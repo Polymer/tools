@@ -8,6 +8,10 @@
   var thisFile = 'lib/mocha-htmltest.js';
   var base = '';
 
+  mocha.htmlbase = function(htmlbase) {
+    base = htmlbase;
+  };
+
   (function() {
     var s$ = document.querySelectorAll('script[src]');
     Array.prototype.forEach.call(s$, function(s) {
