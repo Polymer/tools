@@ -1,4 +1,4 @@
-test
+tools
 ====
 
-Utilities to help with testing toolkit
+The `tools` repository contains some shared utilities for toolkit.
