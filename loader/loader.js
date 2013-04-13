@@ -5,44 +5,9 @@
  */
 
 (function() {
-
-// utility method
-
-function findScript(inFileName) {
-  var script = document.querySelector('script[src*="' + inFileName + '"]');
-  var src = script.attributes.src.value;
-  script.basePath = src.slice(0, src.indexOf(inFileName));
-  return script;
-}
-
-// get arguments
-
-var thisFile = 'loader.js';
-var names = findScript(thisFile).attributes;
-
-// acquire scope from 'scope' attribute on 'loader.js' script tag
-
-var scope = window[names.scope.value] || window;
-if (!scope) {
-  scope = window[names.scope.value] = {};
-}
-
-// imports
-
-var entryPointName = scope.entryPointName;
-var processFlags = scope.processFlags;
-
-// acquire attributes and base path from entry point
-
-var entryPoint = findScript(entryPointName);
-var base = entryPoint.basePath;
-
-// convert attributes to flags
-
+  
+var scope = window.Loader = {};
 var flags = {};
-for (var i=0, a; (a=entryPoint.attributes[i]); i++) {
-  flags[a.name] = a.value || true;
-}
 
 // convert url arguments to flags
 
@@ -55,43 +20,82 @@ if (!flags.noOpts) {
 
 // process global logFlags
 
-var logFlags = window.logFlags || {};
+parseLogFlags(flags);
 
-var logFlags = {};
-if (flags.log) {
-  flags.log.split(',').forEach(function(f) {
-    logFlags[f] = true;
+function load(scopeName) {
+  // imports
+
+  var scope = window[scopeName];
+  var entryPointName = scope.entryPointName;
+  var processFlags = scope.processFlags;
+
+  // acquire attributes and base path from entry point
+
+  var entryPoint = findScript(entryPointName);
+  var base = entryPoint.basePath;
+  
+  // acquire common flags
+  var flags = Loader.flags;
+
+  // convert attributes to flags
+  var flags = Loader.flags;
+  for (var i=0, a; (a=entryPoint.attributes[i]); i++) {
+    if (a.name !== 'src') {
+      flags[a.name] = a.value || true;
+    }
+  }
+
+  // parse log flags into global
+  parseLogFlags(flags);
+
+  // exports
+
+  scope.basePath = base;
+  scope.flags = flags;
+
+  // process flags for dynamic dependencies
+
+  if (processFlags) {
+    processFlags.call(scope, flags);
+  }
+
+  // post-process imports
+
+  var modules = scope.modules || [];
+  var sheets = scope.sheets || [];
+
+  // write script tags for dependencies
+
+  modules.forEach(function(src) {
+    document.write('<script src="' + base + src + '"></script>');
   });
+
+  // write link tags for styles
+
+  sheets.forEach(function(src) {
+    document.write('<link rel="stylesheet" href="' + base + src + '">');
+  }); 
 }
 
-window.logFlags = logFlags;
+// utility method
 
-// exports
+function findScript(fileName) {
+  var script = document.querySelector('script[src*="' + fileName + '"]');
+  var src = script.attributes.src.value;
+  script.basePath = src.slice(0, src.indexOf(fileName));
+  return script;
+}
 
-scope.basePath = base;
+function parseLogFlags(flags) {
+  var logFlags = window.logFlags = window.logFlags || {};
+  if (flags.log) {
+    flags.log.split(',').forEach(function(f) {
+      logFlags[f] = true;
+    });
+  }
+}
+
 scope.flags = flags;
-
-// process flags for dynamic dependencies
-
-if (processFlags) {
-  processFlags.call(scope, flags);
-}
-
-// post-process imports
-
-var modules = scope.modules || [];
-var sheets = scope.sheets || [];
-
-// write script tags for dependencies
-
-modules.forEach(function(inSrc) {
-  document.write('<script src="' + base + inSrc + '"></script>');
-});
-
-// write link tags for styles
-
-sheets.forEach(function(inSrc) {
-  document.write('<link rel="stylesheet" href="' + base + inSrc + '">');
-});
+scope.load = load;  
 
 })();
