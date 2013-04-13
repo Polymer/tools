@@ -9,17 +9,9 @@
 // utility method
 
 function findScript(inFileName) {
-  var script = null;
-  var re = new RegExp(inFileName + '[^\\\\]*');
-  var s$ = document.querySelectorAll('script[src]');
-  Array.prototype.forEach.call(s$, function(s) {
-    var src = s.getAttribute('src');
-    var match = src.match(re);
-    if (match) {
-      s.basePath = src.slice(0, -match[0].length);
-      script = s;
-    }
-  });
+  var script = document.querySelector('script[src*="' + inFileName + '"]');
+  var src = script.attributes.src.value;
+  script.basePath = src.slice(0, src.indexOf(inFileName));
   return script;
 }
 
