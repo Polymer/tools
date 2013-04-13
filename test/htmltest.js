@@ -8,6 +8,7 @@
 if (window.top === window) {
   // if standalone
   window.done = function() {
+    window.onerror = null;
     var d = document.createElement('pre');
     d.style.cssText = 'padding: 6px; background-color: lightgreen;';
     d.textContent = 'Passed';
@@ -23,6 +24,7 @@ if (window.top === window) {
 // if part of a test suite
 {
   window.done = function() {
+    window.onerror = null;
     parent.postMessage('ok', '*');
   };
   
