@@ -30,7 +30,8 @@
     if (event.data === 'ok') {
       next();
     } else if (event.data && event.data.error) {
-      throw event.data.error;
+      // errors cannot be cloned via postMessage according to spec, so we re-errorify them
+      throw new Error(event.data.error);
     }
   };
 

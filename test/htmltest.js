@@ -29,8 +29,7 @@ if (window.top === window) {
   };
   
   window.onerror = function(x) {
-    // errors cannot be cloned postMessage according to spec, so we stringify it for call stack
-    parent.postMessage({error: String(x)}, '*');
+    parent.postMessage({error: x}, '*');
   };
 }
 
