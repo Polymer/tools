@@ -7,14 +7,18 @@
 // if standalone
 if (window.top === window) {
   // if standalone
+  var failed = false;
   window.done = function() {
     window.onerror = null;
-    var d = document.createElement('pre');
-    d.style.cssText = 'padding: 6px; background-color: lightgreen;';
-    d.textContent = 'Passed';
-    document.body.appendChild(d);
+    if (!failed) {
+      var d = document.createElement('pre');
+      d.style.cssText = 'padding: 6px; background-color: lightgreen;';
+      d.textContent = 'Passed';
+      document.body.appendChild(d);
+    }
   };
   window.onerror = function(x) {
+    failed = true;
     var d = document.createElement('pre');
     d.style.cssText = 'padding: 6px; background-color: #FFE0E0;';
     d.textContent = 'FAILED: ' + x;
