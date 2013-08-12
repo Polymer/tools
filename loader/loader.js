@@ -6,7 +6,7 @@
 
 (function() {
   
-var scope = window.Loader = {};
+var scope = window.PolymerLoader = {};
 var flags = {};
 
 // convert url arguments to flags
@@ -35,10 +35,10 @@ function load(scopeName) {
   var base = entryPoint.basePath;
   
   // acquire common flags
-  var flags = Loader.flags;
+  var flags = scope.flags;
 
   // convert attributes to flags
-  var flags = Loader.flags;
+  var flags = PolymerLoader.flags;
   for (var i=0, a; (a=entryPoint.attributes[i]); i++) {
     if (a.name !== 'src') {
       flags[a.name] = a.value || true;
@@ -96,6 +96,6 @@ function parseLogFlags(flags) {
 }
 
 scope.flags = flags;
-scope.load = load;  
+scope.load = load;
 
 })();
