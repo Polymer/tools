@@ -4,10 +4,10 @@
 # Pick which level of authorization you want.
 
 ## ssh auth / need acls to Polymer project
-POLYMER_PATH="git@github.com:Polymer"
+# POLYMER_PATH="git@github.com:Polymer"
 
 ## https auth / can read without auth
-# POLYMER_PATH="https://github.com/Polymer"
+POLYMER_PATH="https://github.com/Polymer"
 
 ## read only
 # POLYMER_PATH="git://github.com/Polymer"
