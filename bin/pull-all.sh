@@ -18,10 +18,10 @@ REPOS=(
   PointerEvents
   PointerGestures
   ShadowDOM
-  ObserveJS
-  Node-bind
-  Template-instantiation
-  PolymerExpressions
+  observe-js
+  NodeBind
+  TemplateInstances
+  polymer-expressions
   platform
   polymer
   projects
