@@ -20,7 +20,7 @@ REPOS=(
   ShadowDOM
   observe-js
   NodeBind
-  TemplateInstances
+  TemplateBinding
   polymer-expressions
   platform
   polymer
