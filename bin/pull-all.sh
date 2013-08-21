@@ -39,17 +39,35 @@ REPOS=(
   labs
 )
 
+err() {
+  echo -e "\033[5;1;31m$REPO FAILED TO CHECK OUT!\033[0m"
+  read
+}
+
+log() {
+  echo -e "\033[1;37m===== $1 \033[1;34m$REPO \033[1;37m=====\033[0m"
+}
+
+ok() {
+  echo -e "\033[1;32mOK\033[0m"
+}
+
 pull() {
     pushd $REPO >/dev/null 2>&1
-    echo "PULLING $REPO"
+    log "PULLING"
     git checkout master
-    git pull
+    git pull --rebase
+    if [ $? -ne 0 ]; then
+      err
+    else
+      ok
+    fi
     git submodule update --init --recursive
     popd >/dev/null 2>&1
 }
 
 checkout() {
-  echo "CHECKING OUT $REPO"
+  log "CHECKING OUT"
   git clone -b master --recursive "$1"
 }
 
