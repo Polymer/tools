@@ -24,18 +24,13 @@ REPOS=(
   polymer-expressions
   platform
   polymer
-  projects
   polymer-elements
   polymer-ui-elements
   more-elements
   toolkit-ui
+  projects
   tools
-  buildbot
-  apps
-  chrome-app-seed
   todomvc
-  polymer-chrome-app
-  polymer-all
   labs
 )
 
