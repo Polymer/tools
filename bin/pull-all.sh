@@ -34,8 +34,14 @@ REPOS=(
   labs
 )
 
+FAILED=()
+
 err() {
-  echo -e "\033[5;1;31m$REPO FAILED TO CHECK OUT!\033[0m"
+  echo -e "\033[1;31m${#FAILED[@]} REPOS FAILED TO CHECK OUT!\033[0m"
+    for f in ${FAILED[@]}; do
+      echo -e "\033[1m$f\033[0m"
+    done
+  # Wait for user input
   read
 }
 
@@ -53,11 +59,10 @@ pull() {
     git checkout master
     git pull --rebase
     if [ $? -ne 0 ]; then
-      err
+      FAILED+=($REPO)
     else
-      ok
+      git submodule update --init --recursive
     fi
-    git submodule update --init --recursive
     popd >/dev/null 2>&1
 }
 
@@ -80,4 +85,10 @@ if [ -d $REPO ]; then
   pull
 else
   checkout "git://github.com/web-animations/$REPO"
+fi
+
+if [[ ${#FAILED[@]} -gt 0 ]]; then
+  err
+else
+  ok
 fi
