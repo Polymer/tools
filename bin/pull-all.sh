@@ -56,7 +56,6 @@ ok() {
 pull() {
     pushd $REPO >/dev/null 2>&1
     log "PULLING"
-    git checkout master
     git pull --rebase
     if [ $? -ne 0 ]; then
       FAILED+=($REPO)
