@@ -1,16 +1,90 @@
 #!/bin/bash
 
 # This script will check out all of the Polymer project's repositories
-# Load repo configuration
-. ../conf/repo_conf.sh
+# Pick which level of authorization you want.
 
-for REPO in ${POLYMER_REPOS[@]}; do
+## ssh auth / need acls to Polymer project
+# POLYMER_PATH="git@github.com:Polymer"
+
+## https auth / can read without auth
+POLYMER_PATH="https://github.com/Polymer"
+
+## read only
+# POLYMER_PATH="git://github.com/Polymer"
+
+REPOS=(
+  HTMLImports
+  CustomElements
+  PointerEvents
+  PointerGestures
+  ShadowDOM
+  observe-js
+  NodeBind
+  TemplateBinding
+  polymer-expressions
+  platform
+  polymer
+  polymer-elements
+  polymer-ui-elements
+  more-elements
+  toolkit-ui
+  projects
+  tools
+  todomvc
+  labs
+)
+
+FAILED=()
+
+err() {
+  echo -e "\033[1;31m${#FAILED[@]} REPOS FAILED TO CHECK OUT!\033[0m"
+    for f in ${FAILED[@]}; do
+      echo -e "\033[1m$f\033[0m"
+    done
+  # Wait for user input
+  read
+}
+
+log() {
+  echo -e "\033[1;37m===== $1 \033[1;34m$REPO \033[1;37m=====\033[0m"
+}
+
+ok() {
+  echo -e "\033[1;32mOK\033[0m"
+}
+
+pull() {
+    pushd $REPO >/dev/null 2>&1
+    log "PULLING"
+    git pull --rebase
+    if [ $? -ne 0 ]; then
+      FAILED+=($REPO)
+    else
+      git submodule update --init --recursive
+    fi
+    popd >/dev/null 2>&1
+}
+
+checkout() {
+  log "CHECKING OUT"
+  git clone -b master --recursive "$1"
+}
+
+for REPO in ${REPOS[@]}; do
   if [ -d $REPO ]; then
-    pull $REPO
+    pull
   else
-    clone $REPO "master"
+    checkout "$POLYMER_PATH/$REPO.git"
   fi
 done
+
+# Web animations is in a different org, readonly copy only
+REPO='web-animations-js'
+if [ -d $REPO ]; then
+  pull
+else
+  checkout "git://github.com/web-animations/$REPO"
+fi
 
 if [[ ${#FAILED[@]} -gt 0 ]]; then
   err
