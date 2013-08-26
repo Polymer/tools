@@ -2,8 +2,8 @@
 
 # This script provides the repo configurations for Polymer's checkout scripts
 
-# https auth / can read without auth
-POLYMER_PATH="https://github.com/Polymer"
+# default to https auth
+POLYMER_PATH=${POLYMER_PATH:-"https://github.com/Polymer"}
 
 # Short names for all the repos
 REPOS=(
@@ -46,12 +46,13 @@ FAILED=()
 DEFAULT_BRANCH="master"
 
 err() {
-  echo -e "\033[1;31m${#FAILED[@]} REPOS FAILED TO CHECK OUT!\033[0m"
+  echo -e "\033[1;31m${#FAILED[@]} REPOS FAILED TO $1!\033[0m"
     for f in ${FAILED[@]}; do
       echo -e "\033[1m$f\033[0m"
     done
   # Wait for user input
   read
+  exit 1
 }
 
 # ARGS: $1 log message, $2 repo shortname
@@ -66,7 +67,7 @@ ok() {
 # Prints errors or says OK
 status_report() {
   if [[ ${#FAILED[@]} -gt 0 ]]; then
-    err
+    err "$1"
   else
     ok
   fi
@@ -108,7 +109,10 @@ sync_repos() {
     fi
   done
 
-  status_report
+  status_report "CHECKOUT"
 }
 
-sync_repos
+# only sync if run, not if importing functions
+if [ `basename $0` == "pull-all.sh" ]; then
+  sync_repos
+fi
