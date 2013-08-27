@@ -94,8 +94,8 @@ pull() {
 # ARGS: $1 shortname, $2 branch
 clone() {
   log "CLONING" "$1"
-  branch="$2" || "$DEFAULT_BRANCH"
-  git clone -b "$2" --recursive "$1"
+  branch=${2:-$DEFAULT_BRANCH}
+  git clone -b "$branch" --recursive "$1"
 }
 
 # ARGS: $1 branch
