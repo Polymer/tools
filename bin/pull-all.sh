@@ -2,6 +2,13 @@
 
 # This script provides the repo configurations for Polymer's checkout scripts
 
+# Check if cwd/tools/bin/pull-all exists, use that if it does
+# this way, a random download of pull-all is always correct
+if [ -x "tools/bin/pull-all.sh" ] && ! [ "$0" -ef "tools/bin/pull-all.sh" ]; then
+  echo "exec'ing more up-to-date copy"
+  exec tools/bin/pull-all.sh
+fi
+
 # default to https auth
 POLYMER_PATH=${POLYMER_PATH:-"https://github.com/Polymer"}
 
