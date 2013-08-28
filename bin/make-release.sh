@@ -10,9 +10,6 @@ VERSION=`date "+v0.0.%Y%m%d"`
 # ssh auth, easier to script
 POLYMER_PATH="git@github.com:Polymer"
 
-# Changelog format: - commit message ([commit](commit url on github))
-PRETTY="- %s ([commit](https://github.com/Polymer/$REPO/commit/%h))"
-
 tag_repos() {
   FAILED=()
   for REPO in ${REPOS[@]}; do
@@ -40,6 +37,8 @@ gen_changelog() {
       continue
     fi
     pushd $REPO >/dev/null
+    # Changelog format: - commit message ([commit](commit url on github))
+    PRETTY="- %s ([commit](https://github.com/Polymer/$REPO/commit/%h))"
     log "GEN CHANGELOG" "$REPO"
     # find slightly older tag, sorted alphabetically
     OLD_VERSION="`git tag -l | tail -n 2 | head -n 1`"
