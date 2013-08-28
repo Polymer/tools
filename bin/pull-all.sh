@@ -6,7 +6,7 @@
 # this way, a random download of pull-all is always correct
 if [ -x "tools/bin/pull-all.sh" ] && ! [ "$0" -ef "tools/bin/pull-all.sh" ]; then
   echo "exec'ing more up-to-date copy"
-  exec tools/bin/pull-all.sh
+  exec tools/bin/pull-all.sh "$@"
 fi
 
 # default to https auth
@@ -52,14 +52,22 @@ FAILED=()
 # default branch of clones
 DEFAULT_BRANCH="master"
 
+die() {
+  read
+  exit 1
+}
+
 err() {
-  echo -e "\033[1;31m${#FAILED[@]} REPOS FAILED TO $1!\033[0m"
+  echo -e "\033[1;31m$1\033[0m"
+}
+
+repo_err() {
+  err "${#FAILED[@]} REPOS FAILED TO $1!"
     for f in ${FAILED[@]}; do
       echo -e "\033[1m$f\033[0m"
     done
   # Wait for user input
-  read
-  exit 1
+  die
 }
 
 # ARGS: $1 log message, $2 repo shortname
@@ -74,7 +82,7 @@ ok() {
 # Prints errors or says OK
 status_report() {
   if [[ ${#FAILED[@]} -gt 0 ]]; then
-    err "$1"
+    repo_err "$1"
   else
     ok
   fi
