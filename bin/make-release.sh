@@ -81,19 +81,39 @@ gen_changelog() {
 }
 
 build() {
+  # build platform
+  pushd platform >/dev/null
+  log "INSTALLING" "node modules"
+  npm --silent install
+  log "TESTING" "platform"
+  grunt test
+  if [ $? -ne 0 ]; then
+    die "platform FAILED TESTING"
+  fi
+  grunt
+  # version number on build file
+  cp platform.min.js platform-${VERSION}.min.js
+  cp platform.min.js.map platform-${VERSION}.min.js.map
+  rm -f platform.concat.js{,.map}
+  mv platform{,-$VERSION}.min.js{,.map} ../
+  ok
+  popd >/dev/null
+
+  # build polymer
   pushd polymer >/dev/null
   log "INSTALLING" "node modules"
   npm --silent install
   log "TESTING" "polymer"
   grunt test
   if [ $? -ne 0 ]; then
-    die "polymer FAILED TESTING!"
+    die "polymer FAILED TESTING"
   fi
   log "BUILDING" "polymer"
   grunt
   # version number on build file
   cp polymer.min.js polymer-${VERSION}.min.js
   cp polymer.min.js.map polymer-${VERSION}.min.js.map
+  rm -f polymer.concat.js{,.map}
   mv build.log polymer{,-$VERSION}.min.js{,.map} ../
   ok
   popd >/dev/null
@@ -101,7 +121,7 @@ build() {
 
 package() {
   log "ZIPPING" "ALL REPOS"
-  zip -q -x "polymer-$VERSION/polymer.min.js*" -x "*.git*" -x "*node_modules/*" -x "*tools/*" -r polymer-all-$VERSION.zip polymer-$VERSION
+  zip -q -x "polymer-$VERSION/tools/*" -x "polymer-$VERSION/polymer.min.js*" -x "polymer-$VERSION/platform.min.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
   ok
 }
 
