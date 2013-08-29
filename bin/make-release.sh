@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# ssh auth, easier to script
+POLYMER_PATH="git@github.com:Polymer"
+
 # import functions from pull-all, must be in same folder as make-release
 . "`dirname $0`/pull-all.sh"
 
@@ -21,9 +25,6 @@ done
 ## TODO(dfreedman): date stamped for now, follow polymer/package.json in the future
 ## make sure to update polymer/package.json to reflect this value
 VERSION=`date "+v0.0.%Y%m%d"`
-
-# ssh auth, easier to script
-POLYMER_PATH="git@github.com:Polymer"
 
 tag_repos() {
   FAILED=()
