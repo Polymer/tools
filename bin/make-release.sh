@@ -2,6 +2,21 @@
 # import functions from pull-all, must be in same folder as make-release
 . "`dirname $0`/pull-all.sh"
 
+# If -f flag is given, actually push the tags
+PUSHTAGS=false
+while getopts ":fv:" opt; do
+  case $opt in
+    f)
+      PUSHTAGS=true
+      ;;
+    v)
+      BRANCH="$OPTARG"
+      ;;
+    :)
+      die "Option -$OPTARG requires an argument";
+  esac
+done
+
 # version number
 ## TODO(dfreedman): date stamped for now, follow polymer/package.json in the future
 ## make sure to update polymer/package.json to reflect this value
@@ -12,7 +27,7 @@ POLYMER_PATH="git@github.com:Polymer"
 
 tag_repos() {
   FAILED=()
-  for REPO in ${REPOS[@]}; do
+  for REPO in "${REPOS[@]}"; do
     # skip web animations repo
     if [ $REPO = 'web-animations-js' ]; then
       continue
@@ -20,17 +35,31 @@ tag_repos() {
     pushd $REPO >/dev/null
     log "TAGGING" "$REPO"
     git tag -f "$VERSION"
-    if [ $? -ne 0 ]; then
-      FAILED+=($REPO)
-    fi
-    # push only tags
-    git push --tags
     popd >/dev/null
   done
   status_report "TAG"
 }
 
+push_tags() {
+  FAILED=()
+  for REPO in "${REPOS[@]}"; do
+    # skip web animations repo
+    if [ $REPO = 'web-animations-js' ]; then
+      continue
+    fi
+    pushd $REPO >/dev/null
+    log "PUSHING TAG" "$REPO"
+    git push --tags
+    if [ $? -ne 0 ]; then
+      FAILED+=($REPO)
+    fi
+    popd >/dev/null
+  done;
+  status_report "PUSH"
+}
+
 gen_changelog() {
+  echo -n "" > "changelog.md"
   for REPO in ${REPOS[@]}; do
     # skip web animations repo
     if [ $REPO = 'web-animations-js' ]; then
@@ -58,8 +87,7 @@ build() {
   log "TESTING" "polymer"
   grunt test
   if [ $? -ne 0 ]; then
-    err "polymer FAILED TESTING!"
-    die
+    die "polymer FAILED TESTING!"
   fi
   log "BUILDING" "polymer"
   grunt
@@ -81,9 +109,12 @@ release() {
   mkdir -p polymer-$VERSION
   pushd polymer-$VERSION >/dev/null
   sync_repos
+  build
   tag_repos
   gen_changelog
-  build
+  if $PUSHTAGS; then
+    push_tags
+  fi
   popd >/dev/null
   package
 }
