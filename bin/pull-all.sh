@@ -53,6 +53,9 @@ FAILED=()
 DEFAULT_BRANCH="master"
 
 die() {
+  if [ -n "$1" ]; then
+    err "$1"
+  fi
   read
   exit 1
 }
@@ -63,7 +66,7 @@ err() {
 
 repo_err() {
   err "${#FAILED[@]} REPOS FAILED TO $1!"
-    for f in ${FAILED[@]}; do
+    for f in "${FAILED[@]}"; do
       echo -e "\033[1m$f\033[0m"
     done
   # Wait for user input
@@ -88,39 +91,43 @@ status_report() {
   fi
 }
 
-# ARGS: $1 shortname, $2 branch
+# ARGS: $1 shortname
 pull() {
   pushd $1 >/dev/null 2>&1
   log "PULLING" "$1"
   # argument arity is important for some reason :(
-  if [[ -z "$2" ]]; then
+  if [[ -z "$BRANCH" ]]; then
     git pull --rebase
   else
-    git pull --rebase origin "$2"
+    git checkout "$BRANCH"
+    git pull --rebase origin "$BRANCH"
   fi
   if [ $? -ne 0 ]; then
-    FAILED+=($1)
+    FAILED+=("$1")
   else
     git submodule update --init --recursive
   fi
   popd >/dev/null 2>&1
 }
 
-# ARGS: $1 shortname, $2 branch
+# ARGS: $1 repo path, $2 shortname
 clone() {
   log "CLONING" "$1"
-  branch=${2:-$DEFAULT_BRANCH}
-  git clone -b "$branch" --recursive "$1"
+  b=${BRANCH:-$DEFAULT_BRANCH}
+  git clone -b "$b" --recursive "$1"
+  if [ $? -ne 0 ]; then
+    FAILED+=($2)
+  fi
 }
 
 # ARGS: $1 branch
 sync_repos() {
-  for i in ${!REPOS[@]}; do
+  for i in "${!REPOS[@]}"; do
     REPO="${REPOS[$i]}"
     if [ -d $REPO ]; then
-      pull "$REPO" "$1"
+      pull "$REPO"
     else
-      clone "${REPO_PATHS[$i]}" "$1"
+      clone "${REPO_PATHS[$i]}" "$REPO"
     fi
   done
 
@@ -129,5 +136,16 @@ sync_repos() {
 
 # only sync if run, not if importing functions
 if [ `basename $0` == "pull-all.sh" ]; then
+  # figure out what branch to pull with the -v "version" argument
+  while getopts ":v:" opt; do
+    case $opt in
+      v)
+        BRANCH="$OPTARG"
+        ;;
+      :)
+        die "Option -$OPTARG requires an argument"
+        ;;
+    esac
+  done
   sync_repos
 fi
