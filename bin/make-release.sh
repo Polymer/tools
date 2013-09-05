@@ -75,6 +75,7 @@ gen_changelog() {
     if [[ -n $OLD_VERSION ]]; then
       echo "#### $REPO" >> "../changelog.md"
       git log $OLD_VERSION..$VERSION --pretty="$PRETTY" >> "../changelog.md"
+      echo "" >> "../changelog.md"
     fi
     popd >/dev/null
   done
@@ -122,6 +123,7 @@ build() {
 
 package() {
   log "ZIPPING" "ALL REPOS"
+  rm -f polymer-all-$VERSION.zip
   zip -q -x "polymer-$VERSION/tools/*" -x "polymer-$VERSION/polymer.min.js*" -x "polymer-$VERSION/platform.min.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
   ok
 }
