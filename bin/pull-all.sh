@@ -14,25 +14,26 @@ POLYMER_PATH=${POLYMER_PATH:-"https://github.com/Polymer"}
 
 # Short names for all the repos
 REPOS=(
-  HTMLImports
   CustomElements
+  HTMLImports
+  NodeBind
   PointerEvents
   PointerGestures
   ShadowDOM
-  observe-js
-  NodeBind
   TemplateBinding
-  polymer-expressions
+  WeakMap
+  labs
+  more-elements
+  observe-js
   platform
   polymer
   polymer-elements
+  polymer-expressions
   polymer-ui-elements
-  more-elements
-  toolkit-ui
   projects
-  tools
   todomvc
-  labs
+  toolkit-ui
+  tools
 )
 
 # Array of all the repos with full path
