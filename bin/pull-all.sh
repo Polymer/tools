@@ -10,6 +10,7 @@
 # fi
 
 # Windows autocloses shell when complete, use `read` to wait for user input
+WINDOWS=0
 if [[ $OSTYPE == win32 ]] || [[ $OSTYPE == cygwin ]]; then
   WINDOWS=1
 fi
