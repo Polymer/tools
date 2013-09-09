@@ -4,9 +4,14 @@
 
 # Check if cwd/tools/bin/pull-all exists, use that if it does
 # this way, a random download of pull-all is always correct
-if [ "${0##*[/|\\]}" == "pull-all.sh" ] && [ -x "tools/bin/pull-all.sh" ] && ! [ "$0" -ef "tools/bin/pull-all.sh" ]; then
-  echo "exec'ing more up-to-date copy"
-  exec tools/bin/pull-all.sh "$@"
+# if [ "${0##*[/|\\]}" == "pull-all.sh" ] && [ -x "tools/bin/pull-all.sh" ] && ! [ "$0" -ef "tools/bin/pull-all.sh" ]; then
+  # echo "exec'ing more up-to-date copy"
+  # exec tools/bin/pull-all.sh "$@"
+# fi
+
+# Windows autocloses shell when complete, use `read` to wait for user input
+if [[ $OSTYPE == win32 ]] || [[ $OSTYPE == cygwin ]]; then
+  WINDOWS=1
 fi
 
 # default to https auth
@@ -57,7 +62,7 @@ die() {
   if [ -n "$1" ]; then
     err "$1"
   fi
-  read
+  [ $WINDOWS -eq 1 ] && read
   exit 1
 }
 
@@ -89,6 +94,7 @@ status_report() {
     repo_err "$1"
   else
     ok
+    [ $WINDOWS -eq 1 ] && read
   fi
 }
 
