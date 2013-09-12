@@ -96,7 +96,6 @@ build() {
   # version number on build file
   cp platform.min.js platform-${VERSION}.min.js
   cp platform.min.js.map platform-${VERSION}.min.js.map
-  rm -f platform.concat.js{,.map}
   mv platform{,-$VERSION}.min.js{,.map} ../
   ok
   popd >/dev/null
@@ -115,7 +114,6 @@ build() {
   # version number on build file
   cp polymer.min.js polymer-${VERSION}.min.js
   cp polymer.min.js.map polymer-${VERSION}.min.js.map
-  rm -f polymer.concat.js{,.map}
   mv build.log polymer{,-$VERSION}.min.js{,.map} ../
   ok
   popd >/dev/null
@@ -124,22 +122,24 @@ build() {
 package() {
   log "ZIPPING" "ALL REPOS"
   rm -f polymer-all-$VERSION.zip
-  zip -q -x "polymer-$VERSION/tools/*" -x "polymer-$VERSION/polymer.min.js*" -x "polymer-$VERSION/platform.min.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
+  zip -q -x "polymer-$VERSION/tools/*" -x "polymer-$VERSION/polymer.min.js*" -x "polymer-$VERSION/platform.min.js*" -x "polymer-$VERSION/polymer/polymer.concat.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
   ok
 }
 
 release() {
   mkdir -p polymer-$VERSION
   pushd polymer-$VERSION >/dev/null
-  sync_repos
-  build
-  tag_repos
-  gen_changelog
   if $PUSHTAGS; then
     push_tags
+    popd >/dev/null
+  else
+    sync_repos
+    build
+    tag_repos
+    gen_changelog
+    popd >/dev/null
+    package
   fi
-  popd >/dev/null
-  package
 }
 
 release
