@@ -40,6 +40,16 @@ exports.mixin_common_opts = function(karma, opts) {
     // CLI --auto-watch --no-auto-watch
     autoWatch: true,
 
+    // Custom launchers via BrowserStack.
+    customLaunchers: {
+      bs_iphone5: {
+        base: 'BrowserStack',
+        device: 'iPhone 5',
+        os: 'ios',
+        os_version: '6.0'
+      }
+    },
+
     // Start these browsers, currently available:
     // - Chrome
     // - ChromeCanary
@@ -65,6 +75,7 @@ exports.mixin_common_opts = function(karma, opts) {
 
     plugins: [
       'karma-mocha',
+      'karma-browserstack-launcher',
       'karma-chrome-launcher',
       'karma-firefox-launcher',
 			'karma-ie-launcher',
