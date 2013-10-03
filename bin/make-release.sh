@@ -122,7 +122,7 @@ build() {
 package() {
   log "ZIPPING" "ALL REPOS"
   rm -f polymer-all-$VERSION.zip
-  zip -q -x "polymer-$VERSION/tools/*" -x "polymer-$VERSION/polymer.min.js*" -x "polymer-$VERSION/platform.min.js*" -x "polymer-$VERSION/polymer/polymer.concat.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
+  zip -q -x "polymer-$VERSION/polymer.min.js*" -x "polymer-$VERSION/platform.min.js*" -x "polymer-$VERSION/polymer/polymer.concat.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
   ok
 }
 
