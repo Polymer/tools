@@ -2,13 +2,6 @@
 
 # This script provides the repo configurations for Polymer's checkout scripts
 
-# Check if cwd/tools/bin/pull-all exists, use that if it does
-# this way, a random download of pull-all is always correct
-# if [ "${0##*[/|\\]}" == "pull-all.sh" ] && [ -x "tools/bin/pull-all.sh" ] && ! [ "$0" -ef "tools/bin/pull-all.sh" ]; then
-  # echo "exec'ing more up-to-date copy"
-  # exec tools/bin/pull-all.sh "$@"
-# fi
-
 # Windows autocloses shell when complete, use `read` to wait for user input
 WINDOWS=0
 if [[ $OSTYPE == win32 ]] || [[ $OSTYPE == cygwin ]]; then
@@ -143,7 +136,7 @@ sync_repos() {
 }
 
 # only sync if run, not if importing functions
-if [ `basename $0` == "pull-all.sh" ]; then
+if [ ${0##*[/\\]} == "pull-all.sh" ]; then
   # figure out what branch to pull with the -v "version" argument
   while getopts ":v:" opt; do
     case $opt in
