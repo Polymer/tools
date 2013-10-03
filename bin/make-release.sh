@@ -96,6 +96,7 @@ build() {
   # version number on build file
   cp platform.min.js platform-${VERSION}.min.js
   cp platform.min.js.map platform-${VERSION}.min.js.map
+  sed -i -e "s|\(//# sourceMappingURL=\)platform.min.js|\1platform-${VERSION}.min.js|" platform-${VERSION}.min.js
   mv platform{,-$VERSION}.min.js{,.map} ../
   ok
   popd >/dev/null
@@ -114,6 +115,7 @@ build() {
   # version number on build file
   cp polymer.min.js polymer-${VERSION}.min.js
   cp polymer.min.js.map polymer-${VERSION}.min.js.map
+  sed -i -e "s|\(//# sourceMappingURL=\)polymer.min.js|\1polymer-${VERSION}.min.js|" polymer-${VERSION}.min.js
   mv build.log polymer{,-$VERSION}.min.js{,.map} ../
   ok
   popd >/dev/null
