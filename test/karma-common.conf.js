@@ -1,13 +1,13 @@
 exports.mixin_common_opts = function(karma, opts) {
-	var browsers = ['Chrome', 'Firefox'];
+	var browsers;
 	var os = require('os').type();
 	if (os === 'Darwin') {
-		browsers.push('ChromeCanary');
-		browsers.push('Safari');
-		// browsers.push('iOS');
+    browsers = ['Chrome', 'ChromeCanary', 'Firefox', 'Safari'];
 	} else if (os === 'Windows_NT') {
-		browsers.push('IE');
-	}
+    browsers = ['Chrome', 'IE'];
+	} else {
+    browsers = ['Chrome', 'Firefox'];
+  }
 	var all_opts = {
     // list of files to exclude
     exclude: [],
@@ -42,6 +42,11 @@ exports.mixin_common_opts = function(karma, opts) {
 
     // Custom launchers via BrowserStack.
     customLaunchers: {
+      ChromeCanaryExperimental: {
+        base: 'ChromeCanary',
+        name: 'ChromeCanaryExperimental',
+        flags: ['--enable-experimental-web-platform-features']
+      },
       bs_iphone5: {
         base: 'BrowserStack',
         device: 'iPhone 5',
