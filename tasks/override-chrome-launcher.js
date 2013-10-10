@@ -8,8 +8,9 @@ module.exports = function(grunt) {
 		if (os === 'Darwin') {
 			var exec = require('child_process').exec;
 			var cb = this.async();
-			exec('npm install karma-chrome-launcher@morethanreal/karma-chrome-launcher', null, function(err, stdout, stderr) {
+			exec('npm install git://github.com/morethanreal/karma-chrome-launcher', null, function(err, stdout, stderr) {
 				console.log(stdout);
+				console.log(stderr);
 				cb();
 			});
 		}
