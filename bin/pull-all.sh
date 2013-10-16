@@ -15,6 +15,7 @@ POLYMER_PATH=${POLYMER_PATH:-"https://github.com/Polymer"}
 REPOS=(
   CustomElements
   HTMLImports
+  MutationObservers
   NodeBind
   PointerEvents
   PointerGestures
