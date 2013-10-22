@@ -4,7 +4,7 @@
 
 # Windows autocloses shell when complete, use `read` to wait for user input
 WINDOWS=0
-if [[ $OSTYPE == win32 ]] || [[ $OSTYPE == cygwin ]]; then
+if [[ $OS = "Windows_NT" ]]; then
   WINDOWS=1
 fi
 
