@@ -88,7 +88,7 @@ build() {
   log "INSTALLING" "node modules"
   npm --silent install
   log "TESTING" "platform"
-  grunt test
+  grunt test-buildbot
   if [ $? -ne 0 ]; then
     die "platform FAILED TESTING"
   fi
@@ -106,7 +106,7 @@ build() {
   log "INSTALLING" "node modules"
   npm --silent install
   log "TESTING" "polymer"
-  grunt test
+  grunt test-buildbot
   if [ $? -ne 0 ]; then
     die "polymer FAILED TESTING"
   fi
