@@ -16,7 +16,7 @@
     "tests"
   ],
   "dependencies": {
-    "chai": "~1.8.1",
-    "mocha": "~1.13.0"
+    "chai": ">=1.8.1",
+    "mocha": ">=1.13.0"
   }
 }
