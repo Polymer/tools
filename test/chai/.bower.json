@@ -32,7 +32,6 @@
     "commit": "4107c02cb1507c8554177aeeefd9732abcfd4e64"
   },
   "_source": "git://github.com/chaijs/chai.git",
-  "_target": "~1.8.1",
-  "_originalSource": "chai",
-  "_direct": true
+  "_target": ">=1.8.1",
+  "_originalSource": "chai"
 }
