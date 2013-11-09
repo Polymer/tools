@@ -8,20 +8,35 @@ if [[ $OS = "Windows_NT" ]]; then
   WINDOWS=1
 fi
 
-# default to https auth
-GIT_PATH=${GIT_PATH:-"https://github.com/polymer-elements"}
-
-# Short names for all the repos
-script="${0%[/\\]*}/all-repos.js"
-echo -e "\033[1;34m===== Fetching \033[1;37mGithub Repos \033[1;34m=====\033[0m"
-REPOS=(`node $script polymer-elements`)
-
-# Array of all the repos with full path
+REPOS=()
 REPO_PATHS=()
+SSH=0
 
-for REPO in ${REPOS[@]}; do
-  REPO_PATHS+=("$GIT_PATH/$REPO.git")
-done
+prepare() {
+  # default to https auth
+  if [ $SSH -eq 1 ]; then
+    GIT_PATH="git@github.com:polymer-elements"
+  else
+    GIT_PATH="https://github.com/polymer-elements"
+  fi
+
+  # boostrap github api
+  pushd ${0%[/\\]*} > /dev/null
+  npm install
+  popd > /dev/null
+
+  # Gather repo list from github
+  script="${0%[/\\]*}/all-repos.js"
+  echo -e "\033[1;34m===== Fetching \033[1;37mGithub Repos \033[1;34m=====\033[0m"
+  REPOS=(`node $script polymer-elements`)
+
+  # Array of all the repos with full path
+  REPO_PATHS=()
+
+  for REPO in ${REPOS[@]}; do
+    REPO_PATHS+=("$GIT_PATH/$REPO.git")
+  done
+}
 
 # repos that fail to clone will be put here
 FAILED=()
@@ -115,8 +130,11 @@ sync_repos() {
 # only sync if run, not if importing functions
 if [ ${0##*[/\\]} == "really-pull-all.sh" ]; then
   # figure out what branch to pull with the -v "version" argument
-  while getopts ":v:" opt; do
+  while getopts ":v:s" opt; do
     case $opt in
+      s)
+        SSH=1
+        ;;
       v)
         BRANCH="$OPTARG"
         ;;
@@ -125,5 +143,6 @@ if [ ${0##*[/\\]} == "really-pull-all.sh" ]; then
         ;;
     esac
   done
+  prepare
   sync_repos
 fi

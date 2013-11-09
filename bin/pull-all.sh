@@ -9,10 +9,20 @@ if [[ $OS = "Windows_NT" ]]; then
 fi
 
 # default to https auth
-POLYMER_PATH=${POLYMER_PATH:-"https://github.com/Polymer"}
+SSH=0
 
-# Short names for all the repos
-REPOS=(
+REPOS=()
+REPO_PATHS=()
+
+prepare() {
+  if [ $SSH -eq 1 ]; then
+    POLYMER_PATH="git@github.com:Polymer"
+  else
+    POLYMER_PATH="https://github.com/Polymer"
+  fi
+
+  # Short names for all the repos
+  REPOS=(
   CustomElements
   HTMLImports
   MutationObservers
@@ -27,18 +37,19 @@ REPOS=(
   polymer
   polymer-expressions
   tools
-)
+  )
 
-# Array of all the repos with full path
-REPO_PATHS=()
+  # Array of all the repos with full path
+  REPO_PATHS=()
 
-for REPO in ${REPOS[@]}; do
-  REPO_PATHS+=("$POLYMER_PATH/$REPO.git")
-done
+  for REPO in ${REPOS[@]}; do
+    REPO_PATHS+=("$POLYMER_PATH/$REPO.git")
+  done
 
-# Web Animations has its own org, hardcode full path
-REPOS+=("web-animations-js")
-REPO_PATHS+=("https://github.com/web-animations/web-animations-js.git")
+  # Web Animations has its own org, hardcode full path
+  REPOS+=("web-animations-js")
+  REPO_PATHS+=("https://github.com/web-animations/web-animations-js.git")
+}
 
 # repos that fail to clone will be put here
 FAILED=()
@@ -132,8 +143,11 @@ sync_repos() {
 # only sync if run, not if importing functions
 if [ ${0##*[/\\]} == "pull-all.sh" ]; then
   # figure out what branch to pull with the -v "version" argument
-  while getopts ":v:" opt; do
+  while getopts ":v:s" opt; do
     case $opt in
+      s)
+        SSH=1
+        ;;
       v)
         BRANCH="$OPTARG"
         ;;
@@ -142,5 +156,6 @@ if [ ${0##*[/\\]} == "pull-all.sh" ]; then
         ;;
     esac
   done
+  prepare
   sync_repos
 fi
