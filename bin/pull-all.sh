@@ -22,17 +22,10 @@ REPOS=(
   ShadowDOM
   TemplateBinding
   WeakMap
-  labs
-  more-elements
   observe-js
   platform
   polymer
-  polymer-elements
   polymer-expressions
-  polymer-ui-elements
-  projects
-  todomvc
-  toolkit-ui
   tools
 )
 
