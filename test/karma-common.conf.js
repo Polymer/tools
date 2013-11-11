@@ -4,7 +4,7 @@ exports.mixin_common_opts = function(karma, opts) {
 	if (os === 'Darwin') {
     browsers = ['Chrome', 'ChromeCanaryExperimental', 'Firefox', 'Safari'];
 	} else if (os === 'Windows_NT') {
-    browsers = ['Chrome', 'IE'];
+    browsers = ['Chrome', 'Firefox', 'IE'];
 	} else {
     browsers = ['Chrome', 'Firefox'];
   }
