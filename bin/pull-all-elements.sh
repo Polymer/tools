@@ -11,23 +11,33 @@ fi
 REPOS=()
 REPO_PATHS=()
 SSH=0
+ORG="polymer-elements"
+
+# ARGS: $1 log message, $2 repo shortname
+log() {
+  echo -e "\033[1;34m===== $1 \033[1;37m$2 \033[1;34m=====\033[0m"
+}
+
+ok() {
+  echo -e "\033[1;32mOK\033[0m"
+}
 
 prepare() {
   # default to https auth
   if [ $SSH -eq 1 ]; then
-    GIT_PATH="git@github.com:polymer-elements"
+    GIT_PATH="git@github.com:$ORG"
   else
-    GIT_PATH="https://github.com/polymer-elements"
+    GIT_PATH="https://github.com/$ORG"
   fi
 
   # boostrap github api
   pushd ${0%[/\\]*} > /dev/null
-  npm install
+  npm install -q
   popd > /dev/null
 
   # Gather repo list from github
   script="${0%[/\\]*}/all-repos.js"
-  echo -e "\033[1;34m===== Fetching \033[1;37mGithub Repos \033[1;34m=====\033[0m"
+  log "Fetching Github Repos" "$ORG"
   REPOS=(`node $script polymer-elements`)
 
   # Array of all the repos with full path
@@ -63,15 +73,6 @@ repo_err() {
     done
   # Wait for user input
   die
-}
-
-# ARGS: $1 log message, $2 repo shortname
-log() {
-  echo -e "\033[1;34m===== $1 \033[1;37m$2 \033[1;34m=====\033[0m"
-}
-
-ok() {
-  echo -e "\033[1;32mOK\033[0m"
 }
 
 # Prints errors or says OK
@@ -128,7 +129,7 @@ sync_repos() {
 }
 
 # only sync if run, not if importing functions
-if [ ${0##*[/\\]} == "really-pull-all.sh" ]; then
+if [ ${0##*[/\\]} == "pull-all-elements.sh" ]; then
   # figure out what branch to pull with the -v "version" argument
   while getopts ":v:s" opt; do
     case $opt in
