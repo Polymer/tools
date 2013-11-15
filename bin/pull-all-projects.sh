@@ -36,7 +36,6 @@ prepare() {
   contacts
   gallery
   memory-game
-  node_modules
   pica
   playground
   sandbox
