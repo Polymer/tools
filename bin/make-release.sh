@@ -68,7 +68,7 @@ gen_changelog() {
     fi
     pushd $REPO >/dev/null
     # Changelog format: - commit message ([commit](commit url on github))
-    PRETTY="- %s ([commit](https://github.com/Polymer/$REPO/commit/%h))"
+    PRETTY="- %s ([commit](https://github.com/polymer/$REPO/commit/%h))"
     log "GEN CHANGELOG" "$REPO"
     # find slightly older tag, sorted alphabetically
     OLD_VERSION="`git tag -l | tail -n 2 | head -n 1`"
