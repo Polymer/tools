@@ -34,7 +34,7 @@ Here's an easy guide that should get you up and running:
 
     Download and run the `pull-all.sh` script to install the sibling dependencies.
 
-        git clone git://github.com/Polymer/tools.git && tools/bin/pull-all.sh
+        git clone git://github.com/polymer/tools.git && tools/bin/pull-all.sh
 
 1. Test your change
    > in the repo you've made changes to, run the tests:
@@ -51,7 +51,7 @@ That's it for the one time setup. Now you're ready to make a change.
 
 We iterate fast! To avoid potential merge conflicts, it's a good idea to pull from the main project before making a change and submitting a pull request. The easiest way to do this is setup a remote called `upstream` and do a pull before working on a change:
 
-    git remote add upstream git://github.com/Polymer/{{ repository }}.git
+    git remote add upstream git://github.com/polymer/{{ repository }}.git
 
 Then before making a change, do a pull from the upstream `master` branch:
 
