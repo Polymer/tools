@@ -30,15 +30,21 @@ prepare() {
     GIT_PATH="https://github.com/$ORG"
   fi
 
-  # boostrap github api
-  pushd ${0%[/\\]*} > /dev/null
-  npm install -q
-  popd > /dev/null
-
-  # Gather repo list from github
-  script="${0%[/\\]*}/all-repos.js"
-  log "Fetching Github Repos" "$ORG"
-  REPOS=(`node $script $ORG`)
+  REPOS=(
+  arrange-game
+  book-search
+  contacts
+  gallery
+  memory-game
+  node_modules
+  pica
+  playground
+  sandbox
+  shuttle
+  slideshow
+  todomvc
+  youtube
+  )
 
   # Array of all the repos with full path
   REPO_PATHS=()
