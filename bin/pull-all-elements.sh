@@ -11,7 +11,7 @@ fi
 REPOS=()
 REPO_PATHS=()
 SSH=0
-ORG="polymer-elements"
+ORG="Polymer"
 
 # ARGS: $1 log message, $2 repo shortname
 log() {
@@ -30,15 +30,100 @@ prepare() {
     GIT_PATH="https://github.com/$ORG"
   fi
 
-  # boostrap github api
-  pushd ${0%[/\\]*} > /dev/null
-  npm install -q
-  popd > /dev/null
-
-  # Gather repo list from github
-  script="${0%[/\\]*}/all-repos.js"
-  log "Fetching Github Repos" "$ORG"
-  REPOS=(`node $script polymer-elements`)
+  REPOS=(
+  ace-element
+  chart-js
+  code-mirror
+  cool-clock
+  flatiron-director
+  g-kratu
+  google-map
+  humane-js
+  js-beautify
+  marked-js
+  more-elements
+  pdf-js
+  pixi-js
+  polymer-ajax
+  polymer-anchor-point
+  polymer-animation
+  polymer-collapse
+  polymer-cookie
+  polymer-elements
+  polymer-file
+  polymer-flex-layout
+  polymer-google-jsapi
+  polymer-grid-layout
+  polymer-jsonp
+  polymer-key-helper
+  polymer-layout
+  polymer-list
+  polymer-localstorage
+  polymer-media-query
+  polymer-meta
+  polymer-mock-data
+  polymer-overlay
+  polymer-page
+  polymer-scrub
+  polymer-sectioned-list
+  polymer-selection
+  polymer-selector
+  polymer-shared-lib
+  polymer-signals
+  polymer-stock
+  polymer-ui-accordion
+  polymer-ui-animated-pages
+  polymer-ui-arrow
+  polymer-ui-breadcrumbs
+  polymer-ui-card
+  polymer-ui-clock
+  polymer-ui-collapsible
+  polymer-ui-elements
+  polymer-ui-field
+  polymer-ui-icon
+  polymer-ui-icon-button
+  polymer-ui-line-chart
+  polymer-ui-menu
+  polymer-ui-menu-button
+  polymer-ui-menu-item
+  polymer-ui-nav-arrow
+  polymer-ui-overlay
+  polymer-ui-pages
+  polymer-ui-ratings
+  polymer-ui-scaffold
+  polymer-ui-sidebar
+  polymer-ui-sidebar-header
+  polymer-ui-sidebar-menu
+  polymer-ui-splitter
+  polymer-ui-stock
+  polymer-ui-submenu-item
+  polymer-ui-tabs
+  polymer-ui-theme-aware
+  polymer-ui-toggle-button
+  polymer-ui-toolbar
+  polymer-ui-weather
+  polymer-view-source-link
+  smoothie-chart
+  speech-mic
+  speech-transcript
+  tk-buildbot
+  typeahead-input
+  wu-weather
+  x-binding
+  x-designable
+  x-designer
+  x-dom-serializer
+  x-editors
+  x-file-document
+  x-inspector
+  x-live-edit
+  x-meta
+  x-output
+  x-palette
+  x-property-inspector
+  x-tags
+  x-tree
+  )
 
   # Array of all the repos with full path
   REPO_PATHS=()
