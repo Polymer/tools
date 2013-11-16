@@ -123,6 +123,9 @@ prepare() {
   x-property-inspector
   x-tags
   x-tree
+  yt-search
+  yt-search-video
+  yt-video
   )
 
   # Array of all the repos with full path
