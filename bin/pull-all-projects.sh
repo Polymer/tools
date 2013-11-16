@@ -11,7 +11,7 @@ fi
 REPOS=()
 REPO_PATHS=()
 SSH=0
-ORG="polymer-projects"
+ORG="Polymer"
 
 # ARGS: $1 log message, $2 repo shortname
 log() {
