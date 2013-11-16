@@ -34,6 +34,7 @@ prepare() {
   arrange-game
   book-search
   contacts
+  designer
   gallery
   memory-game
   pica
