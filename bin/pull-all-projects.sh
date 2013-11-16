@@ -42,6 +42,7 @@ prepare() {
   sandbox
   shuttle
   slideshow
+  test-dashboard
   todomvc
   youtube
   )
