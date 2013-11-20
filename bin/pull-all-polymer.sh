@@ -35,7 +35,9 @@ prepare() {
   WeakMap
   observe-js
   platform
+  platform-dev
   polymer
+  polymer-dev
   polymer-expressions
   tools
   )
