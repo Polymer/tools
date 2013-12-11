@@ -58,7 +58,12 @@ load() {
   if $PULL; then
     sync_repos
   fi
+
+  # skip web animations repo
   for r in ${REPOS[@]}; do
+    if [ $r = 'web-animations-js' ]; then
+      continue
+    fi
     REPOLIST+=("components/$r")
   done
 
@@ -100,11 +105,6 @@ version() {
 tag_repos() {
   FAILED=()
   for REPO in "${REPOLIST[@]}"; do
-
-    # skip web animations repo
-    if [ $REPO = 'components/web-animations-js' ]; then
-      continue
-    fi
     pushd $REPO >/dev/null
     log "TAGGING" "$REPO"
     git checkout --detach
@@ -121,11 +121,6 @@ tag_repos() {
 push_tags() {
   FAILED=()
   for REPO in "${REPOLIST[@]}"; do
-
-    # skip web animations repo
-    if [ $REPO = 'components/web-animations-js' ]; then
-      continue
-    fi
     pushd $REPO >/dev/null
     log "PUSHING TAG" "$REPO"
     git push --tags
@@ -140,11 +135,6 @@ push_tags() {
 gen_changelog() {
   echo -n "" > "changelog.md"
   for REPO in ${REPOLIST[@]}; do
-
-    # skip web animations repo
-    if [ $REPO = 'components/web-animations-js' ]; then
-      continue
-    fi
     pushd $REPO >/dev/null
 
     # Changelog format: - commit message ([commit](commit url on github))
