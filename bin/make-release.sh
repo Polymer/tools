@@ -16,8 +16,11 @@ TEST=true
 # Must give a version number with -v
 VERSION=
 
+# directory for tools/bin scripts
+PA_PREFIX="$PWD/${0%[/\\]*}/"
+
 # node script for mucking with package json
-VERSIONSCRIPT="$PWD/${0%[/\\]*}/set-version.js"
+VERSIONSCRIPT="$PA_PREFIX/set-version.js"
 
 while getopts ":ptv:f" opt; do
   case $opt in
@@ -52,7 +55,7 @@ load() {
   pushd components
 
   # polymer repos
-  . "../../`dirname $0`/pull-all-polymer.sh"
+  . "$PA_PREFIX/pull-all-polymer.sh"
   SSH=1
   prepare
   if $PULL; then
@@ -68,7 +71,7 @@ load() {
   done
 
   # element repos
-  . "../../`dirname $0`/pull-all-elements.sh"
+  . "$PA_PREFIX/pull-all-elements.sh"
   SSH=1
   prepare
   if $PULL; then
@@ -83,7 +86,7 @@ load() {
   pushd projects
 
   # project repos
-  . "../../`dirname $0`/pull-all-projects.sh"
+  . "$PA_PREFIX/pull-all-projects.sh"
   SSH=1
   prepare
   if $PULL; then
