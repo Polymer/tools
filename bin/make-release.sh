@@ -2,40 +2,117 @@
 
 # ssh auth, easier to script
 POLYMER_PATH="git@github.com:Polymer"
+REPOLIST=()
 
-# import functions from pull-all, must be in same folder as make-release
-. "`dirname $0`/pull-all.sh"
+# Only pull new versions with -p flag
+PULL=false
 
-# If -f flag is given, actually push the tags
+# If -t flag is given, actually push the tags
 PUSHTAGS=false
-while getopts ":fv:" opt; do
+
+# test by default, override with -f flag
+TEST=true
+
+# Must give a version number with -v
+VERSION=
+
+# node script for mucking with package json
+VERSIONSCRIPT="$PWD/${0%[/\\]*}/set-version.js"
+
+while getopts ":ptv:f" opt; do
   case $opt in
-    f)
+    p)
+      PULL=true
+      ;;
+    t)
       PUSHTAGS=true
       ;;
     v)
-      BRANCH="$OPTARG"
+      VERSION="$OPTARG"
+      ;;
+    f)
+      TEST=false
       ;;
     :)
       die "Option -$OPTARG requires an argument";
   esac
 done
 
-# version number
-## TODO(dfreedman): date stamped for now, follow polymer/package.json in the future
-## make sure to update polymer/package.json to reflect this value
-VERSION=`date "+v0.0.%Y%m%d"`
+# abort on missing version number
+# TODO(dfreed): read the version out of polymer and bump it up one?
+if [[ -z "$VERSION" ]]; then
+  echo "Need a version number!"
+  exit 1
+fi
+
+load() {
+
+  # import and checkout repos from all scripts
+  ! [ -d components ] && mkdir components
+  pushd components
+
+  # polymer repos
+  . "../../`dirname $0`/pull-all-polymer.sh"
+  SSH=1
+  prepare
+  if $PULL; then
+    sync_repos
+  fi
+  for r in ${REPOS[@]}; do
+    REPOLIST+=("components/$r")
+  done
+
+  # element repos
+  . "../../`dirname $0`/pull-all-elements.sh"
+  SSH=1
+  prepare
+  if $PULL; then
+    sync_repos
+  fi
+  for r in ${REPOS[@]}; do
+    REPOLIST+=("components/$r")
+  done
+  popd
+
+  ! [ -d projects ] && mkdir projects
+  pushd projects
+
+  # project repos
+  . "../../`dirname $0`/pull-all-projects.sh"
+  SSH=1
+  prepare
+  if $PULL; then
+    sync_repos
+  fi
+  for r in ${REPOS[@]}; do
+    REPOLIST+=("projects/$r")
+  done
+  popd
+
+}
+
+version() {
+  if [ -e "bower.json" ]; then
+    node $VERSIONSCRIPT "$PWD/bower.json" $VERSION
+  fi
+}
 
 tag_repos() {
   FAILED=()
-  for REPO in "${REPOS[@]}"; do
+  for REPO in "${REPOLIST[@]}"; do
+
     # skip web animations repo
-    if [ $REPO = 'web-animations-js' ]; then
+    if [ $REPO = 'components/web-animations-js' ]; then
       continue
     fi
     pushd $REPO >/dev/null
     log "TAGGING" "$REPO"
+    git checkout --detach
+    version "$VERSION"
+    git ci -a -m "release $VERSION"
     git tag -f "$VERSION"
+    version "master"
+    git checkout master
     popd >/dev/null
   done
   status_report "TAG"
@@ -43,9 +120,10 @@ tag_repos() {
 
 push_tags() {
   FAILED=()
-  for REPO in "${REPOS[@]}"; do
+  for REPO in "${REPOLIST[@]}"; do
+
     # skip web animations repo
-    if [ $REPO = 'web-animations-js' ]; then
+    if [ $REPO = 'components/web-animations-js' ]; then
       continue
     fi
     pushd $REPO >/dev/null
@@ -61,21 +139,24 @@ push_tags() {
 
 gen_changelog() {
   echo -n "" > "changelog.md"
-  for REPO in ${REPOS[@]}; do
+  for REPO in ${REPOLIST[@]}; do
+
     # skip web animations repo
-    if [ $REPO = 'web-animations-js' ]; then
+    if [ $REPO = 'components/web-animations-js' ]; then
       continue
     fi
     pushd $REPO >/dev/null
+
     # Changelog format: - commit message ([commit](commit url on github))
     PRETTY="- %s ([commit](https://github.com/Polymer/$REPO/commit/%h))"
     log "GEN CHANGELOG" "$REPO"
+
     # find slightly older tag, sorted alphabetically
     OLD_VERSION="`git tag -l | tail -n 2 | head -n 1`"
     if [[ -n $OLD_VERSION ]]; then
-      echo "#### $REPO" >> "../changelog.md"
-      git log $OLD_VERSION..$VERSION --pretty="$PRETTY" >> "../changelog.md"
-      echo "" >> "../changelog.md"
+      echo "#### ${REPO##*[/\\]}" >> "../../changelog.md"
+      git log $OLD_VERSION..$VERSION --pretty="$PRETTY" >> "../../changelog.md"
+      echo "" >> "../../changelog.md"
     fi
     popd >/dev/null
   done
@@ -83,49 +164,44 @@ gen_changelog() {
 }
 
 build() {
+
   # build platform
-  pushd platform >/dev/null
+  pushd components/platform-dev
   log "INSTALLING" "node modules"
-  npm --silent install
-  log "TESTING" "platform"
-  grunt test-buildbot
-  if [ $? -ne 0 ]; then
-    die "platform FAILED TESTING"
+  npm --slient install
+  if $TEST; then
+    log "TESTING" "platform"
+    grunt test
+    if [ $? -ne 0 ]; then
+      die "platform FAILED TESTING"
+    fi
   fi
+  log "BUILDING" "platform"
   grunt
+
   # version number on build file
-  cp platform.min.js platform-${VERSION}.min.js
-  cp platform.min.js.map platform-${VERSION}.min.js.map
-  sed -i '' -e "s|\(//# sourceMappingURL=\)platform.min.js|\1platform-${VERSION}.min.js|" platform-${VERSION}.min.js
-  mv platform{,-$VERSION}.min.js{,.map} ../
+  mv build/platform.js{,.map} ../platform/
   ok
   popd >/dev/null
 
   # build polymer
-  pushd polymer >/dev/null
+  pushd components/polymer-dev
   log "INSTALLING" "node modules"
   npm --silent install
-  log "TESTING" "polymer"
-  grunt test-buildbot
-  if [ $? -ne 0 ]; then
-    die "polymer FAILED TESTING"
+  if $TEST; then
+    log "TESTING" "polymer"
+    grunt test
+    if [ $? -ne 0 ]; then
+      die "polymer FAILED TESTING"
+    fi
   fi
   log "BUILDING" "polymer"
   grunt
+
   # version number on build file
-  cp polymer.min.js polymer-${VERSION}.min.js
-  cp polymer.min.js.map polymer-${VERSION}.min.js.map
-  sed -i '' -e "s|\(//# sourceMappingURL=\)polymer.min.js|\1polymer-${VERSION}.min.js|" polymer-${VERSION}.min.js
-  mv build.log polymer{,-$VERSION}.min.js{,.map} ../
+  mv build/{build.log,polymer.js{,.map}} ../polymer/
   ok
   popd >/dev/null
-}
-
-package() {
-  log "ZIPPING" "ALL REPOS"
-  rm -f polymer-all-$VERSION.zip
-  zip -q -x "polymer-$VERSION/polymer/polymer.concat.js*" -x "*.git*" -x "*node_modules/*" -r polymer-all-$VERSION.zip polymer-$VERSION
-  ok
 }
 
 release() {
@@ -133,15 +209,13 @@ release() {
   pushd polymer-$VERSION >/dev/null
   if $PUSHTAGS; then
     push_tags
-    popd >/dev/null
   else
-    sync_repos
+    load
     build
     tag_repos
     gen_changelog
-    popd >/dev/null
-    package
   fi
+  popd >/dev/null
 }
 
 release
