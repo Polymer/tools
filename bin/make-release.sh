@@ -207,10 +207,10 @@ build() {
 release() {
   mkdir -p polymer-$VERSION
   pushd polymer-$VERSION >/dev/null
+  load
   if $PUSHTAGS; then
     push_tags
   else
-    load
     if $BUILD; then
       build
     fi
