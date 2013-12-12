@@ -16,14 +16,23 @@ TEST=true
 # Must give a version number with -v
 VERSION=
 
+# Don't make builds automatically, override with -b flag
+BUILD=false
+
 # directory for tools/bin scripts
 PA_PREFIX="$PWD/${0%[/\\]*}"
 
 # node script for mucking with package json
 VERSIONSCRIPT="$PA_PREFIX/set-version.js"
 
-while getopts ":ptv:f" opt; do
+while getopts ":bfptv:" opt; do
   case $opt in
+    b)
+      BUILD=true
+      ;;
+    f)
+      TEST=false
+      ;;
     p)
       PULL=true
       ;;
@@ -32,9 +41,6 @@ while getopts ":ptv:f" opt; do
       ;;
     v)
       VERSION="$OPTARG"
-      ;;
-    f)
-      TEST=false
       ;;
     :)
       die "Option -$OPTARG requires an argument";
@@ -205,7 +211,9 @@ release() {
     push_tags
   else
     load
-    build
+    if $BUILD; then
+      build
+    fi
     tag_repos
     gen_changelog
   fi
