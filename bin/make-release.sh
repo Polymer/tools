@@ -17,7 +17,7 @@ TEST=true
 VERSION=
 
 # directory for tools/bin scripts
-PA_PREFIX="$PWD/${0%[/\\]*}/"
+PA_PREFIX="$PWD/${0%[/\\]*}"
 
 # node script for mucking with package json
 VERSIONSCRIPT="$PA_PREFIX/set-version.js"
@@ -56,6 +56,7 @@ load() {
 
   # polymer repos
   . "$PA_PREFIX/pull-all-polymer.sh"
+  BRANCH=master
   SSH=1
   prepare
   if $PULL; then
@@ -72,6 +73,7 @@ load() {
 
   # element repos
   . "$PA_PREFIX/pull-all-elements.sh"
+  BRANCH=master
   SSH=1
   prepare
   if $PULL; then
@@ -87,6 +89,7 @@ load() {
 
   # project repos
   . "$PA_PREFIX/pull-all-projects.sh"
+  BRANCH=master
   SSH=1
   prepare
   if $PULL; then
@@ -110,12 +113,10 @@ tag_repos() {
   for REPO in "${REPOLIST[@]}"; do
     pushd $REPO >/dev/null
     log "TAGGING" "$REPO"
-    git checkout --detach
+    git checkout -q --detach
     version "$VERSION"
     git ci -a -m "release $VERSION"
     git tag -f "$VERSION"
-    version "master"
-    git checkout master
     popd >/dev/null
   done
   status_report "TAG"
@@ -173,7 +174,7 @@ build() {
   grunt
 
   # version number on build file
-  mv build/platform.js{,.map} ../platform/
+  mv build/{build.log,platform.js{,.map}} ../platform/
   ok
   popd >/dev/null
 
