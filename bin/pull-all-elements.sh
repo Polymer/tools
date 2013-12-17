@@ -54,6 +54,8 @@ prepare() {
   polymer-flex-layout
   polymer-google-jsapi
   polymer-grid-layout
+  polymer-home-page
+  polymer-home-page-dev
   polymer-jsonp
   polymer-key-helper
   polymer-layout
