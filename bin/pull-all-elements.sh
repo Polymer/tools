@@ -82,6 +82,7 @@ prepare() {
   polymer-ui-field
   polymer-ui-icon
   polymer-ui-icon-button
+  polymer-ui-iconset
   polymer-ui-line-chart
   polymer-ui-menu
   polymer-ui-menu-button
