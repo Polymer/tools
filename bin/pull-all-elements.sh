@@ -74,6 +74,7 @@ prepare() {
   polymer-ui-accordion
   polymer-ui-animated-pages
   polymer-ui-arrow
+  polymer-ui-base
   polymer-ui-breadcrumbs
   polymer-ui-card
   polymer-ui-clock
@@ -103,7 +104,6 @@ prepare() {
   polymer-ui-toggle-button
   polymer-ui-toolbar
   polymer-ui-weather
-  polymer-ui-base
   polymer-view-source-link
   smoothie-chart
   speech-mic
