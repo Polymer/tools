@@ -102,6 +102,7 @@ prepare() {
   polymer-ui-toggle-button
   polymer-ui-toolbar
   polymer-ui-weather
+  polymer-ui-base-css
   polymer-view-source-link
   smoothie-chart
   speech-mic
