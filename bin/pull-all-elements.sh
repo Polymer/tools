@@ -81,6 +81,7 @@ prepare() {
   polymer-ui-card
   polymer-ui-clock
   polymer-ui-collapsible
+  polymer-ui-dropdown
   polymer-ui-elements
   polymer-ui-field
   polymer-ui-icon
