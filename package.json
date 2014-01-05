@@ -1,0 +1,29 @@
+{
+  "name": "polymer-tools",
+  "version": "0.0.0",
+  "description": "Polymer utilities to help with testing toolkit",
+  "main": "loader/loader.js",
+  "bin": {
+    "polymer-tools": "set-version.js"
+  },
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Polymer/tools.git"
+  },
+  "keywords": [
+    "Polymer",
+    "tools"
+  ],
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Polymer/tools/issues"
+  }
+}
