@@ -113,6 +113,7 @@ prepare() {
   speech-mic
   speech-transcript
   tk-buildbot
+  three-js
   typeahead-input
   wu-weather
   x-binding
