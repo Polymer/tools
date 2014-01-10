@@ -19,19 +19,25 @@ VERSION=
 # Don't make builds automatically, override with -b flag
 BUILD=false
 
+# Make new tags, override with -n
+TAG=true
+
 # directory for tools/bin scripts
 PA_PREFIX="$PWD/${0%[/\\]*}"
 
 # node script for mucking with package json
 VERSIONSCRIPT="$PA_PREFIX/set-version.js"
 
-while getopts ":bfptv:" opt; do
+while getopts ":bfnptv:" opt; do
   case $opt in
     b)
       BUILD=true
       ;;
     f)
       TEST=false
+      ;;
+    n)
+      TAG=false
       ;;
     p)
       PULL=true
@@ -147,14 +153,17 @@ gen_changelog() {
   for REPO in ${REPOLIST[@]}; do
     pushd $REPO >/dev/null
 
+    # strip off the leading folders
+    RNAME=${REPO##*[/\\]}
+
     # Changelog format: - commit message ([commit](commit url on github))
-    PRETTY="- %s ([commit](https://github.com/Polymer/$REPO/commit/%h))"
+    PRETTY="- %s ([commit](https://github.com/Polymer/${RNAME}/commit/%h))"
     log "GEN CHANGELOG" "$REPO"
 
     # find slightly older tag, sorted alphabetically
-    OLD_VERSION="`git tag -l | tail -n 2 | head -n 1`"
+    OLD_VERSION="`git tag -l | sort -n | tail -n 2 | head -n 1`"
     if [[ -n $OLD_VERSION ]]; then
-      echo "#### ${REPO##*[/\\]}" >> "../../changelog.md"
+      echo "#### ${RNAME}" >> "../../changelog.md"
       git log $OLD_VERSION..$VERSION --pretty="$PRETTY" >> "../../changelog.md"
       echo "" >> "../../changelog.md"
     fi
@@ -214,7 +223,9 @@ release() {
     if $BUILD; then
       build
     fi
-    tag_repos
+    if $TAG; then
+      tag_repos
+    fi
     gen_changelog
   fi
   popd >/dev/null
