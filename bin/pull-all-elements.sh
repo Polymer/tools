@@ -112,8 +112,8 @@ prepare() {
   smoothie-chart
   speech-mic
   speech-transcript
-  tk-buildbot
   three-js
+  tk-buildbot
   typeahead-input
   wu-weather
   x-binding
