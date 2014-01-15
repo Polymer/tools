@@ -1,3 +1,58 @@
+1.17.0 / 2014-01-09
+==================
+
+  * add: able to require globals (describe, it, etc.) through mocha (#1077)
+  * fix: abort previous run on --watch change (#1100)
+  * fix: reset context for each --watch triggered run (#1099)
+  * fix: error when cli can't resolve path or pattern (#799)
+  * fix: canonicalize objects before stringifying and diffing them (#1079)
+  * fix: make CR call behave like carriage return for non tty (#1087)
+
+
+1.16.2 / 2013-12-23
+==================
+
+  * fix: couple issues with ie 8 (#1082, #1081)
+  * fix: issue running the xunit reporter in browsers (#1068)
+  * fix: issue with firefox < 3.5 (#725)
+
+
+1.16.1 / 2013-12-19
+==================
+
+  * fix: recompiled for missed changes from the last release
+
+
+1.16.0 / 2013-12-19
+==================
+
+  * add: Runnable.globals(arr) for per test global whitelist (#1046)
+  * add: mocha.throwError(err) for assertion libs to call (#985)
+  * remove: --watch's spinner (#806)
+  * fix: duplicate test output for multi-line specs in spec reporter (#1006)
+  * fix: gracefully exit on SIGINT (#1063)
+  * fix expose the specified ui only in the browser (#984)
+  * fix: ensure process exit code is preserved when using --no-exit (#1059)
+  * fix: return true from window.onerror handler (#868)
+  * fix: xunit reporter to use process.stdout.write (#1068)
+  * fix: utils.clean(str) indentation (#761)
+  * fix: xunit reporter returning test duration a NaN (#1039)
+
+1.15.1 / 2013-12-03
+==================
+
+  * fix: recompiled for missed changes from the last release
+
+1.15.0 / 2013-12-02
+==================
+
+  * add: `--no-exit` to prevent `process.exit()` (#1018)
+  * fix: using inline diffs (#1044)
+  * fix: show pending test details in xunit reporter (#1051)
+  * fix: faster global leak detection (#1024)
+  * fix: yui compression (#1035)
+  * fix: wrapping long lines in test results (#1030, #1031)
+  * fix: handle errors in hooks (#1043)
 
 1.14.0 / 2013-11-02
 ==================
