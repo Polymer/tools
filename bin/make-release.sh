@@ -160,8 +160,8 @@ gen_changelog() {
     PRETTY="- %s ([commit](https://github.com/Polymer/${RNAME}/commit/%h))"
     log "GEN CHANGELOG" "$REPO"
 
-    # find slightly older tag, sorted alphabetically
-    OLD_VERSION="`git tag -l | sort -n | tail -n 2 | head -n 1`"
+    # find slightly older tag, sorted semver style
+    OLD_VERSION="`git tag -l | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 2 | head -n 1`"
     if [[ -n $OLD_VERSION ]]; then
       echo "#### ${RNAME}" >> "../../changelog.md"
       git log $OLD_VERSION..$VERSION --pretty="$PRETTY" >> "../../changelog.md"
