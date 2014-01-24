@@ -45,7 +45,7 @@ exports.mixin_common_opts = function(karma, opts) {
       ChromeCanaryExperimental: {
         base: 'ChromeCanary',
         name: 'ChromeCanaryExperimental',
-        flags: ['--enable-experimental-web-platform-features']
+        flags: ['--enable-experimental-web-platform-features', '--enable-html-imports']
       },
       bs_iphone5: {
         base: 'BrowserStack',
