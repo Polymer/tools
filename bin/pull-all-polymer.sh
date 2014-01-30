@@ -32,6 +32,7 @@ prepare() {
   PointerGestures
   ShadowDOM
   TemplateBinding
+  URL
   WeakMap
   observe-js
   platform
@@ -40,7 +41,6 @@ prepare() {
   polymer-dev
   polymer-expressions
   tools
-  url
   )
 
   # Array of all the repos with full path
