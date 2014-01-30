@@ -40,6 +40,7 @@ prepare() {
   polymer-dev
   polymer-expressions
   tools
+  url
   )
 
   # Array of all the repos with full path
