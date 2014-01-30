@@ -1,6 +1,6 @@
 {
   "name": "mocha",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "main": "mocha.js",
   "ignore": [
     "bin",
@@ -18,11 +18,11 @@
     "package.json"
   ],
   "homepage": "https://github.com/visionmedia/mocha",
-  "_release": "1.17.0",
+  "_release": "1.17.1",
   "_resolution": {
     "type": "version",
-    "tag": "1.17.0",
-    "commit": "ffaa38d49d10d4a5efd8e8b67db2960c4731cdc3"
+    "tag": "1.17.1",
+    "commit": "7fc565ee3e225cb7a66bf39ae9c2c05b346675c1"
   },
   "_source": "git://github.com/visionmedia/mocha.git",
   "_target": ">=1.13.0",
