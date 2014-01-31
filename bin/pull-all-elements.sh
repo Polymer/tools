@@ -35,6 +35,7 @@ prepare() {
   chart-js
   code-mirror
   cool-clock
+  fire-base
   flatiron-director
   g-kratu
   google-map
@@ -49,6 +50,7 @@ prepare() {
   polymer-animation
   polymer-collapse
   polymer-cookie
+  polymer-doc-viewer
   polymer-elements
   polymer-file
   polymer-flex-layout
@@ -74,6 +76,7 @@ prepare() {
   polymer-signals
   polymer-stock
   polymer-ui-accordion
+  polymer-ui-action-icons
   polymer-ui-animated-pages
   polymer-ui-arrow
   polymer-ui-base
