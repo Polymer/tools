@@ -177,7 +177,7 @@ build() {
   # build platform
   pushd components/platform-dev
   log "INSTALLING" "node modules"
-  npm --slient install
+  npm --silent install
   if $TEST; then
     log "TESTING" "platform"
     grunt test
