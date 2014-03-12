@@ -31,6 +31,23 @@ prepare() {
   fi
 
   REPOS=(
+  core-absolute-layout
+  core-action-icons
+  core-ajax
+  core-component-page
+  core-component-page-dev
+  core-elements
+  core-doc-viewer
+  core-icon
+  core-iconset
+  core-layout
+  core-media-query
+  core-meta
+  core-selection
+  core-selector
+  core-tests
+  core-docs
+  core-theme-aware
   ace-element
   chart-js
   code-mirror
