@@ -31,7 +31,6 @@ prepare() {
   fi
 
   REPOS=(
-  core-absolute-layout
   core-action-icons
   core-ajax
   core-component-page
@@ -41,6 +40,7 @@ prepare() {
   core-icon
   core-iconset
   core-layout
+  core-layout-trbl
   core-media-query
   core-meta
   core-selection
