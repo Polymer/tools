@@ -48,6 +48,7 @@ prepare() {
   core-tests
   core-docs
   core-theme-aware
+  core-overlay
   ace-element
   chart-js
   code-mirror
