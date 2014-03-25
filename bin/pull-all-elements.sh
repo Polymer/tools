@@ -37,6 +37,7 @@ prepare() {
   core-component-page-dev
   core-elements
   core-doc-viewer
+  core-firebase
   core-icon
   core-iconset
   core-layout
