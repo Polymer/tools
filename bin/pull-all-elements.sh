@@ -40,6 +40,7 @@ prepare() {
   core-firebase
   core-icon
   core-iconset
+  core-iconset-svg
   core-layout
   core-layout-trbl
   core-media-query
