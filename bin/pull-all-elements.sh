@@ -157,6 +157,7 @@ prepare() {
   yt-search
   yt-search-video
   yt-video
+  github-elements
   )
 
   # Array of all the repos with full path
