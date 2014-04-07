@@ -52,6 +52,12 @@ prepare() {
   core-docs
   core-theme-aware
   core-overlay
+  core-toolbar
+  core-menu
+  core-icon-button
+  core-item
+  core-collapse
+  core-pages
   ace-element
   chart-js
   code-mirror
