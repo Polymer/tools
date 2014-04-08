@@ -58,6 +58,8 @@ prepare() {
   core-item
   core-collapse
   core-pages
+  core-header-panel
+  core-drawer-panel
   ace-element
   chart-js
   code-mirror
