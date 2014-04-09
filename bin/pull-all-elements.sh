@@ -42,6 +42,7 @@ prepare() {
   core-iconset
   core-iconset-svg
   core-layout
+  core-layout-grid
   core-layout-trbl
   core-media-query
   core-meta
