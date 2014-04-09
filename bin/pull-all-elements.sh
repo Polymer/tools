@@ -56,6 +56,7 @@ prepare() {
   core-toolbar
   core-menu
   core-icon-button
+  core-input
   core-item
   core-collapse
   core-pages
