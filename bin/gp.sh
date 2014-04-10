@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # usage gp Polymer core-item
-ORG=$1
-REPO=$2
+org=$1
+repo=$2
 
 # make folder (same as input, no checking!)
 mkdir $repo
@@ -16,13 +16,13 @@ git checkout --orphan gh-pages
 git rm -rf -q .
 
 # use bower to install runtime deployment
-bower install $org/$repo#master
+bower install --config.directory="components" $org/$repo#master
 
 # redirect by default to the component folder
-echo '^<META http-equiv="refresh" content="0;URL=components/%repo%/"^>' >index.html
+echo "<META http-equiv="refresh" content=\"0;URL=components/$repo/\">" >index.html
 
 # send it all to github
-git add -a .
+git add -A .
 git commit -am 'seed gh-pages'
 git push -u origin gh-pages --force
 
