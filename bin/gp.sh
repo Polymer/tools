@@ -1,6 +1,10 @@
 #!/bin/bash -e
 
+# This script pushes a demo-friendly version of your element and its
+# dependencies to gh-pages.
+
 # usage gp Polymer core-item
+# Run in a clean directory passing in a GitHub org and repo name
 org=$1
 repo=$2
 
