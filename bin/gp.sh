@@ -20,6 +20,7 @@ git checkout --orphan gh-pages
 git rm -rf -q .
 
 # use bower to install runtime deployment
+bower cache clean $repo # ensure we're getting the latest from master.
 bower install --config.directory="components" $org/$repo#master
 
 # redirect by default to the component folder
