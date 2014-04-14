@@ -44,6 +44,7 @@ prepare() {
   core-layout
   core-layout-grid
   core-layout-trbl
+  core-localstorage
   core-media-query
   core-meta
   core-range
