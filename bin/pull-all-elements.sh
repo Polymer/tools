@@ -168,6 +168,8 @@ prepare() {
   yt-search-video
   yt-video
   github-elements
+  marked-element
+  highlightjs-element
   )
 
   # Array of all the repos with full path
