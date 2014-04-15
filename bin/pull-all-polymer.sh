@@ -30,6 +30,7 @@ prepare() {
   NodeBind
   PointerEvents
   PointerGestures
+  polymer-gestures
   ShadowDOM
   TemplateBinding
   URL
