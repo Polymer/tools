@@ -55,6 +55,7 @@ prepare() {
   core-theme-aware
   core-overlay
   core-toolbar
+  core-tooltip
   core-menu
   core-icon-button
   core-input
