@@ -146,6 +146,7 @@ prepare() {
   polymer-ui-toolbar
   polymer-ui-weather
   polymer-view-source-link
+  sampler-scaffold
   smoothie-chart
   speech-mic
   speech-transcript
