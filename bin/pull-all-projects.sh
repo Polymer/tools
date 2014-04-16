@@ -34,6 +34,7 @@ prepare() {
   arrange-game
   book-search
   contacts
+  core-sampler
   designer
   gallery
   memory-game
