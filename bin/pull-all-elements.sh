@@ -37,7 +37,10 @@ prepare() {
   core-component-page-dev
   core-elements
   core-doc-viewer
+  core-field
   core-firebase
+  core-home-page
+  core-home-page-dev
   core-icon
   core-iconset
   core-iconset-svg
