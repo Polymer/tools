@@ -68,6 +68,7 @@ prepare() {
   core-header-panel
   core-drawer-panel
   core-transition
+  core-list
   ace-element
   chart-js
   code-mirror
