@@ -61,6 +61,7 @@ prepare() {
   core-tooltip
   core-menu
   core-icon-button
+  core-menu-button
   core-input
   core-item
   core-collapse
