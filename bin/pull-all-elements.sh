@@ -70,6 +70,7 @@ prepare() {
   core-drawer-panel
   core-transition
   core-list
+  core-drag-drop
   ace-element
   chart-js
   code-mirror
