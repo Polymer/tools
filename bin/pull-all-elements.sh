@@ -51,6 +51,7 @@ prepare() {
   core-media-query
   core-meta
   core-range
+  core-scaffold
   core-selection
   core-selector
   core-tests
