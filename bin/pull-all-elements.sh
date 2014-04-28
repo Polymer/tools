@@ -26,8 +26,10 @@ prepare() {
   # default to https auth
   if [ $SSH -eq 1 ]; then
     GIT_PATH="git@github.com:$ORG"
+    POLYMERLABS_PATH="git@github.com:PolymerLabs"
   else
     GIT_PATH="https://github.com/$ORG"
+    POLYMERLABS_PATH="https://github.com/PolymerLabs"
   fi
 
   REPOS=(
@@ -72,6 +74,17 @@ prepare() {
   core-transition
   core-list
   core-drag-drop
+  sampler-scaffold
+  )
+
+  # Array of all the repos with full path
+  REPO_PATHS=()
+
+  for REPO in ${REPOS[@]}; do
+    REPO_PATHS+=("$GIT_PATH/$REPO.git")
+  done
+
+  POLYMERLABS=(
   ace-element
   chart-js
   code-mirror
@@ -79,6 +92,7 @@ prepare() {
   fire-base
   flatiron-director
   g-kratu
+  github-elements
   google-map
   humane-js
   js-beautify
@@ -153,7 +167,6 @@ prepare() {
   polymer-ui-toolbar
   polymer-ui-weather
   polymer-view-source-link
-  sampler-scaffold
   smoothie-chart
   speech-mic
   speech-transcript
@@ -178,14 +191,11 @@ prepare() {
   yt-search
   yt-search-video
   yt-video
-  github-elements
   )
 
-  # Array of all the repos with full path
-  REPO_PATHS=()
-
-  for REPO in ${REPOS[@]}; do
-    REPO_PATHS+=("$GIT_PATH/$REPO.git")
+  REPOS+=(${POLYMERLABS[@]})
+  for REPO in ${POLYMERLABS[@]}; do
+    REPO_PATHS+=("$POLYMERLABS_PATH/$REPO.git")
   done
 }
 

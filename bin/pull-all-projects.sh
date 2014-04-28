@@ -26,15 +26,28 @@ prepare() {
   # default to https auth
   if [ $SSH -eq 1 ]; then
     GIT_PATH="git@github.com:$ORG"
+    POLYMERLABS_PATH="git@github.com:PolymerLabs"
   else
     GIT_PATH="https://github.com/$ORG"
+    POLYMERLABS_PATH="https://github.com/PolymerLabs"
   fi
 
   REPOS=(
+  core-sampler
+  todomvc
+  )
+
+  # Array of all the repos with full path
+  REPO_PATHS=()
+
+  for REPO in ${REPOS[@]}; do
+    REPO_PATHS+=("$GIT_PATH/$REPO.git")
+  done
+
+  POLYMERLABS=(
   arrange-game
   book-search
   contacts
-  core-sampler
   designer
   gallery
   memory-game
@@ -44,15 +57,12 @@ prepare() {
   shuttle
   slideshow
   test-dashboard
-  todomvc
   youtube
   )
 
-  # Array of all the repos with full path
-  REPO_PATHS=()
-
-  for REPO in ${REPOS[@]}; do
-    REPO_PATHS+=("$GIT_PATH/$REPO.git")
+  REPOS+=(${POLYMERLABS[@]})
+  for REPO in ${POLYMERLABS[@]}; do
+    REPO_PATHS+=("$POLYMERLABS_PATH/$REPO.git")
   done
 }
 
