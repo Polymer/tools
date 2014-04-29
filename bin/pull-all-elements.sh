@@ -35,45 +35,46 @@ prepare() {
   REPOS=(
   core-action-icons
   core-ajax
+  core-collapse
   core-component-page
   core-component-page-dev
   core-elements
   core-doc-viewer
+  core-docs
+  core-drag-drop
+  core-drawer-panel
   core-field
   core-firebase
+  core-header-panel
   core-home-page
   core-home-page-dev
   core-icon
+  core-icon-button
   core-iconset
   core-iconset-svg
+  core-input
+  core-item
   core-layout
   core-layout-grid
   core-layout-trbl
   core-localstorage
   core-media-query
+  core-menu
+  core-menu-button
   core-meta
+  core-overlay
+  core-pages
   core-range
   core-scaffold
   core-selection
   core-selector
+  core-shared-lib
   core-tests
-  core-docs
   core-theme-aware
-  core-overlay
   core-toolbar
   core-tooltip
-  core-menu
-  core-icon-button
-  core-menu-button
-  core-input
-  core-item
-  core-collapse
-  core-pages
-  core-header-panel
-  core-drawer-panel
   core-transition
   core-list
-  core-drag-drop
   sampler-scaffold
   )
 
@@ -93,6 +94,7 @@ prepare() {
   flatiron-director
   g-kratu
   github-elements
+  google-apis
   google-map
   humane-js
   js-beautify
