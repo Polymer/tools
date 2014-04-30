@@ -75,6 +75,8 @@ prepare() {
   core-tooltip
   core-transition
   core-list
+  core-drag-drop
+  core-bind
   sampler-scaffold
   )
 
