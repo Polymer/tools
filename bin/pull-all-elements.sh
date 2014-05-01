@@ -69,6 +69,7 @@ prepare() {
   core-selection
   core-selector
   core-shared-lib
+  core-splitter
   core-tests
   core-theme-aware
   core-toolbar
