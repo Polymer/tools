@@ -193,8 +193,6 @@ prepare() {
   x-property-inspector
   x-tags
   x-tree
-  yt-search
-  yt-search-video
   yt-video
   )
 
