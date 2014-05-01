@@ -1,32 +1,37 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 
-fs = require('fs');
-cheerio = require('cheerio');
+var fs = require('fs');
+var cheerio = require('cheerio');
+var path = require('path');
 
 var cheerioOptions = {xmlMode: true};
 var files = process.argv.slice(2);
-var EOL = require('os').EOL;
 
 function read(file) {
   var content = fs.readFileSync(file, 'utf8');
   return cheerio.load(content, cheerioOptions);
 }
 
-function transmogrify($) {
-  // remove styles
-  $('svg > style').remove();
-  $('[class]').removeAttr('class');
+function transmogrify($, name) {
+  // output with cleaned up icon name
+  var node = $('#Icon').attr('id', name);
+  // print icon svg
+  console.log($.xml(node));
 }
 
-function write($) {
-  // only write the <g> of each icon
-  console.log($.xml('svg > g'));
+function path2IconName(file) {
+  parts = path.basename(file).split('_');
+  // remove ic_
+  parts.shift();
+  // remove _24px.svg
+  parts.pop();
+  return parts.join('-');
 }
 
 console.log('<svg><defs>');
-for (var i = 0, $; i < files.length; i++) {
-  $ = read(files[i]);
-  transmogrify($);
-  write($);
-}
+files.forEach(function(file) {
+  var name = path2IconName(file);
+  var $ = read(file);
+  transmogrify($, name);
+});
 console.log('</defs></svg>');
