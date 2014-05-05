@@ -78,6 +78,7 @@ prepare() {
   core-list
   core-drag-drop
   core-bind
+  core-icons
   sampler-scaffold
   )
 
