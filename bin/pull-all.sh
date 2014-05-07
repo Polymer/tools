@@ -1,12 +1,9 @@
 #!/bin/bash
-
 dir="${0%[/\\]*}"
-! [ -d components ] && mkdir components
-pushd components
-bash ../$dir/pull-all-polymer.sh -s $@
-bash ../$dir/pull-all-elements.sh -s $@
+pushd $dir
+git pull
+if [ ! -e node_modules/bigstraw ]; then
+  npm install bigstraw
+fi
 popd
-! [ -d projects ] && mkdir projects
-pushd projects
-bash ../$dir/pull-all-projects.sh -s $@
-popd
+node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/*.json $@
