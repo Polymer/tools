@@ -5,13 +5,17 @@ TMP="$dir/builds-temp"
 mkdir -p $TMP
 pushd $TMP
 
-pushd components/platform
-git reset --hard origin/master
-popd
+if [ -d components/platform ]; then
+  pushd components/platform
+  git reset --hard origin/master
+  popd
+fi
 
-pushd components/polymer
-git reset --hard origin/master
-popd
+if [ -d components/polymer ]; then
+  pushd components/polymer
+  git reset --hard origin/master
+  popd
+fi
 
 node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/polymer.json
 
