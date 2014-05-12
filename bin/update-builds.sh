@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+while getopts ":r" opt; do
+  case $opt in
+    r)
+      RELEASE=1
+      ;;
+  esac
+done
+
 dir=`pwd -P`
 TMP="$dir/builds-temp"
 mkdir -p $TMP
@@ -21,23 +29,39 @@ node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/polymer.json
 
 pushd components/platform-dev
 npm install
-grunt minify audit
+if [ $RELEASE -eq 1 ]; then
+  grunt release
+else
+  grunt minify audit
+fi
 cp build/build.log build/platform.js build/platform.js.map ../platform/
 popd
 
 pushd components/platform
-git commit . -m 'update build'
+if [ $RELEASE -eq 1 ]; then
+  git commit . -m 'update build for release'
+else
+  git commit . -m 'update build'
+fi
 git push origin master
 popd
 
 pushd components/polymer-dev
 npm install
-grunt minify audit
+if [ $RELEASE -eq 1 ]; then
+  grunt release
+else
+  grunt minify audit
+fi
 cp build/build.log build/polymer.js build/polymer.js.map ../polymer/
 popd
 
 pushd components/polymer
-git commit . -m 'update build'
+if [ $RELEASE -eq 1 ]; then
+  git commit . -m 'update build for release'
+else
+  git commit . -m 'update build'
+fi
 git push origin master
 popd
 
