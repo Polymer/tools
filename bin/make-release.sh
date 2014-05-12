@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# ssh auth, easier to script
-POLYMER_PATH="git@github.com:Polymer"
-REPOLIST=()
+# Windows autocloses shell when complete, use `read` to wait for user input
+WINDOWS=0
+if [[ $OS = "Windows_NT" ]]; then
+  WINDOWS=1
+fi
 
 # Only pull new versions with -p flag
 PULL=false
@@ -60,58 +62,55 @@ if [[ -z "$VERSION" ]]; then
   exit 1
 fi
 
-load() {
+# repos that fail to clone will be put here
+FAILED=()
 
-  # import and checkout repos from all scripts
-  ! [ -d components ] && mkdir components
-  pushd components
+# default branch of clones
+DEFAULT_BRANCH="master"
 
-  # polymer repos
-  . "$PA_PREFIX/pull-all-polymer.sh"
-  BRANCH=master
-  SSH=1
-  prepare
-  if $PULL; then
-    sync_repos
+
+log() {
+  echo -e "\033[1;34m===== $1 \033[1;37m$2 \033[1;34m=====\033[0m"
+}
+
+ok() {
+  echo -e "\033[1;32mOK\033[0m"
+}
+
+die() {
+  if [ -n "$1" ]; then
+    err "$1"
   fi
+  [ $WINDOWS -eq 1 ] && read
+  exit 1
+}
 
-  # skip web animations repo
-  for r in ${REPOS[@]}; do
-    if [ $r = 'web-animations-js' ]; then
-      continue
-    fi
-    REPOLIST+=("components/$r")
+err() {
+  echo -e "\033[1;31m$1\033[0m"
+}
+
+repo_err() {
+  err "${#FAILED[@]} REPOS FAILED TO $1!"
+  for f in "${FAILED[@]}"; do
+    echo -e "\033[1m$f\033[0m"
   done
+  # Wait for user input
+  die
+}
 
-  # element repos
-  . "$PA_PREFIX/pull-all-elements.sh"
-  BRANCH=master
-  SSH=1
-  prepare
-  if $PULL; then
-    sync_repos
+# Prints errors or says OK
+status_report() {
+  if [[ ${#FAILED[@]} -gt 0 ]]; then
+    repo_err "$1"
+  else
+    ok
+    [ $WINDOWS -eq 1 ] && read
   fi
-  for r in ${REPOS[@]}; do
-    REPOLIST+=("components/$r")
-  done
-  popd
+}
 
-  ! [ -d projects ] && mkdir projects
-  pushd projects
-
-  # project repos
-  . "$PA_PREFIX/pull-all-projects.sh"
-  BRANCH=master
-  SSH=1
-  prepare
-  if $PULL; then
-    sync_repos
-  fi
-  for r in ${REPOS[@]}; do
-    REPOLIST+=("projects/$r")
-  done
-  popd
-
+pull() {
+  $PA_PREFIX/pull-all.sh
+  REPOLIST=(components/* projects/*)
 }
 
 version() {
@@ -216,7 +215,7 @@ build() {
 release() {
   mkdir -p polymer-$VERSION
   pushd polymer-$VERSION >/dev/null
-  load
+  pull
   if $PUSHTAGS; then
     push_tags
   else
