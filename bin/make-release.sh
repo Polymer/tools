@@ -109,7 +109,7 @@ status_report() {
 }
 
 pull() {
-  $PA_PREFIX/pull-all.sh
+  $PA_PREFIX/pull-all.sh -b master
   REPOLIST=(components/* projects/*)
 }
 
