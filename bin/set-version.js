@@ -34,7 +34,7 @@ if (version && VALID_VERSION.test(version)) {
 var deps = config.dependencies;
 if (deps) {
   Object.keys(deps).forEach(function(d) {
-    if (deps[d].search('Polymer/') > -1) {
+    if (deps[d].search('Polymer.*/') > -1) {
       deps[d] = deps[d].replace(/#.*$/, '#' + version);
     }
   });
