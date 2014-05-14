@@ -28,10 +28,8 @@ function path2IconName(file) {
   return parts.join('-');
 }
 
-console.log('<svg><defs>');
 files.forEach(function(file) {
   var name = path2IconName(file);
   var $ = read(file);
   transmogrify($, name);
 });
-console.log('</defs></svg>');
