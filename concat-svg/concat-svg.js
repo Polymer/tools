@@ -15,6 +15,11 @@ function read(file) {
 function transmogrify($, name) {
   // output with cleaned up icon name
   var node = $('#Icon').attr('id', name);
+  // remove spacer rectangles
+  node.find('rect[fill],rect[style*="fill"]').remove();
+  // remove empty groups
+  var innerHTML = $.xml(node.find('*').filter(':not(g)'));
+  node.html(innerHTML);
   // print icon svg
   console.log($.xml(node));
 }
