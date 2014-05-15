@@ -3,6 +3,7 @@
     "dir": "components",
     "org": "Polymer",
     "repos": [
+      "context-free-parser",
       "core-action-icons",
       "core-ajax",
       "core-bind",
