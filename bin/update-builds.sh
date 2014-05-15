@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+RELEASE=0
 while getopts ":r" opt; do
   case $opt in
     r)
