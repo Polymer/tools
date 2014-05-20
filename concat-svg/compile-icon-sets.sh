@@ -44,7 +44,7 @@ FILE="iconsets/icons.html"
 header
 for dir in ${DEFAULT[@]}; do
   echo $dir
-  find $FOLDER/$dir/ -name "*24px.svg" | xargs $runfrom/concat-svg.js >> $FILE
+  find $FOLDER/$dir/ -name "*24px.svg" | sort | xargs $runfrom/concat-svg.js >> $FILE
 done
 footer
 
@@ -56,6 +56,6 @@ for dir in $FOLDER/*/; do
   NAME=`basename $dir`
   FILE="iconsets/$NAME-icons.html"
   header
-  find $dir -name "*24px.svg" | xargs $runfrom/concat-svg.js >> $FILE
+  find $dir -name "*24px.svg" | sort | xargs $runfrom/concat-svg.js >> $FILE
   footer
 done

@@ -20,8 +20,10 @@ function transmogrify($, name) {
   // remove empty groups
   var innerHTML = $.xml(node.find('*').filter(':not(g)'));
   node.html(innerHTML);
+  // remove extraneous whitespace
+  var output = $.xml(node).replace(/\t|\r|\n/g, '');
   // print icon svg
-  console.log($.xml(node));
+  console.log(output);
 }
 
 function path2IconName(file) {
