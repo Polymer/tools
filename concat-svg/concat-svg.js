@@ -13,15 +13,20 @@ function read(file) {
 }
 
 function transmogrify($, name) {
-  // output with cleaned up icon name
-  var node = $('#Icon').attr('id', name);
+  var node = $('svg');
   // remove spacer rectangles
-  node.find('rect[fill],rect[style*="fill"]').remove();
+  node.find('rect[fill="none"], rect[style *= fill]').remove();
+  // remove fill colors
+  node.find('[fill]').each(function() {
+    var e = $(this);
+    $(this).removeAttr('fill');
+  });
   // remove empty groups
   var innerHTML = $.xml(node.find('*').filter(':not(g)'));
-  node.html(innerHTML);
   // remove extraneous whitespace
-  var output = $.xml(node).replace(/\t|\r|\n/g, '');
+  innerHTML = innerHTML.replace(/\t|\r|\n/g, '');
+  // add parent group with icon name as id
+  var output = '<g id="' + name + '">' + innerHTML + '</g>';
   // print icon svg
   console.log(output);
 }
