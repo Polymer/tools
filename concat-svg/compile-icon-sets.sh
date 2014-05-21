@@ -42,10 +42,8 @@ mkdir -p iconsets
 NAME="icons"
 FILE="iconsets/icons.html"
 header
-for dir in ${DEFAULT[@]}; do
-  echo $dir
-  find $FOLDER/$dir/ -name "*24px.svg" | sort | xargs $runfrom/concat-svg.js >> $FILE
-done
+# find all the default icons, sort by basename (in perl), run concat
+find "${DEFAULT[@]/#/$FOLDER}" -name "*24px.svg" | perl -le 'print sort{lc($p=$a)=~s|.*/||; lc($q=$b)=~s|.*/||; $p cmp $q} <>' | xargs $runfrom/concat-svg.js >> $FILE
 footer
 
 for dir in $FOLDER/*/; do
