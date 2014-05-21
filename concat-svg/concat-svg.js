@@ -15,11 +15,17 @@ function read(file) {
 function transmogrify($, name) {
   var node = $('svg');
   // remove spacer rectangles
-  node.find('rect[fill="none"], rect[style *= fill]').remove();
+  node.find('rect[fill], rect[style *= fill]').remove();
   // remove fill colors
   node.find('[fill]').each(function() {
     var e = $(this);
-    $(this).removeAttr('fill');
+    var color = e.attr('fill');
+    // some "white" nodes are extraneous
+    if (color === '#FFFFFF') {
+      e.remove();
+    } else {
+      e.removeAttr('fill');
+    }
   });
   // remove empty groups
   var innerHTML = $.xml(node.find('*').filter(':not(g)'));
