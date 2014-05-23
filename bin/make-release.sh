@@ -110,7 +110,11 @@ status_report() {
 
 pull() {
   $PA_PREFIX/pull-all.sh -b master
-  REPOLIST=(components/* projects/*)
+  if [ -e ../DEPRECATED ]; then
+    REPOLIST=(`find 'components' 'projects' -mindepth 1 -maxdepth 1 -type d | grep -vEf ../DEPRECATED`)
+  else
+    REPOLIST=(components/* projects/*)
+  fi
 }
 
 version() {
