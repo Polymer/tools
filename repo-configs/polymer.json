@@ -7,8 +7,6 @@
       "HTMLImports",
       "MutationObservers",
       "NodeBind",
-      "PointerEvents",
-      "PointerGestures",
       "polymer-gestures",
       "ShadowDOM",
       "TemplateBinding",
