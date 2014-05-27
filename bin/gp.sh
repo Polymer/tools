@@ -3,12 +3,12 @@
 # This script pushes a demo-friendly version of your element and its
 # dependencies to gh-pages.
 
-# usage gp Polymer core-item
+# usage gp Polymer core-item [branch]
 # Run in a clean directory passing in a GitHub org and repo name
 org=$1
 repo=$2
 branch=$3
-: ${branch:="master"}
+: ${branch:="master"} # default to master when branch isn't specified
 
 # make folder (same as input, no checking!)
 mkdir $repo
@@ -22,7 +22,7 @@ git checkout --orphan gh-pages
 git rm -rf -q .
 
 # use bower to install runtime deployment
-bower cache clean $repo # ensure we're getting the latest from master.
+bower cache clean $repo # ensure we're getting the latest from the desired branch.
 bower install --config.directory="components" $org/$repo#$branch
 
 # redirect by default to the component folder
