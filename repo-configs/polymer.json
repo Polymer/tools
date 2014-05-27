@@ -20,12 +20,5 @@
       "polymer-expressions",
       "tools"
     ]
-  },
-  {
-    "dir": "components",
-    "org": "web-animations",
-    "repos": [
-      "web-animations-js"
-    ]
   }
 ]

@@ -1,0 +1,18 @@
+[
+  {
+    "dir": "components",
+    "org": "web-animations",
+    "repos": [
+      "web-animations-js",
+      "PointerEvents",
+      "PointerGestures"
+    ]
+  },
+  {
+    "dir": "projects",
+    "org": "Polymer",
+    "repos": [
+      "todomvc"
+    ]
+  }
+]
