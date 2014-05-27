@@ -7,6 +7,8 @@
 # Run in a clean directory passing in a GitHub org and repo name
 org=$1
 repo=$2
+branch=$3
+: ${branch:="master"}
 
 # make folder (same as input, no checking!)
 mkdir $repo
@@ -21,7 +23,7 @@ git rm -rf -q .
 
 # use bower to install runtime deployment
 bower cache clean $repo # ensure we're getting the latest from master.
-bower install --config.directory="components" $org/$repo#master
+bower install --config.directory="components" $org/$repo#$branch
 
 # redirect by default to the component folder
 echo "<META http-equiv="refresh" content=\"0;URL=components/$repo/\">" >index.html
