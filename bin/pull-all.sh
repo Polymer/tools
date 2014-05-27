@@ -8,4 +8,4 @@ if [ ! -e node_modules/bigstraw ]; then
   npm install bigstraw
 fi
 popd
-node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/*.json $@
+node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/{core,polymer}.json $@
