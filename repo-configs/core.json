@@ -46,6 +46,7 @@
       "core-toolbar",
       "core-tooltip",
       "core-transition",
+      "firebase-element",
       "highlightjs-element",
       "marked-element",
       "jquery2-import",

@@ -110,16 +110,12 @@ status_report() {
 
 pull() {
   $PA_PREFIX/pull-all.sh -b master
-  if [ -e ../DEPRECATED ]; then
-    REPOLIST=(`find 'components' 'projects' -mindepth 1 -maxdepth 1 -type d | grep -vEf ../DEPRECATED`)
-  else
-    REPOLIST=(components/* projects/*)
-  fi
+  REPOLIST=(components/* projects/*)
 }
 
 version() {
   if [ -e "bower.json" ]; then
-    node $VERSIONSCRIPT "$PWD/bower.json" $VERSION
+    node $VERSIONSCRIPT "$PWD/bower.json" ">=0.3.0  <1.0.0"
   fi
 }
 
