@@ -110,7 +110,6 @@ status_report() {
 
 pull() {
   $PA_PREFIX/pull-all.sh -b master
-  REPOLIST=(components/* projects/*)
 }
 
 version() {
@@ -218,6 +217,7 @@ release() {
   if $PULL; then
     pull
   fi
+  REPOLIST=(components/* projects/*)
   if $PUSHTAGS; then
     push_tags
   else
