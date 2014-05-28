@@ -7,8 +7,7 @@
 # Run in a clean directory passing in a GitHub org and repo name
 org=$1
 repo=$2
-branch=$3
-: ${branch:="master"} # default to master when branch isn't specified
+branch=${3:-"master"} # default to master when branch isn't specified
 
 # make folder (same as input, no checking!)
 mkdir $repo
