@@ -47,6 +47,7 @@
       "core-toolbar",
       "core-tooltip",
       "core-transition",
+      "core-style",
       "firebase-element",
       "highlightjs-element",
       "marked-element",
