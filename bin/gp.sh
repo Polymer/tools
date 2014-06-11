@@ -20,7 +20,7 @@ branch=${3:-"master"} # default to master when branch isn't specified
 
 # make folder (same as input, no checking!)
 mkdir $repo
-git clone git@github.com:$org/$repo.git --single-branch
+git clone https://github.com/$org/$repo.git --single-branch
 
 # switch to gh-pages branch
 pushd $repo >/dev/null
