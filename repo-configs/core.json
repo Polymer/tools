@@ -51,6 +51,7 @@
       "core-style",
       "firebase-element",
       "highlightjs-element",
+      "inspector-elements",
       "marked-element",
       "jquery2-import",
       "sampler-scaffold"
