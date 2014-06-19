@@ -1,3 +1,41 @@
+1.20.1 / 2014-06-03
+==================
+
+  * update: should dependency to ~4.0.0 (#1231)
+
+1.20.0 / 2014-05-28
+==================
+
+  * add: filenames to suite objects (#1222)
+
+1.19.0 / 2014-05-17
+==================
+
+  * add: browser script option to package.json
+  * add: export file in Mocha.Test objects (#1174)
+  * add: add docs for wrapped node flags
+  * fix: mocha.run() to return error status in browser (#1216)
+  * fix: clean() to show failure details (#1205)
+  * fix: regex that generates html for new keyword (#1201)
+  * fix: sibling suites have inherited but separate contexts (#1164)
+
+
+1.18.2 / 2014-03-18
+==================
+
+  * fix: html runner was prevented from using #mocha as the default root el (#1162)
+
+1.18.1 / 2014-03-18
+==================
+
+  * fix: named before/after hooks in bdd, tdd, qunit interfaces (#1161)
+
+1.18.0 / 2014-03-13
+==================
+
+  * add: promise support (#329)
+  * add: named before/after hooks (#966)
+
 1.17.1 / 2014-01-22
 ==================
 
