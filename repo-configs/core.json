@@ -61,7 +61,6 @@
     "dir": "projects",
     "org": "Polymer",
     "repos": [
-      "core-sampler",
       "designer",
       "pica"
     ]

@@ -18,6 +18,7 @@
     "dir": "projects",
     "org": "Polymer",
     "repos": [
+      "core-sampler",
       "todomvc"
     ]
   }
