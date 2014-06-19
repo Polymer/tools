@@ -109,7 +109,7 @@ status_report() {
 }
 
 pull() {
-  $PA_PREFIX/pull-all.sh -b master
+  node $PA_PREFIX/node_modules/bigstraw/index.js -s -b master ${PA_PREFIX}/../repo-configs/{core,polymer}.json
 }
 
 version() {
