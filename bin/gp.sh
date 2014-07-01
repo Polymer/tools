@@ -33,6 +33,14 @@ echo "{
 " > .bowerrc
 bower install --save $org/$repo#$branch
 
+# add core-component-page
+echo "Adding core-component-page..."
+cd components
+mkdir core-component-page && cd core-component-page
+wget https://raw.githubusercontent.com/Polymer/core-component-page/master/core-component-page.html
+cd ..
+cd ..
+
 # redirect by default to the component folder
 echo "<META http-equiv="refresh" content=\"0;URL=components/$repo/\">" >index.html
 
