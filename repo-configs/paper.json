@@ -1,0 +1,29 @@
+[
+  {
+    "dir": "components",
+    "org": "Polymer",
+    "repos": [
+      "paper-dialog",
+      "paper-menu-button",
+      "paper-shadow",
+      "paper-progress",
+      "paper-elements",
+      "paper-toast",
+      "paper-ripple",
+      "paper-button",
+      "paper-input",
+      "paper-tabs",
+      "paper-icon-button",
+      "paper-focusable",
+      "paper-fab",
+      "paper-slider",
+      "paper-item",
+      "paper-calculator",
+      "paper-toggle-button",
+      "paper-checkbox",
+      "paper-radio-group",
+      "paper-radio-button",
+      "paper-docs"
+    ]
+  }
+]
