@@ -17,6 +17,8 @@
       "js-beautify",
       "marked-js",
       "more-elements",
+      "notification-elements",
+      "paper-form",
       "pdf-js",
       "pixi-js",
       "smoothie-chart",

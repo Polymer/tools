@@ -11,14 +11,16 @@
     "org": "Polymer",
     "repos": [
       "PointerEvents",
-      "PointerGestures"
+      "PointerGestures",
+      "topeka-elements"
     ]
   },
   {
     "dir": "projects",
     "org": "Polymer",
     "repos": [
-      "todomvc"
+      "todomvc",
+      "topeka"
     ]
   }
 ]
