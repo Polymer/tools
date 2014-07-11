@@ -109,7 +109,7 @@ status_report() {
 }
 
 pull() {
-  node $PA_PREFIX/node_modules/bigstraw/index.js -s -b master ${PA_PREFIX}/../repo-configs/{core,polymer}.json
+  node $PA_PREFIX/node_modules/bigstraw/index.js -s -b master ${PA_PREFIX}/../repo-configs/{core,polymer,paper}.json
 }
 
 version() {
@@ -167,6 +167,12 @@ gen_changelog() {
     fi
     popd >/dev/null
   done
+  ok
+}
+
+make_names() {
+  log "GENERATING" "release names"
+  ${PA_PREFIX}/namer $VERSION > "names"
   ok
 }
 
@@ -228,6 +234,7 @@ release() {
       tag_repos
     fi
     gen_changelog
+    make_names
   fi
   popd >/dev/null
 }
