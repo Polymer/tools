@@ -27,6 +27,8 @@ function transmogrify($, name) {
       e.removeAttr('fill');
     }
   });
+  // remove adobe "save for web" elements
+  node.find('sfw,metadata').remove();
   // remove empty groups
   var innerHTML = $.xml(node.find('*').filter(':not(g)'));
   // remove extraneous whitespace

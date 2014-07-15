@@ -18,7 +18,8 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../../core-iconset-svg/core-iconset-svg.html">
+<link rel="import" href="../core-icon/core-icon.html">
+<link rel="import" href="../core-iconset-svg/core-iconset-svg.html">
 <core-iconset-svg id="$NAME" iconSize="24">
 <svg><defs>
 ENDL
@@ -40,10 +41,10 @@ contains() {
 mkdir -p iconsets
 
 NAME="icons"
-FILE="iconsets/icons.html"
+FILE="core-icons.html"
 header
 # find all the default icons, sort by basename (in perl), run concat
-find "${DEFAULT[@]/#/$FOLDER}" -name "*24px.svg" | perl -le 'print sort{lc($p=$a)=~s|.*/||; lc($q=$b)=~s|.*/||; $p cmp $q} <>' | xargs $runfrom/concat-svg.js >> $FILE
+find "${DEFAULT[@]/#/$FOLDER}" -name "*24px.svg" | perl -le 'print sort{($p=$a)=~s|.*/||; ($q=$b)=~s|.*/||; lc($p) cmp lc($q)} <>' | xargs $runfrom/concat-svg.js >> $FILE
 footer
 
 for dir in $FOLDER/*/; do
@@ -52,7 +53,7 @@ for dir in $FOLDER/*/; do
   fi
   echo $dir
   NAME=`basename $dir`
-  FILE="iconsets/$NAME-icons.html"
+  FILE="$NAME-icons.html"
   header
   find $dir -name "*24px.svg" | sort | xargs $runfrom/concat-svg.js >> $FILE
   footer
