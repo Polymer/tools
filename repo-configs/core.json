@@ -55,7 +55,8 @@
       "inspector-elements",
       "marked-element",
       "jquery2-import",
-      "sampler-scaffold"
+      "sampler-scaffold",
+      "prettify-element"
     ]
   },
   {
