@@ -11,8 +11,6 @@
       "flatiron-director",
       "g-kratu",
       "github-elements",
-      "google-apis",
-      "google-map",
       "humane-js",
       "js-beautify",
       "marked-js",
@@ -31,6 +29,14 @@
       "x-meta",
       "x-tags",
       "yt-video"
+    ]
+  },
+  {
+    "dir": "components",
+    "org": "GoogleWebComponents",
+    "repos": [
+      "google-apis",
+      "google-map"
     ]
   },
   {
