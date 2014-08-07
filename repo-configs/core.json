@@ -13,8 +13,8 @@
       "core-doc-viewer",
       "core-docs",
       "core-drag-drop",
-      "core-dropdown",
       "core-drawer-panel",
+      "core-dropdown",
       "core-elements",
       "core-field",
       "core-header-panel",
@@ -54,10 +54,11 @@
       "firebase-element",
       "highlightjs-element",
       "inspector-elements",
-      "marked-element",
       "jquery2-import",
-      "sampler-scaffold",
-      "prettify-element"
+      "marked-element",
+      "polymer-test-tools",
+      "prettify-element",
+      "sampler-scaffold"
     ]
   },
   {
