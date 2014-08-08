@@ -1,6 +1,15 @@
 [
   {
     "dir": "components",
+    "org": "Polymer",
+    "repos": [
+      "PointerEvents",
+      "PointerGestures",
+      "core-layout",
+    ]
+  },
+  {
+    "dir": "components",
     "org": "PolymerLabs",
     "repos": [
       "polymer-ajax",

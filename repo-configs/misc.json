@@ -10,8 +10,6 @@
     "dir": "components",
     "org": "Polymer",
     "repos": [
-      "PointerEvents",
-      "PointerGestures",
       "topeka-elements"
     ]
   },
