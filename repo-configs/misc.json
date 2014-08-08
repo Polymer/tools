@@ -20,5 +20,20 @@
       "todomvc",
       "topeka"
     ]
+  },
+  {
+    "dir": "components",
+    "org": "tcollard",
+    "repos": [
+      "google-code-prettify"
+    ]
+  },
+  {
+    "dir": "components",
+    "org": "firebase",
+    "repos": [
+      "firebase-bower::firebase",
+      "firebase-simple-login"
+    ]
   }
 ]

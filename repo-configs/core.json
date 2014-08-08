@@ -67,12 +67,5 @@
       "designer",
       "pica"
     ]
-  },
-  {
-    "dir": "components",
-    "org": "tcollard",
-    "repos": [
-      "google-code-prettify"
-    ]
   }
 ]
