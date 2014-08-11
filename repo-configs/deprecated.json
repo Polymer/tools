@@ -5,7 +5,7 @@
     "repos": [
       "PointerEvents",
       "PointerGestures",
-      "core-layout",
+      "core-layout"
     ]
   },
   {
