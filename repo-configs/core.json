@@ -37,6 +37,7 @@
       "core-meta",
       "core-overlay",
       "core-pages",
+			"core-popup-menu",
       "core-range",
       "core-scaffold",
       "core-scroll-header-panel",
