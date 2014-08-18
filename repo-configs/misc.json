@@ -35,5 +35,12 @@
       "firebase-bower::firebase",
       "firebase-simple-login"
     ]
+  },
+  {
+    "dir": "components",
+    "org": "michael",
+    "repos": [
+      "github": "github#master"
+    ]
   }
 ]
