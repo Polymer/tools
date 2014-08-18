@@ -40,7 +40,7 @@
     "dir": "components",
     "org": "michael",
     "repos": [
-      "github": "github#master"
+      "github"
     ]
   }
 ]
