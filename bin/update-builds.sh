@@ -54,7 +54,7 @@ if [ $RELEASE -eq 1 ]; then
 else
   grunt minify audit
 fi
-cp build/build.log build/polymer.js build/polymer.js.map ../polymer/
+cp build/build.log build/polymer.js build/polymer.js.map layout.html ../polymer/
 popd
 
 pushd components/polymer
