@@ -7,6 +7,9 @@ FOLDER="$1"
 # put these sets into one big "icons" set
 DEFAULT=(action alert content file navigation toggle)
 
+# there are no icons here
+BLACKLIST=(moticons common_cfg)
+
 header() {
 cat > $FILE <<ENDL
 <!--
@@ -49,6 +52,9 @@ footer
 
 for dir in $FOLDER/*/; do
   if contains "`basename $dir`" "${DEFAULT[@]}"; then
+    continue
+  fi
+  if contains "`basename $dir`" "${BLACKLIST[@]}"; then
     continue
   fi
   echo $dir
