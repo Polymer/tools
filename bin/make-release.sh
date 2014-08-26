@@ -114,7 +114,7 @@ pull() {
 
 version() {
   if [ -e "bower.json" ]; then
-    node $VERSIONSCRIPT "$PWD/bower.json" ">=0.3.0 <1.0.0"
+    node $VERSIONSCRIPT "$PWD/bower.json" ">=0.4.0 <1.0.0"
   fi
 }
 
