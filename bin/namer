@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * @license
  * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
@@ -8,7 +9,6 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-#!/usr/bin/env node
 
 adjNoun = require('adj-noun');
 versionString = process.argv[2];
