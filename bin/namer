@@ -9,8 +9,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-
-adjNoun = require('adj-noun');
+totemize = require('totemize');
+seed = require('seed-random');
 versionString = process.argv[2];
 
 if (!versionString) {
@@ -22,8 +22,8 @@ version = versionString.replace(/\./g, '');
 console.log('== Candidates for version', versionString, '==');
 
 // use version number as random seed
-adjNoun.seed(Number(version));
+seed(Number(version), {global: true});
 
 for (var i = 0; i < 10; i++) {
-  console.log(adjNoun().join(' '));
+  console.log(totemize());
 }
