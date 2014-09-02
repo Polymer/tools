@@ -4,6 +4,7 @@
     "org": "Polymer",
     "repos": [
       "context-free-parser",
+      "core-a11y-keys",
       "core-ajax",
       "core-animated-pages",
       "core-animation",
