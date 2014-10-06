@@ -35,7 +35,7 @@ if [ -d components/polymer ]; then
   popd
 fi
 
-node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/polymer.json
+node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/polymer.json -b master
 
 pushd components/platform-dev
 npm install
