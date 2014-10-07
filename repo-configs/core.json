@@ -61,7 +61,8 @@
       "marked-element",
       "polymer-test-tools",
       "prettify-element",
-      "sampler-scaffold"
+      "sampler-scaffold",
+      "web-component-tester"
     ]
   },
   {
