@@ -24,7 +24,7 @@ function read(file) {
 function transmogrify($, name) {
   var node = $('svg');
   // remove spacer rectangles
-  node.find('rect[fill], rect[style *= fill]').remove();
+  node.find('[fill=none]').remove();
   // remove fill colors
   node.find('[fill]').each(function() {
     var e = $(this);
@@ -37,7 +37,7 @@ function transmogrify($, name) {
     }
   });
   // remove adobe "save for web" elements
-  node.find('sfw,metadata').remove();
+  node.find('sfw, metadata').remove();
   // remove empty groups
   var innerHTML = $.xml(node.find('*').filter(':not(g)'));
   // remove extraneous whitespace

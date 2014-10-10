@@ -17,7 +17,7 @@ FOLDER="$1"
 DEFAULT=(action alert content file navigation toggle)
 
 # there are no icons here
-BLACKLIST=(moticons common_cfg)
+BLACKLIST=(moticons common_cfg proprietary)
 
 header() {
 cat > $FILE <<ENDL
@@ -49,8 +49,6 @@ contains() {
   for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
   return 1;
 }
-
-mkdir -p iconsets
 
 NAME="icons"
 FILE="core-icons.html"
