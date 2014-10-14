@@ -3,9 +3,16 @@
     "dir": "components",
     "org": "Polymer",
     "repos": [
+      "CustomElements",
+      "HTMLImports",
+      "MutationObservers",
       "PointerEvents",
       "PointerGestures",
-      "core-layout"
+      "ShadowDOM",
+      "WeakMap",
+      "core-layout",
+      "platform",
+      "platform-dev"
     ]
   },
   {

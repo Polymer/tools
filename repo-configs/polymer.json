@@ -3,22 +3,17 @@
     "dir": "components",
     "org": "Polymer",
     "repos": [
-      "CustomElements",
-      "HTMLImports",
-      "MutationObservers",
       "NodeBind",
-      "polymer-gestures",
-      "ShadowDOM",
       "TemplateBinding",
       "URL",
-      "WeakMap",
       "observe-js",
-      "platform",
-      "platform-dev",
       "polymer",
       "polymer-dev",
       "polymer-expressions",
-      "tools"
+      "polymer-gestures",
+      "tools",
+      "webcomponentsjs",
+      "webcomponentsjs-dev"
     ]
   }
 ]
