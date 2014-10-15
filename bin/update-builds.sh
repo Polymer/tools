@@ -48,12 +48,14 @@ cp dist/* ../webcomponentsjs/
 popd
 
 pushd components/webcomponentsjs
-if [ $RELEASE -eq 1 ]; then
-  git commit . -m 'update build for release'
-else
-  git commit . -m 'update build'
+if ! git diff --quiet; then
+  if [ $RELEASE -eq 1 ]; then
+    git commit . -m 'update build for release'
+  else
+    git commit . -m 'update build'
+  fi
+  git push origin master
 fi
-git push origin master
 popd
 
 pushd components/polymer-dev
@@ -67,12 +69,14 @@ cp build/build.log build/polymer.js build/polymer.js.map layout.html ../polymer/
 popd
 
 pushd components/polymer
-if [ $RELEASE -eq 1 ]; then
-  git commit . -m 'update build for release'
-else
-  git commit . -m 'update build'
+if ! git diff --quiet; then
+  if [ $RELEASE -eq 1 ]; then
+    git commit . -m 'update build for release'
+  else
+    git commit . -m 'update build'
+  fi
+  git push origin master
 fi
-git push origin master
 popd
 
 popd
