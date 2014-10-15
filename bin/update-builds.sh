@@ -23,8 +23,8 @@ TMP="$dir/builds-temp"
 mkdir -p $TMP
 pushd $TMP
 
-if [ -d components/platform ]; then
-  pushd components/platform
+if [ -d components/webcomponentsjs ]; then
+  pushd components/webcomponentsjs
   git reset --hard origin/master
   popd
 fi
@@ -37,17 +37,17 @@ fi
 
 node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/polymer.json -b master
 
-pushd components/platform-dev
+pushd components/webcomponentsjs-dev
 npm install
-if [ $RELEASE -eq 1 ]; then
-  grunt release
-else
-  grunt minify audit
-fi
-cp build/build.log build/platform.js build/platform.js.map ../platform/
+# if [ $RELEASE -eq 1 ]; then
+  # TODO(dfreedm): make a "release" version of webcomponentsjs builds
+# else
+  gulp audit
+# fi
+cp dist/* ../webcomponentsjs/
 popd
 
-pushd components/platform
+pushd components/webcomponentsjs
 if [ $RELEASE -eq 1 ]; then
   git commit . -m 'update build for release'
 else
