@@ -39,11 +39,11 @@ node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/polymer.json -b
 
 pushd components/webcomponentsjs-dev
 npm install
-# if [ $RELEASE -eq 1 ]; then
-  # TODO(dfreedm): make a "release" version of webcomponentsjs builds
-# else
-  gulp audit
-# fi
+if [ $RELEASE -eq 1 ]; then
+  gulp release
+else
+  gulp
+fi
 cp dist/* ../webcomponentsjs/
 popd
 
