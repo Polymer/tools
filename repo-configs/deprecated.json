@@ -10,6 +10,7 @@
       "PointerGestures",
       "ShadowDOM",
       "WeakMap",
+      "core-field",
       "core-layout",
       "platform",
       "platform-dev"
