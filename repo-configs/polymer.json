@@ -8,12 +8,10 @@
       "URL",
       "observe-js",
       "polymer",
-      "polymer-dev",
       "polymer-expressions",
       "polymer-gestures",
       "tools",
-      "webcomponentsjs",
-      "webcomponentsjs-dev"
+      "webcomponentsjs"
     ]
   }
 ]

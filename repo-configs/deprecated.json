@@ -13,7 +13,9 @@
       "core-field",
       "core-layout",
       "platform",
-      "platform-dev"
+      "platform-dev",
+      "polymer-dev",
+      "webcomponentsjs-dev"
     ]
   },
   {
