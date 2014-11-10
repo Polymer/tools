@@ -236,6 +236,7 @@ build() {
   find . -maxdepth 1 -not -name "dist" -not -name ".git" -delete
   mv dist/* .
   rmdir dist
+  git show master:dist/polymer.html > polymer.html
   rm polymer-versioned.js
   version
   git add -A
