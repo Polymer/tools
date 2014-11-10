@@ -21,14 +21,14 @@ PULL=false
 # If -t flag is given, actually push the tags
 PUSHTAGS=false
 
-# test by default, override with -f flag
-TEST=true
-
 # Must give a version number with -v
 VERSION=
 
+# Must give a semver range with -r
+RANGE=
+
 # Don't make builds automatically, override with -b flag
-BUILD=false
+BUILD=true
 
 # Make new tags, override with -n
 TAG=true
@@ -39,13 +39,10 @@ PA_PREFIX="$PWD/${0%[/\\]*}"
 # node script for mucking with package json
 VERSIONSCRIPT="$PA_PREFIX/set-version.js"
 
-while getopts ":bfnptv:" opt; do
+while getopts ":bfnptv:r:" opt; do
   case $opt in
     b)
       BUILD=true
-      ;;
-    f)
-      TEST=false
       ;;
     n)
       TAG=false
@@ -59,6 +56,9 @@ while getopts ":bfnptv:" opt; do
     v)
       VERSION="$OPTARG"
       ;;
+    r)
+      RANGE="$OPTARG"
+      ;;
     :)
       die "Option -$OPTARG requires an argument";
   esac
@@ -68,6 +68,11 @@ done
 # TODO(dfreed): read the version out of polymer and bump it up one?
 if [[ -z "$VERSION" ]]; then
   echo "Need a version number!"
+  exit 1
+fi
+
+if [[ -z "$RANGE" ]]; then
+  echo "Need a semver range!"
   exit 1
 fi
 
@@ -123,13 +128,16 @@ pull() {
 
 version() {
   if [ -e "bower.json" ]; then
-    node $VERSIONSCRIPT "$PWD/bower.json" "^0.4.0"
+    node $VERSIONSCRIPT "$PWD/bower.json" "$VERSION" "$RANGE"
   fi
 }
 
 tag_repos() {
   FAILED=()
   for REPO in "${REPOLIST[@]}"; do
+    if [ $REPO = "components/polymer" -o $REPO = "components/webcomponentsjs" ]; then
+      continue
+    fi
     pushd $REPO >/dev/null
     log "TAGGING" "$REPO"
     git checkout -q --detach
@@ -179,49 +187,62 @@ gen_changelog() {
   ok
 }
 
-make_names() {
-  log "GENERATING" "release names"
-  ${PA_PREFIX}/namer $VERSION > "names"
-  ok
-}
-
 build() {
 
   # build platform
-  pushd components/platform-dev
+  pushd components/webcomponentsjs
   log "INSTALLING" "node modules"
   npm --silent install
-  if $TEST; then
-    log "TESTING" "platform"
-    grunt test
-    if [ $? -ne 0 ]; then
-      die "platform FAILED TESTING"
-    fi
-  fi
-  log "BUILDING" "platform"
-  grunt
+  log "BUILDING" "webcomponentsjs"
+  gulp release
+  ok
 
-  # version number on build file
-  mv build/{build.log,platform.js{,.map}} ../platform/
+  log "PREPARING" "webcomponentjs"
+  if git tag -l | grep -q $VERSION; then
+    git tag -d $VERSION
+  fi
+  local lasttag=`git tag -l | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1`
+  git checkout ${lasttag}
+  git merge -s ours master --no-commit
+  rm -rf node_modules
+  find . -maxdepth 1 -not -name "dist" -not -name ".git" -delete
+  mv dist/* .
+  rmdir dist
+  version
+  git add -A
+
+  git ci -m "release $VERSION"
+  git tag -f "$VERSION"
+
   ok
   popd >/dev/null
 
   # build polymer
-  pushd components/polymer-dev
+  pushd components/polymer
   log "INSTALLING" "node modules"
   npm --silent install
-  if $TEST; then
-    log "TESTING" "polymer"
-    grunt test
-    if [ $? -ne 0 ]; then
-      die "polymer FAILED TESTING"
-    fi
-  fi
   log "BUILDING" "polymer"
-  grunt
+  grunt release
+  ok
 
-  # version number on build file
-  mv build/{build.log,polymer.js{,.map}} ../polymer/
+  log "PREPARING" "polymer"
+  if git tag -l | grep -q $VERSION; then
+    git tag -d $VERSION
+  fi
+  local lasttag=`git tag -l | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1`
+  git checkout ${lasttag}
+  git merge -s ours master --no-commit
+  rm -rf node_modules
+  find . -maxdepth 1 -not -name "dist" -not -name ".git" -delete
+  mv dist/* .
+  rmdir dist
+  rm polymer-versioned.js
+  version
+  git add -A
+
+  git ci -m "release $VERSION"
+  git tag -f "$VERSION"
+
   ok
   popd >/dev/null
 }
@@ -243,7 +264,6 @@ release() {
       tag_repos
     fi
     gen_changelog
-    make_names
   fi
   popd >/dev/null
 }
