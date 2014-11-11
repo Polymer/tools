@@ -45,6 +45,7 @@
       "core-range",
       "core-scaffold",
       "core-scroll-header-panel",
+      "core-scroll-threshold",
       "core-selection",
       "core-selector",
       "core-shared-lib",
