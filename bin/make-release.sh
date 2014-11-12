@@ -135,7 +135,8 @@ version() {
 tag_repos() {
   FAILED=()
   for REPO in "${REPOLIST[@]}"; do
-    if [ $REPO = "components/polymer" -o $REPO = "components/webcomponentsjs" ]; then
+    if [ $REPO = "components/polymer" -o $REPO = "components/webcomponentsjs" -o $REPO = "components/web-component-tester" ]
+    then
       continue
     fi
     pushd $REPO >/dev/null
