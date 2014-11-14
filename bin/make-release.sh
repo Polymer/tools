@@ -15,6 +15,9 @@ if [[ $OS = "Windows_NT" ]]; then
   WINDOWS=1
 fi
 
+# Pull only the "regular" set, "all" with -a
+ALL=false
+
 # Only pull new versions with -p flag
 PULL=false
 
@@ -27,9 +30,6 @@ VERSION=
 # Must give a semver range with -r
 RANGE=
 
-# Don't make builds automatically, override with -b flag
-BUILD=true
-
 # Make new tags, override with -n
 TAG=true
 
@@ -39,10 +39,10 @@ PA_PREFIX="$PWD/${0%[/\\]*}"
 # node script for mucking with package json
 VERSIONSCRIPT="$PA_PREFIX/set-version.js"
 
-while getopts ":bfnptv:r:" opt; do
+while getopts ":abfnptv:r:" opt; do
   case $opt in
-    b)
-      BUILD=true
+    a)
+      ALL=true
       ;;
     n)
       TAG=false
@@ -63,18 +63,6 @@ while getopts ":bfnptv:r:" opt; do
       die "Option -$OPTARG requires an argument";
   esac
 done
-
-# abort on missing version number
-# TODO(dfreed): read the version out of polymer and bump it up one?
-if [[ -z "$VERSION" ]]; then
-  echo "Need a version number!"
-  exit 1
-fi
-
-if [[ -z "$RANGE" ]]; then
-  echo "Need a semver range!"
-  exit 1
-fi
 
 # repos that fail to clone will be put here
 FAILED=()
@@ -123,7 +111,10 @@ status_report() {
 }
 
 pull() {
-  node $PA_PREFIX/node_modules/bigstraw/index.js -s -b master ${PA_PREFIX}/../repo-configs/{core,polymer,paper}.json
+  node $PA_PREFIX/node_modules/.bin/bigstraw -s -b master ${PA_PREFIX}/../repo-configs/{core,polymer,paper}.json
+  if $ALL; then
+    node $PA_PREFIX/node_modules/.bin/bigstraw -s -b master ${PA_PREFIX}/../repo-configs/{labs,misc}.json
+  fi
 }
 
 version() {
@@ -189,6 +180,19 @@ gen_changelog() {
 }
 
 build() {
+
+  # abort on missing version number
+  # TODO(dfreed): read the version out of polymer and bump it up one?
+  if [[ -z "$VERSION" ]]; then
+    echo "Need a version number!"
+    exit 1
+  fi
+
+  # abort on missing dependency range
+  if [[ -z "$RANGE" ]]; then
+    echo "Need a semver range!"
+    exit 1
+  fi
 
   # build platform
   pushd components/webcomponentsjs
@@ -259,9 +263,7 @@ release() {
   if $PUSHTAGS; then
     push_tags
   else
-    if $BUILD; then
-      build
-    fi
+    build
     if $TAG; then
       tag_repos
     fi
