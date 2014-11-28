@@ -3,6 +3,7 @@
     "dir": "components",
     "org": "PolymerLabs",
     "repos": [
+      "polymer-ajax",
       "ace-element",
       "chart-js",
       "code-mirror",
@@ -13,6 +14,7 @@
       "github-elements",
       "humane-js",
       "js-beautify",
+      "polymer-jsonp",
       "marked-js",
       "more-elements",
       "notification-elements",
