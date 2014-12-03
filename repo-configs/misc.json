@@ -3,6 +3,13 @@
     "dir": "components",
     "org": "web-animations",
     "repos": [
+      "web-animations-js"
+    ]
+  },
+  {
+    "dir": "components",
+    "org": "web-animations",
+    "repos": [
       "web-animations-next"
     ]
   },
