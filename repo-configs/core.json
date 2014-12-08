@@ -43,6 +43,7 @@
       "core-pages",
       "core-popup-menu",
       "core-range",
+			"core-resizable",
       "core-scaffold",
       "core-scroll-header-panel",
       "core-scroll-threshold",
