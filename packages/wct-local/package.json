@@ -18,15 +18,21 @@
     "url": "https://github.com/Polymer/wct-local.git"
   },
   "main": "lib/plugin.js",
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js"
+  },
   "wct-plugin": {
-    "autoload": true,
     "cli-options": {
-      "local": {
-        "description": "Local browsers to run tests on.",
-        "alias": "l"
+      "browsers": {
+        "help":    "Local browsers to run tests on, or 'all'.",
+        "full":    "local",
+        "metavar": "NAME",
+        "abbr":    "l",
+        "list":    true
       },
-      "selenium-port": {
-        "description": "The port of a running selenium server to use."
+      "seleniumPort": {
+        "help":    "The port of a running selenium server to use.",
+        "full":    "selenium-port"
       }
     }
   },
@@ -34,5 +40,14 @@
     "gulp": "^3.8.10",
     "gulp-jshint": "^1.9.0",
     "jshint-stylish": "^1.0.0"
+  },
+  "dependencies": {
+    "chalk": "^0.5.1",
+    "cleankill": "^1.0.0",
+    "freeport": "^1.0.4",
+    "launchpad": "^0.4.4",
+    "lodash": "^2.4.1",
+    "selenium-standalone": "^3.0.3",
+    "which": "^1.0.8"
   }
 }

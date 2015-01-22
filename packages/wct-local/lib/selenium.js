@@ -7,9 +7,9 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
+var chalk     = require('chalk');
 var cleankill = require('cleankill');
 var freeport  = require('freeport');
-var process   = require('process');
 var selenium  = require('selenium-standalone');
 var which     = require('which');
 
@@ -33,33 +33,33 @@ function checkSeleniumEnvironment(done) {
   });
 }
 
-function startSeleniumServer(emitter, done) {
+function startSeleniumServer(wct, done) {
+  wct.emit('log:info', 'Starting Selenium server for local browsers');
   checkSeleniumEnvironment(function(error) {
     if (error) return done(error);
     freeport(function(error, port) {
       if (error) return done(error);
 
-      var server = selenium({}, ['-port', port]);
-      var badExit = function() { done('Could not start Selenium'); };
-      server.on('exit', badExit);
-
-      function onOutput(data) {
-        var str = data.toString();
-        emitter.emit('log:debug', str);
-
-        if (str.indexOf('Started org.openqa.jetty.jetty.Server') > -1) {
-          server.removeListener('exit', badExit);
-          emitter.emit('log:info', 'Selenium server running on port', chalk.yellow(port));
-          done(null, port);
-        }
-      }
-      server.stdout.on('data', onOutput);
-      server.stderr.on('data', onOutput);
+      var server = selenium.start({seleniumArgs: ['-port', port]}, function(error) {
+        if (error) return done(error);
+        wct.emit('log:info', 'Selenium server running on port', chalk.yellow(port));
+        done(null, port);
+      });
 
       cleankill.onInterrupt(function(done) {
         server.kill();
         done();
       });
+
+      // TODO(nevir): https://github.com/vvo/selenium-standalone/pull/56
+      function onOutput(data) {
+        wct.emit('log:debug', data.toString());
+      }
+      server.stdout.on('data', onOutput);
+      server.stderr.on('data', onOutput);
+      server.on('exit', function() {
+        console.warn('server exited', arguments);
+      })
     });
   });
 }

@@ -7,8 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-var _       = require('lodash');
-var process = require('process');
+var _ = require('lodash');
 
 var browsers = require('./browsers');
 var selenium = require('./selenium');
@@ -22,14 +21,22 @@ module.exports = function(wct) {
   // Convert any local browser names into Webdriver capabilities objects.
   //
   // Note that we run this hook late to allow other plugins to append their
-  // browsers.
+  // browsers. We don't want the default behavior (run all local browsers) to
+  // kick in if someone has specified browsers via another plugin.
   wct.hookLate('configure', function(options, done) {
-    // We support comma separated browser identifiers for convenience.
-    var names = _.isArray(options.local) ? options.local : [options.local].join(',').split(',');
-    // If the user did not specify _any_ other browsers, we default to running
-    // all local browsers. Otherwise, we run nothing. Remember: This plugin is
-    // always loaded when present.
-    if (!names.length && options.activeBrowsers.length) return done();
+    var names = [];
+    var pluginOptions = options.plugins.local;
+    if (pluginOptions.browsers && pluginOptions.browsers.length) {
+      // We support comma separated browser identifiers for convenience.
+      names = pluginOptions.browsers.join(',').split(',');
+    }
+
+    if (options.activeBrowsers.length === 0 && names.length === 0) {
+      names = ['all'];
+    }
+
+    // No local browsers for you :(
+    if (names.length === 0) return done();
 
     // Note that we **do not** append the browsers to `options.activeBrowsers`
     // until we've got a port chosen for the Selenium server.
@@ -37,6 +44,11 @@ module.exports = function(wct) {
       if (error) return done(error);
       wct.emit('log:debug', 'Expanded local browsers:', names, 'into capabilities:', expanded);
       eachCapabilities = expanded;
+      // We are careful to append these to the configuration object, even though
+      // we don't know the selenium port yet. This allows WCT to give a useful
+      // error if no browsers were configured.
+      options.activeBrowsers.push.apply(options.activeBrowsers, expanded);
+
       done();
     });
   });
@@ -49,7 +61,7 @@ module.exports = function(wct) {
       var port = options['selenium-port'] || parseInt(process.env.SELENIUM_PORT);
       // Is Selenium already running on a specified port?
       if (port) {
-        appendBrowsers(wct, options, port, eachCapabilities);
+        updatePort(eachCapabilities, port);
         done();
       }
 
@@ -58,7 +70,7 @@ module.exports = function(wct) {
         if (error) return done(error);
         selenium.startSeleniumServer(wct, function(error, port) {
           if (error) return done(error);
-          appendBrowsers(wct, options, port, eachCapabilities);
+          updatePort(eachCapabilities, port);
           done();
         });
       });
@@ -71,19 +83,14 @@ module.exports = function(wct) {
 // Utility
 
 /**
- * @param {!wct.Context} wct
- * @param {!Object} options
- * @param {number} port
  * @param {!Array.<!Object>} eachCapabilities
+ * @param {number} port
  */
-function appendBrowsers(wct, options, port, eachCapabilities) {
+function updatePort(eachCapabilities, port) {
   eachCapabilities.forEach(function(capabilities) {
     capabilities.url = {
       hostname: '127.0.0.1',
       port:     port,
     };
   });
-
-  wct.emit('log:debug', 'Appending local browsers:', eachCapabilities);
-  options.activeBrowsers.push.apply(options.activeBrowsers, eachCapabilities);
 }
