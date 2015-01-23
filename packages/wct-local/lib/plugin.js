@@ -23,21 +23,24 @@ module.exports = function(wct, pluginOptions) {
   // Note that we run this hook late to allow other plugins to append their
   // browsers. We don't want the default behavior (run all local browsers) to
   // kick in if someone has specified browsers via another plugin.
-  wct.hookLate('configure', function(options, done) {
+  wct.hookLate('configure', function(done) {
+    pluginOptions.seleniumPort = pluginOptions.seleniumPort || parseInt(process.env.SELENIUM_PORT);
+
     var names = [];
     if (pluginOptions.browsers && pluginOptions.browsers.length) {
       // We support comma separated browser identifiers for convenience.
       names = pluginOptions.browsers.join(',').split(',');
     }
 
-    if (options.activeBrowsers.length === 0 && names.length === 0) {
+    var activeBrowsers = wct.options.activeBrowsers;
+    if (activeBrowsers.length === 0 && names.length === 0) {
       names = ['all'];
     }
 
     // No local browsers for you :(
     if (names.length === 0) return done();
 
-    // Note that we **do not** append the browsers to `options.activeBrowsers`
+    // Note that we **do not** append the browsers to `activeBrowsers`
     // until we've got a port chosen for the Selenium server.
     browsers.expand(names, function(error, expanded) {
       if (error) return done(error);
@@ -46,21 +49,20 @@ module.exports = function(wct, pluginOptions) {
       // We are careful to append these to the configuration object, even though
       // we don't know the selenium port yet. This allows WCT to give a useful
       // error if no browsers were configured.
-      options.activeBrowsers.push.apply(options.activeBrowsers, expanded);
+      activeBrowsers.push.apply(activeBrowsers, expanded);
 
       done();
     });
   });
 
-  wct.hook('prepare', function(options, done) {
+  wct.hook('prepare', function(done) {
     if (!eachCapabilities.length) return done();
 
     wct.emitHook('prepare:selenium', function(error) {
       if (error) return done(error);
-      var port = options['selenium-port'] || parseInt(process.env.SELENIUM_PORT);
       // Is Selenium already running on a specified port?
-      if (port) {
-        updatePort(eachCapabilities, port);
+      if (pluginOptions.seleniumPort) {
+        updatePort(eachCapabilities, pluginOptions.seleniumPort);
         done();
       }
 
