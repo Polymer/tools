@@ -13,7 +13,7 @@ var browsers = require('./browsers');
 var selenium = require('./selenium');
 
 /** WCT plugin that enables support for local browsers via Selenium. */
-module.exports = function(wct) {
+module.exports = function(wct, pluginOptions) {
 
   // The capabilities objects for browsers to run.
   var eachCapabilities = [];
@@ -25,7 +25,6 @@ module.exports = function(wct) {
   // kick in if someone has specified browsers via another plugin.
   wct.hookLate('configure', function(options, done) {
     var names = [];
-    var pluginOptions = options.plugins.local;
     if (pluginOptions.browsers && pluginOptions.browsers.length) {
       // We support comma separated browser identifiers for convenience.
       names = pluginOptions.browsers.join(',').split(',');
