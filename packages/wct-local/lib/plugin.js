@@ -15,7 +15,8 @@ var selenium = require('./selenium');
 /** WCT plugin that enables support for local browsers via Selenium. */
 module.exports = function(wct, pluginOptions) {
 
-  // The capabilities objects for browsers to run.
+  // The capabilities objects for browsers to run. We don't know the port until
+  // `prepare`, so we've gotta hang onto them.
   var eachCapabilities = [];
 
   // Convert any local browser names into Webdriver capabilities objects.
@@ -26,6 +27,7 @@ module.exports = function(wct, pluginOptions) {
   wct.hookLate('configure', function(done) {
     pluginOptions.seleniumPort = pluginOptions.seleniumPort || parseInt(process.env.SELENIUM_PORT);
 
+    // TODO(nevir): Handle object-style browsers too!
     var names = [];
     if (pluginOptions.browsers && pluginOptions.browsers.length) {
       // We support comma separated browser identifiers for convenience.
@@ -36,7 +38,6 @@ module.exports = function(wct, pluginOptions) {
     if (activeBrowsers.length === 0 && names.length === 0) {
       names = ['all'];
     }
-
     // No local browsers for you :(
     if (names.length === 0) return done();
 
