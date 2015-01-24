@@ -20,7 +20,7 @@ module.exports = function(wct, pluginOptions) {
   var eachCapabilities = [];
 
   wct.hook('configure', function(done) {
-    if (pluginOptions.browsers.length === 0) return done();
+    if (!pluginOptions.browsers || pluginOptions.browsers.length === 0) return done();
 
     _.defaults(pluginOptions, {
       username:  process.env.SAUCE_USERNAME,
