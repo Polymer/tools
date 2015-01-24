@@ -22,11 +22,7 @@ module.exports = function(wct, pluginOptions) {
   wct.hook('configure', function(done) {
     if (!pluginOptions.browsers || pluginOptions.browsers.length === 0) return done();
 
-    _.defaults(pluginOptions, {
-      username:  process.env.SAUCE_USERNAME,
-      accessKey: process.env.SAUCE_ACCESS_KEY,
-      tunnelId:  process.env.SAUCE_TUNNEL_ID,
-    });
+    expandOptions(pluginOptions);
 
     browsers.expand(pluginOptions, function(error, expanded) {
       if (error) return done(error);
@@ -68,6 +64,14 @@ module.exports = function(wct, pluginOptions) {
 
 };
 
+function expandOptions(options) {
+  _.defaults(options, {
+    username:  process.env.SAUCE_USERNAME,
+    accessKey: process.env.SAUCE_ACCESS_KEY,
+    tunnelId:  process.env.SAUCE_TUNNEL_ID,
+  });
+}
+
 /**
  * @param {!Array<!Object>} eachCapabilities
  * @param {string} tunnelId
@@ -77,3 +81,7 @@ function _injectTunnelId(eachCapabilities, tunnelId) {
     browser['tunnel-identifier'] = tunnelId;
   });
 }
+
+// Hacks for the wct-st binary.
+module.exports.expandOptions = expandOptions;
+module.exports.startTunnel   = sauce.startTunnel;
