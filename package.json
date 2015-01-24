@@ -24,15 +24,15 @@
   "wct-plugin": {
     "cli-options": {
       "browsers": {
-        "help":    "Local browsers to run tests on, or 'all'.",
-        "full":    "local",
+        "help": "Local browsers to run tests on, or 'all'.",
+        "full": "local",
         "metavar": "NAME",
-        "abbr":    "l",
-        "list":    true
+        "abbr": "l",
+        "list": true
       },
       "seleniumPort": {
-        "help":    "The port of a running selenium server to use.",
-        "full":    "selenium-port"
+        "help": "The port of a running selenium server to use.",
+        "full": "selenium-port"
       }
     }
   },
@@ -47,7 +47,7 @@
     "freeport": "^1.0.4",
     "launchpad": "^0.4.4",
     "lodash": "^2.4.1",
-    "selenium-standalone": "^3.0.3",
+    "selenium-standalone": "^3.2.0",
     "which": "^1.0.8"
   }
 }
