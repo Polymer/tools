@@ -1,0 +1,57 @@
+{
+  "name": "wct-sauce",
+  "version": "1.0.0",
+  "description": "WCT plugin that enables support for sauce browsers via Sauce Labs",
+  "keywords": [
+    "wct",
+    "web-component-tester",
+    "plugin"
+  ],
+  "homepage": "https://github.com/Polymer/wct-sauce",
+  "bugs": "https://github.com/Polymer/wct-sauce/issues",
+  "license": {
+    "type": "BSD-3-Clause",
+    "url": "http://polymer.github.io/LICENSE.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Polymer/wct-sauce.git"
+  },
+  "main": "lib/plugin.js",
+  "wct-plugin": {
+    "cli-options": {
+      "browsers": {
+        "help": "Remote Sauce Labs browsers to run tests on, or 'default'.",
+        "full": "sauce",
+        "metavar": "NAME",
+        "abbr": "s",
+        "list": true
+      },
+      "username": {
+        "help": "Sauce Labs username.",
+        "full": "sauce-username"
+      },
+      "accessKey": {
+        "help": "Sauce Labs access key.",
+        "full": "sauce-access-key"
+      },
+      "tunnelId": {
+        "help": "Sauce Connect tunnel identifier.",
+        "full": "sauce-tunnel-id"
+      }
+    }
+  },
+  "dependencies": {
+    "chalk": "^0.5.1",
+    "cleankill": "^1.0.0",
+    "lodash": "^2.4.1",
+    "sauce-connect-launcher": "^0.9.3",
+    "temp": "^0.8.1",
+    "uuid": "^2.0.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.10",
+    "gulp-jshint": "^1.9.0",
+    "jshint-stylish": "^1.0.0"
+  }
+}
