@@ -27,11 +27,15 @@ if (process.platform === 'win32') {
   };
 }
 
-process.stdout.write('Downloading Selenium... ');
-selenium.install({version: BASE_VERSION, drivers: drivers}, function(error) {
+var config = {
+  version: BASE_VERSION,
+  drivers: drivers,
+  logger:  console.log.bind(console),
+}
+
+selenium.install(config, function(error) {
   if (error) {
-    process.stdout.write('error: ' + error + '\n');
-  } else {
-    process.stdout.write('done\n');
+    console.log(error)
+    proess.exit(1);
   }
 });

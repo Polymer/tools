@@ -40,25 +40,38 @@ function startSeleniumServer(wct, done) {
     freeport(function(error, port) {
       if (error) return done(error);
 
-      var server = selenium.start({seleniumArgs: ['-port', port]}, function(error) {
-        if (error) return done(error);
+      // See below.
+      var log = [];
+
+      var config = {
+        seleniumArgs: ['-port', port],
+        // Bookkeeping once the process starts.
+        spawnCb: function(server) {
+          // Make sure that we interrupt the selenium server ASAP.
+          cleankill.onInterrupt(function(done) {
+            server.kill();
+            done();
+          });
+
+          // If there is an error, we want to be able to give the user all sorts
+          // of useful output.
+          function onOutput(data) {
+            var message = data.toString();
+            log.push(message);
+            wct.emit('log:debug', message);
+          }
+          server.stdout.on('data', onOutput);
+          server.stderr.on('data', onOutput);
+        },
+      };
+
+      selenium.start(config, function(error) {
+        if (error) {
+          log.forEach(function(line) { wct.emit('log:info', line) });
+          return done(error);
+        }
         wct.emit('log:info', 'Selenium server running on port', chalk.yellow(port));
         done(null, port);
-      });
-
-      cleankill.onInterrupt(function(done) {
-        server.kill();
-        done();
-      });
-
-      // TODO(nevir): https://github.com/vvo/selenium-standalone/pull/56
-      function onOutput(data) {
-        wct.emit('log:debug', data.toString());
-      }
-      server.stdout.on('data', onOutput);
-      server.stderr.on('data', onOutput);
-      server.on('exit', function() {
-        console.warn('server exited', arguments);
       });
     });
   });
