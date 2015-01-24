@@ -59,7 +59,7 @@ function startSeleniumServer(wct, done) {
       server.stderr.on('data', onOutput);
       server.on('exit', function() {
         console.warn('server exited', arguments);
-      })
+      });
     });
   });
 }
