@@ -24,7 +24,7 @@ var BROWSER_SPEC = /^([^\/@]+)\/([^\/@]+)(?:@(.*))?$/;
 function expand(pluginOptions, done) {
   var browsers = pluginOptions.browsers;
   // 'all' is really 'default', just to be consistent with wct-local.
-  if (browsers.indexOf('default') !== -1 || browsers.indexOf('all')) {
+  if (browsers.indexOf('default') !== -1 || browsers.indexOf('all') !== -1) {
     // TODO(nevir): Figure out the latest version of each browser and pick
     // appropriate spreads of versions & OSes.
     browsers = browsers.concat(_.cloneDeep(DEFAULT_BROWSERS));
