@@ -26,7 +26,6 @@ module.exports = function(wct, pluginOptions) {
     pluginOptions.seleniumPort = pluginOptions.seleniumPort || parseInt(process.env.SELENIUM_PORT);
 
     var names = browsers.normalize(pluginOptions.browsers);
-    console.log(names)
     if (names.length > 0) {
       // We support comma separated browser identifiers for convenience.
       names = names.join(',').split(',');
