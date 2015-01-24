@@ -33,7 +33,7 @@ function expand(pluginOptions, browsers, done) {
   browsers = _.compact(browsers.map(_expandBrowser));
   browsers.forEach(_injectUrl.bind(null, pluginOptions));
 
-  done(null, browsers)
+  done(null, browsers);
 }
 
 /**
