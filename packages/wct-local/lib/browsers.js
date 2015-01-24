@@ -21,13 +21,23 @@ var LAUNCHPAD_TO_SELENIUM = {
 };
 
 /**
+ * @param {Array<string|!Object>} browsers
+ * @return {!Array<string>}
+ */
+function normalize(browsers) {
+  return (browsers || []).map(function(browser) {
+    return browser.browserName || browser;
+  });
+}
+
+/**
  * Expands an array of browser identifiers for locally installed browsers into
  * their webdriver capabilities objects.
  *
  * If `names` is empty, all installed browsers will be used.
  *
- * @param {!Array.<string>} names
- * @param {function(*, Array.<!Object>)} done
+ * @param {!Array<string>} names
+ * @param {function(*, Array<!Object>)} done
  */
 function expand(names, done) {
   if (names.indexOf('all') !== -1) {
@@ -60,7 +70,7 @@ function expand(names, done) {
 /**
  * Detects any locally installed browsers that we support.
  *
- * @param {function(*, Object.<string, !Object>)} done
+ * @param {function(*, Object<string, !Object>)} done
  */
 function detect(done) {
   launchpad.local(function(error, launcher) {
@@ -80,7 +90,7 @@ function detect(done) {
 }
 
 /**
- * @return {!Array.<string>} A list of local browser names that are supported by
+ * @return {!Array<string>} A list of local browser names that are supported by
  *     the current environment.
  */
 function supported() {
@@ -143,7 +153,8 @@ function internetExplorer(browser) {
 }
 
 module.exports = {
-  detect:  detect,
-  expand:  expand,
+  normalize: normalize,
+  detect:    detect,
+  expand:    expand,
   supported: supported,
 };

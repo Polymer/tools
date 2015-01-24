@@ -25,11 +25,11 @@ module.exports = function(wct, pluginOptions) {
   wct.hookLate('configure', function(done) {
     pluginOptions.seleniumPort = pluginOptions.seleniumPort || parseInt(process.env.SELENIUM_PORT);
 
-    // TODO(nevir): Handle object-style browsers too!
-    var names = [];
-    if (pluginOptions.browsers && pluginOptions.browsers.length) {
+    var names = browsers.normalize(pluginOptions.browsers);
+    console.log(names)
+    if (names.length > 0) {
       // We support comma separated browser identifiers for convenience.
-      names = pluginOptions.browsers.join(',').split(',');
+      names = names.join(',').split(',');
     }
 
     var activeBrowsers = wct.options.activeBrowsers;
