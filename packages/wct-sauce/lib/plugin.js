@@ -20,20 +20,15 @@ module.exports = function(wct, pluginOptions) {
   var eachCapabilities = [];
 
   wct.hook('configure', function(done) {
+    if (pluginOptions.browsers.length === 0) return done();
+
     _.defaults(pluginOptions, {
       username:  process.env.SAUCE_USERNAME,
       accessKey: process.env.SAUCE_ACCESS_KEY,
       tunnelId:  process.env.SAUCE_TUNNEL_ID,
     });
 
-    var names = [];
-    if (pluginOptions.browsers && pluginOptions.browsers.length) {
-      // We support comma separated browser identifiers for convenience.
-      names = pluginOptions.browsers.join(',').split(',');
-    }
-    if (names.length === 0) return done();
-
-    browsers.expand(pluginOptions, names, function(error, expanded) {
+    browsers.expand(pluginOptions, function(error, expanded) {
       if (error) return done(error);
       wct.emit('log:debug', 'Using sauce browsers:', expanded);
       // We are careful to append these to the configuration object, even though

@@ -19,10 +19,11 @@ var BROWSER_SPEC = /^([^\/@]+)\/([^\/@]+)(?:@(.*))?$/;
  * webdriver capabilities objects.
  *
  * @param {!Object} pluginOptions
- * @param {!Array.<string|!Object>} browsers
- * @param {function(*, Array.<!Object>)} done
+ * @param {function(*, Array<!Object>)} done
  */
-function expand(pluginOptions, browsers, done) {
+function expand(pluginOptions, done) {
+  var browsers = pluginOptions.browsers;
+  // 'all' is really 'default', just to be consistent with wct-local.
   if (browsers.indexOf('default') !== -1 || browsers.indexOf('all')) {
     // TODO(nevir): Figure out the latest version of each browser and pick
     // appropriate spreads of versions & OSes.
