@@ -10,6 +10,7 @@
 // https://github.com/npm/npm/issues/6624
 var sauceConnectLauncher = require('sauce-connect-launcher');
 
+console.log('Prefetching the Sauce Connect binary.');
 sauceConnectLauncher.download({
   logger: console.log.bind(console),
 }, function(error) {
