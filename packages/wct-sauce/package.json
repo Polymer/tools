@@ -1,6 +1,6 @@
 {
   "name": "wct-sauce",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WCT plugin that enables support for sauce browsers via Sauce Labs",
   "keywords": [
     "wct",
@@ -16,6 +16,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Polymer/wct-sauce.git"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js"
   },
   "main": "lib/plugin.js",
   "wct-plugin": {
