@@ -9,6 +9,21 @@
 # subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 #
 dir="${0%[/\\]*}"
+
+# Use SSH by default when pulling Git repos with Bigstraw
+bigstraw_flags="-s"
+
+while [ "$#" -gt 0 ]; do
+  case $1 in
+    # Pass the '--https' flag to pull repos via HTTPS when using Bigstraw
+    --https)
+      bigstraw_flags=""
+      break
+  esac
+
+  shift
+done
+
 pushd $dir
 git pull
 if [ ! -e node_modules/bigstraw ]; then
@@ -17,4 +32,5 @@ if [ ! -e node_modules/bigstraw ]; then
 fi
 npm install bigstraw
 popd
-node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/{core,polymer,paper,labs,misc}.json $@
+
+node $dir/node_modules/bigstraw/index.js $bigstraw_flags $dir/../repo-configs/{core,polymer,paper,labs,misc}.json $@
