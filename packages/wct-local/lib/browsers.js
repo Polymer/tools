@@ -34,14 +34,14 @@ function normalize(browsers) {
  * Expands an array of browser identifiers for locally installed browsers into
  * their webdriver capabilities objects.
  *
- * If `names` is empty, all installed browsers will be used.
+ * If `names` is empty, or contains `all`, all installed browsers will be used.
  *
  * @param {!Array<string>} names
  * @param {function(*, Array<!Object>)} done
  */
 function expand(names, done) {
   if (names.indexOf('all') !== -1) {
-    names = module.exports.supported();
+    names = [];
   }
 
   var unsupported = _.difference(names, module.exports.supported());
@@ -55,6 +55,11 @@ function expand(names, done) {
   module.exports.detect(function(error, installedByName) {
     if (error) return done(error);
     var installed = _.keys(installedByName);
+    // Opting to use everything?
+    if (names.length === 0) {
+      names = installed;
+    }
+
     var missing   = _.difference(names, installed);
     if (missing.length > 0) {
       return done(
