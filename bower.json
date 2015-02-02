@@ -1,0 +1,11 @@
+{
+  "name": "hydrolysis",
+  "private": true,
+  "dependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#master",
+    "polymer": "Polymer/polymer#0.8-preview"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#master"
+  }
+}
