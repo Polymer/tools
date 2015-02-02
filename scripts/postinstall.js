@@ -7,7 +7,23 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-var selenium  = require('selenium-standalone');
+// Work around a potential npm race condition:
+// https://github.com/npm/npm/issues/6624
+function requireSelenium(done, attempt) {
+  attempt = attempt || 0;
+  var selenium;
+  try {
+    selenium = require('selenium-standalone');
+  } catch (error) {
+    if (attempt > 3) { throw error; }
+    setTimeout(
+      requireSelenium.bind(null, done, attempt + 1),
+      Math.pow(2, attempt) // Exponential backoff to play it safe.
+    );
+  }
+  // All is well.
+  done(selenium);
+}
 
 var BASE_VERSION   = '2.44.0';
 var CHROME_VERSION = '2.13';
@@ -31,11 +47,13 @@ var config = {
   version: BASE_VERSION,
   drivers: drivers,
   logger:  console.log.bind(console),
-}
+};
 
-selenium.install(config, function(error) {
-  if (error) {
-    console.log(error)
-    proess.exit(1);
-  }
+requireSelenium(function(selenium) {
+  selenium.install(config, function(error) {
+    if (error) {
+      console.log(error);
+      proess.exit(1);
+    }
+  });
 });
