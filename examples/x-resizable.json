@@ -26,7 +26,7 @@
         "Base",
         "x-resizable"
       ],
-      "extends": "x-resizable"
+      "extends": "x-resizable",
       "methods": {
         "resizerAttached": {
           "desc": "User must call from `attached` callback"
