@@ -26,9 +26,7 @@ function requireSauceConnectLauncher(done, attempt) {
   try {
     sauceConnectLauncher = require('sauce-connect-launcher');
   } catch (error) {
-    if (attempt > 3) {
-      throw error;
-    }
+    if (attempt > 3) { throw error; }
     setTimeout(
       requireSauceConnectLauncher.bind(null, done, attempt + 1),
       Math.pow(2, attempt) // Exponential backoff to play it safe.
