@@ -1,6 +1,6 @@
 {
   "name": "wct-local",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "WCT plugin that enables support for local browsers via Selenium",
   "keywords": [
     "wct",
