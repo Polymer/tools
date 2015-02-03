@@ -69,13 +69,6 @@ module.exports = function(wct, pluginOptions) {
 
     wct.emitHook('prepare:selenium', function(error) {
       if (error) return done(error);
-      // Is Selenium already running on a specified port?
-      if (pluginOptions.seleniumPort) {
-        updatePort(eachCapabilities, pluginOptions.seleniumPort);
-        done();
-      }
-
-      // Nope. Gotta spin up our own.
       selenium.checkSeleniumEnvironment(function(error) {
         if (error) return done(error);
         selenium.startSeleniumServer(wct, function(error, port) {
