@@ -64,7 +64,7 @@ module.exports = function(wct, pluginOptions) {
   });
 
   wct.on('browser-end', function(def, error, stats, sessionId) {
-    if (eachCapabilities.length === 0 || !sessionId) return done();
+    if (eachCapabilities.length === 0 || !sessionId) return;
 
     var payload = {
       passed: (stats.status === 'complete' && stats.failing === 0),
