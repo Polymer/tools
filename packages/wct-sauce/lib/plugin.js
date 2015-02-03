@@ -64,7 +64,12 @@ module.exports = function(wct, pluginOptions) {
   });
 
   wct.on('browser-end', function(def, error, stats, sessionId) {
-    if (eachCapabilities.length === 0) return done();
+    if (eachCapabilities.length === 0 || !sessionId) return done();
+
+    var payload = {
+      passed: (stats.status === 'complete' && stats.failing === 0),
+    };
+    wct.emit('log:debug', 'Updating sauce job', sessionId, payload);
 
     // Send the pass/fail info to sauce-labs if we are testing remotely.
     var username  = wct.options.plugins.sauce.username;
@@ -73,9 +78,7 @@ module.exports = function(wct, pluginOptions) {
       url:  'https://saucelabs.com/rest/v1/' + encodeURIComponent(username) + '/jobs/' + encodeURIComponent(sessionId),
       auth: {user: username, pass: accessKey},
       json: true,
-      body: {
-        passed: (stats.failing > 0),
-      },
+      body: payload,
     });
   });
 
