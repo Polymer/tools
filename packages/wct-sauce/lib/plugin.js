@@ -7,7 +7,8 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-var _ = require('lodash');
+var _       = require('lodash');
+var request = require('request');
 
 var browsers = require('./browsers');
 var sauce    = require('./sauce');
@@ -59,6 +60,22 @@ module.exports = function(wct, pluginOptions) {
         _injectTunnelId(eachCapabilities, tunnelId);
         done();
       });
+    });
+  });
+
+  wct.on('browser-end', function(def, error, stats, sessionId) {
+    if (eachCapabilities.length === 0) return done();
+
+    // Send the pass/fail info to sauce-labs if we are testing remotely.
+    var username  = wct.options.plugins.sauce.username;
+    var accessKey = wct.options.plugins.sauce.accessKey;
+    request.put({
+      url:  'https://saucelabs.com/rest/v1/' + encodeURIComponent(username) + '/jobs/' + encodeURIComponent(sessionId),
+      auth: {user: username, pass: accessKey},
+      json: true,
+      body: {
+        passed: (stats.failing > 0),
+      },
     });
   });
 
