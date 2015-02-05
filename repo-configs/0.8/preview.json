@@ -1,0 +1,33 @@
+[
+  {
+    "dir": "components",
+    "org": "Polymer",
+    "branch": "0.8-preview",
+    "repos": [
+      "polymer",
+      "core-overlay",
+      "core-meta",
+      "core-collapse",
+      "core-resizable",
+      "core-selector",
+      "core-toolbar"
+    ]
+  },
+  {
+    "dir": "components",
+    "org": "Polymer",
+    "branch": "master",
+    "repos": [
+      "observe-js",
+      "web-component-tester"
+    ]
+  },
+  {
+    "dir": "components",
+    "org": "webcomponents",
+    "branch": "master",
+    "repos": [
+      "webcomponentsjs"
+    ]
+  }
+]
