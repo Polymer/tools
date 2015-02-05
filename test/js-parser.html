@@ -8,18 +8,26 @@
 
 
   <script src="../hydrolysis.js"></script> 
-  <link rel="import" href="../examples/elements/x-firebase.html">
+  <link id="parsetarget" rel="import" href="static/html-parse-target.html">
 </head>
 <body>
   <script>
     suite('parser throws errors', function() {
       var hyd = require('hydrolysis');
+      var parseTarget = document.getElementById("parsetarget").import.documentElement.innerHTML;
+      var registry = hyd.importParse(parseTarget);
+      parseTarget = registry.script[0];
       
       test('js syntax error', function() {
-        assert.isTrue(hyd.importParse("blah") == "parsed");
+        try {
+          hyd.jsParse(parseTarget);
+        } catch (err) {
+          assert.equals(err.line, 24);
+        }
       });
 
       test('Find all polymer calls', function() {
+        assert.isTrue(hy)
       });
 
       test('All polymer calls have associated metadata', function() {
