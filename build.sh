@@ -1,0 +1,1 @@
+browserify -d -r ./index.js:hydrolysis > hydrolysis.js
