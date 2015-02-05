@@ -8,5 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 var importParse = require('./lib/importParse');
+var jsParse = require('./lib/jsParse');
 
-module.exports = {importParse: importParse}
+module.exports = {
+  importParse: importParse,
+  jsParse: jsParse
+};
