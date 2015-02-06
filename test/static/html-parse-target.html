@@ -1,23 +1,108 @@
+<template id="findme">
+  <div>Fooa</div>
+  <div>Barr</div>
+  <div>Bazz</div>
+</template>
+<template id="noelement">
+  <div>Foooo</div>
+  <div>Barrr</div>
+  <div>Bazzz</div>
+</template>
+<template id="test-element">
+  <div>Foo</div>
+  <div>Bar</div>
+  <div>Baz</div>
+</template>
+<script>
+Polymer({
+
+  is: 'test-element',
+
+  /**
+   * Fired when properties on `data` are added, removed, or modified.
+   *
+   * @event data-change
+   */
+
+  /**
+   * Fired when an error occurs on an interaction with Firebase.  The
+   * `details.error` property contains the `Error` object provided by
+   * the Firebase API.
+   *
+   * @event error
+   */
+
+  published: {
+    /**
+     * I am a string!
+     */
+    stringProp: String,
+    /**
+     * I am a number!
+     */
+    numProp: Number,
+    /**
+     * I am an object!
+     */
+    objectProp: Object,
+    /**
+     * I am an object with explicit type!
+     * @type HTMLElement
+     */
+    elementProp: Object,
+    /**
+     * I am an object with notify=true!
+     */
+    objectNotify: {
+      type: Object,
+      notify: true
+    },
+    /**
+     * I am a boolean property!
+     */
+    boolProp: Boolean
+  },
+
+  bind: {
+    numProp: 'numChanged',
+    elementProp: 'elemChanged'
+  },
+
+  numChanged: function() {
+
+  },
+
+  elemChanged: function() {
+
+  }
+  
+
+});
+
+</script>
+<!--
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!--
+ * @group Polymer Mixins
+-->
+
+<script>
 
 /**
-  `Polymer.CoreResizable` and `Polymer.CoreResizer` are a set of mixins that can be used
-  in Polymer elements to coordinate the flow of resize events between "resizers" (elements
-  that control the size or hidden state of their children) and "resizables" (elements that
-  need to be notified when they are resized or un-hidden by their parents in order to take
-  action on their new measurements).
-  Elements that perform measurement should add the `Core.Resizable` mixin to their 
-  Polymer prototype definition and listen for the `core-resize` event on themselves.
-  This event will be fired when they become showing after having been hidden,
-  when they are resized explicitly by a `CoreResizer`, or when the window has been resized.
-  Note, the `core-resize` event is non-bubbling.
-  `CoreResizable`'s must manually call the `resizableAttached` from the element's
-  `attached` callback and `resizableDetached` from the element's `detached`
-  callback.
-    @element CoreResizable
-    @status beta
-    @homepage github.io
+* A module with no dependencies
+* and some newlines
+* in
+* its
+* docstring.
 */
-  modulate('x-resizable', function() {
+  modulate('bare-module', function() {
     return {
 
       /**
@@ -59,32 +144,12 @@
 
     };
   });
-
-(function(){ 
+  
 /**
-  `Polymer.CoreResizable` and `Polymer.CoreResizer` are a set of mixins that can be used
-  in Polymer elements to coordinate the flow of resize events between "resizers" (elements
-  that control the size or hidden state of their children) and "resizables" (elements that
-  need to be notified when they are resized or un-hidden by their parents in order to take
-  action on their new measurements).
-  Elements that cause their children to be resized (e.g. a splitter control) or hide/show
-  their children (e.g. overlay) should add the `Core.CoreResizer` mixin to their 
-  Polymer prototype definition and then call `this.notifyResize()` any time the element
-  resizes or un-hides its children.
-  `CoreResizer`'s must manually call the `resizerAttached` from the element's
-  `attached` callback and `resizerDetached` from the element's `detached`
-  callback.
-  Note: `CoreResizer` extends `CoreResizable`, and can listen for the `core-resize` event
-  on itself if it needs to perform resize work on itself before notifying children.
-  In this case, returning `false` from the `core-resize` event handler (or calling
-  `preventDefault` on the event) will prevent notification of children if required.
-  @element CoreResizer
-  @extends CoreResizable
-  @status beta
-  @homepage github.io
-*/
-  modulate('x-resizer', ['Base', 'x-resizable'], function(Base, resizable) {
-    return Base.extend({
+ * A module that depends on bare-module.
+ */
+  modulate('module-depends', ['bare-module'], function(bare) {
+    return {
 
       /**
        * User must call from `attached` callback
@@ -183,23 +248,11 @@
         }
       }
 
-    }, resizable);
+    };
   });
-    }());
-    // function log(what, from, to, group) {
-    //   var args = [what];
-    //   if (from) {
-    //     args.push('from ' + from.localName + (from.id ? '#' : '') + from.id);
-    //   }
-    //   if (to) {
-    //     args.push('to ' + to.localName + (to.id ? '#' : '') + to.id);
-    //   }
-    //   if (group) {
-    //     console.group.apply(console, args);
-    //   } else {
-    //     console.log.apply(console, args);
-    //   }
-    // }
-    // function logEnd() {
-    //   console.groupEnd();
-    // }
+    
+//
+//  Toss some comments around for fun.
+//
+//
+</script>

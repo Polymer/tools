@@ -3,7 +3,8 @@
   "private": true,
   "dependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#master",
-    "polymer": "Polymer/polymer#0.8-preview"
+    "polymer": "Polymer/polymer#0.8-preview",
+    "fetch": "fetch#master"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#master"

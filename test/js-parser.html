@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script> 
   <script src="../../web-component-tester/browser.js"></script> 
+  <script src="../../fetch/fetch.js"></script> 
   <link rel="import" href="../../polymer/polymer.html">
 
 
@@ -15,28 +16,34 @@
     suite('parser throws errors', function() {
       var hyd = require('hydrolysis');
       /* Two js documents, one with an error and one with a module declaration. */
-      var modules, parseError;
-      // TODO(ajo): Replace this with a <x-ajax> or <core-ajax>
-      // Load js files for testing.
-      // This has a race condition but I don't believe it matters in practice.
-      var xhr = new XMLHttpRequest();
-      xhr.onload = function() {
-        parseError = this.responseText;
-      };
-      xhr.open("get", "static/js-parse-error.js", true);
-      xhr.send();
-      
-      xhr = new XMLHttpRequest();
-      xhr.onload = function() {
-        modules = this.responseText;
-      };
-      xhr.open("get", "static/js-modules.js", true);
-      xhr.send();
+      var parsed, parseError;
       suiteSetup(function(done) {
-        modules = hyd.jsParse(modules);
+        async.series([
+          function(cb){
+            fetch('static/js-parse-error.js')
+              .then(function(js){
+                return js.text();
+              }).then(function(text){
+                parseError = text;
+                cb();
+              });
+          },
+          function(cb){
+            fetch('static/js-modules.js')
+              .then(function(js){
+                return js.text()
+              }).then(function(text){
+                parsed = hyd.jsParse(text);
+                cb();
+              });
+          },
+          function(){
+            done();
+          }
+        ]);  
       });
+
       test('js syntax error', function() {
-        console.log(parseError);
         try {
           hyd.jsParse(parseError);
         } catch (err) {
@@ -47,7 +54,8 @@
 
 
       test('Find all modulate calls', function() {
-        assert.equal(modules.module.length == 2);
+        console.log(parsed);
+        assert.equal(parsed.modules.length, 2);
       });
 
       test('All polymer calls have associated metadata', function() {
@@ -68,6 +76,6 @@
 
 
     });
-  </script> 
+  </script>
 </body>
 </html>
