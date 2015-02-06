@@ -5,6 +5,10 @@
     "branch": "0.8-preview",
     "repos": [
       "polymer",
+      "core-icon",
+      "core-icons",
+      "core-iconset",
+      "core-iconset-svg",
       "core-overlay",
       "core-meta",
       "core-collapse",
@@ -19,6 +23,7 @@
     "branch": "master",
     "repos": [
       "observe-js",
+      "test-fixture",
       "web-component-tester"
     ]
   },
@@ -28,6 +33,14 @@
     "branch": "master",
     "repos": [
       "webcomponentsjs"
+    ]
+  },
+  {
+    "dir": "projects",
+    "org": "Polymer",
+    "branch": "0.8-preview",
+    "repos": [
+      "contacts"
     ]
   }
 ]
