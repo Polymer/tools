@@ -8,27 +8,23 @@
 
 
   <script src="../hydrolysis.js"></script> 
-  <link rel="import" href="../examples/elements/x-firebase.html">
+  <link id="parsetarget" rel="import" href="static/html-parse-target.html">
 </head>
 <body>
   <script>
-    suite('parser throws errors', function() {
+    suite('parser returns expected ASTs', function() {
       var hyd = require('hydrolysis');
-      
-      test('html syntax error', function() {
-        assert.isTrue(hyd.importParse("blah") == "parsed");
-      });
+      var parseTarget = document.getElementById("parsetarget").import.documentElement.innerHTML;
+      var registry = hyd.importParse(parseTarget);
 
       test('find all templates', function() {
-
+        assert.isDefined(registry.template, "The returned registry should find templates");
+        assert.equal(registry.template.length, 3);
       });
 
       test('find all scripts', function() {
-
-      });
-
-      test('find all styles', function() {
-
+        assert.isDefined(registry.script, "The returned registry should find templates");
+        assert.equal(registry.script.length, 3);
       });
     });
   </script> 

@@ -14,24 +14,58 @@
   <script>
     suite('parser throws errors', function() {
       var hyd = require('hydrolysis');
-      var parseTarget = document.getElementById("parsetarget").import.documentElement.innerHTML;
-      var registry = hyd.importParse(parseTarget);
-      parseTarget = registry.script[0];
+      /* Two js documents, one with an error and one with a module declaration. */
+      var modules, parseError;
+      // TODO(ajo): Replace this with a <x-ajax> or <core-ajax>
+      // Load js files for testing.
+      // This has a race condition but I don't believe it matters in practice.
+      var xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        parseError = this.responseText;
+      };
+      xhr.open("get", "static/js-parse-error.js", true);
+      xhr.send();
       
+      xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        modules = this.responseText;
+      };
+      xhr.open("get", "static/js-modules.js", true);
+      xhr.send();
+      suiteSetup(function(done) {
+        modules = hyd.jsParse(modules);
+      });
       test('js syntax error', function() {
+        console.log(parseError);
         try {
-          hyd.jsParse(parseTarget);
+          hyd.jsParse(parseError);
         } catch (err) {
-          assert.equals(err.line, 24);
+          assert.equal(err.lineNumber, 18);
+          assert.equal(err.column, 34);
         }
       });
 
-      test('Find all polymer calls', function() {
-        assert.isTrue(hy)
+
+      test('Find all modulate calls', function() {
+        assert.equal(modules.module.length == 2);
       });
 
       test('All polymer calls have associated metadata', function() {
       });
+
+
+
+      test('Find all polymer calls', function() {
+      });
+
+      test('Polymer call has a description', function() {
+      });
+
+      test('Polymer call has ', function() {
+      });
+
+      
+
 
     });
   </script> 
