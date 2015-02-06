@@ -5,13 +5,13 @@
     "branch": "0.8-preview",
     "repos": [
       "polymer",
+      "core-collapse",
       "core-icon",
       "core-icons",
       "core-iconset",
       "core-iconset-svg",
-      "core-overlay",
       "core-meta",
-      "core-collapse",
+      "core-overlay",
       "core-resizable",
       "core-selector",
       "core-toolbar"
