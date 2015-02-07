@@ -58,14 +58,30 @@
         assert.equal(parsed.modules.length, 2);
       });
 
-      test('Modulate discovers dependencies', function() {
+      test('Find all modulate dependencies', function() {
         var foundDeps = false;
         for (var i = 0; i < parsed.modules.length; i++) {
           var module = parsed.modules[i];
           if (module.is == "x-resizer") {
+            console.log(module);
             assert.equal(module.deps.length, 2);
+            foundDeps = true;
           }
         }
+        assert(foundDeps);
+      });
+
+      test('Find all modulate properties', function() {
+        var foundProps = false;
+        for (var i = 0; i < parsed.modules.length; i++) {
+          var module = parsed.modules[i];
+          if (module.is == "x-resizable") {
+            assert.equal(module.properties.length, 3);
+            assert.equal(module.properties[0].name == "resizableAttached");
+            foundProps = true;
+          }
+        }
+        assert(foundProps);
       })
 
       test('All polymer calls have associated metadata', function() {
