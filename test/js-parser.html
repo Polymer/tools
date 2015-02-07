@@ -58,6 +58,16 @@
         assert.equal(parsed.modules.length, 2);
       });
 
+      test('Modulate discovers dependencies', function() {
+        var foundDeps = false;
+        for (var i = 0; i < parsed.modules.length; i++) {
+          var module = parsed.modules[i];
+          if (module.is == "x-resizer") {
+            assert.equal(module.deps.length, 2);
+          }
+        }
+      })
+
       test('All polymer calls have associated metadata', function() {
       });
 
