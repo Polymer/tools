@@ -5,6 +5,7 @@
     "branch": "0.8-preview",
     "repos": [
       "polymer",
+      "core-ajax",
       "core-collapse",
       "core-icon",
       "core-icons",
