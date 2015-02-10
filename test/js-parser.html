@@ -82,7 +82,19 @@
           }
         }
         assert(foundProps);
-      })
+      });
+
+      test('Find all module parent', function() {
+        var foundParent = false;
+        for (var i = 0; i < parsed.modules.length; i++) {
+          var module = parsed.modules[i];
+          if (module.is == "x-resizer") {
+            assert.equal(module.extends, "x-resizable");
+            foundParent = true;
+          }
+        }
+        assert(foundParent);
+      });
 
       test('All polymer calls have associated metadata', function() {
       });
