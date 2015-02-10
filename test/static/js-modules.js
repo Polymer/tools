@@ -43,7 +43,7 @@
        *
        * @method resizableDetached
        */
-      resizableDetached: function() {
+      "resizableDetached": function() {
         this.fire('x-request-resize-cancel', null, this, false);
         if (this._boundWindowResizeHandler) {
           window.removeEventListener(this._boundResizeHandler);
@@ -53,7 +53,7 @@
       // Private: fire non-bubbling resize event to self; returns whether
       // preventDefault was called, indicating that children should not
       // be resized
-      _notifyResizeSelf: function() {
+      _notifyResizeSelf : function() {
         return this.fire('x-resize', null, this, false).defaultPrevented;
       }
 

@@ -77,7 +77,7 @@
           var module = parsed.modules[i];
           if (module.is == "x-resizable") {
             assert.equal(module.properties.length, 3);
-            assert.equal(module.properties[0].name == "resizableAttached");
+            assert.equal(module.properties[0].name, "resizableAttached");
             foundProps = true;
           }
         }
