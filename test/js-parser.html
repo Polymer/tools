@@ -6,41 +6,23 @@
   <script src="../../web-component-tester/browser.js"></script> 
   <script src="../../fetch/fetch.js"></script> 
   <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../core-asset/core-asset.html">
 
 
   <script src="../hydrolysis.js"></script> 
-  <link id="parsetarget" rel="import" href="static/html-parse-target.html">
 </head>
 <body>
+  <core-asset id="parsetarget" href="static/html-parse-target.html"></core-asset>
+  <core-asset id="parseerror" href="static/js-parse-error.js"></core-asset>
+  <core-asset id="modules" href="static/js-modules.js"></core-asset>
   <script>
+    var hyd = require('hydrolysis');
     suite('parser throws errors', function() {
-      var hyd = require('hydrolysis');
       /* Two js documents, one with an error and one with a module declaration. */
-      var parsed, parseError;
+      var parseError;
       suiteSetup(function(done) {
-        async.series([
-          function(cb){
-            fetch('static/js-parse-error.js')
-              .then(function(js){
-                return js.text();
-              }).then(function(text){
-                parseError = text;
-                cb();
-              });
-          },
-          function(cb){
-            fetch('static/js-modules.js')
-              .then(function(js){
-                return js.text()
-              }).then(function(text){
-                parsed = hyd.jsParse(text);
-                cb();
-              });
-          },
-          function(){
-            done();
-          }
-        ]);  
+        parseError = document.querySelector("#parseerror").content;
+        done();
       });
 
       test('js syntax error', function() {
@@ -52,6 +34,12 @@
         }
       });
 
+    });
+    suite('module metadata', function(){
+      var parsed;
+      suiteSetup(function() {
+        parsed = hyd.jsParse(document.querySelector("#modules").content);
+      }
 
       test('Find all modulate calls', function() {
         console.log(parsed);
