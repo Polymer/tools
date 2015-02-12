@@ -17,7 +17,8 @@
       "core-pages",
       "core-resizable",
       "core-selector",
-      "core-toolbar"
+      "core-toolbar",
+      "paper-ripple"
     ]
   },
   {
