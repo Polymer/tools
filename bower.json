@@ -8,6 +8,7 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#master"
   },
   "devDependencies": {
-    "web-component-tester": "Polymer/web-component-tester#master"
+    "web-component-tester": "Polymer/web-component-tester#master",
+    "designer2": "PolymerLabs/designer2#master"
   }
 }

@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../hydrolysis.js"></script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../core-asset/core-asset.html">
+  <script src="../../fetch/fetch.js"></script>
+
+</head>
+<body>
+  <core-asset
+    id="play"
+    href="../../designer2/elements/designer-playground/designer-playground.html">
+  </core-asset>
+  <core-asset
+    id="select"
+    href="../../designer2/elements/designer-selection/designer-selection.html">
+  </core-asset>
+  <core-asset
+    id="stage"
+    href="../../designer2/elements/designer-stage/designer-stage.html">
+  </core-asset>
+  <script>
+  window.setTimeout(function(){
+    "use strict";
+    var textarea = document.querySelector("textarea");
+    var hyd = require('hydrolysis');
+    var parse5 = hyd.parse5;
+    var play = document.querySelector("#play").content;
+    var select = document.querySelector("#select").content;
+    var stage = document.querySelector("#stage").content;
+    function displayMetadata(content) {
+      var parsed = hyd.importParse(content);
+      for (var i = 0; i < parsed.script.length; i++) {
+        var script = parsed.script[i];
+        var inline = true;
+        var src;
+        // Check for inline script.
+        for (var j = 0; j < script.attrs.length; j++) {
+          var attr = script.attrs[i];
+          if (attr.name == "src") {
+            inline = false;
+            src = attr.value;
+          }
+        }
+        var parsedJs;
+        if (inline) {
+          parsedJs = hyd.jsParse(script.childNodes[0].value);
+          document.body.innerHTML += "<pre>" + JSON.stringify(parsedJs, null, '  ') + "</pre>";
+        } else {
+          // var asset = document.createElement('core-asset');
+          // asset.href=src;
+          // asset.addEventListener('content-loaded', function(e) {
+          //   debugger;
+          // })
+          // // body.appendChil
+          // parsedJs = hyd.jsParse()
+        }
+      }
+    }
+    displayMetadata(play);
+    displayMetadata(select);
+    displayMetadata(stage);
+  }, 1000);
+  </script>
+</body>
+</html>

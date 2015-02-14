@@ -9,8 +9,12 @@
  */
 var importParse = require('./lib/importParse');
 var jsParse = require('./lib/jsParse');
+var hydrolyze = require('./lib/hydrolyze');
+var parse5 = require('parse5');
 
 module.exports = {
+  hydrolyze: hydrolyze,
   importParse: importParse,
-  jsParse: jsParse
+  jsParse: jsParse,
+  parse5: parse5
 };
