@@ -7,14 +7,15 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-var importParse = require('./lib/importParse');
-var jsParse = require('./lib/jsParse');
-var hydrolyze = require('./lib/hydrolyze');
-var parse5 = require('parse5');
+(function(context){
+  "use strict"
+  var importParse = require('./lib/importParse');
+  var jsParse = require('./lib/jsParse');
+  var hydrolyze = require('./lib/hydrolyze');
 
-module.exports = {
-  hydrolyze: hydrolyze,
-  importParse: importParse,
-  jsParse: jsParse,
-  parse5: parse5
-};
+  context.exports = {
+    hydrolyze: hydrolyze,
+    importParse: importParse,
+    jsParse: jsParse
+  };
+}(module))
