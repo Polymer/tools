@@ -11,10 +11,8 @@
   "use strict"
   var importParse = require('./lib/importParse');
   var jsParse = require('./lib/jsParse');
-  var hydrolyze = require('./lib/hydrolyze');
 
   context.exports = {
-    hydrolyze: hydrolyze,
     importParse: importParse,
     jsParse: jsParse
   };
