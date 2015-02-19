@@ -53,6 +53,7 @@
     "org": "PolymerLabs",
     "branch": "master",
     "repos": [
+      "core-asset",
       "designer2",
       "hydrolysis"
     ]
