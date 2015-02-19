@@ -46,5 +46,22 @@
     "repos": [
       "contacts"
     ]
+  },
+    {
+    "dir": "components",
+    "org": "PolymerLabs",
+    "branch": "master",
+    "repos": [
+      "designer2",
+      "hydrolysis"
+    ]
+  },
+  {
+    "dir": "components",
+    "org": "nevir",
+    "branch": "0.8-preview",
+    "repos": [
+      "core-doc-viewer"
+    ]
   }
 ]
