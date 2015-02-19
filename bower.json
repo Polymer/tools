@@ -1,13 +1,11 @@
 {
   "name": "hydrolysis",
   "private": true,
-  "dependencies": {
-    "core-asset": "PolymerLabs/core-asset#master",
-    "fetch": "fetch#master",
-    "polymer": "Polymer/polymer#0.8-preview",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#master"
-  },
   "devDependencies": {
+    "core-asset": "PolymerLabs/core-asset#master",
+    "designer2": "PolymerLabs/designer2#master",
+    "polymer": "Polymer/polymer#0.8-preview",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#master",
     "web-component-tester": "*"
   }
 }
