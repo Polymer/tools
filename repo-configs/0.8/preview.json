@@ -7,6 +7,7 @@
       "polymer",
       "core-ajax",
       "core-collapse",
+      "core-doc-viewer",
       "core-icon",
       "core-icons",
       "core-iconset",
@@ -54,14 +55,6 @@
     "repos": [
       "designer2",
       "hydrolysis"
-    ]
-  },
-  {
-    "dir": "components",
-    "org": "nevir",
-    "branch": "0.8-preview",
-    "repos": [
-      "core-doc-viewer"
     ]
   }
 ]
