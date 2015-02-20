@@ -13,4 +13,8 @@ module.exports = {
   importParse: require('./lib/importParse'),
   jsdoc:       require('./lib/jsdoc'),
   jsParse:     require('./lib/jsParse'),
+  loader:      require('./lib/file-loader'),
+  fsResolver:  require('./lib/fs-resolver'),
+  urlResolver: require('./lib/url-resolver'),
+  xhrResolver: require('./lib/xhr-resolver')
 };
