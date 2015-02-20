@@ -7,6 +7,7 @@
       "polymer",
       "core-ajax",
       "core-collapse",
+      "core-doc-viewer",
       "core-icon",
       "core-icons",
       "core-iconset",
@@ -46,6 +47,16 @@
     "branch": "0.8-preview",
     "repos": [
       "contacts"
+    ]
+  },
+    {
+    "dir": "components",
+    "org": "PolymerLabs",
+    "branch": "master",
+    "repos": [
+      "core-asset",
+      "designer2",
+      "hydrolysis"
     ]
   }
 ]
