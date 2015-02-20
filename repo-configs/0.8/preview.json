@@ -26,6 +26,7 @@
     "org": "Polymer",
     "branch": "master",
     "repos": [
+      "layout",
       "observe-js",
       "test-fixture",
       "web-component-tester"
