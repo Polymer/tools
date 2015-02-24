@@ -15,7 +15,8 @@
   "main": "index.js",
   "scripts": {
     "build": "browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
-    "watch": "watchify   -d -r ./index.js:hydrolysis -o hydrolysis.js"
+    "watch": "watchify   -d -r ./index.js:hydrolysis -o hydrolysis.js",
+    "lint":  "jshint lib/"
   },
   "devDependencies": {
     "browserify": "^8.1.3",
