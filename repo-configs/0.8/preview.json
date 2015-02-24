@@ -18,7 +18,8 @@
       "core-resizable",
       "core-selector",
       "core-toolbar",
-      "paper-ripple"
+      "paper-ripple",
+      "paper-shadow"
     ]
   },
   {
