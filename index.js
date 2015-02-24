@@ -10,6 +10,7 @@
 'use strict';
 
 module.exports = {
+  hydrolyze:   require('./lib/hydrolyze'),
   importParse: require('./lib/importParse'),
   jsdoc:       require('./lib/jsdoc'),
   jsParse:     require('./lib/jsParse'),
