@@ -7,6 +7,7 @@
       "polymer",
       "core-ajax",
       "core-collapse",
+      "core-drawer-panel",
       "core-icon",
       "core-icons",
       "core-iconset",
