@@ -53,7 +53,7 @@ requireSelenium(function(selenium) {
   selenium.install(config, function(error) {
     if (error) {
       console.log(error);
-      proess.exit(1);
+      process.exit(1);
     }
   });
 });
