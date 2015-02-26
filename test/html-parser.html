@@ -2,20 +2,24 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script> 
-  <script src="../../web-component-tester/browser.js"></script> 
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
   <link rel="import" href="../../polymer/polymer.html">
 
 
-  <script src="../hydrolysis.js"></script> 
+  <script src="../hydrolysis.js"></script>
   <link id="parsetarget" rel="import" href="static/html-parse-target.html">
 </head>
 <body>
   <script>
     suite('parser returns expected ASTs', function() {
       var hyd = require('hydrolysis');
-      var parseTarget = document.getElementById("parsetarget").import.documentElement.innerHTML;
-      var registry = hyd.importParse(parseTarget);
+      var parseTarget, registry;
+
+      setup(function(){
+        parseTarget = document.getElementById("parsetarget").import.documentElement.innerHTML;
+        registry = hyd.importParse(parseTarget);
+      });
 
       test('find all templates', function() {
         assert.isDefined(registry.template, "The returned registry should find templates");
@@ -27,6 +31,6 @@
         assert.equal(registry.script.length, 2);
       });
     });
-  </script> 
+  </script>
 </body>
 </html>

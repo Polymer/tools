@@ -11,18 +11,28 @@
   <script src="../hydrolysis.js"></script>
 </head>
 <body>
-  <core-asset id="parsetarget" href="static/html-parse-target.html"></core-asset>
   <core-asset id="parseerror" href="static/js-parse-error.js"></core-asset>
   <core-asset id="modules" href="static/js-modules.js"></core-asset>
   <core-asset id="elements" href="static/js-elements.js"></core-asset>
   <script>
     var hyd = require('hydrolysis');
+    var pe = document.querySelector("#parseerror");
+    var mod = document.querySelector("#modules");
+    var ele = document.querySelector("#elements");
+
     suite('parser throws errors', function() {
       /* Two js documents, one with an error and one with a module declaration. */
       var parseError;
-      suiteSetup(function(done) {
-        parseError = document.querySelector("#parseerror").content;
-        done();
+      setup(function(done) {
+        if (!pe.loaded) {
+          pe.addEventListener('content-loaded', function() {
+            parseError = pe.content;
+            done();
+          });
+        } else {
+          parseError = pe.content;
+          done();
+        }
       });
 
       test('js syntax error', function() {
@@ -37,8 +47,18 @@
 
     suite('module metadata', function(){
       var parsed;
-      suiteSetup(function() {
-        parsed = hyd.jsParse(document.querySelector("#modules").content);
+      setup(function(done) {
+        if (mod.loaded) {
+          parsed = hyd.jsParse(mod.content);
+          console.log("modmetadata")
+          done();
+        } else {
+          mod.addEventListener('content-loaded', function() {
+            parsed = hyd.jsParse(mod.content);
+            console.log("loaded");
+            done();
+          });
+        }
       });
 
       test('Find all modulate calls', function() {
@@ -87,17 +107,23 @@
 
     suite('element metadata', function(){
       var parsed;
-      suiteSetup(function() {
-        parsed = hyd.jsParse(document.querySelector("#elements").content);
+      setup(function(done) {
+        if (!ele.loaded) {
+          ele.addEventListener('content-loaded', function() {
+            parsed = hyd.jsParse(ele.content);
+            done();
+          });
+        } else {
+          parsed = hyd.jsParse(ele.content);
+          done();
+        }
       });
 
       test('Find all Polymer calls', function() {
-        console.log(parsed);
         assert.equal(parsed.elements.length, 2);
       });
 
       test('Polymer elements are named', function() {
-        console.log(parsed);
         assert.equal(parsed.elements[0].is, 'test-element');
         assert.equal(parsed.elements[1].is, 'x-firebase');
       });

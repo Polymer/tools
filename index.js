@@ -11,11 +11,11 @@
 
 module.exports = {
   hydrolyze:   require('./lib/hydrolyze'),
-  importParse: require('./lib/importParse'),
-  jsdoc:       require('./lib/jsdoc'),
-  jsParse:     require('./lib/jsParse'),
-  loader:      require('./lib/file-loader'),
-  fsResolver:  require('./lib/fs-resolver'),
-  urlResolver: require('./lib/url-resolver'),
-  xhrResolver: require('./lib/xhr-resolver')
+  importParse: require('./lib/ast-utils/import-parse'),
+  jsdoc:       require('./lib/ast-utils/jsdoc'),
+  jsParse:     require('./lib/ast-utils/js-parse'),
+  loader:      require('./lib/loader/file-loader'),
+  fsResolver:  require('./lib/loader/fs-resolver'),
+  urlResolver: require('./lib/loader/url-resolver'),
+  xhrResolver: require('./lib/loader/xhr-resolver')
 };
