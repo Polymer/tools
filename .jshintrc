@@ -1,4 +1,5 @@
 {
   "browserify": true,
-  "node":       true
+  "node":       true,
+  "boss":       true
 }

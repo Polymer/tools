@@ -10,12 +10,13 @@
 'use strict';
 
 module.exports = {
+  docs:        require('./lib/ast-utils/docs'),
+  fsResolver:  require('./lib/loader/fs-resolver'),
   hydrolyze:   require('./lib/hydrolyze'),
   importParse: require('./lib/ast-utils/import-parse'),
   jsdoc:       require('./lib/ast-utils/jsdoc'),
   jsParse:     require('./lib/ast-utils/js-parse'),
   loader:      require('./lib/loader/file-loader'),
-  fsResolver:  require('./lib/loader/fs-resolver'),
   urlResolver: require('./lib/loader/url-resolver'),
   xhrResolver: require('./lib/loader/xhr-resolver')
 };
