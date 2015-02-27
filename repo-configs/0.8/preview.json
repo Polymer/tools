@@ -21,7 +21,8 @@
       "core-selector",
       "core-toolbar",
       "paper-ripple",
-      "paper-shadow"
+      "paper-shadow",
+      "paper-tabs"
     ]
   },
   {
