@@ -13,6 +13,7 @@
       "core-icons",
       "core-iconset",
       "core-iconset-svg",
+      "core-image",
       "core-media-query",
       "core-meta",
       "core-overlay",
@@ -20,6 +21,7 @@
       "core-resizable",
       "core-selector",
       "core-toolbar",
+      "paper-elements",
       "paper-ripple",
       "paper-shadow",
       "paper-tabs"
