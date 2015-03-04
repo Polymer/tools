@@ -29,38 +29,25 @@
     var play = document.querySelector("#play").content;
     var select = document.querySelector("#select").content;
     var stage = document.querySelector("#stage").content;
-    function displayMetadata(content) {
-      var parsed = hyd.importParse(content);
-      for (var i = 0; i < parsed.script.length; i++) {
-        var script = parsed.script[i];
-        var inline = true;
-        var src;
-        // Check for inline script.
-        for (var j = 0; j < script.attrs.length; j++) {
-          var attr = script.attrs[i];
-          if (attr.name == "src") {
-            inline = false;
-            src = attr.value;
-          }
-        }
-        var parsedJs;
-        if (inline) {
-          parsedJs = hyd.jsParse(script.childNodes[0].value);
-          document.body.innerHTML += "<pre>" + JSON.stringify(parsedJs, null, '  ') + "</pre>";
-        } else {
-          // var asset = document.createElement('core-asset');
-          // asset.href=src;
-          // asset.addEventListener('content-loaded', function(e) {
-          //   debugger;
-          // })
-          // // body.appendChil
-          // parsedJs = hyd.jsParse()
-        }
+    function displayMetadata(content, url, loader) {
+      function render(content) {
+        debugger;
+        content = JSON.stringify(content, null, '  ');
+        content = content.replace(/</g,"&lt;");
+        content = content.replace(/>/g,"&gt;");
+        document.body.innerHTML += "<pre>" + content + "</pre>";
       }
+      if (url) {
+        hyd.hydrolyze(content, false, url, loader).then(render);
+      } else {
+        hyd.hydrolyze(content).then(render);
+      }
+
     }
-    displayMetadata(play);
-    displayMetadata(select);
-    displayMetadata(stage);
+    var loader = new hyd.loader({host: document.querySelector('#stage').hostname});
+    loader.addResolver(new hyd.xhrResolver());
+
+    displayMetadata(stage, document.querySelector('#stage').url.href, loader);
   }, 1000);
   </script>
 </body>
