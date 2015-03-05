@@ -1,0 +1,15 @@
+{
+  "name": "parse5-utils",
+  "version": "0.0.0",
+  "description": "Utilities for working with parse5 ASTs",
+  "private": true,
+  "license": {
+    "type": "BSD-3-Clause",
+    "url": "http://polymer.github.io/LICENSE.txt"
+  },
+  "devDependencies": {
+    "chai": "^1.9.2",
+    "mocha": "^2.0.1",
+    "parse5": "^1.4.0"
+  }
+}
