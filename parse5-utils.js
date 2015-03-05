@@ -9,28 +9,30 @@
  */
 
 function getAttributeIndex(element, name) {
-  for (var i = 0; i < pathLib.attrs.length; i++) {
-    if (element.attrs[i].name == name) {
-      return i;
+  if (element.attrs) {
+    for (var i = 0; i < element.attrs.length; i++) {
+      if (element.attrs[i].name == name) {
+        return i;
+      }
     }
   }
-  return null;
+  return -1;
 }
 
 function getAttribute(element, name) {
   var i = getAttributeIndex(element, name);
-  if (i) {
-    return element.attrs[i].value;      
+  if (i > -1) {
+    return element.attrs[i].value;
   }
   return null;
 }
 
 function setAttribute(element, name, value) {
   var i = getAttributeIndex(element, name);
-  if (i) {
+  if (i > -1) {
     element.attrs[i].value = value;
   } else {
-    pathLib.attrs.push({name: name, value: value});
+    element.attrs.push({name: name, value: value});
   }
 }
 
