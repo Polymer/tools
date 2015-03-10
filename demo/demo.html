@@ -10,24 +10,14 @@
 </head>
 <body>
   <core-asset
-    id="play"
-    href="../../designer2/elements/designer-playground/designer-playground.html">
-  </core-asset>
-  <core-asset
-    id="select"
-    href="../../designer2/elements/designer-selection/designer-selection.html">
-  </core-asset>
-  <core-asset
     id="stage"
-    href="../../designer2/elements/designer-stage/designer-stage.html">
+    href="../../polymer/polymer.html">
   </core-asset>
   <script>
   window.setTimeout(function(){
     "use strict";
     var textarea = document.querySelector("textarea");
     var hyd = require('hydrolysis');
-    var play = document.querySelector("#play").content;
-    var select = document.querySelector("#select").content;
     var stage = document.querySelector("#stage").content;
     function displayMetadata(content, url, loader) {
       function render(content) {
