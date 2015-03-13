@@ -1,5 +1,5 @@
 {
-  "name": "parse5-utils",
+  "name": "dom5",
   "version": "0.0.0",
   "description": "Utilities for working with parse5 ASTs",
   "private": true,
@@ -14,5 +14,23 @@
     "chai": "^2.1.1",
     "mocha": "^2.0.1",
     "parse5": "^1.4.0"
-  }
+  },
+  "main": "dom5.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "parse5": "^1.4.1",
+    "css": "^2.2.0",
+    "chai": "^2.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PolymerLabs/dom5.git"
+  },
+  "author": "The Polymer Authors",
+  "bugs": {
+    "url": "https://github.com/PolymerLabs/dom5/issues"
+  },
+  "homepage": "https://github.com/PolymerLabs/dom5"
 }
