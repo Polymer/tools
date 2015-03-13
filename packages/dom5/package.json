@@ -8,10 +8,11 @@
     "url": "http://polymer.github.io/LICENSE.txt"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha --ui tdd"
+    "test": "node_modules/.bin/jshint --verbose *.js test/*.js && node_modules/.bin/mocha --ui tdd"
   },
   "devDependencies": {
     "chai": "^2.1.1",
+    "jshint": "^2.6.3",
     "mocha": "^2.0.1",
     "parse5": "^1.4.0"
   },

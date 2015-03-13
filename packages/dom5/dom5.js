@@ -9,6 +9,7 @@
  */
 
 // jshint node: true
+'use strict';
 
 function getAttributeIndex(element, name) {
   var n = name.toLowerCase();
