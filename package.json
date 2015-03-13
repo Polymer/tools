@@ -19,11 +19,6 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "parse5": "^1.4.1",
-    "css": "^2.2.0",
-    "chai": "^2.1.1"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/PolymerLabs/dom5.git"
