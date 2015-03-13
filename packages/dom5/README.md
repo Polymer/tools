@@ -1,3 +1,3 @@
-# parse5-utils
+# dom5
 
 Utilities for using parse5
