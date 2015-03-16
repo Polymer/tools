@@ -216,7 +216,9 @@ suite('dom5', function() {
       '<dom-module id="my-el">',
       '<template>',
       '<img src="foo.jpg">',
-      '<a href="next-page.html">',
+      '<a href="next-page.html">Anchor</a>',
+      'sample element',
+      '<!-- comment node -->',
       '</template>',
       '</dom-module>',
       '<script>Polymer({is: "my-el"})</script>'
@@ -227,6 +229,33 @@ suite('dom5', function() {
       doc = parser.parse(docText);
     });
 
+    test('nodeWalk', function() {
+      var textNode = function(node) {
+        if (node.nodeName === '#text') {
+          return node.value === '\nsample element\n';
+        }
+        return false;
+      };
+
+      var comment = function(node) {
+        return node.nodeName === '#comment';
+      };
+
+      // doc -> body -> dom-module -> template -> template.content
+      var templateContent = doc.childNodes[1].childNodes[1].childNodes[0]
+      .childNodes[1].childNodes[0];
+
+      // 'sample element' text node
+      var expected = templateContent.childNodes[4];
+      var actual = dom5.nodeWalk(doc, textNode);
+      assert.equal(expected, actual);
+
+      // <!-- comment node -->
+      expected = templateContent.childNodes[5];
+      actual = dom5.nodeWalk(templateContent, comment);
+      assert.equal(expected, actual);
+    });
+
     test('query', function() {
       var fn = dom5.predicates.AND(
         dom5.predicates.hasTagName('link'),
@@ -235,6 +264,24 @@ suite('dom5', function() {
       );
       var expected = doc.childNodes[1].childNodes[0].childNodes[0];
       var actual = dom5.query(doc, fn);
+      assert.equal(expected, actual);
+    });
+
+    test('nodeWalkAll', function() {
+      var empty = function(node) {
+        if (node.nodeName === '#text') {
+          return !/\S/.test(node.value);
+        }
+        return false;
+      };
+
+      // serialize to count for inserted <head> and <body>
+      var serializedDoc = (new Parse5.Serializer()).serialize(doc);
+      // subtract one to get "gap" number
+      var expected = serializedDoc.split('\n').length - 1;
+      // add two for normalized text node "\nsample text\n"
+      var actual = dom5.nodeWalkAll(doc, empty).length + 2;
+
       assert.equal(expected, actual);
     });
 
