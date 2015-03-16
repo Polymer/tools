@@ -21,6 +21,14 @@ function getAttributeIndex(element, name) {
   return -1;
 }
 
+/**
+ * @returns {boolean} `true` iff [element] has the attribute [name], `false`
+ *   otherwise.
+ */
+function hasAttribute(element, name) {
+  return getAttributeIndex(element, name) !== -1;
+}
+
 function getAttribute(element, name) {
   var i = getAttributeIndex(element, name);
   if (i > -1) {
@@ -149,6 +157,7 @@ function queryAll(node, predicate, matches) {
 
 module.exports = {
   getAttribute: getAttribute,
+  hasAttribute: hasAttribute,
   setAttribute: setAttribute,
   isElement: isElement,
   query: query,

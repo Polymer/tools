@@ -1,3 +1,13 @@
+/**
+ * @license
+ * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+
 var chai = require('chai');
 var Parse5 = require('parse5');
 var dom5 = require('../dom5');
@@ -7,7 +17,7 @@ var parser = new Parse5.Parser();
 
 suite('dom5', function() {
 
-  var docText = "<!DOCTYPE html><div id='A'>a1<div bar='b1' bar='b2'>b1</div>a2</div>";
+  var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div>";
   var doc = null;
 
   setup(function () {
@@ -35,6 +45,37 @@ suite('dom5', function() {
       var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
       assert.throws(function () {
         dom5.getAttribute(text, 'bar');
+      });
+    });
+
+  });
+
+  suite('hasAttribute', function() {
+
+    test('returns false for a non-set attribute', function() {
+      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+      assert.equal(dom5.hasAttribute(divA, 'foo'), false);
+    });
+
+    test('returns true for a set attribute', function() {
+      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+      assert.equal(dom5.hasAttribute(divA, 'id'), true);
+    });
+
+    test('returns true for a doubly set attribute', function() {
+      var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
+      assert.equal(dom5.hasAttribute(divB, 'bar'), true);
+    });
+
+    test('returns true for attribute with no value', function() {
+      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+      assert.equal(dom5.hasAttribute(divA, 'qux'), true);
+    });
+
+    test('throws when called on a text node', function() {
+      var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
+      assert.throws(function () {
+        dom5.hasAttribute(text, 'bar');
       });
     });
 
