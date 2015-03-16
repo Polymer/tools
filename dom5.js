@@ -29,6 +29,9 @@ function hasAttribute(element, name) {
   return getAttributeIndex(element, name) !== -1;
 }
 
+/**
+ * @returns {string|null} The string value of attribute `name`, or `null`.
+ */
 function getAttribute(element, name) {
   var i = getAttributeIndex(element, name);
   if (i > -1) {
@@ -124,14 +127,21 @@ function isElement(node) {
   return node.nodeName === node.tagName;
 }
 
-function query(node, predicate) {
-  if (isElement(node) && predicate(node)) {
+/**
+ * Walk the tree down from `node`, applying the `predicate` function.
+ * Return the first node that matches the given predicate.
+ *
+ * @returns {Node} `null` if no node matches, parse5 node object if a node
+ * matches
+ */
+function nodeWalk(node, predicate) {
+  if (predicate(node)) {
     return node;
   }
   var match = null;
   if (node.childNodes) {
     for (var i = 0; i < node.childNodes.length; i++) {
-      match = query(node.childNodes[i], predicate);
+      match = nodeWalk(node.childNodes[i], predicate);
       if (match) {
         break;
       }
@@ -140,19 +150,46 @@ function query(node, predicate) {
   return match;
 }
 
-function queryAll(node, predicate, matches) {
+/**
+ * Walk the tree down from `node`, applying the `predicate` function.
+ * All nodes matching the predicate function from `node` to leaves will be
+ * returned.
+ *
+ * @returns {Array[Node]}
+ */
+function nodeWalkAll(node, predicate, matches) {
   if (!matches) {
     matches = [];
   }
-  if (isElement(node) && predicate(node)) {
+  if (predicate(node)) {
     matches.push(node);
   }
   if (node.childNodes) {
     for (var i = 0; i < node.childNodes.length; i++) {
-      queryAll(node.childNodes[i], predicate, matches);
+      nodeWalkAll(node.childNodes[i], predicate, matches);
     }
   }
   return matches;
+}
+
+/**
+ * Equivalent to `nodeWalk`, but only matches elements
+ *
+ * @returns {Element}
+ */
+function query(node, predicate) {
+  var elementPredicate = AND(isElement, predicate);
+  return nodeWalk(node, elementPredicate);
+}
+
+/**
+ * Equivalent to `nodeWalkAll`, but only matches elements
+ *
+ * @return {Array[Element]}
+ */
+function queryAll(node, predicate, matches) {
+  var elementPredicate = AND(isElement, predicate);
+  return nodeWalkAll(node, elementPredicate, matches);
 }
 
 module.exports = {
@@ -162,6 +199,8 @@ module.exports = {
   isElement: isElement,
   query: query,
   queryAll: queryAll,
+  nodeWalk: nodeWalk,
+  nodeWalkAll: nodeWalkAll,
   predicates: {
     hasClass: hasClass,
     hasAttr: hasAttr,
