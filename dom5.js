@@ -49,6 +49,13 @@ function setAttribute(element, name, value) {
   }
 }
 
+function removeAttribute(element, name) {
+  var i = getAttributeIndex(element, name);
+  if (i > -1) {
+    element.attrs.splice(i, 1);
+  }
+}
+
 function hasTagName(name) {
   var n = name.toLowerCase();
   return function(node) {
@@ -63,6 +70,44 @@ function hasClass(name) {
       return false;
     }
     return attr.split(' ').indexOf(name) > -1;
+  };
+}
+
+/**
+ * Normalize the text inside an element
+ *
+ * Equivalent to `element.textContent` in the browser
+ */
+function normalizeTextContent(node) {
+  var text = '';
+  if (isElement(node)) {
+    for (var i = 0, cn; i < node.childNodes.length; i++) {
+      cn = node.childNodes[i];
+      if (!isTextNode(cn)) {
+        continue;
+      }
+      text += cn.value;
+    }
+  }
+  return text;
+}
+
+/**
+ * Match the text inside an element, textnode, or comment
+ *
+ * Note: nodeWalkAll with hasTextValue may return an textnode and its parent if
+ * the textnode is the only child in that parent.
+ */
+function hasTextValue(value) {
+  return function(node) {
+    if (isElement(node)) {
+      return normalizeTextContent(node) === value;
+    } else if (isTextNode(node)) {
+      return node.value === value;
+    } else if (isCommentNode(node)) {
+      return node.data === value;
+    }
+    return false;
   };
 }
 
@@ -125,6 +170,14 @@ function hasAttrValue(attr, value) {
 
 function isElement(node) {
   return node.nodeName === node.tagName;
+}
+
+function isTextNode(node) {
+  return node.nodeName === '#text';
+}
+
+function isCommentNode(node) {
+  return node.nodeName === '#comment';
 }
 
 /**
@@ -192,11 +245,41 @@ function queryAll(node, predicate, matches) {
   return nodeWalkAll(node, elementPredicate, matches);
 }
 
+function newTextNode(value) {
+  return {
+    nodeName: '#text',
+    value: value,
+    parentNode: null
+  };
+}
+
+function newCommentNode(comment) {
+  return {
+    nodeName: '#comment',
+    data: comment,
+    parentNode: null
+  };
+}
+
+function newElement(tagName, namespace) {
+  return {
+    nodeName: tagName,
+    tagName: tagName,
+    childNodes: [],
+    namespaceURI: namespace || 'http://www.w3.org/1999/xhtml',
+    attrs: [],
+    parentNode: null,
+  };
+}
+
 module.exports = {
   getAttribute: getAttribute,
   hasAttribute: hasAttribute,
   setAttribute: setAttribute,
+  removeAttribute: removeAttribute,
   isElement: isElement,
+  isTextNode: isTextNode,
+  isCommentNode: isCommentNode,
   query: query,
   queryAll: queryAll,
   nodeWalk: nodeWalk,
@@ -206,8 +289,14 @@ module.exports = {
     hasAttr: hasAttr,
     hasAttrValue: hasAttrValue,
     hasTagName: hasTagName,
+    hasTextValue: hasTextValue,
     AND: AND,
     OR: OR,
     NOT: NOT
+  },
+  constructors: {
+    text: newTextNode,
+    comment: newCommentNode,
+    element: newElement
   }
 };

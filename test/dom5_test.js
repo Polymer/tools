@@ -17,11 +17,28 @@ var parser = new Parse5.Parser();
 
 suite('dom5', function() {
 
-  var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div>";
+  var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
   var doc = null;
 
   setup(function () {
     doc = parser.parse(docText);
+  });
+
+  suite('Node Identity', function() {
+    test('isElement', function() {
+      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+      assert(dom5.isElement(divA));
+    });
+
+    test('isTextNode', function() {
+      var textA1 = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
+      assert(dom5.isTextNode(textA1));
+    });
+
+    test('isCommentNode', function() {
+      var commentEnd = doc.childNodes[1].childNodes[1].childNodes.slice(-1)[0];
+      assert(dom5.isCommentNode(commentEnd));
+    });
   });
 
   suite('getAttribute', function() {
@@ -108,10 +125,26 @@ suite('dom5', function() {
       });
     });
 
+    suite('removeAttribute', function() {
+
+      test('removes a set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        dom5.removeAttribute(divA, 'foo');
+        assert.equal(dom5.getAttribute(divA, 'foo'), null);
+      });
+
+      test('does not throw when called on a node without that attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        assert.doesNotThrow(function() {
+          dom5.removeAttribute(divA, 'ZZZ');
+        });
+      });
+    });
+
   });
 
   suite('Query Predicates', function() {
-    var fragText = '<div id="a" class="b c"></div>';
+    var fragText = '<div id="a" class="b c"><!-- nametag -->Hello World</div>';
     var frag = null;
     suiteSetup(function() {
       frag = parser.parseFragment(fragText).childNodes[0];
@@ -155,6 +188,17 @@ suite('dom5', function() {
       assert.isTrue(fn(frag));
       fn = dom5.predicates.hasClass('d');
       assert.isFalse(fn(frag));
+    });
+
+    test('hasTextValue', function() {
+      var fn = dom5.predicates.hasTextValue('Hello World');
+      assert.isFunction(fn);
+      assert.isTrue(fn(frag));
+      var textNode = frag.childNodes[1];
+      assert.isTrue(fn(textNode));
+      var commentNode = frag.childNodes[0];
+      fn = dom5.predicates.hasTextValue(' nametag ');
+      assert.isTrue(fn(commentNode));
     });
 
     test('AND', function() {
@@ -230,20 +274,14 @@ suite('dom5', function() {
     });
 
     test('nodeWalk', function() {
-      var textNode = function(node) {
-        if (node.nodeName === '#text') {
-          return node.value === '\nsample element\n';
-        }
-        return false;
-      };
-
-      var comment = function(node) {
-        return node.nodeName === '#comment';
-      };
-
       // doc -> body -> dom-module -> template -> template.content
       var templateContent = doc.childNodes[1].childNodes[1].childNodes[0]
       .childNodes[1].childNodes[0];
+
+      var textNode = dom5.predicates.AND(
+        dom5.isTextNode,
+        dom5.predicates.hasTextValue('\nsample element\n')
+      );
 
       // 'sample element' text node
       var expected = templateContent.childNodes[4];
@@ -252,7 +290,7 @@ suite('dom5', function() {
 
       // <!-- comment node -->
       expected = templateContent.childNodes[5];
-      actual = dom5.nodeWalk(templateContent, comment);
+      actual = dom5.nodeWalk(templateContent, dom5.isCommentNode);
       assert.equal(expected, actual);
     });
 
@@ -268,12 +306,12 @@ suite('dom5', function() {
     });
 
     test('nodeWalkAll', function() {
-      var empty = function(node) {
-        if (node.nodeName === '#text') {
+      var empty = dom5.predicates.AND(
+        dom5.isTextNode,
+        function(node) {
           return !/\S/.test(node.value);
         }
-        return false;
-      };
+      );
 
       // serialize to count for inserted <head> and <body>
       var serializedDoc = (new Parse5.Serializer()).serialize(doc);
@@ -309,6 +347,30 @@ suite('dom5', function() {
       assert.equal(actual.length, 2);
       assert.equal(expected_1, actual[0]);
       assert.equal(expected_2, actual[1]);
+    });
+  });
+
+  suite('Constructors', function() {
+
+    test('text node', function() {
+      var node = dom5.constructors.text('test');
+      assert.isTrue(dom5.isTextNode(node));
+      var fn = dom5.predicates.hasTextValue('test');
+      assert.equal(dom5.nodeWalk(node, fn), node);
+    });
+
+    test('comment node', function() {
+      var node = dom5.constructors.comment('test');
+      assert.isTrue(dom5.isCommentNode(node));
+      var fn = dom5.predicates.hasTextValue('test');
+      assert.equal(dom5.nodeWalk(node, fn), node);
+    });
+
+    test('element', function() {
+      var node = dom5.constructors.element('div');
+      assert.isTrue(dom5.isElement(node));
+      var fn = dom5.predicates.hasTagName('div');
+      assert.equal(dom5.query(node, fn), node);
     });
   });
 
