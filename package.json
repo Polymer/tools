@@ -1,0 +1,22 @@
+{
+  "name": "polyserve",
+  "version": "0.0.0",
+  "description": "A simple dev server",
+  "private": true,
+  "license": {
+    "type": "BSD-3-Clause",
+    "url": "http://polymer.github.io/LICENSE.txt"
+  },
+  "main": "main.js",
+  "bin": {
+    "polyserve": "bin/polyserve"
+  },
+  "scripts": {
+    "start": "./bin/polyserve"
+  },
+  "dependencies": {
+    "express": "^4.8.5",
+    "resolve": "^1.0.0",
+    "send": "^0.10.1"
+  }
+}
