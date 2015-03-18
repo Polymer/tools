@@ -37,6 +37,8 @@
       "layout",
       "font-roboto",
       "observe-js",
+      "quick-element",
+      "paper-card",
       "test-fixture",
       "web-component-tester"
     ]
