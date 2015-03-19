@@ -7,8 +7,7 @@ from `./bower_components/`.
 
 ## Installation
 
-    npm install
-    npm link
+    npm install polyserve -g
 
 ## Usage
 
