@@ -15,37 +15,49 @@ var path = require('path');
 var parseUrl = require('url').parse;
 var send = require('send');
 
-function startServer(port) {
+function makeApp(componentDir, packageName) {
+  componentDir = componentDir || 'bower_components';
+
+  if (packageName == null) {
+    var bowerFile = fs.readFileSync('bower.json');
+    var bowerJson = JSON.parse(bowerFile);
+    packageName = bowerJson.name;
+  }
+
+  console.log('Serving components from ' + componentDir);
+
+  var app = express();
+  app.get('*', function (req, res) {
+    // Serve local files from . and other components from bower_components
+    var url = parseUrl(req.url, true);
+    var splitPath = url.pathname.split(path.sep).slice(1);
+    splitPath = splitPath[0] == packageName
+       ? splitPath.slice(1)
+       : [componentDir].concat(splitPath);
+    var filePath = splitPath.join(path.sep);
+    console.log(filePath);
+    send(req, filePath).pipe(res);
+  });
+  app.polyservePackageName = packageName;
+  return app;
+}
+
+function startServer(port, componentDir, packageName) {
   port = port || 8080;
   console.log('Starting Polyserve on port ' + port);
 
   var app = express();
-  var server = http.createServer(app);
 
-  var bowerFile = fs.readFileSync('bower.json');
-  var bowerJson = JSON.parse(bowerFile);
-  var bowerPackageName = bowerJson.name;
-  var bowerComponentDir = 'bower_components';
+  app.use('/components/', makeApp(componentDir, packageName));
 
   console.log('Files in this directory are available at localhost:' +
-      port + '/components/' + bowerPackageName + '/...');
+      port + '/components/' + app.polyservePackageName + '/...');
 
-  app.get('/component/*', function (req, res) {
-
-    // Serve local files from . and other components from bower_components
-    var url = parseUrl(req.url, true);
-    var splitPath = url.pathname.split(path.sep).slice(2);
-    splitPath = splitPath[0] == bowerPackageName
-       ? splitPath.slice(1)
-       : [bowerComponentDir].concat(splitPath);
-    var filePath = splitPath.join(path.sep);
-
-    send(req, filePath).pipe(res);
-  });
-
+  var server = http.createServer(app);
   server = app.listen(port);
 }
 
 module.exports = {
-  startServer: startServer
+  makeApp: makeApp,
+  startServer: startServer,
 };

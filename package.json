@@ -1,8 +1,7 @@
 {
   "name": "polyserve",
-  "version": "0.0.0",
-  "description": "A simple dev server",
-  "private": true,
+  "version": "0.2.0",
+  "description": "A simple dev server for bower components",
   "license": {
     "type": "BSD-3-Clause",
     "url": "http://polymer.github.io/LICENSE.txt"
