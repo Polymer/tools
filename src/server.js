@@ -35,7 +35,6 @@ function makeApp(componentDir, packageName) {
        ? splitPath.slice(1)
        : [componentDir].concat(splitPath);
     var filePath = splitPath.join(path.sep);
-    console.log(filePath);
     send(req, filePath).pipe(res);
   });
   app.polyservePackageName = packageName;
