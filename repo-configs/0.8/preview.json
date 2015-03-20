@@ -22,6 +22,7 @@
       "core-resizable",
       "core-selector",
       "core-toolbar",
+      "marked-element",
       "paper-elements",
       "paper-ripple",
       "paper-shadow",
