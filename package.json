@@ -13,8 +13,7 @@
   "devDependencies": {
     "chai": "^2.1.1",
     "jshint": "^2.6.3",
-    "mocha": "^2.0.1",
-    "parse5": "^1.4.0"
+    "mocha": "^2.0.1"
   },
   "main": "dom5.js",
   "directories": {
@@ -28,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/PolymerLabs/dom5/issues"
   },
-  "homepage": "https://github.com/PolymerLabs/dom5"
+  "homepage": "https://github.com/PolymerLabs/dom5",
+  "dependencies": {
+    "parse5": "^1.4.1"
+  }
 }
