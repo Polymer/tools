@@ -17,6 +17,7 @@ module.exports = {
   jsdoc:       require('./lib/ast-utils/jsdoc'),
   jsParse:     require('./lib/ast-utils/js-parse'),
   loader:      require('./lib/loader/file-loader'),
+  monomers:    require('./lib/monomers'),
   urlResolver: require('./lib/loader/url-resolver'),
   xhrResolver: require('./lib/loader/xhr-resolver')
 };
