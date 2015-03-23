@@ -15,7 +15,16 @@ var path = require('path');
 var parseUrl = require('url').parse;
 var send = require('send');
 
-function makeApp(componentDir, packageName) {
+/**
+ * Make a polyserve express app.
+ * @param  {string} componentDir The directory to serve components from.
+ * @param  {string} packageName  A name for this polyserve package.
+ * @param  {Object} headers      An object keyed by header name containing
+ *                               header values.
+ * @return {Object}              An express app which can be served with
+ *                               `app.get`
+ */
+function makeApp(componentDir, packageName, headers) {
   componentDir = componentDir || 'bower_components';
 
   if (packageName == null) {
@@ -35,6 +44,11 @@ function makeApp(componentDir, packageName) {
        ? splitPath.slice(1)
        : [componentDir].concat(splitPath);
     var filePath = splitPath.join(path.sep);
+    if (headers) {
+      for (header in headers) {
+        res.append(header, headers[header]);
+      }
+    }
     send(req, filePath).pipe(res);
   });
   app.polyservePackageName = packageName;
