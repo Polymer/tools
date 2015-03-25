@@ -18,5 +18,7 @@ module.exports = {
   Monomers:     require('./lib/monomers'),
   NoopResolver: require('./lib/loader/noop-resolver'),
   URLResolver:  require('./lib/loader/url-resolver'),
-  XHRResolver:  require('./lib/loader/xhr-resolver')
+  XHRResolver:  require('./lib/loader/xhr-resolver'),
+  _jsParse:     require('./lib/ast-utils/js-parse'),
+  _importParse:     require('./lib/ast-utils/import-parse')
 };

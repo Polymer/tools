@@ -37,7 +37,7 @@
 
       test('js syntax error', function() {
         try {
-          hyd.jsParse(parseError);
+          hyd._jsParse(parseError);
         } catch (err) {
           assert.equal(err.lineNumber, 18);
           assert.equal(err.column, 34);
@@ -49,12 +49,12 @@
       var parsed;
       setup(function(done) {
         if (mod.loaded) {
-          parsed = hyd.jsParse(mod.content);
+          parsed = hyd._jsParse(mod.content);
           console.log("modmetadata")
           done();
         } else {
           mod.addEventListener('content-loaded', function() {
-            parsed = hyd.jsParse(mod.content);
+            parsed = hyd._jsParse(mod.content);
             console.log("loaded");
             done();
           });
@@ -110,11 +110,11 @@
       setup(function(done) {
         if (!ele.loaded) {
           ele.addEventListener('content-loaded', function() {
-            parsed = hyd.jsParse(ele.content);
+            parsed = hyd._jsParse(ele.content);
             done();
           });
         } else {
-          parsed = hyd.jsParse(ele.content);
+          parsed = hyd._jsParse(ele.content);
           done();
         }
       });

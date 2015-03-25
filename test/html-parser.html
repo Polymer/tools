@@ -18,7 +18,7 @@
 
       setup(function(){
         parseTarget = document.getElementById("parsetarget").import.documentElement.innerHTML;
-        registry = hyd.importParse(parseTarget);
+        registry = hyd._importParse(parseTarget);
       });
 
       test('find all templates', function() {
