@@ -9,145 +9,184 @@
  */
 
 var chai = require('chai');
-var Parse5 = require('parse5');
 var dom5 = require('../dom5');
 
 var assert = chai.assert;
-var parser = new Parse5.Parser();
 
 suite('dom5', function() {
 
-  var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
-  var doc = null;
+  suite('Parse5 Wrapper Functions', function() {
+    var parse5 = require('parse5');
+    var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
+    var fragText = '<template><span>Foo</span></template><!-- comment --><my-bar></my-bar>';
+    var parser = new parse5.Parser();
 
-  setup(function () {
-    doc = parser.parse(docText);
-  });
+    test('parse', function() {
+      var doc_expected = parser.parse(docText);
+      var doc_actual = dom5.parse(docText);
 
-  suite('Node Identity', function() {
-    test('isElement', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      assert(dom5.isElement(divA));
+      assert.deepEqual(doc_expected, doc_actual);
     });
 
-    test('isTextNode', function() {
-      var textA1 = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
-      assert(dom5.isTextNode(textA1));
+    test('parseFragment', function() {
+      var frag_expected = parser.parseFragment(fragText);
+      var frag_actual = dom5.parseFragment(fragText);
+
+      assert.deepEqual(frag_expected, frag_actual);
     });
 
-    test('isCommentNode', function() {
-      var commentEnd = doc.childNodes[1].childNodes[1].childNodes.slice(-1)[0];
-      assert(dom5.isCommentNode(commentEnd));
-    });
-  });
+    test('serialize', function() {
+      var serializer = new parse5.Serializer();
 
-  suite('getAttribute', function() {
+      var ast = parser.parse(docText);
+      var expected = serializer.serialize(ast);
+      var actual = dom5.serialize(ast);
 
-    test('returns null for a non-set attribute', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      assert.equal(dom5.getAttribute(divA, 'foo'), null);
-    });
+      assert.equal(expected, actual);
 
-    test('returns the value for a set attribute', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      assert.equal(dom5.getAttribute(divA, 'id'), 'A');
-    });
+      ast = parser.parseFragment(fragText);
+      expected = serializer.serialize(ast);
+      actual = dom5.serialize(ast);
 
-    test('returns the first value for a doubly set attribute', function() {
-      var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
-      assert.equal(dom5.getAttribute(divB, 'bar'), 'b1');
-    });
-
-    test('throws when called on a text node', function() {
-      var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
-      assert.throws(function () {
-        dom5.getAttribute(text, 'bar');
-      });
+      assert.equal(expected, actual);
     });
 
   });
 
-  suite('hasAttribute', function() {
+  suite('Parse5 Node Manipulation', function() {
 
-    test('returns false for a non-set attribute', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      assert.equal(dom5.hasAttribute(divA, 'foo'), false);
+    var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
+    var doc = null;
+
+    setup(function () {
+      doc = dom5.parse(docText);
     });
 
-    test('returns true for a set attribute', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      assert.equal(dom5.hasAttribute(divA, 'id'), true);
-    });
-
-    test('returns true for a doubly set attribute', function() {
-      var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
-      assert.equal(dom5.hasAttribute(divB, 'bar'), true);
-    });
-
-    test('returns true for attribute with no value', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      assert.equal(dom5.hasAttribute(divA, 'qux'), true);
-    });
-
-    test('throws when called on a text node', function() {
-      var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
-      assert.throws(function () {
-        dom5.hasAttribute(text, 'bar');
-      });
-    });
-
-  });
-
-  suite('setAttribute', function() {
-
-    test('sets a non-set attribute', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      dom5.setAttribute(divA, 'foo', 'bar');
-      assert.equal(dom5.getAttribute(divA, 'foo'), 'bar');
-    });
-
-    test('sets and already set attribute', function() {
-      var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-      dom5.setAttribute(divA, 'id', 'qux');
-      assert.equal(dom5.getAttribute(divA, 'id'), 'qux');
-    });
-
-    test('sets the first value for a doubly set attribute', function() {
-      var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
-      dom5.setAttribute(divB, 'bar', 'baz');
-      assert.equal(dom5.getAttribute(divB, 'bar'), 'baz');
-    });
-
-    test('throws when called on a text node', function() {
-      var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
-      assert.throws(function () {
-        dom5.setAttribute(text, 'bar', 'baz');
-      });
-    });
-
-    suite('removeAttribute', function() {
-
-      test('removes a set attribute', function() {
+    suite('Node Identity', function() {
+      test('isElement', function() {
         var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-        dom5.removeAttribute(divA, 'foo');
+        assert(dom5.isElement(divA));
+      });
+
+      test('isTextNode', function() {
+        var textA1 = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
+        assert(dom5.isTextNode(textA1));
+      });
+
+      test('isCommentNode', function() {
+        var commentEnd = doc.childNodes[1].childNodes[1].childNodes.slice(-1)[0];
+        assert(dom5.isCommentNode(commentEnd));
+      });
+    });
+
+    suite('getAttribute', function() {
+
+      test('returns null for a non-set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
       });
 
-      test('does not throw when called on a node without that attribute', function() {
+      test('returns the value for a set attribute', function() {
         var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-        assert.doesNotThrow(function() {
-          dom5.removeAttribute(divA, 'ZZZ');
+        assert.equal(dom5.getAttribute(divA, 'id'), 'A');
+      });
+
+      test('returns the first value for a doubly set attribute', function() {
+        var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
+        assert.equal(dom5.getAttribute(divB, 'bar'), 'b1');
+      });
+
+      test('throws when called on a text node', function() {
+        var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
+        assert.throws(function () {
+          dom5.getAttribute(text, 'bar');
         });
       });
+
     });
 
+    suite('hasAttribute', function() {
+
+      test('returns false for a non-set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        assert.equal(dom5.hasAttribute(divA, 'foo'), false);
+      });
+
+      test('returns true for a set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        assert.equal(dom5.hasAttribute(divA, 'id'), true);
+      });
+
+      test('returns true for a doubly set attribute', function() {
+        var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
+        assert.equal(dom5.hasAttribute(divB, 'bar'), true);
+      });
+
+      test('returns true for attribute with no value', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        assert.equal(dom5.hasAttribute(divA, 'qux'), true);
+      });
+
+      test('throws when called on a text node', function() {
+        var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
+        assert.throws(function () {
+          dom5.hasAttribute(text, 'bar');
+        });
+      });
+
+    });
+
+    suite('setAttribute', function() {
+
+      test('sets a non-set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        dom5.setAttribute(divA, 'foo', 'bar');
+        assert.equal(dom5.getAttribute(divA, 'foo'), 'bar');
+      });
+
+      test('sets and already set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        dom5.setAttribute(divA, 'id', 'qux');
+        assert.equal(dom5.getAttribute(divA, 'id'), 'qux');
+      });
+
+      test('sets the first value for a doubly set attribute', function() {
+        var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
+        dom5.setAttribute(divB, 'bar', 'baz');
+        assert.equal(dom5.getAttribute(divB, 'bar'), 'baz');
+      });
+
+      test('throws when called on a text node', function() {
+        var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
+        assert.throws(function () {
+          dom5.setAttribute(text, 'bar', 'baz');
+        });
+      });
+
+      suite('removeAttribute', function() {
+
+        test('removes a set attribute', function() {
+          var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+          dom5.removeAttribute(divA, 'foo');
+          assert.equal(dom5.getAttribute(divA, 'foo'), null);
+        });
+
+        test('does not throw when called on a node without that attribute', function() {
+          var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+          assert.doesNotThrow(function() {
+            dom5.removeAttribute(divA, 'ZZZ');
+          });
+        });
+      });
+
+    });
   });
 
   suite('Query Predicates', function() {
     var fragText = '<div id="a" class="b c"><!-- nametag -->Hello World</div>';
     var frag = null;
     suiteSetup(function() {
-      frag = parser.parseFragment(fragText).childNodes[0];
+      frag = dom5.parseFragment(fragText).childNodes[0];
     });
 
     test('hasTagName', function() {
@@ -216,7 +255,7 @@ suite('dom5', function() {
     });
 
     test('OR', function() {
-       var preds = [
+      var preds = [
         dom5.predicates.hasTagName('div'),
         dom5.predicates.hasAttr('hidden')
       ];
@@ -226,31 +265,31 @@ suite('dom5', function() {
       preds.shift();
       fn = dom5.predicates.OR.apply(null, preds);
       assert.isFalse(fn(frag));
-   });
+    });
 
-   test('NOT', function() {
-     var pred = dom5.predicates.hasTagName('a');
-     var fn = dom5.predicates.NOT(pred);
-     assert.isFunction(fn);
-     assert.isTrue(fn(frag));
-     assert.isFalse(pred(frag));
-   });
+    test('NOT', function() {
+      var pred = dom5.predicates.hasTagName('a');
+      var fn = dom5.predicates.NOT(pred);
+      assert.isFunction(fn);
+      assert.isTrue(fn(frag));
+      assert.isFalse(pred(frag));
+    });
 
-   test('Chaining Predicates', function() {
-     var fn = dom5.predicates.AND(
-       dom5.predicates.hasTagName('div'),
-       dom5.predicates.OR(
-         dom5.predicates.hasClass('b'),
-         dom5.predicates.hasClass('d')
-       ),
-       dom5.predicates.NOT(
-         dom5.predicates.hasAttr('hidden')
-       )
-     );
+    test('Chaining Predicates', function() {
+      var fn = dom5.predicates.AND(
+        dom5.predicates.hasTagName('div'),
+        dom5.predicates.OR(
+          dom5.predicates.hasClass('b'),
+          dom5.predicates.hasClass('d')
+        ),
+        dom5.predicates.NOT(
+          dom5.predicates.hasAttr('hidden')
+        )
+      );
 
-     assert.isFunction(fn);
-     assert.isTrue(fn(frag));
-   });
+      assert.isFunction(fn);
+      assert.isTrue(fn(frag));
+    });
   });
 
   suite('Query', function() {
@@ -270,7 +309,7 @@ suite('dom5', function() {
     var doc = null;
 
     setup(function() {
-      doc = parser.parse(docText);
+      doc = dom5.parse(docText);
     });
 
     test('nodeWalk', function() {
@@ -314,7 +353,7 @@ suite('dom5', function() {
       );
 
       // serialize to count for inserted <head> and <body>
-      var serializedDoc = (new Parse5.Serializer()).serialize(doc);
+      var serializedDoc = dom5.serialize(doc);
       // subtract one to get "gap" number
       var expected = serializedDoc.split('\n').length - 1;
       // add two for normalized text node "\nsample text\n"

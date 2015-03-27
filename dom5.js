@@ -272,6 +272,22 @@ function newElement(tagName, namespace) {
   };
 }
 
+var parse5 = require('parse5');
+var parser = new parse5.Parser();
+var serializer = new parse5.Serializer();
+
+function parse(text) {
+  return parser.parse(text);
+}
+
+function parseFragment(text) {
+  return parser.parseFragment(text);
+}
+
+function serialize(ast) {
+  return serializer.serialize(ast);
+}
+
 module.exports = {
   getAttribute: getAttribute,
   hasAttribute: hasAttribute,
@@ -298,5 +314,8 @@ module.exports = {
     text: newTextNode,
     comment: newCommentNode,
     element: newElement
-  }
+  },
+  parse: parse,
+  parseFragment: parseFragment,
+  serialize: serialize
 };
