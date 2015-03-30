@@ -73,23 +73,83 @@ function hasClass(name) {
   };
 }
 
+function collapseTextRange(parent, start, end) {
+  var text = '';
+  for (var i = start; i <= end; i++) {
+    text += getTextContent(parent.childNodes[i]);
+  }
+  parent.childNodes.splice(start, (end - start) + 1);
+  if (text) {
+    var tn = newTextNode(text);
+    tn.parentNode = parent;
+    parent.childNodes.splice(start, 0, tn);
+  }
+}
+
 /**
  * Normalize the text inside an element
  *
- * Equivalent to `element.textContent` in the browser
+ * Equivalent to `element.normalize()` in the browser
+ * See https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize
  */
-function normalizeTextContent(node) {
-  var text = '';
-  if (isElement(node)) {
-    for (var i = 0, cn; i < node.childNodes.length; i++) {
-      cn = node.childNodes[i];
-      if (!isTextNode(cn)) {
-        continue;
+function normalize(node) {
+  if (!(isElement(node) || isDocument(node) || isDocumentFragment(node))) {
+    return;
+  }
+  var textRangeStart = -1;
+  for (var i = node.childNodes.length - 1, n; i >= 0; i--) {
+    n = node.childNodes[i];
+    if (isTextNode(n)) {
+      if (textRangeStart == -1) {
+        textRangeStart = i;
       }
-      text += cn.value;
+      if (i === 0) {
+        // collapse leading text nodes
+        collapseTextRange(node, 0, textRangeStart);
+      }
+    } else {
+      // recurse
+      normalize(n);
+      // collapse the range after this node
+      if (textRangeStart > -1) {
+        collapseTextRange(node, i + 1, textRangeStart);
+        textRangeStart = -1;
+      }
     }
   }
-  return text;
+}
+
+/**
+ * Return the text value of a node or element
+ *
+ * Equivalent to `node.textContent` in the browser
+ */
+function getTextContent(node) {
+  if (isCommentNode(node)) {
+    return node.data;
+  }
+  if (isTextNode(node)) {
+    return node.value;
+  }
+  var subtree = nodeWalkAll(node, isTextNode);
+  return subtree.map(getTextContent).join('');
+}
+
+/**
+ * Set the text value of a node or element
+ *
+ * Equivalent to `node.textContent = value` in the browser
+ */
+function setTextContent(node, value) {
+  if (isCommentNode(node)) {
+    node.data = value;
+  } else if (isTextNode(node)) {
+    node.value = value;
+  } else {
+    var tn = newTextNode(value);
+    tn.parentNode = node;
+    node.childNodes = [tn];
+  }
 }
 
 /**
@@ -100,14 +160,7 @@ function normalizeTextContent(node) {
  */
 function hasTextValue(value) {
   return function(node) {
-    if (isElement(node)) {
-      return normalizeTextContent(node) === value;
-    } else if (isTextNode(node)) {
-      return node.value === value;
-    } else if (isCommentNode(node)) {
-      return node.data === value;
-    }
-    return false;
+    return getTextContent(node) === value;
   };
 }
 
@@ -166,6 +219,14 @@ function hasAttrValue(attr, value) {
   return function(node) {
     return getAttribute(node, attr) === value;
   };
+}
+
+function isDocument(node) {
+  return node.nodeName === '#document';
+}
+
+function isDocumentFragment(node) {
+  return node.nodeName === '#document-fragment';
 }
 
 function isElement(node) {
@@ -293,6 +354,11 @@ module.exports = {
   hasAttribute: hasAttribute,
   setAttribute: setAttribute,
   removeAttribute: removeAttribute,
+  getTextContent: getTextContent,
+  setTextContent: setTextContent,
+  normalize: normalize,
+  isDocument: isDocument,
+  isDocumentFragment: isDocumentFragment,
   isElement: isElement,
   isTextNode: isTextNode,
   isCommentNode: isCommentNode,
