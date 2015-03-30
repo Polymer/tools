@@ -251,9 +251,77 @@ suite('dom5', function() {
         assert.equal(actual, expected);
         assert.equal(body.childNodes.length, 1);
       });
-
     });
 
+    suite('Remove node', function() {
+      test('node is removed from parentNode', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        var parent = divA.parentNode;
+        dom5.remove(divA);
+        assert.equal(divA.parentNode, null);
+        assert.equal(parent.childNodes.indexOf(divA), -1);
+      });
+
+      test('removed nodes do not throw', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        dom5.remove(divA);
+        dom5.remove(divA);
+        assert.equal(divA.parentNode, null);
+      });
+    });
+
+    suite('Append Node', function() {
+      var dom, div, span;
+
+      setup(function() {
+        dom = dom5.parseFragment('<div>a</div><span></span>b');
+        div = dom.childNodes[0];
+        span = dom.childNodes[1];
+      });
+
+      test('node is only in one parent', function() {
+        var b = dom.childNodes.slice(-1)[0];
+        dom5.append(span, b);
+        assert.equal(b.parentNode, span);
+        assert.equal(dom.childNodes.indexOf(b), -1);
+      });
+
+      test('node is appended to the end of childNodes', function() {
+        var bidx = dom.childNodes.length - 1;
+        var b = dom.childNodes[bidx];
+        dom5.append(div, b);
+        bidx = div.childNodes.length - 1;
+        assert.equal(div.childNodes[bidx], b);
+      });
+
+      test('a node that is appended to its current parent is reordered', function() {
+        var bidx = dom.childNodes.length - 1;
+        var b = dom.childNodes[bidx];
+        var a = div.childNodes[0];
+        dom5.append(div, b);
+        dom5.append(div, a);
+        assert.equal(div.childNodes[0], b);
+        assert.equal(div.childNodes[1], a);
+      });
+    });
+
+    suite('InsertBefore', function() {
+      var dom, div, span, a;
+
+      setup(function() {
+        dom = dom5.parseFragment('<div></div><span></span>a');
+        div = dom.childNodes[0];
+        span = dom.childNodes[1];
+        a = dom.childNodes[2];
+      });
+
+      test('ordering is correct', function() {
+        dom5.insertBefore(dom, span, a);
+        assert.equal(dom.childNodes.indexOf(a), 1);
+        dom5.insertBefore(dom, div, a);
+        assert.equal(dom.childNodes.indexOf(a), 0);
+      });
+    });
   });
 
   suite('Query Predicates', function() {
@@ -490,11 +558,6 @@ suite('dom5', function() {
   suite('Text Normalization', function() {
     var con = dom5.constructors;
 
-    function append(parent, node) {
-      node.parentNode = parent;
-      parent.childNodes.push(node);
-    }
-
     test('normalizing text nodes or comment nodes is a noop', function() {
       var tn = con.text('test');
       var cn = con.comment('test2');
@@ -509,8 +572,8 @@ suite('dom5', function() {
       var div = con.element('div');
       var tn1 = con.text('foo');
       var tn2 = con.text('bar');
-      append(div, tn1);
-      append(div, tn2);
+      dom5.append(div, tn1);
+      dom5.append(div, tn2);
 
       var expected = dom5.getTextContent(div);
       assert.equal(expected, 'foobar');
@@ -527,10 +590,10 @@ suite('dom5', function() {
       var tn2 = con.text('bar');
       var cn = con.comment('combobreaker');
       var tn3 = con.text('quux');
-      append(div, tn1);
-      append(div, tn2);
-      append(div, cn);
-      append(div, tn3);
+      dom5.append(div, tn1);
+      dom5.append(div, tn2);
+      dom5.append(div, cn);
+      dom5.append(div, tn3);
 
       var expected = dom5.getTextContent(div);
       assert.equal(expected, 'foobarquux');
@@ -547,7 +610,7 @@ suite('dom5', function() {
     test('empty text nodes are removed', function() {
       var div = con.element('div');
       var tn = con.text('');
-      append(div, tn);
+      dom5.append(div, tn);
 
       assert.equal(div.childNodes.length, 1);
       dom5.normalize(div);
@@ -558,14 +621,14 @@ suite('dom5', function() {
       var div = con.element('div');
       var tn1 = con.text('foo');
       var space = con.text('');
-      append(div, tn1);
-      append(div, space);
+      dom5.append(div, tn1);
+      dom5.append(div, space);
       var span = con.element('span');
       var tn2 = con.text('bar');
       var tn3 = con.text('baz');
-      append(span, tn2);
-      append(span, tn3);
-      append(div, span);
+      dom5.append(span, tn2);
+      dom5.append(span, tn3);
+      dom5.append(div, span);
 
       assert.equal(dom5.getTextContent(div), 'foobarbaz');
 
@@ -581,15 +644,15 @@ suite('dom5', function() {
       var div = con.element('div');
       var tn1 = con.text('foo');
       var space = con.text('');
-      append(div, tn1);
-      append(div, space);
+      dom5.append(div, tn1);
+      dom5.append(div, space);
       var span = con.element('span');
       var tn2 = con.text('bar');
       var tn3 = con.text('baz');
-      append(span, tn2);
-      append(span, tn3);
-      append(div, span);
-      append(body, div);
+      dom5.append(span, tn2);
+      dom5.append(span, tn3);
+      dom5.append(div, span);
+      dom5.append(body, div);
 
       assert.equal(dom5.getTextContent(doc), 'foobarbaz');
       dom5.normalize(doc);
