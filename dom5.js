@@ -333,6 +333,28 @@ function newElement(tagName, namespace) {
   };
 }
 
+function remove(node) {
+  var parent = node.parentNode;
+  if (parent) {
+    var idx = parent.childNodes.indexOf(node);
+    parent.childNodes.splice(idx, 1);
+  }
+  node.parentNode = null;
+}
+
+function insertBefore(parent, oldNode, newNode) {
+  remove(newNode);
+  var idx = parent.childNodes.indexOf(oldNode);
+  parent.childNodes.splice(idx, 0, newNode);
+  newNode.parentNode = parent;
+}
+
+function append(parent, node) {
+  remove(node);
+  parent.childNodes.push(node);
+  node.parentNode = parent;
+}
+
 var parse5 = require('parse5');
 var parser = new parse5.Parser();
 var serializer = new parse5.Serializer();
@@ -356,6 +378,9 @@ module.exports = {
   removeAttribute: removeAttribute,
   getTextContent: getTextContent,
   setTextContent: setTextContent,
+  remove: remove,
+  append: append,
+  insertBefore: insertBefore,
   normalize: normalize,
   isDocument: isDocument,
   isDocumentFragment: isDocumentFragment,
