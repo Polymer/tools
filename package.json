@@ -35,6 +35,6 @@
     "request": "^2.53.0",
     "send": "^0.10.1",
     "setimmediate": "^1.0.2",
-    "substratum": "^0.1.1"
+    "substratum": "^0.1.2"
   }
 }

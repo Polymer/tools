@@ -10,6 +10,7 @@
 'use strict';
 
 module.exports = {
+  Analyzer:     require('./lib/analyzer'),
   docs:         require('./lib/ast-utils/docs'),
   FSResolver:   require('./lib/loader/fs-resolver'),
   hydrolyze:    require('./lib/hydrolyze'),
