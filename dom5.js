@@ -356,18 +356,18 @@ function append(parent, node) {
 }
 
 var parse5 = require('parse5');
-var parser = new parse5.Parser();
-var serializer = new parse5.Serializer();
-
 function parse(text) {
+  var parser = new parse5.Parser();
   return parser.parse(text);
 }
 
 function parseFragment(text) {
+  var parser = new parse5.Parser();
   return parser.parseFragment(text);
 }
 
 function serialize(ast) {
+  var serializer = new parse5.Serializer();
   return serializer.serialize(ast);
 }
 
