@@ -24,6 +24,7 @@
       "core-toolbar",
       "marked-element",
       "paper-elements",
+      "paper-item",
       "paper-ripple",
       "paper-shadow",
       "paper-spinner",
