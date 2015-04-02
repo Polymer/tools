@@ -12,7 +12,7 @@
 var assert = require('chai').assert;
 
 suite('Loader', function() {
-  var loader = require('../lib/file-loader.js');
+  var loader = require('../lib/loader/file-loader.js');
   var l;
 
   beforeEach(function() {
@@ -37,7 +37,7 @@ suite('Loader', function() {
     var p = l.request('/');
     var p2 = l.request('/');
     assert.equal(p, p2);
-    assert.equal(l.requests.size, 1);
+    assert.equal(Object.keys(l.requests).length, 1);
   });
 
   test('Null Resolver', function(done) {
@@ -50,7 +50,7 @@ suite('Loader', function() {
   });
 
   suite('Filesystem Resolver', function() {
-    var fsResolver = require('../lib/fs-resolver.js');
+    var fsResolver = require('../lib/loader/fs-resolver.js');
 
     test('fs api', function() {
       var fs = new fsResolver({});
@@ -101,40 +101,4 @@ suite('Loader', function() {
     });
   });
 
-  suite('URL Resolver', function() {
-    var urlResolver = require('../lib/url-resolver.js');
-
-    beforeEach(function() {
-      var url = new urlResolver({
-        host: 'www.polymer-project.org'
-      });
-      l.addResolver(url);
-    });
-
-    test('api', function() {
-      var url = new urlResolver();
-      assert.ok(url.accept);
-    });
-
-    test('absolute url', function(done) {
-      l.request('http://www.polymer-project.org/index.html').then(function(content) {
-        assert.ok(content);
-      }).then(done, done);
-    });
-
-    test('https absolute url', function(done) {
-      l.request('https://www.polymer-project.org/index.html').then(function(content) {
-        assert.ok(content);
-      }).then(done, done);
-    });
-
-    test('wrong host', function(done) {
-      l.request('http://www.example.com/index.html').then(function(){
-        throw 'should not get here';
-      }, function(err) {
-        assert.equal(err, 'no resolver found');
-      }).then(done, done);
-    });
-
-  });
 });
