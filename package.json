@@ -13,6 +13,10 @@
     "url": "https://github.com/PolymerLabs/hydrolysis.git"
   },
   "main": "index.js",
+  "files": [
+    "index.js",
+    "lib/"
+  ],
   "scripts": {
     "build": "browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js",
