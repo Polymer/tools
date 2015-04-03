@@ -10,10 +10,10 @@
 
 var express = require('express');
 var fs = require('fs');
-var http = require('http');
 var path = require('path');
 var parseUrl = require('url').parse;
 var send = require('send');
+var bowerConfig = require('./bower_config');
 
 /**
  * Make a polyserve express app.
@@ -26,12 +26,7 @@ var send = require('send');
  */
 function makeApp(componentDir, packageName, headers) {
   componentDir = componentDir || 'bower_components';
-
-  if (packageName == null) {
-    var bowerFile = fs.readFileSync('bower.json');
-    var bowerJson = JSON.parse(bowerFile);
-    packageName = bowerJson.name;
-  }
+  packageName = packageName || bowerConfig().name;
 
   console.log('Serving components from ' + componentDir);
 
@@ -51,26 +46,8 @@ function makeApp(componentDir, packageName, headers) {
     }
     send(req, filePath).pipe(res);
   });
-  app.polyservePackageName = packageName;
+  app.packageName = packageName;
   return app;
 }
 
-function startServer(port, componentDir, packageName) {
-  port = port || 8080;
-  console.log('Starting Polyserve on port ' + port);
-
-  var app = express();
-
-  app.use('/components/', makeApp(componentDir, packageName));
-
-  console.log('Files in this directory are available at localhost:' +
-      port + '/components/' + app.polyservePackageName + '/...');
-
-  var server = http.createServer(app);
-  server = app.listen(port);
-}
-
-module.exports = {
-  makeApp: makeApp,
-  startServer: startServer,
-};
+module.exports = makeApp;

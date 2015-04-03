@@ -8,11 +8,13 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
+
 var resolve = require('resolve');
+var argv = require('minimist')(process.argv);
 
 process.title = 'polyserve';
 
 resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
   var polyserve = path ? require(path) : require('..');
-  polyserve.startServer();
+  polyserve.startServer(argv.p);
 });
