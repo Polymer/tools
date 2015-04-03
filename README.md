@@ -19,3 +19,7 @@ from `./bower_components/`.
 ### Browse files
 
 Navigate to `localhost:8080/components/my-element/demo.html`
+
+### Options
+
+  * `-p` The TCP port to use for the web server
