@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "express": "^4.8.5",
+    "minimist": "^1.1.1",
     "resolve": "^1.0.0",
     "send": "^0.10.1"
   }
