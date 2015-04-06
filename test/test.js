@@ -10,6 +10,7 @@
 
 // jshint node:true
 var assert = require('chai').assert;
+var path = require('path');
 
 suite('Loader', function() {
   var loader = require('../lib/loader/file-loader.js');
@@ -58,7 +59,9 @@ suite('Loader', function() {
     });
 
     test('absolute url', function(done) {
-      var fs = new fsResolver({});
+      var fs = new fsResolver({
+        root: path.join(__dirname, '..')
+      });
       l.addResolver(fs);
       l.request('/test/static/xhr-text.txt').then(function(content) {
         assert.equal(content.trim(), 'Hello!');
@@ -67,7 +70,8 @@ suite('Loader', function() {
 
     test('host', function(done) {
       var fs = new fsResolver({
-        host: 'www.example.com'
+        host: 'www.example.com',
+        root: path.join(__dirname, '..')
       });
       l.addResolver(fs);
       l.request('http://www.example.com/test/static/xhr-text.txt').then(function(content) {
@@ -99,6 +103,30 @@ suite('Loader', function() {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
+  });
+
+  suite('Noop Resolver', function() {
+    var NoopResolver = require('../lib/loader/noop-resolver.js');
+
+    test('loader api', function() {
+      var noop = new NoopResolver();
+      assert.ok(noop.accept);
+    });
+
+    test('accepts a regex', function() {
+      var noop = new NoopResolver(/./);
+      var actual = noop.accept('foo', {resolve:function(){}});
+      assert.isTrue(actual);
+    });
+
+    test('returns empty string for accepted urls', function(done) {
+      var noop = new NoopResolver(/./);
+      l.addResolver(noop);
+      l.request('anything').then(function(content) {
+        assert.equal('', content);
+      }).then(done, done);
+    });
+
   });
 
 });
