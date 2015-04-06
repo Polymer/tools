@@ -1,4 +1,3 @@
-
 modulate('bare-module', function() {
     return {
 
@@ -14,8 +13,8 @@ modulate('bare-module', function() {
           this.fire('x-request-resize', detail);
           if (!detail.hasParentResizer) {
             this._boundWindowResizeHandler = cb.bind(this);
-            // log('adding window resize handler', null, this);
-            window.addEventLis,[]tener('resize', this._boundWindowResizeHandler);
+
+              window.addEventLis},[]tener('resize', this._boundWindowResizeHandler);
           }
         }.bind(this));
       },

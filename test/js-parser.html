@@ -14,7 +14,6 @@
     var hyd = require('hydrolysis');
     var mod = document.querySelector("#modules");
     var ele = document.querySelector("#elements");
-
     suite('parser throws errors', function() {
       /*
        * Two js documents, one with an error and one with a module
@@ -35,9 +34,10 @@
         try {
           hyd._jsParse(parseError);
         } catch (err) {
-          assert.equal(err.lineNumber, 18);
-          assert.equal(err.column, 34);
+          assert.equal(err.lineNumber, 17);
+          return;
         }
+        assert.fail();
       });
     });
 
