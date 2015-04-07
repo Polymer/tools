@@ -3,8 +3,8 @@
   "private": true,
   "devDependencies": {
     "polymer": "Polymer/polymer#0.8-preview",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#master",
+    "webcomponentsjs": "webcomponents/webcomponentsjs^0.6.0",
     "web-component-tester": "*"
   },
-  "version": "1.0.3"
+  "version": "1.0.4"
 }
