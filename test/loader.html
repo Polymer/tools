@@ -53,23 +53,6 @@
           throw err;
         });
       });
-
-      test('JSON', function(done) {
-        var l = new Loader();
-        var x = new XHRResolver({
-          responseType: 'json'
-        });
-        l.addResolver(x);
-        var url = new URL('static/xhr-json.json', document.baseURI).href;
-        l.request(url).then(function(json){
-          assert.isObject(json);
-          assert.equal(json.xhr, 'success');
-          done();
-        }, function(err) {
-          throw err;
-        });
-      });
-
     });
   </script>
 </body>
