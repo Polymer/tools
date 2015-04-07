@@ -34,7 +34,7 @@
   "dependencies": {
     "dom5": "^1.0.0",
     "es6-promise": "^2.0.1",
-    "espree": "^1.12.2",
+    "espree": "^2.0.0",
     "estraverse": "^1.9.1",
     "setimmediate": "^1.0.2"
   }
