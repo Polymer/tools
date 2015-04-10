@@ -18,5 +18,5 @@ module.exports = {
   NoopResolver: require('./lib/loader/noop-resolver'),
   XHRResolver:  require('./lib/loader/xhr-resolver'),
   _jsParse:     require('./lib/ast-utils/js-parse'),
-  _importParse:     require('./lib/ast-utils/import-parse')
+  _importParse: require('./lib/ast-utils/import-parse'),
 };
