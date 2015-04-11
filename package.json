@@ -21,7 +21,7 @@
     "build": "browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "watch": "watchify   -d -r ./index.js:hydrolysis -o hydrolysis.js",
-    "test": "gulp test"
+    "test": "npm run build && wct && node_modules/mocha/bin/mocha test/test.js"
   },
   "devDependencies": {
     "browserify": "^8.1.3",
