@@ -86,7 +86,7 @@ describe('jsdoc', function() {
       expect(parsed).to.deep.eq({
         body: null,
         tags: [
-          {tag: 'do',      type: 'a',  name: 'thing', body: 'with\nstuff'},
+          {tag: 'do',      type: 'a',  name: 'thing', body: 'with\n stuff'},
           {tag: 'another', type: null, name: 'thing', body: null},
         ],
       });
@@ -97,7 +97,7 @@ describe('jsdoc', function() {
       expect(parsed).to.deep.eq({
         body: null,
         tags: [
-          {tag: 'do', type: 'a', name: 'thing', body: 'with\nstuff'},
+          {tag: 'do', type: 'a', name: 'thing', body: 'with\n stuff'},
         ],
       });
     });
