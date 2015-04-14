@@ -115,10 +115,12 @@ describe('jsdoc', function() {
 
     it('preserves indentation for the body', function() {
       var parsed = jsdoc.parseJsdoc('*   The desc.\n* thing');
-      expect(parsed).to.deep.eq({
-        body: '  The desc.\nthing',
-        tags: [],
-      });
+      expect(parsed.body).to.deep.eq('  The desc.\nthing');
+    });
+
+    it('handles empty lines', function() {
+      var parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
+      expect(parsed.body).to.eq('Foo\n\nBar');
     });
 
   });
