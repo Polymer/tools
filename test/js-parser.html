@@ -155,7 +155,12 @@
         var firebase = parsed.elements[1];
         for (var i = 0, prop; prop = firebase.properties[i]; i++) {
           if (prop.name !== 'observeObject') continue;
-          assert.deepEqual(prop.params, ['added', 'removed', 'changed', 'getOldValueFn']);
+          assert.deepEqual(prop.params, [
+            {name: 'added'},
+            {name: 'removed'},
+            {name: 'changed'},
+            {name: 'getOldValueFn'},
+          ]);
         }
       });
 
