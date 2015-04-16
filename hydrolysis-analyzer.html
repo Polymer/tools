@@ -43,6 +43,14 @@ var hydrolysis = require('hydrolysis');
         type: Boolean,
       },
 
+      /**
+       * Whether the hydrolysis descriptors should be cleaned of redundant
+       * properties.
+       */
+      clean: {
+        type: Boolean,
+      },
+
       /** The resultant `Analyzer` object from Hydrolysis. */
       analyzer: {
         type:     Object,
@@ -80,10 +88,14 @@ var hydrolysis = require('hydrolysis');
       }
       this._setLoading(true);
 
+      var options = {
+        clean:  this.clean,
+        filter: this.transitive ? function() { return false; } : null,
+      };
+
       var baseUri = this.ownerDocument.baseURI;
       var srcUrl  = new URL(this.src, baseUri).toString();
-      var filter  = this.transitive ? function() { return false; } : null;
-      hydrolysis.Analyzer.analyze(srcUrl, {filter: filter}).then(function(analyzer) {
+      hydrolysis.Analyzer.analyze(srcUrl, options).then(function(analyzer) {
         this._setLoading(false);
         this._setAnalyzer(analyzer);
       }.bind(this))
