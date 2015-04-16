@@ -19,7 +19,7 @@ Polymer({
    * @event error
    */
 
-  publish: {
+  properties: {
     /**
      * I am a string!
      */
@@ -87,7 +87,7 @@ Polymer({
    * @event error
    */
 
-  publish: {
+  properties: {
     /**
      * Firebase location mapped to `data`.
      * @attribute location

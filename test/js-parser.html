@@ -97,23 +97,28 @@
         assert.equal(parsed.elements[1].is, 'x-firebase');
       });
 
-      test('Find all published properties', function() {
-        var foundProps = false;
+      test('Finds all published properties', function() {
+        var published = 0;
         for (var i = 0; i < parsed.elements.length; i++) {
           var element = parsed.elements[i];
           if (element.is == "test-element") {
-            var published = 0;
+
             for (var j = 0; j < element.properties.length; j++) {
               if (element.properties[j].published) {
                 published++;
               }
             }
-            if (published == 6) {
-              foundProps = true;
-            }
           }
         }
-        assert(foundProps);
+        assert.equal(published, 6);
+      });
+
+      test('Extracts configured property types', function() {
+        var firebase = parsed.elements[1];
+        for (var i = 0, prop; prop = firebase.properties[i]; i++) {
+          if (prop.name !== 'keys') continue;
+          assert.equal(prop.type, 'Array');
+        }
       });
 
       test('Published properties have notify values', function() {
