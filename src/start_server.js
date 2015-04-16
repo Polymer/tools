@@ -21,8 +21,8 @@ function startServer(port, componentDir, packageName) {
 
   app.use('/components/', polyserve);
 
-  console.log('Files in this directory are available at localhost:' +
-      port + '/components/' + polyserve.packageName + '/...');
+  console.log('Files in this directory are available at http://localhost:' +
+      port + '/components/' + polyserve.packageName + '/');
 
   var server = http.createServer(app);
   server = app.listen(port);
