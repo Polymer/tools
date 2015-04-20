@@ -9,6 +9,7 @@
 # subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 #
 dir="${0%[/\\]*}"
+config=$1
 pushd $dir
 git pull
 if [ ! -e node_modules/bigstraw ]; then
@@ -17,4 +18,4 @@ if [ ! -e node_modules/bigstraw ]; then
 fi
 npm install bigstraw
 popd
-node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/0.8/preview.json
+node $dir/node_modules/bigstraw/index.js -s $dir/../repo-configs/${config:-0.8/elements.json}

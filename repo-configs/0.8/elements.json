@@ -1,0 +1,32 @@
+[
+  {
+    "dir": "components",
+    "org": "PolymerElements",
+    "branch": "master",
+    "repos": [
+      "iron-ajax",
+      "iron-collapse",
+      "iron-icon",
+      "iron-icons",
+      "iron-iconset",
+      "iron-iconset-svg",
+      "iron-image",
+      "iron-list",
+      "iron-media-query",
+      "iron-meta",
+      "iron-selector",
+      "paper-card",
+      "paper-checkbox",
+      "paper-drawer-panel",
+      "paper-header-panel",
+      "paper-item",
+      "paper-menu",
+      "paper-radio-button",
+      "paper-ripple",
+      "paper-styles",
+      "paper-toolbar",
+      "quick-element",
+      "test-fixture"
+    ]
+  }
+]
