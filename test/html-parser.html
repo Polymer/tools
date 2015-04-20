@@ -35,6 +35,11 @@
         assert.isDefined(registry.import, "The returned registry should find imports");
         assert.equal(registry.import.length, 1);
       });
+
+      test('find all styles', function() {
+        assert.isDefined(registry.style, "The returned registry should find styles");
+        assert.equal(registry.style.length, 3);
+      });
     });
   </script>
 </body>
