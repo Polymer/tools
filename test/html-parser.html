@@ -30,6 +30,11 @@
         assert.isDefined(registry.script, "The returned registry should find scripts");
         assert.equal(registry.script.length, 2);
       });
+
+      test('find all imports', function() {
+        assert.isDefined(registry.import, "The returned registry should find imports");
+        assert.equal(registry.import.length, 1);
+      });
     });
   </script>
 </body>
