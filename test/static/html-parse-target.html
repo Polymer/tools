@@ -3,7 +3,6 @@
   <div>Fooa</div>
   <div>Barr</div>
   <div>Bazz</div>
-  <link rel="import" type="css" href="stylesheet.css">
 </template>
 <template id="noelement">
   <div>Foooo</div>
@@ -15,6 +14,13 @@
   <div>Bar</div>
   <div>Baz</div>
 </template>
+<link rel="import" type="css" href="stylesheet.css">
+<link rel="stylesheet" href="stylesheet.css">
+<style>
+  :host {
+    color: black;
+  }
+</style>
 <script>
 Polymer({
 
