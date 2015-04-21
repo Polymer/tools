@@ -31,6 +31,10 @@ function makeApp(componentDir, packageName, headers) {
   console.log('Serving components from ' + componentDir);
 
   var app = express();
+  app.get('/', function (req, res) {
+    // redirect homepage to 
+    res.redirect(301, '/components/' + packageName);
+  });
   app.get('*', function (req, res) {
     // Serve local files from . and other components from bower_components
     var url = parseUrl(req.url, true);
