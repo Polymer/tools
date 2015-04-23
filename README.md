@@ -23,3 +23,4 @@ Navigate to `localhost:8080/components/my-element/demo.html`
 ### Options
 
   * `-p` The TCP port to use for the web server
+  * `-o` Opens your default browser to an initial page, e.g. "demo" or "index.html"

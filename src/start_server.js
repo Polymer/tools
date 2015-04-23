@@ -11,8 +11,10 @@
 var express = require('express');
 var http = require('http');
 var makeApp = require('./make_app');
+var open = require('open');
+var util = require('util');
 
-function startServer(port, componentDir, packageName) {
+function startServer(port, openPage, componentDir, packageName) {
   port = port || 8080;
   console.log('Starting Polyserve on port ' + port);
 
@@ -21,11 +23,15 @@ function startServer(port, componentDir, packageName) {
 
   app.use('/components/', polyserve);
 
-  console.log('Files in this directory are available at localhost:' +
-      port + '/components/' + polyserve.packageName + '/...');
-
   var server = http.createServer(app);
   server = app.listen(port);
+
+  var baseUrl = util.format('http://localhost:%d/components/%s/', port, polyserve.packageName);
+  console.log('Files in this directory are available under ' + baseUrl);
+
+  if (openPage) {
+    open(baseUrl + openPage);
+  }
 }
 
 module.exports = startServer;

@@ -16,5 +16,5 @@ process.title = 'polyserve';
 
 resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
   var polyserve = path ? require(path) : require('..');
-  polyserve.startServer(argv.p);
+  polyserve.startServer(argv.p, argv.o);
 });
