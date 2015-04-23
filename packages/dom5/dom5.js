@@ -333,6 +333,11 @@ function newElement(tagName, namespace) {
   };
 }
 
+function replace(oldNode, newNode) {
+  insertBefore(oldNode.parentNode, oldNode, newNode);
+  remove(oldNode);
+}
+
 function remove(node) {
   var parent = node.parentNode;
   if (parent) {
@@ -379,6 +384,7 @@ module.exports = {
   getTextContent: getTextContent,
   setTextContent: setTextContent,
   remove: remove,
+  replace: replace,
   append: append,
   insertBefore: insertBefore,
   normalize: normalize,
