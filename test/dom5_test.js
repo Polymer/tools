@@ -253,6 +253,17 @@ suite('dom5', function() {
       });
     });
 
+    suite('Replace node', function() {
+      test('New node replaces old node', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        var newNode = dom5.constructors.element('ul');
+        dom5.replace(divA, newNode);
+        assert.equal(divA.parentNode, null);
+        assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(divA), -1);
+        assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(newNode), 0);
+      });
+    });
+
     suite('Remove node', function() {
       test('node is removed from parentNode', function() {
         var divA = doc.childNodes[1].childNodes[1].childNodes[0];
