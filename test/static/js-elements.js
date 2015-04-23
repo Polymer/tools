@@ -45,6 +45,13 @@ Polymer({
       notify: true
     },
     /**
+     * I am an object with notify=!0
+     */
+    objectNotifyUnary: {
+      type: Object,
+      notify: !0
+    },
+    /**
      * I am a boolean property!
      */
     boolProp: Boolean
