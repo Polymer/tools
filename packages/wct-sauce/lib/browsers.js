@@ -14,6 +14,8 @@ var DEFAULT_BROWSERS = require('../default-sauce-browsers.json');
 // "<PLATFORM>/<BROWSER>[@<VERSION>]"
 var BROWSER_SPEC = /^([^\/@]+)\/([^\/@]+)(?:@(.*))?$/;
 
+var PROPERTY_BLACKLIST = ['accessKey', 'browsers', 'disabled', 'username'];
+
 /**
  * Expands an array of browser identifiers for sauce browsers into their
  * webdriver capabilities objects.
@@ -31,42 +33,45 @@ function expand(pluginOptions, done) {
     browsers = _.difference(browsers, ['default', 'all']);
   }
 
-  browsers = _.compact(browsers.map(_expandBrowser));
-  browsers.forEach(_injectUrl.bind(null, pluginOptions));
-
-  done(null, browsers);
+  done(null, _.compact(browsers.map(_expandBrowser.bind(
+    null,
+    pluginOptions,
+    _.omit(pluginOptions, PROPERTY_BLACKLIST)
+  ))));
 }
 
 /**
+ * @param {string} username
+ * @param {string} accessKey
+ * @param {!Object} options
  * @param {string|!Object} browser
  * @return {Object}
  */
-function _expandBrowser(browser) {
-  if (_.isObject(browser)) return browser;
-  var match = _.isString(browser) && browser.match(BROWSER_SPEC);
-  if (!match) {
-    console.log('Invalid sauce browser spec:', browser);
-    return null;
+function _expandBrowser(options, extend, browser) {
+  if (!_.isObject(browser)) {
+    var match = _.isString(browser) && browser.match(BROWSER_SPEC);
+
+    if (!match) {
+      console.log('Invalid sauce browser spec:', browser);
+      return null;
+    }
+    else {
+      browser = {
+        browserName: match[2],
+        platform:    match[1],
+        version:     match[3] || '',
+      };
+    }
   }
 
-  return {
-    browserName: match[2],
-    platform:    match[1],
-    version:     match[3] || '',
-  };
-}
-
-/**
- * @param {!Object} pluginOptions
- * @param {!Object} browser
- */
-function _injectUrl(pluginOptions, browser) {
-  browser.url = {
-    hostname:  'ondemand.saucelabs.com',
-    port:      80,
-    username:  pluginOptions.username,
-    accessKey: pluginOptions.accessKey,
-  };
+  return _.extend(browser, {
+    url: {
+      accessKey: options.accessKey,
+      hostname:  'ondemand.saucelabs.com',
+      port:      80,
+      username:  options.username,
+    },
+  }, extend);
 }
 
 module.exports = {
