@@ -21,7 +21,7 @@ var uuid         = require('uuid');
  * @param {function(*, string)} done
  */
 function startTunnel(config, emitter, done) {
-  if (!config.username && !config.accessKey) {
+  if (!config.username || !config.accessKey) {
     return done('Missing Sauce credentials. Did you forget to set SAUCE_USERNAME and/or SAUCE_ACCESS_KEY?');
   }
 
