@@ -32,8 +32,10 @@ var config = {
 requireSelenium(function(selenium) {
   selenium.install(config, function(error) {
     if (error) {
-      console.log(error);
-      process.exit(1);
+      console.log('Failed to download selenium and/or chromedriver:', error);
+      console.log('selenium-standalone will attempt to re-download next time it is run.');
+      // We explicitly do not fail the install process if this happens; the user
+      // can still recover, unless their permissions are completely screwey.
     }
   });
 });
