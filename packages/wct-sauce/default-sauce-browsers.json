@@ -54,6 +54,11 @@
 
   {
     "browserName": "safari",
+    "platform":    "OS X 10.10",
+    "version":     "8"
+  },
+  {
+    "browserName": "safari",
     "platform":    "OS X 10.9",
     "version":     "7"
   }
