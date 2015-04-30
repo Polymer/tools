@@ -19,6 +19,7 @@
       "iron-media-query",
       "iron-menu-behavior",
       "iron-meta",
+      "iron-overlay-behavior",
       "iron-selector",
       "iron-test-helpers",
       "paper-behaviors",
