@@ -2,6 +2,23 @@
 
 Static anlaysis utilities for polymer.
 
+## Install
+```
+npm install hydrolysis
+```
+
+## Usage
+```js
+var hyd = require('hydrolysis');
+
+hyd.Analyzer.analyze('path-to-polymer-element.html')
+    .then(function(analyzer) {
+      console.log(analyzer.elementsByTagName['my-element'])
+    });
+```
+
+
+
 ## Developing
 You need [wct](https://github.com/Polymer/web-component-tester) to run the tests.
 
