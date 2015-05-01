@@ -21,24 +21,31 @@ var bowerConfig = require('./bower_config');
  * @param  {string} packageName  A name for this polyserve package.
  * @param  {Object} headers      An object keyed by header name containing
  *                               header values.
+ * @param  {string} root         The root directory to serve a package from
  * @return {Object}              An express app which can be served with
  *                               `app.get`
  */
-function makeApp(componentDir, packageName, headers) {
+function makeApp(componentDir, packageName, headers, root) {
   componentDir = componentDir || 'bower_components';
-  packageName = packageName || bowerConfig().name;
-
-  console.log('Serving components from ' + componentDir);
+  packageName = packageName || bowerConfig(root).name;
+  root = root || '.';
 
   var app = express();
+
   app.get('*', function (req, res) {
     // Serve local files from . and other components from bower_components
     var url = parseUrl(req.url, true);
-    var splitPath = url.pathname.split(path.sep).slice(1);
-    splitPath = splitPath[0] == packageName
-       ? splitPath.slice(1)
-       : [componentDir].concat(splitPath);
-    var filePath = splitPath.join(path.sep);
+    var splitPath = url.pathname.split('/').slice(1);
+    if (splitPath[0] === packageName) {
+      if (root) {
+        splitPath = [root].concat(splitPath.slice(1));
+      } else {
+        splitPath = splitPath.slice(1);
+      }
+    } else {
+      splitPath = [componentDir].concat(splitPath);
+    }
+    var filePath = splitPath.join('/');
     if (headers) {
       for (header in headers) {
         res.append(header, headers[header]);
