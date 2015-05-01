@@ -10,6 +10,7 @@
       "iron-component-page",
       "iron-doc-viewer",
       "iron-fit-behavior",
+      "iron-flex-layout",
       "iron-icon",
       "iron-icons",
       "iron-iconset",
