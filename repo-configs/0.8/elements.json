@@ -20,6 +20,8 @@
       "iron-menu-behavior",
       "iron-meta",
       "iron-overlay-behavior",
+      "iron-validatable-behavior",
+      "iron-validator-behavior",
       "iron-selector",
       "iron-test-helpers",
       "paper-behaviors",
