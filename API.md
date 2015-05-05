@@ -11,6 +11,7 @@ Static analysis for Polymer.
       * [.elements](#hydrolysis.Analyzer#elements) : <code>Array.&lt;ElementDescriptor&gt;</code>
       * [.elementsByTagName](#hydrolysis.Analyzer#elementsByTagName) : <code>Object.&lt;string, ElementDescriptor&gt;</code>
       * [.features](#hydrolysis.Analyzer#features) : <code>Array.&lt;FeatureDescriptor&gt;</code>
+      * [.behaviors](#hydrolysis.Analyzer#behaviors) : <code>Array.&lt;BehaviorDescriptor&gt;</code>
       * [.html](#hydrolysis.Analyzer#html) : <code>Object.&lt;string, AnalyzedDocument&gt;</code>
       * [.dependencies(href)](#hydrolysis.Analyzer#dependencies) ⇒ <code>Array.&lt;string&gt;</code>
       * [.metadataTree(href)](#hydrolysis.Analyzer#metadataTree) ⇒ <code>Promise</code>
@@ -32,6 +33,7 @@ Static analysis for Polymer.
   * [.DocumentAST](#hydrolysis.DocumentAST) : <code>Object</code>
   * [.ElementDescriptor](#hydrolysis.ElementDescriptor) : <code>Object</code>
   * [.FeatureDescriptor](#hydrolysis.FeatureDescriptor) : <code>Object</code>
+  * [.BehaviorDescriptor](#hydrolysis.BehaviorDescriptor) : <code>Object</code>
   * [.DocumentDescriptor](#hydrolysis.DocumentDescriptor) : <code>Object</code>
   * [.AnalyzedDocument](#hydrolysis.AnalyzedDocument) : <code>Object</code>
   * [.LoadOptions](#hydrolysis.LoadOptions) : <code>Object</code>
@@ -47,6 +49,7 @@ Static analysis for Polymer.
     * [.elements](#hydrolysis.Analyzer#elements) : <code>Array.&lt;ElementDescriptor&gt;</code>
     * [.elementsByTagName](#hydrolysis.Analyzer#elementsByTagName) : <code>Object.&lt;string, ElementDescriptor&gt;</code>
     * [.features](#hydrolysis.Analyzer#features) : <code>Array.&lt;FeatureDescriptor&gt;</code>
+    * [.behaviors](#hydrolysis.Analyzer#behaviors) : <code>Array.&lt;BehaviorDescriptor&gt;</code>
     * [.html](#hydrolysis.Analyzer#html) : <code>Object.&lt;string, AnalyzedDocument&gt;</code>
     * [.dependencies(href)](#hydrolysis.Analyzer#dependencies) ⇒ <code>Array.&lt;string&gt;</code>
     * [.metadataTree(href)](#hydrolysis.Analyzer#metadataTree) ⇒ <code>Promise</code>
@@ -57,7 +60,7 @@ Static analysis for Polymer.
 
 <a name="new_hydrolysis.Analyzer_new"></a>
 #### new Analyzer(attachAST, [loader])
-A database of polymer elements and features defined in HTML
+A database of Polymer metadata defined in HTML
 
 
 | Param | Type | Description |
@@ -78,7 +81,12 @@ A view into `elements`, keyed by tag name.
 <a name="hydrolysis.Analyzer#features"></a>
 #### analyzer.features : <code>Array.&lt;FeatureDescriptor&gt;</code>
 A list of API features added to `Polymer.Base` encountered by the
- analyzer.
+analyzer.
+
+**Kind**: instance property of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
+<a name="hydrolysis.Analyzer#behaviors"></a>
+#### analyzer.behaviors : <code>Array.&lt;BehaviorDescriptor&gt;</code>
+The behaviors collected by the analysis pass.
 
 **Kind**: instance property of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
 <a name="hydrolysis.Analyzer#html"></a>
@@ -244,6 +252,11 @@ The metadata for a single polymer element
 The metadata for a Polymer feature.
 
 **Kind**: static typedef of <code>[hydrolysis](#hydrolysis)</code>  
+<a name="hydrolysis.BehaviorDescriptor"></a>
+### hydrolysis.BehaviorDescriptor : <code>Object</code>
+The metadata for a Polymer behavior mixin.
+
+**Kind**: static typedef of <code>[hydrolysis](#hydrolysis)</code>  
 <a name="hydrolysis.DocumentDescriptor"></a>
 ### hydrolysis.DocumentDescriptor : <code>Object</code>
 The metadata for all features and elements defined in one document
@@ -255,6 +268,7 @@ The metadata for all features and elements defined in one document
 | --- | --- | --- |
 | elements | <code>Array.&lt;ElementDescriptor&gt;</code> | The elements from the document |
 | features | <code>Array.&lt;FeatureDescriptor&gt;</code> | The features from the document |
+| behaviors | <code>Array.&lt;FeatureDescriptor&gt;</code> | The behaviors from the document |
 
 <a name="hydrolysis.AnalyzedDocument"></a>
 ### hydrolysis.AnalyzedDocument : <code>Object</code>
