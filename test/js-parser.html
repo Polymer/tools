@@ -97,6 +97,10 @@
         assert.equal(parsed.elements[1].is, 'x-firebase');
       });
 
+      test('Extracts documentation attached via a JS comment', function() {
+        assert.include(parsed.elements[0].desc, 'I am a description of test-element.');
+      });
+
       test('Finds all published properties', function() {
         var published = 0;
         for (var i = 0; i < parsed.elements.length; i++) {
