@@ -63,7 +63,13 @@ module.exports = function(wct, pluginOptions) {
     });
   });
 
-  wct.on('browser-end', function(def, error, stats, sessionId) {
+  wct.on('test-end', function(def, data, stats, browser) {
+    if (!browser) return;
+    // Bump the connection to advance Sauce's remote timeout.
+    browser.title(function() {});
+  });
+
+  wct.on('browser-end', function(def, error, stats, sessionId, browser) {
     if (eachCapabilities.length === 0 || !sessionId) return;
 
     var payload = {
