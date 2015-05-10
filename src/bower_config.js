@@ -11,15 +11,16 @@
 var path = require('path');
 var fs = require('fs');
 
-function bowerConfigPath() {
-  return path.resolve(process.cwd(), 'bower.json');
+function bowerConfigPath(root) {
+  root = path.join(process.cwd(), root || '.');
+  return path.resolve(root, 'bower.json');
 }
 
-function bowerConfigContents() {
+function bowerConfigContents(root) {
   var contents;
 
   try {
-    contents = fs.readFileSync(bowerConfigPath());
+    contents = fs.readFileSync(bowerConfigPath(root));
   } catch (e) {
     console.error('Error reading config at ' + bowerConfigPath());
     console.error(e);
@@ -28,9 +29,9 @@ function bowerConfigContents() {
   return contents || '{}';
 }
 
-function bowerConfig() {
+function bowerConfig(root) {
   try {
-    return JSON.parse(bowerConfigContents());
+    return JSON.parse(bowerConfigContents(root));
   } catch (e) {
     console.error('Could not parse bower.json');
     console.error(e);
