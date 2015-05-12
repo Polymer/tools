@@ -125,6 +125,12 @@
         }
       });
 
+      test('Extracts configured events', function() {
+        var firebase = parsed.elements[1];
+        assert.equal(firebase.events.length, 2);
+        assert.equal(firebase.events[0].name, 'data-change');
+      });
+
       test('Published properties have notify values', function() {
         var foundNotify = false;
         for (var i = 0; i < parsed.elements.length; i++) {
