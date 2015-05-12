@@ -13,7 +13,7 @@
   {
     "browserName": "chrome",
     "platform":    "OS X 10.10",
-    "version":     "canary"
+    "version":     "dev"
   },
   {
     "browserName": "chrome",
