@@ -84,6 +84,12 @@
         loader.addResolver(resolver);
         loader.request("static/js-elements.js").then(function(content){
           parsed = hyd._jsParse(content);
+          parsed.elements.forEach(function(el) {
+            hyd.docs.annotateElement(el);
+          });
+          parsed.behaviors.forEach(function(beh) {
+            hyd.docs.annotateBehavior(beh);
+          });
           done();
         });
       });
