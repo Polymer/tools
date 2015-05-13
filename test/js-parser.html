@@ -84,12 +84,6 @@
         loader.addResolver(resolver);
         loader.request("static/js-elements.js").then(function(content){
           parsed = hyd._jsParse(content);
-          parsed.elements.forEach(function(el) {
-            hyd.docs.annotateElement(el);
-          });
-          parsed.behaviors.forEach(function(beh) {
-            hyd.docs.annotateBehavior(beh);
-          });
           done();
         });
       });
@@ -129,12 +123,6 @@
           if (prop.name !== 'keys') continue;
           assert.equal(prop.type, 'Array');
         }
-      });
-
-      test('Extracts configured events', function() {
-        var firebase = parsed.elements[1];
-        assert.equal(firebase.events.length, 2);
-        assert.equal(firebase.events[0].name, 'data-change');
       });
 
       test('Published properties have notify values', function() {
