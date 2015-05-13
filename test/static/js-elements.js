@@ -1,4 +1,8 @@
 /**
+ * @event red-herring
+ */
+
+/**
  * I am a description of test-element.
  */
 Polymer({
