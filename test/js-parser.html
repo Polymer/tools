@@ -222,7 +222,13 @@
         assert.property(byName, 'Really.Really.Deep.Behavior');
         assert.equal(byName['Really.Really.Deep.Behavior'].properties[0].name, 'deep');
       });
-
+      test('Supports property array on behaviors', function() {
+        assert.equal(byName['AwesomeBehavior'].properties[1].default, 1);
+      });
+      test('Supports chained behaviors', function() {
+        assert.equal(byName['Really.Really.Deep.Behavior'].behaviors.length, 1);
+        assert.equal(byName['Really.Really.Deep.Behavior'].behaviors[0], 'Do.Re.Mi.Fa');
+      });
     });
   </script>
 </body>

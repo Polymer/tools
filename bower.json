@@ -12,7 +12,7 @@
   ],
   "devDependencies": {
     "polymer": "Polymer/polymer#0.8-preview",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "web-component-tester": "*"
   },
   "version": "1.5.0"

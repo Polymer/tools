@@ -6,9 +6,17 @@ var SimpleBehavior = {
 /** @behavior AwesomeBehavior */
 var CustomNamedBehavior = {
   custom: true,
+  properties: {
+    a: {
+      value: 1
+    }
+  }
 };
 
-/** @behavior */
-Really.Really.Deep.Behavior = {
+/**
+With a chained behavior
+@behavior
+*/
+Really.Really.Deep.Behavior = [{
   deep: true,
-};
+}, Do.Re.Mi.Fa];
