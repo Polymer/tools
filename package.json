@@ -1,6 +1,6 @@
 {
   "name": "hydrolysis",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Breaks polymers into monomers",
   "homepage": "https://github.com/Polymer/hydrolysis",
   "bugs": "https://github.com/Polymer/hydrolysis/issues",
