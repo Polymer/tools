@@ -1,9 +1,9 @@
-/** @behavior */
+/** @polymerBehavior */
 var SimpleBehavior = {
   simple: true,
 };
 
-/** @behavior AwesomeBehavior */
+/** @polymerBehavior AwesomeBehavior */
 var CustomNamedBehavior = {
   custom: true,
   properties: {
@@ -15,7 +15,7 @@ var CustomNamedBehavior = {
 
 /**
 With a chained behavior
-@behavior
+@polymerBehavior
 */
 Really.Really.Deep.Behavior = [{
   deep: true,
