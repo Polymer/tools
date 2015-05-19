@@ -59,6 +59,9 @@ function removeAttribute(element, name) {
 function hasTagName(name) {
   var n = name.toLowerCase();
   return function(node) {
+    if (!node.tagName) {
+      return false;
+    }
     return node.tagName.toLowerCase() === n;
   };
 }
@@ -209,6 +212,22 @@ function NOT(predicateFn) {
   };
 }
 
+/**
+ * Returns a predicate that matches any node with a parent matching `predicateFn`.
+ */
+function parentMatches(predicateFn) {
+  return function(node) {
+    var parent = node.parentNode;
+    while(parent !== undefined) {
+      if (predicateFn(parent)) {
+        return true;
+      }
+      parent = parent.parentNode;
+    }
+    return false;
+  };
+}
+
 function hasAttr(attr) {
   return function(node) {
     return getAttributeIndex(node, attr) > -1;
@@ -239,6 +258,20 @@ function isTextNode(node) {
 
 function isCommentNode(node) {
   return node.nodeName === '#comment';
+}
+
+/**
+ * Applies `mapfn` to `node` and the tree below `node`, returning a flattened
+ * list of results.
+ * @return {Array}
+ */
+function treeMap(node, mapfn) {
+  var results = [];
+  nodeWalk(node, function(node){
+    results = results.concat(mapfn(node));
+    return false;
+  });
+  return results;
 }
 
 /**
@@ -361,8 +394,8 @@ function append(parent, node) {
 }
 
 var parse5 = require('parse5');
-function parse(text) {
-  var parser = new parse5.Parser();
+function parse(text, options) {
+  var parser = new parse5.Parser(parse5.TreeAdapters.default, options);
   return parser.parse(text);
 }
 
@@ -397,6 +430,7 @@ module.exports = {
   queryAll: queryAll,
   nodeWalk: nodeWalk,
   nodeWalkAll: nodeWalkAll,
+  treeMap: treeMap,
   predicates: {
     hasClass: hasClass,
     hasAttr: hasAttr,
@@ -405,7 +439,8 @@ module.exports = {
     hasTextValue: hasTextValue,
     AND: AND,
     OR: OR,
-    NOT: NOT
+    NOT: NOT,
+    parentMatches: parentMatches
   },
   constructors: {
     text: newTextNode,
