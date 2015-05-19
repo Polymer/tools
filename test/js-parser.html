@@ -37,7 +37,7 @@
       });
     });
 
-    suite('Polymer.Base.addFeature', function() {
+    suite('Polymer.Base._addFeature', function() {
 
       var parsed;
       suiteSetup(function(done) {
@@ -50,7 +50,7 @@
         });
       });
 
-      test('finds calls to Polymer.Base.addFeature, in order', function() {
+      test('finds calls to Polymer.Base._addFeature, in order', function() {
         assert.equal(parsed.features.length, 2);
         assert.equal(parsed.features[0].properties.length, 6);
         assert.equal(parsed.features[1].properties.length, 1);

@@ -1,5 +1,5 @@
 /** Feature one is super great! */
-Polymer.Base.addFeature({
+Polymer.Base._addFeature({
   num: 123,
   bool: false,
   str: 'ohai',
@@ -8,7 +8,7 @@ Polymer.Base.addFeature({
   func: function() {},
 });
 
-Polymer.Base.addFeature({
+Polymer.Base._addFeature({
   /** It does things! */
   doesThings: function() {},
 });
