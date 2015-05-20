@@ -1,6 +1,6 @@
 {
   "name": "dom5",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Utilities for working with parse5 ASTs",
   "license": {
     "type": "BSD",
