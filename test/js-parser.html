@@ -137,6 +137,18 @@
         assert.equal(firebase.events[0].name, 'data-change');
       });
 
+      test('Finds hero tag', function() {
+        var el = parsed.elements[0];
+        assert.equal(el.hero, '/path/to/hero.png');
+      });
+
+      test('Finds demo tags', function() {
+        var el = parsed.elements[0];
+        assert.equal(el.demos.length, 3);
+        assert.equal(el.demos[1].path, '/demo/index.php');
+        assert.equal(el.demos[1].desc, 'I am a php demo');
+      });
+
       test('Published properties have notify values', function() {
         var foundNotify = false;
         for (var i = 0; i < parsed.elements.length; i++) {
