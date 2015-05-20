@@ -4,6 +4,11 @@
 
 /**
  * I am a description of test-element.
+ *
+ * @hero /path/to/hero.png
+ * @demo
+ * @demo /demo/index.php I am a php demo
+ * @demo /demo/no_desc.html
  */
 Polymer({
 
