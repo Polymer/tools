@@ -23,13 +23,14 @@
     "build:watch": "watch 'npm run build' ./lib ",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "npm run build && wct && node_modules/mocha/bin/mocha test/test.js"
+    "test": "jshint index.js lib/ && npm run build && wct && node_modules/mocha/bin/mocha test/test.js"
   },
   "devDependencies": {
     "browserify": "^9.0.8",
     "chai": "^2.2.0",
     "gulp": "^3.8.11",
     "jsdoc-to-markdown": "^1.0.3",
+    "jshint": "^2.7.0",
     "mocha": "^2.2.4",
     "watch": "latest"
   },
