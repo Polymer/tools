@@ -41,10 +41,14 @@ function startWithPort(options) {
   console.log('Files in this directory are available under ' + baseUrl);
 
   if (options.page) {
-    open(
-      baseUrl + (options.page === true ? 'index.html' : options.page),
-      options.browser
-    );
+    var url = baseUrl + (options.page === true ? 'index.html' : options.page);
+    if (Array.isArray(options.browser)) {
+      for (var i=0; i<options.browser.length; i++)
+        open(url, options.browser[i]);
+    }
+    else {
+      open(url, options.browser);
+    }
   }
 }
 
