@@ -14,7 +14,22 @@ var argv = require('minimist')(process.argv);
 
 process.title = 'polyserve';
 
+if (argv.h || argv.help) {
+  console.log("polyserve: web server for bower components\n\n" +
+    "Options:\n" +
+    "  -p <port>        defaults to 8080\n" +
+    "  -o <filename>    open page in default browser on startup (default: index.html)\n" +
+    "  -b <browsername> use this browser instead of default \n" +
+    "                   (ex: 'Google Chrome Canary')\n"
+  );
+  process.exit(0);
+}
+
 resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
   var polyserve = path ? require(path) : require('..');
-  polyserve.startServer(argv.p, argv.o);
+  polyserve.startServer({
+    port: argv.p,
+    page: argv.o,
+    browser: argv.b
+  });
 });
