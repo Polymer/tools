@@ -4,13 +4,14 @@
     "org": "PolymerElements",
     "branch": "master",
     "repos": [
-      "firebase-element",
       "gold-cc-cvc-input",
       "gold-cc-expiration-input",
       "gold-cc-input",
+      "gold-elements",
       "gold-email-input",
       "gold-phone-input",
       "gold-zip-input",
+      "iron-a11y-announcer",
       "iron-a11y-keys",
       "iron-a11y-keys-behavior",
       "iron-ajax",
@@ -31,7 +32,6 @@
       "iron-image",
       "iron-input",
       "iron-jsonp-library",
-      "iron-list",
       "iron-localstorage",
       "iron-media-query",
       "iron-menu-behavior",
@@ -47,11 +47,13 @@
       "iron-validator-behavior",
       "marked-element",
       "neon-animation",
+      "neon-elements",
       "paper-behaviors",
       "paper-button",
       "paper-checkbox",
       "paper-dialog",
       "paper-dialog-behavior",
+      "paper-dialog-scrollable",
       "paper-drawer-panel",
       "paper-elements",
       "paper-fab",
@@ -76,8 +78,7 @@
       "platinum-sw",
       "prism-element",
       "quick-element",
-      "test-fixture",
-      "firebase-element"
+      "test-fixture"
     ]
   }
 ]
