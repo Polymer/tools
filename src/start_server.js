@@ -32,7 +32,7 @@ function startWithPort(options) {
 
   server.on('error', function(err) {
     if (err.code === 'EADDRINUSE')
-      console.error("ERROR: Port in use", options.port, "Aborting!");
+      console.error("ERROR: Port in use", options.port, "\nPlease choose another port, or let an unused port be chosen automatically.");
     process.exit(69);
   });
 
