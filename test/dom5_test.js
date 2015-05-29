@@ -95,14 +95,6 @@ suite('dom5', function() {
         var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
         assert.equal(dom5.getAttribute(divB, 'bar'), 'b1');
       });
-
-      test('throws when called on a text node', function() {
-        var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
-        assert.throws(function () {
-          dom5.getAttribute(text, 'bar');
-        });
-      });
-
     });
 
     suite('hasAttribute', function() {
@@ -126,14 +118,6 @@ suite('dom5', function() {
         var divA = doc.childNodes[1].childNodes[1].childNodes[0];
         assert.equal(dom5.hasAttribute(divA, 'qux'), true);
       });
-
-      test('throws when called on a text node', function() {
-        var text = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[0];
-        assert.throws(function () {
-          dom5.hasAttribute(text, 'bar');
-        });
-      });
-
     });
 
     suite('setAttribute', function() {
