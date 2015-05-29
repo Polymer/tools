@@ -340,8 +340,10 @@ function nodeWalkAll(node, predicate, matches) {
 }
 
 /**
- * Equivalent to `nodeWalkAll`, but only returns nodes that are either ancestors
- * or earlier cousins/siblings in the document.
+ * Equivalent to `nodeWalkAll`, but only returns nodes that are either 
+ * ancestors or earlier cousins/siblings in the document.
+ *
+ * Nodes are returned in reverse document order, starting from `node`.
  */
 function nodeWalkAllPrior(node, predicate, matches) {
   if (!matches) {
@@ -355,9 +357,13 @@ function nodeWalkAllPrior(node, predicate, matches) {
   if (parent) {
     var idx = parent.childNodes.indexOf(node);
     var siblings = parent.childNodes.slice(0, idx);
-    siblings.forEach(function(sibling){
-      nodeWalkAll(sibling, predicate, matches);
-    });
+    var nieces;
+    for (var i = siblings.length-1; i >= 0; i--) {
+      nieces = nodeWalkAll(siblings[i], predicate);
+      for (var j = nieces.length -1; j >=0; j--) {
+        matches.push(nieces[j]);
+      }
+    }
     nodeWalkAllPrior(parent, predicate, matches);
   }
   return matches;

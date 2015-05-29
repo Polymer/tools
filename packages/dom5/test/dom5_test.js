@@ -9,6 +9,8 @@
  */
 
 var chai = require('chai');
+var fs = require('fs');
+
 var dom5 = require('../dom5');
 
 var assert = chai.assert;
@@ -523,6 +525,26 @@ suite('dom5', function() {
       assert.equal(actual.length, 2);
       assert.equal(expected_1, actual[0]);
       assert.equal(expected_2, actual[1]);
+    });
+  });
+
+  suite('NodeWalkAllPrior', function() {
+    var docText = fs.readFileSync(__dirname + '/static/multiple-comments.html', 'utf8');
+    var doc = null;
+
+    setup(function() {
+      doc = dom5.parse(docText);
+    });
+
+    test('nodeWalkAllPrior', function() {
+      var domModule = dom5.nodeWalkAll(doc,
+        dom5.predicates.hasAttrValue('id', 'test-element'))[0];
+      var comments = dom5.nodeWalkAllPrior(domModule, dom5.isCommentNode);
+      assert.include(dom5.getTextContent(comments[0]), 'test element');
+      assert.include(dom5.getTextContent(comments[1]), 'hash or path based routing');
+      assert.include(dom5.getTextContent(comments[2]), 'core-route-selectable.html');
+      assert.include(dom5.getTextContent(comments[comments.length-1]),
+                                         'The Polymer Project Authors');
     });
   });
 
