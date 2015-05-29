@@ -1,0 +1,77 @@
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="core-router-lib.html">
+
+<!-- these are only here so they show up in docs -->
+<!-- <link rel="import" href="core-route.html">
+<link rel="import" href="core-route-selectable.html">
+ -->
+<!--
+`core-router` configures core routing library (CoreRouterLib)
+
+* hash or path based routing
+* callbacks when route activates/deactivates
+* route arguments: /first/:id
+
+No routes will be matched before you call core-router.start()
+
+Initialization example:
+
+    <core-router id="router" pathStyle="hash" defaultRoute="first"></core-router>
+    <script>
+      document.querySelector('core-router').start();
+    < /script>
+
+
+* `<core-route route="first" active="{{firstActive}}">` defines a single route, and tracks its status in `active` attribute.
+
+* `<core-route-selectable selectable="{{selectableEl}}">` syncs a core-selectable with routes
+
+Use Javascript API to implement custom Javascript-based routing. Or use our helper classes for markup-based routing.
+
+-->
+<dom-module id='core-router'>
+  <template>
+  </template>
+</dom-module>
+<script>
+
+  Polymer({
+
+    is: 'core-router',
+
+    properties: {
+      a: Boolean,
+      b: String,
+      c: Array
+    }
+
+  });
+
+</script>
+<!--
+ I am a test element
+-->
+<dom-module id="test-element">
+  <template></template>
+</dom-module>
+
+<script>
+  Polymer( {
+    is: 'test-element',
+    properties: {
+      one: Boolean,
+      two: String,
+      three: Array
+    }
+  });
+</script>
