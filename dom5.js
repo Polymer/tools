@@ -12,6 +12,9 @@
 'use strict';
 
 function getAttributeIndex(element, name) {
+  if (!element.attrs) {
+    return -1;
+  }
   var n = name.toLowerCase();
   for (var i = 0; i < element.attrs.length; i++) {
     if (element.attrs[i].name.toLowerCase() === n) {
@@ -63,6 +66,23 @@ function hasTagName(name) {
       return false;
     }
     return node.tagName.toLowerCase() === n;
+  };
+}
+
+/**
+ * Returns true if `regex.match(tagName)` finds a match.
+ *
+ * This will use the lowercased tagName for comparison.
+ * 
+ * @param  {RegExp} regex
+ * @return {Boolean}
+ */
+function hasMatchingTagName(regex) {
+  return function(node) {
+    if (!node.tagName) {
+      return false;
+    }
+    return regex.test(node.tagName.toLowerCase());
   };
 }
 
@@ -320,6 +340,30 @@ function nodeWalkAll(node, predicate, matches) {
 }
 
 /**
+ * Equivalent to `nodeWalkAll`, but only returns nodes that are either ancestors
+ * or earlier cousins/siblings in the document.
+ */
+function nodeWalkAllPrior(node, predicate, matches) {
+  if (!matches) {
+    matches = [];
+  }
+  if (predicate(node)) {
+    matches.push(node);
+  }
+  // Search our earlier siblings and their descendents.
+  var parent = node.parentNode;
+  if (parent) {
+    var idx = parent.childNodes.indexOf(node);
+    var siblings = parent.childNodes.slice(0, idx);
+    siblings.forEach(function(sibling){
+      nodeWalkAll(sibling, predicate, matches);
+    });
+    nodeWalkAllPrior(parent, predicate, matches);
+  }
+  return matches;
+}
+
+/**
  * Equivalent to `nodeWalk`, but only matches elements
  *
  * @returns {Element}
@@ -430,11 +474,13 @@ module.exports = {
   queryAll: queryAll,
   nodeWalk: nodeWalk,
   nodeWalkAll: nodeWalkAll,
+  nodeWalkAllPrior: nodeWalkAllPrior,
   treeMap: treeMap,
   predicates: {
     hasClass: hasClass,
     hasAttr: hasAttr,
     hasAttrValue: hasAttrValue,
+    hasMatchingTagName: hasMatchingTagName,
     hasTagName: hasTagName,
     hasTextValue: hasTextValue,
     AND: AND,
