@@ -339,6 +339,21 @@ function nodeWalkAll(node, predicate, matches) {
   return matches;
 }
 
+function _reverseNodeWalkAll(node, predicate, matches) {
+  if (!matches) {
+    matches = [];
+  }
+  if (node.childNodes) {
+    for (var i = node.childNodes.length - 1; i >= 0; i--) {
+      nodeWalkAll(node.childNodes[i], predicate, matches);
+    }
+  }
+  if (predicate(node)) {
+    matches.push(node);
+  }
+  return matches;
+}
+
 /**
  * Equivalent to `nodeWalkAll`, but only returns nodes that are either 
  * ancestors or earlier cousins/siblings in the document.
@@ -357,12 +372,8 @@ function nodeWalkAllPrior(node, predicate, matches) {
   if (parent) {
     var idx = parent.childNodes.indexOf(node);
     var siblings = parent.childNodes.slice(0, idx);
-    var nieces;
     for (var i = siblings.length-1; i >= 0; i--) {
-      nieces = nodeWalkAll(siblings[i], predicate);
-      for (var j = nieces.length -1; j >=0; j--) {
-        matches.push(nieces[j]);
-      }
+      _reverseNodeWalkAll(siblings[i], predicate, matches);
     }
     nodeWalkAllPrior(parent, predicate, matches);
   }
