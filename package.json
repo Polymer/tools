@@ -5,8 +5,7 @@
   "homepage": "https://github.com/Polymer/hydrolysis",
   "bugs": "https://github.com/Polymer/hydrolysis/issues",
   "license": {
-    "type": "BSD-3-Clause",
-    "url": "http://polymer.github.io/LICENSE.txt"
+    "type": "BSD-3-Clause"
   },
   "repository": {
     "type": "git",
