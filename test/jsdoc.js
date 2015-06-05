@@ -7,7 +7,7 @@ describe('jsdoc', function() {
     it('parses single-line', function() {
       var parsed = jsdoc.parseJsdoc('* Just some text');
       expect(parsed).to.deep.eq({
-        body: 'Just some text',
+        description: 'Just some text',
         tags: [],
       });
     });
@@ -15,7 +15,7 @@ describe('jsdoc', function() {
     it('parses body-only', function() {
       var parsed = jsdoc.parseJsdoc('* Just some text\n* in multiple lines.');
       expect(parsed).to.deep.eq({
-        body: 'Just some text\nin multiple lines.',
+        description: 'Just some text\nin multiple lines.',
         tags: [],
       });
     });
@@ -23,9 +23,9 @@ describe('jsdoc', function() {
     it('parses tag-only', function() {
       var parsed = jsdoc.parseJsdoc('* @atag');
       expect(parsed).to.deep.eq({
-        body: null,
+        description: '',
         tags: [
-          {tag: 'atag', type: null, name: null, body: null},
+          {title: 'atag', description: null},
         ],
       });
     });
@@ -33,29 +33,30 @@ describe('jsdoc', function() {
     it('parses tag-name', function() {
       var parsed = jsdoc.parseJsdoc('* @do stuff');
       expect(parsed).to.deep.eq({
-        body: null,
+        description: '',
         tags: [
-          {tag: 'do', type: null, name: 'stuff', body: null},
+          {title: 'do', description: 'stuff'},
         ],
       });
     });
 
-    it('parses tag-name-type', function() {
+    it('parses tag-desc', function() {
       var parsed = jsdoc.parseJsdoc('* @do a thing');
       expect(parsed).to.deep.eq({
-        body: null,
+        description: '',
         tags: [
-          {tag: 'do', type: null, name: 'a', body: 'thing'},
+          {title: 'do', description: 'a thing'},
         ],
       });
     });
 
     it('parses tag-type', function() {
-      var parsed = jsdoc.parseJsdoc('* @do {Type}');
+      var parsed = jsdoc.parseJsdoc('/** @do {Type} some type.*/');
+      console.log(Object.keys(parsed.tags[0]));
       expect(parsed).to.deep.eq({
-        body: null,
+        description: '',
         tags: [
-          {tag: 'do', type: 'Type', name: null, body: null},
+          {tag: 'do', type: {type: 'NameExpression', name: 'Type'}, description: null},
         ],
       });
     });
@@ -63,7 +64,7 @@ describe('jsdoc', function() {
     it('parses desc+tag', function() {
       var parsed = jsdoc.parseJsdoc('* The desc.\n* @do {a} thing');
       expect(parsed).to.deep.eq({
-        body: 'The desc.',
+        description: 'The desc.',
         tags: [
           {tag: 'do', type: 'a', name: 'thing', body: null},
         ],
@@ -73,7 +74,7 @@ describe('jsdoc', function() {
     it('parses desc+tags', function() {
       var parsed = jsdoc.parseJsdoc('* The desc.\n* @do {a} thing\n* @another thing');
       expect(parsed).to.deep.eq({
-        body: 'The desc.',
+        description: 'The desc.',
         tags: [
           {tag: 'do',      type: 'a',  name: 'thing', body: null},
           {tag: 'another', type: null, name: 'thing', body: null},
@@ -84,7 +85,7 @@ describe('jsdoc', function() {
     it('parses multiline tags', function() {
       var parsed = jsdoc.parseJsdoc('* @do {a} thing\n* with\r\n* stuff\n* @another thing');
       expect(parsed).to.deep.eq({
-        body: null,
+        description: null,
         tags: [
           {tag: 'do',      type: 'a',  name: 'thing', body: 'with\n stuff'},
           {tag: 'another', type: null, name: 'thing', body: null},
@@ -95,7 +96,7 @@ describe('jsdoc', function() {
     it('allows for wrapped tags', function() {
       var parsed = jsdoc.parseJsdoc('* @do\n* {a}\n* thing\n* with\n* stuff');
       expect(parsed).to.deep.eq({
-        body: null,
+        description: null,
         tags: [
           {tag: 'do', type: 'a', name: 'thing', body: 'with\n stuff'},
         ],
@@ -105,7 +106,7 @@ describe('jsdoc', function() {
     it('expands chained tags', function() {
       var parsed = jsdoc.parseJsdoc('* @private @type {Foo}');
       expect(parsed).to.deep.eq({
-        body: null,
+        description: null,
         tags: [
           {tag: 'private', type: 'Foo', name: null, body: null},
           {tag: 'type',    type: 'Foo', name: null, body: null},

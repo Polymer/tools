@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
-    "build:watch": "watch 'npm run build' ./lib ",
+    "build:watch": "watch 'npm run build' ./lib",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "test": "jshint index.js lib/ && npm run build && wct && node_modules/mocha/bin/mocha test/test.js"
@@ -34,6 +34,7 @@
     "watch": "latest"
   },
   "dependencies": {
+    "doctrine": "^0.6.4",
     "dom5": "^1.1.0",
     "es6-promise": "^2.1.0",
     "espree": "^2.0.1",
