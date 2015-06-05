@@ -1,3 +1,19 @@
+## Objects
+<dl>
+<dt><a href="#hydrolysis">hydrolysis</a> : <code>object</code></dt>
+<dd><p>Static analysis for Polymer.</p>
+</dd>
+</dl>
+## Functions
+<dl>
+<dt><a href="#isSiblingOrAunt">isSiblingOrAunt()</a> ⇒ <code>boolean</code></dt>
+<dd><p>Returns true if <code>patha</code> is a sibling or aunt of <code>pathb</code>.</p>
+</dd>
+<dt><a href="#redirectSibling">redirectSibling()</a> ⇒ <code>string</code></dt>
+<dd><p>Change <code>localPath</code> from a sibling of <code>basePath</code> to be a child of
+<code>basePath</code> joined with <code>redirect</code>.</p>
+</dd>
+</dl>
 <a name="hydrolysis"></a>
 ## hydrolysis : <code>object</code>
 Static analysis for Polymer.
@@ -13,8 +29,10 @@ Static analysis for Polymer.
       * [.features](#hydrolysis.Analyzer#features) : <code>Array.&lt;FeatureDescriptor&gt;</code>
       * [.behaviors](#hydrolysis.Analyzer#behaviors) : <code>Array.&lt;BehaviorDescriptor&gt;</code>
       * [.html](#hydrolysis.Analyzer#html) : <code>Object.&lt;string, AnalyzedDocument&gt;</code>
-      * [.dependencies(href)](#hydrolysis.Analyzer#dependencies) ⇒ <code>Array.&lt;string&gt;</code>
+      * [.parsedDocuments](#hydrolysis.Analyzer#parsedDocuments) : <code>Object</code>
+      * [._getDependencies(href, [found], [transitive])](#hydrolysis.Analyzer#_getDependencies) ⇒ <code>Array.&lt;string&gt;</code>
       * [.metadataTree(href)](#hydrolysis.Analyzer#metadataTree) ⇒ <code>Promise</code>
+      * [.nodeWalkDocuments(predicate)](#hydrolysis.Analyzer#nodeWalkDocuments) ⇒ <code>Object</code>
       * [.annotate()](#hydrolysis.Analyzer#annotate)
       * [.clean()](#hydrolysis.Analyzer#clean)
     * _static_
@@ -51,8 +69,10 @@ Static analysis for Polymer.
     * [.features](#hydrolysis.Analyzer#features) : <code>Array.&lt;FeatureDescriptor&gt;</code>
     * [.behaviors](#hydrolysis.Analyzer#behaviors) : <code>Array.&lt;BehaviorDescriptor&gt;</code>
     * [.html](#hydrolysis.Analyzer#html) : <code>Object.&lt;string, AnalyzedDocument&gt;</code>
-    * [.dependencies(href)](#hydrolysis.Analyzer#dependencies) ⇒ <code>Array.&lt;string&gt;</code>
+    * [.parsedDocuments](#hydrolysis.Analyzer#parsedDocuments) : <code>Object</code>
+    * [._getDependencies(href, [found], [transitive])](#hydrolysis.Analyzer#_getDependencies) ⇒ <code>Array.&lt;string&gt;</code>
     * [.metadataTree(href)](#hydrolysis.Analyzer#metadataTree) ⇒ <code>Promise</code>
+    * [.nodeWalkDocuments(predicate)](#hydrolysis.Analyzer#nodeWalkDocuments) ⇒ <code>Object</code>
     * [.annotate()](#hydrolysis.Analyzer#annotate)
     * [.clean()](#hydrolysis.Analyzer#clean)
   * _static_
@@ -94,8 +114,13 @@ The behaviors collected by the analysis pass.
 A map, keyed by absolute path, of Document metadata.
 
 **Kind**: instance property of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
-<a name="hydrolysis.Analyzer#dependencies"></a>
-#### analyzer.dependencies(href) ⇒ <code>Array.&lt;string&gt;</code>
+<a name="hydrolysis.Analyzer#parsedDocuments"></a>
+#### analyzer.parsedDocuments : <code>Object</code>
+A map, keyed by path, of HTML document ASTs.
+
+**Kind**: instance property of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
+<a name="hydrolysis.Analyzer#_getDependencies"></a>
+#### analyzer._getDependencies(href, [found], [transitive]) ⇒ <code>Array.&lt;string&gt;</code>
 List all the html dependencies for the document at `href`.
 
 **Kind**: instance method of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
@@ -104,6 +129,8 @@ List all the html dependencies for the document at `href`.
 | Param | Type | Description |
 | --- | --- | --- |
 | href | <code>string</code> | The href to get dependencies for. |
+| [found] | <code>Object.&lt;string, boolean&gt;</code> | An object keyed by URL of the     already resolved dependencies. |
+| [transitive] | <code>boolean</code> | Whether to load transitive     dependencies. Defaults to true. |
 
 <a name="hydrolysis.Analyzer#metadataTree"></a>
 #### analyzer.metadataTree(href) ⇒ <code>Promise</code>
@@ -115,6 +142,16 @@ tree, in a format that maintains the ordering of the HTML imports spec.
 | Param | Type | Description |
 | --- | --- | --- |
 | href | <code>string</code> | the import to get metadata for. |
+
+<a name="hydrolysis.Analyzer#nodeWalkDocuments"></a>
+#### analyzer.nodeWalkDocuments(predicate) ⇒ <code>Object</code>
+Calls `dom5.nodeWalk` on each document that `Anayzler` has laoded.
+
+**Kind**: instance method of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| predicate | <code>Object</code> | A dom5 predicate. |
 
 <a name="hydrolysis.Analyzer#annotate"></a>
 #### analyzer.annotate()
@@ -196,6 +233,7 @@ Resolves requests via the file system.
 | config.host | <code>string</code> | Hostname to match for absolute urls.     Matches "/" by default |
 | config.basePath | <code>string</code> | Prefix directory for components in url.     Defaults to "/". |
 | config.root | <code>string</code> | Filesystem root to search. Defaults to the     current working directory. |
+| config.redirect | <code>string</code> | Where to redirect lookups to siblings. |
 
 <a name="hydrolysis.NoopResolver"></a>
 ### hydrolysis.NoopResolver
@@ -281,7 +319,8 @@ The metadata of an entire HTML document, in promises.
 | --- | --- | --- |
 | href | <code>string</code> | The url of the document. |
 | htmlLoaded | <code>Promise.&lt;ParsedImport&gt;</code> | The parsed representation of     the doc. Use the `ast` property to get the full `parse5` ast |
-| depsLoaded | <code>Promise.&lt;Array.&lt;string&gt;&gt;</code> | Resolves to the list of this     Document's import dependencies |
+| depsLoaded | <code>Promise.&lt;Array.&lt;string&gt;&gt;</code> | Resolves to the list of this     Document's transitive import dependencies |
+| depHrefs | <code>Array.&lt;string&gt;</code> | The direct dependencies of the document. |
 | metadataLoaded | <code>Promise.&lt;DocumentDescriptor&gt;</code> | Resolves to the list of     this Document's import dependencies |
 
 <a name="hydrolysis.LoadOptions"></a>
@@ -293,7 +332,6 @@ Options for `Analyzer.analzye`
 
 | Name | Type | Description |
 | --- | --- | --- |
-| attachAST | <code>boolean</code> | Whether underlying AST data should be included. |
 | noAnnotations | <code>boolean</code> | Whether `annotate()` should be skipped. |
 | clean | <code>boolean</code> | Whether the generated descriptors should be cleaned     of redundant data. |
 | filter | <code>function</code> | A predicate function that     indicates which files should be ignored by the loader. By default all     files not located under the dirname of `href` will be ignored. |
@@ -309,3 +347,14 @@ An object that knows how to resolve resources.
 | --- | --- | --- |
 | accept | <code>function</code> | Attempt to resolve     `deferred` with the contents the specified URL. Returns false if the     Resolver is unable to resolve the URL. |
 
+<a name="isSiblingOrAunt"></a>
+## isSiblingOrAunt() ⇒ <code>boolean</code>
+Returns true if `patha` is a sibling or aunt of `pathb`.
+
+**Kind**: global function  
+<a name="redirectSibling"></a>
+## redirectSibling() ⇒ <code>string</code>
+Change `localPath` from a sibling of `basePath` to be a child of
+`basePath` joined with `redirect`.
+
+**Kind**: global function  
