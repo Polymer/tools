@@ -103,6 +103,27 @@ suite('Loader', function() {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
+
+    test('Spaces in Filepath', function(done) {
+      var fs = new fsResolver({
+        root: path.join(__dirname, '..')
+      });
+      l.addResolver(fs);
+      l.request('/test/static/spaces%20in%20request.txt').then(function(content) {
+        assert.equal(content.trim(), 'Spaces!');
+      }).then(done, done);
+    });
+
+    test('Spaces in Filepath', function(done) {
+      var fs = new fsResolver({
+        root: path.join(__dirname, '..'),
+        basePath: '/space%20in%20basePath'
+      });
+      l.addResolver(fs);
+      l.request('/space%20in%20basePath/test/static/xhr-text.txt').then(function(content) {
+        assert.equal(content.trim(), 'Hello!');
+      }).then(done, done);
+    });
   });
 
   suite('Noop Resolver', function() {
