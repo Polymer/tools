@@ -1,6 +1,6 @@
 {
   "name": "hydrolysis",
-  "private": true,
+  "main": "hydrolysis.js",
   "ignore": [
     "lib/",
     "examples/",
