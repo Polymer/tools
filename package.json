@@ -4,9 +4,7 @@
   "description": "Breaks polymers into monomers",
   "homepage": "https://github.com/Polymer/hydrolysis",
   "bugs": "https://github.com/Polymer/hydrolysis/issues",
-  "license": {
-    "type": "BSD-3-Clause"
-  },
+  "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
     "url": "https://github.com/Polymer/hydrolysis.git"
