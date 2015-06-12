@@ -25,7 +25,7 @@ describe('jsdoc', function() {
       expect(parsed).to.deep.eq({
         description: '',
         tags: [
-          {title: 'atag', description: null},
+          {tag: 'atag', description: null, name: undefined, type: null},
         ],
       });
     });
@@ -35,7 +35,7 @@ describe('jsdoc', function() {
       expect(parsed).to.deep.eq({
         description: '',
         tags: [
-          {title: 'do', description: 'stuff'},
+          {tag: 'do', description: 'stuff', name: undefined, type: null},
         ],
       });
     });
@@ -45,83 +45,29 @@ describe('jsdoc', function() {
       expect(parsed).to.deep.eq({
         description: '',
         tags: [
-          {title: 'do', description: 'a thing'},
+          {tag: 'do', description: 'a thing', name: undefined, type: null},
         ],
       });
     });
 
-    it('parses tag-type', function() {
-      var parsed = jsdoc.parseJsdoc('/** @do {Type} some type.*/');
-      console.log(Object.keys(parsed.tags[0]));
+    it('parses param type', function() {
+      var parsed = jsdoc.parseJsdoc('* @param {Type} name desc desc');
       expect(parsed).to.deep.eq({
         description: '',
         tags: [
-          {tag: 'do', type: {type: 'NameExpression', name: 'Type'}, description: null},
-        ],
-      });
-    });
-
-    it('parses desc+tag', function() {
-      var parsed = jsdoc.parseJsdoc('* The desc.\n* @do {a} thing');
-      expect(parsed).to.deep.eq({
-        description: 'The desc.',
-        tags: [
-          {tag: 'do', type: 'a', name: 'thing', body: null},
-        ],
-      });
-    });
-
-    it('parses desc+tags', function() {
-      var parsed = jsdoc.parseJsdoc('* The desc.\n* @do {a} thing\n* @another thing');
-      expect(parsed).to.deep.eq({
-        description: 'The desc.',
-        tags: [
-          {tag: 'do',      type: 'a',  name: 'thing', body: null},
-          {tag: 'another', type: null, name: 'thing', body: null},
-        ],
-      });
-    });
-
-    it('parses multiline tags', function() {
-      var parsed = jsdoc.parseJsdoc('* @do {a} thing\n* with\r\n* stuff\n* @another thing');
-      expect(parsed).to.deep.eq({
-        description: null,
-        tags: [
-          {tag: 'do',      type: 'a',  name: 'thing', body: 'with\n stuff'},
-          {tag: 'another', type: null, name: 'thing', body: null},
-        ],
-      });
-    });
-
-    it('allows for wrapped tags', function() {
-      var parsed = jsdoc.parseJsdoc('* @do\n* {a}\n* thing\n* with\n* stuff');
-      expect(parsed).to.deep.eq({
-        description: null,
-        tags: [
-          {tag: 'do', type: 'a', name: 'thing', body: 'with\n stuff'},
-        ],
-      });
-    });
-
-    it('expands chained tags', function() {
-      var parsed = jsdoc.parseJsdoc('* @private @type {Foo}');
-      expect(parsed).to.deep.eq({
-        description: null,
-        tags: [
-          {tag: 'private', type: 'Foo', name: null, body: null},
-          {tag: 'type',    type: 'Foo', name: null, body: null},
+          {tag: 'param', type: "Type", name: 'name', description: 'desc desc'},
         ],
       });
     });
 
     it('preserves indentation for the body', function() {
-      var parsed = jsdoc.parseJsdoc('*   The desc.\n* thing');
-      expect(parsed.body).to.deep.eq('  The desc.\nthing');
+      var parsed = jsdoc.parseJsdoc('*     The desc.\n*     thing');
+      expect(parsed.description).to.deep.eq('    The desc.\n    thing');
     });
 
     it('handles empty lines', function() {
       var parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
-      expect(parsed.body).to.eq('Foo\n\nBar');
+      expect(parsed.description).to.eq('\n\nFoo\n\nBar');
     });
 
   });
