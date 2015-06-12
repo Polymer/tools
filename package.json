@@ -34,7 +34,6 @@
   "dependencies": {
     "doctrine": "PolymerLabs/doctrine#master",
     "dom5": "^1.1.0",
-    "dom5": "^1.0.3",
     "es6-promise": "^2.1.0",
     "espree": "^2.0.1",
     "estraverse": "^3.1.0",
