@@ -10,6 +10,10 @@
     "gulpfile.js",
     "package.json"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Polymer/hydrolysis.git"
+  },
   "devDependencies": {
     "polymer": "Polymer/polymer#^0.9.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
