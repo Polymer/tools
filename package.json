@@ -32,7 +32,7 @@
     "watch": "latest"
   },
   "dependencies": {
-    "doctrine": "PolymerLabs/doctrine#master",
+    "doctrine": "https://github.com/PolymerLabs/doctrine/archive/4f74c86ea5cd03fbd947c4df91a2192d13779fb5.tar.gz",
     "dom5": "^1.1.0",
     "es6-promise": "^2.1.0",
     "espree": "^2.0.1",
