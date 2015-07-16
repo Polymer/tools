@@ -63,14 +63,22 @@ module.exports = function(wct, pluginOptions) {
     });
   });
 
-  wct.on('test-end', function(def, data, stats, browser) {
+  wct.on('browser-start', function(def, data, stats, browser) {
     if (!browser) return;
-    // Bump the connection to advance Sauce's remote timeout.
-    browser.title(function() {});
+    // Bump the connection periodically to advance Sauce's remote timeout.
+    browser._keepalive = setInterval(function(){
+      browser.title(function() {});
+    }, (def.testTimeout / 2) || 45 * 1000);
+    // do not let the keepalive hang node
+    browser._keepalive.unref();
   });
 
   wct.on('browser-end', function(def, error, stats, sessionId, browser) {
     if (eachCapabilities.length === 0 || !sessionId) return;
+
+    if (browser._keepalive) {
+      clearInterval(browser._keepalive);
+    }
 
     var payload = {
       passed: (stats.status === 'complete' && stats.failing === 0),
