@@ -11,33 +11,6 @@
   },
 
   {
-    "browserName": "chrome",
-    "platform":    "OS X 10.10",
-    "version":     "dev"
-  },
-  {
-    "browserName": "chrome",
-    "platform":    "Windows 8.1",
-    "version":     "beta"
-  },
-  {
-    "browserName": "chrome",
-    "platform":    "Linux",
-    "version":     ""
-  },
-
-  {
-    "browserName": "firefox",
-    "platform":    "Windows 8.1",
-    "version":     ""
-  },
-  {
-    "browserName": "firefox",
-    "platform":    "Linux",
-    "version":     "beta"
-  },
-
-  {
     "browserName": "safari",
     "platform":    "OS X 10.10",
     "version":     "8"
@@ -46,5 +19,37 @@
     "browserName": "safari",
     "platform":    "OS X 10.9",
     "version":     "7"
+  },
+
+  {
+    "browserName": "chrome",
+    "platform":    "Linux",
+    "version":     "dev"
+  },
+  {
+    "browserName": "chrome",
+    "platform":    "Linux",
+    "version":     "beta"
+  },
+  {
+    "browserName": "chrome",
+    "platform":    "Linux",
+    "version":     ""
+  },
+
+  {
+    "browserName": "firefox",
+    "platform":    "Linux",
+    "version":     "dev"
+  },
+  {
+    "browserName": "firefox",
+    "platform":    "Linux",
+    "version":     "beta"
+  },
+  {
+    "browserName": "firefox",
+    "platform":    "Linux",
+    "version":     ""
   }
 ]
