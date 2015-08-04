@@ -217,7 +217,7 @@
       });
 
       test('Finds behavior object assignments', function() {
-        assert.equal(parsed.behaviors.length, 3);
+        assert.equal(parsed.behaviors.length, 4);
       });
 
       test('Supports behaviors at local assignments', function() {
@@ -238,6 +238,10 @@
         assert.equal(byName['AwesomeBehavior'].properties[1].default, 1);
       });
       test('Supports chained behaviors', function() {
+        assert.property(byName, 'CustomBehaviorList');
+        assert.equal(byName['CustomBehaviorList'].behaviors[0], 'SimpleBehavior');
+        assert.equal(byName['CustomBehaviorList'].behaviors[1], 'CustomNamedBehavior');
+        assert.equal(byName['CustomBehaviorList'].behaviors[2], 'Really.Really.Deep.Behavior');
         assert.equal(byName['Really.Really.Deep.Behavior'].behaviors.length, 1);
         assert.equal(byName['Really.Really.Deep.Behavior'].behaviors[0], 'Do.Re.Mi.Fa');
       });

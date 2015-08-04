@@ -20,3 +20,12 @@ With a chained behavior
 Really.Really.Deep.Behavior = [{
   deep: true,
 }, Do.Re.Mi.Fa];
+
+/**
+@polymerBehavior
+*/
+CustomBehaviorList = [
+  SimpleBehavior,
+  CustomNamedBehavior,
+  Really.Really.Deep.Behavior
+];
