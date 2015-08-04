@@ -25,7 +25,6 @@
   "devDependencies": {
     "browserify": "^9.0.8",
     "chai": "^2.2.0",
-    "gulp": "^3.8.11",
     "jsdoc-to-markdown": "^1.0.3",
     "jshint": "^2.7.0",
     "mocha": "^2.2.4",
