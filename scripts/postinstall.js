@@ -26,7 +26,7 @@ function requireSelenium(done, attempt) {
 }
 
 var config = {
-  version: '2.45.0',
+  version: '2.47.1',
   logger:  console.log.bind(console),
 };
 
