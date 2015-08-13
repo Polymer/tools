@@ -202,48 +202,55 @@
     suite('behavior metadata', function() {
 
       var parsed, byName;
-      setup(function(done) {
-        var loader = new hyd.Loader();
-        var resolver = new hyd.XHRResolver();
-        loader.addResolver(resolver);
-        loader.request("static/js-behaviors.js").then(function(content){
-          parsed = hyd._jsParse(content);
-          byName = {};
-          parsed.behaviors.forEach(function(behavior) {
-            byName[behavior.is] = behavior;
-          });
-          done();
+      var analyzer;
+      setup(function() {
+        return hyd.Analyzer.analyze("static/html-behaviors.html").then(function(analyzed){
+          analyzer = analyzed;
         });
       });
 
       test('Finds behavior object assignments', function() {
-        assert.equal(parsed.behaviors.length, 4);
+        assert.equal(analyzer.behaviors.length, 4);
       });
 
       test('Supports behaviors at local assignments', function() {
-        assert.property(byName, 'SimpleBehavior');
-        assert.equal(byName['SimpleBehavior'].properties[0].name, 'simple');
+        assert.property(analyzer.behaviorsByName, 'SimpleBehavior');
+        assert.equal(analyzer.behaviorsByName['SimpleBehavior'].properties[0].name, 'simple');
       });
 
       test('Supports behaviors with renamed paths', function() {
-        assert.property(byName, 'AwesomeBehavior');
-        assert.equal(byName['AwesomeBehavior'].properties[0].name, 'custom');
+        assert.property(analyzer.behaviorsByName, 'AwesomeBehavior');
+        console.log(analyzer.behaviorsByName['AwesomeBehavior'].properties);
+        var found = false;
+        analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
+          if (prop.name == 'custom') {
+            found = true;
+          }
+        });
+        assert(found);
       });
 
       test('Supports behaviors On.Property.Paths', function() {
-        assert.property(byName, 'Really.Really.Deep.Behavior');
-        assert.equal(byName['Really.Really.Deep.Behavior'].properties[0].name, 'deep');
+        assert.property(analyzer.behaviorsByName, 'Really.Really.Deep.Behavior');
+        assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].properties[0].name, 'deep');
       });
       test('Supports property array on behaviors', function() {
-        assert.equal(byName['AwesomeBehavior'].properties[1].default, 1);
+        var defaultValue;
+        analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
+          if (prop.name == 'a') {
+            console.log(prop);
+            defaultValue = prop.default;
+          }
+        });
+        assert.equal(defaultValue, 1);
       });
       test('Supports chained behaviors', function() {
-        assert.property(byName, 'CustomBehaviorList');
-        assert.equal(byName['CustomBehaviorList'].behaviors[0], 'SimpleBehavior');
-        assert.equal(byName['CustomBehaviorList'].behaviors[1], 'CustomNamedBehavior');
-        assert.equal(byName['CustomBehaviorList'].behaviors[2], 'Really.Really.Deep.Behavior');
-        assert.equal(byName['Really.Really.Deep.Behavior'].behaviors.length, 1);
-        assert.equal(byName['Really.Really.Deep.Behavior'].behaviors[0], 'Do.Re.Mi.Fa');
+        assert.property(analyzer.behaviorsByName, 'CustomBehaviorList');
+        assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[0], 'SimpleBehavior');
+        assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[1], 'CustomNamedBehavior');
+        assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[2], 'Really.Really.Deep.Behavior');
+        assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].behaviors.length, 1);
+        assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].behaviors[0], 'Do.Re.Mi.Fa');
       });
     });
   </script>
