@@ -355,6 +355,34 @@ function _reverseNodeWalkAll(node, predicate, matches) {
 }
 
 /**
+ * Equivalent to `nodeWalk`, but only returns nodes that are either
+ * ancestors or earlier cousins/siblings in the document.
+ *
+ * Nodes are searched in reverse document order, starting from the sibling
+ * prior to `node`.
+ */
+function nodeWalkPrior(node, predicate) {
+  // Search our earlier siblings and their descendents.
+  var parent = node.parentNode;
+  if (parent) {
+    var idx = parent.childNodes.indexOf(node);
+    var siblings = parent.childNodes.slice(0, idx);
+    for (var i = siblings.length-1; i >= 0; i--) {
+      var sibling = siblings[i];
+      if (predicate(sibling)) {
+        return sibling;
+      }
+      var found = nodeWalkPrior(sibling, predicate);
+    }
+    if (predicate(parent)) {
+      return parent;
+    }
+    return nodeWalkPrior(parent, predicate);
+  }
+  return undefined;
+}
+
+/**
  * Equivalent to `nodeWalkAll`, but only returns nodes that are either 
  * ancestors or earlier cousins/siblings in the document.
  *
@@ -491,6 +519,7 @@ module.exports = {
   queryAll: queryAll,
   nodeWalk: nodeWalk,
   nodeWalkAll: nodeWalkAll,
+  nodeWalkPrior: nodeWalkPrior,
   nodeWalkAllPrior: nodeWalkAllPrior,
   treeMap: treeMap,
   predicates: {
