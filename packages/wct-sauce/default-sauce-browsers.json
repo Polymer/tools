@@ -40,11 +40,6 @@
   {
     "browserName": "firefox",
     "platform":    "Linux",
-    "version":     "beta"
-  },
-  {
-    "browserName": "firefox",
-    "platform":    "Linux",
     "version":     ""
   }
 ]
