@@ -9,6 +9,11 @@
     "platform":    "Windows 7",
     "version":     "10"
   },
+  {
+    "browserName": "microsoftedge",
+    "platform": "Windows 10",
+    "version": ""
+  },
 
   {
     "browserName": "safari",
