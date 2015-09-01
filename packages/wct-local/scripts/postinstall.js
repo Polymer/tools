@@ -30,13 +30,17 @@ var config = {
   logger:  console.log.bind(console),
 };
 
-requireSelenium(function(selenium) {
-  selenium.install(config, function(error) {
-    if (error) {
-      console.log('Failed to download selenium and/or chromedriver:', error);
-      console.log('selenium-standalone will attempt to re-download next time it is run.');
-      // We explicitly do not fail the install process if this happens; the user
-      // can still recover, unless their permissions are completely screwey.
-    }
+if (!process.env.NOSELENIUM) {
+  requireSelenium(function(selenium) {
+    selenium.install(config, function(error) {
+      if (error) {
+        console.log('Failed to download selenium and/or chromedriver:', error);
+        console.log('selenium-standalone will attempt to re-download next time it is run.');
+        // We explicitly do not fail the install process if this happens; the user
+        // can still recover, unless their permissions are completely screwey.
+      }
+    });
   });
-});
+} else {
+  console.log('skipping install of selenium because of NOSELENIUM flag');
+}
