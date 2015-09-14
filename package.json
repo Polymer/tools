@@ -20,7 +20,7 @@
     "build:watch": "watch 'npm run build' ./lib",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "jshint index.js lib/ && npm run build && wct && node_modules/mocha/bin/mocha test/test.js"
+    "test": "jshint index.js lib/ && npm run build && wct && mocha test/test.js"
   },
   "devDependencies": {
     "browserify": "^9.0.8",
@@ -28,7 +28,8 @@
     "jsdoc-to-markdown": "^1.0.3",
     "jshint": "^2.7.0",
     "mocha": "^2.2.4",
-    "watch": "latest"
+    "watch": "latest",
+    "web-component-tester": "^3.3.21"
   },
   "dependencies": {
     "doctrine": "https://github.com/PolymerLabs/doctrine/archive/4f74c86ea5cd03fbd947c4df91a2192d13779fb5.tar.gz",
