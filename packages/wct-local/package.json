@@ -30,6 +30,11 @@
       "seleniumPort": {
         "help": "The port of a running selenium server to use.",
         "full": "selenium-port"
+      },
+      "skipSeleniumInstall": {
+        "help": "Skip trying to install selenium.",
+        "full": "skip-selenium-install",
+        "flag": true
       }
     }
   },
