@@ -1,6 +1,6 @@
 # hydrolysis
 
-Static anlaysis utilities for polymer.
+Static analysis utilities for polymer.
 
 ## Install
 ```
