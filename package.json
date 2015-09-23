@@ -2,15 +2,12 @@
   "name": "dom5",
   "version": "1.1.0",
   "description": "Utilities for working with parse5 ASTs",
-  "license": {
-    "type": "BSD",
-    "url": "http://polymer.github.io/LICENSE.txt"
-  },
+  "license": "BSD-3-Clause",
   "scripts": {
-    "test": "node_modules/.bin/jshint --verbose *.js test/*.js && node_modules/.bin/mocha --ui tdd"
+    "test": "jshint --verbose *.js test/*.js && mocha --ui tdd"
   },
   "devDependencies": {
-    "chai": "^2.1.1",
+    "chai": "^3.3.0",
     "jshint": "^2.6.3",
     "mocha": "^2.0.1"
   },
