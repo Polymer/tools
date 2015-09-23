@@ -41,7 +41,7 @@
   "devDependencies": {
     "gulp": "^3.8.10",
     "gulp-jshint": "^1.9.0",
-    "jshint-stylish": "^1.0.0"
+    "jshint-stylish": "^2.0.1"
   },
   "dependencies": {
     "chalk": "^1.1.1",
