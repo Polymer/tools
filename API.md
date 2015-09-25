@@ -175,8 +175,8 @@ tree, in a format that maintains the ordering of the HTML imports spec.
 <a name="hydrolysis.Analyzer+getLoadedAst"></a>
 #### analyzer.getLoadedAst(href, [loaded]) ⇒ <code>Promise.&lt;DocumentAST&gt;</code>
 Returns a promise resolving to a form of the AST with all links replaced
-with the document they link to. .css and .script files become <style> and
-<script>, respectively.
+with the document they link to. .css and .script files become &lt;style&gt; and
+&lt;script&gt;, respectively.
 
 The elements in the loaded document are unmodified from their original
 documents.
