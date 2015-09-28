@@ -45,7 +45,7 @@ suite('Loader', function() {
     l.request('/').then(function() {
       throw 'should not get here';
     }, function(err) {
-      assert.equal(err, 'no resolver found');
+      assert.include(err.message, 'no resolver found');
       done();
     });
   });
