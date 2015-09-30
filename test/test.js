@@ -50,6 +50,27 @@ suite('Loader', function() {
     });
   });
 
+  suite('redirect resolver', function(){
+    var RedirectResolver = require('../lib/loader/redirect-resolver.js');
+
+    test('redirects to the fs', function(done) {
+      var redirect = new RedirectResolver.ProtocolRedirect({
+        protocol: 'chrome:',
+        hostname: 'settings',
+        path: '/static/',
+        redirectPath: 'test/static'
+      });
+      var resolver = new RedirectResolver({
+        root: path.join(__dirname, '..'),
+        redirects: [redirect]
+      });
+      l.addResolver(resolver);
+      l.request('chrome://settings/static/xhr-text.txt').then(function(content){
+        assert.equal(content.trim(), 'Hello!');
+      }).then(done, done);
+    });
+  });
+
   suite('Filesystem Resolver', function() {
     var fsResolver = require('../lib/loader/fs-resolver.js');
 
