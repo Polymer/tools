@@ -30,7 +30,7 @@ function startServer(options) {
 /**
  * @param {Object} options
  * @param {Number} options.port -- port number
- * @param {Host} options.host 
+ * @param {String} options.host -- hostname string
  * @param {String=} options.page -- page path, ex: "/", "/index.html"
  * @param {(String|String[])} options.browser -- names of browser apps to launch
  */
@@ -48,7 +48,7 @@ function startWithPort(options) {
 
   var server = http.createServer(app);
 
-  server = app.listen(options.port);
+  server = app.listen(options.port, options.host);
 
   server.on('error', function(err) {
     if (err.code === 'EADDRINUSE')
