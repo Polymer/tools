@@ -7,9 +7,9 @@
 </head>
 <body>
   <script>
+    var hyd = require('hydrolysis');
+    var registry;
     suite('parser returns expected ASTs', function() {
-      var hyd = require('hydrolysis');
-      var registry;
 
       setup(function(done) {
         var loader = new hyd.Loader();
@@ -39,6 +39,17 @@
       test('find all styles', function() {
         assert.isDefined(registry.style, "The returned registry should find styles");
         assert.equal(registry.style.length, 3);
+      });
+    });
+
+    suite('malformed input is handled properly', function(){
+      test('bad HTML reports a filename', function(done){
+        hyd.Analyzer.analyze("static/malformed.html").then(function(analyzer){
+          done(new Error("Should have thrown an error message."));
+        }).catch(function(err){
+          assert.include(err.message, "malformed.html");
+          done();
+        });
       });
     });
   </script>
