@@ -30,6 +30,7 @@ resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
   polyserve.startServer({
     port: argv.p,
     page: argv.o,
+    host: argv.H,
     browser: argv.b
   });
 });

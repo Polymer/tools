@@ -30,12 +30,14 @@ function startServer(options) {
 /**
  * @param {Object} options
  * @param {Number} options.port -- port number
+ * @param {Host} options.host 
  * @param {String=} options.page -- page path, ex: "/", "/index.html"
  * @param {(String|String[])} options.browser -- names of browser apps to launch
  */
 function startWithPort(options) {
 
   options.port = options.port || 8080;
+  options.host = options.host || "0.0.0.0";
 
   console.log('Starting Polyserve on port ' + options.port);
 
@@ -55,7 +57,7 @@ function startWithPort(options) {
     process.exit(69);
   });
 
-  var baseUrl = util.format('http://localhost:%d/components/%s/', options.port,
+  var baseUrl = util.format('http://'+options.host+':%d/components/%s/', options.port,
     polyserve.packageName);
   console.log('Files in this directory are available under ' + baseUrl);
 
