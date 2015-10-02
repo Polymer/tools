@@ -36,6 +36,7 @@
     "dom5": "^1.1.0",
     "es6-promise": "^2.1.0",
     "espree": "^2.0.1",
-    "estraverse": "^3.1.0"
+    "estraverse": "^3.1.0",
+    "path-is-absolute": "^1.0.0"
   }
 }
