@@ -11,7 +11,7 @@
 var express = require('express');
 var http = require('http');
 var makeApp = require('./make_app');
-var open = require('open');
+var opn = require('opn');
 var util = require('util');
 var findPort = require('find-port');
 
@@ -63,10 +63,10 @@ function startWithPort(options) {
     var url = baseUrl + (options.page === true ? 'index.html' : options.page);
     if (Array.isArray(options.browser)) {
       for (var i = 0; i < options.browser.length; i++)
-        open(url, options.browser[i]);
+        opn(url, options.browser[i]);
     }
     else {
-      open(url, options.browser);
+      opn(url, options.browser);
     }
   }
 }
