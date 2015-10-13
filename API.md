@@ -37,8 +37,8 @@ Static analysis for Polymer.
       * [.parsedScripts](#hydrolysis.Analyzer+parsedScripts) : <code>Object.&lt;string, Array.&lt;ParsedJS&gt;&gt;</code>
       * [._content](#hydrolysis.Analyzer+_content) : <code>Object</code>
       * [._getDependencies(href, [found], [transitive])](#hydrolysis.Analyzer+_getDependencies) ⇒ <code>Array.&lt;string&gt;</code>
-      * [.elementsForFolder(path)](#hydrolysis.Analyzer+elementsForFolder) ⇒ <code>Array.&lt;ElementDescriptor&gt;</code>
-      * [.behaviorsForFolder(path)](#hydrolysis.Analyzer+behaviorsForFolder) ⇒ <code>Array.&lt;BehaviorDescriptor&gt;</code>
+      * [.elementsForFolder(href)](#hydrolysis.Analyzer+elementsForFolder) ⇒ <code>Array.&lt;ElementDescriptor&gt;</code>
+      * [.behaviorsForFolder(href)](#hydrolysis.Analyzer+behaviorsForFolder) ⇒ <code>Array.&lt;BehaviorDescriptor&gt;</code>
       * [.metadataTree(href)](#hydrolysis.Analyzer+metadataTree) ⇒ <code>Promise</code>
       * [.getLoadedAst(href, [loaded])](#hydrolysis.Analyzer+getLoadedAst) ⇒ <code>Promise.&lt;DocumentAST&gt;</code>
       * [.nodeWalkDocuments(predicate)](#hydrolysis.Analyzer+nodeWalkDocuments) ⇒ <code>Object</code>
@@ -88,8 +88,8 @@ Static analysis for Polymer.
     * [.parsedScripts](#hydrolysis.Analyzer+parsedScripts) : <code>Object.&lt;string, Array.&lt;ParsedJS&gt;&gt;</code>
     * [._content](#hydrolysis.Analyzer+_content) : <code>Object</code>
     * [._getDependencies(href, [found], [transitive])](#hydrolysis.Analyzer+_getDependencies) ⇒ <code>Array.&lt;string&gt;</code>
-    * [.elementsForFolder(path)](#hydrolysis.Analyzer+elementsForFolder) ⇒ <code>Array.&lt;ElementDescriptor&gt;</code>
-    * [.behaviorsForFolder(path)](#hydrolysis.Analyzer+behaviorsForFolder) ⇒ <code>Array.&lt;BehaviorDescriptor&gt;</code>
+    * [.elementsForFolder(href)](#hydrolysis.Analyzer+elementsForFolder) ⇒ <code>Array.&lt;ElementDescriptor&gt;</code>
+    * [.behaviorsForFolder(href)](#hydrolysis.Analyzer+behaviorsForFolder) ⇒ <code>Array.&lt;BehaviorDescriptor&gt;</code>
     * [.metadataTree(href)](#hydrolysis.Analyzer+metadataTree) ⇒ <code>Promise</code>
     * [.getLoadedAst(href, [loaded])](#hydrolysis.Analyzer+getLoadedAst) ⇒ <code>Promise.&lt;DocumentAST&gt;</code>
     * [.nodeWalkDocuments(predicate)](#hydrolysis.Analyzer+nodeWalkDocuments) ⇒ <code>Object</code>
@@ -171,24 +171,24 @@ List all the html dependencies for the document at `href`.
 | [transitive] | <code>boolean</code> | Whether to load transitive     dependencies. Defaults to true. |
 
 <a name="hydrolysis.Analyzer+elementsForFolder"></a>
-#### analyzer.elementsForFolder(path) ⇒ <code>Array.&lt;ElementDescriptor&gt;</code>
+#### analyzer.elementsForFolder(href) ⇒ <code>Array.&lt;ElementDescriptor&gt;</code>
 Returns the elements defined in the folder containing `href`.
 
 **Kind**: instance method of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| path | <code>string</code> | to search. |
+| href | <code>string</code> | path to search. |
 
 <a name="hydrolysis.Analyzer+behaviorsForFolder"></a>
-#### analyzer.behaviorsForFolder(path) ⇒ <code>Array.&lt;BehaviorDescriptor&gt;</code>
+#### analyzer.behaviorsForFolder(href) ⇒ <code>Array.&lt;BehaviorDescriptor&gt;</code>
 Returns the behaviors defined in the folder containing `href`.
 
 **Kind**: instance method of <code>[Analyzer](#hydrolysis.Analyzer)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| path | <code>string</code> | to search. |
+| href | <code>string</code> | path to search. |
 
 <a name="hydrolysis.Analyzer+metadataTree"></a>
 #### analyzer.metadataTree(href) ⇒ <code>Promise</code>
