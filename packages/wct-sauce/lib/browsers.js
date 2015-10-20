@@ -9,7 +9,12 @@
  */
 var _ = require('lodash');
 
-var DEFAULT_BROWSERS = require('../default-sauce-browsers.json');
+var ALL_BROWSERS = require('../default-sauce-browsers.json');
+
+var TRAVIS_BROWSERS = require('../travis-browsers.json');
+
+// if running under travis, ENV{TRAVIS} = true, use the travis browser set
+var DEFAULT_BROWSERS = process.env.TRAVIS ? TRAVIS_BROWSERS : ALL_BROWSERS;
 
 // "<PLATFORM>/<BROWSER>[@<VERSION>]"
 var BROWSER_SPEC = /^([^\/@]+)\/([^\/@]+)(?:@(.*))?$/;
