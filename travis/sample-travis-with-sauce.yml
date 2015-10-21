@@ -1,10 +1,5 @@
 language: node_js
 sudo: false
-before_script:
-- npm install web-component-tester
-- npm install bower
-- export PATH=$PWD/node_modules/.bin:$PATH
-- bower install
 matrix:
   include:
   - node_js: stable
@@ -22,3 +17,8 @@ matrix:
       if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
         wct -s 'default'
       fi
+before_script:
+- npm install web-component-tester
+- npm install bower
+- export PATH=$PWD/node_modules/.bin:$PATH
+- bower install
