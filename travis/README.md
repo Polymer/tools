@@ -11,7 +11,8 @@
 1. Navigate to your [profile page](https://travis-ci.org/profile)
 1. Click the organization of the repo, and toggle the switch to enable travis the repo.
 1. If you have a [Sauce Labs](https://saucelabs.com) Account, follow the "with
-   sauce" instructions. Otherwise follow the "without sauce" instructions.
+   sauce" instructions.
+1. Otherwise follow the "without sauce" instructions.
 
 ### WCT without Sauce
 1. Copy `sample_travis_without_sauce.yml` to your repo as `.travis.yml`
