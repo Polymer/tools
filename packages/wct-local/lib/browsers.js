@@ -114,6 +114,7 @@ function chrome(browser) {
     'version':     browser.version.match(/\d+/)[0],
     'chromeOptions': {
       'binary': browser.binPath,
+      'args': ['start-maximized']
     },
   };
 }
