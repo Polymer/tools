@@ -41,8 +41,12 @@ function startWithPort(options) {
 
   console.log('Starting Polyserve on port ' + options.port);
 
-  var app = express();
-  var polyserve = makeApp(options.componentDir, options.packageName);
+  let app = express();
+  let polyserve = makeApp({
+    componentDir: options.componentDir,
+    packageName: options.packageName,
+    root: process.cwd(),
+  });
 
   app.use('/components/', polyserve);
 

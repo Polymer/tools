@@ -17,18 +17,21 @@ var bowerConfig = require('./bower_config');
 
 /**
  * Make a polyserve express app.
- * @param  {string} componentDir The directory to serve components from.
- * @param  {string} packageName  A name for this polyserve package.
- * @param  {Object} headers      An object keyed by header name containing
- *                               header values.
- * @param  {string} root         The root directory to serve a package from
- * @return {Object}              An express app which can be served with
- *                               `app.get`
+ * @param  {Object} options
+ * @param  {string} options.componentDir The directory to serve components from.
+ * @param  {string} options.packageName A name for this polyserve package.
+ * @param  {Object} options.headers An object keyed by header name containing
+ *         header values.
+ * @param  {string} options.root The root directory to serve a package from
+ * @return {Object} An express app which can be served with `app.get`
  */
-function makeApp(componentDir, packageName, headers, root) {
-  componentDir = componentDir || 'bower_components';
-  packageName = packageName || bowerConfig(root).name;
-  root = root || '.';
+function makeApp(options) {
+
+  let root = options.root;
+  let componentDir = options.componentDir || 'bower_components';
+  let packageName = options.packageName || bowerConfig(root).name
+      || path.basename(process.cwd());
+  let headers = options.headers || {};
 
   var app = express();
 
