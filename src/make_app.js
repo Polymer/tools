@@ -8,12 +8,14 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var express = require('express');
-var fs = require('fs');
-var path = require('path');
-var parseUrl = require('url').parse;
-var send = require('send');
-var bowerConfig = require('./bower_config');
+'use strict';
+
+let express = require('express');
+let fs = require('fs');
+let path = require('path');
+let parseUrl = require('url').parse;
+let send = require('send');
+let bowerConfig = require('./bower_config');
 
 /**
  * Make a polyserve express app.
@@ -33,12 +35,13 @@ function makeApp(options) {
       || path.basename(process.cwd());
   let headers = options.headers || {};
 
-  var app = express();
+  let app = express();
 
   app.get('*', function (req, res) {
     // Serve local files from . and other components from bower_components
-    var url = parseUrl(req.url, true);
-    var splitPath = url.pathname.split('/').slice(1);
+    let url = parseUrl(req.url, true);
+    let splitPath = url.pathname.split('/').slice(1);
+
     if (splitPath[0] === packageName) {
       if (root) {
         splitPath = [root].concat(splitPath.slice(1));
@@ -48,9 +51,10 @@ function makeApp(options) {
     } else {
       splitPath = [componentDir].concat(splitPath);
     }
-    var filePath = splitPath.join('/');
+    let filePath = splitPath.join('/');
+
     if (headers) {
-      for (header in headers) {
+      for (let header in headers) {
         res.append(header, headers[header]);
       }
     }

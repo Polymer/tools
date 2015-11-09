@@ -8,12 +8,14 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var express = require('express');
-var http = require('http');
-var makeApp = require('./make_app');
-var opn = require('opn');
-var util = require('util');
-var findPort = require('find-port');
+'use strict';
+
+let express = require('express');
+let findPort = require('find-port');
+let http = require('http');
+let makeApp = require('./make_app');
+let opn = require('opn');
+let util = require('util');
 
 function startServer(options) {
   if (!options.port) {
@@ -50,7 +52,7 @@ function startWithPort(options) {
 
   app.use('/components/', polyserve);
 
-  var server = http.createServer(app);
+  let server = http.createServer(app);
 
   server = app.listen(options.port, options.host);
 
@@ -61,14 +63,14 @@ function startWithPort(options) {
     process.exit(69);
   });
 
-  var baseUrl = util.format('http://'+ options.host +':%d/components/%s/', options.port,
+  let baseUrl = util.format('http://'+ options.host +':%d/components/%s/', options.port,
     polyserve.packageName);
   console.log('Files in this directory are available under ' + baseUrl);
 
   if (options.page) {
-    var url = baseUrl + (options.page === true ? 'index.html' : options.page);
+    let url = baseUrl + (options.page === true ? 'index.html' : options.page);
     if (Array.isArray(options.browser)) {
-      for (var i = 0; i < options.browser.length; i++)
+      for (let i = 0; i < options.browser.length; i++)
         opn(url, options.browser[i]);
     }
     else {

@@ -8,15 +8,17 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var path = require('path');
-var fs = require('fs');
+'use strict';
+
+let path = require('path');
+let fs = require('fs');
 
 function bowerConfigPath(root) {
   return path.resolve(root, 'bower.json');
 }
 
 function bowerConfigContents(root) {
-  var contents;
+  let contents;
 
   try {
     contents = fs.readFileSync(bowerConfigPath(root));
