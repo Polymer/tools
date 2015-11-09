@@ -34,5 +34,7 @@ resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
     page: argv.o,
     host: argv.H,
     browser: argv.b
+  }).catch((e) => {
+    process.exit(69);
   });
 });

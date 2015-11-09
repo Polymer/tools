@@ -17,16 +17,20 @@ let makeApp = require('./make_app');
 let opn = require('opn');
 let util = require('util');
 
+/**
+ * @return {Promise} A Promise that completes when the server has started.
+ */
 function startServer(options) {
-  if (!options.port) {
-    findPort(8080, 8180, function(ports) {
-      options.port = ports[0];
-      startWithPort(options);
-    });
-  }
-  else {
-    startWithPort(options);
-  }
+  return new Promise((resolve, reject) => {
+    if (options.port) {
+      resolve(options);
+    } else {
+      findPort(8080, 8180, function(ports) {
+        options.port = ports[0];
+        resolve(options);
+      });
+    }
+  }).then((opts) => startWithPort(opts));
 }
 
 let portInUseMessage = (port) => `
@@ -40,6 +44,7 @@ Please choose another port, or let an unused port be chosen automatically.
  * @param {String} options.host -- hostname string
  * @param {String=} options.page -- page path, ex: "/", "/index.html"
  * @param {(String|String[])} options.browser -- names of browser apps to launch
+ * @return {Promise}
  */
 function startWithPort(options) {
 
@@ -58,13 +63,21 @@ function startWithPort(options) {
   app.use('/components/', polyserve);
 
   let server = http.createServer(app);
+  let serverStartedResolve;
+  let serverStartedReject;
+  let serverStartedPromise = new Promise((resolve, reject) => {
+    serverStartedResolve = resolve;
+    serverStartedReject = reject;
+  });
 
-  server = app.listen(options.port, options.host);
+  server = app.listen(options.port, options.host,
+      () => serverStartedResolve(server));
 
   server.on('error', function(err) {
-    if (err.code === 'EADDRINUSE')
+    if (err.code === 'EADDRINUSE') {
       console.error(portInUseMessage(options.port));
-    process.exit(69);
+    }
+    serverStartedReject(err);
   });
 
   let baseUrl = util.format('http://'+ options.host +':%d/components/%s/', options.port,
@@ -81,6 +94,8 @@ function startWithPort(options) {
       opn(url, options.browser);
     }
   }
+
+  return serverStartedPromise;
 }
 
 module.exports = startServer;
