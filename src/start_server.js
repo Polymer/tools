@@ -29,6 +29,11 @@ function startServer(options) {
   }
 }
 
+let portInUseMessage = (port) => `
+ERROR: Port in use: ${port}
+Please choose another port, or let an unused port be chosen automatically.
+`;
+
 /**
  * @param {Object} options
  * @param {Number} options.port -- port number
@@ -58,8 +63,7 @@ function startWithPort(options) {
 
   server.on('error', function(err) {
     if (err.code === 'EADDRINUSE')
-      console.error("ERROR: Port in use", options.port,
-        "\nPlease choose another port, or let an unused port be chosen automatically.");
+      console.error(portInUseMessage(options.port));
     process.exit(69);
   });
 
