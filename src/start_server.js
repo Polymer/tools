@@ -15,7 +15,6 @@ let findPort = require('find-port');
 let http = require('http');
 let makeApp = require('./make_app');
 let opn = require('opn');
-let util = require('util');
 
 /**
  * @return {Promise} A Promise that completes when the server has started.
@@ -80,9 +79,8 @@ function startWithPort(options) {
     serverStartedReject(err);
   });
 
-  let baseUrl = util.format('http://'+ options.host +':%d/components/%s/', options.port,
-    polyserve.packageName);
-  console.log('Files in this directory are available under ' + baseUrl);
+  let baseUrl = `http://${options.host}:${options.port}/components/${polyserve.packageName}/`;
+  console.log(`Files in this directory are available under ${baseUrl}`);
 
   if (options.page) {
     let url = baseUrl + (options.page === true ? 'index.html' : options.page);
