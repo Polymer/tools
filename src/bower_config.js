@@ -12,7 +12,6 @@ var path = require('path');
 var fs = require('fs');
 
 function bowerConfigPath(root) {
-  root = path.join(process.cwd(), root || '.');
   return path.resolve(root, 'bower.json');
 }
 
