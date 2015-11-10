@@ -59,6 +59,10 @@ function startWithPort(options) {
     root: process.cwd(),
   });
 
+  app.get('/', function (req, res) {
+    res.redirect(301, `/components/${polyserve.packageName}/`);
+  });
+
   app.use('/components/', polyserve);
 
   let server = http.createServer(app);

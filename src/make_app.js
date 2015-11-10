@@ -38,8 +38,7 @@ function makeApp(options) {
   let app = express();
 
   app.get('/', function (req, res) {
-    // redirect homepage to
-    res.redirect(301, `/components/${packageName}/`);
+    res.redirect(301, `./${packageName}/`);
   });
 
   app.get('*', function (req, res) {
@@ -57,7 +56,6 @@ function makeApp(options) {
       splitPath = [componentDir].concat(splitPath);
     }
     let filePath = splitPath.join('/');
-    console.log('filePath', filePath);
 
     if (headers) {
       for (let header in headers) {
