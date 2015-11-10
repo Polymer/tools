@@ -56,7 +56,6 @@ function makeApp(options) {
       splitPath = [componentDir].concat(splitPath);
     }
     let filePath = splitPath.join('/');
-    console.log('filePath', filePath);
 
     if (headers) {
       for (let header in headers) {
