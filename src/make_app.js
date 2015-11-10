@@ -8,34 +8,40 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var express = require('express');
-var fs = require('fs');
-var path = require('path');
-var parseUrl = require('url').parse;
-var send = require('send');
-var bowerConfig = require('./bower_config');
+'use strict';
+
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const parseUrl = require('url').parse;
+const send = require('send');
+const bowerConfig = require('./bower_config');
 
 /**
  * Make a polyserve express app.
- * @param  {string} componentDir The directory to serve components from.
- * @param  {string} packageName  A name for this polyserve package.
- * @param  {Object} headers      An object keyed by header name containing
- *                               header values.
- * @param  {string} root         The root directory to serve a package from
- * @return {Object}              An express app which can be served with
- *                               `app.get`
+ * @param  {Object} options
+ * @param  {string} options.componentDir The directory to serve components from.
+ * @param  {string} options.packageName A name for this polyserve package.
+ * @param  {Object} options.headers An object keyed by header name containing
+ *         header values.
+ * @param  {string} options.root The root directory to serve a package from
+ * @return {Object} An express app which can be served with `app.get`
  */
-function makeApp(componentDir, packageName, headers, root) {
-  componentDir = componentDir || 'bower_components';
-  packageName = packageName || bowerConfig(root).name;
-  root = root || '.';
+function makeApp(options) {
 
-  var app = express();
+  let root = options.root;
+  let componentDir = options.componentDir || 'bower_components';
+  let packageName = options.packageName || bowerConfig(root).name
+      || path.basename(process.cwd());
+  let headers = options.headers || {};
+
+  let app = express();
 
   app.get('*', function (req, res) {
     // Serve local files from . and other components from bower_components
-    var url = parseUrl(req.url, true);
-    var splitPath = url.pathname.split('/').slice(1);
+    let url = parseUrl(req.url, true);
+    let splitPath = url.pathname.split('/').slice(1);
+
     if (splitPath[0] === packageName) {
       if (root) {
         splitPath = [root].concat(splitPath.slice(1));
@@ -45,9 +51,11 @@ function makeApp(componentDir, packageName, headers, root) {
     } else {
       splitPath = [componentDir].concat(splitPath);
     }
-    var filePath = splitPath.join('/');
+    let filePath = splitPath.join('/');
+    console.log('filePath', filePath);
+
     if (headers) {
-      for (header in headers) {
+      for (let header in headers) {
         res.append(header, headers[header]);
       }
     }

@@ -9,8 +9,10 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var resolve = require('resolve');
-var argv = require('minimist')(process.argv);
+'use strict';
+
+const resolve = require('resolve');
+const argv = require('minimist')(process.argv);
 
 process.title = 'polyserve';
 
@@ -26,11 +28,13 @@ if (argv.h || argv.help) {
 }
 
 resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
-  var polyserve = path ? require(path) : require('..');
+  let polyserve = path ? require(path) : require('..');
   polyserve.startServer({
     port: argv.p,
     page: argv.o,
     host: argv.H,
     browser: argv.b
+  }).catch((e) => {
+    process.exit(69);
   });
 });

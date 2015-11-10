@@ -8,24 +8,34 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var express = require('express');
-var http = require('http');
-var makeApp = require('./make_app');
-var opn = require('opn');
-var util = require('util');
-var findPort = require('find-port');
+'use strict';
 
+const express = require('express');
+const findPort = require('find-port');
+const http = require('http');
+const makeApp = require('./make_app');
+const opn = require('opn');
+
+/**
+ * @return {Promise} A Promise that completes when the server has started.
+ */
 function startServer(options) {
-  if (!options.port) {
-    findPort(8080, 8180, function(ports) {
-      options.port = ports[0];
-      startWithPort(options);
-    });
-  }
-  else {
-    startWithPort(options);
-  }
+  return new Promise((resolve, reject) => {
+    if (options.port) {
+      resolve(options);
+    } else {
+      findPort(8080, 8180, function(ports) {
+        options.port = ports[0];
+        resolve(options);
+      });
+    }
+  }).then((opts) => startWithPort(opts));
 }
+
+let portInUseMessage = (port) => `
+ERROR: Port in use: ${port}
+Please choose another port, or let an unused port be chosen automatically.
+`;
 
 /**
  * @param {Object} options
@@ -33,6 +43,7 @@ function startServer(options) {
  * @param {String} options.host -- hostname string
  * @param {String=} options.page -- page path, ex: "/", "/index.html"
  * @param {(String|String[])} options.browser -- names of browser apps to launch
+ * @return {Promise}
  */
 function startWithPort(options) {
 
@@ -41,36 +52,48 @@ function startWithPort(options) {
 
   console.log('Starting Polyserve on port ' + options.port);
 
-  var app = express();
-  var polyserve = makeApp(options.componentDir, options.packageName);
+  let app = express();
+  let polyserve = makeApp({
+    componentDir: options.componentDir,
+    packageName: options.packageName,
+    root: process.cwd(),
+  });
 
   app.use('/components/', polyserve);
 
-  var server = http.createServer(app);
-
-  server = app.listen(options.port, options.host);
-
-  server.on('error', function(err) {
-    if (err.code === 'EADDRINUSE')
-      console.error("ERROR: Port in use", options.port,
-        "\nPlease choose another port, or let an unused port be chosen automatically.");
-    process.exit(69);
+  let server = http.createServer(app);
+  let serverStartedResolve;
+  let serverStartedReject;
+  let serverStartedPromise = new Promise((resolve, reject) => {
+    serverStartedResolve = resolve;
+    serverStartedReject = reject;
   });
 
-  var baseUrl = util.format('http://'+ options.host +':%d/components/%s/', options.port,
-    polyserve.packageName);
-  console.log('Files in this directory are available under ' + baseUrl);
+  server = app.listen(options.port, options.host,
+      () => serverStartedResolve(server));
+
+  server.on('error', function(err) {
+    if (err.code === 'EADDRINUSE') {
+      console.error(portInUseMessage(options.port));
+    }
+    serverStartedReject(err);
+  });
+
+  let baseUrl = `http://${options.host}:${options.port}/components/${polyserve.packageName}/`;
+  console.log(`Files in this directory are available under ${baseUrl}`);
 
   if (options.page) {
-    var url = baseUrl + (options.page === true ? 'index.html' : options.page);
+    let url = baseUrl + (options.page === true ? 'index.html' : options.page);
     if (Array.isArray(options.browser)) {
-      for (var i = 0; i < options.browser.length; i++)
+      for (let i = 0; i < options.browser.length; i++)
         opn(url, options.browser[i]);
     }
     else {
       opn(url, options.browser);
     }
   }
+
+  return serverStartedPromise;
 }
 
 module.exports = startServer;
