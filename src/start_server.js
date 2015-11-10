@@ -10,11 +10,11 @@
 
 'use strict';
 
-let express = require('express');
-let findPort = require('find-port');
-let http = require('http');
-let makeApp = require('./make_app');
-let opn = require('opn');
+const express = require('express');
+const findPort = require('find-port');
+const http = require('http');
+const makeApp = require('./make_app');
+const opn = require('opn');
 
 /**
  * @return {Promise} A Promise that completes when the server has started.

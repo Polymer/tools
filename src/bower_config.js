@@ -10,8 +10,8 @@
 
 'use strict';
 
-let path = require('path');
-let fs = require('fs');
+const path = require('path');
+const fs = require('fs');
 
 function bowerConfigPath(root) {
   return path.resolve(root, 'bower.json');

@@ -11,8 +11,8 @@
 
 'use strict';
 
-let resolve = require('resolve');
-let argv = require('minimist')(process.argv);
+const resolve = require('resolve');
+const argv = require('minimist')(process.argv);
 
 process.title = 'polyserve';
 

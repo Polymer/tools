@@ -10,12 +10,12 @@
 
 'use strict';
 
-let express = require('express');
-let fs = require('fs');
-let path = require('path');
-let parseUrl = require('url').parse;
-let send = require('send');
-let bowerConfig = require('./bower_config');
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const parseUrl = require('url').parse;
+const send = require('send');
+const bowerConfig = require('./bower_config');
 
 /**
  * Make a polyserve express app.
@@ -52,6 +52,7 @@ function makeApp(options) {
       splitPath = [componentDir].concat(splitPath);
     }
     let filePath = splitPath.join('/');
+    console.log('filePath', filePath);
 
     if (headers) {
       for (let header in headers) {
