@@ -10,6 +10,23 @@
     var hyd = require('hydrolysis');
     var mod = document.querySelector("#modules");
     var ele = document.querySelector("#elements");
+
+    suite('ES6 support', function() {
+
+      test('parses classes', function(done) {
+        var loader = new hyd.Loader();
+        loader.addResolver(new hyd.XHRResolver());
+        loader.request("static/es6-support.js")
+          .then(function(content) {
+            var parsed = hyd._jsParse(content);
+            done();
+          }).catch(function(e) {
+            done(e);
+          });
+      });
+
+    });
+
     suite('parser throws errors', function() {
       /*
        * Two js documents, one with an error and one with a module
