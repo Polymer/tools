@@ -37,6 +37,9 @@ function requireSauceConnectLauncher(done, attempt) {
 }
 
 console.log('Prefetching the Sauce Connect binary.');
+
+process.env.SAUCE_CONNECT_VERSION = '4.3.12';
+
 requireSauceConnectLauncher(function(sauceConnectLauncher) {
   sauceConnectLauncher.download({
     logger: console.log.bind(console),
