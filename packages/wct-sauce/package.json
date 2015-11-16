@@ -1,6 +1,6 @@
 {
   "name": "wct-sauce",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "WCT plugin that enables support for sauce browsers via Sauce Labs",
   "keywords": [
     "wct",
