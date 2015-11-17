@@ -248,6 +248,22 @@ suite('dom5', function() {
         assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(divA), -1);
         assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(newNode), 0);
       });
+
+      test('accepts document fragments', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        var fragment = dom5.constructors.fragment();
+        var span = dom5.constructors.element('span');
+        var text = dom5.constructors.text('foo');
+        fragment.childNodes.push(span);
+        fragment.childNodes.push(text);
+
+        dom5.replace(divA, fragment);
+
+        assert.equal(divA.parentNode, null);
+        assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(divA), -1);
+        assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(span), 0);
+        assert.equal(doc.childNodes[1].childNodes[1].childNodes.indexOf(text), 1);
+      });
     });
 
     suite('Remove node', function() {
@@ -300,6 +316,19 @@ suite('dom5', function() {
         assert.equal(div.childNodes[0], b);
         assert.equal(div.childNodes[1], a);
       });
+
+      test('accepts document fragments', function() {
+        var fragment = dom5.constructors.fragment();
+        var span = dom5.constructors.element('span');
+        var text = dom5.constructors.text('foo');
+        fragment.childNodes.push(span);
+        fragment.childNodes.push(text);
+
+        dom5.append(div, fragment);
+
+        assert.equal(div.childNodes.indexOf(span), 1);
+        assert.equal(div.childNodes.indexOf(text), 2);
+      });
     });
 
     suite('InsertBefore', function() {
@@ -318,6 +347,21 @@ suite('dom5', function() {
         dom5.insertBefore(dom, div, a);
         assert.equal(dom.childNodes.indexOf(a), 0);
       });
+
+      test('accepts document fragments', function() {
+        var fragment = dom5.constructors.fragment();
+        var span2 = dom5.constructors.element('span');
+        var text = dom5.constructors.text('foo');
+        fragment.childNodes.push(span2);
+        fragment.childNodes.push(text);
+
+        dom5.insertBefore(dom, span, fragment);
+        assert.equal(dom.childNodes.indexOf(span2), 1);
+        assert.equal(dom.childNodes.indexOf(text), 2);
+        assert.equal(dom.childNodes.indexOf(span), 3);
+        assert.equal(dom.childNodes.indexOf(a), 4);
+      });
+
     });
   });
 
