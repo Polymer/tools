@@ -44,6 +44,9 @@ function startTunnel(config, emitter, done) {
     emitter.emit('log:info', 'Creating Sauce Connect tunnel');
     emitter.emit('log:info', 'Sauce Connect log:', chalk.magenta(logPath));
     emitter.emit('log:debug', 'sauce-connect-launcher options', connectOptions);
+
+    process.env.SAUCE_CONNECT_VERSION = '4.3.12';
+
     sauceConnect(connectOptions, function(error, tunnel) {
       if (error) {
         emitter.emit('log:error', 'Sauce tunnel failed:');
