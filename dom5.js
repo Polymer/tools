@@ -462,6 +462,7 @@ function newDocumentFragment() {
     nodeName: '#document-fragment',
     childNodes: [],
     parentNode: null,
+    quirksMode: false,
   };
 }
 
