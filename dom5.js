@@ -11,6 +11,8 @@
 // jshint node: true
 'use strict';
 
+var cloneObject = require('clone');
+
 function getAttributeIndex(element, name) {
   if (!element.attrs) {
     return -1;
@@ -73,7 +75,7 @@ function hasTagName(name) {
  * Returns true if `regex.match(tagName)` finds a match.
  *
  * This will use the lowercased tagName for comparison.
- * 
+ *
  * @param  {RegExp} regex
  * @return {Boolean}
  */
@@ -383,7 +385,7 @@ function nodeWalkPrior(node, predicate) {
 }
 
 /**
- * Equivalent to `nodeWalkAll`, but only returns nodes that are either 
+ * Equivalent to `nodeWalkAll`, but only returns nodes that are either
  * ancestors or earlier cousins/siblings in the document.
  *
  * Nodes are returned in reverse document order, starting from `node`.
@@ -455,9 +457,63 @@ function newElement(tagName, namespace) {
   };
 }
 
+function newDocumentFragment() {
+  return {
+    nodeName: '#document-fragment',
+    childNodes: [],
+    parentNode: null,
+  };
+}
+
+function cloneNode(node) {
+  // parent is a backreference, and we don't want to clone the whole tree, so
+  // make it null before cloning.
+  var parent = node.parentNode;
+  node.parentNode = null;
+  var clone = cloneObject(node);
+  node.parentNode = parent;
+  return clone;
+}
+
+/**
+ * Inserts `newNode` into `parent` at `index`, optionally replaceing the
+ * current node at `index`. If `newNode` is a DocumentFragment, its childNodes
+ * are inserted and removed from the fragment.
+ */
+function insertNode(parent, index, newNode, replace) {
+  var newNodes = [];
+  var removedNode = replace ? parent.childNodes[index] : null;
+
+  if (newNode) {
+    if (isDocumentFragment(newNode)) {
+      newNodes = newNode.childNodes;
+      newNode.childNodes = [];
+    } else {
+      newNodes = [newNode];
+      remove(newNode);
+    }
+  }
+
+  if (replace) {
+    removedNode = parent.childNodes[index];
+  }
+
+  Array.prototype.splice.apply(parent.childNodes,
+      [index, replace ? 1 : 0].concat(newNodes));
+
+  newNodes.forEach(function(n) {
+    n.parentNode = parent;
+  });
+
+  if (removedNode) {
+    removedNode.parentNode = null;
+  }
+}
+
 function replace(oldNode, newNode) {
-  insertBefore(oldNode.parentNode, oldNode, newNode);
-  remove(oldNode);
+  var parent = oldNode.parentNode;
+  var index = parent.childNodes.indexOf(oldNode);
+  insertNode(parent, index, newNode, true);
 }
 
 function remove(node) {
@@ -470,16 +526,12 @@ function remove(node) {
 }
 
 function insertBefore(parent, oldNode, newNode) {
-  remove(newNode);
-  var idx = parent.childNodes.indexOf(oldNode);
-  parent.childNodes.splice(idx, 0, newNode);
-  newNode.parentNode = parent;
+  var index = parent.childNodes.indexOf(oldNode);
+  insertNode(parent, index, newNode);
 }
 
-function append(parent, node) {
-  remove(node);
-  parent.childNodes.push(node);
-  node.parentNode = parent;
+function append(parent, newNode) {
+  insertNode(parent, parent.childNodes.length, newNode);
 }
 
 var parse5 = require('parse5');
@@ -508,6 +560,7 @@ module.exports = {
   remove: remove,
   replace: replace,
   append: append,
+  cloneNode: cloneNode,
   insertBefore: insertBefore,
   normalize: normalize,
   isDocument: isDocument,
@@ -532,14 +585,15 @@ module.exports = {
     AND: AND,
     OR: OR,
     NOT: NOT,
-    parentMatches: parentMatches
+    parentMatches: parentMatches,
   },
   constructors: {
     text: newTextNode,
     comment: newCommentNode,
-    element: newElement
+    element: newElement,
+    fragment: newDocumentFragment,
   },
   parse: parse,
   parseFragment: parseFragment,
-  serialize: serialize
+  serialize: serialize,
 };
