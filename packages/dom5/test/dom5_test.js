@@ -363,6 +363,31 @@ suite('dom5', function() {
       });
 
     });
+
+    suite('cloneNode', function() {
+
+      test('clones a node', function() {
+        var dom = dom5.parseFragment('<div><span foo="bar">a</span></div>');
+        var div = dom.childNodes[0];
+        var span = div.childNodes[0];
+
+        var clone = dom5.cloneNode(span);
+
+        assert.equal(clone.parentNode, null);
+        assert.equal(span.parentNode, div);
+
+        assert.equal(clone.tagName, 'span');
+        assert.equal(dom5.getAttribute(clone, 'foo'), 'bar');
+        
+        assert.equal(clone.childNodes[0].nodeName, '#text');
+        assert.equal(clone.childNodes[0].value, 'a');
+        assert.equal(span.childNodes[0].nodeName, '#text');
+        assert.equal(span.childNodes[0].value, 'a');
+        assert.notStrictEqual(clone.childNodes[0], span.childNodes[0]);
+      });
+
+    });
+
   });
 
   suite('Query Predicates', function() {

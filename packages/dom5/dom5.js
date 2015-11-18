@@ -11,6 +11,8 @@
 // jshint node: true
 'use strict';
 
+var cloneObject = require('clone');
+
 function getAttributeIndex(element, name) {
   if (!element.attrs) {
     return -1;
@@ -73,7 +75,7 @@ function hasTagName(name) {
  * Returns true if `regex.match(tagName)` finds a match.
  *
  * This will use the lowercased tagName for comparison.
- * 
+ *
  * @param  {RegExp} regex
  * @return {Boolean}
  */
@@ -383,7 +385,7 @@ function nodeWalkPrior(node, predicate) {
 }
 
 /**
- * Equivalent to `nodeWalkAll`, but only returns nodes that are either 
+ * Equivalent to `nodeWalkAll`, but only returns nodes that are either
  * ancestors or earlier cousins/siblings in the document.
  *
  * Nodes are returned in reverse document order, starting from `node`.
@@ -463,6 +465,15 @@ function newDocumentFragment() {
   };
 }
 
+function cloneNode(node) {
+  // parent is a backreference, and we don't want to clone the whole tree, so
+  // make it null before cloning.
+  var parent = node.parentNode;
+  node.parentNode = null;
+  var clone = cloneObject(node);
+  node.parentNode = parent;
+  return clone;
+}
 
 /**
  * Inserts `newNode` into `parent` at `index`, optionally replaceing the
@@ -549,6 +560,7 @@ module.exports = {
   remove: remove,
   replace: replace,
   append: append,
+  cloneNode: cloneNode,
   insertBefore: insertBefore,
   normalize: normalize,
   isDocument: isDocument,
