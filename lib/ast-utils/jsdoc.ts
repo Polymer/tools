@@ -10,7 +10,7 @@
 // jshint node: true
 'use strict';
 
-var doctrine = require('doctrine');
+import * as doctrine from 'doctrine';
 
 /**
  * An annotated JSDoc block tag, all fields are optionally processed except for
@@ -22,25 +22,21 @@ var doctrine = require('doctrine');
  * the tag was extracted from - relative to the first character of the comment
  * contents (e.g. the value of `desc` on a descriptor node). Lines are
  * 1-indexed.
- *
- * @typedef {{
- *   tag:   string,
- *   type: ?string,
- *   name: ?string,
- *   description: ?string,
- * }}
  */
-var JsdocTag;
+export interface Tag {
+  tag: string;
+  type?: string;
+  name?: string;
+  description?: string;
+}
 
 /**
  * The parsed representation of a JSDoc comment.
- *
- * @typedef {{
- *   description: ?string,
- *   tags: Array<JsdocTag>,
- * }}
  */
-var JsdocAnnotation;
+export interface Annotation {
+  description?: string;
+  tags: Tag[];
+}
 
 /**
  * doctrine configuration,
@@ -60,7 +56,7 @@ var JsdocAnnotation;
 // configureDoctrine();
 
 // @demo [path] [title]
-function parseDemo(tag) {
+function parseDemo(tag:doctrine.Tag):Tag {
   var match = (tag.description || "").match(/^\s*(\S*)\s*(.*)$/);
   return {
     tag: 'demo',
@@ -71,7 +67,7 @@ function parseDemo(tag) {
 }
 
 // @hero [path]
-function parseHero(tag) {
+function parseHero(tag:doctrine.Tag):Tag {
   return {
     tag:  tag.title,
     type: null,
@@ -81,7 +77,7 @@ function parseHero(tag) {
 }
 
 // @polymerBehavior [name]
-function parsePolymerBehavior(tag) {
+function parsePolymerBehavior(tag:doctrine.Tag):Tag {
   return {
     tag:  tag.title,
     type: null,
@@ -91,7 +87,7 @@ function parsePolymerBehavior(tag) {
 }
 
 // @pseudoElement name
-function parsePseudoElement(tag) {
+function parsePseudoElement(tag:doctrine.Tag):Tag {
   return {
     tag:  tag.title,
     type: null,
@@ -100,7 +96,7 @@ function parsePseudoElement(tag) {
   };
 }
 
-var CUSTOM_TAGS = {
+var CUSTOM_TAGS: {[name:string]: (tag:doctrine.Tag)=>Tag} = {
   demo: parseDemo,
   hero: parseHero,
   polymerBehavior: parsePolymerBehavior,
@@ -108,12 +104,12 @@ var CUSTOM_TAGS = {
 };
 
 /**
- * Convert doctrine tags to hydrolysis tag format
+ * Convert doctrine tags to our tag format
  */
-function _tagsToHydroTags(tags) {
+function _tagsToHydroTags(tags:doctrine.Tag[]):Tag[] {
   if (!tags)
     return null;
-  return tags.map( function(tag) {
+  return tags.map(function(tag):Tag {
     if (tag.title in CUSTOM_TAGS) {
       return CUSTOM_TAGS[tag.title](tag);
     }
@@ -130,15 +126,14 @@ function _tagsToHydroTags(tags) {
 
 /**
  * removes leading *, and any space before it
- * @param {string} description -- js doc description
  */
-function _removeLeadingAsterisks(description) {
+function _removeLeadingAsterisks(description:string):string {
   if ((typeof description) !== 'string')
     return description;
 
   return description
     .split('\n')
-    .map( function(line) {
+    .map(function(line) {
       // remove leading '\s*' from each line
       var match = line.match(/^[\s]*\*\s?(.*)$/);
       return match ? match[1] : line;
@@ -151,9 +146,9 @@ function _removeLeadingAsterisks(description) {
  * description and tags.
  *
  * @param {string} docs
- * @return {?JsdocAnnotation}
+ * @return {?Annotation}
  */
-function parseJsdoc(docs) {
+export function parseJsdoc(docs:string):Annotation {
   docs = _removeLeadingAsterisks(docs);
   var d = doctrine.parse(docs, {
     unwrap: false,
@@ -168,12 +163,7 @@ function parseJsdoc(docs) {
 
 // Utility
 
-/**
- * @param {JsdocAnnotation} jsdoc
- * @param {string} tagName
- * @return {boolean}
- */
-function hasTag(jsdoc, tagName) {
+export function hasTag(jsdoc:Annotation, tagName:string):boolean {
   if (!jsdoc || !jsdoc.tags) return false;
   return jsdoc.tags.some(function(tag) { return tag.tag === tagName; });
 }
@@ -181,13 +171,10 @@ function hasTag(jsdoc, tagName) {
 /**
  * Finds the first JSDoc tag matching `name` and returns its value at `key`.
  *
- * @param {JsdocAnnotation} jsdoc
- * @param {string} tagName
- * @param {string=} key If omitted, the entire tag object is returned.
- * @return {?string|Object}
+ * If `key` is omitted, the entire tag object is returned.
  */
-function getTag(jsdoc, tagName, key) {
-  if (!jsdoc || !jsdoc.tags) return false;
+export function getTag(jsdoc:Annotation, tagName:string, key?:string):string|Tag {
+  if (!jsdoc || !jsdoc.tags) return null;
   for (var i = 0; i < jsdoc.tags.length; i++) {
     var tag = jsdoc.tags[i];
     if (tag.tag === tagName) {
@@ -197,14 +184,10 @@ function getTag(jsdoc, tagName, key) {
   return null;
 }
 
-/**
- * @param {?string} text
- * @return {?string}
- */
-function unindent(text) {
+export function unindent(text:string):string {
   if (!text) return text;
   var lines  = text.replace(/\t/g, '  ').split('\n');
-  var indent = lines.reduce(function(prev, line) {
+  var indent = lines.reduce<number>(function(prev, line) {
     if (/^\s*$/.test(line)) return prev;  // Completely ignore blank lines.
 
     var lineIndent = line.match(/^(\s*)/)[0].length;
@@ -214,10 +197,3 @@ function unindent(text) {
 
   return lines.map(function(l) { return l.substr(indent); }).join('\n');
 }
-
-module.exports = {
-  getTag:     getTag,
-  hasTag:     hasTag,
-  parseJsdoc: parseJsdoc,
-  unindent:   unindent
-};
