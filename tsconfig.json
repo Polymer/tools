@@ -20,5 +20,8 @@
         "!node_modules/**",
         "typings/tsd.d.ts",
         "custom_typings/main.d.ts"
-    ]
+    ],
+    "atom": {
+        "rewriteTsconfig": false
+    }
 }

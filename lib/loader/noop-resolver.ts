@@ -10,45 +10,36 @@
 
 // jshint node:true
 'use strict';
+import {Resolver, Deferred} from './resolver';
 
 /**
- * A resolver that resolves to `config.content` any uri matching config.
- * @constructor
- * @memberof hydrolysis
- * @param {string|RegExp} config.url     The url or rejex to accept.
- * @param {string} config.content The content to serve for `url`.
+ * A resolver that resolves to empty string any uri that matches config.
  */
-function StringResolver(config) {
-  this.url = config.url;
-  this.content = config.content;
-  if (!this.url || !this.content) {
-    throw new Error("Must provide a url and content to the string resolver.");
+class NoopResolver implements Resolver {
+  config: (string|RegExp);
+  constructor(config:(string|RegExp)) {
+    this.config = config;
   }
-}
-
-StringResolver.prototype = {
 
   /**
    * @param {string}    uri      The absolute URI being requested.
    * @param {!Deferred} deferred The deferred promise that should be resolved if
-   *     this resolver handles the URI.
+   *     this resolver will handle the URI.
    * @return {boolean} Whether the URI is handled by this resolver.
    */
-  accept: function(uri, deferred) {
-    if (this.url.test) {
-      // this.url is a regex
-      if (!this.url.test(uri)) {
+  accept(uri: string, deferred: Deferred<string>) {
+    if (this.config instanceof String) {
+      if (uri.search(<string>this.config) == -1) {
         return false;
       }
     } else {
-      // this.url is a string
-      if (uri.search(this.url) == -1) {
-        return false;
-      }
+      const r = <RegExp>this.config;
+      if (!r.test(uri)) return false;
     }
-    deferred.resolve(this.content);
+
+    deferred.resolve('');
     return true;
   }
-};
+}
 
-module.exports = StringResolver;
+module.exports = NoopResolver;

@@ -10,8 +10,9 @@
 
 // jshint node:true
 'use strict';
+import {Resolver, Deferred} from './resolver';
 
-function getFile(url, deferred, config) {
+function getFile(url:string, deferred:Deferred<string>, config:Config) {
   /* global XMLHttpRequest:false */
   var x = new XMLHttpRequest();
   x.onload = function() {
@@ -32,19 +33,25 @@ function getFile(url, deferred, config) {
   x.send();
 }
 
+interface Config {
+  /**
+   * Type of object to be returned by the XHR. Defaults to 'text',
+   * accepts 'document', 'arraybuffer', and 'json'.
+   * responseType: string;
+   */
+  responseType: string;
+}
+
 /**
  * Construct a resolver that requests resources over XHR.
- * @constructor
- * @memberof hydrolysis
- * @param {Object} config              configuration arguments.
- * @param {string} config.responseType Type of object to be returned by the
- *     XHR. Defaults to 'text', accepts 'document', 'arraybuffer', and 'json'.
  */
-function XHRResolver(config) {
-  this.config = config;
-}
-XHRResolver.prototype = {
-  accept: function(uri, deferred) {
+class XHRResolver implements Resolver {
+  config: Config;
+  constructor(config:Config) {
+    this.config = config;
+  }
+
+  accept(uri: string, deferred: Deferred<string>) {
     getFile(uri, deferred, this.config);
     return true;
   }

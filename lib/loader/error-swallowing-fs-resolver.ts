@@ -11,20 +11,21 @@
 // jshint node:true
 'use strict';
 
-var FSResolver = require('./fs-resolver');
+import {FSResolver, Config} from './fs-resolver';
+import {Deferred} from './resolver';
 
-function ErrorSwallowingFSResolver(config) {
-  FSResolver.call(this, config);
+class ErrorSwallowingFSResolver extends FSResolver {
+  constructor(config:Config) {
+    super(config);
+  }
+
+  accept(uri:string, deferred:Deferred<string>) {
+    var reject = deferred.reject;
+    deferred.reject = function(arg) {
+      deferred.resolve("");
+    };
+    return FSResolver.prototype.accept.call(this, uri, deferred);
+  }
 }
-
-ErrorSwallowingFSResolver.prototype = Object.create(FSResolver.prototype);
-
-ErrorSwallowingFSResolver.prototype.accept = function(uri, deferred) {
-  var reject = deferred.reject;
-  deferred.reject = function(arg) {
-    deferred.resolve("");
-  };
-  return FSResolver.prototype.accept.call(this, uri, deferred);
-};
 
 module.exports = ErrorSwallowingFSResolver;
