@@ -10,21 +10,22 @@
 // jshint node: true
 'use strict';
 
+import * as ESTree from 'estree';
+
 // useful tool to visualize AST: http://esprima.org/demo/parse.html
 
 /**
  * converts literal: {"type": "Literal", "value": 5,  "raw": "5" }
  * to string
  */
-function literalToValue(literal) {
+function literalToValue(literal:ESTree.Literal) {
   return literal.value;
 }
 
 /**
  * converts unary to string
- * unary: { type: 'UnaryExpression', operator: '-', argument: { ... } }
  */
-function unaryToValue(unary) {
+function unaryToValue(unary:ESTree.UnaryExpression):string {
   var argValue = expressionToValue(unary.argument);
   if (argValue === undefined)
     return;
@@ -35,43 +36,43 @@ function unaryToValue(unary) {
  * converts identifier to its value
  * identifier { "type": "Identifier", "name": "Number }
  */
-function identifierToValue(identifier) {
+function identifierToValue(identifier:ESTree.Identifier):string {
   return identifier.name;
 }
 
 /**
  * Function is a block statement.
  */
-function functionDeclarationToValue(fn) {
+function functionDeclarationToValue(fn:ESTree.FunctionDeclaration) {
   if (fn.body.type == "BlockStatement")
     return blockStatementToValue(fn.body);
 }
 
-function functionExpressionToValue(fn) {
+function functionExpressionToValue(fn:ESTree.FunctionExpression) {
   if (fn.body.type == "BlockStatement")
     return blockStatementToValue(fn.body);
 }
 /**
  * Block statement: find last return statement, and return its value
  */
-function blockStatementToValue(block) {
+function blockStatementToValue(block:ESTree.BlockStatement) {
   for (var i=block.body.length - 1; i>= 0; i--) {
     if (block.body[i].type === "ReturnStatement")
-      return returnStatementToValue(block.body[i]);
+      return returnStatementToValue(<ESTree.ReturnStatement>block.body[i]);
   }
 }
 
 /**
  * Evaluates return's argument
  */
-function returnStatementToValue(ret) {
+function returnStatementToValue(ret:ESTree.ReturnStatement) {
   return expressionToValue(ret.argument);
 }
 
 /**
  * Enclose containing values in []
  */
-function arrayExpressionToValue(arry) {
+function arrayExpressionToValue(arry:ESTree.ArrayExpression) {
   var value = '[';
   for (var i=0; i<arry.elements.length; i++) {
     var v = expressionToValue(arry.elements[i]);
@@ -88,7 +89,7 @@ function arrayExpressionToValue(arry) {
 /**
  * Make it look like an object
  */
-function objectExpressionToValue(obj) {
+function objectExpressionToValue(obj:ESTree.ObjectExpression) {
   var value = '{';
   for (var i=0; i<obj.properties.length; i++) {
     var k = expressionToValue(obj.properties[i].key);
@@ -106,7 +107,7 @@ function objectExpressionToValue(obj) {
 /**
  * MemberExpression references a variable with name
  */
-function memberExpressionToValue(member) {
+function memberExpressionToValue(member:ESTree.MemberExpression) {
   return expressionToValue(member.object) + "." + expressionToValue(member.property);
 }
 
@@ -116,33 +117,29 @@ function memberExpressionToValue(member) {
  * valueExpression example:
  * { type: "Literal",
  */
-function expressionToValue(valueExpression) {
+export function expressionToValue(valueExpression:ESTree.Node):string|boolean|number|RegExp {
   switch(valueExpression.type) {
     case 'Literal':
-      return literalToValue(valueExpression);
+      return literalToValue(<ESTree.Literal>valueExpression);
     case 'UnaryExpression':
-      return unaryToValue(valueExpression);
+      return unaryToValue(<ESTree.UnaryExpression>valueExpression);
     case 'Identifier':
-      return identifierToValue(valueExpression);
+      return identifierToValue(<ESTree.Identifier>valueExpression);
     case 'FunctionDeclaration':
-      return functionDeclarationToValue(valueExpression);
+      return functionDeclarationToValue(<ESTree.FunctionDeclaration>valueExpression);
     case 'FunctionExpression':
-      return functionExpressionToValue(valueExpression);
+      return functionExpressionToValue(<ESTree.FunctionExpression>valueExpression);
     case 'ArrayExpression':
-      return arrayExpressionToValue(valueExpression);
+      return arrayExpressionToValue(<ESTree.ArrayExpression>valueExpression);
     case 'ObjectExpression':
-      return objectExpressionToValue(valueExpression);
+      return objectExpressionToValue(<ESTree.ObjectExpression>valueExpression);
     case 'Identifier':
-      return identifierToValue(valueExpression);
+      return identifierToValue(<ESTree.Identifier>valueExpression);
     case 'MemberExpression':
-      return memberExpressionToValue(valueExpression);
+      return memberExpressionToValue(<ESTree.MemberExpression>valueExpression);
     default:
       return;
   }
 }
 
-var CANT_CONVERT = 'UNKNOWN';
-module.exports = {
-  CANT_CONVERT: CANT_CONVERT,
-  expressionToValue: expressionToValue
-};
+export var CANT_CONVERT = 'UNKNOWN';

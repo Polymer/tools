@@ -3,4 +3,6 @@ bower_components
 .DS_Store
 .idea
 lib/loader/*.js
+lib/ast-utils/esutil.js
+lib/ast-utils/ast-value.js
 typings/
