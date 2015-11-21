@@ -33,6 +33,7 @@
         "lib/ast-utils/esutil.ts",
         "lib/ast-utils/find-alias.ts",
         "lib/ast-utils/fluent-traverse.ts",
+        "lib/ast-utils/import-parse.ts",
         "lib/ast-utils/jsdoc.ts",
         "lib/loader/error-swallowing-fs-resolver.ts",
         "lib/loader/file-loader.ts",

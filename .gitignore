@@ -2,7 +2,9 @@ node_modules
 bower_components
 .DS_Store
 .idea
+
 lib/loader/*.js
+
 lib/ast-utils/esutil.js
 lib/ast-utils/ast-value.js
 lib/ast-utils/analyze-properties.js
@@ -14,5 +16,6 @@ lib/ast-utils/fluent-traverse.js
 lib/ast-utils/behavior-finder.js
 lib/ast-utils/element-finder.js
 lib/ast-utils/find-alias.js
+lib/ast-utils/import-parse.js
 
 typings/
