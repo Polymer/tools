@@ -72,7 +72,7 @@ suite('Loader', function() {
   });
 
   suite('Filesystem Resolver', function() {
-    var fsResolver = require('../lib/loader/fs-resolver.js');
+    var fsResolver = require('../lib/loader/fs-resolver.js').FSResolver;
 
     test('fs api', function() {
       var fs = new fsResolver({});

@@ -2,3 +2,9 @@ node_modules
 bower_components
 .DS_Store
 .idea
+lib/loader/file-laoder.js
+lib/loader/fs-resolver.js
+lib/loader/redirect-resolver.js
+lib/loader/resolver.js
+lib/loader/file-loader.js
+typings/

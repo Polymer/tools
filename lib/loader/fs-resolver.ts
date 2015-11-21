@@ -11,12 +11,12 @@
 // jshint node:true
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var pathIsAbsolute = require('path-is-absolute');
-var url = require('url');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as url from 'url';
+import {Resolver, Deferred} from './resolver';
 
-function getFile(filePath, deferred, secondPath) {
+function getFile(filePath:string, deferred:Deferred<string>, secondPath?:string) {
   fs.readFile(filePath, 'utf-8', function(err, content) {
     if (err) {
       if (secondPath) {
@@ -33,9 +33,8 @@ function getFile(filePath, deferred, secondPath) {
 
 /**
  * Returns true if `patha` is a sibling or aunt of `pathb`.
- * @return {boolean}
  */
-function isSiblingOrAunt(patha, pathb) {
+function isSiblingOrAunt(patha:string, pathb:string) {
   var parent = path.dirname(patha);
   if (pathb.indexOf(patha) === -1 && pathb.indexOf(parent) === 0) {
     return true;
@@ -46,39 +45,50 @@ function isSiblingOrAunt(patha, pathb) {
 /**
  * Change `localPath` from a sibling of `basePath` to be a child of
  * `basePath` joined with `redirect`.
- * @return {string}
  */
-function redirectSibling(basePath, localPath, redirect) {
+function redirectSibling(basePath:string, localPath:string, redirect:string) {
   var parent = path.dirname(basePath);
   var redirected = path.join(basePath, redirect, localPath.slice(parent.length));
   return redirected;
 }
 
+export interface Config {
+  /**
+   * Hostname to match for absolute urls.
+   * Matches "/" by default
+   */
+  host?: string;
+  /**
+   * Prefix directory for components in url. Defaults to "/".
+   */
+  basePath?: string;
+  /**
+   * Filesystem root to search. Defaults to the current working directory.
+   */
+  root?: string;
+  /**
+   * Where to redirect lookups to siblings.
+   */
+  redirect?: string;
+}
+
 /**
  * Resolves requests via the file system.
- * @constructor
- * @memberof hydrolysis
- * @param {Object} config  configuration options.
- * @param {string} config.host Hostname to match for absolute urls.
- *     Matches "/" by default
- * @param {string} config.basePath Prefix directory for components in url.
- *     Defaults to "/".
- * @param {string} config.root Filesystem root to search. Defaults to the
- *     current working directory.
- * @param {string} config.redirect Where to redirect lookups to siblings.
  */
-function FSResolver(config) {
-  this.config = config || {};
-}
-FSResolver.prototype = {
-  accept: function(uri, deferred) {
+export class FSResolver implements Resolver {
+  config: Config;
+  constructor(config:Config) {
+    this.config = config || {};
+  }
+
+  accept(uri:string, deferred:Deferred<string>) {
     var parsed = url.parse(uri);
     var host = this.config.host;
     var base = this.config.basePath && decodeURIComponent(this.config.basePath);
     var root = this.config.root && path.normalize(this.config.root);
     var redirect = this.config.redirect;
 
-    var local;
+    var local: string;
 
     if (!parsed.hostname || parsed.hostname === host) {
       local = parsed.pathname;
@@ -94,7 +104,7 @@ FSResolver.prototype = {
         local = path.join(root, local);
       }
 
-      var backup;
+      var backup: string;
       if (redirect && isSiblingOrAunt(root, local)) {
         backup = redirectSibling(root, local, redirect);
       }
@@ -104,7 +114,5 @@ FSResolver.prototype = {
     }
 
     return false;
-  }
+  };
 };
-
-module.exports = FSResolver;

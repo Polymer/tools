@@ -11,11 +11,18 @@
 // jshint node:true
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var url = require('url');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as url from 'url';
+import {FSResolver, Config as FSConfig} from './fs-resolver';
+import {Deferred} from './resolver';
 
-var FSResolver = require('./fs-resolver');
+interface RedirectConfig {
+  protocol: string;
+  hostname: string;
+  path: string;
+  redirectPath: string;
+}
 
 /**
  * A single redirect configuration
@@ -27,38 +34,31 @@ var FSResolver = require('./fs-resolver');
  * @param {string} config.redirectPath The local filesystem path that should
  *                                     replace "protocol://hosname/path/"
  */
-function ProtocolRedirect(config){
-  this.protocol = config.protocol;
-  this.hostname = config.hostname;
-  this.path = config.path;
-  this.redirectPath = config.redirectPath;
-}
-
-ProtocolRedirect.prototype = {
+class ProtocolRedirect {
   /**
    * The protocol this redirect matches.
-   * @type {string}
    */
-  protocol: null,
+  protocol: string;
   /**
    * The host name this redirect matches.
-   * @type {string}
    */
-  hostname: null,
-
+  hostname: string;
   /**
    * The part of the path to match and replace with 'redirectPath'
-   * @type {string}
    */
-  path: null,
-
+  path: string;
   /**
    * The local filesystem path that should replace "protocol://hosname/path/"
-   * @type {string}
    */
-  redirectPath: null,
+  redirectPath: string;
+  constructor(config:RedirectConfig) {
+    this.protocol = config.protocol;
+    this.hostname = config.hostname;
+    this.path = config.path;
+    this.redirectPath = config.redirectPath;
+  }
 
-  redirect: function redirect(uri) {
+  redirect(uri: string) {
     var parsed = url.parse(uri);
     if (this.protocol !== parsed.protocol) {
       return null;
@@ -72,6 +72,10 @@ ProtocolRedirect.prototype = {
   }
 };
 
+interface RedirectConfig extends FSConfig {
+  redirects: ProtocolRedirect[];
+}
+
 /**
  * Resolves protocol://hostname/path to the local filesystem.
  * @constructor
@@ -82,25 +86,23 @@ ProtocolRedirect.prototype = {
  * @param {Array.<ProtocolRedirect>} redirects A list of protocol redirects
  *     for the resolver. They are checked for matching first-to-last.
  */
-function RedirectResolver(config) {
-  FSResolver.call(this, config);
-  this.redirects = config.redirects || [];
-}
-
-RedirectResolver.prototype = Object.create(FSResolver.prototype);
-
-RedirectResolver.prototype.accept = function(uri, deferred) {
-  for (var i = 0; i < this.redirects.length; i++) {
-    var redirected = this.redirects[i].redirect(uri);
-    if (redirected) {
-      return FSResolver.prototype.accept.call(this, redirected, deferred);
-    }
+class RedirectResolver extends FSResolver {
+  redirects: ProtocolRedirect[];
+  constructor(config:RedirectConfig) {
+    super(config);
+    this.redirects = config.redirects || [];
   }
-  return false;
-};
+  accept(uri: string, deferred: Deferred<string>) {
+    for (var i = 0; i < this.redirects.length; i++) {
+      var redirected = this.redirects[i].redirect(uri);
+      if (redirected) {
+        return FSResolver.prototype.accept.call(this, redirected, deferred);
+      }
+    }
+    return false;
+  };
 
-RedirectResolver.prototype.constructor = RedirectResolver;
-RedirectResolver.ProtocolRedirect = ProtocolRedirect;
-
+  static ProtocolRedirect = ProtocolRedirect;
+}
 
 module.exports = RedirectResolver;

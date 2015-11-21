@@ -11,40 +11,16 @@
 // jshint node:true
 'use strict';
 
-// jshint -W079
-// Promise polyfill
-var Promise = global.Promise || require('es6-promise').Promise;
-// jshint +W079
-
-function Deferred() {
-  var self = this;
-  this.promise = new Promise(function(resolve, reject) {
-    self.resolve = resolve;
-    self.reject = reject;
-  });
-}
-
-/**
- * An object that knows how to resolve resources.
- * @typedef {Object} Resolver
- * @memberof hydrolysis
- * @property {function(string, Deferred): boolean} accept Attempt to resolve
- *     `deferred` with the contents the specified URL. Returns false if the
- *     Resolver is unable to resolve the URL.
- */
-
+import {Resolver, Deferred} from './resolver';
 
 /**
  * A FileLoader lets you resolve URLs with a set of potential resolvers.
- * @constructor
- * @memberof hydrolysis
  */
-function FileLoader() {
-  this.resolvers = [];
+class FileLoader {
+  resolvers: Resolver[] = [];
+
   // map url -> Deferred
-  this.requests = {};
-}
-FileLoader.prototype = {
+  requests: {[url:string]: Deferred<string>} = {};
 
   /**
    * Add an instance of a Resolver class to the list of url resolvers
@@ -53,9 +29,9 @@ FileLoader.prototype = {
    * The first resolver to "accept" the url wins.
    * @param {Resolver} resolver The resolver to add.
    */
-  addResolver: function(resolver) {
+  addResolver(resolver:Resolver) {
     this.resolvers.push(resolver);
-  },
+  };
 
   /**
    * Return a promise for an absolute url
@@ -66,17 +42,17 @@ FileLoader.prototype = {
    * @param {string} url        The absolute url to request.
    * @return {Promise.<string>} A promise that resolves to the contents of the URL.
    */
-  request: function(uri) {
-    var promise;
+  request(uri:string) {
+    var promise: Promise<string>;
 
     if (!(uri in this.requests)) {
       var handled = false;
-      var deferred = new Deferred();
+      var deferred = new Deferred<string>();
       this.requests[uri] = deferred;
 
       // loop backwards through resolvers until one "accepts" the request
-      for (var i = this.resolvers.length - 1, r; i >= 0; i--) {
-        r = this.resolvers[i];
+      for (var i = this.resolvers.length - 1; i >= 0; i--) {
+        const r = this.resolvers[i];
         if (r.accept(uri, deferred)) {
           handled = true;
           break;
@@ -95,5 +71,4 @@ FileLoader.prototype = {
     return promise;
   }
 };
-
 module.exports = FileLoader;
