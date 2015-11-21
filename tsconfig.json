@@ -31,7 +31,7 @@
         "lib/ast-utils/docs.ts",
         "lib/ast-utils/element-finder.ts",
         "lib/ast-utils/esutil.ts",
-        "lib/ast-utils/find-alias.ts",
+        "lib/ast-utils/feature-finder.ts",
         "lib/ast-utils/fluent-traverse.ts",
         "lib/ast-utils/import-parse.ts",
         "lib/ast-utils/jsdoc.ts",

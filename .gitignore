@@ -17,5 +17,6 @@ lib/ast-utils/behavior-finder.js
 lib/ast-utils/element-finder.js
 lib/ast-utils/find-alias.js
 lib/ast-utils/import-parse.js
+lib/ast-utils/feature-finder.js
 
 typings/
