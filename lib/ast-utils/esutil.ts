@@ -9,16 +9,25 @@
  */
 // jshint node: true
 'use strict';
-var estraverse = require("estraverse");
+import * as estraverse from "estraverse";
 import * as ESTree from 'estree';
 import * as escodegen from 'escodegen';
 
-interface PropertyDescriptor {
+type LiteralValue = string|number|boolean|RegExp;
+
+export interface PropertyDescriptor {
   name: string,
   type: string,
   desc: string,
   javascriptNode: ESTree.Node;
   params?: {name: string}[];
+  published?: boolean;
+  notify?: LiteralValue;
+  observer?: LiteralValue;
+  observerNode?: ESTree.Expression;
+  readOnly?: LiteralValue;
+  reflectToAttribute?: LiteralValue;
+  default?: LiteralValue;
 }
 
 /**
@@ -102,12 +111,8 @@ export function closureType(node: ESTree.Node):string {
   }
 }
 
-/**
- * @param {Node} node
- * @return {?string}
- */
 export function getAttachedComment(node: ESTree.Node):string {
-  var comments = getLeadingComments(node) || getLeadingComments(node['key']);
+  const comments = getLeadingComments(node) || getLeadingComments(node['key']);
   if (!comments) {
     return;
   }
@@ -116,34 +121,27 @@ export function getAttachedComment(node: ESTree.Node):string {
 
 /**
  * Returns all comments from a tree defined with @event.
- * @param  {Node} node [description]
- * @return {[type]}      [description]
  */
-export function getEventComments(node: ESTree.Node):string[] {
+export function getEventComments(node: ESTree.Node) {
   var eventComments: string[] = [];
   estraverse.traverse(node, {
-    enter: function (node: ESTree.Node) {
+    enter: (node) => {
       var comments = (node.leadingComments || []).concat(node.trailingComments || [])
         .map(function(commentAST) {
           return commentAST.value;
         })
-        .filter( function(comment: string) {
+        .filter( function(comment) {
           return comment.indexOf("@event") != -1;
         });
       eventComments = eventComments.concat(comments);
     }
   });
   // dedup
-  return eventComments.filter( function(el, index, array) {
+  return eventComments.filter((el, index, array) => {
     return array.indexOf(el) === index;
   });
 }
 
-/**
- * @param {Node} node
- * @param
- * @return {Array.<string>}
- */
 function getLeadingComments(node: ESTree.Node): string[] {
   if (!node) {
     return;
@@ -157,9 +155,6 @@ function getLeadingComments(node: ESTree.Node): string[] {
 
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
- *
- * @param {Node} node
- * @return {PropertyDescriptor}
  */
 export function toPropertyDescriptor(node:ESTree.Property):PropertyDescriptor {
   var type = closureType(node.value);

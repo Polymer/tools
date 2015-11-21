@@ -16,11 +16,12 @@
     "lib/"
   ],
   "scripts": {
-    "build": "browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
+    "build": "tsc && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
     "build:watch": "watch 'npm run build' ./lib",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "jshint index.js lib/ && npm run build && wct && mocha test/test.js"
+    "test": "npm run build && wct && mocha test/test.js",
+    "testNode": "npm run build && mocha test/test.js"
   },
   "devDependencies": {
     "browserify": "^9.0.8",
@@ -28,6 +29,7 @@
     "jsdoc-to-markdown": "^1.0.3",
     "jshint": "^2.7.0",
     "mocha": "^2.2.4",
+    "typescript": "^1.8.0-dev.20151121",
     "watch": "latest",
     "web-component-tester": "^3.3.21"
   },

@@ -10,24 +10,26 @@
 // jshint node: true
 'use strict';
 
-var esutil    = require('./esutil');
-var astValue = require('./ast-value');
+import * as esutil from './esutil';
+import * as astValue from './ast-value';
+import * as estree from 'estree';
 
-var analyzeProperties = function(node) {
+var analyzeProperties = function(node:estree.Node) {
 
-  var analyzedProps = [];
+  var analyzedProps: esutil.PropertyDescriptor[] = [];
 
   if (node.type != 'ObjectExpression') {
     return analyzedProps;
   }
-  for (var i = 0; i < node.properties.length; i++) {
-    var property = node.properties[i];
+  const obEx = <estree.ObjectExpression>node;
+  for (var i = 0; i < obEx.properties.length; i++) {
+    var property = obEx.properties[i];
     var prop = esutil.toPropertyDescriptor(property);
     prop.published = true;
 
     if (property.value.type == 'ObjectExpression') {
       /**
-       * Parse the expression inside a property object block.
+       * Parse the expression inside a property object block. e.g.
        * property: {
        *   key: {
        *     type: String,
@@ -38,8 +40,9 @@ var analyzeProperties = function(node) {
        *   }
        * }
        */
-      for (var j = 0; j < property.value.properties.length; j++) {
-        var propertyArg = property.value.properties[j];
+      const propDescExpr = <estree.ObjectExpression>property.value;
+      for (var j = 0; j < propDescExpr.properties.length; j++) {
+        var propertyArg = propDescExpr.properties[j];
         var propertyKey = esutil.objectKeyToString(propertyArg.key);
 
         switch(propertyKey) {
@@ -104,4 +107,3 @@ var analyzeProperties = function(node) {
 
 
 module.exports = analyzeProperties;
-

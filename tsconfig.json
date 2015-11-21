@@ -15,13 +15,29 @@
         "suppressImplicitAnyIndexErrors": true
     },
     "filesGlob": [
-        "**/*.ts",
-        "**/*.tsx",
-        "!node_modules/**",
-        "typings/tsd.d.ts",
-        "custom_typings/main.d.ts"
+        "lib/**/*.ts",
+        "typings/**.ts",
+        "custom_typings/**.d.ts"
     ],
     "atom": {
-        "rewriteTsconfig": false
-    }
+        "rewriteTsconfig": true
+    },
+    "files": [
+        "lib/ast-utils/analyze-properties.ts",
+        "lib/ast-utils/ast-value.ts",
+        "lib/ast-utils/esutil.ts",
+        "lib/loader/error-swallowing-fs-resolver.ts",
+        "lib/loader/file-loader.ts",
+        "lib/loader/fs-resolver.ts",
+        "lib/loader/noop-resolver.ts",
+        "lib/loader/redirect-resolver.ts",
+        "lib/loader/resolver.ts",
+        "lib/loader/string-resolver.ts",
+        "lib/loader/xhr-resolver.ts",
+        "typings/tsd.d.ts",
+        "custom_typings/escodegen.d.ts",
+        "custom_typings/estraverse.d.ts",
+        "custom_typings/estree.d.ts",
+        "custom_typings/main.d.ts"
+    ]
 }

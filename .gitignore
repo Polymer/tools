@@ -5,4 +5,5 @@ bower_components
 lib/loader/*.js
 lib/ast-utils/esutil.js
 lib/ast-utils/ast-value.js
+lib/ast-utils/analyze-properties.js
 typings/
