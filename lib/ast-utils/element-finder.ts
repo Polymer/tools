@@ -9,32 +9,34 @@
  */
 // jshint node: true
 'use strict';
-var estraverse = require('estraverse');
+import * as estraverse from 'estraverse';
 
-var esutil    = require('./esutil');
-var findAlias = require('./find-alias');
-var analyzeProperties = require('./analyze-properties');
-var astValue = require('./ast-value');
-var declarationPropertyHandlers = require('./declaration-property-handlers');
+import * as esutil from './esutil';
+import * as analyzeProperties from './analyze-properties';
+import * as astValue from './ast-value';
+import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
+import {ElementDescriptor, PropertyDescriptor} from './descriptors';
+import {Visitor} from './fluent-traverse';
+import * as estree from 'estree';
 
 var elementFinder = function elementFinder() {
   /**
    * The list of elements exported by each traversed script.
    */
-  var elements = [];
+  var elements: ElementDescriptor[] = [];
 
   /**
    * The element being built during a traversal;
    */
-  var element = null;
-  var propertyHandlers = null;
+  var element: ElementDescriptor = null;
+  var propertyHandlers: PropertyHandlers = null;
 
-  var visitors = {
+  var visitors: Visitor = {
     enterCallExpression: function enterCallExpression(node, parent) {
       var callee = node.callee;
       if (callee.type == 'Identifier') {
-
-        if (callee.name == 'Polymer') {
+        const ident = <estree.Identifier>callee;
+        if (ident.name == 'Polymer') {
           element = {
             type: 'element',
             desc: esutil.getAttachedComment(parent),
@@ -49,7 +51,8 @@ var elementFinder = function elementFinder() {
     leaveCallExpression: function leaveCallExpression(node, parent) {
       var callee = node.callee;
       if (callee.type == 'Identifier') {
-        if (callee.name == 'Polymer') {
+        const ident = <estree.Identifier>callee;
+        if (ident.name == 'Polymer') {
           if (element) {
             elements.push(element);
             element = null;
@@ -63,9 +66,9 @@ var elementFinder = function elementFinder() {
         element.properties = [];
         element.behaviors = [];
         element.observers = [];
-        var getters = {};
-        var setters = {};
-        var definedProperties = {};
+        var getters: {[name: string]: PropertyDescriptor} = {};
+        var setters: {[name: string]: PropertyDescriptor} = {};
+        var definedProperties: {[name: string]: PropertyDescriptor} = {};
         for (var i = 0; i < node.properties.length; i++) {
           var prop = node.properties[i];
           var name = esutil.objectKeyToString(prop.key);
@@ -103,7 +106,7 @@ var elementFinder = function elementFinder() {
         });
         Object.keys(definedProperties).forEach(function(p){
           var prop = definedProperties[p];
-          element.properties.push(p);
+          element.properties.push(prop);
         });
         return estraverse.VisitorOption.Skip;
       }

@@ -9,7 +9,7 @@
  */
 // jshint node: true
 'use strict';
-var findAlias = function findAlias(names, aliases, name) {
+export function findAlias(names:string, aliases:{[s:string]:string}, name:string):string {
   if (!names) {
     return null;
   }

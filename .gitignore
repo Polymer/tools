@@ -12,4 +12,7 @@ lib/ast-utils/descriptors.js
 lib/ast-utils/docs.js
 lib/ast-utils/fluent-traverse.js
 lib/ast-utils/behavior-finder.js
+lib/ast-utils/element-finder.js
+lib/ast-utils/find-alias.js
+
 typings/

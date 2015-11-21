@@ -10,5 +10,8 @@ declare module 'estraverse' {
     remove?: ()=>void;
     skip?: ()=>void;
   }
+  export enum VisitorOption {
+      Skip, Break, Remove
+  }
   export function traverse(n: Node, callbacks:Callbacks):void;
 }

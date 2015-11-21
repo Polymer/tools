@@ -24,6 +24,8 @@ export interface PropertyDescriptor extends Descriptor {
   default?: LiteralValue;
   private?: boolean;
   configuration?: boolean;
+  getter?: boolean;
+  setter?: boolean;
 
   __fromBehavior?: BehaviorOrName;
 }
