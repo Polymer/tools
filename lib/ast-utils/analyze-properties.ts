@@ -13,10 +13,11 @@
 import * as esutil from './esutil';
 import * as astValue from './ast-value';
 import * as estree from 'estree';
+import {PropertyDescriptor} from './descriptors';
 
 export function analyzeProperties(node:estree.Node) {
 
-  var analyzedProps: esutil.PropertyDescriptor[] = [];
+  var analyzedProps: PropertyDescriptor[] = [];
 
   if (node.type != 'ObjectExpression') {
     return analyzedProps;

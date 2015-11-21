@@ -36,6 +36,7 @@ export interface Tag {
 export interface Annotation {
   description?: string;
   tags: Tag[];
+  orig?: string;
 }
 
 /**
@@ -173,7 +174,9 @@ export function hasTag(jsdoc:Annotation, tagName:string):boolean {
  *
  * If `key` is omitted, the entire tag object is returned.
  */
-export function getTag(jsdoc:Annotation, tagName:string, key?:string):string|Tag {
+export function getTag(jsdoc:Annotation, tagName:string):Tag;
+export function getTag(jsdoc:Annotation, tagName:string, key:string):string;
+export function getTag(jsdoc:Annotation, tagName:string, key?:string):any {
   if (!jsdoc || !jsdoc.tags) return null;
   for (var i = 0; i < jsdoc.tags.length; i++) {
     var tag = jsdoc.tags[i];

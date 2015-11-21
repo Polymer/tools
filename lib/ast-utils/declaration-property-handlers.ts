@@ -11,7 +11,7 @@
 'use strict';
 
 import * as astValue from './ast-value';
-import {PropertyDescriptor} from './esutil';
+import {PropertyDescriptor, ElementDescriptor} from './descriptors';
 import {analyzeProperties} from './analyze-properties';
 import * as estree from 'estree';
 
@@ -28,7 +28,7 @@ function declarationPropertyHandlers(declaration:ElementDescriptor) {
   return {
     is: function(node: estree.Node) {
       if (node.type == 'Literal') {
-        declaration.is = (<estree.Literal>node).value;
+        declaration.is = (<estree.Literal>node).value.toString();
       }
     },
     properties: function(node: estree.Node) {
@@ -68,16 +68,5 @@ function declarationPropertyHandlers(declaration:ElementDescriptor) {
     }
   };
 }
-
-export interface ElementDescriptor {
-  is: string|number|boolean|RegExp;
-  properties: PropertyDescriptor[];
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: (string|number|boolean|RegExp)
-  }[];
-  behaviors: (string|number|boolean|RegExp)[];
-}
-
 
 module.exports = declarationPropertyHandlers;

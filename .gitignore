@@ -8,4 +8,6 @@ lib/ast-utils/ast-value.js
 lib/ast-utils/analyze-properties.js
 lib/ast-utils/jsdoc.js
 lib/ast-utils/declaration-property-handlers.js
+lib/ast-utils/descriptors.js
+lib/ast-utils/docs.js
 typings/

@@ -12,23 +12,7 @@
 import * as estraverse from "estraverse";
 import * as ESTree from 'estree';
 import * as escodegen from 'escodegen';
-
-type LiteralValue = string|number|boolean|RegExp;
-
-export interface PropertyDescriptor {
-  name: string,
-  type: string,
-  desc: string,
-  javascriptNode: ESTree.Node;
-  params?: {name: string}[];
-  published?: boolean;
-  notify?: LiteralValue;
-  observer?: LiteralValue;
-  observerNode?: ESTree.Expression;
-  readOnly?: LiteralValue;
-  reflectToAttribute?: LiteralValue;
-  default?: LiteralValue;
-}
+import {BehaviorDescriptor, PropertyDescriptor} from './descriptors';
 
 /**
  * Returns whether an Espree node matches a particular object path.
