@@ -7,4 +7,5 @@ lib/ast-utils/esutil.js
 lib/ast-utils/ast-value.js
 lib/ast-utils/analyze-properties.js
 lib/ast-utils/jsdoc.js
+lib/ast-utils/declaration-property-handlers.js
 typings/

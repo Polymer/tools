@@ -14,7 +14,7 @@ import * as esutil from './esutil';
 import * as astValue from './ast-value';
 import * as estree from 'estree';
 
-var analyzeProperties = function(node:estree.Node) {
+export function analyzeProperties(node:estree.Node) {
 
   var analyzedProps: esutil.PropertyDescriptor[] = [];
 

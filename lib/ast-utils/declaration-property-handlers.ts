@@ -10,8 +10,11 @@
 // jshint node: true
 'use strict';
 
-var astValue = require('./ast-value');
-var analyzeProperties = require('./analyze-properties');
+import * as astValue from './ast-value';
+import {PropertyDescriptor} from './esutil';
+import {analyzeProperties} from './analyze-properties';
+import * as estree from 'estree';
+
 
 /**
  * Returns an object containing functions that will annotate `declaration` with
@@ -21,48 +24,60 @@ var analyzeProperties = require('./analyze-properties');
  * @return {object.<string,function>}      An object containing property
  *                                         handlers.
  */
-function declarationPropertyHandlers(declaration) {
+function declarationPropertyHandlers(declaration:ElementDescriptor) {
   return {
-    is: function(node) {
+    is: function(node: estree.Node) {
       if (node.type == 'Literal') {
-        declaration.is = node.value;
+        declaration.is = (<estree.Literal>node).value;
       }
     },
-    properties: function(node) {
-
+    properties: function(node: estree.Node) {
       var props = analyzeProperties(node);
 
       for (var i=0; i<props.length; i++) {
         declaration.properties.push(props[i]);
       }
     },
-    behaviors: function(node) {
+    behaviors: function(node: estree.Node) {
       if (node.type != 'ArrayExpression') {
         return;
       }
-
-      for (var i=0; i<node.elements.length; i++) {
-        var v = astValue.expressionToValue(node.elements[i]);
-        if (v === undefined)
+      const arrNode = <estree.ArrayExpression>node;
+      for (const element of arrNode.elements) {
+        let v = astValue.expressionToValue(element);
+        if (v === undefined) {
           v = astValue.CANT_CONVERT;
+        }
         declaration.behaviors.push(v);
       }
     },
-    observers: function(node) {
+    observers: function(node: estree.Node) {
       if (node.type != 'ArrayExpression') {
         return;
       }
-      for (var i=0; i<node.elements.length; i++) {
-        var v = astValue.expressionToValue(node.elements[i]);
+      const arrNode = <estree.ArrayExpression>node;
+      for (let element of arrNode.elements) {
+        var v = astValue.expressionToValue(element);
         if (v === undefined)
           v = astValue.CANT_CONVERT;
         declaration.observers.push({
-          javascriptNode: node.elements[i],
+          javascriptNode: element,
           expression: v
         });
       }
     }
   };
 }
+
+export interface ElementDescriptor {
+  is: string|number|boolean|RegExp;
+  properties: PropertyDescriptor[];
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: (string|number|boolean|RegExp)
+  }[];
+  behaviors: (string|number|boolean|RegExp)[];
+}
+
 
 module.exports = declarationPropertyHandlers;
