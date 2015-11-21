@@ -2,6 +2,7 @@ declare module 'estree' {
   export interface Node {
     type: string;
     leadingComments?: Comment[];
+    trailingComments?: Comment[];
     loc?: SourceLocation;
   }
   export interface Comment {
@@ -325,7 +326,7 @@ declare module 'estree' {
 
   export interface ArrayPattern extends Pattern {
     // type: "ArrayPattern";
-    elements: [Pattern];
+    elements: Pattern[];
   }
   export interface RestElement extends Pattern {
     // type: "RestElement";

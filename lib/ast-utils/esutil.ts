@@ -10,14 +10,14 @@
 // jshint node: true
 'use strict';
 var estraverse = require("estraverse");
-
-type ESNode = any;
+import * as ESTree from 'estree';
+import * as escodegen from 'escodegen';
 
 interface PropertyDescriptor {
   name: string,
   type: string,
   desc: string,
-  javascriptNode: ESNode;
+  javascriptNode: ESTree.Node;
   params?: {name: string}[];
 }
 
@@ -29,22 +29,27 @@ interface PropertyDescriptor {
  *
  *     matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
  *
- * @param {ESNode} expression The Espree node to match against.
+ * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
  */
-export function matchesCallExpression(expression:ESNode, path:string[]):boolean {
+export function matchesCallExpression(expression:ESTree.MemberExpression, path:string[]):boolean {
   if (!expression.property || !expression.object) return;
   console.assert(path.length >= 2);
 
+  if (expression.property.type !== 'Literal') {
+    return false;
+  }
+  const property = <ESTree.Identifier>expression.property;
   // Unravel backwards, make sure properties match each step of the way.
-  if (expression.property.name !== path[path.length - 1]) return false;
+  if (property.name !== path[path.length - 1]) return false;
   // We've got ourselves a final member expression.
   if (path.length == 2 && expression.object.type === 'Identifier') {
-    return expression.object.name === path[0];
+    return (<ESTree.Identifier>expression.object).name === path[0];
   }
   // Nested expressions.
   if (path.length > 2 && expression.object.type == 'MemberExpression') {
-    return matchesCallExpression(expression.object, path.slice(0, path.length - 1));
+    const object = <ESTree.MemberExpression>expression.object;
+    return matchesCallExpression(object, path.slice(0, path.length - 1));
   }
 
   return false;
@@ -54,15 +59,16 @@ export function matchesCallExpression(expression:ESNode, path:string[]):boolean 
  * @param {Node} key The node representing an object key or expression.
  * @return {string} The name of that key.
  */
-export function objectKeyToString(key: ESNode):string {
+export function objectKeyToString(key: ESTree.Node):string {
   if (key.type == 'Identifier') {
-    return key.name;
+    return (<ESTree.Identifier>key).name;
   }
   if (key.type == 'Literal') {
-    return key.value;
+    return (<ESTree.Literal>key).value.toString();
   }
   if (key.type == 'MemberExpression') {
-    return objectKeyToString(key.object) + '.' + objectKeyToString(key.property);
+    let mEx = <ESTree.MemberExpression>key;
+    return objectKeyToString(mEx.object) + '.' + objectKeyToString(mEx.property);
   }
 }
 
@@ -80,13 +86,14 @@ const CLOSURE_CONSTRUCTOR_MAP = {
  * @param {Node} node An Espree expression node.
  * @return {string} The type of that expression, in Closure terms.
  */
-export function closureType(node: ESNode):string {
+export function closureType(node: ESTree.Node):string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
-    return typeof node.value;
+    return typeof (<ESTree.Literal>node).value;
   } else if (node.type === 'Identifier') {
-    return CLOSURE_CONSTRUCTOR_MAP[node.name] || node.name;
+    let ident = <ESTree.Identifier>node;
+    return CLOSURE_CONSTRUCTOR_MAP[ident.name] || ident.name;
   } else {
     throw {
       message: 'Unknown Closure type for node: ' + node.type,
@@ -99,8 +106,8 @@ export function closureType(node: ESNode):string {
  * @param {Node} node
  * @return {?string}
  */
-export function getAttachedComment(node: ESNode):string {
-  var comments = getLeadingComments(node) || getLeadingComments(node.key);
+export function getAttachedComment(node: ESTree.Node):string {
+  var comments = getLeadingComments(node) || getLeadingComments(node['key']);
   if (!comments) {
     return;
   }
@@ -112,12 +119,12 @@ export function getAttachedComment(node: ESNode):string {
  * @param  {Node} node [description]
  * @return {[type]}      [description]
  */
-export function getEventComments(node: ESNode):string[] {
+export function getEventComments(node: ESTree.Node):string[] {
   var eventComments: string[] = [];
   estraverse.traverse(node, {
-    enter: function (node: ESNode) {
+    enter: function (node: ESTree.Node) {
       var comments = (node.leadingComments || []).concat(node.trailingComments || [])
-        .map( function(commentAST: ESNode) {
+        .map(function(commentAST) {
           return commentAST.value;
         })
         .filter( function(comment: string) {
@@ -137,24 +144,24 @@ export function getEventComments(node: ESNode):string[] {
  * @param
  * @return {Array.<string>}
  */
-function getLeadingComments(node: ESNode): string[] {
+function getLeadingComments(node: ESTree.Node): string[] {
   if (!node) {
     return;
   }
   var comments = node.leadingComments;
   if (!comments || comments.length === 0) return;
-  return comments.map(function(comment: ESNode) {
+  return comments.map(function(comment) {
     return comment.value;
   });
 }
 
 /**
- * Converts a parse5 Property AST node into its Hydrolysis representation.
+ * Converts a estree Property AST node into its Hydrolysis representation.
  *
  * @param {Node} node
  * @return {PropertyDescriptor}
  */
-export function toPropertyDescriptor(node:ESNode):PropertyDescriptor {
+export function toPropertyDescriptor(node:ESTree.Property):PropertyDescriptor {
   var type = closureType(node.value);
   if (type == "Function") {
     if (node.kind === "get" || node.kind === "set") {
@@ -170,8 +177,11 @@ export function toPropertyDescriptor(node:ESNode):PropertyDescriptor {
   };
 
   if (type === 'Function') {
-    result.params = (node.value.params || []).map(function(param:{name: string}) {
-      return {name: param.name};
+    const value = <ESTree.Function>node.value;
+    result.params = (value.params || []).map((param) => {
+      // With ES6 we can have a variety of param patterns. Best to leave the
+      // formatting to escodegen.
+      return {name: escodegen.generate(param)};
     });
   }
 
