@@ -11,6 +11,7 @@
 'use strict';
 
 import * as ESTree from 'estree';
+import {LiteralValue} from './descriptors';
 
 // useful tool to visualize AST: http://esprima.org/demo/parse.html
 
@@ -117,7 +118,7 @@ function memberExpressionToValue(member:ESTree.MemberExpression) {
  * valueExpression example:
  * { type: "Literal",
  */
-export function expressionToValue(valueExpression:ESTree.Node):string|boolean|number|RegExp {
+export function expressionToValue(valueExpression:ESTree.Node):LiteralValue {
   switch(valueExpression.type) {
     case 'Literal':
       return literalToValue(<ESTree.Literal>valueExpression);

@@ -2,7 +2,7 @@ import * as estree from 'estree';
 import * as jsdoc from './jsdoc';
 import * as dom5 from 'dom5';
 
-type LiteralValue = string|number|boolean|RegExp;
+export type LiteralValue = string|number|boolean|RegExp;
 
 export interface Descriptor {
   jsdoc?: jsdoc.Annotation;
@@ -29,8 +29,8 @@ export interface PropertyDescriptor extends Descriptor {
 }
 
 export interface ElementDescriptor extends Descriptor {
-  is: string;
-  properties: PropertyDescriptor[];
+  is?: string;
+  properties?: PropertyDescriptor[];
   observers?: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
@@ -51,13 +51,13 @@ export interface ElementDescriptor extends Descriptor {
 }
 
 export interface BehaviorDescriptor extends ElementDescriptor {
-  symbol: string;
+  symbol?: string;
 }
 
 export interface EventDescriptor extends Descriptor {
-  name: string;
-  __fromBehavior: BehaviorDescriptor;
-  params: {
+  name?: string;
+  __fromBehavior?: BehaviorDescriptor;
+  params?: {
     type: string,
     desc: string,
     name: string

@@ -25,10 +25,12 @@
     "files": [
         "lib/ast-utils/analyze-properties.ts",
         "lib/ast-utils/ast-value.ts",
+        "lib/ast-utils/behavior-finder.ts",
         "lib/ast-utils/declaration-property-handlers.ts",
         "lib/ast-utils/descriptors.ts",
         "lib/ast-utils/docs.ts",
         "lib/ast-utils/esutil.ts",
+        "lib/ast-utils/fluent-traverse.ts",
         "lib/ast-utils/jsdoc.ts",
         "lib/loader/error-swallowing-fs-resolver.ts",
         "lib/loader/file-loader.ts",

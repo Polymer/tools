@@ -53,7 +53,7 @@ const HANDLED_TAGS = [
  * @param {Object} descriptor The descriptor node to process.
  * @return {Object} The descriptor that was given.
  */
-function annotate(descriptor: Descriptor) {
+export function annotate(descriptor: Descriptor) {
   if (!descriptor || descriptor.jsdoc) return descriptor;
 
   if (typeof descriptor.desc === 'string') {
@@ -69,7 +69,7 @@ function annotate(descriptor: Descriptor) {
 /**
  * Annotates @event, @hero, & @demo tags
  */
-function annotateElementHeader(descriptor: ElementDescriptor) {
+export function annotateElementHeader(descriptor: ElementDescriptor) {
   if (descriptor.events) {
     descriptor.events.forEach(function(event) {
       _annotateEvent(event);
@@ -218,7 +218,7 @@ function annotateElement(descriptor: ElementDescriptor, behaviorsByName: Behavio
  * @param {Object} descriptor behavior descriptor
  * @return {Object} descriptor passed in as param
  */
-function annotateBehavior(descriptor:BehaviorDescriptor, behaviorsByName:BehaviorsByName) {
+export function annotateBehavior(descriptor:BehaviorDescriptor) {
   annotate(descriptor);
   annotateElementHeader(descriptor);
 
@@ -324,7 +324,7 @@ function _annotateFunctionProperty(descriptor:FunctionDescriptor) {
  * @param {Array<FeatureDescriptor>} features
  * @return {ElementDescriptor}
  */
-function featureElement(features:FeatureDescriptor[]):ElementDescriptor {
+export function featureElement(features:FeatureDescriptor[]):ElementDescriptor {
   var properties = features.reduce<PropertyDescriptor[]>(function(result, feature) {
     return result.concat(feature.properties);
   }, []);
@@ -350,7 +350,7 @@ function featureElement(features:FeatureDescriptor[]):ElementDescriptor {
  *
  * @param {Object} descriptor
  */
-function clean(descriptor:Descriptor) {
+export function clean(descriptor:Descriptor) {
   if (!descriptor.jsdoc) return;
   // The doctext was written to `descriptor.desc`
   delete descriptor.jsdoc.description;
@@ -377,7 +377,7 @@ function clean(descriptor:Descriptor) {
  *
  * @param {ElementDescriptor|BehaviorDescriptor} element
  */
-function cleanElement(element:ElementDescriptor) {
+export function cleanElement(element:ElementDescriptor) {
   clean(element);
   element.properties.forEach(cleanProperty);
 }
@@ -397,7 +397,7 @@ function cleanProperty(property:PropertyDescriptor) {
  * @param  {comments} Array<string> A list of comments to parse.
  * @return {ElementDescriptor}      A list of pseudo-elements.
  */
-function parsePseudoElements(comments: string[]):ElementDescriptor[] {
+export function parsePseudoElements(comments: string[]):ElementDescriptor[] {
   var elements: ElementDescriptor[] = [];
   comments.forEach(function(comment) {
     var parsedJsdoc = jsdoc.parseJsdoc(comment);
@@ -472,13 +472,3 @@ function _getNodeAttribute(node:dom5.Node, name:string) {
     }
   }
 }
-
-module.exports = {
-  annotate:        annotate,
-  annotateElement: annotateElement,
-  annotateBehavior: annotateBehavior,
-  clean:           clean,
-  cleanElement:    cleanElement,
-  featureElement:  featureElement,
-  parsePseudoElements: parsePseudoElements
-};

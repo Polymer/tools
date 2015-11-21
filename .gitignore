@@ -10,4 +10,6 @@ lib/ast-utils/jsdoc.js
 lib/ast-utils/declaration-property-handlers.js
 lib/ast-utils/descriptors.js
 lib/ast-utils/docs.js
+lib/ast-utils/fluent-traverse.js
+lib/ast-utils/behavior-finder.js
 typings/

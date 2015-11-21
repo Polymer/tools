@@ -15,7 +15,7 @@ import {PropertyDescriptor, ElementDescriptor} from './descriptors';
 import {analyzeProperties} from './analyze-properties';
 import * as estree from 'estree';
 
-
+export type PropertyHandlers = {[key:string]: (node: estree.Node)=>void};
 /**
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.
@@ -24,7 +24,7 @@ import * as estree from 'estree';
  * @return {object.<string,function>}      An object containing property
  *                                         handlers.
  */
-function declarationPropertyHandlers(declaration:ElementDescriptor) {
+export function declarationPropertyHandlers(declaration:ElementDescriptor): PropertyHandlers {
   return {
     is: function(node: estree.Node) {
       if (node.type == 'Literal') {
