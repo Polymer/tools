@@ -11,6 +11,16 @@
 'use strict';
 var estraverse = require("estraverse");
 
+type ESNode = any;
+
+interface PropertyDescriptor {
+  name: string,
+  type: string,
+  desc: string,
+  javascriptNode: ESNode;
+  params?: {name: string}[];
+}
+
 /**
  * Returns whether an Espree node matches a particular object path.
  *
@@ -19,10 +29,10 @@ var estraverse = require("estraverse");
  *
  *     matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
  *
- * @param {Node} expression The Espree node to match against.
+ * @param {ESNode} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
  */
-function matchesCallExpression(expression, path) {
+export function matchesCallExpression(expression:ESNode, path:string[]):boolean {
   if (!expression.property || !expression.object) return;
   console.assert(path.length >= 2);
 
@@ -44,7 +54,7 @@ function matchesCallExpression(expression, path) {
  * @param {Node} key The node representing an object key or expression.
  * @return {string} The name of that key.
  */
-function objectKeyToString(key) {
+export function objectKeyToString(key: ESNode):string {
   if (key.type == 'Identifier') {
     return key.name;
   }
@@ -56,7 +66,7 @@ function objectKeyToString(key) {
   }
 }
 
-var CLOSURE_CONSTRUCTOR_MAP = {
+const CLOSURE_CONSTRUCTOR_MAP = {
   'Boolean': 'boolean',
   'Number':  'number',
   'String':  'string',
@@ -70,7 +80,7 @@ var CLOSURE_CONSTRUCTOR_MAP = {
  * @param {Node} node An Espree expression node.
  * @return {string} The type of that expression, in Closure terms.
  */
-function closureType(node) {
+export function closureType(node: ESNode):string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
@@ -89,7 +99,7 @@ function closureType(node) {
  * @param {Node} node
  * @return {?string}
  */
-function getAttachedComment(node) {
+export function getAttachedComment(node: ESNode):string {
   var comments = getLeadingComments(node) || getLeadingComments(node.key);
   if (!comments) {
     return;
@@ -102,15 +112,15 @@ function getAttachedComment(node) {
  * @param  {Node} node [description]
  * @return {[type]}      [description]
  */
-function getEventComments(node) {
-  var eventComments = [];
+export function getEventComments(node: ESNode):string[] {
+  var eventComments: string[] = [];
   estraverse.traverse(node, {
-    enter: function (node) {
+    enter: function (node: ESNode) {
       var comments = (node.leadingComments || []).concat(node.trailingComments || [])
-        .map( function(commentAST) {
+        .map( function(commentAST: ESNode) {
           return commentAST.value;
         })
-        .filter( function(comment) {
+        .filter( function(comment: string) {
           return comment.indexOf("@event") != -1;
         });
       eventComments = eventComments.concat(comments);
@@ -127,13 +137,13 @@ function getEventComments(node) {
  * @param
  * @return {Array.<string>}
  */
-function getLeadingComments(node) {
+function getLeadingComments(node: ESNode): string[] {
   if (!node) {
     return;
   }
   var comments = node.leadingComments;
   if (!comments || comments.length === 0) return;
-  return comments.map(function(comment) {
+  return comments.map(function(comment: ESNode) {
     return comment.value;
   });
 }
@@ -144,7 +154,7 @@ function getLeadingComments(node) {
  * @param {Node} node
  * @return {PropertyDescriptor}
  */
-function toPropertyDescriptor(node) {
+export function toPropertyDescriptor(node:ESNode):PropertyDescriptor {
   var type = closureType(node.value);
   if (type == "Function") {
     if (node.kind === "get" || node.kind === "set") {
@@ -152,7 +162,7 @@ function toPropertyDescriptor(node) {
       node[node.kind+"ter"] = true;
     }
   }
-  var result = {
+  var result : PropertyDescriptor = {
     name: objectKeyToString(node.key),
     type: type,
     desc: getAttachedComment(node),
@@ -160,19 +170,10 @@ function toPropertyDescriptor(node) {
   };
 
   if (type === 'Function') {
-    result.params = (node.value.params || []).map(function(param) {
+    result.params = (node.value.params || []).map(function(param:{name: string}) {
       return {name: param.name};
     });
   }
 
   return result;
 }
-
-module.exports = {
-  closureType:           closureType,
-  getAttachedComment:    getAttachedComment,
-  getEventComments:      getEventComments,
-  matchesCallExpression: matchesCallExpression,
-  objectKeyToString:     objectKeyToString,
-  toPropertyDescriptor:  toPropertyDescriptor,
-};
