@@ -12,20 +12,19 @@
 */
 // jshint node: true
 'use strict';
-var espree = require('espree');
-var estraverse = require('estraverse');
+import * as espree from 'espree';
+import * as estree from 'estree';
+import * as estraverse from 'estraverse';
+import {behaviorFinder} from './behavior-finder';
+import {elementFinder} from './element-finder';
+import {featureFinder} from './feature-finder';
+import {Visitor} from './fluent-traverse';
 
-var behaviorFinder = require('./behavior-finder');
-var elementFinder  = require('./element-finder');
-var featureFinder  = require('./feature-finder');
-
-function traverse(visitorRegistries) {
-  var visitor;
-  function applyVisitors(name, node, parent) {
-    var returnVal;
-    for (var i = 0; i < visitorRegistries.length; i++) {
-      if (name in visitorRegistries[i]) {
-        returnVal = visitorRegistries[i][name](node, parent);
+function traverse(visitorRegistries:Visitor[]):estraverse.Callbacks {
+  function applyVisitors(name:string, node:estree.Node, parent:estree.Node) {
+    for (const registry of visitorRegistries) {
+      if (name in registry) {
+        let returnVal = registry[name](node, parent);
         if (returnVal) {
           return returnVal;
         }
@@ -34,18 +33,16 @@ function traverse(visitorRegistries) {
   }
   return {
     enter: function(node, parent) {
-      visitor = 'enter' + node.type;
-      return applyVisitors(visitor, node, parent);
+      return applyVisitors('enter' + node.type, node, parent);
     },
     leave: function(node, parent) {
-      visitor = 'leave' + node.type;
-      return applyVisitors(visitor, node, parent);
+      return applyVisitors('leave' + node.type, node, parent);
     },
     fallback: 'iteration',
   };
 }
 
-var jsParse = function jsParse(jsString) {
+export function jsParse(jsString:string) {
   var script = espree.parse(jsString, {
     attachComment: true,
     comment: true,

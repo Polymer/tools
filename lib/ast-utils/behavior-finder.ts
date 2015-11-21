@@ -20,7 +20,7 @@ import {Visitor} from './fluent-traverse';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import {BehaviorDescriptor, LiteralValue} from './descriptors';
 
-module.exports = function behaviorFinder() {
+export function behaviorFinder() {
   /** The behaviors we've found. */
   var behaviors: BehaviorDescriptor[] = [];
 
@@ -231,3 +231,5 @@ module.exports = function behaviorFinder() {
 
   return {visitors, behaviors};
 };
+
+module.exports = behaviorFinder;

@@ -19,7 +19,7 @@ import {ElementDescriptor, PropertyDescriptor} from './descriptors';
 import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
 
-var elementFinder = function elementFinder() {
+export function elementFinder() {
   /**
    * The list of elements exported by each traversed script.
    */

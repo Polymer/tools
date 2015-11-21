@@ -4,19 +4,6 @@ bower_components
 .idea
 
 lib/loader/*.js
-
-lib/ast-utils/esutil.js
-lib/ast-utils/ast-value.js
-lib/ast-utils/analyze-properties.js
-lib/ast-utils/jsdoc.js
-lib/ast-utils/declaration-property-handlers.js
-lib/ast-utils/descriptors.js
-lib/ast-utils/docs.js
-lib/ast-utils/fluent-traverse.js
-lib/ast-utils/behavior-finder.js
-lib/ast-utils/element-finder.js
-lib/ast-utils/find-alias.js
-lib/ast-utils/import-parse.js
-lib/ast-utils/feature-finder.js
+lib/ast-utils/*.js
 
 typings/

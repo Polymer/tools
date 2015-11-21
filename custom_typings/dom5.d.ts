@@ -7,6 +7,9 @@ declare module 'dom5' {
     attrs: Attr[];
     value?: string;
     data?: string;
+    __location?: {
+      start: number;
+    }
   }
   export interface Attr {
     name: string;

@@ -4,6 +4,7 @@ declare module 'estraverse' {
     enter?: (node:Node, parent:Node)=>any;
     leave?: (node:Node, parent:Node)=>any;
 
+    fallback?: string;
 
     // Methods provided for you, don't override.
     break?: ()=>void;

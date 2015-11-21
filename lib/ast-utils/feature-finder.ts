@@ -18,7 +18,7 @@ import * as estree from 'estree';
 
 var numFeatures = 0;
 
-module.exports = function featureFinder() {
+export function featureFinder() {
   /** The features we've found. */
   var features : FeatureDescriptor[] = [];
 
@@ -57,3 +57,5 @@ module.exports = function featureFinder() {
 
   return {visitors: visitors, features: features};
 };
+
+module.exports = featureFinder;
