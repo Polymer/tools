@@ -16,7 +16,7 @@ import {Resolver, Deferred} from './resolver';
 /**
  * A FileLoader lets you resolve URLs with a set of potential resolvers.
  */
-class FileLoader {
+export class FileLoader {
   resolvers: Resolver[] = [];
 
   // map url -> Deferred
@@ -71,4 +71,5 @@ class FileLoader {
     return promise;
   }
 };
+
 module.exports = FileLoader;

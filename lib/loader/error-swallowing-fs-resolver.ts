@@ -14,7 +14,7 @@
 import {FSResolver, Config} from './fs-resolver';
 import {Deferred} from './resolver';
 
-class ErrorSwallowingFSResolver extends FSResolver {
+export class ErrorSwallowingFSResolver extends FSResolver {
   constructor(config:Config) {
     super(config);
   }

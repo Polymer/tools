@@ -170,7 +170,7 @@ function mixinBehaviors(descriptor:ElementDescriptor, behaviorsByName: Behaviors
  * @param {Object} descriptor The element descriptor.
  * @return {Object} The descriptor that was given.
  */
-function annotateElement(descriptor: ElementDescriptor, behaviorsByName: BehaviorsByName) {
+export function annotateElement(descriptor: ElementDescriptor, behaviorsByName: BehaviorsByName) {
   if (!descriptor.desc && descriptor.type === 'element') {
     descriptor.desc = _findElementDocs(descriptor.is,
                                        descriptor.domModule,

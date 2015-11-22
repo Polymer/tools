@@ -30,8 +30,12 @@ export interface PropertyDescriptor extends Descriptor {
   __fromBehavior?: BehaviorOrName;
 }
 
+/**
+ * The metadata for a single polymer element
+ */
 export interface ElementDescriptor extends Descriptor {
   is?: string;
+  contentHref?: string;
   properties?: PropertyDescriptor[];
   observers?: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -52,6 +56,9 @@ export interface ElementDescriptor extends Descriptor {
   abstract?: boolean;
 }
 
+/**
+ * The metadata for a Polymer behavior mixin.
+ */
 export interface BehaviorDescriptor extends ElementDescriptor {
   symbol?: string;
 }
@@ -76,6 +83,9 @@ export interface FunctionDescriptor extends PropertyDescriptor {
   };
 }
 
+/**
+ * The metadata for a Polymer feature.
+ */
 export interface FeatureDescriptor extends ElementDescriptor {
 
 }

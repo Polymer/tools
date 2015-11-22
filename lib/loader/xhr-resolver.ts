@@ -45,7 +45,7 @@ interface Config {
 /**
  * Construct a resolver that requests resources over XHR.
  */
-class XHRResolver implements Resolver {
+export class XHRResolver implements Resolver {
   config: Config;
   constructor(config:Config) {
     this.config = config;

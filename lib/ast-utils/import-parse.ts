@@ -109,7 +109,7 @@ export interface ParsedImport {
  * An extension of the dom5 node type with location information and the
  * owner document squirreled away.
  */
-interface LocNode extends dom5.Node {
+export interface LocNode extends dom5.Node {
   __locationDetail: {line: number, column: number};
   __ownerDocument: string;
 }

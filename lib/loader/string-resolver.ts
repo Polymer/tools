@@ -22,7 +22,7 @@ interface Config {
 /**
  * A resolver that resolves to `config.content` any uri matching config.
  */
-class StringResolver implements Resolver {
+export class StringResolver implements Resolver {
   url: string|RegExp;
   content: string;
   constructor(config:Config) {

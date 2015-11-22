@@ -15,9 +15,9 @@ import {Resolver, Deferred} from './resolver';
 /**
  * A resolver that resolves to empty string any uri that matches config.
  */
-class NoopResolver implements Resolver {
-  config: string|RegExp;
-  constructor(config:string|RegExp) {
+export class NoopResolver implements Resolver {
+  config: string|{test: (path:string)=>boolean};
+  constructor(config:string|{test: (path:string)=>boolean}) {
     this.config = config;
   }
 
@@ -29,12 +29,12 @@ class NoopResolver implements Resolver {
    */
   accept(uri: string, deferred: Deferred<string>) {
     const config = this.config;
-    if (config instanceof RegExp) {
-      if (!config.test(uri)) {
+    if (config instanceof String) {
+      if (uri.search(config) == -1) {
         return false;
       }
     } else {
-      if (uri.search(config) == -1) {
+      if (!config.test(uri)) {
         return false;
       }
     }

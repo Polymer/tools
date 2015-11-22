@@ -116,3 +116,5 @@ export class FSResolver implements Resolver {
     return false;
   };
 };
+
+module.exports = FSResolver;

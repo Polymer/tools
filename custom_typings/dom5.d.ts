@@ -27,11 +27,19 @@ declare module 'dom5' {
   export type Predicate = (n:Node) => boolean;
   export function query(root: Node, predicate: Predicate):Node;
   export function queryAll(root: Node, predicate: Predicate):Node[];
+  export function nodeWalk(node: Node, predicate: Predicate):Node;
+  export function nodeWalkAll(node: Node, predicate: Predicate):Node[];
   export function nodeWalkAllPrior(node: Node, predicate: Predicate):Node[];
   export function treeMap(node: Node, walker:(node: Node)=>void):void;
-  export var isCommentNode: Predicate;
+  export function getAttribute(node: Node, attrName: string): string;
+  export function removeAttribute(node: Node, attrName: string): string;
+  export function getTextContent(node: Node): string;
+  export function setTextContent(node: Node, string: string): void;
+  export function remove(willBeRemoved: Node): void;
+  export function replace(current: Node, replacement: Node): void;
 
-  export interface PredicateCombinators {
+  export var isCommentNode: Predicate;
+  interface PredicateCombinators {
     hasTagName(name: string):Predicate;
     hasAttr(name: string): Predicate;
     hasAttrValue(name: string, value: string): Predicate;
@@ -40,4 +48,9 @@ declare module 'dom5' {
     OR(...preds: Predicate[]):Predicate;
   }
   export var predicates: PredicateCombinators;
+
+  interface Constructors {
+    element(tagName: string): Node;
+  }
+  export var constructors: Constructors;
 }

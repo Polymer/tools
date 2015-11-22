@@ -23,6 +23,7 @@
         "rewriteTsconfig": true
     },
     "files": [
+        "lib/analyzer.ts",
         "lib/ast-utils/analyze-properties.ts",
         "lib/ast-utils/ast-value.ts",
         "lib/ast-utils/behavior-finder.ts",
