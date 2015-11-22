@@ -647,21 +647,6 @@ export class Analyzer {
     return astCopy;
   };
 
-  // /**
-  //  * Calls `dom5.nodeWalkAll` on each document that `Anayzler` has laoded.
-  //  * @param  {Object} predicate A dom5 predicate.
-  //  * @return {Object}
-  //  */
-  // nodeWalkDocuments(predicate:dom5.Predicate):dom5.Node {
-  //   for (var href in this.parsedDocuments) {
-  //     var match = dom5.nodeWalk(this.parsedDocuments[href], predicate);
-  //     if (match) {
-  //       return match;
-  //     }
-  //   }
-  //   return null;
-  // };
-
   /**
    * Calls `dom5.nodeWalkAll` on each document that `Anayzler` has laoded.
    * @param  {Object} predicate A dom5 predicate.
@@ -735,13 +720,6 @@ function matchesDocumentFolder(descriptor: ElementDescriptor, href: string) {
     searchPath = searchPath.slice(0, lastSlash);
   }
   return descriptorDoc.pathname.indexOf(searchPath) === 0;
-}
-
-function matchingImport(importElement: dom5.Node) {
-  var matchesTag = dom5.predicates.hasTagName(importElement.tagName);
-  var matchesHref = dom5.predicates.hasAttrValue('href', dom5.getAttribute(importElement, 'href'));
-  var matchesRel = dom5.predicates.hasAttrValue('rel', dom5.getAttribute(importElement, 'rel'));
-  return dom5.predicates.AND(matchesTag, matchesHref, matchesRel);
 }
 
 // TODO(ajo): Refactor out of vulcanize into dom5.
