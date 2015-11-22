@@ -4,7 +4,6 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "isolatedModules": false,
-        "jsx": "react",
         "experimentalDecorators": false,
         "emitDecoratorMetadata": false,
         "declaration": false,
@@ -12,7 +11,9 @@
         "removeComments": false,
         "noLib": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true
     },
     "filesGlob": [
         "lib/analyzer.ts",

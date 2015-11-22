@@ -15,7 +15,7 @@ require("babel-polyfill");
  * Static analysis for Polymer.
  * @namespace hydrolysis
  */
-export {Analyzer} from './lib/Analyzer';
+export {Analyzer} from './lib/analyzer';
 import * as _int_docs from './lib/ast-utils/docs';
 export {FSResolver} from './lib/loader/fs-resolver';
 import * as _int_jsdoc from './lib/ast-utils/jsdoc';

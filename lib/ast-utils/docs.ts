@@ -90,6 +90,7 @@ export function annotateElementHeader(descriptor: ElementDescriptor) {
             desc: tag.description || 'demo',
             path: tag.name || 'demo/index.html'
           });
+          break;
       }
     });
   }
