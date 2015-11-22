@@ -86,7 +86,7 @@ interface RedirectConfig extends FSConfig {
  * @param {Array.<ProtocolRedirect>} redirects A list of protocol redirects
  *     for the resolver. They are checked for matching first-to-last.
  */
-class RedirectResolver extends FSResolver {
+export class RedirectResolver extends FSResolver {
   redirects: ProtocolRedirect[];
   constructor(config:RedirectConfig) {
     super(config);
@@ -104,5 +104,3 @@ class RedirectResolver extends FSResolver {
 
   static ProtocolRedirect = ProtocolRedirect;
 }
-
-module.exports = RedirectResolver;

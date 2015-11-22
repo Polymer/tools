@@ -68,5 +68,3 @@ export function declarationPropertyHandlers(declaration:ElementDescriptor): Prop
     }
   };
 }
-
-module.exports = declarationPropertyHandlers;

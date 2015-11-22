@@ -29,8 +29,8 @@ export function matchesCallExpression(expression:ESTree.MemberExpression, path:s
   if (!expression.property || !expression.object) return;
   console.assert(path.length >= 2);
 
-  if (expression.property.type !== 'Literal') {
-    return false;
+  if (expression.property.type !== 'Identifier') {
+    return;
   }
   const property = <ESTree.Identifier>expression.property;
   // Unravel backwards, make sure properties match each step of the way.
@@ -41,8 +41,9 @@ export function matchesCallExpression(expression:ESTree.MemberExpression, path:s
   }
   // Nested expressions.
   if (path.length > 2 && expression.object.type == 'MemberExpression') {
-    const object = <ESTree.MemberExpression>expression.object;
-    return matchesCallExpression(object, path.slice(0, path.length - 1));
+    return matchesCallExpression(
+        <ESTree.MemberExpression>expression.object,
+        path.slice(0, path.length - 1));
   }
 
   return false;

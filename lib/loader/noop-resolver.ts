@@ -29,7 +29,7 @@ export class NoopResolver implements Resolver {
    */
   accept(uri: string, deferred: Deferred<string>) {
     const config = this.config;
-    if (config instanceof String) {
+    if (typeof config === 'string') {
       if (uri.search(config) == -1) {
         return false;
       }
@@ -43,5 +43,3 @@ export class NoopResolver implements Resolver {
     return true;
   }
 }
-
-module.exports = NoopResolver;

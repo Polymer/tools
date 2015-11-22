@@ -13,7 +13,7 @@ var assert = require('chai').assert;
 var path = require('path');
 
 suite('Loader', function() {
-  var loader = require('../lib/loader/file-loader.js');
+  var loader = require('../lib/loader/file-loader.js').FileLoader;
   var l;
 
   beforeEach(function() {
@@ -51,7 +51,7 @@ suite('Loader', function() {
   });
 
   suite('redirect resolver', function(){
-    var RedirectResolver = require('../lib/loader/redirect-resolver.js');
+    var RedirectResolver = require('../lib/loader/redirect-resolver.js').RedirectResolver;
 
     test('redirects to the fs', function(done) {
       var redirect = new RedirectResolver.ProtocolRedirect({
@@ -148,7 +148,7 @@ suite('Loader', function() {
   });
 
   suite('Noop Resolver', function() {
-    var NoopResolver = require('../lib/loader/noop-resolver.js');
+    var NoopResolver = require('../lib/loader/noop-resolver.js').NoopResolver;
 
     test('loader api', function() {
       var noop = new NoopResolver();

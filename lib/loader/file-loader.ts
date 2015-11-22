@@ -71,5 +71,3 @@ export class FileLoader {
     return promise;
   }
 };
-
-module.exports = FileLoader;

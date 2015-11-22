@@ -148,7 +148,7 @@ interface LocError extends Error{
  * @param  {FileLoader=} loader An optional `FileLoader` used to load external
  *                              resources
  */
-var Analyzer = class Analyzer {
+export class Analyzer {
   loader: FileLoader;
   /**
    * A list of all elements the `Analyzer` has metadata for.
@@ -231,7 +231,7 @@ var Analyzer = class Analyzer {
     if (resolver === 'fs') {
       primaryResolver = new FSResolver(options);
     } else if (resolver === 'xhr') {
-      primaryResolver = new XHRResolver(<any>options);
+      primaryResolver = new XHRResolver(options);
     } else if (resolver === 'permissive') {
       primaryResolver = new ErrorSwallowingFSResolver(options);
     } else {
@@ -773,5 +773,3 @@ function attachDomModule(parsedImport: ParsedImport, element: ElementDescriptor)
     }
   }
 }
-
-module.exports = Analyzer;

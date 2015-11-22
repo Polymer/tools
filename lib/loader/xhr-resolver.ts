@@ -39,7 +39,7 @@ interface Config {
    * accepts 'document', 'arraybuffer', and 'json'.
    * responseType: string;
    */
-  responseType: string;
+  responseType?: string;
 }
 
 /**
@@ -47,7 +47,7 @@ interface Config {
  */
 export class XHRResolver implements Resolver {
   config: Config;
-  constructor(config:Config) {
+  constructor(config?:Config) {
     this.config = config;
   }
 
@@ -56,5 +56,3 @@ export class XHRResolver implements Resolver {
     return true;
   }
 };
-
-module.exports = XHRResolver;

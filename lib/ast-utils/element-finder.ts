@@ -114,5 +114,3 @@ export function elementFinder() {
   };
   return {visitors: visitors, elements: elements};
 };
-
-module.exports = elementFinder;

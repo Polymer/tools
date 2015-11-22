@@ -163,5 +163,3 @@ export function importParse(htmlString:string, href:string) {
   ;
   return registry;
 };
-
-module.exports = importParse;

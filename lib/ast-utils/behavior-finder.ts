@@ -184,7 +184,7 @@ export function behaviorFinder() {
      */
     enterVariableDeclaration: function(node, parent) {
       if (node.declarations.length !== 1) return;  // Ambiguous.
-      this._initBehavior(node, function () {
+      _initBehavior(node, function () {
         return esutil.objectKeyToString(node.declarations[0].id);
       });
     },
@@ -192,8 +192,8 @@ export function behaviorFinder() {
     /**
      * Look for object assignments with @polymerBehavior in the docs.
      */
-    enterAssignmentExpression: function(node, parentNode) {
-      this._initBehavior(parent, function () {
+    enterAssignmentExpression: function(node, parent) {
+      _initBehavior(parent, function () {
         return esutil.objectKeyToString(node.left);
       });
     },
@@ -231,5 +231,3 @@ export function behaviorFinder() {
 
   return {visitors, behaviors};
 };
-
-module.exports = behaviorFinder;

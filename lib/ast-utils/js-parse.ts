@@ -88,5 +88,3 @@ export function jsParse(jsString:string) {
     parsedScript: script
   };
 };
-
-module.exports = jsParse;

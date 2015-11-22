@@ -15,9 +15,11 @@
         "suppressImplicitAnyIndexErrors": true
     },
     "filesGlob": [
+        "lib/analyzer.ts",
         "lib/**/*.ts",
         "typings/**.ts",
-        "custom_typings/**.d.ts"
+        "custom_typings/**.d.ts",
+        "index.ts"
     ],
     "atom": {
         "rewriteTsconfig": true
@@ -52,6 +54,7 @@
         "custom_typings/espree.d.ts",
         "custom_typings/estraverse.d.ts",
         "custom_typings/estree.d.ts",
-        "custom_typings/main.d.ts"
+        "custom_typings/main.d.ts",
+        "index.ts"
     ]
 }

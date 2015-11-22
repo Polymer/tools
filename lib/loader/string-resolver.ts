@@ -54,5 +54,3 @@ export class StringResolver implements Resolver {
     return true;
   }
 };
-
-module.exports = StringResolver;

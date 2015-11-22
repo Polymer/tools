@@ -57,5 +57,3 @@ export function featureFinder() {
 
   return {visitors: visitors, features: features};
 };
-
-module.exports = featureFinder;

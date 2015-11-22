@@ -27,5 +27,3 @@ export class ErrorSwallowingFSResolver extends FSResolver {
     return FSResolver.prototype.accept.call(this, uri, deferred);
   }
 }
-
-module.exports = ErrorSwallowingFSResolver;

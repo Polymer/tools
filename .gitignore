@@ -3,6 +3,7 @@ bower_components
 .DS_Store
 .idea
 
+index.js
 lib/*.js
 lib/ast-utils/*.js
 lib/loader/*.js

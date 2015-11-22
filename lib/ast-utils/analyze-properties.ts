@@ -105,6 +105,3 @@ export function analyzeProperties(node:estree.Node) {
   }
   return analyzedProps;
 };
-
-
-module.exports = analyzeProperties;
