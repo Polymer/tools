@@ -153,7 +153,7 @@ function safari(browser) {
  */
 function internetExplorer(browser) {
   return {
-    'browserName': 'ie',
+    'browserName': 'internet explorer',
     'version':     browser.version,
   };
 }
