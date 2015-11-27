@@ -25,7 +25,7 @@ module.exports = function(wct, pluginOptions) {
   // browsers. We don't want the default behavior (run all local browsers) to
   // kick in if someone has specified browsers via another plugin.
   wct.hookLate('configure', function(done) {
-    pluginOptions.seleniumPort = pluginOptions.seleniumPort || parseInt(process.env.SELENIUM_PORT);
+    pluginOptions.seleniumArgs = pluginOptions.seleniumArgs || [];
     pluginOptions.skipSeleniumInstall = pluginOptions.skipSeleniumInstall || false;
     
     var names = browsers.normalize(pluginOptions.browsers);
@@ -59,32 +59,19 @@ module.exports = function(wct, pluginOptions) {
   wct.hook('prepare', function(done) {
     if (!eachCapabilities.length) return done();
 
-    // Already have your own Selenium server running?
-    if (pluginOptions.skipSelenium) {
-      if (!pluginOptions.seleniumPort) {
-        return done('When skipSelenium is true, you must specify a port via seleniumPort or SELENIUM_PORT');
-      }
-      wct.emit('log:info', 'Using user-managed Selenium server on port', chalk.yellow(pluginOptions.seleniumPort));
-      return done();
-    }
-
     wct.emitHook('prepare:selenium', function(error) {
       if (error) return done(error);
       selenium.checkSeleniumEnvironment(function(error) {
         if (error) return done(error);
+        var start = selenium.installAndStartSeleniumServer;
         if(pluginOptions.skipSeleniumInstall) {
-          selenium.startSeleniumServer(wct, function(error, port) {
-            if (error) return done(error);
-            updatePort(eachCapabilities, port);
-            done();
-          });
-        } else {
-          selenium.installAndStartSeleniumServer(wct, function(error, port) {
-            if (error) return done(error);
-            updatePort(eachCapabilities, port);
-            done();
-          });
+          start = selenium.startSeleniumServer;
         }
+        start(wct, pluginOptions.seleniumArgs, function(error, port) {
+          if (error) return done(error);
+          updatePort(eachCapabilities, port);
+          done();
+        });
       });
     });
 

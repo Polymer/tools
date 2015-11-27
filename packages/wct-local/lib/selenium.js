@@ -33,17 +33,19 @@ function checkSeleniumEnvironment(done) {
   });
 }
 
-function startSeleniumServer(wct, done) {
+function startSeleniumServer(wct, args, done) {
   wct.emit('log:info', 'Starting Selenium server for local browsers');
-  checkSeleniumEnvironment(seleniumStart(wct, done, true));
+  var opts = {args: args, install: false};
+  checkSeleniumEnvironment(seleniumStart(wct, opts, done));
 }
 
-function installAndStartSeleniumServer(wct, done) {
+function installAndStartSeleniumServer(wct, args, done) {
   wct.emit('log:info', 'Installing and starting Selenium server for local browsers');
-  checkSeleniumEnvironment(seleniumStart(wct, done, false));
+  var opts = {args: args, install: true};
+  checkSeleniumEnvironment(seleniumStart(wct, opts, done));
 }
 
-function seleniumStart(wct, done, skipinstall) {
+function seleniumStart(wct, opts, done) {
   return function(error) {
     if (error) return done(error);
     freeport(function(error, port) {
@@ -59,7 +61,7 @@ function seleniumStart(wct, done, skipinstall) {
 
       var config = {
         version: '2.47.1',
-        seleniumArgs: ['-port', port],
+        seleniumArgs: ['-port', port].concat(opts.args),
         // Bookkeeping once the process starts.
         spawnCb: function(server) {
           // Make sure that we interrupt the selenium server ASAP.
@@ -94,10 +96,10 @@ function seleniumStart(wct, done, skipinstall) {
         });
       }
       
-      if(skipinstall) {
-        start();
-      } else {
+      if(opts.install) {
         install();
+      } else {
+        start();
       }
     });
   };
