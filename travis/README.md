@@ -21,7 +21,9 @@
 
 ### WCT with Sauce
 1. Copy `sample_travis_with_sauce.yml` to your repo as `.travis.yml`
-1. Follow the Sauce Labs documentation on [adding your Sauce Labs credentials to travis](https://docs.saucelabs.com/ci-integrations/travis-ci/#securely-use-your-sauce-labs-credentials-on-travis-ci)
+1. Install the travis command line module (if you haven't already)
+  - `gem install travis`
+1. Add the saucelabs enviroment variables using the travis gem
   - `travis encrypt SAUCE_USERNAME="your username" --add`
   - `travis encrypt SAUCE_ACCESS_KEY="your access key" --add`
 1. Commit and push `.travis.yml`
