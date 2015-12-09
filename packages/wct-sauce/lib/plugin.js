@@ -82,6 +82,9 @@ module.exports = function(wct, pluginOptions) {
 
     var payload = {
       passed: (stats.status === 'complete' && stats.failing === 0),
+      "public": pluginOptions.visibility,
+      build: parseInt(""+pluginOptions.buildNumber),
+      name: pluginOptions.jobName
     };
     wct.emit('log:debug', 'Updating sauce job', sessionId, payload);
 
@@ -104,6 +107,9 @@ function expandOptions(options) {
     accessKey: process.env.SAUCE_ACCESS_KEY,
     // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
     tunnelId:  process.env.SAUCE_TUNNEL_ID || process.env.TRAVIS_JOB_NUMBER,
+    buildNumber: process.env.TRAVIS_BUILD_NUMBER,
+    jobName: process.env.TRAVIS_JOB_ID,
+    visibility: "public"
   });
 }
 

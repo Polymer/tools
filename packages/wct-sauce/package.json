@@ -39,6 +39,18 @@
       "tunnelId": {
         "help": "Sauce Connect tunnel identifier.",
         "full": "sauce-tunnel-id"
+      },
+      "buildNumber": {
+        "help": "The build number tested by this test for the sauce labs REST API.",
+        "full": "build-number"
+      },
+      "jobName": {
+        "help": "Job name for the sauce labs REST API.",
+        "full": "job-name"
+      },
+      "visibility": {
+        "help": "Set job visibility to 'public', 'public restricted', 'share', 'team' or 'private'",
+        "full": "visibility"
       }
     }
   },
