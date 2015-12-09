@@ -37,6 +37,7 @@ function startTunnel(config, emitter, done) {
       tunnelIdentifier: uuid.v4(),
       logger:           emitter.emit.bind(emitter, 'log:debug'),
       logfile:          logPath,
+      port:             config.port
     };
     _.assign(connectOptions, config.tunnelOptions);
     var tunnelId = connectOptions.tunnelIdentifier;
