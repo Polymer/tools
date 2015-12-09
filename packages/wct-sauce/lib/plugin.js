@@ -102,7 +102,8 @@ function expandOptions(options) {
   _.defaults(options, {
     username:  process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
-    tunnelId:  process.env.SAUCE_TUNNEL_ID,
+    // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
+    tunnelId:  process.env.SAUCE_TUNNEL_ID || process.env.TRAVIS_JOB_NUMBER,
   });
 }
 
