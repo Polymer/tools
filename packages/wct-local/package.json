@@ -51,7 +51,7 @@
     "freeport": "^1.0.4",
     "launchpad": "^0.4.4",
     "lodash": "^3.0.1",
-    "selenium-standalone": "^4.6.1",
+    "selenium-standalone": "4.7.1",
     "which": "^1.0.8"
   }
 }
