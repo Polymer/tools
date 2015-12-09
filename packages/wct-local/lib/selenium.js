@@ -60,7 +60,7 @@ function seleniumStart(wct, opts, done) {
       }
 
       var config = {
-        version: '2.47.1',
+        // version: '2.48.2',
         seleniumArgs: ['-port', port].concat(opts.args),
         // Bookkeeping once the process starts.
         spawnCb: function(server) {
@@ -74,7 +74,7 @@ function seleniumStart(wct, opts, done) {
           server.stderr.on('data', onOutput);
         },
       };
-      
+
       function install() {
         selenium.install({version: '2.47.1', logger: onOutput}, function(error) {
           if (error) {
@@ -84,7 +84,7 @@ function seleniumStart(wct, opts, done) {
           start();
         });
       }
-      
+
       function start() {
         selenium.start(config, function(error) {
           if (error) {
@@ -95,7 +95,7 @@ function seleniumStart(wct, opts, done) {
           done(null, port);
         });
       }
-      
+
       if(opts.install) {
         install();
       } else {
