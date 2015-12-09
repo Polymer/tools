@@ -27,9 +27,11 @@
         "abbr": "l",
         "list": true
       },
-      "seleniumPort": {
-        "help": "The port of a running selenium server to use.",
-        "full": "selenium-port"
+      "seleniumArgs": {
+	"help": "Additional selenium server arguments. Port is auto-selected.",
+	"full": "selenium-arg",
+	"metavar": "ARG",
+	"list": true
       },
       "skipSeleniumInstall": {
         "help": "Skip trying to install selenium.",
