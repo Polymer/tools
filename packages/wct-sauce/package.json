@@ -51,6 +51,10 @@
       "visibility": {
         "help": "Set job visibility to 'public', 'public restricted', 'share', 'team' or 'private'",
         "full": "visibility"
+      },
+      "port": {
+        "help": "Select an alternative port for Sauce Connect (default is 4445)",
+        "full": "port"
       }
     }
   },
