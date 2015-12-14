@@ -8,7 +8,6 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 var _       = require('lodash');
-var fs      = require('fs');
 var request = require('request');
 
 var browsers = require('./browsers');
@@ -107,28 +106,16 @@ function expandOptions(options) {
     username:  process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
     tunnelId:  process.env.SAUCE_TUNNEL_ID,
+    // export the travis build number (integer) and repo slug (user/repo) to
+    // sauce dashboard
+    buildNumber: process.env.TRAVIS_BUILD_NUMBER,
+    jobName: process.env.TRAVIS_REPO_SLUG,
     visibility: 'public'
   });
-
-  // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
-  if (process.env.TRAVIS) {
-    try {
-      // when using the travis sauce_connect addon, the file
-      // /home/travis/sauce-connect.log is written to with the sauce logs.
-      // If this file exists, then the sauce_connect addon is in use
-      if(fs.statSync('/home/travis/sauce-connect.log')) {
-        _.defaults(options, {
-          // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
-          tunnelId: process.env.TRAVIS_JOB_NUMBER
-        });
-      }
-    } catch(e) {
-    }
+  if (sauce.isTravisSauceConnectRunning()) {
     _.defaults(options, {
-      // export the travis build number (integer) and repo slug (user/repo) to
-      // sauce dashboard
-      buildNumber: process.env.TRAVIS_BUILD_NUMBER,
-      jobName: process.env.TRAVIS_REPO_SLUG,
+      // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
+      tunnelId: process.env.TRAVIS_JOB_NUMBER
     });
   }
 }

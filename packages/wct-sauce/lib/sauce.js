@@ -10,6 +10,7 @@
 var _            = require('lodash');
 var chalk        = require('chalk');
 var cleankill    = require('cleankill');
+var fs           = require('fs');
 var path         = require('path');
 var sauceConnect = require('sauce-connect-launcher');
 var temp         = require('temp');
@@ -63,6 +64,28 @@ function startTunnel(config, emitter, done) {
   });
 }
 
+function isTravisSauceConnectRunning() {
+  // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
+  if (!process.env.TRAVIS) {
+    return false;
+  }
+
+  try {
+    // when using the travis sauce_connect addon, the file
+    // /home/travis/sauce-connect.log is written to with the sauce logs.
+    // If this file exists, then the sauce_connect addon is in use
+    // If fs.statSync throws, then the file does not exist
+    var travisScLog = path.join(process.env.HOME, 'sauce-connect.log');
+    if (fs.statSync(travisScLog)) {
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
 module.exports = {
   startTunnel: startTunnel,
+  isTravisSauceConnectRunning: isTravisSauceConnectRunning
 };
