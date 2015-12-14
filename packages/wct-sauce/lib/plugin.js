@@ -8,6 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 var _       = require('lodash');
+var fs      = require('fs');
 var request = require('request');
 
 var browsers = require('./browsers');
@@ -111,13 +112,11 @@ function expandOptions(options) {
 
   // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
   if (process.env.TRAVIS) {
-    var sauceAddonRunning = false;
     try {
       // when using the travis sauce_connect addon, the file
       // /home/travis/sauce-connect.log is written to with the sauce logs.
       // If this file exists, then the sauce_connect addon is in use
-      sauceAddonRunning = fs.statSync('/home/travis/sauce-connect.log');
-      if (sauceAddonRunning) {
+      if(fs.statSync('/home/travis/sauce-connect.log')) {
         _.defaults(options, {
           // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
           tunnelId: process.env.TRAVIS_JOB_NUMBER
