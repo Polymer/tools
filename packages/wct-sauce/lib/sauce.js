@@ -47,7 +47,7 @@ function startTunnel(config, emitter, done) {
     emitter.emit('log:info', 'Sauce Connect log:', chalk.magenta(logPath));
     emitter.emit('log:debug', 'sauce-connect-launcher options', connectOptions);
 
-    process.env.SAUCE_CONNECT_VERSION = '4.3.12';
+    setSauceConnectDownloadVersion();
 
     sauceConnect(connectOptions, function(error, tunnel) {
       if (error) {
@@ -85,7 +85,14 @@ function isTravisSauceConnectRunning() {
   }
 }
 
+// sauce-connect-launcher only checks the environment variable
+// $SAUCE_CONNECT_VERSION
+function setSauceConnectDownloadVersion() {
+  process.env.SAUCE_CONNECT_VERSION = '4.3.12';
+}
+
 module.exports = {
   startTunnel: startTunnel,
-  isTravisSauceConnectRunning: isTravisSauceConnectRunning
+  isTravisSauceConnectRunning: isTravisSauceConnectRunning,
+  setSauceConnectDownloadVersion: setSauceConnectDownloadVersion
 };

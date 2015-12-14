@@ -36,15 +36,15 @@ function requireSauceConnectLauncher(done, attempt) {
   done(sauceConnectLauncher);
 }
 
-console.log('Prefetching the Sauce Connect binary.');
-
-process.env.SAUCE_CONNECT_VERSION = '4.3.12';
-
 var sauce = require('../lib/sauce');
 
 // don't download our own sauce connect binary if travis is running the
 // sauce_connect addon
 if (!sauce.isTravisSauceConnectRunning()) {
+  console.log('Prefetching the Sauce Connect binary.');
+
+  sauce.setSauceConnectDownloadVersion();
+
   requireSauceConnectLauncher(function(sauceConnectLauncher) {
     sauceConnectLauncher.download({
       logger: console.log.bind(console),
