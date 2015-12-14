@@ -82,8 +82,8 @@ module.exports = function(wct, pluginOptions) {
 
     var payload = {
       passed: (stats.status === 'complete' && stats.failing === 0),
-      "public": pluginOptions.visibility,
-      build: parseInt(""+pluginOptions.buildNumber),
+      'public': pluginOptions.visibility,
+      build: parseInt(pluginOptions.buildNumber, 10),
       name: pluginOptions.jobName
     };
     wct.emit('log:debug', 'Updating sauce job', sessionId, payload);
@@ -106,10 +106,32 @@ function expandOptions(options) {
     username:  process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
     tunnelId:  process.env.SAUCE_TUNNEL_ID,
-    buildNumber: process.env.TRAVIS_BUILD_NUMBER,
-    jobName: process.env.TRAVIS_JOB_ID,
-    visibility: "public"
+    visibility: 'public'
   });
+
+  // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
+  if (process.env.TRAVIS) {
+    var sauceAddonRunning = false;
+    try {
+      // when using the travis sauce_connect addon, the file
+      // /home/travis/sauce-connect.log is written to with the sauce logs.
+      // If this file exists, then the sauce_connect addon is in use
+      sauceAddonRunning = fs.statSync('/home/travis/sauce-connect.log');
+      if (sauceAddonRunning) {
+        _.defaults(options, {
+          // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
+          tunnelId: process.env.TRAVIS_JOB_NUMBER
+        });
+      }
+    } catch(e) {
+    }
+    _.defaults(options, {
+      // export the travis build number (integer) and repo slug (user/repo) to
+      // sauce dashboard
+      buildNumber: process.env.TRAVIS_BUILD_NUMBER,
+      jobName: process.env.TRAVIS_REPO_SLUG,
+    });
+  }
 }
 
 /**
