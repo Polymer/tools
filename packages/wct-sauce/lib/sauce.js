@@ -88,7 +88,7 @@ function isTravisSauceConnectRunning() {
 // sauce-connect-launcher only checks the environment variable
 // $SAUCE_CONNECT_VERSION
 function setSauceConnectDownloadVersion() {
-  process.env.SAUCE_CONNECT_VERSION = '4.3.12';
+  process.env.SAUCE_CONNECT_VERSION = '4.3.13';
 }
 
 module.exports = {

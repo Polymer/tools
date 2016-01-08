@@ -8,5 +8,6 @@
   "onecase":   true,
   "quotmark":  "single",
   "unused":    "vars",
-  "validthis": true
+  "validthis": true,
+  "esnext": true
 }
