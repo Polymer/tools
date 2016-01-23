@@ -106,6 +106,19 @@ function objectExpressionToValue(obj:ESTree.ObjectExpression) {
 }
 
 /**
+ * BinaryExpressions are of the form "literal" + "literal"
+ */
+function binaryExpressionToValue(member: ESTree.BinaryExpression):(number|string) {
+  if (member.operator == "+") {
+    // We need to cast to `any` here because, while it's usually not the right
+    // thing to do to use '+' on two values of a mix of types because it's
+    // unpredictable, that is what the original code we're evaluating does.
+    return <any>expressionToValue(member.left) + expressionToValue(member.right);
+  }
+  return
+}
+
+/**
  * MemberExpression references a variable with name
  */
 function memberExpressionToValue(member:ESTree.MemberExpression) {
@@ -113,10 +126,7 @@ function memberExpressionToValue(member:ESTree.MemberExpression) {
 }
 
 /**
- * Tries to get a value from expression. Handles Literal, UnaryExpression
- * returns undefined on failure
- * valueExpression example:
- * { type: "Literal",
+ * Tries to get the value of an expression. Returns undefined on failure.
  */
 export function expressionToValue(valueExpression:ESTree.Node):LiteralValue {
   switch(valueExpression.type) {
@@ -138,6 +148,8 @@ export function expressionToValue(valueExpression:ESTree.Node):LiteralValue {
       return identifierToValue(<ESTree.Identifier>valueExpression);
     case 'MemberExpression':
       return memberExpressionToValue(<ESTree.MemberExpression>valueExpression);
+    case 'BinaryExpression':
+      return binaryExpressionToValue(<ESTree.BinaryExpression>valueExpression);
     default:
       return;
   }

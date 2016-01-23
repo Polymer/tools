@@ -132,32 +132,32 @@ function copyProperties(from:ElementDescriptor, to:ElementDescriptor, behaviorsB
   if (!from.behaviors) {
     return;
   }
-  from.behaviors.forEach(function(behavior){
+  for (let i = from.behaviors.length - 1; i >= 0; i--) {
     // TODO: what's up with behaviors sometimes being a literal, and sometimes
     // being a descriptor object?
-    let localBehavior : any = behavior;
+    const localBehavior: any = from.behaviors[i];
     var definedBehavior = behaviorsByName[localBehavior] || behaviorsByName[localBehavior.symbol];
     if (!definedBehavior) {
-        console.warn("Behavior " + behavior + " not found when mixing " +
+        console.warn("Behavior " + localBehavior + " not found when mixing " +
           "properties into " + to.is + "!");
         return;
     }
     copyProperties(definedBehavior, to, behaviorsByName);
-  });
+  }
 }
 
 function mixinBehaviors(descriptor:ElementDescriptor, behaviorsByName: BehaviorsByName) {
   if (descriptor.behaviors) {
-    descriptor.behaviors.forEach(function(behavior){
-
-      if (!behaviorsByName[<string>behavior]) {
+    for (let i = descriptor.behaviors.length - 1; i >= 0; i--) {
+      const behavior = <string>descriptor.behaviors[i];
+      if (!behaviorsByName[behavior]) {
         console.warn("Behavior " + behavior + " not found when mixing " +
           "properties into " + descriptor.is + "!");
-        return;
+        break;
       }
       var definedBehavior = behaviorsByName[<string>behavior];
       copyProperties(definedBehavior, descriptor, behaviorsByName);
-    });
+    }
   }
 }
 
