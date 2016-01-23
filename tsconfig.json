@@ -4,15 +4,10 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "isolatedModules": false,
-        "experimentalDecorators": false,
-        "emitDecoratorMetadata": false,
-        "declaration": false,
         "noImplicitAny": true,
         "removeComments": false,
-        "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true
     },
     "filesGlob": [

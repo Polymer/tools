@@ -649,8 +649,6 @@ export class Analyzer {
 
   /**
    * Calls `dom5.nodeWalkAll` on each document that `Anayzler` has laoded.
-   * @param  {Object} predicate A dom5 predicate.
-   * @return {Object}
    */
   nodeWalkDocuments(predicate:dom5.Predicate) {
     var results: dom5.Node[] = [];
@@ -660,6 +658,21 @@ export class Analyzer {
     }
     return results;
   };
+
+  /**
+   * Calls `dom5.nodeWalkAll` on each document that `Anayzler` has laoded.
+   *
+   * TODO: make nodeWalkAll & nodeWalkAllDocuments distict, or delete one.
+   */
+  nodeWalkAllDocuments(predicate:dom5.Predicate) {
+    var results: dom5.Node[] = [];
+    for (var href in this.parsedDocuments) {
+      var newNodes = dom5.nodeWalkAll(this.parsedDocuments[href], predicate);
+      results = results.concat(newNodes);
+    }
+    return results;
+  };
+
 
   /** Annotates all loaded metadata with its documentation. */
   annotate() {
