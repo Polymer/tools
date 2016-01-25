@@ -56,5 +56,6 @@
   },
   "engines": {
     "node": ">=0.12"
-  }
+  },
+  "selenium-version": "2.49.1"
 }

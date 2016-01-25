@@ -7,6 +7,8 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
+
+var SELENIUM_VERSION = require('../package.json')['selenium-version'];
 // Work around a potential npm race condition:
 // https://github.com/npm/npm/issues/6624
 function requireSelenium(done, attempt) {
@@ -26,7 +28,7 @@ function requireSelenium(done, attempt) {
 }
 
 var config = {
-  // version: '2.48.2',
+  version: SELENIUM_VERSION,
   logger:  console.log.bind(console),
 };
 

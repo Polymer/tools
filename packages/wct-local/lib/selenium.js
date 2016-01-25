@@ -13,6 +13,8 @@ var freeport  = require('freeport');
 var selenium  = require('selenium-standalone');
 var which     = require('which');
 
+var SELENIUM_VERSION = require('../package.json')['selenium-version'];
+
 function checkSeleniumEnvironment(done) {
   which('java', function(error) {
     if (!error) return done();
@@ -60,7 +62,7 @@ function seleniumStart(wct, opts, done) {
       }
 
       var config = {
-        // version: '2.48.2',
+        version: SELENIUM_VERSION,
         seleniumArgs: ['-port', port].concat(opts.args),
         // Bookkeeping once the process starts.
         spawnCb: function(server) {
@@ -76,7 +78,7 @@ function seleniumStart(wct, opts, done) {
       };
 
       function install() {
-        selenium.install({version: '2.47.1', logger: onOutput}, function(error) {
+        selenium.install({version: SELENIUM_VERSION, logger: onOutput}, function(error) {
           if (error) {
             log.forEach(function(line) { wct.emit('log:info', line) });
             return done(error);
