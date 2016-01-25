@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "init": "tsd install",
+    "clean": "rm -rf node_modules/ typings/ *.js && find lib | grep \\.js$ | xargs rm",
     "build": "tsc && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js -t babelify",
     "build:watch": "watch 'npm run build' ./lib",
     "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js -t babelify",
@@ -32,6 +33,7 @@
     "jsdoc-to-markdown": "^1.0.3",
     "jshint": "^2.7.0",
     "mocha": "^2.2.4",
+    "tsd": "^0.6.5",
     "typescript": "^1.8.0-dev.20151121",
     "watch": "latest",
     "web-component-tester": "^3.3.21"
