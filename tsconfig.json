@@ -12,7 +12,7 @@
     "filesGlob": [
         "src/analyzer.ts",
         "src/**/*.ts",
-        "typings/**.ts",
+        "typings/main.d.ts",
         "custom_typings/**.d.ts"
     ],
     "atom": {
@@ -41,7 +41,7 @@
         "src/loader/resolver.ts",
         "src/loader/string-resolver.ts",
         "src/loader/xhr-resolver.ts",
-        "typings/tsd.d.ts",
+        "typings/main.d.ts",
         "custom_typings/doctrine.d.ts",
         "custom_typings/dom5.d.ts",
         "custom_typings/escodegen.d.ts",
