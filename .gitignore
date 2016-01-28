@@ -3,9 +3,12 @@ bower_components
 .DS_Store
 .idea
 
-index.js
-lib/*.js
-lib/ast-utils/*.js
-lib/loader/*.js
-
 typings/
+
+# lib is where typescript + babel output goes
+lib/
+# typescript's ES6 output goes in src/*.js before babel transforms it and
+# moves it to lib
+src/*.js
+src/ast-utils/*.js
+src/loader/*.js

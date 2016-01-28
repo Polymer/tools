@@ -6,6 +6,5 @@ node_js:
 sudo: false
 before_script:
   - npm run init
-  - npm run build
 script:
-  - ./node_modules/.bin/mocha test/test.js
+  - npm run testNode

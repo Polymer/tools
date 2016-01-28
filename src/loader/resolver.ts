@@ -1,5 +1,7 @@
 'use strict';
 
+require("babel-polyfill");
+
 /**
  * An object that knows how to resolve resources.
  */
