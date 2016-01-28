@@ -7,8 +7,5 @@ sudo: false
 before_script:
   - npm run init
   - npm run build
-  - npm install -g mocha
-  - npm install -g jshint
 script:
-  - jshint index.js lib/
-  - mocha test/test.js
+  - ./node_modules/.bin/mocha test/test.js

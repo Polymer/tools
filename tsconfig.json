@@ -7,8 +7,7 @@
         "noImplicitAny": true,
         "removeComments": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "noFallthroughCasesInSwitch": true
+        "suppressImplicitAnyIndexErrors": true
     },
     "filesGlob": [
         "lib/analyzer.ts",

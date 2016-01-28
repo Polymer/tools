@@ -31,10 +31,9 @@
     "browserify": "^9.0.8",
     "chai": "^2.2.0",
     "jsdoc-to-markdown": "^1.0.3",
-    "jshint": "^2.7.0",
     "mocha": "^2.2.4",
     "tsd": "^0.6.5",
-    "typescript": "^1.8.0-dev.20151121",
+    "typescript": "^1.8.0-dev.20160125",
     "watch": "latest",
     "web-component-tester": "^3.3.21"
   },
