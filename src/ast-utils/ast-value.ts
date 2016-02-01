@@ -10,7 +10,7 @@
 // jshint node: true
 'use strict';
 
-import * as ESTree from 'estree';
+import * as estree from 'estree';
 import {LiteralValue} from './descriptors';
 
 // useful tool to visualize AST: http://esprima.org/demo/parse.html
@@ -19,14 +19,14 @@ import {LiteralValue} from './descriptors';
  * converts literal: {"type": "Literal", "value": 5,  "raw": "5" }
  * to string
  */
-function literalToValue(literal:ESTree.Literal) {
+function literalToValue(literal:estree.Literal) {
   return literal.value;
 }
 
 /**
  * converts unary to string
  */
-function unaryToValue(unary:ESTree.UnaryExpression):string {
+function unaryToValue(unary:estree.UnaryExpression):string {
   var argValue = expressionToValue(unary.argument);
   if (argValue === undefined)
     return;
@@ -37,43 +37,43 @@ function unaryToValue(unary:ESTree.UnaryExpression):string {
  * converts identifier to its value
  * identifier { "type": "Identifier", "name": "Number }
  */
-function identifierToValue(identifier:ESTree.Identifier):string {
+function identifierToValue(identifier:estree.Identifier):string {
   return identifier.name;
 }
 
 /**
  * Function is a block statement.
  */
-function functionDeclarationToValue(fn:ESTree.FunctionDeclaration) {
+function functionDeclarationToValue(fn:estree.FunctionDeclaration) {
   if (fn.body.type == "BlockStatement")
     return blockStatementToValue(fn.body);
 }
 
-function functionExpressionToValue(fn:ESTree.FunctionExpression) {
+function functionExpressionToValue(fn:estree.FunctionExpression) {
   if (fn.body.type == "BlockStatement")
     return blockStatementToValue(fn.body);
 }
 /**
  * Block statement: find last return statement, and return its value
  */
-function blockStatementToValue(block:ESTree.BlockStatement) {
+function blockStatementToValue(block:estree.BlockStatement) {
   for (var i=block.body.length - 1; i>= 0; i--) {
     if (block.body[i].type === "ReturnStatement")
-      return returnStatementToValue(<ESTree.ReturnStatement>block.body[i]);
+      return returnStatementToValue(<estree.ReturnStatement>block.body[i]);
   }
 }
 
 /**
  * Evaluates return's argument
  */
-function returnStatementToValue(ret:ESTree.ReturnStatement) {
+function returnStatementToValue(ret:estree.ReturnStatement) {
   return expressionToValue(ret.argument);
 }
 
 /**
  * Enclose containing values in []
  */
-function arrayExpressionToValue(arry:ESTree.ArrayExpression) {
+function arrayExpressionToValue(arry:estree.ArrayExpression) {
   var value = '[';
   for (var i=0; i<arry.elements.length; i++) {
     var v = expressionToValue(arry.elements[i]);
@@ -90,7 +90,7 @@ function arrayExpressionToValue(arry:ESTree.ArrayExpression) {
 /**
  * Make it look like an object
  */
-function objectExpressionToValue(obj:ESTree.ObjectExpression) {
+function objectExpressionToValue(obj:estree.ObjectExpression) {
   var value = '{';
   for (var i=0; i<obj.properties.length; i++) {
     var k = expressionToValue(obj.properties[i].key);
@@ -108,7 +108,7 @@ function objectExpressionToValue(obj:ESTree.ObjectExpression) {
 /**
  * BinaryExpressions are of the form "literal" + "literal"
  */
-function binaryExpressionToValue(member: ESTree.BinaryExpression):(number|string) {
+function binaryExpressionToValue(member: estree.BinaryExpression):(number|string) {
   if (member.operator == "+") {
     // We need to cast to `any` here because, while it's usually not the right
     // thing to do to use '+' on two values of a mix of types because it's
@@ -121,35 +121,35 @@ function binaryExpressionToValue(member: ESTree.BinaryExpression):(number|string
 /**
  * MemberExpression references a variable with name
  */
-function memberExpressionToValue(member:ESTree.MemberExpression) {
+function memberExpressionToValue(member:estree.MemberExpression) {
   return expressionToValue(member.object) + "." + expressionToValue(member.property);
 }
 
 /**
  * Tries to get the value of an expression. Returns undefined on failure.
  */
-export function expressionToValue(valueExpression:ESTree.Node):LiteralValue {
+export function expressionToValue(valueExpression:estree.Node):LiteralValue {
   switch(valueExpression.type) {
     case 'Literal':
-      return literalToValue(<ESTree.Literal>valueExpression);
+      return literalToValue(<estree.Literal>valueExpression);
     case 'UnaryExpression':
-      return unaryToValue(<ESTree.UnaryExpression>valueExpression);
+      return unaryToValue(<estree.UnaryExpression>valueExpression);
     case 'Identifier':
-      return identifierToValue(<ESTree.Identifier>valueExpression);
+      return identifierToValue(<estree.Identifier>valueExpression);
     case 'FunctionDeclaration':
-      return functionDeclarationToValue(<ESTree.FunctionDeclaration>valueExpression);
+      return functionDeclarationToValue(<estree.FunctionDeclaration>valueExpression);
     case 'FunctionExpression':
-      return functionExpressionToValue(<ESTree.FunctionExpression>valueExpression);
+      return functionExpressionToValue(<estree.FunctionExpression>valueExpression);
     case 'ArrayExpression':
-      return arrayExpressionToValue(<ESTree.ArrayExpression>valueExpression);
+      return arrayExpressionToValue(<estree.ArrayExpression>valueExpression);
     case 'ObjectExpression':
-      return objectExpressionToValue(<ESTree.ObjectExpression>valueExpression);
+      return objectExpressionToValue(<estree.ObjectExpression>valueExpression);
     case 'Identifier':
-      return identifierToValue(<ESTree.Identifier>valueExpression);
+      return identifierToValue(<estree.Identifier>valueExpression);
     case 'MemberExpression':
-      return memberExpressionToValue(<ESTree.MemberExpression>valueExpression);
+      return memberExpressionToValue(<estree.MemberExpression>valueExpression);
     case 'BinaryExpression':
-      return binaryExpressionToValue(<ESTree.BinaryExpression>valueExpression);
+      return binaryExpressionToValue(<estree.BinaryExpression>valueExpression);
     default:
       return;
   }

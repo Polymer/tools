@@ -10,7 +10,7 @@
 // jshint node: true
 'use strict';
 import * as estraverse from "estraverse";
-import * as ESTree from 'estree';
+import * as estree from 'estree';
 import * as escodegen from 'escodegen';
 import {BehaviorDescriptor, PropertyDescriptor} from './descriptors';
 
@@ -25,24 +25,24 @@ import {BehaviorDescriptor, PropertyDescriptor} from './descriptors';
  * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
  */
-export function matchesCallExpression(expression:ESTree.MemberExpression, path:string[]):boolean {
+export function matchesCallExpression(expression:estree.MemberExpression, path:string[]):boolean {
   if (!expression.property || !expression.object) return;
   console.assert(path.length >= 2);
 
   if (expression.property.type !== 'Identifier') {
     return;
   }
-  const property = <ESTree.Identifier>expression.property;
+  const property = <estree.Identifier>expression.property;
   // Unravel backwards, make sure properties match each step of the way.
   if (property.name !== path[path.length - 1]) return false;
   // We've got ourselves a final member expression.
   if (path.length == 2 && expression.object.type === 'Identifier') {
-    return (<ESTree.Identifier>expression.object).name === path[0];
+    return (<estree.Identifier>expression.object).name === path[0];
   }
   // Nested expressions.
   if (path.length > 2 && expression.object.type == 'MemberExpression') {
     return matchesCallExpression(
-        <ESTree.MemberExpression>expression.object,
+        <estree.MemberExpression>expression.object,
         path.slice(0, path.length - 1));
   }
 
@@ -53,15 +53,15 @@ export function matchesCallExpression(expression:ESTree.MemberExpression, path:s
  * @param {Node} key The node representing an object key or expression.
  * @return {string} The name of that key.
  */
-export function objectKeyToString(key: ESTree.Node):string {
+export function objectKeyToString(key: estree.Node):string {
   if (key.type == 'Identifier') {
-    return (<ESTree.Identifier>key).name;
+    return (<estree.Identifier>key).name;
   }
   if (key.type == 'Literal') {
-    return (<ESTree.Literal>key).value.toString();
+    return (<estree.Literal>key).value.toString();
   }
   if (key.type == 'MemberExpression') {
-    let mEx = <ESTree.MemberExpression>key;
+    let mEx = <estree.MemberExpression>key;
     return objectKeyToString(mEx.object) + '.' + objectKeyToString(mEx.property);
   }
 }
@@ -80,13 +80,13 @@ const CLOSURE_CONSTRUCTOR_MAP = {
  * @param {Node} node An Espree expression node.
  * @return {string} The type of that expression, in Closure terms.
  */
-export function closureType(node: ESTree.Node):string {
+export function closureType(node: estree.Node):string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
-    return typeof (<ESTree.Literal>node).value;
+    return typeof (<estree.Literal>node).value;
   } else if (node.type === 'Identifier') {
-    let ident = <ESTree.Identifier>node;
+    let ident = <estree.Identifier>node;
     return CLOSURE_CONSTRUCTOR_MAP[ident.name] || ident.name;
   } else {
     throw {
@@ -96,7 +96,7 @@ export function closureType(node: ESTree.Node):string {
   }
 }
 
-export function getAttachedComment(node: ESTree.Node):string {
+export function getAttachedComment(node: estree.Node):string {
   const comments = getLeadingComments(node) || getLeadingComments(node['key']);
   if (!comments) {
     return;
@@ -107,7 +107,7 @@ export function getAttachedComment(node: ESTree.Node):string {
 /**
  * Returns all comments from a tree defined with @event.
  */
-export function getEventComments(node: ESTree.Node) {
+export function getEventComments(node: estree.Node) {
   var eventComments: string[] = [];
   estraverse.traverse(node, {
     enter: (node) => {
@@ -127,7 +127,7 @@ export function getEventComments(node: ESTree.Node) {
   });
 }
 
-function getLeadingComments(node: ESTree.Node): string[] {
+function getLeadingComments(node: estree.Node): string[] {
   if (!node) {
     return;
   }
@@ -141,7 +141,7 @@ function getLeadingComments(node: ESTree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node:ESTree.Property):PropertyDescriptor {
+export function toPropertyDescriptor(node:estree.Property):PropertyDescriptor {
   var type = closureType(node.value);
   if (type == "Function") {
     if (node.kind === "get" || node.kind === "set") {
@@ -157,7 +157,7 @@ export function toPropertyDescriptor(node:ESTree.Property):PropertyDescriptor {
   };
 
   if (type === 'Function') {
-    const value = <ESTree.Function>node.value;
+    const value = <estree.Function>node.value;
     result.params = (value.params || []).map((param) => {
       // With ES6 we can have a variety of param patterns. Best to leave the
       // formatting to escodegen.
