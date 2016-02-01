@@ -18,9 +18,10 @@
   "scripts": {
     "init": "typings install",
     "clean": "rm -rf node_modules/ typings/ lib/ && find src | grep \\.js$ | xargs rm",
-    "build": "tsc && babel -q -d lib src && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
+    "compile": "tsc && babel --presets es2015 -q -d lib src",
+    "build"  : "npm run compile && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
+    "release": "npm run compile && browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "build:watch": "watch 'npm run build' ./src",
-    "release": "browserify -r ./index.js:hydrolysis -o hydrolysis.js -t babelify",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "test": "npm run build && wct && mocha test/test.js",
     "testNode": "npm run build && mocha test/test.js"
