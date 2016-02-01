@@ -1,3 +1,5 @@
+// TODO(rictic): Upstream/merge with https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/estree/estree.d.ts
+
 declare module 'estree' {
   export interface Node {
     type: string;

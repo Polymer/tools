@@ -1,3 +1,5 @@
+// TODO(rictic): upstream this to dom5 itself.
+
 declare module 'dom5' {
   export interface Node {
     nodeName: string;
