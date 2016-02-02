@@ -9,11 +9,14 @@
  */
 'use strict';
 
-// jshint node:true
+
 
 import * as jsdoc from './jsdoc'
 import * as dom5 from 'dom5'
-import {FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor, ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor} from './descriptors'
+import {
+  FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor,
+  ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor
+} from './descriptors'
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [
@@ -53,7 +56,7 @@ const HANDLED_TAGS = [
  * @param {Object} descriptor The descriptor node to process.
  * @return {Object} The descriptor that was given.
  */
-export function annotate(descriptor: Descriptor) {
+export function annotate(descriptor: Descriptor): Descriptor{
   if (!descriptor || descriptor.jsdoc) return descriptor;
 
   if (typeof descriptor.desc === 'string') {
@@ -96,10 +99,13 @@ export function annotateElementHeader(descriptor: ElementDescriptor) {
   }
 }
 
-function copyProperties(from:ElementDescriptor, to:ElementDescriptor, behaviorsByName:BehaviorsByName) {
+function copyProperties(
+    from:ElementDescriptor, to:ElementDescriptor,
+    behaviorsByName:BehaviorsByName) {
   if (from.properties) {
     from.properties.forEach(function(fromProp){
-      for (var toProp:PropertyDescriptor, i = 0; i < to.properties.length; i++) {
+      for (var toProp:PropertyDescriptor, i = 0;
+           i < to.properties.length; i++) {
         toProp = to.properties[i];
         if (fromProp.name === toProp.name) {
           return;
@@ -136,7 +142,8 @@ function copyProperties(from:ElementDescriptor, to:ElementDescriptor, behaviorsB
     // TODO: what's up with behaviors sometimes being a literal, and sometimes
     // being a descriptor object?
     const localBehavior: any = from.behaviors[i];
-    var definedBehavior = behaviorsByName[localBehavior] || behaviorsByName[localBehavior.symbol];
+    var definedBehavior =
+        behaviorsByName[localBehavior] || behaviorsByName[localBehavior.symbol];
     if (!definedBehavior) {
         console.warn("Behavior " + localBehavior + " not found when mixing " +
           "properties into " + to.is + "!");
@@ -146,7 +153,8 @@ function copyProperties(from:ElementDescriptor, to:ElementDescriptor, behaviorsB
   }
 }
 
-function mixinBehaviors(descriptor:ElementDescriptor, behaviorsByName: BehaviorsByName) {
+function mixinBehaviors(
+    descriptor:ElementDescriptor, behaviorsByName: BehaviorsByName) {
   if (descriptor.behaviors) {
     for (let i = descriptor.behaviors.length - 1; i >= 0; i--) {
       const behavior = <string>descriptor.behaviors[i];
@@ -171,7 +179,9 @@ function mixinBehaviors(descriptor:ElementDescriptor, behaviorsByName: Behaviors
  * @param {Object} descriptor The element descriptor.
  * @return {Object} The descriptor that was given.
  */
-export function annotateElement(descriptor: ElementDescriptor, behaviorsByName: BehaviorsByName) {
+export function annotateElement(
+    descriptor: ElementDescriptor,
+    behaviorsByName: BehaviorsByName): ElementDescriptor {
   if (!descriptor.desc && descriptor.type === 'element') {
     descriptor.desc = _findElementDocs(descriptor.is,
                                        descriptor.domModule,
@@ -219,7 +229,8 @@ export function annotateElement(descriptor: ElementDescriptor, behaviorsByName: 
  * @param {Object} descriptor behavior descriptor
  * @return {Object} descriptor passed in as param
  */
-export function annotateBehavior(descriptor:BehaviorDescriptor) {
+export function annotateBehavior(
+    descriptor:BehaviorDescriptor): BehaviorDescriptor {
   annotate(descriptor);
   annotateElementHeader(descriptor);
 
@@ -229,7 +240,7 @@ export function annotateBehavior(descriptor:BehaviorDescriptor) {
 /**
  * Annotates event documentation
  */
-function _annotateEvent(descriptor:EventDescriptor) {
+function _annotateEvent(descriptor:EventDescriptor): EventDescriptor {
   annotate(descriptor);
   // process @event
   var eventTag = jsdoc.getTag(descriptor.jsdoc, 'event');
@@ -258,20 +269,24 @@ function _annotateEvent(descriptor:EventDescriptor) {
  * @param {boolean} ignoreConfiguration If true, `configuration` is not set.
  * @return {Object} The descriptior that was given.
  */
-function annotateProperty(descriptor:PropertyDescriptor, ignoreConfiguration:boolean) {
+function annotateProperty(
+    descriptor:PropertyDescriptor,
+    ignoreConfiguration:boolean): PropertyDescriptor {
   // DO NOT SUBMIT: calling annotate doesn't seem to make sense here...
   // annotate(descriptor);
   if (descriptor.name[0] === '_' || jsdoc.hasTag(descriptor.jsdoc, 'private')) {
     descriptor.private = true;
   }
 
-  if (!ignoreConfiguration && ELEMENT_CONFIGURATION.indexOf(descriptor.name) !== -1) {
+  if (!ignoreConfiguration &&
+      ELEMENT_CONFIGURATION.indexOf(descriptor.name) !== -1) {
     descriptor.private       = true;
     descriptor.configuration = true;
   }
 
   // @type JSDoc wins
-  descriptor.type = jsdoc.getTag(descriptor.jsdoc, 'type', 'type') || descriptor.type;
+  descriptor.type =
+      jsdoc.getTag(descriptor.jsdoc, 'type', 'type') || descriptor.type;
 
   if (descriptor.type.match(/^function/i)) {
     _annotateFunctionProperty(<FunctionDescriptor>descriptor);
@@ -325,8 +340,9 @@ function _annotateFunctionProperty(descriptor:FunctionDescriptor) {
  * @param {Array<FeatureDescriptor>} features
  * @return {ElementDescriptor}
  */
-export function featureElement(features:FeatureDescriptor[]):ElementDescriptor {
-  var properties = features.reduce<PropertyDescriptor[]>(function(result, feature) {
+export function featureElement(
+    features:FeatureDescriptor[]): ElementDescriptor {
+  var properties = features.reduce<PropertyDescriptor[]>((result, feature) => {
     return result.concat(feature.properties);
   }, []);
 
@@ -421,13 +437,16 @@ export function parsePseudoElements(comments: string[]):ElementDescriptor[] {
 /**
  * @param {string} elementId
  * @param {DocumentAST} domModule
- * @param {DocumentAST} scriptElement The script that the element was defined in.
+ * @param {DocumentAST} scriptElement The script that the element was
+ *     defined in.
  */
-function _findElementDocs(elementId:string, domModule:dom5.Node, scriptElement:dom5.Node) {
+function _findElementDocs(
+    elementId:string, domModule:dom5.Node, scriptElement:dom5.Node) {
   // Note that we concatenate docs from all sources if we find them.
   // element can be defined in:
   // html comment right before dom-module
-  // html commnet right before script defining the module, if dom-module is empty
+  // html commnet right before script defining the module,
+  // if dom-module is empty
 
   var found:string[] = [];
 

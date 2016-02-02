@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// jshint node: true
+
 'use strict';
 
 import * as estraverse from 'estraverse';
@@ -20,13 +20,17 @@ var numFeatures = 0;
 
 export function featureFinder() {
   /** The features we've found. */
-  var features : FeatureDescriptor[] = [];
+  var features: FeatureDescriptor[] = [];
 
-  function _extractDesc(feature:FeatureDescriptor, node:estree.CallExpression, parent: estree.Node) {
+  function _extractDesc(
+      feature:FeatureDescriptor, node:estree.CallExpression,
+      parent: estree.Node) {
     feature.desc = esutil.getAttachedComment(parent);
   }
 
-  function _extractProperties(feature:FeatureDescriptor, node:estree.CallExpression, parent: estree.Node) {
+  function _extractProperties(
+      feature:FeatureDescriptor, node:estree.CallExpression,
+      parent: estree.Node) {
     var featureNode = node.arguments[0];
     if (featureNode.type !== 'ObjectExpression') {
       console.warn(
@@ -43,7 +47,10 @@ export function featureFinder() {
   var visitors: Visitor = {
 
     enterCallExpression: function enterCallExpression(node, parent) {
-      if (!esutil.matchesCallExpression(<estree.MemberExpression>node.callee, ['Polymer', 'Base', '_addFeature'])) {
+      const isAddFeatureCall = esutil.matchesCallExpression(
+            <estree.MemberExpression>node.callee,
+            ['Polymer', 'Base', '_addFeature']);
+      if (!isAddFeatureCall) {
         return;
       }
       /** @type {!FeatureDescriptor} */

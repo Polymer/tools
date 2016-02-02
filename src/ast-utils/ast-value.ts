@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// jshint node: true
+
 'use strict';
 
 import * as estree from 'estree';
@@ -19,14 +19,14 @@ import {LiteralValue} from './descriptors';
  * converts literal: {"type": "Literal", "value": 5,  "raw": "5" }
  * to string
  */
-function literalToValue(literal:estree.Literal) {
+function literalToValue(literal: estree.Literal): LiteralValue {
   return literal.value;
 }
 
 /**
  * converts unary to string
  */
-function unaryToValue(unary:estree.UnaryExpression):string {
+function unaryToValue(unary: estree.UnaryExpression):string {
   var argValue = expressionToValue(unary.argument);
   if (argValue === undefined)
     return;
@@ -37,26 +37,29 @@ function unaryToValue(unary:estree.UnaryExpression):string {
  * converts identifier to its value
  * identifier { "type": "Identifier", "name": "Number }
  */
-function identifierToValue(identifier:estree.Identifier):string {
+function identifierToValue(identifier: estree.Identifier):string {
   return identifier.name;
 }
 
 /**
  * Function is a block statement.
  */
-function functionDeclarationToValue(fn:estree.FunctionDeclaration) {
+function functionDeclarationToValue(
+    fn: estree.FunctionDeclaration): LiteralValue {
   if (fn.body.type == "BlockStatement")
     return blockStatementToValue(fn.body);
 }
 
-function functionExpressionToValue(fn:estree.FunctionExpression) {
+function functionExpressionToValue(
+    fn: estree.FunctionExpression): LiteralValue {
   if (fn.body.type == "BlockStatement")
     return blockStatementToValue(fn.body);
 }
 /**
  * Block statement: find last return statement, and return its value
  */
-function blockStatementToValue(block:estree.BlockStatement) {
+function blockStatementToValue(
+    block: estree.BlockStatement): LiteralValue {
   for (var i=block.body.length - 1; i>= 0; i--) {
     if (block.body[i].type === "ReturnStatement")
       return returnStatementToValue(<estree.ReturnStatement>block.body[i]);
@@ -66,14 +69,14 @@ function blockStatementToValue(block:estree.BlockStatement) {
 /**
  * Evaluates return's argument
  */
-function returnStatementToValue(ret:estree.ReturnStatement) {
+function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
   return expressionToValue(ret.argument);
 }
 
 /**
  * Enclose containing values in []
  */
-function arrayExpressionToValue(arry:estree.ArrayExpression) {
+function arrayExpressionToValue(arry: estree.ArrayExpression): string {
   var value = '[';
   for (var i=0; i<arry.elements.length; i++) {
     var v = expressionToValue(arry.elements[i]);
@@ -90,7 +93,7 @@ function arrayExpressionToValue(arry:estree.ArrayExpression) {
 /**
  * Make it look like an object
  */
-function objectExpressionToValue(obj:estree.ObjectExpression) {
+function objectExpressionToValue(obj: estree.ObjectExpression): string {
   var value = '{';
   for (var i=0; i<obj.properties.length; i++) {
     var k = expressionToValue(obj.properties[i].key);
@@ -108,7 +111,8 @@ function objectExpressionToValue(obj:estree.ObjectExpression) {
 /**
  * BinaryExpressions are of the form "literal" + "literal"
  */
-function binaryExpressionToValue(member: estree.BinaryExpression):(number|string) {
+function binaryExpressionToValue(
+    member: estree.BinaryExpression): number|string {
   if (member.operator == "+") {
     // We need to cast to `any` here because, while it's usually not the right
     // thing to do to use '+' on two values of a mix of types because it's
@@ -121,14 +125,14 @@ function binaryExpressionToValue(member: estree.BinaryExpression):(number|string
 /**
  * MemberExpression references a variable with name
  */
-function memberExpressionToValue(member:estree.MemberExpression) {
+function memberExpressionToValue(member: estree.MemberExpression): string {
   return expressionToValue(member.object) + "." + expressionToValue(member.property);
 }
 
 /**
  * Tries to get the value of an expression. Returns undefined on failure.
  */
-export function expressionToValue(valueExpression:estree.Node):LiteralValue {
+export function expressionToValue(valueExpression: estree.Node): LiteralValue {
   switch(valueExpression.type) {
     case 'Literal':
       return literalToValue(<estree.Literal>valueExpression);

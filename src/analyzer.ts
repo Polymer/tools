@@ -7,13 +7,12 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// jshint node: true
+
 'use strict';
 
 import * as dom5 from 'dom5';
 import * as url from 'url';
 import * as estree from 'estree';
-
 import * as docs from './ast-utils/docs';
 import {FileLoader} from './loader/file-loader';
 import {importParse, ParsedImport, LocNode} from './ast-utils/import-parse';
@@ -143,10 +142,6 @@ interface LocError extends Error{
 
 /**
  * A database of Polymer metadata defined in HTML
- *
- * @param  {boolean} attachAST  If true, attach a parse5 compliant AST
- * @param  {FileLoader=} loader An optional `FileLoader` used to load external
- *                              resources
  */
 export class Analyzer {
   loader: FileLoader;
@@ -198,6 +193,11 @@ export class Analyzer {
    */
   _content: {[path:string]: string} = {};
 
+  /**
+   * @param  {boolean} attachAST  If true, attach a parse5 compliant AST
+   * @param  {FileLoader=} loader An optional `FileLoader` used to load external
+   *                              resources
+   */
   constructor(attachAST:boolean, loader:FileLoader) {
     this.loader = loader;
   }

@@ -10,7 +10,7 @@
 /**
 * Finds and annotates the Polymer() and modulate() calls in javascript.
 */
-// jshint node: true
+
 'use strict';
 import * as espree from 'espree';
 import * as estree from 'estree';

@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// jshint node: true
+
 'use strict';
 import * as estraverse from 'estraverse';
 import * as docs from './docs';
@@ -20,6 +20,7 @@ import {Visitor} from './fluent-traverse';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import {BehaviorDescriptor, LiteralValue} from './descriptors';
 
+// TODO(rictic): turn this into a class.
 export function behaviorFinder() {
   /** The behaviors we've found. */
   var behaviors: BehaviorDescriptor[] = [];
@@ -32,7 +33,7 @@ export function behaviorFinder() {
    * here to support multiple @polymerBehavior tags referring
    * to same behavior. See iron-multi-selectable for example.
    */
-  function mergeBehavior(newBehavior:BehaviorDescriptor) {
+  function mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
     var isBehaviorImpl = (b:string) => {
       // filter out BehaviorImpl
       return b.indexOf(newBehavior.is) === -1;
@@ -70,7 +71,7 @@ export function behaviorFinder() {
   /**
    * gets the expression representing a behavior from a node.
    */
-  function behaviorExpression(node:estree.Node):estree.Node {
+  function behaviorExpression(node:estree.Node): estree.Node {
     switch(node.type) {
       case 'ExpressionStatement':
         // need to cast to `any` here because ExpressionStatement is super
@@ -86,7 +87,7 @@ export function behaviorFinder() {
    * checks whether an expression is a simple array containing only member
    * expressions or identifiers.
    */
-  function isSimpleBehaviorArray(expression: estree.Node) {
+  function isSimpleBehaviorArray(expression: estree.Node): boolean {
     if (!expression || expression.type !== 'ArrayExpression') return false;
     const arrayExpr = <estree.ArrayExpression>expression;
     for (var i=0; i < arrayExpr.elements.length; i++) {
@@ -100,7 +101,7 @@ export function behaviorFinder() {
 
   var templatizer = "Polymer.Templatizer";
 
-  function _parseChainedBehaviors(node:estree.Node) {
+  function _parseChainedBehaviors(node: estree.Node) {
     // if current behavior is part of an array, it gets extended by other behaviors
     // inside the array. Ex:
     // Polymer.IronMultiSelectableBehavior = [ {....}, Polymer.IronSelectableBehavior]
