@@ -19,11 +19,14 @@ process.title = 'polyserve';
 if (argv.h || argv.help) {
   console.log(`polyserve: web server for bower components
 Options:
-  -p <port>        defaults to 8080
-  -o <filename>    open page in default browser on startup (default: index.html)
-  -b <browsername> use this browser instead of default
-                   (ex: 'Google Chrome Canary')
-  -H <hostname>    use this hostname instead of localhost
+  -c <component-dir> The component directory to use. Defaults to reading from
+                     the Bower config (usually bower_components/)
+  -n                 Package name. Defaults to reading from bower.json
+  -p <port>          Defaults to 8080
+  -o <filename>      Open page in default browser on startup (default: index.html)
+  -b <browsername>   Use this browser instead of default
+                     (ex: 'Google Chrome Canary')
+  -H <hostname>      Use this hostname instead of localhost
 `);
   process.exit(0);
 }
@@ -31,6 +34,8 @@ Options:
 resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
   let polyserve = path ? require(path) : require('..');
   polyserve.startServer({
+    componentDir: argv.c,
+    packageName: argv.n,
     port: argv.p,
     page: argv.o,
     host: argv.H,
