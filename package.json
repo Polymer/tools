@@ -18,7 +18,7 @@
   "scripts": {
     "init": "typings install",
     "clean": "rm -rf node_modules/ typings/ lib/ && find src | grep \\.js$ | xargs rm",
-    "compile": "tsc && babel --presets es2015 -q -d lib src",
+    "compile": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc && babel --presets es2015 -q -d lib src",
     "build"  : "npm run compile && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
     "release": "npm run compile && browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "build:watch": "watch 'npm run build' ./src",
