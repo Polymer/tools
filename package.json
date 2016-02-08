@@ -11,6 +11,9 @@
   },
   "main": "index.js",
   "files": [
+    "hydrolysis-analyzer.html",
+    "hydrolysis.html",
+    "hydrolysis.jtml",
     "index.js",
     "LICENSE",
     "lib/"
