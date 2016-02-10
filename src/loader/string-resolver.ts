@@ -46,7 +46,7 @@ export class StringResolver implements Resolver {
         return false;
       }
     } else {
-      if (uri.search(url) == -1) {
+      if (uri.indexOf(<string>url) == -1) {
         return false;
       }
     }

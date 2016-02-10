@@ -20,6 +20,26 @@ import {Visitor} from './fluent-traverse';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import {BehaviorDescriptor, LiteralValue} from './descriptors';
 
+interface KeyFunc<T> {
+  (value: T): any;
+}
+
+function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
+  var bucket = {};
+  array.forEach((el) => {
+    var key = keyFunc(el);
+    if (key in bucket) {
+      return;
+    }
+    bucket[key] = el;
+  });
+  var returned = <Array<T>>[];
+  Object.keys(bucket).forEach((k) => {
+    returned.push(bucket[k]);
+  });
+  return returned;
+}
+
 // TODO(rictic): turn this into a class.
 export function behaviorFinder() {
   /** The behaviors we've found. */
@@ -55,6 +75,7 @@ export function behaviorFinder() {
       behaviors[i].demos = (behaviors[i].demos || []).concat(newBehavior.demos || []);
       // merge events,
       behaviors[i].events = (behaviors[i].events || []).concat(newBehavior.events || []);
+      behaviors[i].events = dedupe(behaviors[i].events, (e) => {return e.name});
       // merge properties
       behaviors[i].properties = (behaviors[i].properties || []).concat(newBehavior.properties || []);
       // merge observers
