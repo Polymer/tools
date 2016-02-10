@@ -8,14 +8,23 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+import * as express from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as send from 'send';
+import { parse as parseUrl } from 'url';
+import { bowerConfig } from './bower_config';
 
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const parseUrl = require('url').parse;
-const send = require('send');
-const bowerConfig = require('./bower_config');
+export interface AppOptions {
+  componentDir?: string;
+  packageName?: string;
+  headers?: {[name: string]: string};
+  root?: string;
+}
+
+export interface PolyserveApplication extends express.Express {
+  packageName: string;
+}
 
 /**
  * Make a polyserve express app.
@@ -27,7 +36,7 @@ const bowerConfig = require('./bower_config');
  * @param  {string} options.root The root directory to serve a package from
  * @return {Object} An express app which can be served with `app.get`
  */
-function makeApp(options) {
+export function makeApp(options: AppOptions): PolyserveApplication {
 
   let root = options.root;
   let componentDir = options.componentDir || 'bower_components';
@@ -35,7 +44,7 @@ function makeApp(options) {
       || path.basename(process.cwd());
   let headers = options.headers || {};
 
-  let app = express();
+  let app: PolyserveApplication = <PolyserveApplication>express();
 
   app.get('/', function (req, res) {
     res.redirect(301, `./${packageName}/`);
@@ -59,7 +68,7 @@ function makeApp(options) {
 
     if (headers) {
       for (let header in headers) {
-        res.append(header, headers[header]);
+        (<any>res).append(header, headers[header]);
       }
     }
     send(req, filePath).pipe(res);
@@ -67,5 +76,3 @@ function makeApp(options) {
   app.packageName = packageName;
   return app;
 }
-
-module.exports = makeApp;

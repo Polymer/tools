@@ -9,6 +9,6 @@
  */
 
 module.exports = {
-  startServer: require('./src/start_server'),
-  makeApp: require('./src/make_app')
+  startServer: require('./lib/start_server'),
+  makeApp: require('./lib/make_app')
 };
