@@ -1,0 +1,36 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "isolatedModules": false,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": false,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "lib"
+    },
+    "filesGlob": [
+        "src/**/*.ts",
+        "!node_modules/**",
+        "typings/main.d.ts",
+        "custom_typings/*.d.ts"
+    ],
+    "compileOnSave": true,
+    "buildOnSave": false,
+    "files": [
+        "src/bower_config.ts",
+        "src/make_app.ts",
+        "src/start_server.ts",
+        "typings/main.d.ts",
+        "custom_typings/find-port.d.ts",
+        "custom_typings/send.d.ts"
+    ],
+    "atom": {
+        "rewriteTsconfig": true
+    }
+}

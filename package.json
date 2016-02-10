@@ -22,5 +22,8 @@
     "opn": "^3.0.2",
     "resolve": "^1.0.0",
     "send": "^0.10.1"
+  },
+  "devDependencies": {
+    "typescript": "^1.8.0"
   }
 }

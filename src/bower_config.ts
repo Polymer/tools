@@ -8,20 +8,18 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+import * as path from 'path';
+import * as fs from 'fs';
 
-const path = require('path');
-const fs = require('fs');
-
-function bowerConfigPath(root) {
+function bowerConfigPath(root?: string): string {
   return path.resolve(root, 'bower.json');
 }
 
-function bowerConfigContents(root) {
-  let contents;
+function bowerConfigContents(root?: string): string {
+  let contents: string;
 
   try {
-    contents = fs.readFileSync(bowerConfigPath(root));
+    contents = fs.readFileSync(bowerConfigPath(root)).toString();
   } catch (e) {
     console.error('Error reading config at ' + bowerConfigPath());
     console.error(e);
@@ -30,7 +28,7 @@ function bowerConfigContents(root) {
   return contents || '{}';
 }
 
-function bowerConfig(root) {
+export function bowerConfig(root?: string) {
   try {
     return JSON.parse(bowerConfigContents(root));
   } catch (e) {
@@ -40,5 +38,3 @@ function bowerConfig(root) {
 
   return {};
 }
-
-module.exports = bowerConfig;

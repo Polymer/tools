@@ -9,30 +9,34 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+//
+// This file must stay compatible with node 0.12.x, no ES6!
+//
+
 'use strict';
 
-const resolve = require('resolve');
-const argv = require('minimist')(process.argv);
+var resolve = require('resolve');
+var argv = require('minimist')(process.argv);
 
 process.title = 'polyserve';
 
 if (argv.h || argv.help) {
-  console.log(`polyserve: web server for bower components
-Options:
-  -c <component-dir> The component directory to use. Defaults to reading from
-                     the Bower config (usually bower_components/)
-  -n                 Package name. Defaults to reading from bower.json
-  -p <port>          Defaults to 8080
-  -o <filename>      Open page in default browser on startup (default: index.html)
-  -b <browsername>   Use this browser instead of default
-                     (ex: 'Google Chrome Canary')
-  -H <hostname>      Use this hostname instead of localhost
-`);
+  console.log(
+"polyserve: web server for bower components\n\n" +
+"Options:\n" +
+"  -c <component-dir> The component directory to use. Defaults to reading from\n" +
+"                     the Bower config (usually bower_components/)\n" +
+"  -n                 Package name. Defaults to reading from bower.json\n" +
+"  -p <port>          Defaults to 8080\n" +
+"  -o <filename>      Open page in default browser on startup (default: index.html)\n" +
+"  -b <browsername>   Use this browser instead of default\n" +
+"                     (ex: 'Google Chrome Canary')\n" +
+"  -H <hostname>      Use this hostname instead of localhost\n");
   process.exit(0);
 }
 
 resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
-  let polyserve = path ? require(path) : require('..');
+  var polyserve = path ? require(path) : require('..');
   polyserve.startServer({
     componentDir: argv.c,
     packageName: argv.n,
@@ -40,7 +44,7 @@ resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
     page: argv.o,
     host: argv.H,
     browser: argv.b
-  }).catch((e) => {
+  }).catch(function(e) {
     process.exit(69);
   });
 });
