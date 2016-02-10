@@ -76,7 +76,7 @@ export interface BehaviorDescriptor extends ElementDescriptor {
 
 export interface EventDescriptor extends Descriptor {
   name?: string;
-  __fromBehavior?: BehaviorDescriptor;
+  __fromBehavior?: BehaviorOrName;
   params?: {
     type: string,
     desc: string,

@@ -130,8 +130,10 @@ function copyProperties(
       if (fromEvent.__fromBehavior) {
         return;
       }
-      var newEvent = Object.create(fromEvent);
-      newEvent.__fromBehavior = from.is;
+      var newEvent = {__fromBehavior: from.is};
+      Object.keys(fromEvent).forEach(function(eventField){
+        newEvent[eventField] = fromEvent[eventField];
+      });
       to.events.push(newEvent);
     });
   }

@@ -119,7 +119,7 @@ function binaryExpressionToValue(
     // unpredictable, that is what the original code we're evaluating does.
     return <any>expressionToValue(member.left) + expressionToValue(member.right);
   }
-  return
+  return;
 }
 
 /**
