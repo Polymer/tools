@@ -5,11 +5,15 @@ addons:
   apt:
     sources:
     - google-chrome
+    - ubuntu-toolchain-r-test
     packages:
     - google-chrome-stable
-script: xvfb-run wct
+    - g++-4.8
 before_script:
-- npm install web-component-tester
-- npm install bower
-- export PATH=$PWD/node_modules/.bin:$PATH
+- npm install -g bower polylint web-component-tester
 - bower install
+- polylint
+script: xvfb-run wct
+env:
+  global:
+    - CXX=g++-4.8
