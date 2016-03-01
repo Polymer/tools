@@ -13,7 +13,7 @@
   "files": [
     "hydrolysis-analyzer.html",
     "hydrolysis.html",
-    "hydrolysis.jtml",
+    "hydrolysis.js",
     "index.js",
     "LICENSE",
     "lib/"
