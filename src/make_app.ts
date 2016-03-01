@@ -47,7 +47,7 @@ export function makeApp(options: AppOptions): PolyserveApplication {
   let app: PolyserveApplication = <PolyserveApplication>express();
 
   app.get('/', function (req, res) {
-    res.redirect(301, `./${packageName}/`);
+    res.redirect(`./${packageName}/`);
   });
 
   app.get('*', function (req, res) {
