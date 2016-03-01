@@ -37,6 +37,7 @@ declare module 'dom5' {
   export function removeAttribute(node: Node, attrName: string): string;
   export function getTextContent(node: Node): string;
   export function setTextContent(node: Node, string: string): void;
+  export function append(parent: Node, newNode: Node): void;
   export function remove(willBeRemoved: Node): void;
   export function replace(current: Node, replacement: Node): void;
 
@@ -53,6 +54,7 @@ declare module 'dom5' {
 
   interface Constructors {
     element(tagName: string): Node;
+    text(content: string): Node;
   }
   export var constructors: Constructors;
 }

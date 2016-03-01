@@ -439,11 +439,10 @@ export class Analyzer {
       var resolvedSrc = url.resolve(href, src);
       return this.loader.request(resolvedSrc).then((content) => {
         this._content[resolvedSrc] = content;
-        var resolvedScript = Object.create(script);
-        resolvedScript.childNodes = [{value: content}];
-        resolvedScript.attrs = resolvedScript.attrs.slice();
-        dom5.removeAttribute(resolvedScript, 'src');
-        return this._processScript(resolvedScript, resolvedSrc);
+        var scriptText = dom5.constructors.text(content);
+        dom5.append(script, scriptText);
+        dom5.removeAttribute(script, 'src');
+        return this._processScript(script, resolvedSrc);
       }).catch(function(err) {throw err;});
     } else {
       return Promise.resolve(EMPTY_METADATA);
