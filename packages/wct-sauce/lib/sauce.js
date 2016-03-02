@@ -45,7 +45,6 @@ function startTunnel(config, emitter, done) {
 
     emitter.emit('log:info', 'Creating Sauce Connect tunnel');
     emitter.emit('log:info', 'Sauce Connect log:', chalk.magenta(logPath));
-    emitter.emit('log:debug', 'sauce-connect-launcher options', connectOptions);
 
     setSauceConnectDownloadVersion();
 
