@@ -52,11 +52,11 @@
     "freeport": "^1.0.4",
     "launchpad": "^0.5.0",
     "lodash": "^3.0.1",
-    "selenium-standalone": "^4.8.0",
+    "selenium-standalone": "^5.0.0",
     "which": "^1.0.8"
   },
   "engines": {
     "node": ">=0.12"
   },
-  "selenium-version": "2.49.1"
+  "selenium-version": "2.52.0"
 }
