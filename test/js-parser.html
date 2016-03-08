@@ -19,6 +19,14 @@
         loader.request("static/es6-support.js")
           .then(function(content) {
             var parsed = hyd._jsParse(content);
+            assert.equal(parsed.elements.length, 1);
+            assert.equal(parsed.elements[0].behaviors.length, 2);
+            assert.equal(parsed.elements[0].behaviors[0], 'Behavior1');
+            assert.equal(parsed.elements[0].behaviors[1], 'Behavior2');
+            assert.equal(parsed.elements[0].is, 'test-seed');
+            assert.equal(parsed.elements[0].observers.length, 2);
+            assert.equal(parsed.elements[0].properties.length, 4);
+            assert.equal(parsed.elements[0].events.length, 1);
             done();
           }).catch(function(e) {
             done(e);

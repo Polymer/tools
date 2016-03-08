@@ -22,6 +22,7 @@ import {
 const ELEMENT_CONFIGURATION = [
   'attached',
   'attributeChanged',
+  'beforeRegister',
   'configure',
   'constructor',
   'created',

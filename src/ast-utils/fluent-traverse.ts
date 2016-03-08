@@ -1,6 +1,8 @@
 import * as estree from 'estree';
 
 export interface Visitor {
+  classDetected?: boolean,
+
   enterIdentifier?: (node: estree.Identifier, parent: estree.Node)=>void;
   leaveIdentifier?: (node: estree.Identifier, parent: estree.Node)=>void;
 

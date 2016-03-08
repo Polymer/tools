@@ -40,7 +40,7 @@
     "typescript": "^1.8.0-dev.20160125",
     "typings": "^0.6.3",
     "watch": "latest",
-    "web-component-tester": "^3.3.21"
+    "web-component-tester": "^4.2.2"
   },
   "dependencies": {
     "babel-polyfill": "^6.2.0",

@@ -18,6 +18,7 @@ import {declarationPropertyHandlers, PropertyHandlers} from './declaration-prope
 import {ElementDescriptor, PropertyDescriptor} from './descriptors';
 import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
+import * as docs from './docs';
 
 export function elementFinder() {
   /**
@@ -32,7 +33,82 @@ export function elementFinder() {
   var propertyHandlers: PropertyHandlers = null;
 
   var visitors: Visitor = {
+
+    classDetected: false,
+
+    enterClassDeclaration: function enterClassDeclaration(node, parent) {
+      this.classDetected = true;
+      element = {
+        type: 'element',
+        desc: esutil.getAttachedComment(parent),
+        events: esutil.getEventComments(parent).map(function(event) {
+          return { desc: event };
+        }),
+        properties: [],
+        behaviors: [],
+        observers: []
+      };
+      propertyHandlers = declarationPropertyHandlers(element);
+    },
+
+    leaveClassDeclaration: function leaveClassDeclaration(node, parent) {
+      element.properties.map(property => docs.annotate(property));
+      if (element) {
+        elements.push(element);
+        element = null;
+        propertyHandlers = null;
+      }
+    },
+
+    enterAssignmentExpression: function enterAssignmentExpression(node, parent) {
+      const left = <estree.MemberExpression>node.left;
+      if (left && left.object && left.object.type !== 'ThisExpression') {
+        return;
+      }
+      const prop = <estree.Identifier>left.property;
+      if (prop && prop.name) {
+        var name = prop.name;
+        if (name in propertyHandlers) {
+          propertyHandlers[name](node.right);
+        }
+      }
+    },
+
+    enterMethodDefinition: function enterMethodDefinition(node, parent) {
+      var prop = <estree.Property>{
+        key: node.key,
+        value: node.value,
+        kind: node.kind,
+        method: true,
+        leadingComments: node.leadingComments,
+        shorthand: false,
+        computed: false,
+        type: 'Property'
+      };
+      const propDesc = <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
+      if (prop && prop.kind === 'get' && (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
+        var returnStatement = <estree.ReturnStatement>node.value.body.body[0];
+        var argument = <estree.ArrayExpression>returnStatement.argument;
+        if (propDesc.name === 'behaviors') {
+          argument.elements.forEach((elementObject: estree.Identifier) => {
+            element.behaviors.push(elementObject.name);
+          });
+        } else {
+          argument.elements.forEach((elementObject: estree.Literal) => {
+            element.observers.push({ javascriptNode: elementObject, expression: elementObject.raw });
+          });
+        }
+      } else {
+        element.properties.push(propDesc);
+      }
+    },
+
     enterCallExpression: function enterCallExpression(node, parent) {
+      // When dealing with a class, enterCallExpression is called after the parsing actually starts
+      if (this.classDetected) {
+        return estraverse.VisitorOption.Skip;
+      }
+
       var callee = node.callee;
       if (callee.type == 'Identifier') {
         const ident = <estree.Identifier>callee;
@@ -48,6 +124,7 @@ export function elementFinder() {
         }
       }
     },
+
     leaveCallExpression: function leaveCallExpression(node, parent) {
       var callee = node.callee;
       if (callee.type == 'Identifier') {
@@ -61,7 +138,13 @@ export function elementFinder() {
         }
       }
     },
+
     enterObjectExpression: function enterObjectExpression(node, parent) {
+      // When dealing with a class, there is no single object that we can parse to retrieve all properties
+      if (this.classDetected) {
+        return estraverse.VisitorOption.Skip;
+      }
+
       if (element && !element.properties) {
         element.properties = [];
         element.behaviors = [];
@@ -112,5 +195,6 @@ export function elementFinder() {
       }
     }
   };
+
   return {visitors: visitors, elements: elements};
 };

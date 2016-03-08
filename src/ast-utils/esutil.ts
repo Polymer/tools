@@ -119,6 +119,9 @@ export function getEventComments(node: estree.Node) {
           return comment.indexOf("@event") != -1;
         });
       eventComments = eventComments.concat(comments);
+    },
+    keys: {
+      Super: []
     }
   });
   // dedup

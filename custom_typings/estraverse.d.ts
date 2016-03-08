@@ -10,6 +10,7 @@ declare module 'estraverse' {
     break?: ()=>void;
     remove?: ()=>void;
     skip?: ()=>void;
+    keys?: {};
   }
   export enum VisitorOption {
       Skip, Break, Remove
