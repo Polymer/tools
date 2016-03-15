@@ -274,8 +274,7 @@ function _annotateEvent(descriptor:EventDescriptor): EventDescriptor {
 function annotateProperty(
     descriptor:PropertyDescriptor,
     ignoreConfiguration:boolean): PropertyDescriptor {
-  // DO NOT SUBMIT: calling annotate doesn't seem to make sense here...
-  // annotate(descriptor);
+  annotate(descriptor);
   if (descriptor.name[0] === '_' || jsdoc.hasTag(descriptor.jsdoc, 'private')) {
     descriptor.private = true;
   }
