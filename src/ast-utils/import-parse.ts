@@ -112,6 +112,7 @@ export interface ParsedImport {
 export interface LocNode extends dom5.Node {
   __locationDetail: {line: number, column: number};
   __ownerDocument: string;
+  __hydrolysisInlined: string;
 }
 
 /**
