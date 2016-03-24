@@ -37,7 +37,7 @@
     "chai": "^2.2.0",
     "jsdoc-to-markdown": "^1.0.3",
     "mocha": "^2.2.4",
-    "typescript": "^1.8.0-dev.20160125",
+    "typescript": "^1.8.0",
     "typings": "^0.6.3",
     "watch": "latest",
     "web-component-tester": "^4.2.2"

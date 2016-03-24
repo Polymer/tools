@@ -368,12 +368,14 @@ export class Analyzer {
       scriptPromises.push(this._processScript(script, href));
     });
     return Promise.all(scriptPromises).then(function(metadataList) {
-      return metadataList.reduce(reduceMetadata, EMPTY_METADATA);
+      // TODO(ajo) remove this cast.
+      var list: DocumentDescriptor[] = <any>metadataList;
+      return list.reduce(reduceMetadata, EMPTY_METADATA);
     });
   };
 
   _processScript(script: LocNode, href: string):Promise<DocumentDescriptor> {
-    var src = dom5.getAttribute(script, 'src');
+    const src = dom5.getAttribute(script, 'src');
     var parsedJs: DocumentDescriptor;
     if (!src) {
       try {
@@ -442,6 +444,7 @@ export class Analyzer {
         var scriptText = dom5.constructors.text(content);
         dom5.append(script, scriptText);
         dom5.removeAttribute(script, 'src');
+        script.__hydrolysisInlined = src;
         return this._processScript(script, resolvedSrc);
       }).catch(function(err) {throw err;});
     } else {
@@ -563,7 +566,8 @@ export class Analyzer {
       depMetadata.push(metadataPromise);
     }
     return Promise.all(depMetadata).then(function(importMetadata) {
-      metadata.imports = importMetadata;
+      // TODO(ajo): remove this when tsc stops having issues.
+      metadata.imports = <any>importMetadata;
       return htmlMonomer.htmlLoaded.then(function(parsedHtml) {
         metadata.html = parsedHtml;
         if (metadata.elements) {
