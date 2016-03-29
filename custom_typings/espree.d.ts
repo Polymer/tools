@@ -4,7 +4,8 @@ declare module 'espree' {
     attachComment: boolean;
     comment: boolean;
     loc: boolean;
-    ecmaFeatures: {
+    ecmaVersion?: number;
+    ecmaFeatures?: {
       arrowFunctions: boolean;
       blockBindings: boolean;
       destructuring: boolean;

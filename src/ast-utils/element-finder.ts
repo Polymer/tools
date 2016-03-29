@@ -40,8 +40,8 @@ export function elementFinder() {
       this.classDetected = true;
       element = {
         type: 'element',
-        desc: esutil.getAttachedComment(parent),
-        events: esutil.getEventComments(parent).map(function(event) {
+        desc: esutil.getAttachedComment(node),
+        events: esutil.getEventComments(node).map(function(event) {
           return { desc: event };
         }),
         properties: [],
@@ -58,9 +58,13 @@ export function elementFinder() {
         element = null;
         propertyHandlers = null;
       }
+      this.classDetected = false;
     },
 
     enterAssignmentExpression: function enterAssignmentExpression(node, parent) {
+      if (!element) {
+        return;
+      }
       const left = <estree.MemberExpression>node.left;
       if (left && left.object && left.object.type !== 'ThisExpression') {
         return;
@@ -75,6 +79,9 @@ export function elementFinder() {
     },
 
     enterMethodDefinition: function enterMethodDefinition(node, parent) {
+      if (!element) {
+        return;
+      }
       var prop = <estree.Property>{
         key: node.key,
         value: node.value,
