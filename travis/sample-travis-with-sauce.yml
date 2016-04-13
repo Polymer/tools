@@ -1,15 +1,15 @@
 language: node_js
 node_js: stable
+dist: trusty
+sudo: required
 addons:
   firefox: latest
   sauce_connect: true
   apt:
     sources:
     - google-chrome
-    - ubuntu-toolchain-r-test
     packages:
     - google-chrome-stable
-    - g++-4.8
 before_script:
 - npm install -g bower polylint web-component-tester
 - bower install
@@ -17,6 +17,3 @@ before_script:
 script:
 - xvfb-run wct
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'default'; fi
-env:
-  global:
-    - CXX=g++-4.8
