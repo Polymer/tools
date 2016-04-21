@@ -16,7 +16,7 @@ import * as http from 'http';
 import * as opn from 'opn';
 import { makeApp } from './make_app';
 
-interface ServerOptions {
+export interface ServerOptions {
   port?: number;
   host?: string;
   page?: boolean;
