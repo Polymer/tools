@@ -27,7 +27,7 @@ interface ServerOptions {
 /**
  * @return {Promise} A Promise that completes when the server has started.
  */
-function startServer(options: ServerOptions) {
+export function startServer(options: ServerOptions): Promise<http.Server> {
   return new Promise((resolve, reject) => {
     if (options.port) {
       resolve(options);
@@ -37,7 +37,7 @@ function startServer(options: ServerOptions) {
         resolve(options);
       });
     }
-  }).then((opts) => startWithPort(opts));
+  }).then<http.Server>((opts) => startWithPort(opts));
 }
 
 const portInUseMessage = (port: number) => `
@@ -108,5 +108,3 @@ function startWithPort(options: ServerOptions) {
 
   return serverStartedPromise;
 }
-
-module.exports = startServer;
