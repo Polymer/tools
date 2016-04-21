@@ -10,7 +10,8 @@
   },
   "scripts": {
     "start": "./bin/polyserve",
-    "prepublish": "typings install && tsc"
+    "init": "typings install",
+    "build": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc"
   },
   "keywords": [
     "polymer",
@@ -19,13 +20,12 @@
   "dependencies": {
     "express": "^4.8.5",
     "find-port": "^1.0.1",
-    "minimist": "^1.1.1",
     "opn": "^3.0.2",
     "resolve": "^1.0.0",
     "send": "^0.10.1"
   },
   "devDependencies": {
-    "typescript": "^1.8.0",
-    "typings": "^0.6.8"
+    "typescript": "^1.8.10",
+    "typings": "^0.8.1"
   }
 }
