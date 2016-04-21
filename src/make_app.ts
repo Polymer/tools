@@ -37,7 +37,7 @@ export interface PolyserveApplication extends express.Express {
  * @return {Object} An express app which can be served with `app.get`
  */
 export function makeApp(options: AppOptions): PolyserveApplication {
-
+  options = options || {};
   let root = options.root;
   let componentDir = options.componentDir || 'bower_components';
   let packageName = options.packageName || bowerConfig(root).name
