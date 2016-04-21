@@ -1,15 +1,15 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "module": "commonjs",
         "moduleResolution": "node",
-        "isolatedModules": false,
+        "isolatedModules": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "declaration": false,
         "noImplicitAny": true,
-        "removeComments": true,
-        "noLib": false,
+        "removeComments": false,
+        "noLib": true,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "lib"
@@ -17,18 +17,25 @@
     "filesGlob": [
         "src/**/*.ts",
         "!node_modules/**",
+        "custom_typings/*.d.ts",
+        "typings/main/*.d.ts",
         "typings/main.d.ts",
-        "custom_typings/*.d.ts"
+        "node_modules/typescript/lib/lib.core.es6.d.ts"
     ],
     "compileOnSave": true,
     "buildOnSave": false,
     "files": [
+        "src/args.ts",
         "src/bower_config.ts",
+        "src/cli.ts",
         "src/make_app.ts",
         "src/start_server.ts",
-        "typings/main.d.ts",
+        "custom_typings/command-line-args.d.ts",
         "custom_typings/find-port.d.ts",
-        "custom_typings/send.d.ts"
+        "custom_typings/node.d.ts",
+        "custom_typings/send.d.ts",
+        "typings/main.d.ts",
+        "node_modules/typescript/lib/lib.core.es6.d.ts"
     ],
     "atom": {
         "rewriteTsconfig": true
