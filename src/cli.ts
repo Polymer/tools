@@ -11,7 +11,7 @@
 import * as commandLineArgs from 'command-line-args';
 import {ArgDescriptor} from 'command-line-args';
 import {args} from './args';
-import {startServer} from './start_server';
+import {startServer, ServerOptions} from './start_server';
 
 export function run(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -21,11 +21,19 @@ export function run(): Promise<void> {
       type: Boolean,
     });
     var cli = commandLineArgs(argsWithHelp);
-    var options = cli.parse();
+    var cliOptions = cli.parse();
+    var options: ServerOptions = {
+      port: cliOptions.port,
+      hostname: cliOptions.hostname,
+      open: cliOptions.open,
+      browser: cliOptions.browser,
+      componentDir: cliOptions['component-dir'],
+      packageName: cliOptions['package-name'],
+    }
 
-    if (options.help) {
+    if (cliOptions.help) {
       var usage = cli.getUsage({
-        header: 'Runs the polyserve development server',
+        header: 'A development server for Polymer projects',
         title: 'polyserve',
       });
       console.log(usage);
