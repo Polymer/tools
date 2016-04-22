@@ -17,11 +17,22 @@ import * as opn from 'opn';
 import { makeApp } from './make_app';
 
 export interface ServerOptions {
+  /** The port to serve from */
   port?: number;
+
+  /** The hostname to serve from */
   hostname?: string;
-  page?: boolean;
-  browser?: string|string[];
+
+  /** The page to open in the default browser on startup **/
+  open?: boolean | string;
+
+  /** The browser to open **/
+  browser?: string | string[];
+
+  /** The component directory to use **/
   componentDir?: string;
+
+  /** The package name to use for the root directory **/
   packageName?: string;
 }
 /**
@@ -45,14 +56,6 @@ ERROR: Port in use: ${port}
 Please choose another port, or let an unused port be chosen automatically.
 `;
 
-/**
- * @param {Object} options
- * @param {Number} options.port -- port number
- * @param {String} options.hostname -- hostname string
- * @param {String=} options.page -- page path, ex: "/", "/index.html"
- * @param {(String|String[])} options.browser -- names of browser apps to launch
- * @return {Promise}
- */
 function startWithPort(options: ServerOptions) {
 
   options.port = options.port || 8080;
@@ -95,15 +98,15 @@ function startWithPort(options: ServerOptions) {
   let baseUrl = `http://${options.hostname}:${options.port}/components/${polyserve.packageName}/`;
   console.log(`Files in this directory are available under ${baseUrl}`);
 
-  if (options.page) {
-    let url = baseUrl + (options.page === true ? 'index.html' : options.page);
-    if (Array.isArray(options.browser)) {
-      for (let i = 0; i < options.browser.length; i++)
-        opn(url, options.browser[i]);
-    }
-    else {
-      opn(url, options.browser);
-    }
+  if (options.open) {
+    console.log('browser', options.browser);
+    let url = baseUrl + (options.open === true ? 'index.html' : options.open);
+    let browsers = Array.isArray(options.browser)
+      ? <Array<string>>options.browser
+      : [options.browser];
+    browsers.forEach((browser) => {
+      opn(url, {app: browser});
+    });
   }
 
   return serverStartedPromise;
