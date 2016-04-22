@@ -12,6 +12,12 @@ import {ArgDescriptor} from 'command-line-args';
 
 export let args : ArgDescriptor[] = [
   {
+    name: 'root',
+    description: 'The root directory. Defaults to cwd',
+    type: String,
+    defaultOption: true,
+  },
+  {
     name: 'port',
     alias: 'p',
     description: 'The port to serve from. Defaults to 8080',
@@ -40,8 +46,7 @@ export let args : ArgDescriptor[] = [
   {
     name: 'open',
     alias: 'o',
-    description: 'The page to open in the default browser on startup.' +
-        ' Defaults to index.html',
+    description: 'The page to open in the default browser on startup.',
     type: String,
   },
   {
