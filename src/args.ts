@@ -19,7 +19,7 @@ export let args : ArgDescriptor[] = [
   },
   {
     name: 'hostname',
-    alias: 'h',
+    alias: 'H',
     description: 'The hostname to serve. Defaults to localhost',
     type: String,
   },
