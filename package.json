@@ -4,7 +4,7 @@
   "description": "A simple dev server for bower components",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/polyserve",
-  "main": "main.js",
+  "main": "./lib/polyserve.js",
   "bin": {
     "polyserve": "bin/polyserve"
   },
@@ -31,5 +31,6 @@
     "supertest": "^1.2.0",
     "typescript": "^1.8.10",
     "typings": "^0.8.1"
-  }
+  },
+  "typings": "./lib/polyserve.d.ts"
 }

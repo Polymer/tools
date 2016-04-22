@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
  * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
@@ -8,7 +8,6 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-module.exports = {
-  startServer: require('./lib/start_server'),
-  makeApp: require('./lib/make_app')
-};
+export {startServer} from './start_server';
+export {makeApp} from './make_app';
+export {args} from './args';
