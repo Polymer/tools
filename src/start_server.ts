@@ -18,7 +18,7 @@ import { makeApp } from './make_app';
 
 export interface ServerOptions {
   port?: number;
-  host?: string;
+  hostname?: string;
   page?: boolean;
   browser?: string|string[];
   componentDir?: string;
@@ -48,7 +48,7 @@ Please choose another port, or let an unused port be chosen automatically.
 /**
  * @param {Object} options
  * @param {Number} options.port -- port number
- * @param {String} options.host -- hostname string
+ * @param {String} options.hostname -- hostname string
  * @param {String=} options.page -- page path, ex: "/", "/index.html"
  * @param {(String|String[])} options.browser -- names of browser apps to launch
  * @return {Promise}
@@ -56,7 +56,7 @@ Please choose another port, or let an unused port be chosen automatically.
 function startWithPort(options: ServerOptions) {
 
   options.port = options.port || 8080;
-  options.host = options.host || "localhost";
+  options.hostname = options.hostname || "localhost";
 
   console.log('Starting Polyserve on port ' + options.port);
 
@@ -82,7 +82,7 @@ function startWithPort(options: ServerOptions) {
     serverStartedReject = reject;
   });
 
-  server = app.listen(options.port, options.host,
+  server = app.listen(options.port, options.hostname,
       () => serverStartedResolve(server));
 
   server.on('error', function(err: any) {
@@ -92,7 +92,7 @@ function startWithPort(options: ServerOptions) {
     serverStartedReject(err);
   });
 
-  let baseUrl = `http://${options.host}:${options.port}/components/${polyserve.packageName}/`;
+  let baseUrl = `http://${options.hostname}:${options.port}/components/${polyserve.packageName}/`;
   console.log(`Files in this directory are available under ${baseUrl}`);
 
   if (options.page) {
