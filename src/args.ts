@@ -14,13 +14,13 @@ export let args : ArgDescriptor[] = [
   {
     name: 'port',
     alias: 'p',
-    description: 'The port to serve files from. Defaults to 8080',
+    description: 'The port to serve from. Defaults to 8080',
     type: Number,
   },
   {
     name: 'hostname',
     alias: 'H',
-    description: 'The hostname to serve. Defaults to localhost',
+    description: 'The hostname to serve from. Defaults to localhost',
     type: String,
   },
   {
@@ -33,13 +33,14 @@ export let args : ArgDescriptor[] = [
   {
     name: 'package-name',
     alias: 'n',
-    description: 'Package name. Defaults to reading from bower.json',
+    description: 'The package name to use for the root directory. Defaults to' +
+        ' reading from bower.json',
     type: String,
   },
   {
     name: 'open',
     alias: 'o',
-    description: 'Open page in default browser on startup.' +
+    description: 'The page to open in the default browser on startup.' +
         ' Defaults to index.html',
     type: String,
   },
