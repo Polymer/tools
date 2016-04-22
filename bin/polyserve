@@ -12,12 +12,13 @@
 'use strict';
 
 var resolve = require('resolve');
+var path = require('path');
 
 process.title = 'polyserve';
 
-resolve('polyserve', {basedir: process.cwd()}, function(error, path) {
-  path = path || '..';
-  var cli = require(path + '/lib/cli')
+resolve('polyserve', {basedir: process.cwd()}, function(error, libpath) {
+  var clipath = libpath ? path.resolve(libpath, '../cli') : '../lib/cli';
+  var cli = require(clipath);
   cli.run(process.argv)
     .catch(function(e) {
       process.exit(69);
