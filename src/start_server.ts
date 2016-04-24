@@ -14,9 +14,17 @@ import * as express from 'express';
 import * as findPort from 'find-port';
 import * as http from 'http';
 import * as opn from 'opn';
+import * as path from 'path';
+import * as send from 'send';
+import * as url from 'url';
+
 import { makeApp } from './make_app';
 
 export interface ServerOptions {
+
+  /** The root directory to serve **/
+  root?: string;
+
   /** The port to serve from */
   port?: number;
 
@@ -35,15 +43,27 @@ export interface ServerOptions {
   /** The package name to use for the root directory **/
   packageName?: string;
 }
+
+function applyDefaultOptions(options: ServerOptions): ServerOptions {
+  let withDefaults = Object.assign({}, options);
+  Object.assign(withDefaults, {
+    port: options.port || 8080,
+    hostname: options.hostname || "localhost",
+    root: path.resolve(options.root || '.'),
+  });
+  return withDefaults;
+}
+
 /**
  * @return {Promise} A Promise that completes when the server has started.
  */
 export function startServer(options: ServerOptions): Promise<http.Server> {
   return new Promise((resolve, reject) => {
+    options = options || {};
     if (options.port) {
       resolve(options);
     } else {
-      findPort(8080, 8180, function(ports) {
+      findPort(8080, 8180, (ports) => {
         options.port = ports[0];
         resolve(options);
       });
@@ -56,27 +76,46 @@ ERROR: Port in use: ${port}
 Please choose another port, or let an unused port be chosen automatically.
 `;
 
-function startWithPort(options: ServerOptions) {
-
-  options.port = options.port || 8080;
-  options.hostname = options.hostname || "localhost";
-
-  console.log('Starting Polyserve on port ' + options.port);
+export function getApp(options: ServerOptions) {
+  let port = options.port;
+  let hostname = options.hostname;
+  let root = options.root;
 
   let app = express();
+
+  console.log(`Starting Polyserve...
+    serving on port: ${port}
+    from root: ${root}
+  `);
 
   let polyserve = makeApp({
     componentDir: options.componentDir,
     packageName: options.packageName,
-    root: process.cwd(),
+    root,
   });
-
-  app.get('/', function (req, res) {
-    res.redirect(301, `/components/${polyserve.packageName}/`);
-  });
+  options.packageName = polyserve.packageName;
 
   app.use('/components/', polyserve);
 
+  app.get('/*', (req, res) => {
+    let filePath = req.path;
+    send(req, filePath, {root: root,})
+      .on('error', (error: send.SendError) => {
+        if ((error).status == 404) {
+          send(req, '/', {root: root}).pipe(res);
+        } else {
+          res.statusCode = error.status || 500;
+          res.end(error.message);
+        }
+      })
+      .pipe(res);
+  });
+  return app;
+}
+
+function startWithPort(userOptions: ServerOptions) {
+  let options = applyDefaultOptions(userOptions);
+  let app = getApp(options);
   let server = http.createServer(app);
   let serverStartedResolve: (r: any) => void;
   let serverStartedReject: (r: any) => void;
@@ -95,17 +134,25 @@ function startWithPort(options: ServerOptions) {
     serverStartedReject(err);
   });
 
-  let baseUrl = `http://${options.hostname}:${options.port}/components/${polyserve.packageName}/`;
-  console.log(`Files in this directory are available under ${baseUrl}`);
+  let serverUrl = {
+    protocol: 'http',
+    hostname: options.hostname,
+    port: `${options.port}`,
+  };
+  let componentUrl: url.Url = Object.assign({}, serverUrl);
+  componentUrl.pathname = `components/${options.packageName}/`;
+
+  console.log(`Files in this directory are available under the following URLs
+    applications: ${url.format(serverUrl)}
+    reusable components: ${url.format(componentUrl)}`);
 
   if (options.open) {
-    console.log('browser', options.browser);
-    let url = baseUrl + (options.open === true ? 'index.html' : options.open);
+    componentUrl.pathname += options.open;
     let browsers = Array.isArray(options.browser)
       ? <Array<string>>options.browser
       : [options.browser];
     browsers.forEach((browser) => {
-      opn(url, {app: browser});
+      opn(url.format(componentUrl), {app: browser});
     });
   }
 

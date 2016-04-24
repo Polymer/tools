@@ -12,6 +12,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 function bowerConfigPath(root?: string): string {
+  root = root || process.cwd();
   return path.resolve(root, 'bower.json');
 }
 

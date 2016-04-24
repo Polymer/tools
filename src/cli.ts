@@ -23,6 +23,7 @@ export function run(): Promise<void> {
     var cli = commandLineArgs(argsWithHelp);
     var cliOptions = cli.parse();
     var options: ServerOptions = {
+      root: cliOptions.root,
       port: cliOptions.port,
       hostname: cliOptions.hostname,
       open: cliOptions.open,
