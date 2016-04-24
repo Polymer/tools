@@ -10,6 +10,8 @@
 
 import * as commandLineArgs from 'command-line-args';
 import {ArgDescriptor} from 'command-line-args';
+import * as path from 'path';
+import * as fs from 'fs';
 import {args} from './args';
 import {startServer, ServerOptions} from './start_server';
 
@@ -39,8 +41,19 @@ export function run(): Promise<void> {
       });
       console.log(usage);
       resolve();
+    } else if (cliOptions.version) {
+      console.log(getVersion());
+      resolve();
     } else {
       return startServer(options);
     }
   });
+}
+
+function getVersion(): string {
+  let packageFilePath = path.resolve(__dirname, '../package.json');
+  let packageFile = fs.readFileSync(packageFilePath).toString()
+  let packageJson = JSON.parse(packageFile);
+  let version = packageJson['version'];
+  return version;
 }

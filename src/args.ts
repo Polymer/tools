@@ -12,6 +12,12 @@ import {ArgDescriptor} from 'command-line-args';
 
 export let args : ArgDescriptor[] = [
   {
+    name: 'version',
+    alias: 'v',
+    description: 'Print version info',
+    type: Boolean,
+  },
+  {
     name: 'root',
     description: 'The root directory. Defaults to cwd',
     type: String,
