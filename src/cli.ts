@@ -23,7 +23,15 @@ export function run(): Promise<void> {
       type: Boolean,
     });
     var cli = commandLineArgs(argsWithHelp);
-    var cliOptions = cli.parse();
+    try {
+      var cliOptions = cli.parse();
+    }
+    catch (e) {
+      printUsage(cli);
+      resolve(null);
+      return;
+    }
+
     var options: ServerOptions = {
       root: cliOptions.root,
       port: cliOptions.port,
@@ -35,19 +43,23 @@ export function run(): Promise<void> {
     }
 
     if (cliOptions.help) {
-      var usage = cli.getUsage({
-        header: 'A development server for Polymer projects',
-        title: 'polyserve',
-      });
-      console.log(usage);
-      resolve();
+      printUsage(cli);
+      resolve(null);
     } else if (cliOptions.version) {
       console.log(getVersion());
-      resolve();
+      resolve(null);
     } else {
       return startServer(options);
     }
   });
+}
+
+function printUsage(cli: any): void {
+  var usage = cli.getUsage({
+    header: 'A development server for Polymer projects',
+    title: 'polyserve',
+  });
+  console.log(usage);
 }
 
 function getVersion(): string {
