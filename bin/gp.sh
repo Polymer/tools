@@ -19,7 +19,8 @@ repo=$2
 branch=${3:-"master"} # default to master when branch isn't specified
 
 # make folder (same as input, no checking!)
-mkdir $repo
+mkdir -p temp/$repo
+pushd temp/ >/dev/null
 git clone git@github.com:$org/$repo.git --single-branch
 
 # switch to gh-pages branch
@@ -51,3 +52,7 @@ git commit -am 'seed gh-pages'
 git push -u origin gh-pages --force
 
 popd >/dev/null
+popd >/dev/null
+
+# remove temporary folder
+rm -rf temp/$repo
