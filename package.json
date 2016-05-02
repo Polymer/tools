@@ -11,7 +11,8 @@
   "scripts": {
     "start": "./bin/polyserve",
     "init": "typings install",
-    "build": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc"
+    "build": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc",
+    "test": "gulp test"
   },
   "keywords": [
     "polymer",
