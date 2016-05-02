@@ -37,7 +37,8 @@ export function run(): Promise<void> {
       port: cliOptions.port,
       hostname: cliOptions.hostname,
       open: cliOptions.open,
-      browser: cliOptions.browser,
+      browser: cliOptions['browser'],
+      openPath: cliOptions['open-path'],
       componentDir: cliOptions['component-dir'],
       packageName: cliOptions['package-name'],
     }
