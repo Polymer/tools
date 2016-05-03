@@ -53,13 +53,20 @@ export let args : ArgDescriptor[] = [
     name: 'open',
     alias: 'o',
     description: 'The page to open in the default browser on startup.',
-    type: String,
+    type: Boolean,
   },
   {
     name: 'browser',
     alias: 'b',
-    description: 'The browser to open when using the --open option.' +
-        ' Defaults to chrome',
+    description: 'The browser(s) to open with when using the --open option.' +
+      ' Defaults to your default web browser.',
+    type: String,
+    multiple: true,
+  },
+  {
+    name: 'open-path',
+    description: 'The URL path to open when using the --open option.' +
+      ' Defaults to "index.html".',
     type: String,
   },
 ];

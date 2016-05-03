@@ -31,11 +31,14 @@ export interface ServerOptions {
   /** The hostname to serve from */
   hostname?: string;
 
-  /** The page to open in the default browser on startup **/
-  open?: boolean | string;
+  /** Whether to open the browser when run **/
+  open?: boolean;
 
-  /** The browser to open **/
-  browser?: string | string[];
+  /** The browser(s) to open when run with open argument **/
+  browser?: string[];
+
+  /** The URL path to open in each browser **/
+  openPath?: string;
 
   /** The component directory to use **/
   componentDir?: string;
@@ -113,6 +116,22 @@ export function getApp(options: ServerOptions) {
   return app;
 }
 
+/**
+ * Open the given web page URL. If no browser keyword is provided, `opn` will use
+ * the user's default browser.
+ */
+function openWebPage(url: string, withBrowser?: string) {
+  let openOptions = {
+    app: withBrowser
+  };
+  opn(url, openOptions, (err) => {
+    if (err) {
+      // log error and continue
+      console.error(`ERROR: Problem launching "${openOptions.app || 'default web browser'}".`);
+    }
+  });
+}
+
 function startWithPort(userOptions: ServerOptions) {
   let options = applyDefaultOptions(userOptions);
   let app = getApp(options);
@@ -147,13 +166,17 @@ function startWithPort(userOptions: ServerOptions) {
     reusable components: ${url.format(componentUrl)}`);
 
   if (options.open) {
-    componentUrl.pathname += options.open;
-    let browsers = Array.isArray(options.browser)
-      ? <Array<string>>options.browser
-      : [options.browser];
-    browsers.forEach((browser) => {
-      opn(url.format(componentUrl), {app: browser});
-    });
+    let openUrl: url.Url = Object.assign({}, componentUrl);
+    if (options.openPath) {
+      openUrl.pathname += options.openPath;
+    }
+    if (!Array.isArray(options.browser)) {
+      openWebPage(url.format(openUrl));
+    } else {
+      options.browser.forEach((browser) => {
+        openWebPage(url.format(openUrl), browser);
+      });
+    }
   }
 
   return serverStartedPromise;
