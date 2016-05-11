@@ -28,3 +28,9 @@ Navigate to `localhost:8080/components/my-element/demo.html`
   * `-o` Opens your default browser to an initial page, e.g. "demo" or "index.html"
   * `-b <browsername>` use this browser instead of default (ex: 'Google Chrome Canary')
   * `-H <hostname>` use this hostname instead of localhost
+
+## Run Tests
+
+```
+npm test
+```
