@@ -28,6 +28,7 @@ class PolymerLogger {
     let consoleTransport = new (winston.transports.Console)({
       level: options.level || 'info',
       label: options.name || null,
+      prettyPrint: true,
     });
     this._logger =  new (winston.Logger)({transports: [consoleTransport]});
     this._logger.cli();
