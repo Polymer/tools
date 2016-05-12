@@ -26,7 +26,8 @@ class PolymerLogger {
     options = options || {};
 
     let consoleTransport = new (winston.transports.Console)({
-      level: options.level || 'info'
+      level: options.level || 'info',
+      label: options.name || null,
     });
     this._logger =  new (winston.Logger)({transports: [consoleTransport]});
     this._logger.cli();
@@ -99,4 +100,40 @@ class PolymerLogger {
 
 }
 
-module.exports = PolymerLogger;
+module.exports = {
+
+  configOptions: {},
+
+  /**
+   * Set all future loggers created, across the application, to be verbose.
+   *
+   * @return {void}
+   */
+  setVerbose: function() {
+    this.configOptions.level = 'debug';
+  },
+
+  /**
+   * Set all future loggers created, across the application, to be quiet.
+   *
+   * @return {void}
+   */
+  setQuiet: function() {
+    this.configOptions.level = 'error';
+  },
+
+  /**
+   * Create a new logger with the given name label. It will inherit the global
+   * level if one has been set within the application.
+   *
+   * @param  {string} name The name of the logger, useful for grouping messages
+   * @return {PolymerLogger}
+   */
+  getLogger: function(name) {
+    return new PolymerLogger({
+      level: this.configOptions.level,
+      name: name,
+    });
+  },
+
+};
