@@ -1,0 +1,24 @@
+{
+  "name": "plylog",
+  "version": "0.0.1",
+  "description": "A logger for the Polymer CLI toolchain",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/ --ui tdd"
+  },
+  "keywords": [
+    "polymer",
+    "logging",
+    "cli"
+  ],
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "winston": "^2.2.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.4"
+  }
+}
