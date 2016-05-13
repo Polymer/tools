@@ -113,7 +113,7 @@ class PolymerLogger {
 
 module.exports = {
 
-  configOptions: {},
+  level:'info',
 
   /**
    * Set all future loggers created, across the application, to be verbose.
@@ -121,7 +121,7 @@ module.exports = {
    * @return {void}
    */
   setVerbose: function() {
-    this.configOptions.level = 'debug';
+    this.level = 'debug';
   },
 
   /**
@@ -130,7 +130,7 @@ module.exports = {
    * @return {void}
    */
   setQuiet: function() {
-    this.configOptions.level = 'error';
+    this.level = 'error';
   },
 
   /**
@@ -142,7 +142,7 @@ module.exports = {
    */
   getLogger: function(name) {
     return new PolymerLogger({
-      level: this.configOptions.level,
+      level: this.level,
       name: name,
     });
   },

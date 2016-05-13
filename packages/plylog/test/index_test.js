@@ -30,6 +30,7 @@ suite('plylog', () => {
 
     test('sets the level of all future loggers to "debug"', () => {
       logging.setVerbose();
+      assert.equal(logging.level, 'debug');
       let logger = logging.getLogger('TEST_LOGGER');
       assert.equal(logger._logger.transports.console.level, 'debug');
     });
@@ -40,6 +41,7 @@ suite('plylog', () => {
 
     test('sets the level of all future loggers to "error"', () => {
       logging.setQuiet();
+      assert.equal(logging.level, 'error');
       let logger = logging.getLogger('TEST_LOGGER');
       assert.equal(logger._logger.transports.console.level, 'error');
     });
