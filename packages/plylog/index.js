@@ -30,8 +30,18 @@ class PolymerLogger {
       label: options.name || null,
       prettyPrint: true,
     });
+
     this._logger =  new (winston.Logger)({transports: [consoleTransport]});
     this._logger.cli();
+  }
+
+  /**
+   * Read the instance's level from our internal logger.
+   *
+   * @return {string}
+   */
+  get level() {
+    return this._logger.transports.console.level;
   }
 
   /**
@@ -41,7 +51,7 @@ class PolymerLogger {
    * @param  {string} [newLevel] The new maximum severity that will be logged
    * @return {void}
    */
-  setLevel(newLevel) {
+  set level(newLevel) {
     this._logger.transports.console.level = newLevel;
   }
 

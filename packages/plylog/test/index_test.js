@@ -48,12 +48,19 @@ suite('plylog', () => {
 
   suite('PolymerLogger instance', () => {
 
-    test('changes its internal logger\'s level when setLevel() is called', () => {
+    test('changes its internal logger\'s level when level property is changed', () => {
       let logger = logging.getLogger('TEST_LOGGER');
-      logger.setLevel('info');
+      logger.level = 'info';
       assert.equal(logger._logger.transports.console.level, 'info');
-      logger.setLevel('debug');
+      logger.level = 'debug';
       assert.equal(logger._logger.transports.console.level, 'debug');
+     });
+
+    test('reads its internal logger\'s level when the level property is read', () => {
+      let logger = logging.getLogger('TEST_LOGGER');
+      logger.level = 'silly';
+      assert.equal(logger._logger.transports.console.level, 'silly');
+      assert.equal(logger.level, 'silly');
      });
 
     test('loggers properly pass arguments to their internal logger\'s log methods when called', () => {
