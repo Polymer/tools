@@ -33,6 +33,37 @@ class PolymerLogger {
 
     this._logger =  new (winston.Logger)({transports: [consoleTransport]});
     this._logger.cli();
+
+    /**
+     * Logs an ERROR message, if the log level allows it. These should be used
+     * to give the user information about a serious error that occurred. Usually
+     * used right before the process exits.
+     */
+    this.error = this._log.bind(this, 'error');
+
+    /**
+     * Logs a WARN message, if the log level allows it. These should be used
+     * to give the user information about some unexpected issue that was
+     * encountered. Usually the process is able to continue, but the user should
+     * still be concerned and hopefully investigate further.
+     */
+    this.warn = this._log.bind(this, 'warn');
+
+    /**
+     * Logs an INFO message, if the log level allows it. These should be used
+     * to give the user generatl information about the process, including progress
+     * updates and status messages.
+     */
+    this.info = this._log.bind(this, 'info');
+
+    /**
+     * Logs a DEBUG message, if the log level allows it. These should be used
+     * to give the user useful information for debugging purposes. These will
+     * generally only be displayed when the user is are troubleshooting an
+     * issue.
+     */
+    this.debug = this._log.bind(this, 'debug');
+
   }
 
   /**
@@ -56,57 +87,15 @@ class PolymerLogger {
   }
 
   /**
-   * Logs an ERROR message, if the log level allows it. These should be used
-   * to give the user information about a serious error that occurred. Usually
-   * used right before the process exits.
+   * Logs a message of any level. Used internally by the public logging methods.
    *
+   * @param  {string} level The severity level of the log
    * @param  {string} msg The message to log
    * @param  {Object} [metadata] Optional metadata to log
    * @return {void}
    */
-  error() {
-    this._logger.error.apply(this._logger, arguments);
-  }
-
-  /**
-   * Logs a WARN message, if the log level allows it. These should be used
-   * to give the user information about some unexpected issue that was
-   * encountered. Usually the process is able to continue, but the user should
-   * still be concerned and hopefully investigate further.
-   *
-   * @param  {string} msg The message to log
-   * @param  {Object} [metadata] Optional metadata to log
-   * @return {void}
-   */
-  warn() {
-    this._logger.warn.apply(this._logger, arguments);
-  }
-
-  /**
-   * Logs an INFO message, if the log level allows it. These should be used
-   * to give the user generatl information about the process, including progress
-   * updates and status messages.
-   *
-   * @param  {string} msg The message to log
-   * @param  {Object} [metadata] Optional metadata to log
-   * @return {void}
-   */
-  info() {
-    this._logger.info.apply(this._logger, arguments);
-  }
-
-  /**
-   * Logs a DEBUG message, if the log level allows it. These should be used
-   * to give the user useful information for debugging purposes. These will
-   * generally only be displayed when the user is are troubleshooting an
-   * issue.
-   *
-   * @param  {string} msg The message to log
-   * @param  {Object} [metadata] Optional metadata to log
-   * @return {void}
-   */
-  debug() {
-    this._logger.debug.apply(this._logger, arguments);
+  _log() {
+    this._logger.log.apply(this._logger, arguments);
   }
 
 }
