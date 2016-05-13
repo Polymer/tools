@@ -12,7 +12,6 @@
 
 const getApp = require('../lib/start_server').getApp;
 const assert = require('chai').assert;
-const cliRun = require('../lib/cli').run;
 const supertest = require('supertest');
 
 suite('startServer', () => {
@@ -50,21 +49,6 @@ suite('startServer', () => {
       .get('/foo')
       .expect(200, 'INDEX\n')
       .end(done);
-  });
-
-  test('unknown cmd parameter should not throw exception', (done) => {
-    var argv = process.argv;
-
-    process.argv = ["node", "polyserve", "--unknown-parameter"];
-    var result = cliRun();
-
-    result.then(function() {
-      process.argv = argv;
-      done();
-    }, function(err) {
-      process.argv = argv;
-      done(err);
-    });
   });
 
 });
