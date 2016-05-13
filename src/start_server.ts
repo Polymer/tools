@@ -104,7 +104,7 @@ export function getApp(options: ServerOptions) {
     let filePath = req.path;
     send(req, filePath, {root: root,})
       .on('error', (error: send.SendError) => {
-        if ((error).status == 404) {
+        if ((error).status == 404 && !filePath.endsWith('.html')) {
           send(req, '/', {root: root}).pipe(res);
         } else {
           res.statusCode = error.status || 500;
