@@ -166,9 +166,12 @@ function startWithPort(userOptions: ServerOptions) {
     reusable components: ${url.format(componentUrl)}`);
 
   if (options.open) {
-    let openUrl: url.Url = Object.assign({}, componentUrl);
+    let openUrl: url.Url;
     if (options.openPath) {
-      openUrl.pathname += options.openPath;
+      openUrl = Object.assign({}, serverUrl);
+      openUrl.pathname = options.openPath;
+    } else {
+      openUrl = Object.assign({}, componentUrl);
     }
     if (!Array.isArray(options.browser)) {
       openWebPage(url.format(openUrl));
