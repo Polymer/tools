@@ -256,18 +256,13 @@ export class Analyzer {
     });
   };
 
-  load(href: string):Promise<AnalyzedDocument> {
-    return this.loader.request(href).then((content) => {
-      return new Promise<AnalyzedDocument>((resolve, reject) => {
-        setTimeout(() => {
-          this._content[href] = content;
-          resolve(this._parseHTML(content, href));
-        }, 0);
-      }).catch(function(err){
-        console.error("Error processing document at " + href);
+  load(href: string): Promise<AnalyzedDocument> {
+    return this.loader.request(href)
+      .then((content) => this._parseHTML(this._content[href], href))
+      .catch((err) => {
+        console.error("Error loading " + href);
         throw err;
       });
-    });
   };
 
   /**
