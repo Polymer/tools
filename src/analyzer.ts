@@ -8,8 +8,6 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import * as dom5 from 'dom5';
 import * as url from 'url';
 import * as estree from 'estree';
@@ -24,6 +22,8 @@ import {FSResolver} from './loader/fs-resolver';
 import {XHRResolver} from './loader/xhr-resolver';
 import {ErrorSwallowingFSResolver} from './loader/error-swallowing-fs-resolver';
 import {Descriptor, ElementDescriptor, FeatureDescriptor, BehaviorDescriptor} from './ast-utils/descriptors';
+
+import {AnalyzedDocument} from './analyzed-document';
 
 function reduceMetadata(m1:DocumentDescriptor, m2:DocumentDescriptor): DocumentDescriptor {
   return {
@@ -71,34 +71,7 @@ interface DocumentDescriptor {
   html?: ParsedImport;
 }
 
-/**
- * The metadata of an entire HTML document, in promises.
- */
-interface AnalyzedDocument {
-  /**
-   * The url of the document.
-   */
-  href: string;
-  /**
-   * The parsed representation of the doc. Use the `ast` property to get
-   * the full `parse5` ast.
-   */
-  htmlLoaded: Promise<ParsedImport>;
 
-  /**
-   * Resolves to the list of this Document's transitive import dependencies.
-   */
-  depsLoaded: Promise<string[]>;
-
-  /**
-   * The direct dependencies of the document.
-   */
-  depHrefs: string[];
-  /**
-   * Resolves to the list of this Document's import dependencies
-   */
-  metadataLoaded: Promise<DocumentDescriptor>;
-}
 
 /**
  * Options for `Analyzer.analzye`

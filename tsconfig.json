@@ -20,6 +20,7 @@
     },
     "files": [
         "src/analyzer.ts",
+        "src/analyzed-document.ts",
         "src/ast-utils/analyze-properties.ts",
         "src/ast-utils/ast-value.ts",
         "src/ast-utils/behavior-finder.ts",
@@ -33,6 +34,7 @@
         "src/ast-utils/import-parse.ts",
         "src/ast-utils/js-parse.ts",
         "src/ast-utils/jsdoc.ts",
+        "src/ast/document-descriptor.ts",
         "src/loader/error-swallowing-fs-resolver.ts",
         "src/loader/file-loader.ts",
         "src/loader/fs-resolver.ts",
