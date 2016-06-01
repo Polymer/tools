@@ -48,6 +48,8 @@ class A {
   }
 }
 
+Polymer(A);
+
 /**
  * I am a description of test-element.
  *
