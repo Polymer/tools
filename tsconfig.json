@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": false,
+    "noImplicitAny": false,
+    "removeComments": false,
+    "noLib": true,
+    "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "lib"
+  },
+  "filesGlob": [
+    "src/**/*.ts",
+    "!node_modules/**",
+    "custom_typings/*.d.ts",
+    "typings/main/*.d.ts",
+    "typings/main.d.ts",
+    "node_modules/typescript/lib/lib.core.es6.d.ts"
+  ],
+  "files": [
+    "src/analyzer.ts",
+    "src/build.ts",
+    "src/bundle.ts",
+    "src/html-project.ts",
+    "src/optimize.ts",
+    "src/polymer-build.ts",
+    "src/prefetch.ts",
+    "src/streams.ts",
+    "src/sw-precache.ts",
+    "src/uglify-transform.ts",
+    "src/url-from-path.ts",
+    "custom_typings/fs-extra.d.ts",
+    "custom_typings/hydrolysis.d.ts",
+    "custom_typings/node.d.ts",
+    "custom_typings/plylog.d.ts",
+    "custom_typings/slash.d.ts",
+    "custom_typings/vinyl-fs.d.ts",
+    "node_modules/typescript/lib/lib.core.es6.d.ts"
+  ],
+  "atom": {
+    "rewriteTsconfig": true
+  }
+}
