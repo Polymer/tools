@@ -9,7 +9,6 @@
  */
 
 import * as gulpif from 'gulp-if';
-import * as stream from 'stream';
 
 import {UglifyTransform} from './uglify-transform';
 import {compose} from './streams';
@@ -43,7 +42,7 @@ export interface OptimizeOptions {
 }
 
 export function optimize(options?: OptimizeOptions) {
-  let transforms = [];
+  let transforms: NodeJS.ReadWriteStream[] = [];
 
   if (options) {
     if (options.js && options.js.minify) {

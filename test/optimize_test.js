@@ -13,8 +13,8 @@
 const assert = require('chai').assert;
 const vfs = require('vinyl-fs-fake');
 
-const HtmlProject = require('../lib/html-project').HtmlProject;
-const optimize = require('..//lib/optimize').optimize;
+const PolymerProject = require('../lib/polymer-project').PolymerProject;
+const optimize = require('../lib/optimize').optimize;
 
 suite('optimize()', () => {
 
@@ -95,9 +95,12 @@ suite('optimize()', () => {
         minify: true,
       },
     };
-    let project = new HtmlProject();
-    let op = stream.pipe(project.split);
-    op = op.pipe(optimize(options)).pipe(project.rejoin);
+    let project = new PolymerProject({
+      entrypoint: 'entrypoint.html',
+      shell: 'shell.html',
+    });
+    let op = stream.pipe(project.splitHtml());
+    op = op.pipe(optimize(options)).pipe(project.rejoinHtml());
     testStream(op, (err, f) => {
       if (err) {
         return done(err);

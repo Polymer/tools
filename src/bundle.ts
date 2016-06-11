@@ -67,7 +67,7 @@ export class Bundler extends Transform {
   _transform(
       file: File,
       encoding: string,
-      callback: (error?, data?: File) => void
+      callback: (error?: any, data?: File) => void
     ): void {
 
     // If this is the entrypoint, hold on to the file, so that it's fully
@@ -80,7 +80,7 @@ export class Bundler extends Transform {
 
   }
 
-  _flush(done: (error?) => void) {
+  _flush(done: (error?: any) => void) {
     this._buildBundles().then((bundles: Map<string, string>) => {
       for (let fragment of this.allFragments) {
         let file = this.analyzer.getFile(fragment);
@@ -100,7 +100,7 @@ export class Bundler extends Transform {
     });
   }
 
-  isEntrypoint(file): boolean {
+  isEntrypoint(file: File): boolean {
     return this.allFragments.indexOf(file.path) !== -1;
   }
 
@@ -110,7 +110,7 @@ export class Bundler extends Transform {
           ? urlFromPath(this.root, this.shell)
           : this.sharedBundleUrl;
       let sharedDeps = bundles.get(sharedDepsBundle) || [];
-      let promises = [];
+      let promises: Promise<any>[] = [];
 
       if (this.shell) {
         let shellFile = this.analyzer.getFile(this.shell);
@@ -138,7 +138,7 @@ export class Bundler extends Transform {
             inlineCss: true,
             inputUrl: fragmentUrl,
           });
-          vulcanize.process(null, (err, doc) => {
+          vulcanize.process(null, (err: any, doc: string) => {
             if (err) {
               reject(err);
             } else {
@@ -156,9 +156,11 @@ export class Bundler extends Transform {
         promises.push(this._generateSharedBundle(sharedDeps));
       }
       return Promise.all(promises).then((bundles) => {
+        // TODO(justinfagnani): remove at TypeScript 2.0
+        let _bundles = <any[]>bundles;
         // convert {url,contents}[] into a Map
         let contentsMap = new Map();
-        for (let bundle of bundles) {
+        for (let bundle of _bundles) {
           contentsMap.set(bundle.url, bundle.contents);
         }
         return contentsMap;
@@ -238,7 +240,7 @@ export class Bundler extends Transform {
         inlineCss: true,
         inputUrl: this.sharedBundleUrl,
       });
-      vulcanize.process(null, (err, doc) => {
+      vulcanize.process(null, (err: any, doc: any) => {
         if (err) {
           reject(err);
         } else {
@@ -258,7 +260,7 @@ export class Bundler extends Transform {
       let bundles = new Map<string, string[]>();
 
       let addImport = (from: string, to: string) => {
-        let imports;
+        let imports: string[];
         if (!bundles.has(from)) {
           imports = [];
           bundles.set(from, imports);
