@@ -52,7 +52,7 @@
     "freeport": "^1.0.4",
     "launchpad": "^0.5.0",
     "lodash": "^3.0.1",
-    "selenium-standalone": "^5.0.0",
+    "selenium-standalone": "azakus/selenium-standalone#firefox-marionette-driver",
     "which": "^1.0.8"
   },
   "engines": {
