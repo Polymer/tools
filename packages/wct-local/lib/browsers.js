@@ -128,7 +128,6 @@ function firefox(browser) {
     'browserName':    'firefox',
     'version':        browser.version.match(/\d+/)[0],
     'firefox_binary': browser.binPath,
-    'marionette': true
   };
 }
 
