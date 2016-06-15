@@ -17,6 +17,8 @@ import File = require('vinyl');
 import {parse as parseUrl} from 'url';
 import * as logging from 'plylog';
 import {Node, queryAll, predicates, getAttribute} from 'dom5';
+
+import {FileCB} from './streams';
 import urlFromPath from './url-from-path';
 
 const minimatchAll = require('minimatch-all');
@@ -42,7 +44,7 @@ export class StreamAnalyzer extends Transform {
 
   files = new Map<string, File>();
 
-  _analyzeResolve: (DepsIndex) => void;
+  _analyzeResolve: (index: DepsIndex) => void;
   analyze: Promise<DepsIndex>;
 
   constructor(root: string, entrypoint: string, shell: string, fragments: string[]) {
@@ -75,12 +77,7 @@ export class StreamAnalyzer extends Transform {
     });
   }
 
-  _transform(
-      file: File,
-      encoding: string,
-      callback: (error?, data?: File) => void
-    ): void {
-
+  _transform(file: File, encoding: string, callback: FileCB): void {
     this.addFile(file);
 
     // If this is the entrypoint, hold on to the file, so that it's fully
@@ -92,7 +89,7 @@ export class StreamAnalyzer extends Transform {
     }
   }
 
-  _flush(done: (error?) => void) {
+  _flush(done: (error?: any) => void) {
     this._getDepsToEntrypointIndex().then((depsIndex) => {
       // push held back files
       for (let fragment of this.allFragments) {
@@ -115,6 +112,7 @@ export class StreamAnalyzer extends Transform {
    * can be injected into the stream.
    */
   addFile(file: File): void {
+    logger.debug(`addFile: ${file.path}`);
     // Badly-behaved upstream transformers (looking at you gulp-html-minifier)
     // may use posix path separators on Windows.
     let filepath = osPath.normalize(file.path);
@@ -133,11 +131,17 @@ export class StreamAnalyzer extends Transform {
     let file = this.files.get(url);
     if (!file) {
       logger.debug(`no file for ${url} :(`);
+      logger.debug(Array.from(this.files.values()).join(', '));
+      try {
+        throw new Error();
+      } catch (e) {
+        logger.error(e.stack);
+      }
     }
     return file;
   }
 
-  isFragment(file): boolean {
+  isFragment(file: File): boolean {
     return this.allFragments.indexOf(file.path) !== -1;
   }
 
@@ -168,7 +172,7 @@ export class StreamAnalyzer extends Transform {
         fragmentToFullDeps.set(fragment, deps);
 
         for (let dep of deps.imports) {
-          let entrypointList;
+          let entrypointList: string[];
           if (!depsToFragments.has(dep)) {
             entrypointList = [];
             depsToFragments.set(dep, entrypointList);
@@ -195,7 +199,7 @@ export class StreamAnalyzer extends Transform {
   }
 
   _getDependenciesFromDescriptor(descriptor: DocumentDescriptor, dir: string): DocumentDeps {
-    let allHtmlDeps = [];
+    let allHtmlDeps: string[] = [];
     let allScriptDeps = new Set<string>();
     let allStyleDeps = new Set<string>();
 
@@ -225,14 +229,16 @@ export class StreamAnalyzer extends Transform {
   }
 
   _collectScriptsAndStyles(tree: DocumentDescriptor): DocumentDeps {
-    let scripts = [];
-    let styles = [];
-    tree.html.script.forEach((script) => {
-      if (script['__hydrolysisInlined']) {
-        scripts.push(script['__hydrolysisInlined']);
+    let scripts: string[] = [];
+    let styles: string[] = [];
+    tree.html.script.forEach((script: Node) => {
+      // TODO(justinfagnani): stop patching Nodes in Hydrolysis
+      let __hydrolysisInlined = (<any>script).__hydrolysisInlined;
+      if (__hydrolysisInlined) {
+        scripts.push(__hydrolysisInlined);
       }
     });
-    tree.html.style.forEach((style) => {
+    tree.html.style.forEach((style: Node) => {
       let href = getAttribute(style, 'href');
       if (href) {
         styles.push(href);
@@ -262,6 +268,7 @@ class StreamResolver implements Resolver {
   }
 
   accept(url: string, deferred: Deferred<string>): boolean {
+    logger.debug(`accept: ${url}`);
     let urlObject = parseUrl(url);
 
     if (urlObject.hostname || !urlObject.pathname) {

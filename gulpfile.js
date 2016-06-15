@@ -18,21 +18,37 @@ const mergeStream = require('merge-stream');
 const mocha = require('gulp-mocha');
 const path = require('path');
 const runSeq = require('run-sequence');
-const tslint = require("gulp-tslint");
+const stream = require('stream');
+const tslint = require('gulp-tslint');
 const typescript = require('gulp-typescript');
 const typings = require('gulp-typings');
 
 const tsProject = typescript.createProject('tsconfig.json');
+
+// WTF gulp-typescript
+class Rebase extends stream.Transform {
+  constructor() {
+    super({objectMode: true});
+  }
+
+  _transform(file, enc, callback) {
+    let oldPath = file.path;
+    if (oldPath.startsWith('lib/src')) {
+      file.path = 'lib' + oldPath.substring('lib/src'.length);
+    }
+    callback(null, file);
+  }
+}
 
 gulp.task('init', () => gulp.src("./typings.json").pipe(typings()));
 
 gulp.task('lint', ['tslint', 'eslint', 'depcheck']);
 
 gulp.task('build', () =>
-  mergeStream(
-    gulp.src('src/**/*.ts').pipe(typescript(tsProject)),
-    gulp.src(['src/**/*', '!src/**/*.ts'])
-  ).pipe(gulp.dest('lib'))
+  tsProject.src()
+    .pipe(typescript(tsProject))
+    .pipe(new Rebase())
+    .pipe(gulp.dest('lib'))
 );
 
 gulp.task('clean', (done) => {

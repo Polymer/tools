@@ -15,6 +15,7 @@ import {Transform} from 'stream';
 import File = require('vinyl');
 
 import {StreamAnalyzer, DepsIndex} from './analyzer';
+import {FileCB} from './streams';
 
 let logger = logging.getLogger('cli.build.prefech');
 
@@ -96,7 +97,7 @@ export class PrefetchTransform extends Transform {
     file.contents = new Buffer(contents);
   }
 
-  _transform(file: File, enc: string, callback: (err?, file?) => void) {
+  _transform(file: File, enc: string, callback: FileCB) {
     if (this.isImportantFile(file)) {
       // hold on to the file for safe keeping
       this.fileMap.set(file.path, file);
@@ -106,12 +107,12 @@ export class PrefetchTransform extends Transform {
     }
   }
 
-  isImportantFile(file) {
+  isImportantFile(file: File) {
     return file.path === this.entrypoint ||
         this.allFragments.indexOf(file.path) > -1;
   }
 
-  _flush(done: (err?) => void) {
+  _flush(done: (err?: any) => void) {
     if (this.fileMap.size === 0) {
       return done();
     }

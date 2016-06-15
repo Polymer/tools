@@ -13,6 +13,8 @@ import * as uglify from 'uglify-js';
 import * as logging from 'plylog';
 import File = require('vinyl');
 
+import {FileCB} from './streams';
+
 let logger = logging.getLogger('cli.build.uglify');
 const UglifyOptions: uglify.MinifyOptions = { fromString: true };
 
@@ -22,7 +24,7 @@ export class UglifyTransform extends Transform {
     super({objectMode: true});
   }
 
-  _transform(file: File, encoding: string, callback: (error?, data?) => void): void {
+  _transform(file: File, encoding: string, callback: FileCB): void {
     if (file.contents && file.path.endsWith('.js')) {
       try {
         let contents = file.contents.toString();
