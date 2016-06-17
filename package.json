@@ -20,6 +20,7 @@
   "dependencies": {
     "@types/express": "^4.0.33",
     "@types/mime": "0.0.29",
+    "@types/mz": "0.0.29",
     "@types/node": "^4.0.30",
     "@types/opn": "^3.0.28",
     "@types/serve-static": "^1.7.31",
@@ -27,9 +28,12 @@
     "command-line-usage": "^3.0.3",
     "express": "^4.8.5",
     "find-port": "^1.0.1",
+    "mz": "^2.4.0",
     "opn": "^3.0.2",
+    "pem": "^1.8.3",
     "resolve": "^1.0.0",
-    "send": "^0.10.1"
+    "send": "^0.10.1",
+    "spdy": "^3.3.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",

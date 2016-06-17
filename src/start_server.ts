@@ -9,10 +9,14 @@
  */
 
 import * as express from 'express';
-import * as http from 'http';
+// TODO: Switch to node-http2 when compatible with express
+// https://github.com/molnarg/node-http2/issues/100
+import * as http from 'spdy';
+import * as pem from 'pem';
 import * as path from 'path';
 import * as send from 'send';
 import * as url from 'url';
+import * as fs from 'mz/fs';
 
 import { makeApp } from './make_app';
 
@@ -44,14 +48,25 @@ export interface ServerOptions {
 
   /** The package name to use for the root directory **/
   packageName?: string;
+
+  /** The HTTP protocol to use */
+  protocol?: string;
+
+  /** Path to TLS service key for HTTPS */
+  keyPath?: string;
+
+  /** Path to TLS certificate for HTTPS */
+  certPath?: string;
 }
 
 function applyDefaultOptions(options: ServerOptions): ServerOptions {
   const withDefaults = Object.assign({}, options);
   Object.assign(withDefaults, {
     port: options.port || 8080,
-    hostname: options.hostname || "localhost",
+    hostname: options.hostname || 'localhost',
     root: path.resolve(options.root || '.'),
+    certPath: options.certPath || 'cert.pem',
+    keyPath: options.keyPath || 'key.pem',
   });
   return withDefaults;
 }
@@ -60,8 +75,11 @@ function applyDefaultOptions(options: ServerOptions): ServerOptions {
  * @return {Promise} A Promise that completes when the server has started.
  */
 export function startServer(options: ServerOptions): Promise<http.Server> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     options = options || {};
+
+    assertNodeVersion(options);
+
     if (options.port) {
       resolve(options);
     } else {
@@ -70,7 +88,12 @@ export function startServer(options: ServerOptions): Promise<http.Server> {
         resolve(options);
       });
     }
-  }).then<http.Server>((opts) => startWithPort(opts));
+  })
+  .then<http.Server>((opts) => startWithPort(opts))
+  .catch((e) => {
+    console.error('ERROR: Server failed to start:', e);
+    return Promise.reject(e);
+  });
 }
 
 const portInUseMessage = (port: number) => `
@@ -80,9 +103,7 @@ Please choose another port, or let an unused port be chosen automatically.
 
 export function getApp(options: ServerOptions): express.Express {
   const port = options.port;
-  const hostname = options.hostname;
   const root = options.root;
-
   const app = express();
 
   console.log(`Starting Polyserve...
@@ -133,39 +154,13 @@ function openWebPage(url: string, withBrowser?: string) {
   });
 }
 
-function startWithPort(userOptions: ServerOptions) {
-  const options = applyDefaultOptions(userOptions);
-  const app = getApp(options);
-  let server = http.createServer(app);
-  let serverStartedResolve: (r: any) => void;
-  let serverStartedReject: (r: any) => void;
-  const serverStartedPromise = new Promise((resolve, reject) => {
-    serverStartedResolve = resolve;
-    serverStartedReject = reject;
-  });
-
-  server = app.listen(options.port, options.hostname,
-      () => serverStartedResolve(server));
-
-  server.on('error', function(err: any) {
-    if (err.code === 'EADDRINUSE') {
-      console.error(portInUseMessage(options.port));
-    }
-    serverStartedReject(err);
-  });
-
-  const serverUrl = {
-    protocol: 'http',
-    hostname: options.hostname,
-    port: `${options.port}`,
-  };
-  const componentUrl: url.Url = Object.assign({}, serverUrl);
-  componentUrl.pathname = `components/${options.packageName}/`;
-
-  console.log(`Files in this directory are available under the following URLs
-    applications: ${url.format(serverUrl)}
-    reusable components: ${url.format(componentUrl)}`);
-
+/**
+ * Opens a browser
+ * @param options
+ * @param serverUrl
+ * @param componentUrl
+ */
+function openBrowser(options: ServerOptions, serverUrl: Object, componentUrl: url.Url) {
   if (options.open) {
     let openUrl: url.Url;
     if (options.openPath) {
@@ -182,6 +177,166 @@ function startWithPort(userOptions: ServerOptions) {
       });
     }
   }
+}
 
-  return serverStartedPromise;
+/**
+ * Determines whether a protocol requires HTTPS
+ * @param {string} protocol Protocol to evaluate.
+ * @returns {boolean}
+ */
+function isHttps(protocol: string): boolean {
+  return ['https/1.1', 'https', 'h2'].indexOf(protocol) > -1;
+}
+
+/**
+ * Gets the URLs for the main and component pages
+ * @param {ServerOptions} options
+ * @returns {{serverUrl: {protocol: string, hostname: string, port: string}, componentUrl: url.Url}}
+ */
+function getServerUrls(options: ServerOptions) {
+  const serverUrl = {
+    protocol: isHttps(options.protocol) ? 'https' : 'http',
+    hostname: options.hostname,
+    port: `${options.port}`,
+  };
+  const componentUrl: url.Url = Object.assign({}, serverUrl);
+  componentUrl.pathname = `components/${options.packageName}/`;
+  return {serverUrl, componentUrl};
+}
+
+/**
+ * Handles server-ready tasks (prints URLs and opens browser)
+ * @param {ServerOptions} options
+ */
+function handleServerReady(options: ServerOptions) {
+  const urls = getServerUrls(options);
+  console.log(`Files in this directory are available under the following URLs
+    applications: ${url.format(urls.serverUrl)}
+    reusable components: ${url.format(urls.componentUrl)}`);
+  openBrowser(options, urls.serverUrl, urls.componentUrl);
+}
+
+/**
+ * Generates a TLS certificate for HTTPS
+ * @param {string} keyPath path to TLS service key
+ * @param {string} certPath path to TLS certificate
+ * @returns {Promise<{}>} Promise of {serviceKey: string, certificate: string}
+ */
+function createTLSCertificate(keyPath: string, certPath: string) {
+  return new Promise<{}>((resolve, reject) => {
+    console.log('Generating TLS certificate...');
+    pem.createCertificate({days: 1, selfSigned: true}, (err: any, keys: any) => {
+      if (err) {
+        reject(err);
+      } else {
+        Promise.all([
+              fs.writeFile(certPath, keys.certificate),
+              fs.writeFile(keyPath, keys.serviceKey)
+            ])
+            .then(() => resolve(keys));
+      }
+    });
+  });
+}
+
+/**
+ * Gets the current TLS certificate (from current directory)
+ * or generates one if needed
+ * @param {string} keyPath path to TLS service key
+ * @param {string} certPath path to TLS certificate
+ * @returns {Promise<{}>} Promise of {serviceKey: string, certificate: string}
+ */
+function getTLSCertificate(keyPath: string, certPath: string) {
+  let certificate: string;
+  let serviceKey: string;
+
+  const validate = (data: string) => {
+    if (!data) {
+      throw new Error('invalid data');
+    } else {
+      return data;
+    }
+  };
+
+  return Promise.all([
+                    fs.readFile(certPath)
+                      .then((value: Buffer) => value.toString().trim())
+                      .then((data: string) => { certificate = validate(data); }),
+                    fs.readFile(keyPath)
+                      .then((value: Buffer) => value.toString().trim())
+                      .then((data: string) => { serviceKey = validate(data); })
+                  ])
+                  .then(() => ({
+                    certificate: certificate,
+                    serviceKey: serviceKey
+                  }))
+                  .catch(() => createTLSCertificate(keyPath, certPath));
+}
+
+/**
+ * Asserts that Node version is valid for h2 protocol
+ * @param {ServerOptions} options
+ */
+function assertNodeVersion(options: ServerOptions) {
+  if (options.protocol === 'h2') {
+    const matches = /(\d+)\./.exec(process.version);
+    if (matches) {
+      const major = Number(matches[1]);
+      assert(major >= 5, 'h2 requires ALPN which is only supported in node.js >= 5.0');
+    }
+  }
+}
+
+/**
+ * Creates an HTTP(S) server
+ * @param app
+ * @param {ServerOptions} options
+ * @returns {Promise<http.Server>} Promise of server
+ */
+function createServer(app: any, options: ServerOptions): Promise<http.Server> {
+  let p: Promise<http.Server>;
+  if (isHttps(options.protocol)) {
+    p = getTLSCertificate(options.keyPath, options.certPath)
+        .then((keys: any) => {
+          let opt = {
+            spdy: {protocols: [options.protocol]},
+            key: keys.serviceKey,
+            cert: keys.certificate
+          };
+          let server = http.createServer(opt, app);
+          return Promise.resolve(server);
+        });
+  } else {
+    const spdyOptions = {protocols: [options.protocol], plain: true, ssl: false};
+    const server = http.createServer({spdy: spdyOptions}, app);
+    p = Promise.resolve(server);
+  }
+  return p;
+}
+
+/**
+ * Starts an HTTP(S) server on a specific port
+ * @param {ServerOptions} userOptions
+ * @returns {Promise<http.Server>} Promise of server
+ */
+function startWithPort(userOptions: ServerOptions): Promise<http.Server> {
+  const options = applyDefaultOptions(userOptions);
+  const app = getApp(options);
+
+  return createServer(app, options)
+      .then((server) => new Promise<http.Server>((resolve, reject) => {
+          server.listen(options.port, options.hostname, () => {
+            resolve(server);
+            handleServerReady(options);
+          });
+
+          server.on('error', (err: any) => {
+            if (err.code === 'EADDRINUSE') {
+              console.error(portInUseMessage(options.port));
+            }
+            console.warn('rejecting with err', err);
+            reject(err);
+          });
+        })
+      );
 }
