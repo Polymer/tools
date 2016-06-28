@@ -16,6 +16,11 @@
   },
   "main": "lib/plugin.js",
   "scripts": {
+    "lint": "gulp lint",
+    "init": "gulp init",
+    "build": "gulp build",
+    "test": "gulp test",
+    "prepublish": "gulp build-all",
     "postinstall": "node scripts/postinstall.js"
   },
   "wct-plugin": {
@@ -42,21 +47,20 @@
   },
   "devDependencies": {
     "gulp": "^3.8.10",
-    "gulp-jshint": "^2.0.0",
-    "jshint": "^2.9.1",
-    "jshint-stylish": "^2.0.1"
+    "tools-common": "github:rictic/tools-common#0de693a",
+    "typescript": "^1.8.10"
   },
   "dependencies": {
     "chalk": "^1.1.1",
     "cleankill": "^1.0.0",
     "freeport": "^1.0.4",
     "launchpad": "^0.5.0",
-    "lodash": "^3.0.1",
+    "promisify-node": "^0.4.0",
     "selenium-standalone": "^5.0.0",
     "which": "^1.0.8"
   },
   "engines": {
-    "node": ">=0.12"
+    "node": ">=4.0"
   },
   "selenium-version": "2.53.0"
 }
