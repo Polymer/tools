@@ -1,0 +1,9 @@
+# Any changes you make here you should also make in .gitignore
+
+/node_modules/
+/typings/
+
+# Don't exclude /lib/ from npm!
+
+# No point in publishing this to npm.
+/custom_typings/
