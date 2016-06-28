@@ -19,17 +19,17 @@ gulp.task('test1', () => {
 
   // process source files in the project
   let sources = project.sources()
-    .pipe(project.split())
+    .pipe(project.splitHtml())
     // add compilers or optimizers here!
     // TODO(justinfagnani): add in default optimizer passes
-    .pipe(project.rejoin());
+    .pipe(project.rejoinHtml());
 
   // process dependencies
   let dependencies = project.dependencies()
-    .pipe(project.split())
+    .pipe(project.splitHtml())
     // add compilers or optimizers here!
     // TODO(justinfagnani): add in default optimizer passes
-    .pipe(project.rejoin());
+    .pipe(project.rejoinHtml());
 
   // merge the source and dependencies streams to we can analyze the project
   let allFiles = mergeStream(sources, dependencies)
