@@ -14,18 +14,18 @@
  * to cleanly shut down before the process exits.
  */
 
-// TODO(rictic): convert this library to promises.
-
 /**
  * The type of a cleankill interrupt handler.
  */
-export type Handler = (doneHandling: () => void) => void;
+export type Handler = () => Promise<void>;
 
-let interruptHandlers: Handler[] = [];
+const interruptHandlers: Handler[] = [];
 
 /**
- * Register a handler to occur on SIGINT. All handlers are passed a callback,
- * and the process will be terminated once all handlers complete.
+ * Register a handler to occur on SIGINT. The handler must return a promise if
+ * it has any asynchronous work to do. The process will be terminated once
+ * all handlers complete. If a handler throws or the promise it returns rejects
+ * then the process will be terminated immediately.
  */
 export function onInterrupt(handler: Handler): void {
   interruptHandlers.push(handler);
@@ -34,21 +34,13 @@ export function onInterrupt(handler: Handler): void {
 /**
  * Call all interrupt handlers, and call the callback when they all complete.
  *
- * Removes the list of interrupt handlers.
+ * Clears the list of interrupt handlers.
  */
-export function close(done: () => void): void {
-  let numComplete = 0;
-  // You could cheat by calling callbacks multiple times, but that's your bug!
-  let total = interruptHandlers.length;
-  interruptHandlers.forEach((handler) => {
-    handler(() => {
-      numComplete = numComplete + 1;
-      if (numComplete === total) {
-        done();
-      }
-    });
-  });
-  interruptHandlers = [];
+export async function close(): Promise<void> {
+  const promises = interruptHandlers.map((handler) => handler());
+  // Empty the array in place. Looks weird, totally works.
+  interruptHandlers.length = 0;
+  await Promise.all(promises);
 }
 
 let interrupted = false;
@@ -57,22 +49,23 @@ let interrupted = false;
  * Calls all interrupt handlers, then exits with exit code 0.
  *
  * If called more than once it skips waiting for the interrupt handlers to
- * finish and exits with exit code 1.
+ * finish and exits with exit code 1. If there are any errors with interrupt
+ * handlers, the process exits immediately with exit code 2.
  *
  * This function is called when a SIGINT is received.
  */
 export function interrupt(): void {
-  if (interruptHandlers.length === 0) {
-    return process.exit(0);
-  }
   if (interrupted) {
-    console.log('\nKilling process with extreme prejudice');
+    console.log('\nGot multiple interrupts, exiting immediately!');
     return process.exit(1);
-  } else {
-    interrupted = true;
   }
+  interrupted = true;
 
-  close(() => process.exit(0));
+  close().then(() => process.exit(0), (error) => {
+    error = error || 'cleankill interrupt handler failed without a message';
+    console.error(error.stack || error.message || error);
+    process.exit(2);
+  });
   console.log('\nShutting down. Press ctrl-c again to kill immediately.');
 }
 

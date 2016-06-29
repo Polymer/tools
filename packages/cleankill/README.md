@@ -13,16 +13,18 @@ var cleankill = require('cleankill');
 To register a handler:
 
 ```js
-cleankill.onInterrupt(function(done) {
-  // do things.
-  done();
+cleankill.onInterrupt(() => {
+  return new Promise((resolve) => {
+    // do things.
+    resolve();
+  });
 });
 ```
 
 If you wish to shut down any existing handlers (without exiting the process):
 
 ```js
-cleankill.close(function() {
+cleankill.close().then(() => {
   // All handlers have cleaned things up.
 });
 ```

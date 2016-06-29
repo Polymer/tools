@@ -16,5 +16,6 @@
   "devDependencies": {
     "typescript": "^1.8.10"
   },
-  "typings": "./index.d.ts"
+  "typings": "./index.d.ts",
+  "engine": ">=4"
 }
