@@ -62,5 +62,5 @@
   "engines": {
     "node": ">=4.0"
   },
-  "selenium-version": "2.53.0"
+  "selenium-version": "2.53.1"
 }
