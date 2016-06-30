@@ -32,6 +32,19 @@ export function onInterrupt(handler: Handler): void {
 }
 
 /**
+ * Waits for all promises to settle, then rejects with the first error, if any.
+ */
+export async function promiseAllStrict(
+      promises: Promise<any>[]): Promise<void> {
+  let errors = await Promise.all(
+      promises.map((p) => p.then(() => null, (e) => e)));
+  let firstError = errors.find((e) => e != null);
+  if (firstError) {
+    throw firstError;
+  }
+}
+
+/**
  * Call all interrupt handlers, and call the callback when they all complete.
  *
  * Clears the list of interrupt handlers.
@@ -40,7 +53,8 @@ export async function close(): Promise<void> {
   const promises = interruptHandlers.map((handler) => handler());
   // Empty the array in place. Looks weird, totally works.
   interruptHandlers.length = 0;
-  await Promise.all(promises);
+
+  await promiseAllStrict(promises);
 }
 
 let interrupted = false;
