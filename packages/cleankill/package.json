@@ -1,6 +1,6 @@
 {
   "name": "cleankill",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Hook SIGINT and cleanly shut down your async code",
   "homepage": "https://github.com/PolymerLabs/cleankill",
   "bugs": "https://github.com/PolymerLabs/cleankill/issues",
