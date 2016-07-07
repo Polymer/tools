@@ -1,4 +1,5 @@
-var jsdoc = require('hydrolysis').jsdoc;
+var jsdoc = require('../lib/ast-utils/jsdoc.js');
+var expect = require('chai').expect;
 
 describe('jsdoc', function() {
 
