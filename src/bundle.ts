@@ -15,7 +15,7 @@ import {posix as posixPath} from 'path';
 import {Transform} from 'stream';
 import File = require('vinyl');
 import * as logging from 'plylog';
-import urlFromPath from './url-from-path';
+import {urlFromPath} from './path-transformers';
 import {StreamAnalyzer, DepsIndex} from './analyzer';
 import {compose} from './streams';
 
@@ -254,7 +254,7 @@ export class Bundler extends Transform {
   }
 
   _getBundles() {
-    return this.analyzer.analyze.then((indexes) => {
+    return this.analyzer.analyzeDependencies.then((indexes) => {
       let depsToEntrypoints = indexes.depsToFragments;
       let fragmentToDeps = indexes.fragmentToDeps;
       let bundles = new Map<string, string[]>();

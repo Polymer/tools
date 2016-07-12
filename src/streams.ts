@@ -10,6 +10,7 @@
 
 import {PassThrough, Readable, Transform} from 'stream';
 import File = require('vinyl');
+import * as fs from 'fs';
 
 const multipipe = require('multipipe');
 
@@ -41,4 +42,33 @@ export function compose(streams: NodeJS.ReadWriteStream[]) {
   } else {
     return new PassThrough({objectMode: true});
   }
+}
+
+/**
+ * A stream that takes file path strings, and outputs full Vinyl file objects
+ * for the file at each location.
+ */
+export class VinylReaderTransform extends Transform {
+
+  constructor() {
+    super({ objectMode: true });
+  }
+
+  _transform(
+    filePath: string,
+    encoding: string,
+    callback: (error?: Error, data?: File) => void
+  ): void {
+    fs.readFile(filePath, (err?: Error, data?: Buffer) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+      callback(null, new File({
+        path: filePath,
+        contents: data
+      }));
+    });
+  }
+
 }

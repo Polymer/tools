@@ -9,25 +9,31 @@
  */
 
 import * as fs from 'fs';
-import {Analyzer, Deferred, Loader, Resolver, DocumentDescriptor} from 'hydrolysis';
-import {posix as posixPath} from 'path';
-import * as osPath from 'path';
-import {Transform} from 'stream';
+import {Analyzer, Deferred, Loader, Resolver, DocumentDescriptor}
+  from 'hydrolysis';
+import * as path from 'path';
+import {PassThrough, Transform} from 'stream';
 import File = require('vinyl');
 import {parse as parseUrl} from 'url';
 import * as logging from 'plylog';
 import {Node, queryAll, predicates, getAttribute} from 'dom5';
 
-import {FileCB} from './streams';
-import urlFromPath from './url-from-path';
+import {FileCB, VinylReaderTransform} from './streams';
+import {urlFromPath, pathFromUrl} from './path-transformers';
+import {DocumentDeps, getDependenciesFromDocument}
+  from './get-dependencies-from-document';
 
 const minimatchAll = require('minimatch-all');
 const logger = logging.getLogger('cli.build.analyzer');
 
-export interface DocumentDeps {
-  imports?: Array<string>;
-  scripts?: Array<string>;
-  styles?: Array<string>;
+export interface DepsIndex {
+  // An index of dependency -> fragments that depend on it
+  depsToFragments: Map<string, string[]>;
+  // TODO(garlicnation): Remove this map.
+  // An index of fragments -> html dependencies
+  fragmentToDeps: Map<string, string[]>;
+  // A map from frament urls to html, js, and css dependencies.
+  fragmentToFullDeps: Map<string, DocumentDeps>;
 }
 
 export class StreamAnalyzer extends Transform {
@@ -37,33 +43,45 @@ export class StreamAnalyzer extends Transform {
   shell: string;
   fragments: string[];
   allFragments: string[];
+  sourceGlobs: string[];
 
   resolver: StreamResolver;
   loader: Loader;
   analyzer: Analyzer;
 
+  _dependenciesStream = new PassThrough({ objectMode: true });
+  _dependenciesProcessingStream = new VinylReaderTransform();
+
   files = new Map<string, File>();
+  allFragmentsToAnalyze: Set<string>;
+  foundDependencies = new Set<string>();
 
-  _analyzeResolve: (index: DepsIndex) => void;
-  analyze: Promise<DepsIndex>;
+  analyzeDependencies: Promise<DepsIndex>;
+  _dependencyAnalysis: DepsIndex = {
+    depsToFragments: new Map(),
+    fragmentToDeps: new Map(),
+    fragmentToFullDeps: new Map()
+  };
+  _resolveDependencyAnalysis: (index: DepsIndex) => void;
 
-  constructor(root: string, entrypoint: string, shell: string, fragments: string[]) {
+  constructor(root: string, entrypoint: string, shell: string,
+      fragments: string[], sourceGlobs: string[]) {
     super({objectMode: true});
+
     this.root = root;
     this.entrypoint = entrypoint;
     this.shell = shell;
     this.fragments = fragments;
-
+    this.sourceGlobs = sourceGlobs;
     this.allFragments = [];
+
     // It's important that shell is first for document-ordering of imports
     if (shell) {
       this.allFragments.push(shell);
     }
-
     if (entrypoint && !shell && fragments.length === 0) {
       this.allFragments.push(entrypoint);
     }
-
     if (fragments) {
       this.allFragments = this.allFragments.concat(fragments);
     }
@@ -72,37 +90,83 @@ export class StreamAnalyzer extends Transform {
     this.loader = new Loader();
     this.loader.addResolver(this.resolver);
     this.analyzer = new Analyzer(false, this.loader);
-    this.analyze = new Promise((resolve, reject) => {
-      this._analyzeResolve = resolve;
+
+    // Connect the dependencies stream that the analyzer pushes into to the
+    // processing stream which loads each file and attaches the file contents.
+    this._dependenciesStream.pipe(this._dependenciesProcessingStream);
+
+    this.allFragmentsToAnalyze = new Set(this.allFragments);
+    this.analyzeDependencies = new Promise((resolve, reject) => {
+      this._resolveDependencyAnalysis = resolve;
     });
   }
 
+  /**
+   * The source dependency stream that Analyzer pushes discovered dependencies
+   * into is connected to the post-processing stream. We want consumers to only
+   * use the post-processed data so that all file objects have contents
+   * loaded by default. This also makes Analyzer easier for us to test.
+   */
+  get dependencies(): Transform {
+    return this._dependenciesProcessingStream;
+  }
+
   _transform(file: File, encoding: string, callback: FileCB): void {
+    let filePath = file.path;
+    let fileUrl = urlFromPath(this.root, file.path);
     this.addFile(file);
 
-    // If this is the entrypoint, hold on to the file, so that it's fully
-    // analyzed by the time down-stream transforms see it.
+    // If our resolver is waiting for this file, resolve its deferred loader
+    if (this.resolver.hasDeferredFile(fileUrl)) {
+      this.resolver.resolveDeferredFile(fileUrl, file);
+    }
+
+    // Propagate the file so that the stream can continue
+    callback(null, file);
+
+    // If the file is a fragment, begin analysis on its dependencies
     if (this.isFragment(file)) {
-      callback(null, null);
-    } else {
-      callback(null, file);
+      this._getDependencies(urlFromPath(this.root, filePath))
+        .then((deps: DocumentDeps) => {
+          // Add all found dependencies to our index
+          this._addDependencies(filePath, deps);
+          this.allFragmentsToAnalyze.delete(filePath);
+          // If there are no more fragments to analyze, close the dependency stream
+          if (this.allFragmentsToAnalyze.size === 0) {
+            this._dependenciesStream.end();
+          }
+        });
     }
   }
 
   _flush(done: (error?: any) => void) {
-    this._getDepsToEntrypointIndex().then((depsIndex) => {
-      // push held back files
-      for (let fragment of this.allFragments) {
-        let url = urlFromPath(this.root, fragment);
-        let file = this.getUrl(url);
-        if (file == null) {
-          done(new Error(`no file found for fragment ${fragment}`));
-        }
-        this.push(file);
+    // If stream finished with files that still needed to be loaded, error out
+    if (this.resolver.hasDeferredFiles()) {
+      for (let fileUrl of this.resolver.deferredFiles.keys()) {
+        logger.error(`${fileUrl} never loaded`);
       }
-      this._analyzeResolve(depsIndex);
-      done();
-    });
+      done(new Error(`${this.resolver.deferredFiles.size} deferred files were never loaded`));
+      return;
+    }
+    // Resolve our dependency analysis promise now that we have seen all files
+    this._resolveDependencyAnalysis(this._dependencyAnalysis);
+    done();
+  }
+
+  getFile(filepath: string): File {
+    let url = urlFromPath(this.root, filepath);
+    return this.getFileByUrl(url);
+  }
+
+  getFileByUrl(url: string): File {
+    if (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+    return this.files.get(url);
+  }
+
+  isFragment(file: File): boolean {
+    return this.allFragments.indexOf(file.path) !== -1;
   }
 
   /**
@@ -115,156 +179,87 @@ export class StreamAnalyzer extends Transform {
     logger.debug(`addFile: ${file.path}`);
     // Badly-behaved upstream transformers (looking at you gulp-html-minifier)
     // may use posix path separators on Windows.
-    let filepath = osPath.normalize(file.path);
+    let filepath = path.normalize(file.path);
     // Store only root-relative paths, in URL/posix format
     this.files.set(urlFromPath(this.root, filepath), file);
   }
 
-  getFile(filepath: string): File {
-    return this.getUrl(urlFromPath(this.root, filepath));
-  }
-
-  getUrl(url: string): File {
-    if (url.startsWith('/')) {
-      url = url.substring(1);
-    }
-    let file = this.files.get(url);
-    if (!file) {
-      logger.debug(`no file for ${url} :(`);
-      logger.debug(Array.from(this.files.values()).join(', '));
-      try {
-        throw new Error();
-      } catch (e) {
-        logger.error(e.stack);
-      }
-    }
-    return file;
-  }
-
-  isFragment(file: File): boolean {
-    return this.allFragments.indexOf(file.path) !== -1;
-  }
-
-  _getDepsToEntrypointIndex(): Promise<DepsIndex> {
-    let depsPromises = <Promise<DepsIndex>[]>this.allFragments.map((f) =>
-        this._getDependencies(urlFromPath(this.root, f)));
-
-    return Promise.all(depsPromises).then((value: any) => {
-      // tsc was giving a spurious error with `allDeps` as the parameter
-      let allDeps: DocumentDeps[] = <DocumentDeps[]>value;
-
-      // An index of dependency -> fragments that depend on it
-      let depsToFragments = new Map<string, string[]>();
-
-      // An index of fragments -> dependencies
-      let fragmentToDeps = new Map<string, string[]>();
-
-      let fragmentToFullDeps = new Map<string, DocumentDeps>();
-
-      console.assert(this.allFragments.length === allDeps.length);
-
-      for (let i = 0; i < allDeps.length; i++) {
-        let fragment = this.allFragments[i];
-        let deps: DocumentDeps = allDeps[i];
-        console.assert(deps != null, `deps is null for ${fragment}`);
-
-        fragmentToDeps.set(fragment, deps.imports);
-        fragmentToFullDeps.set(fragment, deps);
-
-        for (let dep of deps.imports) {
-          let entrypointList: string[];
-          if (!depsToFragments.has(dep)) {
-            entrypointList = [];
-            depsToFragments.set(dep, entrypointList);
-          } else {
-            entrypointList = depsToFragments.get(dep);
-          }
-          entrypointList.push(fragment);
-        }
-      }
-      return {
-        depsToFragments,
-        fragmentToDeps,
-        fragmentToFullDeps,
-      };
-    });
-  }
   /**
    * Attempts to retreive document-order transitive dependencies for `url`.
    */
   _getDependencies(url: string): Promise<DocumentDeps> {
-    let dir = posixPath.dirname(url);
+    let dir = path.posix.dirname(url);
     return this.analyzer.metadataTree(url)
-        .then((tree) => this._getDependenciesFromDescriptor(tree, dir));
+        .then((tree) => getDependenciesFromDocument(tree, dir));
   }
 
-  _getDependenciesFromDescriptor(descriptor: DocumentDescriptor, dir: string): DocumentDeps {
-    let allHtmlDeps: string[] = [];
-    let allScriptDeps = new Set<string>();
-    let allStyleDeps = new Set<string>();
-
-    let deps: DocumentDeps = this._collectScriptsAndStyles(descriptor);
-    deps.scripts.forEach((s) => allScriptDeps.add(posixPath.resolve(dir, s)));
-    deps.styles.forEach((s) => allStyleDeps.add(posixPath.resolve(dir, s)));
-    if (descriptor.imports) {
-      let queue = descriptor.imports.slice();
-      while (queue.length > 0) {
-        let next = queue.shift();
-        if (!next.href) {
-          continue;
-        }
-        allHtmlDeps.push(next.href);
-        let childDeps = this._getDependenciesFromDescriptor(next, posixPath.dirname(next.href));
-        allHtmlDeps = allHtmlDeps.concat(childDeps.imports);
-        childDeps.scripts.forEach((s) => allScriptDeps.add(s));
-        childDeps.styles.forEach((s) => allStyleDeps.add(s));
-      }
+  _addDependencies(filePath: string, deps: DocumentDeps) {
+    // Make sure function is being called properly
+    if (!this.allFragmentsToAnalyze.has(filePath)) {
+      throw new Error(`Dependency analysis incorrectly called for ${filePath}`);
     }
 
-    return {
-      scripts: Array.from(allScriptDeps),
-      styles: Array.from(allStyleDeps),
-      imports: allHtmlDeps,
-    };
+    // Add dependencies to _dependencyAnalysis object, and push them through
+    // the dependency stream.
+    this._dependencyAnalysis.fragmentToFullDeps.set(filePath, deps);
+    this._dependencyAnalysis.fragmentToDeps.set(filePath, deps.imports);
+    deps.scripts.forEach((url) => this.pushDependency(url));
+    deps.styles.forEach((url) => this.pushDependency(url));
+    deps.imports.forEach((url) => {
+      this.pushDependency(url);
+
+      let entrypointList: string[] = this._dependencyAnalysis.depsToFragments.get(url);
+      if (entrypointList) {
+        entrypointList.push(filePath);
+      } else {
+        this._dependencyAnalysis.depsToFragments.set(url, [filePath]);
+      }
+    });
   }
 
-  _collectScriptsAndStyles(tree: DocumentDescriptor): DocumentDeps {
-    let scripts: string[] = [];
-    let styles: string[] = [];
-    tree.html.script.forEach((script: Node) => {
-      // TODO(justinfagnani): stop patching Nodes in Hydrolysis
-      let __hydrolysisInlined = (<any>script).__hydrolysisInlined;
-      if (__hydrolysisInlined) {
-        scripts.push(__hydrolysisInlined);
-      }
-    });
-    tree.html.style.forEach((style: Node) => {
-      let href = getAttribute(style, 'href');
-      if (href) {
-        styles.push(href);
-      }
-    });
-    return {
-      scripts,
-      styles
-    };
+  /**
+   * Process the given dependency before pushing it through the stream.
+   * Each dependency is only pushed through once to avoid duplicates.
+   */
+  pushDependency(dependencyUrl: string) {
+    if (this.getFileByUrl(dependencyUrl)) {
+      logger.debug('dependency has already been pushed, ignoring...', {dep: dependencyUrl});
+      return;
+    }
+
+    let dependencyFilePath = pathFromUrl(this.root, dependencyUrl);
+    if (minimatchAll(dependencyFilePath, this.sourceGlobs)) {
+      logger.debug('dependency is a source file, ignoring...', {dep: dependencyUrl});
+      return;
+    }
+
+    logger.debug('new dependency found, pushing into dependency stream...', dependencyFilePath);
+    this._dependenciesStream.push(dependencyFilePath);
   }
 }
 
-export interface DepsIndex {
-  depsToFragments: Map<string, string[]>;
-  // TODO(garlicnation): Remove this map.
-  // A legacy map from framents to html dependencies.
-  fragmentToDeps: Map<string, string[]>;
-  // A map from frament urls to html, js, and css dependencies.
-  fragmentToFullDeps: Map<string, DocumentDeps>;
-}
 
 class StreamResolver implements Resolver {
+
   analyzer: StreamAnalyzer;
+  deferredFiles = new Map<string, Deferred<string>>();
 
   constructor(analyzer: StreamAnalyzer) {
     this.analyzer = analyzer;
+  }
+
+  hasDeferredFile(url: string): boolean {
+    return this.deferredFiles.has(url);
+  }
+
+  hasDeferredFiles(): boolean {
+    return this.deferredFiles.size > 0;
+  }
+
+  resolveDeferredFile(url: string, file: File): void {
+    let deferred = this.deferredFiles.get(url);
+    deferred.resolve(file.contents.toString());
+    this.deferredFiles.delete(url);
   }
 
   accept(url: string, deferred: Deferred<string>): boolean {
@@ -276,17 +271,15 @@ class StreamResolver implements Resolver {
     }
 
     let urlPath = decodeURIComponent(urlObject.pathname);
-    let file = this.analyzer.getUrl(urlPath);
+    let file = this.analyzer.getFileByUrl(urlPath);
 
     if (file) {
       deferred.resolve(file.contents.toString());
     } else {
-      logger.debug(`No file found for ${urlPath}`);
-      // If you're template to do the next line, Loader does that for us, so
-      // don't double reject!
-      // deferred.reject(new Error(`No file found for ${urlPath}`));
-      return false;
+      this.analyzer.pushDependency(urlPath);
+      this.deferredFiles.set(urlPath, deferred);
     }
+
     return true;
   }
 }

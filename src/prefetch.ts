@@ -116,7 +116,7 @@ export class PrefetchTransform extends Transform {
     if (this.fileMap.size === 0) {
       return done();
     }
-    this.analyzer.analyze.then((depsIndex: DepsIndex) => {
+    this.analyzer.analyzeDependencies.then((depsIndex: DepsIndex) => {
       let fragmentToDeps = new Map(depsIndex.fragmentToDeps);
 
       if (this.entrypoint && this.shell) {

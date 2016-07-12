@@ -38,7 +38,7 @@
 
 import * as path from 'path';
 
-export default function urlFromPath(root: string, filepath: string) {
+export function urlFromPath(root: string, filepath: string) {
   if (!filepath.startsWith(root)) {
     throw new Error(`file path is not in root: ${filepath} (${root})`);
   }
@@ -53,4 +53,19 @@ export default function urlFromPath(root: string, filepath: string) {
 
   // Otherwise, just return the relative path between the two
   return path.relative(root, filepath);
+}
+
+export function pathFromUrl(root: string, url: string) {
+  let isPlatformWin = /^win/.test(process.platform);
+  let filepath: string;
+
+  // On windows systems, convert URL to filesystem path by replacing slashes
+  if (isPlatformWin) {
+    filepath = url.replace(/\//g, '\\');
+  } else {
+    filepath = url;
+  }
+
+  // Otherwise, just return the relative path between the two
+  return path.join(root, url);
 }
