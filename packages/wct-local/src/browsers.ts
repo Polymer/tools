@@ -72,9 +72,9 @@ export async function expand(names: string[]): Promise<wd.Capabilities[]> {
 /**
  * Detects any locally installed browsers that we support.
  *
- * Exported for testabilty in wct.
+ * Exported and declared as `let` variables for testabilty in wct.
  */
-export async function detect(): Promise<{[browser: string]: wd.Capabilities}> {
+export let detect = async function detect(): Promise<{[browser: string]: wd.Capabilities}> {
   const launcher = await promisify(launchpad.local)();
   const browsers = await promisify(launcher.browsers)();
 
@@ -86,18 +86,18 @@ export async function detect(): Promise<{[browser: string]: wd.Capabilities}> {
   }
 
   return results;
-}
+};
 
 /**
- * Exported for testabilty in wct.
+ * Exported and declared as `let` variables for testabilty in wct.
  *
  * @return A list of local browser names that are supported by
  *     the current environment.
  */
-export function supported(): string[] {
+export let supported = function supported(): string[] {
   return Object.keys(launchpad.local.platform).filter(
       (key) => key in LAUNCHPAD_TO_SELENIUM);
-}
+};
 
 // Launchpad -> Selenium
 
