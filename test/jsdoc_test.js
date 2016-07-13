@@ -1,3 +1,15 @@
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+
+"use strict";
+
 var jsdoc;
 
 try {
@@ -15,11 +27,11 @@ try {
   // `expect` is magically provided by wct, yay!
 }
 
-describe('jsdoc', function() {
+suite('jsdoc', function() {
 
-  describe('.parseJsdoc', function() {
+  suite('.parseJsdoc', function() {
 
-    it('parses single-line', function() {
+    test('parses single-line', function() {
       var parsed = jsdoc.parseJsdoc('* Just some text');
       expect(parsed).to.deep.eq({
         description: 'Just some text',
@@ -27,7 +39,7 @@ describe('jsdoc', function() {
       });
     });
 
-    it('parses body-only', function() {
+    test('parses body-only', function() {
       var parsed = jsdoc.parseJsdoc('* Just some text\n* in multiple lines.');
       expect(parsed).to.deep.eq({
         description: 'Just some text\nin multiple lines.',
@@ -35,7 +47,7 @@ describe('jsdoc', function() {
       });
     });
 
-    it('parses tag-only', function() {
+    test('parses tag-only', function() {
       var parsed = jsdoc.parseJsdoc('* @atag');
       expect(parsed).to.deep.eq({
         description: '',
@@ -45,7 +57,7 @@ describe('jsdoc', function() {
       });
     });
 
-    it('parses tag-name', function() {
+    test('parses tag-name', function() {
       var parsed = jsdoc.parseJsdoc('* @do stuff');
       expect(parsed).to.deep.eq({
         description: '',
@@ -55,7 +67,7 @@ describe('jsdoc', function() {
       });
     });
 
-    it('parses tag-desc', function() {
+    test('parses tag-desc', function() {
       var parsed = jsdoc.parseJsdoc('* @do a thing');
       expect(parsed).to.deep.eq({
         description: '',
@@ -65,7 +77,7 @@ describe('jsdoc', function() {
       });
     });
 
-    it('parses param type', function() {
+    test('parses param type', function() {
       var parsed = jsdoc.parseJsdoc('* @param {Type} name desc desc');
       expect(parsed).to.deep.eq({
         description: '',
@@ -75,12 +87,12 @@ describe('jsdoc', function() {
       });
     });
 
-    it('preserves indentation for the body', function() {
+    test('preserves indentation for the body', function() {
       var parsed = jsdoc.parseJsdoc('*     The desc.\n*     thing');
       expect(parsed.description).to.deep.eq('    The desc.\n    thing');
     });
 
-    it('handles empty lines', function() {
+    test('handles empty lines', function() {
       var parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
       expect(parsed.description).to.eq('\n\nFoo\n\nBar');
     });
