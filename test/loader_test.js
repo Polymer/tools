@@ -8,41 +8,47 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+"use strict";
+
 // jshint node:true
-var assert = require('chai').assert;
-var path = require('path');
+const assert = require('chai').assert;
+const path = require('path');
+
+const FileLoader = require('../src/loader/file-loader.js').FileLoader;
+const FSResolver = require('../src/loader/fs-resolver.js').FSResolver;
+const NoopResolver = require('../src/loader/noop-resolver.js').NoopResolver;
+const RedirectResolver = require('../src/loader/redirect-resolver.js').RedirectResolver;
 
 suite('Loader', function() {
-  var loader = require('../lib/loader/file-loader.js').FileLoader;
-  var l;
+  let loader;
 
   setup(function() {
-    l = new loader();
+    loader = new FileLoader();
   });
 
   test('api', function() {
-    assert.ok(l.addResolver);
-    assert.ok(l.request);
-    assert.ok(l.requests);
+    assert.ok(loader.addResolver);
+    assert.ok(loader.request);
+    assert.ok(loader.requests);
   });
 
   test('request returns a promise', function() {
     if (!global.Promise) {
       return;
     }
-    var p = l.request('/');
+    var p = loader.request('/');
     assert.instanceOf(p, Promise);
   });
 
   test('request promises are deduplicated', function() {
-    var p = l.request('/');
-    var p2 = l.request('/');
+    var p = loader.request('/');
+    var p2 = loader.request('/');
     assert.equal(p, p2);
-    assert.equal(Object.keys(l.requests).length, 1);
+    assert.equal(Object.keys(loader.requests).length, 1);
   });
 
   test('Null Resolver', function(done) {
-    l.request('/').then(function() {
+    loader.request('/').then(function() {
       throw 'should not get here';
     }, function(err) {
       assert.include(err.message, 'no resolver found');
@@ -51,7 +57,6 @@ suite('Loader', function() {
   });
 
   suite('redirect resolver', function(){
-    var RedirectResolver = require('../lib/loader/redirect-resolver.js').RedirectResolver;
 
     test('redirects to the fs', function(done) {
       var redirect = new RedirectResolver.ProtocolRedirect({
@@ -64,91 +69,89 @@ suite('Loader', function() {
         root: path.join(__dirname, '..'),
         redirects: [redirect]
       });
-      l.addResolver(resolver);
-      l.request('chrome://settings/static/xhr-text.txt').then(function(content){
+      loader.addResolver(resolver);
+      loader.request('chrome://settings/static/xhr-text.txt').then(function(content){
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
   });
 
   suite('Filesystem Resolver', function() {
-    var fsResolver = require('../lib/loader/fs-resolver.js').FSResolver;
 
     test('fs api', function() {
-      var fs = new fsResolver({});
+      var fs = new FSResolver({});
       assert.ok(fs.accept);
     });
 
     test('absolute url', function(done) {
-      var fs = new fsResolver({
+      var fs = new FSResolver({
         root: path.join(__dirname, '..')
       });
-      l.addResolver(fs);
-      l.request('/test/static/xhr-text.txt').then(function(content) {
+      loader.addResolver(fs);
+      loader.request('/test/static/xhr-text.txt').then(function(content) {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
 
     test('host', function(done) {
-      var fs = new fsResolver({
+      var fs = new FSResolver({
         host: 'www.example.com',
         root: path.join(__dirname, '..')
       });
-      l.addResolver(fs);
-      l.request('http://www.example.com/test/static/xhr-text.txt').then(function(content) {
+      loader.addResolver(fs);
+      loader.request('http://www.example.com/test/static/xhr-text.txt').then(function(content) {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
 
     test('basepath', function(done) {
-      var fs = new fsResolver({
+      var fs = new FSResolver({
         host: 'www.example.com',
         basePath: '/components'
       });
 
-      l.addResolver(fs);
-      l.request('http://www.example.com/components/test/static/xhr-text.txt').then(function(content) {
+      loader.addResolver(fs);
+      loader.request('http://www.example.com/components/test/static/xhr-text.txt').then(function(content) {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
 
     test('root', function(done) {
-      var fs = new fsResolver({
+      var fs = new FSResolver({
         host: 'www.example.com',
         basePath: '/components',
         root: 'test/static/'
       });
 
-      l.addResolver(fs);
-      l.request('http://www.example.com/components/xhr-text.txt').then(function(content) {
+      loader.addResolver(fs);
+      loader.request('http://www.example.com/components/xhr-text.txt').then(function(content) {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
 
     test('Spaces in Filepath', function(done) {
-      var fs = new fsResolver({
+      var fs = new FSResolver({
         root: path.join(__dirname, '..')
       });
-      l.addResolver(fs);
-      l.request('/test/static/spaces%20in%20request.txt').then(function(content) {
+      loader.addResolver(fs);
+      loader.request('/test/static/spaces%20in%20request.txt').then(function(content) {
         assert.equal(content.trim(), 'Spaces!');
       }).then(done, done);
     });
 
     test('Spaces in Filepath', function(done) {
-      var fs = new fsResolver({
+      var fs = new FSResolver({
         root: path.join(__dirname, '..'),
         basePath: '/space%20in%20basePath'
       });
-      l.addResolver(fs);
-      l.request('/space%20in%20basePath/test/static/xhr-text.txt').then(function(content) {
+      loader.addResolver(fs);
+      loader.request('/space%20in%20basePath/test/static/xhr-text.txt').then(function(content) {
         assert.equal(content.trim(), 'Hello!');
       }).then(done, done);
     });
   });
 
   suite('Noop Resolver', function() {
-    var NoopResolver = require('../lib/loader/noop-resolver.js').NoopResolver;
 
     test('loader api', function() {
       var noop = new NoopResolver();
@@ -169,8 +172,8 @@ suite('Loader', function() {
 
     test('returns empty string for accepted urls', function(done) {
       var noop = new NoopResolver(/./);
-      l.addResolver(noop);
-      l.request('anything').then(function(content) {
+      loader.addResolver(noop);
+      loader.request('anything').then(function(content) {
         assert.equal('', content);
       }).then(done, done);
     });
