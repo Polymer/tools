@@ -16,7 +16,7 @@ suite('Loader', function() {
   var loader = require('../lib/loader/file-loader.js').FileLoader;
   var l;
 
-  beforeEach(function() {
+  setup(function() {
     l = new loader();
   });
 
