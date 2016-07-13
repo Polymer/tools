@@ -21,7 +21,7 @@ import {StringResolver} from './loader/string-resolver';
 import {FSResolver} from './loader/fs-resolver';
 import {XHRResolver} from './loader/xhr-resolver';
 import {ErrorSwallowingFSResolver} from './loader/error-swallowing-fs-resolver';
-import {Descriptor, ElementDescriptor, FeatureDescriptor, BehaviorDescriptor} from './ast-utils/descriptors';
+import {Descriptor, ElementDescriptor, FeatureDescriptor, BehaviorDescriptor} from './ast/ast';
 
 import {AnalyzedDocument} from './analyzed-document';
 

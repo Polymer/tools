@@ -18,7 +18,7 @@ import * as astValue from './ast-value';
 import * as estree from 'estree';
 import {Visitor} from './fluent-traverse';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
-import {BehaviorDescriptor, LiteralValue} from './descriptors';
+import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
 
 interface KeyFunc<T> {
   (value: T): any;
@@ -128,13 +128,13 @@ export function behaviorFinder() {
     // Polymer.IronMultiSelectableBehavior = [ {....}, Polymer.IronSelectableBehavior]
     // We add these to behaviors array
     var expression = behaviorExpression(node);
-    var chained:LiteralValue[] = [];
+    var chained: BehaviorOrName[] = [];
     if (expression && expression.type === 'ArrayExpression') {
       const arrExpr = <estree.ArrayExpression>expression;
       for (var i=0; i < arrExpr.elements.length; i++) {
         if (arrExpr.elements[i].type === 'MemberExpression' ||
             arrExpr.elements[i].type === 'Identifier') {
-          chained.push(astValue.expressionToValue(arrExpr.elements[i]));
+          chained.push(<BehaviorOrName>astValue.expressionToValue(arrExpr.elements[i]));
         }
       }
       if (chained.length > 0)

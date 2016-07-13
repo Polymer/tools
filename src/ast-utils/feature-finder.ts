@@ -12,7 +12,7 @@
 
 import * as estraverse from 'estraverse';
 import * as esutil from './esutil';
-import {FeatureDescriptor} from './descriptors';
+import {FeatureDescriptor} from '../ast/ast';
 import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
 

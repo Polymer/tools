@@ -13,7 +13,7 @@
 import * as esutil from './esutil';
 import * as astValue from './ast-value';
 import * as estree from 'estree';
-import {PropertyDescriptor} from './descriptors';
+import {PropertyDescriptor} from '../ast/ast';
 
 export function analyzeProperties(node:estree.Node) {
 

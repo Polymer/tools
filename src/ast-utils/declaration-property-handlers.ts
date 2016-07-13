@@ -11,7 +11,7 @@
 'use strict';
 
 import * as astValue from './ast-value';
-import {PropertyDescriptor, ElementDescriptor} from './descriptors';
+import {PropertyDescriptor, ElementDescriptor, BehaviorOrName} from '../ast/ast';
 import {analyzeProperties} from './analyze-properties';
 import * as estree from 'estree';
 
@@ -48,7 +48,7 @@ export function declarationPropertyHandlers(declaration:ElementDescriptor): Prop
         if (v === undefined) {
           v = astValue.CANT_CONVERT;
         }
-        declaration.behaviors.push(v);
+        declaration.behaviors.push(<BehaviorOrName>v);
       }
     },
     observers: function(node: estree.Node) {

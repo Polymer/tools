@@ -11,7 +11,7 @@
 'use strict';
 
 import * as estree from 'estree';
-import {LiteralValue} from './descriptors';
+import {LiteralValue} from '../ast/ast';
 
 // useful tool to visualize AST: http://esprima.org/demo/parse.html
 

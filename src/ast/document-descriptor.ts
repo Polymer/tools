@@ -1,3 +1,11 @@
+import * as estree from 'estree';
+import * as dom5 from 'dom5';
+
+import {ParsedImport} from '../ast-utils/import-parse';
+
+import {ElementDescriptor} from './element-descriptor';
+import {FeatureDescriptor} from './feature-descriptor';
+import {BehaviorDescriptor} from './behavior-descriptor';
 
 /**
  * The metadata for all features and elements defined in one document
