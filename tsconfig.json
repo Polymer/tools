@@ -7,7 +7,8 @@
         "noImplicitAny": true,
         "removeComments": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "./lib"
     },
     "filesGlob": [
         "src/analyzer.ts",
@@ -25,7 +26,6 @@
         "src/ast-utils/ast-value.ts",
         "src/ast-utils/behavior-finder.ts",
         "src/ast-utils/declaration-property-handlers.ts",
-        "src/ast-utils/descriptors.ts",
         "src/ast-utils/docs.ts",
         "src/ast-utils/element-finder.ts",
         "src/ast-utils/esutil.ts",
@@ -34,7 +34,14 @@
         "src/ast-utils/import-parse.ts",
         "src/ast-utils/js-parse.ts",
         "src/ast-utils/jsdoc.ts",
-        "src/ast/document-descriptor.ts",
+        "src/ast/ast.ts",
+        "src/ast/behavior-descriptor.ts",
+        "src/ast/descriptor.ts",
+        "src/ast/element-descriptor.ts",
+        "src/ast/event-descriptor.ts",
+        "src/ast/feature-descriptor.ts",
+        "src/ast/function-descriptor.ts",
+        "src/ast/property-descriptor.ts",
         "src/loader/error-swallowing-fs-resolver.ts",
         "src/loader/file-loader.ts",
         "src/loader/fs-resolver.ts",
