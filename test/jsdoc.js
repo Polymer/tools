@@ -1,5 +1,19 @@
-var jsdoc = require('../lib/ast-utils/jsdoc.js');
-var expect = require('chai').expect;
+var jsdoc;
+
+try {
+  // in browserify
+  jsdoc = require('hydrolysis').jsdoc;
+} catch (e) {
+  // in node
+  jsdoc = require('../lib/ast-utils/jsdoc.js');
+}
+
+try {
+  // we're in node, we need to explicity require `expect`
+  var expect = require('chai').expect;
+} catch (e) {
+  // `expect` is magically provided by wct, yay!
+}
 
 describe('jsdoc', function() {
 
