@@ -43,6 +43,7 @@
     "web-component-tester": "^4.2.2"
   },
   "dependencies": {
+    "acorn": "^3.2.0",
     "babel-polyfill": "^6.2.0",
     "doctrine": "^0.7.0",
     "dom5": "^1.1.0",
