@@ -1,0 +1,302 @@
+"use strict";
+
+const path = require('path');
+const hyd = require('..');
+const assert = require('chai').assert;
+
+suite('js-parser', () => {
+
+  let loader;
+
+  suiteSetup(() => {
+    loader = new hyd.Loader();
+    let resolver = new hyd.FSResolver({
+      root: path.join(__dirname),
+    });
+    loader.addResolver(resolver);
+  });
+
+  suite('ES6 support', function() {
+
+    test('parses classes', function(done) {
+      loader.request("static/es6-support.js")
+        .then(function(content) {
+          var parsed = hyd._jsParse(content);
+          assert.equal(parsed.elements.length, 2);
+          assert.equal(parsed.elements[0].behaviors.length, 2);
+          assert.equal(parsed.elements[0].behaviors[0], 'Behavior1');
+          assert.equal(parsed.elements[0].behaviors[1], 'Behavior2');
+          assert.equal(parsed.elements[0].is, 'test-seed');
+          assert.equal(parsed.elements[0].observers.length, 2);
+          assert.equal(parsed.elements[0].properties.length, 4);
+          assert.equal(parsed.elements[0].events.length, 1);
+          done();
+        }).catch(function(e) {
+          done(e);
+        });
+    });
+
+    test('parses 1 classe', function(done) {
+      loader.request("static/es6-support-simple.js")
+        .then(function(content) {
+          var parsed = hyd._jsParse(content);
+          assert.equal(parsed.elements.length, 1);
+          assert.equal(parsed.elements[0].behaviors.length, 2);
+          assert.equal(parsed.elements[0].behaviors[0], 'Behavior1');
+          assert.equal(parsed.elements[0].behaviors[1], 'Behavior2');
+          assert.equal(parsed.elements[0].is, 'test-seed');
+          assert.equal(parsed.elements[0].observers.length, 2);
+          assert.equal(parsed.elements[0].properties.length, 4);
+          assert.equal(parsed.elements[0].events.length, 1);
+          done();
+        }).catch(function(e) {
+          done(e);
+        });
+    });
+  });
+
+  suite('parser throws errors', function() {
+    /*
+     * Two js documents, one with an error and one with a module
+     * declaration.
+     */
+    var parseError;
+    setup(function(done) {
+      loader.request("static/js-parse-error.js").then(function(content){
+        parseError = content;
+        done();
+      });
+    });
+
+    test('js syntax error', function() {
+      try {
+        hyd._jsParse(parseError);
+      } catch (err) {
+        assert.equal(err.lineNumber, 17);
+        return;
+      }
+      assert.fail();
+    });
+  });
+
+  suite('Polymer.Base._addFeature', function() {
+
+    var parsed;
+
+    suiteSetup(function(done) {
+      console.log('setup')
+      loader.request("static/js-polymer-features.js").then(function(content) {
+        parsed = hyd._jsParse(content);
+        done();
+      });
+    });
+
+    test('finds calls to Polymer.Base._addFeature, in order', function() {
+      assert.equal(parsed.features.length, 2);
+      assert.equal(parsed.features[0].properties.length, 6);
+      assert.equal(parsed.features[1].properties.length, 1);
+    });
+
+    test('detects property types, in Closure notation', function() {
+      var properties = parsed.features[0].properties;
+      assert.equal(properties[0].type, 'number');
+      assert.equal(properties[1].type, 'boolean');
+      assert.equal(properties[2].type, 'string');
+      assert.equal(properties[3].type, 'Array');
+      assert.equal(properties[4].type, 'Object');
+      assert.equal(properties[5].type, 'Function');
+    });
+
+    test('finds globally attached documentation', function() {
+      assert.equal(parsed.features[0].desc, '* Feature one is super great! ');
+    });
+
+    test('finds docs attached to properties', function() {
+      assert.equal(parsed.features[1].properties[0].desc, '* It does things! ');
+    });
+
+  });
+
+  suite('element metadata', function(){
+
+    var parsed;
+
+    setup(function(done) {
+      loader.request("static/js-elements.js").then(function(content){
+        parsed = hyd._jsParse(content);
+        parsed.elements.forEach(function(el) {
+          hyd.docs.annotateElement(el);
+        });
+        parsed.behaviors.forEach(function(beh) {
+          hyd.docs.annotateBehavior(beh);
+        });
+        done();
+      });
+    });
+
+    test('Find all Polymer calls', function() {
+      assert.equal(parsed.elements.length, 2);
+    });
+
+    test('Polymer elements are named', function() {
+      assert.equal(parsed.elements[0].is, 'test-element');
+      assert.equal(parsed.elements[1].is, 'x-firebase');
+    });
+
+    test('Extracts documentation attached via a JS comment', function() {
+      assert.include(parsed.elements[0].desc, 'I am a description of test-element.');
+    });
+
+    test('Finds all published properties', function() {
+      var published = 0;
+      for (var i = 0; i < parsed.elements.length; i++) {
+        var element = parsed.elements[i];
+        if (element.is == "test-element") {
+
+          for (var j = 0; j < element.properties.length; j++) {
+            if (element.properties[j].published) {
+              published++;
+            }
+          }
+        }
+      }
+      assert.equal(published, 7);
+    });
+
+    test('Extracts configured property types', function() {
+      var firebase = parsed.elements[1];
+      for (var i = 0, prop; prop = firebase.properties[i]; i++) {
+        if (prop.name !== 'keys') continue;
+        assert.equal(prop.type, 'Array');
+      }
+    });
+
+    test('Extracts configured events', function() {
+      var firebase = parsed.elements[1];
+      assert.equal(firebase.events.length, 2);
+      assert.equal(firebase.events[0].name, 'data-change');
+    });
+
+    test('Finds hero tag', function() {
+      var el = parsed.elements[0];
+      assert.equal(el.hero, '/path/to/hero.png');
+    });
+
+    test('Finds demo tags', function() {
+      var el = parsed.elements[0];
+      assert.equal(el.demos.length, 3);
+      assert.equal(el.demos[1].path, '/demo/index.php');
+      assert.equal(el.demos[1].desc, 'I am a php demo');
+    });
+
+    test('Published properties have notify values', function() {
+      var foundNotify = false;
+      for (var i = 0; i < parsed.elements.length; i++) {
+        var element = parsed.elements[i];
+        if (element.is == "test-element") {
+          var published = 0;
+          for (var j = 0; j < element.properties.length; j++) {
+            if (element.properties[j].name == "objectNotify") {
+              foundNotify = true;
+            }
+          }
+        }
+      }
+      assert(foundNotify);
+    });
+
+    test('Find all methods', function() {
+      var foundMethods = false;
+      for (var i = 0; i < parsed.elements.length; i++) {
+        var element = parsed.elements[i];
+        if (element.is == "x-firebase") {
+          var methods = 0;
+          for (var j = 0; j < element.properties.length; j++) {
+            if (element.properties[j].type == "Function") {
+              methods++;
+            }
+          }
+          if (methods == 31) {
+            foundMethods = true;
+          }
+        }
+      }
+      assert(foundMethods);
+    });
+
+    test('Extracts method properties', function() {
+      var firebase = parsed.elements[1];
+      for (var i = 0, prop; prop = firebase.properties[i]; i++) {
+        if (prop.name !== 'observeObject') continue;
+        assert.deepEqual(prop.params, [
+          {name: 'added'},
+          {name: 'removed'},
+          {name: 'changed'},
+          {name: 'getOldValueFn'},
+        ]);
+      }
+    });
+
+  });
+
+  suite('behavior metadata', function() {
+
+    let parsed;
+    let byName;
+    let analyzer;
+
+    setup(function() {
+      analyzer = new hyd.Analyzer(false, loader);
+      return analyzer.metadataTree("static/html-behaviors.html").then((root) => {
+        analyzer.annotate();
+      });
+    });
+
+    test('Finds behavior object assignments', function() {
+      assert.equal(analyzer.behaviors.length, 4);
+    });
+
+    test('Supports behaviors at local assignments', function() {
+      assert.property(analyzer.behaviorsByName, 'SimpleBehavior');
+      assert.equal(analyzer.behaviorsByName['SimpleBehavior'].properties[0].name, 'simple');
+    });
+
+    test('Supports behaviors with renamed paths', function() {
+      assert.property(analyzer.behaviorsByName, 'AwesomeBehavior');
+      console.log(analyzer.behaviorsByName['AwesomeBehavior'].properties);
+      var found = false;
+      analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
+        if (prop.name == 'custom') {
+          found = true;
+        }
+      });
+      assert(found);
+    });
+
+    test('Supports behaviors On.Property.Paths', function() {
+      assert.property(analyzer.behaviorsByName, 'Really.Really.Deep.Behavior');
+      assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].properties[0].name, 'deep');
+    });
+
+    test('Supports property array on behaviors', function() {
+      var defaultValue;
+      analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
+        if (prop.name == 'a') {
+          console.log(prop);
+          defaultValue = prop.default;
+        }
+      });
+      assert.equal(defaultValue, 1);
+    });
+
+    test('Supports chained behaviors', function() {
+      assert.property(analyzer.behaviorsByName, 'CustomBehaviorList');
+      assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[0], 'SimpleBehavior');
+      assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[1], 'CustomNamedBehavior');
+      assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[2], 'Really.Really.Deep.Behavior');
+      assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].behaviors.length, 1);
+      assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].behaviors[0], 'Do.Re.Mi.Fa');
+    });
+  });
+
+});
