@@ -6,4 +6,4 @@ sudo: false
 before_script:
   - npm run init
 script:
-  - npm run testNode
+  - npm run test
