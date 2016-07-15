@@ -14,10 +14,10 @@
 const assert = require('chai').assert;
 const path = require('path');
 
-const FileLoader = require('../src/loader/file-loader.js').FileLoader;
-const FSResolver = require('../src/loader/fs-resolver.js').FSResolver;
-const NoopResolver = require('../src/loader/noop-resolver.js').NoopResolver;
-const RedirectResolver = require('../src/loader/redirect-resolver.js').RedirectResolver;
+const FileLoader = require('../lib/loader/file-loader.js').FileLoader;
+const FSResolver = require('../lib/loader/fs-resolver.js').FSResolver;
+const NoopResolver = require('../lib/loader/noop-resolver.js').NoopResolver;
+const RedirectResolver = require('../lib/loader/redirect-resolver.js').RedirectResolver;
 
 suite('Loader', function() {
   let loader;
