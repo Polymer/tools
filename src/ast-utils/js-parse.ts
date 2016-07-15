@@ -20,6 +20,26 @@ import {elementFinder} from './element-finder';
 import {featureFinder} from './feature-finder';
 import {Visitor} from './fluent-traverse';
 
+// Patch espree to work around https://github.com/eslint/espree/issues/282
+(function() {
+  const acorn = require("acorn");
+  const origEspree = acorn.plugins.espree;
+  acorn.plugins.espree = function(instance: any) {
+    let result = origEspree(instance);
+
+    instance.raise = instance.raiseRecoverable = function(pos: any, message: string) {
+      let loc = acorn.getLineInfo(this.input, pos);
+      let err = Object.create(new SyntaxError(message), {
+        index: {value: pos},
+        lineNumber: {value: loc.line},
+        column: {value: loc.column + 1},
+      })
+      throw err;
+    }
+    return result;
+  };
+})();
+
 function traverse(visitorRegistries:Visitor[]):estraverse.Callbacks {
   function applyVisitors(name:string, node:estree.Node, parent:estree.Node) {
     for (const registry of visitorRegistries) {

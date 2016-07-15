@@ -26,8 +26,8 @@
     "release": "npm run compile && browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "build:watch": "watch 'npm run build' ./src",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "npm run build && wct && mocha test/test.js",
-    "testNode": "npm run build && mocha test/test.js"
+    "test": "npm run build && wct && mocha",
+    "testNode": "npm run build && mocha"
   },
   "devDependencies": {
     "babel-cli": "^6.4.5",
@@ -43,6 +43,7 @@
     "web-component-tester": "^4.2.2"
   },
   "dependencies": {
+    "acorn": "^3.2.0",
     "babel-polyfill": "^6.2.0",
     "doctrine": "^0.7.0",
     "dom5": "^1.1.0",
