@@ -21,6 +21,6 @@ addons:
   sauce_connect: true
 script:
 - mocha
-- xvfb-run wct
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'default'; fi
+- if node --version | grep v6; then xvfb-run wct; fi
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && node --version | grep v6; then wct -s 'default'; fi
 dist: trusty
