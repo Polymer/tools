@@ -21,17 +21,15 @@ import {StringResolver} from './loader/string-resolver';
 import {FSResolver} from './loader/fs-resolver';
 import {XHRResolver} from './loader/xhr-resolver';
 import {ErrorSwallowingFSResolver} from './loader/error-swallowing-fs-resolver';
-import {Descriptor, ElementDescriptor, FeatureDescriptor, BehaviorDescriptor} from './ast/ast';
-
+import {
+  BehaviorDescriptor,
+  Descriptor,
+  DocumentDescriptor,
+  ElementDescriptor,
+  FeatureDescriptor,
+} from './ast/ast';
+import {reduceMetadata} from './ast/document-descriptor';
 import {AnalyzedDocument} from './analyzed-document';
-
-function reduceMetadata(m1:DocumentDescriptor, m2:DocumentDescriptor): DocumentDescriptor {
-  return {
-    elements:  m1.elements.concat(m2.elements),
-    features:  m1.features.concat(m2.features),
-    behaviors: m1.behaviors.concat(m2.behaviors),
-  };
-}
 
 var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
 
@@ -42,36 +40,6 @@ interface ParsedJS {
   ast: estree.Program;
   scriptElement: dom5.Node;
 }
-
-/**
- * The metadata for all features and elements defined in one document
- */
-interface DocumentDescriptor {
-  /**
-   * The elements from the document.
-   */
-  elements: ElementDescriptor[];
-
-  /**
-   * The features from the document
-   */
-  features: FeatureDescriptor[];
-
-  /**
-   * The behaviors from the document
-   */
-  behaviors: BehaviorDescriptor[];
-
-  href?: string;
-
-  imports?: DocumentDescriptor[];
-
-  parsedScript?: estree.Program;
-
-  html?: ParsedImport;
-}
-
-
 
 /**
  * Options for `Analyzer.analzye`

@@ -34,3 +34,12 @@ export interface DocumentDescriptor {
 
   html?: ParsedImport;
 }
+
+export function reduceMetadata(m1: DocumentDescriptor, m2: DocumentDescriptor)
+    : DocumentDescriptor {
+  return {
+    elements:  m1.elements.concat(m2.elements),
+    features:  m1.features.concat(m2.features),
+    behaviors: m1.behaviors.concat(m2.behaviors),
+  };
+}
