@@ -9,16 +9,15 @@
   <script>
     var hyd = require('hydrolysis');
     var registry;
+
     suite('parser returns expected ASTs', function() {
 
-      setup(function(done) {
-        var loader = new hyd.Loader();
-        var resolver = new hyd.XHRResolver();
-        loader.addResolver(resolver);
-        loader.request("static/html-parse-target.html").then(function(content){
-          registry = hyd._importParse(content);
-          done();
-        });
+      setup(() => {
+        var loader = new hyd.FetchUrlLoader();
+        return loader.load("static/html-parse-target.html")
+          .then((content) => {
+            registry = hyd._importParse(content);
+          });
       });
 
       test('find all templates', function() {
@@ -42,15 +41,18 @@
       });
     });
 
-    suite('malformed input is handled properly', function(){
-      test('bad HTML reports a filename', function(done){
-        hyd.Analyzer.analyze("static/malformed.html").then(function(analyzer){
-          done(new Error("Should have thrown an error message."));
-        }).catch(function(err){
-          assert.include(err.message, "malformed.html");
-          done();
+    suite('malformed input is handled properly', () => {
+
+      test('bad HTML reports a filename', () => {
+        let loader = new hyd.FetchUrlLoader();
+        let analyzer = new hyd.Analyzer(false, loader);
+        return analyzer.metadataTree("static/malformed.html").then((root) => {
+          throw new Error("Should have thrown an error message.");
+        }, (error) => {
+          assert.include(error.message, "malformed.html");
         });
       });
+
     });
   </script>
 </body>

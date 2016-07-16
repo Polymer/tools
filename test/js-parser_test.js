@@ -4,22 +4,20 @@ const path = require('path');
 const hyd = require('..');
 const assert = require('chai').assert;
 
+const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
+
 suite('js-parser', () => {
 
   let loader;
 
   suiteSetup(() => {
-    loader = new hyd.Loader();
-    let resolver = new hyd.FSResolver({
-      root: path.join(__dirname),
-    });
-    loader.addResolver(resolver);
+    loader = new FSUrlLoader(__dirname);
   });
 
   suite('ES6 support', function() {
 
     test('parses classes', function(done) {
-      loader.request("static/es6-support.js")
+      loader.load("static/es6-support.js")
         .then(function(content) {
           var parsed = hyd._jsParse(content);
           assert.equal(parsed.elements.length, 2);
@@ -37,7 +35,7 @@ suite('js-parser', () => {
     });
 
     test('parses 1 classe', function(done) {
-      loader.request("static/es6-support-simple.js")
+      loader.load("static/es6-support-simple.js")
         .then(function(content) {
           var parsed = hyd._jsParse(content);
           assert.equal(parsed.elements.length, 1);
@@ -62,7 +60,7 @@ suite('js-parser', () => {
      */
     var parseError;
     setup(function(done) {
-      loader.request("static/js-parse-error.js").then(function(content){
+      loader.load("static/js-parse-error.js").then(function(content){
         parseError = content;
         done();
       });
@@ -84,8 +82,7 @@ suite('js-parser', () => {
     var parsed;
 
     suiteSetup(function(done) {
-      console.log('setup')
-      loader.request("static/js-polymer-features.js").then(function(content) {
+      loader.load("static/js-polymer-features.js").then(function(content) {
         parsed = hyd._jsParse(content);
         done();
       });
@@ -122,7 +119,7 @@ suite('js-parser', () => {
     var parsed;
 
     setup(function(done) {
-      loader.request("static/js-elements.js").then(function(content){
+      loader.load("static/js-elements.js").then(function(content){
         parsed = hyd._jsParse(content);
         parsed.elements.forEach(function(el) {
           hyd.docs.annotateElement(el);
@@ -263,7 +260,6 @@ suite('js-parser', () => {
 
     test('Supports behaviors with renamed paths', function() {
       assert.property(analyzer.behaviorsByName, 'AwesomeBehavior');
-      console.log(analyzer.behaviorsByName['AwesomeBehavior'].properties);
       var found = false;
       analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
         if (prop.name == 'custom') {
@@ -282,7 +278,6 @@ suite('js-parser', () => {
       var defaultValue;
       analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
         if (prop.name == 'a') {
-          console.log(prop);
           defaultValue = prop.default;
         }
       });

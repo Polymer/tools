@@ -11,11 +11,14 @@
 "use strict";
 
 const assert = require('chai').assert;
+const path = require('path');
 
 const hyd = require('../lib/analyzer');
-const FileLoader = require('../lib/loader/file-loader.js').FileLoader;
-const FSResolver = require('../lib/loader/fs-resolver.js').FSResolver;
+// const FileLoader = require('../lib/loader/file-loader.js').FileLoader;
+// const FSResolver = require('../lib/loader/fs-resolver.js').FSResolver;
 const importParse = require('../lib/ast-utils/import-parse').importParse;
+
+const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 
 let registry;
 
@@ -24,16 +27,12 @@ suite('importParse: HTML', () => {
   suite('parser returns expected ASTs', function() {
     let loader;
 
-    setup((done) => {
-      loader = new FileLoader();
-      let resolver = new FSResolver({
-        root: __dirname,
-      });
-      loader.addResolver(resolver);
-      loader.request("/static/html-parse-target.html").then((content) => {
-        registry = importParse(content);
-        done();
-      }, done);
+    setup(() => {
+      loader = new FSUrlLoader(__dirname);
+      return loader.load('/static/html-parse-target.html')
+        .then((content) => {
+          registry = importParse(content);
+        });
     });
 
     test('find all templates', function() {
@@ -57,15 +56,18 @@ suite('importParse: HTML', () => {
     });
   });
 
-  suite('malformed input is handled properly', function(){
-    test('bad HTML reports a filename', function(done){
-      hyd.Analyzer.analyze("static/malformed.html").then(function(analyzer){
-        done(new Error("Should have thrown an error message."));
-      }).catch(function(err){
-        assert.include(err.message, "malformed.html");
-        done();
+  suite('malformed input is handled properly', function() {
+
+    test('bad HTML reports a filename', () => {
+      let loader = new FSUrlLoader(__dirname);
+      let analyzer = new hyd.Analyzer(false, loader);
+      return analyzer.metadataTree("static/malformed.html").then((root) => {
+        throw new Error("Should have thrown an error message.");
+      }, (error) => {
+        assert.include(error.message, "malformed.html");
       });
     });
+
   });
 
 });

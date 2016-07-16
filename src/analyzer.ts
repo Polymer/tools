@@ -11,16 +11,12 @@
 import * as dom5 from 'dom5';
 import * as url from 'url';
 import * as estree from 'estree';
+
+import {AnalyzedDocument} from './analyzed-document';
+import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
-import {FileLoader} from './loader/file-loader';
 import {importParse, ParsedImport, LocNode} from './ast-utils/import-parse';
 import {jsParse} from './ast-utils/js-parse';
-import {Resolver} from './loader/resolver';
-import {NoopResolver} from './loader/noop-resolver';
-import {StringResolver} from './loader/string-resolver';
-import {FSResolver} from './loader/fs-resolver';
-import {XHRResolver} from './loader/xhr-resolver';
-import {ErrorSwallowingFSResolver} from './loader/error-swallowing-fs-resolver';
 import {
   BehaviorDescriptor,
   Descriptor,
@@ -28,8 +24,8 @@ import {
   ElementDescriptor,
   FeatureDescriptor,
 } from './ast/ast';
-import {reduceMetadata} from './ast/document-descriptor';
-import {AnalyzedDocument} from './analyzed-document';
+import {UrlLoader} from './url-loader/url-loader';
+import {UrlResolver} from './url-loader/url-resolver';
 
 var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
 
@@ -85,7 +81,7 @@ interface LocError extends Error{
  * A database of Polymer metadata defined in HTML
  */
 export class Analyzer {
-  loader: FileLoader;
+  loader: UrlLoader;
   /**
    * A list of all elements the `Analyzer` has metadata for.
    */
@@ -139,7 +135,7 @@ export class Analyzer {
    * @param  {FileLoader=} loader An optional `FileLoader` used to load external
    *                              resources
    */
-  constructor(attachAST:boolean, loader:FileLoader) {
+  constructor(attachAST:boolean, loader:UrlLoader) {
     this.loader = loader;
   }
 
@@ -154,54 +150,57 @@ export class Analyzer {
    * @return {Promise<Analyzer>} A promise that will resolve once `href` and its
    *     dependencies have been loaded and analyzed.
    */
-  static analyze = function analyze(href:string, options?:LoadOptions) {
-    options = options || {};
-    options.filter = options.filter || _defaultFilter(href);
+  // static analyze = function analyze(href:string, options?:LoadOptions) {
+  //   options = options || {};
+  //   options.filter = options.filter || _defaultFilter(href);
+  //
+  //   var loader = new FileLoader();
+  //
+  //   var resolver = options.resolver;
+  //   if (resolver === undefined) {
+  //     if (typeof window === 'undefined') {
+  //       resolver = 'fs';
+  //     } else {
+  //       resolver = 'xhr';
+  //     }
+  //   }
+  //   let primaryResolver: Resolver;
+  //   if (resolver === 'fs') {
+  //     primaryResolver = new FSResolver(options);
+  //   } else if (resolver === 'xhr') {
+  //     primaryResolver = new XHRResolver(options);
+  //   } else if (resolver === 'permissive') {
+  //     primaryResolver = new ErrorSwallowingFSResolver(options);
+  //   } else {
+  //     throw new Error("Resolver must be one of 'fs', 'xhr', or 'permissive'");
+  //   }
+  //
+  //   loader.addResolver(primaryResolver);
+  //   if (options.content) {
+  //     loader.addResolver(new StringResolver({url: href, content: options.content}));
+  //   }
+  //   loader.addResolver(new NoopResolver({test: options.filter}));
+  //
+  //   var analyzer = new Analyzer(false, loader);
+  //   return analyzer.metadataTree(href).then((root) => {
+  //     if (!options.noAnnotations) {
+  //       analyzer.annotate();
+  //     }
+  //     if (options.clean) {
+  //       analyzer.clean();
+  //     }
+  //     return Promise.resolve(analyzer);
+  //   });
+  // };
 
-    var loader = new FileLoader();
-
-    var resolver = options.resolver;
-    if (resolver === undefined) {
-      if (typeof window === 'undefined') {
-        resolver = 'fs';
-      } else {
-        resolver = 'xhr';
-      }
+  async load(url: string): Promise<AnalyzedDocument> {
+    if (!this.loader.canLoad(url)) {
+      throw new Error(`Can't load URL: ${url}`);
     }
-    let primaryResolver: Resolver;
-    if (resolver === 'fs') {
-      primaryResolver = new FSResolver(options);
-    } else if (resolver === 'xhr') {
-      primaryResolver = new XHRResolver(options);
-    } else if (resolver === 'permissive') {
-      primaryResolver = new ErrorSwallowingFSResolver(options);
-    } else {
-      throw new Error("Resolver must be one of 'fs', 'xhr', or 'permissive'");
-    }
-
-    loader.addResolver(primaryResolver);
-    if (options.content) {
-      loader.addResolver(new StringResolver({url: href, content: options.content}));
-    }
-    loader.addResolver(new NoopResolver({test: options.filter}));
-
-    var analyzer = new Analyzer(false, loader);
-    return analyzer.metadataTree(href).then((root) => {
-      if (!options.noAnnotations) {
-        analyzer.annotate();
-      }
-      if (options.clean) {
-        analyzer.clean();
-      }
-      return Promise.resolve(analyzer);
-    });
-  };
-
-  load(href: string): Promise<AnalyzedDocument> {
-    return this.loader.request(href)
-      .then((content) => this._parseHTML(this._content[href], href))
+    return this.loader.load(url)
+      .then((content) => this._parseHTML(content, url))
       .catch((err) => {
-        console.error("Error loading " + href);
+        console.error(`Error loading ${url}`);
         throw err;
       });
   };
@@ -276,7 +275,7 @@ export class Analyzer {
           var styleHref = dom5.getAttribute(styleElement, 'href');
           if (href) {
             styleHref = url.resolve(baseUri, styleHref);
-            depsLoaded.push(this.loader.request(styleHref).then((content) => {
+            depsLoaded.push(this.loader.load(styleHref).then((content) => {
               this._content[styleHref] = content;
               return {};
             }));
@@ -375,7 +374,7 @@ export class Analyzer {
     }
     if (this.loader) {
       var resolvedSrc = url.resolve(href, src);
-      return this.loader.request(resolvedSrc).then((content) => {
+      return this.loader.load(resolvedSrc).then((content) => {
         this._content[resolvedSrc] = content;
         var scriptText = dom5.constructors.text(content);
         dom5.append(script, scriptText);
