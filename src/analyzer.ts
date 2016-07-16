@@ -82,6 +82,7 @@ interface LocError extends Error{
  */
 export class Analyzer {
   loader: UrlLoader;
+
   /**
    * A list of all elements the `Analyzer` has metadata for.
    */
@@ -138,60 +139,6 @@ export class Analyzer {
   constructor(attachAST:boolean, loader:UrlLoader) {
     this.loader = loader;
   }
-
-  /**
-   * Shorthand for transitively loading and processing all imports beginning at
-   * `href`.
-   *
-   * In order to properly filter paths, `href` _must_ be an absolute URI.
-   *
-   * @param {string} href The root import to begin loading from.
-   * @param {LoadOptions=} options Any additional options for the load.
-   * @return {Promise<Analyzer>} A promise that will resolve once `href` and its
-   *     dependencies have been loaded and analyzed.
-   */
-  // static analyze = function analyze(href:string, options?:LoadOptions) {
-  //   options = options || {};
-  //   options.filter = options.filter || _defaultFilter(href);
-  //
-  //   var loader = new FileLoader();
-  //
-  //   var resolver = options.resolver;
-  //   if (resolver === undefined) {
-  //     if (typeof window === 'undefined') {
-  //       resolver = 'fs';
-  //     } else {
-  //       resolver = 'xhr';
-  //     }
-  //   }
-  //   let primaryResolver: Resolver;
-  //   if (resolver === 'fs') {
-  //     primaryResolver = new FSResolver(options);
-  //   } else if (resolver === 'xhr') {
-  //     primaryResolver = new XHRResolver(options);
-  //   } else if (resolver === 'permissive') {
-  //     primaryResolver = new ErrorSwallowingFSResolver(options);
-  //   } else {
-  //     throw new Error("Resolver must be one of 'fs', 'xhr', or 'permissive'");
-  //   }
-  //
-  //   loader.addResolver(primaryResolver);
-  //   if (options.content) {
-  //     loader.addResolver(new StringResolver({url: href, content: options.content}));
-  //   }
-  //   loader.addResolver(new NoopResolver({test: options.filter}));
-  //
-  //   var analyzer = new Analyzer(false, loader);
-  //   return analyzer.metadataTree(href).then((root) => {
-  //     if (!options.noAnnotations) {
-  //       analyzer.annotate();
-  //     }
-  //     if (options.clean) {
-  //       analyzer.clean();
-  //     }
-  //     return Promise.resolve(analyzer);
-  //   });
-  // };
 
   async load(url: string): Promise<AnalyzedDocument> {
     if (!this.loader.canLoad(url)) {
