@@ -129,27 +129,35 @@ export class Analyzer {
   /**
    * A map, keyed by path, of document content.
    */
-  _content: {[path:string]: string} = {};
+  private _content: Map<string, string> = new Map();
+
+  private _documents: Map<string, Promise<AnalyzedDocument>> = new Map();
+  private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
 
   /**
-   * @param  {boolean} attachAST  If true, attach a parse5 compliant AST
-   * @param  {FileLoader=} loader An optional `FileLoader` used to load external
-   *                              resources
+   * @param {UrlLoader} loader
    */
-  constructor(attachAST:boolean, loader:UrlLoader) {
+  constructor(loader: UrlLoader) {
     this.loader = loader;
   }
 
   async load(url: string): Promise<AnalyzedDocument> {
+    // TODO(justinfagnani): normalize url
+    if (this._documents.has(url)) {
+      return this._documents.get(url);
+    }
     if (!this.loader.canLoad(url)) {
       throw new Error(`Can't load URL: ${url}`);
     }
-    return this.loader.load(url)
-      .then((content) => this._parseHTML(content, url))
-      .catch((err) => {
-        console.error(`Error loading ${url}`);
-        throw err;
-      });
+    // Use an immediately executed async function to create the final Promise
+    // synchronously so we can store it in this._documents before any other
+    // operations to avoid any race conditions with the loader
+    let promise = (async () => {
+      let content = await this.loader.load(url);
+      return this._parseHTML(content, url);
+    })();
+    this._documents.set(url, promise);
+    return promise;
   };
 
   /**
@@ -159,7 +167,7 @@ export class Analyzer {
    * @param  {string} href       The document's URL.
    * @return {AnalyzedDocument}       An  `AnalyzedDocument`
    */
-  _parseHTML(htmlImport: string, href: string):AnalyzedDocument {
+  _parseHTML(htmlImport: string, href: string): AnalyzedDocument {
     if (href in this.html) {
       return this.html[href];
     }
@@ -222,8 +230,9 @@ export class Analyzer {
           var styleHref = dom5.getAttribute(styleElement, 'href');
           if (href) {
             styleHref = url.resolve(baseUri, styleHref);
+            // TODO(justinfagnani): use this.load()
             depsLoaded.push(this.loader.load(styleHref).then((content) => {
-              this._content[styleHref] = content;
+              this._content.set(styleHref, content);
               return {};
             }));
           }
@@ -234,13 +243,13 @@ export class Analyzer {
           .then(function() {return depHrefs;})
           .catch(function(err) {throw err;});
     this.parsedDocuments[href] = parsed.ast;
-    this.html[href] = {
-        href: href,
+    this.html[href] = new AnalyzedDocument({
+        url: href,
         htmlLoaded: htmlLoaded,
-        metadataLoaded: metadataLoaded,
-        depHrefs: depHrefs,
-        depsLoaded: depsStrLoaded
-    };
+        descriptor: metadataLoaded,
+        dependencies: depHrefs,
+        transitiveDependencies: depsStrLoaded
+    });
     return this.html[href];
   };
 
@@ -321,8 +330,9 @@ export class Analyzer {
     }
     if (this.loader) {
       var resolvedSrc = url.resolve(href, src);
+      // TODO(justinfagnani): use this.load()
       return this.loader.load(resolvedSrc).then((content) => {
-        this._content[resolvedSrc] = content;
+        this._content.set(resolvedSrc, content);
         var scriptText = dom5.constructors.text(content);
         dom5.append(script, scriptText);
         dom5.removeAttribute(script, 'src');
@@ -342,7 +352,7 @@ export class Analyzer {
     return this._getDependencies(href, found).then((deps) => {
       var depPromises = deps.map((depHref) =>{
         return this.load(depHref).then((htmlMonomer) => {
-          return htmlMonomer.metadataLoaded;
+          return htmlMonomer.descriptor;
         });
       });
       return Promise.all(depPromises);
@@ -369,7 +379,7 @@ export class Analyzer {
     var deps: string[] = [];
     return this.load(href).then((htmlMonomer) => {
       var transitiveDeps: Promise<string[]>[] = [];
-      htmlMonomer.depHrefs.forEach((depHref) => {
+      htmlMonomer.dependencies.forEach((depHref) => {
         if (found[depHref]) {
           return;
         }
@@ -410,65 +420,50 @@ export class Analyzer {
   };
 
   /**
-   * Returns a promise that resolves to a POJO representation of the import
-   * tree, in a format that maintains the ordering of the HTML imports spec.
-   * @param {string} href the import to get metadata for.
-   * @return {Promise}
+   * Returns a Promise that resolves to a DocumentDescriptor of the transitive
+   * import tree, which maintains the ordering of the HTML imports spec.
+   *
+   * @param {string} url the location of the HTML file to analyze
+   * @return {Promise<DocumentDescriptor>}
    */
-  metadataTree(href:string) {
-    return this.load(href).then((monomer) =>{
-      var loadedHrefs: {[href: string]: boolean} = {};
-      loadedHrefs[href] = true;
-      return this._metadataTree(monomer, loadedHrefs);
-    });
-  };
-
-  async _metadataTree(htmlMonomer:AnalyzedDocument, loadedHrefs: {[href: string]: boolean}) {
-    if (loadedHrefs === undefined) {
-      loadedHrefs = {};
+  async analyze(url: string): Promise<DocumentDescriptor> {
+    if (this._documentDescriptors.has(url)) {
+      return this._documentDescriptors.get(url);
     }
-    let metadata = await htmlMonomer.metadataLoaded;
-    metadata = {
-      elements: metadata.elements,
-      features: metadata.features,
-      behaviors: [],
-      href: htmlMonomer.href
-    };
-    const hrefs = await htmlMonomer.depsLoaded
-    var depMetadata: Promise<DocumentDescriptor>[] = [];
-    for (const href of hrefs) {
-      let metadataPromise: Promise<DocumentDescriptor>;
-      if (!loadedHrefs[href]) {
-        loadedHrefs[href] = true;
-        metadataPromise = this._metadataTree(this.html[href], loadedHrefs);
-        await metadataPromise;
-      } else {
-        metadataPromise = Promise.resolve({});
+
+    let promise = (async () => {
+      let document = await this.load(url);
+      let localMetadata = await document.descriptor;
+      // TODO(justinfagnani): remove casts with Typescript 2.0
+      let dependencies = <DocumentDescriptor[]><any>(
+        await Promise.all(document.dependencies.map((d) => this.analyze(d))));
+      let parsedHtml = await document.htmlLoaded;
+
+      let tranitiveMetadata: DocumentDescriptor = {
+        elements: localMetadata.elements,
+        features: localMetadata.features,
+        behaviors: [],
+        href: document.url,
+        imports: dependencies,
+        html: parsedHtml,
+      };
+      if (tranitiveMetadata.elements) {
+        tranitiveMetadata.elements.forEach((element) => {
+          attachDomModule(parsedHtml, element);
+        });
       }
-      depMetadata.push(metadataPromise);
-    }
-    return Promise.all(depMetadata).then(function(importMetadata) {
-      // TODO(ajo): remove this when tsc stops having issues.
-      metadata.imports = <any>importMetadata;
-      return htmlMonomer.htmlLoaded.then(function(parsedHtml) {
-        metadata.html = parsedHtml;
-        if (metadata.elements) {
-          metadata.elements.forEach(function(element) {
-            attachDomModule(parsedHtml, element);
-          });
-        }
-        return metadata;
-      });
-    });
+      return tranitiveMetadata;
+    })();
+    this._documentDescriptors.set(url, promise);
+    return promise;
   };
-
 
   _inlineStyles(ast:dom5.Node, href: string) {
     var cssLinks = dom5.queryAll(ast, polymerExternalStyle);
     cssLinks.forEach((link) => {
       var linkHref = dom5.getAttribute(link, 'href');
       var uri = url.resolve(href, linkHref);
-      var content = this._content[uri];
+      var content = this._content.get(uri);
       var style = dom5.constructors.element('style');
       dom5.setTextContent(style, '\n' + content + '\n');
       dom5.replace(link, style);
@@ -481,7 +476,7 @@ export class Analyzer {
     scripts.forEach((script) => {
       var scriptHref = dom5.getAttribute(script, 'src');
       var uri = url.resolve(href, scriptHref);
-      var content = this._content[uri];
+      var content = this._content.get(uri);
       var inlined = dom5.constructors.element('script');
       dom5.setTextContent(inlined, '\n' + content + '\n');
       dom5.replace(script, inlined);

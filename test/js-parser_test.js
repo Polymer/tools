@@ -243,8 +243,8 @@ suite('js-parser', () => {
     let analyzer;
 
     setup(function() {
-      analyzer = new hyd.Analyzer(false, loader);
-      return analyzer.metadataTree("static/html-behaviors.html").then((root) => {
+      analyzer = new hyd.Analyzer(loader);
+      return analyzer.analyze("static/html-behaviors.html").then((root) => {
         analyzer.annotate();
       });
     });

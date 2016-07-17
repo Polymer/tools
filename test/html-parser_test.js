@@ -14,8 +14,6 @@ const assert = require('chai').assert;
 const path = require('path');
 
 const hyd = require('../lib/analyzer');
-// const FileLoader = require('../lib/loader/file-loader.js').FileLoader;
-// const FSResolver = require('../lib/loader/fs-resolver.js').FSResolver;
 const importParse = require('../lib/ast-utils/import-parse').importParse;
 
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
@@ -60,8 +58,8 @@ suite('importParse: HTML', () => {
 
     test('bad HTML reports a filename', () => {
       let loader = new FSUrlLoader(__dirname);
-      let analyzer = new hyd.Analyzer(false, loader);
-      return analyzer.metadataTree("static/malformed.html").then((root) => {
+      let analyzer = new hyd.Analyzer(loader);
+      return analyzer.analyze("static/malformed.html").then((root) => {
         throw new Error("Should have thrown an error message.");
       }, (error) => {
         assert.include(error.message, "malformed.html");
