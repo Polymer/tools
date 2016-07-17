@@ -1,5 +1,5 @@
 import {DocumentDescriptor} from './ast/document-descriptor';
-import {ParsedImport} from './parser/html-parser';
+import {HtmlDocument} from './parser/html-parser';
 
 /**
  * The metadata of an entire HTML document, in promises.
@@ -15,7 +15,7 @@ export class AnalyzedDocument {
    * The parsed representation of the doc. Use the `ast` property to get
    * the full `parse5` ast.
    */
-  htmlLoaded: Promise<ParsedImport>;
+  htmlLoaded: Promise<HtmlDocument>;
 
   /**
    * Resolves to the list of this Document's transitive import dependencies.
@@ -52,7 +52,7 @@ export interface AnalyzedDocumentInit {
    * The parsed representation of the doc. Use the `ast` property to get
    * the full `parse5` ast.
    */
-  htmlLoaded?: Promise<ParsedImport>;
+  htmlLoaded?: Promise<HtmlDocument>;
 
   /**
    * Resolves to the list of this Document's transitive import dependencies.

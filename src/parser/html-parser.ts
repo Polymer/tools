@@ -49,7 +49,7 @@ const isJSScriptNode = p.AND(
   )
 );
 
-function addNode(node: ASTNode, registry: ParsedImport) {
+function addNode(node: ASTNode, registry: HtmlDocument) {
   if (isHtmlImportNode(node)) {
     registry.import.push(node);
   } else if (isStyleNode(node)) {
@@ -70,7 +70,8 @@ function addNode(node: ASTNode, registry: ParsedImport) {
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */
-export interface ParsedImport {
+export interface HtmlDocument {
+  url: string;
   base: parse5.ASTNode[];
   /**
    * The entry points to the AST at each outermost template tag.
@@ -103,7 +104,7 @@ export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
   return node;
 }
 
-export class HtmlParser implements Parser<ParsedImport> {
+export class HtmlParser implements Parser<HtmlDocument> {
 
   /**
   * Parse html into ASTs.
@@ -113,20 +114,21 @@ export class HtmlParser implements Parser<ParsedImport> {
   *
   * href is the path of the document.
   */
-  parse(htmlString: string, href: string): ParsedImport {
+  parse(htmlString: string, href: string): HtmlDocument {
     let doc: parse5.ASTNode;
 
     doc = parse5.parse(htmlString, {locationInfo: true});
 
-    let registry: ParsedImport = {
-        base: [],
-        template: [],
-        script: [],
-        style: [],
-        import: [],
-        'dom-module': [],
-        comment: [],
-        ast: doc};
+    let registry: HtmlDocument = {
+      base: [],
+      template: [],
+      script: [],
+      style: [],
+      import: [],
+      'dom-module': [],
+      comment: [],
+      ast: doc,
+    };
 
     let queue = [].concat(doc.childNodes);
     let nextNode: ASTNode;

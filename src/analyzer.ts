@@ -15,7 +15,7 @@ import * as estree from 'estree';
 import {AnalyzedDocument} from './analyzed-document';
 import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
-import {HtmlParser, ParsedImport, getOwnerDocument} from './parser/html-parser';
+import {HtmlParser, HtmlDocument, getOwnerDocument} from './parser/html-parser';
 import {jsParse} from './ast-utils/js-parse';
 import {
   BehaviorDescriptor,
@@ -176,7 +176,7 @@ export class Analyzer {
     var depsLoaded: Promise<Object>[] = [];
     var depHrefs: string[] = [];
     var metadataLoaded = Promise.resolve(EMPTY_METADATA);
-    var parsed: ParsedImport;
+    var parsed: HtmlDocument;
     try {
       parsed = this._htmlParser.parse(htmlImport, href);
     } catch (err) {
@@ -542,7 +542,7 @@ var isHtmlImportNode = dom5.predicates.AND(
   )
 );
 
-function attachDomModule(parsedImport: ParsedImport, element: ElementDescriptor) {
+function attachDomModule(parsedImport: HtmlDocument, element: ElementDescriptor) {
   var domModules = parsedImport['dom-module'];
   for (const domModule of domModules) {
     if (dom5.getAttribute(domModule, 'id') === element.is) {

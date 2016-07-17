@@ -1,7 +1,7 @@
 import * as estree from 'estree';
 import * as dom5 from 'dom5';
 
-import {ParsedImport} from '../parser/html-parser';
+import {HtmlDocument} from '../parser/html-parser';
 
 import {ElementDescriptor} from './element-descriptor';
 import {FeatureDescriptor} from './feature-descriptor';
@@ -32,7 +32,7 @@ export interface DocumentDescriptor {
 
   parsedScript?: estree.Program;
 
-  html?: ParsedImport;
+  html?: HtmlDocument;
 }
 
 export function reduceMetadata(m1: DocumentDescriptor, m2: DocumentDescriptor)
