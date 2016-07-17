@@ -120,6 +120,7 @@ export class HtmlParser implements Parser<HtmlDocument> {
     doc = parse5.parse(htmlString, {locationInfo: true});
 
     let registry: HtmlDocument = {
+      url: href,
       base: [],
       template: [],
       script: [],

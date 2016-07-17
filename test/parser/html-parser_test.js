@@ -31,6 +31,7 @@ suite('HtmlParser', () => {
       let file = fs.readFileSync(
           path.resolve(__dirname, '../static/html-parse-target.html'), 'utf8');
       let document = parser.parse(file, '/static/html-parse-target.html');
+      assert.equal(document.url, '/static/html-parse-target.html');
       assert.equal(document.template.length, 3);
       assert.equal(document.script.length, 5);
       assert.equal(document.import.length, 1);
