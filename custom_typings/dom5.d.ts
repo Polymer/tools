@@ -1,22 +1,13 @@
 // TODO(rictic): upstream this to dom5 itself.
 
 declare module 'dom5' {
-  export interface Node {
-    nodeName: string;
-    tagName: string;
-    childNodes: Node[];
-    parentNode: Node;
-    attrs: Attr[];
+  import {ASTNode} from 'parse5';
+
+  export interface Node extends ASTNode {
     value?: string;
     data?: string;
-    __location?: {
-      start: number;
-    }
   }
-  export interface Attr {
-    name: string;
-    value: string;
-  }
+
   interface ParseOptions {
     locationInfo: boolean;
   }
