@@ -57,6 +57,7 @@
     "escodegen": "^1.7.0",
     "espree": "^3.1.3",
     "estraverse": "^3.1.0",
+    "parse5": "^2.1.5",
     "path-is-absolute": "^1.0.0"
   }
 }
