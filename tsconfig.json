@@ -11,10 +11,10 @@
         "outDir": "./lib"
     },
     "filesGlob": [
-        "src/analyzer.ts",
+        "typings/index.d.ts",
+        "custom_typings/**.d.ts",
         "src/**/*.ts",
-        "typings/main.d.ts",
-        "custom_typings/**.d.ts"
+        "src/analyzer.ts"
     ],
     "atom": {
         "rewriteTsconfig": true
@@ -50,7 +50,7 @@
         "src/url-loader/package-url-resolver.ts",
         "src/url-loader/url-loader.ts",
         "src/url-loader/url-resolver.ts",
-        "typings/main.d.ts",
+        "typings/index.d.ts",
         "custom_typings/doctrine.d.ts",
         "custom_typings/dom5.d.ts",
         "custom_typings/escodegen.d.ts",

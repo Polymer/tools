@@ -1,5 +1,6 @@
 {
-  "ambientDependencies": {
-    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#fc341765ebbb04b7109981a25dced01f488f4d94"
+  "globalDependencies": {
+    "node": "registry:dt/node#6.0.0+20160709114037",
+    "parse5": "registry:dt/parse5#2.1.5+20160602151856"
   }
 }

@@ -21,7 +21,7 @@
   "scripts": {
     "init": "typings install",
     "clean": "rm -rf typings/ lib/ && find src | grep \\.js$ | xargs rm",
-    "compile": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc",
+    "compile": "if [ ! -f typings/index.d.ts ]; then npm run init; fi; tsc",
     "build": "npm run compile && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
     "release": "npm run compile && browserify -r ./index.js:hydrolysis -o hydrolysis.js",
     "build:watch": "watch 'npm run build' ./src",
@@ -32,12 +32,6 @@
   "devDependencies": {
     "browserify": "^9.0.8",
     "chai": "^2.2.0",
-    "jsdoc-to-markdown": "^1.0.3",
-    "mocha": "^2.2.4",
-    "typescript": "^1.8.0",
-    "typings": "^0.6.3",
-    "watch": "latest",
-    "web-component-tester": "^4.2.2",
     "depcheck": "^0.6.3",
     "fs-extra": "^0.30.0",
     "gulp-eslint": "^2.0.0",
@@ -45,10 +39,16 @@
     "gulp-tslint": "^5.0.0",
     "gulp-typescript": "^2.13.4",
     "gulp-typings": "^1.3.6",
+    "jsdoc-to-markdown": "^1.0.3",
+    "mocha": "^2.2.4",
     "run-sequence": "^1.2.0",
     "sinon": "^1.17.4",
     "temp": "^0.8.3",
-    "tslint": "^3.10.2"
+    "tslint": "^3.10.2",
+    "typescript": "^1.8.0",
+    "typings": "^1.3.1",
+    "watch": "latest",
+    "web-component-tester": "^4.2.2"
   },
   "dependencies": {
     "acorn": "^3.2.0",
