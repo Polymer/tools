@@ -31,6 +31,7 @@ declare module 'dom5' {
   export function append(parent: Node, newNode: Node): void;
   export function remove(willBeRemoved: Node): void;
   export function replace(current: Node, replacement: Node): void;
+  export function isDocument(node: Node): boolean;
 
   export var isCommentNode: Predicate;
   interface PredicateCombinators {
