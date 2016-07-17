@@ -1,5 +1,5 @@
 import {DocumentDescriptor} from './ast/document-descriptor';
-import {ParsedImport} from './ast-utils/import-parse';
+import {ParsedImport} from './parser/html-parser';
 
 /**
  * The metadata of an entire HTML document, in promises.

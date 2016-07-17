@@ -15,7 +15,7 @@ import * as estree from 'estree';
 import {AnalyzedDocument} from './analyzed-document';
 import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
-import {importParse, ParsedImport, LocNode} from './ast-utils/import-parse';
+import {HtmlParser, ParsedImport, LocNode} from './parser/html-parser';
 import {jsParse} from './ast-utils/js-parse';
 import {
   BehaviorDescriptor,
@@ -125,6 +125,7 @@ export class Analyzer {
    */
   parsedScripts: {[path:string]: ParsedJS[]} = {};
 
+  private _htmlParser = new HtmlParser();
 
   /**
    * A map, keyed by path, of document content.
@@ -176,7 +177,7 @@ export class Analyzer {
     var metadataLoaded = Promise.resolve(EMPTY_METADATA);
     var parsed: ParsedImport;
     try {
-      parsed = importParse(htmlImport, href);
+      parsed = this._htmlParser.parse(htmlImport, href);
     } catch (err) {
       console.error('Error parsing!');
       throw err;

@@ -8,12 +8,13 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
 import * as dom5 from 'dom5';
 
-var p = dom5.predicates;
+import {Parser} from './parser';
 
-var isHtmlImportNode = p.AND(
+const p = dom5.predicates;
+
+const isHtmlImportNode = p.AND(
   p.hasTagName('link'),
   p.hasAttrValue('rel', 'import'),
   p.NOT(
@@ -21,7 +22,7 @@ var isHtmlImportNode = p.AND(
   )
 );
 
-var isStyleNode = p.OR(
+const isStyleNode = p.OR(
   // inline style
   p.hasTagName('style'),
   // external stylesheet
@@ -37,7 +38,7 @@ var isStyleNode = p.OR(
   )
 );
 
-var isJSScriptNode = p.AND(
+const isJSScriptNode = p.AND(
   p.hasTagName('script'),
   p.OR(
     p.NOT(p.hasAttr('type')),
@@ -46,7 +47,7 @@ var isJSScriptNode = p.AND(
   )
 );
 
-function addNode(node:LocNode, registry:ParsedImport) {
+function addNode(node: LocNode, registry: ParsedImport) {
   if (isHtmlImportNode(node)) {
     registry.import.push(node);
   } else if (isStyleNode(node)) {
@@ -64,15 +65,15 @@ function addNode(node:LocNode, registry:ParsedImport) {
   }
 }
 
-function getLineAndColumn(string:string, charNumber:number) {
+function getLineAndColumn(string: string, charNumber: number) {
   if (charNumber > string.length) {
     return undefined;
   }
   // TODO(ajo): Caching the line lengths of each document could be much faster.
-  var sliced = string.slice(0,charNumber+1);
-  var split = sliced.split('\n');
-  var line = split.length;
-  var column = split[split.length - 1].length;
+  let sliced = string.slice(0, charNumber + 1);
+  let split = sliced.split('\n');
+  let line = split.length;
+  let column = split[split.length - 1].length;
   return {line: line, column: column};
 }
 
@@ -115,52 +116,55 @@ export interface LocNode extends dom5.Node {
   __hydrolysisInlined: string;
 }
 
-/**
-* Parse html into ASTs.
-*
-* htmlString is a utf8, html5 document containing polymer elements
-* or module definitons.
-*
-* href is the path of the document.
-*/
-export function importParse(htmlString:string, href:string) {
-  var doc: LocNode;
-  try {
-    doc = <LocNode>dom5.parse(htmlString, {locationInfo: true});
-  } catch (err) {
-    console.log(err);
-    return null;
-  }
+export class HtmlParser implements Parser<ParsedImport> {
 
-  // Add line/column information
-  dom5.treeMap(doc, function(node:LocNode) {
-    if (node.__location && node.__location.start >= 0) {
-      node.__locationDetail = getLineAndColumn(htmlString, node.__location.start);
-      if (href) {
-        node.__ownerDocument = href;
+  /**
+  * Parse html into ASTs.
+  *
+  * htmlString is a utf8, html5 document containing polymer elements
+  * or module definitons.
+  *
+  * href is the path of the document.
+  */
+  parse(htmlString: string, href: string): ParsedImport {
+    let doc: LocNode;
+    try {
+      doc = <LocNode>dom5.parse(htmlString, {locationInfo: true});
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+
+    // Add line/column information
+    dom5.treeMap(doc, function(node: LocNode) {
+      if (node.__location && node.__location.start >= 0) {
+        node.__locationDetail = getLineAndColumn(htmlString, node.__location.start);
+        if (href) {
+          node.__ownerDocument = href;
+        }
+      }
+    });
+
+    let registry: ParsedImport = {
+        base: [],
+        template: [],
+        script: [],
+        style: [],
+        import: [],
+        'dom-module': [],
+        comment: [],
+        ast: doc};
+
+    let queue = [].concat(doc.childNodes);
+    let nextNode: LocNode;
+    while (queue.length > 0) {
+      nextNode = queue.shift();
+      if (nextNode) {
+        queue = queue.concat(nextNode.childNodes);
+        addNode(nextNode, registry);
       }
     }
-  });
-
-  var registry: ParsedImport = {
-      base: [],
-      template: [],
-      script: [],
-      style: [],
-      import: [],
-      'dom-module': [],
-      comment: [],
-      ast: doc};
-
-  var queue = [].concat(doc.childNodes);
-  var nextNode: LocNode;
-  while (queue.length > 0) {
-    nextNode = queue.shift();
-    if (nextNode) {
-      queue = queue.concat(nextNode.childNodes);
-      addNode(nextNode, registry);
-    }
+    return registry;
   }
-  ;
-  return registry;
-};
+
+}
