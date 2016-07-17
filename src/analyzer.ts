@@ -458,33 +458,6 @@ export class Analyzer {
     return promise;
   };
 
-  /**
-   * Calls `dom5.nodeWalkAll` on each document that `Anayzler` has laoded.
-   */
-  nodeWalkDocuments(predicate:dom5.Predicate) {
-    var results: dom5.Node[] = [];
-    for (var href in this.parsedDocuments) {
-      var newNodes = dom5.nodeWalkAll(this.parsedDocuments[href], predicate);
-      results = results.concat(newNodes);
-    }
-    return results;
-  };
-
-  /**
-   * Calls `dom5.nodeWalkAll` on each document that `Anayzler` has laoded.
-   *
-   * TODO: make nodeWalkAll & nodeWalkAllDocuments distict, or delete one.
-   */
-  nodeWalkAllDocuments(predicate:dom5.Predicate) {
-    var results: dom5.Node[] = [];
-    for (var href in this.parsedDocuments) {
-      var newNodes = dom5.nodeWalkAll(this.parsedDocuments[href], predicate);
-      results = results.concat(newNodes);
-    }
-    return results;
-  };
-
-
   /** Annotates all loaded metadata with its documentation. */
   annotate() {
     if (this.features.length > 0) {
