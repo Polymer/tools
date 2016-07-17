@@ -15,7 +15,7 @@ import * as estree from 'estree';
 import {AnalyzedDocument} from './analyzed-document';
 import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
-import {HtmlParser, ParsedImport, LocNode} from './parser/html-parser';
+import {HtmlParser, ParsedImport, getOwnerDocument} from './parser/html-parser';
 import {jsParse} from './ast-utils/js-parse';
 import {
   BehaviorDescriptor,
@@ -26,6 +26,7 @@ import {
 } from './ast/ast';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
+import {ASTNode, LocationInfo} from 'parse5';
 
 var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
 
@@ -254,7 +255,7 @@ export class Analyzer {
     return this.html[href];
   };
 
-  _processScripts(scripts: LocNode[], href: string) {
+  _processScripts(scripts: ASTNode[], href: string) {
     var scriptPromises: Promise<DocumentDescriptor>[] = [];
     scripts.forEach((script) => {
       scriptPromises.push(this._processScript(script, href));
@@ -266,7 +267,7 @@ export class Analyzer {
     });
   };
 
-  _processScript(script: LocNode, href: string):Promise<DocumentDescriptor> {
+  _processScript(script: ASTNode, href: string): Promise<DocumentDescriptor> {
     const src = dom5.getAttribute(script, 'src');
     var parsedJs: DocumentDescriptor;
     if (!src) {
@@ -274,19 +275,20 @@ export class Analyzer {
         parsedJs = jsParse((script.childNodes.length) ? script.childNodes[0].value : '');
       } catch (err) {
         // Figure out the correct line number for the error.
-        var line = 0;
-        var col = 0;
-        if (script.__ownerDocument && script.__ownerDocument == href) {
-          line = script.__locationDetail.line - 1;
-          col = script.__locationDetail.column - 1;
-        }
-        line += err.lineNumber;
-        col += err.column;
+        let location: LocationInfo = script.__location['line']
+            ? script.__location
+            : script.__location['startTag'];
+        // this assumes there's a newline after the <script> start tag
+        let line = location.line + err.lineNumber;
+        // this assumes that the script content is indented with the tag
+        let col = location.col + err.column;
+
         var message = "Error parsing script in " + href + " at " + line + ":" + col;
         message += "\n" + err.stack;
         var fixedErr = <LocError>(new Error(message));
         fixedErr.location = {line: line, column: col};
-        fixedErr.ownerDocument = script.__ownerDocument;
+        // I'm assuming that href is the owner of the script... this may not be the case, but when?
+        fixedErr.ownerDocument = href;
         return Promise.reject<DocumentDescriptor>(fixedErr);
       }
       if (parsedJs.elements) {
@@ -319,10 +321,10 @@ export class Analyzer {
       if (!Object.hasOwnProperty.call(this.parsedScripts, href)) {
         this.parsedScripts[href] = [];
       }
-      var scriptElement : LocNode;
-      if (script.__ownerDocument && script.__ownerDocument == href) {
+      var scriptElement : ASTNode;
+      // if (script.__ownerDocument && script.__ownerDocument == href) {
         scriptElement = script;
-      }
+      // }
       this.parsedScripts[href].push({
         ast: parsedJs.parsedScript,
         scriptElement: scriptElement
@@ -337,7 +339,7 @@ export class Analyzer {
         var scriptText = dom5.constructors.text(content);
         dom5.append(script, scriptText);
         dom5.removeAttribute(script, 'src');
-        script.__hydrolysisInlined = src;
+        // script.__hydrolysisInlined = src;
         return this._processScript(script, resolvedSrc);
       }).catch(function(err) {throw err;});
     } else {

@@ -9,6 +9,8 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
+import {ASTNode} from 'parse5';
 
 import {Parser} from './parser';
 
@@ -47,73 +49,58 @@ const isJSScriptNode = p.AND(
   )
 );
 
-function addNode(node: LocNode, registry: ParsedImport) {
+function addNode(node: ASTNode, registry: ParsedImport) {
   if (isHtmlImportNode(node)) {
     registry.import.push(node);
   } else if (isStyleNode(node)) {
     registry.style.push(node);
   } else if (isJSScriptNode(node)) {
     registry.script.push(node);
-  } else if (node.tagName === 'base') {
+  } else if (node['tagName'] === 'base') {
     registry.base.push(node);
-  } else if (node.tagName === 'template') {
+  } else if (node['tagName'] === 'template') {
     registry.template.push(node);
-  } else if (node.tagName === 'dom-module') {
+  } else if (node['tagName'] === 'dom-module') {
     registry['dom-module'].push(node);
   } else if (dom5.isCommentNode(node)) {
     registry.comment.push(node);
   }
 }
 
-function getLineAndColumn(string: string, charNumber: number) {
-  if (charNumber > string.length) {
-    return undefined;
-  }
-  // TODO(ajo): Caching the line lengths of each document could be much faster.
-  let sliced = string.slice(0, charNumber + 1);
-  let split = sliced.split('\n');
-  let line = split.length;
-  let column = split[split.length - 1].length;
-  return {line: line, column: column};
-}
-
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */
 export interface ParsedImport {
-  base: LocNode[];
+  base: parse5.ASTNode[];
   /**
    * The entry points to the AST at each outermost template tag.
    */
-  template: LocNode[];
+  template: parse5.ASTNode[];
   /**
    * The entry points to the AST at each script tag not inside a template.
    */
-  script: LocNode[];
+  script: parse5.ASTNode[];
   /**
    * The entry points to the AST at style tag outside a template.
    */
-  style: LocNode[];
-  import: LocNode[];
+  style: parse5.ASTNode[];
+  import: parse5.ASTNode[];
   /**
    * The entry points to the AST at each outermost dom-module element.
    */
-  'dom-module': LocNode[];
-  comment: LocNode[];
+  'dom-module': parse5.ASTNode[];
+  comment: parse5.ASTNode[];
   /**
    * The full parse5 ast for the document.
    */
-  ast: LocNode;
+  ast: parse5.ASTNode;
 }
 
-/**
- * An extension of the dom5 node type with location information and the
- * owner document squirreled away.
- */
-export interface LocNode extends dom5.Node {
-  __locationDetail: {line: number, column: number};
-  __ownerDocument: string;
-  __hydrolysisInlined: string;
+export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
+  while (node && !dom5.isDocument(node)) {
+    node = node.parentNode;
+  }
+  return node;
 }
 
 export class HtmlParser implements Parser<ParsedImport> {
@@ -127,23 +114,9 @@ export class HtmlParser implements Parser<ParsedImport> {
   * href is the path of the document.
   */
   parse(htmlString: string, href: string): ParsedImport {
-    let doc: LocNode;
-    try {
-      doc = <LocNode>dom5.parse(htmlString, {locationInfo: true});
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
+    let doc: parse5.ASTNode;
 
-    // Add line/column information
-    dom5.treeMap(doc, function(node: LocNode) {
-      if (node.__location && node.__location.start >= 0) {
-        node.__locationDetail = getLineAndColumn(htmlString, node.__location.start);
-        if (href) {
-          node.__ownerDocument = href;
-        }
-      }
-    });
+    doc = parse5.parse(htmlString, {locationInfo: true});
 
     let registry: ParsedImport = {
         base: [],
@@ -156,7 +129,7 @@ export class HtmlParser implements Parser<ParsedImport> {
         ast: doc};
 
     let queue = [].concat(doc.childNodes);
-    let nextNode: LocNode;
+    let nextNode: ASTNode;
     while (queue.length > 0) {
       nextNode = queue.shift();
       if (nextNode) {
