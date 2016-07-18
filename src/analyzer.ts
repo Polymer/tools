@@ -12,7 +12,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {ASTNode, LocationInfo} from 'parse5';
 import * as path from 'path';
-import * as url from 'url';
+import * as urlLib from 'url';
 
 import {AnalyzedDocument} from './analyzed-document';
 import {reduceMetadata} from './ast/document-descriptor';
@@ -204,30 +204,21 @@ export class Analyzer {
    * @param  {string} href       The document's URL.
    * @return {AnalyzedDocument}       An  `AnalyzedDocument`
    */
-  _parseHTML(htmlImport: string, href: string): AnalyzedDocument {
-    if (href in this.html) {
-      return this.html[href];
-    }
+  _parseHTML(contents: string, url: string): AnalyzedDocument {
     var depsLoaded: Promise<Object>[] = [];
     var depHrefs: string[] = [];
     var metadataLoaded = Promise.resolve(EMPTY_METADATA);
-    var parsed: HtmlDocument;
-    try {
-      parsed = this._htmlParser.parse(htmlImport, href);
-    } catch (err) {
-      console.error('Error parsing!');
-      throw err;
-    }
-    // var htmlLoaded = Promise.resolve(parsed);
+    var parsed = this._htmlParser.parse(contents, url);
+
     if (parsed.script) {
-      metadataLoaded = this._processScripts(parsed.script, href);
+      metadataLoaded = this._processScripts(parsed.script, url);
     }
     var commentText = parsed.comment.map(function(comment){
       return dom5.getTextContent(comment);
     });
     var pseudoElements = docs.parsePseudoElements(commentText);
     for (const element of pseudoElements) {
-      element.contentHref = href;
+      element.contentHref = url;
       this.elements.push(element);
       this.elementsByTagName[element.is] = element;
     }
@@ -243,30 +234,30 @@ export class Analyzer {
 
 
     if (this.loader) {
-      var baseUri = href;
+      var baseUri = url;
       if (parsed.base.length > 1) {
         console.error("Only one base tag per document!");
-        throw "Multiple base tags in " + href;
+        throw "Multiple base tags in " + url;
       } else if (parsed.base.length == 1) {
         var baseHref = dom5.getAttribute(parsed.base[0], "href");
         if (baseHref) {
           baseHref = baseHref + "/";
-          baseUri = url.resolve(baseUri, baseHref);
+          baseUri = urlLib.resolve(baseUri, baseHref);
         }
       }
       for (const link of parsed.import) {
         var linkurl = dom5.getAttribute(link, 'href');
         if (linkurl) {
-          var resolvedUrl = url.resolve(baseUri, linkurl);
+          var resolvedUrl = urlLib.resolve(baseUri, linkurl);
           depHrefs.push(resolvedUrl);
-          depsLoaded.push(this._dependenciesLoadedFor(resolvedUrl, href));
+          depsLoaded.push(this._dependenciesLoadedFor(resolvedUrl, url));
         }
       }
       for (const styleElement of parsed.style) {
         if (polymerExternalStyle(styleElement)) {
           var styleHref = dom5.getAttribute(styleElement, 'href');
-          if (href) {
-            styleHref = url.resolve(baseUri, styleHref);
+          if (url) {
+            styleHref = urlLib.resolve(baseUri, styleHref);
             // TODO(justinfagnani): use this.load()
             depsLoaded.push(this.loader.load(styleHref).then((content) => {
               this._content.set(styleHref, content);
@@ -279,15 +270,15 @@ export class Analyzer {
     const depsStrLoaded = Promise.all(depsLoaded)
           .then(function() {return depHrefs;})
           .catch(function(err) {throw err;});
-    this.parsedDocuments[href] = parsed.ast;
-    this.html[href] = new AnalyzedDocument({
-        url: href,
+    this.parsedDocuments[url] = parsed.ast;
+    this.html[url] = new AnalyzedDocument({
+        url: url,
         htmlDocument: parsed,
         descriptor: metadataLoaded,
         dependencies: depHrefs,
         transitiveDependencies: depsStrLoaded
     });
-    return this.html[href];
+    return this.html[url];
   };
 
   _processScripts(scripts: ASTNode[], href: string) {
@@ -367,7 +358,7 @@ export class Analyzer {
       return Promise.resolve(parsedJs);
     }
     if (this.loader) {
-      var resolvedSrc = url.resolve(href, src);
+      var resolvedSrc = urlLib.resolve(href, src);
       // TODO(justinfagnani): use this.load()
       return this.loader.load(resolvedSrc).then((content) => {
         this._content.set(resolvedSrc, content);
@@ -541,11 +532,11 @@ function matchesDocumentFolder(descriptor: ElementDescriptor, href: string) {
   if (!descriptor.contentHref) {
     return false;
   }
-  var descriptorDoc = url.parse(descriptor.contentHref);
+  var descriptorDoc = urlLib.parse(descriptor.contentHref);
   if (!descriptorDoc || !descriptorDoc.pathname) {
     return false;
   }
-  var searchDoc = url.parse(href);
+  var searchDoc = urlLib.parse(href);
   if (!searchDoc || !searchDoc.pathname) {
     return false;
   }
