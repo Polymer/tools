@@ -217,7 +217,7 @@ export class Analyzer {
       console.error('Error parsing!');
       throw err;
     }
-    var htmlLoaded = Promise.resolve(parsed);
+    // var htmlLoaded = Promise.resolve(parsed);
     if (parsed.script) {
       metadataLoaded = this._processScripts(parsed.script, href);
     }
@@ -281,7 +281,7 @@ export class Analyzer {
     this.parsedDocuments[href] = parsed.ast;
     this.html[href] = new AnalyzedDocument({
         url: href,
-        htmlLoaded: htmlLoaded,
+        htmlDocument: parsed,
         descriptor: metadataLoaded,
         dependencies: depHrefs,
         transitiveDependencies: depsStrLoaded
@@ -474,7 +474,7 @@ export class Analyzer {
       // TODO(justinfagnani): remove casts with Typescript 2.0
       let dependencies = <DocumentDescriptor[]><any>(
         await Promise.all(document.dependencies.map((d) => this.analyze(d))));
-      let parsedHtml = await document.htmlLoaded;
+      let parsedHtml = await document.htmlDocument;
 
       let tranitiveMetadata: DocumentDescriptor = {
         elements: localMetadata.elements,

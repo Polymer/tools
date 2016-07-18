@@ -15,7 +15,7 @@ export class AnalyzedDocument {
    * The parsed representation of the doc. Use the `ast` property to get
    * the full `parse5` ast.
    */
-  htmlLoaded: Promise<HtmlDocument>;
+  htmlDocument: HtmlDocument;
 
   /**
    * Resolves to the list of this Document's transitive import dependencies.
@@ -34,7 +34,7 @@ export class AnalyzedDocument {
 
   constructor(init: AnalyzedDocumentInit) {
     this.url = init.url;
-    this.htmlLoaded = init.htmlLoaded;
+    this.htmlDocument = init.htmlDocument;
     this.transitiveDependencies = init.transitiveDependencies;
     this.dependencies = init.dependencies;
     this.descriptor = init.descriptor;
@@ -52,7 +52,7 @@ export interface AnalyzedDocumentInit {
    * The parsed representation of the doc. Use the `ast` property to get
    * the full `parse5` ast.
    */
-  htmlLoaded?: Promise<HtmlDocument>;
+  htmlDocument?: HtmlDocument;
 
   /**
    * Resolves to the list of this Document's transitive import dependencies.
