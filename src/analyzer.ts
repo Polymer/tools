@@ -543,7 +543,7 @@ var isHtmlImportNode = dom5.predicates.AND(
 );
 
 function attachDomModule(parsedImport: HtmlDocument, element: ElementDescriptor) {
-  var domModules = parsedImport['dom-module'];
+  var domModules = parsedImport['domModule'];
   for (const domModule of domModules) {
     if (dom5.getAttribute(domModule, 'id') === element.is) {
       element.domModule = domModule;
