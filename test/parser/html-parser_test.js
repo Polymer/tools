@@ -24,7 +24,11 @@ suite('HtmlParser', () => {
     let parser;
 
     setup(() => {
-      parser = new HtmlParser();
+      parser = new HtmlParser({
+        findImports(url, document) {
+          return [{type: 'html', url: 'abc'}];
+        },
+      });
     });
 
     test('parses a well-formed document', () => {
@@ -36,6 +40,9 @@ suite('HtmlParser', () => {
       assert.equal(document.script.length, 5);
       assert.equal(document.import.length, 1);
       assert.equal(document.style.length, 3);
+      assert.equal(document.imports.length, 1);
+      assert.equal(document.imports[0].url, 'abc');
+      assert.equal(document.imports[0].type, 'html');
     });
 
     // enable when parse() or another method parses inline scripts

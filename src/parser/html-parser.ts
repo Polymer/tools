@@ -12,7 +12,9 @@ import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
+import {Analyzer} from '../analyzer';
 import {Parser} from './parser';
+import {ImportDescriptor} from '../ast/ast';
 
 const p = dom5.predicates;
 
@@ -64,6 +66,9 @@ export class HtmlDocument {
   /** The parse5 ast for the document */
   ast: parse5.ASTNode;
 
+  /** imports contained in this document */
+  imports: ImportDescriptor[];
+
   base: parse5.ASTNode[] = [];
   /**
    * The entry points to the AST at each outermost template tag.
@@ -84,10 +89,17 @@ export class HtmlDocument {
   domModule: parse5.ASTNode[] = [];
   comment: parse5.ASTNode[] = [];
 
-  constructor(url: string, contents: string, document: parse5.ASTNode) {
+
+  constructor(
+      url: string,
+      contents: string,
+      document: parse5.ASTNode,
+      imports: ImportDescriptor[]) {
     this.url = url;
     this.contents = contents;
     this.ast = document;
+    this.imports = imports;
+    // TODO(justinfagnani): remove this
     this._addNodes();
   }
 
@@ -128,6 +140,12 @@ export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
 
 export class HtmlParser implements Parser<HtmlDocument> {
 
+  analyzer: Analyzer;
+
+  constructor(analyzer: Analyzer) {
+    this.analyzer = analyzer;
+  }
+
   /**
   * Parse html into ASTs.
   *
@@ -136,7 +154,8 @@ export class HtmlParser implements Parser<HtmlDocument> {
   */
   parse(contents: string, url: string): HtmlDocument {
     let doc = parse5.parse(contents, {locationInfo: true});
-    return new HtmlDocument(url, contents, doc);
+    let imports = this.analyzer.findImports(url, doc);
+    return new HtmlDocument(url, contents, doc, imports);
   }
 
 }

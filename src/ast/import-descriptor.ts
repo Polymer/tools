@@ -7,13 +7,13 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
+ 
+export class ImportDescriptor {
+  type: string;
+  url: string;
 
-export * from './behavior-descriptor';
-export * from './descriptor';
-export * from './document-descriptor';
-export * from './element-descriptor';
-export * from './event-descriptor';
-export * from './feature-descriptor';
-export * from './function-descriptor';
-export * from './property-descriptor';
-export * from './import-descriptor';
+  constructor(type: string, url: string) {
+    this.type = type;
+    this.url = url;
+  }
+}

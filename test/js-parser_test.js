@@ -242,8 +242,10 @@ suite('js-parser', () => {
     let byName;
     let analyzer;
 
-    setup(function() {
-      analyzer = new hyd.Analyzer(loader);
+    setup(() => {
+      analyzer = new hyd.Analyzer({
+        urlLoader: loader,
+      });
       return analyzer.analyze("static/html-behaviors.html").then((root) => {
         analyzer.annotate();
       });

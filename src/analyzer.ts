@@ -9,8 +9,10 @@
  */
 
 import * as dom5 from 'dom5';
-import * as url from 'url';
 import * as estree from 'estree';
+import {ASTNode, LocationInfo} from 'parse5';
+import * as path from 'path';
+import * as url from 'url';
 
 import {AnalyzedDocument} from './analyzed-document';
 import {reduceMetadata} from './ast/document-descriptor';
@@ -23,10 +25,12 @@ import {
   DocumentDescriptor,
   ElementDescriptor,
   FeatureDescriptor,
+  ImportDescriptor,
 } from './ast/ast';
+import {ImportFinder} from './import/import-finder.ts';
+import {HtmlImportFinder} from './import/html-import-finder';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
-import {ASTNode, LocationInfo} from 'parse5';
 
 var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
 
@@ -78,6 +82,11 @@ interface LocError extends Error{
   ownerDocument: string;
 }
 
+export interface AnalyzerInit {
+  urlLoader: UrlLoader;
+  importFinders: Map<string, ImportFinder<any>[]>;
+}
+
 /**
  * A database of Polymer metadata defined in HTML
  */
@@ -126,7 +135,9 @@ export class Analyzer {
    */
   parsedScripts: {[path:string]: ParsedJS[]} = {};
 
-  private _htmlParser = new HtmlParser();
+  private _htmlParser = new HtmlParser(this);
+
+  private _importFinders: Map<string, ImportFinder<any>[]> = new Map();
 
   /**
    * A map, keyed by path, of document content.
@@ -136,11 +147,18 @@ export class Analyzer {
   private _documents: Map<string, Promise<AnalyzedDocument>> = new Map();
   private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
 
+  static get defaultImportFinders(): Map<string, ImportFinder<any>[]> {
+    let finders = new Map();
+    finders.set('html', [new HtmlImportFinder()]);
+    return finders;
+  }
+
   /**
    * @param {UrlLoader} loader
    */
-  constructor(loader: UrlLoader) {
-    this.loader = loader;
+  constructor(from: AnalyzerInit) {
+    this.loader = from.urlLoader;
+    this._importFinders = from.importFinders || Analyzer.defaultImportFinders;
   }
 
   async load(url: string): Promise<AnalyzedDocument> {
@@ -148,12 +166,15 @@ export class Analyzer {
     if (this._documents.has(url)) {
       return this._documents.get(url);
     }
+    if (!url.endsWith('.html')) {
+      throw new Error('Only files with extension .html are supported at this time');
+    }
     if (!this.loader.canLoad(url)) {
       throw new Error(`Can't load URL: ${url}`);
     }
     // Use an immediately executed async function to create the final Promise
     // synchronously so we can store it in this._documents before any other
-    // operations to avoid any race conditions with the loader
+    // async operations to avoid any race conditions.
     let promise = (async () => {
       let content = await this.loader.load(url);
       return this._parseHTML(content, url);
@@ -161,6 +182,19 @@ export class Analyzer {
     this._documents.set(url, promise);
     return promise;
   };
+
+  findImports<T>(url: string, document: T): ImportDescriptor[] {
+    let extension = path.extname(url).substring(1);
+    let finders: ImportFinder<T>[] = this._importFinders.get(extension);
+    if (finders == null) {
+      throw new Error(`No ImportFinders for extension ${extension}`);
+    }
+    let imports: ImportDescriptor[] = [];
+    for (let finder of finders) {
+      imports = imports.concat(finder.findImports(url, document));
+    }
+    return imports;
+  }
 
   /**
    * Returns an `AnalyzedDocument` representing the provided document

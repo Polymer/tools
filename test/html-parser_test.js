@@ -58,7 +58,9 @@ suite('importParse: HTML', () => {
 
     test('bad HTML reports a filename', () => {
       let loader = new FSUrlLoader(__dirname);
-      let analyzer = new hyd.Analyzer(loader);
+      let analyzer = new hyd.Analyzer({
+        urlLoader: loader,
+      });
       return analyzer.analyze("static/malformed.html").then((root) => {
         throw new Error("Should have thrown an error message.");
       }, (error) => {

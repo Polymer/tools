@@ -18,12 +18,18 @@ const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 const AnalyzedDocument = require('../lib/analyzed-document').AnalyzedDocument;
 
 suite('Analyzer', () => {
-  let loader;
+  let importFinder;
   let analyzer;
 
   setup(() => {
-    loader = new FSUrlLoader(__dirname);
-    analyzer = new Analyzer(loader);
+    importFinder = new ImportFinderStub([{
+      type: 'html',
+      url: 'abc',
+    }]);
+    analyzer = new Analyzer({
+      urlLoader: new FSUrlLoader(__dirname),
+      importFinders: new Map([['html', [importFinder]]]),
+    });
   });
 
   suite('load()', () => {
@@ -80,4 +86,33 @@ suite('Analyzer', () => {
 
   });
 
+  suite('findImports()', () => {
+
+    test('calls to the ImportFinders', () => {
+      let document = {};
+      let imports = analyzer.findImports('foo.html', document);
+      assert.equal(importFinder.calls.length, 1);
+      assert.equal(importFinder.calls[0].url, 'foo.html');
+      assert.equal(importFinder.calls[0].document, document);
+      assert.equal(imports.length, 1);
+      assert.equal(imports[0].url, 'abc');
+      assert.equal(imports[0].type, 'html');
+    });
+
+  });
+
 });
+
+class ImportFinderStub {
+
+  constructor(imports) {
+    this.imports = imports;
+    this.calls = [];
+  }
+
+  findImports(url, document) {
+    this.calls.push({url, document});
+    return this.imports;
+  }
+
+}
