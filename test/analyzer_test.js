@@ -16,6 +16,7 @@ const path = require('path');
 const Analyzer = require('../lib/analyzer').Analyzer;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 const AnalyzedDocument = require('../lib/analyzed-document').AnalyzedDocument;
+const Document = require('../lib/parser/document').Document;
 
 suite('Analyzer', () => {
   let importFinder;
@@ -53,6 +54,36 @@ suite('Analyzer', () => {
 
     test.skip('returns a Promise that rejects for malformed files', () => {
       return analyzer.load('/static/malformed.html')
+        .then((doc) => {
+          assert.fail();
+        }, (error) => {
+          // pass
+        });
+    });
+
+  });
+
+  suite('loadDocument()', () => {
+
+    test('returns a Promise that resolves to an AnalyzedDocument', () => {
+      return analyzer.loadDocument('/static/html-parse-target.html')
+        .then((doc) => {
+          assert.instanceOf(doc, Document);
+          assert.equal(doc.url, '/static/html-parse-target.html');
+        });
+    });
+
+    test('returns a Promise that rejects for non-existant files', () => {
+      return analyzer.loadDocument('/static/not-found')
+        .then((doc) => {
+          assert.fail();
+        }, (error) => {
+          // pass
+        });
+    });
+
+    test.skip('returns a Promise that rejects for malformed files', () => {
+      return analyzer.loadDocument('/static/malformed.html')
         .then((doc) => {
           assert.fail();
         }, (error) => {

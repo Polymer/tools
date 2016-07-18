@@ -19,6 +19,8 @@ import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
 import {HtmlParser, getOwnerDocument} from './parser/html-parser';
 import {HtmlDocument} from './parser/html-document';
+import {Document} from './parser/document';
+import {Parser} from './parser/parser';
 import {jsParse} from './ast-utils/js-parse';
 import {
   BehaviorDescriptor,
@@ -86,6 +88,7 @@ interface LocError extends Error{
 export interface AnalyzerInit {
   urlLoader: UrlLoader;
   importFinders: Map<string, ImportFinder<any>[]>;
+  parsers: Map<string, Parser<any>>;
 }
 
 /**
@@ -131,8 +134,7 @@ export class Analyzer {
    */
   parsedScripts: {[path:string]: ParsedJS[]} = {};
 
-  private _htmlParser = new HtmlParser(this);
-
+  private _parsers: Map<string, Parser<any>> = new Map();
   private _importFinders: Map<string, ImportFinder<any>[]> = new Map();
 
   /**
@@ -140,13 +142,20 @@ export class Analyzer {
    */
   private _content: Map<string, string> = new Map();
 
-  private _documents: Map<string, Promise<AnalyzedDocument>> = new Map();
+  private _analyzedDocuments: Map<string, Promise<AnalyzedDocument>> = new Map();
+  private _documents: Map<string, Promise<Document<any>>> = new Map();
   private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
 
-  static get defaultImportFinders(): Map<string, ImportFinder<any>[]> {
+  static getDefaultImportFinders(): Map<string, ImportFinder<any>[]> {
     let finders = new Map();
     finders.set('html', [new HtmlImportFinder()]);
     return finders;
+  }
+
+  static getDefaultParsers(analyzer: Analyzer): Map<string, Parser<any>> {
+    let parsers = new Map();
+    parsers.set('html', new HtmlParser(analyzer));
+    return parsers;
   }
 
   /**
@@ -154,13 +163,14 @@ export class Analyzer {
    */
   constructor(from: AnalyzerInit) {
     this.loader = from.urlLoader;
-    this._importFinders = from.importFinders || Analyzer.defaultImportFinders;
+    this._parsers = from.parsers || Analyzer.getDefaultParsers(this);
+    this._importFinders = from.importFinders || Analyzer.getDefaultImportFinders();
   }
 
   async load(url: string): Promise<AnalyzedDocument> {
     // TODO(justinfagnani): normalize url
-    if (this._documents.has(url)) {
-      return this._documents.get(url);
+    if (this._analyzedDocuments.has(url)) {
+      return this._analyzedDocuments.get(url);
     }
     if (!url.endsWith('.html')) {
       throw new Error('Only files with extension .html are supported at this time');
@@ -175,9 +185,35 @@ export class Analyzer {
       let content = await this.loader.load(url);
       return this._parseHTML(content, url);
     })();
+    this._analyzedDocuments.set(url, promise);
+    return promise;
+  }
+
+  // new version of load() that returns Document instead of AnalyzedDocument
+  // this will replace load() soon
+  async loadDocument(url: string): Promise<Document<any>> {
+    // TODO(justinfagnani): normalize url
+    if (this._documents.has(url)) {
+      return this._documents.get(url);
+    }
+    if (!this.loader.canLoad(url)) {
+      throw new Error(`Can't load URL: ${url}`);
+    }
+    let extension = path.extname(url).substring(1);
+    let parser = this._parsers.get(extension);
+    if (parser == null) {
+      throw new Error(`No parser for for file type ${extension}`);
+    }
+    // Use an immediately executed async function to create the final Promise
+    // synchronously so we can store it in this._documents before any other
+    // async operations to avoid any race conditions.
+    let promise = (async () => {
+      let content = await this.loader.load(url);
+      return parser.parse(content, url);
+    })();
     this._documents.set(url, promise);
     return promise;
-  };
+  }
 
   findImports<T>(url: string, document: T): ImportDescriptor[] {
     let extension = path.extname(url).substring(1);
@@ -203,7 +239,7 @@ export class Analyzer {
     var depsLoaded: Promise<Object>[] = [];
     var depHrefs: string[] = [];
     var metadataLoaded = Promise.resolve(EMPTY_METADATA);
-    var parsed = this._htmlParser.parse(contents, url);
+    var parsed = <HtmlDocument>this._parsers.get('html').parse(contents, url);
 
     if (parsed.script) {
       metadataLoaded = this._processScripts(parsed.script, url);

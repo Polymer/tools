@@ -13,6 +13,7 @@ import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
 import {Analyzer} from '../analyzer';
+import {Document, DocumentInit} from './document';
 import {Parser} from './parser';
 import {ImportDescriptor} from '../ast/ast';
 
@@ -53,18 +54,7 @@ const isJSScriptNode = p.AND(
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */
-export class HtmlDocument {
-  /** The normalized URL of the document */
-  url: string;
-
-  /** The unparsed source of the document */
-  contents: string;
-
-  /** The parse5 ast for the document */
-  ast: parse5.ASTNode;
-
-  /** imports contained in this document */
-  imports: ImportDescriptor[];
+export class HtmlDocument extends Document<parse5.ASTNode> {
 
   base: parse5.ASTNode[] = [];
   /**
@@ -87,15 +77,8 @@ export class HtmlDocument {
   comment: parse5.ASTNode[] = [];
 
 
-  constructor(
-      url: string,
-      contents: string,
-      document: parse5.ASTNode,
-      imports: ImportDescriptor[]) {
-    this.url = url;
-    this.contents = contents;
-    this.ast = document;
-    this.imports = imports;
+  constructor(from: DocumentInit<parse5.ASTNode>) {
+    super(from);
     // TODO(justinfagnani): remove this
     this._addNodes();
   }

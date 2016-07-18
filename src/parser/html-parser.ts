@@ -40,9 +40,9 @@ export class HtmlParser implements Parser<HtmlDocument> {
   * @param {string} href is the path of the document.
   */
   parse(contents: string, url: string): HtmlDocument {
-    let doc = parse5.parse(contents, {locationInfo: true});
-    let imports = this.analyzer.findImports(url, doc);
-    return new HtmlDocument(url, contents, doc, imports);
+    let ast = parse5.parse(contents, {locationInfo: true});
+    let imports = this.analyzer.findImports(url, ast);
+    return new HtmlDocument({url, contents, ast, imports, analyzer: this.analyzer});
   }
 
 }
