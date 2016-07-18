@@ -1,7 +1,7 @@
 import * as estree from 'estree';
 import * as dom5 from 'dom5';
 
-import {HtmlDocument} from '../parser/html-parser';
+import {HtmlDocument} from '../parser/html-document';
 
 import {ElementDescriptor} from './element-descriptor';
 import {FeatureDescriptor} from './feature-descriptor';

@@ -55,6 +55,7 @@
         "src/import/html-import-finder.ts",
         "src/import/import-finder.ts",
         "src/importer/import-finder.ts",
+        "src/parser/html-document.ts",
         "src/parser/html-parser.ts",
         "src/parser/parser.ts",
         "src/url-loader/fetch-url-loader.ts",

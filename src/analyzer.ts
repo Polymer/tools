@@ -17,7 +17,8 @@ import * as url from 'url';
 import {AnalyzedDocument} from './analyzed-document';
 import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
-import {HtmlParser, HtmlDocument, getOwnerDocument} from './parser/html-parser';
+import {HtmlParser, getOwnerDocument} from './parser/html-parser';
+import {HtmlDocument} from './parser/html-document';
 import {jsParse} from './ast-utils/js-parse';
 import {
   BehaviorDescriptor,
