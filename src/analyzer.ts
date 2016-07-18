@@ -119,11 +119,6 @@ export class Analyzer {
   behaviorsByName: {[name:string]: BehaviorDescriptor} = {};
 
   /**
-   * A map, keyed by absolute path, of Document metadata.
-   */
-  html: {[path: string]: AnalyzedDocument} = {};
-
-  /**
    * A map, keyed by path, of HTML document ASTs.
    */
   parsedDocuments: {[path:string]: dom5.Node} = {};
@@ -271,14 +266,13 @@ export class Analyzer {
           .then(function() {return depHrefs;})
           .catch(function(err) {throw err;});
     this.parsedDocuments[url] = parsed.ast;
-    this.html[url] = new AnalyzedDocument({
+    return new AnalyzedDocument({
         url: url,
         htmlDocument: parsed,
         descriptor: metadataLoaded,
         dependencies: depHrefs,
         transitiveDependencies: depsStrLoaded
     });
-    return this.html[url];
   };
 
   _processScripts(scripts: ASTNode[], href: string) {
