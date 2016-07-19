@@ -40,14 +40,6 @@ import {UrlResolver} from './url-loader/url-resolver';
 var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
 
 /**
- * Package of a parsed JS script
- */
-interface ParsedJS {
-  ast: estree.Program;
-  scriptElement: dom5.Node;
-}
-
-/**
  * An Error extended with location metadata.
  */
 interface LocError extends Error{
@@ -437,41 +429,6 @@ export class Analyzer {
   };
 
 };
-
-
-
-/**
- * @private
- * @param {string} href
- * @return {function(string): boolean}
- */
-function _defaultFilter(href:string) {
-  // Everything up to the last `/` or `\`.
-  var base = href.match(/^(.*?)[^\/\\]*$/)[1];
-  return function(uri:string) {
-    return uri.indexOf(base) !== 0;
-  };
-}
-
-function matchesDocumentFolder(descriptor: ElementDescriptor, href: string) {
-  if (!descriptor.contentHref) {
-    return false;
-  }
-  var descriptorDoc = urlLib.parse(descriptor.contentHref);
-  if (!descriptorDoc || !descriptorDoc.pathname) {
-    return false;
-  }
-  var searchDoc = urlLib.parse(href);
-  if (!searchDoc || !searchDoc.pathname) {
-    return false;
-  }
-  var searchPath = searchDoc.pathname;
-  var lastSlash = searchPath.lastIndexOf("/");
-  if (lastSlash > 0) {
-    searchPath = searchPath.slice(0, lastSlash);
-  }
-  return descriptorDoc.pathname.indexOf(searchPath) === 0;
-}
 
 // TODO(ajo): Refactor out of vulcanize into dom5.
 var polymerExternalStyle = dom5.predicates.AND(
