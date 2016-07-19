@@ -14,8 +14,6 @@ import {ASTNode, LocationInfo} from 'parse5';
 import * as path from 'path';
 import * as urlLib from 'url';
 
-import {AnalyzedDocument} from './analyzed-document';
-import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
 import {HtmlParser, getOwnerDocument} from './parser/html-parser';
 import {HtmlDocument} from './parser/html-document';
@@ -37,8 +35,6 @@ import {HtmlScriptFinder} from './import/html-script-finder';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
 
-var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
-
 export interface AnalyzerInit {
   urlLoader: UrlLoader;
   importFinders: Map<string, ImportFinder<any>[]>;
@@ -54,8 +50,6 @@ export class Analyzer {
   private _parsers: Map<string, Parser<any>> = new Map();
   private _importFinders: Map<string, ImportFinder<any>[]> = new Map();
 
-  private _content: Map<string, string> = new Map();
-  private _analyzedDocuments: Map<string, Promise<AnalyzedDocument>> = new Map();
   private _documents: Map<string, Promise<Document<any>>> = new Map();
   private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
 
@@ -72,40 +66,36 @@ export class Analyzer {
     return parsers;
   }
 
-  /**
-   * @param {UrlLoader} loader
-   */
   constructor(from: AnalyzerInit) {
     this.loader = from.urlLoader;
     this._parsers = from.parsers || Analyzer.getDefaultParsers(this);
     this._importFinders = from.importFinders || Analyzer.getDefaultImportFinders();
   }
 
-  async load(url: string): Promise<AnalyzedDocument> {
-    // TODO(justinfagnani): normalize url
-    if (this._analyzedDocuments.has(url)) {
-      return this._analyzedDocuments.get(url);
-    }
-    if (!url.endsWith('.html')) {
-      throw new Error('Only files with extension .html are supported at this time');
-    }
-    if (!this.loader.canLoad(url)) {
-      throw new Error(`Can't load URL: ${url}`);
-    }
-    // Use an immediately executed async function to create the final Promise
-    // synchronously so we can store it in this._documents before any other
-    // async operations to avoid any race conditions.
-    let promise = (async () => {
-      let content = await this.loader.load(url);
-      return this._parseHTML(content, url);
-    })();
-    this._analyzedDocuments.set(url, promise);
-    return promise;
-  }
 
-  // new version of load() that returns Document instead of AnalyzedDocument
-  // this will replace load() soon
-  async loadDocument(url: string): Promise<Document<any>> {
+  /**
+   * Analyzes a document and its transitive dependencies.
+   *
+   * @param {string} url the location of the file to analyze
+   * @return {Promise<DocumentDescriptor>}
+   */
+  async analyze(url: string): Promise<DocumentDescriptor> {
+    if (this._documentDescriptors.has(url)) {
+      return this._documentDescriptors.get(url);
+    }
+
+    let promise = (async () => {
+      let document = await this.load(url);
+      // TODO(justinfagnani): trigger entity finders
+      let dependencies = <DocumentDescriptor[]><any>(await Promise.all(
+          document.imports.map((i) => this.analyze(i.url))));
+      return new DocumentDescriptor(document, dependencies);
+    })();
+    this._documentDescriptors.set(url, promise);
+    return promise;
+  };
+
+  async load(url: string): Promise<Document<any>> {
     // TODO(justinfagnani): normalize url
     if (this._documents.has(url)) {
       return this._documents.get(url);
@@ -150,299 +140,4 @@ export class Analyzer {
     }
   }
 
-  /**
-   * Returns an `AnalyzedDocument` representing the provided document
-   * @private
-   * @param  {string} htmlImport Raw text of an HTML document
-   * @param  {string} href       The document's URL.
-   * @return {AnalyzedDocument}       An  `AnalyzedDocument`
-   */
-  _parseHTML(contents: string, url: string): AnalyzedDocument {
-    var depsLoaded: Promise<Object>[] = [];
-    var depHrefs: string[] = [];
-    var metadataLoaded = Promise.resolve(EMPTY_METADATA);
-    var parsed = <HtmlDocument>this._parsers.get('html').parse(contents, url);
-
-    if (parsed.script) {
-      metadataLoaded = this._processScripts(parsed.script, url);
-    }
-    var commentText = parsed.comment.map(function(comment){
-      return dom5.getTextContent(comment);
-    });
-    var pseudoElements = docs.parsePseudoElements(commentText);
-    for (const element of pseudoElements) {
-      element.contentHref = url;
-    }
-    metadataLoaded = metadataLoaded.then(function(metadata){
-      var metadataEntry: DocumentDescriptor = {
-        elements: pseudoElements,
-        features: [],
-        behaviors: []
-      };
-      return [metadata, metadataEntry].reduce(reduceMetadata);
-    });
-    depsLoaded.push(metadataLoaded);
-
-
-    if (this.loader) {
-      var baseUri = url;
-      if (parsed.base.length > 1) {
-        console.error("Only one base tag per document!");
-        throw "Multiple base tags in " + url;
-      } else if (parsed.base.length == 1) {
-        var baseHref = dom5.getAttribute(parsed.base[0], "href");
-        if (baseHref) {
-          baseHref = baseHref + "/";
-          baseUri = urlLib.resolve(baseUri, baseHref);
-        }
-      }
-      for (const link of parsed.import) {
-        var linkurl = dom5.getAttribute(link, 'href');
-        if (linkurl) {
-          var resolvedUrl = urlLib.resolve(baseUri, linkurl);
-          depHrefs.push(resolvedUrl);
-          depsLoaded.push(this._dependenciesLoadedFor(resolvedUrl, url));
-        }
-      }
-      for (const styleElement of parsed.style) {
-        if (polymerExternalStyle(styleElement)) {
-          var styleHref = dom5.getAttribute(styleElement, 'href');
-          if (url) {
-            styleHref = urlLib.resolve(baseUri, styleHref);
-            // TODO(justinfagnani): use this.load()
-            depsLoaded.push(this.loader.load(styleHref).then((content) => {
-              this._content.set(styleHref, content);
-              return {};
-            }));
-          }
-        }
-      }
-    }
-    const depsStrLoaded = Promise.all(depsLoaded)
-          .then(function() {return depHrefs;})
-          .catch(function(err) {throw err;});
-    return new AnalyzedDocument({
-        url: url,
-        htmlDocument: parsed,
-        descriptor: metadataLoaded,
-        dependencies: depHrefs,
-        transitiveDependencies: depsStrLoaded
-    });
-  };
-
-  _processScripts(scripts: ASTNode[], href: string) {
-    var scriptPromises: Promise<DocumentDescriptor>[] = [];
-    scripts.forEach((script) => {
-      scriptPromises.push(this._processScript(script, href));
-    });
-    return Promise.all(scriptPromises).then(function(metadataList) {
-      // TODO(ajo) remove this cast.
-      var list: DocumentDescriptor[] = <any>metadataList;
-      return list.reduce(reduceMetadata, EMPTY_METADATA);
-    });
-  };
-
-  _processScript(script: ASTNode, href: string): Promise<DocumentDescriptor> {
-    const src = dom5.getAttribute(script, 'src');
-    var parsedJs: DocumentDescriptor;
-    if (!src) {
-      try {
-        parsedJs = jsParse((script.childNodes.length) ? script.childNodes[0].value : '');
-      } catch (err) {
-        // Figure out the correct line number for the error.
-        let location: LocationInfo = script.__location['line']
-            ? script.__location
-            : script.__location['startTag'];
-        // this assumes there's a newline after the <script> start tag
-        let line = location.line + err.lineNumber;
-        // this assumes that the script content is indented with the tag
-        let col = location.col + err.column;
-
-        // TODO(justinfagnani): use SyntaxError
-        let fixedErr = new Error(`Error parsing script in ${href} at `
-          + `${line}:${col}\n${err.stack}`);
-        fixedErr['location'] = {line: line, column: col};
-        // I'm assuming that href is the owner of the script... this may not be the case, but when?
-        fixedErr['ownerDocument'] = href;
-        return Promise.reject<DocumentDescriptor>(fixedErr);
-      }
-      if (parsedJs.elements) {
-        parsedJs.elements.forEach((element) => {
-          element.scriptElement = script;
-          element.contentHref = href;
-        });
-      }
-      if (parsedJs.features) {
-        parsedJs.features.forEach((feature) => {
-          feature.contentHref = href;
-          feature.scriptElement = script;
-        });
-      }
-      if (parsedJs.behaviors) {
-        parsedJs.behaviors.forEach((behavior) => {
-          behavior.contentHref = href;
-        });
-      }
-      return Promise.resolve(parsedJs);
-    }
-    if (this.loader) {
-      var resolvedSrc = urlLib.resolve(href, src);
-      // TODO(justinfagnani): use this.load()
-      return this.loader.load(resolvedSrc).then((content) => {
-        this._content.set(resolvedSrc, content);
-        var scriptText = dom5.constructors.text(content);
-        dom5.append(script, scriptText);
-        dom5.removeAttribute(script, 'src');
-        // script.__hydrolysisInlined = src;
-        return this._processScript(script, resolvedSrc);
-      }).catch(function(err) {throw err;});
-    } else {
-      return Promise.resolve(EMPTY_METADATA);
-    }
-  };
-
-  _dependenciesLoadedFor(href: string, root: string) {
-    var found: {[href: string]: boolean} = {};
-    if (root !== undefined) {
-      found[root] = true;
-    }
-    return this._getDependencies(href, found).then((deps) => {
-      var depPromises = deps.map((depHref) =>{
-        return this.load(depHref).then((htmlMonomer) => {
-          return htmlMonomer.descriptor;
-        });
-      });
-      return Promise.all(depPromises);
-    });
-  };
-
-  /**
-   * List all the html dependencies for the document at `href`.
-   * @param  {string}                   href      The href to get dependencies for.
-   * @param  {Object.<string,boolean>=} found     An object keyed by URL of the
-   *     already resolved dependencies.
-   * @param  {boolean=}                transitive Whether to load transitive
-   *     dependencies. Defaults to true.
-   * @return {Array.<string>}  A list of all the html dependencies.
-   */
-  _getDependencies(href:string, found?:{[url:string]: boolean}, transitive?:boolean):Promise<string[]> {
-    if (found === undefined) {
-      found = {};
-      found[href] = true;
-    }
-    if (transitive === undefined) {
-      transitive = true;
-    }
-    var deps: string[] = [];
-    return this.load(href).then((htmlMonomer) => {
-      var transitiveDeps: Promise<string[]>[] = [];
-      htmlMonomer.dependencies.forEach((depHref) => {
-        if (found[depHref]) {
-          return;
-        }
-        deps.push(depHref);
-        found[depHref] = true;
-        if (transitive) {
-          transitiveDeps.push(this._getDependencies(depHref, found));
-        }
-      });
-      return Promise.all(transitiveDeps);
-    }).then(function(transitiveDeps) {
-      var alldeps = transitiveDeps.reduce(function(a, b) {
-        return a.concat(b);
-      }, []).concat(deps);
-      return alldeps;
-    });
-  };
-
-  /**
-   * Returns a Promise that resolves to a DocumentDescriptor of the transitive
-   * import tree, which maintains the ordering of the HTML imports spec.
-   *
-   * @param {string} url the location of the HTML file to analyze
-   * @return {Promise<DocumentDescriptor>}
-   */
-  async analyze(url: string): Promise<DocumentDescriptor> {
-    if (this._documentDescriptors.has(url)) {
-      return this._documentDescriptors.get(url);
-    }
-
-    let promise = (async () => {
-      let document = await this.load(url);
-      let localMetadata = await document.descriptor;
-      // TODO(justinfagnani): remove casts with Typescript 2.0
-      let dependencies = <DocumentDescriptor[]><any>(
-        await Promise.all(document.dependencies.map((d) => this.analyze(d))));
-      let parsedHtml = await document.htmlDocument;
-
-      let tranitiveMetadata: DocumentDescriptor = {
-        elements: localMetadata.elements,
-        features: localMetadata.features,
-        behaviors: [],
-        href: document.url,
-        imports: dependencies,
-        html: parsedHtml,
-      };
-      if (tranitiveMetadata.elements) {
-        tranitiveMetadata.elements.forEach((element) => {
-          attachDomModule(parsedHtml, element);
-        });
-      }
-      return tranitiveMetadata;
-    })();
-    this._documentDescriptors.set(url, promise);
-    return promise;
-  };
-
-  /** Annotates all loaded metadata with its documentation. */
-  annotate() {
-    // TODO(justinfagnani): re-implement in EntityFinders
-    // if (this.features.length > 0) {
-    //   var featureEl = docs.featureElement(this.features);
-    //   this.elements.unshift(featureEl);
-    //   this.elementsByTagName[featureEl.is] = featureEl;
-    // }
-    // var behaviorsByName = this.behaviorsByName;
-    // var elementHelper = (descriptor: ElementDescriptor) => {
-    //   docs.annotateElement(descriptor, behaviorsByName);
-    // };
-    // this.elements.forEach(elementHelper);
-    // this.behaviors.forEach(elementHelper); // Same shape.
-    // this.behaviors.forEach((behavior) =>{
-    //   if (behavior.is !== behavior.symbol && behavior.symbol) {
-    //     this.behaviorsByName[behavior.symbol] = undefined;
-    //   }
-    // });
-  };
-
-};
-
-// TODO(ajo): Refactor out of vulcanize into dom5.
-var polymerExternalStyle = dom5.predicates.AND(
-  dom5.predicates.hasTagName('link'),
-  dom5.predicates.hasAttrValue('rel', 'import'),
-  dom5.predicates.hasAttrValue('type', 'css')
-);
-
-var externalScript = dom5.predicates.AND(
-  dom5.predicates.hasTagName('script'),
-  dom5.predicates.hasAttr('src')
-);
-
-var isHtmlImportNode = dom5.predicates.AND(
-  dom5.predicates.hasTagName('link'),
-  dom5.predicates.hasAttrValue('rel', 'import'),
-  dom5.predicates.NOT(
-    dom5.predicates.hasAttrValue('type', 'css')
-  )
-);
-
-function attachDomModule(parsedImport: HtmlDocument, element: ElementDescriptor) {
-  var domModules = parsedImport['domModule'];
-  for (const domModule of domModules) {
-    if (dom5.getAttribute(domModule, 'id') === element.is) {
-      element.domModule = domModule;
-      return;
-    }
-  }
 }

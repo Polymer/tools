@@ -26,23 +26,26 @@ suite('Analyzer', () => {
   let analyzer;
 
   setup(() => {
-    importFinder = new ImportFinderStub([{
-      type: 'html',
-      url: 'abc',
-    }]);
     analyzer = new Analyzer({
       urlLoader: new FSUrlLoader(__dirname),
-      importFinders: new Map([['html', [importFinder]]]),
     });
   });
 
   suite('load()', () => {
 
-    test('returns a Promise that resolves to an AnalyzedDocument', () => {
+    test('loads and parses an HTML document', () => {
       return analyzer.load('/static/html-parse-target.html')
         .then((doc) => {
-          assert.instanceOf(doc, AnalyzedDocument);
+          assert.instanceOf(doc, HtmlDocument);
           assert.equal(doc.url, '/static/html-parse-target.html');
+        });
+    });
+
+    test('loads and parses a JavaScript document', () => {
+      return analyzer.load('/static/js-elements.js')
+        .then((doc) => {
+          assert.instanceOf(doc, JavaScriptDocument);
+          assert.equal(doc.url, '/static/js-elements.js');
         });
     });
 
@@ -66,52 +69,12 @@ suite('Analyzer', () => {
 
   });
 
-  suite('loadDocument()', () => {
-
-    test('loads and parses an HTML document', () => {
-      return analyzer.loadDocument('/static/html-parse-target.html')
-        .then((doc) => {
-          assert.instanceOf(doc, HtmlDocument);
-          assert.equal(doc.url, '/static/html-parse-target.html');
-        });
-    });
-
-    test('loads and parses a JavaScript document', () => {
-      return analyzer.loadDocument('/static/js-elements.js')
-        .then((doc) => {
-          assert.instanceOf(doc, JavaScriptDocument);
-          assert.equal(doc.url, '/static/js-elements.js');
-        });
-    });
-
-    test('returns a Promise that rejects for non-existant files', () => {
-      return analyzer.loadDocument('/static/not-found')
-        .then((doc) => {
-          assert.fail();
-        }, (error) => {
-          // pass
-        });
-    });
-
-    test.skip('returns a Promise that rejects for malformed files', () => {
-      return analyzer.loadDocument('/static/malformed.html')
-        .then((doc) => {
-          assert.fail();
-        }, (error) => {
-          // pass
-        });
-    });
-
-  });
-
   suite('analyze()', () => {
 
     test('returns a Promise that resolves to a DocumentDescriptor', () => {
       return analyzer.analyze('/static/html-parse-target.html')
-        .then((document) => {
-          assert.equal(document.elements[0].is, 'test-element');
-          assert.equal(document.html.template.length, 3);
-          assert.equal(document.imports[0].href, '/static/xhr-document.html');
+        .then((descriptor) => {
+          assert.equal(descriptor.document.template.length, 3);
           // TODO(justinfagnani): add a lot more checks, especially for
           // transitive dependencies
         });
@@ -131,6 +94,14 @@ suite('Analyzer', () => {
   suite('findImports()', () => {
 
     test('calls to the ImportFinders', () => {
+      importFinder = new ImportFinderStub([{
+        type: 'html',
+        url: 'abc',
+      }]);
+      let analyzer = new Analyzer({
+        urlLoader: new FSUrlLoader(__dirname),
+        importFinders: new Map([['html', [importFinder]]]),
+      });
       let document = {};
       let imports = analyzer.findImports('foo.html', document);
       assert.equal(importFinder.calls.length, 1);
@@ -142,9 +113,6 @@ suite('Analyzer', () => {
     });
 
     test('default import finders', () => {
-      let analyzer = new Analyzer({
-        urlLoader: new FSUrlLoader(__dirname),
-      });
       let document = parse5.parse(`<html><head>
           <link rel="import" href="polymer.html">
           <script src="foo.js"></script>

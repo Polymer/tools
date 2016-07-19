@@ -32,7 +32,7 @@ export class Document<T> {
 
   loadImports(): Promise<Document<any>[]> {
     return <Promise<Document<any>[]>><any>Promise.all(
-        this.imports.map((i) => this._analyzer.loadDocument(i.url)));
+        this.imports.map((i) => this._analyzer.load(i.url)));
   }
 }
 

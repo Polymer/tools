@@ -1,45 +1,29 @@
-import * as estree from 'estree';
-import * as dom5 from 'dom5';
+/**
+ * @license
+ * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 
-import {HtmlDocument} from '../parser/html-document';
-
-import {ElementDescriptor} from './element-descriptor';
-import {FeatureDescriptor} from './feature-descriptor';
-import {BehaviorDescriptor} from './behavior-descriptor';
+import {Document} from '../parser/document';
+import {Descriptor} from './descriptor';
 
 /**
  * The metadata for all features and elements defined in one document
  */
-export interface DocumentDescriptor {
-  /**
-   * The elements from the document.
-   */
-  elements: ElementDescriptor[];
+export class DocumentDescriptor {
+  document: Document<any>;
+  dependencies: DocumentDescriptor[];
 
-  /**
-   * The features from the document
-   */
-  features: FeatureDescriptor[];
+  constructor(document: Document<any>, dependencies: DocumentDescriptor[]) {
+    this.document = document;
+    this.dependencies = dependencies;
+  }
 
-  /**
-   * The behaviors from the document
-   */
-  behaviors: BehaviorDescriptor[];
-
-  href?: string;
-
-  imports?: DocumentDescriptor[];
-
-  parsedScript?: estree.Program;
-
-  html?: HtmlDocument;
-}
-
-export function reduceMetadata(m1: DocumentDescriptor, m2: DocumentDescriptor)
-    : DocumentDescriptor {
-  return {
-    elements:  m1.elements.concat(m2.elements),
-    features:  m1.features.concat(m2.features),
-    behaviors: m1.behaviors.concat(m2.behaviors),
-  };
+  get url() {
+    return this.document.url;
+  }
 }

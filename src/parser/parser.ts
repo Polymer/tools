@@ -8,8 +8,6 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {AnalyzedDocument} from '../analyzed-document';
-
 export interface Parser<T> {
   parse(contents: string, url: string): T;
 }
