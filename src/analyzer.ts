@@ -48,38 +48,6 @@ interface ParsedJS {
 }
 
 /**
- * Options for `Analyzer.analzye`
- */
-interface LoadOptions {
-  /**
-   * Whether `annotate()` should be skipped.
-   */
-  noAnnotations?: boolean;
-  /**
-   * Content to resolve `href` to instead of loading from the file system.
-   */
-  content?: string;
-  /**
-   * Whether the generated descriptors should be cleaned of redundant data.
-   */
-  clean?: boolean;
-  /**
-   * `xhr` to use XMLHttpRequest.
-   * `fs` to use the local filesystem.
-   * `permissive` to use the local filesystem and return empty files when a
-   * path can't be found.
-   * Default is `fs` in node and `xhr` in the browser.
-   */
-  resolver?: string;
-  /**
-   * A predicate function that indicates which files should be ignored by
-   * the loader. By default all files not located under the dirname
-   * of `href` will be ignored.
-   */
-  filter?: (path:string)=> boolean;
-}
-
-/**
  * An Error extended with location metadata.
  */
 interface LocError extends Error{
