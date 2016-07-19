@@ -67,51 +67,10 @@ export interface AnalyzerInit {
 export class Analyzer {
   loader: UrlLoader;
 
-  /**
-   * A list of all elements the `Analyzer` has metadata for.
-   */
-  elements: ElementDescriptor[] = [];
-  /**
-   * A view into `elements`, keyed by tag name.
-   */
-  elementsByTagName: {[tagName: string]: ElementDescriptor} = {};
-
-  /**
-   * A list of API features added to `Polymer.Base` encountered by the
-   * analyzer.
-   */
-  features: FeatureDescriptor[] = [];
-
-  /**
-   * The behaviors collected by the analysis pass.
-   */
-  behaviors: BehaviorDescriptor[] = [];
-  /**
-   * The behaviors collected by the analysis pass by name.
-   */
-  behaviorsByName: {[name:string]: BehaviorDescriptor} = {};
-
-  /**
-   * A map, keyed by path, of HTML document ASTs.
-   */
-  parsedDocuments: {[path:string]: dom5.Node} = {};
-
-  /**
-   * A map, keyed by path, of JS script ASTs.
-   *
-   * If the path is an HTML file with multiple scripts,
-   * the entry will be an array of scripts.
-   */
-  parsedScripts: {[path:string]: ParsedJS[]} = {};
-
   private _parsers: Map<string, Parser<any>> = new Map();
   private _importFinders: Map<string, ImportFinder<any>[]> = new Map();
 
-  /**
-   * A map, keyed by path, of document content.
-   */
   private _content: Map<string, string> = new Map();
-
   private _analyzedDocuments: Map<string, Promise<AnalyzedDocument>> = new Map();
   private _documents: Map<string, Promise<Document<any>>> = new Map();
   private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
@@ -229,8 +188,6 @@ export class Analyzer {
     var pseudoElements = docs.parsePseudoElements(commentText);
     for (const element of pseudoElements) {
       element.contentHref = url;
-      this.elements.push(element);
-      this.elementsByTagName[element.is] = element;
     }
     metadataLoaded = metadataLoaded.then(function(metadata){
       var metadataEntry: DocumentDescriptor = {
@@ -280,7 +237,6 @@ export class Analyzer {
     const depsStrLoaded = Promise.all(depsLoaded)
           .then(function() {return depHrefs;})
           .catch(function(err) {throw err;});
-    this.parsedDocuments[url] = parsed.ast;
     return new AnalyzedDocument({
         url: url,
         htmlDocument: parsed,
@@ -330,12 +286,6 @@ export class Analyzer {
         parsedJs.elements.forEach((element) => {
           element.scriptElement = script;
           element.contentHref = href;
-          this.elements.push(element);
-          if (element.is in this.elementsByTagName) {
-            console.warn('Ignoring duplicate element definition: ' + element.is);
-          } else {
-            this.elementsByTagName[element.is] = element;
-          }
         });
       }
       if (parsedJs.features) {
@@ -343,27 +293,17 @@ export class Analyzer {
           feature.contentHref = href;
           feature.scriptElement = script;
         });
-        this.features = this.features.concat(parsedJs.features);
+        // this.features = this.features.concat(parsedJs.features);
       }
       if (parsedJs.behaviors) {
         parsedJs.behaviors.forEach((behavior) => {
           behavior.contentHref = href;
-          this.behaviorsByName[behavior.is] = behavior;
-          this.behaviorsByName[behavior.symbol] = behavior;
         });
-        this.behaviors = this.behaviors.concat(parsedJs.behaviors);
-      }
-      if (!Object.hasOwnProperty.call(this.parsedScripts, href)) {
-        this.parsedScripts[href] = [];
       }
       var scriptElement : ASTNode;
       // if (script.__ownerDocument && script.__ownerDocument == href) {
         scriptElement = script;
       // }
-      this.parsedScripts[href].push({
-        ast: parsedJs.parsedScript,
-        scriptElement: scriptElement
-      });
       return Promise.resolve(parsedJs);
     }
     if (this.loader) {
@@ -437,27 +377,6 @@ export class Analyzer {
   };
 
   /**
-   * Returns the elements defined in the folder containing `href`.
-   * @param {string} href path to search.
-   */
-  elementsForFolder(href: string): ElementDescriptor[] {
-    return this.elements.filter(function(element){
-      return matchesDocumentFolder(element, href);
-    });
-  };
-
-  /**
-   * Returns the behaviors defined in the folder containing `href`.
-   * @param {string} href path to search.
-   * @return {Array.<BehaviorDescriptor>}
-   */
-  behaviorsForFolder(href:string):BehaviorDescriptor[] {
-    return this.behaviors.filter(function(behavior){
-      return matchesDocumentFolder(behavior, href);
-    });
-  };
-
-  /**
    * Returns a Promise that resolves to a DocumentDescriptor of the transitive
    * import tree, which maintains the ordering of the HTML imports spec.
    *
@@ -498,28 +417,25 @@ export class Analyzer {
 
   /** Annotates all loaded metadata with its documentation. */
   annotate() {
-    if (this.features.length > 0) {
-      var featureEl = docs.featureElement(this.features);
-      this.elements.unshift(featureEl);
-      this.elementsByTagName[featureEl.is] = featureEl;
-    }
-    var behaviorsByName = this.behaviorsByName;
-    var elementHelper = (descriptor: ElementDescriptor) => {
-      docs.annotateElement(descriptor, behaviorsByName);
-    };
-    this.elements.forEach(elementHelper);
-    this.behaviors.forEach(elementHelper); // Same shape.
-    this.behaviors.forEach((behavior) =>{
-      if (behavior.is !== behavior.symbol && behavior.symbol) {
-        this.behaviorsByName[behavior.symbol] = undefined;
-      }
-    });
+    // TODO(justinfagnani): re-implement in EntityFinders
+    // if (this.features.length > 0) {
+    //   var featureEl = docs.featureElement(this.features);
+    //   this.elements.unshift(featureEl);
+    //   this.elementsByTagName[featureEl.is] = featureEl;
+    // }
+    // var behaviorsByName = this.behaviorsByName;
+    // var elementHelper = (descriptor: ElementDescriptor) => {
+    //   docs.annotateElement(descriptor, behaviorsByName);
+    // };
+    // this.elements.forEach(elementHelper);
+    // this.behaviors.forEach(elementHelper); // Same shape.
+    // this.behaviors.forEach((behavior) =>{
+    //   if (behavior.is !== behavior.symbol && behavior.symbol) {
+    //     this.behaviorsByName[behavior.symbol] = undefined;
+    //   }
+    // });
   };
 
-  /** Removes redundant properties from the collected descriptors. */
-  clean() {
-    this.elements.forEach(docs.cleanElement);
-  };
 };
 
 
