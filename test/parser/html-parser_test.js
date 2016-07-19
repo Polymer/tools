@@ -39,13 +39,6 @@ suite('HtmlParser', () => {
           path.resolve(__dirname, '../static/html-parse-target.html'), 'utf8');
       let document = parser.parse(file, '/static/html-parse-target.html');
       assert.equal(document.url, '/static/html-parse-target.html');
-      assert.equal(document.template.length, 3);
-      assert.equal(document.script.length, 5);
-      assert.equal(document.import.length, 1);
-      assert.equal(document.style.length, 3);
-      assert.equal(document.imports.length, 1);
-      assert.equal(document.imports[0].url, 'abc');
-      assert.equal(document.imports[0].type, 'html');
     });
 
     // enable when parse() or another method parses inline scripts

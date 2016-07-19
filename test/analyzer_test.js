@@ -74,7 +74,6 @@ suite('Analyzer', () => {
     test('returns a Promise that resolves to a DocumentDescriptor', () => {
       return analyzer.analyze('/static/html-parse-target.html')
         .then((descriptor) => {
-          assert.equal(descriptor.document.template.length, 3);
           // TODO(justinfagnani): add a lot more checks, especially for
           // transitive dependencies
         });
