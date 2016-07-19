@@ -39,14 +39,6 @@ import {UrlResolver} from './url-loader/url-resolver';
 
 var EMPTY_METADATA: DocumentDescriptor = {elements: [], features: [], behaviors: []};
 
-/**
- * An Error extended with location metadata.
- */
-interface LocError extends Error{
-  location: {line: number; column: number};
-  ownerDocument: string;
-}
-
 export interface AnalyzerInit {
   urlLoader: UrlLoader;
   importFinders: Map<string, ImportFinder<any>[]>;
@@ -266,12 +258,12 @@ export class Analyzer {
         // this assumes that the script content is indented with the tag
         let col = location.col + err.column;
 
-        var message = "Error parsing script in " + href + " at " + line + ":" + col;
-        message += "\n" + err.stack;
-        var fixedErr = <LocError>(new Error(message));
-        fixedErr.location = {line: line, column: col};
+        // TODO(justinfagnani): use SyntaxError
+        let fixedErr = new Error(`Error parsing script in ${href} at `
+          + `${line}:${col}\n${err.stack}`);
+        fixedErr['location'] = {line: line, column: col};
         // I'm assuming that href is the owner of the script... this may not be the case, but when?
-        fixedErr.ownerDocument = href;
+        fixedErr['ownerDocument'] = href;
         return Promise.reject<DocumentDescriptor>(fixedErr);
       }
       if (parsedJs.elements) {
@@ -281,21 +273,16 @@ export class Analyzer {
         });
       }
       if (parsedJs.features) {
-        parsedJs.features.forEach(function(feature){
+        parsedJs.features.forEach((feature) => {
           feature.contentHref = href;
           feature.scriptElement = script;
         });
-        // this.features = this.features.concat(parsedJs.features);
       }
       if (parsedJs.behaviors) {
         parsedJs.behaviors.forEach((behavior) => {
           behavior.contentHref = href;
         });
       }
-      var scriptElement : ASTNode;
-      // if (script.__ownerDocument && script.__ownerDocument == href) {
-        scriptElement = script;
-      // }
       return Promise.resolve(parsedJs);
     }
     if (this.loader) {
