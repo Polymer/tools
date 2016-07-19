@@ -12,14 +12,15 @@ import * as dom5 from 'dom5';
 import {posix as posixPath} from 'path';
 import * as osPath from 'path';
 import * as logging from 'plylog';
-import {Transform, Readable} from 'stream';
+import {Transform} from 'stream';
 import File = require('vinyl');
 import * as vfs from 'vinyl-fs';
-
 import {StreamAnalyzer} from './analyzer';
 import {Bundler} from './bundle';
 import {optimize, OptimizeOptions} from './optimize';
 import {FileCB} from './streams';
+import {forkStream} from './fork-stream';
+const mergeStream = require('merge-stream');
 
 const logger = logging.getLogger('polymer-project');
 const pred = dom5.predicates;
@@ -62,20 +63,17 @@ export interface ProjectOptions {
   sourceGlobs?: string[];
 
   /**
-   * List of glob patterns, relative to root, of dependencies to read from the
-   * file system. For example node_modules\/**\/* and bower_components\/**\/*
+   * List of file paths, relative to the project directory, that should be included
+   * as dependencies in the build target.
    */
-  dependencyGlobs?: string[];
+  includeDependencies?: string[];
 }
 
 export const defaultSourceGlobs = [
-  '**/*',
-  '!build/**/*',
-];
-
-export const defaultDependencyGlobs = [
-  'bower_components/**/*',
-  'node_modules/**/*',
+  'src/**/*',
+  // NOTE(fks) 06-29-2016: `polymer-cli serve` uses a bower.json file to display
+  // information about the project. The file is included here by default.
+  'bower.json',
 ];
 
 function resolveGlob(fromPath: string, glob: string) {
@@ -105,7 +103,7 @@ export class PolymerProject {
   shell: string;
   fragments: string[];
   sourceGlobs: string[];
-  dependencyGlobs: string[];
+  includeDependencies: string[];
 
   _splitFiles: Map<string, SplitFile> = new Map();
   _parts: Map<string, SplitFile> = new Map();
@@ -119,15 +117,16 @@ export class PolymerProject {
     this.fragments = (options.fragments || [])
         .map((f) => osPath.resolve(this.root, f));
     this.sourceGlobs = (options.sourceGlobs || defaultSourceGlobs)
-        .map((g) => resolveGlob(this.root, g));
-    this.dependencyGlobs = (options.dependencyGlobs || defaultDependencyGlobs)
-        .map((g) => resolveGlob(this.root, g));
+        .map((glob) => resolveGlob(this.root, glob));
+    this.includeDependencies = (options.includeDependencies || [])
+        .map((path) => osPath.resolve(this.root, path));
 
     this._analyzer = new StreamAnalyzer(
       this.root,
       this.entrypoint,
       this.shell,
-      this.fragments);
+      this.fragments,
+      this.allSourceGlobs);
 
     this._bundler = new Bundler(
       this.root,
@@ -141,12 +140,12 @@ export class PolymerProject {
     logger.debug(`entrypoint: ${this.entrypoint}`);
     logger.debug(`fragments: ${this.entrypoint}`);
     logger.debug(`sources: ${this.sourceGlobs}`);
-    logger.debug(`dependencies: \n\t${this.dependencyGlobs}`);
+    logger.debug(`includeDependencies: ${this.includeDependencies}`);
   }
 
   /**
    * An array of globs composed of `entrypoint`, `shell`, `fragments`,
-   * `sourceGlobs`, and the inverted array of `dependencyGlobs`.
+   * and `sourceGlobs`.
    */
   get allSourceGlobs(): string[] {
     let globs: string[] = [];
@@ -157,11 +156,6 @@ export class PolymerProject {
     }
     if (this.sourceGlobs && this.sourceGlobs.length > 0) {
       globs = globs.concat(this.sourceGlobs);
-    }
-    if (this.dependencyGlobs && this.dependencyGlobs.length > 0) {
-      let excludes = this.dependencyGlobs.map((g) => invertGlob(g));
-      logger.debug(`excludes: \n\t${excludes.join('\n\t')}`);
-      globs = globs.concat(excludes);
     }
     logger.debug(`sourceGlobs: \n\t${globs.join('\n\t')}`);
     return globs;
@@ -181,17 +175,25 @@ export class PolymerProject {
     });
   }
 
-  // TODO(justinfagnani): add options, pass to vfs.src()
   dependencies(): NodeJS.ReadableStream {
-    let deps = this.dependencyGlobs;
-    return vfs.src(deps, {
-      allowEmpty: true,
-      cwdbase: true,
-      nodir: true,
-    });
-  }
+    let dependenciesStream: NodeJS.ReadableStream = forkStream(
+      this._analyzer.dependencies
+    );
 
-  // TODO(justinfagnani): add allFiles()
+    // If we need to include additional dependencies, create a new vfs.src
+    // stream and pipe our default dependencyStream through it to combine.
+    if (this.includeDependencies.length > 0) {
+      let includeStream = vfs.src(this.includeDependencies, {
+         allowEmpty: true,
+         cwdbase: true,
+         nodir: true,
+         passthrough: true,
+      });
+      dependenciesStream = dependenciesStream.pipe(includeStream);
+    }
+
+    return dependenciesStream;
+  }
 
   /**
    * Returns a new `Transform` that splits inline script into separate files.
@@ -358,6 +360,7 @@ class HtmlSplitter extends Transform {
     }
   }
 }
+
 
 /**
  * Joins HTML files split by `Splitter`.

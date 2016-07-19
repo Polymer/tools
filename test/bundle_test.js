@@ -15,6 +15,7 @@ const dom5 = require('dom5');
 const File = require('vinyl');
 const path = require('path');
 const stream = require('stream');
+const mergeStream = require('merge-stream');
 
 const analyzer = require('../lib/analyzer');
 const bundle = require('../lib/bundle');
@@ -39,14 +40,29 @@ suite('Bundler', () => {
         && path.resolve(root, options.entrypoint);
     let shell = options.shell
         && path.resolve(root, options.shell);
-    let analyzer = new StreamAnalyzer(root, entrypoint, shell, fragments);
-    bundler = new Bundler(root, entrypoint, shell, fragments, analyzer);
+    let analyzer = new StreamAnalyzer(
+      root,
+      entrypoint,
+      shell,
+      fragments,
+      options.files.map((f) => f.path)
+    );
+    bundler = new Bundler(
+      root,
+      entrypoint,
+      shell,
+      fragments,
+      analyzer
+    );
     sourceStream = new stream.Readable({
       objectMode: true,
     });
-    bundledStream = sourceStream
-        .pipe(analyzer)
-        .pipe(bundler);
+    bundledStream = mergeStream(
+        sourceStream,
+        analyzer.dependencies
+      )
+      .pipe(analyzer)
+      .pipe(bundler);
     files = new Map();
     bundledStream.on('data', (file) => {
       files.set(file.path, file);

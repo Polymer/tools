@@ -14,47 +14,51 @@ const assert = require('chai').assert;
 const path = require('path');
 const stream = require('stream');
 const File = require('vinyl');
+const mergeStream = require('merge-stream');
 
 const PolymerProject = require('../lib/polymer-project').PolymerProject;
 
 suite('PolymerProject', () => {
 
-  let project;
+  let defaultProject;
   let root = path.resolve(__dirname, 'test-project');
 
   let unroot = (p) => p.substring(root.length + 1);
 
   setup(() => {
-    project = new PolymerProject({
+    defaultProject = new PolymerProject({
       root: path.resolve(__dirname, 'test-project'),
       entrypoint: 'index.html',
       shell: 'shell.html',
+      sourceGlobs: [
+        'source-dir/**',
+      ],
     });
   })
 
   test('reads sources', (done) => {
     let files = [];
-    project.sources()
+    defaultProject.sources()
       .on('data', (f) => files.push(f))
       .on('end', () => {
         let names = files.map((f) => unroot(f.path));
         let expected = [
           'index.html',
           'shell.html',
-          // note, we'll probably want to exclude certain files by defult in
-          // the future
-          'gulpfile.js',
+          'source-dir/my-app.html',
         ];
         assert.sameMembers(names, expected);
         done();
       });
   });
 
-  test('reads dependencies', (done) => {
-    let files = [];
-    project.dependencies()
-      .on('data', (f) => files.push(f))
-      .on('end', () => {
+  suite('.dependencies()', () => {
+
+    test('reads dependencies', (done) => {
+      let files = [];
+      let dependencyStream = defaultProject.dependencies();
+      dependencyStream.on('data', (f) => files.push(f));
+      dependencyStream.on('end', () => {
         let names = files.map((f) => unroot(f.path));
         let expected = [
           'bower_components/dep.html',
@@ -62,27 +66,64 @@ suite('PolymerProject', () => {
         assert.sameMembers(names, expected);
         done();
       });
+      mergeStream(
+        defaultProject.sources(),
+        dependencyStream
+      ).pipe(defaultProject.analyze);
+    });
+
+    test('reads dependencies and includes additionally provided files', (done) => {
+      let files = [];
+      let projectWithIncludedDeps = new PolymerProject({
+        root: path.resolve(__dirname, 'test-project'),
+        entrypoint: 'index.html',
+        shell: 'shell.html',
+        sourceGlobs: [
+          'source-dir/**',
+        ],
+        includeDependencies: [
+          'bower_components/unreachable*',
+        ],
+      });
+
+      let dependencyStream = projectWithIncludedDeps.dependencies();
+      dependencyStream.on('data', (f) => files.push(f));
+      dependencyStream.on('end', () => {
+        let names = files.map((f) => unroot(f.path));
+        let expected = [
+          'bower_components/dep.html',
+          'bower_components/unreachable-dep.html',
+        ];
+        assert.sameMembers(names, expected);
+        done();
+      });
+
+      mergeStream(
+        projectWithIncludedDeps.sources(),
+        dependencyStream
+      ).pipe(projectWithIncludedDeps.analyze);
+    });
   });
 
   test('splits and rejoins scripts', (done) => {
     let splitFiles = new Map();
     let joinedFiles = new Map();
-    project.sources()
-      .pipe(project.splitHtml())
+    defaultProject.sources()
+      .pipe(defaultProject.splitHtml())
       .on('data', (f) => splitFiles.set(unroot(f.path), f))
-      .pipe(project.rejoinHtml())
+      .pipe(defaultProject.rejoinHtml())
       .on('data', (f) => joinedFiles.set(unroot(f.path), f))
       .on('end', () => {
         let expectedSplitFiles = [
           'index.html',
           'shell.html_script_0.js',
           'shell.html',
-          'gulpfile.js',
+          'source-dir/my-app.html',
         ];
         let expectedJoinedFiles = [
           'index.html',
           'shell.html',
-          'gulpfile.js',
+          'source-dir/my-app.html',
         ];
         assert.sameMembers(Array.from(splitFiles.keys()), expectedSplitFiles);
         assert.sameMembers(Array.from(joinedFiles.keys()), expectedJoinedFiles);
@@ -115,14 +156,14 @@ suite('PolymerProject', () => {
     });
 
     sourceStream
-      .pipe(project.splitHtml())
+      .pipe(defaultProject.splitHtml())
       .on('data', (file) => {
         // this is what gulp-html-minifier does...
         if (path.sep === '\\' && file.path.endsWith('.html')) {
           file.path = file.path.replace('\\', '/');
         }
       })
-      .pipe(project.rejoinHtml())
+      .pipe(defaultProject.rejoinHtml())
       .on('data', (file) => {
         let contents = file.contents.toString();
         assert.equal(contents, source);

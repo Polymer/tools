@@ -11,7 +11,7 @@
 'use strict';
 
 const assert = require('chai').assert;
-const urlFromPath = require('../lib/url-from-path').default;
+const urlFromPath = require('../lib/path-transformers').urlFromPath;
 
 const WIN_ROOT_PATH = 'C:\\Users\\TEST_USER\\TEST_ROOT';
 const MAC_ROOT_PATH = '/Users/TEST_USER/TEST_ROOT';
