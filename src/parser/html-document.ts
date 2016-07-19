@@ -51,6 +51,7 @@ const isJSScriptNode = p.AND(
     p.hasAttrValue('type', 'application/javascript')
   )
 );
+
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */

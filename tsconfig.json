@@ -58,6 +58,8 @@
         "src/parser/document.ts",
         "src/parser/html-document.ts",
         "src/parser/html-parser.ts",
+        "src/parser/javascript-document.ts",
+        "src/parser/javascript-parser.ts",
         "src/parser/parser.ts",
         "src/url-loader/fetch-url-loader.ts",
         "src/url-loader/fs-url-loader.ts",

@@ -19,6 +19,7 @@ export class Document<T> {
   contents: string;
   ast: T;
   imports: ImportDescriptor[];
+  inlineDocuments: Document<any>[];
 
   constructor(from: DocumentInit<T>) {
     this._analyzer = from.analyzer;
@@ -26,6 +27,7 @@ export class Document<T> {
     this.contents = from.contents;
     this.ast = from.ast;
     this.imports = from.imports;
+    this.inlineDocuments = from.inlineDocuments;
   }
 
   loadImports(): Promise<Document<any>[]> {
@@ -40,4 +42,5 @@ export interface DocumentInit<T> {
   contents: string;
   ast: T;
   imports: ImportDescriptor[];
+  inlineDocuments: Document<any>[];
 }

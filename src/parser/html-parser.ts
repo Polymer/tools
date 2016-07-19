@@ -17,6 +17,7 @@ import {Parser} from './parser';
 import {ImportDescriptor} from '../ast/ast';
 
 import {HtmlDocument} from './html-document';
+import {Document} from './document';
 
 export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
   while (node && !dom5.isDocument(node)) {
@@ -24,6 +25,17 @@ export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
   }
   return node;
 }
+
+const p = dom5.predicates;
+const isInlineJSScript = p.AND(
+  p.hasTagName('script'),
+  p.NOT(p.hasAttr('src')),
+  p.OR(
+    p.NOT(p.hasAttr('type')),
+    p.hasAttrValue('type', 'text/javascript'),
+    p.hasAttrValue('type', 'application/javascript')
+  )
+);
 
 export class HtmlParser implements Parser<HtmlDocument> {
 
@@ -42,7 +54,22 @@ export class HtmlParser implements Parser<HtmlDocument> {
   parse(contents: string, url: string): HtmlDocument {
     let ast = parse5.parse(contents, {locationInfo: true});
     let imports = this.analyzer.findImports(url, ast);
-    return new HtmlDocument({url, contents, ast, imports, analyzer: this.analyzer});
+    let scripts = this._parseScripts(ast, url);
+    return new HtmlDocument({
+      url,
+      contents,
+      ast,
+      imports,
+      inlineDocuments: scripts,
+      analyzer: this.analyzer,
+    });
+  }
+
+  private _parseScripts(ast: parse5.ASTNode, url: string): Document<any>[] {
+    let scriptTags = dom5.queryAll(ast, isInlineJSScript);
+    let scriptContents = scriptTags.map((s) => dom5.getTextContent(s));
+    let scriptDocuments = scriptContents.map((s) => this.analyzer.parse('javascript', s, url));
+    return scriptDocuments;
   }
 
 }

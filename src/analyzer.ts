@@ -19,6 +19,7 @@ import {reduceMetadata} from './ast/document-descriptor';
 import * as docs from './ast-utils/docs';
 import {HtmlParser, getOwnerDocument} from './parser/html-parser';
 import {HtmlDocument} from './parser/html-document';
+import {JavaScriptParser} from './parser/javascript-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
 import {jsParse} from './ast-utils/js-parse';
@@ -155,6 +156,7 @@ export class Analyzer {
   static getDefaultParsers(analyzer: Analyzer): Map<string, Parser<any>> {
     let parsers = new Map();
     parsers.set('html', new HtmlParser(analyzer));
+    parsers.set('javascript', new JavaScriptParser(analyzer));
     return parsers;
   }
 
@@ -199,17 +201,13 @@ export class Analyzer {
     if (!this.loader.canLoad(url)) {
       throw new Error(`Can't load URL: ${url}`);
     }
-    let extension = path.extname(url).substring(1);
-    let parser = this._parsers.get(extension);
-    if (parser == null) {
-      throw new Error(`No parser for for file type ${extension}`);
-    }
     // Use an immediately executed async function to create the final Promise
     // synchronously so we can store it in this._documents before any other
     // async operations to avoid any race conditions.
     let promise = (async () => {
       let content = await this.loader.load(url);
-      return parser.parse(content, url);
+      let extension = path.extname(url).substring(1);
+      return this.parse(extension, content, url);
     })();
     this._documents.set(url, promise);
     return promise;
@@ -226,6 +224,18 @@ export class Analyzer {
       imports = imports.concat(finder.findImports(url, document));
     }
     return imports;
+  }
+
+  parse(type: string, content: string, url: string) {
+    let parser = this._parsers.get(type);
+    if (parser == null) {
+      throw new Error(`No parser for for file type ${type}`);
+    }
+    try {
+      return parser.parse(content, url);
+    } catch (error) {
+      throw new Error(`Error parsing ${url}:\n ${error.stack}`);
+    }
   }
 
   /**

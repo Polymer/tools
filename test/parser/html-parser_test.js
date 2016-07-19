@@ -28,6 +28,9 @@ suite('HtmlParser', () => {
         findImports(url, document) {
           return [{type: 'html', url: 'abc'}];
         },
+        parse(type, content, url) {
+          return null;
+        },
       });
     });
 
