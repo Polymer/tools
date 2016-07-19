@@ -15,6 +15,7 @@ import * as path from 'path';
 import * as urlLib from 'url';
 
 import * as docs from './ast-utils/docs';
+import {CssParser} from './parser/css-parser';
 import {HtmlParser, getOwnerDocument} from './parser/html-parser';
 import {HtmlDocument} from './parser/html-document';
 import {JavaScriptParser} from './parser/javascript-parser';
@@ -63,6 +64,7 @@ export class Analyzer {
     let parsers = new Map();
     parsers.set('html', new HtmlParser(analyzer));
     parsers.set('js', new JavaScriptParser(analyzer));
+    parsers.set('css', new CssParser(analyzer));
     return parsers;
   }
 

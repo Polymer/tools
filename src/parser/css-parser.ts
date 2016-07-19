@@ -8,29 +8,27 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as espree from 'espree';
+import * as shadyCss from 'shady-css-parser';
 
 import {Analyzer} from '../analyzer';
+import {Document} from './document';
 import {Parser} from './parser';
-import {JavaScriptDocument} from './javascript-document';
+import {CssDocument} from './css-document';
 
-export class JavaScriptParser implements Parser<JavaScriptDocument> {
+export class CssParser implements Parser<CssDocument> {
 
   analyzer: Analyzer;
+  private _parser: shadyCss.Parser;
 
   constructor(analyzer: Analyzer) {
     this.analyzer = analyzer;
+    this._parser = new shadyCss.Parser();
   }
 
-  parse(contents: string, url: string): JavaScriptDocument {
-    let ast = espree.parse(contents, {
-      attachComment: true,
-      comment: true,
-      loc: true,
-      ecmaVersion: 6,
-    });
+  parse(contents: string, url: string): CssDocument {
+    let ast = this._parser.parse(contents);
 
-    return new JavaScriptDocument({
+    return new CssDocument({
       url,
       contents,
       ast,
