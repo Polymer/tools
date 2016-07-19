@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as espree from 'espree';
+import * as acorn from 'acorn';
 
 import {Analyzer} from '../analyzer';
 import {Parser} from './parser';
@@ -23,11 +23,11 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
   }
 
   parse(contents: string, url: string): JavaScriptDocument {
-    let ast = espree.parse(contents, {
-      attachComment: true,
-      comment: true,
-      loc: true,
-      ecmaVersion: 6,
+    // TODO(justinfagnani): add onComment handler
+    let ast = acorn.parse(contents, {
+      ecmaVersion: 7,
+      sourceType: 'script',
+      locations: true,
     });
 
     return new JavaScriptDocument({
