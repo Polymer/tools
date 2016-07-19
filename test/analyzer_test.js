@@ -18,6 +18,8 @@ const Analyzer = require('../lib/analyzer').Analyzer;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 const AnalyzedDocument = require('../lib/analyzed-document').AnalyzedDocument;
 const Document = require('../lib/parser/document').Document;
+const HtmlDocument = require('../lib/parser/html-document').HtmlDocument;
+const JavaScriptDocument = require('../lib/parser/javascript-document').JavaScriptDocument;
 
 suite('Analyzer', () => {
   let importFinder;
@@ -66,11 +68,19 @@ suite('Analyzer', () => {
 
   suite('loadDocument()', () => {
 
-    test('returns a Promise that resolves to an AnalyzedDocument', () => {
+    test('loads and parses an HTML document', () => {
       return analyzer.loadDocument('/static/html-parse-target.html')
         .then((doc) => {
-          assert.instanceOf(doc, Document);
+          assert.instanceOf(doc, HtmlDocument);
           assert.equal(doc.url, '/static/html-parse-target.html');
+        });
+    });
+
+    test('loads and parses a JavaScript document', () => {
+      return analyzer.loadDocument('/static/js-elements.js')
+        .then((doc) => {
+          assert.instanceOf(doc, JavaScriptDocument);
+          assert.equal(doc.url, '/static/js-elements.js');
         });
     });
 

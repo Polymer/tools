@@ -157,7 +157,7 @@ export class Analyzer {
   static getDefaultParsers(analyzer: Analyzer): Map<string, Parser<any>> {
     let parsers = new Map();
     parsers.set('html', new HtmlParser(analyzer));
-    parsers.set('javascript', new JavaScriptParser(analyzer));
+    parsers.set('js', new JavaScriptParser(analyzer));
     return parsers;
   }
 

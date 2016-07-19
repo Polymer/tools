@@ -68,7 +68,7 @@ export class HtmlParser implements Parser<HtmlDocument> {
   private _parseScripts(ast: parse5.ASTNode, url: string): Document<any>[] {
     let scriptTags = dom5.queryAll(ast, isInlineJSScript);
     let scriptContents = scriptTags.map((s) => dom5.getTextContent(s));
-    let scriptDocuments = scriptContents.map((s) => this.analyzer.parse('javascript', s, url));
+    let scriptDocuments = scriptContents.map((s) => this.analyzer.parse('js', s, url));
     return scriptDocuments;
   }
 
