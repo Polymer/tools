@@ -97,6 +97,10 @@ export class Analyzer {
     return promise;
   };
 
+  /**
+   * Loads and parses a single file, deduplicating any requrests for the same
+   * URL.
+   */
   async load(url: string): Promise<Document<any>> {
     // TODO(justinfagnani): normalize url
     if (this._documents.has(url)) {
