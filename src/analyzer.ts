@@ -33,6 +33,7 @@ import {
 } from './ast/ast';
 import {ImportFinder} from './import/import-finder.ts';
 import {HtmlImportFinder} from './import/html-import-finder';
+import {HtmlScriptFinder} from './import/html-script-finder';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
 
@@ -149,7 +150,7 @@ export class Analyzer {
 
   static getDefaultImportFinders(): Map<string, ImportFinder<any>[]> {
     let finders = new Map();
-    finders.set('html', [new HtmlImportFinder()]);
+    finders.set('html', [new HtmlImportFinder(), new HtmlScriptFinder()]);
     return finders;
   }
 

@@ -11,6 +11,7 @@
 "use strict";
 
 const assert = require('chai').assert;
+const parse5 = require('parse5');
 const path = require('path');
 
 const Analyzer = require('../lib/analyzer').Analyzer;
@@ -128,6 +129,23 @@ suite('Analyzer', () => {
       assert.equal(imports.length, 1);
       assert.equal(imports[0].url, 'abc');
       assert.equal(imports[0].type, 'html');
+    });
+
+    test('default import finders', () => {
+      let analyzer = new Analyzer({
+        urlLoader: new FSUrlLoader(__dirname),
+      });
+      let document = parse5.parse(`<html><head>
+          <link rel="import" href="polymer.html">
+          <script src="foo.js"></script>
+          <script>console.log('hi')</script>
+        </head></html>`);
+      let imports = analyzer.findImports('foo.html', document);
+      assert.equal(imports.length, 2);
+      assert.equal(imports[0].type, 'html-import');
+      assert.equal(imports[0].url, 'polymer.html');
+      assert.equal(imports[1].type, 'html-script');
+      assert.equal(imports[1].url, 'foo.js');
     });
 
   });

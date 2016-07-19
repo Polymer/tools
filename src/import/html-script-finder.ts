@@ -17,25 +17,25 @@ import {ImportDescriptor} from '../ast/ast';
 
 const p = dom5.predicates;
 
-const isHtmlImportNode = p.AND(
-  p.hasTagName('link'),
-  (node) => {
-    let rel = dom5.getAttribute(node, 'rel') || '';
-    return rel.split(' ').indexOf('import') !== -1;
-  },
-  p.NOT(
-    p.hasAttrValue('type', 'css')
+const isJsScriptNode = p.AND(
+  p.hasTagName('script'),
+  p.hasAttr('src'),
+  p.OR(
+    p.NOT(p.hasAttr('type')),
+    p.hasAttrValue('type', 'text/javascript'),
+    p.hasAttrValue('type', 'application/javascript'),
+    p.hasAttrValue('type', 'module')
   )
 );
 
-export class HtmlImportFinder implements ImportFinder<ASTNode> {
+export class HtmlScriptFinder implements ImportFinder<ASTNode> {
 
   findImports(url: string, document: ASTNode): ImportDescriptor[] {
-    let importLinks = dom5.queryAll(document, isHtmlImportNode);
-    let importDescriptors = importLinks.map((link) => {
-      let href = dom5.getAttribute(link, 'href');
-      let importUrl = resolveUrl(url, href);
-      return new ImportDescriptor('html-import', importUrl);
+    let scriptTags = dom5.queryAll(document, isJsScriptNode);
+    let importDescriptors = scriptTags.map((script) => {
+      let src = dom5.getAttribute(script, 'src');
+      let scriptUrl = resolveUrl(url, src);
+      return new ImportDescriptor('html-script', scriptUrl);
     });
     return importDescriptors;
   }

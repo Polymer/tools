@@ -11,30 +11,28 @@
 "use strict";
 
 const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
 const parse5 = require('parse5');
 
-const HtmlImportFinder = require('../../lib/import/html-import-finder').HtmlImportFinder;
+const HtmlScriptFinder = require('../../lib/import/html-script-finder').HtmlScriptFinder;
 
-suite('HtmlImportFinder', () => {
+suite('HtmlScriptFinder', () => {
 
   suite('findImports()', () => {
     let finder;
 
     setup(() => {
-      finder = new HtmlImportFinder();
+      finder = new HtmlScriptFinder();
     });
 
-    test('finds HTML Imports', () => {
+    test('finds external scripts', () => {
       let document = parse5.parse(`<html><head>
-          <link rel="import" href="../foo/foo.html">
-          <link rel="prefetch import" href="../bar/bar.html">
+          <script src="foo.js"></script>
+          <script>console.log('hi')</script>
         </head></html>`)
       let imports = finder.findImports('x-element.html', document);
-      assert.equal(imports.length, 2);
-      assert.equal(imports[0].type, 'html-import');
-      assert.equal(imports[0].url, '../foo/foo.html');
+      assert.equal(imports.length, 1);
+      assert.equal(imports[0].type, 'html-script');
+      assert.equal(imports[0].url, 'foo.js');
     });
 
   });
