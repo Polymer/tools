@@ -56,4 +56,5 @@ const isJSScriptNode = p.AND(
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */
 export class HtmlDocument extends Document<parse5.ASTNode> {
+  type: 'html';
 }

@@ -11,10 +11,11 @@
 import {Analyzer} from '../analyzer';
 import {ImportDescriptor} from '../ast/ast';
 
-export class Document<T> {
+export abstract class Document<T> {
 
   private _analyzer: Analyzer;
 
+  abstract type: string;
   url: string;
   contents: string;
   ast: T;

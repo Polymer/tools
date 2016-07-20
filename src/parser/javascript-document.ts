@@ -11,4 +11,5 @@
 import {Document} from './document';
 
 export class JavaScriptDocument extends Document<any> {
+  type: 'js';
 }
