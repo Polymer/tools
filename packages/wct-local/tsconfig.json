@@ -27,7 +27,6 @@
         "src/browsers.ts",
         "src/plugin.ts",
         "src/selenium.ts",
-        "custom_typings/freeport.d.ts",
         "custom_typings/launchpad.d.ts",
         "custom_typings/promisify-node.d.ts",
         "custom_typings/selenium-standalone.d.ts",
