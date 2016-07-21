@@ -17,7 +17,6 @@
 exports.Analyzer = require('./lib/analyzer').Analyzer;
 exports.FetchUrlLoader = require('./lib/url-loader/fetch-url-loader').FetchUrlLoader;
 exports._jsParse = require('./lib/ast-utils/js-parse').jsParse;
-exports._importParse = require('./lib/ast-utils/import-parse').importParse;
 
 exports.docs = require('./lib/ast-utils/docs');
 exports.jsdoc = require('./lib/ast-utils/jsdoc');
