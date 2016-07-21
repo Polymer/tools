@@ -13,6 +13,3 @@ lib/
 src/*.js
 src/ast-utils/*.js
 src/loader/*.js
-
-# Don't check in hydrolysis.js by default. It'll have to exist in a branch for bower
-hydrolysis.js

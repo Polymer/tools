@@ -22,15 +22,14 @@
     "init": "typings install",
     "clean": "rm -rf typings/ lib/ && find src | grep \\.js$ | xargs rm",
     "compile": "if [ ! -f typings/index.d.ts ]; then npm run init; fi; tsc",
-    "build": "npm run compile && browserify -d -r ./index.js:hydrolysis -o hydrolysis.js",
-    "release": "npm run compile && browserify -r ./index.js:hydrolysis -o hydrolysis.js",
+    "build": "npm run compile",
+    "release": "npm run compile",
     "build:watch": "watch 'npm run build' ./src",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "test": "npm run build && wct && mocha",
     "testNode": "npm run build && mocha"
   },
   "devDependencies": {
-    "browserify": "^9.0.8",
     "chai": "^2.2.0",
     "depcheck": "^0.6.3",
     "fs-extra": "^0.30.0",
