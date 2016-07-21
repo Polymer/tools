@@ -50,7 +50,7 @@ export function getDependenciesFromDocument(descriptor: DocumentDescriptor, dir:
   deps.styles.forEach((s) => allStyleDeps.add(posixPath.join(dir, s)));
   if (descriptor.imports) {
     let queue = descriptor.imports.slice();
-    let next;
+    let next: DocumentDescriptor;
     while (next = queue.shift()) {
       if (!next.href) {
         continue;
