@@ -13,11 +13,11 @@ import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
 import {Analyzer} from '../analyzer';
-import {Parser} from './parser';
+import {Parser} from '../parser/parser';
 import {ImportDescriptor} from '../ast/ast';
 
 import {HtmlDocument} from './html-document';
-import {Document} from './document';
+import {Document} from '../parser/document';
 
 export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
   while (node && !dom5.isDocument(node)) {

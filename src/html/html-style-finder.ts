@@ -14,8 +14,8 @@ import {resolve as resolveUrl} from 'url';
 
 import {Analyzer} from '../analyzer';
 import {Descriptor, DocumentDescriptor, ImportDescriptor} from '../ast/ast';
-import {HtmlEntityFinder} from '../entity/html-entity-finder';
-import {HtmlDocument, HtmlVisitor} from '../parser/html-document';
+import {HtmlEntityFinder} from './html-entity-finder';
+import {HtmlDocument, HtmlVisitor} from './html-document';
 
 const p = dom5.predicates;
 
@@ -23,7 +23,7 @@ const isStyleElement = p.AND(
   p.hasTagName('style'),
   p.OR(
     p.NOT(p.hasAttr('type')),
-    p.hasAttrValue('type', 'text/css'),
+    p.hasAttrValue('type', 'text/css')
   )
 );
 

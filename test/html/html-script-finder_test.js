@@ -11,28 +11,28 @@
 "use strict";
 
 const assert = require('chai').assert;
-const fs = require('fs');
 const parse5 = require('parse5');
-const path = require('path');
 
+const Analyzer = require('../../lib/analyzer').Analyzer;
 const HtmlDocument = require('../../lib/parser/html-document').HtmlDocument;
-const HtmlImportFinder = require('../../lib/import/html-import-finder').HtmlImportFinder;
+const HtmlScriptFinder = require('../../lib/html/html-script-finder').HtmlScriptFinder;
+const ImportDescriptor = require('../../lib/ast/import-descriptor').ImportDescriptor;
+const DocumentDescriptor = require('../../lib/ast/ast').DocumentDescriptor;
 
-suite('HtmlImportFinder', () => {
+suite('HtmlScriptFinder', () => {
 
   suite('findImports()', () => {
     let finder;
 
     setup(() => {
-      finder = new HtmlImportFinder();
+      let analyzer = new Analyzer({});
+      finder = new HtmlScriptFinder(analyzer);
     });
 
-    test('finds HTML Imports', () => {
+    test('finds external and inline scripts', () => {
       let contents = `<html><head>
-          <link rel="import" href="polymer.html">
-          <link rel="import" type="css" href="polymer.css">
           <script src="foo.js"></script>
-          <link rel="stylesheet" href="foo.css"></link>
+          <script>console.log('hi')</script>
         </head></html>`;
       let ast = parse5.parse(contents);
       let document = new HtmlDocument({
@@ -40,13 +40,17 @@ suite('HtmlImportFinder', () => {
         contents,
         ast,
       });
+      let promises = [];
       let visit = (visitor) => document.visit([visitor]);
 
       return finder.findEntities(document, visit)
         .then((entities) => {
-          assert.equal(entities.length, 1);
-          assert.equal(entities[0].type, 'html-import');
-          assert.equal(entities[0].url, 'polymer.html');
+          assert.equal(entities.length, 2);
+          assert.instanceOf(entities[0], ImportDescriptor);
+          assert.equal(entities[0].type, 'html-script');
+          assert.equal(entities[0].url, 'foo.js');
+          assert.instanceOf(entities[1], DocumentDescriptor);
+          assert.equal(entities[1].document.url, 'test.html');
         });
 
     });

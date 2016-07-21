@@ -14,10 +14,9 @@ import {ASTNode, LocationInfo} from 'parse5';
 import * as path from 'path';
 import * as urlLib from 'url';
 
-// import * as docs from './ast-utils/docs';
 import {CssParser} from './parser/css-parser';
-import {HtmlParser} from './parser/html-parser';
-import {HtmlDocument} from './parser/html-document';
+import {HtmlParser} from './html/html-parser';
+import {HtmlDocument} from './html/html-document';
 import {JavaScriptParser} from './parser/javascript-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
@@ -33,9 +32,9 @@ import {
 import {ElementFinder} from './entity/element-finder';
 import {EntityFinder} from './entity/entity-finder';
 // import {ImportFinder} from './import/import-finder';
-import {HtmlImportFinder} from './import/html-import-finder';
-import {HtmlScriptFinder} from './import/html-script-finder';
-import {HtmlStyleFinder} from './import/html-style-finder';
+import {HtmlImportFinder} from './html/html-import-finder';
+import {HtmlScriptFinder} from './html/html-script-finder';
+import {HtmlStyleFinder} from './html/html-style-finder';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
 
