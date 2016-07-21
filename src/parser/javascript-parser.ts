@@ -9,10 +9,13 @@
  */
 
 import * as acorn from 'acorn';
+import {Program} from 'estree';
+import * as estraverse from 'estraverse';
 
 import {Analyzer} from '../analyzer';
 import {Parser} from './parser';
 import {JavaScriptDocument} from './javascript-document';
+import {Visitor} from '../ast-utils/fluent-traverse';
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
 
@@ -24,7 +27,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
 
   parse(contents: string, url: string): JavaScriptDocument {
     // TODO(justinfagnani): add onComment handler
-    let ast = acorn.parse(contents, {
+    const ast = <Program>acorn.parse(contents, {
       ecmaVersion: 7,
       sourceType: 'script',
       locations: true,
@@ -34,9 +37,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       url,
       contents,
       ast,
-      imports: [],
       inlineDocuments: [],
-      analyzer: this.analyzer,
     });
   }
 

@@ -32,9 +32,7 @@ export class CssParser implements Parser<CssDocument> {
       url,
       contents,
       ast,
-      imports: [],
       inlineDocuments: [],
-      analyzer: this.analyzer,
     });
   }
 

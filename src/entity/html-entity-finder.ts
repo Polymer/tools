@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
  * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
@@ -8,8 +8,10 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {ImportDescriptor} from '../ast/ast';
+import {ASTNode} from 'parse5';
+import {Descriptor} from '../ast/ast';
+import {HtmlDocument, HtmlVisitor} from '../parser/html-document';
+import {EntityFinder} from './entity-finder';
 
-export interface ImportFinder<T> {
-  findImports(url: string, document: T): ImportDescriptor[] ;
-}
+export interface HtmlEntityFinder
+    extends EntityFinder<HtmlDocument, ASTNode, HtmlVisitor> {}

@@ -56,19 +56,19 @@ export class HtmlParser implements Parser<HtmlDocument> {
   */
   parse(contents: string, url: string): HtmlDocument {
     let ast = parse5.parse(contents, {locationInfo: true});
-    let imports = this.analyzer.findImports(url, ast);
+    // let imports = this.analyzer.findImports(url, ast);
     let inlineDocuments = this._parseInlineDocuments(ast, url);
     return new HtmlDocument({
       url,
       contents,
       ast,
-      imports,
+      // imports,
       inlineDocuments,
-      analyzer: this.analyzer,
+      // analyzer: this.analyzer,
     });
   }
 
-  private _parseInlineDocuments(ast: parse5.ASTNode, url: string): Document<any>[] {
+  private _parseInlineDocuments(ast: parse5.ASTNode, url: string): Document<any, any>[] {
     let elements = dom5.queryAll(ast, p.OR(isInlineJSScript, isStyle));
     return elements.map((e) => {
       let contents = dom5.getTextContent(e);

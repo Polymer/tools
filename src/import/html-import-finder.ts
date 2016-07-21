@@ -12,8 +12,9 @@ import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {ImportFinder} from './import-finder.ts';
 import {ImportDescriptor} from '../ast/ast';
+import {HtmlEntityFinder} from '../entity/html-entity-finder';
+import {HtmlDocument, HtmlVisitor} from '../parser/html-document';
 
 const p = dom5.predicates;
 
@@ -28,16 +29,18 @@ const isHtmlImportNode = p.AND(
   )
 );
 
-export class HtmlImportFinder implements ImportFinder<ASTNode> {
+export class HtmlImportFinder implements HtmlEntityFinder {
 
-  findImports(url: string, document: ASTNode): ImportDescriptor[] {
-    let importLinks = dom5.queryAll(document, isHtmlImportNode);
-    let importDescriptors = importLinks.map((link) => {
-      let href = dom5.getAttribute(link, 'href');
-      let importUrl = resolveUrl(url, href);
-      return new ImportDescriptor('html-import', importUrl);
+  async findEntities(document: HtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>): Promise<ImportDescriptor[]> {
+    let imports: ImportDescriptor[] = [];
+    await visit((node) => {
+      if (isHtmlImportNode(node)) {
+        let href = dom5.getAttribute(node, 'href');
+        let importUrl = resolveUrl(document.url, href);
+        imports.push(new ImportDescriptor('html-import', importUrl));
+      }
     });
-    return importDescriptors;
+    return imports;
   }
 
 }

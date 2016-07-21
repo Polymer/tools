@@ -12,9 +12,10 @@
 
 const assert = require('chai').assert;
 const fs = require('fs');
-const path = require('path');
 const parse5 = require('parse5');
+const path = require('path');
 
+const HtmlDocument = require('../../lib/parser/html-document').HtmlDocument;
 const HtmlImportFinder = require('../../lib/import/html-import-finder').HtmlImportFinder;
 
 suite('HtmlImportFinder', () => {
@@ -27,14 +28,27 @@ suite('HtmlImportFinder', () => {
     });
 
     test('finds HTML Imports', () => {
-      let document = parse5.parse(`<html><head>
-          <link rel="import" href="../foo/foo.html">
-          <link rel="prefetch import" href="../bar/bar.html">
-        </head></html>`)
-      let imports = finder.findImports('x-element.html', document);
-      assert.equal(imports.length, 2);
-      assert.equal(imports[0].type, 'html-import');
-      assert.equal(imports[0].url, '../foo/foo.html');
+      let contents = `<html><head>
+          <link rel="import" href="polymer.html">
+          <link rel="import" type="css" href="polymer.css">
+          <script src="foo.js"></script>
+          <link rel="stylesheet" href="foo.css"></link>
+        </head></html>`;
+      let ast = parse5.parse(contents);
+      let document = new HtmlDocument({
+        url: 'test.html',
+        contents,
+        ast,
+      });
+      let visit = (visitor) => document.visit([visitor]);
+
+      return finder.findEntities(document, visit)
+        .then((entities) => {
+          assert.equal(entities.length, 1);
+          assert.equal(entities[0].type, 'html-import');
+          assert.equal(entities[0].url, 'polymer.html');
+        });
+
     });
 
   });

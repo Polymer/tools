@@ -9,39 +9,36 @@
  */
 
 import {Analyzer} from '../analyzer';
-import {ImportDescriptor} from '../ast/ast';
 
-export abstract class Document<T> {
+/**
+ * A parsed Document.
+ *
+ * @template A The AST type of the document
+ * @template V The Visitor type of the document
+ */
+export abstract class Document<A, V> {
 
-  private _analyzer: Analyzer;
-
-  abstract type: string;
+  // abstract type: string; // argh, how do I declare an abstract field?
+  type: string;
   url: string;
   contents: string;
-  ast: T;
-  imports: ImportDescriptor[];
-  inlineDocuments: Document<any>[];
+  ast: A;
+  inlineDocuments: Document<any, any>[];
 
-  constructor(from: DocumentInit<T>) {
-    this._analyzer = from.analyzer;
+  constructor(from: DocumentInit<A>) {
     this.url = from.url;
     this.contents = from.contents;
     this.ast = from.ast;
-    this.imports = from.imports;
     this.inlineDocuments = from.inlineDocuments;
   }
 
-  loadImports(): Promise<Document<any>[]> {
-    return <Promise<Document<any>[]>><any>Promise.all(
-        this.imports.map((i) => this._analyzer.load(i.url)));
-  }
+  abstract visit(visitors: V[]): void;
+
 }
 
-export interface DocumentInit<T> {
-  analyzer: Analyzer;
+export interface DocumentInit<A> {
   url: string;
   contents: string;
-  ast: T;
-  imports: ImportDescriptor[];
-  inlineDocuments: Document<any>[];
+  ast: A;
+  inlineDocuments: Document<any, any>[];
 }

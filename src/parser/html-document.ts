@@ -9,52 +9,64 @@
  */
 
 import * as dom5 from 'dom5';
-import * as parse5 from 'parse5';
+// import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
-import {Analyzer} from '../analyzer';
+// import {Analyzer} from '../analyzer';
 import {Document, DocumentInit} from './document';
-import {Parser} from './parser';
-import {ImportDescriptor} from '../ast/ast';
+// import {Parser} from './parser';
+// import {ImportDescriptor} from '../ast/ast';
 
-const p = dom5.predicates;
-
-const isHtmlImportNode = p.AND(
-  p.hasTagName('link'),
-  p.hasAttrValue('rel', 'import'),
-  p.NOT(
-    p.hasAttrValue('type', 'css')
-  )
-);
-
-const isStyleNode = p.OR(
-  // inline style
-  p.hasTagName('style'),
-  // external stylesheet
-  p.AND(
-    p.hasTagName('link'),
-    p.hasAttrValue('rel', 'stylesheet')
-  ),
-  // polymer specific external stylesheet
-  p.AND(
-    p.hasTagName('link'),
-    p.hasAttrValue('rel', 'import'),
-    p.hasAttrValue('type', 'css')
-  )
-);
-
-const isJSScriptNode = p.AND(
-  p.hasTagName('script'),
-  p.OR(
-    p.NOT(p.hasAttr('type')),
-    p.hasAttrValue('type', 'text/javascript'),
-    p.hasAttrValue('type', 'application/javascript')
-  )
-);
+// const p = dom5.predicates;
+//
+// const isHtmlImportNode = p.AND(
+//   p.hasTagName('link'),
+//   p.hasAttrValue('rel', 'import'),
+//   p.NOT(
+//     p.hasAttrValue('type', 'css')
+//   )
+// );
+//
+// const isStyleNode = p.OR(
+//   // inline style
+//   p.hasTagName('style'),
+//   // external stylesheet
+//   p.AND(
+//     p.hasTagName('link'),
+//     p.hasAttrValue('rel', 'stylesheet')
+//   ),
+//   // polymer specific external stylesheet
+//   p.AND(
+//     p.hasTagName('link'),
+//     p.hasAttrValue('rel', 'import'),
+//     p.hasAttrValue('type', 'css')
+//   )
+// );
+//
+// const isJSScriptNode = p.AND(
+//   p.hasTagName('script'),
+//   p.OR(
+//     p.NOT(p.hasAttr('type')),
+//     p.hasAttrValue('type', 'text/javascript'),
+//     p.hasAttrValue('type', 'application/javascript')
+//   )
+// );
 
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */
-export class HtmlDocument extends Document<parse5.ASTNode> {
-  type: 'html';
+
+export interface HtmlVisitor {
+  (node: ASTNode): void;
+}
+
+export class HtmlDocument extends Document<ASTNode, HtmlVisitor> {
+  type = 'html';
+
+  visit(visitors: HtmlVisitor[]) {
+    dom5.nodeWalk(this.ast, (node) => {
+      visitors.forEach((visitor) => visitor(node));
+      return false;
+    })
+  }
 }

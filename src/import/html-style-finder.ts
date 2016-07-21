@@ -19,17 +19,25 @@ import {HtmlDocument, HtmlVisitor} from '../parser/html-document';
 
 const p = dom5.predicates;
 
-const isJsScriptNode = p.AND(
-  p.hasTagName('script'),
+const isStyleElement = p.AND(
+  p.hasTagName('style'),
   p.OR(
     p.NOT(p.hasAttr('type')),
-    p.hasAttrValue('type', 'text/javascript'),
-    p.hasAttrValue('type', 'application/javascript'),
-    p.hasAttrValue('type', 'module')
+    p.hasAttrValue('type', 'text/css'),
   )
 );
 
-export class HtmlScriptFinder implements HtmlEntityFinder {
+const isStyleLink = p.AND(
+  p.hasTagName('link'),
+  (node) => {
+    let rel = dom5.getAttribute(node, 'rel') || '';
+    return rel.split(' ').indexOf('stylesheet') !== -1;
+  }
+);
+
+const isStyleNode = p.OR(isStyleElement, isStyleLink);
+
+export class HtmlStyleFinder implements HtmlEntityFinder {
 
   analyzer: Analyzer;
 
@@ -39,15 +47,16 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
 
   async findEntities(document: HtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
     let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
-    await visit((node) => {
-      if (isJsScriptNode(node)) {
-        let src = dom5.getAttribute(node, 'src');
-        if (src) {
-          let importUrl = resolveUrl(document.url, src);
-          promises.push(Promise.resolve(new ImportDescriptor('html-script', importUrl)));
+    await visit(async (node) => {
+      if (isStyleNode(node)) {
+        let tagName = node.nodeName;
+        if (tagName === 'link') {
+          let href = dom5.getAttribute(node, 'href');
+          let importUrl = resolveUrl(document.url, href);
+          promises.push(Promise.resolve(new ImportDescriptor('html-style', importUrl)));
         } else {
           let contents = dom5.getTextContent(node);
-          promises.push(this.analyzer.analyzeSource('js', contents, document.url));
+          promises.push(this.analyzer.analyzeSource('css', contents, document.url));
         }
       }
     });

@@ -14,9 +14,9 @@ import {ASTNode, LocationInfo} from 'parse5';
 import * as path from 'path';
 import * as urlLib from 'url';
 
-import * as docs from './ast-utils/docs';
+// import * as docs from './ast-utils/docs';
 import {CssParser} from './parser/css-parser';
-import {HtmlParser, getOwnerDocument} from './parser/html-parser';
+import {HtmlParser} from './parser/html-parser';
 import {HtmlDocument} from './parser/html-document';
 import {JavaScriptParser} from './parser/javascript-parser';
 import {Document} from './parser/document';
@@ -30,53 +30,50 @@ import {
   FeatureDescriptor,
   ImportDescriptor,
 } from './ast/ast';
-import {ImportFinder} from './import/import-finder.ts';
+import {ElementFinder} from './entity/element-finder';
+import {EntityFinder} from './entity/entity-finder';
+// import {ImportFinder} from './import/import-finder';
 import {HtmlImportFinder} from './import/html-import-finder';
 import {HtmlScriptFinder} from './import/html-script-finder';
+import {HtmlStyleFinder} from './import/html-style-finder';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
 
 export interface AnalyzerInit {
-  urlLoader: UrlLoader;
-  importFinders: Map<string, ImportFinder<any>[]>;
-  parsers: Map<string, Parser<any>>;
+  urlLoader?: UrlLoader;
+  parsers?: Map<string, Parser<any>>;
+  entityFinders?: Map<string, EntityFinder<any, any, any>[]>;
 }
 
 /**
  * A database of Polymer metadata defined in HTML
  */
 export class Analyzer {
-  loader: UrlLoader;
 
-  private _parsers: Map<string, Parser<any>> = new Map();
-  private _importFinders: Map<string, ImportFinder<any>[]> = new Map();
+  private _parsers: Map<string, Parser<any>> = new Map<string, Parser<any>>([
+      ['html', new HtmlParser(this)],
+      ['js', new JavaScriptParser(this)],
+      ['css', new CssParser(this)],
+    ]);
 
-  private _documents: Map<string, Promise<Document<any>>> = new Map();
+  private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
+        ['html', [new HtmlImportFinder(), new HtmlScriptFinder(this), new HtmlStyleFinder(this)]],
+        ['js', [new ElementFinder(this)]],
+    ]);
+
+  private _loader: UrlLoader;
+
+  private _documents: Map<string, Promise<Document<any, any>>> = new Map();
   private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
 
-  static getDefaultImportFinders(): Map<string, ImportFinder<any>[]> {
-    let finders = new Map();
-    finders.set('html', [new HtmlImportFinder(), new HtmlScriptFinder()]);
-    return finders;
-  }
-
-  static getDefaultParsers(analyzer: Analyzer): Map<string, Parser<any>> {
-    let parsers = new Map();
-    parsers.set('html', new HtmlParser(analyzer));
-    parsers.set('js', new JavaScriptParser(analyzer));
-    parsers.set('css', new CssParser(analyzer));
-    return parsers;
-  }
-
   constructor(from: AnalyzerInit) {
-    this.loader = from.urlLoader;
-    this._parsers = from.parsers || Analyzer.getDefaultParsers(this);
-    this._importFinders = from.importFinders || Analyzer.getDefaultImportFinders();
+    this._loader = from.urlLoader;
+    this._parsers = from.parsers || this._parsers;
+    this._entityFinders = from.entityFinders || this._entityFinders;
   }
-
 
   /**
-   * Analyzes a document and its transitive dependencies.
+   * Loads and analyzes a document and its transitive dependencies.
    *
    * @param {string} url the location of the file to analyze
    * @return {Promise<DocumentDescriptor>}
@@ -85,35 +82,42 @@ export class Analyzer {
     if (this._documentDescriptors.has(url)) {
       return this._documentDescriptors.get(url);
     }
-
-    let promise = (async () => {
-      let document = await this.load(url);
-      // TODO(justinfagnani): trigger entity finders
-      let dependencies = <DocumentDescriptor[]><any>(await Promise.all(
-          document.imports.map((i) => this.analyze(i.url))));
-      return new DocumentDescriptor(document, dependencies);
-    })();
+    let promise = this.analyzeDocument(await this.load(url));
     this._documentDescriptors.set(url, promise);
     return promise;
-  };
+  }
+
+  async analyzeSource(type: string, contents: string, url: string): Promise<DocumentDescriptor>  {
+    let document = this.parse(type, contents, url);
+    return this.analyzeDocument(document);
+  }
+
+  async analyzeDocument(document: Document<any, any>): Promise<DocumentDescriptor> {
+    let entities = await this.getEntities(document);
+
+    // TODO(justinfagnani): Load ImportDescriptors
+
+    return new DocumentDescriptor(document, entities);
+  }
+
 
   /**
    * Loads and parses a single file, deduplicating any requrests for the same
    * URL.
    */
-  async load(url: string): Promise<Document<any>> {
+  async load(url: string): Promise<Document<any, any>> {
     // TODO(justinfagnani): normalize url
     if (this._documents.has(url)) {
       return this._documents.get(url);
     }
-    if (!this.loader.canLoad(url)) {
+    if (!this._loader.canLoad(url)) {
       throw new Error(`Can't load URL: ${url}`);
     }
     // Use an immediately executed async function to create the final Promise
     // synchronously so we can store it in this._documents before any other
     // async operations to avoid any race conditions.
     let promise = (async () => {
-      let content = await this.loader.load(url);
+      let content = await this._loader.load(url);
       let extension = path.extname(url).substring(1);
       return this.parse(extension, content, url);
     })();
@@ -121,29 +125,46 @@ export class Analyzer {
     return promise;
   }
 
-  findImports<T>(url: string, document: T): ImportDescriptor[] {
-    let extension = path.extname(url).substring(1);
-    let finders: ImportFinder<T>[] = this._importFinders.get(extension);
-    if (finders == null) {
-      throw new Error(`No ImportFinders for extension ${extension}`);
-    }
-    let imports: ImportDescriptor[] = [];
-    for (let finder of finders) {
-      imports = imports.concat(finder.findImports(url, document));
-    }
-    return imports;
-  }
-
-  parse(type: string, content: string, url: string) {
+  parse(type: string, contents: string, url: string) {
     let parser = this._parsers.get(type);
     if (parser == null) {
       throw new Error(`No parser for for file type ${type}`);
     }
     try {
-      return parser.parse(content, url);
+      return parser.parse(contents, url);
     } catch (error) {
       throw new Error(`Error parsing ${url}:\n ${error.stack}`);
     }
+  }
+
+  async getEntities(document: Document<any, any>): Promise<Descriptor[]> {
+    let finders = this._entityFinders.get(document.type);
+    let entities: Descriptor[] = [];
+
+    if (finders) {
+
+      // We batch run visitors passed by findEntities() to its visit argument.
+      // Since we need to pass control back to findEnties, we return a Promise
+      // when the batch is done. We use an IIAFE (Immediatly Invoked Async
+      // Function Expression) to make a Promise resolves and catch exceptions
+      // automatically.
+      let finderPromises: Promise<Descriptor>[];
+      let visitPromise: Promise<void>;
+      visitPromise = (async () => {
+        let visitors: any = [];
+        // Collect visitors and return the batch Promise
+        let visit = (visitor: any) => {
+          visitors.push(visitor);
+          return visitPromise;
+        };
+        finderPromises = finders.map((f) => f.findEntities(document, visit));
+        document.visit(visitors);
+        // The Promise will resolve when the function returns
+      })();
+      await visitPromise;
+      entities = entities.concat.apply(entities, await Promise.all(finderPromises));
+    }
+    return entities;
   }
 
 }

@@ -15,12 +15,12 @@ import {Descriptor} from './descriptor';
  * The metadata for all features and elements defined in one document
  */
 export class DocumentDescriptor {
-  document: Document<any>;
-  dependencies: DocumentDescriptor[];
+  document: Document<any, any>;
+  entities: Descriptor[];
 
-  constructor(document: Document<any>, dependencies: DocumentDescriptor[]) {
+  constructor(document: Document<any, any>, entities: Descriptor[]) {
     this.document = document;
-    this.dependencies = dependencies;
+    this.entities = entities;
   }
 
   get url() {

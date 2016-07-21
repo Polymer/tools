@@ -15,14 +15,14 @@ const parse5 = require('parse5');
 const path = require('path');
 
 const Analyzer = require('../lib/analyzer').Analyzer;
+const DocumentDescriptor = require('../lib/ast/ast').DocumentDescriptor;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
-const AnalyzedDocument = require('../lib/analyzed-document').AnalyzedDocument;
 const Document = require('../lib/parser/document').Document;
 const HtmlDocument = require('../lib/parser/html-document').HtmlDocument;
 const JavaScriptDocument = require('../lib/parser/javascript-document').JavaScriptDocument;
+const ImportDescriptor = require('../lib/ast/import-descriptor').ImportDescriptor;
 
 suite('Analyzer', () => {
-  let importFinder;
   let analyzer;
 
   setup(() => {
@@ -90,55 +90,89 @@ suite('Analyzer', () => {
 
   });
 
-  suite('findImports()', () => {
+  suite('getEntities()', () => {
 
-    test('calls to the ImportFinders', () => {
-      importFinder = new ImportFinderStub([{
+    test('calls EntityFinder.findEntities', () => {
+      let finder = new EntityFinderStub([{
         type: 'html',
         url: 'abc',
       }]);
       let analyzer = new Analyzer({
-        urlLoader: new FSUrlLoader(__dirname),
-        importFinders: new Map([['html', [importFinder]]]),
+        entityFinders: new Map([['html', [finder]]]),
       });
-      let document = {};
-      let imports = analyzer.findImports('foo.html', document);
-      assert.equal(importFinder.calls.length, 1);
-      assert.equal(importFinder.calls[0].url, 'foo.html');
-      assert.equal(importFinder.calls[0].document, document);
-      assert.equal(imports.length, 1);
-      assert.equal(imports[0].url, 'abc');
-      assert.equal(imports[0].type, 'html');
+      let document = {
+        type: 'html',
+        visit(visitors) {
+          return Promise.resolve();
+        },
+      };
+      return analyzer.getEntities(document).then((entities) => {
+        assert.equal(finder.calls.length, 1);
+        assert.equal(finder.calls[0].document, document);
+
+        assert.equal(entities.length, 1);
+        assert.equal(entities[0].url, 'abc');
+        assert.equal(entities[0].type, 'html');
+      });
+
     });
 
     test('default import finders', () => {
-      let document = parse5.parse(`<html><head>
+      let contents = `<html><head>
           <link rel="import" href="polymer.html">
           <script src="foo.js"></script>
+          <link rel="stylesheet" href="foo.css"></link>
+        </head></html>`;
+      let ast = parse5.parse(contents);
+      let document = new HtmlDocument({
+        url: 'test.html',
+        contents,
+        ast,
+      })
+      return analyzer.getEntities(document).then((entities) => {
+        assert.equal(entities.length, 3);
+        assert.equal(entities[0].type, 'html-import');
+        assert.equal(entities[0].url, 'polymer.html');
+        assert.equal(entities[1].type, 'html-script');
+        assert.equal(entities[1].url, 'foo.js');
+        assert.equal(entities[2].type, 'html-style');
+        assert.equal(entities[2].url, 'foo.css');
+      });
+    });
+
+    test('HTML inline document finders', () => {
+      let contents = `<html><head>
           <script>console.log('hi')</script>
-        </head></html>`);
-      let imports = analyzer.findImports('foo.html', document);
-      assert.equal(imports.length, 2);
-      assert.equal(imports[0].type, 'html-import');
-      assert.equal(imports[0].url, 'polymer.html');
-      assert.equal(imports[1].type, 'html-script');
-      assert.equal(imports[1].url, 'foo.js');
+          <style>body { color: red; }</style>
+        </head></html>`;
+      let ast = parse5.parse(contents);
+      let document = new HtmlDocument({
+        url: 'test.html',
+        contents,
+        ast,
+      })
+      return analyzer.getEntities(document).then((entities) => {
+        assert.equal(entities.length, 2);
+        assert.instanceOf(entities[0], DocumentDescriptor);
+        assert.instanceOf(entities[1], DocumentDescriptor);
+      });
+
     });
 
   });
 
 });
 
-class ImportFinderStub {
+class EntityFinderStub {
 
-  constructor(imports) {
-    this.imports = imports;
+  constructor(entities) {
+    this.entities = entities;
     this.calls = [];
   }
 
-  findImports(url, document) {
-    this.calls.push({url, document});
-    return this.imports;
+  findEntities(document, visit) {
+    this.calls.push({document, visit});
+    return Promise.resolve(this.entities);
   }
 
 }
