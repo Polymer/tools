@@ -8,15 +8,11 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {Node, NodeVisitor} from 'shady-css-parser';
+import {Program} from 'estree';
+import {Descriptor} from '../ast/ast';
+import {JavaScriptDocument} from './javascript-document';
+import {Visitor} from '../ast-utils/fluent-traverse';
+import {EntityFinder} from '../entity/entity-finder';
 
-import {Document} from './document';
-
-
-export class CssDocument extends Document<Node, NodeVisitor> {
-  type = 'css';
-
-  visit(visitors: NodeVisitor[]) {
-    throw new Error('Not implemented');
-  }
-}
+export interface JavaScriptEntityFinder extends
+    EntityFinder<JavaScriptDocument, Program, Visitor>, Visitor {}

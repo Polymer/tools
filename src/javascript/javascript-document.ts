@@ -11,7 +11,7 @@
 import {traverse} from 'estraverse';
 import {Program, Node} from 'estree';
 
-import {Document} from './document';
+import {Document} from '../parser/document';
 import {Visitor} from '../ast-utils/fluent-traverse';
 export {Visitor} from '../ast-utils/fluent-traverse';
 

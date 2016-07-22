@@ -8,27 +8,32 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as shadyCss from 'shady-css-parser';
+import * as acorn from 'acorn';
+import {Program} from 'estree';
+import * as estraverse from 'estraverse';
 
 import {Analyzer} from '../analyzer';
-import {Document} from './document';
-import {Parser} from './parser';
-import {CssDocument} from './css-document';
+import {Parser} from '../parser/parser';
+import {JavaScriptDocument} from './javascript-document';
+import {Visitor} from '../ast-utils/fluent-traverse';
 
-export class CssParser implements Parser<CssDocument> {
+export class JavaScriptParser implements Parser<JavaScriptDocument> {
 
   analyzer: Analyzer;
-  private _parser: shadyCss.Parser;
 
   constructor(analyzer: Analyzer) {
     this.analyzer = analyzer;
-    this._parser = new shadyCss.Parser();
   }
 
-  parse(contents: string, url: string): CssDocument {
-    let ast = this._parser.parse(contents);
+  parse(contents: string, url: string): JavaScriptDocument {
+    // TODO(justinfagnani): add onComment handler
+    const ast = <Program>acorn.parse(contents, {
+      ecmaVersion: 7,
+      sourceType: 'script',
+      locations: true,
+    });
 
-    return new CssDocument({
+    return new JavaScriptDocument({
       url,
       contents,
       ast,

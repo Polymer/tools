@@ -20,7 +20,7 @@ import {declarationPropertyHandlers, PropertyHandlers} from '../ast-utils/declar
 import {ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import {Visitor} from '../ast-utils/fluent-traverse';
 import * as docs from '../ast-utils/docs';
-import {JavaScriptDocument} from '../parser/javascript-document';
+import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptEntityFinder} from './javascript-entity-finder';
 
 export class ElementFinder implements JavaScriptEntityFinder {

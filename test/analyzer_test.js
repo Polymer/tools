@@ -19,7 +19,7 @@ const DocumentDescriptor = require('../lib/ast/ast').DocumentDescriptor;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 const Document = require('../lib/parser/document').Document;
 const HtmlDocument = require('../lib/html/html-document').HtmlDocument;
-const JavaScriptDocument = require('../lib/parser/javascript-document').JavaScriptDocument;
+const JavaScriptDocument = require('../lib/javascript/javascript-document').JavaScriptDocument;
 const ImportDescriptor = require('../lib/ast/import-descriptor').ImportDescriptor;
 
 suite('Analyzer', () => {
