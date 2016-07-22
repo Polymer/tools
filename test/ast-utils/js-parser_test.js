@@ -1,25 +1,26 @@
 "use strict";
 
 const path = require('path');
-const hyd = require('..');
 const assert = require('chai').assert;
 
-const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
+const docs = require('../../lib/ast-utils/docs');
+const jsParse = require('../../lib/ast-utils/js-parse').jsParse;
+const FSUrlLoader = require('../../lib/url-loader/fs-url-loader').FSUrlLoader;
 
 suite('js-parser', () => {
 
   let loader;
 
   suiteSetup(() => {
-    loader = new FSUrlLoader(__dirname);
+    loader = new FSUrlLoader(path.resolve(__dirname, '../'));
   });
 
-  suite('ES6 support', function() {
+  suite('ES6 support', () => {
 
-    test('parses classes', function(done) {
-      loader.load("static/es6-support.js")
+    test('parses classes', () => {
+      return loader.load("static/es6-support.js")
         .then(function(content) {
-          var parsed = hyd._jsParse(content);
+          var parsed = jsParse(content);
           assert.equal(parsed.elements.length, 2);
           assert.equal(parsed.elements[0].behaviors.length, 2);
           assert.equal(parsed.elements[0].behaviors[0], 'Behavior1');
@@ -28,16 +29,13 @@ suite('js-parser', () => {
           assert.equal(parsed.elements[0].observers.length, 2);
           assert.equal(parsed.elements[0].properties.length, 4);
           assert.equal(parsed.elements[0].events.length, 1);
-          done();
-        }).catch(function(e) {
-          done(e);
         });
     });
 
-    test('parses 1 classe', function(done) {
-      loader.load("static/es6-support-simple.js")
+    test('parses 1 classe', () => {
+      return loader.load("static/es6-support-simple.js")
         .then(function(content) {
-          var parsed = hyd._jsParse(content);
+          var parsed = jsParse(content);
           assert.equal(parsed.elements.length, 1);
           assert.equal(parsed.elements[0].behaviors.length, 2);
           assert.equal(parsed.elements[0].behaviors[0], 'Behavior1');
@@ -46,29 +44,25 @@ suite('js-parser', () => {
           assert.equal(parsed.elements[0].observers.length, 2);
           assert.equal(parsed.elements[0].properties.length, 4);
           assert.equal(parsed.elements[0].events.length, 1);
-          done();
-        }).catch(function(e) {
-          done(e);
         });
     });
   });
 
-  suite('parser throws errors', function() {
+  suite('parser throws errors', () => {
     /*
      * Two js documents, one with an error and one with a module
      * declaration.
      */
     var parseError;
-    setup(function(done) {
-      loader.load("static/js-parse-error.js").then(function(content){
+    setup(() => {
+      return loader.load("static/js-parse-error.js").then((content) => {
         parseError = content;
-        done();
       });
     });
 
-    test('js syntax error', function() {
+    test('js syntax error', () => {
       try {
-        hyd._jsParse(parseError);
+        jsParse(parseError);
       } catch (err) {
         assert.equal(err.lineNumber, 17);
         return;
@@ -77,24 +71,23 @@ suite('js-parser', () => {
     });
   });
 
-  suite('Polymer.Base._addFeature', function() {
+  suite('Polymer.Base._addFeature', () => {
 
     var parsed;
 
-    suiteSetup(function(done) {
-      loader.load("static/js-polymer-features.js").then(function(content) {
-        parsed = hyd._jsParse(content);
-        done();
+    suiteSetup(() => {
+      return loader.load("static/js-polymer-features.js").then((content) => {
+        parsed = jsParse(content);
       });
     });
 
-    test('finds calls to Polymer.Base._addFeature, in order', function() {
+    test('finds calls to Polymer.Base._addFeature, in order', () => {
       assert.equal(parsed.features.length, 2);
       assert.equal(parsed.features[0].properties.length, 6);
       assert.equal(parsed.features[1].properties.length, 1);
     });
 
-    test('detects property types, in Closure notation', function() {
+    test('detects property types, in Closure notation', () => {
       var properties = parsed.features[0].properties;
       assert.equal(properties[0].type, 'number');
       assert.equal(properties[1].type, 'boolean');
@@ -114,37 +107,37 @@ suite('js-parser', () => {
 
   });
 
-  suite('element metadata', function(){
+  suite('element metadata', () => {
 
     var parsed;
 
-    setup(function(done) {
-      loader.load("static/js-elements.js").then(function(content){
-        parsed = hyd._jsParse(content);
-        parsed.elements.forEach(function(el) {
-          hyd.docs.annotateElement(el);
+    setup(() => {
+      return loader.load("static/js-elements.js")
+        .then((content) => {
+          parsed = jsParse(content);
+          parsed.elements.forEach(function(el) {
+            docs.annotateElement(el);
+          });
+          parsed.behaviors.forEach(function(beh) {
+            docs.annotateBehavior(beh);
+          });
         });
-        parsed.behaviors.forEach(function(beh) {
-          hyd.docs.annotateBehavior(beh);
-        });
-        done();
-      });
     });
 
-    test('Find all Polymer calls', function() {
+    test('Find all Polymer calls', () => {
       assert.equal(parsed.elements.length, 2);
     });
 
-    test('Polymer elements are named', function() {
+    test('Polymer elements are named', () => {
       assert.equal(parsed.elements[0].is, 'test-element');
       assert.equal(parsed.elements[1].is, 'x-firebase');
     });
 
-    test('Extracts documentation attached via a JS comment', function() {
+    test('Extracts documentation attached via a JS comment', () => {
       assert.include(parsed.elements[0].desc, 'I am a description of test-element.');
     });
 
-    test('Finds all published properties', function() {
+    test('Finds all published properties', () => {
       var published = 0;
       for (var i = 0; i < parsed.elements.length; i++) {
         var element = parsed.elements[i];
@@ -160,7 +153,7 @@ suite('js-parser', () => {
       assert.equal(published, 7);
     });
 
-    test('Extracts configured property types', function() {
+    test('Extracts configured property types', () => {
       var firebase = parsed.elements[1];
       for (var i = 0, prop; prop = firebase.properties[i]; i++) {
         if (prop.name !== 'keys') continue;
@@ -168,25 +161,25 @@ suite('js-parser', () => {
       }
     });
 
-    test('Extracts configured events', function() {
+    test('Extracts configured events', () => {
       var firebase = parsed.elements[1];
       assert.equal(firebase.events.length, 2);
       assert.equal(firebase.events[0].name, 'data-change');
     });
 
-    test('Finds hero tag', function() {
+    test('Finds hero tag', () => {
       var el = parsed.elements[0];
       assert.equal(el.hero, '/path/to/hero.png');
     });
 
-    test('Finds demo tags', function() {
+    test('Finds demo tags', () => {
       var el = parsed.elements[0];
       assert.equal(el.demos.length, 3);
       assert.equal(el.demos[1].path, '/demo/index.php');
       assert.equal(el.demos[1].desc, 'I am a php demo');
     });
 
-    test('Published properties have notify values', function() {
+    test('Published properties have notify values', () => {
       var foundNotify = false;
       for (var i = 0; i < parsed.elements.length; i++) {
         var element = parsed.elements[i];
@@ -202,7 +195,7 @@ suite('js-parser', () => {
       assert(foundNotify);
     });
 
-    test('Find all methods', function() {
+    test('Find all methods', () => {
       var foundMethods = false;
       for (var i = 0; i < parsed.elements.length; i++) {
         var element = parsed.elements[i];
@@ -221,7 +214,7 @@ suite('js-parser', () => {
       assert(foundMethods);
     });
 
-    test('Extracts method properties', function() {
+    test('Extracts method properties', () => {
       var firebase = parsed.elements[1];
       for (var i = 0, prop; prop = firebase.properties[i]; i++) {
         if (prop.name !== 'observeObject') continue;
@@ -237,7 +230,7 @@ suite('js-parser', () => {
   });
 
   // TODO(justinfagnani): port to replacement to Analyzer.behaviors, etc.
-  suite.skip('behavior metadata', function() {
+  suite.skip('behavior metadata', () => {
 
     let parsed;
     let byName;
@@ -252,16 +245,16 @@ suite('js-parser', () => {
       });
     });
 
-    test('Finds behavior object assignments', function() {
+    test('Finds behavior object assignments', () => {
       assert.equal(analyzer.behaviors.length, 4);
     });
 
-    test('Supports behaviors at local assignments', function() {
+    test('Supports behaviors at local assignments', () => {
       assert.property(analyzer.behaviorsByName, 'SimpleBehavior');
       assert.equal(analyzer.behaviorsByName['SimpleBehavior'].properties[0].name, 'simple');
     });
 
-    test('Supports behaviors with renamed paths', function() {
+    test('Supports behaviors with renamed paths', () => {
       assert.property(analyzer.behaviorsByName, 'AwesomeBehavior');
       var found = false;
       analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
@@ -272,12 +265,12 @@ suite('js-parser', () => {
       assert(found);
     });
 
-    test('Supports behaviors On.Property.Paths', function() {
+    test('Supports behaviors On.Property.Paths', () => {
       assert.property(analyzer.behaviorsByName, 'Really.Really.Deep.Behavior');
       assert.equal(analyzer.behaviorsByName['Really.Really.Deep.Behavior'].properties[0].name, 'deep');
     });
 
-    test('Supports property array on behaviors', function() {
+    test('Supports property array on behaviors', () => {
       var defaultValue;
       analyzer.behaviorsByName['AwesomeBehavior'].properties.forEach(function(prop) {
         if (prop.name == 'a') {
@@ -287,7 +280,7 @@ suite('js-parser', () => {
       assert.equal(defaultValue, 1);
     });
 
-    test('Supports chained behaviors', function() {
+    test('Supports chained behaviors', () => {
       assert.property(analyzer.behaviorsByName, 'CustomBehaviorList');
       assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[0], 'SimpleBehavior');
       assert.equal(analyzer.behaviorsByName['CustomBehaviorList'].behaviors[1], 'CustomNamedBehavior');
