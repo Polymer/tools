@@ -23,13 +23,11 @@ export abstract class Document<A, V> {
   url: string;
   contents: string;
   ast: A;
-  inlineDocuments: Document<any, any>[];
 
   constructor(from: DocumentInit<A>) {
     this.url = from.url;
     this.contents = from.contents;
     this.ast = from.ast;
-    this.inlineDocuments = from.inlineDocuments;
   }
 
   abstract visit(visitors: V[]): void;
@@ -40,5 +38,4 @@ export interface DocumentInit<A> {
   url: string;
   contents: string;
   ast: A;
-  inlineDocuments: Document<any, any>[];
 }

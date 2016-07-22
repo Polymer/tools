@@ -37,7 +37,6 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       url,
       contents,
       ast,
-      inlineDocuments: [],
     });
   }
 

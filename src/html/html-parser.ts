@@ -8,36 +8,13 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import * as parse5 from 'parse5';
-import {ASTNode} from 'parse5';
+import {ASTNode, parse as parseHtml} from 'parse5';
 
 import {HtmlDocument} from './html-document';
 import {Analyzer} from '../analyzer';
 import {ImportDescriptor} from '../ast/ast';
 import {Document} from '../parser/document';
 import {Parser} from '../parser/parser';
-
-export function getOwnerDocument(node: ASTNode): ASTNode {
-  while (node && !dom5.isDocument(node)) {
-    node = node.parentNode;
-  }
-  return node;
-}
-
-const p = dom5.predicates;
-
-const isInlineJSScript = p.AND(
-  p.hasTagName('script'),
-  p.NOT(p.hasAttr('src')),
-  p.OR(
-    p.NOT(p.hasAttr('type')),
-    p.hasAttrValue('type', 'text/javascript'),
-    p.hasAttrValue('type', 'application/javascript')
-  )
-);
-
-const isStyle = p.hasTagName('style');
 
 export class HtmlParser implements Parser<HtmlDocument> {
 
@@ -54,24 +31,12 @@ export class HtmlParser implements Parser<HtmlDocument> {
   * @param {string} href is the path of the document.
   */
   parse(contents: string, url: string): HtmlDocument {
-    let ast = parse5.parse(contents, {locationInfo: true});
-    let inlineDocuments = this._parseInlineDocuments(ast, url);
+    let ast = parseHtml(contents, {locationInfo: true});
     return new HtmlDocument({
       url,
       contents,
       ast,
-      inlineDocuments,
     });
-  }
-
-  private _parseInlineDocuments(ast: ASTNode, url: string)
-      : Document<any, any>[] {
-    let elements = dom5.queryAll(ast, p.OR(isInlineJSScript, isStyle));
-    return elements.map((e) => {
-      let contents = dom5.getTextContent(e);
-      let type = e.nodeName == 'script' ? 'js' : 'css';
-      return this.analyzer.parse(type, contents, url);
-    })
   }
 
 }
