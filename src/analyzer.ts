@@ -75,7 +75,10 @@ export class Analyzer {
     if (this._documentDescriptors.has(url)) {
       return this._documentDescriptors.get(url);
     }
-    let promise = this.analyzeDocument(await this.load(url));
+    let promise = (async () => {
+      let document = await this.load(url);
+      return this.analyzeDocument(document);
+    })();
     this._documentDescriptors.set(url, promise);
     return promise;
   }
