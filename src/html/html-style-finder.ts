@@ -45,7 +45,9 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
     this.analyzer = analyzer;
   }
 
-  async findEntities(document: HtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
+  async findEntities(
+      document: HtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
     let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
     await visit(async (node) => {
       if (isStyleNode(node)) {
@@ -53,10 +55,12 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
         if (tagName === 'link') {
           let href = dom5.getAttribute(node, 'href');
           let importUrl = resolveUrl(document.url, href);
-          promises.push(Promise.resolve(new ImportDescriptor('html-style', importUrl)));
+          promises.push(
+              Promise.resolve(new ImportDescriptor('html-style', importUrl)));
         } else {
           let contents = dom5.getTextContent(node);
-          promises.push(this.analyzer.analyzeSource('css', contents, document.url));
+          promises.push(
+              this.analyzer.analyzeSource('css', contents, document.url));
         }
       }
     });

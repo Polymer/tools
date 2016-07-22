@@ -14,8 +14,8 @@ import {resolve as resolveUrl} from 'url';
 
 import {Analyzer} from '../analyzer';
 import {Descriptor, DocumentDescriptor, ImportDescriptor} from '../ast/ast';
-import {HtmlEntityFinder} from './html-entity-finder';
 import {HtmlDocument, HtmlVisitor} from './html-document';
+import {HtmlEntityFinder} from './html-entity-finder';
 
 const p = dom5.predicates;
 
@@ -37,17 +37,21 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
     this.analyzer = analyzer;
   }
 
-  async findEntities(document: HtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
+  async findEntities(
+      document: HtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
     let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
     await visit((node) => {
       if (isJsScriptNode(node)) {
         let src = dom5.getAttribute(node, 'src');
         if (src) {
           let importUrl = resolveUrl(document.url, src);
-          promises.push(Promise.resolve(new ImportDescriptor('html-script', importUrl)));
+          promises.push(
+              Promise.resolve(new ImportDescriptor('html-script', importUrl)));
         } else {
           let contents = dom5.getTextContent(node);
-          promises.push(this.analyzer.analyzeSource('js', contents, document.url));
+          promises.push(
+              this.analyzer.analyzeSource('js', contents, document.url));
         }
       }
     });

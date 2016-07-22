@@ -9,7 +9,6 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {ImportDescriptor} from '../ast/ast';
@@ -31,7 +30,10 @@ const isHtmlImportNode = p.AND(
 
 export class HtmlImportFinder implements HtmlEntityFinder {
 
-  async findEntities(document: HtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>): Promise<ImportDescriptor[]> {
+  async findEntities(
+      document: HtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>)
+      : Promise<ImportDescriptor[]> {
     let imports: ImportDescriptor[] = [];
     await visit((node) => {
       if (isHtmlImportNode(node)) {

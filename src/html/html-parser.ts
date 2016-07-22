@@ -12,14 +12,13 @@ import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
-import {Analyzer} from '../analyzer';
-import {Parser} from '../parser/parser';
-import {ImportDescriptor} from '../ast/ast';
-
 import {HtmlDocument} from './html-document';
+import {Analyzer} from '../analyzer';
+import {ImportDescriptor} from '../ast/ast';
 import {Document} from '../parser/document';
+import {Parser} from '../parser/parser';
 
-export function getOwnerDocument(node: parse5.ASTNode): parse5.ASTNode {
+export function getOwnerDocument(node: ASTNode): ASTNode {
   while (node && !dom5.isDocument(node)) {
     node = node.parentNode;
   }
@@ -56,19 +55,17 @@ export class HtmlParser implements Parser<HtmlDocument> {
   */
   parse(contents: string, url: string): HtmlDocument {
     let ast = parse5.parse(contents, {locationInfo: true});
-    // let imports = this.analyzer.findImports(url, ast);
     let inlineDocuments = this._parseInlineDocuments(ast, url);
     return new HtmlDocument({
       url,
       contents,
       ast,
-      // imports,
       inlineDocuments,
-      // analyzer: this.analyzer,
     });
   }
 
-  private _parseInlineDocuments(ast: parse5.ASTNode, url: string): Document<any, any>[] {
+  private _parseInlineDocuments(ast: ASTNode, url: string)
+      : Document<any, any>[] {
     let elements = dom5.queryAll(ast, p.OR(isInlineJSScript, isStyle));
     return elements.map((e) => {
       let contents = dom5.getTextContent(e);

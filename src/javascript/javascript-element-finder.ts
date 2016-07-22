@@ -11,23 +11,27 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {Analyzer} from '../analyzer';
-import {Descriptor} from '../ast/ast';
-import * as esutil from '../ast-utils/esutil';
-import * as analyzeProperties from '../ast-utils/analyze-properties';
-import * as astValue from '../ast-utils/ast-value';
-import {declarationPropertyHandlers, PropertyHandlers} from '../ast-utils/declaration-property-handlers';
-import {ElementDescriptor, PropertyDescriptor} from '../ast/ast';
-import {Visitor} from '../ast-utils/fluent-traverse';
-import * as docs from '../ast-utils/docs';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptEntityFinder} from './javascript-entity-finder';
+import {Analyzer} from '../analyzer';
+import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import * as analyzeProperties from '../ast-utils/analyze-properties';
+import * as astValue from '../ast-utils/ast-value';
+import {
+  declarationPropertyHandlers,
+  PropertyHandlers} from '../ast-utils/declaration-property-handlers';
+import * as docs from '../ast-utils/docs';
+import * as esutil from '../ast-utils/esutil';
+import {Visitor} from '../ast-utils/fluent-traverse';
 
 export class ElementFinder implements JavaScriptEntityFinder {
 
   constructor(analyzer: Analyzer) {}
 
-  async findEntities(document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>): Promise<ElementDescriptor[]> {
+  async findEntities(
+      document: JavaScriptDocument,
+      visit: (visitor: Visitor) => Promise<void>)
+      : Promise<ElementDescriptor[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.entities;

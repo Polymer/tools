@@ -47,16 +47,19 @@ export class Analyzer {
     ]);
 
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
-        ['html', [new HtmlImportFinder(), new HtmlScriptFinder(this), new HtmlStyleFinder(this)]],
+        ['html', [
+          new HtmlImportFinder(),
+          new HtmlScriptFinder(this),
+          new HtmlStyleFinder(this)]],
         ['js', [new ElementFinder(this)]],
     ]);
 
   private _loader: UrlLoader;
+  private _documents = new Map<string, Promise<Document<any, any>>>();
+  private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
 
-  private _documents: Map<string, Promise<Document<any, any>>> = new Map();
-  private _documentDescriptors: Map<string, Promise<DocumentDescriptor>> = new Map();
-
-  constructor(from: AnalyzerInit) {
+  constructor(from?: AnalyzerInit) {
+    from = from || {};
     this._loader = from.urlLoader;
     this._parsers = from.parsers || this._parsers;
     this._entityFinders = from.entityFinders || this._entityFinders;
@@ -77,12 +80,14 @@ export class Analyzer {
     return promise;
   }
 
-  async analyzeSource(type: string, contents: string, url: string): Promise<DocumentDescriptor>  {
+  async analyzeSource(type: string, contents: string, url: string)
+      : Promise<DocumentDescriptor>  {
     let document = this.parse(type, contents, url);
     return this.analyzeDocument(document);
   }
 
-  async analyzeDocument(document: Document<any, any>): Promise<DocumentDescriptor> {
+  async analyzeDocument(document: Document<any, any>)
+      : Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
 
     // TODO(justinfagnani): Load ImportDescriptors
@@ -115,7 +120,7 @@ export class Analyzer {
     return promise;
   }
 
-  parse(type: string, contents: string, url: string) {
+  parse(type: string, contents: string, url: string): Document<any, any> {
     let parser = this._parsers.get(type);
     if (parser == null) {
       throw new Error(`No parser for for file type ${type}`);

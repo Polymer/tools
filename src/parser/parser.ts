@@ -8,6 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-export interface Parser<T> {
-  parse(contents: string, url: string): T;
+import {Document} from './document';
+
+export interface Parser<D extends Document<any, any>> {
+  parse(contents: string, url: string): D;
 }

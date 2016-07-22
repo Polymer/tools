@@ -9,8 +9,9 @@
  */
 
 import {Program} from 'estree';
-import {Descriptor} from '../ast/ast';
+
 import {JavaScriptDocument} from './javascript-document';
+import {Descriptor} from '../ast/ast';
 import {Visitor} from '../ast-utils/fluent-traverse';
 import {EntityFinder} from '../entity/entity-finder';
 
