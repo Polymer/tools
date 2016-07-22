@@ -9,6 +9,6 @@
   "rules": {
     "comma-dangle": [2, "always-multiline"],
     "no-unused-vars": [2, { "vars": "all", "args": "none" }],
-    "no-console": "off""
+    "no-console": "off"
   }
 }
