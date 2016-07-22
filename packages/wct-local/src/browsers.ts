@@ -20,6 +20,7 @@ const LAUNCHPAD_TO_SELENIUM: {[browser: string]: LaunchpadToWebdriver} = {
   ie:      internetExplorer,
   // Until https://code.google.com/p/selenium/issues/detail?id=7933
   safari:  safari,
+  phantom: phantom,
 };
 
 export function normalize(
@@ -141,6 +142,18 @@ function safari(browser: launchpad.Browser): wd.Capabilities {
     'safari.options': {
       'skipExtensionInstallation': true,
     },
+  };
+}
+
+/**
+ * @param browser A launchpad browser definition.
+ * @return A selenium capabilities object.
+ */
+function phantom(browser: launchpad.Browser): wd.Capabilities {
+  return {
+    'browserName': 'phantomjs',
+    'version':     browser.version,
+    'phantomjs.binary.path': browser.binPath,
   };
 }
 
