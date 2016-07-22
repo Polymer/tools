@@ -10,15 +10,7 @@
 
 "use strict";
 
-var jsdoc;
-
-try {
-  // in browserify
-  jsdoc = require('hydrolysis').jsdoc;
-} catch (e) {
-  // in node
-  jsdoc = require('../lib/ast-utils/jsdoc.js');
-}
+const jsdoc = require('../../lib/ast-utils/jsdoc.js');
 
 try {
   // we're in node, we need to explicity require `expect`
