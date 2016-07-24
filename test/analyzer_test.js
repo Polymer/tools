@@ -90,6 +90,7 @@ suite('Analyzer', () => {
 
   });
 
+  // TODO(justinfagnani): move this to entity/find-entities_test.js
   suite('getEntities()', () => {
 
     test('calls EntityFinder.findEntities', () => {
@@ -106,15 +107,64 @@ suite('Analyzer', () => {
           return Promise.resolve();
         },
       };
-      return analyzer.getEntities(document).then((entities) => {
-        assert.equal(finder.calls.length, 1);
-        assert.equal(finder.calls[0].document, document);
+      return analyzer.getEntities(document)
+        .then((entities) => {
+          assert.equal(finder.calls.length, 1);
+          assert.equal(finder.calls[0].document, document);
 
-        assert.equal(entities.length, 1);
-        assert.equal(entities[0].url, 'abc');
-        assert.equal(entities[0].type, 'html');
+          assert.equal(entities.length, 1);
+          assert.equal(entities[0].url, 'abc');
+          assert.equal(entities[0].type, 'html');
+        });
+
+    });
+
+    test('supports multiple calls to visit()', () => {
+      let visitor1 = {};
+      let visitor2 = {};
+      let visitor3 = {};
+      let finder = {
+        findEntities(document, visit) {
+          // two visitors in one batch
+          return Promise.all([visit(visitor1), visit(visitor2)])
+            .then(() => {
+              // one visitor in a subsequent batch, delayed a turn to make sure
+              // we can call visit() truly async
+              return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  visit(visitor3).then(resolve);
+                }, 0);
+              });
+            })
+            .then(() => {
+              return [`an entity`];
+            });
+        },
+      };
+      let visitedVisitors = [];
+      let document = {
+        type: 'test',
+        visit(visitors) {
+          visitedVisitors.push.apply(visitedVisitors, visitors);
+        },
+      };
+      let parser = {
+        parse(contents, url) {
+          return document;
+        },
+      };
+      let analyzer = new Analyzer({
+        parsers: new Map([['test', parser]]),
+        entityFinders: new Map([['test', [finder]]]),
       });
 
+      return analyzer.getEntities(document)
+        .then((entities) => {
+          assert.equal(visitedVisitors.length, 3);
+          assert.equal(visitedVisitors[0], visitor1);
+          assert.equal(visitedVisitors[1], visitor2);
+          assert.equal(visitedVisitors[2], visitor3);
+        });
     });
 
     test('default import finders', () => {

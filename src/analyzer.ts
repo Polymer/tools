@@ -13,6 +13,7 @@ import * as urlLib from 'url';
 
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
+import {findEntities} from './entity/find-entities';
 import {HtmlDocument} from './html/html-document';
 import {HtmlImportFinder} from './html/html-import-finder';
 import {HtmlParser} from './html/html-parser';
@@ -137,32 +138,9 @@ export class Analyzer {
 
   async getEntities(document: Document<any, any>): Promise<Descriptor[]> {
     let finders = this._entityFinders.get(document.type);
-    let entities: Descriptor[] = [];
-
     if (finders) {
-
-      // We batch run visitors passed by findEntities() to its visit argument.
-      // Since we need to pass control back to findEnties, we return a Promise
-      // when the batch is done. We use an IIAFE (Immediatly Invoked Async
-      // Function Expression) to make a Promise resolves and catch exceptions
-      // automatically.
-      let finderPromises: Promise<Descriptor>[];
-      let visitPromise: Promise<void>;
-      visitPromise = (async () => {
-        let visitors: any = [];
-        // Collect visitors and return the batch Promise
-        let visit = (visitor: any) => {
-          visitors.push(visitor);
-          return visitPromise;
-        };
-        finderPromises = finders.map((f) => f.findEntities(document, visit));
-        document.visit(visitors);
-        // The Promise will resolve when the function returns
-      })();
-      await visitPromise;
-      entities = entities.concat.apply(entities, await Promise.all(finderPromises));
+      return findEntities(document, finders);
     }
-    return entities;
   }
 
 }

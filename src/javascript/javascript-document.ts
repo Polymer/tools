@@ -25,19 +25,18 @@ export class JavaScriptDocument extends Document<Program, Visitor> {
      */
     function applyFinders(callbackName: string, node: Node, parent: Node) {
       for (let visitor of visitors) {
-        let callback = visitor[callbackName];
-        if (callback) {
-          return callback(node, parent) || undefined;
+        if (callbackName in visitor) {
+          return visitor[callbackName](node, parent) || undefined;
         }
       }
     }
 
     traverse(<Node><any>this.ast, {
       enter(node, parent) {
-        return applyFinders(`enter ${node.type}`, node, parent);
+        return applyFinders(`enter${node.type}`, node, parent);
       },
       leave(node, parent) {
-        return applyFinders(`leave ${node.type}`, node, parent);
+        return applyFinders(`leave${node.type}`, node, parent);
       },
       fallback: 'iteration',
     });

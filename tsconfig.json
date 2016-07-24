@@ -55,6 +55,7 @@
         "src/css/css-document.ts",
         "src/css/css-parser.ts",
         "src/entity/entity-finder.ts",
+        "src/entity/find-entities.ts",
         "src/html/html-document.ts",
         "src/html/html-entity-finder.ts",
         "src/html/html-import-finder.ts",
