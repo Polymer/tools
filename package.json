@@ -26,8 +26,7 @@
     "release": "npm run compile",
     "build:watch": "watch 'npm run build' ./src",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "npm run build && wct && mocha",
-    "testNode": "npm run build && mocha"
+    "test": "npm run build && mocha"
   },
   "devDependencies": {
     "chai": "^2.2.0",
@@ -46,8 +45,7 @@
     "tslint": "^3.10.2",
     "typescript": "^1.8.0",
     "typings": "^1.3.1",
-    "watch": "latest",
-    "web-component-tester": "^4.2.2"
+    "watch": "latest"
   },
   "dependencies": {
     "acorn": "^3.2.0",
