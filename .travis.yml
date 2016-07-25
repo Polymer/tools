@@ -2,15 +2,5 @@ language: node_js
 node_js:
   - "4"
   - "6"
-sudo: required
-addons:
-  firefox: '46.0'
-  apt:
-    sources:
-    - google-chrome
-    packages:
-    - google-chrome-stable
-  sauce_connect: false
 script:
 - npm test
-dist: trusty
