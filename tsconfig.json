@@ -40,7 +40,6 @@
         "src/ast-utils/esutil.ts",
         "src/ast-utils/feature-finder.ts",
         "src/ast-utils/fluent-traverse.ts",
-        "src/ast-utils/js-parse.ts",
         "src/ast-utils/jsdoc.ts",
         "src/ast/ast.ts",
         "src/ast/behavior-descriptor.ts",
