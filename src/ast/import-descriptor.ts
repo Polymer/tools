@@ -10,6 +10,10 @@
 
 export class ImportDescriptor {
   type: 'html-import' | 'html-script' | 'html-style' | string;
+
+  /**
+   * URL of the import, relative to the document containing the import.
+   */
   url: string;
 
   constructor(type: string, url: string) {
