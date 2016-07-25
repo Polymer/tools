@@ -19,15 +19,13 @@
     "lib/"
   ],
   "scripts": {
-    "init": "typings install",
-    "clean": "rm -rf typings/ lib/",
-    "clean-lib": "rm -rf lib/",
-    "compile": "if [ ! -f typings/index.d.ts ]; then npm run init; fi; tsc",
+    "clean": "rm -rf lib/",
+    "compile": "tsc",
     "build": "npm run compile",
     "release": "npm run compile",
     "build:watch": "watch 'npm run build' ./src",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "npm run clean-lib && npm run build && mocha"
+    "test": "npm run clean && npm run build && mocha"
   },
   "devDependencies": {
     "chai": "^2.2.0",
@@ -44,11 +42,14 @@
     "sinon": "^1.17.4",
     "temp": "^0.8.3",
     "tslint": "^3.10.2",
-    "typescript": "^1.8.0",
+    "typescript": "^2.0.0",
     "typings": "^1.3.1",
     "watch": "latest"
   },
   "dependencies": {
+    "@types/acorn": "^1.0.28",
+    "@types/node": "^4.0.30",
+    "@types/parse5": "0.0.27",
     "acorn": "^3.2.0",
     "doctrine": "^0.7.0",
     "dom5": "^1.1.0",
