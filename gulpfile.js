@@ -30,114 +30,66 @@ function task(name, deps, impl) {
   gulp.task(name, deps, impl);
 }
 
-// module.exports.init = function() {
-  task('init', () => gulp.src("./typings.json").pipe(typings()));
-// }
+task('init', () => gulp.src("./typings.json").pipe(typings()));
 
-// module.exports.depcheck = function depcheck(options) {
-  // const defaultOptions = {stickyDeps: new Set()};
-  // options = Object.assign({}, defaultOptions, options);
+task('depcheck', () => {
+  return new Promise((resolve, reject) => {
+    depcheck_lib(__dirname, {ignoreDirs: []}, resolve);
+  }).then((result) => {
+    const invalidFiles = Object.keys(result.invalidFiles) || [];
+    const invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
 
-  task('depcheck', () => {
-    return new Promise((resolve, reject) => {
-      depcheck_lib(__dirname, {ignoreDirs: []}, resolve);
-    }).then((result) => {
-      const invalidFiles = Object.keys(result.invalidFiles) || [];
-      const invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
+    if (invalidJsFiles.length > 0) {
+      console.log('Invalid files:', result.invalidFiles);
+      throw new Error('Invalid files');
+    }
 
-      if (invalidJsFiles.length > 0) {
-        console.log('Invalid files:', result.invalidFiles);
-        throw new Error('Invalid files');
-      }
-
-      const unused = new Set(result.dependencies);
-      // for (const falseUnused of options.stickyDeps) {
-      //   unused.delete(falseUnused);
-      // }
-      if (unused.size > 0) {
-        console.log('Unused dependencies:', unused);
-        throw new Error('Unused dependencies');
-      }
-    });
-  });
-// }
-
-// module.exports.lint = function(options) {
-  // module.exports.tslint(options);
-  // module.exports.eslint_lib(options);
-  // module.exports.depcheck(options);
-  task('lint', ['tslint', 'eslint', 'depcheck']);
-// }
-
-// module.exports.tslint = function(options) {
-  // const defaultOptions = {tsSrcs: gulp.src('src/**/*.ts')};
-  // options = Object.assign({}, defaultOptions, options);
-  task('tslint', () =>
-      gulp.src('src/**/*.ts')
-        .pipe(tslint_lib({
-          configuration: 'tslint.json',
-        }))
-        .pipe(tslint_lib.report('verbose')));
-// }
-
-// module.exports.eslint = function(options) {
-  // const defaultOptions = {jsSrcs: gulp.src('test/**/*.js')};
-  // options = Object.assign({}, defaultOptions, options);
-  task('eslint', () =>
-      gulp.src('test/**/*.js')
-        .pipe(eslint())
-        .pipe(eslint.format())
-        .pipe(eslint.failAfterError()));
-// }
-
-// module.exports.build = function(options) {
-  // const defaultOptions = {
-  //   tsSrcs: gulp.src('src/**/*.ts'),
-  //   dataSrcs: gulp.src(['src/**/*', '!src/**/*.ts'])
-  // };
-  // options = Object.assign({}, defaultOptions, options);
-
-  const tsProject = typescript.createProject('tsconfig.json');
-
-  task('build', () =>
-    mergeStream(
-      tsProject.src().pipe(typescript(tsProject)),
-      gulp.src(['src/**/*', '!src/**/*.ts'])
-    ).pipe(gulp.dest('lib'))
-  );
-// }
-
-// module.exports.clean = function(options) {
-  // const defaultOptions = {buildArtifacts: ['lib']};
-  // options = Object.assign({}, defaultOptions, options);
-
-  task('clean', () => {
-    for (const buildArtifact of ['lib']) {
-      fs.removeSync(path.join(__dirname, buildArtifact));
+    const unused = new Set(result.dependencies);
+    if (unused.size > 0) {
+      console.log('Unused dependencies:', unused);
+      throw new Error('Unused dependencies');
     }
   });
-// }
+});
 
+task('lint', ['tslint', 'eslint', 'depcheck']);
 
-// module.exports.buildAll = function(options) {
-//   module.exports.clean(options);
-//   module.exports.init(options);
-//   module.exports.lint(options);
-//   module.exports.build(options);
+task('tslint', () =>
+    gulp.src('src/**/*.ts')
+      .pipe(tslint_lib({
+        configuration: 'tslint.json',
+      }))
+      .pipe(tslint_lib.report('verbose')));
 
-  task('build-all', (done) => {
-    runSeq('clean', 'init', 'lint', 'build', done);
-  });
-// }
+task('eslint', () =>
+    gulp.src('test/**/*.js')
+      .pipe(eslint())
+      .pipe(eslint.format())
+      .pipe(eslint.failAfterError()));
 
-// module.exports.test = function(options) {
-//   module.exports.buildAll(options);
+const tsProject = typescript.createProject('tsconfig.json');
 
-  task('test', ['build'], () =>
-    gulp.src('test/**/*_test.js', {read: false})
-        .pipe(mocha({
-          ui: 'tdd',
-          reporter: 'spec',
-        }))
-  );
-// }
+task('build', () =>
+  mergeStream(
+    tsProject.src().pipe(typescript(tsProject)),
+    gulp.src(['src/**/*', '!src/**/*.ts'])
+  ).pipe(gulp.dest('lib'))
+);
+
+task('clean', () => {
+  for (const buildArtifact of ['lib']) {
+    fs.removeSync(path.join(__dirname, buildArtifact));
+  }
+});
+
+task('build-all', (done) => {
+  runSeq('clean', 'init', 'lint', 'build', done);
+});
+
+task('test', ['build'], () =>
+  gulp.src('test/**/*_test.js', {read: false})
+      .pipe(mocha({
+        ui: 'tdd',
+        reporter: 'spec',
+      }))
+);
