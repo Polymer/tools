@@ -3,10 +3,6 @@ node_js:
   - "4"
   - "6"
 sudo: required
-before_script:
-- npm install -g mocha bower
-- bower install
-- npm run build
 addons:
   firefox: '46.0'
   apt:
@@ -16,5 +12,5 @@ addons:
     - google-chrome-stable
   sauce_connect: false
 script:
-- mocha
+- npm test
 dist: trusty
