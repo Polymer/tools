@@ -82,6 +82,9 @@ export class Analyzer {
       return this._documentDescriptors.get(url);
     }
     let promise = (async () => {
+      // Make sure we wait and return a Promise before doing any work, so that
+      // the Promise can be cached.
+      await Promise.resolve();
       let document = await this.load(url);
       return this.analyzeDocument(document);
     })();
@@ -127,6 +130,9 @@ export class Analyzer {
     // synchronously so we can store it in this._documents before any other
     // async operations to avoid any race conditions.
     let promise = (async () => {
+      // Make sure we wait and return a Promise before doing any work, so that
+      // the Promise can be cached.
+      await Promise.resolve();
       let content = await this._loader.load(url);
       let extension = path.extname(url).substring(1);
       return this.parse(extension, content, url);
