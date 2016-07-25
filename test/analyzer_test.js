@@ -14,6 +14,7 @@ const assert = require('chai').assert;
 const parse5 = require('parse5');
 const path = require('path');
 
+const invertPromise = require('./test-utils').invertPromise;
 const Analyzer = require('../lib/analyzer').Analyzer;
 const DocumentDescriptor = require('../lib/ast/ast').DocumentDescriptor;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
@@ -50,21 +51,11 @@ suite('Analyzer', () => {
     });
 
     test('returns a Promise that rejects for non-existant files', () => {
-      return analyzer.load('/static/not-found')
-        .then((doc) => {
-          assert.fail();
-        }, (error) => {
-          // pass
-        });
+      return invertPromise(analyzer.load('/static/not-found'));
     });
 
     test.skip('returns a Promise that rejects for malformed files', () => {
-      return analyzer.load('/static/malformed.html')
-        .then((doc) => {
-          assert.fail();
-        }, (error) => {
-          // pass
-        });
+      return invertPromise(analyzer.load('/static/malformed.html'));
     });
 
   });
@@ -80,10 +71,8 @@ suite('Analyzer', () => {
     });
 
     test('returns a Promise that rejects for malformed files', () => {
-      return analyzer.analyze('static/malformed.html')
-        .then((root) => {
-          assert.fail();
-        }, (error) => {
+      return invertPromise(analyzer.analyze('static/malformed.html'))
+        .then((error) => {
           assert.include(error.message, 'malformed.html');
         });
     });
