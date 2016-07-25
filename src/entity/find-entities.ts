@@ -22,8 +22,6 @@ export async function findEntities(
   // all calls to visit() in a batch when the visitors have run.
   // Then we repeat if any visitors have registered new visitors.
 
-  let entities: Descriptor[] = [];
-
   // Resolves Promises returned by visit() calls
   let batchDone: () => void;
 
@@ -40,7 +38,7 @@ export async function findEntities(
 
   // Initializes the current batch running state
   function setup() {
-    visitorsPromise = new Promise<void>((resolve, reject) => {
+    visitorsPromise = new Promise<void>((resolve, _) => {
       batchDone = resolve;
     });
     visitors = [];
@@ -51,15 +49,15 @@ export async function findEntities(
   function runVisitors() {
     // Record the current state so that any new visitors are enqueued into
     // a fresh batch.
-    let currentVisitors = visitors;
-    let currentDoneCallback = batchDone;
-    let currentVisitorsPromise = visitorsPromise;
+    const currentVisitors = visitors;
+    const currentDoneCallback = batchDone;
+    const currentVisitorsPromise = visitorsPromise;
     setup();
 
     try {
       document.visit(currentVisitors);
     } catch (error) {
-      visitError = error;
+      visitError = visitError || error;
     }
 
     // Let `findEntities` continue after calls to visit().then()
@@ -77,10 +75,10 @@ export async function findEntities(
 
   // Ok, go!
   setup();
-  let finderPromises = finders.map((f) => f.findEntities(document, visit));
+  const finderPromises = finders.map((f) => f.findEntities(document, visit));
 
   // This waits for all `findEntities()` calls to finish
-  let nestedEntities = await Promise.all(finderPromises);
+  const nestedEntities = await Promise.all(finderPromises);
 
   // TODO(justinfagnani): write a test w/ a visitor that throws to test this
   if (visitError) {
@@ -88,6 +86,5 @@ export async function findEntities(
   }
 
   // Flatten the nested list
-  entities = entities.concat.apply(entities, nestedEntities);
-  return entities;
+  return Array.prototype.concat.apply([], nestedEntities);
 }
