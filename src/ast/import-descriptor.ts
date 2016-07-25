@@ -7,9 +7,9 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
- 
+
 export class ImportDescriptor {
-  type: string;
+  type: 'html-import' | 'html-script' | 'html-style' | string;
   url: string;
 
   constructor(type: string, url: string) {
