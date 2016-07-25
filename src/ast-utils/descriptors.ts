@@ -84,7 +84,7 @@ export interface EventDescriptor extends Descriptor {
   }[];
 }
 
-type BehaviorOrName = LiteralValue|BehaviorDescriptor;
+export type BehaviorOrName = LiteralValue|BehaviorDescriptor;
 
 export interface FunctionDescriptor extends PropertyDescriptor {
   function: boolean; // true

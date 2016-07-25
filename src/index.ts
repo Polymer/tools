@@ -14,9 +14,11 @@
  * Static analysis for Polymer.
  * @namespace hydrolysis
  */
-exports.Analyzer = require('./lib/analyzer').Analyzer;
-exports.FetchUrlLoader = require('./lib/url-loader/fetch-url-loader').FetchUrlLoader;
-exports._jsParse = require('./lib/ast-utils/js-parse').jsParse;
+export {Analyzer} from './analyzer';
+export {FetchUrlLoader} from './url-loader/fetch-url-loader';
 
-exports.docs = require('./lib/ast-utils/docs');
-exports.jsdoc = require('./lib/ast-utils/jsdoc');
+import * as _docs from './ast-utils/docs';
+import * as _jsdoc from './ast-utils/jsdoc';
+
+export let docs = _docs;
+export let jsdoc = _jsdoc;
