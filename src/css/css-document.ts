@@ -10,10 +10,14 @@
 
 import {Node, NodeVisitor} from 'shady-css-parser';
 
-import {Document} from '../parser/document';
+import {Document, Options} from '../parser/document';
 
 export class CssDocument extends Document<Node, NodeVisitor> {
   type = 'css';
+
+  constructor(from: Options<Node>) {
+    super(from);
+  }
 
   visit(visitors: NodeVisitor[]) {
     throw new Error('Not implemented');

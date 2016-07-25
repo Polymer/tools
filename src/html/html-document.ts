@@ -11,7 +11,7 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import {Document, DocumentInit} from '../parser/document';
+import {Document, Options} from '../parser/document';
 
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
@@ -23,6 +23,10 @@ export interface HtmlVisitor {
 
 export class HtmlDocument extends Document<ASTNode, HtmlVisitor> {
   type = 'html';
+
+  constructor(from: Options<ASTNode>) {
+    super(from);
+  }
 
   visit(visitors: HtmlVisitor[]) {
     dom5.nodeWalk(this.ast, (node) => {

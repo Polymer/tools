@@ -24,7 +24,7 @@ export abstract class Document<A, V> {
   contents: string;
   ast: A;
 
-  constructor(from: DocumentInit<A>) {
+  constructor(from: Options<A>) {
     this.url = from.url;
     this.contents = from.contents;
     this.ast = from.ast;
@@ -34,7 +34,7 @@ export abstract class Document<A, V> {
 
 }
 
-export interface DocumentInit<A> {
+export interface Options<A> {
   url: string;
   contents: string;
   ast: A;

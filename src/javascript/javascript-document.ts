@@ -13,10 +13,14 @@ import {Program, Node} from 'estree';
 
 import {Visitor} from '../ast-utils/fluent-traverse';
 export {Visitor} from '../ast-utils/fluent-traverse';
-import {Document} from '../parser/document';
+import {Document, Options} from '../parser/document';
 
 export class JavaScriptDocument extends Document<Program, Visitor> {
   type = 'js';
+
+  constructor(from: Options<Program>) {
+    super(from);
+  }
 
   visit(visitors: Visitor[]) {
 
