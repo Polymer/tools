@@ -15,7 +15,7 @@ const fs = require('fs');
 const parse5 = require('parse5');
 const path = require('path');
 
-const HtmlDocument = require('../../lib/parser/html-document').HtmlDocument;
+const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
 const HtmlImportFinder = require('../../lib/html/html-import-finder').HtmlImportFinder;
 
 suite('HtmlImportFinder', () => {

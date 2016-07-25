@@ -20,13 +20,14 @@
   ],
   "scripts": {
     "init": "typings install",
-    "clean": "rm -rf typings/ lib/ && find src | grep \\.js$ | xargs rm",
+    "clean": "rm -rf typings/ lib/",
+    "clean-lib": "rm -rf lib/",
     "compile": "if [ ! -f typings/index.d.ts ]; then npm run init; fi; tsc",
     "build": "npm run compile",
     "release": "npm run compile",
     "build:watch": "watch 'npm run build' ./src",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
-    "test": "npm run build && mocha"
+    "test": "npm run clean-lib && npm run build && mocha"
   },
   "devDependencies": {
     "chai": "^2.2.0",

@@ -14,7 +14,7 @@ const assert = require('chai').assert;
 const parse5 = require('parse5');
 
 const Analyzer = require('../../lib/analyzer').Analyzer;
-const HtmlDocument = require('../../lib/parser/html-document').HtmlDocument;
+const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
 const HtmlScriptFinder = require('../../lib/html/html-script-finder').HtmlScriptFinder;
 const ImportDescriptor = require('../../lib/ast/import-descriptor').ImportDescriptor;
 const DocumentDescriptor = require('../../lib/ast/ast').DocumentDescriptor;

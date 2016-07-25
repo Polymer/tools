@@ -14,8 +14,8 @@ const assert = require('chai').assert;
 const fs = require('fs');
 const path = require('path');
 
-const JavaScriptParser = require('../../lib/parser/javascript-parser').JavaScriptParser;
-const JavaScriptDocument = require('../../lib/parser/javascript-document').JavaScriptDocument;
+const JavaScriptParser = require('../../lib/javascript/javascript-parser').JavaScriptParser;
+const JavaScriptDocument = require('../../lib/javascript/javascript-document').JavaScriptDocument;
 
 suite('JavaScriptParser', () => {
 

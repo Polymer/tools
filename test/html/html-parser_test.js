@@ -14,7 +14,7 @@ const assert = require('chai').assert;
 const fs = require('fs');
 const path = require('path');
 
-const HtmlParser = require('../../lib/parser/html-parser').HtmlParser;
+const HtmlParser = require('../../lib/html/html-parser').HtmlParser;
 
 let registry;
 

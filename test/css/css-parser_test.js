@@ -14,8 +14,8 @@ const assert = require('chai').assert;
 const fs = require('fs');
 const path = require('path');
 
-const CssParser = require('../../lib/parser/css-parser').CssParser;
-const CssDocument = require('../../lib/parser/css-document').CssDocument;
+const CssParser = require('../../lib/css/css-parser').CssParser;
+const CssDocument = require('../../lib/css/css-document').CssDocument;
 
 suite('CssParser', () => {
 
