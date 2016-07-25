@@ -15,7 +15,7 @@ import * as esutil from './esutil';
 import * as analyzeProperties from './analyze-properties';
 import * as astValue from './ast-value';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
-import {ElementDescriptor, PropertyDescriptor} from './descriptors';
+import {ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
 import * as docs from './docs';

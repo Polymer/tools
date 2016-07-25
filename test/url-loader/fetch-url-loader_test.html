@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="../../../web-component-tester/browser.js"></script>
+    <script src="../../hydrolysis.js"></script>
+  </head>
+  <body>
+    <script>
+      'use strict';
+
+      const FetchUrlLoader = require('hydrolysis').FetchUrlLoader;
+
+      suite('FetchUrlLoader', () => {
+
+        let loader;
+
+        setup(() => {
+          loader = new FetchUrlLoader();
+        })
+
+        test('load() returns a Promise that resolves an existing document', () => {
+          let url = new URL('../static/xhr-text.txt', document.baseURI).href;
+          return loader.load(url)
+            .then((content) => {
+              assert.equal(content.trim(), 'Hello!');
+            });
+        });
+
+        test('load() returns a Promise that rejects ', () => {
+          var url = new URL('../static/not-found', document.baseURI).href;
+          return loader.load(url)
+            .then((content) => {
+              throw new Error(`resolve not expected: ${content}`);
+            }, (error) => {
+              // pass
+            });
+        });
+
+      });
+    </script>
+  </body>
+</html>
