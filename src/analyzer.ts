@@ -30,14 +30,19 @@ import {
 } from './ast/ast';
 import {UrlLoader} from './url-loader/url-loader';
 
-export interface AnalyzerInit {
+export interface Options {
   urlLoader?: UrlLoader;
   parsers?: Map<string, Parser<any>>;
   entityFinders?: Map<string, EntityFinder<any, any, any>[]>;
 }
 
 /**
- * A database of Polymer metadata defined in HTML
+ * A static analyzer for web projects.
+ *
+ * An Analyzer can load and parse documents of various types, and extract
+ * arbitratrary information from the documents, and transitively load
+ * dependencies. An Analyzer instance is configured with parsers, and entity
+ * finders which do the actual work of understanding different file types.
  */
 export class Analyzer {
 
@@ -59,15 +64,15 @@ export class Analyzer {
   private _documents = new Map<string, Promise<Document<any, any>>>();
   private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
 
-  constructor(from?: AnalyzerInit) {
-    from = from || {};
-    this._loader = from.urlLoader;
-    this._parsers = from.parsers || this._parsers;
-    this._entityFinders = from.entityFinders || this._entityFinders;
+  constructor(options?: Options) {
+    options = options || {};
+    this._loader = options.urlLoader;
+    this._parsers = options.parsers || this._parsers;
+    this._entityFinders = options.entityFinders || this._entityFinders;
   }
 
   /**
-   * Loads and analyzes a document and its transitive dependencies.
+   * Loads, parses and analyzes a document and its transitive dependencies.
    *
    * @param {string} url the location of the file to analyze
    * @return {Promise<DocumentDescriptor>}
@@ -84,12 +89,18 @@ export class Analyzer {
     return promise;
   }
 
+  /**
+   * Parses and analyzes a document from source.
+   */
   async analyzeSource(type: string, contents: string, url: string)
       : Promise<DocumentDescriptor>  {
     let document = this.parse(type, contents, url);
     return this.analyzeDocument(document);
   }
 
+  /**
+   * Analyzes a parsed Document object.
+   */
   async analyzeDocument(document: Document<any, any>)
       : Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
