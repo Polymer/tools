@@ -1,21 +1,31 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
 
 import * as astValue from './ast-value';
-import {PropertyDescriptor, ElementDescriptor, BehaviorOrName} from '../ast/ast';
+import {
+  PropertyDescriptor,
+  ElementDescriptor,
+  BehaviorOrName
+} from '../ast/ast';
 import {analyzeProperties} from './analyze-properties';
 import * as estree from 'estree';
 
-export type PropertyHandlers = {[key: string]: (node: estree.Node) => void};
+export type PropertyHandlers = {
+  [key: string]: (node: estree.Node) => void
+};
 /**
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.
@@ -24,21 +34,22 @@ export type PropertyHandlers = {[key: string]: (node: estree.Node) => void};
  * @return {object.<string,function>}      An object containing property
  *                                         handlers.
  */
-export function declarationPropertyHandlers(declaration: ElementDescriptor): PropertyHandlers {
+export function declarationPropertyHandlers(declaration: ElementDescriptor):
+    PropertyHandlers {
   return {
-    is: function(node: estree.Node) {
+    is(node: estree.Node) {
       if (node.type === 'Literal') {
         declaration.is = node.value.toString();
       }
     },
-    properties: function(node: estree.Node) {
+    properties(node: estree.Node) {
       const props = analyzeProperties(node);
 
       for (let i = 0; i < props.length; i++) {
         declaration.properties.push(props[i]);
       }
     },
-    behaviors: function(node: estree.Node) {
+    behaviors(node: estree.Node) {
       if (node.type !== 'ArrayExpression') {
         return;
       }
@@ -50,7 +61,7 @@ export function declarationPropertyHandlers(declaration: ElementDescriptor): Pro
         declaration.behaviors.push(<BehaviorOrName>v);
       }
     },
-    observers: function(node: estree.Node) {
+    observers(node: estree.Node) {
       if (node.type !== 'ArrayExpression') {
         return;
       }
@@ -59,10 +70,7 @@ export function declarationPropertyHandlers(declaration: ElementDescriptor): Pro
         if (v === undefined) {
           v = astValue.CANT_CONVERT;
         }
-        declaration.observers.push({
-          javascriptNode: element,
-          expression: v
-        });
+        declaration.observers.push({javascriptNode: element, expression: v});
       }
     }
   };

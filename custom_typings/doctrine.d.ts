@@ -6,10 +6,7 @@ declare module 'doctrine' {
     type: Type;
   }
   class Type {}
-  export var type: {
-    stringify(type: Type):string;
-  }
-  interface Options {
+  export var type: {stringify(type: Type): string;} interface Options {
     unwrap: boolean;
     lineNumber: boolean;
     preserveWhitespace: boolean;
@@ -18,5 +15,5 @@ declare module 'doctrine' {
     description: string;
     tags: Tag[];
   }
-  export function parse(content:string, options:Options):Annotation;
+  export function parse(content: string, options: Options): Annotation;
 }

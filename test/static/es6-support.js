@@ -1,8 +1,6 @@
 'use strict';
 class A {
-  constructor() {
-    super();
-  }
+  constructor() { super(); }
 
   beforeRegister() {
     this.is = 'test-seed';
@@ -26,7 +24,7 @@ class A {
       },
     }
 
-    this.observers = [
+                      this.observers = [
       '_observer1(string)',
       '_observer2(string)',
     ]
@@ -43,9 +41,7 @@ class A {
    * Test comment.
    * @param {string=} string Optional string
    */
-  test(string) {
-    this.data = 'Hello World';
-  }
+  test(string) { this.data = 'Hello World'; }
 }
 
 Polymer(A);
@@ -97,27 +93,18 @@ Polymer({
     /**
      * I am an object with notify=true!
      */
-    objectNotify: {
-      type: Object,
-      notify: true
-    },
+    objectNotify: {type: Object, notify: true},
     /**
      * I am an object with notify=!0
      */
-    objectNotifyUnary: {
-      type: Object,
-      notify: !0
-    },
+    objectNotifyUnary: {type: Object, notify: !0},
     /**
      * I am a boolean property!
      */
     boolProp: Boolean
   },
 
-  bind: {
-    numProp: 'numChanged',
-    elementProp: 'elemChanged'
-  },
+  bind: {numProp: 'numChanged', elementProp: 'elemChanged'},
 
   numChanged: function() {
 

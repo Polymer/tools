@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as estraverse from 'estraverse';
@@ -19,19 +23,18 @@ import * as analyzeProperties from '../ast-utils/analyze-properties';
 import * as astValue from '../ast-utils/ast-value';
 import {
   declarationPropertyHandlers,
-  PropertyHandlers} from '../ast-utils/declaration-property-handlers';
+  PropertyHandlers
+} from '../ast-utils/declaration-property-handlers';
 import * as docs from '../ast-utils/docs';
 import * as esutil from '../ast-utils/esutil';
 import {Visitor} from '../ast-utils/fluent-traverse';
 
 export class ElementFinder implements JavaScriptEntityFinder {
-
   constructor(analyzer: Analyzer) {}
 
   async findEntities(
-      document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>
-      ): Promise<ElementDescriptor[]> {
+      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
+      Promise<ElementDescriptor[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.entities;
@@ -54,7 +57,7 @@ class ElementVisitor implements Visitor {
       type: 'element',
       desc: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node).map(function(event) {
-        return { desc: event };
+        return {desc: event};
       }),
       properties: [],
       behaviors: [],
@@ -73,7 +76,8 @@ class ElementVisitor implements Visitor {
     this.classDetected = false;
   }
 
-  enterAssignmentExpression(node: estree.AssignmentExpression, parent: estree.Node) {
+  enterAssignmentExpression(
+      node: estree.AssignmentExpression, parent: estree.Node) {
     if (!this.element) {
       return;
     }
@@ -104,8 +108,10 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc = <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
-    if (prop && prop.kind === 'get' && (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
+    const propDesc =
+        <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
+    if (prop && prop.kind === 'get' &&
+        (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
       let returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       let argument = <estree.ArrayExpression>returnStatement.argument;
       if (propDesc.name === 'behaviors') {
@@ -114,7 +120,8 @@ class ElementVisitor implements Visitor {
         });
       } else {
         argument.elements.forEach((elementObject: estree.Literal) => {
-          this.element.observers.push({ javascriptNode: elementObject, expression: elementObject.raw });
+          this.element.observers.push(
+              {javascriptNode: elementObject, expression: elementObject.raw});
         });
       }
     } else {
@@ -123,7 +130,8 @@ class ElementVisitor implements Visitor {
   }
 
   enterCallExpression(node: estree.CallExpression, parent: estree.Node) {
-    // When dealing with a class, enterCallExpression is called after the parsing actually starts
+    // When dealing with a class, enterCallExpression is called after the
+    // parsing actually starts
     if (this.classDetected) {
       return estraverse.VisitorOption.Skip;
     }
@@ -134,7 +142,7 @@ class ElementVisitor implements Visitor {
         this.element = {
           type: 'element',
           desc: esutil.getAttachedComment(parent),
-          events: esutil.getEventComments(parent).map( function(event) {
+          events: esutil.getEventComments(parent).map(function(event) {
             return {desc: event};
           })
         };
@@ -146,7 +154,8 @@ class ElementVisitor implements Visitor {
   leaveCallExpression(node: estree.CallExpression, parent: estree.Node) {
     let callee = node.callee;
     let args = node.arguments;
-    if (callee.type === 'Identifier' && args.length === 1 && args[0].type === 'ObjectExpression') {
+    if (callee.type === 'Identifier' && args.length === 1 &&
+        args[0].type === 'ObjectExpression') {
       if (callee.name === 'Polymer') {
         if (this.element) {
           this.entities.push(this.element);
@@ -158,7 +167,8 @@ class ElementVisitor implements Visitor {
   }
 
   enterObjectExpression(node: estree.ObjectExpression, parent: estree.Node) {
-    // When dealing with a class, there is no single object that we can parse to retrieve all properties
+    // When dealing with a class, there is no single object that we can parse to
+    // retrieve all properties
     if (this.classDetected) {
       return estraverse.VisitorOption.Skip;
     }

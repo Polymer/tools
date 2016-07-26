@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -25,7 +29,8 @@ import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
  * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
  */
-export function matchesCallExpression(expression: estree.MemberExpression, path: string[]): boolean {
+export function matchesCallExpression(
+    expression: estree.MemberExpression, path: string[]): boolean {
   if (!expression.property || !expression.object) return;
   console.assert(path.length >= 2);
 
@@ -59,14 +64,15 @@ export function objectKeyToString(key: estree.Node): string {
     return key.value.toString();
   }
   if (key.type === 'MemberExpression') {
-    return objectKeyToString(key.object) + '.' + objectKeyToString(key.property);
+    return objectKeyToString(key.object) + '.' +
+        objectKeyToString(key.property);
   }
 }
 
 const CLOSURE_CONSTRUCTOR_MAP = {
   'Boolean': 'boolean',
-  'Number':  'number',
-  'String':  'string',
+  'Number': 'number',
+  'String': 'string',
 };
 
 /**
@@ -107,23 +113,18 @@ export function getEventComments(node: estree.Node) {
   let eventComments: string[] = [];
   estraverse.traverse(node, {
     enter: (node) => {
-      const comments = (node.leadingComments || []).concat(node.trailingComments || [])
-        .map(function(commentAST) {
-          return commentAST.value;
-        })
-        .filter( function(comment) {
-          return comment.indexOf('@event') !== -1;
-        });
+      const comments =
+          (node.leadingComments || [])
+              .concat(node.trailingComments || [])
+              .map((commentAST) => commentAST.value)
+              .filter((comment) => comment.indexOf('@event') !== -1);
       eventComments = eventComments.concat(comments);
     },
-    keys: {
-      Super: []
-    }
+    keys: {Super: []}
   });
   // dedup
-  return eventComments.filter((el, index, array) => {
-    return array.indexOf(el) === index;
-  });
+  return eventComments.filter(
+      (el, index, array) => { return array.indexOf(el) === index; });
 }
 
 function getLeadingComments(node: estree.Node): string[] {
@@ -132,15 +133,14 @@ function getLeadingComments(node: estree.Node): string[] {
   }
   const comments = node.leadingComments;
   if (!comments || comments.length === 0) return;
-  return comments.map(function(comment) {
-    return comment.value;
-  });
+  return comments.map(function(comment) { return comment.value; });
 }
 
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node: estree.Property): PropertyDescriptor {
+export function toPropertyDescriptor(node: estree.Property):
+    PropertyDescriptor {
   let type = closureType(node.value);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {

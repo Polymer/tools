@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import {Document} from '../parser/document';
@@ -26,21 +30,24 @@ export async function findEntities(
   let batchDone: () => void;
 
   // Promise returned by visit()
-  let visitorsPromise: Promise<void>;
+  let
+  visitorsPromise: Promise<void>;
 
   // Current batch of visitors
-  let visitors: any[];
+  let
+  visitors: any[];
 
   // A Promise that runs the next batch of visitors in a microtask
-  let runner: Promise<void>;
+  let
+  runner: Promise<void>;
 
-  let visitError: any;
+  let
+  visitError: any;
 
   // Initializes the current batch running state
   function setup() {
-    visitorsPromise = new Promise<void>((resolve, _) => {
-      batchDone = resolve;
-    });
+    visitorsPromise =
+        new Promise<void>((resolve, _) => { batchDone = resolve; });
     visitors = [];
     runner = null;
   }
@@ -81,9 +88,7 @@ export async function findEntities(
   const nestedEntities = await Promise.all(finderPromises);
 
   // TODO(justinfagnani): write a test w/ a visitor that throws to test this
-  if (visitError) {
-    throw visitError;
-  }
+  if (visitError) { throw visitError;}
 
   // Flatten the nested list
   return Array.prototype.concat.apply([], nestedEntities);

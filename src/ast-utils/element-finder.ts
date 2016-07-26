@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -14,7 +18,10 @@ import * as estraverse from 'estraverse';
 import * as esutil from './esutil';
 import * as analyzeProperties from './analyze-properties';
 import * as astValue from './ast-value';
-import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
+import {
+  declarationPropertyHandlers,
+  PropertyHandlers
+} from './declaration-property-handlers';
 import {ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
@@ -41,9 +48,7 @@ export function elementFinder() {
       element = {
         type: 'element',
         desc: esutil.getAttachedComment(node),
-        events: esutil.getEventComments(node).map(function(event) {
-          return { desc: event };
-        }),
+        events: esutil.getEventComments(node).map((event) => ({desc: event})),
         properties: [],
         behaviors: [],
         observers: []
@@ -61,7 +66,7 @@ export function elementFinder() {
       this.classDetected = false;
     },
 
-    enterAssignmentExpression: function enterAssignmentExpression(node, parent) {
+    enterAssignmentExpression(node, parent) {
       if (!element) {
         return;
       }
@@ -78,7 +83,7 @@ export function elementFinder() {
       }
     },
 
-    enterMethodDefinition: function enterMethodDefinition(node, parent) {
+    enterMethodDefinition(node, parent) {
       if (!element) {
         return;
       }
@@ -92,8 +97,10 @@ export function elementFinder() {
         computed: false,
         type: 'Property'
       };
-      const propDesc = <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
-      if (prop && prop.kind === 'get' && (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
+      const propDesc =
+          <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
+      if (prop && prop.kind === 'get' &&
+          (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
         const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
         const argument = <estree.ArrayExpression>returnStatement.argument;
         if (propDesc.name === 'behaviors') {
@@ -102,7 +109,8 @@ export function elementFinder() {
           });
         } else {
           argument.elements.forEach((elementObject: estree.Literal) => {
-            element.observers.push({ javascriptNode: elementObject, expression: elementObject.raw });
+            element.observers.push(
+                {javascriptNode: elementObject, expression: elementObject.raw});
           });
         }
       } else {
@@ -110,8 +118,9 @@ export function elementFinder() {
       }
     },
 
-    enterCallExpression: function enterCallExpression(node, parent) {
-      // When dealing with a class, enterCallExpression is called after the parsing actually starts
+    enterCallExpression(node, parent) {
+      // When dealing with a class, enterCallExpression is called after the
+      // parsing actually starts
       if (this.classDetected) {
         return estraverse.VisitorOption.Skip;
       }
@@ -122,9 +131,8 @@ export function elementFinder() {
           element = {
             type: 'element',
             desc: esutil.getAttachedComment(parent),
-            events: esutil.getEventComments(parent).map( function(event) {
-              return {desc: event};
-            })
+            events: esutil.getEventComments(parent).map(
+                (event) => ({desc: event}))
           };
           propertyHandlers = declarationPropertyHandlers(element);
         }
@@ -134,7 +142,8 @@ export function elementFinder() {
     leaveCallExpression: function leaveCallExpression(node, parent) {
       const callee = node.callee;
       const args = node.arguments;
-      if (callee.type === 'Identifier' && args.length === 1 && args[0].type === 'ObjectExpression') {
+      if (callee.type === 'Identifier' && args.length === 1 &&
+          args[0].type === 'ObjectExpression') {
         if (callee.name === 'Polymer') {
           if (element) {
             elements.push(element);
@@ -146,7 +155,8 @@ export function elementFinder() {
     },
 
     enterObjectExpression: function enterObjectExpression(node, parent) {
-      // When dealing with a class, there is no single object that we can parse to retrieve all properties
+      // When dealing with a class, there is no single object that we can parse
+      // to retrieve all properties
       if (this.classDetected) {
         return estraverse.VisitorOption.Skip;
       }
@@ -193,7 +203,7 @@ export function elementFinder() {
             definedProperties[set.name].setter = true;
           }
         });
-        Object.keys(definedProperties).forEach(function(p){
+        Object.keys(definedProperties).forEach(function(p) {
           const prop = definedProperties[p];
           element.properties.push(prop);
         });

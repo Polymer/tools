@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -17,7 +21,10 @@ import * as analyzeProperties from './analyze-properties';
 import * as astValue from './ast-value';
 import * as estree from 'estree';
 import {Visitor} from './fluent-traverse';
-import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
+import {
+  declarationPropertyHandlers,
+  PropertyHandlers
+} from './declaration-property-handlers';
 import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
 
 interface KeyFunc<T> {
@@ -34,9 +41,7 @@ function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
     bucket[key] = el;
   });
   const returned = <Array<T>>[];
-  Object.keys(bucket).forEach((k) => {
-    returned.push(bucket[k]);
-  });
+  Object.keys(bucket).forEach((k) => { returned.push(bucket[k]); });
   return returned;
 }
 
@@ -59,31 +64,35 @@ export function behaviorFinder() {
       return b.indexOf(newBehavior.is) === -1;
     };
     for (let i = 0; i < behaviors.length; i++) {
-      if (newBehavior.is !== behaviors[i].is)
+      if (newBehavior.is !== behaviors[i].is) {
         continue;
+      }
       // merge desc, longest desc wins
       if (newBehavior.desc) {
         if (behaviors[i].desc) {
           if (newBehavior.desc.length > behaviors[i].desc.length)
             behaviors[i].desc = newBehavior.desc;
-        }
-        else {
+        } else {
           behaviors[i].desc = newBehavior.desc;
         }
       }
       // merge demos
-      behaviors[i].demos = (behaviors[i].demos || []).concat(newBehavior.demos || []);
+      behaviors[i].demos =
+          (behaviors[i].demos || []).concat(newBehavior.demos || []);
       // merge events,
-      behaviors[i].events = (behaviors[i].events || []).concat(newBehavior.events || []);
+      behaviors[i].events =
+          (behaviors[i].events || []).concat(newBehavior.events || []);
       behaviors[i].events = dedupe(behaviors[i].events, (e) => e.name);
       // merge properties
-      behaviors[i].properties = (behaviors[i].properties || []).concat(newBehavior.properties || []);
+      behaviors[i].properties =
+          (behaviors[i].properties || []).concat(newBehavior.properties || []);
       // merge observers
-      behaviors[i].observers = (behaviors[i].observers || []).concat(newBehavior.observers || []);
+      behaviors[i].observers =
+          (behaviors[i].observers || []).concat(newBehavior.observers || []);
       // merge behaviors
-      behaviors[i].behaviors =
-        (behaviors[i].behaviors || []).concat(newBehavior.behaviors || [])
-        .filter(isBehaviorImpl);
+      behaviors[i].behaviors = (behaviors[i].behaviors || [])
+                                   .concat(newBehavior.behaviors || [])
+                                   .filter(isBehaviorImpl);
       return behaviors[i];
     }
     return newBehavior;
@@ -123,9 +132,11 @@ export function behaviorFinder() {
   const templatizer = 'Polymer.Templatizer';
 
   function _parseChainedBehaviors(node: estree.Node) {
-    // if current behavior is part of an array, it gets extended by other behaviors
+    // if current behavior is part of an array, it gets extended by other
+    // behaviors
     // inside the array. Ex:
-    // Polymer.IronMultiSelectableBehavior = [ {....}, Polymer.IronSelectableBehavior]
+    // Polymer.IronMultiSelectableBehavior = [ {....},
+    // Polymer.IronSelectableBehavior]
     // We add these to behaviors array
     const expression = behaviorExpression(node);
     const chained: BehaviorOrName[] = [];
@@ -136,8 +147,9 @@ export function behaviorFinder() {
           chained.push(<BehaviorOrName>astValue.expressionToValue(element));
         }
       }
-      if (chained.length > 0)
+      if (chained.length > 0) {
         currentBehavior.behaviors = chained;
+      }
     }
   }
 
@@ -155,8 +167,8 @@ export function behaviorFinder() {
     currentBehavior = {
       type: 'behavior',
       desc: comment,
-      events: esutil.getEventComments(node).map( function(event) {
-        return { desc: event};
+      events: esutil.getEventComments(node).map(function(event) {
+        return {desc: event};
       })
     };
     propertyHandlers = declarationPropertyHandlers(currentBehavior);
@@ -205,7 +217,7 @@ export function behaviorFinder() {
      */
     enterVariableDeclaration: function(node, parent) {
       if (node.declarations.length !== 1) return;  // Ambiguous.
-      _initBehavior(node, function () {
+      _initBehavior(node, function() {
         return esutil.objectKeyToString(node.declarations[0].id);
       });
     },
@@ -214,9 +226,8 @@ export function behaviorFinder() {
      * Look for object assignments with @polymerBehavior in the docs.
      */
     enterAssignmentExpression: function(node, parent) {
-      _initBehavior(parent, function () {
-        return esutil.objectKeyToString(node.left);
-      });
+      _initBehavior(
+          parent, function() { return esutil.objectKeyToString(node.left); });
     },
 
     /**
@@ -239,8 +250,7 @@ export function behaviorFinder() {
         }
         if (name in propertyHandlers) {
           propertyHandlers[name](prop.value);
-        }
-        else {
+        } else {
           currentBehavior.properties.push(esutil.toPropertyDescriptor(prop));
         }
       }

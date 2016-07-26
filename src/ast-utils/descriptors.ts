@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -13,7 +17,7 @@ import * as estree from 'estree';
 import * as jsdoc from './jsdoc';
 import * as dom5 from 'dom5';
 
-export type LiteralValue = string|number|boolean|RegExp;
+export type LiteralValue = string | number | boolean | RegExp;
 
 export interface Descriptor {
   jsdoc?: jsdoc.Annotation;
@@ -33,12 +37,12 @@ export interface PropertyDescriptor extends Descriptor {
   readOnly?: LiteralValue;
   reflectToAttribute?: LiteralValue;
   default?: LiteralValue;
-  private?: boolean;
-  configuration?: boolean;
-  getter?: boolean;
-  setter?: boolean;
+    private?: boolean;
+    configuration?: boolean;
+    getter?: boolean;
+    setter?: boolean;
 
-  __fromBehavior?: BehaviorOrName;
+    __fromBehavior?: BehaviorOrName;
 }
 
 /**
@@ -54,11 +58,8 @@ export interface ElementDescriptor extends Descriptor {
   }[];
   behaviors?: BehaviorOrName[];
 
-  type: string; // 'element' | 'behavior'
-  demos?: {
-    desc: string;
-    path: string;
-  }[];
+  type: string;  // 'element' | 'behavior'
+  demos?: {desc: string; path: string;}[];
   events?: EventDescriptor[];
   hero?: string;
   domModule?: dom5.Node;
@@ -77,28 +78,21 @@ export interface BehaviorDescriptor extends ElementDescriptor {
 export interface EventDescriptor extends Descriptor {
   name?: string;
   __fromBehavior?: BehaviorOrName;
-  params?: {
-    type: string,
-    desc: string,
-    name: string
-  }[];
+  params?: {type: string, desc: string, name: string}[];
 }
 
-export type BehaviorOrName = LiteralValue|BehaviorDescriptor;
+export type BehaviorOrName = LiteralValue | BehaviorDescriptor;
 
 export interface FunctionDescriptor extends PropertyDescriptor {
-  function: boolean; // true
-  return: {
-    type: string;
-    desc: string;
-  };
+  function: boolean;  // true
+  return: {type: string; desc: string;};
 }
 
 /**
  * The metadata for a Polymer feature.
  */
-export interface FeatureDescriptor extends ElementDescriptor {
+export interface FeatureDescriptor extends ElementDescriptor {}
 
-}
-
-export type BehaviorsByName = {[name: string]: BehaviorDescriptor};
+export type BehaviorsByName = {
+  [name: string]: BehaviorDescriptor
+};

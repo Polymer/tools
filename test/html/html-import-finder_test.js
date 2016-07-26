@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 "use strict";
@@ -16,16 +20,15 @@ const parse5 = require('parse5');
 const path = require('path');
 
 const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
-const HtmlImportFinder = require('../../lib/html/html-import-finder').HtmlImportFinder;
+const HtmlImportFinder =
+    require('../../lib/html/html-import-finder').HtmlImportFinder;
 
 suite('HtmlImportFinder', () => {
 
   suite('findImports()', () => {
     let finder;
 
-    setup(() => {
-      finder = new HtmlImportFinder();
-    });
+    setup(() => { finder = new HtmlImportFinder(); });
 
     test('finds HTML Imports', () => {
       let contents = `<html><head>
@@ -42,12 +45,11 @@ suite('HtmlImportFinder', () => {
       });
       let visit = (visitor) => document.visit([visitor]);
 
-      return finder.findEntities(document, visit)
-        .then((entities) => {
-          assert.equal(entities.length, 1);
-          assert.equal(entities[0].type, 'html-import');
-          assert.equal(entities[0].url, 'polymer.html');
-        });
+      return finder.findEntities(document, visit).then((entities) => {
+        assert.equal(entities.length, 1);
+        assert.equal(entities[0].type, 'html-import');
+        assert.equal(entities[0].url, 'polymer.html');
+      });
 
     });
 

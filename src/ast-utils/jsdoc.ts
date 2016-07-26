@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -49,7 +53,8 @@ export interface Annotation {
 //   doctrine.Rules['hero'] = ['parseNamePathOptional', 'ensureEnd'];
 
 //   // // @demo [path/to/demo] [Demo title]
-//   doctrine.Rules['demo'] = ['parseNamePathOptional', 'parseDescription', 'ensureEnd'];
+//   doctrine.Rules['demo'] = ['parseNamePathOptional', 'parseDescription',
+//   'ensureEnd'];
 
 //   // // @polymerBehavior [Polymer.BehaviorName]
 //   doctrine.Rules['polymerBehavior'] = ['parseNamePathOptional', 'ensureEnd'];
@@ -69,32 +74,17 @@ function parseDemo(tag: doctrine.Tag): Tag {
 
 // @hero [path]
 function parseHero(tag: doctrine.Tag): Tag {
-  return {
-    tag:  tag.title,
-    type: null,
-    name: tag.description,
-    description: null
-  };
+  return {tag: tag.title, type: null, name: tag.description, description: null};
 }
 
 // @polymerBehavior [name]
 function parsePolymerBehavior(tag: doctrine.Tag): Tag {
-  return {
-    tag:  tag.title,
-    type: null,
-    name: tag.description,
-    description: null
-  };
+  return {tag: tag.title, type: null, name: tag.description, description: null};
 }
 
 // @pseudoElement name
 function parsePseudoElement(tag: doctrine.Tag): Tag {
-  return {
-    tag:  tag.title,
-    type: null,
-    name: tag.description,
-    description: null
-  };
+  return {tag: tag.title, type: null, name: tag.description, description: null};
 }
 
 const CUSTOM_TAGS: {[name: string]: (tag: doctrine.Tag) => Tag} = {
@@ -108,15 +98,13 @@ const CUSTOM_TAGS: {[name: string]: (tag: doctrine.Tag) => Tag} = {
  * Convert doctrine tags to our tag format
  */
 function _tagsToHydroTags(tags: doctrine.Tag[]): Tag[] {
-  if (!tags)
-    return null;
+  if (!tags) return null;
   return tags.map(function(tag): Tag {
     if (tag.title in CUSTOM_TAGS) {
       return CUSTOM_TAGS[tag.title](tag);
-    }
-    else {
+    } else {
       return {
-        tag:  tag.title,
+        tag: tag.title,
         type: tag.type ? doctrine.type.stringify(tag.type) : null,
         name: tag.name,
         description: tag.description,
@@ -129,17 +117,15 @@ function _tagsToHydroTags(tags: doctrine.Tag[]): Tag[] {
  * removes leading *, and any space before it
  */
 function _removeLeadingAsterisks(description: string): string {
-  if ((typeof description) !== 'string')
-    return description;
+  if ((typeof description) !== 'string') return description;
 
-  return description
-    .split('\n')
-    .map(function(line) {
-      // remove leading '\s*' from each line
-      const match = line.match(/^[\s]*\*\s?(.*)$/);
-      return match ? match[1] : line;
-    })
-    .join('\n');
+  return description.split('\n')
+      .map(function(line) {
+        // remove leading '\s*' from each line
+        const match = line.match(/^[\s]*\*\s?(.*)$/);
+        return match ? match[1] : line;
+      })
+      .join('\n');
 }
 
 /**
@@ -151,15 +137,9 @@ function _removeLeadingAsterisks(description: string): string {
  */
 export function parseJsdoc(docs: string): Annotation {
   docs = _removeLeadingAsterisks(docs);
-  const d = doctrine.parse(docs, {
-    unwrap: false,
-    lineNumber: true,
-    preserveWhitespace: true
-  });
-  return {
-    description: d.description,
-    tags: _tagsToHydroTags(d.tags)
-  };
+  const d = doctrine.parse(
+      docs, {unwrap: false, lineNumber: true, preserveWhitespace: true});
+  return {description: d.description, tags: _tagsToHydroTags(d.tags)};
 }
 
 // Utility
@@ -189,7 +169,7 @@ export function getTag(jsdoc: Annotation, tagName: string, key?: string): any {
 
 export function unindent(text: string): string {
   if (!text) return text;
-  const lines  = text.replace(/\t/g, '  ').split('\n');
+  const lines = text.replace(/\t/g, '  ').split('\n');
   const indent = lines.reduce<number>(function(prev, line) {
     if (/^\s*$/.test(line)) return prev;  // Completely ignore blank lines.
 

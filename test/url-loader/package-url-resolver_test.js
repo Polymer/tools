@@ -1,19 +1,23 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
 
 const assert = require('chai').assert;
 
-const PackageUrlResolver = require('../../lib/url-loader/package-url-resolver')
-    .PackageUrlResolver;
+const PackageUrlResolver =
+    require('../../lib/url-loader/package-url-resolver').PackageUrlResolver;
 
 suite('PackageUrlResolver', function() {
 
@@ -35,7 +39,8 @@ suite('PackageUrlResolver', function() {
     });
 
     test('canResolve is false for URL with a hostname', () => {
-      assert.isFalse(new PackageUrlResolver().canResolve('http://abc.xyz/foo.html'));
+      assert.isFalse(
+          new PackageUrlResolver().canResolve('http://abc.xyz/foo.html'));
     });
 
     test('canResolve is true for a URL with the right hostname', () => {
@@ -66,11 +71,13 @@ suite('PackageUrlResolver', function() {
     });
 
     test('throws for a cousin URL', () => {
-      assert.throws(() => new PackageUrlResolver().resolve('../../foo/foo.html'));
+      assert.throws(
+          () => new PackageUrlResolver().resolve('../../foo/foo.html'));
     });
 
     test('throws for a URL with a hostname', () => {
-      assert.throws(() => new PackageUrlResolver().resolve('http://abc.xyz/foo.html'));
+      assert.throws(
+          () => new PackageUrlResolver().resolve('http://abc.xyz/foo.html'));
     });
 
     test('resolves a URL with the right hostname', () => {

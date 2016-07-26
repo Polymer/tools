@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 "use strict";
@@ -20,8 +24,10 @@ const DocumentDescriptor = require('../lib/ast/ast').DocumentDescriptor;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 const Document = require('../lib/parser/document').Document;
 const HtmlDocument = require('../lib/html/html-document').HtmlDocument;
-const JavaScriptDocument = require('../lib/javascript/javascript-document').JavaScriptDocument;
-const ImportDescriptor = require('../lib/ast/import-descriptor').ImportDescriptor;
+const JavaScriptDocument =
+    require('../lib/javascript/javascript-document').JavaScriptDocument;
+const ImportDescriptor =
+    require('../lib/ast/import-descriptor').ImportDescriptor;
 
 suite('Analyzer', () => {
   let analyzer;
@@ -35,19 +41,17 @@ suite('Analyzer', () => {
   suite('load()', () => {
 
     test('loads and parses an HTML document', () => {
-      return analyzer.load('/static/html-parse-target.html')
-        .then((doc) => {
-          assert.instanceOf(doc, HtmlDocument);
-          assert.equal(doc.url, '/static/html-parse-target.html');
-        });
+      return analyzer.load('/static/html-parse-target.html').then((doc) => {
+        assert.instanceOf(doc, HtmlDocument);
+        assert.equal(doc.url, '/static/html-parse-target.html');
+      });
     });
 
     test('loads and parses a JavaScript document', () => {
-      return analyzer.load('/static/js-elements.js')
-        .then((doc) => {
-          assert.instanceOf(doc, JavaScriptDocument);
-          assert.equal(doc.url, '/static/js-elements.js');
-        });
+      return analyzer.load('/static/js-elements.js').then((doc) => {
+        assert.instanceOf(doc, JavaScriptDocument);
+        assert.equal(doc.url, '/static/js-elements.js');
+      });
     });
 
     test('returns a Promise that rejects for non-existant files', () => {
@@ -64,17 +68,17 @@ suite('Analyzer', () => {
 
     test('returns a Promise that resolves to a DocumentDescriptor', () => {
       return analyzer.analyze('/static/html-parse-target.html')
-        .then((descriptor) => {
-          // TODO(justinfagnani): add a lot more checks, especially for
-          // transitive dependencies
-        });
+          .then(
+              (descriptor) => {
+                  // TODO(justinfagnani): add a lot more checks, especially for
+                  // transitive dependencies
+              });
     });
 
     test('returns a Promise that rejects for malformed files', () => {
       return invertPromise(analyzer.analyze('static/malformed.html'))
-        .then((error) => {
-          assert.include(error.message, 'malformed.html');
-        });
+          .then(
+              (error) => { assert.include(error.message, 'malformed.html'); });
     });
 
   });
@@ -91,7 +95,7 @@ suite('Analyzer', () => {
         url: 'test.html',
         contents,
         ast,
-      })
+      });
       return analyzer.getEntities(document).then((entities) => {
         assert.equal(entities.length, 3);
         assert.equal(entities[0].type, 'html-import');
@@ -113,7 +117,7 @@ suite('Analyzer', () => {
         url: 'test.html',
         contents,
         ast,
-      })
+      });
       return analyzer.getEntities(document).then((entities) => {
         assert.equal(entities.length, 2);
         assert.instanceOf(entities[0], DocumentDescriptor);

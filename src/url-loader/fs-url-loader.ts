@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as fs from 'fs';
@@ -19,9 +23,7 @@ import {UrlLoader} from './url-loader';
 export class FSUrlLoader implements UrlLoader {
   root: string;
 
-  constructor(root: string) {
-    this.root = root;
-  }
+  constructor(root: string) { this.root = root; }
 
   canLoad(url: string): boolean {
     let urlObject = parseUrl(url);
@@ -30,8 +32,8 @@ export class FSUrlLoader implements UrlLoader {
   }
 
   _isValid(urlObject: Url, pathname: string) {
-    return (urlObject.protocol === 'file' || !urlObject.hostname)
-        && !pathname.startsWith('../');
+    return (urlObject.protocol === 'file' || !urlObject.hostname) &&
+        !pathname.startsWith('../');
   }
 
   load(url: string): Promise<string> {

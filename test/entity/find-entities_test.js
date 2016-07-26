@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 "use strict";
@@ -26,17 +30,14 @@ suite('findEntities()', () => {
     let finder = new EntityFinderStub([entity]);
     let document = {
       type: 'html',
-      visit(visitors) {
-        return Promise.resolve();
-      },
+      visit(visitors) { return Promise.resolve(); },
     };
-    return findEntities(document, [finder])
-      .then((entities) => {
-        assert.equal(finder.calls.length, 1);
-        assert.equal(finder.calls[0].document, document);
-        assert.equal(entities.length, 1);
-        assert.equal(entities[0], entity);
-      });
+    return findEntities(document, [finder]).then((entities) => {
+      assert.equal(finder.calls.length, 1);
+      assert.equal(finder.calls[0].document, document);
+      assert.equal(entities.length, 1);
+      assert.equal(entities[0], entity);
+    });
   });
 
   test('supports multiple and async calls to visit()', () => {
@@ -47,18 +48,14 @@ suite('findEntities()', () => {
       findEntities(document, visit) {
         // two visitors in one batch
         return Promise.all([visit(visitor1), visit(visitor2)])
-          .then(() => {
-            // one visitor in a subsequent batch, delayed a turn to make sure
-            // we can call visit() truly async
-            return new Promise((resolve, reject) => {
-              setTimeout(() => {
-                visit(visitor3).then(resolve);
-              }, 0);
-            });
-          })
-          .then(() => {
-            return [`an entity`];
-          });
+            .then(() => {
+              // one visitor in a subsequent batch, delayed a turn to make sure
+              // we can call visit() truly async
+              return new Promise((resolve, reject) => {
+                setTimeout(() => { visit(visitor3).then(resolve); }, 0);
+              });
+            })
+            .then(() => { return [`an entity`]; });
       },
     };
     let visitedVisitors = [];
@@ -69,41 +66,32 @@ suite('findEntities()', () => {
       },
     };
 
-    return findEntities(document, [finder])
-      .then((entities) => {
-        assert.equal(visitedVisitors.length, 3);
-        assert.equal(visitedVisitors[0], visitor1);
-        assert.equal(visitedVisitors[1], visitor2);
-        assert.equal(visitedVisitors[2], visitor3);
-      });
+    return findEntities(document, [finder]).then((entities) => {
+      assert.equal(visitedVisitors.length, 3);
+      assert.equal(visitedVisitors[0], visitor1);
+      assert.equal(visitedVisitors[1], visitor2);
+      assert.equal(visitedVisitors[2], visitor3);
+    });
   });
 
   test('propagates exceptions in entity finders', () => {
     let finder = {
-      findEntities(document, visit) {
-        throw new Error('expected');
-      },
+      findEntities(document, visit) { throw new Error('expected'); },
     };
     let document = {
       type: 'html',
-      visit(visitors) {
-        return Promise.resolve();
-      },
+      visit(visitors) { return Promise.resolve(); },
     };
     return invertPromise(findEntities(document, [finder]));
   });
 
   test('propagates exceptions in visitors', () => {
     let finder = {
-      findEntities(document, visit) {
-        return visit((x) => x);
-      },
+      findEntities(document, visit) { return visit((x) => x); },
     };
     let document = {
       type: 'html',
-      visit(visitors) {
-        throw new Error('expected');
-      },
+      visit(visitors) { throw new Error('expected'); },
     };
     return invertPromise(findEntities(document, [finder]));
   });
@@ -112,7 +100,6 @@ suite('findEntities()', () => {
 
 
 class EntityFinderStub {
-
   constructor(entities) {
     this.entities = entities;
     this.calls = [];
@@ -122,5 +109,4 @@ class EntityFinderStub {
     this.calls.push({document, visit});
     return Promise.resolve(this.entities);
   }
-
 }

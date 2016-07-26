@@ -19,11 +19,8 @@ export interface ElementDescriptor extends Descriptor {
   }[];
   behaviors?: BehaviorOrName[];
 
-  type: string; // 'element' | 'behavior'
-  demos?: {
-    desc: string;
-    path: string;
-  }[];
+  type: string;  // 'element' | 'behavior'
+  demos?: {desc: string; path: string;}[];
   events?: EventDescriptor[];
   hero?: string;
   domModule?: dom5.Node;

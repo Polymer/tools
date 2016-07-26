@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -43,7 +47,8 @@ suite('FSUrlLoader', function() {
     });
 
     test('resolves an in-package URL', () => {
-      assert.equal(new FSUrlLoader('root').getFilePath('foo.html'), 'root/foo.html');
+      assert.equal(
+          new FSUrlLoader('root').getFilePath('foo.html'), 'root/foo.html');
     });
 
     test('throws for a sibling URL', () => {
@@ -55,7 +60,8 @@ suite('FSUrlLoader', function() {
     });
 
     test('throws for a URL with a hostname', () => {
-      assert.throws(() => new FSUrlLoader().getFilePath('http://abc.xyz/foo.html'));
+      assert.throws(
+          () => new FSUrlLoader().getFilePath('http://abc.xyz/foo.html'));
     });
 
   });
