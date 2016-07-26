@@ -26,7 +26,7 @@
     "build:watch": "watch 'npm run build' ./src",
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "lint": "gulp lint",
-    "test": "npm run clean && npm run build && mocha"
+    "test": "npm run clean && npm run build && npm run lint && mocha"
   },
   "devDependencies": {
     "chai": "^2.2.0",
