@@ -15,7 +15,6 @@ import {PolymerProject} from './polymer-project';
 import {DepsIndex} from './analyzer';
 import {SWConfig, generate as swPrecacheGenerate} from 'sw-precache';
 
-// non-ES compatible modules
 let logger = logging.getLogger('polymer-build.service-worker');
 
 export interface AddServiceWorkerOptions {
@@ -26,7 +25,11 @@ export interface AddServiceWorkerOptions {
   swConfig?: SWConfig;
 }
 
-function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject) {
+/**
+ * Parses a depsIndex object and returns an array of file paths, pointing to
+ * the project's required service worker precached assets.
+ */
+function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject): string[] {
   let precachedAssets = new Set<string>(project.analyzer.allFragments);
   precachedAssets.add(project.entrypoint);
 
@@ -40,6 +43,10 @@ function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject) {
   return Array.from(precachedAssets);
 }
 
+/**
+ * Parses a depsIndex object and returns an array of file paths for a BUNDLED
+ * build, pointing to the project's required service worker precached assets.
+ */
 function getBundledPrecachedAssets(project: PolymerProject) {
   let precachedAssets = new Set<string>(project.analyzer.allFragments);
   precachedAssets.add(project.entrypoint);
@@ -48,12 +55,8 @@ function getBundledPrecachedAssets(project: PolymerProject) {
 }
 
 /**
- * Returns a service worker transform stream. This stream will add a service
- * worker to the build stream, based on the options passed and build analysis
- * performed eariler in the stream.
- *
- * Note that this stream closely resembles a pass-through stream. It does not
- * modify the files that pass through it. It only ever adds 1 file.
+ * Returns a promise that resolves with a generated service worker (the file
+ * contents), based off of the options provided.
  */
 export function generateServiceWorker(options: AddServiceWorkerOptions): Promise<Buffer> {
   console.assert(!!options.project, '`project` option is required');
@@ -97,13 +100,12 @@ export function generateServiceWorker(options: AddServiceWorkerOptions): Promise
   });
 }
 
+
 /**
- * Returns a service worker transform stream. This stream will add a service
- * worker to the build stream, based on the options passed and build analysis
- * performed eariler in the stream.
- *
- * Note that this stream closely resembles a pass-through stream. It does not
- * modify the files that pass through it. It only ever adds 1 file.
+ * Returns a promise that resolves when a service worker has been generated
+ * and written to the build directory. This uses generateServiceWorker() to
+ * generate a service worker, which it then writes to the file system based on
+ * the buildRoot & serviceWorkerPath (if provided) options.
  */
 export function addServiceWorker(options: AddServiceWorkerOptions): Promise<{}> {
   return generateServiceWorker(options).then((fileContents: Buffer) => {

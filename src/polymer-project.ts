@@ -83,17 +83,6 @@ function resolveGlob(fromPath: string, glob: string) {
   }
 }
 
-function invertGlob(glob: string) {
-  return glob.startsWith('!') ? glob.substring(1) : '!' + glob;
-}
-
-/**
- * Splits and rejoins inline scripts and styles from HTML files.
- *
- * Use `HtmlProject.prototype.split` and `HtmlProject.prototype.rejoin` to
- * surround processing steps that operate on the extracted resources.
- * HtmlProject works well with gulp-if to process files based on filename.
- */
 export class PolymerProject {
 
   root: string;
@@ -107,16 +96,19 @@ export class PolymerProject {
   _parts: Map<string, SplitFile> = new Map();
 
   /**
-   * analyzer is a `Transform` that runs Hydrolysis analysis on the files, for
-   * use by the bundler transform. This transform must only be used in one
-   * stream.
+   * A `Transform` stream that runs Hydrolysis analysis on the files. It
+   * can be used to get information on dependencies and fragments for the
+   * project once the source & dependency streams have been piped into it.
    */
   analyzer: StreamAnalyzer;
 
   /**
-   * bundler is a `Transform` that bundles the shell and fragments of the
-   * project according to the dependency analysis done by the `analyze`
-   * transform. `analyze` must be in the pipeline before this transform.
+   * A `Transform` stream that modifies the files that pass through it based
+   * on the dependency analysis done by the `analyzer` transform. It "bundles"
+   * a project by injecting its dependencies into the application fragments
+   * themselves, so that a minimum number of requests need to be made to load.
+   *
+   * (NOTE: The analyzer stream must be in the pipeline somewhere before this.)
    */
   bundler: Bundler;
 
