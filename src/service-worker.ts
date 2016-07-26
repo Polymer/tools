@@ -13,40 +13,10 @@ import * as path from 'path';
 import * as logging from 'plylog';
 import {PolymerProject} from './polymer-project';
 import {DepsIndex} from './analyzer';
-const swPrecache = require('sw-precache');
+import {SWConfig, generate as swPrecacheGenerate} from 'sw-precache';
 
 // non-ES compatible modules
 let logger = logging.getLogger('polymer-build.service-worker');
-
-export interface SWConfig {
-  cacheId?: string;
-  directoryIndex?: string;
-  dynamicUrlToDependencies?: {
-    [property: string]: string[]
-  };
-  handleFetch?: boolean;
-  ignoreUrlParametersMatching?: RegExp[];
-  importScripts?: string[];
-  logger?: Function;
-  maximumFileSizeToCacheInBytes?: number;
-  navigateFallback?: string;
-  navigateFallbackWhitelist?: RegExp[];
-  replacePrefix?: string;
-  runtimeCaching?: {
-    urlPattern: RegExp;
-    handler: string;
-    options?: {
-      cache: {
-        maxEntries: number;
-        name: string;
-      };
-    };
-  }[];
-  staticFileGlobs?: string[];
-  stripPrefix?: string;
-  templateFilePath?: string;
-  verbose?: boolean;
-}
 
 export interface AddServiceWorkerOptions {
   project: PolymerProject;
@@ -116,7 +86,7 @@ export function generateServiceWorker(options: AddServiceWorkerOptions): Promise
 
     return new Promise((resolve, reject) => {
       logger.debug(`writing service worker...`, swConfig);
-      swPrecache.generate(swConfig, (err?: Error, fileContents?: string) => {
+      swPrecacheGenerate(swConfig, (err?: Error, fileContents?: string) => {
         if (err) {
           reject(err);
         } else {
