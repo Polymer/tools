@@ -55,8 +55,8 @@ export class Analyzer {
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
         ['html', [
           new HtmlImportFinder(),
-          new HtmlScriptFinder(this),
-          new HtmlStyleFinder(this)]],
+          new HtmlScriptFinder(),
+          new HtmlStyleFinder()]],
         ['js', [new ElementFinder(this)]],
     ]);
 

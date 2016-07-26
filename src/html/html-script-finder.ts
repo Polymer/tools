@@ -9,11 +9,9 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {Analyzer} from '../analyzer';
-import {Descriptor, DocumentDescriptor, ImportDescriptor} from '../ast/ast';
+import {Descriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
 import {HtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
 
@@ -31,31 +29,25 @@ const isJsScriptNode = p.AND(
 
 export class HtmlScriptFinder implements HtmlEntityFinder {
 
-  analyzer: Analyzer;
-
-  constructor(analyzer: Analyzer) {
-    this.analyzer = analyzer;
-  }
-
   async findEntities(
       document: HtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
-    let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
+
+    let entities: (ImportDescriptor | InlineDocumentDescriptor)[] = [];
+
     await visit((node) => {
       if (isJsScriptNode(node)) {
         let src = dom5.getAttribute(node, 'src');
         if (src) {
           let importUrl = resolveUrl(document.url, src);
-          promises.push(
-              Promise.resolve(new ImportDescriptor('html-script', importUrl)));
+          entities.push(new ImportDescriptor('html-script', importUrl));
         } else {
           let contents = dom5.getTextContent(node);
-          promises.push(
-              this.analyzer.analyzeSource('js', contents, document.url));
+          entities.push(new InlineDocumentDescriptor('js', contents));
         }
       }
     });
-    let entities = await Promise.all(promises);
+
     return entities;
   }
 
