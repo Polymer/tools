@@ -6,7 +6,8 @@ declare module 'doctrine' {
     type: Type;
   }
   class Type {}
-  export var type: {stringify(type: Type): string;} interface Options {
+  export var type: {stringify(type: Type): string;};
+  interface Options {
     unwrap: boolean;
     lineNumber: boolean;
     preserveWhitespace: boolean;

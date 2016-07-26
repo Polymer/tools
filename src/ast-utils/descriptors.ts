@@ -59,7 +59,7 @@ export interface ElementDescriptor extends Descriptor {
   behaviors?: BehaviorOrName[];
 
   type: string;  // 'element' | 'behavior'
-  demos?: {desc: string; path: string;}[];
+  demos?: {desc: string; path: string}[];
   events?: EventDescriptor[];
   hero?: string;
   domModule?: dom5.Node;
@@ -85,7 +85,7 @@ export type BehaviorOrName = LiteralValue | BehaviorDescriptor;
 
 export interface FunctionDescriptor extends PropertyDescriptor {
   function: boolean;  // true
-  return: {type: string; desc: string;};
+  return: {type: string; desc: string};
 }
 
 /**

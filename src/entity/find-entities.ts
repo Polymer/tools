@@ -88,7 +88,7 @@ export async function findEntities(
   const nestedEntities = await Promise.all(finderPromises);
 
   // TODO(justinfagnani): write a test w/ a visitor that throws to test this
-  if (visitError) { throw visitError;}
+  if (visitError) throw visitError;
 
   // Flatten the nested list
   return Array.prototype.concat.apply([], nestedEntities);
