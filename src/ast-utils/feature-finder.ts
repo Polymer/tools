@@ -38,10 +38,11 @@ export function featureFinder() {
           'Got', featureNode.type, 'instead.');
       return;
     }
-    const objExpr = <estree.ObjectExpression>featureNode;
-    if (!objExpr.properties) return;
+    if (!featureNode.properties) {
+      return;
+    }
 
-    feature.properties = objExpr.properties.map(esutil.toPropertyDescriptor);
+    feature.properties = featureNode.properties.map(esutil.toPropertyDescriptor);
   }
 
   const visitors: Visitor = {

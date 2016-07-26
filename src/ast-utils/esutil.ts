@@ -32,9 +32,8 @@ export function matchesCallExpression(expression: estree.MemberExpression, path:
   if (expression.property.type !== 'Identifier') {
     return;
   }
-  const property = <estree.Identifier>expression.property;
   // Unravel backwards, make sure properties match each step of the way.
-  if (property.name !== path[path.length - 1]) return false;
+  if (expression.property.name !== path[path.length - 1]) return false;
   // We've got ourselves a final member expression.
   if (path.length === 2 && expression.object.type === 'Identifier') {
     return expression.object.name === path[0];
@@ -82,10 +81,9 @@ export function closureType(node: estree.Node): string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
-    return typeof (<estree.Literal>node).value;
+    return typeof node.value;
   } else if (node.type === 'Identifier') {
-    let ident = <estree.Identifier>node;
-    return CLOSURE_CONSTRUCTOR_MAP[ident.name] || ident.name;
+    return CLOSURE_CONSTRUCTOR_MAP[node.name] || node.name;
   } else {
     throw {
       message: 'Unknown Closure type for node: ' + node.type,

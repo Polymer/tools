@@ -99,8 +99,7 @@ export function behaviorFinder() {
         // super general. this code is suspicious.
         return (<any>node).expression.right;
       case 'VariableDeclaration':
-        const n = <estree.VariableDeclaration>node;
-        return n.declarations.length > 0 ? n.declarations[0].init : null;
+        return node.declarations.length > 0 ? node.declarations[0].init : null;
     }
   }
 
@@ -108,12 +107,13 @@ export function behaviorFinder() {
    * checks whether an expression is a simple array containing only member
    * expressions or identifiers.
    */
-  function isSimpleBehaviorArray(expression: estree.Node): boolean {
-    if (!expression || expression.type !== 'ArrayExpression') return false;
-    const arrayExpr = <estree.ArrayExpression>expression;
-    for (let i = 0; i < arrayExpr.elements.length; i++) {
-      if (arrayExpr.elements[i].type !== 'MemberExpression' &&
-          arrayExpr.elements[i].type !== 'Identifier') {
+  function isSimpleBehaviorArray(expression: estree.Node | null): boolean {
+    if (!expression || expression.type !== 'ArrayExpression') {
+      return false;
+    }
+    for (const element of expression.elements) {
+      if (element.type !== 'MemberExpression' &&
+          element.type !== 'Identifier') {
         return false;
       }
     }
@@ -130,11 +130,10 @@ export function behaviorFinder() {
     const expression = behaviorExpression(node);
     const chained: BehaviorOrName[] = [];
     if (expression && expression.type === 'ArrayExpression') {
-      const arrExpr = <estree.ArrayExpression>expression;
-      for (let i = 0; i < arrExpr.elements.length; i++) {
-        if (arrExpr.elements[i].type === 'MemberExpression' ||
-            arrExpr.elements[i].type === 'Identifier') {
-          chained.push(<BehaviorOrName>astValue.expressionToValue(arrExpr.elements[i]));
+      for (const element of expression.elements) {
+        if (element.type === 'MemberExpression' ||
+            element.type === 'Identifier') {
+          chained.push(<BehaviorOrName>astValue.expressionToValue(element));
         }
       }
       if (chained.length > 0)
