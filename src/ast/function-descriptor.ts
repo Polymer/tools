@@ -1,4 +1,4 @@
-import {PropertyDescriptor} from './property-descriptor.ts';
+import {PropertyDescriptor} from './property-descriptor';
 
 export interface FunctionDescriptor extends PropertyDescriptor {
   function: boolean; // true

@@ -8,6 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/main.d.ts" />
+
 'use strict';
 
 /**

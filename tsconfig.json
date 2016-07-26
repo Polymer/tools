@@ -12,7 +12,7 @@
         "declaration": true
     },
     "include": [
-        "custom_typings/**.d.ts",
+        "custom_typings/main.d.ts",
         "src/**/*.ts",
         "src/analyzer.ts"
     ]

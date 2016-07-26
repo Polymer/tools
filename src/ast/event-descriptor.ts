@@ -1,5 +1,5 @@
-import {Descriptor} from './descriptor.ts';
-import {BehaviorOrName} from './behavior-descriptor.ts';
+import {Descriptor} from './descriptor';
+import {BehaviorOrName} from './behavior-descriptor';
 
 export interface EventDescriptor extends Descriptor {
   name?: string;
