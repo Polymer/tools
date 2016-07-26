@@ -15,20 +15,18 @@ import * as astValue from './ast-value';
 import * as estree from 'estree';
 import {PropertyDescriptor} from '../ast/ast';
 
-export function analyzeProperties(node:estree.Node) {
+export function analyzeProperties(node: estree.Node) {
 
-  var analyzedProps: PropertyDescriptor[] = [];
+  const analyzedProps: PropertyDescriptor[] = [];
 
-  if (node.type != 'ObjectExpression') {
+  if (node.type !== 'ObjectExpression') {
     return analyzedProps;
   }
-  const obEx = <estree.ObjectExpression>node;
-  for (var i = 0; i < obEx.properties.length; i++) {
-    var property = obEx.properties[i];
-    var prop = esutil.toPropertyDescriptor(property);
+  for (const property of node.properties) {
+    const prop = esutil.toPropertyDescriptor(property);
     prop.published = true;
 
-    if (property.value.type == 'ObjectExpression') {
+    if (property.value.type === 'ObjectExpression') {
       /**
        * Parse the expression inside a property object block. e.g.
        * property: {
@@ -41,12 +39,10 @@ export function analyzeProperties(node:estree.Node) {
        *   }
        * }
        */
-      const propDescExpr = <estree.ObjectExpression>property.value;
-      for (var j = 0; j < propDescExpr.properties.length; j++) {
-        var propertyArg = propDescExpr.properties[j];
-        var propertyKey = esutil.objectKeyToString(propertyArg.key);
+      for (const propertyArg of property.value.properties) {
+        const propertyKey = esutil.objectKeyToString(propertyArg.key);
 
-        switch(propertyKey) {
+        switch (propertyKey) {
           case 'type': {
             prop.type = esutil.objectKeyToString(propertyArg.value);
             if (prop.type === undefined) {

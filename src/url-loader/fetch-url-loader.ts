@@ -25,11 +25,11 @@ export class FetchUrlLoader implements UrlLoader {
     return this.baseUrl ? resolveUrl(this.baseUrl, url) : url;
   }
 
-  canLoad(url: string) : boolean {
+  canLoad(url: string): boolean {
     return true;
   }
 
-  load(url: string) : Promise<string> {
+  load(url: string): Promise<string> {
     // Use []'s to shut TS up for now, until this file can have use a
     // different core lib
     return window['fetch'](this._resolve(url))

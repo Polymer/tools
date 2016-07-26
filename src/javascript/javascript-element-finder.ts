@@ -30,8 +30,8 @@ export class ElementFinder implements JavaScriptEntityFinder {
 
   async findEntities(
       document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>)
-      : Promise<ElementDescriptor[]> {
+      visit: (visitor: Visitor) => Promise<void>
+      ): Promise<ElementDescriptor[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.entities;
@@ -129,9 +129,8 @@ class ElementVisitor implements Visitor {
     }
 
     let callee = node.callee;
-    if (callee.type == 'Identifier') {
-      const ident = <estree.Identifier>callee;
-      if (ident.name == 'Polymer') {
+    if (callee.type === 'Identifier') {
+      if (callee.name === 'Polymer') {
         this.element = {
           type: 'element',
           desc: esutil.getAttachedComment(parent),
@@ -146,10 +145,9 @@ class ElementVisitor implements Visitor {
 
   leaveCallExpression(node: estree.CallExpression, parent: estree.Node) {
     let callee = node.callee;
-    let args = node.arguments
-    if (callee.type == 'Identifier' && args.length === 1 && args[0].type === 'ObjectExpression') {
-      const ident = <estree.Identifier>callee;
-      if (ident.name == 'Polymer') {
+    let args = node.arguments;
+    if (callee.type === 'Identifier' && args.length === 1 && args[0].type === 'ObjectExpression') {
+      if (callee.name === 'Polymer') {
         if (this.element) {
           this.entities.push(this.element);
           this.element = null;

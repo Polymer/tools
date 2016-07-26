@@ -21,9 +21,9 @@ export interface Descriptor {
 }
 
 export interface PropertyDescriptor extends Descriptor {
-  name: string,
-  type: string,
-  desc: string,
+  name: string;
+  type: string;
+  desc: string;
   javascriptNode: estree.Node;
   params?: {name: string}[];
   published?: boolean;

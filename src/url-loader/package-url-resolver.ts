@@ -14,7 +14,7 @@ import {UrlResolver} from './url-resolver';
 
 export interface PackageUrlResolverOptions {
   componentDir?: string;
-  hostname?: string
+  hostname?: string;
 }
 
 /**
@@ -53,7 +53,7 @@ export class PackageUrlResolver implements UrlResolver {
     // If the path points to a sibling directory, resolve it to the
     // component directory
     if (pathname.startsWith('../')) {
-      pathname = pathlib.join(this.componentDir,pathname.substring(3));
+      pathname = pathlib.join(this.componentDir, pathname.substring(3));
     }
 
     // make all paths relative to the root directory

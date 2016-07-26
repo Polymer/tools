@@ -5,9 +5,9 @@ import {Descriptor, LiteralValue} from './descriptor';
 
 // TODO(justinfagnani): Rename, this name clashes with ES6's PropertyDescriptor
 export interface PropertyDescriptor extends Descriptor {
-  name: string,
-  type: string,
-  desc: string,
+  name: string;
+  type: string;
+  desc: string;
   javascriptNode: estree.Node;
   params?: {name: string}[];
   published?: boolean;
