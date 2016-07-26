@@ -2,8 +2,7 @@ node_modules
 bower_components
 .DS_Store
 .idea
+npm-debug.log
 
-typings/
-
-# Our typescript source and the ES6 it emits
+# The raw typescript source
 src/

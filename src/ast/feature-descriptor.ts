@@ -1,4 +1,4 @@
-import {ElementDescriptor} from './element-descriptor.ts';
+import {ElementDescriptor} from './element-descriptor';
 
 /**
  * The metadata for a Polymer feature.
