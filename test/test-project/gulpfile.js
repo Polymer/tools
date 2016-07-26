@@ -8,6 +8,17 @@ logging.setVerbose();
 
 const PolymerProject = polymer.PolymerProject;
 const fork = polymer.forkStream;
+const addServiceWorker = polymer.addServiceWorker;
+
+/**
+ * Waits for the given ReadableStream
+ */
+function waitFor(stream) {
+  return new Promise((resolve, reject) => {
+    stream.on('end', resolve);
+    stream.on('error', reject);
+  });
+}
 
 let project = new PolymerProject({
   root: process.cwd(),
@@ -16,6 +27,15 @@ let project = new PolymerProject({
 });
 
 gulp.task('test1', () => {
+
+  let swConfig = {
+    staticFileGlobs: [
+      '/index.html',
+      '/shell.html',
+      '/source-dir/**',
+    ],
+    navigateFallback: '/index.html',
+  };
 
   // process source files in the project
   let sources = project.sources()
@@ -33,12 +53,12 @@ gulp.task('test1', () => {
 
   // merge the source and dependencies streams to we can analyze the project
   let allFiles = mergeStream(sources, dependencies)
-    .pipe(project.analyze);
+    .pipe(project.analyzer);
 
   // fork the stream in case downstream transformers mutate the files
   // this fork will vulcanize the project
   let bundled = fork(allFiles)
-    .pipe(project.bundle)
+    .pipe(project.bundler)
     // write to the bundled folder
     // TODO(justinfagnani): allow filtering of files before writing
     .pipe(gulp.dest('build/bundled'));
@@ -48,5 +68,21 @@ gulp.task('test1', () => {
     // TODO(justinfagnani): allow filtering of files before writing
     .pipe(gulp.dest('build/unbundled'));
 
-  return mergeStream(bundled, unbundled);
+  return Promise.all([waitFor(bundled), waitFor(unbundled)]).then(() => {
+    return Promise.all([
+      addServiceWorker({
+        project: project,
+        buildRoot: 'build/unbundled',
+        swConfig: swConfig,
+        serviceWorkerPath: 'test-custom-sw-path.js',
+      }),
+      addServiceWorker({
+        project: project,
+        buildRoot: 'build/bundled',
+        swConfig: swConfig,
+        bundled: true,
+      }),
+    ]);
+  });
+
 });

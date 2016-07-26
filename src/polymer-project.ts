@@ -9,7 +9,6 @@
  */
 
 import * as dom5 from 'dom5';
-import {posix as posixPath} from 'path';
 import * as osPath from 'path';
 import * as logging from 'plylog';
 import {Transform} from 'stream';
@@ -20,7 +19,6 @@ import {Bundler} from './bundle';
 import {optimize, OptimizeOptions} from './optimize';
 import {FileCB} from './streams';
 import {forkStream} from './fork-stream';
-const mergeStream = require('merge-stream');
 
 const logger = logging.getLogger('polymer-project');
 const pred = dom5.predicates;
@@ -107,8 +105,20 @@ export class PolymerProject {
 
   _splitFiles: Map<string, SplitFile> = new Map();
   _parts: Map<string, SplitFile> = new Map();
-  _analyzer: StreamAnalyzer;
-  _bundler: Bundler;
+
+  /**
+   * analyzer is a `Transform` that runs Hydrolysis analysis on the files, for
+   * use by the bundler transform. This transform must only be used in one
+   * stream.
+   */
+  analyzer: StreamAnalyzer;
+
+  /**
+   * bundler is a `Transform` that bundles the shell and fragments of the
+   * project according to the dependency analysis done by the `analyze`
+   * transform. `analyze` must be in the pipeline before this transform.
+   */
+  bundler: Bundler;
 
   constructor(options?: ProjectOptions) {
     this.root = options.root || process.cwd();
@@ -121,19 +131,19 @@ export class PolymerProject {
     this.includeDependencies = (options.includeDependencies || [])
         .map((path) => osPath.resolve(this.root, path));
 
-    this._analyzer = new StreamAnalyzer(
+    this.analyzer = new StreamAnalyzer(
       this.root,
       this.entrypoint,
       this.shell,
       this.fragments,
       this.allSourceGlobs);
 
-    this._bundler = new Bundler(
+    this.bundler = new Bundler(
       this.root,
       this.entrypoint,
       this.shell,
       this.fragments,
-      this._analyzer);
+      this.analyzer);
 
     logger.debug(`root: ${this.root}`);
     logger.debug(`shell: ${this.shell}`);
@@ -177,7 +187,7 @@ export class PolymerProject {
 
   dependencies(): NodeJS.ReadableStream {
     let dependenciesStream: NodeJS.ReadableStream = forkStream(
-      this._analyzer.dependencies
+      this.analyzer.dependencies
     );
 
     // If we need to include additional dependencies, create a new vfs.src
@@ -214,26 +224,6 @@ export class PolymerProject {
     return new HtmlRejoiner(this);
   }
 
-  /**
-   * Returns the a `Transform` that runs Hydrolysis analysis on the files, for
-   * use by the bundler transform. This transform must only be used in one
-   * stream.
-   */
-  get analyze(): Transform {
-    return this._analyzer;
-  }
-
-  /**
-   * Returns the a `Transform` that bundles the shell and fragments of the
-   * project according to the dependency analysis done by the `analyze`
-   * transform. `analyze` must be in the pipeline before this transform.
-   */
-  get bundle(): Transform {
-    // TODO(justinfagnani): we need a stream of just the bundled files, for
-    // minimal bundled build folders.
-    return this._bundler;
-  }
-
   isSplitFile(parentPath: string): boolean {
     return this._splitFiles.has(parentPath);
   }
@@ -261,7 +251,6 @@ export class PolymerProject {
   }
 
 }
-
 
 /**
  * Represents a file that is split into multiple files.
