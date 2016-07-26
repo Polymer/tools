@@ -24,15 +24,15 @@ export function elementFinder() {
   /**
    * The list of elements exported by each traversed script.
    */
-  var elements: ElementDescriptor[] = [];
+  const elements: ElementDescriptor[] = [];
 
   /**
    * The element being built during a traversal;
    */
-  var element: ElementDescriptor = null;
-  var propertyHandlers: PropertyHandlers = null;
+  let element: ElementDescriptor = null;
+  let propertyHandlers: PropertyHandlers = null;
 
-  var visitors: Visitor = {
+  const visitors: Visitor = {
 
     classDetected: false,
 
@@ -71,7 +71,7 @@ export function elementFinder() {
       }
       const prop = <estree.Identifier>left.property;
       if (prop && prop.name) {
-        var name = prop.name;
+        const name = prop.name;
         if (name in propertyHandlers) {
           propertyHandlers[name](node.right);
         }
@@ -82,7 +82,7 @@ export function elementFinder() {
       if (!element) {
         return;
       }
-      var prop = <estree.Property>{
+      const prop = <estree.Property>{
         key: node.key,
         value: node.value,
         kind: node.kind,
@@ -94,8 +94,8 @@ export function elementFinder() {
       };
       const propDesc = <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
       if (prop && prop.kind === 'get' && (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
-        var returnStatement = <estree.ReturnStatement>node.value.body.body[0];
-        var argument = <estree.ArrayExpression>returnStatement.argument;
+        const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
+        const argument = <estree.ArrayExpression>returnStatement.argument;
         if (propDesc.name === 'behaviors') {
           argument.elements.forEach((elementObject: estree.Identifier) => {
             element.behaviors.push(elementObject.name);
@@ -116,10 +116,9 @@ export function elementFinder() {
         return estraverse.VisitorOption.Skip;
       }
 
-      var callee = node.callee;
-      if (callee.type == 'Identifier') {
-        const ident = <estree.Identifier>callee;
-        if (ident.name == 'Polymer') {
+      const callee = node.callee;
+      if (callee.type === 'Identifier') {
+        if (callee.name === 'Polymer') {
           element = {
             type: 'element',
             desc: esutil.getAttachedComment(parent),
@@ -133,11 +132,10 @@ export function elementFinder() {
     },
 
     leaveCallExpression: function leaveCallExpression(node, parent) {
-      var callee = node.callee;
-      var args = node.arguments
-      if (callee.type == 'Identifier' && args.length === 1 && args[0].type === 'ObjectExpression') {
-        const ident = <estree.Identifier>callee;
-        if (ident.name == 'Polymer') {
+      const callee = node.callee;
+      const args = node.arguments;
+      if (callee.type === 'Identifier' && args.length === 1 && args[0].type === 'ObjectExpression') {
+        if (callee.name === 'Polymer') {
           if (element) {
             elements.push(element);
             element = null;
@@ -157,12 +155,12 @@ export function elementFinder() {
         element.properties = [];
         element.behaviors = [];
         element.observers = [];
-        var getters: {[name: string]: PropertyDescriptor} = {};
-        var setters: {[name: string]: PropertyDescriptor} = {};
-        var definedProperties: {[name: string]: PropertyDescriptor} = {};
-        for (var i = 0; i < node.properties.length; i++) {
-          var prop = node.properties[i];
-          var name = esutil.objectKeyToString(prop.key);
+        const getters: {[name: string]: PropertyDescriptor} = {};
+        const setters: {[name: string]: PropertyDescriptor} = {};
+        const definedProperties: {[name: string]: PropertyDescriptor} = {};
+        for (let i = 0; i < node.properties.length; i++) {
+          const prop = node.properties[i];
+          const name = esutil.objectKeyToString(prop.key);
           if (!name) {
             throw {
               message: 'Cant determine name for property key.',
@@ -174,7 +172,7 @@ export function elementFinder() {
             propertyHandlers[name](prop.value);
             continue;
           }
-          var descriptor = esutil.toPropertyDescriptor(prop);
+          const descriptor = esutil.toPropertyDescriptor(prop);
           if (descriptor.getter) {
             getters[descriptor.name] = descriptor;
           } else if (descriptor.setter) {
@@ -184,11 +182,11 @@ export function elementFinder() {
           }
         }
         Object.keys(getters).forEach(function(getter) {
-          var get = getters[getter];
+          const get = getters[getter];
           definedProperties[get.name] = get;
         });
         Object.keys(setters).forEach(function(setter) {
-          var set = setters[setter];
+          const set = setters[setter];
           if (!(set.name in definedProperties)) {
             definedProperties[set.name] = set;
           } else {
@@ -196,7 +194,7 @@ export function elementFinder() {
           }
         });
         Object.keys(definedProperties).forEach(function(p){
-          var prop = definedProperties[p];
+          const prop = definedProperties[p];
           element.properties.push(prop);
         });
         return estraverse.VisitorOption.Skip;

@@ -32,8 +32,8 @@ export class HtmlImportFinder implements HtmlEntityFinder {
 
   async findEntities(
       document: HtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>)
-      : Promise<ImportDescriptor[]> {
+      visit: (visitor: HtmlVisitor) => Promise<void>
+      ): Promise<ImportDescriptor[]> {
     let imports: ImportDescriptor[] = [];
     await visit((node) => {
       if (isHtmlImportNode(node)) {

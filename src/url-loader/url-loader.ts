@@ -14,6 +14,6 @@ export interface UrlLoader {
    *
    * This should only be called if `canLoad` returns `true` for `url`.
    */
-  load(url: string) : Promise<string>;
+  load(url: string): Promise<string>;
 
 }

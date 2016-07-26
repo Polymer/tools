@@ -16,35 +16,36 @@ import {FeatureDescriptor} from '../ast/ast';
 import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
 
-var numFeatures = 0;
+const numFeatures = 0;
 
 export function featureFinder() {
   /** The features we've found. */
-  var features: FeatureDescriptor[] = [];
+  const features: FeatureDescriptor[] = [];
 
   function _extractDesc(
-      feature:FeatureDescriptor, node:estree.CallExpression,
+      feature: FeatureDescriptor, node: estree.CallExpression,
       parent: estree.Node) {
     feature.desc = esutil.getAttachedComment(parent);
   }
 
   function _extractProperties(
-      feature:FeatureDescriptor, node:estree.CallExpression,
+      feature: FeatureDescriptor, node: estree.CallExpression,
       parent: estree.Node) {
-    var featureNode = node.arguments[0];
+    const featureNode = node.arguments[0];
     if (featureNode.type !== 'ObjectExpression') {
       console.warn(
           'Expected first argument to Polymer.Base._addFeature to be an object.',
           'Got', featureNode.type, 'instead.');
       return;
     }
-    const objExpr = <estree.ObjectExpression>featureNode;
-    if (!objExpr.properties) return;
+    if (!featureNode.properties) {
+      return;
+    }
 
-    feature.properties = objExpr.properties.map(esutil.toPropertyDescriptor);
+    feature.properties = featureNode.properties.map(esutil.toPropertyDescriptor);
   }
 
-  var visitors: Visitor = {
+  const visitors: Visitor = {
 
     enterCallExpression: function enterCallExpression(node, parent) {
       const isAddFeatureCall = esutil.matchesCallExpression(
@@ -54,7 +55,7 @@ export function featureFinder() {
         return;
       }
       /** @type {!FeatureDescriptor} */
-      var feature = <FeatureDescriptor>{};
+      const feature = <FeatureDescriptor>{};
       _extractDesc(feature, node, parent);
       _extractProperties(feature, node, parent);
 

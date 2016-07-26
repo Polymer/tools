@@ -23,18 +23,18 @@ export class FSUrlLoader implements UrlLoader {
     this.root = root;
   }
 
-  canLoad(url: string) : boolean {
+  canLoad(url: string): boolean {
     let urlObject = parseUrl(url);
     let pathname = pathlib.normalize(decodeURIComponent(urlObject.pathname));
     return this._isValid(urlObject, pathname);
   }
 
   _isValid(urlObject: Url, pathname: string) {
-    return (urlObject.protocol == 'file' || !urlObject.hostname)
-        && !pathname.startsWith('../')
+    return (urlObject.protocol === 'file' || !urlObject.hostname)
+        && !pathname.startsWith('../');
   }
 
-  load(url: string) : Promise<string> {
+  load(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
       let filepath = this.getFilePath(url);
       fs.readFile(filepath, 'utf8', (error: Error, contents: string) => {

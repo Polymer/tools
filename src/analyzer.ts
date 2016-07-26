@@ -95,8 +95,9 @@ export class Analyzer {
   /**
    * Parses and analyzes a document from source.
    */
-  async analyzeSource(type: string, contents: string, url: string)
-      : Promise<DocumentDescriptor>  {
+  async analyzeSource(
+        type: string, contents: string, url: string
+        ): Promise<DocumentDescriptor>  {
     let document = this.parse(type, contents, url);
     return this.analyzeDocument(document);
   }
@@ -104,8 +105,8 @@ export class Analyzer {
   /**
    * Analyzes a parsed Document object.
    */
-  async analyzeDocument(document: Document<any, any>)
-      : Promise<DocumentDescriptor> {
+  async analyzeDocument(
+        document: Document<any, any>): Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
 
     // TODO(justinfagnani): Load ImportDescriptors

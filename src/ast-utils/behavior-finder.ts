@@ -25,15 +25,15 @@ interface KeyFunc<T> {
 }
 
 function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
-  var bucket = {};
+  const bucket = {};
   array.forEach((el) => {
-    var key = keyFunc(el);
+    const key = keyFunc(el);
     if (key in bucket) {
       return;
     }
     bucket[key] = el;
   });
-  var returned = <Array<T>>[];
+  const returned = <Array<T>>[];
   Object.keys(bucket).forEach((k) => {
     returned.push(bucket[k]);
   });
@@ -43,10 +43,10 @@ function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
 // TODO(rictic): turn this into a class.
 export function behaviorFinder() {
   /** The behaviors we've found. */
-  var behaviors: BehaviorDescriptor[] = [];
+  const behaviors: BehaviorDescriptor[] = [];
 
-  var currentBehavior: BehaviorDescriptor = null;
-  var propertyHandlers: PropertyHandlers = null;
+  let currentBehavior: BehaviorDescriptor = null;
+  let propertyHandlers: PropertyHandlers = null;
 
   /**
    * merges behavior with preexisting behavior with the same name.
@@ -54,11 +54,11 @@ export function behaviorFinder() {
    * to same behavior. See iron-multi-selectable for example.
    */
   function mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
-    var isBehaviorImpl = (b:string) => {
+    const isBehaviorImpl = (b: string) => {
       // filter out BehaviorImpl
       return b.indexOf(newBehavior.is) === -1;
     };
-    for (var i=0; i<behaviors.length; i++) {
+    for (let i = 0; i < behaviors.length; i++) {
       if (newBehavior.is !== behaviors[i].is)
         continue;
       // merge desc, longest desc wins
@@ -75,7 +75,7 @@ export function behaviorFinder() {
       behaviors[i].demos = (behaviors[i].demos || []).concat(newBehavior.demos || []);
       // merge events,
       behaviors[i].events = (behaviors[i].events || []).concat(newBehavior.events || []);
-      behaviors[i].events = dedupe(behaviors[i].events, (e) => {return e.name});
+      behaviors[i].events = dedupe(behaviors[i].events, (e) => e.name);
       // merge properties
       behaviors[i].properties = (behaviors[i].properties || []).concat(newBehavior.properties || []);
       // merge observers
@@ -92,15 +92,14 @@ export function behaviorFinder() {
   /**
    * gets the expression representing a behavior from a node.
    */
-  function behaviorExpression(node:estree.Node): estree.Node {
-    switch(node.type) {
+  function behaviorExpression(node: estree.Node): estree.Node {
+    switch (node.type) {
       case 'ExpressionStatement':
         // need to cast to `any` here because ExpressionStatement is super
         // super general. this code is suspicious.
         return (<any>node).expression.right;
       case 'VariableDeclaration':
-        const n = <estree.VariableDeclaration>node;
-        return n.declarations.length > 0 ? n.declarations[0].init : null;
+        return node.declarations.length > 0 ? node.declarations[0].init : null;
     }
   }
 
@@ -108,33 +107,33 @@ export function behaviorFinder() {
    * checks whether an expression is a simple array containing only member
    * expressions or identifiers.
    */
-  function isSimpleBehaviorArray(expression: estree.Node): boolean {
-    if (!expression || expression.type !== 'ArrayExpression') return false;
-    const arrayExpr = <estree.ArrayExpression>expression;
-    for (var i=0; i < arrayExpr.elements.length; i++) {
-      if (arrayExpr.elements[i].type !== 'MemberExpression' &&
-          arrayExpr.elements[i].type !== 'Identifier') {
+  function isSimpleBehaviorArray(expression: estree.Node | null): boolean {
+    if (!expression || expression.type !== 'ArrayExpression') {
+      return false;
+    }
+    for (const element of expression.elements) {
+      if (element.type !== 'MemberExpression' &&
+          element.type !== 'Identifier') {
         return false;
       }
     }
     return true;
   }
 
-  var templatizer = "Polymer.Templatizer";
+  const templatizer = 'Polymer.Templatizer';
 
   function _parseChainedBehaviors(node: estree.Node) {
     // if current behavior is part of an array, it gets extended by other behaviors
     // inside the array. Ex:
     // Polymer.IronMultiSelectableBehavior = [ {....}, Polymer.IronSelectableBehavior]
     // We add these to behaviors array
-    var expression = behaviorExpression(node);
-    var chained: BehaviorOrName[] = [];
+    const expression = behaviorExpression(node);
+    const chained: BehaviorOrName[] = [];
     if (expression && expression.type === 'ArrayExpression') {
-      const arrExpr = <estree.ArrayExpression>expression;
-      for (var i=0; i < arrExpr.elements.length; i++) {
-        if (arrExpr.elements[i].type === 'MemberExpression' ||
-            arrExpr.elements[i].type === 'Identifier') {
-          chained.push(<BehaviorOrName>astValue.expressionToValue(arrExpr.elements[i]));
+      for (const element of expression.elements) {
+        if (element.type === 'MemberExpression' ||
+            element.type === 'Identifier') {
+          chained.push(<BehaviorOrName>astValue.expressionToValue(element));
         }
       }
       if (chained.length > 0)
@@ -142,9 +141,9 @@ export function behaviorFinder() {
     }
   }
 
-  function _initBehavior(node: estree.Node, getName: ()=>string) {
-    var comment = esutil.getAttachedComment(node);
-    var symbol = getName();
+  function _initBehavior(node: estree.Node, getName: () => string) {
+    const comment = esutil.getAttachedComment(node);
+    const symbol = getName();
     // Quickly filter down to potential candidates.
     if (!comment || comment.indexOf('@polymerBehavior') === -1) {
       if (symbol !== templatizer) {
@@ -171,7 +170,7 @@ export function behaviorFinder() {
       return;
     }
 
-    var name = jsdoc.getTag(currentBehavior.jsdoc, 'polymerBehavior', 'name');
+    let name = jsdoc.getTag(currentBehavior.jsdoc, 'polymerBehavior', 'name');
     currentBehavior.symbol = symbol;
     if (!name) {
       name = currentBehavior.symbol;
@@ -199,7 +198,7 @@ export function behaviorFinder() {
     }
   }
 
-  var visitors: Visitor = {
+  const visitors: Visitor = {
 
     /**
      * Look for object declarations with @behavior in the docs.
@@ -229,9 +228,9 @@ export function behaviorFinder() {
 
       currentBehavior.properties = currentBehavior.properties || [];
       currentBehavior.observers = currentBehavior.observers || [];
-      for (var i = 0; i < node.properties.length; i++) {
-        var prop = node.properties[i];
-        var name = esutil.objectKeyToString(prop.key);
+      for (let i = 0; i < node.properties.length; i++) {
+        const prop = node.properties[i];
+        const name = esutil.objectKeyToString(prop.key);
         if (!name) {
           throw {
             message: 'Cant determine name for property key.',

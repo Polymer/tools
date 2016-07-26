@@ -9,7 +9,7 @@
  */
 
 'use strict';
-import * as estraverse from "estraverse";
+import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 import * as escodegen from 'escodegen';
 import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
@@ -25,25 +25,23 @@ import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
  * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
  */
-export function matchesCallExpression(expression:estree.MemberExpression, path:string[]):boolean {
+export function matchesCallExpression(expression: estree.MemberExpression, path: string[]): boolean {
   if (!expression.property || !expression.object) return;
   console.assert(path.length >= 2);
 
   if (expression.property.type !== 'Identifier') {
     return;
   }
-  const property = <estree.Identifier>expression.property;
   // Unravel backwards, make sure properties match each step of the way.
-  if (property.name !== path[path.length - 1]) return false;
+  if (expression.property.name !== path[path.length - 1]) return false;
   // We've got ourselves a final member expression.
-  if (path.length == 2 && expression.object.type === 'Identifier') {
-    return (<estree.Identifier>expression.object).name === path[0];
+  if (path.length === 2 && expression.object.type === 'Identifier') {
+    return expression.object.name === path[0];
   }
   // Nested expressions.
-  if (path.length > 2 && expression.object.type == 'MemberExpression') {
+  if (path.length > 2 && expression.object.type === 'MemberExpression') {
     return matchesCallExpression(
-        <estree.MemberExpression>expression.object,
-        path.slice(0, path.length - 1));
+        expression.object, path.slice(0, path.length - 1));
   }
 
   return false;
@@ -53,16 +51,15 @@ export function matchesCallExpression(expression:estree.MemberExpression, path:s
  * @param {Node} key The node representing an object key or expression.
  * @return {string} The name of that key.
  */
-export function objectKeyToString(key: estree.Node):string {
-  if (key.type == 'Identifier') {
-    return (<estree.Identifier>key).name;
+export function objectKeyToString(key: estree.Node): string {
+  if (key.type === 'Identifier') {
+    return key.name;
   }
-  if (key.type == 'Literal') {
-    return (<estree.Literal>key).value.toString();
+  if (key.type === 'Literal') {
+    return key.value.toString();
   }
-  if (key.type == 'MemberExpression') {
-    let mEx = <estree.MemberExpression>key;
-    return objectKeyToString(mEx.object) + '.' + objectKeyToString(mEx.property);
+  if (key.type === 'MemberExpression') {
+    return objectKeyToString(key.object) + '.' + objectKeyToString(key.property);
   }
 }
 
@@ -80,14 +77,13 @@ const CLOSURE_CONSTRUCTOR_MAP = {
  * @param {Node} node An Espree expression node.
  * @return {string} The type of that expression, in Closure terms.
  */
-export function closureType(node: estree.Node):string {
+export function closureType(node: estree.Node): string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
-    return typeof (<estree.Literal>node).value;
+    return typeof node.value;
   } else if (node.type === 'Identifier') {
-    let ident = <estree.Identifier>node;
-    return CLOSURE_CONSTRUCTOR_MAP[ident.name] || ident.name;
+    return CLOSURE_CONSTRUCTOR_MAP[node.name] || node.name;
   } else {
     throw {
       message: 'Unknown Closure type for node: ' + node.type,
@@ -96,7 +92,7 @@ export function closureType(node: estree.Node):string {
   }
 }
 
-export function getAttachedComment(node: estree.Node):string {
+export function getAttachedComment(node: estree.Node): string {
   const comments = getLeadingComments(node) || getLeadingComments(node['key']);
   if (!comments) {
     return;
@@ -108,15 +104,15 @@ export function getAttachedComment(node: estree.Node):string {
  * Returns all comments from a tree defined with @event.
  */
 export function getEventComments(node: estree.Node) {
-  var eventComments: string[] = [];
+  let eventComments: string[] = [];
   estraverse.traverse(node, {
     enter: (node) => {
-      var comments = (node.leadingComments || []).concat(node.trailingComments || [])
+      const comments = (node.leadingComments || []).concat(node.trailingComments || [])
         .map(function(commentAST) {
           return commentAST.value;
         })
         .filter( function(comment) {
-          return comment.indexOf("@event") != -1;
+          return comment.indexOf('@event') !== -1;
         });
       eventComments = eventComments.concat(comments);
     },
@@ -134,7 +130,7 @@ function getLeadingComments(node: estree.Node): string[] {
   if (!node) {
     return;
   }
-  var comments = node.leadingComments;
+  const comments = node.leadingComments;
   if (!comments || comments.length === 0) return;
   return comments.map(function(comment) {
     return comment.value;
@@ -144,15 +140,15 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node:estree.Property):PropertyDescriptor {
-  var type = closureType(node.value);
-  if (type == "Function") {
-    if (node.kind === "get" || node.kind === "set") {
+export function toPropertyDescriptor(node: estree.Property): PropertyDescriptor {
+  let type = closureType(node.value);
+  if (type === 'Function') {
+    if (node.kind === 'get' || node.kind === 'set') {
       type = '';
-      node[node.kind+"ter"] = true;
+      node[`${node.kind}ter`] = true;
     }
   }
-  var result : PropertyDescriptor = {
+  const result: PropertyDescriptor = {
     name: objectKeyToString(node.key),
     type: type,
     desc: getAttachedComment(node),
@@ -162,7 +158,7 @@ export function toPropertyDescriptor(node:estree.Property):PropertyDescriptor {
   if (type === 'Function') {
     const value = <estree.Function>node.value;
     result.params = (value.params || []).map((param) => {
-      // With ES6 we can have a variety of param patterns. Best to leave the
+      // With ES6 we can have a constiety of param patterns. Best to leave the
       // formatting to escodegen.
       return {name: escodegen.generate(param)};
     });

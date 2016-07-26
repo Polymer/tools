@@ -26,8 +26,8 @@ function literalToValue(literal: estree.Literal): LiteralValue {
 /**
  * converts unary to string
  */
-function unaryToValue(unary: estree.UnaryExpression):string {
-  var argValue = expressionToValue(unary.argument);
+function unaryToValue(unary: estree.UnaryExpression): string {
+  const argValue = expressionToValue(unary.argument);
   if (argValue === undefined)
     return;
   return unary.operator + argValue;
@@ -37,7 +37,7 @@ function unaryToValue(unary: estree.UnaryExpression):string {
  * converts identifier to its value
  * identifier { "type": "Identifier", "name": "Number }
  */
-function identifierToValue(identifier: estree.Identifier):string {
+function identifierToValue(identifier: estree.Identifier): string {
   return identifier.name;
 }
 
@@ -46,13 +46,13 @@ function identifierToValue(identifier: estree.Identifier):string {
  */
 function functionDeclarationToValue(
     fn: estree.FunctionDeclaration): LiteralValue {
-  if (fn.body.type == "BlockStatement")
+  if (fn.body.type === 'BlockStatement')
     return blockStatementToValue(fn.body);
 }
 
 function functionExpressionToValue(
     fn: estree.FunctionExpression): LiteralValue {
-  if (fn.body.type == "BlockStatement")
+  if (fn.body.type === 'BlockStatement')
     return blockStatementToValue(fn.body);
 }
 /**
@@ -60,9 +60,11 @@ function functionExpressionToValue(
  */
 function blockStatementToValue(
     block: estree.BlockStatement): LiteralValue {
-  for (var i=block.body.length - 1; i>= 0; i--) {
-    if (block.body[i].type === "ReturnStatement")
-      return returnStatementToValue(<estree.ReturnStatement>block.body[i]);
+  for (let i = block.body.length - 1; i >= 0; i--) {
+    const body = block.body[i];
+    if (body.type === 'ReturnStatement') {
+      return returnStatementToValue(body);
+    }
   }
 }
 
@@ -77,13 +79,15 @@ function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
  * Enclose containing values in []
  */
 function arrayExpressionToValue(arry: estree.ArrayExpression): string {
-  var value = '[';
-  for (var i=0; i<arry.elements.length; i++) {
-    var v = expressionToValue(arry.elements[i]);
-    if (v === undefined)
+  let value = '[';
+  for (let i = 0; i < arry.elements.length; i++) {
+    const v = expressionToValue(arry.elements[i]);
+    if (v === undefined) {
       continue;
-    if (i !== 0)
+    }
+    if (i !== 0) {
       value += ', ';
+    }
     value += v;
   }
   value += ']';
@@ -94,14 +98,16 @@ function arrayExpressionToValue(arry: estree.ArrayExpression): string {
  * Make it look like an object
  */
 function objectExpressionToValue(obj: estree.ObjectExpression): string {
-  var value = '{';
-  for (var i=0; i<obj.properties.length; i++) {
-    var k = expressionToValue(obj.properties[i].key);
-    var v = expressionToValue(obj.properties[i].value);
-    if (v === undefined)
+  let value = '{';
+  for (let i = 0; i < obj.properties.length; i++) {
+    const k = expressionToValue(obj.properties[i].key);
+    const v = expressionToValue(obj.properties[i].value);
+    if (v === undefined) {
       continue;
-    if (i !== 0)
+    }
+    if (i !== 0) {
       value += ', ';
+    }
     value += '"' + k + '": ' + v;
   }
   value += '}';
@@ -113,7 +119,7 @@ function objectExpressionToValue(obj: estree.ObjectExpression): string {
  */
 function binaryExpressionToValue(
     member: estree.BinaryExpression): number|string {
-  if (member.operator == "+") {
+  if (member.operator === '+') {
     // We need to cast to `any` here because, while it's usually not the right
     // thing to do to use '+' on two values of a mix of types because it's
     // unpredictable, that is what the original code we're evaluating does.
@@ -126,34 +132,35 @@ function binaryExpressionToValue(
  * MemberExpression references a variable with name
  */
 function memberExpressionToValue(member: estree.MemberExpression): string {
-  return expressionToValue(member.object) + "." + expressionToValue(member.property);
+  return expressionToValue(
+      member.object) + '.' + expressionToValue(member.property);
 }
 
 /**
  * Tries to get the value of an expression. Returns undefined on failure.
  */
 export function expressionToValue(valueExpression: estree.Node): LiteralValue {
-  switch(valueExpression.type) {
+  switch (valueExpression.type) {
     case 'Literal':
-      return literalToValue(<estree.Literal>valueExpression);
+      return literalToValue(valueExpression);
     case 'UnaryExpression':
-      return unaryToValue(<estree.UnaryExpression>valueExpression);
+      return unaryToValue(valueExpression);
     case 'Identifier':
-      return identifierToValue(<estree.Identifier>valueExpression);
+      return identifierToValue(valueExpression);
     case 'FunctionDeclaration':
-      return functionDeclarationToValue(<estree.FunctionDeclaration>valueExpression);
+      return functionDeclarationToValue(valueExpression);
     case 'FunctionExpression':
-      return functionExpressionToValue(<estree.FunctionExpression>valueExpression);
+      return functionExpressionToValue(valueExpression);
     case 'ArrayExpression':
-      return arrayExpressionToValue(<estree.ArrayExpression>valueExpression);
+      return arrayExpressionToValue(valueExpression);
     case 'ObjectExpression':
-      return objectExpressionToValue(<estree.ObjectExpression>valueExpression);
+      return objectExpressionToValue(valueExpression);
     case 'Identifier':
-      return identifierToValue(<estree.Identifier>valueExpression);
+      return identifierToValue(valueExpression);
     case 'MemberExpression':
-      return memberExpressionToValue(<estree.MemberExpression>valueExpression);
+      return memberExpressionToValue(valueExpression);
     case 'BinaryExpression':
-      return binaryExpressionToValue(<estree.BinaryExpression>valueExpression);
+      return binaryExpressionToValue(valueExpression);
     default:
       return;
   }

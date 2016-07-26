@@ -15,7 +15,7 @@ import {PropertyDescriptor, ElementDescriptor, BehaviorOrName} from '../ast/ast'
 import {analyzeProperties} from './analyze-properties';
 import * as estree from 'estree';
 
-export type PropertyHandlers = {[key:string]: (node: estree.Node)=>void};
+export type PropertyHandlers = {[key: string]: (node: estree.Node) => void};
 /**
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.
@@ -24,26 +24,25 @@ export type PropertyHandlers = {[key:string]: (node: estree.Node)=>void};
  * @return {object.<string,function>}      An object containing property
  *                                         handlers.
  */
-export function declarationPropertyHandlers(declaration:ElementDescriptor): PropertyHandlers {
+export function declarationPropertyHandlers(declaration: ElementDescriptor): PropertyHandlers {
   return {
     is: function(node: estree.Node) {
-      if (node.type == 'Literal') {
-        declaration.is = (<estree.Literal>node).value.toString();
+      if (node.type === 'Literal') {
+        declaration.is = node.value.toString();
       }
     },
     properties: function(node: estree.Node) {
-      var props = analyzeProperties(node);
+      const props = analyzeProperties(node);
 
-      for (var i=0; i<props.length; i++) {
+      for (let i = 0; i < props.length; i++) {
         declaration.properties.push(props[i]);
       }
     },
     behaviors: function(node: estree.Node) {
-      if (node.type != 'ArrayExpression') {
+      if (node.type !== 'ArrayExpression') {
         return;
       }
-      const arrNode = <estree.ArrayExpression>node;
-      for (const element of arrNode.elements) {
+      for (const element of node.elements) {
         let v = astValue.expressionToValue(element);
         if (v === undefined) {
           v = astValue.CANT_CONVERT;
@@ -52,14 +51,14 @@ export function declarationPropertyHandlers(declaration:ElementDescriptor): Prop
       }
     },
     observers: function(node: estree.Node) {
-      if (node.type != 'ArrayExpression') {
+      if (node.type !== 'ArrayExpression') {
         return;
       }
-      const arrNode = <estree.ArrayExpression>node;
-      for (let element of arrNode.elements) {
-        var v = astValue.expressionToValue(element);
-        if (v === undefined)
+      for (let element of node.elements) {
+        let v = astValue.expressionToValue(element);
+        if (v === undefined) {
           v = astValue.CANT_CONVERT;
+        }
         declaration.observers.push({
           javascriptNode: element,
           expression: v
