@@ -114,8 +114,12 @@ export class PolymerProject {
 
   constructor(options?: ProjectOptions) {
     this.root = options.root || process.cwd();
-    this.entrypoint = osPath.resolve(this.root, options.entrypoint);
-    this.shell = osPath.resolve(this.root, options.shell);
+    if (options.entrypoint) {
+      this.entrypoint = osPath.resolve(this.root, options.entrypoint);
+    }
+    if (options.shell) {
+      this.shell = osPath.resolve(this.root, options.shell);
+    }
     this.fragments = (options.fragments || [])
         .map((f) => osPath.resolve(this.root, f));
     this.sourceGlobs = (options.sourceGlobs || defaultSourceGlobs)
