@@ -57,32 +57,36 @@ gulp.task('test1', () => {
 
   // fork the stream in case downstream transformers mutate the files
   // this fork will vulcanize the project
-  let bundled = fork(allFiles)
+  let bundledPhase = fork(allFiles)
     .pipe(project.bundler)
     // write to the bundled folder
     // TODO(justinfagnani): allow filtering of files before writing
     .pipe(gulp.dest('build/bundled'));
 
-  let unbundled = fork(allFiles)
+  let unbundledPhase = fork(allFiles)
     // write to the unbundled folder
     // TODO(justinfagnani): allow filtering of files before writing
     .pipe(gulp.dest('build/unbundled'));
 
-  return Promise.all([waitFor(bundled), waitFor(unbundled)]).then(() => {
-    return Promise.all([
-      addServiceWorker({
-        project: project,
-        buildRoot: 'build/unbundled',
-        swConfig: swConfig,
-        serviceWorkerPath: 'test-custom-sw-path.js',
-      }),
-      addServiceWorker({
-        project: project,
-        buildRoot: 'build/bundled',
-        swConfig: swConfig,
-        bundled: true,
-      }),
-    ]);
+  // Once the unbundled build stream is complete, create a service worker for the build
+  let unbundledPostProcessing = waitFor(unbundledPhase).then(() => {
+    return addServiceWorker({
+      project: project,
+      buildRoot: 'build/unbundled',
+      swConfig: swConfig,
+      serviceWorkerPath: 'test-custom-sw-path.js',
+    });
   });
 
+  // Once the bundled build stream is complete, create a service worker for the build
+  let bundledPostProcessing = waitFor(bundledPhase).then(() => {
+    return addServiceWorker({
+      project: project,
+      buildRoot: 'build/bundled',
+      swConfig: swConfig,
+      bundled: true,
+    });
+  });
+
+  return Promise.all([unbundledPostProcessing, bundledPostProcessing]);
 });
