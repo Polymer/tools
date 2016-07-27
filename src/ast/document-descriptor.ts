@@ -16,10 +16,15 @@ import {Descriptor} from './descriptor';
  */
 export class DocumentDescriptor {
   document: Document<any, any>;
+  dependencies: Descriptor[];
   entities: Descriptor[];
 
-  constructor(document: Document<any, any>, entities: Descriptor[]) {
+  constructor(
+      document: Document<any, any>,
+      dependencies: Descriptor[],
+      entities: Descriptor[]) {
     this.document = document;
+    this.dependencies = dependencies;
     this.entities = entities;
   }
 

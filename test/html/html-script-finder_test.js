@@ -17,7 +17,7 @@ const Analyzer = require('../../lib/analyzer').Analyzer;
 const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
 const HtmlScriptFinder = require('../../lib/html/html-script-finder').HtmlScriptFinder;
 const ImportDescriptor = require('../../lib/ast/import-descriptor').ImportDescriptor;
-const DocumentDescriptor = require('../../lib/ast/ast').DocumentDescriptor;
+const InlineDocumentDescriptor = require('../../lib/ast/ast').InlineDocumentDescriptor;
 
 suite('HtmlScriptFinder', () => {
 
@@ -49,8 +49,9 @@ suite('HtmlScriptFinder', () => {
           assert.instanceOf(entities[0], ImportDescriptor);
           assert.equal(entities[0].type, 'html-script');
           assert.equal(entities[0].url, 'foo.js');
-          assert.instanceOf(entities[1], DocumentDescriptor);
-          assert.equal(entities[1].document.url, 'test.html');
+          assert.instanceOf(entities[1], InlineDocumentDescriptor);
+          assert.equal(entities[1].type, 'js');
+          assert.equal(entities[1].contents, `console.log('hi')`);
         });
 
     });

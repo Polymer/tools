@@ -8,13 +8,13 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-export * from './behavior-descriptor';
-export * from './descriptor';
-export * from './document-descriptor';
-export * from './element-descriptor';
-export * from './event-descriptor';
-export * from './feature-descriptor';
-export * from './function-descriptor';
-export * from './import-descriptor';
-export * from './inline-document-descriptor';
-export * from './property-descriptor';
+export class InlineDocumentDescriptor {
+  type: 'html' | 'javascript' | 'css' | /* etc */ string;
+
+  contents: string;
+
+  constructor(type: string, contents: string) {
+    this.type = type;
+    this.contents = contents;
+  }
+}

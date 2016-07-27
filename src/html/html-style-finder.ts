@@ -9,11 +9,9 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {Analyzer} from '../analyzer';
-import {Descriptor, DocumentDescriptor, ImportDescriptor} from '../ast/ast';
+import {Descriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
 import {HtmlEntityFinder} from './html-entity-finder';
 import {HtmlDocument, HtmlVisitor} from './html-document';
 
@@ -39,32 +37,26 @@ const isStyleNode = p.OR(isStyleElement, isStyleLink);
 
 export class HtmlStyleFinder implements HtmlEntityFinder {
 
-  analyzer: Analyzer;
-
-  constructor(analyzer: Analyzer) {
-    this.analyzer = analyzer;
-  }
-
   async findEntities(
       document: HtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
-    let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
+
+    let entities: (ImportDescriptor | InlineDocumentDescriptor)[] = [];
+
     await visit(async (node) => {
       if (isStyleNode(node)) {
         let tagName = node.nodeName;
         if (tagName === 'link') {
           let href = dom5.getAttribute(node, 'href');
           let importUrl = resolveUrl(document.url, href);
-          promises.push(
-              Promise.resolve(new ImportDescriptor('html-style', importUrl)));
+          entities.push(new ImportDescriptor('html-style', importUrl));
         } else {
           let contents = dom5.getTextContent(node);
-          promises.push(
-              this.analyzer.analyzeSource('css', contents, document.url));
+          entities.push(new InlineDocumentDescriptor('css', contents));
         }
       }
     });
-    let entities = await Promise.all(promises);
+
     return entities;
   }
 

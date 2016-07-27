@@ -27,6 +27,7 @@ import {
   Descriptor,
   DocumentDescriptor,
   ImportDescriptor,
+  InlineDocumentDescriptor,
 } from './ast/ast';
 import {UrlLoader} from './url-loader/url-loader';
 
@@ -55,8 +56,8 @@ export class Analyzer {
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
         ['html', [
           new HtmlImportFinder(),
-          new HtmlScriptFinder(this),
-          new HtmlStyleFinder(this)]],
+          new HtmlScriptFinder(),
+          new HtmlStyleFinder()]],
         ['js', [new ElementFinder(this)]],
     ]);
 
@@ -109,11 +110,22 @@ export class Analyzer {
         document: Document<any, any>): Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
 
-    // TODO(justinfagnani): Load ImportDescriptors
+    let dependencyDescriptors: Descriptor[] = entities
+        .filter((e) => e instanceof InlineDocumentDescriptor
+          || e instanceof ImportDescriptor);
+    let analyzeDependencies = dependencyDescriptors
+        .map((d) =>  {
+          if (d instanceof InlineDocumentDescriptor) {
+            return this.analyzeSource(d.type, d.contents, document.url);
+          } else if (d instanceof ImportDescriptor) {
+            return this.analyze(d.url);
+          }
+        });
 
-    return new DocumentDescriptor(document, entities);
+    let dependencies = await Promise.all(analyzeDependencies);
+
+    return new DocumentDescriptor(document, dependencies, entities);
   }
-
 
   /**
    * Loads and parses a single file, deduplicating any requrests for the same
@@ -159,6 +171,7 @@ export class Analyzer {
     if (finders) {
       return findEntities(document, finders);
     }
+    return [];
   }
 
 }
