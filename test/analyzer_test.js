@@ -71,13 +71,55 @@ suite('Analyzer', () => {
         });
     });
 
-    // TODO(justinfagnani): re-enable when analyzer parses inline documents
-    test.skip('returns a Promise that rejects for malformed files', () => {
+    test('returns a Promise that rejects for malformed files', () => {
       return invertPromise(analyzer.analyze('static/malformed.html'))
         .then((error) => {
           assert.include(error.message, 'malformed.html');
         });
     });
+
+    test('analyzes transitive dependencies', () => {
+      return analyzer.analyze('static/dependencies/root.html')
+        .then((root) => {
+          // check first level dependencies
+          assert.deepEqual(
+            root.dependencies.map((d) => d.url),
+            [
+              'static/dependencies/inline-only.html',
+              'static/dependencies/leaf.html',
+              'static/dependencies/inline-and-imports.html',
+              'static/dependencies/subfolder/in-folder.html',
+            ]
+          );
+
+          let inlineOnly = root.dependencies[0];
+          assert.deepEqual(
+            inlineOnly.dependencies.map((d) => d.document.type),
+            ['js', 'css']
+          );
+
+          let leaf = root.dependencies[1];
+          assert.equal(leaf.dependencies.length, 0);
+
+          let inlineAndImports = root.dependencies[2];
+          // TODO(justinfagnani): This fails because ordering between entitiy
+          // finders is not preserved
+          // assert.deepEqual(
+          //   inlineAndImports.dependencies.map((d) => d.document.type),
+          //   ['js', 'html', 'css']
+          // );
+
+          let inFolder = root.dependencies[3];
+          assert.equal(inFolder.dependencies.length, 1);
+          assert.equal(inFolder.dependencies[0].url,
+            'static/dependencies/subfolder/subfolder-sibling.html');
+
+          // check de-duplication
+          // TODO(justinfagnani): The index here should be 1
+          assert.equal(inlineAndImports.dependencies[0], leaf);
+        });
+    });
+
 
   });
 
