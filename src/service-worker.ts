@@ -26,32 +26,32 @@ export interface AddServiceWorkerOptions {
 }
 
 /**
- * Parses a depsIndex object and returns an array of file paths, pointing to
- * the project's required service worker precached assets.
+ * Returns an array of file paths for the service worker to precache, based on
+ * the information provided in the DepsIndex object.
  */
 function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject): string[] {
   let precachedAssets = new Set<string>(project.analyzer.allFragments);
   precachedAssets.add(project.entrypoint);
 
-  for (let dep of depsIndex.depsToFragments.keys()) {
-    precachedAssets.add(dep);
-  }
   for (let depImports of depsIndex.fragmentToFullDeps.values()) {
+    depImports.imports.forEach((s) => precachedAssets.add(s));
     depImports.scripts.forEach((s) => precachedAssets.add(s));
     depImports.styles.forEach((s) => precachedAssets.add(s));
   }
+
   return Array.from(precachedAssets);
 }
 
 /**
- * Parses a depsIndex object and returns an array of file paths for a BUNDLED
- * build, pointing to the project's required service worker precached assets.
+ * Returns an array of file paths for the service worker to precache for a
+ * BUNDLED build, based on the information provided in the DepsIndex object.
  */
 function getBundledPrecachedAssets(project: PolymerProject) {
   let precachedAssets = new Set<string>(project.analyzer.allFragments);
   precachedAssets.add(project.entrypoint);
+  precachedAssets.add(project.bundler.sharedBundleUrl);
 
-  return Array.from(precachedAssets).concat(project.bundler.sharedBundleUrl);
+  return Array.from(precachedAssets);
 }
 
 /**
