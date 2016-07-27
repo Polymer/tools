@@ -130,6 +130,21 @@ interface LoadOptions {
    * of `href` will be ignored.
    */
   filter?: (path:string)=> boolean;
+
+  /**
+   * If resolver is 'xhr':
+   * Type of object to be returned by the XHR. Defaults to 'text',
+   * accepts 'document', 'arraybuffer', and 'json'.
+   * responseType: string;
+   */
+  responseType?: string;
+
+  /**
+   * If resolver is 'xhr':
+   * If true, we'll set the `withCredentials` property on any XHRs made.
+   * This is relevant for whether cross-domain requests include cookies.
+   */
+  withCredentials?: boolean;
 }
 
 /**
