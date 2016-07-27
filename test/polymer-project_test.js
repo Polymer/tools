@@ -36,6 +36,12 @@ suite('PolymerProject', () => {
     });
   })
 
+  test('will not throw an exception when created with minimum options', () => {
+    new PolymerProject({
+      root: path.resolve(__dirname, 'test-project'),
+    });
+  });
+
   test('reads sources', (done) => {
     let files = [];
     defaultProject.sources()
