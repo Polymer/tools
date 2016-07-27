@@ -9,6 +9,7 @@
  */
 
 import * as dom5 from 'dom5';
+import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {Descriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
@@ -33,17 +34,17 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
       document: HtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
 
-    let entities: (ImportDescriptor | InlineDocumentDescriptor)[] = [];
+    let entities: (ImportDescriptor<ASTNode> | InlineDocumentDescriptor<ASTNode>)[] = [];
 
     await visit((node) => {
       if (isJsScriptNode(node)) {
         let src = dom5.getAttribute(node, 'src');
         if (src) {
           let importUrl = resolveUrl(document.url, src);
-          entities.push(new ImportDescriptor('html-script', importUrl));
+          entities.push(new ImportDescriptor<ASTNode>('html-script', importUrl, node));
         } else {
           let contents = dom5.getTextContent(node);
-          entities.push(new InlineDocumentDescriptor('js', contents));
+          entities.push(new InlineDocumentDescriptor<ASTNode>('js', contents, node));
         }
       }
     });
