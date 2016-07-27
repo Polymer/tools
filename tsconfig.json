@@ -8,6 +8,7 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
+        "lib": ["es2017"],
         "outDir": "./lib",
         "declaration": true
     },

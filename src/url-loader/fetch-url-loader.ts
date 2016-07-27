@@ -11,6 +11,8 @@
 import {resolve as resolveUrl} from 'url';
 import {UrlLoader} from './url-loader';
 
+declare let window: any;
+
 /**
  * Resolves requests via the the DOM fetch API.
  */
@@ -30,9 +32,7 @@ export class FetchUrlLoader implements UrlLoader {
   }
 
   load(url: string): Promise<string> {
-    // Use []'s to shut TS up for now, until this file can have use a
-    // different core lib
-    return window['fetch'](this._resolve(url))
+    return window.fetch(this._resolve(url))
       .then((response: any) => {
         if (response.ok) {
           return response.text();
