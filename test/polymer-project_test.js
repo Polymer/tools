@@ -69,7 +69,7 @@ suite('PolymerProject', () => {
       mergeStream(
         defaultProject.sources(),
         dependencyStream
-      ).pipe(defaultProject.analyze);
+      ).pipe(defaultProject.analyzer);
     });
 
     test('reads dependencies and includes additionally provided files', (done) => {
@@ -101,7 +101,7 @@ suite('PolymerProject', () => {
       mergeStream(
         projectWithIncludedDeps.sources(),
         dependencyStream
-      ).pipe(projectWithIncludedDeps.analyze);
+      ).pipe(projectWithIncludedDeps.analyzer);
     });
   });
 

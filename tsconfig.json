@@ -28,6 +28,7 @@
     "custom_typings/node.d.ts",
     "custom_typings/plylog.d.ts",
     "custom_typings/slash.d.ts",
+    "custom_typings/sw-precache.d.ts",
     "custom_typings/vinyl-fs.d.ts",
     "src/analyzer.ts",
     "src/bundle.ts",
@@ -38,7 +39,7 @@
     "src/polymer-project.ts",
     "src/prefetch.ts",
     "src/streams.ts",
-    "src/sw-precache.ts",
+    "src/service-worker.ts",
     "src/uglify-transform.ts",
     "src/path-transformers.ts",
     "typings/index.d.ts"
