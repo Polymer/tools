@@ -1,4 +1,4 @@
-import * as jsdoc from '../ast-utils/jsdoc';
+import * as jsdoc from '../javascript/jsdoc';
 
 export type LiteralValue = string | number | boolean | RegExp;
 

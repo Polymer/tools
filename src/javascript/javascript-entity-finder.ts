@@ -14,7 +14,7 @@
 
 import {Program} from 'estree';
 
-import {Visitor} from '../ast-utils/fluent-traverse';
+import {Visitor} from './estree-visitor';
 import {Descriptor} from '../ast/ast';
 import {EntityFinder} from '../entity/entity-finder';
 

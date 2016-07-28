@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import * as doctrine from 'doctrine';
 
 /**

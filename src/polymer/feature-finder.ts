@@ -12,13 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import * as estraverse from 'estraverse';
-import * as esutil from './esutil';
-import {FeatureDescriptor} from '../ast/ast';
-import {Visitor} from './fluent-traverse';
 import * as estree from 'estree';
+
+import * as esutil from '../javascript/esutil';
+import {FeatureDescriptor} from '../ast/ast';
+import {Visitor} from '../javascript/estree-visitor';
 
 const numFeatures = 0;
 

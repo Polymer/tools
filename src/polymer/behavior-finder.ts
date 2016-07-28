@@ -12,15 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
 import * as estraverse from 'estraverse';
-import * as docs from './docs';
-import * as esutil from './esutil';
-import * as jsdoc from './jsdoc';
-import * as analyzeProperties from './analyze-properties';
-import * as astValue from './ast-value';
 import * as estree from 'estree';
-import {Visitor} from './fluent-traverse';
+
+import * as docs from './docs';
+import * as esutil from '../javascript/esutil';
+import * as jsdoc from '../javascript/jsdoc';
+import * as analyzeProperties from './analyze-properties';
+import * as astValue from '../javascript/ast-value';
+import {Visitor} from '../javascript/estree-visitor';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
 

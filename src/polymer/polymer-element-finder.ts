@@ -16,12 +16,12 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import * as analyzeProperties from '../ast-utils/analyze-properties';
-import * as astValue from '../ast-utils/ast-value';
-import {PropertyHandlers, declarationPropertyHandlers} from '../ast-utils/declaration-property-handlers';
-import * as docs from '../ast-utils/docs';
-import * as esutil from '../ast-utils/esutil';
-import {Visitor} from '../ast-utils/fluent-traverse';
+import * as analyzeProperties from './analyze-properties';
+import * as astValue from '../javascript/ast-value';
+import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
+import * as docs from './docs';
+import * as esutil from '../javascript/esutil';
+import {Visitor} from '../javascript/estree-visitor';
 import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
