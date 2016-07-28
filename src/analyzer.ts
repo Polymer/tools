@@ -24,10 +24,10 @@ import {HtmlImportFinder} from './html/html-import-finder';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptFinder} from './html/html-script-finder';
 import {HtmlStyleFinder} from './html/html-style-finder';
-import {ElementFinder} from './javascript/javascript-element-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
+import {PolymerElementFinder} from './polymer/polymer-element-finder';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Options {
@@ -56,7 +56,7 @@ export class Analyzer {
       'html',
       [new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder()]
     ],
-    ['js', [new ElementFinder(this)]],
+    ['js', [new PolymerElementFinder()]],
   ]);
 
   private _loader: UrlLoader;

@@ -23,14 +23,10 @@ import * as docs from '../ast-utils/docs';
 import * as esutil from '../ast-utils/esutil';
 import {Visitor} from '../ast-utils/fluent-traverse';
 import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {JavaScriptDocument} from '../javascript/javascript-document';
+import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 
-import {JavaScriptDocument} from './javascript-document';
-import {JavaScriptEntityFinder} from './javascript-entity-finder';
-
-export class ElementFinder implements JavaScriptEntityFinder {
-  constructor(analyzer: Analyzer) {
-  }
-
+export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
       Promise<ElementDescriptor[]> {
