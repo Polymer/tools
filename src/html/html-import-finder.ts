@@ -16,8 +16,9 @@ import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
 import {ImportDescriptor} from '../ast/ast';
-import {HtmlEntityFinder} from './html-entity-finder';
+
 import {HtmlDocument, HtmlVisitor} from './html-document';
+import {HtmlEntityFinder} from './html-entity-finder';
 
 const p = dom5.predicates;
 

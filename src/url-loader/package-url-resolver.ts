@@ -13,7 +13,8 @@
  */
 
 import {posix as pathlib} from 'path';
-import {parse as parseUrl, Url} from 'url';
+import {Url, parse as parseUrl} from 'url';
+
 import {UrlResolver} from './url-resolver';
 
 export interface PackageUrlResolverOptions {

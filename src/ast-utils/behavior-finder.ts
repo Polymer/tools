@@ -21,10 +21,7 @@ import * as analyzeProperties from './analyze-properties';
 import * as astValue from './ast-value';
 import * as estree from 'estree';
 import {Visitor} from './fluent-traverse';
-import {
-  declarationPropertyHandlers,
-  PropertyHandlers
-} from './declaration-property-handlers';
+import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
 
 interface KeyFunc<T> {
@@ -118,7 +115,7 @@ export function behaviorFinder() {
    * checks whether an expression is a simple array containing only member
    * expressions or identifiers.
    */
-  function isSimpleBehaviorArray(expression: estree.Node | null): boolean {
+  function isSimpleBehaviorArray(expression: estree.Node|null): boolean {
     if (!expression || expression.type !== 'ArrayExpression') {
       return false;
     }

@@ -40,7 +40,7 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
   async findEntities(
       document: HtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
-    let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
+    let promises: Promise<ImportDescriptor|DocumentDescriptor>[] = [];
     await visit((node) => {
       if (isJsScriptNode(node)) {
         let src = dom5.getAttribute(node, 'src');

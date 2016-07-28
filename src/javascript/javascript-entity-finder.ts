@@ -14,11 +14,11 @@
 
 import {Program} from 'estree';
 
-import {JavaScriptDocument} from './javascript-document';
-import {Descriptor} from '../ast/ast';
 import {Visitor} from '../ast-utils/fluent-traverse';
+import {Descriptor} from '../ast/ast';
 import {EntityFinder} from '../entity/entity-finder';
 
+import {JavaScriptDocument} from './javascript-document';
+
 export interface JavaScriptEntityFinder extends
-    EntityFinder<JavaScriptDocument, Program, Visitor>,
-    Visitor {}
+    EntityFinder<JavaScriptDocument, Program, Visitor>, Visitor {}

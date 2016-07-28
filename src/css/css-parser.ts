@@ -31,9 +31,8 @@ export class CssParser implements Parser<CssDocument> {
   parse(contents: string, url: string): CssDocument {
     let ast = this._parser.parse(contents);
 
-    return new CssDocument(
-        {
-            url, contents, ast,
-        });
+    return new CssDocument({
+        url, contents, ast,
+    });
   }
 }

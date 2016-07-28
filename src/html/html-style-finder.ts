@@ -18,8 +18,9 @@ import {resolve as resolveUrl} from 'url';
 
 import {Analyzer} from '../analyzer';
 import {Descriptor, DocumentDescriptor, ImportDescriptor} from '../ast/ast';
-import {HtmlEntityFinder} from './html-entity-finder';
+
 import {HtmlDocument, HtmlVisitor} from './html-document';
+import {HtmlEntityFinder} from './html-entity-finder';
 
 const p = dom5.predicates;
 
@@ -44,7 +45,7 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
   async findEntities(
       document: HtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
-    let promises: Promise<ImportDescriptor | DocumentDescriptor>[] = [];
+    let promises: Promise<ImportDescriptor|DocumentDescriptor>[] = [];
     await visit(async(node) => {
       if (isStyleNode(node)) {
         let tagName = node.nodeName;

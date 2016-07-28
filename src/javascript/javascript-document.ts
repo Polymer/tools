@@ -13,11 +13,12 @@
  */
 
 import {traverse} from 'estraverse';
-import {Program, Node} from 'estree';
+import {Node, Program} from 'estree';
 
 import {Visitor} from '../ast-utils/fluent-traverse';
-export {Visitor} from '../ast-utils/fluent-traverse';
 import {Document, Options} from '../parser/document';
+
+export {Visitor} from '../ast-utils/fluent-traverse';
 
 export class JavaScriptDocument extends Document<Program, Visitor> {
   type = 'js';

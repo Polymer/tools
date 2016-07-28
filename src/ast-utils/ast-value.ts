@@ -123,7 +123,7 @@ function objectExpressionToValue(obj: estree.ObjectExpression): string {
 /**
  * BinaryExpressions are of the form "literal" + "literal"
  */
-function binaryExpressionToValue(member: estree.BinaryExpression): number |
+function binaryExpressionToValue(member: estree.BinaryExpression): number|
     string {
   if (member.operator === '+') {
     // We need to cast to `any` here because, while it's usually not the right

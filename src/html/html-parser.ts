@@ -14,11 +14,12 @@
 
 import {ASTNode, parse as parseHtml} from 'parse5';
 
-import {HtmlDocument} from './html-document';
 import {Analyzer} from '../analyzer';
 import {ImportDescriptor} from '../ast/ast';
 import {Document} from '../parser/document';
 import {Parser} from '../parser/parser';
+
+import {HtmlDocument} from './html-document';
 
 export class HtmlParser implements Parser<HtmlDocument> {
   analyzer: Analyzer;
@@ -35,9 +36,8 @@ export class HtmlParser implements Parser<HtmlDocument> {
   */
   parse(contents: string, url: string): HtmlDocument {
     let ast = parseHtml(contents, {locationInfo: true});
-    return new HtmlDocument(
-        {
-            url, contents, ast,
-        });
+    return new HtmlDocument({
+        url, contents, ast,
+    });
   }
 }

@@ -28,10 +28,11 @@
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
-    "reformat": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
   },
   "devDependencies": {
     "chai": "^2.2.0",
+    "clang-format": "^1.0.42",
     "depcheck": "^0.6.3",
     "fs-extra": "^0.30.0",
     "gulp": "^3.9.1",

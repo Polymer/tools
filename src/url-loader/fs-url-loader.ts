@@ -14,8 +14,10 @@
 
 import * as fs from 'fs';
 import * as pathlib from 'path';
-import {parse as parseUrl, Url} from 'url';
+import {Url, parse as parseUrl} from 'url';
+
 import {UrlLoader} from './url-loader';
+
 
 /**
  * Resolves requests via the file system.

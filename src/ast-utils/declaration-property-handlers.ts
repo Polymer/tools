@@ -15,11 +15,7 @@
 'use strict';
 
 import * as astValue from './ast-value';
-import {
-  PropertyDescriptor,
-  ElementDescriptor,
-  BehaviorOrName
-} from '../ast/ast';
+import {PropertyDescriptor, ElementDescriptor, BehaviorOrName} from '../ast/ast';
 import {analyzeProperties} from './analyze-properties';
 import * as estree from 'estree';
 

@@ -13,13 +13,14 @@
  */
 
 import * as acorn from 'acorn';
-import {Program} from 'estree';
 import * as estraverse from 'estraverse';
+import {Program} from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Parser} from '../parser/parser';
-import {JavaScriptDocument} from './javascript-document';
 import {Visitor} from '../ast-utils/fluent-traverse';
+import {Parser} from '../parser/parser';
+
+import {JavaScriptDocument} from './javascript-document';
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   analyzer: Analyzer;

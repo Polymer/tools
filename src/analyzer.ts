@@ -27,11 +27,7 @@ import {ElementFinder} from './javascript/javascript-element-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
-import {
-  Descriptor,
-  DocumentDescriptor,
-  ImportDescriptor,
-} from './ast/ast';
+import {Descriptor, DocumentDescriptor, ImportDescriptor} from './ast/ast';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Options {

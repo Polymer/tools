@@ -17,16 +17,7 @@
 
 import * as jsdoc from './jsdoc';
 import * as dom5 from 'dom5';
-import {
-  FeatureDescriptor,
-  FunctionDescriptor,
-  PropertyDescriptor,
-  Descriptor,
-  ElementDescriptor,
-  BehaviorsByName,
-  EventDescriptor,
-  BehaviorDescriptor
-} from '../ast/ast';
+import {FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor, ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor} from '../ast/ast';
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [
