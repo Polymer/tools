@@ -15,6 +15,9 @@ import {Resolver, Deferred} from './resolver';
 function getFile(url:string, deferred:Deferred<string>, config:Config) {
   /* global XMLHttpRequest:false */
   var x = new XMLHttpRequest();
+  if (config && config.withCredentials) {
+    x.withCredentials = true;
+  }
   x.onload = function() {
     var status = x.status || 0;
     if (status >= 200 && status < 300) {
@@ -40,6 +43,12 @@ interface Config {
    * responseType: string;
    */
   responseType?: string;
+
+  /**
+   * If true, we'll set the `withCredentials` property on any XHRs made.
+   * This is relevant for whether cross-domain requests include cookies.
+   */
+  withCredentials?: boolean;
 }
 
 /**
