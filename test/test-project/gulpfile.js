@@ -29,7 +29,7 @@ let project = new PolymerProject({
 
 // Clean build directory
 gulp.task('clean', () => {
-  return del(['build/**']);
+  return del('build');
 });
 
 gulp.task('test1',['clean'], (cb) => {
