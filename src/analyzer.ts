@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/main.d.ts" />
+
 import * as path from 'path';
 import * as urlLib from 'url';
 

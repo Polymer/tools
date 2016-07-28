@@ -12,9 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import * as estree from 'estree';
+
 import {LiteralValue} from '../ast/ast';
 
 // useful tool to visualize AST: http://esprima.org/demo/parse.html

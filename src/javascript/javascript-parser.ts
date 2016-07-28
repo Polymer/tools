@@ -17,7 +17,7 @@ import * as estraverse from 'estraverse';
 import {Program} from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Visitor} from '../ast-utils/fluent-traverse';
+import {Visitor} from './estree-visitor';
 import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';

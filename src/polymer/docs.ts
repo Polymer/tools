@@ -13,10 +13,9 @@
  */
 'use strict';
 
-
-
-import * as jsdoc from './jsdoc';
 import * as dom5 from 'dom5';
+
+import * as jsdoc from '../javascript/jsdoc';
 import {FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor, ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor} from '../ast/ast';
 
 /** Properties on element prototypes that are purely configuration. */

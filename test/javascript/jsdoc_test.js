@@ -14,7 +14,7 @@
 
 "use strict";
 
-const jsdoc = require('../../lib/ast-utils/jsdoc.js');
+const jsdoc = require('../../lib/javascript/jsdoc.js');
 
 try {
   // we're in node, we need to explicity require `expect`

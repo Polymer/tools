@@ -12,11 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
-import * as esutil from './esutil';
-import * as astValue from './ast-value';
 import * as estree from 'estree';
+
+import * as esutil from '../javascript/esutil';
+import * as astValue from '../javascript/ast-value';
 import {PropertyDescriptor} from '../ast/ast';
 
 export function analyzeProperties(node: estree.Node) {

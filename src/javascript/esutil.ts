@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 import * as escodegen from 'escodegen';
+
 import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
 
 /**
