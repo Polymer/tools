@@ -15,6 +15,7 @@
 import * as path from 'path';
 import * as urlLib from 'url';
 
+import {Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
@@ -27,7 +28,6 @@ import {ElementFinder} from './javascript/javascript-element-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
-import {Descriptor, DocumentDescriptor, ImportDescriptor} from './ast/ast';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Options {
@@ -54,10 +54,7 @@ export class Analyzer {
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
     [
       'html',
-      [
-        new HtmlImportFinder(), new HtmlScriptFinder(this),
-        new HtmlStyleFinder(this)
-      ]
+      [new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder()]
     ],
     ['js', [new ElementFinder(this)]],
   ]);
@@ -110,11 +107,21 @@ export class Analyzer {
       Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
 
-    // TODO(justinfagnani): Load ImportDescriptors
+    let dependencyDescriptors: Descriptor[] = entities.filter(
+        (e) => e instanceof InlineDocumentDescriptor ||
+            e instanceof ImportDescriptor);
+    let analyzeDependencies = dependencyDescriptors.map((d) => {
+      if (d instanceof InlineDocumentDescriptor) {
+        return this.analyzeSource(d.type, d.contents, document.url);
+      } else if (d instanceof ImportDescriptor) {
+        return this.analyze(d.url);
+      }
+    });
 
-    return new DocumentDescriptor(document, entities);
+    let dependencies = await Promise.all(analyzeDependencies);
+
+    return new DocumentDescriptor(document, dependencies, entities);
   }
-
 
   /**
    * Loads and parses a single file, deduplicating any requrests for the same
@@ -160,5 +167,6 @@ export class Analyzer {
     if (finders) {
       return findEntities(document, finders);
     }
+    return [];
   }
 }

@@ -15,18 +15,15 @@
 import {Descriptor} from './descriptor';
 
 /**
- * Represents an import, such as an HTML import, an external script or style
- * tag, or an JavaScript import.
+ * Represents an inline document, usually a <script> or <style> tag in an HTML
+ * document.
  *
  * @template N The AST node type
  */
-export class ImportDescriptor<N> implements Descriptor {
-  type: 'html-import'|'html-script'|'html-style'|string;
+export class InlineDocumentDescriptor<N> implements Descriptor {
+  type: 'html'|'javascript'|'css'|/* etc */ string;
 
-  /**
-   * URL of the import, relative to the document containing the import.
-   */
-  url: string;
+  contents: string;
 
   /**
    * The AST node associated with this descriptor. This is required for correct
@@ -34,9 +31,9 @@ export class ImportDescriptor<N> implements Descriptor {
    */
   node: N;
 
-  constructor(type: string, url: string, node: N) {
+  constructor(type: string, contents: string, node: N) {
     this.type = type;
-    this.url = url;
+    this.contents = contents;
     this.node = node;
   }
 }

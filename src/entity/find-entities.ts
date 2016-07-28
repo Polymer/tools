@@ -84,10 +84,46 @@ export async function findEntities(
   // This waits for all `findEntities()` calls to finish
   const nestedEntities = await Promise.all(finderPromises);
 
-  // TODO(justinfagnani): write a test w/ a visitor that throws to test this
-  if (visitError)
+  if (visitError) {
     throw visitError;
+  }
 
-  // Flatten the nested list
-  return Array.prototype.concat.apply([], nestedEntities);
+  return orderEntities(document, nestedEntities);
+}
+
+function orderEntities(
+    document: Document<any, any>,
+    unorderedEntities: Descriptor[][]): Descriptor[] {
+  // Build a map of node -> entities
+  let entitiesByNode = new Map<any, Descriptor[]>();
+  for (let entitySet of unorderedEntities) {
+    for (let entity of entitySet) {
+      let node = entity.node || null;  // convert undefined to null
+      let entities = entitiesByNode.get(node);
+      if (!entities) {
+        entities = [];
+        entitiesByNode.set(node, entities);
+      }
+      entities.push(entity);
+    }
+  }
+
+  // Walk the document to build document ordered entities list
+  let orderedEntities: Descriptor[][] = [];
+  document.forEachNode((node: any) => {
+    if (entitiesByNode.has(node)) {
+      orderedEntities.push(entitiesByNode.get(node));
+      entitiesByNode.delete(node);
+    }
+  });
+
+  // All entities not associated with a node, or associated with a node that
+  // wasn't visited by document.forEachNode come last.
+  // TODO(justinfagnani): shouldn't this be a warning?
+  let orhphanedEntities = entitiesByNode.values();
+  for (let entitySet of orhphanedEntities) {
+    orderedEntities.push(entitySet);
+  }
+
+  return Array.prototype.concat.apply([], orderedEntities);
 }

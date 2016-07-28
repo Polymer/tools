@@ -21,6 +21,7 @@ const path = require('path');
 const invertPromise = require('./test-utils').invertPromise;
 const Analyzer = require('../lib/analyzer').Analyzer;
 const DocumentDescriptor = require('../lib/ast/ast').DocumentDescriptor;
+const InlineDocumentDescriptor = require('../lib/ast/ast').InlineDocumentDescriptor;
 const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
 const Document = require('../lib/parser/document').Document;
 const HtmlDocument = require('../lib/html/html-document').HtmlDocument;
@@ -82,6 +83,46 @@ suite('Analyzer', () => {
           });
     });
 
+    test('analyzes transitive dependencies', () => {
+      return analyzer.analyze('static/dependencies/root.html')
+        .then((root) => {
+          // check first level dependencies
+          assert.deepEqual(
+            root.dependencies.map((d) => d.url),
+            [
+              'static/dependencies/inline-only.html',
+              'static/dependencies/leaf.html',
+              'static/dependencies/inline-and-imports.html',
+              'static/dependencies/subfolder/in-folder.html',
+            ]
+          );
+
+          let inlineOnly = root.dependencies[0];
+          assert.deepEqual(
+            inlineOnly.dependencies.map((d) => d.document.type),
+            ['js', 'css']
+          );
+
+          let leaf = root.dependencies[1];
+          assert.equal(leaf.dependencies.length, 0);
+
+          let inlineAndImports = root.dependencies[2];
+          assert.deepEqual(
+            inlineAndImports.dependencies.map((d) => d.document.type),
+            ['js', 'html', 'css']
+          );
+
+          let inFolder = root.dependencies[3];
+          assert.equal(inFolder.dependencies.length, 1);
+          assert.equal(inFolder.dependencies[0].url,
+            'static/dependencies/subfolder/subfolder-sibling.html');
+
+          // check de-duplication
+          assert.equal(inlineAndImports.dependencies[1], leaf);
+        });
+    });
+
+
   });
 
   suite('getEntities()', () => {
@@ -121,8 +162,8 @@ suite('Analyzer', () => {
       });
       return analyzer.getEntities(document).then((entities) => {
         assert.equal(entities.length, 2);
-        assert.instanceOf(entities[0], DocumentDescriptor);
-        assert.instanceOf(entities[1], DocumentDescriptor);
+        assert.instanceOf(entities[0], InlineDocumentDescriptor);
+        assert.instanceOf(entities[1], InlineDocumentDescriptor);
       });
 
     });

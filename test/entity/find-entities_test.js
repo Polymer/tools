@@ -33,6 +33,9 @@ suite('findEntities()', () => {
       visit(visitors) {
         return Promise.resolve();
       },
+      forEachNode(callback) {
+        return null;
+      },
     };
     return findEntities(document, [finder]).then((entities) => {
       assert.equal(finder.calls.length, 1);
@@ -70,6 +73,9 @@ suite('findEntities()', () => {
       visit(visitors) {
         visitedVisitors.push.apply(visitedVisitors, visitors);
       },
+      forEachNode(callback) {
+        return null;
+      },
     };
 
     return findEntities(document, [finder]).then((entities) => {
@@ -91,6 +97,9 @@ suite('findEntities()', () => {
       visit(visitors) {
         return Promise.resolve();
       },
+      forEachNode(callback) {
+        return null;
+      },
     };
     return invertPromise(findEntities(document, [finder]));
   });
@@ -105,6 +114,9 @@ suite('findEntities()', () => {
       type: 'html',
       visit(visitors) {
         throw new Error('expected');
+      },
+      forEachNode(callback) {
+        return null;
       },
     };
     return invertPromise(findEntities(document, [finder]));

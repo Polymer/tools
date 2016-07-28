@@ -19,5 +19,6 @@ export * from './element-descriptor';
 export * from './event-descriptor';
 export * from './feature-descriptor';
 export * from './function-descriptor';
-export * from './property-descriptor';
 export * from './import-descriptor';
+export * from './inline-document-descriptor';
+export * from './property-descriptor';

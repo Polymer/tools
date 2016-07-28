@@ -1,23 +1,20 @@
 {
-  "name": "hydrolysis",
-  "version": "1.24.1",
-  "description": "Breaks polymers into monomers",
-  "homepage": "https://github.com/Polymer/hydrolysis",
-  "bugs": "https://github.com/Polymer/hydrolysis/issues",
+  "name": "polymer-analyzer",
+  "version": "2.0.0-alpha.1",
+  "description": "Static analysis for Web Components",
+  "homepage": "https://github.com/Polymer/polymer-analyzer",
+  "bugs": "https://github.com/Polymer/polymer-analyzer/issues",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Polymer/hydrolysis.git"
+    "url": "https://github.com/Polymer/polymer-analyzer.git"
   },
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
-    "hydrolysis-analyzer.html",
-    "hydrolysis.html",
-    "hydrolysis.js",
-    "index.js",
     "LICENSE",
-    "lib/"
+    "lib/",
+    "custom_typings/"
   ],
   "scripts": {
     "clean": "rm -rf lib/",
@@ -28,7 +25,7 @@
     "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
     "chai": "^2.2.0",

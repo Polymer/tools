@@ -19,11 +19,9 @@ const parse5 = require('parse5');
 
 const Analyzer = require('../../lib/analyzer').Analyzer;
 const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
-const HtmlScriptFinder =
-    require('../../lib/html/html-script-finder').HtmlScriptFinder;
-const ImportDescriptor =
-    require('../../lib/ast/import-descriptor').ImportDescriptor;
-const DocumentDescriptor = require('../../lib/ast/ast').DocumentDescriptor;
+const HtmlScriptFinder = require('../../lib/html/html-script-finder').HtmlScriptFinder;
+const ImportDescriptor = require('../../lib/ast/import-descriptor').ImportDescriptor;
+const InlineDocumentDescriptor = require('../../lib/ast/ast').InlineDocumentDescriptor;
 
 suite('HtmlScriptFinder', () => {
 
@@ -49,14 +47,16 @@ suite('HtmlScriptFinder', () => {
       let promises = [];
       let visit = (visitor) => document.visit([visitor]);
 
-      return finder.findEntities(document, visit).then((entities) => {
-        assert.equal(entities.length, 2);
-        assert.instanceOf(entities[0], ImportDescriptor);
-        assert.equal(entities[0].type, 'html-script');
-        assert.equal(entities[0].url, 'foo.js');
-        assert.instanceOf(entities[1], DocumentDescriptor);
-        assert.equal(entities[1].document.url, 'test.html');
-      });
+      return finder.findEntities(document, visit)
+        .then((entities) => {
+          assert.equal(entities.length, 2);
+          assert.instanceOf(entities[0], ImportDescriptor);
+          assert.equal(entities[0].type, 'html-script');
+          assert.equal(entities[0].url, 'foo.js');
+          assert.instanceOf(entities[1], InlineDocumentDescriptor);
+          assert.equal(entities[1].type, 'js');
+          assert.equal(entities[1].contents, `console.log('hi')`);
+        });
 
     });
 

@@ -33,7 +33,18 @@ export abstract class Document<A, V> {
     this.ast = from.ast;
   }
 
+  /**
+   * Runs a set of document-type specific visitors against the document.
+   */
   abstract visit(visitors: V[]): void;
+
+  /**
+   * Calls `callback` for each AST node in the document in document order.
+   *
+   * Implementations _must_ call the callback with every node, and must do so
+   * in document order.
+   */
+  abstract forEachNode(callback: (node: A) => void): void;
 }
 
 export interface Options<A> {
