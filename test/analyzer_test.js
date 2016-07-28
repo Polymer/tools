@@ -102,12 +102,10 @@ suite('Analyzer', () => {
           assert.equal(leaf.dependencies.length, 0);
 
           let inlineAndImports = root.dependencies[2];
-          // TODO(justinfagnani): This fails because ordering between entitiy
-          // finders is not preserved
-          // assert.deepEqual(
-          //   inlineAndImports.dependencies.map((d) => d.document.type),
-          //   ['js', 'html', 'css']
-          // );
+          assert.deepEqual(
+            inlineAndImports.dependencies.map((d) => d.document.type),
+            ['js', 'html', 'css']
+          );
 
           let inFolder = root.dependencies[3];
           assert.equal(inFolder.dependencies.length, 1);
@@ -115,8 +113,7 @@ suite('Analyzer', () => {
             'static/dependencies/subfolder/subfolder-sibling.html');
 
           // check de-duplication
-          // TODO(justinfagnani): The index here should be 1
-          assert.equal(inlineAndImports.dependencies[0], leaf);
+          assert.equal(inlineAndImports.dependencies[1], leaf);
         });
     });
 

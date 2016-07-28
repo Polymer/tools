@@ -9,6 +9,7 @@
  */
 
 import * as dom5 from 'dom5';
+import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {Descriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
@@ -41,7 +42,7 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
       document: HtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
 
-    let entities: (ImportDescriptor | InlineDocumentDescriptor)[] = [];
+    let entities: (ImportDescriptor<ASTNode> | InlineDocumentDescriptor<ASTNode>)[] = [];
 
     await visit(async (node) => {
       if (isStyleNode(node)) {
@@ -49,10 +50,10 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
         if (tagName === 'link') {
           let href = dom5.getAttribute(node, 'href');
           let importUrl = resolveUrl(document.url, href);
-          entities.push(new ImportDescriptor('html-style', importUrl));
+          entities.push(new ImportDescriptor<ASTNode>('html-style', importUrl, node));
         } else {
           let contents = dom5.getTextContent(node);
-          entities.push(new InlineDocumentDescriptor('css', contents));
+          entities.push(new InlineDocumentDescriptor<ASTNode>('css', contents, node));
         }
       }
     });
