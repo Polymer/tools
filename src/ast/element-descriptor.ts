@@ -1,10 +1,11 @@
-import * as estree from 'estree';
 import * as dom5 from 'dom5';
+import * as estree from 'estree';
 
 import {BehaviorOrName} from './behavior-descriptor';
 import {Descriptor, LiteralValue} from './descriptor';
 import {EventDescriptor} from './event-descriptor';
 import {PropertyDescriptor} from './property-descriptor';
+
 
 /**
  * The metadata for a single polymer element
@@ -19,11 +20,8 @@ export interface ElementDescriptor extends Descriptor {
   }[];
   behaviors?: BehaviorOrName[];
 
-  type: string; // 'element' | 'behavior'
-  demos?: {
-    desc: string;
-    path: string;
-  }[];
+  type: string;  // 'element' | 'behavior'
+  demos?: {desc: string; path: string}[];
   events?: EventDescriptor[];
   hero?: string;
   domModule?: dom5.Node;

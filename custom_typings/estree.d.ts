@@ -1,4 +1,5 @@
-// TODO(rictic): Upstream/merge with https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/estree/estree.d.ts
+// TODO(rictic): Upstream/merge with
+// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/estree/estree.d.ts
 
 declare module 'estree' {
   interface BaseNode {
@@ -9,15 +10,12 @@ declare module 'estree' {
     trailingComments?: Comment[];
     loc?: SourceLocation;
   }
-  export type Node =
-      Identifier | Literal | Program | Function | SwitchCase | CatchClause |
-      VariableDeclarator | Statement | Expression | Property |
+  export type Node = Identifier | Literal | Program | Function | SwitchCase |
+      CatchClause | VariableDeclarator | Statement | Expression | Property |
       AssignmentProperty | Super | TemplateElement | SpreadElement | Pattern |
       ClassBody | ClassDeclaration | ClassExpression | MethodDefinition |
       ModuleDeclaration | ModuleSpecifier;
-  export interface Comment {
-    value: string;
-  }
+  export interface Comment { value: string; }
   export interface SourceLocation {
     source: string;
     start: Position;
@@ -40,15 +38,12 @@ declare module 'estree' {
     raw: string;
   }
   export interface RegExpLiteral extends Literal {
-    regex: {
-      pattern: string;
-      flags: string;
-    };
+    regex: {pattern: string; flags: string;};
   }
   export interface Program extends BaseNode {
     type: 'Program';
-    sourceType: string; // "script" or "module"
-    body: Statement[]|ModuleDeclaration[];
+    sourceType: string;  // "script" or "module"
+    body: Statement[] | ModuleDeclaration[];
   }
   export type Function = FunctionDeclaration | FunctionExpression;
   interface BaseFunction extends BaseNode {
@@ -57,13 +52,13 @@ declare module 'estree' {
     body: BlockStatement;
     generator?: boolean;
   }
-  export type Statement =
-      ExpressionStatement | BlockStatement | EmptyStatement |
-      DebuggerStatement | WithStatement | ReturnStatement | LabeledStatement |
-      BreakStatement | ContinueStatement | IfStatement | SwitchStatement |
-      ThrowStatement | TryStatement | WhileStatement | DoWhileStatement |
-      ForStatement | ForInStatement | ForOfStatement | Declaration;
-  interface BaseStatement extends BaseNode { }
+  export type Statement = ExpressionStatement | BlockStatement |
+      EmptyStatement | DebuggerStatement | WithStatement | ReturnStatement |
+      LabeledStatement | BreakStatement | ContinueStatement | IfStatement |
+      SwitchStatement | ThrowStatement | TryStatement | WhileStatement |
+      DoWhileStatement | ForStatement | ForInStatement | ForOfStatement |
+      Declaration;
+  interface BaseStatement extends BaseNode {}
   export interface ExpressionStatement extends BaseStatement {
     type: "ExpressionStatement";
     expression: Expression;
@@ -153,7 +148,7 @@ declare module 'estree' {
     body: Statement;
   }
   interface ForXStatement extends BaseStatement {
-    left: VariableDeclaration |  Expression;
+    left: VariableDeclaration | Expression;
     right: Expression;
     body: Statement;
   }
@@ -166,7 +161,7 @@ declare module 'estree' {
 
   export type Declaration =
       FunctionDeclaration | VariableDeclaration | ClassDeclaration;
-  interface BaseDeclaration extends BaseStatement { }
+  interface BaseDeclaration extends BaseStatement {}
   export interface FunctionDeclaration extends BaseFunction, BaseDeclaration {
     type: "FunctionDeclaration";
     id: Identifier;
@@ -182,20 +177,20 @@ declare module 'estree' {
     init?: Expression;
   }
 
-  type Expression =
-      ThisExpression | ArrayExpression | ObjectExpression | FunctionExpression |
-      ArrowFunctionExpression | YieldExpression | Literal | UnaryExpression |
-      UpdateExpression | BinaryExpression | AssignmentExpression |
-      LogicalExpression | MemberExpression | ConditionalExpression |
-      CallExpression | NewExpression | SequenceExpression | TemplateLiteral |
-      TaggedTemplateExpression | ClassExpression | MetaProperty | Identifier;
-  export interface BaseExpression extends BaseNode { }
+  type Expression = ThisExpression | ArrayExpression | ObjectExpression |
+      FunctionExpression | ArrowFunctionExpression | YieldExpression | Literal |
+      UnaryExpression | UpdateExpression | BinaryExpression |
+      AssignmentExpression | LogicalExpression | MemberExpression |
+      ConditionalExpression | CallExpression | NewExpression |
+      SequenceExpression | TemplateLiteral | TaggedTemplateExpression |
+      ClassExpression | MetaProperty | Identifier;
+  export interface BaseExpression extends BaseNode {}
   export interface ThisExpression extends BaseExpression {
     type: "ThisExpression";
   }
   export interface ArrayExpression extends BaseExpression {
     type: "ArrayExpression";
-    elements: (Expression|SpreadElement)[];
+    elements: (Expression | SpreadElement)[];
   }
 
   export interface ObjectExpression extends BaseExpression {
@@ -211,9 +206,7 @@ declare module 'estree' {
     shorthand: boolean;
     computed: boolean;
   }
-  export interface Property extends BaseProperty {
-    value: Expression;
-  }
+  export interface Property extends BaseProperty { value: Expression; }
   export interface FunctionExpression extends BaseFunction, BaseExpression {
     type: "FunctionExpression";
   }
@@ -229,9 +222,7 @@ declare module 'estree' {
     argument?: Expression;
     delegate: boolean;
   }
-  export interface Super extends BaseNode {
-    type: "Super";
-  }
+  export interface Super extends BaseNode { type: "Super"; }
 
 
   export interface UnaryExpression extends BaseExpression {
@@ -256,19 +247,17 @@ declare module 'estree' {
     left: Expression;
     right: Expression;
   }
-  export type BinaryOperator =
-      "==" | "!=" | "===" | "!==" | "<" | "<=" | ">" | ">=" | "<<" |
-      ">>" | ">>>" | "+" | "-" | "*" | "/" | "%" | "|" | "^" | "&" | "in" |
-      "instanceof";
+  export type BinaryOperator = "==" | "!=" | "===" | "!==" | "<" | "<=" | ">" |
+      ">=" | "<<" | ">>" | ">>>" | "+" | "-" | "*" | "/" | "%" | "|" | "^" |
+      "&" | "in" | "instanceof";
   export interface AssignmentExpression extends BaseExpression {
     type: "AssignmentExpression";
     operator: AssignmentOperator;
     left: Pattern | MemberExpression;
     right: Expression;
   }
-  export type AssignmentOperator =
-      "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | ">>>=" |
-      "|=" | "^=" | "&=";
+  export type AssignmentOperator = "=" | "+=" | "-=" | "*=" | "/=" | "%=" |
+      "<<=" | ">>=" | ">>>=" | "|=" | "^=" | "&=";
   export interface LogicalExpression extends BaseExpression {
     type: "LogicalExpression";
     operator: LogicalOperator;
@@ -291,7 +280,7 @@ declare module 'estree' {
   }
   interface BaseCallExpression extends BaseExpression {
     callee: Expression | Super;
-    arguments: (Expression|SpreadElement)[];
+    arguments: (Expression | SpreadElement)[];
   }
   export interface CallExpression extends BaseCallExpression {
     type: "CallExpression";
@@ -317,10 +306,7 @@ declare module 'estree' {
   export interface TemplateElement extends BaseNode {
     type: "TemplateElement";
     tail: boolean;
-    value: {
-        cooked: string;
-        raw: string;
-    };
+    value: {cooked: string; raw: string;};
   }
 
   export interface SpreadElement extends BaseNode {
@@ -328,10 +314,9 @@ declare module 'estree' {
     argument: Expression;
   }
 
-  type Pattern =
-      ObjectPattern | ArrayPattern | RestElement | AssignmentPattern |
-      MemberExpression;
-  export interface BasePattern extends BaseNode { }
+  type Pattern = ObjectPattern | ArrayPattern | RestElement |
+      AssignmentPattern | MemberExpression;
+  export interface BasePattern extends BaseNode {}
   export interface AssignmentProperty extends BaseProperty {
     value: Pattern;
     kind: "init";
@@ -388,20 +373,19 @@ declare module 'estree' {
     property: Identifier;
   }
 
-  export type ModuleDeclaration =
-      ImportDeclaration | ExportNamedDeclaration | ExportDefaultDeclaration |
-      ExportAllDeclaration;
-  interface BaseModuleDeclaration extends BaseNode { }
-  export type ModuleSpecifier =
-      ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier |
-      ExportSpecifier;
+  export type ModuleDeclaration = ImportDeclaration | ExportNamedDeclaration |
+      ExportDefaultDeclaration | ExportAllDeclaration;
+  interface BaseModuleDeclaration extends BaseNode {}
+  export type ModuleSpecifier = ImportSpecifier | ImportDefaultSpecifier |
+      ImportNamespaceSpecifier | ExportSpecifier;
   interface BaseModuleSpecifier extends BaseNode {
     local: Identifier;
   }
 
   export interface ImportDeclaration extends BaseModuleDeclaration {
     type: "ImportDeclaration";
-    specifiers: (ImportSpecifier|ImportDefaultSpecifier|ImportNamespaceSpecifier)[];
+    specifiers:
+        (ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier)[];
     source: Literal;
   }
   export interface ImportSpecifier extends BaseModuleSpecifier {

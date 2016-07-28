@@ -1,0 +1,8 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "clang-format.style": "file",
+  "clang-format.formatOnSave": true,
+  "files.exclude": {
+    "lib/**": true
+  }
+}

@@ -49,27 +49,18 @@ Polymer({
     /**
      * I am an object with notify=true!
      */
-    objectNotify: {
-      type: Object,
-      notify: true
-    },
+    objectNotify: {type: Object, notify: true},
     /**
      * I am an object with notify=!0
      */
-    objectNotifyUnary: {
-      type: Object,
-      notify: !0
-    },
+    objectNotifyUnary: {type: Object, notify: !0},
     /**
      * I am a boolean property!
      */
     boolProp: Boolean
   },
 
-  bind: {
-    numProp: 'numChanged',
-    elementProp: 'elemChanged'
-  },
+  bind: {numProp: 'numChanged', elementProp: 'elemChanged'},
 
   numChanged: function() {
 
@@ -133,21 +124,17 @@ Polymer({
      * @attribute data
      * @type Object
      */
-    data: {
-      type: Object,
-      notify: true
-    },
+    data: {type: Object, notify: true},
     /**
-     * All keys in data (array of names, if you think of data as a set of name/value pairs).
+     * All keys in data (array of names, if you think of data as a set of
+     * name/value pairs).
      * @attribute keys
      * @type Array
      */
-    keys: {
-      type: Array,
-      notify: true
-    },
+    keys: {type: Array, notify: true},
     /**
-     * If true, will fire `child-added`, `child-removed`, `child-changed` events.
+     * If true, will fire `child-added`, `child-removed`, `child-changed`
+     * events.
      * @attribute childEvents
      * @type Boolean
      */
@@ -163,10 +150,7 @@ Polymer({
      * @attribute initialized
      * @type Boolean
      */
-    dataReady: {
-      type: Boolean,
-      notify: true
-    },
+    dataReady: {type: Boolean, notify: true},
     /**
      * If true, will log various occurances to the console api.
      * @attribute log
@@ -243,7 +227,8 @@ Polymer({
   valueLoaded: function(snapshot) {
     this.valueLoading = false;
     if (this.ref.key() !== snapshot.key()) {
-      this.log && console.warn('squelching stale response [%s]', snapshot.key());
+      this.log &&
+          console.warn('squelching stale response [%s]', snapshot.key());
       return;
     }
     this.log && console.log('acquired value ' + this.location);
@@ -277,8 +262,10 @@ Polymer({
     // server side dynamics
     if (this.data instanceof Object || this.data instanceof Array) {
       this.query.on('child_added', this.childAdded, this.errorHandler, this);
-      this.query.on('child_changed', this.childChanged, this.errorHandler, this);
-      this.query.on('child_removed', this.childRemoved, this.errorHandler, this);
+      this.query.on(
+          'child_changed', this.childChanged, this.errorHandler, this);
+      this.query.on(
+          'child_removed', this.childRemoved, this.errorHandler, this);
     } else {
       this.query.on('value', this.valueUpdated, this.errorHandler, this);
     }
@@ -344,7 +331,8 @@ Polymer({
       // ignore initial adds, we'll take the 'value' instead
       this.modulateData('updateData', snapshot);
     } else if (!this.valueLoading) {
-      // if children are added to a previously null location, grab the whole value in one go
+      // if children are added to a previously null location, grab the whole
+      // value in one go
       this.valueLoading = true;
       this.query.once('value', this.valueLoaded, this);
     }
@@ -405,14 +393,15 @@ Polymer({
   },
 
   dataChange: function() {
-    //this.job('change', function() {
-      if (this.data) {
-        this.keys = this.data instanceof Object ? Object.keys(this.data) : [];
-      }
-      // TODO(kschaaf): Notify when bind-effects-object experimental feature is enabled
-      if (this.notifyPropertyChange) {
-        this.notifyPropertyChange('data');
-      }
+    // this.job('change', function() {
+    if (this.data) {
+      this.keys = this.data instanceof Object ? Object.keys(this.data) : [];
+    }
+    // TODO(kschaaf): Notify when bind-effects-object experimental feature is
+    // enabled
+    if (this.notifyPropertyChange) {
+      this.notifyPropertyChange('data');
+    }
     //});
   },
 
@@ -420,7 +409,7 @@ Polymer({
   // client-side effects
   //
   observeArray: function(splices) {
-    //console.warn('observeArray');
+    // console.warn('observeArray');
     // TODO(sjmiles): arrays are nasty because simple insertions/deletions
     // cause changes to ripple through keys
     this.commit();
@@ -456,7 +445,8 @@ Polymer({
     this.log && console.log('commit');
     if (this.ref) {
       if (this.priority != null) {
-        this.ref.setWithPriority(this.data || {}, this.priority, this.errorHandler);
+        this.ref.setWithPriority(
+            this.data || {}, this.priority, this.errorHandler);
       } else {
         this.ref.set(this.data || {}, this.errorHandler);
       }
@@ -466,7 +456,7 @@ Polymer({
   push: function(item) {
     var neo;
     if (this.data instanceof Array) {
-      this.commitProperty(this.data.push(item)-1);
+      this.commitProperty(this.data.push(item) - 1);
     } else {
       neo = this.ref.push(item, this.errorHandler);
     }

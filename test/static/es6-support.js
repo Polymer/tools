@@ -26,7 +26,7 @@ class A {
       },
     }
 
-    this.observers = [
+                      this.observers = [
       '_observer1(string)',
       '_observer2(string)',
     ]
@@ -97,27 +97,18 @@ Polymer({
     /**
      * I am an object with notify=true!
      */
-    objectNotify: {
-      type: Object,
-      notify: true
-    },
+    objectNotify: {type: Object, notify: true},
     /**
      * I am an object with notify=!0
      */
-    objectNotifyUnary: {
-      type: Object,
-      notify: !0
-    },
+    objectNotifyUnary: {type: Object, notify: !0},
     /**
      * I am a boolean property!
      */
     boolProp: Boolean
   },
 
-  bind: {
-    numProp: 'numChanged',
-    elementProp: 'elemChanged'
-  },
+  bind: {numProp: 'numChanged', elementProp: 'elemChanged'},
 
   numChanged: function() {
 

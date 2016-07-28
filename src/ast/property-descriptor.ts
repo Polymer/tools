@@ -16,7 +16,7 @@ export interface PropertyDescriptor extends Descriptor {
   observerNode?: estree.Expression;
   readOnly?: LiteralValue;
   reflectToAttribute?: LiteralValue;
-  default?: LiteralValue;
+  'default'?: LiteralValue;
   private?: boolean;
   configuration?: boolean;
   getter?: boolean;

@@ -4,12 +4,11 @@ declare module 'escodegen' {
     comment?: boolean;
     format?: {
       indent?: {
-        style?: string;
+        style?: string;  //
         base?: number;
         adjustMultilineComment: boolean;
       }
     }
   }
-  export function generate(ast:Node, opts?: GenerateOpts):string;
-
+  export function generate(ast: Node, opts?: GenerateOpts): string;
 }

@@ -7,7 +7,6 @@
  * to '/bower_components/polymer/polymer.html'.
  */
 export interface UrlResolver {
-
   /**
    * Returns `true` if this resolver can resolve the given `url`.
    */

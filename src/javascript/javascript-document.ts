@@ -1,19 +1,24 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import {traverse} from 'estraverse';
-import {Program, Node} from 'estree';
+import {Node, Program} from 'estree';
 
 import {Visitor} from '../ast-utils/fluent-traverse';
-export {Visitor} from '../ast-utils/fluent-traverse';
 import {Document, Options} from '../parser/document';
+
+export {Visitor} from '../ast-utils/fluent-traverse';
 
 export class JavaScriptDocument extends Document<Program, Visitor> {
   type = 'js';
@@ -23,7 +28,6 @@ export class JavaScriptDocument extends Document<Program, Visitor> {
   }
 
   visit(visitors: Visitor[]) {
-
     /**
      * Applies all visiting callbacks from `visitors`.
      */
@@ -54,5 +58,4 @@ export class JavaScriptDocument extends Document<Program, Visitor> {
       fallback: 'iteration',
     });
   }
-
 }

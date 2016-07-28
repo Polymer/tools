@@ -9,4 +9,6 @@ export interface BehaviorDescriptor extends ElementDescriptor {
 
 export type BehaviorOrName = BehaviorDescriptor | string;
 
-export type BehaviorsByName = {[name: string]: BehaviorDescriptor};
+export type BehaviorsByName = {
+  [name: string]: BehaviorDescriptor
+};

@@ -1,21 +1,25 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from '../parser/document';
 import {Descriptor} from '../ast/ast';
+import {Document} from '../parser/document';
+
 import {EntityFinder} from './entity-finder';
 
 export async function findEntities(
     document: Document<any, any>,
     finders: EntityFinder<any, any, any>[]): Promise<Descriptor[]> {
-
   // Finders register a visitor to run via the `visit` callback passed to
   // `findEntities()`. We run these visitors in a batch, then pass control back
   // to the `findEntities` methods by resolving a single Promise return for
@@ -88,14 +92,13 @@ export async function findEntities(
 }
 
 function orderEntities(
-  document: Document<any, any>,
-  unorderedEntities: Descriptor[][]): Descriptor[] {
-
+    document: Document<any, any>,
+    unorderedEntities: Descriptor[][]): Descriptor[] {
   // Build a map of node -> entities
   let entitiesByNode = new Map<any, Descriptor[]>();
   for (let entitySet of unorderedEntities) {
     for (let entity of entitySet) {
-      let node = entity.node || null; // convert undefined to null
+      let node = entity.node || null;  // convert undefined to null
       let entities = entitiesByNode.get(node);
       if (!entities) {
         entities = [];

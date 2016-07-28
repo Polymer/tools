@@ -26,7 +26,7 @@ class A {
       },
     }
 
-    this.observers = [
+                      this.observers = [
       '_observer1(string)',
       '_observer2(string)',
     ]

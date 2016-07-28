@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 'use strict';
 
@@ -13,28 +17,13 @@
 
 import * as jsdoc from './jsdoc';
 import * as dom5 from 'dom5';
-import {
-  FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor,
-  ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor
-} from '../ast/ast';
+import {FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor, ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor} from '../ast/ast';
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [
-  'attached',
-  'attributeChanged',
-  'beforeRegister',
-  'configure',
-  'constructor',
-  'created',
-  'detached',
-  'enableCustomStyleProperties',
-  'extends',
-  'hostAttributes',
-  'is',
-  'listeners',
-  'mixins',
-  'properties',
-  'ready',
+  'attached', 'attributeChanged', 'beforeRegister', 'configure', 'constructor',
+  'created', 'detached', 'enableCustomStyleProperties', 'extends',
+  'hostAttributes', 'is', 'listeners', 'mixins', 'properties', 'ready',
   'registered'
 ];
 
@@ -58,13 +47,14 @@ const HANDLED_TAGS = [
  * @return {Object} The descriptor that was given.
  */
 export function annotate(descriptor: Descriptor): Descriptor {
-  if (!descriptor || descriptor.jsdoc) return descriptor;
+  if (!descriptor || descriptor.jsdoc)
+    return descriptor;
 
   if (typeof descriptor.desc === 'string') {
     descriptor.jsdoc = jsdoc.parseJsdoc(descriptor.desc);
     // We want to present the normalized form of a descriptor.
     descriptor.jsdoc.orig = descriptor.desc;
-    descriptor.desc       = descriptor.jsdoc.description;
+    descriptor.desc = descriptor.jsdoc.description;
   }
 
   return descriptor;
@@ -78,13 +68,13 @@ export function annotateElementHeader(descriptor: ElementDescriptor) {
     descriptor.events.forEach(function(event) {
       _annotateEvent(event);
     });
-    descriptor.events.sort( function(a, b) {
+    descriptor.events.sort(function(a, b) {
       return a.name.localeCompare(b.name);
     });
   }
   descriptor.demos = [];
   if (descriptor.jsdoc && descriptor.jsdoc.tags) {
-    descriptor.jsdoc.tags.forEach( function(tag) {
+    descriptor.jsdoc.tags.forEach(function(tag) {
       switch (tag.tag) {
         case 'hero':
           descriptor.hero = tag.name || 'hero.png';
@@ -104,9 +94,9 @@ function copyProperties(
     from: ElementDescriptor, to: ElementDescriptor,
     behaviorsByName: BehaviorsByName) {
   if (from.properties) {
-    from.properties.forEach(function(fromProp){
-      for (let toProp: PropertyDescriptor, i = 0;
-           i < to.properties.length; i++) {
+    from.properties.forEach(function(fromProp) {
+      for (let toProp: PropertyDescriptor, i = 0; i < to.properties.length;
+           i++) {
         toProp = to.properties[i];
         if (fromProp.name === toProp.name) {
           return;
@@ -116,12 +106,12 @@ function copyProperties(
       if (fromProp.__fromBehavior) {
         return;
       }
-      Object.keys(fromProp).forEach(function(propertyField){
+      Object.keys(fromProp).forEach(function(propertyField) {
         newProp[propertyField] = fromProp[propertyField];
       });
       to.properties.push(<any>newProp);
     });
-    from.events.forEach(function(fromEvent){
+    from.events.forEach(function(fromEvent) {
       for (let toEvent: EventDescriptor, i = 0; i < to.events.length; i++) {
         toEvent = to.events[i];
         if (fromEvent.name === toEvent.name) {
@@ -132,7 +122,7 @@ function copyProperties(
         return;
       }
       const newEvent = {__fromBehavior: from.is};
-      Object.keys(fromEvent).forEach(function(eventField){
+      Object.keys(fromEvent).forEach(function(eventField) {
         newEvent[eventField] = fromEvent[eventField];
       });
       to.events.push(newEvent);
@@ -148,10 +138,10 @@ function copyProperties(
     const definedBehavior =
         behaviorsByName[localBehavior] || behaviorsByName[localBehavior.symbol];
     if (!definedBehavior) {
-        console.warn(
-            `Behavior ${localBehavior} not found when mixing ` +
-            `properties into ${to.is}!`);
-        return;
+      console.warn(
+          `Behavior ${localBehavior} not found when mixing ` +
+          `properties into ${to.is}!`);
+      return;
     }
     copyProperties(definedBehavior, to, behaviorsByName);
   }
@@ -188,9 +178,8 @@ export function annotateElement(
     descriptor: ElementDescriptor,
     behaviorsByName: BehaviorsByName): ElementDescriptor {
   if (!descriptor.desc && descriptor.type === 'element') {
-    descriptor.desc = _findElementDocs(descriptor.is,
-                                       descriptor.domModule,
-                                       descriptor.scriptElement);
+    descriptor.desc = _findElementDocs(
+        descriptor.is, descriptor.domModule, descriptor.scriptElement);
   }
   annotate(descriptor);
 
@@ -218,7 +207,7 @@ export function annotateElement(
       return 1;
     } else if (!a.private && b.private) {
       return -1;
-    // Otherwise, we're just sorting alphabetically.
+      // Otherwise, we're just sorting alphabetically.
     } else {
       return a.name.localeCompare(b.name);
     }
@@ -234,8 +223,8 @@ export function annotateElement(
  * @param {Object} descriptor behavior descriptor
  * @return {Object} descriptor passed in as param
  */
-export function annotateBehavior(
-    descriptor: BehaviorDescriptor): BehaviorDescriptor {
+export function annotateBehavior(descriptor: BehaviorDescriptor):
+    BehaviorDescriptor {
   annotate(descriptor);
   annotateElementHeader(descriptor);
 
@@ -251,18 +240,16 @@ function _annotateEvent(descriptor: EventDescriptor): EventDescriptor {
   const eventTag = jsdoc.getTag(descriptor.jsdoc, 'event');
   descriptor.name = eventTag ? eventTag.description : 'N/A';
 
+  const tags = (descriptor.jsdoc.tags || []);
   // process @params
-  descriptor.params = (descriptor.jsdoc.tags || [])
-    .filter(function(tag) {
-      return tag.tag === 'param';
-    })
-    .map(function(tag) {
-      return {
-        type: tag.type || 'N/A',
-        desc: tag.description,
-        name: tag.name || 'N/A'
-      };
-    });
+  descriptor.params =
+      tags.filter((tag) => tag.tag === 'param').map(function(param) {
+        return {
+          type: param.type || 'N/A',
+          desc: param.description,
+          name: param.name || 'N/A'
+        };
+      });
   // process @params
   return descriptor;
 }
@@ -284,7 +271,7 @@ function annotateProperty(
 
   if (!ignoreConfiguration &&
       ELEMENT_CONFIGURATION.indexOf(descriptor.name) !== -1) {
-    descriptor.private       = true;
+    descriptor.private = true;
     descriptor.configuration = true;
   }
 
@@ -320,11 +307,12 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
   }
 
   const paramsByName = {};
-  (descriptor.params || []).forEach(function(param) {
+  (descriptor.params || []).forEach((param) => {
     paramsByName[param.name] = param;
   });
-  (descriptor.jsdoc && descriptor.jsdoc.tags || []).forEach(function(tag) {
-    if (tag.tag !== 'param') return;
+  (descriptor.jsdoc && descriptor.jsdoc.tags || []).forEach((tag) => {
+    if (tag.tag !== 'param')
+      return;
     const param = paramsByName[tag.name];
     if (!param) {
       return;
@@ -344,24 +332,25 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  * @param {Array<FeatureDescriptor>} features
  * @return {ElementDescriptor}
  */
-export function featureElement(
-    features: FeatureDescriptor[]): ElementDescriptor {
-  const properties = features.reduce<PropertyDescriptor[]>((result, feature) => {
-    return result.concat(feature.properties);
-  }, []);
+export function featureElement(features: FeatureDescriptor[]):
+    ElementDescriptor {
+  const properties =
+      features.reduce<PropertyDescriptor[]>((result, feature) => {
+        return result.concat(feature.properties);
+      }, []);
 
   return {
-    type:       'element',
-    is:         'Polymer.Base',
-    abstract:   true,
+    type: 'element',
+    is: 'Polymer.Base',
+    abstract: true,
     properties: properties,
     desc: '`Polymer.Base` acts as a base prototype for all Polymer ' +
-          'elements. It is composed via various calls to ' +
-          '`Polymer.Base._addFeature()`.\n' +
-          '\n' +
-          'The properties reflected here are the combined view of all ' +
-          'features found in this library. There may be more properties ' +
-          'added via other libraries, as well.',
+        'elements. It is composed via various calls to ' +
+        '`Polymer.Base._addFeature()`.\n' +
+        '\n' +
+        'The properties reflected here are the combined view of all ' +
+        'features found in this library. There may be more properties ' +
+        'added via other libraries, as well.',
   };
 }
 
@@ -372,7 +361,8 @@ export function featureElement(
  * @param {Object} descriptor
  */
 export function clean(descriptor: Descriptor) {
-  if (!descriptor.jsdoc) return;
+  if (!descriptor.jsdoc)
+    return;
   // The doctext was written to `descriptor.desc`
   delete descriptor.jsdoc.description;
   delete descriptor.jsdoc.orig;
@@ -380,7 +370,8 @@ export function clean(descriptor: Descriptor) {
   const cleanTags: jsdoc.Tag[] = [];
   (descriptor.jsdoc.tags || []).forEach(function(tag) {
     // Drop any tags we've consumed.
-    if (HANDLED_TAGS.indexOf(tag.tag) !== -1) return;
+    if (HANDLED_TAGS.indexOf(tag.tag) !== -1)
+      return;
     cleanTags.push(tag);
   });
 
@@ -464,25 +455,27 @@ function _findElementDocs(
   if (comment && comment.data) {
     found.push(comment.data);
   }
-  if (found.length === 0) return null;
+  if (found.length === 0)
+    return null;
   return found
-    .filter(function(comment) {
-      // skip @license comments
-      if (comment && comment.indexOf('@license') === -1) {
-        return true;
-      }
-      else {
-        return false;
-      }
-    })
-    .map(jsdoc.unindent).join('\n');
+      .filter(function(comment) {
+        // skip @license comments
+        if (comment && comment.indexOf('@license') === -1) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map(jsdoc.unindent)
+      .join('\n');
 }
 
 function _findLastChildNamed(name: string, parent: dom5.Node) {
   const children = parent.childNodes;
   for (let i = children.length - 1; i >= 0; i--) {
     let child = children[i];
-    if (child.nodeName === name) return child;
+    if (child.nodeName === name)
+      return child;
   }
   return null;
 }

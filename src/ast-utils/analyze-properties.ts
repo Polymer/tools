@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
@@ -16,7 +20,6 @@ import * as estree from 'estree';
 import {PropertyDescriptor} from '../ast/ast';
 
 export function analyzeProperties(node: estree.Node) {
-
   const analyzedProps: PropertyDescriptor[] = [];
 
   if (node.type !== 'ObjectExpression') {
@@ -43,7 +46,7 @@ export function analyzeProperties(node: estree.Node) {
         const propertyKey = esutil.objectKeyToString(propertyArg.key);
 
         switch (propertyKey) {
-          case 'type': {
+          case 'type':
             prop.type = esutil.objectKeyToString(propertyArg.value);
             if (prop.type === undefined) {
               throw {
@@ -51,41 +54,40 @@ export function analyzeProperties(node: estree.Node) {
                 location: propertyArg.loc.start
               };
             }
-          }
-          break;
-          case 'notify': {
+            break;
+          case 'notify':
             prop.notify = astValue.expressionToValue(propertyArg.value);
-            if (prop.notify === undefined)
+            if (prop.notify === undefined) {
               prop.notify = astValue.CANT_CONVERT;
-          }
-          break;
-          case 'observer': {
+            }
+            break;
+          case 'observer':
             prop.observer = astValue.expressionToValue(propertyArg.value);
             prop.observerNode = propertyArg.value;
-            if (prop.observer === undefined)
+            if (prop.observer === undefined) {
               prop.observer = astValue.CANT_CONVERT;
-          }
-          break;
-          case 'readOnly': {
+            }
+            break;
+          case 'readOnly':
             prop.readOnly = astValue.expressionToValue(propertyArg.value);
-            if (prop.readOnly === undefined)
+            if (prop.readOnly === undefined) {
               prop.readOnly = astValue.CANT_CONVERT;
-          }
-          break;
-          case 'reflectToAttribute': {
+            }
+            break;
+          case 'reflectToAttribute':
             prop.reflectToAttribute = astValue.expressionToValue(propertyArg);
-            if (prop.reflectToAttribute === undefined)
+            if (prop.reflectToAttribute === undefined) {
               prop.reflectToAttribute = astValue.CANT_CONVERT;
-          }
-          break;
-          case 'value': {
+            }
+            break;
+          case 'value':
             prop.default = astValue.expressionToValue(propertyArg.value);
-            if (prop.default === undefined)
+            if (prop.default === undefined) {
               prop.default = astValue.CANT_CONVERT;
-          }
-          break;
+            }
+            break;
           default:
-          break;
+            break;
         }
       }
     }

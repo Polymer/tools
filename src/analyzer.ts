@@ -1,16 +1,21 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as path from 'path';
 import * as urlLib from 'url';
 
+import {Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
@@ -23,12 +28,6 @@ import {ElementFinder} from './javascript/javascript-element-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
-import {
-  Descriptor,
-  DocumentDescriptor,
-  ImportDescriptor,
-  InlineDocumentDescriptor,
-} from './ast/ast';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Options {
@@ -46,20 +45,19 @@ export interface Options {
  * finders which do the actual work of understanding different file types.
  */
 export class Analyzer {
-
   private _parsers: Map<string, Parser<any>> = new Map<string, Parser<any>>([
-      ['html', new HtmlParser(this)],
-      ['js', new JavaScriptParser(this)],
-      ['css', new CssParser(this)],
-    ]);
+    ['html', new HtmlParser(this)],
+    ['js', new JavaScriptParser(this)],
+    ['css', new CssParser(this)],
+  ]);
 
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
-        ['html', [
-          new HtmlImportFinder(),
-          new HtmlScriptFinder(),
-          new HtmlStyleFinder()]],
-        ['js', [new ElementFinder(this)]],
-    ]);
+    [
+      'html',
+      [new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder()]
+    ],
+    ['js', [new ElementFinder(this)]],
+  ]);
 
   private _loader: UrlLoader;
   private _documents = new Map<string, Promise<Document<any, any>>>();
@@ -82,7 +80,7 @@ export class Analyzer {
     if (this._documentDescriptors.has(url)) {
       return this._documentDescriptors.get(url);
     }
-    let promise = (async () => {
+    let promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
@@ -96,9 +94,8 @@ export class Analyzer {
   /**
    * Parses and analyzes a document from source.
    */
-  async analyzeSource(
-        type: string, contents: string, url: string
-        ): Promise<DocumentDescriptor>  {
+  async analyzeSource(type: string, contents: string, url: string):
+      Promise<DocumentDescriptor> {
     let document = this.parse(type, contents, url);
     return this.analyzeDocument(document);
   }
@@ -106,21 +103,20 @@ export class Analyzer {
   /**
    * Analyzes a parsed Document object.
    */
-  async analyzeDocument(
-        document: Document<any, any>): Promise<DocumentDescriptor> {
+  async analyzeDocument(document: Document<any, any>):
+      Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
 
-    let dependencyDescriptors: Descriptor[] = entities
-        .filter((e) => e instanceof InlineDocumentDescriptor
-          || e instanceof ImportDescriptor);
-    let analyzeDependencies = dependencyDescriptors
-        .map((d) =>  {
-          if (d instanceof InlineDocumentDescriptor) {
-            return this.analyzeSource(d.type, d.contents, document.url);
-          } else if (d instanceof ImportDescriptor) {
-            return this.analyze(d.url);
-          }
-        });
+    let dependencyDescriptors: Descriptor[] = entities.filter(
+        (e) => e instanceof InlineDocumentDescriptor ||
+            e instanceof ImportDescriptor);
+    let analyzeDependencies = dependencyDescriptors.map((d) => {
+      if (d instanceof InlineDocumentDescriptor) {
+        return this.analyzeSource(d.type, d.contents, document.url);
+      } else if (d instanceof ImportDescriptor) {
+        return this.analyze(d.url);
+      }
+    });
 
     let dependencies = await Promise.all(analyzeDependencies);
 
@@ -142,7 +138,7 @@ export class Analyzer {
     // Use an immediately executed async function to create the final Promise
     // synchronously so we can store it in this._documents before any other
     // async operations to avoid any race conditions.
-    let promise = (async () => {
+    let promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
@@ -173,5 +169,4 @@ export class Analyzer {
     }
     return [];
   }
-
 }

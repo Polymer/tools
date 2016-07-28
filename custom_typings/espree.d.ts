@@ -6,7 +6,7 @@ declare module 'espree' {
     loc: boolean;
     ecmaVersion?: number;
     ecmaFeatures?: {
-      arrowFunctions: boolean;
+      arrowFunctions: boolean;  //
       blockBindings: boolean;
       destructuring: boolean;
       regexYFlag: boolean;
@@ -29,5 +29,5 @@ declare module 'espree' {
       globalReturn: boolean;
     }
   }
-  export function parse(text: string, opts?: ParseOpts):estree.Program;
+  export function parse(text: string, opts?: ParseOpts): estree.Program;
 }
