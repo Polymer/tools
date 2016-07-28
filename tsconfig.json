@@ -13,7 +13,6 @@
     },
     "include": [
         "custom_typings/main.d.ts",
-        "src/**/*.ts",
-        "src/analyzer.ts"
+        "src/**/*.ts"
     ]
 }
