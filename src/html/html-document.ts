@@ -26,7 +26,9 @@ export interface HtmlVisitor { (node: ASTNode): void; }
 export class HtmlDocument extends Document<ASTNode, HtmlVisitor> {
   type = 'html';
 
-  constructor(from: Options<ASTNode>) { super(from); }
+  constructor(from: Options<ASTNode>) {
+    super(from);
+  }
 
   visit(visitors: HtmlVisitor[]) {
     dom5.nodeWalk(this.ast, (node) => {

@@ -23,7 +23,9 @@ import {Parser} from '../parser/parser';
 export class HtmlParser implements Parser<HtmlDocument> {
   analyzer: Analyzer;
 
-  constructor(analyzer: Analyzer) { this.analyzer = analyzer; }
+  constructor(analyzer: Analyzer) {
+    this.analyzer = analyzer;
+  }
 
   /**
   * Parse html into ASTs.

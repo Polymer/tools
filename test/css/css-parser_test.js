@@ -28,8 +28,12 @@ suite('CssParser', () => {
 
     setup(() => {
       parser = new CssParser({
-        findImports(url, document) { return []; },
-        parse(type, content, url) { return null; },
+        findImports(url, document) {
+          return [];
+        },
+        parse(type, content, url) {
+          return null;
+        },
       });
     });
 

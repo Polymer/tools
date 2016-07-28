@@ -56,7 +56,8 @@ const HANDLED_TAGS = [
  * @return {Object} The descriptor that was given.
  */
 export function annotate(descriptor: Descriptor): Descriptor {
-  if (!descriptor || descriptor.jsdoc) return descriptor;
+  if (!descriptor || descriptor.jsdoc)
+    return descriptor;
 
   if (typeof descriptor.desc === 'string') {
     descriptor.jsdoc = jsdoc.parseJsdoc(descriptor.desc);
@@ -73,7 +74,9 @@ export function annotate(descriptor: Descriptor): Descriptor {
  */
 export function annotateElementHeader(descriptor: ElementDescriptor) {
   if (descriptor.events) {
-    descriptor.events.forEach(function(event) { _annotateEvent(event); });
+    descriptor.events.forEach(function(event) {
+      _annotateEvent(event);
+    });
     descriptor.events.sort(function(a, b) {
       return a.name.localeCompare(b.name);
     });
@@ -313,10 +316,12 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
   }
 
   const paramsByName = {};
-  (descriptor.params ||
-   []).forEach((param) => { paramsByName[param.name] = param; });
+  (descriptor.params || []).forEach((param) => {
+    paramsByName[param.name] = param;
+  });
   (descriptor.jsdoc && descriptor.jsdoc.tags || []).forEach((tag) => {
-    if (tag.tag !== 'param') return;
+    if (tag.tag !== 'param')
+      return;
     const param = paramsByName[tag.name];
     if (!param) {
       return;
@@ -338,8 +343,10 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  */
 export function featureElement(features: FeatureDescriptor[]):
     ElementDescriptor {
-  const properties = features.reduce<PropertyDescriptor[]>(
-      (result, feature) => { return result.concat(feature.properties); }, []);
+  const properties =
+      features.reduce<PropertyDescriptor[]>((result, feature) => {
+        return result.concat(feature.properties);
+      }, []);
 
   return {
     type: 'element',
@@ -363,7 +370,8 @@ export function featureElement(features: FeatureDescriptor[]):
  * @param {Object} descriptor
  */
 export function clean(descriptor: Descriptor) {
-  if (!descriptor.jsdoc) return;
+  if (!descriptor.jsdoc)
+    return;
   // The doctext was written to `descriptor.desc`
   delete descriptor.jsdoc.description;
   delete descriptor.jsdoc.orig;
@@ -371,7 +379,8 @@ export function clean(descriptor: Descriptor) {
   const cleanTags: jsdoc.Tag[] = [];
   (descriptor.jsdoc.tags || []).forEach(function(tag) {
     // Drop any tags we've consumed.
-    if (HANDLED_TAGS.indexOf(tag.tag) !== -1) return;
+    if (HANDLED_TAGS.indexOf(tag.tag) !== -1)
+      return;
     cleanTags.push(tag);
   });
 
@@ -455,7 +464,8 @@ function _findElementDocs(
   if (comment && comment.data) {
     found.push(comment.data);
   }
-  if (found.length === 0) return null;
+  if (found.length === 0)
+    return null;
   return found
       .filter(function(comment) {
         // skip @license comments
@@ -473,7 +483,8 @@ function _findLastChildNamed(name: string, parent: dom5.Node) {
   const children = parent.childNodes;
   for (let i = children.length - 1; i >= 0; i--) {
     let child = children[i];
-    if (child.nodeName === name) return child;
+    if (child.nodeName === name)
+      return child;
   }
   return null;
 }

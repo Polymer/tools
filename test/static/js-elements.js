@@ -437,7 +437,9 @@ Polymer({
     }
   },
 
-  remove: function(key) { this.ref.child(key).remove(this.errorHandler); },
+  remove: function(key) {
+    this.ref.child(key).remove(this.errorHandler);
+  },
 
   commit: function() {
     this.log && console.log('commit');

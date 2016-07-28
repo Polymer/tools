@@ -33,7 +33,9 @@ const isJsScriptNode = p.AND(
 export class HtmlScriptFinder implements HtmlEntityFinder {
   analyzer: Analyzer;
 
-  constructor(analyzer: Analyzer) { this.analyzer = analyzer; }
+  constructor(analyzer: Analyzer) {
+    this.analyzer = analyzer;
+  }
 
   async findEntities(
       document: HtmlDocument,

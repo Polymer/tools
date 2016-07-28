@@ -24,7 +24,9 @@ import {Visitor} from '../ast-utils/fluent-traverse';
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   analyzer: Analyzer;
 
-  constructor(analyzer: Analyzer) { this.analyzer = analyzer; }
+  constructor(analyzer: Analyzer) {
+    this.analyzer = analyzer;
+  }
 
   parse(contents: string, url: string): JavaScriptDocument {
     // TODO(justinfagnani): add onComment handler

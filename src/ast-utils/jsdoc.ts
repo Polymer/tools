@@ -98,7 +98,8 @@ const CUSTOM_TAGS: {[name: string]: (tag: doctrine.Tag) => Tag} = {
  * Convert doctrine tags to our tag format
  */
 function _tagsToHydroTags(tags: doctrine.Tag[]): Tag[] {
-  if (!tags) return null;
+  if (!tags)
+    return null;
   return tags.map(function(tag): Tag {
     if (tag.title in CUSTOM_TAGS) {
       return CUSTOM_TAGS[tag.title](tag);
@@ -117,7 +118,8 @@ function _tagsToHydroTags(tags: doctrine.Tag[]): Tag[] {
  * removes leading *, and any space before it
  */
 function _removeLeadingAsterisks(description: string): string {
-  if ((typeof description) !== 'string') return description;
+  if ((typeof description) !== 'string')
+    return description;
 
   return description.split('\n')
       .map(function(line) {
@@ -145,8 +147,11 @@ export function parseJsdoc(docs: string): Annotation {
 // Utility
 
 export function hasTag(jsdoc: Annotation, tagName: string): boolean {
-  if (!jsdoc || !jsdoc.tags) return false;
-  return jsdoc.tags.some(function(tag) { return tag.tag === tagName; });
+  if (!jsdoc || !jsdoc.tags)
+    return false;
+  return jsdoc.tags.some(function(tag) {
+    return tag.tag === tagName;
+  });
 }
 
 /**
@@ -157,7 +162,8 @@ export function hasTag(jsdoc: Annotation, tagName: string): boolean {
 export function getTag(jsdoc: Annotation, tagName: string): Tag;
 export function getTag(jsdoc: Annotation, tagName: string, key: string): string;
 export function getTag(jsdoc: Annotation, tagName: string, key?: string): any {
-  if (!jsdoc || !jsdoc.tags) return null;
+  if (!jsdoc || !jsdoc.tags)
+    return null;
   for (let i = 0; i < jsdoc.tags.length; i++) {
     const tag = jsdoc.tags[i];
     if (tag.tag === tagName) {
@@ -168,15 +174,22 @@ export function getTag(jsdoc: Annotation, tagName: string, key?: string): any {
 }
 
 export function unindent(text: string): string {
-  if (!text) return text;
+  if (!text)
+    return text;
   const lines = text.replace(/\t/g, '  ').split('\n');
   const indent = lines.reduce<number>(function(prev, line) {
-    if (/^\s*$/.test(line)) return prev;  // Completely ignore blank lines.
+    if (/^\s*$/.test(line))
+      return prev;  // Completely ignore blank lines.
 
     const lineIndent = line.match(/^(\s*)/)[0].length;
-    if (prev === null) return lineIndent;
+    if (prev === null)
+      return lineIndent;
     return lineIndent < prev ? lineIndent : prev;
   }, null);
 
-  return lines.map(function(l) { return l.substr(indent); }).join('\n');
+  return lines
+      .map(function(l) {
+        return l.substr(indent);
+      })
+      .join('\n');
 }

@@ -1,6 +1,8 @@
 'use strict';
 class A {
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
 
   beforeRegister() {
     this.is = 'test-seed';
@@ -41,7 +43,9 @@ class A {
    * Test comment.
    * @param {string=} string Optional string
    */
-  test(string) { this.data = 'Hello World'; }
+  test(string) {
+    this.data = 'Hello World';
+  }
 }
 
 Polymer(A);

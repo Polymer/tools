@@ -30,7 +30,9 @@ suite('findEntities()', () => {
     let finder = new EntityFinderStub([entity]);
     let document = {
       type: 'html',
-      visit(visitors) { return Promise.resolve(); },
+      visit(visitors) {
+        return Promise.resolve();
+      },
     };
     return findEntities(document, [finder]).then((entities) => {
       assert.equal(finder.calls.length, 1);
@@ -52,10 +54,14 @@ suite('findEntities()', () => {
               // one visitor in a subsequent batch, delayed a turn to make sure
               // we can call visit() truly async
               return new Promise((resolve, reject) => {
-                setTimeout(() => { visit(visitor3).then(resolve); }, 0);
+                setTimeout(() => {
+                  visit(visitor3).then(resolve);
+                }, 0);
               });
             })
-            .then(() => { return [`an entity`]; });
+            .then(() => {
+              return [`an entity`];
+            });
       },
     };
     let visitedVisitors = [];
@@ -76,22 +82,30 @@ suite('findEntities()', () => {
 
   test('propagates exceptions in entity finders', () => {
     let finder = {
-      findEntities(document, visit) { throw new Error('expected'); },
+      findEntities(document, visit) {
+        throw new Error('expected');
+      },
     };
     let document = {
       type: 'html',
-      visit(visitors) { return Promise.resolve(); },
+      visit(visitors) {
+        return Promise.resolve();
+      },
     };
     return invertPromise(findEntities(document, [finder]));
   });
 
   test('propagates exceptions in visitors', () => {
     let finder = {
-      findEntities(document, visit) { return visit((x) => x); },
+      findEntities(document, visit) {
+        return visit((x) => x);
+      },
     };
     let document = {
       type: 'html',
-      visit(visitors) { throw new Error('expected'); },
+      visit(visitors) {
+        throw new Error('expected');
+      },
     };
     return invertPromise(findEntities(document, [finder]));
   });

@@ -29,8 +29,12 @@ suite('HtmlParser', () => {
 
     setup(() => {
       parser = new HtmlParser({
-        findImports(url, document) { return [{type: 'html', url: 'abc'}]; },
-        parse(type, content, url) { return null; },
+        findImports(url, document) {
+          return [{type: 'html', url: 'abc'}];
+        },
+        parse(type, content, url) {
+          return null;
+        },
       });
     });
 

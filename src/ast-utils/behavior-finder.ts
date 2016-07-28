@@ -41,7 +41,9 @@ function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
     bucket[key] = el;
   });
   const returned = <Array<T>>[];
-  Object.keys(bucket).forEach((k) => { returned.push(bucket[k]); });
+  Object.keys(bucket).forEach((k) => {
+    returned.push(bucket[k]);
+  });
   return returned;
 }
 
@@ -201,8 +203,10 @@ export function behaviorFinder() {
     // add it to behaviors right away.
     if (isSimpleBehaviorArray(behaviorExpression(node))) {
       // TODO(ajo): Add a test to confirm the presence of `properties`
-      if (!currentBehavior.observers) currentBehavior.observers = [];
-      if (!currentBehavior.properties) currentBehavior.properties = [];
+      if (!currentBehavior.observers)
+        currentBehavior.observers = [];
+      if (!currentBehavior.properties)
+        currentBehavior.properties = [];
       if (behaviors.indexOf(currentBehavior) === -1)
         behaviors.push(currentBehavior);
       currentBehavior = null;
@@ -216,7 +220,8 @@ export function behaviorFinder() {
      * Look for object declarations with @behavior in the docs.
      */
     enterVariableDeclaration: function(node, parent) {
-      if (node.declarations.length !== 1) return;  // Ambiguous.
+      if (node.declarations.length !== 1)
+        return;  // Ambiguous.
       _initBehavior(node, function() {
         return esutil.objectKeyToString(node.declarations[0].id);
       });
@@ -226,8 +231,9 @@ export function behaviorFinder() {
      * Look for object assignments with @polymerBehavior in the docs.
      */
     enterAssignmentExpression: function(node, parent) {
-      _initBehavior(
-          parent, function() { return esutil.objectKeyToString(node.left); });
+      _initBehavior(parent, function() {
+        return esutil.objectKeyToString(node.left);
+      });
     },
 
     /**
@@ -235,7 +241,8 @@ export function behaviorFinder() {
      * behavior's declaration. Seems to be a decent assumption for now.
      */
     enterObjectExpression: function(node, parent) {
-      if (!currentBehavior || currentBehavior.properties) return;
+      if (!currentBehavior || currentBehavior.properties)
+        return;
 
       currentBehavior.properties = currentBehavior.properties || [];
       currentBehavior.observers = currentBehavior.observers || [];

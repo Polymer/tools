@@ -30,7 +30,8 @@ import * as esutil from '../ast-utils/esutil';
 import {Visitor} from '../ast-utils/fluent-traverse';
 
 export class ElementFinder implements JavaScriptEntityFinder {
-  constructor(analyzer: Analyzer) {}
+  constructor(analyzer: Analyzer) {
+  }
 
   async findEntities(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):

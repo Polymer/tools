@@ -19,7 +19,11 @@ import {Document, Options} from '../parser/document';
 export class CssDocument extends Document<Node, NodeVisitor> {
   type = 'css';
 
-  constructor(from: Options<Node>) { super(from); }
+  constructor(from: Options<Node>) {
+    super(from);
+  }
 
-  visit(visitors: NodeVisitor[]) { throw new Error('Not implemented'); }
+  visit(visitors: NodeVisitor[]) {
+    throw new Error('Not implemented');
+  }
 }

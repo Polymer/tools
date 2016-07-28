@@ -77,8 +77,9 @@ suite('Analyzer', () => {
 
     test('returns a Promise that rejects for malformed files', () => {
       return invertPromise(analyzer.analyze('static/malformed.html'))
-          .then(
-              (error) => { assert.include(error.message, 'malformed.html'); });
+          .then((error) => {
+            assert.include(error.message, 'malformed.html');
+          });
     });
 
   });

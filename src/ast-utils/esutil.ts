@@ -31,14 +31,16 @@ import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
  */
 export function matchesCallExpression(
     expression: estree.MemberExpression, path: string[]): boolean {
-  if (!expression.property || !expression.object) return;
+  if (!expression.property || !expression.object)
+    return;
   console.assert(path.length >= 2);
 
   if (expression.property.type !== 'Identifier') {
     return;
   }
   // Unravel backwards, make sure properties match each step of the way.
-  if (expression.property.name !== path[path.length - 1]) return false;
+  if (expression.property.name !== path[path.length - 1])
+    return false;
   // We've got ourselves a final member expression.
   if (path.length === 2 && expression.object.type === 'Identifier') {
     return expression.object.name === path[0];
@@ -123,8 +125,9 @@ export function getEventComments(node: estree.Node) {
     keys: {Super: []}
   });
   // dedup
-  return eventComments.filter(
-      (el, index, array) => { return array.indexOf(el) === index; });
+  return eventComments.filter((el, index, array) => {
+    return array.indexOf(el) === index;
+  });
 }
 
 function getLeadingComments(node: estree.Node): string[] {
@@ -132,8 +135,11 @@ function getLeadingComments(node: estree.Node): string[] {
     return;
   }
   const comments = node.leadingComments;
-  if (!comments || comments.length === 0) return;
-  return comments.map(function(comment) { return comment.value; });
+  if (!comments || comments.length === 0)
+    return;
+  return comments.map(function(comment) {
+    return comment.value;
+  });
 }
 
 /**

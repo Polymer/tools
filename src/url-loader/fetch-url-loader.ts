@@ -21,13 +21,17 @@ import {UrlLoader} from './url-loader';
 export class FetchUrlLoader implements UrlLoader {
   baseUrl: string;
 
-  constructor(baseUrl: string) { this.baseUrl = baseUrl; }
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
   _resolve(url: string) {
     return this.baseUrl ? resolveUrl(this.baseUrl, url) : url;
   }
 
-  canLoad(url: string): boolean { return true; }
+  canLoad(url: string): boolean {
+    return true;
+  }
 
   load(url: string): Promise<string> {
     // Use []'s to shut TS up for now, until this file can have use a

@@ -37,7 +37,9 @@ const isStyleNode = p.OR(isStyleElement, isStyleLink);
 export class HtmlStyleFinder implements HtmlEntityFinder {
   analyzer: Analyzer;
 
-  constructor(analyzer: Analyzer) { this.analyzer = analyzer; }
+  constructor(analyzer: Analyzer) {
+    this.analyzer = analyzer;
+  }
 
   async findEntities(
       document: HtmlDocument,

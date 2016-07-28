@@ -27,5 +27,7 @@ export class DocumentDescriptor {
     this.entities = entities;
   }
 
-  get url() { return this.document.url; }
+  get url() {
+    return this.document.url;
+  }
 }

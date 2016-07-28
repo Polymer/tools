@@ -22,7 +22,9 @@ import {Document, Options} from '../parser/document';
 export class JavaScriptDocument extends Document<Program, Visitor> {
   type = 'js';
 
-  constructor(from: Options<Program>) { super(from); }
+  constructor(from: Options<Program>) {
+    super(from);
+  }
 
   visit(visitors: Visitor[]) {
     /**

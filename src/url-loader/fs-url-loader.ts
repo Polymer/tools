@@ -23,7 +23,9 @@ import {UrlLoader} from './url-loader';
 export class FSUrlLoader implements UrlLoader {
   root: string;
 
-  constructor(root: string) { this.root = root; }
+  constructor(root: string) {
+    this.root = root;
+  }
 
   canLoad(url: string): boolean {
     let urlObject = parseUrl(url);

@@ -46,8 +46,9 @@ export async function findEntities(
 
   // Initializes the current batch running state
   function setup() {
-    visitorsPromise =
-        new Promise<void>((resolve, _) => { batchDone = resolve; });
+    visitorsPromise = new Promise<void>((resolve, _) => {
+      batchDone = resolve;
+    });
     visitors = [];
     runner = null;
   }

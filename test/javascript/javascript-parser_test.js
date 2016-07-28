@@ -30,8 +30,12 @@ suite('JavaScriptParser', () => {
 
     setup(() => {
       parser = new JavaScriptParser({
-        findImports(url, document) { return []; },
-        parse(type, content, url) { return null; },
+        findImports(url, document) {
+          return [];
+        },
+        parse(type, content, url) {
+          return null;
+        },
       });
     });
 

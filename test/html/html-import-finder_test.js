@@ -28,7 +28,9 @@ suite('HtmlImportFinder', () => {
   suite('findImports()', () => {
     let finder;
 
-    setup(() => { finder = new HtmlImportFinder(); });
+    setup(() => {
+      finder = new HtmlImportFinder();
+    });
 
     test('finds HTML Imports', () => {
       let contents = `<html><head>
