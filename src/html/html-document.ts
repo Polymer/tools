@@ -34,4 +34,12 @@ export class HtmlDocument extends Document<ASTNode, HtmlVisitor> {
       return false;
     });
   }
+
+  forEachNode(callback: (node: ASTNode) => void) {
+    dom5.nodeWalk(this.ast, (node) => {
+      callback(node);
+      return false;
+    });
+  }
+
 }

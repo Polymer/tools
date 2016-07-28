@@ -75,4 +75,8 @@ export class CssDocument extends Document<shady.Node, Visitor> {
     const shadyVisitor = new ShadyVisitor(visitors);
     shadyVisitor.visit(this.ast);
   }
+
+  forEachNode(callback: (node: shady.Node) => void) {
+    throw new Error('Not implemented');
+  }
 }

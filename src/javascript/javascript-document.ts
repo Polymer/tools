@@ -35,7 +35,7 @@ export class JavaScriptDocument extends Document<Program, Visitor> {
       }
     }
 
-    traverse(<Node><any>this.ast, {
+    traverse(this.ast, {
       enter(node, parent) {
         return applyFinders(`enter${node.type}`, node, parent);
       },
@@ -45,4 +45,14 @@ export class JavaScriptDocument extends Document<Program, Visitor> {
       fallback: 'iteration',
     });
   }
+
+  forEachNode(callback: (node: Node) => void) {
+    traverse(this.ast, {
+      enter(node, parent) {
+        callback(node);
+      },
+      fallback: 'iteration',
+    });
+  }
+
 }
