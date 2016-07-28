@@ -1,3 +1,4 @@
+const del = require('del');
 const gulp = require('gulp');
 const logging = require('plylog');
 const mergeStream = require('merge-stream');
@@ -26,7 +27,12 @@ let project = new PolymerProject({
   shell: 'shell.html',
 });
 
-gulp.task('test1', () => {
+// Clean build directory
+gulp.task('clean', () => {
+  return del(['build/**']);
+});
+
+gulp.task('test1',['clean'], (cb) => {
 
   let swConfig = {
     staticFileGlobs: [
