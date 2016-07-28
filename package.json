@@ -9,8 +9,8 @@
     "type": "git",
     "url": "https://github.com/Polymer/polymer-analyzer.git"
   },
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "lib/analyzer.js",
+  "typings": "lib/analyzer.d.ts",
   "files": [
     "LICENSE",
     "lib/",
@@ -22,7 +22,6 @@
     "build": "npm run compile",
     "release": "npm run compile",
     "build:watch": "watch 'npm run build' ./src",
-    "apidocs": "node_modules/jsdoc-to-markdown/bin/cli.js {index.js,lib/{analyzer,loader/*}.js} > API.md",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
