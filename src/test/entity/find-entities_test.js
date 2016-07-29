@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+'use strict';
 
 const assert = require('chai').assert;
 
-const findEntities = require('../../lib/entity/find-entities').findEntities;
-const Document = require('../../lib/parser/document').Document;
+const findEntities = require('../../entity/find-entities').findEntities;
+const Document = require('../../parser/document').Document;
 const invertPromise = require('../test-utils').invertPromise;
 
 suite('findEntities()', () => {

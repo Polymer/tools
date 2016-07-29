@@ -12,16 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+'use strict';
 
 const assert = require('chai').assert;
 const fs = require('fs');
 const path = require('path');
 
 const JavaScriptParser =
-    require('../../lib/javascript/javascript-parser').JavaScriptParser;
+    require('../../javascript/javascript-parser').JavaScriptParser;
 const JavaScriptDocument =
-    require('../../lib/javascript/javascript-document').JavaScriptDocument;
+    require('../../javascript/javascript-document').JavaScriptDocument;
 
 suite('JavaScriptParser', () => {
 

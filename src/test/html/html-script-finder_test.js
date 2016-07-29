@@ -12,32 +12,34 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+'use strict';
 
 const assert = require('chai').assert;
-const fs = require('fs');
 const parse5 = require('parse5');
-const path = require('path');
 
-const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
-const HtmlImportFinder =
-    require('../../lib/html/html-import-finder').HtmlImportFinder;
+const Analyzer = require('../../analyzer').Analyzer;
+const HtmlDocument = require('../../html/html-document').HtmlDocument;
+const HtmlScriptFinder =
+    require('../../html/html-script-finder').HtmlScriptFinder;
+const ImportDescriptor =
+    require('../../ast/import-descriptor').ImportDescriptor;
+const InlineDocumentDescriptor =
+    require('../../ast/ast').InlineDocumentDescriptor;
 
-suite('HtmlImportFinder', () => {
+suite('HtmlScriptFinder', () => {
 
   suite('findImports()', () => {
     let finder;
 
     setup(() => {
-      finder = new HtmlImportFinder();
+      let analyzer = new Analyzer({});
+      finder = new HtmlScriptFinder(analyzer);
     });
 
-    test('finds HTML Imports', () => {
+    test('finds external and inline scripts', () => {
       let contents = `<html><head>
-          <link rel="import" href="polymer.html">
-          <link rel="import" type="css" href="polymer.css">
           <script src="foo.js"></script>
-          <link rel="stylesheet" href="foo.css"></link>
+          <script>console.log('hi')</script>
         </head></html>`;
       let ast = parse5.parse(contents);
       let document = new HtmlDocument({
@@ -45,12 +47,17 @@ suite('HtmlImportFinder', () => {
         contents,
         ast,
       });
+      let promises = [];
       let visit = (visitor) => document.visit([visitor]);
 
       return finder.findEntities(document, visit).then((entities) => {
-        assert.equal(entities.length, 1);
-        assert.equal(entities[0].type, 'html-import');
-        assert.equal(entities[0].url, 'polymer.html');
+        assert.equal(entities.length, 2);
+        assert.instanceOf(entities[0], ImportDescriptor);
+        assert.equal(entities[0].type, 'html-script');
+        assert.equal(entities[0].url, 'foo.js');
+        assert.instanceOf(entities[1], InlineDocumentDescriptor);
+        assert.equal(entities[1].type, 'js');
+        assert.equal(entities[1].contents, `console.log('hi')`);
       });
 
     });

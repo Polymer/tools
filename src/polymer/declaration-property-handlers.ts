@@ -14,8 +14,9 @@
 
 import * as estree from 'estree';
 
+import {BehaviorOrName, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
-import {PropertyDescriptor, ElementDescriptor, BehaviorOrName} from '../ast/ast';
+
 import {analyzeProperties} from './analyze-properties';
 
 export type PropertyHandlers = {

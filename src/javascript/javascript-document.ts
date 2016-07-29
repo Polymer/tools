@@ -15,9 +15,11 @@
 import {traverse} from 'estraverse';
 import {Node, Program} from 'estree';
 
-import {Visitor} from './estree-visitor';
-export {Visitor} from './estree-visitor';
 import {Document, Options} from '../parser/document';
+
+import {Visitor} from './estree-visitor';
+
+export {Visitor} from './estree-visitor';
 
 export class JavaScriptDocument extends Document<Program, Visitor> {
   type = 'js';

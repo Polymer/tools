@@ -16,15 +16,16 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import * as analyzeProperties from './analyze-properties';
-import * as astValue from '../javascript/ast-value';
-import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
-import * as docs from './docs';
-import * as esutil from '../javascript/esutil';
-import {Visitor} from '../javascript/estree-visitor';
 import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import * as astValue from '../javascript/ast-value';
+import {Visitor} from '../javascript/estree-visitor';
+import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
+
+import * as analyzeProperties from './analyze-properties';
+import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
+import * as docs from './docs';
 
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(

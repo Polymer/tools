@@ -12,23 +12,23 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+'use strict';
 
 const assert = require('chai').assert;
 const parse5 = require('parse5');
 const path = require('path');
 
 const invertPromise = require('./test-utils').invertPromise;
-const Analyzer = require('../lib/analyzer').Analyzer;
-const DocumentDescriptor = require('../lib/ast/ast').DocumentDescriptor;
-const InlineDocumentDescriptor = require('../lib/ast/ast').InlineDocumentDescriptor;
-const FSUrlLoader = require('../lib/url-loader/fs-url-loader').FSUrlLoader;
-const Document = require('../lib/parser/document').Document;
-const HtmlDocument = require('../lib/html/html-document').HtmlDocument;
+const Analyzer = require('../analyzer').Analyzer;
+const DocumentDescriptor = require('../ast/ast').DocumentDescriptor;
+const InlineDocumentDescriptor = require('../ast/ast').InlineDocumentDescriptor;
+const FSUrlLoader = require('../url-loader/fs-url-loader').FSUrlLoader;
+const Document = require('../parser/document').Document;
+const HtmlDocument = require('../html/html-document').HtmlDocument;
 const JavaScriptDocument =
-    require('../lib/javascript/javascript-document').JavaScriptDocument;
-const ImportDescriptor =
-    require('../lib/ast/import-descriptor').ImportDescriptor;
+    require('../javascript/javascript-document').JavaScriptDocument;
+const ImportDescriptor = require('../ast/import-descriptor').ImportDescriptor;
+
 
 suite('Analyzer', () => {
   let analyzer;
@@ -84,42 +84,36 @@ suite('Analyzer', () => {
     });
 
     test('analyzes transitive dependencies', () => {
-      return analyzer.analyze('static/dependencies/root.html')
-        .then((root) => {
-          // check first level dependencies
-          assert.deepEqual(
-            root.dependencies.map((d) => d.url),
-            [
-              'static/dependencies/inline-only.html',
-              'static/dependencies/leaf.html',
-              'static/dependencies/inline-and-imports.html',
-              'static/dependencies/subfolder/in-folder.html',
-            ]
-          );
+      return analyzer.analyze('static/dependencies/root.html').then((root) => {
+        // check first level dependencies
+        assert.deepEqual(root.dependencies.map((d) => d.url), [
+          'static/dependencies/inline-only.html',
+          'static/dependencies/leaf.html',
+          'static/dependencies/inline-and-imports.html',
+          'static/dependencies/subfolder/in-folder.html',
+        ]);
 
-          let inlineOnly = root.dependencies[0];
-          assert.deepEqual(
-            inlineOnly.dependencies.map((d) => d.document.type),
-            ['js', 'css']
-          );
+        let inlineOnly = root.dependencies[0];
+        assert.deepEqual(
+            inlineOnly.dependencies.map((d) => d.document.type), ['js', 'css']);
 
-          let leaf = root.dependencies[1];
-          assert.equal(leaf.dependencies.length, 0);
+        let leaf = root.dependencies[1];
+        assert.equal(leaf.dependencies.length, 0);
 
-          let inlineAndImports = root.dependencies[2];
-          assert.deepEqual(
+        let inlineAndImports = root.dependencies[2];
+        assert.deepEqual(
             inlineAndImports.dependencies.map((d) => d.document.type),
-            ['js', 'html', 'css']
-          );
+            ['js', 'html', 'css']);
 
-          let inFolder = root.dependencies[3];
-          assert.equal(inFolder.dependencies.length, 1);
-          assert.equal(inFolder.dependencies[0].url,
+        let inFolder = root.dependencies[3];
+        assert.equal(inFolder.dependencies.length, 1);
+        assert.equal(
+            inFolder.dependencies[0].url,
             'static/dependencies/subfolder/subfolder-sibling.html');
 
-          // check de-duplication
-          assert.equal(inlineAndImports.dependencies[1], leaf);
-        });
+        // check de-duplication
+        assert.equal(inlineAndImports.dependencies[1], leaf);
+      });
     });
 
 

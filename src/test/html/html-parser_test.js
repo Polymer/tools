@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+'use strict';
 
 const assert = require('chai').assert;
 const fs = require('fs');
 const path = require('path');
 
-const HtmlParser = require('../../lib/html/html-parser').HtmlParser;
+const HtmlParser = require('../../html/html-parser').HtmlParser;
 
 let registry;
 

@@ -17,7 +17,7 @@
 const assert = require('chai').assert;
 
 const PackageUrlResolver =
-    require('../../lib/url-loader/package-url-resolver').PackageUrlResolver;
+    require('../../url-loader/package-url-resolver').PackageUrlResolver;
 
 suite('PackageUrlResolver', function() {
 

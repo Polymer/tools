@@ -16,7 +16,7 @@
 
 const assert = require('chai').assert;
 
-const FSUrlLoader = require('../../lib/url-loader/fs-url-loader').FSUrlLoader;
+const FSUrlLoader = require('../../url-loader/fs-url-loader').FSUrlLoader;
 
 suite('FSUrlLoader', function() {
 

@@ -1,2 +1,2 @@
 --ui tdd
-test/*_test.js test/**/*_test.js
+lib/test/*_test.js lib/test/**/*_test.js

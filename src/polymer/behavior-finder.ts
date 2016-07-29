@@ -15,14 +15,15 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import * as docs from './docs';
-import * as esutil from '../javascript/esutil';
-import * as jsdoc from '../javascript/jsdoc';
-import * as analyzeProperties from './analyze-properties';
+import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
-import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
-import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
+import * as esutil from '../javascript/esutil';
+import * as jsdoc from '../javascript/jsdoc';
+
+import * as analyzeProperties from './analyze-properties';
+import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
+import * as docs from './docs';
 
 interface KeyFunc<T> {
   (value: T): any;
