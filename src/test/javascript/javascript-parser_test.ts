@@ -14,28 +14,22 @@
 
 'use strict';
 
-const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
+import {assert} from 'chai';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const JavaScriptParser =
-    require('../../javascript/javascript-parser').JavaScriptParser;
-const JavaScriptDocument =
-    require('../../javascript/javascript-document').JavaScriptDocument;
+import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {JavaScriptDocument} from '../../javascript/javascript-document';
 
 suite('JavaScriptParser', () => {
 
   suite('parse()', () => {
-    let parser;
+    let parser: JavaScriptParser;
 
     setup(() => {
-      parser = new JavaScriptParser({
-        findImports(url, document) {
-          return [];
-        },
-        parse(type, content, url) {
-          return null;
-        },
+      parser = new JavaScriptParser(<any>{
+        findImports: (): any[] => [],
+        parse: (): any => null,
       });
     });
 
