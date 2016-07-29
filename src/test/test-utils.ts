@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-class UnexpectedResolutionError extends Error {
+export class UnexpectedResolutionError extends Error {
   resolvedValue: any;
   constructor(message: string, resolvedValue: any) {
     super(message);
@@ -20,10 +20,12 @@ class UnexpectedResolutionError extends Error {
   }
 }
 
-export function invertPromise(promise: Promise<any>): Promise<any> {
-  return new Promise((resolve, reject) => {
-    promise.then((value) => {
-      reject(new UnexpectedResolutionError('Inverted Promise resolved', value));
-    }, resolve);
-  });
+export async function invertPromise(promise: Promise<any>): Promise<any> {
+  let value: any;
+  try {
+    value = await promise;
+  } catch (e) {
+    return e;
+  }
+  throw new UnexpectedResolutionError('Inverted Promise resolved', value);
 }
