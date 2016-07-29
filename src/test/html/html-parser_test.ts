@@ -14,27 +14,26 @@
 
 'use strict';
 
-const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
+import {assert} from 'chai';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const HtmlParser = require('../../html/html-parser').HtmlParser;
-
-let registry;
+import {HtmlParser} from '../../html/html-parser';
+import {Document} from '../../parser/document';
+import {Analyzer} from '../../analyzer';
 
 suite('HtmlParser', () => {
 
   suite('parse()', () => {
-    let parser;
+    let parser: HtmlParser;
 
     setup(() => {
-      parser = new HtmlParser({
-        findImports(url, document) {
+      parser = new HtmlParser(<any>{
+        findImports(url: string) {
           return [{type: 'html', url: 'abc'}];
         },
-        parse(type, content, url) {
-          return null;
-        },
+        parse: (type: string, content: string, url: string):
+                   Document<any, any> => null,
       });
     });
 
