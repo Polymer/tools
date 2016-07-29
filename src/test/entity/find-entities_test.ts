@@ -24,36 +24,21 @@ import {invertPromise} from '../test-utils';
 
 suite('findEntities()', () => {
 
-  test('calls EntityFinder.findEntities', () => {
-    let entity = {
-      type: 'html',
-      url: 'abc',
-    };
+  test('calls EntityFinder.findEntities', async() => {
+    let entity = Symbol('entity');
     let finder = new EntityFinderStub([entity]);
-    let document: Document<null, any> = {
-      type: 'html',
-      url: 'test-url',
-      contents: 'test-contents',
-      ast: null,
-      visit(visitors) {
-        return Promise.resolve();
-      },
-      forEachNode(callback) {
-        return null;
-      },
-    };
-    return findEntities(document, [finder]).then((entities) => {
-      assert.equal(finder.calls.length, 1);
-      assert.equal(finder.calls[0].document, document);
-      assert.equal(entities.length, 1);
-      assert.equal(entities[0], entity);
-    });
+    let document = makeTestDocument({});
+
+    const entities = await findEntities(document, [finder]);
+    assert.deepEqual(entities, [entity]);
+    assert.deepEqual(finder.calls, [{document}]);
+    assert.deepEqual(entities, [entity]);
   });
 
-  test('supports multiple and async calls to visit()', () => {
-    let visitor1 = {};
-    let visitor2 = {};
-    let visitor3 = {};
+  test('supports multiple and async calls to visit()', async() => {
+    let visitor1 = Symbol('visitor1');
+    let visitor2 = Symbol('visitor2');
+    let visitor3 = Symbol('visitor3');
     let finder: EntityFinder<any, any, any> = {
       async findEntities(
           document: Document<any, any>,
@@ -68,27 +53,20 @@ suite('findEntities()', () => {
             visit(visitor3).then(resolve);
           }, 0);
         });
+
         return [`an entity`];
       },
     };
     let visitedVisitors: any[] = [];
-    let document: Document<string, any> = {
-      type: 'test',
-      url: 'test-url',
-      contents: 'test-contents',
-      ast: 'test-ast',
-      visit(visitors: any) {
+    let document = makeTestDocument({
+      async visit(visitors: any) {
         visitedVisitors.push.apply(visitedVisitors, visitors);
-      },
-      forEachNode: (callback: any) => null,
-    };
-
-    return findEntities(document, [finder]).then((entities) => {
-      assert.equal(visitedVisitors.length, 3);
-      assert.equal(visitedVisitors[0], visitor1);
-      assert.equal(visitedVisitors[1], visitor2);
-      assert.equal(visitedVisitors[2], visitor3);
+      }
     });
+
+    const entities = await findEntities(document, [finder]);
+    assert.deepEqual([`an entity`], entities);
+    assert.deepEqual(visitedVisitors, [visitor1, visitor2, visitor3]);
   });
 
   test('propagates exceptions in entity finders', () => {
@@ -97,45 +75,68 @@ suite('findEntities()', () => {
         throw new Error('expected');
       },
     };
-    let document = {
-      type: 'html',
-      visit(visitors: any) {
-        return Promise.resolve();
-      },
-      forEachNode: (callback: any): void => null,
-    };
-    return invertPromise(findEntities(<any>document, <any>[finder]));
+    return invertPromise(findEntities(makeTestDocument({}), <any>[finder]));
   });
 
   test('propagates exceptions in visitors', () => {
-    let finder = {
-      findEntities(document: any, visit: any) {
-        return visit((x: any) => x);
-      },
-    };
-    let document: any = {
-      type: 'html',
-      visit(visitors: any) {
+    let document: any = makeTestDocument({
+      visit: (): Promise<any> => {
         throw new Error('expected');
       },
-      forEachNode: (callback: any): void => null,
-    };
-    return invertPromise(findEntities(document, [finder]));
+    });
+    return invertPromise(findEntities(document, [makeTestEntityFinder({})]));
   });
 
 });
 
+interface TestDocumentMakerOptions {
+  forEachNode?: (callback: (node: any) => void) => void;
+  visit?: (visitors: any[]) => void;
+  type?: string;
+  contents?: string;
+  ast?: string;
+  url?: string;
+}
+function makeTestDocument(options: TestDocumentMakerOptions):
+    Document<string, any> {
+  return {
+    type: options.type || 'test-type',
+    contents: options.contents || 'test-contents',
+    ast: options.ast || 'test-ast',
+    url: options.url || 'test-url',
+    visit: options.visit || (() => null),
+    forEachNode: options.forEachNode || (() => null),
+  };
+}
 
+interface TestEntityFinderMakerOptions {
+  findEntities?:
+      (document: Document<string, any>,
+       visit: (visitor: any) => Promise<void>) => Promise<any[]>;
+}
+function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
+    EntityFinder<Document<string, any>, any, any> {
+  const simpleFindEntities = (async(doc: any, visit: () => Promise<any>) => {
+    const promise = visit();
+    return ['test-entity'];
+  });
+  return {findEntities: options.findEntities || simpleFindEntities};
+}
+
+/**
+ * Entity finder that always returns the given entities and tracks when
+ * findEntities is called.
+ */
 class EntityFinderStub implements EntityFinder<any, any, any> {
-  calls: {document: Document<any, any>, visit: any}[];
+  calls: {document: Document<any, any>}[];
   entities: Descriptor[];
   constructor(entities: Descriptor[]) {
     this.entities = entities;
     this.calls = [];
   }
 
-  findEntities(document: Document<any, any>, visit: any) {
-    this.calls.push({document, visit});
-    return Promise.resolve(this.entities);
+  async findEntities(document: Document<any, any>, visit: any) {
+    this.calls.push({document});
+    return this.entities;
   }
 }
