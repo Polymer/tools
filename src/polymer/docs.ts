@@ -11,12 +11,12 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-'use strict';
 
 import * as dom5 from 'dom5';
 
+import {BehaviorDescriptor, BehaviorsByName, Descriptor, ElementDescriptor, EventDescriptor, FeatureDescriptor, FunctionDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
-import {FeatureDescriptor, FunctionDescriptor, PropertyDescriptor, Descriptor, ElementDescriptor, BehaviorsByName, EventDescriptor, BehaviorDescriptor} from '../ast/ast';
+
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [

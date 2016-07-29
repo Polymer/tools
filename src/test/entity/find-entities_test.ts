@@ -12,13 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import {assert} from 'chai';
 
+import {Descriptor} from '../../ast/descriptor';
 import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
-import {Descriptor} from '../../ast/descriptor';
 import {Document} from '../../parser/document';
 import {invertPromise} from '../test-utils';
 

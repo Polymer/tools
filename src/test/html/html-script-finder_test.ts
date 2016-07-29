@@ -12,15 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import {assert} from 'chai';
 import * as parse5 from 'parse5';
 
+import {InlineDocumentDescriptor} from '../../ast/ast';
+import {ImportDescriptor} from '../../ast/import-descriptor';
 import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
 import {HtmlScriptFinder} from '../../html/html-script-finder';
-import {ImportDescriptor} from '../../ast/import-descriptor';
-import {InlineDocumentDescriptor} from '../../ast/ast';
 
 suite('HtmlScriptFinder', () => {
 
