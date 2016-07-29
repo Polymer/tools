@@ -23,9 +23,9 @@ import {UrlLoader} from './url-loader';
  * Resolves requests via the file system.
  */
 export class FSUrlLoader implements UrlLoader {
-  root: string;
+  root: string|undefined;
 
-  constructor(root: string) {
+  constructor(root?: string) {
     this.root = root;
   }
 
