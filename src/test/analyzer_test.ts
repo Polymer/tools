@@ -12,26 +12,39 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-const assert = require('chai').assert;
-const parse5 = require('parse5');
-const path = require('path');
+import * as assert from 'assert';
+import * as parse5 from 'parse5';
+import * as path from 'path';
 
-const invertPromise = require('./test-utils').invertPromise;
-const Analyzer = require('../analyzer').Analyzer;
-const DocumentDescriptor = require('../ast/ast').DocumentDescriptor;
-const InlineDocumentDescriptor = require('../ast/ast').InlineDocumentDescriptor;
-const FSUrlLoader = require('../url-loader/fs-url-loader').FSUrlLoader;
-const Document = require('../parser/document').Document;
-const HtmlDocument = require('../html/html-document').HtmlDocument;
-const JavaScriptDocument =
-    require('../javascript/javascript-document').JavaScriptDocument;
-const ImportDescriptor = require('../ast/import-descriptor').ImportDescriptor;
+import {Analyzer} from '../analyzer';
+import {DocumentDescriptor} from '../ast/ast';
+import {InlineDocumentDescriptor} from '../ast/ast';
+import {ImportDescriptor} from '../ast/import-descriptor';
+import {HtmlDocument} from '../html/html-document';
+import {JavaScriptDocument} from '../javascript/javascript-document';
+import {Document} from '../parser/document';
+import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {invertPromise} from './test-utils';
 
+function assertInstanceOf<T>(
+    instance: T, cnstructor: new (...v: any[]) => T): void {
+  if (instance instanceof cnstructor) {
+    return;
+  }
+  throw new Error(`Expected ${instance} to be an instance of ${cnstructor}`);
+}
+
+function assertInclude(haystack: string, needle: string): void {
+  if (haystack.search(needle)) {
+    return;
+  }
+  throw new Error(`Expected to find '${needle}' in '${haystack}''`);
+}
 
 suite('Analyzer', () => {
-  let analyzer;
+  let analyzer: Analyzer;
 
   setup(() => {
     analyzer = new Analyzer({
@@ -41,16 +54,16 @@ suite('Analyzer', () => {
 
   suite('load()', () => {
 
-    test('loads and parses an HTML document', () => {
+    test('loads and parses an HTML document', async() => {
       return analyzer.load('/static/html-parse-target.html').then((doc) => {
-        assert.instanceOf(doc, HtmlDocument);
+        assertInstanceOf(doc, HtmlDocument);
         assert.equal(doc.url, '/static/html-parse-target.html');
       });
     });
 
     test('loads and parses a JavaScript document', () => {
       return analyzer.load('/static/js-elements.js').then((doc) => {
-        assert.instanceOf(doc, JavaScriptDocument);
+        assertInstanceOf(doc, JavaScriptDocument);
         assert.equal(doc.url, '/static/js-elements.js');
       });
     });
@@ -79,36 +92,40 @@ suite('Analyzer', () => {
     test('returns a Promise that rejects for malformed files', () => {
       return invertPromise(analyzer.analyze('static/malformed.html'))
           .then((error) => {
-            assert.include(error.message, 'malformed.html');
+            assertInclude(error.message, 'malformed.html');
           });
     });
 
     test('analyzes transitive dependencies', () => {
       return analyzer.analyze('static/dependencies/root.html').then((root) => {
         // check first level dependencies
-        assert.deepEqual(root.dependencies.map((d) => d.url), [
-          'static/dependencies/inline-only.html',
-          'static/dependencies/leaf.html',
-          'static/dependencies/inline-and-imports.html',
-          'static/dependencies/subfolder/in-folder.html',
-        ]);
-
-        let inlineOnly = root.dependencies[0];
         assert.deepEqual(
-            inlineOnly.dependencies.map((d) => d.document.type), ['js', 'css']);
+            root.dependencies.map((d: DocumentDescriptor) => d.url), [
+              'static/dependencies/inline-only.html',
+              'static/dependencies/leaf.html',
+              'static/dependencies/inline-and-imports.html',
+              'static/dependencies/subfolder/in-folder.html',
+            ]);
 
-        let leaf = root.dependencies[1];
+        let inlineOnly = <DocumentDescriptor>root.dependencies[0];
+        assert.deepEqual(
+            inlineOnly.dependencies.map(
+                (d: DocumentDescriptor) => d.document.type),
+            ['js', 'css']);
+
+        let leaf = <DocumentDescriptor>root.dependencies[1];
         assert.equal(leaf.dependencies.length, 0);
 
-        let inlineAndImports = root.dependencies[2];
+        let inlineAndImports = <DocumentDescriptor>root.dependencies[2];
         assert.deepEqual(
-            inlineAndImports.dependencies.map((d) => d.document.type),
+            inlineAndImports.dependencies.map(
+                (d: DocumentDescriptor) => d.document.type),
             ['js', 'html', 'css']);
 
-        let inFolder = root.dependencies[3];
+        let inFolder = <DocumentDescriptor>root.dependencies[3];
         assert.equal(inFolder.dependencies.length, 1);
         assert.equal(
-            inFolder.dependencies[0].url,
+            (<DocumentDescriptor>inFolder.dependencies[0]).url,
             'static/dependencies/subfolder/subfolder-sibling.html');
 
         // check de-duplication
@@ -132,15 +149,16 @@ suite('Analyzer', () => {
         contents,
         ast,
       });
-      return analyzer.getEntities(document).then((entities) => {
-        assert.equal(entities.length, 3);
-        assert.equal(entities[0].type, 'html-import');
-        assert.equal(entities[0].url, 'polymer.html');
-        assert.equal(entities[1].type, 'html-script');
-        assert.equal(entities[1].url, 'foo.js');
-        assert.equal(entities[2].type, 'html-style');
-        assert.equal(entities[2].url, 'foo.css');
-      });
+      return analyzer.getEntities(document).then(
+          (entities: ImportDescriptor<any>[]) => {
+            assert.equal(entities.length, 3);
+            assert.equal(entities[0].type, 'html-import');
+            assert.equal(entities[0].url, 'polymer.html');
+            assert.equal(entities[1].type, 'html-script');
+            assert.equal(entities[1].url, 'foo.js');
+            assert.equal(entities[2].type, 'html-style');
+            assert.equal(entities[2].url, 'foo.css');
+          });
     });
 
     test('HTML inline document finders', () => {
@@ -154,11 +172,12 @@ suite('Analyzer', () => {
         contents,
         ast,
       });
-      return analyzer.getEntities(document).then((entities) => {
-        assert.equal(entities.length, 2);
-        assert.instanceOf(entities[0], InlineDocumentDescriptor);
-        assert.instanceOf(entities[1], InlineDocumentDescriptor);
-      });
+      return analyzer.getEntities(document).then(
+          (entities: InlineDocumentDescriptor<any>[]) => {
+            assert.equal(entities.length, 2);
+            assertInstanceOf(entities[0], InlineDocumentDescriptor);
+            assertInstanceOf(entities[1], InlineDocumentDescriptor);
+          });
 
     });
 
