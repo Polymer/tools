@@ -32,7 +32,7 @@ gulp.task('clean', () => {
   return del('build');
 });
 
-gulp.task('test1',['clean'], (cb) => {
+gulp.task('test1', ['clean'], (cb) => {
 
   let swConfig = {
     staticFileGlobs: [
