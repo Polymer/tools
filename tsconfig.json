@@ -34,13 +34,10 @@
     "src/bundle.ts",
     "src/fork-stream.ts",
     "src/get-dependencies-from-document.ts",
-    "src/optimize.ts",
     "src/polymer-build.ts",
     "src/polymer-project.ts",
-    "src/prefetch.ts",
     "src/streams.ts",
     "src/service-worker.ts",
-    "src/uglify-transform.ts",
     "src/path-transformers.ts",
     "typings/index.d.ts"
   ],

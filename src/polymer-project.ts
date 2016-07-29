@@ -16,7 +16,6 @@ import File = require('vinyl');
 import * as vfs from 'vinyl-fs';
 import {StreamAnalyzer} from './analyzer';
 import {Bundler} from './bundle';
-import {optimize, OptimizeOptions} from './optimize';
 import {FileCB} from './streams';
 import {forkStream} from './fork-stream';
 
