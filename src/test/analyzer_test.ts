@@ -28,8 +28,8 @@ import {Document} from '../parser/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {invertPromise} from './test-utils';
 
-function assertInstanceOf<T>(
-    instance: T, cnstructor: new (...v: any[]) => T): void {
+function assertInstanceOf(
+    instance: any, cnstructor: new (...v: any[]) => any): void {
   if (instance instanceof cnstructor) {
     return;
   }
@@ -55,89 +55,81 @@ suite('Analyzer', () => {
   suite('load()', () => {
 
     test('loads and parses an HTML document', async() => {
-      return analyzer.load('/static/html-parse-target.html').then((doc) => {
-        assertInstanceOf(doc, HtmlDocument);
-        assert.equal(doc.url, '/static/html-parse-target.html');
-      });
+      const doc = await analyzer.load('/static/html-parse-target.html');
+      assertInstanceOf(doc, HtmlDocument);
+      assert.equal(doc.url, '/static/html-parse-target.html');
     });
 
-    test('loads and parses a JavaScript document', () => {
-      return analyzer.load('/static/js-elements.js').then((doc) => {
-        assertInstanceOf(doc, JavaScriptDocument);
-        assert.equal(doc.url, '/static/js-elements.js');
-      });
+    test('loads and parses a JavaScript document', async() => {
+      const doc = await analyzer.load('/static/js-elements.js');
+      assertInstanceOf(doc, JavaScriptDocument);
+      assert.equal(doc.url, '/static/js-elements.js');
     });
 
-    test('returns a Promise that rejects for non-existant files', () => {
-      return invertPromise(analyzer.load('/static/not-found'));
+    test('returns a Promise that rejects for non-existant files', async() => {
+      await invertPromise(analyzer.load('/static/not-found'));
     });
 
-    test.skip('returns a Promise that rejects for malformed files', () => {
-      return invertPromise(analyzer.load('/static/malformed.html'));
+    test.skip('returns a Promise that rejects for malformed files', async() => {
+      await invertPromise(analyzer.load('/static/malformed.html'));
     });
 
   });
 
   suite('analyze()', () => {
 
-    test('returns a Promise that resolves to a DocumentDescriptor', () => {
-      return analyzer.analyze('/static/html-parse-target.html')
-          .then(
-              (descriptor) => {
-                  // TODO(justinfagnani): add a lot more checks, especially for
-                  // transitive dependencies
-              });
+    test('returns a Promise that resolves to a DocumentDescriptor', async() => {
+      const descriptor =
+          await analyzer.analyze('/static/html-parse-target.html');
+      // TODO(justinfagnani): add a lot more checks, especially for
+      // transitive dependencies
     });
 
-    test('returns a Promise that rejects for malformed files', () => {
-      return invertPromise(analyzer.analyze('static/malformed.html'))
-          .then((error) => {
-            assertInclude(error.message, 'malformed.html');
-          });
+    test('returns a Promise that rejects for malformed files', async() => {
+      const error =
+          await invertPromise(analyzer.analyze('static/malformed.html'));
+      assertInclude(error.message, 'malformed.html');
     });
 
-    test('analyzes transitive dependencies', () => {
-      return analyzer.analyze('static/dependencies/root.html').then((root) => {
-        // check first level dependencies
-        assert.deepEqual(
-            root.dependencies.map((d: DocumentDescriptor) => d.url), [
-              'static/dependencies/inline-only.html',
-              'static/dependencies/leaf.html',
-              'static/dependencies/inline-and-imports.html',
-              'static/dependencies/subfolder/in-folder.html',
-            ]);
+    test('analyzes transitive dependencies', async() => {
+      const root = await analyzer.analyze('static/dependencies/root.html');
+      // check first level dependencies
+      assert.deepEqual(
+          root.dependencies.map((d: DocumentDescriptor) => d.url), [
+            'static/dependencies/inline-only.html',
+            'static/dependencies/leaf.html',
+            'static/dependencies/inline-and-imports.html',
+            'static/dependencies/subfolder/in-folder.html',
+          ]);
 
-        let inlineOnly = <DocumentDescriptor>root.dependencies[0];
-        assert.deepEqual(
-            inlineOnly.dependencies.map(
-                (d: DocumentDescriptor) => d.document.type),
-            ['js', 'css']);
+      let inlineOnly = <DocumentDescriptor>root.dependencies[0];
+      assert.deepEqual(
+          inlineOnly.dependencies.map(
+              (d: DocumentDescriptor) => d.document.type),
+          ['js', 'css']);
 
-        let leaf = <DocumentDescriptor>root.dependencies[1];
-        assert.equal(leaf.dependencies.length, 0);
+      let leaf = <DocumentDescriptor>root.dependencies[1];
+      assert.equal(leaf.dependencies.length, 0);
 
-        let inlineAndImports = <DocumentDescriptor>root.dependencies[2];
-        assert.deepEqual(
-            inlineAndImports.dependencies.map(
-                (d: DocumentDescriptor) => d.document.type),
-            ['js', 'html', 'css']);
+      let inlineAndImports = <DocumentDescriptor>root.dependencies[2];
+      assert.deepEqual(
+          inlineAndImports.dependencies.map(
+              (d: DocumentDescriptor) => d.document.type),
+          ['js', 'html', 'css']);
 
-        let inFolder = <DocumentDescriptor>root.dependencies[3];
-        assert.equal(inFolder.dependencies.length, 1);
-        assert.equal(
-            (<DocumentDescriptor>inFolder.dependencies[0]).url,
-            'static/dependencies/subfolder/subfolder-sibling.html');
+      let inFolder = <DocumentDescriptor>root.dependencies[3];
+      assert.equal(inFolder.dependencies.length, 1);
+      assert.equal(
+          (<DocumentDescriptor>inFolder.dependencies[0]).url,
+          'static/dependencies/subfolder/subfolder-sibling.html');
 
-        // check de-duplication
-        assert.equal(inlineAndImports.dependencies[1], leaf);
-      });
+      // check de-duplication
+      assert.equal(inlineAndImports.dependencies[1], leaf);
     });
-
-
   });
 
   suite('getEntities()', () => {
-    test('default import finders', () => {
+    test('default import finders', async() => {
       let contents = `<html><head>
           <link rel="import" href="polymer.html">
           <script src="foo.js"></script>
@@ -149,19 +141,18 @@ suite('Analyzer', () => {
         contents,
         ast,
       });
-      return analyzer.getEntities(document).then(
-          (entities: ImportDescriptor<any>[]) => {
-            assert.equal(entities.length, 3);
-            assert.equal(entities[0].type, 'html-import');
-            assert.equal(entities[0].url, 'polymer.html');
-            assert.equal(entities[1].type, 'html-script');
-            assert.equal(entities[1].url, 'foo.js');
-            assert.equal(entities[2].type, 'html-style');
-            assert.equal(entities[2].url, 'foo.css');
-          });
+      const entities =
+          <ImportDescriptor<any>[]>(await analyzer.getEntities(document));
+      assert.equal(entities.length, 3);
+      assert.equal(entities[0].type, 'html-import');
+      assert.equal(entities[0].url, 'polymer.html');
+      assert.equal(entities[1].type, 'html-script');
+      assert.equal(entities[1].url, 'foo.js');
+      assert.equal(entities[2].type, 'html-style');
+      assert.equal(entities[2].url, 'foo.css');
     });
 
-    test('HTML inline document finders', () => {
+    test('HTML inline document finders', async() => {
       let contents = `<html><head>
           <script>console.log('hi')</script>
           <style>body { color: red; }</style>
@@ -172,15 +163,13 @@ suite('Analyzer', () => {
         contents,
         ast,
       });
-      return analyzer.getEntities(document).then(
-          (entities: InlineDocumentDescriptor<any>[]) => {
-            assert.equal(entities.length, 2);
-            assertInstanceOf(entities[0], InlineDocumentDescriptor);
-            assertInstanceOf(entities[1], InlineDocumentDescriptor);
-          });
+      const entities = <InlineDocumentDescriptor<any>[]>(
+          await analyzer.getEntities(document));
 
+      assert.equal(entities.length, 2);
+      assertInstanceOf(entities[0], InlineDocumentDescriptor);
+      assertInstanceOf(entities[1], InlineDocumentDescriptor);
     });
 
   });
-
 });
