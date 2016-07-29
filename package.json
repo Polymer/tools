@@ -52,13 +52,12 @@
     "watchy": "^0.6.6"
   },
   "dependencies": {
-    "@types/acorn": "^1.0.28",
     "@types/node": "^4.0.30",
     "@types/parse5": "0.0.27",
-    "acorn": "^3.2.0",
     "doctrine": "^0.7.0",
     "dom5": "^1.1.0",
     "escodegen": "^1.7.0",
+    "espree": "^3.1.7",
     "estraverse": "^3.1.0",
     "parse5": "^2.1.5",
     "shady-css-parser": "0.0.8"

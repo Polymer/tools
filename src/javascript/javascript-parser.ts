@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as acorn from 'acorn';
 import * as estraverse from 'estraverse';
+import * as espree from 'espree';
 import {Program} from 'estree';
 
 import {Analyzer} from '../analyzer';
@@ -30,13 +30,12 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
   }
 
   parse(contents: string, url: string): JavaScriptDocument {
-    // TODO(justinfagnani): add onComment handler
-    const ast = <Program>acorn.parse(contents, {
+    const ast = <Program>espree.parse(contents, {
       ecmaVersion: 7,
-      sourceType: 'script',
-      locations: true,
+      attachComment: true,
+      comment: true,
+      loc: true,
     });
-
     return new JavaScriptDocument({url, contents, ast});
   }
 }

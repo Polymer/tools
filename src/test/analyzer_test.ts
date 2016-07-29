@@ -157,4 +157,33 @@ suite('Analyzer', () => {
     });
 
   });
+
+  suite('legacy tests', () => {
+
+    // ported from old js-parser_test.js
+    test('parses classes', () => {
+      return analyzer.analyze("static/es6-support.js")
+        .then((document) => {
+          console.log('entities', document.entities);
+          let elements = document.entities.filter((e) => e.type === 'element');
+          console.log('elements', elements);
+          assert.equal(elements.length, 2);
+
+          let element1 = elements[0];
+          assert.equal(element1.behaviors.length, 2);
+          assert.equal(element1.behaviors[0], 'Behavior1');
+          assert.equal(element1.behaviors[1], 'Behavior2');
+          assert.equal(element1.is, 'test-seed');
+
+          assert.equal(element1.observers.length, 2);
+          assert.equal(element1.properties.length, 4);
+
+          // TODO(justinfagnani): fix events
+          // assert.equal(elements[0].events.length, 1);
+          assert.equal(elements[1].is, 'test-element');
+        });
+    });
+
+  });
+  
 });

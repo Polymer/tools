@@ -103,10 +103,7 @@ export function closureType(node: estree.Node): string {
 
 export function getAttachedComment(node: estree.Node): string {
   const comments = getLeadingComments(node) || getLeadingComments(node['key']);
-  if (!comments) {
-    return;
-  }
-  return comments[comments.length - 1];
+  return comments && comments[comments.length - 1];
 }
 
 /**
@@ -125,6 +122,7 @@ export function getEventComments(node: estree.Node) {
     },
     keys: {Super: []}
   });
+  // TODO(justinfagnani): use a Map, this is n^2
   // dedup
   return eventComments.filter((el, index, array) => {
     return array.indexOf(el) === index;
@@ -136,11 +134,7 @@ function getLeadingComments(node: estree.Node): string[] {
     return;
   }
   const comments = node.leadingComments;
-  if (!comments || comments.length === 0)
-    return;
-  return comments.map(function(comment) {
-    return comment.value;
-  });
+  return comments && comments.map((comment) => comment.value);
 }
 
 /**
