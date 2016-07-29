@@ -14,7 +14,7 @@
 
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-import * as assert from 'assert';
+import {assert} from 'chai';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
@@ -27,21 +27,6 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document} from '../parser/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {invertPromise} from './test-utils';
-
-function assertInstanceOf(
-    instance: any, cnstructor: new (...v: any[]) => any): void {
-  if (instance instanceof cnstructor) {
-    return;
-  }
-  throw new Error(`Expected ${instance} to be an instance of ${cnstructor}`);
-}
-
-function assertInclude(haystack: string, needle: string): void {
-  if (haystack.search(needle)) {
-    return;
-  }
-  throw new Error(`Expected to find '${needle}' in '${haystack}''`);
-}
 
 suite('Analyzer', () => {
   let analyzer: Analyzer;
@@ -56,13 +41,13 @@ suite('Analyzer', () => {
 
     test('loads and parses an HTML document', async() => {
       const doc = await analyzer.load('/static/html-parse-target.html');
-      assertInstanceOf(doc, HtmlDocument);
+      assert.instanceOf(doc, HtmlDocument);
       assert.equal(doc.url, '/static/html-parse-target.html');
     });
 
     test('loads and parses a JavaScript document', async() => {
       const doc = await analyzer.load('/static/js-elements.js');
-      assertInstanceOf(doc, JavaScriptDocument);
+      assert.instanceOf(doc, JavaScriptDocument);
       assert.equal(doc.url, '/static/js-elements.js');
     });
 
@@ -88,7 +73,7 @@ suite('Analyzer', () => {
     test('returns a Promise that rejects for malformed files', async() => {
       const error =
           await invertPromise(analyzer.analyze('static/malformed.html'));
-      assertInclude(error.message, 'malformed.html');
+      assert.include(error.message, 'malformed.html');
     });
 
     test('analyzes transitive dependencies', async() => {
@@ -167,8 +152,8 @@ suite('Analyzer', () => {
           await analyzer.getEntities(document));
 
       assert.equal(entities.length, 2);
-      assertInstanceOf(entities[0], InlineDocumentDescriptor);
-      assertInstanceOf(entities[1], InlineDocumentDescriptor);
+      assert.instanceOf(entities[0], InlineDocumentDescriptor);
+      assert.instanceOf(entities[1], InlineDocumentDescriptor);
     });
 
   });

@@ -29,6 +29,7 @@
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.29",
     "@types/mocha": "^2.2.28",
     "chai": "^2.2.0",
     "clang-format": "^1.0.42",
