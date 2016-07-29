@@ -33,7 +33,7 @@ import {PolymerElementFinder} from './polymer/polymer-element-finder';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Options {
-  urlLoader?: UrlLoader;
+  urlLoader: UrlLoader;
   parsers?: Map<string, Parser<any>>;
   entityFinders?: Map<string, EntityFinder<any, any, any>[]>;
 }
@@ -65,8 +65,7 @@ export class Analyzer {
   private _documents = new Map<string, Promise<Document<any, any>>>();
   private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
 
-  constructor(options?: Options) {
-    options = options || {};
+  constructor(options: Options) {
     this._loader = options.urlLoader;
     this._parsers = options.parsers || this._parsers;
     this._entityFinders = options.entityFinders || this._entityFinders;
