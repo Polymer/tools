@@ -16,9 +16,9 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import * as esutil from '../../javascript/esutil';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import * as esutil from '../../javascript/esutil';
 
 suite('JavaScriptParser', () => {
 
@@ -26,10 +26,7 @@ suite('JavaScriptParser', () => {
     let parser: JavaScriptParser;
 
     setup(() => {
-      parser = new JavaScriptParser(<any>{
-        findImports: (): any[] => [],
-        parse: (): any => null,
-      });
+      parser = new JavaScriptParser();
     });
 
     test('parses classes', () => {

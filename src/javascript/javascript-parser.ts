@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
 import * as espree from 'espree';
+import * as estraverse from 'estraverse';
 import {Program} from 'estree';
 
 import {Analyzer} from '../analyzer';
@@ -23,12 +23,6 @@ import {Visitor} from './estree-visitor';
 import {JavaScriptDocument} from './javascript-document';
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
-  analyzer: Analyzer;
-
-  constructor(analyzer: Analyzer) {
-    this.analyzer = analyzer;
-  }
-
   parse(contents: string, url: string): JavaScriptDocument {
     const ast = <Program>espree.parse(contents, {
       ecmaVersion: 7,

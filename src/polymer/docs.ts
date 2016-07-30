@@ -338,7 +338,7 @@ export function featureElement(features: FeatureDescriptor[]):
         return result.concat(feature.properties);
       }, []);
 
-  return {
+  return new ElementDescriptor({
     type: 'element',
     is: 'Polymer.Base',
     abstract: true,
@@ -350,7 +350,7 @@ export function featureElement(features: FeatureDescriptor[]):
         'The properties reflected here are the combined view of all ' +
         'features found in this library. There may be more properties ' +
         'added via other libraries, as well.',
-  };
+  });
 }
 
 /**
@@ -414,13 +414,13 @@ export function parsePseudoElements(comments: string[]): ElementDescriptor[] {
     const parsedJsdoc = jsdoc.parseJsdoc(comment);
     const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
     if (pseudoTag) {
-      let element: ElementDescriptor = {
+      let element = new ElementDescriptor({
         is: pseudoTag,
         type: 'element',
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
         properties: [],
         desc: parsedJsdoc.description,
-      };
+      });
       annotateElementHeader(element);
       elements.push(element);
     }

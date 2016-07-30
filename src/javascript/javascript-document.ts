@@ -35,17 +35,17 @@ export class JavaScriptDocument extends Document<Program, Visitor> {
     function applyFinders(callbackName: string, node: Node, parent: Node) {
       for (let visitor of visitors) {
         if (callbackName in visitor) {
-          return visitor[callbackName](node, parent) || undefined;
+          visitor[callbackName](node, parent);
         }
       }
     }
 
     traverse(this.ast, {
       enter(node, parent) {
-        return applyFinders(`enter${node.type}`, node, parent);
+        applyFinders(`enter${node.type}`, node, parent);
       },
       leave(node, parent) {
-        return applyFinders(`leave${node.type}`, node, parent);
+        applyFinders(`leave${node.type}`, node, parent);
       },
       fallback: 'iteration',
     });
