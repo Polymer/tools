@@ -12,7 +12,32 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * The base interface, holding properties common to all nodes.
+ */
+export interface Node {
+  /** Where this feature is defined in source code. */
+  sourceLocation?: {
+    /** Line number, zero indexed. */
+    line: number;
+    /** Column number, zero indexed. */
+    column: number;
+  };
+
+  /**
+   * An extension point for framework-specific metadata, as well as any
+   * metadata not yet standardized here such as what polyfills are needed,
+   * behaviors and mixins used, the framework that the element was written in,
+   * tags/categories, links to specs that the element implements, etc.
+   *
+   * Framework-specific metadata should be put into a sub-object with the name
+   * of that framework.
+   */
+  metadata?: {};
+}
+
 export interface SerializedAnalysis { packages: Package[]; }
+
 
 export interface Package {
   /** The name of the package, like `paper-button` */
@@ -30,7 +55,7 @@ export interface Package {
   elements: Element[];
 }
 
-export interface Element {
+export interface Element extends Node {
   /**
    * The path, relative to the base directory of the package.
    *
@@ -126,17 +151,9 @@ export interface Element {
     // Would be nice to document the default styling a bit here, whether it's
     // display: block or inline or whatever.
   };
-
-  /**
-   * An extension point for framework-specific metadata, as well as any
-   * metadata not yet standardized here such as what polyfills are needed,
-   * behaviors and mixins used, the framework that the element was written in,
-   * tags/categories, links to specs that the element implements, etc.
-   */
-  metadata: Object;
 }
 
-export interface Attribute {
+export interface Attribute extends Node {
   /** The name of the attribute. e.g. `value`, `icon`, `should-collapse`. */
   name: string;
 
@@ -157,7 +174,7 @@ export interface Attribute {
   // property. TBD.
 }
 
-export interface Property {
+export interface Property extends Node {
   /** The name of the property. e.g. `value`, `icon`, `shouldCollapse`. */
   name: string;
 
@@ -177,16 +194,9 @@ export interface Property {
 
   /** Nested subproperties hanging off of this property. */
   properties?: Property[];
-
-  /**
-   * An extension point for framework-specific metadata, as well as any
-   * metadata not yet standardized here such as associated events and
-   * observers.
-   */
-  metadata?: Object;
 }
 
-export interface Event {
+export interface Event extends Node {
   /** The name of the event. */
   name: string;
 
@@ -206,7 +216,7 @@ export interface Event {
   // property?
 }
 
-export interface Slot {
+export interface Slot extends Node {
   /** The name of the slot. e.g. `banner`, `body`, `tooltipContents` */
   name: string;
 
