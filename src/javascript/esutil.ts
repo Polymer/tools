@@ -12,11 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
-import * as escodegen from 'escodegen';
 
 import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
+
 
 /**
  * Returns whether an Espree node matches a particular object path.

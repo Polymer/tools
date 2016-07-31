@@ -12,18 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
-
-function invertPromise(promise) {
-  return new Promise((resolve, reject) => {
-    promise.then((value) => {
-      let error = new Error('Inverted Promise resolved');
-      error.resolvedValue = value;
-      reject(error);
-    }, resolve);
-  });
+export class UnexpectedResolutionError extends Error {
+  resolvedValue: any;
+  constructor(message: string, resolvedValue: any) {
+    super(message);
+    this.resolvedValue = resolvedValue;
+  }
 }
 
-module.exports = {
-    invertPromise,
-};
+export async function invertPromise(promise: Promise<any>): Promise<any> {
+  let value: any;
+  try {
+    value = await promise;
+  } catch (e) {
+    return e;
+  }
+  throw new UnexpectedResolutionError('Inverted Promise resolved', value);
+}

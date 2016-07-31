@@ -17,17 +17,19 @@
     "custom_typings/"
   ],
   "scripts": {
-    "clean": "mkdir -p lib/ && rm -rf lib/*",
+    "clean": "mkdir -p lib/ && rm -rf lib/",
     "compile": "tsc",
-    "build": "npm run compile",
+    "build": "mkdir -p lib/ && cp -r src/test lib/ && npm run compile",
     "release": "npm run compile",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
     "quicktest": "npm run build && mocha",
-    "test:watch": "watchy -w ./ -i '/(.git|lib|node_modules)/' -- npm run quicktest",
+    "test:watch": "watchy -w src/ -- npm run quicktest",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.29",
+    "@types/mocha": "^2.2.28",
     "chai": "^2.2.0",
     "clang-format": "^1.0.42",
     "depcheck": "^0.6.3",

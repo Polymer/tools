@@ -60,19 +60,20 @@ export async function findEntities(
 
     try {
       document.visit(currentVisitors);
-    } catch (error) {
-      visitError = visitError || error;
+    } finally {
+      // Let `findEntities` continue after calls to visit().then()
+      currentDoneCallback();
     }
-
-    // Let `findEntities` continue after calls to visit().then()
-    currentDoneCallback();
   };
 
   // The callback passed to `findEntities()`
   function visit(visitor: any) {
     visitors.push(visitor);
     if (!runner) {
-      runner = Promise.resolve().then(runVisitors);
+      runner = Promise.resolve().then(runVisitors).catch((error) => {
+        visitError = visitError || error;
+        throw error;
+      });
     }
     return visitorsPromise;
   };

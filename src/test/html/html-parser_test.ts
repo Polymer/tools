@@ -12,29 +12,31 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+import {assert} from 'chai';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
-
-const HtmlParser = require('../../lib/html/html-parser').HtmlParser;
-
-let registry;
+import {Descriptor} from '../../ast/descriptor';
+import {EntityFinder} from '../../entity/entity-finder';
+import {findEntities} from '../../entity/find-entities';
+import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {HtmlImportFinder} from '../../html/html-import-finder';
+import {HtmlParser} from '../../html/html-parser';
+import {Document} from '../../parser/document';
+import {invertPromise} from '../test-utils';
 
 suite('HtmlParser', () => {
 
   suite('parse()', () => {
-    let parser;
+    let parser: HtmlParser;
 
     setup(() => {
-      parser = new HtmlParser({
-        findImports(url, document) {
+      parser = new HtmlParser(<any>{
+        findImports(url: string) {
           return [{type: 'html', url: 'abc'}];
         },
-        parse(type, content, url) {
-          return null;
-        },
+        parse: (type: string, content: string, url: string):
+                   Document<any, any> => null,
       });
     });
 

@@ -12,11 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+import {assert} from 'chai';
 
-const assert = require('chai').assert;
-
-const FSUrlLoader = require('../../lib/url-loader/fs-url-loader').FSUrlLoader;
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('FSUrlLoader', function() {
 

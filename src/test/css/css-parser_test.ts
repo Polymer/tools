@@ -12,27 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+import {assert} from 'chai';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
-
-const CssParser = require('../../lib/css/css-parser').CssParser;
-const CssDocument = require('../../lib/css/css-document').CssDocument;
+import {CssDocument} from '../../css/css-document';
+import {CssParser} from '../../css/css-parser';
 
 suite('CssParser', () => {
 
   suite('parse()', () => {
-    let parser;
+    let parser: CssParser;
 
     setup(() => {
-      parser = new CssParser({
-        findImports(url, document) {
-          return [];
+      parser = new CssParser(<any>{
+        findImports(url: string, document: CssDocument): Array<any>/* */ {
+            return [];  //
         },
-        parse(type, content, url) {
-          return null;
+        parse(type: any, content: any, url: any): void /* */ {
+            return null;  //
         },
       });
     });

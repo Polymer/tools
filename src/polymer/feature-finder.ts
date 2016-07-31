@@ -15,9 +15,9 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import * as esutil from '../javascript/esutil';
 import {FeatureDescriptor} from '../ast/ast';
 import {Visitor} from '../javascript/estree-visitor';
+import * as esutil from '../javascript/esutil';
 
 const numFeatures = 0;
 

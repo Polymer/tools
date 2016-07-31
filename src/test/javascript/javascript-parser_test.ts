@@ -12,30 +12,27 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+import {assert} from 'chai';
+import * as fs from 'fs';
+import * as parse5 from 'parse5';
+import * as path from 'path';
 
-const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
-
-const JavaScriptParser =
-    require('../../lib/javascript/javascript-parser').JavaScriptParser;
-const JavaScriptDocument =
-    require('../../lib/javascript/javascript-document').JavaScriptDocument;
+import {InlineDocumentDescriptor} from '../../ast/ast';
+import {ImportDescriptor} from '../../ast/import-descriptor';
+import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {HtmlScriptFinder} from '../../html/html-script-finder';
+import {JavaScriptDocument} from '../../javascript/javascript-document';
+import {JavaScriptParser} from '../../javascript/javascript-parser';
 
 suite('JavaScriptParser', () => {
 
   suite('parse()', () => {
-    let parser;
+    let parser: JavaScriptParser;
 
     setup(() => {
-      parser = new JavaScriptParser({
-        findImports(url, document) {
-          return [];
-        },
-        parse(type, content, url) {
-          return null;
-        },
+      parser = new JavaScriptParser(<any>{
+        findImports: (): any[] => [],
+        parse: (): any => null,
       });
     });
 

@@ -12,40 +12,31 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+import {assert} from 'chai';
 
-const jsdoc = require('../../lib/javascript/jsdoc.js');
-
-try {
-  // we're in node, we need to explicity require `expect`
-  var expect = require('chai').expect;
-} catch (e) {
-  // `expect` is magically provided by wct, yay!
-}
+import * as jsdoc from '../../javascript/jsdoc.js';
 
 suite('jsdoc', function() {
-
   suite('.parseJsdoc', function() {
-
     test('parses single-line', function() {
-      var parsed = jsdoc.parseJsdoc('* Just some text');
-      expect(parsed).to.deep.eq({
+      const parsed = jsdoc.parseJsdoc('* Just some text');
+      assert.deepEqual(parsed, {
         description: 'Just some text',
         tags: [],
       });
     });
 
     test('parses body-only', function() {
-      var parsed = jsdoc.parseJsdoc('* Just some text\n* in multiple lines.');
-      expect(parsed).to.deep.eq({
+      const parsed = jsdoc.parseJsdoc('* Just some text\n* in multiple lines.');
+      assert.deepEqual(parsed, {
         description: 'Just some text\nin multiple lines.',
         tags: [],
       });
     });
 
     test('parses tag-only', function() {
-      var parsed = jsdoc.parseJsdoc('* @atag');
-      expect(parsed).to.deep.eq({
+      const parsed = jsdoc.parseJsdoc('* @atag');
+      assert.deepEqual(parsed, {
         description: '',
         tags: [
           {tag: 'atag', description: null, name: undefined, type: null},
@@ -54,8 +45,8 @@ suite('jsdoc', function() {
     });
 
     test('parses tag-name', function() {
-      var parsed = jsdoc.parseJsdoc('* @do stuff');
-      expect(parsed).to.deep.eq({
+      const parsed = jsdoc.parseJsdoc('* @do stuff');
+      assert.deepEqual(parsed, {
         description: '',
         tags: [
           {tag: 'do', description: 'stuff', name: undefined, type: null},
@@ -64,8 +55,8 @@ suite('jsdoc', function() {
     });
 
     test('parses tag-desc', function() {
-      var parsed = jsdoc.parseJsdoc('* @do a thing');
-      expect(parsed).to.deep.eq({
+      const parsed = jsdoc.parseJsdoc('* @do a thing');
+      assert.deepEqual(parsed, {
         description: '',
         tags: [
           {tag: 'do', description: 'a thing', name: undefined, type: null},
@@ -74,23 +65,23 @@ suite('jsdoc', function() {
     });
 
     test('parses param type', function() {
-      var parsed = jsdoc.parseJsdoc('* @param {Type} name desc desc');
-      expect(parsed).to.deep.eq({
+      const parsed = jsdoc.parseJsdoc('* @param {Type} name desc desc');
+      assert.deepEqual(parsed, {
         description: '',
         tags: [
-          {tag: 'param', type: "Type", name: 'name', description: 'desc desc'},
+          {tag: 'param', type: 'Type', name: 'name', description: 'desc desc'},
         ],
       });
     });
 
     test('preserves indentation for the body', function() {
-      var parsed = jsdoc.parseJsdoc('*     The desc.\n*     thing');
-      expect(parsed.description).to.deep.eq('    The desc.\n    thing');
+      const parsed = jsdoc.parseJsdoc('*     The desc.\n*     thing');
+      assert.deepEqual(parsed.description, '    The desc.\n    thing');
     });
 
     test('handles empty lines', function() {
-      var parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
-      expect(parsed.description).to.eq('\n\nFoo\n\nBar');
+      const parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
+      assert.deepEqual(parsed.description, '\n\nFoo\n\nBar');
     });
 
   });

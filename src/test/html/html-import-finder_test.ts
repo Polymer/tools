@@ -12,27 +12,27 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+import {assert} from 'chai';
+import * as parse5 from 'parse5';
 
-const assert = require('chai').assert;
-const fs = require('fs');
-const parse5 = require('parse5');
-const path = require('path');
-
-const HtmlDocument = require('../../lib/html/html-document').HtmlDocument;
-const HtmlImportFinder =
-    require('../../lib/html/html-import-finder').HtmlImportFinder;
+import {Descriptor} from '../../ast/descriptor';
+import {EntityFinder} from '../../entity/entity-finder';
+import {findEntities} from '../../entity/find-entities';
+import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {HtmlImportFinder} from '../../html/html-import-finder';
+import {Document} from '../../parser/document';
+import {invertPromise} from '../test-utils';
 
 suite('HtmlImportFinder', () => {
 
   suite('findImports()', () => {
-    let finder;
+    let finder: HtmlImportFinder;
 
     setup(() => {
       finder = new HtmlImportFinder();
     });
 
-    test('finds HTML Imports', () => {
+    test('finds HTML Imports', async() => {
       let contents = `<html><head>
           <link rel="import" href="polymer.html">
           <link rel="import" type="css" href="polymer.css">
@@ -45,14 +45,12 @@ suite('HtmlImportFinder', () => {
         contents,
         ast,
       });
-      let visit = (visitor) => document.visit([visitor]);
+      let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      return finder.findEntities(document, visit).then((entities) => {
-        assert.equal(entities.length, 1);
-        assert.equal(entities[0].type, 'html-import');
-        assert.equal(entities[0].url, 'polymer.html');
-      });
-
+      const entities = await finder.findEntities(document, visit);
+      assert.equal(entities.length, 1);
+      assert.equal(entities[0].type, 'html-import');
+      assert.equal(entities[0].url, 'polymer.html');
     });
 
   });

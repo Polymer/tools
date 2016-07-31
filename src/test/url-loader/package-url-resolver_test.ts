@@ -12,12 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+import {assert} from 'chai';
 
-const assert = require('chai').assert;
-
-const PackageUrlResolver =
-    require('../../lib/url-loader/package-url-resolver').PackageUrlResolver;
+import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 suite('PackageUrlResolver', function() {
 
@@ -103,6 +100,5 @@ suite('PackageUrlResolver', function() {
     });
 
   });
-
 
 });
