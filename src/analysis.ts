@@ -16,9 +16,9 @@ import {DocumentDescriptor} from './ast/ast';
 import {SerializedAnalysis} from './serialized-analysis';
 
 export class Analysis {
-  private descriptors_: DocumentDescriptor[];
+  private _descriptors: DocumentDescriptor[];
   constructor(descriptors: DocumentDescriptor[]) {
-    this.descriptors_ = descriptors;
+    this._descriptors = descriptors;
   }
 
   serialize(): SerializedAnalysis {

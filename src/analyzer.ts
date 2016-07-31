@@ -93,8 +93,7 @@ export class Analyzer {
   }
 
   async resolve(): Promise<Analysis> {
-    const descriptorPromises = Array.from(this._documentDescriptors.values());
-    return new Analysis(Array.from(await Promise.all(descriptorPromises)));
+    return new Analysis(await Promise.all(this._documentDescriptors.values()));
   }
 
   /**

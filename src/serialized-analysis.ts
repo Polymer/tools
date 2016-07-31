@@ -87,7 +87,8 @@ export interface Element {
   events?: Event[];
 
   /** The shadow dom content slots that this element accepts. */
-  'slots': Slot[];
+  slots:
+  Slot[];
 
   /** Information useful for styling the element and its children. */
   styling: {
@@ -151,6 +152,9 @@ export interface Attribute {
 
   /** The default value of the attribute, if any. */
   defaultValue?: string;
+
+  // We need some way of representing that this attribute is associated with a
+  // property. TBD.
 }
 
 export interface Property {
@@ -197,6 +201,9 @@ export interface Event {
 
   /** Information about the `detail` field of the event. */
   detail?: {properties: Property[]};
+
+  // Should we have a way of associating an event with an attribute or a
+  // property?
 }
 
 export interface Slot {
