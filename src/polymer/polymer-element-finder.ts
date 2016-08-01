@@ -49,21 +49,22 @@ class ElementVisitor implements Visitor {
 
   enterClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
     this.classDetected = true;
-    this.element = {
+    this.element = new ElementDescriptor({
       type: 'element',
       desc: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node).map(function(event) {
         return {desc: event};
       }),
-      properties: [],
-      behaviors: [],
-      observers: []
-    };
+    });
     this.propertyHandlers = declarationPropertyHandlers(this.element);
   }
 
   leaveClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
     this.element.properties.map((property) => docs.annotate(property));
+    // TODO(justinfagnani): this looks wrong, class definitions can be nested
+    // so a definition in a method in a Polymer() declaration would end the
+    // declaration early. We should track which class induced the current
+    // element and finish the element when leaving _that_ class.
     if (this.element) {
       this.entities.push(this.element);
       this.element = null;
@@ -135,13 +136,13 @@ class ElementVisitor implements Visitor {
     let callee = node.callee;
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
-        this.element = {
+        this.element = new ElementDescriptor({
           type: 'element',
           desc: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent).map(function(event) {
             return {desc: event};
           })
-        };
+        });
         this.propertyHandlers = declarationPropertyHandlers(this.element);
       }
     }
@@ -169,10 +170,8 @@ class ElementVisitor implements Visitor {
       return estraverse.VisitorOption.Skip;
     }
 
-    if (this.element && !this.element.properties) {
-      this.element.properties = [];
-      this.element.behaviors = [];
-      this.element.observers = [];
+    // TODO(justinfagnani): is the second clause needed?
+    if (this.element /* && !this.element.properties*/) {
       let getters: {[name: string]: PropertyDescriptor} = {};
       let setters: {[name: string]: PropertyDescriptor} = {};
       let definedProperties: {[name: string]: PropertyDescriptor} = {};

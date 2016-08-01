@@ -22,6 +22,7 @@ import {analyzeProperties} from './analyze-properties';
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void
 };
+
 /**
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.

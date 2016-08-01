@@ -14,13 +14,9 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import * as parse5 from 'parse5';
 import * as path from 'path';
 
-import {InlineDocumentDescriptor} from '../../ast/ast';
-import {ImportDescriptor} from '../../ast/import-descriptor';
-import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
-import {HtmlScriptFinder} from '../../html/html-script-finder';
+import * as esutil from '../../javascript/esutil';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 
@@ -30,10 +26,7 @@ suite('JavaScriptParser', () => {
     let parser: JavaScriptParser;
 
     setup(() => {
-      parser = new JavaScriptParser(<any>{
-        findImports: (): any[] => [],
-        parse: (): any => null,
-      });
+      parser = new JavaScriptParser();
     });
 
     test('parses classes', () => {
@@ -51,6 +44,16 @@ suite('JavaScriptParser', () => {
       let file = fs.readFileSync(
           path.resolve(__dirname, '../static/js-parse-error.js'), 'utf8');
       assert.throws(() => parser.parse(file, '/static/js-parse-error.js'));
+    });
+
+    test('attaches comments', () => {
+      let file = fs.readFileSync(
+          path.resolve(__dirname, '../static/js-elements.js'), 'utf8');
+      let document = parser.parse(file, '/static/js-elements.js');
+      let ast = document.ast;
+      let element1 = ast.body[0];
+      let comment = esutil.getAttachedComment(element1);
+      assert.isTrue(comment.indexOf('test-element') !== -1);
     });
 
   });

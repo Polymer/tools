@@ -15,10 +15,12 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, BehaviorOrName, LiteralValue} from '../ast/ast';
+import {BehaviorDescriptor, BehaviorOrName, Descriptor, ElementDescriptor, LiteralValue, PropertyDescriptor} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
+import {JavaScriptDocument} from '../javascript/javascript-document';
+import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
 import * as analyzeProperties from './analyze-properties';
@@ -45,93 +47,186 @@ function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
   return returned;
 }
 
-// TODO(rictic): turn this into a class.
-export function behaviorFinder() {
-  /** The behaviors we've found. */
-  const behaviors: BehaviorDescriptor[] = [];
+const templatizer = 'Polymer.Templatizer';
 
-  let currentBehavior: BehaviorDescriptor = null;
-  let propertyHandlers: PropertyHandlers = null;
+export class BehaviorFinder implements JavaScriptEntityFinder {
+  async findEntities(
+      document: JavaScriptDocument,
+      visit: (visitor: Visitor) => Promise<void>): Promise<Descriptor[]> {
+    let visitor = new BehaviorVisitor();
+    await visit(visitor);
+    return visitor.behaviors;
+  }
+}
+
+class BehaviorVisitor implements Visitor {
+  /** The behaviors we've found. */
+  behaviors: BehaviorDescriptor[] = [];
+
+  currentBehavior: BehaviorDescriptor = null;
+  propertyHandlers: PropertyHandlers = null;
+
+  /**
+   * Look for object declarations with @behavior in the docs.
+   */
+  enterVariableDeclaration(
+      node: estree.VariableDeclaration, parent: estree.Node) {
+    if (node.declarations.length !== 1) {
+      return;  // Ambiguous.
+    }
+    this._initBehavior(node, () => {
+      return esutil.objectKeyToString(node.declarations[0].id);
+    });
+  }
+
+  /**
+   * Look for object assignments with @polymerBehavior in the docs.
+   */
+  enterAssignmentExpression(
+      node: estree.AssignmentExpression, parent: estree.Node) {
+    this._initBehavior(parent, () => esutil.objectKeyToString(node.left));
+  }
+
+  /**
+   * We assume that the object expression after such an assignment is the
+   * behavior's declaration. Seems to be a decent assumption for now.
+   */
+  enterObjectExpression(node: estree.ObjectExpression, parent: estree.Node) {
+    // TODO(justinfagnani): is the second clause required? No test fails w/o it
+    if (!this.currentBehavior /* || this.currentBehavior.properties */) {
+      return;
+    }
+
+    this.currentBehavior.properties = this.currentBehavior.properties || [];
+    this.currentBehavior.observers = this.currentBehavior.observers || [];
+    for (let i = 0; i < node.properties.length; i++) {
+      const prop = node.properties[i];
+      const name = esutil.objectKeyToString(prop.key);
+      if (!name) {
+        throw {
+          message: 'Cant determine name for property key.',
+          location: node.loc.start
+        };
+      }
+      if (name in this.propertyHandlers) {
+        this.propertyHandlers[name](prop.value);
+      } else {
+        this.currentBehavior.properties.push(esutil.toPropertyDescriptor(prop));
+      }
+    }
+    this._finishBehavior();
+  }
+
+  private _startBehavior(behavior: BehaviorDescriptor) {
+    console.assert(this.currentBehavior == null);
+    this.currentBehavior = behavior;
+  }
+
+  private _finishBehavior() {
+    console.assert(this.currentBehavior != null);
+    this.behaviors.push(this.currentBehavior);
+    this.currentBehavior = null;
+  }
+
+  private _abandonBehavior() {
+    // TODO(justinfagnani): this seems a bit dangerous...
+    this.currentBehavior = null;
+    this.propertyHandlers = null;
+  }
+
+  private _initBehavior(node: estree.Node, getName: () => string) {
+    const comment = esutil.getAttachedComment(node);
+    const symbol = getName();
+    // Quickly filter down to potential candidates.
+    if (!comment || comment.indexOf('@polymerBehavior') === -1) {
+      if (symbol !== templatizer) {
+        return;
+      }
+    }
+
+    this._startBehavior(new BehaviorDescriptor({
+      type: 'behavior',
+      desc: comment,
+      events: esutil.getEventComments(node).map(function(event) {
+        return {desc: event};
+      }),
+    }));
+    this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
+
+    docs.annotateBehavior(this.currentBehavior);
+    // Make sure that we actually parsed a behavior tag!
+    if (!jsdoc.hasTag(this.currentBehavior.jsdoc, 'polymerBehavior') &&
+        symbol !== templatizer) {
+      this._abandonBehavior();
+      return;
+    }
+
+    let name =
+        jsdoc.getTag(this.currentBehavior.jsdoc, 'polymerBehavior', 'name');
+    this.currentBehavior.symbol = symbol;
+    if (!name) {
+      name = this.currentBehavior.symbol;
+    }
+    if (!name) {
+      console.warn('Unable to determine name for @polymerBehavior:', comment);
+    }
+    this.currentBehavior.is = name;
+
+    this._parseChainedBehaviors(node);
+
+    this.currentBehavior = this.mergeBehavior(this.currentBehavior);
+    this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
+
+    // Some behaviors are just lists of other behaviors. If this is one then
+    // add it to behaviors right away.
+    if (isSimpleBehaviorArray(behaviorExpression(node))) {
+      this._finishBehavior();
+    }
+  }
 
   /**
    * merges behavior with preexisting behavior with the same name.
    * here to support multiple @polymerBehavior tags referring
    * to same behavior. See iron-multi-selectable for example.
    */
-  function mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
+  mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
     const isBehaviorImpl = (b: string) => {
       // filter out BehaviorImpl
       return b.indexOf(newBehavior.is) === -1;
     };
-    for (let i = 0; i < behaviors.length; i++) {
-      if (newBehavior.is !== behaviors[i].is) {
+    for (let i = 0; i < this.behaviors.length; i++) {
+      if (newBehavior.is !== this.behaviors[i].is) {
         continue;
       }
       // merge desc, longest desc wins
       if (newBehavior.desc) {
-        if (behaviors[i].desc) {
-          if (newBehavior.desc.length > behaviors[i].desc.length)
-            behaviors[i].desc = newBehavior.desc;
+        if (this.behaviors[i].desc) {
+          if (newBehavior.desc.length > this.behaviors[i].desc.length)
+            this.behaviors[i].desc = newBehavior.desc;
         } else {
-          behaviors[i].desc = newBehavior.desc;
+          this.behaviors[i].desc = newBehavior.desc;
         }
       }
-      // merge demos
-      behaviors[i].demos =
-          (behaviors[i].demos || []).concat(newBehavior.demos || []);
-      // merge events,
-      behaviors[i].events =
-          (behaviors[i].events || []).concat(newBehavior.events || []);
-      behaviors[i].events = dedupe(behaviors[i].events, (e) => e.name);
-      // merge properties
-      behaviors[i].properties =
-          (behaviors[i].properties || []).concat(newBehavior.properties || []);
-      // merge observers
-      behaviors[i].observers =
-          (behaviors[i].observers || []).concat(newBehavior.observers || []);
-      // merge behaviors
-      behaviors[i].behaviors = (behaviors[i].behaviors || [])
-                                   .concat(newBehavior.behaviors || [])
-                                   .filter(isBehaviorImpl);
-      return behaviors[i];
+      // TODO(justinfagnani): move into BehaviorDescriptor
+      this.behaviors[i].demos =
+          this.behaviors[i].demos.concat(newBehavior.demos);
+      this.behaviors[i].events =
+          this.behaviors[i].events.concat(newBehavior.events);
+      this.behaviors[i].events =
+          dedupe(this.behaviors[i].events, (e) => e.name);
+      this.behaviors[i].properties =
+          this.behaviors[i].properties.concat(newBehavior.properties);
+      this.behaviors[i].observers =
+          this.behaviors[i].observers.concat(newBehavior.observers);
+      this.behaviors[i].behaviors = (this.behaviors[i].behaviors)
+                                        .concat(newBehavior.behaviors)
+                                        .filter(isBehaviorImpl);
+      return this.behaviors[i];
     }
     return newBehavior;
   }
 
-  /**
-   * gets the expression representing a behavior from a node.
-   */
-  function behaviorExpression(node: estree.Node): estree.Node {
-    switch (node.type) {
-      case 'ExpressionStatement':
-        // need to cast to `any` here because ExpressionStatement is super
-        // super general. this code is suspicious.
-        return (<any>node).expression.right;
-      case 'VariableDeclaration':
-        return node.declarations.length > 0 ? node.declarations[0].init : null;
-    }
-  }
-
-  /**
-   * checks whether an expression is a simple array containing only member
-   * expressions or identifiers.
-   */
-  function isSimpleBehaviorArray(expression: estree.Node|null): boolean {
-    if (!expression || expression.type !== 'ArrayExpression') {
-      return false;
-    }
-    for (const element of expression.elements) {
-      if (element.type !== 'MemberExpression' &&
-          element.type !== 'Identifier') {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  const templatizer = 'Polymer.Templatizer';
-
-  function _parseChainedBehaviors(node: estree.Node) {
+  _parseChainedBehaviors(node: estree.Node) {
     // if current behavior is part of an array, it gets extended by other
     // behaviors
     // inside the array. Ex:
@@ -148,122 +243,38 @@ export function behaviorFinder() {
         }
       }
       if (chained.length > 0) {
-        currentBehavior.behaviors = chained;
+        this.currentBehavior.behaviors = chained;
       }
     }
   }
+}
 
-  function _initBehavior(node: estree.Node, getName: () => string) {
-    const comment = esutil.getAttachedComment(node);
-    const symbol = getName();
-    // Quickly filter down to potential candidates.
-    if (!comment || comment.indexOf('@polymerBehavior') === -1) {
-      if (symbol !== templatizer) {
-        return;
-      }
-    }
+/**
+ * gets the expression representing a behavior from a node.
+ */
+function behaviorExpression(node: estree.Node): estree.Node {
+  switch (node.type) {
+    case 'ExpressionStatement':
+      // need to cast to `any` here because ExpressionStatement is super
+      // super general. this code is suspicious.
+      return (<any>node).expression.right;
+    case 'VariableDeclaration':
+      return node.declarations.length > 0 ? node.declarations[0].init : null;
+  }
+}
 
-
-    currentBehavior = {
-      type: 'behavior',
-      desc: comment,
-      events: esutil.getEventComments(node).map(function(event) {
-        return {desc: event};
-      })
-    };
-    propertyHandlers = declarationPropertyHandlers(currentBehavior);
-
-    docs.annotateBehavior(currentBehavior);
-    // Make sure that we actually parsed a behavior tag!
-    if (!jsdoc.hasTag(currentBehavior.jsdoc, 'polymerBehavior') &&
-        symbol !== templatizer) {
-      currentBehavior = null;
-      propertyHandlers = null;
-      return;
-    }
-
-    let name = jsdoc.getTag(currentBehavior.jsdoc, 'polymerBehavior', 'name');
-    currentBehavior.symbol = symbol;
-    if (!name) {
-      name = currentBehavior.symbol;
-    }
-    if (!name) {
-      console.warn('Unable to determine name for @polymerBehavior:', comment);
-    }
-    currentBehavior.is = name;
-
-    _parseChainedBehaviors(node);
-
-    currentBehavior = mergeBehavior(currentBehavior);
-    propertyHandlers = declarationPropertyHandlers(currentBehavior);
-
-    // Some behaviors are just lists of other behaviors. If this is one then
-    // add it to behaviors right away.
-    if (isSimpleBehaviorArray(behaviorExpression(node))) {
-      // TODO(ajo): Add a test to confirm the presence of `properties`
-      if (!currentBehavior.observers)
-        currentBehavior.observers = [];
-      if (!currentBehavior.properties)
-        currentBehavior.properties = [];
-      if (behaviors.indexOf(currentBehavior) === -1)
-        behaviors.push(currentBehavior);
-      currentBehavior = null;
-      propertyHandlers = null;
+/**
+ * checks whether an expression is a simple array containing only member
+ * expressions or identifiers.
+ */
+function isSimpleBehaviorArray(expression: estree.Node|null): boolean {
+  if (!expression || expression.type !== 'ArrayExpression') {
+    return false;
+  }
+  for (const element of expression.elements) {
+    if (element.type !== 'MemberExpression' && element.type !== 'Identifier') {
+      return false;
     }
   }
-
-  const visitors: Visitor = {
-
-    /**
-     * Look for object declarations with @behavior in the docs.
-     */
-    enterVariableDeclaration: function(node, parent) {
-      if (node.declarations.length !== 1)
-        return;  // Ambiguous.
-      _initBehavior(node, function() {
-        return esutil.objectKeyToString(node.declarations[0].id);
-      });
-    },
-
-    /**
-     * Look for object assignments with @polymerBehavior in the docs.
-     */
-    enterAssignmentExpression: function(node, parent) {
-      _initBehavior(parent, function() {
-        return esutil.objectKeyToString(node.left);
-      });
-    },
-
-    /**
-     * We assume that the object expression after such an assignment is the
-     * behavior's declaration. Seems to be a decent assumption for now.
-     */
-    enterObjectExpression: function(node, parent) {
-      if (!currentBehavior || currentBehavior.properties)
-        return;
-
-      currentBehavior.properties = currentBehavior.properties || [];
-      currentBehavior.observers = currentBehavior.observers || [];
-      for (let i = 0; i < node.properties.length; i++) {
-        const prop = node.properties[i];
-        const name = esutil.objectKeyToString(prop.key);
-        if (!name) {
-          throw {
-            message: 'Cant determine name for property key.',
-            location: node.loc.start
-          };
-        }
-        if (name in propertyHandlers) {
-          propertyHandlers[name](prop.value);
-        } else {
-          currentBehavior.properties.push(esutil.toPropertyDescriptor(prop));
-        }
-      }
-      behaviors.push(currentBehavior);
-      currentBehavior = null;
-    },
-
-  };
-
-  return {visitors, behaviors};
-};
+  return true;
+}

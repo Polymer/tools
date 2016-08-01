@@ -19,13 +19,12 @@ import * as parse5 from 'parse5';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {DocumentDescriptor} from '../ast/ast';
-import {InlineDocumentDescriptor} from '../ast/ast';
-import {ImportDescriptor} from '../ast/import-descriptor';
+import {DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
 import {HtmlDocument} from '../html/html-document';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document} from '../parser/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+
 import {invertPromise} from './test-utils';
 
 suite('Analyzer', () => {
@@ -157,4 +156,44 @@ suite('Analyzer', () => {
     });
 
   });
+
+  suite('legacy tests', () => {
+
+    // ported from old js-parser_test.js
+    test('parses classes', () => {
+      return analyzer.analyze('static/es6-support.js').then((document) => {
+        let elements = <ElementDescriptor[]>document.entities.filter(
+            (e) => e['type'] === 'element');
+        assert.equal(elements.length, 2);
+
+        let element1 = elements[0];
+        assert.equal(element1.behaviors.length, 2);
+        assert.equal(element1.behaviors[0], 'Behavior1');
+        assert.equal(element1.behaviors[1], 'Behavior2');
+        assert.equal(element1.is, 'test-seed');
+
+        assert.equal(element1.observers.length, 2);
+        assert.equal(element1.properties.length, 4);
+
+        // TODO(justinfagnani): fix events
+        // assert.equal(elements[0].events.length, 1);
+        assert.equal(elements[1].is, 'test-element');
+      });
+    });
+
+    // ported from old js-parser_test.js
+    test.skip('parses events from classes', () => {
+      return analyzer.analyze('static/es6-support.js').then((document) => {
+        let elements = <ElementDescriptor[]>document.entities.filter(
+            (e) => e['type'] === 'element');
+        assert.equal(elements.length, 2);
+
+        let element1 = elements[0];
+        // TODO(justinfagnani): fix events
+        assert.equal(element1.events.length, 1);
+      });
+    });
+
+  });
+
 });
