@@ -44,8 +44,6 @@ suite('CssParser', () => {
       assert(document.ast != null);
     });
 
-    test.skip('throws syntax errors', () => {});
-
   });
 
 });
