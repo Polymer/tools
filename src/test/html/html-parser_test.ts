@@ -47,16 +47,6 @@ suite('HtmlParser', () => {
       assert.equal(document.url, '/static/html-parse-target.html');
     });
 
-    // enable when parse() or another method parses inline scripts
-    test.skip('throws when parsing a malformed document', () => {
-      let file = fs.readFileSync(
-          path.resolve(__dirname, '../static/malformed.html'), 'utf8');
-      assert.throws(() => {
-        let document = parser.parse(file, '/static/malformed.html');
-        console.log('document', document);
-      });
-    });
-
   });
 
 });

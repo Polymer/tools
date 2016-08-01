@@ -54,10 +54,6 @@ suite('Analyzer', () => {
       await invertPromise(analyzer.load('/static/not-found'));
     });
 
-    test.skip('returns a Promise that rejects for malformed files', async() => {
-      await invertPromise(analyzer.load('/static/malformed.html'));
-    });
-
   });
 
   suite('analyze()', () => {
@@ -110,6 +106,11 @@ suite('Analyzer', () => {
       // check de-duplication
       assert.equal(inlineAndImports.dependencies[1], leaf);
     });
+
+    test('returns a Promise that rejects for malformed files', async() => {
+      await invertPromise(analyzer.analyze('/static/malformed.html'));
+    });
+
   });
 
   suite('getEntities()', () => {
