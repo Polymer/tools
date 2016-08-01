@@ -1,5 +1,5 @@
-[![NPM version](http://img.shields.io/npm/v/hydrolysis.svg)](https://npmjs.org/package/hydrolysis)
-[![Build Status](https://travis-ci.org/Polymer/hydrolysis.svg?branch=master)](https://travis-ci.org/Polymer/hydrolysis)
+[![NPM version](http://img.shields.io/npm/v/polymer-analyzer.svg)](https://npmjs.org/package/polymer-analyzer)
+[![Build Status](https://travis-ci.org/Polymer/hydrolysis.svg?branch=2.0)](https://travis-ci.org/Polymer/hydrolysis)
 # Polymer Analyzer
 
 A static analysis framework for Web Components.
