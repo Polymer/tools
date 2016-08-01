@@ -36,6 +36,7 @@ import {PolymerElementFinder} from './polymer/polymer-element-finder';
 import {PackageUrlResolver} from './url-loader/package-url-resolver';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
+import {ElementFinder as VanillaElementFinder} from './vanilla-custom-elements/element-finder';
 
 export interface Options {
   urlLoader: UrlLoader;
@@ -65,7 +66,13 @@ export class Analyzer {
       'html',
       [new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder()]
     ],
-    ['js', [new PolymerElementFinder(), new BehaviorFinder()]],
+    [
+      'js',
+      [
+        new PolymerElementFinder(), new BehaviorFinder(),
+        new VanillaElementFinder()
+      ]
+    ],
   ]);
 
   private _loader: UrlLoader;
