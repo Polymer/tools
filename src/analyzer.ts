@@ -17,6 +17,7 @@
 import * as path from 'path';
 import * as urlLib from 'url';
 
+import {Analysis} from './analysis';
 import {Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
@@ -91,6 +92,10 @@ export class Analyzer {
     })();
     this._documentDescriptors.set(url, promise);
     return promise;
+  }
+
+  async resolve(): Promise<Analysis> {
+    return new Analysis(await Promise.all(this._documentDescriptors.values()));
   }
 
   /**
