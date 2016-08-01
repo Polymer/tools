@@ -13,16 +13,11 @@
  */
 
 /**
- * The base interface, holding properties common to all nodes.
+ * The base interface, holding properties common to many nodes.
  */
 export interface Node {
   /** Where this feature is defined in source code. */
-  sourceLocation?: {
-    /** Line number, zero indexed. */
-    line: number;
-    /** Column number, zero indexed. */
-    column: number;
-  };
+  sourceLocation?: SourceLocation;
 
   /**
    * An extension point for framework-specific metadata, as well as any
@@ -36,22 +31,20 @@ export interface Node {
   metadata?: {};
 }
 
-export interface SerializedAnalysis { packages: Package[]; }
+export interface SourceLocation {
+  /** Line number, zero indexed. */
+  line: number;
+  /** Column number, zero indexed. */
+  column: number;
+  /**
+   * Path to file, relative to the package base. If not present, is the
+   * element's file.
+   */
+  file?: string;
+}
 
-
-export interface Package {
-  /** The name of the package, like `paper-button` */
-  name: string;
-  /** The version, extracted from package.json, bower.json, etc as available. */
-  version: string;
-
-  /** The npm metadata of the package, if any. */
-  npmPackage?: NpmPackage;
-
-  /** The bower metadata of the package, if any. */
-  bowerMetadata?: BowerMetadata;
-
-  /** Elements found inside the package. */
+export interface AnalyzedPackage {
+  schema_version: '1.0.0';
   elements: Element[];
 }
 
@@ -71,7 +64,8 @@ export interface Element extends Node {
   description: string;
 
   /**
-   * Paths, relative to `this.path` to demo pages for the element.
+   * Paths, relative to the base directory of the package, to demo pages for the
+   * element.
    *
    * e.g. `['demos/index.html', 'demos/extended.html']`
    */
@@ -118,11 +112,14 @@ export interface Element extends Node {
   /** Information useful for styling the element and its children. */
   styling: {
 
-    /** CSS Classes that produce built-in custom styling for the element. */
-    classes: {
-      /** The name of the class. e.g. `bright`, `cascade`, `ominous_pulsing` */
-      name: string;
-      /** A markdown description of the class and what effects it has. */
+    /** CSS selectors that the element recognizes on itself for styling. */
+    selectors: {
+      /** The CSS selector. e.g. `.bright`, `[height=5]`, `[cascade]`. */
+      value: string;
+      /**
+       * A markdown description of the effect of this selector matching
+       * on the element.
+       */
       description: string;
     }[];
 
@@ -167,7 +164,12 @@ export interface Attribute extends Node {
    */
   type?: string;
 
-  /** The default value of the attribute, if any. */
+  /**
+   * The default value of the attribute, if any.
+   *
+   * As attributes are always strings, this is the actual value, not a human
+   * readable description.
+   */
   defaultValue?: string;
 
   // We need some way of representing that this attribute is associated with a
@@ -189,7 +191,10 @@ export interface Property extends Node {
    */
   type: string;
 
-  /** A string representation of the default value. */
+  /**
+   * A string representation of the default value. Intended only to be human
+   * readable, so may be a description, an identifier name, etc.
+   */
   defaultValue?: string;
 
   /** Nested subproperties hanging off of this property. */
@@ -226,20 +231,6 @@ export interface Slot extends Node {
   // Something about fallback perhaps?
 }
 
-export interface NpmPackage {
-  name: string;
-  version: string;
-  description?: string;
-  // ... etc
-}
-
-export interface BowerMetadata {
-  name: string;
-  version: string;
-  description?: string;
-  // ... etc
-}
-
 // An example, the correct compilation thereof acts as a test.
 // TODO(rictic): once the tests are typescript, move this there.
 const paperButtonElement: Element = {
@@ -259,9 +250,9 @@ const paperButtonElement: Element = {
       name: 'elevation',
       type: 'number',
       description: `
-  The z-depth of this element, from 0-5. Setting to 0 will remove the
-  shadow, and each increasing number greater than 0 will be "deeper"
-  than the last.`.trim()
+The z-depth of this element, from 0-5. Setting to 0 will remove the
+shadow, and each increasing number greater than 0 will be "deeper"
+than the last.`.trim()
     },
     {name: 'role', defaultValue: 'button'},
     {name: 'tabindex', defaultValue: '0'},
@@ -275,7 +266,7 @@ const paperButtonElement: Element = {
       defaultValue: 'false',
       metadata: {
         polymer: {reflectToAttribute: true, observer: '_calculateElevation'}
-      }
+      },
     },
     {
       name: 'elevation',
@@ -305,7 +296,7 @@ the ripple animation finishes to perform some action.`.trim(),
   }],
   slots: [{name: '', description: 'The body of the button.'}],
   styling: {
-    classes: [],
+    selectors: [],
     cssVariables: [
       {
         name: '--paper-button-ink-color',
@@ -413,44 +404,7 @@ Custom property | Description | Default
 
 };
 
-const paperButton: SerializedAnalysis = {
-  packages: [{
-    name: 'paper-button',
-    version: '1.0.12',
-    bowerMetadata: <BowerMetadata>{
-      'name': 'paper-button',
-      'version': '1.0.12',
-      'description': 'Material design button',
-      'authors': ['The Polymer Authors'],
-      'keywords':
-          ['web-components', 'web-component', 'polymer', 'paper', 'button'],
-      'main': 'paper-button.html',
-      'private': true,
-      'repository': {
-        'type': 'git',
-        'url': 'git://github.com/PolymerElements/paper-button.git'
-      },
-      'license': 'http://polymer.github.io/LICENSE.txt',
-      'homepage': 'https://github.com/PolymerElements/paper-button',
-      'dependencies': {
-        'polymer': 'Polymer/polymer#^1.1.0',
-        'iron-flex-layout': 'PolymerElements/iron-flex-layout#^1.0.0',
-        'paper-behaviors': 'PolymerElements/paper-behaviors#^1.0.0',
-        'paper-material': 'PolymerElements/paper-material#^1.0.0'
-      },
-      'devDependencies': {
-        'iron-component-page': 'PolymerElements/iron-component-page#^1.0.0',
-        'iron-demo-helpers': 'PolymerElements/iron-demo-helpers#^1.0.0',
-        'iron-icon': 'PolymerElements/iron-icon#^1.0.0',
-        'iron-icons': 'PolymerElements/iron-icons#^1.0.0',
-        'iron-test-helpers': 'PolymerElements/iron-test-helpers#^1.0.0',
-        'paper-styles': 'PolymerElements/paper-styles#^1.0.0',
-        'test-fixture': 'PolymerElements/test-fixture#^1.0.0',
-        'web-component-tester': '^4.0.0',
-        'webcomponentsjs': 'webcomponents/webcomponentsjs#^0.7.0'
-      },
-      'ignore': []
-    },
-    elements: [paperButtonElement]
-  }],
+const paperButton: AnalyzedPackage = {
+  schema_version: '1.0.0',
+  elements: [paperButtonElement]
 };

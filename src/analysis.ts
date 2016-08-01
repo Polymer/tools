@@ -13,7 +13,7 @@
  */
 
 import {DocumentDescriptor} from './ast/ast';
-import {SerializedAnalysis} from './serialized-analysis';
+import {AnalyzedPackage} from './serialized-analysis';
 
 export class Analysis {
   private _descriptors: DocumentDescriptor[];
@@ -21,7 +21,7 @@ export class Analysis {
     this._descriptors = descriptors;
   }
 
-  serialize(): SerializedAnalysis {
+  serialize(): AnalyzedPackage {
     throw new Error('not implemented');
   }
 }
