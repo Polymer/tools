@@ -143,7 +143,7 @@ export class PolymerProject {
     logger.debug(`root: ${this.root}`);
     logger.debug(`shell: ${this.shell}`);
     logger.debug(`entrypoint: ${this.entrypoint}`);
-    logger.debug(`fragments: ${this.entrypoint}`);
+    logger.debug(`fragments: ${this.fragments}`);
     logger.debug(`sources: ${this.sourceGlobs}`);
     logger.debug(`includeDependencies: ${this.includeDependencies}`);
   }
