@@ -1,0 +1,16 @@
+{
+  "name": "polymer-tools",
+  "version": "0.0.0",
+  "description": "Polymer utilities to help with testing toolkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Polymer/tools.git"
+  },
+  "keywords": [
+    "Polymer",
+    "tools"
+  ],
+  "bugs": {
+    "url": "https://github.com/Polymer/tools/issues"
+  }
+}
