@@ -20,7 +20,7 @@ import {Node, queryAll, predicates, getAttribute} from 'dom5';
 
 import {FileCB, VinylReaderTransform} from './streams';
 import {urlFromPath, pathFromUrl} from './path-transformers';
-import {DocumentDeps, getDependenciesFromDocument}
+import {DocumentDeps, getDependenciesFromDocument, isDependencyExternal}
   from './get-dependencies-from-document';
 
 const minimatchAll = require('minimatch-all');
@@ -266,8 +266,11 @@ class StreamResolver implements Resolver {
     logger.debug(`accept: ${url}`);
     let urlObject = parseUrl(url);
 
-    if (urlObject.hostname || !urlObject.pathname) {
-      return false;
+    // Resolve external files as empty strings. We filter these out later
+    // in the analysis process to make sure they aren't included in the build.
+    if (isDependencyExternal(url)) {
+      deferred.resolve('');
+      return true;
     }
 
     let urlPath = decodeURIComponent(urlObject.pathname);
