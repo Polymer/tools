@@ -32,6 +32,8 @@ suite('PolymerProject', () => {
       shell: 'shell.html',
       sourceGlobs: [
         'source-dir/**',
+        'index.html',
+        'shell.html',
       ],
     });
   })
@@ -77,6 +79,25 @@ suite('PolymerProject', () => {
         defaultProject.sources(),
         dependencyStream
       ).pipe(defaultProject.analyzer);
+    });
+
+    test('reads dependencies in a monolithic (non-shell) application without timing out', (done) => {
+      let project = new PolymerProject({
+        root: path.resolve(__dirname, 'test-project'),
+        entrypoint: 'index.html',
+        sourceGlobs: [
+          'source-dir/**',
+          'index.html',
+          'shell.html',
+        ],
+      });
+
+      mergeStream(
+          project.sources(),
+          project.dependencies()
+        )
+        .pipe(project.analyzer)
+        .on('finish', done);
     });
 
     test('reads dependencies and includes additionally provided files', (done) => {

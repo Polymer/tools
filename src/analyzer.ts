@@ -113,12 +113,11 @@ export class StreamAnalyzer extends Transform {
 
   _transform(file: File, encoding: string, callback: FileCB): void {
     let filePath = file.path;
-    let fileUrl = urlFromPath(this.root, file.path);
     this.addFile(file);
 
     // If our resolver is waiting for this file, resolve its deferred loader
-    if (this.resolver.hasDeferredFile(fileUrl)) {
-      this.resolver.resolveDeferredFile(fileUrl, file);
+    if (this.resolver.hasDeferredFile(filePath)) {
+      this.resolver.resolveDeferredFile(filePath, file);
     }
 
     // Propagate the file so that the stream can continue
@@ -189,6 +188,7 @@ export class StreamAnalyzer extends Transform {
    */
   _getDependencies(url: string): Promise<DocumentDeps> {
     let dir = path.posix.dirname(url);
+
     return this.analyzer.metadataTree(url)
         .then((tree) => getDependenciesFromDocument(tree, dir));
   }
@@ -240,25 +240,27 @@ export class StreamAnalyzer extends Transform {
 
 export class StreamResolver implements Resolver {
 
+  root: string;
   analyzer: StreamAnalyzer;
   deferredFiles = new Map<string, Deferred<string>>();
 
   constructor(analyzer: StreamAnalyzer) {
     this.analyzer = analyzer;
+    this.root = this.analyzer.root;
   }
 
-  hasDeferredFile(url: string): boolean {
-    return this.deferredFiles.has(url);
+  hasDeferredFile(filePath: string): boolean {
+    return this.deferredFiles.has(filePath);
   }
 
   hasDeferredFiles(): boolean {
     return this.deferredFiles.size > 0;
   }
 
-  resolveDeferredFile(url: string, file: File): void {
-    let deferred = this.deferredFiles.get(url);
+  resolveDeferredFile(filePath: string, file: File): void {
+    let deferred = this.deferredFiles.get(filePath);
     deferred.resolve(file.contents.toString());
-    this.deferredFiles.delete(url);
+    this.deferredFiles.delete(filePath);
   }
 
   accept(url: string, deferred: Deferred<string>): boolean {
@@ -273,13 +275,14 @@ export class StreamResolver implements Resolver {
     }
 
     let urlPath = decodeURIComponent(urlObject.pathname);
-    let file = this.analyzer.getFileByUrl(urlPath);
+    let filePath = pathFromUrl(this.root, urlPath);
+    let file = this.analyzer.getFile(filePath);
 
     if (file) {
       deferred.resolve(file.contents.toString());
     } else {
+      this.deferredFiles.set(filePath, deferred);
       this.analyzer.pushDependency(urlPath);
-      this.deferredFiles.set(urlPath, deferred);
     }
 
     return true;
