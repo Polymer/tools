@@ -91,8 +91,8 @@ export class PolymerProject {
   sourceGlobs: string[];
   includeDependencies: string[];
 
-  _splitFiles: Map<string, SplitFile> = new Map();
-  _parts: Map<string, SplitFile> = new Map();
+  private _splitFiles: Map<string, SplitFile> = new Map();
+  private _parts: Map<string, SplitFile> = new Map();
 
   /**
    * A `Transform` stream that runs Hydrolysis analysis on the files. It
@@ -250,7 +250,7 @@ export class PolymerProject {
 /**
  * Represents a file that is split into multiple files.
  */
-class SplitFile {
+export class SplitFile {
   path: string;
   parts: Map<string, string> = new Map();
   outstandingPartCount = 0;

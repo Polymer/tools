@@ -49,8 +49,8 @@ export class StreamAnalyzer extends Transform {
   loader: Loader;
   analyzer: Analyzer;
 
-  _dependenciesStream = new PassThrough({ objectMode: true });
-  _dependenciesProcessingStream = new VinylReaderTransform();
+  private _dependenciesStream = new PassThrough({ objectMode: true });
+  private _dependenciesProcessingStream = new VinylReaderTransform();
 
   files = new Map<string, File>();
   allFragmentsToAnalyze: Set<string>;
@@ -238,8 +238,7 @@ export class StreamAnalyzer extends Transform {
   }
 }
 
-
-class StreamResolver implements Resolver {
+export class StreamResolver implements Resolver {
 
   analyzer: StreamAnalyzer;
   deferredFiles = new Map<string, Deferred<string>>();

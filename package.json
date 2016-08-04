@@ -3,6 +3,7 @@
   "version": "0.3.2",
   "description": "A library of Gulp build tasks",
   "main": "lib/polymer-build.js",
+  "typings": "lib/polymer-build.d.ts",
   "scripts": {
     "lint": "gulp lint",
     "init": "gulp init",
