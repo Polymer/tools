@@ -68,6 +68,7 @@ suite('PolymerProject', () => {
         let names = files.map((f) => unroot(f.path));
         let expected = [
           'bower_components/dep.html',
+          'bower_components/loads-external-dependencies.html',
         ];
         assert.sameMembers(names, expected);
         done();
@@ -99,6 +100,7 @@ suite('PolymerProject', () => {
         let expected = [
           'bower_components/dep.html',
           'bower_components/unreachable-dep.html',
+          'bower_components/loads-external-dependencies.html',
         ];
         assert.sameMembers(names, expected);
         done();
@@ -109,6 +111,7 @@ suite('PolymerProject', () => {
         dependencyStream
       ).pipe(projectWithIncludedDeps.analyzer);
     });
+
   });
 
   test('splits and rejoins scripts', (done) => {

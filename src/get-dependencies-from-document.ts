@@ -27,7 +27,7 @@ export interface DocumentDeps {
  * starts with '//', which can be an alias to the page's current protocol
  * in the browser.
  */
-function isDependencyExternal(url: string) {
+export function isDependencyExternal(url: string) {
   // TODO(fks) 08-01-2016: Add additional check for files on current hostname
   // but external to this application root. Ignore them.
   return urlParse(url).protocol !== null || url.startsWith('//');
