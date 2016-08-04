@@ -4,5 +4,11 @@
   "clang-format.formatOnSave": true,
   "files.exclude": {
     "lib/**": true
-  }
+  },
+  "json.schemas": [{
+    "fileMatch": [
+      "elements.json"
+    ],
+    "url": "./lib/analysis.schema.json"
+  }]
 }

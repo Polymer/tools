@@ -36,7 +36,7 @@ export async function findEntities(
   let visitors: any[];
 
   // A Promise that runs the next batch of visitors in a microtask
-  let runner: Promise<void>;
+  let runner: Promise<void>|null;
 
   let visitError: any;
 
@@ -112,8 +112,9 @@ function orderEntities(
   // Walk the document to build document ordered entities list
   let orderedEntities: Descriptor[][] = [];
   document.forEachNode((node: any) => {
-    if (entitiesByNode.has(node)) {
-      orderedEntities.push(entitiesByNode.get(node));
+    const entities = entitiesByNode.get(node);
+    if (entities) {
+      orderedEntities.push(entities);
       entitiesByNode.delete(node);
     }
   });

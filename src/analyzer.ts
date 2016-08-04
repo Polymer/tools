@@ -28,6 +28,7 @@ import {HtmlParser} from './html/html-parser';
 import {HtmlScriptFinder} from './html/html-script-finder';
 import {HtmlStyleFinder} from './html/html-style-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
+import {JsonParser} from './json/json-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
@@ -53,6 +54,7 @@ export class Analyzer {
     ['html', new HtmlParser(this)],
     ['js', new JavaScriptParser()],
     ['css', new CssParser(this)],
+    ['json', new JsonParser()],
   ]);
 
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
@@ -80,15 +82,16 @@ export class Analyzer {
    * @return {Promise<DocumentDescriptor>}
    */
   async analyze(url: string): Promise<DocumentDescriptor> {
-    if (this._documentDescriptors.has(url)) {
-      return this._documentDescriptors.get(url);
+    const cachedResult = this._documentDescriptors.get(url);
+    if (cachedResult) {
+      return cachedResult;
     }
-    let promise = (async() => {
+    const promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      let document = await this.load(url);
-      return this.analyzeDocument(document);
+      const document = await this.load(url);
+      return this._analyzeDocument(document);
     })();
     this._documentDescriptors.set(url, promise);
     return promise;
@@ -101,16 +104,16 @@ export class Analyzer {
   /**
    * Parses and analyzes a document from source.
    */
-  async analyzeSource(type: string, contents: string, url: string):
+  private async _analyzeSource(type: string, contents: string, url: string):
       Promise<DocumentDescriptor> {
     let document = this.parse(type, contents, url);
-    return this.analyzeDocument(document);
+    return this._analyzeDocument(document);
   }
 
   /**
    * Analyzes a parsed Document object.
    */
-  async analyzeDocument(document: Document<any, any>):
+  private async _analyzeDocument(document: Document<any, any>):
       Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
 
@@ -119,9 +122,11 @@ export class Analyzer {
             e instanceof ImportDescriptor);
     let analyzeDependencies = dependencyDescriptors.map((d) => {
       if (d instanceof InlineDocumentDescriptor) {
-        return this.analyzeSource(d.type, d.contents, document.url);
+        return this._analyzeSource(d.type, d.contents, document.url);
       } else if (d instanceof ImportDescriptor) {
         return this.analyze(d.url);
+      } else {
+        throw new Error(`Unexpected dependency type: ${d}`);
       }
     });
 
@@ -136,8 +141,9 @@ export class Analyzer {
    */
   async load(url: string): Promise<Document<any, any>> {
     // TODO(justinfagnani): normalize url
-    if (this._documents.has(url)) {
-      return this._documents.get(url);
+    const cachedResult = this._documents.get(url);
+    if (cachedResult) {
+      return cachedResult;
     }
     if (!this._loader.canLoad(url)) {
       throw new Error(`Can't load URL: ${url}`);

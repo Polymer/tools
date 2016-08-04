@@ -1,0 +1,21 @@
+{
+  "elements": [
+    {
+      "tagname": "element-b",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "element.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {}
+    }
+  ],
+  "schema_version": "1.0.0"
+}

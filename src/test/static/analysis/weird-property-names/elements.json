@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "simple-element",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "simple-element.html",
+      "attributes": [
+        {
+          "name": "d-e-f",
+          "description": "",
+          "type": "String"
+        },
+        {
+          "name": "g--h--i",
+          "description": "",
+          "type": "String"
+        }
+      ],
+      "properties": [
+        {
+          "name": "ABC",
+          "type": "String",
+          "description": "",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "dEF",
+          "type": "String",
+          "description": "",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "g-H--i",
+          "type": "String",
+          "description": "",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [
+        {
+          "name": "d-e-f-changed",
+          "type": "CustomEvent",
+          "description": "Fired when the `dEF` property changes."
+        },
+        {
+          "name": "g--h--i-changed",
+          "type": "CustomEvent",
+          "description": "Fired when the `g-H--i` property changes."
+        }
+      ],
+      "metadata": {}
+    }
+  ]
+}

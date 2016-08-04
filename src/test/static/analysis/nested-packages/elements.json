@@ -1,0 +1,37 @@
+{
+  "elements": [
+    {
+      "tagname": "element-subdir",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "element-subdir/element.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {}
+    },
+    {
+      "tagname": "outermost-element",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "outermost-element.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {}
+    }
+  ],
+  "schema_version": "1.0.0"
+}

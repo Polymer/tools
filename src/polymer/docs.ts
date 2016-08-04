@@ -68,7 +68,7 @@ export function annotateElementHeader(descriptor: ElementDescriptor) {
       _annotateEvent(event);
     });
     descriptor.events.sort(function(a, b) {
-      return a.name.localeCompare(b.name);
+      return (a.name || '').localeCompare(b.name || '');
     });
   }
   descriptor.demos = [];
@@ -146,6 +146,7 @@ function copyProperties(
   }
 }
 
+
 function mixinBehaviors(
     descriptor: ElementDescriptor, behaviorsByName: BehaviorsByName) {
   if (descriptor.behaviors) {
@@ -177,8 +178,9 @@ export function annotateElement(
     descriptor: ElementDescriptor,
     behaviorsByName: BehaviorsByName): ElementDescriptor {
   if (!descriptor.desc && descriptor.type === 'element') {
-    descriptor.desc = _findElementDocs(
-        descriptor.is, descriptor.domModule, descriptor.scriptElement);
+    descriptor.desc =
+        _findElementDocs(descriptor.domModule, descriptor.scriptElement) ||
+        undefined;
   }
   annotate(descriptor);
 
@@ -194,7 +196,7 @@ export function annotateElement(
   descriptor.properties.forEach(function(property) {
     // Feature properties are special, configuration is really just a matter of
     // inheritance...
-    annotateProperty(property, descriptor.abstract);
+    annotateProperty(property, !!descriptor.abstract);
   });
 
   // It may seem like overkill to always sort, but we have an assumption that
@@ -237,15 +239,16 @@ function _annotateEvent(descriptor: EventDescriptor): EventDescriptor {
   annotate(descriptor);
   // process @event
   const eventTag = jsdoc.getTag(descriptor.jsdoc, 'event');
-  descriptor.name = eventTag ? eventTag.description : 'N/A';
+  descriptor.name =
+      (eventTag && eventTag.description) ? eventTag.description : 'N/A';
 
-  const tags = (descriptor.jsdoc.tags || []);
+  const tags = (descriptor.jsdoc && descriptor.jsdoc.tags || []);
   // process @params
   descriptor.params =
       tags.filter((tag) => tag.tag === 'param').map(function(param) {
         return {
           type: param.type || 'N/A',
-          desc: param.description,
+          desc: param.description || '',
           name: param.name || 'N/A'
         };
       });
@@ -301,7 +304,7 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
   if (returnTag) {
     descriptor.return = {
       type: returnTag.type,
-      desc: returnTag.description,
+      desc: returnTag.description || '',
     };
   }
 
@@ -310,7 +313,7 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
     paramsByName[param.name] = param;
   });
   (descriptor.jsdoc && descriptor.jsdoc.tags || []).forEach((tag) => {
-    if (tag.tag !== 'param')
+    if (tag.tag !== 'param' || tag.name == null)
       return;
     const param = paramsByName[tag.name];
     if (!param) {
@@ -419,7 +422,7 @@ export function parsePseudoElements(comments: string[]): ElementDescriptor[] {
         type: 'element',
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
         properties: [],
-        desc: parsedJsdoc.description,
+        desc: parsedJsdoc.description
       });
       annotateElementHeader(element);
       elements.push(element);
@@ -429,13 +432,13 @@ export function parsePseudoElements(comments: string[]): ElementDescriptor[] {
 }
 
 /**
- * @param {string} elementId
  * @param {DocumentAST} domModule
  * @param {DocumentAST} scriptElement The script that the element was
  *     defined in.
  */
 function _findElementDocs(
-    elementId: string, domModule: dom5.Node, scriptElement: dom5.Node) {
+    domModule: dom5.Node|null|undefined,
+    scriptElement: dom5.Node|null|undefined): string|null {
   // Note that we concatenate docs from all sources if we find them.
   // element can be defined in:
   // html comment right before dom-module
@@ -449,6 +452,9 @@ function _findElementDocs(
   // Confusingly, with our current style, the comment will be attached to
   // `<head>`, rather than being a sibling to the `<dom-module>`
   const searchRoot = domModule || scriptElement;
+  if (!searchRoot) {
+    return null;
+  }
   const parents = dom5.nodeWalkAllPrior(searchRoot, dom5.isCommentNode);
   const comment = parents.length > 0 ? parents[0] : null;
   if (comment && comment.data) {
@@ -471,6 +477,9 @@ function _findElementDocs(
 
 function _findLastChildNamed(name: string, parent: dom5.Node) {
   const children = parent.childNodes;
+  if (!children) {
+    return null;
+  }
   for (let i = children.length - 1; i >= 0; i--) {
     let child = children[i];
     if (child.nodeName === name)

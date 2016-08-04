@@ -36,7 +36,7 @@ suite('HtmlParser', () => {
           return [{type: 'html', url: 'abc'}];
         },
         parse: (type: string, content: string, url: string):
-                   Document<any, any> => null,
+                   Document<any, any> => <any>null,
       });
     });
 

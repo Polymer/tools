@@ -40,10 +40,8 @@ export function declarationPropertyHandlers(declaration: ElementDescriptor):
       }
     },
     properties(node: estree.Node) {
-      const props = analyzeProperties(node);
-
-      for (let i = 0; i < props.length; i++) {
-        declaration.properties.push(props[i]);
+      for (const prop of analyzeProperties(node)) {
+        declaration.properties.push(prop);
       }
     },
     behaviors(node: estree.Node) {

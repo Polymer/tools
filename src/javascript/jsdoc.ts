@@ -27,9 +27,9 @@ import * as doctrine from 'doctrine';
  */
 export interface Tag {
   tag: string;
-  type?: string;
-  name?: string;
-  description?: string;
+  type: string|null;
+  name: string|null;
+  description: string|null;
 }
 
 /**
@@ -37,7 +37,7 @@ export interface Tag {
  */
 export interface Annotation {
   description?: string;
-  tags: Tag[];
+  tags: Tag[]|null;
   orig?: string;
 }
 
@@ -95,7 +95,7 @@ const CUSTOM_TAGS: {[name: string]: (tag: doctrine.Tag) => Tag} = {
 /**
  * Convert doctrine tags to our tag format
  */
-function _tagsToHydroTags(tags: doctrine.Tag[]): Tag[] {
+function _tagsToHydroTags(tags: doctrine.Tag[]|null): Tag[]|null {
   if (!tags)
     return null;
   return tags.map(function(tag): Tag {
@@ -144,7 +144,7 @@ export function parseJsdoc(docs: string): Annotation {
 
 // Utility
 
-export function hasTag(jsdoc: Annotation, tagName: string): boolean {
+export function hasTag(jsdoc: Annotation|null|undefined, tagName: string): boolean {
   if (!jsdoc || !jsdoc.tags)
     return false;
   return jsdoc.tags.some(function(tag) {
@@ -157,9 +157,13 @@ export function hasTag(jsdoc: Annotation, tagName: string): boolean {
  *
  * If `key` is omitted, the entire tag object is returned.
  */
-export function getTag(jsdoc: Annotation, tagName: string): Tag;
-export function getTag(jsdoc: Annotation, tagName: string, key: string): string;
-export function getTag(jsdoc: Annotation, tagName: string, key?: string): any {
+export function getTag(
+    jsdoc: Annotation|null|undefined, tagName: string): (Tag | null);
+export function getTag(
+    jsdoc: Annotation|null|undefined, tagName: string,
+    key: string): (string | null);
+export function getTag(
+    jsdoc: Annotation|null|undefined, tagName: string, key?: string): any {
   if (!jsdoc || !jsdoc.tags)
     return null;
   for (let i = 0; i < jsdoc.tags.length; i++) {
@@ -179,11 +183,11 @@ export function unindent(text: string): string {
     if (/^\s*$/.test(line))
       return prev;  // Completely ignore blank lines.
 
-    const lineIndent = line.match(/^(\s*)/)[0].length;
+    const lineIndent = line.match(/^(\s*)/)![0].length;
     if (prev === null)
       return lineIndent;
     return lineIndent < prev ? lineIndent : prev;
-  }, null);
+  }, 0);
 
   return lines
       .map(function(l) {

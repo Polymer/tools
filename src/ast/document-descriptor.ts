@@ -18,7 +18,7 @@ import {Descriptor} from './descriptor';
 /**
  * The metadata for all features and elements defined in one document
  */
-export class DocumentDescriptor {
+export class DocumentDescriptor implements Descriptor {
   document: Document<any, any>;
   dependencies: Descriptor[];
   entities: Descriptor[];

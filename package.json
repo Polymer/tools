@@ -18,8 +18,7 @@
   ],
   "scripts": {
     "clean": "mkdir -p lib/ && rm -rf lib/",
-    "compile": "tsc",
-    "build": "mkdir -p lib/ && cp -r src/test lib/ && npm run compile",
+    "build": "gulp build --silent",
     "release": "npm run compile",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
@@ -37,10 +36,12 @@
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.0.0",
     "gulp-mocha": "^2.2.0",
+    "gulp-newer": "^1.2.0",
+    "gulp-shell": "^0.5.2",
     "gulp-tslint": "^5.0.0",
     "gulp-typescript": "^2.13.4",
-    "gulp-typings": "^1.3.6",
     "jsdoc-to-markdown": "^1.0.3",
+    "jsonschema": "^1.1.0",
     "merge-stream": "^1.0.0",
     "mocha": "^2.2.4",
     "run-sequence": "^1.2.0",
@@ -48,7 +49,7 @@
     "temp": "^0.8.3",
     "tslint": "^3.10.2",
     "typescript": "^2.0.0",
-    "typings": "^1.3.1",
+    "typescript-json-schema": "^0.1.1",
     "watchy": "^0.6.6"
   },
   "dependencies": {

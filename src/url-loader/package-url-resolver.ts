@@ -27,7 +27,7 @@ export interface PackageUrlResolverOptions {
  */
 export class PackageUrlResolver implements UrlResolver {
   componentDir: string;
-  hostname: string;
+  hostname: string|null;
 
   constructor(options?: PackageUrlResolverOptions) {
     options = options || {};
@@ -37,7 +37,8 @@ export class PackageUrlResolver implements UrlResolver {
 
   canResolve(url: string): boolean {
     let urlObject = parseUrl(url);
-    let pathname = pathlib.normalize(decodeURIComponent(urlObject.pathname));
+    let pathname =
+        pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
     return this._isValid(urlObject, pathname);
   }
 
@@ -48,7 +49,8 @@ export class PackageUrlResolver implements UrlResolver {
 
   resolve(url: string): string {
     let urlObject = parseUrl(url);
-    let pathname = pathlib.normalize(decodeURIComponent(urlObject.pathname));
+    let pathname =
+        pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
 
     if (!this._isValid(urlObject, pathname)) {
       throw new Error(`Invalid URL ${url}`);

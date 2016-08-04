@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "simple-element",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "simple-element.html",
+      "attributes": [
+        {
+          "name": "the-value",
+          "description": "",
+          "type": "String"
+        }
+      ],
+      "properties": [
+        {
+          "name": "theValue",
+          "type": "String",
+          "description": "",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [
+        {
+          "name": "the-value-changed",
+          "type": "CustomEvent",
+          "description": "Fired when the `theValue` property changes."
+        }
+      ],
+      "metadata": {}
+    }
+  ]
+}

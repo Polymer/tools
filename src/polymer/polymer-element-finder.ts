@@ -171,7 +171,7 @@ class ElementVisitor implements Visitor {
     }
 
     // TODO(justinfagnani): is the second clause needed?
-    if (this.element /* && !this.element.properties*/) {
+    if (this.element) {
       let getters: {[name: string]: PropertyDescriptor} = {};
       let setters: {[name: string]: PropertyDescriptor} = {};
       let definedProperties: {[name: string]: PropertyDescriptor} = {};
