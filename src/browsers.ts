@@ -18,9 +18,10 @@ const LAUNCHPAD_TO_SELENIUM: {[browser: string]: LaunchpadToWebdriver} = {
   firefox: firefox,
   aurora:  firefox,
   ie:      internetExplorer,
-  // Until https://code.google.com/p/selenium/issues/detail?id=7933
   safari:  safari,
-  phantom: phantom,
+  // Temporarily disabling phantom until we can disable it on travis.
+  // See: https://github.com/Polymer/wct-local/issues/38
+  // phantom: phantom,
 };
 
 export function normalize(
