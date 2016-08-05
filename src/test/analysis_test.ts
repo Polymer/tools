@@ -22,9 +22,10 @@ import {ElementDescriptor} from '../ast/ast';
 import {Elements} from '../elements-format';
 import {generateElementMetadata} from '../generate-elements';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
-
+import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
+
 suite('Analysis', function() {
   const basedir = path.join(__dirname, 'static', 'analysis');
   const analysisFixtureDirs = fs.readdirSync(basedir)
@@ -108,7 +109,10 @@ suite('Analysis', function() {
 });
 
 function analyzeDir(baseDir: string): Analyzer {
-  const analyzer = new Analyzer({urlLoader: new FSUrlLoader(baseDir)});
+  const analyzer = new Analyzer({
+    urlLoader: new FSUrlLoader(baseDir),
+    urlResolver: new PackageUrlResolver(),
+  });
   for (const filename of walkRecursively(baseDir)) {
     analyzer.analyze(filename.substring(baseDir.length));
   }

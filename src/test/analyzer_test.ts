@@ -24,8 +24,20 @@ import {HtmlDocument} from '../html/html-document';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document} from '../parser/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {UrlResolver} from '../url-loader/url-resolver';
 
 import {invertPromise} from './test-utils';
+
+class TestUrlResolver implements UrlResolver {
+  canResolve(url: string) {
+    return (url === 'test.com/test.html');
+  }
+
+  resolve(url: string) {
+    return (url === 'test.com/test.html') ? '/static/html-parse-target.html' :
+                                            url;
+  }
+}
 
 suite('Analyzer', () => {
   let analyzer: Analyzer;
@@ -33,6 +45,7 @@ suite('Analyzer', () => {
   setup(() => {
     analyzer = new Analyzer({
       urlLoader: new FSUrlLoader(__dirname),
+      urlResolver: new TestUrlResolver(),
     });
   });
 
@@ -50,6 +63,17 @@ suite('Analyzer', () => {
       assert.equal(doc.url, '/static/js-elements.js');
     });
 
+    test('resolves URLs', async() => {
+      const docs = await Promise.all([
+        analyzer.load('test.com/test.html'),
+        analyzer.load('/static/html-parse-target.html'),
+      ]);
+      let doc1 = docs[0];
+      let doc2 = docs[1];
+      assert.equal(doc1.url, '/static/html-parse-target.html');
+      assert.equal(doc1, doc2);
+    });
+
     test('returns a Promise that rejects for non-existant files', async() => {
       await invertPromise(analyzer.load('/static/not-found'));
     });
@@ -63,6 +87,17 @@ suite('Analyzer', () => {
           await analyzer.analyze('/static/html-parse-target.html');
       // TODO(justinfagnani): add a lot more checks, especially for
       // transitive dependencies
+    });
+
+    test('resolves URLs', async() => {
+      const docs = await Promise.all([
+        analyzer.analyze('test.com/test.html'),
+        analyzer.analyze('/static/html-parse-target.html'),
+      ]);
+      let doc1 = docs[0];
+      let doc2 = docs[1];
+      assert.equal(doc1.url, '/static/html-parse-target.html');
+      assert.equal(doc1, doc2);
     });
 
     test('returns a Promise that rejects for malformed files', async() => {

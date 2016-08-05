@@ -33,10 +33,13 @@ import {Document} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
 import {PolymerElementFinder} from './polymer/polymer-element-finder';
+import {PackageUrlResolver} from './url-loader/package-url-resolver';
 import {UrlLoader} from './url-loader/url-loader';
+import {UrlResolver} from './url-loader/url-resolver';
 
 export interface Options {
   urlLoader: UrlLoader;
+  urlResolver?: UrlResolver;
   parsers?: Map<string, Parser<any>>;
   entityFinders?: Map<string, EntityFinder<any, any, any>[]>;
 }
@@ -66,11 +69,13 @@ export class Analyzer {
   ]);
 
   private _loader: UrlLoader;
+  private _resolver: UrlResolver;
   private _documents = new Map<string, Promise<Document<any, any>>>();
   private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
 
   constructor(options: Options) {
     this._loader = options.urlLoader;
+    this._resolver = options.urlResolver;
     this._parsers = options.parsers || this._parsers;
     this._entityFinders = options.entityFinders || this._entityFinders;
   }
@@ -82,18 +87,28 @@ export class Analyzer {
    * @return {Promise<DocumentDescriptor>}
    */
   async analyze(url: string): Promise<DocumentDescriptor> {
-    const cachedResult = this._documentDescriptors.get(url);
+    return this._analyzeResolved(this._resolveUrl(url));
+  }
+
+  private async _analyzeResolved(resolvedUrl: string):
+      Promise<DocumentDescriptor> {
+    let isExternalUrl = urlLib.parse(resolvedUrl).protocol !== null ||
+        resolvedUrl.startsWith('//');
+    if (isExternalUrl) {
+      return null;
+    }
+    let cachedResult = this._documentDescriptors.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
-    const promise = (async() => {
+    let promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      const document = await this.load(url);
+      let document = await this._loadResolved(resolvedUrl);
       return this._analyzeDocument(document);
     })();
-    this._documentDescriptors.set(url, promise);
+    this._documentDescriptors.set(resolvedUrl, promise);
     return promise;
   }
 
@@ -107,7 +122,8 @@ export class Analyzer {
   private async _analyzeSource(
       type: string, contents: string, url: string,
       locationOffset?: LocationOffset): Promise<DocumentDescriptor> {
-    let document = this.parse(type, contents, url);
+    let resolvedUrl = this._resolveUrl(url);
+    let document = this._parse(type, contents, resolvedUrl);
     return await this._analyzeDocument(document, locationOffset);
   }
 
@@ -144,13 +160,17 @@ export class Analyzer {
    * URL.
    */
   async load(url: string): Promise<Document<any, any>> {
-    // TODO(justinfagnani): normalize url
-    const cachedResult = this._documents.get(url);
+    return this._loadResolved(this._resolveUrl(url));
+  }
+
+  private async _loadResolved(resolvedUrl: string):
+      Promise<Document<any, any>> {
+    const cachedResult = this._documents.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
-    if (!this._loader.canLoad(url)) {
-      throw new Error(`Can't load URL: ${url}`);
+    if (!this._loader.canLoad(resolvedUrl)) {
+      throw new Error(`Can't load URL: ${resolvedUrl}`);
     }
     // Use an immediately executed async function to create the final Promise
     // synchronously so we can store it in this._documents before any other
@@ -159,15 +179,16 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      let content = await this._loader.load(url);
-      let extension = path.extname(url).substring(1);
-      return this.parse(extension, content, url);
+      let content = await this._loader.load(resolvedUrl);
+      let extension = path.extname(resolvedUrl).substring(1);
+      return this._parse(extension, content, resolvedUrl);
     })();
-    this._documents.set(url, promise);
+    this._documents.set(resolvedUrl, promise);
     return promise;
   }
 
-  parse(type: string, contents: string, url: string): Document<any, any> {
+  private _parse(type: string, contents: string, url: string):
+      Document<any, any> {
     let parser = this._parsers.get(type);
     if (parser == null) {
       throw new Error(`No parser for for file type ${type}`);
@@ -185,5 +206,15 @@ export class Analyzer {
       return findEntities(document, finders);
     }
     return [];
+  }
+
+  /**
+   * Resolves a URL with this Analyzer's `UrlResolver` if it has one, otherwise
+   * returns the given URL.
+   */
+  private _resolveUrl(url: string): string {
+    return this._resolver && this._resolver.canResolve(url) ?
+        this._resolver.resolve(url) :
+        url;
   }
 }
