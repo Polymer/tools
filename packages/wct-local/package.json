@@ -15,9 +15,9 @@
     "url": "https://github.com/Polymer/wct-local.git"
   },
   "main": "lib/plugin.js",
+  "typings": "lib/plugin.d.ts",
   "scripts": {
     "lint": "gulp lint",
-    "init": "gulp init",
     "build": "gulp build",
     "test": "gulp test",
     "prepublish": "gulp build-all",
@@ -46,12 +46,17 @@
     }
   },
   "devDependencies": {
-    "@types/freeport": "^1.0.19",
     "gulp": "^3.8.10",
-    "tools-common": "github:rictic/tools-common#0de693a",
-    "typescript": "^1.8.10"
+    "tools-common": "github:Polymer/tools-common#aa1c22d",
+    "tslint": "^3.14.0",
+    "typescript": "^2.0.0"
   },
   "dependencies": {
+    "@types/chalk": "^0.4.28",
+    "@types/express": "^4.0.30",
+    "@types/freeport": "^1.0.19",
+    "@types/node": "^6.0.31",
+    "@types/which": "^1.0.27",
     "chalk": "^1.1.1",
     "cleankill": "^1.0.3",
     "freeport": "^1.0.4",

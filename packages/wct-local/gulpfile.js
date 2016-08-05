@@ -10,8 +10,9 @@
 
 'use strict';
 
-const toolsCommon = require('tools-common/gulpfile');
-const gulp = require('gulp');
+const toolsCommon = require('tools-common/gulp-tasks');
 
 // All the default values work fine here!
-toolsCommon.test(gulp);
+toolsCommon.test({
+
+});

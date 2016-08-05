@@ -3,39 +3,23 @@
         "target": "es6",
         "module": "commonjs",
         "moduleResolution": "node",
-        "isolatedModules": true,
+        "isolatedModules": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "declaration": false,
+        "declaration": true,
         "noImplicitAny": true,
         "removeComments": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "lib"
     },
-    "exclude": [
-        "node_modules"
-    ],
-    "filesGlob": [
-        "src/*.ts",
-        "!node_modules/**",
-        "custom_typings/*.d.ts",
-        "typings/index.d.ts",
-        "node_modules/typescript/lib/lib.core.es6.d.ts"
-    ],
     "files": [
         "src/browsers.ts",
         "src/plugin.ts",
         "src/selenium.ts",
-        "custom_typings/launchpad.d.ts",
-        "custom_typings/promisify-node.d.ts",
-        "custom_typings/selenium-standalone.d.ts",
-        "custom_typings/wct.d.ts",
-        "custom_typings/wd.d.ts",
-        "custom_typings/which.d.ts",
-        "typings/index.d.ts"
+        "custom_typings/main.d.ts"
     ],
     "atom": {
-        "rewriteTsconfig": true
+        "rewriteTsconfig": false
     }
 }
