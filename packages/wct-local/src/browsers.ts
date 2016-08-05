@@ -83,7 +83,10 @@ export let detect = async function detect(): Promise<{[browser: string]: wd.Capa
   for (const browser of browsers) {
     if (!LAUNCHPAD_TO_SELENIUM[browser.name]) continue;
     const converter = LAUNCHPAD_TO_SELENIUM[browser.name];
-    results[browser.name] = converter(browser);
+    const convertedBrowser = converter(browser);
+    if (convertedBrowser) {
+      results[browser.name] = convertedBrowser;
+    }
   }
 
   return results;
@@ -122,6 +125,10 @@ function chrome(browser: launchpad.Browser): wd.Capabilities {
  * @return A selenium capabilities object.
  */
 function firefox(browser: launchpad.Browser): wd.Capabilities {
+  const version = browser.version.match(/\d+/)[0];
+  if (parseInt(version, 10) > 46) {
+    return null;
+  }
   return {
     'browserName':    'firefox',
     'version':        browser.version.match(/\d+/)[0],
