@@ -19,6 +19,7 @@ const typings = require('gulp-typings');
 const mergeStream = require('merge-stream');
 const path = require('path');
 const runSequence = require('run-sequence');
+const typescript_lib = require('typescript');
 
 function task(name, deps, impl) {
   if (gulp.hasTask(name)) {
@@ -29,7 +30,11 @@ function task(name, deps, impl) {
 }
 
 module.exports.init = function() {
-  task('init', () => gulp.src('./typings.json').pipe(typings()));
+  task('init', () => {
+    if (fs.existsSync('./typings.json')) {
+      gulp.src('./typings.json').pipe(typings())
+    }
+  });
 }
 
 module.exports.depcheck = function depcheck(options) {
@@ -54,6 +59,11 @@ module.exports.depcheck = function depcheck(options) {
       const unused = new Set(result.dependencies);
       for (const falseUnused of options.stickyDeps) {
         unused.delete(falseUnused);
+      }
+      for (const dep of unused) {
+        if (dep.startsWith('@types/')) {
+          unused.delete(dep);
+        }
       }
       if (unused.size > 0) {
         console.log('Unused dependencies:', unused);
@@ -115,7 +125,8 @@ module.exports.build = function(options) {
   };
   options = Object.assign({}, defaultOptions, options);
 
-  const tsProject = typescript.createProject('tsconfig.json');
+  const tsProject =
+    typescript.createProject('tsconfig.json', {typescript: typescript_lib});
 
   task('build', () =>
     mergeStream(
