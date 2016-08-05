@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "el-el",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "el.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
+    },
+    {
+      "tagname": "sub-el",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "subdir/sub-el.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
+    }
+  ]
+}

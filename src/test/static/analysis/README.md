@@ -1,0 +1,1 @@
+In this directory are fixtures for testing analysis serialization.

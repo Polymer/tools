@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "my-element",
+      "description": "my-element!",
+      "superclass": "HTMLElement",
+      "path": "element.js",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 4,
+        "column": 8
+      }
+    }
+  ]
+}

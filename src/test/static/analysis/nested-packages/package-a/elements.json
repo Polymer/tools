@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "an-element",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "an-element.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 0,
+        "column": 17
+      }
+    },
+    {
+      "tagname": "another-element",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "subdir/another-element.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
+    }
+  ]
+}
