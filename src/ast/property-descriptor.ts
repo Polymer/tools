@@ -30,7 +30,7 @@ export interface PropertyDescriptor extends Descriptor {
   published?: boolean;
   notify?: LiteralValue;
   observer?: LiteralValue;
-  observerNode?: estree.Expression;
+  observerNode?: estree.Expression|estree.Pattern;
   readOnly?: LiteralValue;
   reflectToAttribute?: LiteralValue;
   'default'?: LiteralValue;

@@ -138,7 +138,7 @@ export function removeLeadingAsterisks(description: string): string {
 export function parseJsdoc(docs: string): Annotation {
   docs = removeLeadingAsterisks(docs);
   const d = doctrine.parse(
-      docs, {unwrap: false, lineNumber: true, preserveWhitespace: true});
+      docs, {unwrap: false, lineNumbers: true, preserveWhitespace: true});
   return {description: d.description, tags: _tagsToHydroTags(d.tags)};
 }
 

@@ -13,6 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 
 import {BehaviorDescriptor, BehaviorsByName, Descriptor, ElementDescriptor, EventDescriptor, FeatureDescriptor, FunctionDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
@@ -455,7 +456,8 @@ function _findElementDocs(
   if (!searchRoot) {
     return null;
   }
-  const parents = dom5.nodeWalkAllPrior(searchRoot, dom5.isCommentNode);
+  const parents = <{data: string}[]><any>dom5.nodeWalkAllPrior(
+      searchRoot, dom5.isCommentNode);
   const comment = parents.length > 0 ? parents[0] : null;
   if (comment && comment.data) {
     found.push(comment.data);

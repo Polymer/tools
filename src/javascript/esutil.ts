@@ -115,7 +115,7 @@ export function getAttachedComment(node: estree.Node): string {
 export function getEventComments(node: estree.Node) {
   let eventComments: string[] = [];
   estraverse.traverse(node, {
-    enter: (node) => {
+    enter: (node: estree.Node) => {
       const comments =
           (node.leadingComments || [])
               .concat(node.trailingComments || [])
