@@ -15,10 +15,11 @@
 import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as path from 'path';
+import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ElementDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
-import {Attribute, Element, Elements, Event, Property} from './elements-format';
+import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset, PropertyDescriptor} from './ast/ast';
+import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {Document} from './parser/document';
 import {trimLeft} from './utils';
@@ -57,7 +58,8 @@ export function generateElementMetadata(
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, path: string): Element|null {
+    elementDescriptor: ElementDescriptor, path: string,
+    locationOffset?: LocationOffset): Element|null {
   const propChangeEvents: Event[] =
       (elementDescriptor.properties || [])
           .filter(p => p.notify && propertyToAttributeName(p.name))
@@ -73,11 +75,13 @@ function serializeElementDescriptor(
   const properties = elementDescriptor.properties || [];
   return {
     tagname: elementDescriptor.is,
-    description: '',
+    description: elementDescriptor.desc || '',
     superclass: 'HTMLElement',
     path: path,
-    attributes: computeAttributesFromPropertyDescriptors(properties),
-    properties: properties.map(serializePropertyDescriptor),
+    attributes:
+        computeAttributesFromPropertyDescriptors(properties, locationOffset),
+    properties:
+        properties.map(p => serializePropertyDescriptor(p, locationOffset)),
     styling: {
       cssVariables: [],
       selectors: [],
@@ -86,35 +90,42 @@ function serializeElementDescriptor(
     slots: [],
     events: propChangeEvents,
     metadata: {},
+    sourceLocation:
+        correctSourceLocation(elementDescriptor.sourceLocation, locationOffset)
   };
 }
 
-function serializePropertyDescriptor(p: PropertyDescriptor): Property {
+function serializePropertyDescriptor(
+    propertyDescriptor: PropertyDescriptor,
+    locationOffset?: LocationOffset): Property {
   const property: Property = {
-    name: p.name,
-    type: p.type || '?',
-    description: p.desc || '',
+    name: propertyDescriptor.name,
+    type: propertyDescriptor.type || '?',
+    description: propertyDescriptor.desc || '',
+    sourceLocation:
+        correctSourceLocation(propertyDescriptor.sourceLocation, locationOffset)
   };
-  if (p.default) {
-    property.defaultValue = JSON.stringify(p.default);
+  if (propertyDescriptor.default) {
+    property.defaultValue = JSON.stringify(propertyDescriptor.default);
   }
   const polymerMetadata: any = {};
   const polymerMetadataFields = ['notify', 'observer', 'readOnly'];
   for (const field of polymerMetadataFields) {
-    if (field in p) {
-      polymerMetadata[field] = p[field];
+    if (field in propertyDescriptor) {
+      polymerMetadata[field] = propertyDescriptor[field];
     }
   }
   property.metadata = {polymer: polymerMetadata};
   return property;
 }
 
-function computeAttributesFromPropertyDescriptors(props: PropertyDescriptor[]):
-    Attribute[] {
+function computeAttributesFromPropertyDescriptors(
+    props: PropertyDescriptor[], locationOffset?: LocationOffset): Attribute[] {
   return props.filter(prop => propertyToAttributeName(prop.name)).map(prop => {
     const attribute: Attribute = {
-      name: propertyToAttributeName(prop.name)!,
-      description: prop.desc || ''
+      name: propertyToAttributeName(prop.name),
+      description: prop.desc || '',
+      sourceLocation: correctSourceLocation(prop.sourceLocation, locationOffset)
     };
     if (prop.type) {
       attribute.type = prop.type;
@@ -151,27 +162,31 @@ class PackageGatherer implements AnalysisVisitor {
 class ElementGatherer implements AnalysisVisitor {
   elements: Element[] = [];
   private _elementPaths = new Map<ElementDescriptor, string>();
-  visitElement(element: ElementDescriptor, path: Descriptor[]): void {
+  visitElement(elementDescriptor: ElementDescriptor, path: Descriptor[]): void {
     let pathToElement: string|null = null;
+    let locationOffset: LocationOffset;
     for (const descriptor of path) {
       if (descriptor instanceof DocumentDescriptor) {
         pathToElement = descriptor.document.url;
+        locationOffset = descriptor.locationOffset;
       }
     }
     if (!pathToElement) {
-      throw new Error(`Unable to determine path to element: ${element}`);
+      throw new Error(
+          `Unable to determine path to element: ${elementDescriptor}`);
     }
-    if (this._elementPaths.has(element)) {
-      if (this._elementPaths.get(element) !== pathToElement) {
+    if (this._elementPaths.has(elementDescriptor)) {
+      if (this._elementPaths.get(elementDescriptor) !== pathToElement) {
         throw new Error(
-            `Found element ${element} at distinct paths: ` +
-            `${pathToElement} and ${this._elementPaths.get(element)}`);
+            `Found element ${elementDescriptor} at distinct paths: ` +
+            `${pathToElement} and ${this._elementPaths.get(elementDescriptor)}`);
       }
     } else {
-      this._elementPaths.set(element, pathToElement);
-      const elem = serializeElementDescriptor(element, pathToElement);
-      if (elem) {
-        this.elements.push(elem);
+      this._elementPaths.set(elementDescriptor, pathToElement);
+      const element = serializeElementDescriptor(
+          elementDescriptor, pathToElement, locationOffset);
+      if (element) {
+        this.elements.push(element);
       }
     }
   }
@@ -182,6 +197,8 @@ abstract class AnalysisVisitor {
   visitInlineDocumentDescriptor?
       (dd: InlineDocumentDescriptor<any>, path: Descriptor[]): void;
   visitElement?(element: ElementDescriptor, path: Descriptor[]): void;
+  visitImportDescriptor?
+      (importDesc: ImportDescriptor<any>, path: Descriptor[]): void;
   done?(): void;
 }
 
@@ -238,8 +255,10 @@ class AnalysisWalker {
       return this._walkInlineDocumentDescriptor(entity, visitors);
     } else if (entity['type'] === 'element') {
       return this._walkElement(<ElementDescriptor>entity, visitors);
+    } else if (entity instanceof ImportDescriptor) {
+      return this._walkImportDescriptor(entity, visitors);
     }
-    throw new Error(`Unknown kind of descriptor: ${entity}`);
+    throw new Error(`Unknown kind of descriptor: ${util.inspect(entity)}`);
   }
 
   private _walkElement(
@@ -250,7 +269,17 @@ class AnalysisWalker {
       }
     }
   }
+
+  private _walkImportDescriptor(
+      importDesc: ImportDescriptor<any>, visitors: AnalysisVisitor[]) {
+    for (const visitor of visitors) {
+      if (visitor.visitImportDescriptor) {
+        visitor.visitImportDescriptor(importDesc, this._path);
+      }
+    }
+  }
 }
+
 
 /**
  * Implements Polymer core's translation of property names to attribute names.
@@ -265,4 +294,17 @@ function propertyToAttributeName(propertyName: string): string|null {
   }
   return propertyName.replace(
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
+}
+
+export function correctSourceLocation(
+    sourceLocation: SourceLocation,
+    locationOffset?: LocationOffset): SourceLocation|undefined {
+  if (!locationOffset)
+    return sourceLocation;
+  return sourceLocation && {
+    line: sourceLocation.line + locationOffset.line,
+    // The location offset column only matters for the first line.
+    column: sourceLocation.column +
+        (sourceLocation.line === 0 ? locationOffset.col : 0)
+  };
 }

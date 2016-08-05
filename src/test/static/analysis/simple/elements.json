@@ -3,21 +3,29 @@
   "elements": [
     {
       "tagname": "simple-element",
-      "description": "",
+      "description": "This is a description of the element.",
       "superclass": "HTMLElement",
       "path": "simple-element.html",
       "attributes": [
         {
           "name": "the-value",
-          "description": "",
-          "type": "String"
+          "description": "This is a simple test property named theValue.",
+          "sourceLocation": {
+            "line": 9,
+            "column": 6
+          },
+          "type": "string"
         }
       ],
       "properties": [
         {
           "name": "theValue",
-          "type": "String",
-          "description": "",
+          "type": "string",
+          "description": "This is a simple test property named theValue.",
+          "sourceLocation": {
+            "line": 9,
+            "column": 6
+          },
           "metadata": {
             "polymer": {
               "notify": true
@@ -38,7 +46,11 @@
           "description": "Fired when the `theValue` property changes."
         }
       ],
-      "metadata": {}
+      "metadata": {},
+      "sourceLocation": {
+        "line": 4,
+        "column": 10
+      }
     }
   ]
 }

@@ -18,7 +18,6 @@ import {Element, Elements} from '../elements-format';
 const paperButtonElement: Element = {
   path: 'paper-button.html',
   tagname: 'paper-button',
-  classname: 'PaperButton',
   superclass: 'HTMLElement',
   demos: ['demo/index.html'],
 

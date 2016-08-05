@@ -13,14 +13,17 @@
  */
 
 import * as dom5 from 'dom5';
+import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
+import {SourceLocation} from '../elements-format';
+import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
+import {Document} from '../parser/document';
 
-import {BehaviorOrName} from './behavior-descriptor';
-import {Descriptor, LiteralValue} from './descriptor';
-import {EventDescriptor} from './event-descriptor';
-import {PropertyDescriptor} from './property-descriptor';
+import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, PropertyDescriptor} from './ast';
+
+export {Visitor} from '../javascript/estree-visitor';
 
 export interface Options {
   type: 'element'|'behavior';
@@ -43,6 +46,7 @@ export interface Options {
   scriptElement?: dom5.Node;
 
   abstract?: boolean;
+  sourceLocation?: SourceLocation;
 }
 
 /**
@@ -69,6 +73,7 @@ export class ElementDescriptor implements Descriptor {
   scriptElement?: dom5.Node;
 
   abstract?: boolean;
+  sourceLocation?: SourceLocation;
 
   constructor(options: Options) {
     Object.assign(this, options);

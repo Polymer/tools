@@ -10,19 +10,31 @@
         {
           "name": "d-e-f",
           "description": "",
-          "type": "String"
+          "sourceLocation": {
+            "line": 7,
+            "column": 6
+          },
+          "type": "string"
         },
         {
           "name": "g--h--i",
           "description": "",
-          "type": "String"
+          "sourceLocation": {
+            "line": 11,
+            "column": 6
+          },
+          "type": "string"
         }
       ],
       "properties": [
         {
           "name": "ABC",
-          "type": "String",
+          "type": "string",
           "description": "",
+          "sourceLocation": {
+            "line": 3,
+            "column": 6
+          },
           "metadata": {
             "polymer": {
               "notify": true
@@ -31,8 +43,12 @@
         },
         {
           "name": "dEF",
-          "type": "String",
+          "type": "string",
           "description": "",
+          "sourceLocation": {
+            "line": 7,
+            "column": 6
+          },
           "metadata": {
             "polymer": {
               "notify": true
@@ -41,8 +57,12 @@
         },
         {
           "name": "g-H--i",
-          "type": "String",
+          "type": "string",
           "description": "",
+          "sourceLocation": {
+            "line": 11,
+            "column": 6
+          },
           "metadata": {
             "polymer": {
               "notify": true
@@ -68,7 +88,11 @@
           "description": "Fired when the `g-H--i` property changes."
         }
       ],
-      "metadata": {}
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
     }
   ]
 }

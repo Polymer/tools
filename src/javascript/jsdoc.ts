@@ -115,7 +115,7 @@ function _tagsToHydroTags(tags: doctrine.Tag[]|null): Tag[]|null {
 /**
  * removes leading *, and any space before it
  */
-function _removeLeadingAsterisks(description: string): string {
+export function removeLeadingAsterisks(description: string): string {
   if ((typeof description) !== 'string')
     return description;
 
@@ -136,7 +136,7 @@ function _removeLeadingAsterisks(description: string): string {
  * @return {?Annotation}
  */
 export function parseJsdoc(docs: string): Annotation {
-  docs = _removeLeadingAsterisks(docs);
+  docs = removeLeadingAsterisks(docs);
   const d = doctrine.parse(
       docs, {unwrap: false, lineNumber: true, preserveWhitespace: true});
   return {description: d.description, tags: _tagsToHydroTags(d.tags)};
@@ -144,7 +144,8 @@ export function parseJsdoc(docs: string): Annotation {
 
 // Utility
 
-export function hasTag(jsdoc: Annotation|null|undefined, tagName: string): boolean {
+export function hasTag(
+    jsdoc: Annotation|null|undefined, tagName: string): boolean {
   if (!jsdoc || !jsdoc.tags)
     return false;
   return jsdoc.tags.some(function(tag) {

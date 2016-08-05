@@ -2,10 +2,10 @@
   "schema_version": "1.0.0",
   "elements": [
     {
-      "tagname": "element-b",
-      "description": "",
+      "tagname": "my-element",
+      "description": "my-element!",
       "superclass": "HTMLElement",
-      "path": "element.html",
+      "path": "element.js",
       "attributes": [],
       "properties": [],
       "styling": {
@@ -17,8 +17,8 @@
       "events": [],
       "metadata": {},
       "sourceLocation": {
-        "line": 0,
-        "column": 24
+        "line": 4,
+        "column": 8
       }
     }
   ]

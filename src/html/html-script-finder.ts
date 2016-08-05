@@ -13,10 +13,11 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
+import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {Descriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
+import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from '../ast/ast';
+
 import {HtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
 
@@ -44,13 +45,39 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
           entities.push(
               new ImportDescriptor<ASTNode>('html-script', importUrl, node));
         } else {
+          const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           let contents = dom5.getTextContent(node);
-          entities.push(
-              new InlineDocumentDescriptor<ASTNode>('js', contents, node));
+          entities.push(new InlineDocumentDescriptor<ASTNode>(
+              'js', contents, node, locationOffset));
         }
       }
     });
 
     return entities;
   }
+}
+
+function isLocationInfo(loc: LocationInfo|
+                        ElementLocationInfo): loc is LocationInfo {
+  return 'line' in loc;
+}
+
+function getLocationOffsetOfStartOfTextContent(node: ASTNode) {
+  let locationOffset: LocationOffset|undefined;
+  let scriptContentsLocation =
+      node.childNodes[0] && node.childNodes[0].__location;
+  if (scriptContentsLocation) {
+    if (isLocationInfo(scriptContentsLocation)) {
+      locationOffset = {
+        line: scriptContentsLocation.line - 1,
+        col: scriptContentsLocation.col
+      };
+    } else {
+      locationOffset = {
+        line: scriptContentsLocation.startTag.line - 1,
+        col: scriptContentsLocation.startTag.endOffset,
+      };
+    }
+  }
+  return locationOffset;
 }

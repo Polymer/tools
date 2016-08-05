@@ -14,6 +14,7 @@
 
 import {Document} from '../parser/document';
 import {Descriptor} from './descriptor';
+import {LocationOffset} from './inline-document-descriptor';
 
 /**
  * The metadata for all features and elements defined in one document
@@ -22,13 +23,15 @@ export class DocumentDescriptor implements Descriptor {
   document: Document<any, any>;
   dependencies: Descriptor[];
   entities: Descriptor[];
+  locationOffset?: LocationOffset;
 
   constructor(
       document: Document<any, any>, dependencies: Descriptor[],
-      entities: Descriptor[]) {
+      entities: Descriptor[], locationOffset?: LocationOffset) {
     this.document = document;
     this.dependencies = dependencies;
     this.entities = entities;
+    this.locationOffset = locationOffset;
   }
 
   get url() {

@@ -13,11 +13,11 @@
  */
 
 import {assert} from 'chai';
-import * as parse5 from 'parse5';
 
 import {InlineDocumentDescriptor} from '../../ast/ast';
 import {ImportDescriptor} from '../../ast/import-descriptor';
-import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {HtmlVisitor} from '../../html/html-document';
+import {HtmlParser} from '../../html/html-parser';
 import {HtmlScriptFinder} from '../../html/html-script-finder';
 
 suite('HtmlScriptFinder', () => {
@@ -34,12 +34,8 @@ suite('HtmlScriptFinder', () => {
           <script src="foo.js"></script>
           <script>console.log('hi')</script>
         </head></html>`;
-      let ast = parse5.parse(contents);
-      let document = new HtmlDocument({
-        url: 'test.html',
-        contents,
-        ast,
-      });
+      const document =
+          new HtmlParser(null).parse(contents, 'test-document.html');
       let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const entities = await finder.findEntities(document, visit);
@@ -52,7 +48,7 @@ suite('HtmlScriptFinder', () => {
       const entity1 = <InlineDocumentDescriptor<any>>entities[1];
       assert.equal(entity1.type, 'js');
       assert.equal(entity1.contents, `console.log('hi')`);
-
+      assert.deepEqual(entity1.locationOffset, {line: 2, col: 19});
     });
 
   });

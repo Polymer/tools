@@ -49,6 +49,7 @@ export function analyzeProperties(node: estree.Node) {
       switch (propertyKey) {
         case 'type':
           prop.type = esutil.objectKeyToString(propertyArg.value);
+          prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP[prop.type] || prop.type;
           if (prop.type === undefined) {
             throw {
               message: 'Invalid type in property object.',

@@ -15,7 +15,11 @@
       "demos": [],
       "slots": [],
       "events": [],
-      "metadata": {}
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
     },
     {
       "tagname": "sub-el",
@@ -31,7 +35,11 @@
       "demos": [],
       "slots": [],
       "events": [],
-      "metadata": {}
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
     }
   ]
 }

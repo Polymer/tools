@@ -20,7 +20,7 @@ import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
-import {JavaScriptDocument} from '../javascript/javascript-document';
+import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 
 import * as analyzeProperties from './analyze-properties';
@@ -55,6 +55,7 @@ class ElementVisitor implements Visitor {
       events: esutil.getEventComments(node).map(function(event) {
         return {desc: event};
       }),
+      sourceLocation: getSourceLocation(node)
     });
     this.propertyHandlers = declarationPropertyHandlers(this.element);
   }
@@ -66,6 +67,7 @@ class ElementVisitor implements Visitor {
     // declaration early. We should track which class induced the current
     // element and finish the element when leaving _that_ class.
     if (this.element) {
+      docs.annotate(this.element);
       this.entities.push(this.element);
       this.element = null;
       this.propertyHandlers = null;
@@ -141,8 +143,11 @@ class ElementVisitor implements Visitor {
           desc: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent).map(function(event) {
             return {desc: event};
-          })
+          }),
+          sourceLocation: getSourceLocation(node.arguments[0])
         });
+        docs.annotate(this.element);
+        this.element.desc = (this.element.desc || '').trim();
         this.propertyHandlers = declarationPropertyHandlers(this.element);
       }
     }

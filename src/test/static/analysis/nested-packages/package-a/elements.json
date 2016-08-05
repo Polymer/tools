@@ -1,5 +1,5 @@
-
 {
+  "schema_version": "1.0.0",
   "elements": [
     {
       "tagname": "an-element",
@@ -15,7 +15,11 @@
       "demos": [],
       "slots": [],
       "events": [],
-      "metadata": {}
+      "metadata": {},
+      "sourceLocation": {
+        "line": 0,
+        "column": 17
+      }
     },
     {
       "tagname": "another-element",
@@ -31,9 +35,11 @@
       "demos": [],
       "slots": [],
       "events": [],
-      "metadata": {}
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
     }
-  ],
-
-  "schema_version": "1.0.0"
+  ]
 }
