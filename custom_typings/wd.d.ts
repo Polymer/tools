@@ -18,7 +18,7 @@ declare module 'wd' {
   }
   export interface Capabilities {
     /** The name of the browser being used */
-    browserName: 'android'|'chrome'|'firefox'|'htmlunit'|'internet explorer'|'iPhone'|'iPad'|'opera'|'safari';
+    browserName: 'android'|'chrome'|'firefox'|'htmlunit'|'internet explorer'|'iPhone'|'iPad'|'opera'|'safari'|'phantomjs';
     /** The browser version, or the empty string if unknown. */
     version: string;
     /** A key specifying which platform the browser should be running on. */
@@ -51,6 +51,7 @@ declare module 'wd' {
     'safari.options'?: {
       skipExtensionInstallation?: boolean;
     };
+    'phantomjs.binary.path'?: string;
   }
 
   export type ValidHost =
