@@ -5,7 +5,7 @@
       "tagname": "behavior-test-elem",
       "description": "An element to test out behavior inheritance.",
       "superclass": "HTMLElement",
-      "path": "element.html",
+      "path": "elementdir/element.html",
       "attributes": [
         {
           "name": "local-property",
@@ -20,11 +20,21 @@
           "name": "inherit-please",
           "description": "A property provided by SimpleBehavior.",
           "sourceLocation": {
-            "line": 5,
+            "line": 8,
             "column": 6,
-            "file": "behavior.html"
+            "file": "../behavior.html"
           },
           "type": "number"
+        },
+        {
+          "name": "deeply-inherited-property",
+          "description": "",
+          "sourceLocation": {
+            "line": 4,
+            "column": 6,
+            "file": "../subdir/subbehavior.html"
+          },
+          "type": "Array"
         }
       ],
       "properties": [
@@ -48,11 +58,27 @@
           "type": "number",
           "description": "A property provided by SimpleBehavior.",
           "sourceLocation": {
-            "line": 5,
+            "line": 8,
             "column": 6,
-            "file": "behavior.html"
+            "file": "../behavior.html"
           },
           "defaultValue": "10",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "deeplyInheritedProperty",
+          "type": "Array",
+          "description": "",
+          "sourceLocation": {
+            "line": 4,
+            "column": 6,
+            "file": "../subdir/subbehavior.html"
+          },
+          "defaultValue": "\"[]\"",
           "metadata": {
             "polymer": {
               "notify": true
@@ -76,6 +102,11 @@
           "name": "inherit-please-changed",
           "type": "CustomEvent",
           "description": "Fired when the `inheritPlease` property changes."
+        },
+        {
+          "name": "deeply-inherited-property-changed",
+          "type": "CustomEvent",
+          "description": "Fired when the `deeplyInheritedProperty` property changes."
         }
       ],
       "metadata": {},
