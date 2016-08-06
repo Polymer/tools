@@ -54,6 +54,16 @@ function functionExpressionToValue(fn: estree.FunctionExpression):
     return blockStatementToValue(fn.body);
   }
 }
+
+function arrowFunctionExpressionToValue(fn: estree.ArrowFunctionExpression):
+    LiteralValue {
+  if (fn.body.type === 'BlockStatement') {
+    return blockStatementToValue(fn.body);
+  } else {
+    return expressionToValue(fn.body);
+  }
+}
+
 /**
  * Block statement: find last return statement, and return its value
  */
@@ -110,14 +120,18 @@ function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
 /**
  * BinaryExpressions are of the form "literal" + "literal"
  */
-function binaryExpressionToValue(member: estree.BinaryExpression): number|
-    string {
+function binaryExpressionToValue(member: estree.BinaryExpression):
+    (number | string) {
+  const left = expressionToValue(member.left);
+  const right = expressionToValue(member.right);
+  if (left == null || right == null) {
+    return undefined;
+  }
   if (member.operator === '+') {
     // We need to cast to `any` here because, while it's usually not the right
     // thing to do to use '+' on two values of a mix of types because it's
     // unpredictable, that is what the original code we're evaluating does.
-    return <any>expressionToValue(member.left) +
-        expressionToValue(member.right);
+    return <any>left + right;
   }
   return;
 }
@@ -135,6 +149,8 @@ export function expressionToValue(valueExpression: estree.Node): LiteralValue {
       return functionDeclarationToValue(valueExpression);
     case 'FunctionExpression':
       return functionExpressionToValue(valueExpression);
+    case 'ArrowFunctionExpression':
+      return arrowFunctionExpressionToValue(valueExpression);
     case 'ArrayExpression':
       return arrayExpressionToValue(valueExpression);
     case 'ObjectExpression':

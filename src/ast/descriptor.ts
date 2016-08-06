@@ -15,7 +15,7 @@
 import * as jsdoc from '../javascript/jsdoc';
 
 export type LiteralValue =
-    string | number | boolean | RegExp | LiteralArray | LiteralObj;
+    string | number | boolean | RegExp | undefined | LiteralArray | LiteralObj;
 export interface LiteralArray extends Array<LiteralValue> {}
 export interface LiteralObj { [key: string]: LiteralValue; }
 
