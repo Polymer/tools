@@ -14,7 +14,8 @@
 
 import * as estree from 'estree';
 
-import {LiteralValue} from '../ast/ast';
+import {LiteralObj, LiteralValue} from '../ast/ast';
+
 
 // useful tool to visualize AST: http://esprima.org/demo/parse.html
 
@@ -35,14 +36,6 @@ function unaryToValue(unary: estree.UnaryExpression): string {
     return;
   }
   return unary.operator + argValue;
-}
-
-/**
- * converts identifier to its value
- * identifier { "type": "Identifier", "name": "Number }
- */
-function identifierToValue(identifier: estree.Identifier): string {
-  return identifier.name;
 }
 
 /**
@@ -83,39 +76,34 @@ function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
 /**
  * Enclose containing values in []
  */
-function arrayExpressionToValue(arry: estree.ArrayExpression): string {
-  let value = '[';
+function arrayExpressionToValue(arry: estree.ArrayExpression): LiteralValue {
+  let value: LiteralValue[] = [];
   for (let i = 0; i < arry.elements.length; i++) {
     const v = expressionToValue(arry.elements[i]);
     if (v === undefined) {
       continue;
     }
-    if (i !== 0) {
-      value += ', ';
-    }
-    value += v;
+    value.push(v);
   }
-  value += ']';
   return value;
 }
 
 /**
  * Make it look like an object
  */
-function objectExpressionToValue(obj: estree.ObjectExpression): string {
-  let value = '{';
-  for (let i = 0; i < obj.properties.length; i++) {
-    const k = expressionToValue(obj.properties[i].key);
-    const v = expressionToValue(obj.properties[i].value);
+function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
+  let value: LiteralObj = {};
+  for (const prop of obj.properties) {
+    if (prop.key.type !== 'Literal') {
+      return undefined;
+    }
+    const k = literalToValue(prop.key).toString();
+    const v = expressionToValue(prop.value);
     if (v === undefined) {
-      continue;
+      return;
     }
-    if (i !== 0) {
-      value += ', ';
-    }
-    value += '"' + k + '": ' + v;
+    value[k] = v;
   }
-  value += '}';
   return value;
 }
 
@@ -135,14 +123,6 @@ function binaryExpressionToValue(member: estree.BinaryExpression): number|
 }
 
 /**
- * MemberExpression references a variable with name
- */
-function memberExpressionToValue(member: estree.MemberExpression): string {
-  return expressionToValue(member.object) + '.' +
-      expressionToValue(member.property);
-}
-
-/**
  * Tries to get the value of an expression. Returns undefined on failure.
  */
 export function expressionToValue(valueExpression: estree.Node): LiteralValue {
@@ -151,8 +131,6 @@ export function expressionToValue(valueExpression: estree.Node): LiteralValue {
       return literalToValue(valueExpression);
     case 'UnaryExpression':
       return unaryToValue(valueExpression);
-    case 'Identifier':
-      return identifierToValue(valueExpression);
     case 'FunctionDeclaration':
       return functionDeclarationToValue(valueExpression);
     case 'FunctionExpression':
@@ -161,14 +139,23 @@ export function expressionToValue(valueExpression: estree.Node): LiteralValue {
       return arrayExpressionToValue(valueExpression);
     case 'ObjectExpression':
       return objectExpressionToValue(valueExpression);
-    case 'Identifier':
-      return identifierToValue(valueExpression);
-    case 'MemberExpression':
-      return memberExpressionToValue(valueExpression);
     case 'BinaryExpression':
       return binaryExpressionToValue(valueExpression);
     default:
       return;
+  }
+}
+
+export function getIdentifierName(node: estree.Node): string|undefined {
+  if (node.type === 'Identifier') {
+    return node.name;
+  }
+  if (node.type === 'MemberExpression') {
+    const object = getIdentifierName(node.object);
+    const property = getIdentifierName(node.property);
+    if (object != null && property != null) {
+      return `${object}.${property}`;
+    }
   }
 }
 

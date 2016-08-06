@@ -19,7 +19,6 @@ import {SourceLocation} from '../elements-format';
 import {BehaviorOrName} from './behavior-descriptor';
 import {Descriptor, LiteralValue} from './descriptor';
 
-
 // TODO(justinfagnani): Rename, this name clashes with ES6's PropertyDescriptor
 export interface PropertyDescriptor extends Descriptor {
   name: string;
@@ -28,12 +27,12 @@ export interface PropertyDescriptor extends Descriptor {
   javascriptNode: estree.Node;
   params?: {name: string}[];
   published?: boolean;
-  notify?: LiteralValue;
-  observer?: LiteralValue;
+  notify?: boolean;
+  observer?: string;
   observerNode?: estree.Expression|estree.Pattern;
-  readOnly?: LiteralValue;
-  reflectToAttribute?: LiteralValue;
-  'default'?: LiteralValue;
+  readOnly?: boolean;
+  reflectToAttribute?: boolean;
+  'default'?: string;
   private?: boolean;
   configuration?: boolean;
   getter?: boolean;

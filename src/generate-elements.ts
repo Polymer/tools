@@ -101,7 +101,7 @@ function serializePropertyDescriptor(
         elementPath, propertyDescriptor.sourceLocation)
   };
   if (propertyDescriptor.default) {
-    property.defaultValue = JSON.stringify(propertyDescriptor.default);
+    property.defaultValue = propertyDescriptor.default;
   }
   const polymerMetadata: any = {};
   const polymerMetadataFields = ['notify', 'observer', 'readOnly'];

@@ -49,11 +49,11 @@ export function declarationPropertyHandlers(declaration: ElementDescriptor):
         return;
       }
       for (const element of node.elements) {
-        let v = astValue.expressionToValue(element);
-        if (v === undefined) {
-          v = astValue.CANT_CONVERT;
+        let behaviorName = astValue.getIdentifierName(element);
+        if (behaviorName === undefined) {
+          behaviorName = astValue.CANT_CONVERT;
         }
-        declaration.behaviors.push(<BehaviorOrName>v);
+        declaration.behaviors.push(behaviorName);
       }
     },
     observers(node: estree.Node) {

@@ -58,35 +58,26 @@ export function analyzeProperties(node: estree.Node) {
           }
           break;
         case 'notify':
-          prop.notify = astValue.expressionToValue(propertyArg.value);
-          if (prop.notify === undefined) {
-            prop.notify = astValue.CANT_CONVERT;
-          }
+          prop.notify = !!astValue.expressionToValue(propertyArg.value);
           break;
         case 'observer':
-          prop.observer = astValue.expressionToValue(propertyArg.value);
+          const val = astValue.expressionToValue(propertyArg.value);
           prop.observerNode = propertyArg.value;
-          if (prop.observer === undefined) {
+          if (val === undefined) {
             prop.observer = astValue.CANT_CONVERT;
+          } else {
+            prop.observer = JSON.stringify(val);
           }
           break;
         case 'readOnly':
-          prop.readOnly = astValue.expressionToValue(propertyArg.value);
-          if (prop.readOnly === undefined) {
-            prop.readOnly = astValue.CANT_CONVERT;
-          }
+          prop.readOnly = !!astValue.expressionToValue(propertyArg.value);
           break;
         case 'reflectToAttribute':
-          prop.reflectToAttribute = astValue.expressionToValue(propertyArg);
-          if (prop.reflectToAttribute === undefined) {
-            prop.reflectToAttribute = astValue.CANT_CONVERT;
-          }
+          prop.reflectToAttribute = !!astValue.expressionToValue(propertyArg);
           break;
         case 'value':
-          prop.default = astValue.expressionToValue(propertyArg.value);
-          if (prop.default === undefined) {
-            prop.default = astValue.CANT_CONVERT;
-          }
+          prop.default =
+              JSON.stringify(astValue.expressionToValue(propertyArg.value));
           break;
         default:
           break;

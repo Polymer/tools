@@ -114,8 +114,8 @@ class ElementVisitor implements Visitor {
       let returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       let argument = <estree.ArrayExpression>returnStatement.argument;
       if (propDesc.name === 'behaviors') {
-        argument.elements.forEach((elementObject: estree.Identifier) => {
-          this.element.behaviors.push(elementObject.name);
+        argument.elements.forEach((elementNode) => {
+          this.element.behaviors.push(astValue.getIdentifierName(elementNode));
         });
       } else {
         argument.elements.forEach((elementObject: estree.Literal) => {

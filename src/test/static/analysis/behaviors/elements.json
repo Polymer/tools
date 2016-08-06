@@ -78,7 +78,7 @@
             "column": 6,
             "file": "../subdir/subbehavior.html"
           },
-          "defaultValue": "\"[]\"",
+          "defaultValue": "[]",
           "metadata": {
             "polymer": {
               "notify": true

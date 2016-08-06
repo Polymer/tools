@@ -237,9 +237,9 @@ class BehaviorVisitor implements Visitor {
     const chained: BehaviorOrName[] = [];
     if (expression && expression.type === 'ArrayExpression') {
       for (const element of expression.elements) {
-        if (element.type === 'MemberExpression' ||
-            element.type === 'Identifier') {
-          chained.push(<BehaviorOrName>astValue.expressionToValue(element));
+        const behaviorName = astValue.getIdentifierName(element);
+        if (behaviorName) {
+          chained.push(behaviorName);
         }
       }
       if (chained.length > 0) {
