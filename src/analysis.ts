@@ -20,7 +20,6 @@ import * as util from 'util';
 import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
-import {trimLeft} from './utils';
 
 const validator = new jsonschema.Validator();
 const schema = JSON.parse(
@@ -62,7 +61,7 @@ export class Analysis {
       let elementPath = elementsGatherer.elementPaths.get(element);
       const matchingPackageDirs =
           Array.from(packageGatherer.packageDirs)
-              .filter(dir => trimLeft(elementPath, '/').startsWith(dir));
+              .filter(dir => elementPath.startsWith(dir));
       const longestMatchingPackageDir =
           matchingPackageDirs.sort((a, b) => b.length - a.length)[0] || '';
 
@@ -71,12 +70,6 @@ export class Analysis {
       elementsInPackage.push(element);
       this._elementsByPackageDir.set(
           longestMatchingPackageDir, elementsInPackage);
-      // We want element paths to be relative to the package directory.
-      elementsGatherer.elementPaths.set(
-          element, trimLeft(
-                       trimLeft(elementPath, '/')
-                           .substring(longestMatchingPackageDir.length),
-                       '/'));
     }
 
     for (const behavior of elementsGatherer.behaviorDescriptors) {
@@ -130,7 +123,7 @@ class PackageGatherer implements AnalysisVisitor {
          dd.document.url.endsWith('bower.json'))) {
       const dirname = path.dirname(dd.document.url);
       if (!this.packageDirs.has(dirname)) {
-        this.packageDirs.add(trimLeft(dirname, '/'));
+        this.packageDirs.add(dirname);
       }
     }
   }

@@ -18,8 +18,7 @@
       "metadata": {},
       "sourceLocation": {
         "line": 1,
-        "column": 10,
-        "file": "el.html"
+        "column": 10
       }
     },
     {
@@ -39,8 +38,7 @@
       "metadata": {},
       "sourceLocation": {
         "line": 1,
-        "column": 10,
-        "file": "subdir/sub-el.html"
+        "column": 10
       }
     }
   ]

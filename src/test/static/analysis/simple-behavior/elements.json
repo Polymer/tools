@@ -12,8 +12,7 @@
           "description": "",
           "sourceLocation": {
             "line": 8,
-            "column": 6,
-            "file": "element.html"
+            "column": 6
           },
           "type": "boolean"
         },
@@ -35,8 +34,7 @@
           "description": "",
           "sourceLocation": {
             "line": 8,
-            "column": 6,
-            "file": "element.html"
+            "column": 6
           },
           "defaultValue": "true",
           "metadata": {
@@ -83,8 +81,7 @@
       "metadata": {},
       "sourceLocation": {
         "line": 4,
-        "column": 10,
-        "file": "element.html"
+        "column": 10
       }
     }
   ]

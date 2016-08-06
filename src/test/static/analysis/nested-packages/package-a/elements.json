@@ -18,8 +18,7 @@
       "metadata": {},
       "sourceLocation": {
         "line": 0,
-        "column": 17,
-        "file": "package-a/an-element.html"
+        "column": 17
       }
     },
     {
@@ -39,8 +38,7 @@
       "metadata": {},
       "sourceLocation": {
         "line": 1,
-        "column": 10,
-        "file": "package-a/subdir/another-element.html"
+        "column": 10
       }
     }
   ]

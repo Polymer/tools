@@ -14,7 +14,7 @@
 
 import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
-import * as path from 'path';
+import * as pathLib from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
@@ -34,14 +34,13 @@ export function generateElementMetadata(
   return {
     schema_version: '1.0.0',
     elements: elementDescriptors.map(
-        e => serializeElementDescriptor(
-            e, analysis.elementPaths.get(e), analysis))
+        e => serializeElementDescriptor(e, analysis, packagePath))
   };
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, path: string,
-    analysis: Analysis): Element|null {
+    elementDescriptor: ElementDescriptor, analysis: Analysis,
+    packagePath: string): Element|null {
   if (!elementDescriptor.is) {
     return null;
   }
@@ -59,6 +58,10 @@ function serializeElementDescriptor(
     }
   }
 
+  const path = elementDescriptor.sourceLocation.file;
+  const packageRelativePath =
+      pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
+
   const properties = Array.from(propertiesByName.values());
   const propChangeEvents: Event[] =
       properties.filter(p => p.notify && propertyToAttributeName(p.name))
@@ -72,9 +75,9 @@ function serializeElementDescriptor(
     tagname: elementDescriptor.is,
     description: elementDescriptor.desc || '',
     superclass: 'HTMLElement',
-    path: path,
-    attributes: computeAttributesFromPropertyDescriptors(properties),
-    properties: properties.map(serializePropertyDescriptor),
+    path: packageRelativePath,
+    attributes: computeAttributesFromPropertyDescriptors(path, properties),
+    properties: properties.map(p => serializePropertyDescriptor(path, p)),
     styling: {
       cssVariables: [],
       selectors: [],
@@ -83,17 +86,19 @@ function serializeElementDescriptor(
     slots: [],
     events: propChangeEvents,
     metadata: {},
-    sourceLocation: elementDescriptor.sourceLocation
+    sourceLocation:
+        resolveSourceLocationPath(path, elementDescriptor.sourceLocation)
   };
 }
 
-function serializePropertyDescriptor(propertyDescriptor: PropertyDescriptor):
-    Property {
+function serializePropertyDescriptor(
+    elementPath: string, propertyDescriptor: PropertyDescriptor): Property {
   const property: Property = {
     name: propertyDescriptor.name,
     type: propertyDescriptor.type || '?',
     description: propertyDescriptor.desc || '',
-    sourceLocation: propertyDescriptor.sourceLocation
+    sourceLocation: resolveSourceLocationPath(
+        elementPath, propertyDescriptor.sourceLocation)
   };
   if (propertyDescriptor.default) {
     property.defaultValue = JSON.stringify(propertyDescriptor.default);
@@ -139,13 +144,14 @@ function _getFlattenedAndResolvedBehaviors(
   }
 }
 
-function computeAttributesFromPropertyDescriptors(props: PropertyDescriptor[]):
-    Attribute[] {
+function computeAttributesFromPropertyDescriptors(
+    elementPath: string, props: PropertyDescriptor[]): Attribute[] {
   return props.filter(prop => propertyToAttributeName(prop.name)).map(prop => {
     const attribute: Attribute = {
       name: propertyToAttributeName(prop.name),
       description: prop.desc || '',
-      sourceLocation: prop.sourceLocation
+      sourceLocation:
+          resolveSourceLocationPath(elementPath, prop.sourceLocation)
     };
     if (prop.type) {
       attribute.type = prop.type;
@@ -170,4 +176,27 @@ function propertyToAttributeName(propertyName: string): string|null {
   }
   return propertyName.replace(
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
+}
+
+function resolveSourceLocationPath(
+    elementPath: string,
+    sourceLocation: SourceLocation|undefined): SourceLocation|undefined {
+  if (!sourceLocation) {
+    return undefined;
+  }
+  if (!sourceLocation.file) {
+    return sourceLocation;
+  }
+  if (elementPath === sourceLocation.file) {
+    return {line: sourceLocation.line, column: sourceLocation.column};
+  }
+  // The source location's path is relative to file resolver's base, so first
+  // we need to make it relative to the package dir so that it's
+  const filePath =
+      pathLib.relative(pathLib.dirname(elementPath), sourceLocation.file);
+  return {
+    line: sourceLocation.line,
+    column: sourceLocation.column,
+    file: filePath
+  };
 }

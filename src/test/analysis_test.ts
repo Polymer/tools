@@ -25,7 +25,6 @@ import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
-
 suite('Analysis', function() {
   const basedir = path.join(__dirname, 'static', 'analysis');
   const analysisFixtureDirs = fs.readdirSync(basedir)
@@ -33,11 +32,15 @@ suite('Analysis', function() {
                                   .filter(p => fs.statSync(p).isDirectory());
 
   for (const analysisFixtureDir of analysisFixtureDirs) {
+    // Generate a test from the goldens found in every dir in
+    // src/test/static/analysis/
     const testBaseName = path.basename(analysisFixtureDir);
     const testDefiner = onlyTests.has(testBaseName) ? test.only : test;
     const testName = `correctly produces a serialized elements.json ` +
         `for fixture dir \`${testBaseName}\``;
+
     testDefiner(testName, async function() {
+      // Test body here:
       const analysis = await analyzeDir(analysisFixtureDir).resolve();
 
       const packages = new Set<string>(mapI(
@@ -49,7 +52,7 @@ suite('Analysis', function() {
         packages.add(analysisFixtureDir);
       }
       for (const packagePath of packages) {
-        const pathToCanonical = path.join(packagePath || '', 'elements.json');
+        const pathToGolden = path.join(packagePath || '', 'elements.json');
         const renormedPackagePath = packagePath ?
             packagePath.substring(analysisFixtureDir.length + 1) :
             packagePath;
@@ -60,10 +63,13 @@ suite('Analysis', function() {
         try {
           assert.deepEqual(
               analyzedPackages,
-              JSON.parse(fs.readFileSync(pathToCanonical, 'utf-8')));
+              JSON.parse(fs.readFileSync(pathToGolden, 'utf-8')),
+              `Generated form of ${path.relative(__dirname, pathToGolden)} ` +
+                  `differs from the golden at that path`);
         } catch (e) {
           console.log(
-              `Expected contents of ${pathToCanonical}:\n${JSON.stringify(analyzedPackages, null, 2)}`);
+              `Expected contents of ${pathToGolden}:\n` +
+              `${JSON.stringify(analyzedPackages, null, 2)}`);
           throw e;
         }
       }
