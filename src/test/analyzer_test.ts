@@ -15,12 +15,12 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
-import * as parse5 from 'parse5';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
 import {DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
 import {HtmlDocument} from '../html/html-document';
+import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document} from '../parser/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
@@ -155,12 +155,7 @@ suite('Analyzer', () => {
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      let ast = parse5.parse(contents);
-      let document = new HtmlDocument({
-        url: 'test.html',
-        contents,
-        ast,
-      });
+      const document = new HtmlParser(analyzer).parse(contents, 'test.html');
       const entities =
           <ImportDescriptor<any>[]>(await analyzer.getEntities(document));
       assert.equal(entities.length, 3);
@@ -177,12 +172,7 @@ suite('Analyzer', () => {
           <script>console.log('hi')</script>
           <style>body { color: red; }</style>
         </head></html>`;
-      let ast = parse5.parse(contents);
-      let document = new HtmlDocument({
-        url: 'test.html',
-        contents,
-        ast,
-      });
+      const document = new HtmlParser(analyzer).parse(contents, 'test.html');
       const entities = <InlineDocumentDescriptor<any>[]>(
           await analyzer.getEntities(document));
 

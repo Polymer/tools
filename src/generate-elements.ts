@@ -59,8 +59,6 @@ function serializeElementDescriptor(
     }
   }
 
-  // TODO(rictic): the source locations here are wrong because they don't
-  //   include the right file for inherited props...
   const properties = Array.from(propertiesByName.values());
   const propChangeEvents: Event[] =
       properties.filter(p => p.notify && propertyToAttributeName(p.name))

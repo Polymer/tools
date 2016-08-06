@@ -18,7 +18,8 @@
       "metadata": {},
       "sourceLocation": {
         "line": 0,
-        "column": 24
+        "column": 24,
+        "file": "package-b/element.html"
       }
     }
   ]

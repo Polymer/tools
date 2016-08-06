@@ -132,7 +132,9 @@ export class Analyzer {
    */
   private async _analyzeDocument(
       document: Document<any, any>,
-      locationOffset?: LocationOffset): Promise<DocumentDescriptor> {
+      maybeLocationOffset?: LocationOffset): Promise<DocumentDescriptor> {
+    const locationOffset =
+        maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     let entities = await this.getEntities(document);
     for (const entity of entities) {
       if (entity instanceof ElementDescriptor) {
@@ -145,8 +147,13 @@ export class Analyzer {
             e instanceof ImportDescriptor);
     let analyzeDependencies = dependencyDescriptors.map((d) => {
       if (d instanceof InlineDocumentDescriptor) {
+        const locationOffset: LocationOffset = {
+          line: d.locationOffset.line,
+          col: d.locationOffset.col,
+          filename: document.url
+        };
         return this._analyzeSource(
-            d.type, d.contents, document.url, d.locationOffset);
+            d.type, d.contents, document.url, locationOffset);
       } else if (d instanceof ImportDescriptor) {
         return this.analyze(d.url);
       } else {

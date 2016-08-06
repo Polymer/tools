@@ -51,8 +51,8 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
               new ImportDescriptor<ASTNode>('html-style', importUrl, node));
         } else {
           let contents = dom5.getTextContent(node);
-          entities.push(
-              new InlineDocumentDescriptor<ASTNode>('css', contents, node));
+          entities.push(new InlineDocumentDescriptor<ASTNode>(
+              'css', contents, node, {line: 0, col: 0}));
         }
       }
     });

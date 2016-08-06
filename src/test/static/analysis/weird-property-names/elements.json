@@ -12,7 +12,8 @@
           "description": "",
           "sourceLocation": {
             "line": 7,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "type": "string"
         },
@@ -21,7 +22,8 @@
           "description": "",
           "sourceLocation": {
             "line": 11,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "type": "string"
         }
@@ -33,7 +35,8 @@
           "description": "",
           "sourceLocation": {
             "line": 3,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "metadata": {
             "polymer": {
@@ -47,7 +50,8 @@
           "description": "",
           "sourceLocation": {
             "line": 7,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "metadata": {
             "polymer": {
@@ -61,7 +65,8 @@
           "description": "",
           "sourceLocation": {
             "line": 11,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "metadata": {
             "polymer": {
@@ -91,7 +96,8 @@
       "metadata": {},
       "sourceLocation": {
         "line": 1,
-        "column": 10
+        "column": 10,
+        "file": "simple-element.html"
       }
     }
   ]

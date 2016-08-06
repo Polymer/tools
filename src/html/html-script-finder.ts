@@ -15,6 +15,7 @@
 import * as dom5 from 'dom5';
 import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
 import {resolve as resolveUrl} from 'url';
+import * as util from 'util';
 
 import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from '../ast/ast';
 
@@ -62,22 +63,22 @@ function isLocationInfo(loc: LocationInfo|
   return 'line' in loc;
 }
 
-function getLocationOffsetOfStartOfTextContent(node: ASTNode) {
-  let locationOffset: LocationOffset|undefined;
-  let scriptContentsLocation =
-      node.childNodes[0] && node.childNodes[0].__location;
-  if (scriptContentsLocation) {
-    if (isLocationInfo(scriptContentsLocation)) {
-      locationOffset = {
-        line: scriptContentsLocation.line - 1,
-        col: scriptContentsLocation.col
-      };
-    } else {
-      locationOffset = {
-        line: scriptContentsLocation.startTag.line - 1,
-        col: scriptContentsLocation.startTag.endOffset,
-      };
-    }
+function getLocationOffsetOfStartOfTextContent(node: ASTNode): LocationOffset {
+  let firstChildNodeWithLocation = node.childNodes.find(n => !!n.__location);
+  let bestLocation = firstChildNodeWithLocation ?
+      firstChildNodeWithLocation.__location :
+      node.__location;
+  if (!bestLocation) {
+    throw new Error(
+        `Couldn't extract a location offset from HTML node: ` +
+        `${util.inspect(node)}`);
   }
-  return locationOffset;
+  if (isLocationInfo(bestLocation)) {
+    return {line: bestLocation.line - 1, col: bestLocation.col};
+  } else {
+    return {
+      line: bestLocation.startTag.line - 1,
+      col: bestLocation.startTag.endOffset,
+    };
+  }
 }

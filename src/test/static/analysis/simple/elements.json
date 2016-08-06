@@ -12,7 +12,8 @@
           "description": "This is a simple test property named theValue.",
           "sourceLocation": {
             "line": 9,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "type": "string"
         }
@@ -24,7 +25,8 @@
           "description": "This is a simple test property named theValue.",
           "sourceLocation": {
             "line": 9,
-            "column": 6
+            "column": 6,
+            "file": "simple-element.html"
           },
           "metadata": {
             "polymer": {
@@ -49,7 +51,8 @@
       "metadata": {},
       "sourceLocation": {
         "line": 4,
-        "column": 10
+        "column": 10,
+        "file": "simple-element.html"
       }
     }
   ]

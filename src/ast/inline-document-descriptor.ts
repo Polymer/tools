@@ -21,6 +21,10 @@ export interface LocationOffset {
   line: number;
   /** Zero based column index. */
   col: number;
+  /**
+   * The url of the source file.
+   */
+  filename?: string;
 }
 
 /**
@@ -35,7 +39,7 @@ export class InlineDocumentDescriptor<N> implements Descriptor {
   contents: string;
 
   /** The location offset of this document within the containing document. */
-  locationOffset?: LocationOffset;
+  locationOffset: LocationOffset;
 
   /**
    * The AST node associated with this descriptor. This is required for correct
@@ -44,8 +48,7 @@ export class InlineDocumentDescriptor<N> implements Descriptor {
   node: N;
 
   constructor(
-      type: string, contents: string, node: N,
-      locationOffset?: LocationOffset) {
+      type: string, contents: string, node: N, locationOffset: LocationOffset) {
     this.type = type;
     this.contents = contents;
     this.node = node;
@@ -56,12 +59,17 @@ export class InlineDocumentDescriptor<N> implements Descriptor {
 export function correctSourceLocation(
     sourceLocation: SourceLocation,
     locationOffset?: LocationOffset): SourceLocation|undefined {
-  if (!locationOffset)
+  if (!locationOffset || !sourceLocation) {
     return sourceLocation;
-  return sourceLocation && {
+  }
+  const result: SourceLocation = {
     line: sourceLocation.line + locationOffset.line,
     // The location offset column only matters for the first line.
     column: sourceLocation.column +
-        (sourceLocation.line === 0 ? locationOffset.col : 0)
+        (sourceLocation.line === 0 ? locationOffset.col : 0),
   };
+  if (locationOffset.filename != null || sourceLocation.file != null) {
+    result.file = locationOffset.filename || sourceLocation.file;
+  }
+  return result;
 }

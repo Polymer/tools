@@ -12,7 +12,8 @@
           "description": "",
           "sourceLocation": {
             "line": 8,
-            "column": 6
+            "column": 6,
+            "file": "element.html"
           },
           "type": "boolean"
         },
@@ -21,7 +22,8 @@
           "description": "A property provided by SimpleBehavior.",
           "sourceLocation": {
             "line": 5,
-            "column": 6
+            "column": 6,
+            "file": "behavior.html"
           },
           "type": "number"
         }
@@ -33,7 +35,8 @@
           "description": "",
           "sourceLocation": {
             "line": 8,
-            "column": 6
+            "column": 6,
+            "file": "element.html"
           },
           "defaultValue": "true",
           "metadata": {
@@ -48,7 +51,8 @@
           "description": "A property provided by SimpleBehavior.",
           "sourceLocation": {
             "line": 5,
-            "column": 6
+            "column": 6,
+            "file": "behavior.html"
           },
           "defaultValue": "10",
           "metadata": {
@@ -79,7 +83,8 @@
       "metadata": {},
       "sourceLocation": {
         "line": 4,
-        "column": 10
+        "column": 10,
+        "file": "element.html"
       }
     }
   ]

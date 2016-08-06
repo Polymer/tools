@@ -18,7 +18,8 @@
       "metadata": {},
       "sourceLocation": {
         "line": 4,
-        "column": 8
+        "column": 8,
+        "file": "element.js"
       }
     }
   ]
