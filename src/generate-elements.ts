@@ -27,34 +27,16 @@ import {trimLeft} from './utils';
 
 export function generateElementMetadata(
     analysis: Analysis, packagePath: string): Elements|undefined {
-  const packageGatherer = new PackageGatherer();
-  const elementsGatherer = new ElementGatherer();
-  new AnalysisWalker(analysis.descriptors).walk([
-    packageGatherer, elementsGatherer
-  ]);
-
-  const packagesByDir: Map<string, Elements> = packageGatherer.packagesByDir;
-  const elements = elementsGatherer.elements;
-  const elementsByPackageDir = new Map<string, Element[]>();
-
-  for (const element of elementsGatherer.elements) {
-    const matchingPackageDirs =
-        <string[]>Array.from(packagesByDir.keys())
-            .filter(dir => trimLeft(element.path, '/').startsWith(dir));
-    const longestMatchingPackageDir =
-        matchingPackageDirs.sort((a, b) => b.length - a.length)[0] || '';
-
-    if (longestMatchingPackageDir === '' && !packagesByDir.has('')) {
-      packagesByDir.set('', {schema_version: '1.0.0', elements: []});
-    }
-    packagesByDir.get(longestMatchingPackageDir)!.elements.push(element);
-    // We want element paths to be relative to the package directory.
-    element.path = trimLeft(
-        trimLeft(element.path, '/').substring(longestMatchingPackageDir.length),
-        '/');
+  const elementDescriptors = analysis.getElementsForPackage(packagePath);
+  if (!elementDescriptors) {
+    return undefined;
   }
-
-  return packagesByDir.get(packagePath);
+  return {
+    schema_version: '1.0.0',
+    elements: elementDescriptors.map(
+        e => serializeElementDescriptor(
+            e, analysis.elementPaths.get(e), analysis.locationOffsets.get(e)))
+  };
 }
 
 function serializeElementDescriptor(
@@ -136,150 +118,6 @@ function computeAttributesFromPropertyDescriptors(
     return attribute;
   });
 }
-
-class PackageGatherer implements AnalysisVisitor {
-  private _packageFiles: string[] = [];
-  packagesByDir = new Map<string, Elements>();
-  visitDocumentDescriptor(dd: DocumentDescriptor, path: Descriptor[]): void {
-    if (dd.document instanceof JsonDocument &&
-        (dd.document.url.endsWith('package.json') ||
-         dd.document.url.endsWith('bower.json'))) {
-      this._packageFiles.push(dd.document.url);
-    }
-  }
-
-  done() {
-    for (const packageFile of this._packageFiles) {
-      const dirname = path.dirname(packageFile);
-      if (!this.packagesByDir.has(dirname)) {
-        this.packagesByDir.set(
-            trimLeft(dirname, '/'), {schema_version: '1.0.0', elements: []});
-      }
-    }
-  }
-}
-
-class ElementGatherer implements AnalysisVisitor {
-  elements: Element[] = [];
-  private _elementPaths = new Map<ElementDescriptor, string>();
-  visitElement(elementDescriptor: ElementDescriptor, path: Descriptor[]): void {
-    let pathToElement: string|null = null;
-    let locationOffset: LocationOffset;
-    for (const descriptor of path) {
-      if (descriptor instanceof DocumentDescriptor) {
-        pathToElement = descriptor.document.url;
-        locationOffset = descriptor.locationOffset;
-      }
-    }
-    if (!pathToElement) {
-      throw new Error(
-          `Unable to determine path to element: ${elementDescriptor}`);
-    }
-    if (this._elementPaths.has(elementDescriptor)) {
-      if (this._elementPaths.get(elementDescriptor) !== pathToElement) {
-        throw new Error(
-            `Found element ${elementDescriptor} at distinct paths: ` +
-            `${pathToElement} and ${this._elementPaths.get(elementDescriptor)}`);
-      }
-    } else {
-      this._elementPaths.set(elementDescriptor, pathToElement);
-      const element = serializeElementDescriptor(
-          elementDescriptor, pathToElement, locationOffset);
-      if (element) {
-        this.elements.push(element);
-      }
-    }
-  }
-}
-
-abstract class AnalysisVisitor {
-  visitDocumentDescriptor?(dd: DocumentDescriptor, path: Descriptor[]): void;
-  visitInlineDocumentDescriptor?
-      (dd: InlineDocumentDescriptor<any>, path: Descriptor[]): void;
-  visitElement?(element: ElementDescriptor, path: Descriptor[]): void;
-  visitImportDescriptor?
-      (importDesc: ImportDescriptor<any>, path: Descriptor[]): void;
-  done?(): void;
-}
-
-class AnalysisWalker {
-  private _documents: DocumentDescriptor[];
-  private _path: Descriptor[] = [];
-  constructor(descriptors: DocumentDescriptor[]) {
-    this._documents = descriptors;
-  }
-  walk(visitors: AnalysisVisitor[]) {
-    this._path.length = 0;
-    for (const descriptor of this._documents) {
-      this._walkDocumentDescriptor(descriptor, visitors);
-    }
-    for (const visitor of visitors) {
-      if (visitor.done) {
-        visitor.done();
-      }
-    }
-  }
-
-  private _walkDocumentDescriptor(
-      dd: DocumentDescriptor, visitors: AnalysisVisitor[]) {
-    this._path.push(dd);
-
-    for (const visitor of visitors) {
-      if (visitor.visitDocumentDescriptor) {
-        visitor.visitDocumentDescriptor(dd, this._path);
-      }
-    }
-
-    for (const entity of dd.entities) {
-      this._walkEntity(entity, visitors);
-    }
-    for (const dependency of dd.dependencies) {
-      this._walkEntity(dependency, visitors);
-    }
-    this._path.pop();
-  }
-
-  private _walkInlineDocumentDescriptor(
-      dd: InlineDocumentDescriptor<any>, visitors: AnalysisVisitor[]) {
-    for (const visitor of visitors) {
-      if (visitor.visitInlineDocumentDescriptor) {
-        visitor.visitInlineDocumentDescriptor(dd, this._path);
-      }
-    }
-  }
-
-  private _walkEntity(entity: Descriptor, visitors: AnalysisVisitor[]) {
-    if (entity instanceof DocumentDescriptor) {
-      return this._walkDocumentDescriptor(entity, visitors);
-    } else if (entity instanceof InlineDocumentDescriptor) {
-      return this._walkInlineDocumentDescriptor(entity, visitors);
-    } else if (entity['type'] === 'element') {
-      return this._walkElement(<ElementDescriptor>entity, visitors);
-    } else if (entity instanceof ImportDescriptor) {
-      return this._walkImportDescriptor(entity, visitors);
-    }
-    throw new Error(`Unknown kind of descriptor: ${util.inspect(entity)}`);
-  }
-
-  private _walkElement(
-      element: ElementDescriptor, visitors: AnalysisVisitor[]) {
-    for (const visitor of visitors) {
-      if (visitor.visitElement) {
-        visitor.visitElement(element, this._path);
-      }
-    }
-  }
-
-  private _walkImportDescriptor(
-      importDesc: ImportDescriptor<any>, visitors: AnalysisVisitor[]) {
-    for (const visitor of visitors) {
-      if (visitor.visitImportDescriptor) {
-        visitor.visitImportDescriptor(importDesc, this._path);
-      }
-    }
-  }
-}
-
 
 /**
  * Implements Polymer core's translation of property names to attribute names.
