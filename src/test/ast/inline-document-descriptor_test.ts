@@ -14,12 +14,9 @@
 
 import {assert} from 'chai';
 
-import {LocationOffset} from '../ast/ast';
-import {SourceLocation} from '../elements-format';
-import {correctSourceLocation} from '../generate-elements';
+import {LocationOffset, correctSourceLocation} from '../../ast/ast';
+import {SourceLocation} from '../../elements-format';
 
-
-// See analysis_test for tests of generateElementMetadata
 
 suite('correctSourceLocation', function() {
   test('handles undefined gracefully', function() {

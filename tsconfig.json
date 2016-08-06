@@ -16,7 +16,6 @@
         "sourceMap": true
     },
     "include": [
-        "custom_typings/main.d.ts",
         "src/**/*.ts"
     ]
 }

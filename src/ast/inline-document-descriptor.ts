@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {SourceLocation} from '../elements-format';
+
 import {Descriptor} from './descriptor';
 
 export interface LocationOffset {
@@ -49,4 +51,17 @@ export class InlineDocumentDescriptor<N> implements Descriptor {
     this.node = node;
     this.locationOffset = locationOffset;
   }
+}
+
+export function correctSourceLocation(
+    sourceLocation: SourceLocation,
+    locationOffset?: LocationOffset): SourceLocation|undefined {
+  if (!locationOffset)
+    return sourceLocation;
+  return sourceLocation && {
+    line: sourceLocation.line + locationOffset.line,
+    // The location offset column only matters for the first line.
+    column: sourceLocation.column +
+        (sourceLocation.line === 0 ? locationOffset.col : 0)
+  };
 }

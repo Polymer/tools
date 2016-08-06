@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as urlLib from 'url';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
+import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
@@ -134,6 +134,11 @@ export class Analyzer {
       document: Document<any, any>,
       locationOffset?: LocationOffset): Promise<DocumentDescriptor> {
     let entities = await this.getEntities(document);
+    for (const entity of entities) {
+      if (entity instanceof ElementDescriptor) {
+        entity.applyLocationOffset(locationOffset);
+      }
+    }
 
     let dependencyDescriptors: Descriptor[] = entities.filter(
         (e) => e instanceof InlineDocumentDescriptor ||

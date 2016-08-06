@@ -21,7 +21,7 @@ import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 import {Document} from '../parser/document';
 
-import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, PropertyDescriptor} from './ast';
+import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, PropertyDescriptor, correctSourceLocation} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -77,5 +77,17 @@ export class ElementDescriptor implements Descriptor {
 
   constructor(options: Options) {
     Object.assign(this, options);
+  }
+
+  applyLocationOffset(locationOffset?: LocationOffset) {
+    if (!locationOffset) {
+      return;
+    }
+    this.sourceLocation =
+        correctSourceLocation(this.sourceLocation, locationOffset);
+    for (const prop of this.properties) {
+      prop.sourceLocation =
+          correctSourceLocation(prop.sourceLocation, locationOffset);
+    }
   }
 }

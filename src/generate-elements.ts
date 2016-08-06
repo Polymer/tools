@@ -34,8 +34,7 @@ export function generateElementMetadata(
   return {
     schema_version: '1.0.0',
     elements: elementDescriptors.map(
-        e => serializeElementDescriptor(
-            e, analysis.elementPaths.get(e), analysis.locationOffsets.get(e)))
+        e => serializeElementDescriptor(e, analysis.elementPaths.get(e)))
   };
 }
 
