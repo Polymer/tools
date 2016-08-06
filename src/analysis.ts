@@ -17,7 +17,7 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset, PropertyDescriptor} from './ast/ast';
+import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {trimLeft} from './utils';
@@ -43,7 +43,6 @@ export class Analysis {
   private _elementsByTagName = new Map<string, ElementDescriptor>();
   private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
   elementPaths = new Map<ElementDescriptor, string>();
-  locationOffsets = new Map<ElementDescriptor, LocationOffset>();
 
   constructor(descriptors: DocumentDescriptor[]) {
     this._descriptors = descriptors;
@@ -78,7 +77,6 @@ export class Analysis {
                            .substring(longestMatchingPackageDir.length),
                        '/'));
     }
-    this.locationOffsets = elementsGatherer.locationOffsets;
     this.elementPaths = elementsGatherer.elementPaths;
   }
 
@@ -127,15 +125,12 @@ class PackageGatherer implements AnalysisVisitor {
 
 class ElementGatherer implements AnalysisVisitor {
   elementDescriptors: ElementDescriptor[] = [];
-  locationOffsets = new Map<ElementDescriptor, LocationOffset>();
   elementPaths = new Map<ElementDescriptor, string>();
   visitElement(elementDescriptor: ElementDescriptor, path: Descriptor[]): void {
     let pathToElement: string|null = null;
-    let locationOffset: LocationOffset|undefined;
     for (const descriptor of path) {
       if (descriptor instanceof DocumentDescriptor) {
         pathToElement = descriptor.document.url;
-        locationOffset = descriptor.locationOffset;
       }
     }
     if (!pathToElement) {
@@ -152,7 +147,6 @@ class ElementGatherer implements AnalysisVisitor {
     }
 
     this.elementPaths.set(elementDescriptor, pathToElement);
-    this.locationOffsets.set(elementDescriptor, locationOffset);
     this.elementDescriptors.push(elementDescriptor);
   }
 }

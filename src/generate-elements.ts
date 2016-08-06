@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset, PropertyDescriptor} from './ast/ast';
+import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {Document} from './parser/document';
@@ -39,8 +39,7 @@ export function generateElementMetadata(
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, path: string,
-    locationOffset?: LocationOffset): Element|null {
+    elementDescriptor: ElementDescriptor, path: string): Element|null {
   const propChangeEvents: Event[] =
       (elementDescriptor.properties || [])
           .filter(p => p.notify && propertyToAttributeName(p.name))
@@ -59,10 +58,8 @@ function serializeElementDescriptor(
     description: elementDescriptor.desc || '',
     superclass: 'HTMLElement',
     path: path,
-    attributes:
-        computeAttributesFromPropertyDescriptors(properties, locationOffset),
-    properties:
-        properties.map(p => serializePropertyDescriptor(p, locationOffset)),
+    attributes: computeAttributesFromPropertyDescriptors(properties),
+    properties: properties.map(serializePropertyDescriptor),
     styling: {
       cssVariables: [],
       selectors: [],
@@ -71,20 +68,17 @@ function serializeElementDescriptor(
     slots: [],
     events: propChangeEvents,
     metadata: {},
-    sourceLocation:
-        correctSourceLocation(elementDescriptor.sourceLocation, locationOffset)
+    sourceLocation: elementDescriptor.sourceLocation
   };
 }
 
-function serializePropertyDescriptor(
-    propertyDescriptor: PropertyDescriptor,
-    locationOffset?: LocationOffset): Property {
+function serializePropertyDescriptor(propertyDescriptor: PropertyDescriptor):
+    Property {
   const property: Property = {
     name: propertyDescriptor.name,
     type: propertyDescriptor.type || '?',
     description: propertyDescriptor.desc || '',
-    sourceLocation:
-        correctSourceLocation(propertyDescriptor.sourceLocation, locationOffset)
+    sourceLocation: propertyDescriptor.sourceLocation
   };
   if (propertyDescriptor.default) {
     property.defaultValue = JSON.stringify(propertyDescriptor.default);
@@ -100,13 +94,13 @@ function serializePropertyDescriptor(
   return property;
 }
 
-function computeAttributesFromPropertyDescriptors(
-    props: PropertyDescriptor[], locationOffset?: LocationOffset): Attribute[] {
+function computeAttributesFromPropertyDescriptors(props: PropertyDescriptor[]):
+    Attribute[] {
   return props.filter(prop => propertyToAttributeName(prop.name)).map(prop => {
     const attribute: Attribute = {
       name: propertyToAttributeName(prop.name),
       description: prop.desc || '',
-      sourceLocation: correctSourceLocation(prop.sourceLocation, locationOffset)
+      sourceLocation: prop.sourceLocation
     };
     if (prop.type) {
       attribute.type = prop.type;
@@ -131,17 +125,4 @@ function propertyToAttributeName(propertyName: string): string|null {
   }
   return propertyName.replace(
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
-}
-
-export function correctSourceLocation(
-    sourceLocation: SourceLocation,
-    locationOffset?: LocationOffset): SourceLocation|undefined {
-  if (!locationOffset)
-    return sourceLocation;
-  return sourceLocation && {
-    line: sourceLocation.line + locationOffset.line,
-    // The location offset column only matters for the first line.
-    column: sourceLocation.column +
-        (sourceLocation.line === 0 ? locationOffset.col : 0)
-  };
 }
