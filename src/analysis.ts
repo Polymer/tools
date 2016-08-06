@@ -17,7 +17,7 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
+import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {trimLeft} from './utils';
@@ -42,7 +42,10 @@ export class Analysis {
   private _descriptors: DocumentDescriptor[];
   private _elementsByTagName = new Map<string, ElementDescriptor>();
   private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
-  elementPaths = new Map<ElementDescriptor, string>();
+  private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
+
+  elementPaths: Map<ElementDescriptor, string>;
+  behaviorPaths: Map<ElementDescriptor, string>;
 
   constructor(descriptors: DocumentDescriptor[]) {
     this._descriptors = descriptors;
@@ -52,11 +55,9 @@ export class Analysis {
       packageGatherer, elementsGatherer
     ]);
 
-    const elements = elementsGatherer.elementDescriptors;
-
-    for (const element of elements) {
+    for (const element of elementsGatherer.elementDescriptors) {
       if (element.is) {
-        this._elementsByTagName.set(element.is);
+        this._elementsByTagName.set(element.is, element);
       }
       let elementPath = elementsGatherer.elementPaths.get(element);
       const matchingPackageDirs =
@@ -77,15 +78,27 @@ export class Analysis {
                            .substring(longestMatchingPackageDir.length),
                        '/'));
     }
+
+    for (const behavior of elementsGatherer.behaviorDescriptors) {
+      if (behavior.symbol) {
+        this._behaviorsByIdentifierName.set(behavior.symbol, behavior);
+      }
+    }
+
+    this.behaviorPaths = elementsGatherer.behaviorPaths;
     this.elementPaths = elementsGatherer.elementPaths;
   }
 
-  getElement(tagName: string): ElementDescriptor|undefined {
-    return this._elementsByTagName.get(tagName);
+  getElement(tag: string): ElementDescriptor|undefined {
+    return this._elementsByTagName.get(tag);
   }
 
   getElementsForPackage(dirName: string): ElementDescriptor[]|undefined {
     return this._elementsByPackageDir.get(dirName);
+  }
+
+  getBehavior(identifier: string): BehaviorDescriptor|undefined {
+    return this._behaviorsByIdentifierName.get(identifier);
   }
 
   /**
@@ -126,49 +139,80 @@ class PackageGatherer implements AnalysisVisitor {
 class ElementGatherer implements AnalysisVisitor {
   elementDescriptors: ElementDescriptor[] = [];
   elementPaths = new Map<ElementDescriptor, string>();
-  visitElement(elementDescriptor: ElementDescriptor, path: Descriptor[]): void {
-    let pathToElement: string|null = null;
-    for (const descriptor of path) {
-      if (descriptor instanceof DocumentDescriptor) {
-        pathToElement = descriptor.document.url;
-      }
-    }
-    if (!pathToElement) {
+
+  behaviorDescriptors: BehaviorDescriptor[] = [];
+  behaviorPaths = new Map<BehaviorDescriptor, string>();
+  visitElement(elementDescriptor: ElementDescriptor, ancestors: Descriptor[]):
+      void {
+    const path = this._getPathFromAncestors(ancestors);
+    if (!path) {
       throw new Error(
           `Unable to determine path to element: ${elementDescriptor}`);
     }
     if (this.elementPaths.has(elementDescriptor)) {
-      if (this.elementPaths.get(elementDescriptor) !== pathToElement) {
+      if (this.elementPaths.get(elementDescriptor) !== path) {
         throw new Error(
             `Found element ${elementDescriptor} at distinct paths: ` +
-            `${pathToElement} and ${this.elementPaths.get(elementDescriptor)}`);
+            `${path} and ${this.elementPaths.get(elementDescriptor)}`);
       }
       return;
     }
 
-    this.elementPaths.set(elementDescriptor, pathToElement);
+    this.elementPaths.set(elementDescriptor, path);
     this.elementDescriptors.push(elementDescriptor);
+  }
+
+  visitBehavior(
+      behaviorDescriptor: BehaviorDescriptor, ancestors: Descriptor[]): void {
+    const path = this._getPathFromAncestors(ancestors);
+    if (!path) {
+      throw new Error(
+          `Unable to determine path to behavior: ${behaviorDescriptor}`);
+    }
+    if (this.behaviorPaths.has(behaviorDescriptor)) {
+      if (this.behaviorPaths.get(behaviorDescriptor) !== path) {
+        throw new Error(
+            `Found element ${behaviorDescriptor} at distinct paths: ` +
+            `${path} and ${this.behaviorPaths.get(behaviorDescriptor)}`);
+      }
+      return;
+    }
+
+    this.behaviorPaths.set(behaviorDescriptor, path);
+    this.behaviorDescriptors.push(behaviorDescriptor);
+  }
+
+  _getPathFromAncestors(ancestors: Descriptor[]) {
+    let pathToElement: string|null = null;
+    for (const descriptor of ancestors) {
+      if (descriptor instanceof DocumentDescriptor) {
+        pathToElement = descriptor.document.url;
+      }
+    }
+    return pathToElement;
   }
 }
 
 abstract class AnalysisVisitor {
-  visitDocumentDescriptor?(dd: DocumentDescriptor, path: Descriptor[]): void;
+  visitDocumentDescriptor?
+      (dd: DocumentDescriptor, ancestors: Descriptor[]): void;
   visitInlineDocumentDescriptor?
-      (dd: InlineDocumentDescriptor<any>, path: Descriptor[]): void;
-  visitElement?(element: ElementDescriptor, path: Descriptor[]): void;
+      (dd: InlineDocumentDescriptor<any>, ancestors: Descriptor[]): void;
+  visitElement?(element: ElementDescriptor, ancestors: Descriptor[]): void;
+  visitBehavior?(behavior: BehaviorDescriptor, ancestors: Descriptor[]): void;
   visitImportDescriptor?
-      (importDesc: ImportDescriptor<any>, path: Descriptor[]): void;
+      (importDesc: ImportDescriptor<any>, ancestors: Descriptor[]): void;
   done?(): void;
 }
 
 class AnalysisWalker {
   private _documents: DocumentDescriptor[];
-  private _path: Descriptor[] = [];
+  private _ancestors: Descriptor[] = [];
   constructor(descriptors: DocumentDescriptor[]) {
     this._documents = descriptors;
   }
   walk(visitors: AnalysisVisitor[]) {
-    this._path.length = 0;
+    this._ancestors.length = 0;
     for (const descriptor of this._documents) {
       this._walkDocumentDescriptor(descriptor, visitors);
     }
@@ -181,11 +225,11 @@ class AnalysisWalker {
 
   private _walkDocumentDescriptor(
       dd: DocumentDescriptor, visitors: AnalysisVisitor[]) {
-    this._path.push(dd);
+    this._ancestors.push(dd);
 
     for (const visitor of visitors) {
       if (visitor.visitDocumentDescriptor) {
-        visitor.visitDocumentDescriptor(dd, this._path);
+        visitor.visitDocumentDescriptor(dd, this._ancestors);
       }
     }
 
@@ -195,14 +239,14 @@ class AnalysisWalker {
     for (const dependency of dd.dependencies) {
       this._walkEntity(dependency, visitors);
     }
-    this._path.pop();
+    this._ancestors.pop();
   }
 
   private _walkInlineDocumentDescriptor(
       dd: InlineDocumentDescriptor<any>, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitInlineDocumentDescriptor) {
-        visitor.visitInlineDocumentDescriptor(dd, this._path);
+        visitor.visitInlineDocumentDescriptor(dd, this._ancestors);
       }
     }
   }
@@ -216,6 +260,8 @@ class AnalysisWalker {
       return this._walkElement(<ElementDescriptor>entity, visitors);
     } else if (entity instanceof ImportDescriptor) {
       return this._walkImportDescriptor(entity, visitors);
+    } else if (entity instanceof BehaviorDescriptor) {
+      return this._walkBehavior(entity, visitors);
     }
     throw new Error(`Unknown kind of descriptor: ${util.inspect(entity)}`);
   }
@@ -224,7 +270,16 @@ class AnalysisWalker {
       element: ElementDescriptor, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitElement) {
-        visitor.visitElement(element, this._path);
+        visitor.visitElement(element, this._ancestors);
+      }
+    }
+  }
+
+  private _walkBehavior(
+      behavior: BehaviorDescriptor, visitors: AnalysisVisitor[]) {
+    for (const visitor of visitors) {
+      if (visitor.visitBehavior) {
+        visitor.visitBehavior(behavior, this._ancestors);
       }
     }
   }
@@ -233,7 +288,7 @@ class AnalysisWalker {
       importDesc: ImportDescriptor<any>, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitImportDescriptor) {
-        visitor.visitImportDescriptor(importDesc, this._path);
+        visitor.visitImportDescriptor(importDesc, this._ancestors);
       }
     }
   }

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "behavior-test-elem",
+      "description": "An element to test out behavior inheritance.",
+      "superclass": "HTMLElement",
+      "path": "element.html",
+      "attributes": [
+        {
+          "name": "local-property",
+          "description": "",
+          "sourceLocation": {
+            "line": 8,
+            "column": 6
+          },
+          "type": "boolean"
+        },
+        {
+          "name": "inherit-please",
+          "description": "A property provided by SimpleBehavior.",
+          "sourceLocation": {
+            "line": 5,
+            "column": 6
+          },
+          "type": "number"
+        }
+      ],
+      "properties": [
+        {
+          "name": "localProperty",
+          "type": "boolean",
+          "description": "",
+          "sourceLocation": {
+            "line": 8,
+            "column": 6
+          },
+          "defaultValue": "true",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "inheritPlease",
+          "type": "number",
+          "description": "A property provided by SimpleBehavior.",
+          "sourceLocation": {
+            "line": 5,
+            "column": 6
+          },
+          "defaultValue": "10",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [
+        {
+          "name": "local-property-changed",
+          "type": "CustomEvent",
+          "description": "Fired when the `localProperty` property changes."
+        },
+        {
+          "name": "inherit-please-changed",
+          "type": "CustomEvent",
+          "description": "Fired when the `inheritPlease` property changes."
+        }
+      ],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 4,
+        "column": 10
+      }
+    }
+  ]
+}

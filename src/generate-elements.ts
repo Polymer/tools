@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
+import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {Document} from './parser/document';
@@ -34,25 +34,42 @@ export function generateElementMetadata(
   return {
     schema_version: '1.0.0',
     elements: elementDescriptors.map(
-        e => serializeElementDescriptor(e, analysis.elementPaths.get(e)))
+        e => serializeElementDescriptor(
+            e, analysis.elementPaths.get(e), analysis))
   };
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, path: string): Element|null {
+    elementDescriptor: ElementDescriptor, path: string,
+    analysis: Analysis): Element|null {
+  if (!elementDescriptor.is) {
+    return null;
+  }
+  const behaviors =
+      getFlattenedAndResolvedBehaviors(elementDescriptor.behaviors, analysis);
+  const propertiesByName = new Map<string, PropertyDescriptor>();
+  for (const prop of elementDescriptor.properties) {
+    propertiesByName.set(prop.name, prop);
+  }
+  for (const behavior of behaviors) {
+    for (const prop of behavior.properties) {
+      if (!propertiesByName.has(prop.name)) {
+        propertiesByName.set(prop.name, prop);
+      }
+    }
+  }
+
+  // TODO(rictic): the source locations here are wrong because they don't
+  //   include the right file for inherited props...
+  const properties = Array.from(propertiesByName.values());
   const propChangeEvents: Event[] =
-      (elementDescriptor.properties || [])
-          .filter(p => p.notify && propertyToAttributeName(p.name))
+      properties.filter(p => p.notify && propertyToAttributeName(p.name))
           .map(p => ({
                  name: `${propertyToAttributeName(p.name)}-changed`,
                  type: 'CustomEvent',
                  description: `Fired when the \`${p.name}\` property changes.`
                }));
 
-  if (!elementDescriptor.is) {
-    return null;
-  }
-  const properties = elementDescriptor.properties || [];
   return {
     tagname: elementDescriptor.is,
     description: elementDescriptor.desc || '',
@@ -92,6 +109,36 @@ function serializePropertyDescriptor(propertyDescriptor: PropertyDescriptor):
   }
   property.metadata = {polymer: polymerMetadata};
   return property;
+}
+
+function getFlattenedAndResolvedBehaviors(
+    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis) {
+  const resolvedBehaviors = new Set<BehaviorDescriptor>();
+  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
+  return resolvedBehaviors;
+}
+
+function _getFlattenedAndResolvedBehaviors(
+    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis,
+    resolvedBehaviors: Set<BehaviorDescriptor>) {
+  const toLookup = behaviors.slice();
+  for (let behavior of toLookup) {
+    if (typeof behavior === 'string') {
+      const behaviorName = behavior;
+      behavior = analysis.getBehavior(behavior);
+      if (!behavior) {
+        throw new Error(
+            `Unable to resolve behavior \`${behaviorName}\` ` +
+            `Did you import it? Is it annotated with @polymerBehavior?`);
+      }
+    }
+    if (resolvedBehaviors.has(behavior)) {
+      continue;
+    }
+    resolvedBehaviors.add(behavior);
+    _getFlattenedAndResolvedBehaviors(
+        behavior.behaviors, analysis, resolvedBehaviors);
+  }
 }
 
 function computeAttributesFromPropertyDescriptors(props: PropertyDescriptor[]):
