@@ -24,6 +24,7 @@ import {FSUrlLoader} from '../url-loader/fs-url-loader';
 suite('EditorService', function() {
   const basedir = path.join(__dirname, 'static', 'analysis', 'behaviors');
   const tagPosition = {line: 6, column: 9};
+  const tagPositionEnd = {line: 6, column: 21};
   const localAttributePosition = {line: 6, column: 31};
   const deepAttributePosition = {line: 6, column: 49};
 
@@ -140,7 +141,38 @@ suite('EditorService', function() {
           });
     });
 
-    testName = 'Get property completions anywhere else in the element';
+    testName = 'Gets element completions with an incomplete tag';
+    test(testName, async function() {
+      await editorService.fileChanged('index.html');
+      const incompleteText = `<behav>`;
+      editorService.fileChanged('index.html', incompleteText);
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              'index.html', {line: 0, column: incompleteText.length - 2}),
+          {
+            kind: 'element-tags',
+            elements: [{
+              tagname: 'behavior-test-elem',
+              description: 'An element to test out behavior inheritance.'
+            }]
+          });
+    });
+
+    test('get element completions for the end of a tag', async function() {
+      editorService.fileChanged('index.html');
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              'index.html', tagPositionEnd),
+          {
+            kind: 'element-tags',
+            elements: [{
+              tagname: 'behavior-test-elem',
+              description: 'An element to test out behavior inheritance.'
+            }]
+          });
+    });
+
+    testName = 'Get attribute completions when editing an existing attribute';
     test(testName, async function() {
       editorService.fileChanged('index.html');
       assert.deepEqual(
@@ -153,6 +185,33 @@ suite('EditorService', function() {
               description: 'A property defined directly on behavior-test-elem.'
             }]
           });
+    });
+
+    testName = 'Get attribute completions when adding a new attribute';
+    test(testName, async function() {
+      await editorService.fileChanged('index.html');
+      const partialContents = [
+        `<behavior-test-elem >`, `<behavior-test-elem existing-attr>`,
+        `<behavior-test-elem existing-attr></behavior-test-elem>`,
+        `<behavior-test-elem existing-attr></wrong-closing-tag>`
+      ];
+      for (const partial of partialContents) {
+        editorService.fileChanged('index.html', partial);
+        assert.deepEqual(
+            await editorService.getTypeaheadCompletionsFor('index.html', {
+              line: 0,
+              column: 20 /* after the space after the element name */
+            }),
+            {
+              kind: 'attributes',
+              attributes: [{
+                name: 'local-property',
+                description:
+                    'A property defined directly on behavior-test-elem.'
+              }]
+            });
+      }
+
     });
   });
 });

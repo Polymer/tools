@@ -134,7 +134,7 @@ export class EditorService {
 type LocationResult = LocatedAttribute | LocatedTag;
 interface LocatedAttribute {
   kind: 'attribute';
-  attribute: string;
+  attribute: string|null;
   element: parse5.ASTNode;
 }
 interface LocatedTag {
@@ -143,23 +143,36 @@ interface LocatedTag {
 }
 function getElementWithStartTagAtPosition(
     node: parse5.ASTNode, position: Position): undefined|LocationResult {
-  if (node.__location && isElementLocationInfo(node.__location)) {
+  if (node.__location) {
     const location = node.__location;
-    // Early exit examining this node if the position we're interested in
-    // is beyond the end tag of the element.
-    if (location.endTag.line - 1 < position.line) {
-      return;
-    }
-    if (isPositionInsideLocation(position, location.startTag)) {
-      // Ok we're definitely in this start tag, now the question is whether
-      // we're in an attribute or the tag itself.
-      for (const attrName in location.startTag.attrs) {
-        const attributeLocation = location.startTag.attrs[attrName];
-        if (isPositionInsideLocation(position, attributeLocation)) {
-          return {kind: 'attribute', attribute: attrName, element: node};
-        }
+    if (isElementLocationInfo(location)) {
+      // Early exit examining this node if the position we're interested in
+      // is beyond the end tag of the element.
+      if (location.endTag.line - 1 < position.line) {
+        return;
       }
-      return {kind: 'tagName', element: node};
+      if (isPositionInsideLocation(position, location.startTag)) {
+        // Ok we're definitely in this start tag, now the question is whether
+        // we're in an attribute or the tag itself.
+        if (position.column <
+            location.startTag.col + node.nodeName.length + 1) {
+          return {kind: 'tagName', element: node};
+        }
+        for (const attrName in location.startTag.attrs) {
+          const attributeLocation = location.startTag.attrs[attrName];
+          if (isPositionInsideLocation(position, attributeLocation)) {
+            return {kind: 'attribute', attribute: attrName, element: node};
+          }
+        }
+        // We're in the attributes section, but not over any particular
+        // attribute.
+        return {kind: 'attribute', attribute: null, element: node};
+      }
+    } else if (node.nodeName && isPositionInsideLocation(position, location)) {
+      if (position.column < location.col + node.nodeName.length + 1) {
+        return {kind: 'tagName', element: node};
+      }
+      return {kind: 'attribute', attribute: null, element: node};
     }
   }
   if (!node.childNodes) {
