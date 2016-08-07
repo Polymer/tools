@@ -41,3 +41,7 @@ export interface PropertyDescriptor extends Descriptor {
 
   __fromBehavior?: BehaviorOrName;
 }
+
+export function isPropertyDescriptor(d: Descriptor): d is PropertyDescriptor {
+  return (<PropertyDescriptor>d).javascriptNode !== undefined;
+}

@@ -16,7 +16,7 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
-import {DocumentDescriptor, ElementDescriptor, PropertyDescriptor} from './ast/ast';
+import {DocumentDescriptor, ElementDescriptor, PropertyDescriptor, isPropertyDescriptor} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
 
@@ -34,7 +34,7 @@ export interface ElementCompletion {
 }
 export interface AttributeCompletion {
   kind: 'attributes';
-  attributes: {name: string, description: string}[];
+  attributes: {name: string, description: string, type: string|undefined}[];
 }
 
 export class EditorService {
@@ -53,6 +53,11 @@ export class EditorService {
     const descriptor = await this._getDescriptorAt(localPath, position);
     if (!descriptor) {
       return;
+    }
+    if (isPropertyDescriptor(descriptor)) {
+      if (descriptor.type) {
+        return `{${descriptor.type}} ${descriptor.desc}`;
+      }
     }
     return descriptor.desc;
   }
@@ -92,7 +97,8 @@ export class EditorService {
                 .map(p => ({
                        name: p.name.replace(
                            /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
-                       description: p.desc
+                       description: p.desc,
+                       type: p.type
                      }))
       };
     }

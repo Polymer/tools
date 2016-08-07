@@ -39,8 +39,9 @@ suite('EditorService', function() {
   suite('getDocumentationFor', function() {
     const tagDescription = 'An element to test out behavior inheritance.';
     const localAttributeDescription =
-        'A property defined directly on behavior-test-elem.';
-    const deepAttributeDescription = 'This is a deeply inherited property.';
+        '{boolean} A property defined directly on behavior-test-elem.';
+    const deepAttributeDescription =
+        '{Array} This is a deeply inherited property.';
 
     let testName = 'it supports getting the element description ' +
         'when hovering over its tag name';
@@ -81,8 +82,8 @@ suite('EditorService', function() {
 
     // After we move behavior inlining to .resolve() should be able to unskip
     // this
-    testName =
-        'it supports getting a description of an attribute defined in a behavior';
+    testName = 'it supports getting a description of an attribute ' +
+        'defined in a behavior';
     test.skip(testName, async function() {
       editorService.fileChanged('index.html');
       assert.equal(
@@ -113,8 +114,8 @@ suite('EditorService', function() {
 
     // After we move behavior inlining to .resolve() should be able to unskip
     // this
-    testName =
-        'it supports getting the definition of an attribute defined in a behavior';
+    testName = 'it supports getting the definition of an attribute ' +
+        'defined in a behavior';
     test.skip(testName, async function() {
       editorService.fileChanged('index.html');
       assert.deepEqual(
@@ -182,7 +183,8 @@ suite('EditorService', function() {
             kind: 'attributes',
             attributes: [{
               name: 'local-property',
-              description: 'A property defined directly on behavior-test-elem.'
+              description: 'A property defined directly on behavior-test-elem.',
+              type: 'boolean'
             }]
           });
     });
@@ -207,7 +209,8 @@ suite('EditorService', function() {
               attributes: [{
                 name: 'local-property',
                 description:
-                    'A property defined directly on behavior-test-elem.'
+                    'A property defined directly on behavior-test-elem.',
+                type: 'boolean'
               }]
             });
       }
