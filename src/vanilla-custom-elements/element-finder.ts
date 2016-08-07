@@ -23,10 +23,12 @@ import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
+import * as jsdoc from '../javascript/jsdoc';
 
 export interface AttributeDescriptor extends Descriptor {
   name: string;
   sourceLocation: SourceLocation;
+  type?: string;
 }
 
 export class VanillaElementDescriptor extends ElementDescriptor {
@@ -78,7 +80,8 @@ class ElementVisitor implements Visitor {
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const element = new VanillaElementDescriptor({
       type: 'element',
-      desc: esutil.getAttachedComment(node),
+      desc: jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
+                .description.trim(),
       events: esutil.getEventComments(node).map(function(event) {
         return {desc: event};
       }),
@@ -168,11 +171,24 @@ class ElementVisitor implements Visitor {
     for (const expr of arry.elements) {
       const value = astValue.expressionToValue(expr);
       if (value && typeof value === 'string') {
-        results.push({
+        const annotation = jsdoc.parseJsdoc(esutil.getAttachedComment(expr));
+        let description = annotation.description;
+        let type: string|null = null;
+        for (const tag of annotation.tags) {
+          if (tag.tag === 'type') {
+            type = type || tag.type;
+          }
+          description = description || tag.description;
+        }
+        const attribute: AttributeDescriptor = {
           name: value,
-          desc: esutil.getAttachedComment(expr),
+          desc: description,
           sourceLocation: getSourceLocation(expr)
-        });
+        };
+        if (type) {
+          attribute.type = type;
+        }
+        results.push(attribute);
       }
     }
     return results;

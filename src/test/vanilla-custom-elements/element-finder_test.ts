@@ -67,6 +67,25 @@ suite('BehaviorFinder', () => {
 
   test('Extracts attributes from observedAttributes', () => {
     const element = elements.get('with-observed-attributes');
-    assert.deepEqual(element.attributes.length, 2);
+    assert.deepEqual(element.attributes, [
+      {
+        desc: 'When given the element is totally inactive',
+        name: 'disabled',
+        type: 'boolean',
+        sourceLocation: {column: 6, line: 25}
+      },
+      {
+        desc: 'When given the element is expanded',
+        name: 'open',
+        type: 'boolean',
+        sourceLocation: {column: 6, line: 27}
+      }
+    ]);
+  });
+
+  test('Extracts description from jsdoc', () => {
+    const element = elements.get('with-observed-attributes');
+    assert.equal(
+        element.desc, 'This is a description of WithObservedAttributes.');
   });
 });

@@ -16,6 +16,9 @@ customElements.define('register-before-expression', RegisterBeforeExpression);
 
 let RegisterBeforeExpression = class extends HTMLElement {}
 
+/**
+ * This is a description of WithObservedAttributes.
+ */
 class WithObservedAttributes extends HTMLElement {
   static get observedAttributes() {
     return [
