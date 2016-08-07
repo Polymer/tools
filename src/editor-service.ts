@@ -27,6 +27,16 @@ export interface Position {
   column: number;
 }
 
+export type TypeaheadCompletion = ElementCompletion | AttributeCompletion;
+export interface ElementCompletion {
+  kind: 'element-tags';
+  elements: {tagname: string, description: string}[];
+}
+export interface AttributeCompletion {
+  kind: 'attributes';
+  attributes: {name: string, description: string}[];
+}
+
 export class EditorService {
   private _analyzer: Analyzer;
   constructor(analyzer: Analyzer) {
@@ -53,6 +63,37 @@ export class EditorService {
       return;
     }
     return descriptor.sourceLocation;
+  }
+
+  async getTypeaheadCompletionsFor(localPath: string, position: Position):
+      Promise<TypeaheadCompletion|undefined> {
+    const analysis = await this._analyzer.resolve();
+    const location =
+        await this._getLocationResult(localPath, position, analysis);
+    if (!location) {
+      return;
+    }
+    if (location.kind === 'tagName') {
+      return {
+        kind: 'element-tags',
+        elements: analysis.getElements().map(
+            e => ({tagname: e.is, description: e.desc}))
+      };
+    } else {
+      const element = analysis.getElement(location.element.nodeName);
+      if (!element) {
+        return;
+      }
+      return {
+        kind: 'attributes',
+        attributes: element.properties.map(
+            p => ({
+              name: p.name.replace(
+                  /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
+              description: p.desc
+            }))
+      };
+    }
   }
 
   private async _getDescriptorAt(localPath: string, position: Position):

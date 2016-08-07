@@ -94,6 +94,10 @@ export class Analysis {
     return this._elementsByTagName.get(tag);
   }
 
+  getElements(): ElementDescriptor[] {
+    return Array.from(this._elementsByTagName.values());
+  }
+
   getElementsForPackage(dirName: string): ElementDescriptor[]|undefined {
     return this._elementsByPackageDir.get(dirName);
   }

@@ -123,4 +123,36 @@ suite('EditorService', function() {
     });
 
   });
+
+  suite('getTypeaheadCompletionsFor', function() {
+    let testName = 'Get element completions for a start tag.';
+    test(testName, async function() {
+      editorService.fileChanged('index.html');
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              'index.html', tagPosition),
+          {
+            kind: 'element-tags',
+            elements: [{
+              tagname: 'behavior-test-elem',
+              description: 'An element to test out behavior inheritance.'
+            }]
+          });
+    });
+
+    testName = 'Get property completions anywhere else in the element';
+    test(testName, async function() {
+      editorService.fileChanged('index.html');
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              'index.html', localAttributePosition),
+          {
+            kind: 'attributes',
+            attributes: [{
+              name: 'local-property',
+              description: 'A property defined directly on behavior-test-elem.'
+            }]
+          });
+    });
+  });
 });
