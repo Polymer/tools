@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {Descriptor, PolymerElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -30,7 +30,7 @@ import * as docs from './docs';
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ElementDescriptor[]> {
+      Promise<PolymerElementDescriptor[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.entities;
@@ -38,18 +38,18 @@ export class PolymerElementFinder implements JavaScriptEntityFinder {
 }
 
 class ElementVisitor implements Visitor {
-  entities: ElementDescriptor[] = [];
+  entities: PolymerElementDescriptor[] = [];
 
   /**
    * The element being built during a traversal;
    */
-  element: ElementDescriptor = null;
+  element: PolymerElementDescriptor = null;
   propertyHandlers: PropertyHandlers = null;
   classDetected: boolean = false;
 
   enterClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
     this.classDetected = true;
-    this.element = new ElementDescriptor({
+    this.element = new PolymerElementDescriptor({
       type: 'element',
       desc: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node).map(function(event) {
@@ -138,7 +138,7 @@ class ElementVisitor implements Visitor {
     let callee = node.callee;
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
-        this.element = new ElementDescriptor({
+        this.element = new PolymerElementDescriptor({
           type: 'element',
           desc: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent).map(function(event) {

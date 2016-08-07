@@ -16,7 +16,7 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
-import {DocumentDescriptor, ElementDescriptor, PropertyDescriptor, isPropertyDescriptor} from './ast/ast';
+import {DocumentDescriptor, PolymerElementDescriptor, PropertyDescriptor, isPropertyDescriptor} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
 
@@ -105,7 +105,7 @@ export class EditorService {
   }
 
   private async _getDescriptorAt(localPath: string, position: Position):
-      Promise<ElementDescriptor|PropertyDescriptor|undefined> {
+      Promise<PolymerElementDescriptor|PropertyDescriptor|undefined> {
     const analysis = await this._analyzer.resolve();
     const location =
         await this._getLocationResult(localPath, position, analysis);

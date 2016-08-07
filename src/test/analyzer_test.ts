@@ -18,7 +18,7 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
+import {DocumentDescriptor, PolymerElementDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
 import {HtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -188,7 +188,7 @@ suite('Analyzer', () => {
     // ported from old js-parser_test.js
     test('parses classes', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
-        let elements = <ElementDescriptor[]>document.entities.filter(
+        let elements = <PolymerElementDescriptor[]>document.entities.filter(
             (e) => e['type'] === 'element');
         assert.equal(elements.length, 2);
 
@@ -210,7 +210,7 @@ suite('Analyzer', () => {
     // ported from old js-parser_test.js
     test('parses events from classes', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
-        let elements = <ElementDescriptor[]>document.entities.filter(
+        let elements = <PolymerElementDescriptor[]>document.entities.filter(
             (e) => e['type'] === 'element');
         assert.equal(elements.length, 2);
 

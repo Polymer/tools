@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import {BehaviorOrName, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {BehaviorOrName, PolymerElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 
 import {analyzeProperties} from './analyze-properties';
@@ -31,7 +31,7 @@ export type PropertyHandlers = {
  * @return {object.<string,function>}      An object containing property
  *                                         handlers.
  */
-export function declarationPropertyHandlers(declaration: ElementDescriptor):
+export function declarationPropertyHandlers(declaration: PolymerElementDescriptor):
     PropertyHandlers {
   return {
     is(node: estree.Node) {

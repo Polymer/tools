@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {Descriptor, PolymerElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -31,7 +31,7 @@ export interface AttributeDescriptor extends Descriptor {
   type?: string;
 }
 
-export class VanillaElementDescriptor extends ElementDescriptor {
+export class VanillaElementDescriptor extends PolymerElementDescriptor {
   className?: string;
   superclass?: string;
   attributes: AttributeDescriptor[];
@@ -40,7 +40,7 @@ export class VanillaElementDescriptor extends ElementDescriptor {
 export class ElementFinder implements JavaScriptEntityFinder {
   async findEntities(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ElementDescriptor[]> {
+      Promise<PolymerElementDescriptor[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.getRegisteredElements();

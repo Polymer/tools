@@ -17,7 +17,7 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
+import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, PolymerElementDescriptor, PropertyDescriptor} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
 
@@ -39,13 +39,13 @@ export class ValidationError extends Error {
 
 export class Analysis {
   private _descriptors: DocumentDescriptor[];
-  private _elementsByTagName = new Map<string, ElementDescriptor>();
-  private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
+  private _elementsByTagName = new Map<string, PolymerElementDescriptor>();
+  private _elementsByPackageDir = new Map<string, PolymerElementDescriptor[]>();
   private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
   private _documentsByLocalPath = new Map<string, DocumentDescriptor>();
 
-  elementPaths: Map<ElementDescriptor, string>;
-  behaviorPaths: Map<ElementDescriptor, string>;
+  elementPaths: Map<PolymerElementDescriptor, string>;
+  behaviorPaths: Map<PolymerElementDescriptor, string>;
 
   constructor(descriptors: DocumentDescriptor[]) {
     this._descriptors = descriptors;
@@ -90,15 +90,15 @@ export class Analysis {
     this.elementPaths = elementsGatherer.elementPaths;
   }
 
-  getElement(tag: string): ElementDescriptor|undefined {
+  getElement(tag: string): PolymerElementDescriptor|undefined {
     return this._elementsByTagName.get(tag);
   }
 
-  getElements(): ElementDescriptor[] {
+  getElements(): PolymerElementDescriptor[] {
     return Array.from(this._elementsByTagName.values());
   }
 
-  getElementsForPackage(dirName: string): ElementDescriptor[]|undefined {
+  getElementsForPackage(dirName: string): PolymerElementDescriptor[]|undefined {
     return this._elementsByPackageDir.get(dirName);
   }
 
@@ -160,13 +160,14 @@ class PackageGatherer implements AnalysisVisitor {
  * well as their resolved urls.
  */
 class ElementGatherer implements AnalysisVisitor {
-  elementDescriptors: ElementDescriptor[] = [];
-  elementPaths = new Map<ElementDescriptor, string>();
+  elementDescriptors: PolymerElementDescriptor[] = [];
+  elementPaths = new Map<PolymerElementDescriptor, string>();
   behaviorDescriptors: BehaviorDescriptor[] = [];
   behaviorPaths = new Map<BehaviorDescriptor, string>();
 
-  visitElement(elementDescriptor: ElementDescriptor, ancestors: Descriptor[]):
-      void {
+  visitElement(
+      elementDescriptor: PolymerElementDescriptor,
+      ancestors: Descriptor[]): void {
     const elementPath = this._getPathFromAncestors(ancestors);
     if (!elementPath) {
       throw new Error(
@@ -222,7 +223,8 @@ abstract class AnalysisVisitor {
       (dd: DocumentDescriptor, ancestors: Descriptor[]): void;
   visitInlineDocumentDescriptor?
       (dd: InlineDocumentDescriptor<any>, ancestors: Descriptor[]): void;
-  visitElement?(element: ElementDescriptor, ancestors: Descriptor[]): void;
+  visitElement?
+      (element: PolymerElementDescriptor, ancestors: Descriptor[]): void;
   visitBehavior?(behavior: BehaviorDescriptor, ancestors: Descriptor[]): void;
   visitImportDescriptor?
       (importDesc: ImportDescriptor<any>, ancestors: Descriptor[]): void;
@@ -287,7 +289,7 @@ class AnalysisWalker {
     } else if (entity instanceof InlineDocumentDescriptor) {
       return this._walkInlineDocumentDescriptor(entity, visitors);
     } else if (entity['type'] === 'element') {
-      return this._walkElement(<ElementDescriptor>entity, visitors);
+      return this._walkElement(<PolymerElementDescriptor>entity, visitors);
     } else if (entity instanceof ImportDescriptor) {
       return this._walkImportDescriptor(entity, visitors);
     } else if (entity instanceof BehaviorDescriptor) {
@@ -297,7 +299,7 @@ class AnalysisWalker {
   }
 
   private _walkElement(
-      element: ElementDescriptor, visitors: AnalysisVisitor[]) {
+      element: PolymerElementDescriptor, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitElement) {
         visitor.visitElement(element, this._ancestors);

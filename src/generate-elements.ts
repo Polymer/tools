@@ -18,7 +18,7 @@ import * as pathLib from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
+import {BehaviorDescriptor, Descriptor, DocumentDescriptor, PolymerElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {Document} from './parser/document';
@@ -39,7 +39,7 @@ export function generateElementMetadata(
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, analysis: Analysis,
+    elementDescriptor: PolymerElementDescriptor, analysis: Analysis,
     packagePath: string): Element|null {
   if (!elementDescriptor.is) {
     return null;

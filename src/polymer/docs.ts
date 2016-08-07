@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 
-import {BehaviorDescriptor, BehaviorsByName, Descriptor, ElementDescriptor, EventDescriptor, FeatureDescriptor, FunctionDescriptor, PropertyDescriptor} from '../ast/ast';
+import {BehaviorDescriptor, BehaviorsByName, Descriptor, PolymerElementDescriptor, EventDescriptor, FeatureDescriptor, FunctionDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
 
@@ -63,7 +63,7 @@ export function annotate(descriptor: Descriptor): Descriptor {
 /**
  * Annotates @event, @hero, & @demo tags
  */
-export function annotateElementHeader(descriptor: ElementDescriptor) {
+export function annotateElementHeader(descriptor: PolymerElementDescriptor) {
   if (descriptor.events) {
     descriptor.events.forEach(function(event) {
       _annotateEvent(event);
@@ -91,7 +91,7 @@ export function annotateElementHeader(descriptor: ElementDescriptor) {
 }
 
 function copyProperties(
-    from: ElementDescriptor, to: ElementDescriptor,
+    from: PolymerElementDescriptor, to: PolymerElementDescriptor,
     behaviorsByName: BehaviorsByName) {
   if (from.properties) {
     from.properties.forEach(function(fromProp) {
@@ -149,7 +149,7 @@ function copyProperties(
 
 
 function mixinBehaviors(
-    descriptor: ElementDescriptor, behaviorsByName: BehaviorsByName) {
+    descriptor: PolymerElementDescriptor, behaviorsByName: BehaviorsByName) {
   if (descriptor.behaviors) {
     for (let i = descriptor.behaviors.length - 1; i >= 0; i--) {
       const behavior = <string>descriptor.behaviors[i];
@@ -176,8 +176,8 @@ function mixinBehaviors(
  * @return {Object} The descriptor that was given.
  */
 export function annotateElement(
-    descriptor: ElementDescriptor,
-    behaviorsByName: BehaviorsByName): ElementDescriptor {
+    descriptor: PolymerElementDescriptor,
+    behaviorsByName: BehaviorsByName): PolymerElementDescriptor {
   if (!descriptor.desc && descriptor.type === 'element') {
     descriptor.desc =
         _findElementDocs(descriptor.domModule, descriptor.scriptElement) ||
@@ -336,13 +336,13 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  * @return {ElementDescriptor}
  */
 export function featureElement(features: FeatureDescriptor[]):
-    ElementDescriptor {
+    PolymerElementDescriptor {
   const properties =
       features.reduce<PropertyDescriptor[]>((result, feature) => {
         return result.concat(feature.properties);
       }, []);
 
-  return new ElementDescriptor({
+  return new PolymerElementDescriptor({
     type: 'element',
     is: 'Polymer.Base',
     abstract: true,
@@ -392,7 +392,7 @@ export function clean(descriptor: Descriptor) {
  *
  * @param {ElementDescriptor|BehaviorDescriptor} element
  */
-export function cleanElement(element: ElementDescriptor) {
+export function cleanElement(element: PolymerElementDescriptor) {
   clean(element);
   element.properties.forEach(cleanProperty);
 }
@@ -412,13 +412,13 @@ function cleanProperty(property: PropertyDescriptor) {
  * @param  {comments} Array<string> A list of comments to parse.
  * @return {ElementDescriptor}      A list of pseudo-elements.
  */
-export function parsePseudoElements(comments: string[]): ElementDescriptor[] {
-  const elements: ElementDescriptor[] = [];
+export function parsePseudoElements(comments: string[]): PolymerElementDescriptor[] {
+  const elements: PolymerElementDescriptor[] = [];
   comments.forEach(function(comment) {
     const parsedJsdoc = jsdoc.parseJsdoc(comment);
     const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
     if (pseudoTag) {
-      let element = new ElementDescriptor({
+      let element = new PolymerElementDescriptor({
         is: pseudoTag,
         type: 'element',
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},

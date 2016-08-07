@@ -52,7 +52,7 @@ export interface Options {
 /**
  * The metadata for a single polymer element
  */
-export class ElementDescriptor implements Descriptor {
+export class PolymerElementDescriptor implements Descriptor {
   type: 'element'|'behavior';
   is: string;
 
