@@ -14,8 +14,10 @@
 
 import * as parse5 from 'parse5';
 
+import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
-import {DocumentDescriptor} from './ast/ast';
+import {DocumentDescriptor, ElementDescriptor, PropertyDescriptor} from './ast/ast';
+import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
 
 export interface Position {
@@ -36,9 +38,45 @@ export class EditorService {
     return this._analyzer.analyzeChangedFile(localPath, contents);
   }
 
-  async getHoverInfo(localPath: string, position: Position):
+  async getDocumentationFor(localPath: string, position: Position):
       Promise<string|undefined> {
+    const descriptor = await this._getDescriptorAt(localPath, position);
+    if (!descriptor) {
+      return;
+    }
+    return descriptor.desc;
+  }
+
+  async getDefinitionFor(localPath: string, position: Position) {
+    const descriptor = await this._getDescriptorAt(localPath, position);
+    if (!descriptor) {
+      return;
+    }
+    return descriptor.sourceLocation;
+  }
+
+  private async _getDescriptorAt(localPath: string, position: Position):
+      Promise<ElementDescriptor|PropertyDescriptor|undefined> {
     const analysis = await this._analyzer.resolve();
+    const location =
+        await this._getLocationResult(localPath, position, analysis);
+    if (!location) {
+      return;
+    }
+    if (location.kind === 'tagName') {
+      return analysis.getElement(location.element.nodeName);
+    } else if (location.kind === 'attribute') {
+      return analysis.getElement(location.element.nodeName)
+          .properties.find(
+              (p) => p && p.name &&
+                  p.name.replace(
+                      /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`) ===
+                      location.attribute);
+    }
+  }
+
+  private async _getLocationResult(
+      localPath: string, position: Position, analysis: Analysis) {
     const documentDesc = await analysis.getDocument(localPath);
     if (!documentDesc) {
       return;
@@ -47,31 +85,10 @@ export class EditorService {
     if (!(document instanceof HtmlDocument)) {
       return;
     }
-    const node = getElementWithStartTagAtPosition(document.ast, position);
-    if (!node) {
-      return;
-    }
-    if (node.kind === 'tagName') {
-      const elem = analysis.getElement(node.element.nodeName);
-      if (!elem) {
-        return;
-      }
-      return elem.desc;
-    } else if (node.kind === 'attribute') {
-      const property =
-          analysis.getElement(node.element.nodeName)
-              .properties.find(
-                  (p) => p && p.name &&
-                      p.name.replace(
-                          /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`) ===
-                          node.attribute);
-      if (!property) {
-        return;
-      }
-      return property.desc;
-    }
+    return getElementWithStartTagAtPosition(document.ast, position);
   }
 }
+
 
 type LocationResult = LocatedAttribute | LocatedTag;
 interface LocatedAttribute {
