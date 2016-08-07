@@ -42,6 +42,7 @@ export class Analysis {
   private _elementsByTagName = new Map<string, ElementDescriptor>();
   private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
   private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
+  private _documentsByLocalPath = new Map<string, DocumentDescriptor>();
 
   elementPaths: Map<ElementDescriptor, string>;
   behaviorPaths: Map<ElementDescriptor, string>;
@@ -81,6 +82,10 @@ export class Analysis {
       }
     }
 
+    for (const dd of this._descriptors) {
+      this._documentsByLocalPath.set(dd.url, dd);
+    }
+
     this.behaviorPaths = elementsGatherer.behaviorPaths;
     this.elementPaths = elementsGatherer.elementPaths;
   }
@@ -106,6 +111,10 @@ export class Analysis {
    */
   getBehavior(name: string): BehaviorDescriptor|undefined {
     return this._behaviorsByIdentifierName.get(name);
+  }
+
+  getDocument(path: string): DocumentDescriptor|undefined {
+    return this._documentsByLocalPath.get(path);
   }
 
   /**

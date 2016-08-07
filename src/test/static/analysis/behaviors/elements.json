@@ -9,9 +9,9 @@
       "attributes": [
         {
           "name": "local-property",
-          "description": "",
+          "description": "A property defined directly on behavior-test-elem.",
           "sourceLocation": {
-            "line": 8,
+            "line": 9,
             "column": 6
           },
           "type": "boolean"
@@ -28,9 +28,9 @@
         },
         {
           "name": "deeply-inherited-property",
-          "description": "",
+          "description": "This is a deeply inherited property.",
           "sourceLocation": {
-            "line": 4,
+            "line": 5,
             "column": 6,
             "file": "../subdir/subbehavior.html"
           },
@@ -41,9 +41,9 @@
         {
           "name": "localProperty",
           "type": "boolean",
-          "description": "",
+          "description": "A property defined directly on behavior-test-elem.",
           "sourceLocation": {
-            "line": 8,
+            "line": 9,
             "column": 6
           },
           "defaultValue": "true",
@@ -72,9 +72,9 @@
         {
           "name": "deeplyInheritedProperty",
           "type": "Array",
-          "description": "",
+          "description": "This is a deeply inherited property.",
           "sourceLocation": {
-            "line": 4,
+            "line": 5,
             "column": 6,
             "file": "../subdir/subbehavior.html"
           },

@@ -69,7 +69,7 @@ export class Analyzer {
   ]);
 
   private _loader: UrlLoader;
-  private _resolver: UrlResolver;
+  private _resolver: UrlResolver|undefined;
   private _documents = new Map<string, Promise<Document<any, any>>>();
   private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
 
@@ -86,14 +86,24 @@ export class Analyzer {
    * @param {string} url the location of the file to analyze
    * @return {Promise<DocumentDescriptor>}
    */
-  async analyze(url: string): Promise<DocumentDescriptor> {
+  async analyze(url: string): Promise<DocumentDescriptor|null> {
     return this._analyzeResolved(this._resolveUrl(url));
   }
 
-  private async _analyzeResolved(resolvedUrl: string):
-      Promise<DocumentDescriptor> {
-    let isExternalUrl = urlLib.parse(resolvedUrl).protocol !== null ||
-        resolvedUrl.startsWith('//');
+  async analyzeChangedFile(url: string, contents?: string):
+      Promise<DocumentDescriptor|null> {
+    const resolved = this._resolveUrl(url);
+    this._documentDescriptors.delete(resolved);
+    this._documents.delete(resolved);
+    return this._analyzeResolved(this._resolveUrl(url), contents);
+  }
+
+  private async _analyzeResolved(resolvedUrl: string, contents?: string):
+      Promise<DocumentDescriptor|null> {
+    let isExternalUrl =
+        urlLib.parse(resolvedUrl).protocol !== null || resolvedUrl.startsWith(`
+            //
+        `.trim());
     if (isExternalUrl) {
       return null;
     }
@@ -105,7 +115,7 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      let document = await this._loadResolved(resolvedUrl);
+      let document = await this._loadResolved(resolvedUrl, contents);
       return this._analyzeDocument(document);
     })();
     this._documentDescriptors.set(resolvedUrl, promise);
@@ -175,7 +185,7 @@ export class Analyzer {
     return this._loadResolved(this._resolveUrl(url));
   }
 
-  private async _loadResolved(resolvedUrl: string):
+  private async _loadResolved(resolvedUrl: string, providedContents?: string):
       Promise<Document<any, any>> {
     const cachedResult = this._documents.get(resolvedUrl);
     if (cachedResult) {
@@ -191,7 +201,9 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      let content = await this._loader.load(resolvedUrl);
+      let content = providedContents == null ?
+          await this._loader.load(resolvedUrl) :
+          providedContents;
       let extension = path.extname(resolvedUrl).substring(1);
       return this._parse(extension, content, resolvedUrl);
     })();
