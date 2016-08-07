@@ -62,7 +62,11 @@ function serializeElementDescriptor(
   const packageRelativePath =
       pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
 
-  const properties = Array.from(propertiesByName.values());
+  const properties =
+      Array
+          .from(propertiesByName.values())
+          // Filter out private properties.
+          .filter(p => !(p.name.startsWith('_') || p.name.endsWith('_')));
   const propChangeEvents: Event[] =
       properties.filter(p => p.notify && propertyToAttributeName(p.name))
           .map(p => ({

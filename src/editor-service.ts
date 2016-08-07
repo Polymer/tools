@@ -86,12 +86,14 @@ export class EditorService {
       }
       return {
         kind: 'attributes',
-        attributes: element.properties.map(
-            p => ({
-              name: p.name.replace(
-                  /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
-              description: p.desc
-            }))
+        attributes:
+            element.properties
+                .filter(p => !(p.name.startsWith('_') || p.name.endsWith('_')))
+                .map(p => ({
+                       name: p.name.replace(
+                           /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
+                       description: p.desc
+                     }))
       };
     }
   }
