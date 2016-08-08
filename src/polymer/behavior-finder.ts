@@ -57,13 +57,13 @@ export class BehaviorFinder implements JavaScriptEntityFinder {
       visit: (visitor: Visitor) => Promise<void>): Promise<Descriptor[]> {
     let visitor = new BehaviorVisitor();
     await visit(visitor);
-    return visitor.behaviors;
+    return Array.from(visitor.behaviors);
   }
 }
 
 class BehaviorVisitor implements Visitor {
   /** The behaviors we've found. */
-  behaviors: BehaviorDescriptor[] = [];
+  behaviors = new Set<BehaviorDescriptor>();
 
   currentBehavior: BehaviorDescriptor = null;
   propertyHandlers: PropertyHandlers = null;
@@ -124,7 +124,7 @@ class BehaviorVisitor implements Visitor {
 
   private _finishBehavior() {
     console.assert(this.currentBehavior != null);
-    this.behaviors.push(this.currentBehavior);
+    this.behaviors.add(this.currentBehavior);
     this.currentBehavior = null;
   }
 
@@ -188,36 +188,31 @@ class BehaviorVisitor implements Visitor {
       // filter out BehaviorImpl
       return b.indexOf(newBehavior.className) === -1;
     };
-    for (let i = 0; i < this.behaviors.length; i++) {
-      if (newBehavior.className !== this.behaviors[i].className) {
+    for (const behavior of this.behaviors) {
+      if (newBehavior.className !== behavior.className) {
         continue;
       }
       // merge desc, longest desc wins
       if (newBehavior.description) {
-        if (this.behaviors[i].description) {
-          if (newBehavior.description.length >
-              this.behaviors[i].description.length)
-            this.behaviors[i].description = newBehavior.description;
+        if (behavior.description) {
+          if (newBehavior.description.length > behavior.description.length)
+            behavior.description = newBehavior.description;
         } else {
-          this.behaviors[i].description = newBehavior.description;
+          behavior.description = newBehavior.description;
         }
       }
       // TODO(justinfagnani): move into BehaviorDescriptor
-      this.behaviors[i].demos =
-          this.behaviors[i].demos.concat(newBehavior.demos);
-      this.behaviors[i].events =
-          this.behaviors[i].events.concat(newBehavior.events);
-      this.behaviors[i].events =
-          dedupe(this.behaviors[i].events, (e) => e.name);
+      behavior.demos = behavior.demos.concat(newBehavior.demos);
+      behavior.events = behavior.events.concat(newBehavior.events);
+      behavior.events = dedupe(behavior.events, (e) => e.name);
       for (const property of newBehavior.properties) {
-        this.behaviors[i].addProperty(property);
+        behavior.addProperty(property);
       }
-      this.behaviors[i].observers =
-          this.behaviors[i].observers.concat(newBehavior.observers);
-      this.behaviors[i].behaviors = (this.behaviors[i].behaviors)
-                                        .concat(newBehavior.behaviors)
-                                        .filter(isBehaviorImpl);
-      return this.behaviors[i];
+      behavior.observers = behavior.observers.concat(newBehavior.observers);
+      behavior.behaviors = (behavior.behaviors)
+                               .concat(newBehavior.behaviors)
+                               .filter(isBehaviorImpl);
+      return behavior;
     }
     return newBehavior;
   }

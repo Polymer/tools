@@ -279,6 +279,9 @@ class AnalysisWalker {
   }
 
   private _walkEntity(entity: Descriptor, visitors: AnalysisVisitor[]) {
+    if (entity == null) {
+      return;
+    }
     if (entity instanceof DocumentDescriptor) {
       return this._walkDocumentDescriptor(entity, visitors);
     } else if (entity instanceof InlineDocumentDescriptor) {

@@ -2,7 +2,7 @@ import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation} from '../ast/ast';
+import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
