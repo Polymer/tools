@@ -136,12 +136,9 @@ suite('EditorService', function() {
           localAttributeDescription);
     });
 
-    // After we move behavior inlining to .resolve() should be able to
-    // unskip
-    // this
     testName = 'it supports getting a description of an attribute ' +
         'defined in a behavior';
-    test.skip(testName, async function() {
+    test(testName, async function() {
       editorService.fileChanged(indexFile);
       assert.equal(
           await editorService.getDocumentationFor(
@@ -176,17 +173,18 @@ suite('EditorService', function() {
           });
     });
 
-    // After we move behavior inlining to .resolve() should be able to
-    // unskip
-    // this
     testName = 'it supports getting the definition of an attribute ' +
         'defined in a behavior';
-    test.skip(testName, async function() {
+    test(testName, async function() {
       editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getDefinitionFor(
               indexFile, deepAttributePosition),
-          {line: 5, column: 6, file: '../subdir/subbehavior.html'});
+          {
+            line: 5,
+            column: 6,
+            file: 'analysis/behaviors/subdir/subbehavior.html'
+          });
     });
 
   });
