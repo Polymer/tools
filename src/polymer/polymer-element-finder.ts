@@ -15,7 +15,6 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {Analyzer} from '../analyzer';
 import {Descriptor, EventDescriptor, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';

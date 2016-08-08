@@ -15,10 +15,10 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 
-import {BehaviorDescriptor, BehaviorsByName, Descriptor, EventDescriptor, FeatureDescriptor, FunctionDescriptor, Property} from '../ast/ast';
+import {BehaviorDescriptor, BehaviorsByName, Descriptor, EventDescriptor, FeatureDescriptor, Property} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {PolymerElementDescriptor, PolymerProperty} from './element-descriptor';
+import {FunctionDescriptor, PolymerElementDescriptor, PolymerProperty} from './element-descriptor';
 
 
 

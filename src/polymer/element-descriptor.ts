@@ -2,7 +2,7 @@ import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation, isFunctionDescriptor} from '../ast/ast';
+import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
@@ -18,6 +18,16 @@ export interface PolymerProperty extends Property {
   getter?: boolean;
   setter?: boolean;
   function?: boolean;
+}
+
+export interface FunctionDescriptor extends PolymerProperty {
+  function: boolean;  // true
+  params: {name: string, type?: string}[];
+  return: {type: string | null; desc: string};
+}
+
+export function isFunctionDescriptor(d: Property): d is FunctionDescriptor {
+  return d['function'] === true;
 }
 
 export interface Options {
