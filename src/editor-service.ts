@@ -113,8 +113,18 @@ export class EditorService {
       }
       return {
         kind: 'attributes',
-        attributes: element.attributes.map(
-            p => ({name: p.name, description: p.description, type: p.type}))
+        attributes:
+            element.attributes
+                .map(p => ({
+                       name: p.name,
+                       description: p.description,
+                       type: p.type
+                     }))
+                .concat(element.events.map(e => ({
+                                             name: `on-${e.name}`,
+                                             description: e.description,
+                                             type: e.type || 'CustomEvent'
+                                           })))
       };
     }
   }

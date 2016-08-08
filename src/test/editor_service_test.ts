@@ -61,6 +61,22 @@ suite('EditorService', function() {
       description: 'This is a deeply inherited property.',
       type: 'Array',
     },
+    {
+      name: 'on-local-property-changed',
+      description: 'Fired when the `localProperty` property changes.',
+      type: 'CustomEvent'
+    },
+    {
+      name: 'on-inherit-please-changed',
+      description: 'Fired when the `inheritPlease` property changes.',
+      type: 'CustomEvent'
+    },
+    {
+      name: 'on-deeply-inherited-property-changed',
+      description: 'Fired when the `deeplyInheritedProperty` property changes.',
+      type: 'CustomEvent'
+    },
+
   ];
 
   // The weird cast is because the service will always be non-null.
