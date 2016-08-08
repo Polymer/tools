@@ -15,6 +15,6 @@
 import {PolymerElementDescriptor} from '../polymer/element-descriptor';
 
 /**
- * The metadata for a Polymer feature.
+ * The metadata for a Polymer core feature.
  */
 export interface FeatureDescriptor extends PolymerElementDescriptor {}
