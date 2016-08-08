@@ -25,9 +25,10 @@ class WithObservedAttributes extends HTMLElement {
       /** @type {boolean} When given the element is totally inactive */
       'disabled',
       /** @type {boolean} When given the element is expanded */
-      'open'
+      'open', 'foo', 'bar'
     ];
   }
 }
 
-customElements.define('vanilla-with-observed-attributes', WithObservedAttributes);
+customElements.define(
+    'vanilla-with-observed-attributes', WithObservedAttributes);

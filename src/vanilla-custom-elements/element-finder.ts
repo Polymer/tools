@@ -162,14 +162,18 @@ class ElementVisitor implements Visitor {
     for (const expr of arry.elements) {
       const value = astValue.expressionToValue(expr);
       if (value && typeof value === 'string') {
-        const annotation = jsdoc.parseJsdoc(esutil.getAttachedComment(expr));
-        let description = annotation.description;
+        let description = '';
         let type: string|null = null;
-        for (const tag of annotation.tags) {
-          if (tag.tag === 'type') {
-            type = type || tag.type;
+        const comment = esutil.getAttachedComment(expr);
+        if (comment) {
+          const annotation = jsdoc.parseJsdoc(comment);
+          description = annotation.description;
+          for (const tag of annotation.tags) {
+            if (tag.tag === 'type') {
+              type = type || tag.type;
+            }
+            description = description || tag.description;
           }
-          description = description || tag.description;
         }
         const attribute: AttributeDescriptor = {
           name: value,

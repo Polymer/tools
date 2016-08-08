@@ -86,6 +86,16 @@ suite('VanillaElementFinder', () => {
         name: 'open',
         type: 'boolean',
         sourceLocation: {column: 6, line: 27}
+      },
+      {
+        description: '',
+        name: 'foo',
+        sourceLocation: {column: 14, line: 27},
+      },
+      {
+        description: '',
+        name: 'bar',
+        sourceLocation: {column: 21, line: 27},
       }
     ]);
   });
