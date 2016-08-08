@@ -25,8 +25,6 @@ export class BehaviorDescriptor extends PolymerElementDescriptor {
   }
 }
 
-export type BehaviorOrName = BehaviorDescriptor | string;
-
 export type BehaviorsByName = {
   [name: string]: BehaviorDescriptor
 };

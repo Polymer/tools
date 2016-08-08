@@ -21,7 +21,7 @@ import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 import {Document} from '../parser/document';
 
-import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, correctSourceLocation, isFunctionDescriptor} from './ast';
+import {Descriptor, EventDescriptor, LiteralValue, LocationOffset, correctSourceLocation, isFunctionDescriptor} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -74,4 +74,3 @@ export class ElementDescriptor implements Descriptor {
     }
   }
 }
-

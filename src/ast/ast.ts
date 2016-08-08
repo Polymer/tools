@@ -21,4 +21,4 @@ export * from './function-descriptor';
 export * from './import-descriptor';
 export * from './inline-document-descriptor';
 export * from './property-descriptor';
-export {BehaviorDescriptor, BehaviorOrName, BehaviorsByName} from './behavior-descriptor';
+export {BehaviorDescriptor, BehaviorsByName} from './behavior-descriptor';

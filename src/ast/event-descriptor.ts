@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {BehaviorOrName} from './behavior-descriptor';
 import {Descriptor} from './descriptor';
 
 export interface EventDescriptor extends Descriptor {

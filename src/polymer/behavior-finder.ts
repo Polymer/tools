@@ -15,7 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, BehaviorOrName, Descriptor, LiteralValue, Property} from '../ast/ast';
+import {BehaviorDescriptor, Descriptor, LiteralValue, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';

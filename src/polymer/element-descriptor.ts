@@ -2,7 +2,7 @@ import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Attribute, BehaviorOrName, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation, isFunctionDescriptor} from '../ast/ast';
+import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation, isFunctionDescriptor} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
@@ -32,7 +32,7 @@ export interface Options {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
   }[];
-  behaviors?: BehaviorOrName[];
+  behaviors?: string[];
 
   demos?: {desc: string; path: string}[];
   events?: EventDescriptor[];

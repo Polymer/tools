@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import {BehaviorOrName, Property} from '../ast/ast';
+import {Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 
 import {analyzeProperties} from './analyze-properties';
