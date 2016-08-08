@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, EventDescriptor, PolymerElementDescriptor, PolymerProperty, Property} from '../ast/ast';
+import {Descriptor, EventDescriptor, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -27,6 +27,7 @@ import * as jsdoc from '../javascript/jsdoc';
 import * as analyzeProperties from './analyze-properties';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
+import {PolymerElementDescriptor, PolymerProperty} from './element-descriptor';
 
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(

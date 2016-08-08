@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export {BehaviorDescriptor, BehaviorOrName, BehaviorsByName} from './behavior-descriptor';
 export * from './descriptor';
 export * from './document-descriptor';
-export {PolymerElementDescriptor, ElementDescriptor, Property, Attribute, PolymerProperty, } from './element-descriptor';
+export {ElementDescriptor, Property, Attribute} from './element-descriptor';
 export * from './event-descriptor';
 export * from './feature-descriptor';
 export * from './function-descriptor';
 export * from './import-descriptor';
 export * from './inline-document-descriptor';
 export * from './property-descriptor';
+export {BehaviorDescriptor, BehaviorOrName, BehaviorsByName} from './behavior-descriptor';

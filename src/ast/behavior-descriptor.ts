@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PolymerElementDescriptor, Options as ElementOptions} from './element-descriptor';
+import {Options as ElementOptions, PolymerElementDescriptor} from '../polymer/element-descriptor';
 
 export interface Options extends ElementOptions {}
 

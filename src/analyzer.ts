@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as urlLib from 'url';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, PolymerElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
+import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
@@ -154,7 +154,7 @@ export class Analyzer {
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     let entities = await this.getEntities(document);
     for (const entity of entities) {
-      if (entity instanceof PolymerElementDescriptor) {
+      if (entity instanceof ElementDescriptor) {
         entity.applyLocationOffset(locationOffset);
       }
     }

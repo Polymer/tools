@@ -14,10 +14,11 @@
 
 import * as estree from 'estree';
 
-import {BehaviorOrName, PolymerElementDescriptor, Property} from '../ast/ast';
+import {BehaviorOrName, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 
 import {analyzeProperties} from './analyze-properties';
+import {PolymerElementDescriptor} from './element-descriptor';
 
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void
@@ -31,8 +32,8 @@ export type PropertyHandlers = {
  * @return {object.<string,function>}      An object containing property
  *                                         handlers.
  */
-export function declarationPropertyHandlers(declaration: PolymerElementDescriptor):
-    PropertyHandlers {
+export function declarationPropertyHandlers(
+    declaration: PolymerElementDescriptor): PropertyHandlers {
   return {
     is(node: estree.Node) {
       if (node.type === 'Literal') {

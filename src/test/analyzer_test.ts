@@ -18,11 +18,12 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, PolymerElementDescriptor} from '../ast/ast';
+import {DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
 import {HtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document} from '../parser/document';
+import {PolymerElementDescriptor} from '../polymer/element-descriptor';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 

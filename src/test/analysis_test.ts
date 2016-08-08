@@ -18,7 +18,6 @@ import * as path from 'path';
 
 import {Analysis, ValidationError} from '../analysis';
 import {Analyzer} from '../analyzer';
-import {PolymerElementDescriptor} from '../ast/ast';
 import {generateElementMetadata} from '../generate-elements';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';

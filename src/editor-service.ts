@@ -16,9 +16,10 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
-import {DocumentDescriptor, FunctionDescriptor, PolymerElementDescriptor, Property} from './ast/ast';
+import {DocumentDescriptor, FunctionDescriptor, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
+import {PolymerElementDescriptor} from './polymer/element-descriptor';
 
 export interface Position {
   /** Line number in file, starting from 0. */
