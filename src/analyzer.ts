@@ -32,6 +32,7 @@ import {JsonParser} from './json/json-parser';
 import {Document} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
+import {DomModuleFinder} from './polymer/dom-module-finder';
 import {PolymerElementFinder} from './polymer/polymer-element-finder';
 import {PackageUrlResolver} from './url-loader/package-url-resolver';
 import {UrlLoader} from './url-loader/url-loader';
@@ -64,7 +65,10 @@ export class Analyzer {
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
     [
       'html',
-      [new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder()]
+      [
+        new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder(),
+        new DomModuleFinder()
+      ]
     ],
     [
       'js',

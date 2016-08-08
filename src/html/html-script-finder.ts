@@ -17,7 +17,7 @@ import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 import * as util from 'util';
 
-import {Descriptor, ImportDescriptor, InlineDocumentDescriptor,getLocationOffsetOfStartOfTextContent,  LocationOffset, getAttachedCommentText} from '../ast/ast';
+import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 
 import {HtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';

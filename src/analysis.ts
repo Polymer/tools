@@ -21,6 +21,7 @@ import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, Inl
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {BehaviorDescriptor} from './polymer/behavior-descriptor';
+import {DomModuleDescriptor} from './polymer/dom-module-finder';
 import {PolymerElementDescriptor} from './polymer/element-descriptor';
 
 const validator = new jsonschema.Validator();
@@ -45,14 +46,22 @@ export class Analysis {
   private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
   private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
   private _documentsByLocalPath = new Map<string, DocumentDescriptor>();
+  private _domModulesById = new Map<string, DomModuleDescriptor>();
 
   constructor(descriptors: DocumentDescriptor[]) {
     this._descriptors = descriptors;
     const packageGatherer = new PackageGatherer();
     const elementsGatherer = new ElementGatherer();
+    const domModuleGatherer = new DomModuleGatherer();
     new AnalysisWalker(this._descriptors).walk([
-      packageGatherer, elementsGatherer
+      packageGatherer, elementsGatherer, domModuleGatherer
     ]);
+
+    for (const domModule of domModuleGatherer.domModules) {
+      if (domModule.id) {
+        this._domModulesById.set(domModule.id, domModule);
+      }
+    }
 
     for (const behavior of elementsGatherer.behaviorDescriptors) {
       if (behavior.className) {
@@ -116,6 +125,10 @@ export class Analysis {
 
   getDocument(path: string): DocumentDescriptor|undefined {
     return this._documentsByLocalPath.get(path);
+  }
+
+  getDomModule(id: string): DomModuleDescriptor|undefined {
+    return this._domModulesById.get(id);
   }
 
   /**
@@ -214,6 +227,14 @@ class ElementGatherer implements AnalysisVisitor {
   }
 }
 
+class DomModuleGatherer implements AnalysisVisitor {
+  domModules: DomModuleDescriptor[] = [];
+
+  visitDomModule(domModule: DomModuleDescriptor) {
+    this.domModules.push(domModule);
+  }
+}
+
 abstract class AnalysisVisitor {
   visitDocumentDescriptor?
       (dd: DocumentDescriptor, ancestors: Descriptor[]): void;
@@ -221,6 +242,8 @@ abstract class AnalysisVisitor {
       (dd: InlineDocumentDescriptor<any>, ancestors: Descriptor[]): void;
   visitElement?(element: ElementDescriptor, ancestors: Descriptor[]): void;
   visitBehavior?(behavior: BehaviorDescriptor, ancestors: Descriptor[]): void;
+  visitDomModule?
+      (domModule: DomModuleDescriptor, ancestors: Descriptor[]): void;
   visitImportDescriptor?
       (importDesc: ImportDescriptor<any>, ancestors: Descriptor[]): void;
   done?(): void;
@@ -292,6 +315,8 @@ class AnalysisWalker {
       return this._walkElement(entity, visitors);
     } else if (entity instanceof ImportDescriptor) {
       return this._walkImportDescriptor(entity, visitors);
+    } else if (entity instanceof DomModuleDescriptor) {
+      return this._walkDomModuleDescriptor(entity, visitors);
     }
     throw new Error(`Unknown kind of descriptor: ${util.inspect(entity)}`);
   }
@@ -310,6 +335,15 @@ class AnalysisWalker {
     for (const visitor of visitors) {
       if (visitor.visitBehavior) {
         visitor.visitBehavior(behavior, this._ancestors);
+      }
+    }
+  }
+
+  private _walkDomModuleDescriptor(
+      domModule: DomModuleDescriptor, visitors: AnalysisVisitor[]) {
+    for (const visitor of visitors) {
+      if (visitor.visitDomModule) {
+        visitor.visitDomModule(domModule, this._ancestors);
       }
     }
   }
@@ -339,7 +373,7 @@ function resolveElement(
   if (elementDescriptor instanceof PolymerElementDescriptor) {
     const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
         elementDescriptor.behaviors, analysis));
-    ;
+
     properties = mergeByName(
         properties,
         behaviors.map(b => ({name: b.className, vals: b.properties})));
@@ -348,6 +382,12 @@ function resolveElement(
         behaviors.map(b => ({name: b.className, vals: b.attributes})));
     events = mergeByName(
         events, behaviors.map(b => ({name: b.className, vals: b.events})));
+
+    const domModule = analysis.getDomModule(elementDescriptor.tagName);
+    if (domModule) {
+      elementDescriptor.description =
+          elementDescriptor.description || domModule.comment;
+    }
   }
 
   const clone = <ElementDescriptor>{};

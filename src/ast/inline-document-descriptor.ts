@@ -12,11 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 import {ElementLocationInfo, LocationInfo} from 'parse5';
 import * as util from 'util';
 
 import {SourceLocation} from '../elements-format';
+import * as jsdoc from '../javascript/jsdoc';
 
 import {Descriptor} from './descriptor';
 
@@ -82,29 +84,17 @@ export function correctSourceLocation(
 }
 
 export function getAttachedCommentText(node: ASTNode): string|undefined {
-  let ancestor = node.parentNode;
-  let current = node;
-  let previousNodeIndex: number;
-  while (true) {
-    previousNodeIndex = ancestor.childNodes.indexOf(current) - 1;
-    if (previousNodeIndex < 0) {
-      if (ancestor.__location == null) {
-        // ancestor is a virtual node, keep looking up for our previous node.
-        ancestor = ancestor.parentNode;
-        current = current.parentNode;
-        if (ancestor == null) {
-          return;  // We reached the top and never found anything, stop.
-        }
-        continue;
-      }
-      return;  // There is none, just stop
-    }
-    break;
+  // When the element is defined in a document fragment with a structure of
+  // imports -> comment explaining the element -> then its dom-module, the
+  // comment will be attached to <head>, rather than being a sibling to the
+  // <dom-module>, thus the need to walk up and previous so aggressively.
+  const parentComments = dom5.nodeWalkAllPrior(node, dom5.isCommentNode);
+  const comment = <string|undefined>(
+      parentComments[0] ? parentComments[0]['data'] : undefined);
+  if (!comment || /@license/.test(comment)) {
+    return;
   }
-  const previousNode = ancestor.childNodes[previousNodeIndex];
-  if (previousNode.nodeName === '#comment') {
-    return previousNode['data'].trim();
-  }
+  return jsdoc.unindent(comment).trim();
 }
 
 function isLocationInfo(loc: (LocationInfo | ElementLocationInfo)):
