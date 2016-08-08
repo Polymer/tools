@@ -22,12 +22,28 @@ import {SourceLocation} from '../elements-format';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
 suite('EditorService', function() {
-  const basedir = path.join(__dirname, 'static', 'analysis', 'behaviors');
-  const tagPosition = {line: 6, column: 9};
-  const tagPositionEnd = {line: 6, column: 21};
-  const localAttributePosition = {line: 6, column: 31};
-  const deepAttributePosition = {line: 6, column: 49};
+  const basedir = path.join(__dirname, 'static');
+  const indexFile = path.join('editor-service', 'index.html');
+  const tagPosition = {line: 7, column: 9};
+  const tagPositionEnd = {line: 7, column: 21};
+  const localAttributePosition = {line: 7, column: 31};
+  const deepAttributePosition = {line: 7, column: 49};
+  const elementTypehead = [
+    {
+      tagname: 'behavior-test-elem',
+      description: 'An element to test out behavior inheritance.'
+    },
+    {description: '', tagname: 'class-declaration'},
+    {description: '', tagname: 'anonymous-class'},
+    {description: '', tagname: 'class-expression'},
+    {
+      description: 'This is a description of WithObservedAttributes.',
+      tagname: 'vanilla-with-observed-attributes'
+    },
+    {description: '', tagname: 'register-before-declaration'},
+    {description: '', tagname: 'register-before-expression'},
 
+  ];
 
   // The weird cast is because the service will always be non-null.
   let editorService: EditorService = <EditorService><any>null;
@@ -46,49 +62,51 @@ suite('EditorService', function() {
     let testName = 'it supports getting the element description ' +
         'when hovering over its tag name';
     test(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.equal(
-          await editorService.getDocumentationFor('index.html', tagPosition),
+          await editorService.getDocumentationFor(indexFile, tagPosition),
           tagDescription);
     });
     testName = 'it can still get element info after changing a file in memory';
     test(testName, async function() {
-      await editorService.fileChanged('index.html');
-      const contents = fs.readFileSync(path.join(basedir, 'index.html'));
-      // Add a newline at the beginning of the file, shifting the lines down.
-      editorService.fileChanged('index.html', `\n${contents}`);
+      await editorService.fileChanged(indexFile);
+      const contents = fs.readFileSync(path.join(basedir, indexFile));
+      // Add a newline at the beginning of the file, shifting the lines
+      // down.
+      editorService.fileChanged(indexFile, `\n${contents}`);
 
       assert.equal(
-          await editorService.getDocumentationFor('index.html', tagPosition),
+          await editorService.getDocumentationFor(indexFile, tagPosition),
           undefined);
       assert.equal(
           await editorService.getDocumentationFor(
-              'index.html',
+              indexFile,
               {line: tagPosition.line + 1, column: tagPosition.column}),
           tagDescription, );
     });
     test(`it can't get element info before reading the file`, async function() {
       assert.equal(
-          await editorService.getDocumentationFor('index.html', tagPosition),
+          await editorService.getDocumentationFor(indexFile, tagPosition),
           undefined);
     });
     test('it supports getting an attribute description', async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.equal(
           await editorService.getDocumentationFor(
-              'index.html', localAttributePosition),
+              indexFile, localAttributePosition),
           localAttributeDescription);
     });
 
-    // After we move behavior inlining to .resolve() should be able to unskip
+    // After we move behavior inlining to .resolve() should be able to
+    // unskip
     // this
     testName = 'it supports getting a description of an attribute ' +
         'defined in a behavior';
     test.skip(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.equal(
           await editorService.getDocumentationFor(
-              'index.html', deepAttributePosition),
+              indexFile, deepAttributePosition),
           deepAttributeDescription);
     });
   });
@@ -97,30 +115,38 @@ suite('EditorService', function() {
     let testName = `it supports getting the definition of ` +
         `an element from its tag`;
     test(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.deepEqual(
-          await editorService.getDefinitionFor('index.html', tagPosition),
-          {file: 'elementdir/element.html', line: 4, column: 10});
+          await editorService.getDefinitionFor(indexFile, tagPosition), {
+            file: 'analysis/behaviors/elementdir/element.html',
+            line: 4,
+            column: 10
+          });
     });
 
     testName = 'it supports getting the definition of a local attribute';
     test(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getDefinitionFor(
-              'index.html', localAttributePosition),
-          {file: 'elementdir/element.html', line: 9, column: 6});
+              indexFile, localAttributePosition),
+          {
+            file: 'analysis/behaviors/elementdir/element.html',
+            line: 9,
+            column: 6
+          });
     });
 
-    // After we move behavior inlining to .resolve() should be able to unskip
+    // After we move behavior inlining to .resolve() should be able to
+    // unskip
     // this
     testName = 'it supports getting the definition of an attribute ' +
         'defined in a behavior';
     test.skip(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getDefinitionFor(
-              'index.html', deepAttributePosition),
+              indexFile, deepAttributePosition),
           {line: 5, column: 6, file: '../subdir/subbehavior.html'});
     });
 
@@ -129,56 +155,38 @@ suite('EditorService', function() {
   suite('getTypeaheadCompletionsFor', function() {
     let testName = 'Get element completions for a start tag.';
     test(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
-              'index.html', tagPosition),
-          {
-            kind: 'element-tags',
-            elements: [{
-              tagname: 'behavior-test-elem',
-              description: 'An element to test out behavior inheritance.'
-            }]
-          });
+              indexFile, tagPosition),
+          {kind: 'element-tags', elements: elementTypehead});
     });
 
     testName = 'Gets element completions with an incomplete tag';
     test(testName, async function() {
-      await editorService.fileChanged('index.html');
+      await editorService.fileChanged(indexFile);
       const incompleteText = `<behav>`;
-      editorService.fileChanged('index.html', incompleteText);
+      editorService.fileChanged(indexFile, incompleteText);
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
-              'index.html', {line: 0, column: incompleteText.length - 2}),
-          {
-            kind: 'element-tags',
-            elements: [{
-              tagname: 'behavior-test-elem',
-              description: 'An element to test out behavior inheritance.'
-            }]
-          });
+              indexFile, {line: 0, column: incompleteText.length - 2}),
+          {kind: 'element-tags', elements: elementTypehead});
     });
 
     test('get element completions for the end of a tag', async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
-              'index.html', tagPositionEnd),
-          {
-            kind: 'element-tags',
-            elements: [{
-              tagname: 'behavior-test-elem',
-              description: 'An element to test out behavior inheritance.'
-            }]
-          });
+              indexFile, tagPositionEnd),
+          {kind: 'element-tags', elements: elementTypehead});
     });
 
     testName = 'Get attribute completions when editing an existing attribute';
     test(testName, async function() {
-      editorService.fileChanged('index.html');
+      editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
-              'index.html', localAttributePosition),
+              indexFile, localAttributePosition),
           {
             kind: 'attributes',
             attributes: [{
@@ -191,16 +199,16 @@ suite('EditorService', function() {
 
     testName = 'Get attribute completions when adding a new attribute';
     test(testName, async function() {
-      await editorService.fileChanged('index.html');
+      await editorService.fileChanged(indexFile);
       const partialContents = [
         `<behavior-test-elem >`, `<behavior-test-elem existing-attr>`,
         `<behavior-test-elem existing-attr></behavior-test-elem>`,
         `<behavior-test-elem existing-attr></wrong-closing-tag>`
       ];
       for (const partial of partialContents) {
-        editorService.fileChanged('index.html', partial);
+        editorService.fileChanged(indexFile, partial);
         assert.deepEqual(
-            await editorService.getTypeaheadCompletionsFor('index.html', {
+            await editorService.getTypeaheadCompletionsFor(indexFile, {
               line: 0,
               column: 20 /* after the space after the element name */
             }),

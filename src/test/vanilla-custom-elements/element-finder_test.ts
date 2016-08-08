@@ -54,7 +54,7 @@ suite('VanillaElementFinder', () => {
   test('Finds elements', () => {
     assert.deepEqual(elementsList.map(e => e.tagName).sort(), [
       'anonymous-class', 'class-declaration', 'class-expression',
-      'with-observed-attributes', 'register-before-declaration',
+      'vanilla-with-observed-attributes', 'register-before-declaration',
       'register-before-expression'
     ].sort());
     assert.deepEqual(elementsList.map(e => e.className).sort(), [
@@ -73,7 +73,7 @@ suite('VanillaElementFinder', () => {
   });
 
   test('Extracts attributes from observedAttributes', () => {
-    const element = elements.get('with-observed-attributes');
+    const element = elements.get('vanilla-with-observed-attributes');
     assert.deepEqual(element.attributes, [
       {
         description: 'When given the element is totally inactive',
@@ -91,7 +91,7 @@ suite('VanillaElementFinder', () => {
   });
 
   test('Extracts description from jsdoc', () => {
-    const element = elements.get('with-observed-attributes');
+    const element = elements.get('vanilla-with-observed-attributes');
     assert.equal(
         element.description,
         'This is a description of WithObservedAttributes.');

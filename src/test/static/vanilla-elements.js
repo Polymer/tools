@@ -30,4 +30,4 @@ class WithObservedAttributes extends HTMLElement {
   }
 }
 
-customElements.define('with-observed-attributes', WithObservedAttributes);
+customElements.define('vanilla-with-observed-attributes', WithObservedAttributes);
