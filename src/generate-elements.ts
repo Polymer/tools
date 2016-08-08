@@ -53,8 +53,13 @@ function serializeElementDescriptor(
 
   const attributes = elementDescriptor.attributes.map(
       a => serializeAttributeDescriptor(path, a));
-  const properties = elementDescriptor.properties.filter(p => !p.private)
-                         .map(p => serializePropertyDescriptor(path, p));
+  const properties =
+      elementDescriptor.properties
+          .filter(
+              p => !p.private &&
+                  // Blacklist functions until we figure out what to do.
+                  p.type !== 'Function')
+          .map(p => serializePropertyDescriptor(path, p));
   const events = elementDescriptor.events.map(
       e => ({name: e.name, description: e.description, type: 'CustomEvent'}));
 

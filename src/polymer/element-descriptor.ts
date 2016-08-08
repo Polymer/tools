@@ -81,7 +81,7 @@ export class PolymerElementDescriptor extends ElementDescriptor {
     }
     this.properties.push(prop);
     const attributeName = propertyToAttributeName(prop.name);
-    if (prop.private || !attributeName) {
+    if (prop.private || !attributeName || !prop.published) {
       return;
     }
     if (!isFunctionDescriptor(prop)) {
