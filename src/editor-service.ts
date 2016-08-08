@@ -33,12 +33,16 @@ export interface Position {
 export type TypeaheadCompletion = ElementCompletion | AttributeCompletion;
 export interface ElementCompletion {
   kind: 'element-tags';
-  elements: {tagname: string, description: string}[];
+  elements: {tagname: string, description: string, expandTo?: string}[];
 }
 export interface AttributeCompletion {
   kind: 'attributes';
   attributes: {
-    name: string, description: string, type: string|undefined, sortKey: string;
+    name: string,
+    description: string,
+    type: string|undefined,
+    sortKey: string;
+    inheritedFrom?: string;
   }[];
 }
 
@@ -100,16 +104,21 @@ export class EditorService {
     const analysis = await this._analyzer.resolvePermissive();
     const location =
         await this._getLocationResult(localPath, position, analysis);
-    if (!location) {
-      return;
-    }
-    if (location.kind === 'tagName') {
+    if (location.kind === 'tagName' || location.kind === 'text') {
       return {
         kind: 'element-tags',
-        elements: analysis.getElements().map(
-            e => ({tagname: e.tagName, description: e.description}))
+        elements: analysis.getElements().map(e => {
+          let attributesSpace = e.attributes.length > 0 ? ' ' : '';
+          return {
+            tagname: e.tagName,
+            description: e.description,
+            expandTo: location.kind === 'text' ?
+                `<${e.tagName}${attributesSpace}></${e.tagName}>` :
+                undefined
+          };
+        })
       };
-    } else {
+    } else if (location.kind === 'attribute') {
       const element = analysis.getElement(location.element.nodeName);
       if (!element) {
         return;
@@ -139,6 +148,7 @@ export class EditorService {
                       name: p.name,
                       description: p.description,
                       type: p.type,
+                      inheritedFrom: p.inheritedFrom,
                       sortKey:
                           `${sortPrefixes.get(p.inheritedFrom) || 'eee-'}${p.name}`
                     }))
@@ -147,6 +157,7 @@ export class EditorService {
                       name: `on-${e.name}`,
                       description: e.description,
                       type: e.type || 'CustomEvent',
+                      inheritedFrom: e.inheritedFrom,
                       sortKey:
                           `fff-${sortPrefixes.get(e.inheritedFrom) || 'eee-'}on-${e.name}`
                     })))
@@ -184,12 +195,13 @@ export class EditorService {
     if (!(document instanceof HtmlDocument)) {
       return;
     }
-    return getElementWithStartTagAtPosition(document.ast, position);
+    return getLocationInfoForPosition(document.ast, position);
   }
 }
 
 
-type LocationResult = LocatedAttribute | LocatedTag;
+type LocationResult =
+    LocatedAttribute | LocatedTag | LocatedEndTag | LocatedInText;
 interface LocatedAttribute {
   kind: 'attribute';
   attribute: string|null;
@@ -199,7 +211,22 @@ interface LocatedTag {
   kind: 'tagName';
   element: parse5.ASTNode;
 }
-function getElementWithStartTagAtPosition(
+interface LocatedEndTag {
+  kind: 'endTag';
+  element: parse5.ASTNode;
+}
+interface LocatedInText {
+  kind: 'text';
+}
+function getLocationInfoForPosition(
+    node: parse5.ASTNode, position: Position): LocationResult {
+  const location = _getLocationInfoForPosition(node, position);
+  if (!location) {
+    return {kind: 'text'};
+  }
+  return location;
+}
+function _getLocationInfoForPosition(
     node: parse5.ASTNode, position: Position): undefined|LocationResult {
   if (node.__location) {
     const location = node.__location;
@@ -226,6 +253,9 @@ function getElementWithStartTagAtPosition(
         // attribute.
         return {kind: 'attribute', attribute: null, element: node};
       }
+      if (isPositionInsideLocation(position, location.endTag)) {
+        return {kind: 'endTag', element: node};
+      }
     } else if (node.nodeName && isPositionInsideLocation(position, location)) {
       if (position.column < location.col + node.nodeName.length + 1) {
         return {kind: 'tagName', element: node};
@@ -233,15 +263,11 @@ function getElementWithStartTagAtPosition(
       return {kind: 'attribute', attribute: null, element: node};
     }
   }
-  if (!node.childNodes) {
-    return;
-  }
-  for (const child of node.childNodes) {
-    const result = getElementWithStartTagAtPosition(child, position);
+  for (const child of node.childNodes || []) {
+    const result = _getLocationInfoForPosition(child, position);
     if (result) {
       return result;
     }
-    continue;
   }
 }
 

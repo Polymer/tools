@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {EditorService} from '../editor-service';
+import {AttributeCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {SourceLocation} from '../elements-format';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
@@ -30,62 +30,101 @@ suite('EditorService', function() {
   const tagPositionEnd = {line: 7, column: 21};
   const localAttributePosition = {line: 7, column: 31};
   const deepAttributePosition = {line: 7, column: 49};
-  const elementTypehead = [
-    {
-      tagname: 'behavior-test-elem',
-      description: 'An element to test out behavior inheritance.'
-    },
-    {description: '', tagname: 'class-declaration'},
-    {description: '', tagname: 'anonymous-class'},
-    {description: '', tagname: 'class-expression'},
-    {
-      description: 'This is a description of WithObservedAttributes.',
-      tagname: 'vanilla-with-observed-attributes'
-    },
-    {description: '', tagname: 'register-before-declaration'},
-    {description: '', tagname: 'register-before-expression'},
-  ];
-  const attributeTypeahead = [
-    {
-      name: 'local-property',
-      description: 'A property defined directly on behavior-test-elem.',
-      type: 'boolean',
-      sortKey: 'aaa-local-property',
-    },
-    {
-      name: 'inherit-please',
-      description: 'A property provided by SimpleBehavior.',
-      type: 'number',
-      sortKey: 'eee-inherit-please',
-    },
-    {
-      name: 'deeply-inherited-property',
-      description: 'This is a deeply inherited property.',
-      type: 'Array',
-      sortKey: 'eee-deeply-inherited-property',
-    },
-    {
-      name: 'on-local-property-changed',
-      description: 'Fired when the `localProperty` property changes.',
-      type: 'CustomEvent',
-      sortKey: 'fff-aaa-on-local-property-changed',
-    },
-    {
-      name: 'on-inherit-please-changed',
-      description: 'Fired when the `inheritPlease` property changes.',
-      type: 'CustomEvent',
-      sortKey: 'fff-eee-on-inherit-please-changed',
-    },
-    {
-      name: 'on-deeply-inherited-property-changed',
-      description: 'Fired when the `deeplyInheritedProperty` property changes.',
-      type: 'CustomEvent',
-      sortKey: 'fff-eee-on-deeply-inherited-property-changed'
-    },
+  const elementTypeahead: ElementCompletion = {
+    kind: 'element-tags',
+    elements: [
+      {
+        tagname: 'behavior-test-elem',
+        description: 'An element to test out behavior inheritance.',
+        expandTo: undefined
+      },
+      {description: '', tagname: 'class-declaration', expandTo: undefined},
+      {description: '', tagname: 'anonymous-class', expandTo: undefined},
+      {description: '', tagname: 'class-expression', expandTo: undefined},
+      {
+        description: 'This is a description of WithObservedAttributes.',
+        tagname: 'vanilla-with-observed-attributes',
+        expandTo: undefined
+      },
+      {
+        description: '',
+        tagname: 'register-before-declaration',
+        expandTo: undefined
+      },
+      {
+        description: '',
+        tagname: 'register-before-expression',
+        expandTo: undefined
+      },
+    ]
+  };
+  // Like elementTypeahead, but we also want to add a leading < because we're
+  // in a context where we don't have one.
+  const emptyStartElementTypeahead = Object.assign({}, elementTypeahead);
+  emptyStartElementTypeahead.elements =
+      emptyStartElementTypeahead.elements.map(e => {
+        let copy = Object.assign({}, e);
+        let space = '';
+        const elementsWithAttributes =
+            new Set(['vanilla-with-observed-attributes', 'behavior-test-elem']);
+        if (elementsWithAttributes.has(e.tagname)) {
+          space = ' ';
+        }
+        copy.expandTo = `<${e.tagname}${space}></${e.tagname}>`;
+        return copy;
+      });
+  const attributeTypeahead: AttributeCompletion = {
+    kind: 'attributes',
+    attributes: [
+      {
+        name: 'local-property',
+        description: 'A property defined directly on behavior-test-elem.',
+        type: 'boolean',
+        sortKey: 'aaa-local-property',
+        inheritedFrom: undefined,
+      },
+      {
+        name: 'inherit-please',
+        description: 'A property provided by SimpleBehavior.',
+        type: 'number',
+        sortKey: 'eee-inherit-please',
+        inheritedFrom: 'MyNamespace.SimpleBehavior',
+      },
+      {
+        name: 'deeply-inherited-property',
+        description: 'This is a deeply inherited property.',
+        type: 'Array',
+        sortKey: 'eee-deeply-inherited-property',
+        inheritedFrom: 'MyNamespace.SubBehavior',
+      },
+      {
+        name: 'on-local-property-changed',
+        description: 'Fired when the `localProperty` property changes.',
+        type: 'CustomEvent',
+        sortKey: 'fff-aaa-on-local-property-changed',
+        inheritedFrom: undefined,
+      },
+      {
+        name: 'on-inherit-please-changed',
+        description: 'Fired when the `inheritPlease` property changes.',
+        type: 'CustomEvent',
+        sortKey: 'fff-eee-on-inherit-please-changed',
+        inheritedFrom: 'MyNamespace.SimpleBehavior',
+      },
+      {
+        name: 'on-deeply-inherited-property-changed',
+        description:
+            'Fired when the `deeplyInheritedProperty` property changes.',
+        type: 'CustomEvent',
+        sortKey: 'fff-eee-on-deeply-inherited-property-changed',
+        inheritedFrom: 'MyNamespace.SubBehavior',
+      },
+    ]
+  };
+  const indexContents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
 
-  ];
-
-  // The weird cast is because the service will always be non-null.
+  // The weird cast is because the service will always be non-null when we
+  // actually use it.
   let editorService: EditorService = <EditorService><any>null;
   setup(async function() {
     editorService = new EditorService({urlLoader: new FSUrlLoader(basedir)});
@@ -99,7 +138,7 @@ suite('EditorService', function() {
         '{Array} This is a deeply inherited property.';
 
     let testName = 'it supports getting the element description ' +
-        'when hovering over its tag name';
+        'when asking for docs at its tag name';
     test(testName, async function() {
       editorService.fileChanged(indexFile);
       assert.equal(
@@ -190,13 +229,22 @@ suite('EditorService', function() {
   });
 
   suite('getTypeaheadCompletionsFor', function() {
-    let testName = 'Get element completions for a start tag.';
+    let testName = 'Get element completions for an empty text region.';
+    test(testName, async function() {
+      editorService.fileChanged(indexFile, `\n${indexContents}`);
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              indexFile, {line: 0, column: 0}),
+          emptyStartElementTypeahead);
+    });
+
+    testName = 'Get element completions for a start tag.';
     test(testName, async function() {
       editorService.fileChanged(indexFile);
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, tagPosition),
-          {kind: 'element-tags', elements: elementTypehead});
+          elementTypeahead);
     });
 
     testName = 'Gets element completions with an incomplete tag';
@@ -207,7 +255,7 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, {line: 0, column: incompleteText.length - 2}),
-          {kind: 'element-tags', elements: elementTypehead});
+          elementTypeahead);
     });
 
     test('get element completions for the end of a tag', async function() {
@@ -215,7 +263,7 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, tagPositionEnd),
-          {kind: 'element-tags', elements: elementTypehead});
+          elementTypeahead);
     });
 
     testName = 'Get attribute completions when editing an existing attribute';
@@ -224,7 +272,7 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, localAttributePosition),
-          {kind: 'attributes', attributes: attributeTypeahead});
+          attributeTypeahead);
     });
 
     testName = 'Get attribute completions when adding a new attribute';
@@ -242,18 +290,16 @@ suite('EditorService', function() {
               line: 0,
               column: 20 /* after the space after the element name */
             }),
-            {kind: 'attributes', attributes: attributeTypeahead});
+            attributeTypeahead);
       }
     });
 
     testName = 'Recover from references to undefined files.';
     test(testName, async function() {
-      const goodContents =
-          fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       await editorService.fileChanged(indexFile);
 
       // Load a file that contains a reference error.
-      await editorService.fileChanged(indexFile, `${goodContents}
+      await editorService.fileChanged(indexFile, `${indexContents}
            <script src="nonexistant.js"></script>`);
 
       // We recover after getting a good version of the file.
@@ -262,24 +308,22 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, localAttributePosition),
-          {kind: 'attributes', attributes: attributeTypeahead});
+          attributeTypeahead);
     });
 
     testName = 'Remain useful in the face of unloadable files.';
     test(testName, async function() {
-      const goodContents =
-          fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       await editorService.fileChanged(indexFile);
 
       // We load a file that contains a reference error.
-      await editorService.fileChanged(indexFile, `${goodContents}
+      await editorService.fileChanged(indexFile, `${indexContents}
            <script src="nonexistant.js"></script>`);
 
       // Harder: can we give typeahead completion when there's errors?'
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, localAttributePosition),
-          {kind: 'attributes', attributes: attributeTypeahead});
+          attributeTypeahead);
     });
 
     testName = 'Remain useful in the face of syntax errors.';
@@ -297,7 +341,7 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, localAttributePosition),
-          {kind: 'attributes', attributes: attributeTypeahead});
+          attributeTypeahead);
     });
   });
 });
