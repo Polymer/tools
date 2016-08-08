@@ -95,7 +95,7 @@ export class PolymerElementDescriptor extends ElementDescriptor {
     if (prop.notify) {
       this.events.push({
         name: `${attributeName}-changed`,
-        description: `Fired when ${attributeName} changes.`,
+        description: `Fired when the \`${prop.name}\` property changes.`,
       });
     }
   }
@@ -110,6 +110,9 @@ export class PolymerElementDescriptor extends ElementDescriptor {
 function propertyToAttributeName(propertyName: string): string|null {
   // Polymer core will not map a property name that starts with an uppercase
   // character onto an attribute.
+  if (propertyName[0].toUpperCase() === propertyName[0]) {
+    return null;
+  }
   return propertyName.replace(
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
 }

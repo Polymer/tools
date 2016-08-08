@@ -18,7 +18,7 @@ import * as pathLib from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property as PropertyDescriptor} from './ast/ast';
+import {Attribute as AttributeDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property as PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {Document} from './parser/document';
@@ -41,48 +41,35 @@ export function generateElementMetadata(
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: PolymerElementDescriptor, analysis: Analysis,
+    elementDescriptor: ElementDescriptor, analysis: Analysis,
     packagePath: string): Element|null {
   if (!elementDescriptor.tagName) {
     return null;
   }
-  const behaviors =
-      getFlattenedAndResolvedBehaviors(elementDescriptor.behaviors, analysis);
-  const propertiesByName = new Map<string, PolymerProperty>();
-  for (const prop of elementDescriptor.properties) {
-    propertiesByName.set(prop.name, prop);
+  let properties = elementDescriptor.properties;
+  let attributes = elementDescriptor.attributes;
+  let events = elementDescriptor.events;
+  if (elementDescriptor instanceof PolymerElementDescriptor) {
+    const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
+        elementDescriptor.behaviors, analysis));
+    properties =
+        mergeByName([properties].concat(behaviors.map(b => b.properties)));
+    attributes =
+        mergeByName([attributes].concat(behaviors.map(b => b.attributes)));
+    events = mergeByName([events].concat(behaviors.map(b => b.events)));
   }
-  for (const behavior of behaviors) {
-    for (const prop of behavior.properties) {
-      if (!propertiesByName.has(prop.name)) {
-        propertiesByName.set(prop.name, prop);
-      }
-    }
-  }
+  properties = properties.filter(p => !p.private);
 
   const path = elementDescriptor.sourceLocation.file;
   const packageRelativePath =
       pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
-
-  const properties =
-      Array
-          .from(propertiesByName.values())
-          // Filter out private properties.
-          .filter(p => !(p.name.startsWith('_') || p.name.endsWith('_')));
-  const propChangeEvents: Event[] =
-      properties.filter(p => p.notify && propertyToAttributeName(p.name))
-          .map(p => ({
-                 name: `${propertyToAttributeName(p.name)}-changed`,
-                 type: 'CustomEvent',
-                 description: `Fired when the \`${p.name}\` property changes.`
-               }));
 
   return {
     tagname: elementDescriptor.tagName,
     description: elementDescriptor.description || '',
     superclass: 'HTMLElement',
     path: packageRelativePath,
-    attributes: computeAttributesFromPropertyDescriptors(path, properties),
+    attributes: attributes.map(a => serializeAttributeDescriptor(path, a)),
     properties: properties.map(p => serializePropertyDescriptor(path, p)),
     styling: {
       cssVariables: [],
@@ -90,7 +77,8 @@ function serializeElementDescriptor(
     },
     demos: (elementDescriptor.demos || []).map(d => d.path),
     slots: [],
-    events: propChangeEvents,
+    events: events.map(
+        e => ({name: e.name, description: e.description, type: 'CustomEvent'})),
     metadata: {},
     sourceLocation:
         resolveSourceLocationPath(path, elementDescriptor.sourceLocation)
@@ -98,7 +86,7 @@ function serializeElementDescriptor(
 }
 
 function serializePropertyDescriptor(
-    elementPath: string, propertyDescriptor: PolymerProperty): Property {
+    elementPath: string, propertyDescriptor: PropertyDescriptor): Property {
   const property: Property = {
     name: propertyDescriptor.name,
     type: propertyDescriptor.type || '?',
@@ -118,6 +106,20 @@ function serializePropertyDescriptor(
   }
   property.metadata = {polymer: polymerMetadata};
   return property;
+}
+
+function serializeAttributeDescriptor(
+    elementPath: string, attributeDescriptor: AttributeDescriptor): Attribute {
+  const attribute: Attribute = {
+    name: attributeDescriptor.name,
+    description: attributeDescriptor.description || '',
+    sourceLocation: resolveSourceLocationPath(
+        elementPath, attributeDescriptor.sourceLocation)
+  };
+  if (attributeDescriptor.type) {
+    attribute.type = attributeDescriptor.type;
+  }
+  return attribute;
 }
 
 function getFlattenedAndResolvedBehaviors(
@@ -150,40 +152,6 @@ function _getFlattenedAndResolvedBehaviors(
   }
 }
 
-function computeAttributesFromPropertyDescriptors(
-    elementPath: string, props: PolymerProperty[]): Attribute[] {
-  return props.filter(prop => propertyToAttributeName(prop.name)).map(prop => {
-    const attribute: Attribute = {
-      name: propertyToAttributeName(prop.name),
-      description: prop.description || '',
-      sourceLocation:
-          resolveSourceLocationPath(elementPath, prop.sourceLocation)
-    };
-    if (prop.type) {
-      attribute.type = prop.type;
-    }
-    if (prop.default) {
-      attribute.type = prop.type;
-    }
-    return attribute;
-  });
-}
-
-/**
- * Implements Polymer core's translation of property names to attribute names.
- *
- * Returns null if the property name cannot be so converted.
- */
-function propertyToAttributeName(propertyName: string): string|null {
-  // Polymer core will not map a property name that starts with an uppercase
-  // character onto an attribute.
-  if (propertyName[0].toUpperCase() === propertyName[0]) {
-    return null;
-  }
-  return propertyName.replace(
-      /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
-}
-
 function resolveSourceLocationPath(
     elementPath: string,
     sourceLocation: SourceLocation|undefined): SourceLocation|undefined {
@@ -205,4 +173,16 @@ function resolveSourceLocationPath(
     column: sourceLocation.column,
     file: filePath
   };
+}
+
+function mergeByName<T extends{name: string}>(buckets: T[][]): T[] {
+  const byName = new Map<string, T>();
+  for (const bucket of buckets) {
+    for (const element of bucket) {
+      if (!byName.has(element.name)) {
+        byName.set(element.name, element);
+      }
+    }
+  }
+  return Array.from(byName.values());
 }
