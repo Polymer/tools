@@ -49,32 +49,38 @@ suite('EditorService', function() {
     {
       name: 'local-property',
       description: 'A property defined directly on behavior-test-elem.',
-      type: 'boolean'
+      type: 'boolean',
+      sortKey: 'aaa-local-property',
     },
     {
       name: 'inherit-please',
       description: 'A property provided by SimpleBehavior.',
       type: 'number',
+      sortKey: 'eee-inherit-please',
     },
     {
       name: 'deeply-inherited-property',
       description: 'This is a deeply inherited property.',
       type: 'Array',
+      sortKey: 'eee-deeply-inherited-property',
     },
     {
       name: 'on-local-property-changed',
       description: 'Fired when the `localProperty` property changes.',
-      type: 'CustomEvent'
+      type: 'CustomEvent',
+      sortKey: 'fff-aaa-on-local-property-changed',
     },
     {
       name: 'on-inherit-please-changed',
       description: 'Fired when the `inheritPlease` property changes.',
-      type: 'CustomEvent'
+      type: 'CustomEvent',
+      sortKey: 'fff-eee-on-inherit-please-changed',
     },
     {
       name: 'on-deeply-inherited-property-changed',
       description: 'Fired when the `deeplyInheritedProperty` property changes.',
-      type: 'CustomEvent'
+      type: 'CustomEvent',
+      sortKey: 'fff-eee-on-deeply-inherited-property-changed'
     },
 
   ];

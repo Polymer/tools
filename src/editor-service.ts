@@ -20,6 +20,7 @@ import {ElementDescriptor} from './ast/ast';
 import {DocumentDescriptor, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
+import {PolymerElementDescriptor} from './polymer/element-descriptor';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Position {
@@ -36,7 +37,9 @@ export interface ElementCompletion {
 }
 export interface AttributeCompletion {
   kind: 'attributes';
-  attributes: {name: string, description: string, type: string|undefined}[];
+  attributes: {
+    name: string, description: string, type: string|undefined, sortKey: string;
+  }[];
 }
 
 class PermissiveUrlLoader implements UrlLoader {
@@ -111,20 +114,42 @@ export class EditorService {
       if (!element) {
         return;
       }
+      // A map from the inheritedFrom to a sort prefix.
+      let sortPrefixes = new Map<string, string>();
+      // Not inherited, that means local! Sort it early.
+      sortPrefixes.set(undefined, 'aaa-');
+      sortPrefixes.set(null, 'aaa-');
+      if (element.superClass) {
+        sortPrefixes.set(element.superClass, 'bbb-');
+      }
+      if (element.extends) {
+        sortPrefixes.set(element.extends, 'ccc-');
+      }
+      if (element instanceof PolymerElementDescriptor) {
+        for (const behaviorName of element.behaviors) {
+          sortPrefixes.set(behaviorName, 'ddd-');
+        }
+      }
       return {
         kind: 'attributes',
         attributes:
             element.attributes
-                .map(p => ({
-                       name: p.name,
-                       description: p.description,
-                       type: p.type
-                     }))
-                .concat(element.events.map(e => ({
-                                             name: `on-${e.name}`,
-                                             description: e.description,
-                                             type: e.type || 'CustomEvent'
-                                           })))
+                .map(
+                    p => ({
+                      name: p.name,
+                      description: p.description,
+                      type: p.type,
+                      sortKey:
+                          `${sortPrefixes.get(p.inheritedFrom) || 'eee-'}${p.name}`
+                    }))
+                .concat(element.events.map(
+                    e => ({
+                      name: `on-${e.name}`,
+                      description: e.description,
+                      type: e.type || 'CustomEvent',
+                      sortKey:
+                          `fff-${sortPrefixes.get(e.inheritedFrom) || 'eee-'}on-${e.name}`
+                    })))
       };
     }
   }

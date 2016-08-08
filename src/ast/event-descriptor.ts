@@ -18,4 +18,5 @@ export interface EventDescriptor extends Descriptor {
   name: string;
   type?: string;
   params?: {type: string, desc: string, name: string}[];
+  inheritedFrom?: string;
 }

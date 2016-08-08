@@ -27,4 +27,5 @@ export interface Property {
   readOnly?: boolean;
   javascriptNode?: estree.Node;
   sourceLocation: SourceLocation;
+  inheritedFrom?: string;
 }

@@ -336,11 +336,15 @@ function resolveElement(
   if (elementDescriptor instanceof PolymerElementDescriptor) {
     const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
         elementDescriptor.behaviors, analysis));
-    properties =
-        mergeByName([properties].concat(behaviors.map(b => b.properties)));
-    attributes =
-        mergeByName([attributes].concat(behaviors.map(b => b.attributes)));
-    events = mergeByName([events].concat(behaviors.map(b => b.events)));
+    ;
+    properties = mergeByName(
+        properties,
+        behaviors.map(b => ({name: b.className, vals: b.properties})));
+    attributes = mergeByName(
+        attributes,
+        behaviors.map(b => ({name: b.className, vals: b.attributes})));
+    events = mergeByName(
+        events, behaviors.map(b => ({name: b.className, vals: b.events})));
   }
 
   const clone = <ElementDescriptor>{};
@@ -383,12 +387,18 @@ function _getFlattenedAndResolvedBehaviors(
   }
 }
 
-function mergeByName<T extends{name: string}>(buckets: T[][]): T[] {
+function mergeByName<T extends{name: string, inheritedFrom?: string}>(
+    base: T[], inheritFrom: {name: string, vals: T[]}[]): T[] {
   const byName = new Map<string, T>();
-  for (const bucket of buckets) {
-    for (const element of bucket) {
-      if (!byName.has(element.name)) {
-        byName.set(element.name, element);
+  for (const initial of base) {
+    byName.set(initial.name, initial);
+  }
+  for (const source of inheritFrom) {
+    for (const item of source.vals) {
+      if (!byName.has(item.name)) {
+        const copy = Object.assign({}, item);
+        copy.inheritedFrom = source.name;
+        byName.set(copy.name, copy);
       }
     }
   }

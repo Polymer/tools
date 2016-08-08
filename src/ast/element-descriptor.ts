@@ -30,6 +30,7 @@ export interface Attribute {
   sourceLocation: SourceLocation;
   description?: string;
   type?: string;
+  inheritedFrom?: string;
 }
 
 export class ElementDescriptor implements Descriptor {
