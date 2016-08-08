@@ -92,11 +92,7 @@ export class EditorService {
       return {
         kind: 'attributes',
         attributes:
-            element.properties
-                .filter(
-                    p =>
-                        !(p.name.startsWith('_') || p.name.endsWith('_') ||
-                          isFunctionDescriptor(p)))
+            element.properties.filter(p => !p.private)
                 .map(p => ({
                        name: p.name.replace(
                            /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
@@ -224,8 +220,4 @@ function isElementLocationInfo(location: parse5.LocationInfo|
 
 function isPropertyDescriptor(d: any): d is Property {
   return 'type' in d;
-}
-
-function isFunctionDescriptor(d: any): d is FunctionDescriptor {
-  return d.function === true;
 }

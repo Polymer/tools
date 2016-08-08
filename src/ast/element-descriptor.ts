@@ -21,7 +21,7 @@ import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 import {Document} from '../parser/document';
 
-import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, correctSourceLocation} from './ast';
+import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, correctSourceLocation, isFunctionDescriptor} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -131,17 +131,22 @@ export class PolymerElementDescriptor extends ElementDescriptor {
   }
 
   addProperty(prop: PolymerProperty) {
+    if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
+      prop.private = true;
+    }
     this.properties.push(prop);
     const attributeName = propertyToAttributeName(prop.name);
-    if (!attributeName) {
+    if (prop.private || !attributeName) {
       return;
     }
-    this.attributes.push({
-      name: attributeName,
-      sourceLocation: prop.sourceLocation,
-      description: prop.description,
-      type: prop.type,
-    });
+    if (!isFunctionDescriptor(prop)) {
+      this.attributes.push({
+        name: attributeName,
+        sourceLocation: prop.sourceLocation,
+        description: prop.description,
+        type: prop.type,
+      });
+    }
     if (prop.notify) {
       this.events.push({
         name: `${attributeName}-changed`,

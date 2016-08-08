@@ -19,3 +19,7 @@ export interface FunctionDescriptor extends Property {
   params: {name: string, type?: string}[];
   return: {type: string | null; desc: string};
 }
+
+export function isFunctionDescriptor(d: Property): d is FunctionDescriptor {
+  return d['function'] === true;
+}
