@@ -17,7 +17,7 @@ import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 import * as util from 'util';
 
-import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from '../ast/ast';
+import {Descriptor, ImportDescriptor, InlineDocumentDescriptor,getLocationOffsetOfStartOfTextContent,  LocationOffset, getAttachedCommentText} from '../ast/ast';
 
 import {HtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
@@ -47,38 +47,15 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
               new ImportDescriptor<ASTNode>('html-script', importUrl, node));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
+          const attachedCommentText = getAttachedCommentText(node);
           let contents = dom5.getTextContent(node);
+
           entities.push(new InlineDocumentDescriptor<ASTNode>(
-              'js', contents, node, locationOffset));
+              'js', contents, node, locationOffset, attachedCommentText));
         }
       }
     });
 
     return entities;
-  }
-}
-
-function isLocationInfo(loc: LocationInfo|
-                        ElementLocationInfo): loc is LocationInfo {
-  return 'line' in loc;
-}
-
-function getLocationOffsetOfStartOfTextContent(node: ASTNode): LocationOffset {
-  let firstChildNodeWithLocation = node.childNodes.find(n => !!n.__location);
-  let bestLocation = firstChildNodeWithLocation ?
-      firstChildNodeWithLocation.__location :
-      node.__location;
-  if (!bestLocation) {
-    throw new Error(
-        `Couldn't extract a location offset from HTML node: ` +
-        `${util.inspect(node)}`);
-  }
-  if (isLocationInfo(bestLocation)) {
-    return {line: bestLocation.line - 1, col: bestLocation.col};
-  } else {
-    return {
-      line: bestLocation.startTag.line - 1,
-      col: bestLocation.startTag.endOffset,
-    };
   }
 }

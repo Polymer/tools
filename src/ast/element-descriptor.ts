@@ -62,4 +62,8 @@ export class ElementDescriptor implements Descriptor {
           correctSourceLocation(attribute.sourceLocation, locationOffset);
     }
   }
+
+  applyHtmlComment(commentText: string|undefined) {
+    this.description = this.description || commentText;
+  }
 }

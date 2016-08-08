@@ -16,7 +16,7 @@ import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {Descriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
+import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 
 import {HtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
@@ -51,8 +51,10 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
               new ImportDescriptor<ASTNode>('html-style', importUrl, node));
         } else {
           let contents = dom5.getTextContent(node);
+          const locationOffset = getLocationOffsetOfStartOfTextContent(node);
+          const commentText = getAttachedCommentText(node);
           entities.push(new InlineDocumentDescriptor<ASTNode>(
-              'css', contents, node, {line: 0, col: 0}));
+              'css', contents, node, locationOffset, commentText));
         }
       }
     });

@@ -48,9 +48,6 @@ export interface Options {
   demos?: {desc: string; path: string}[];
   events?: EventDescriptor[];
 
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
-
   abstract?: boolean;
   sourceLocation?: SourceLocation;
 }

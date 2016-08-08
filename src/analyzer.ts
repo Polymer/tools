@@ -152,18 +152,20 @@ export class Analyzer {
    */
   private async _analyzeSource(
       type: string, contents: string, url: string,
-      locationOffset?: LocationOffset): Promise<DocumentDescriptor> {
+      locationOffset?: LocationOffset,
+      attachedComment?: string): Promise<DocumentDescriptor> {
     let resolvedUrl = this._resolveUrl(url);
     let document = this._parse(type, contents, resolvedUrl);
-    return await this._analyzeDocument(document, locationOffset);
+    return await this._analyzeDocument(
+        document, locationOffset, attachedComment);
   }
 
   /**
    * Analyzes a parsed Document object.
    */
   private async _analyzeDocument(
-      document: Document<any, any>,
-      maybeLocationOffset?: LocationOffset): Promise<DocumentDescriptor> {
+      document: Document<any, any>, maybeLocationOffset?: LocationOffset,
+      maybeAttachedComment?: string): Promise<DocumentDescriptor> {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     let entities = await this.getEntities(document);
@@ -171,6 +173,12 @@ export class Analyzer {
       if (entity instanceof ElementDescriptor) {
         entity.applyLocationOffset(locationOffset);
       }
+    }
+    // If there's an HTML comment that applies to this document then we assume
+    // that it applies to the first entity.
+    const firstEntity = entities[0];
+    if (firstEntity && firstEntity instanceof ElementDescriptor) {
+      firstEntity.applyHtmlComment(maybeAttachedComment);
     }
 
     let dependencyDescriptors: Descriptor[] = entities.filter(
@@ -184,7 +192,8 @@ export class Analyzer {
           filename: document.url
         };
         return this._analyzeSource(
-            d.type, d.contents, document.url, locationOffset);
+            d.type, d.contents, document.url, locationOffset,
+            d.attachedComment);
       } else if (d instanceof ImportDescriptor) {
         return this.analyze(d.url);
       } else {
