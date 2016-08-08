@@ -16,6 +16,7 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
+import {EventDescriptor} from '../ast/ast';
 import {BehaviorDescriptor, FunctionDescriptor, PolymerProperty, Property} from '../ast/ast';
 
 import {getSourceLocation} from './javascript-document';
@@ -114,23 +115,30 @@ export function getAttachedComment(node: estree.Node): string {
  * Returns all comments from a tree defined with @event.
  */
 export function getEventComments(node: estree.Node) {
-  let eventComments: string[] = [];
+  const eventComments = new Set<string>();
   estraverse.traverse(node, {
     enter: (node: estree.Node) => {
       const comments =
           (node.leadingComments || [])
               .concat(node.trailingComments || [])
               .map((commentAST) => commentAST.value)
-              .filter((comment) => comment.indexOf('@event') !== -1);
-      eventComments = eventComments.concat(comments);
+              .filter((comment) => comment.indexOf('@event') !== -1)
+              .forEach((comment) => eventComments.add(comment));
     },
     keys: {Super: []}
   });
-  // TODO(justinfagnani): use a Map, this is n^2
-  // dedup
-  return eventComments.filter((el, index, array) => {
-    return array.indexOf(el) === index;
-  });
+  return Array.from(eventComments)
+      .map(function(event) {
+        const annotation = jsdoc.parseJsdoc(event);
+        const tag = jsdoc.getTag(annotation, 'event');
+        if (tag) {
+          return <EventDescriptor>{
+            name: tag.name,
+            description: tag.description || annotation.description,
+          };
+        }
+      })
+      .filter((ev) => !!ev);
 }
 
 function getLeadingComments(node: estree.Node): string[] {

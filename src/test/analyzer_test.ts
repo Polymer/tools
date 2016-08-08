@@ -158,13 +158,12 @@ suite('Analyzer', () => {
       const document = new HtmlParser(analyzer).parse(contents, 'test.html');
       const entities =
           <ImportDescriptor<any>[]>(await analyzer.getEntities(document));
-      assert.equal(entities.length, 3);
-      assert.equal(entities[0].type, 'html-import');
-      assert.equal(entities[0].url, 'polymer.html');
-      assert.equal(entities[1].type, 'html-script');
-      assert.equal(entities[1].url, 'foo.js');
-      assert.equal(entities[2].type, 'html-style');
-      assert.equal(entities[2].url, 'foo.css');
+      assert.deepEqual(
+          entities.map(e => e.type),
+          ['html-import', 'html-script', 'html-style']);
+      assert.deepEqual(
+          entities.map(e => e.url),  //
+          ['polymer.html', 'foo.js', 'foo.css']);
     });
 
     test('HTML inline document finders', async() => {

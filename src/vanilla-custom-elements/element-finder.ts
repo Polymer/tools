@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, PolymerElementDescriptor, Property} from '../ast/ast';
+import {Descriptor, ElementDescriptor, Property} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -31,16 +31,10 @@ export interface AttributeDescriptor extends Descriptor {
   type?: string;
 }
 
-export class VanillaElementDescriptor extends PolymerElementDescriptor {
-  className?: string;
-  superclass?: string;
-  attributes: AttributeDescriptor[];
-}
-
 export class ElementFinder implements JavaScriptEntityFinder {
   async findEntities(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<PolymerElementDescriptor[]> {
+      Promise<ElementDescriptor[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.getRegisteredElements();
@@ -48,9 +42,9 @@ export class ElementFinder implements JavaScriptEntityFinder {
 }
 
 class ElementVisitor implements Visitor {
-  private _possibleElements = new Map<string, VanillaElementDescriptor>();
+  private _possibleElements = new Map<string, ElementDescriptor>();
   private _registeredButNotFound = new Map<string, string>();
-  private _elements: VanillaElementDescriptor[] = [];
+  private _elements: ElementDescriptor[] = [];
 
   enterClassExpression(node: estree.ClassExpression, parent: estree.Node) {
     if (parent.type !== 'AssignmentExpression' &&
@@ -78,16 +72,14 @@ class ElementVisitor implements Visitor {
   }
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
-    const element = new VanillaElementDescriptor({
-      description: jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
-                       .description.trim(),
-      events: esutil.getEventComments(node).map(function(event) {
-        return {desc: event};
-      }),
-      sourceLocation: getSourceLocation(node)
-    });
+    const element = new ElementDescriptor();
+    element.description =
+        jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
+            .description.trim();
+    element.events = esutil.getEventComments(node);
+    element.sourceLocation = getSourceLocation(node);
     if (node.superClass && node.superClass.type === 'Identifier') {
-      element.superclass = node.superClass.name;
+      element.superClass = node.superClass.name;
     }
     const observedAttributesDefn: estree.MethodDefinition =
         node.body.body.find(m => {
@@ -122,7 +114,7 @@ class ElementVisitor implements Visitor {
     if (elementDefn == null) {
       return;
     }
-    const element: VanillaElementDescriptor|null =
+    const element: ElementDescriptor|null =
         this._getElement(tagName, elementDefn);
     if (!element) {
       return;
@@ -132,7 +124,7 @@ class ElementVisitor implements Visitor {
   }
 
   private _getElement(tagName: string, elementDefn: estree.Node):
-      VanillaElementDescriptor|null {
+      ElementDescriptor|null {
     const className = astValue.getIdentifierName(elementDefn);
     if (className) {
       const element = this._possibleElements.get(className);
@@ -196,7 +188,7 @@ class ElementVisitor implements Visitor {
   /**
    * Gets all found elements. Can only be called once.
    */
-  getRegisteredElements(): VanillaElementDescriptor[] {
+  getRegisteredElements(): ElementDescriptor[] {
     const results = this._elements;
     for (const classAndTag of this._registeredButNotFound.entries()) {
       const className = classAndTag[0];

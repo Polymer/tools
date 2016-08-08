@@ -78,9 +78,7 @@ export interface PolymerProperty extends Property {
   configuration?: boolean;
   getter?: boolean;
   setter?: boolean;
-  __fromBehavior?: BehaviorOrName;
 }
-
 
 export class ElementDescriptor implements Descriptor {
   tagName?: string;
@@ -131,4 +129,40 @@ export class PolymerElementDescriptor extends ElementDescriptor {
     super();
     Object.assign(this, options);
   }
+
+  addProperty(prop: PolymerProperty) {
+    this.properties.push(prop);
+    const attributeName = propertyToAttributeName(prop.name);
+    if (!attributeName) {
+      return;
+    }
+    this.attributes.push({
+      name: attributeName,
+      sourceLocation: prop.sourceLocation,
+      description: prop.description,
+      type: prop.type,
+    });
+    if (prop.notify) {
+      this.events.push({
+        name: `${attributeName}-changed`,
+        description: `Fired when ${attributeName} changes.`,
+      });
+    }
+  }
+}
+
+
+/**
+ * Implements Polymer core's translation of property names to attribute names.
+ *
+ * Returns null if the property name cannot be so converted.
+ */
+function propertyToAttributeName(propertyName: string): string|null {
+  // Polymer core will not map a property name that starts with an uppercase
+  // character onto an attribute.
+  if (propertyName[0].toUpperCase() === propertyName[0]) {
+    return null;
+  }
+  return propertyName.replace(
+      /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
 }

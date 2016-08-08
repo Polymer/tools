@@ -18,21 +18,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {Descriptor} from '../../ast/ast';
+import {Descriptor, ElementDescriptor} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ElementFinder, VanillaElementDescriptor} from '../../vanilla-custom-elements/element-finder';
+import {ElementFinder} from '../../vanilla-custom-elements/element-finder';
 
 suite('VanillaElementFinder', () => {
 
   let document: JavaScriptDocument;
   let analyzer: Analyzer;
-  let elements: Map<string, VanillaElementDescriptor>;
-  let elementsList: VanillaElementDescriptor[];
+  let elements: Map<string, ElementDescriptor>;
+  let elementsList: ElementDescriptor[];
 
   suiteSetup(() => {
-
     let parser = new JavaScriptParser();
     let file = fs.readFileSync(
         path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
@@ -44,8 +43,8 @@ suite('VanillaElementFinder', () => {
     return finder.findEntities(document, visit)
         .then((entities: Descriptor[]) => {
           elements = new Map();
-          elementsList = <VanillaElementDescriptor[]>entities.filter(
-              (e) => e instanceof VanillaElementDescriptor);
+          elementsList = <ElementDescriptor[]>entities.filter(
+              (e) => e instanceof ElementDescriptor);
           for (let element of elementsList) {
             elements.set(element.tagName, element);
           }
@@ -62,6 +61,14 @@ suite('VanillaElementFinder', () => {
       undefined, 'ClassDeclaration', 'ClassExpression',
       'WithObservedAttributes', 'RegisterBeforeDeclaration',
       'RegisterBeforeExpression'
+    ].sort());
+    assert.deepEqual(elementsList.map(e => e.superClass).sort(), [
+      'HTMLElement',
+      'HTMLElement',
+      'HTMLElement',
+      'HTMLElement',
+      'HTMLElement',
+      'HTMLElement',
     ].sort());
   });
 

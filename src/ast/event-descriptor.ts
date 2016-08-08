@@ -16,7 +16,6 @@ import {BehaviorOrName} from './behavior-descriptor';
 import {Descriptor} from './descriptor';
 
 export interface EventDescriptor extends Descriptor {
-  name?: string;
-  __fromBehavior?: BehaviorOrName;
+  name: string;
   params?: {type: string, desc: string, name: string}[];
 }
