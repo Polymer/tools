@@ -16,10 +16,10 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
+import {ElementDescriptor} from './ast/ast';
 import {DocumentDescriptor, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
-import {PolymerElementDescriptor} from './polymer/element-descriptor';
 
 export interface Position {
   /** Line number in file, starting from 0. */
@@ -92,20 +92,14 @@ export class EditorService {
       }
       return {
         kind: 'attributes',
-        attributes:
-            element.properties.filter(p => !p.private)
-                .map(p => ({
-                       name: p.name.replace(
-                           /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
-                       description: p.description,
-                       type: p.type
-                     }))
+        attributes: element.attributes.map(
+            p => ({name: p.name, description: p.description, type: p.type}))
       };
     }
   }
 
   private async _getDescriptorAt(localPath: string, position: Position):
-      Promise<PolymerElementDescriptor|Property|undefined> {
+      Promise<ElementDescriptor|Property|undefined> {
     const analysis = await this._analyzer.resolve();
     const location =
         await this._getLocationResult(localPath, position, analysis);
