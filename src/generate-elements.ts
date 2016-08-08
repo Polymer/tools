@@ -36,49 +36,43 @@ export function generateElementMetadata(
   return {
     schema_version: '1.0.0',
     elements: elementDescriptors.map(
-        e => serializeElementDescriptor(e, analysis, packagePath))
+        e => serializeElementDescriptor(
+            resolveElement(e, analysis), packagePath))
   };
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, analysis: Analysis,
-    packagePath: string): Element|null {
+    elementDescriptor: ElementDescriptor, packagePath: string): Element|null {
   if (!elementDescriptor.tagName) {
     return null;
   }
-  let properties = elementDescriptor.properties;
-  let attributes = elementDescriptor.attributes;
-  let events = elementDescriptor.events;
-  if (elementDescriptor instanceof PolymerElementDescriptor) {
-    const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
-        elementDescriptor.behaviors, analysis));
-    properties =
-        mergeByName([properties].concat(behaviors.map(b => b.properties)));
-    attributes =
-        mergeByName([attributes].concat(behaviors.map(b => b.attributes)));
-    events = mergeByName([events].concat(behaviors.map(b => b.events)));
-  }
-  properties = properties.filter(p => !p.private);
+
 
   const path = elementDescriptor.sourceLocation.file;
   const packageRelativePath =
       pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
+
+  const attributes = elementDescriptor.attributes.map(
+      a => serializeAttributeDescriptor(path, a));
+  const properties = elementDescriptor.properties.filter(p => !p.private)
+                         .map(p => serializePropertyDescriptor(path, p));
+  const events = elementDescriptor.events.map(
+      e => ({name: e.name, description: e.description, type: 'CustomEvent'}));
 
   return {
     tagname: elementDescriptor.tagName,
     description: elementDescriptor.description || '',
     superclass: 'HTMLElement',
     path: packageRelativePath,
-    attributes: attributes.map(a => serializeAttributeDescriptor(path, a)),
-    properties: properties.map(p => serializePropertyDescriptor(path, p)),
+    attributes: attributes,
+    properties: properties,
     styling: {
       cssVariables: [],
       selectors: [],
     },
     demos: (elementDescriptor.demos || []).map(d => d.path),
     slots: [],
-    events: events.map(
-        e => ({name: e.name, description: e.description, type: 'CustomEvent'})),
+    events: events,
     metadata: {},
     sourceLocation:
         resolveSourceLocationPath(path, elementDescriptor.sourceLocation)
@@ -185,4 +179,29 @@ function mergeByName<T extends{name: string}>(buckets: T[][]): T[] {
     }
   }
   return Array.from(byName.values());
+}
+
+function resolveElement(
+    elementDescriptor: ElementDescriptor, analysis: Analysis) {
+  let properties = elementDescriptor.properties;
+  let attributes = elementDescriptor.attributes;
+  let events = elementDescriptor.events;
+  if (elementDescriptor instanceof PolymerElementDescriptor) {
+    const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
+        elementDescriptor.behaviors, analysis));
+    properties =
+        mergeByName([properties].concat(behaviors.map(b => b.properties)));
+    attributes =
+        mergeByName([attributes].concat(behaviors.map(b => b.attributes)));
+    events = mergeByName([events].concat(behaviors.map(b => b.events)));
+  }
+
+  const clone = <ElementDescriptor>{};
+  for (const key in elementDescriptor) {
+    clone[key] = elementDescriptor[key];
+  }
+  clone.properties = properties;
+  clone.attributes = attributes;
+  clone.events = events;
+  return clone;
 }
