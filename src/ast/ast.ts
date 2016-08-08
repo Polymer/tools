@@ -14,10 +14,9 @@
 
 export * from './descriptor';
 export * from './document-descriptor';
-export {ElementDescriptor, Attribute} from './element-descriptor';
+export * from './element-descriptor';
 export * from './event-descriptor';
 export * from './feature-descriptor';
 export * from './import-descriptor';
 export * from './inline-document-descriptor';
 export * from './property-descriptor';
-export {BehaviorDescriptor, BehaviorsByName} from './behavior-descriptor';

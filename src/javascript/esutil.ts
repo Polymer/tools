@@ -17,7 +17,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {EventDescriptor} from '../ast/ast';
-import {BehaviorDescriptor, Property} from '../ast/ast';
+import {Property} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
 import {FunctionDescriptor, PolymerElementDescriptor, PolymerProperty} from '../polymer/element-descriptor';
 

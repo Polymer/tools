@@ -17,9 +17,10 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property} from './ast/ast';
+import {Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
+import {BehaviorDescriptor} from './polymer/behavior-descriptor';
 import {PolymerElementDescriptor} from './polymer/element-descriptor';
 
 const validator = new jsonschema.Validator();

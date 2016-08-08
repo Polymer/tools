@@ -20,11 +20,9 @@ export interface Options extends ElementOptions {}
  * The metadata for a Polymer behavior mixin.
  */
 export class BehaviorDescriptor extends PolymerElementDescriptor {
+  tagName: undefined;
+  className: string;
   constructor(options: Options) {
     super(options);
   }
 }
-
-export type BehaviorsByName = {
-  [name: string]: BehaviorDescriptor
-};

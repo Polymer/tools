@@ -15,7 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, Descriptor, LiteralValue, Property} from '../ast/ast';
+import {Descriptor, LiteralValue, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -24,6 +24,7 @@ import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
 import * as analyzeProperties from './analyze-properties';
+import {BehaviorDescriptor} from './behavior-descriptor';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 import {PolymerElementDescriptor} from './element-descriptor';
@@ -157,16 +158,13 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    let name =
+    let explicitName =
         jsdoc.getTag(this.currentBehavior.jsdoc, 'polymerBehavior', 'name');
-    this.currentBehavior.className = symbol;
-    if (!name) {
-      name = this.currentBehavior.className;
+    this.currentBehavior.className = explicitName || symbol;
+    if (!this.currentBehavior.className) {
+      throw new Error(
+          `Unable to determine name for @polymerBehavior: ${comment}`);
     }
-    if (!name) {
-      console.warn('Unable to determine name for @polymerBehavior:', comment);
-    }
-    this.currentBehavior.tagName = name;
 
     this._parseChainedBehaviors(node);
 
@@ -188,10 +186,10 @@ class BehaviorVisitor implements Visitor {
   mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
     const isBehaviorImpl = (b: string) => {
       // filter out BehaviorImpl
-      return b.indexOf(newBehavior.tagName) === -1;
+      return b.indexOf(newBehavior.className) === -1;
     };
     for (let i = 0; i < this.behaviors.length; i++) {
-      if (newBehavior.tagName !== this.behaviors[i].tagName) {
+      if (newBehavior.className !== this.behaviors[i].className) {
         continue;
       }
       // merge desc, longest desc wins

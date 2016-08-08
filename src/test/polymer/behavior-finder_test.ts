@@ -18,10 +18,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {BehaviorDescriptor, Descriptor} from '../../ast/ast';
+import {Descriptor} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {BehaviorDescriptor} from '../../polymer/behavior-descriptor';
 import {BehaviorFinder} from '../../polymer/behavior-finder';
 
 suite('BehaviorFinder', () => {
@@ -46,13 +47,16 @@ suite('BehaviorFinder', () => {
           behaviorsList = <BehaviorDescriptor[]>entities.filter(
               (e) => e instanceof BehaviorDescriptor);
           for (let behavior of behaviorsList) {
-            behaviors.set(behavior.tagName, behavior);
+            behaviors.set(behavior.className, behavior);
           }
         });
   });
 
   test('Finds behavior object assignments', () => {
-    assert.equal(behaviorsList.length, 4);
+    assert.deepEqual(behaviorsList.map(b => b.className).sort(), [
+      'SimpleBehavior', 'AwesomeBehavior', 'Really.Really.Deep.Behavior',
+      'CustomBehaviorList'
+    ].sort());
   });
 
   test('Supports behaviors at local assignments', () => {
