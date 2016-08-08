@@ -18,7 +18,7 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {DocumentDescriptor, PolymerElementDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
+import {DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, PolymerElementDescriptor} from '../ast/ast';
 import {HtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -189,21 +189,21 @@ suite('Analyzer', () => {
     test('parses classes', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
         let elements = <PolymerElementDescriptor[]>document.entities.filter(
-            (e) => e['type'] === 'element');
+            (e) => e instanceof PolymerElementDescriptor);
         assert.equal(elements.length, 2);
 
         let element1 = elements[0];
         assert.equal(element1.behaviors.length, 2);
         assert.equal(element1.behaviors[0], 'Behavior1');
         assert.equal(element1.behaviors[1], 'Behavior2');
-        assert.equal(element1.is, 'test-seed');
+        assert.equal(element1.tagName, 'test-seed');
 
         assert.equal(element1.observers.length, 2);
         assert.equal(element1.properties.length, 4);
 
         // TODO(justinfagnani): fix events
         // assert.equal(elements[0].events.length, 1);
-        assert.equal(elements[1].is, 'test-element');
+        assert.equal(elements[1].tagName, 'test-element');
       });
     });
 
@@ -211,7 +211,7 @@ suite('Analyzer', () => {
     test('parses events from classes', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
         let elements = <PolymerElementDescriptor[]>document.entities.filter(
-            (e) => e['type'] === 'element');
+            (e) => e instanceof PolymerElementDescriptor);
         assert.equal(elements.length, 2);
 
         let element1 = elements[0];

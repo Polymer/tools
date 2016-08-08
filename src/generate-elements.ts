@@ -18,7 +18,7 @@ import * as pathLib from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {BehaviorDescriptor, Descriptor, DocumentDescriptor, PolymerElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
+import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, PolymerElementDescriptor, PolymerProperty, Property as PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {Document} from './parser/document';
@@ -41,12 +41,12 @@ export function generateElementMetadata(
 function serializeElementDescriptor(
     elementDescriptor: PolymerElementDescriptor, analysis: Analysis,
     packagePath: string): Element|null {
-  if (!elementDescriptor.is) {
+  if (!elementDescriptor.tagName) {
     return null;
   }
   const behaviors =
       getFlattenedAndResolvedBehaviors(elementDescriptor.behaviors, analysis);
-  const propertiesByName = new Map<string, PropertyDescriptor>();
+  const propertiesByName = new Map<string, PolymerProperty>();
   for (const prop of elementDescriptor.properties) {
     propertiesByName.set(prop.name, prop);
   }
@@ -76,8 +76,8 @@ function serializeElementDescriptor(
                }));
 
   return {
-    tagname: elementDescriptor.is,
-    description: elementDescriptor.desc || '',
+    tagname: elementDescriptor.tagName,
+    description: elementDescriptor.description || '',
     superclass: 'HTMLElement',
     path: packageRelativePath,
     attributes: computeAttributesFromPropertyDescriptors(path, properties),
@@ -96,11 +96,11 @@ function serializeElementDescriptor(
 }
 
 function serializePropertyDescriptor(
-    elementPath: string, propertyDescriptor: PropertyDescriptor): Property {
+    elementPath: string, propertyDescriptor: PolymerProperty): Property {
   const property: Property = {
     name: propertyDescriptor.name,
     type: propertyDescriptor.type || '?',
-    description: propertyDescriptor.desc || '',
+    description: propertyDescriptor.description || '',
     sourceLocation: resolveSourceLocationPath(
         elementPath, propertyDescriptor.sourceLocation)
   };
@@ -149,11 +149,11 @@ function _getFlattenedAndResolvedBehaviors(
 }
 
 function computeAttributesFromPropertyDescriptors(
-    elementPath: string, props: PropertyDescriptor[]): Attribute[] {
+    elementPath: string, props: PolymerProperty[]): Attribute[] {
   return props.filter(prop => propertyToAttributeName(prop.name)).map(prop => {
     const attribute: Attribute = {
       name: propertyToAttributeName(prop.name),
-      description: prop.desc || '',
+      description: prop.description || '',
       sourceLocation:
           resolveSourceLocationPath(elementPath, prop.sourceLocation)
     };

@@ -21,18 +21,19 @@ import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 import {Document} from '../parser/document';
 
-import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, PropertyDescriptor, correctSourceLocation} from './ast';
+import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, correctSourceLocation} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
 export interface Options {
-  type: 'element'|'behavior';
-  is?: string;
-
+  tagName?: string;
+  className?: string;
+  superClass?: string;
+  extends?: string;
   jsdoc?: jsdoc.Annotation;
-  desc?: string;
-  contentHref?: string;
-  properties?: PropertyDescriptor[];
+  description?: string;
+  properties?: Property[];
+  attributes?: Attribute[];
   observers?: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
@@ -41,7 +42,7 @@ export interface Options {
 
   demos?: {desc: string; path: string}[];
   events?: EventDescriptor[];
-  hero?: string;
+
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
 
@@ -49,35 +50,51 @@ export interface Options {
   sourceLocation?: SourceLocation;
 }
 
-/**
- * The metadata for a single polymer element
- */
-export class PolymerElementDescriptor implements Descriptor {
-  type: 'element'|'behavior';
-  is: string;
+export interface Attribute {
+  name: string;
+  sourceLocation: SourceLocation;
+  description?: string;
+  type?: string;
+}
+
+export interface Property {
+  name: string;
+  type?: string;
+  description?: string;
+  jsdoc?: jsdoc.Annotation;
+  private?: boolean;
+  'default'?: string;
+  readOnly?: boolean;
+  javascriptNode?: estree.Node;
+  sourceLocation: SourceLocation;
+}
+
+export interface PolymerProperty extends Property {
+  published?: boolean;
+  notify?: boolean;
+  observer?: string;
+  observerNode?: estree.Expression|estree.Pattern;
+  reflectToAttribute?: boolean;
+  configuration?: boolean;
+  getter?: boolean;
+  setter?: boolean;
+  __fromBehavior?: BehaviorOrName;
+}
+
+
+export class ElementDescriptor implements Descriptor {
+  tagName?: string;
+  className?: string;
+  superClass?: string;
+  extends?: string;
+  properties: Property[] = [];
+  attributes: Attribute[] = [];
+  description = '';
+  demos: {desc?: string; path: string}[] = [];
+  events: EventDescriptor[] = [];
+  sourceLocation: SourceLocation;
 
   jsdoc?: jsdoc.Annotation;
-  desc?: string;
-  contentHref?: string;
-  properties: PropertyDescriptor[] = [];
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[] = [];
-  behaviors: BehaviorOrName[] = [];
-
-  demos: {desc: string; path: string}[] = [];
-  events: EventDescriptor[] = [];
-  hero?: string;
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
-
-  abstract?: boolean;
-  sourceLocation?: SourceLocation;
-
-  constructor(options: Options) {
-    Object.assign(this, options);
-  }
 
   applyLocationOffset(locationOffset?: LocationOffset) {
     if (!locationOffset) {
@@ -89,5 +106,29 @@ export class PolymerElementDescriptor implements Descriptor {
       prop.sourceLocation =
           correctSourceLocation(prop.sourceLocation, locationOffset);
     }
+    for (const attribute of this.attributes) {
+      attribute.sourceLocation =
+          correctSourceLocation(attribute.sourceLocation, locationOffset);
+    }
+  }
+}
+/**
+ * The metadata for a single polymer element
+ */
+export class PolymerElementDescriptor extends ElementDescriptor {
+  properties: PolymerProperty[] = [];
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[] = [];
+  behaviors: string[] = [];
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+
+  abstract?: boolean;
+
+  constructor(options: Options) {
+    super();
+    Object.assign(this, options);
   }
 }

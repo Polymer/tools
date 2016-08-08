@@ -19,29 +19,3 @@ import {SourceLocation} from '../elements-format';
 import {BehaviorOrName} from './behavior-descriptor';
 import {Descriptor, LiteralValue} from './descriptor';
 
-// TODO(justinfagnani): Rename, this name clashes with ES6's PropertyDescriptor
-export interface PropertyDescriptor extends Descriptor {
-  name: string;
-  type: string;
-  desc: string;
-  javascriptNode: estree.Node;
-  params?: {name: string}[];
-  published?: boolean;
-  notify?: boolean;
-  observer?: string;
-  observerNode?: estree.Expression|estree.Pattern;
-  readOnly?: boolean;
-  reflectToAttribute?: boolean;
-  'default'?: string;
-  private?: boolean;
-  configuration?: boolean;
-  getter?: boolean;
-  setter?: boolean;
-  sourceLocation?: SourceLocation;
-
-  __fromBehavior?: BehaviorOrName;
-}
-
-export function isPropertyDescriptor(d: Descriptor): d is PropertyDescriptor {
-  return (<PropertyDescriptor>d).javascriptNode !== undefined;
-}

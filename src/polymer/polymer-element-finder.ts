@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, PolymerElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {Descriptor, PolymerElementDescriptor, PolymerProperty, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -50,8 +50,7 @@ class ElementVisitor implements Visitor {
   enterClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
     this.classDetected = true;
     this.element = new PolymerElementDescriptor({
-      type: 'element',
-      desc: esutil.getAttachedComment(node),
+      description: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node).map(function(event) {
         return {desc: event};
       }),
@@ -107,8 +106,7 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc =
-        <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
+    const propDesc = <Property>docs.annotate(esutil.toPropertyDescriptor(prop));
     if (prop && prop.kind === 'get' &&
         (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
       let returnStatement = <estree.ReturnStatement>node.value.body.body[0];
@@ -139,15 +137,14 @@ class ElementVisitor implements Visitor {
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
         this.element = new PolymerElementDescriptor({
-          type: 'element',
-          desc: esutil.getAttachedComment(parent),
+          description: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent).map(function(event) {
             return {desc: event};
           }),
           sourceLocation: getSourceLocation(node.arguments[0])
         });
         docs.annotate(this.element);
-        this.element.desc = (this.element.desc || '').trim();
+        this.element.description = (this.element.description || '').trim();
         this.propertyHandlers = declarationPropertyHandlers(this.element);
       }
     }
@@ -177,9 +174,9 @@ class ElementVisitor implements Visitor {
 
     // TODO(justinfagnani): is the second clause needed?
     if (this.element) {
-      let getters: {[name: string]: PropertyDescriptor} = {};
-      let setters: {[name: string]: PropertyDescriptor} = {};
-      let definedProperties: {[name: string]: PropertyDescriptor} = {};
+      let getters: {[name: string]: PolymerProperty} = {};
+      let setters: {[name: string]: PolymerProperty} = {};
+      let definedProperties: {[name: string]: PolymerProperty} = {};
       for (let i = 0; i < node.properties.length; i++) {
         let prop = node.properties[i];
         let name = esutil.objectKeyToString(prop.key);

@@ -16,10 +16,11 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
+import {BehaviorDescriptor, FunctionDescriptor, PolymerProperty, Property} from '../ast/ast';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
+
 
 
 /**
@@ -143,8 +144,7 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node: estree.Property):
-    PropertyDescriptor {
+export function toPropertyDescriptor(node: estree.Property): PolymerProperty {
   let type = closureType(node.value);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {
@@ -155,18 +155,18 @@ export function toPropertyDescriptor(node: estree.Property):
   let description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
 
-  const result: PropertyDescriptor = {
+  const result: PolymerProperty = {
     name: objectKeyToString(node.key),
     type: type,
-    desc: description,
+    description: description,
     javascriptNode: node,
     sourceLocation: getSourceLocation(node)
   };
 
   if (type === 'Function') {
     const value = <estree.Function>node.value;
-    result.params = (value.params || []).map((param) => {
-      // With ES6 we can have a constiety of param patterns. Best to leave the
+    (<FunctionDescriptor>result).params = (value.params || []).map((param) => {
+      // With ES6 we can have a lot of param patterns. Best to leave the
       // formatting to escodegen.
       return {name: escodegen.generate(param)};
     });

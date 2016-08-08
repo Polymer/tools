@@ -15,7 +15,7 @@
 export {BehaviorDescriptor, BehaviorOrName, BehaviorsByName} from './behavior-descriptor';
 export * from './descriptor';
 export * from './document-descriptor';
-export {PolymerElementDescriptor} from './element-descriptor';
+export {PolymerElementDescriptor, ElementDescriptor, Property, Attribute, PolymerProperty, } from './element-descriptor';
 export * from './event-descriptor';
 export * from './feature-descriptor';
 export * from './function-descriptor';

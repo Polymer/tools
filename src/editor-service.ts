@@ -16,7 +16,7 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
-import {DocumentDescriptor, PolymerElementDescriptor, PropertyDescriptor, isPropertyDescriptor} from './ast/ast';
+import {DocumentDescriptor, PolymerElementDescriptor, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
 
@@ -56,10 +56,10 @@ export class EditorService {
     }
     if (isPropertyDescriptor(descriptor)) {
       if (descriptor.type) {
-        return `{${descriptor.type}} ${descriptor.desc}`;
+        return `{${descriptor.type}} ${descriptor.description}`;
       }
     }
-    return descriptor.desc;
+    return descriptor.description;
   }
 
   async getDefinitionFor(localPath: string, position: Position) {
@@ -82,7 +82,7 @@ export class EditorService {
       return {
         kind: 'element-tags',
         elements: analysis.getElements().map(
-            e => ({tagname: e.is, description: e.desc}))
+            e => ({tagname: e.tagName, description: e.description}))
       };
     } else {
       const element = analysis.getElement(location.element.nodeName);
@@ -97,7 +97,7 @@ export class EditorService {
                 .map(p => ({
                        name: p.name.replace(
                            /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
-                       description: p.desc,
+                       description: p.description,
                        type: p.type
                      }))
       };
@@ -105,7 +105,7 @@ export class EditorService {
   }
 
   private async _getDescriptorAt(localPath: string, position: Position):
-      Promise<PolymerElementDescriptor|PropertyDescriptor|undefined> {
+      Promise<PolymerElementDescriptor|Property|undefined> {
     const analysis = await this._analyzer.resolve();
     const location =
         await this._getLocationResult(localPath, position, analysis);
@@ -217,4 +217,8 @@ function isElementLocationInfo(location: parse5.LocationInfo|
                                parse5.ElementLocationInfo):
     location is parse5.ElementLocationInfo {
   return location['startTag'] && location['endTag'];
+}
+
+function isPropertyDescriptor(d: any): d is Property {
+  return 'type' in d;
 }

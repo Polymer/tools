@@ -15,7 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, BehaviorOrName, Descriptor, PolymerElementDescriptor, LiteralValue, PropertyDescriptor} from '../ast/ast';
+import {BehaviorDescriptor, BehaviorOrName, Descriptor, LiteralValue, PolymerElementDescriptor, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -145,8 +145,7 @@ class BehaviorVisitor implements Visitor {
     }
 
     this._startBehavior(new BehaviorDescriptor({
-      type: 'behavior',
-      desc: comment,
+      description: comment,
       events: esutil.getEventComments(node).map(function(event) {
         return {desc: event};
       }),
@@ -170,7 +169,7 @@ class BehaviorVisitor implements Visitor {
     if (!name) {
       console.warn('Unable to determine name for @polymerBehavior:', comment);
     }
-    this.currentBehavior.is = name;
+    this.currentBehavior.tagName = name;
 
     this._parseChainedBehaviors(node);
 
@@ -192,19 +191,20 @@ class BehaviorVisitor implements Visitor {
   mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
     const isBehaviorImpl = (b: string) => {
       // filter out BehaviorImpl
-      return b.indexOf(newBehavior.is) === -1;
+      return b.indexOf(newBehavior.tagName) === -1;
     };
     for (let i = 0; i < this.behaviors.length; i++) {
-      if (newBehavior.is !== this.behaviors[i].is) {
+      if (newBehavior.tagName !== this.behaviors[i].tagName) {
         continue;
       }
       // merge desc, longest desc wins
-      if (newBehavior.desc) {
-        if (this.behaviors[i].desc) {
-          if (newBehavior.desc.length > this.behaviors[i].desc.length)
-            this.behaviors[i].desc = newBehavior.desc;
+      if (newBehavior.description) {
+        if (this.behaviors[i].description) {
+          if (newBehavior.description.length >
+              this.behaviors[i].description.length)
+            this.behaviors[i].description = newBehavior.description;
         } else {
-          this.behaviors[i].desc = newBehavior.desc;
+          this.behaviors[i].description = newBehavior.description;
         }
       }
       // TODO(justinfagnani): move into BehaviorDescriptor
@@ -234,7 +234,7 @@ class BehaviorVisitor implements Visitor {
     // Polymer.IronSelectableBehavior]
     // We add these to behaviors array
     const expression = behaviorExpression(node);
-    const chained: BehaviorOrName[] = [];
+    const chained: string[] = [];
     if (expression && expression.type === 'ArrayExpression') {
       for (const element of expression.elements) {
         const behaviorName = astValue.getIdentifierName(element);

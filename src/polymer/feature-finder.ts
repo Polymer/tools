@@ -28,7 +28,7 @@ export function featureFinder() {
   function _extractDesc(
       feature: FeatureDescriptor, node: estree.CallExpression,
       parent: estree.Node) {
-    feature.desc = esutil.getAttachedComment(parent);
+    feature.description = esutil.getAttachedComment(parent);
   }
 
   function _extractProperties(

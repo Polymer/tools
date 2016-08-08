@@ -21,6 +21,6 @@ export interface LiteralObj { [key: string]: LiteralValue; }
 
 export interface Descriptor {
   jsdoc?: jsdoc.Annotation;
-  desc?: string;
+  description?: string;
   node?: any;
 }

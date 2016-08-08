@@ -46,7 +46,7 @@ suite('BehaviorFinder', () => {
           behaviorsList = <BehaviorDescriptor[]>entities.filter(
               (e) => e instanceof BehaviorDescriptor);
           for (let behavior of behaviorsList) {
-            behaviors.set(behavior.is, behavior);
+            behaviors.set(behavior.tagName, behavior);
           }
         });
   });

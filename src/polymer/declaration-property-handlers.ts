@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import {BehaviorOrName, PolymerElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {BehaviorOrName, PolymerElementDescriptor, Property} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 
 import {analyzeProperties} from './analyze-properties';
@@ -36,7 +36,7 @@ export function declarationPropertyHandlers(declaration: PolymerElementDescripto
   return {
     is(node: estree.Node) {
       if (node.type === 'Literal') {
-        declaration.is = node.value.toString();
+        declaration.tagName = node.value.toString();
       }
     },
     properties(node: estree.Node) {

@@ -18,13 +18,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {BehaviorDescriptor, Descriptor} from '../../ast/ast';
+import {Descriptor} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ElementFinder, VanillaElementDescriptor} from '../../vanilla-custom-elements/element-finder';
 
-suite('BehaviorFinder', () => {
+suite('VanillaElementFinder', () => {
 
   let document: JavaScriptDocument;
   let analyzer: Analyzer;
@@ -47,13 +47,13 @@ suite('BehaviorFinder', () => {
           elementsList = <VanillaElementDescriptor[]>entities.filter(
               (e) => e instanceof VanillaElementDescriptor);
           for (let element of elementsList) {
-            elements.set(element.is, element);
+            elements.set(element.tagName, element);
           }
         });
   });
 
   test('Finds elements', () => {
-    assert.deepEqual(elementsList.map(e => e.is).sort(), [
+    assert.deepEqual(elementsList.map(e => e.tagName).sort(), [
       'anonymous-class', 'class-declaration', 'class-expression',
       'with-observed-attributes', 'register-before-declaration',
       'register-before-expression'
@@ -69,13 +69,13 @@ suite('BehaviorFinder', () => {
     const element = elements.get('with-observed-attributes');
     assert.deepEqual(element.attributes, [
       {
-        desc: 'When given the element is totally inactive',
+        description: 'When given the element is totally inactive',
         name: 'disabled',
         type: 'boolean',
         sourceLocation: {column: 6, line: 25}
       },
       {
-        desc: 'When given the element is expanded',
+        description: 'When given the element is expanded',
         name: 'open',
         type: 'boolean',
         sourceLocation: {column: 6, line: 27}
@@ -86,6 +86,7 @@ suite('BehaviorFinder', () => {
   test('Extracts description from jsdoc', () => {
     const element = elements.get('with-observed-attributes');
     assert.equal(
-        element.desc, 'This is a description of WithObservedAttributes.');
+        element.description,
+        'This is a description of WithObservedAttributes.');
   });
 });

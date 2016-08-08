@@ -17,7 +17,7 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, PolymerElementDescriptor, PropertyDescriptor} from './ast/ast';
+import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor, PolymerElementDescriptor, Property} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
 
@@ -57,8 +57,8 @@ export class Analysis {
 
     // Index the elements that we found by their tag names and package names.
     for (const element of elementsGatherer.elementDescriptors) {
-      if (element.is) {
-        this._elementsByTagName.set(element.is, element);
+      if (element.tagName) {
+        this._elementsByTagName.set(element.tagName, element);
       }
       let elementPath = elementsGatherer.elementPaths.get(element);
       const matchingPackageDirs =
@@ -288,12 +288,12 @@ class AnalysisWalker {
       return this._walkDocumentDescriptor(entity, visitors);
     } else if (entity instanceof InlineDocumentDescriptor) {
       return this._walkInlineDocumentDescriptor(entity, visitors);
-    } else if (entity['type'] === 'element') {
+    } else if (entity instanceof BehaviorDescriptor) {
+      return this._walkBehavior(entity, visitors);
+    } else if (entity instanceof PolymerElementDescriptor) {
       return this._walkElement(<PolymerElementDescriptor>entity, visitors);
     } else if (entity instanceof ImportDescriptor) {
       return this._walkImportDescriptor(entity, visitors);
-    } else if (entity instanceof BehaviorDescriptor) {
-      return this._walkBehavior(entity, visitors);
     }
     throw new Error(`Unknown kind of descriptor: ${util.inspect(entity)}`);
   }

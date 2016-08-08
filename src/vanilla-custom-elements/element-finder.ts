@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, PolymerElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {Descriptor, PolymerElementDescriptor, Property} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -79,9 +79,8 @@ class ElementVisitor implements Visitor {
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const element = new VanillaElementDescriptor({
-      type: 'element',
-      desc: jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
-                .description.trim(),
+      description: jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
+                       .description.trim(),
       events: esutil.getEventComments(node).map(function(event) {
         return {desc: event};
       }),
@@ -128,7 +127,7 @@ class ElementVisitor implements Visitor {
     if (!element) {
       return;
     }
-    element.is = tagName;
+    element.tagName = tagName;
     this._elements.push(element);
   }
 
@@ -182,7 +181,7 @@ class ElementVisitor implements Visitor {
         }
         const attribute: AttributeDescriptor = {
           name: value,
-          desc: description,
+          description: description,
           sourceLocation: getSourceLocation(expr)
         };
         if (type) {
@@ -205,7 +204,7 @@ class ElementVisitor implements Visitor {
       const element = this._possibleElements.get(className);
       if (element) {
         element.className = className;
-        element.is = tagName;
+        element.tagName = tagName;
         results.push(element);
       }
     }
