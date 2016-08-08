@@ -35,9 +35,8 @@ export function generateElementMetadata(
   }
   return {
     schema_version: '1.0.0',
-    elements: elementDescriptors.map(
-        e => serializeElementDescriptor(
-            resolveElement(e, analysis), packagePath))
+    elements:
+        elementDescriptors.map(e => serializeElementDescriptor(e, packagePath))
   };
 }
 
@@ -116,36 +115,6 @@ function serializeAttributeDescriptor(
   return attribute;
 }
 
-function getFlattenedAndResolvedBehaviors(
-    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis) {
-  const resolvedBehaviors = new Set<BehaviorDescriptor>();
-  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
-  return resolvedBehaviors;
-}
-
-function _getFlattenedAndResolvedBehaviors(
-    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis,
-    resolvedBehaviors: Set<BehaviorDescriptor>) {
-  const toLookup = behaviors.slice();
-  for (let behavior of toLookup) {
-    if (typeof behavior === 'string') {
-      const behaviorName = behavior;
-      behavior = analysis.getBehavior(behavior);
-      if (!behavior) {
-        throw new Error(
-            `Unable to resolve behavior \`${behaviorName}\` ` +
-            `Did you import it? Is it annotated with @polymerBehavior?`);
-      }
-    }
-    if (resolvedBehaviors.has(behavior)) {
-      continue;
-    }
-    resolvedBehaviors.add(behavior);
-    _getFlattenedAndResolvedBehaviors(
-        behavior.behaviors, analysis, resolvedBehaviors);
-  }
-}
-
 function resolveSourceLocationPath(
     elementPath: string,
     sourceLocation: SourceLocation|undefined): SourceLocation|undefined {
@@ -167,41 +136,4 @@ function resolveSourceLocationPath(
     column: sourceLocation.column,
     file: filePath
   };
-}
-
-function mergeByName<T extends{name: string}>(buckets: T[][]): T[] {
-  const byName = new Map<string, T>();
-  for (const bucket of buckets) {
-    for (const element of bucket) {
-      if (!byName.has(element.name)) {
-        byName.set(element.name, element);
-      }
-    }
-  }
-  return Array.from(byName.values());
-}
-
-function resolveElement(
-    elementDescriptor: ElementDescriptor, analysis: Analysis) {
-  let properties = elementDescriptor.properties;
-  let attributes = elementDescriptor.attributes;
-  let events = elementDescriptor.events;
-  if (elementDescriptor instanceof PolymerElementDescriptor) {
-    const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
-        elementDescriptor.behaviors, analysis));
-    properties =
-        mergeByName([properties].concat(behaviors.map(b => b.properties)));
-    attributes =
-        mergeByName([attributes].concat(behaviors.map(b => b.attributes)));
-    events = mergeByName([events].concat(behaviors.map(b => b.events)));
-  }
-
-  const clone = <ElementDescriptor>{};
-  for (const key in elementDescriptor) {
-    clone[key] = elementDescriptor[key];
-  }
-  clone.properties = properties;
-  clone.attributes = attributes;
-  clone.events = events;
-  return clone;
 }

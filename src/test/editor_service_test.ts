@@ -42,7 +42,23 @@ suite('EditorService', function() {
     },
     {description: '', tagname: 'register-before-declaration'},
     {description: '', tagname: 'register-before-expression'},
-
+  ];
+  const attributeTypeahead = [
+    {
+      name: 'local-property',
+      description: 'A property defined directly on behavior-test-elem.',
+      type: 'boolean'
+    },
+    {
+      name: 'inherit-please',
+      description: 'A property provided by SimpleBehavior.',
+      type: 'number',
+    },
+    {
+      name: 'deeply-inherited-property',
+      description: 'This is a deeply inherited property.',
+      type: 'Array',
+    },
   ];
 
   // The weird cast is because the service will always be non-null.
@@ -187,14 +203,7 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, localAttributePosition),
-          {
-            kind: 'attributes',
-            attributes: [{
-              name: 'local-property',
-              description: 'A property defined directly on behavior-test-elem.',
-              type: 'boolean'
-            }]
-          });
+          {kind: 'attributes', attributes: attributeTypeahead});
     });
 
     testName = 'Get attribute completions when adding a new attribute';
@@ -212,15 +221,7 @@ suite('EditorService', function() {
               line: 0,
               column: 20 /* after the space after the element name */
             }),
-            {
-              kind: 'attributes',
-              attributes: [{
-                name: 'local-property',
-                description:
-                    'A property defined directly on behavior-test-elem.',
-                type: 'boolean'
-              }]
-            });
+            {kind: 'attributes', attributes: attributeTypeahead});
       }
 
     });

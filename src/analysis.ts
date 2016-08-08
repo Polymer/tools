@@ -46,9 +46,6 @@ export class Analysis {
   private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
   private _documentsByLocalPath = new Map<string, DocumentDescriptor>();
 
-  elementPaths: Map<ElementDescriptor, string>;
-  behaviorPaths: Map<ElementDescriptor, string>;
-
   constructor(descriptors: DocumentDescriptor[]) {
     this._descriptors = descriptors;
     const packageGatherer = new PackageGatherer();
@@ -57,12 +54,19 @@ export class Analysis {
       packageGatherer, elementsGatherer
     ]);
 
+    for (const behavior of elementsGatherer.behaviorDescriptors) {
+      if (behavior.className) {
+        this._behaviorsByIdentifierName.set(behavior.className, behavior);
+      }
+    }
+
     // Index the elements that we found by their tag names and package names.
-    for (const element of elementsGatherer.elementDescriptors) {
+    for (const originalElement of elementsGatherer.elementDescriptors) {
+      const element = resolveElement(originalElement, this);
       if (element.tagName) {
         this._elementsByTagName.set(element.tagName, element);
       }
-      let elementPath = elementsGatherer.elementPaths.get(element);
+      let elementPath = elementsGatherer.elementPaths.get(originalElement);
       const matchingPackageDirs =
           Array.from(packageGatherer.packageDirs)
               .filter(dir => elementPath.startsWith(dir));
@@ -78,18 +82,9 @@ export class Analysis {
           longestMatchingPackageDir, elementsInPackage);
     }
 
-    for (const behavior of elementsGatherer.behaviorDescriptors) {
-      if (behavior.className) {
-        this._behaviorsByIdentifierName.set(behavior.className, behavior);
-      }
-    }
-
     for (const dd of this._descriptors) {
       this._documentsByLocalPath.set(dd.url, dd);
     }
-
-    this.behaviorPaths = elementsGatherer.behaviorPaths;
-    this.elementPaths = elementsGatherer.elementPaths;
   }
 
   getElement(tag: string): ElementDescriptor|undefined {
@@ -331,4 +326,71 @@ function max<T>(arr: T[], comparison: (t1: T | undefined, t2: T) => number): T|
   return arr.reduce((prev, cur) => {
     return comparison(prev, cur) > 0 ? prev : cur;
   }, undefined);
+}
+
+function resolveElement(
+    elementDescriptor: ElementDescriptor, analysis: Analysis) {
+  let properties = elementDescriptor.properties;
+  let attributes = elementDescriptor.attributes;
+  let events = elementDescriptor.events;
+  if (elementDescriptor instanceof PolymerElementDescriptor) {
+    const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
+        elementDescriptor.behaviors, analysis));
+    properties =
+        mergeByName([properties].concat(behaviors.map(b => b.properties)));
+    attributes =
+        mergeByName([attributes].concat(behaviors.map(b => b.attributes)));
+    events = mergeByName([events].concat(behaviors.map(b => b.events)));
+  }
+
+  const clone = <ElementDescriptor>{};
+  for (const key in elementDescriptor) {
+    clone[key] = elementDescriptor[key];
+  }
+  clone.properties = properties;
+  clone.attributes = attributes;
+  clone.events = events;
+  return clone;
+}
+
+function getFlattenedAndResolvedBehaviors(
+    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis) {
+  const resolvedBehaviors = new Set<BehaviorDescriptor>();
+  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
+  return resolvedBehaviors;
+}
+
+function _getFlattenedAndResolvedBehaviors(
+    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis,
+    resolvedBehaviors: Set<BehaviorDescriptor>) {
+  const toLookup = behaviors.slice();
+  for (let behavior of toLookup) {
+    if (typeof behavior === 'string') {
+      const behaviorName = behavior;
+      behavior = analysis.getBehavior(behavior);
+      if (!behavior) {
+        throw new Error(
+            `Unable to resolve behavior \`${behaviorName}\` ` +
+            `Did you import it? Is it annotated with @polymerBehavior?`);
+      }
+    }
+    if (resolvedBehaviors.has(behavior)) {
+      continue;
+    }
+    resolvedBehaviors.add(behavior);
+    _getFlattenedAndResolvedBehaviors(
+        behavior.behaviors, analysis, resolvedBehaviors);
+  }
+}
+
+function mergeByName<T extends{name: string}>(buckets: T[][]): T[] {
+  const byName = new Map<string, T>();
+  for (const bucket of buckets) {
+    for (const element of bucket) {
+      if (!byName.has(element.name)) {
+        byName.set(element.name, element);
+      }
+    }
+  }
+  return Array.from(byName.values());
 }
