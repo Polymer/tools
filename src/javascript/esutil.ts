@@ -171,11 +171,12 @@ export function toPropertyDescriptor(node: estree.Property): PolymerProperty {
 
   if (type === 'Function') {
     const value = <estree.Function>node.value;
-    (<FunctionDescriptor>result).params = (value.params || []).map((param) => {
-      // With ES6 we can have a lot of param patterns. Best to leave the
-      // formatting to escodegen.
-      return {name: escodegen.generate(param)};
-    });
+    (<FunctionDescriptor><any>result).params =
+        (value.params || []).map((param) => {
+          // With ES6 we can have a lot of param patterns. Best to leave the
+          // formatting to escodegen.
+          return {name: escodegen.generate(param)};
+        });
   }
 
   return result;

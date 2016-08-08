@@ -152,7 +152,7 @@ function annotateProperty(
       jsdoc.getTag(descriptor.jsdoc, 'type', 'type') || descriptor.type;
 
   if (descriptor.type.match(/^function/i)) {
-    _annotateFunctionProperty(<FunctionDescriptor>descriptor);
+    _annotateFunctionProperty(<FunctionDescriptor><any>descriptor);
   }
 
   // @default JSDoc wins

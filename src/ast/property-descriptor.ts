@@ -15,7 +15,16 @@
 import * as estree from 'estree';
 
 import {SourceLocation} from '../elements-format';
+import * as jsdoc from '../javascript/jsdoc';
 
-import {BehaviorOrName} from './behavior-descriptor';
-import {Descriptor, LiteralValue} from './descriptor';
-
+export interface Property {
+  name: string;
+  type?: string;
+  description?: string;
+  jsdoc?: jsdoc.Annotation;
+  private?: boolean;
+  'default'?: string;
+  readOnly?: boolean;
+  javascriptNode?: estree.Node;
+  sourceLocation: SourceLocation;
+}

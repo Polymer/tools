@@ -17,6 +17,7 @@ export interface PolymerProperty extends Property {
   configuration?: boolean;
   getter?: boolean;
   setter?: boolean;
+  function?: boolean;
 }
 
 export interface Options {

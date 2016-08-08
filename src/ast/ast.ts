@@ -14,7 +14,7 @@
 
 export * from './descriptor';
 export * from './document-descriptor';
-export {ElementDescriptor, Property, Attribute} from './element-descriptor';
+export {ElementDescriptor, Attribute} from './element-descriptor';
 export * from './event-descriptor';
 export * from './feature-descriptor';
 export * from './function-descriptor';

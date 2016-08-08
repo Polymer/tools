@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Property} from './element-descriptor';
+import {PolymerProperty} from '../polymer/element-descriptor';
 
-export interface FunctionDescriptor extends Property {
+import {Property} from './property-descriptor';
+
+export interface FunctionDescriptor extends PolymerProperty {
   function: boolean;  // true
   params: {name: string, type?: string}[];
   return: {type: string | null; desc: string};

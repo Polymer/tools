@@ -21,7 +21,7 @@ import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 import {Document} from '../parser/document';
 
-import {Descriptor, EventDescriptor, LiteralValue, LocationOffset, correctSourceLocation, isFunctionDescriptor} from './ast';
+import {Descriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation, isFunctionDescriptor} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -30,18 +30,6 @@ export interface Attribute {
   sourceLocation: SourceLocation;
   description?: string;
   type?: string;
-}
-
-export interface Property {
-  name: string;
-  type?: string;
-  description?: string;
-  jsdoc?: jsdoc.Annotation;
-  private?: boolean;
-  'default'?: string;
-  readOnly?: boolean;
-  javascriptNode?: estree.Node;
-  sourceLocation: SourceLocation;
 }
 
 export class ElementDescriptor implements Descriptor {
