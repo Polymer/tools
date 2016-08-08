@@ -15,11 +15,12 @@
 import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
-import {Analyzer} from './analyzer';
+import {Analyzer, Options as AnalyzerOptions} from './analyzer';
 import {ElementDescriptor} from './ast/ast';
 import {DocumentDescriptor, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
+import {UrlLoader} from './url-loader/url-loader';
 
 export interface Position {
   /** Line number in file, starting from 0. */
@@ -38,10 +39,30 @@ export interface AttributeCompletion {
   attributes: {name: string, description: string, type: string|undefined}[];
 }
 
+class PermissiveUrlLoader implements UrlLoader {
+  private _realLoader: UrlLoader;
+  constructor(realLoader: UrlLoader) {
+    this._realLoader = realLoader;
+  }
+  canLoad() {
+    return true;
+  }
+  async load(path: string) {
+    try {
+      return await this._realLoader.load(path);
+    } catch (_) {
+      // muddle on!
+    }
+    return '';
+  }
+}
+
 export class EditorService {
   private _analyzer: Analyzer;
-  constructor(analyzer: Analyzer) {
-    this._analyzer = analyzer;
+  constructor(options: AnalyzerOptions) {
+    this._analyzer = new Analyzer(Object.assign({}, options, <AnalyzerOptions>{
+      urlLoader: new PermissiveUrlLoader(options.urlLoader)
+    }));
   }
 
   async fileChanged(localPath: string, contents?: string):
@@ -73,7 +94,7 @@ export class EditorService {
 
   async getTypeaheadCompletionsFor(localPath: string, position: Position):
       Promise<TypeaheadCompletion|undefined> {
-    const analysis = await this._analyzer.resolve();
+    const analysis = await this._analyzer.resolvePermissive();
     const location =
         await this._getLocationResult(localPath, position, analysis);
     if (!location) {
@@ -100,7 +121,7 @@ export class EditorService {
 
   private async _getDescriptorAt(localPath: string, position: Position):
       Promise<ElementDescriptor|Property|undefined> {
-    const analysis = await this._analyzer.resolve();
+    const analysis = await this._analyzer.resolvePermissive();
     const location =
         await this._getLocationResult(localPath, position, analysis);
     if (!location) {

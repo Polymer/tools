@@ -21,6 +21,8 @@ import {EditorService} from '../editor-service';
 import {SourceLocation} from '../elements-format';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
+import {invertPromise} from './test-utils';
+
 suite('EditorService', function() {
   const basedir = path.join(__dirname, 'static');
   const indexFile = path.join('editor-service', 'index.html');
@@ -64,8 +66,7 @@ suite('EditorService', function() {
   // The weird cast is because the service will always be non-null.
   let editorService: EditorService = <EditorService><any>null;
   setup(async function() {
-    editorService =
-        new EditorService(new Analyzer({urlLoader: new FSUrlLoader(basedir)}));
+    editorService = new EditorService({urlLoader: new FSUrlLoader(basedir)});
   });
 
   suite('getDocumentationFor', function() {
@@ -86,7 +87,7 @@ suite('EditorService', function() {
     testName = 'it can still get element info after changing a file in memory';
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
-      const contents = fs.readFileSync(path.join(basedir, indexFile));
+      const contents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       // Add a newline at the beginning of the file, shifting the lines
       // down.
       editorService.fileChanged(indexFile, `\n${contents}`);
@@ -223,7 +224,60 @@ suite('EditorService', function() {
             }),
             {kind: 'attributes', attributes: attributeTypeahead});
       }
+    });
 
+    testName = 'Recover from references to undefined files.';
+    test(testName, async function() {
+      const goodContents =
+          fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
+      await editorService.fileChanged(indexFile);
+
+      // Load a file that contains a reference error.
+      await editorService.fileChanged(indexFile, `${goodContents}
+           <script src="nonexistant.js"></script>`);
+
+      // We recover after getting a good version of the file.
+      await editorService.fileChanged(indexFile);
+
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              indexFile, localAttributePosition),
+          {kind: 'attributes', attributes: attributeTypeahead});
+    });
+
+    testName = 'Remain useful in the face of unloadable files.';
+    test(testName, async function() {
+      const goodContents =
+          fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
+      await editorService.fileChanged(indexFile);
+
+      // We load a file that contains a reference error.
+      await editorService.fileChanged(indexFile, `${goodContents}
+           <script src="nonexistant.js"></script>`);
+
+      // Harder: can we give typeahead completion when there's errors?'
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              indexFile, localAttributePosition),
+          {kind: 'attributes', attributes: attributeTypeahead});
+    });
+
+    testName = 'Remain useful in the face of syntax errors.';
+    test(testName, async function() {
+      const goodContents =
+          fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
+      // Load a file with a syntax error
+      await invertPromise(editorService.fileChanged(
+          path.join(basedir, 'syntax-error.js'),
+          'var var var var var var var var “hello”'));
+
+      await editorService.fileChanged(indexFile, `${goodContents}
+          <script src="./syntax-error.js"></script>`);
+      // Even with a reference to the bad file we can still get completions!
+      assert.deepEqual(
+          await editorService.getTypeaheadCompletionsFor(
+              indexFile, localAttributePosition),
+          {kind: 'attributes', attributes: attributeTypeahead});
     });
   });
 });

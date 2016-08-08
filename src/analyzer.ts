@@ -89,14 +89,16 @@ export class Analyzer {
 
   /**
    * Loads, parses and analyzes a document and its transitive dependencies.
-   *
-   * @param {string} url the location of the file to analyze
-   * @return {Promise<DocumentDescriptor>}
    */
   async analyze(url: string): Promise<DocumentDescriptor|null> {
     return this._analyzeResolved(this._resolveUrl(url));
   }
 
+  /**
+   * Like `analyze`, but for use cases like editors where you know that
+   * a file has changed since the last time it was analyzed, and you may
+   * even have unsaved in-memory contents to use for the given file.
+   */
   async analyzeChangedFile(url: string, contents?: string):
       Promise<DocumentDescriptor|null> {
     const resolved = this._resolveUrl(url);
@@ -131,6 +133,18 @@ export class Analyzer {
 
   async resolve(): Promise<Analysis> {
     return new Analysis(await Promise.all(this._documentDescriptors.values()));
+  }
+
+  async resolvePermissive(): Promise<Analysis> {
+    const docDescriptors: DocumentDescriptor[] = [];
+    for (const descriptorPromise of this._documentDescriptors.values()) {
+      try {
+        docDescriptors.push(await descriptorPromise);
+      } catch (_) {
+        // deliberately ignore error
+      }
+    }
+    return new Analysis(docDescriptors);
   }
 
   /**
