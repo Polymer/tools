@@ -41,7 +41,7 @@ export function declarationPropertyHandlers(declaration: PolymerElementDescripto
     },
     properties(node: estree.Node) {
       for (const prop of analyzeProperties(node)) {
-        declaration.properties.push(prop);
+        declaration.addProperty(prop);
       }
     },
     behaviors(node: estree.Node) {

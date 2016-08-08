@@ -18,6 +18,7 @@ import * as estree from 'estree';
 
 import {EventDescriptor} from '../ast/ast';
 import {BehaviorDescriptor, FunctionDescriptor, PolymerProperty, Property} from '../ast/ast';
+import {annotateEvent} from '../polymer/docs';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
@@ -128,17 +129,13 @@ export function getEventComments(node: estree.Node) {
     keys: {Super: []}
   });
   return Array.from(eventComments)
-      .map(function(event) {
-        const annotation = jsdoc.parseJsdoc(event);
-        const tag = jsdoc.getTag(annotation, 'event');
-        if (tag) {
-          return <EventDescriptor>{
-            name: tag.name,
-            description: tag.description || annotation.description,
-          };
-        }
+      .map(function(comment) {
+        const annotation =
+            jsdoc.parseJsdoc(jsdoc.removeLeadingAsterisks(comment).trim());
+        return annotateEvent(annotation);
       })
-      .filter((ev) => !!ev);
+      .filter((ev) => !!ev)
+      .sort((ev1, ev2) => ev1.name.localeCompare(ev2.name));
 }
 
 function getLeadingComments(node: estree.Node): string[] {

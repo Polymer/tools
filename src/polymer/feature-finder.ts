@@ -45,8 +45,10 @@ export function featureFinder() {
       return;
     }
 
-    feature.properties =
-        featureNode.properties.map(esutil.toPropertyDescriptor);
+    for (const prop of featureNode.properties.map(
+             esutil.toPropertyDescriptor)) {
+      feature.addProperty(prop);
+    }
   }
 
   const visitors: Visitor = {

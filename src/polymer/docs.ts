@@ -65,14 +65,6 @@ export function annotate(descriptor: Descriptor): Descriptor {
  * Annotates @event, @hero, & @demo tags
  */
 export function annotateElementHeader(descriptor: PolymerElementDescriptor) {
-  if (descriptor.events) {
-    descriptor.events.forEach(function(event) {
-      _annotateEvent(event);
-    });
-    descriptor.events.sort(function(a, b) {
-      return (a.name || '').localeCompare(b.name || '');
-    });
-  }
   descriptor.demos = [];
   if (descriptor.jsdoc && descriptor.jsdoc.tags) {
     descriptor.jsdoc.tags.forEach(function(tag) {
@@ -101,19 +93,26 @@ export function annotateBehavior(descriptor: BehaviorDescriptor):
   return descriptor;
 }
 
+export interface PartialEvent {
+  description: string;
+  jsdoc: jsdoc.Annotation;
+}
 /**
  * Annotates event documentation
  */
-function _annotateEvent(descriptor: EventDescriptor): EventDescriptor {
-  annotate(descriptor);
-  // process @event
-  const eventTag = jsdoc.getTag(descriptor.jsdoc, 'event');
-  descriptor.name =
-      (eventTag && eventTag.description) ? eventTag.description : 'N/A';
+export function annotateEvent(annotation: jsdoc.Annotation): EventDescriptor {
+  const eventTag = jsdoc.getTag(annotation, 'event');
+  const eventDescriptor: EventDescriptor = {
+    name: (eventTag && eventTag.description) ?
+        (eventTag.description || '').match(/^\S*/)[0] :
+        'N/A',
+    description: eventTag.description || annotation.description,
+    jsdoc: annotation
+  };
 
-  const tags = (descriptor.jsdoc && descriptor.jsdoc.tags || []);
+  const tags = (annotation && annotation.tags || []);
   // process @params
-  descriptor.params =
+  eventDescriptor.params =
       tags.filter((tag) => tag.tag === 'param').map(function(param) {
         return {
           type: param.type || 'N/A',
@@ -122,7 +121,7 @@ function _annotateEvent(descriptor: EventDescriptor): EventDescriptor {
         };
       });
   // process @params
-  return descriptor;
+  return eventDescriptor;
 }
 
 /**
@@ -205,7 +204,7 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  */
 export function featureElement(features: FeatureDescriptor[]):
     PolymerElementDescriptor {
-  const properties = features.reduce<Property[]>((result, feature) => {
+  const properties = features.reduce<PolymerProperty[]>((result, feature) => {
     return result.concat(feature.properties);
   }, []);
 

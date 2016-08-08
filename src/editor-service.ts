@@ -16,7 +16,7 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer} from './analyzer';
-import {DocumentDescriptor, PolymerElementDescriptor, Property} from './ast/ast';
+import {DocumentDescriptor, FunctionDescriptor, PolymerElementDescriptor, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
 
@@ -93,7 +93,10 @@ export class EditorService {
         kind: 'attributes',
         attributes:
             element.properties
-                .filter(p => !(p.name.startsWith('_') || p.name.endsWith('_')))
+                .filter(
+                    p =>
+                        !(p.name.startsWith('_') || p.name.endsWith('_') ||
+                          isFunctionDescriptor(p)))
                 .map(p => ({
                        name: p.name.replace(
                            /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`),
@@ -221,4 +224,8 @@ function isElementLocationInfo(location: parse5.LocationInfo|
 
 function isPropertyDescriptor(d: any): d is Property {
   return 'type' in d;
+}
+
+function isFunctionDescriptor(d: any): d is FunctionDescriptor {
+  return d.function === true;
 }

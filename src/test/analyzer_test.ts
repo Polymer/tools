@@ -211,10 +211,11 @@ suite('Analyzer', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
         let elements = <PolymerElementDescriptor[]>document.entities.filter(
             (e) => e instanceof PolymerElementDescriptor);
-        assert.equal(elements.length, 2);
-
-        let element1 = elements[0];
-        assert.equal(element1.events.length, 1);
+        assert.deepEqual(
+            elements.map(e => e.tagName), ['test-seed', 'test-element']);
+        assert.deepEqual(
+            elements[0].events.map(e => e.name),
+            ['fired-event', 'data-changed']);
       });
     });
 

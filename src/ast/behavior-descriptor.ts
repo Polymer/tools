@@ -14,17 +14,14 @@
 
 import {PolymerElementDescriptor, Options as ElementOptions} from './element-descriptor';
 
-export interface Options extends ElementOptions { symbol?: string; }
+export interface Options extends ElementOptions {}
 
 /**
  * The metadata for a Polymer behavior mixin.
  */
 export class BehaviorDescriptor extends PolymerElementDescriptor {
-  symbol?: string;
-
   constructor(options: Options) {
     super(options);
-    this.symbol = options.symbol;
   }
 }
 

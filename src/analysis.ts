@@ -77,8 +77,8 @@ export class Analysis {
     }
 
     for (const behavior of elementsGatherer.behaviorDescriptors) {
-      if (behavior.symbol) {
-        this._behaviorsByIdentifierName.set(behavior.symbol, behavior);
+      if (behavior.className) {
+        this._behaviorsByIdentifierName.set(behavior.className, behavior);
       }
     }
 

@@ -121,7 +121,7 @@ class ElementVisitor implements Visitor {
         });
       }
     } else {
-      this.element.properties.push(propDesc);
+      this.element.addProperty(propDesc);
     }
   }
 
@@ -194,7 +194,7 @@ class ElementVisitor implements Visitor {
         } else if (descriptor.setter) {
           setters[descriptor.name] = descriptor;
         } else {
-          this.element.properties.push(esutil.toPropertyDescriptor(prop));
+          this.element.addProperty(esutil.toPropertyDescriptor(prop));
         }
       }
       Object.keys(getters).forEach((getter) => {
@@ -211,7 +211,7 @@ class ElementVisitor implements Visitor {
       });
       Object.keys(definedProperties).forEach((p) => {
         let prop = definedProperties[p];
-        this.element.properties.push(prop);
+        this.element.addProperty(prop);
       });
       return estraverse.VisitorOption.Skip;
     }

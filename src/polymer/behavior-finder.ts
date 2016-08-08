@@ -97,8 +97,6 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    this.currentBehavior.properties = this.currentBehavior.properties || [];
-    this.currentBehavior.observers = this.currentBehavior.observers || [];
     for (let i = 0; i < node.properties.length; i++) {
       const prop = node.properties[i];
       const name = esutil.objectKeyToString(prop.key);
@@ -111,7 +109,7 @@ class BehaviorVisitor implements Visitor {
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else {
-        this.currentBehavior.properties.push(esutil.toPropertyDescriptor(prop));
+        this.currentBehavior.addProperty(esutil.toPropertyDescriptor(prop));
       }
     }
     this._finishBehavior();
@@ -146,9 +144,7 @@ class BehaviorVisitor implements Visitor {
 
     this._startBehavior(new BehaviorDescriptor({
       description: comment,
-      events: esutil.getEventComments(node).map(function(event) {
-        return {desc: event};
-      }),
+      events: esutil.getEventComments(node),
     }));
     this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
 
@@ -162,9 +158,9 @@ class BehaviorVisitor implements Visitor {
 
     let name =
         jsdoc.getTag(this.currentBehavior.jsdoc, 'polymerBehavior', 'name');
-    this.currentBehavior.symbol = symbol;
+    this.currentBehavior.className = symbol;
     if (!name) {
-      name = this.currentBehavior.symbol;
+      name = this.currentBehavior.className;
     }
     if (!name) {
       console.warn('Unable to determine name for @polymerBehavior:', comment);
@@ -214,8 +210,9 @@ class BehaviorVisitor implements Visitor {
           this.behaviors[i].events.concat(newBehavior.events);
       this.behaviors[i].events =
           dedupe(this.behaviors[i].events, (e) => e.name);
-      this.behaviors[i].properties =
-          this.behaviors[i].properties.concat(newBehavior.properties);
+      for (const property of newBehavior.properties) {
+        this.behaviors[i].addProperty(property);
+      }
       this.behaviors[i].observers =
           this.behaviors[i].observers.concat(newBehavior.observers);
       this.behaviors[i].behaviors = (this.behaviors[i].behaviors)
