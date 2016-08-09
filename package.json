@@ -23,7 +23,7 @@
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
     "quicktest": "npm run build && mocha",
-    "test:watch": "watchy -w src/ -- npm run quicktest",
+    "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
