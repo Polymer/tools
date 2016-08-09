@@ -50,36 +50,6 @@ suite('Analyzer', () => {
     });
   });
 
-  suite('load()', () => {
-
-    test('loads and parses an HTML document', async() => {
-      const doc = await analyzer.load('/static/html-parse-target.html');
-      assert.instanceOf(doc, HtmlDocument);
-      assert.equal(doc.url, '/static/html-parse-target.html');
-    });
-
-    test('loads and parses a JavaScript document', async() => {
-      const doc = await analyzer.load('/static/js-elements.js');
-      assert.instanceOf(doc, JavaScriptDocument);
-      assert.equal(doc.url, '/static/js-elements.js');
-    });
-
-    test('resolves URLs', async() => {
-      const docs = await Promise.all([
-        analyzer.load('test.com/test.html'),
-        analyzer.load('/static/html-parse-target.html'),
-      ]);
-      let doc1 = docs[0];
-      let doc2 = docs[1];
-      assert.equal(doc1.url, '/static/html-parse-target.html');
-      assert.equal(doc1, doc2);
-    });
-
-    test('returns a Promise that rejects for non-existant files', async() => {
-      await invertPromise(analyzer.load('/static/not-found'));
-    });
-
-  });
 
   suite('analyze()', () => {
 
@@ -149,16 +119,48 @@ suite('Analyzer', () => {
 
   });
 
-  suite('getEntities()', () => {
+  // TODO: reconsider whether we should test these private methods.
+  suite('_load()', () => {
+
+    test('loads and parses an HTML document', async() => {
+      const doc = await analyzer['_load']('/static/html-parse-target.html');
+      assert.instanceOf(doc, HtmlDocument);
+      assert.equal(doc.url, '/static/html-parse-target.html');
+    });
+
+    test('loads and parses a JavaScript document', async() => {
+      const doc = await analyzer['_load']('/static/js-elements.js');
+      assert.instanceOf(doc, JavaScriptDocument);
+      assert.equal(doc.url, '/static/js-elements.js');
+    });
+
+    test('resolves URLs', async() => {
+      const docs = await Promise.all([
+        analyzer['_load']('test.com/test.html'),
+        analyzer['_load']('/static/html-parse-target.html'),
+      ]);
+      let doc1 = docs[0];
+      let doc2 = docs[1];
+      assert.equal(doc1.url, '/static/html-parse-target.html');
+      assert.equal(doc1, doc2);
+    });
+
+    test('returns a Promise that rejects for non-existant files', async() => {
+      await invertPromise(analyzer['_load']('/static/not-found'));
+    });
+
+  });
+
+  suite('_getEntities()', () => {
     test('default import finders', async() => {
       let contents = `<html><head>
           <link rel="import" href="polymer.html">
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      const document = new HtmlParser(analyzer).parse(contents, 'test.html');
+      const document = new HtmlParser().parse(contents, 'test.html');
       const entities =
-          <ImportDescriptor<any>[]>(await analyzer.getEntities(document));
+          <ImportDescriptor<any>[]>(await analyzer['_getEntities'](document));
       assert.deepEqual(
           entities.map(e => e.type),
           ['html-import', 'html-script', 'html-style']);
@@ -172,9 +174,9 @@ suite('Analyzer', () => {
           <script>console.log('hi')</script>
           <style>body { color: red; }</style>
         </head></html>`;
-      const document = new HtmlParser(analyzer).parse(contents, 'test.html');
+      const document = new HtmlParser().parse(contents, 'test.html');
       const entities = <InlineDocumentDescriptor<any>[]>(
-          await analyzer.getEntities(document));
+          await analyzer['_getEntities'](document));
 
       assert.equal(entities.length, 2);
       assert.instanceOf(entities[0], InlineDocumentDescriptor);

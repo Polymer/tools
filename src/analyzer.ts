@@ -56,9 +56,9 @@ export interface Options {
  */
 export class Analyzer {
   private _parsers: Map<string, Parser<any>> = new Map<string, Parser<any>>([
-    ['html', new HtmlParser(this)],
+    ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
-    ['css', new CssParser(this)],
+    ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);
 
@@ -99,8 +99,8 @@ export class Analyzer {
   }
 
   /**
-   * Like `analyze`, but for use cases like editors where you know that
-   * a file has changed since the last time it was analyzed, and you may
+   * Like `analyze`, but for use cases like editors where the caller believes
+   * the file has changed since the last time it was analyzed, and you may
    * even have unsaved in-memory contents to use for the given file.
    */
   async analyzeChangedFile(url: string, contents?: string):
@@ -113,20 +113,13 @@ export class Analyzer {
 
   private async _analyzeResolved(resolvedUrl: string, contents?: string):
       Promise<DocumentDescriptor|null> {
-    let isExternalUrl =
-        urlLib.parse(resolvedUrl).protocol !== null || resolvedUrl.startsWith(`
-            //
-        `.trim());
-    if (isExternalUrl) {
-      return null;
-    }
     let cachedResult = this._documentDescriptors.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
     let promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
-      // the Promise can be cached.
+      // the Promise is cached before anything else happens.
       await Promise.resolve();
       let document = await this._loadResolved(resolvedUrl, contents);
       return this._analyzeDocument(document);
@@ -172,7 +165,7 @@ export class Analyzer {
       maybeAttachedComment?: string): Promise<DocumentDescriptor> {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
-    let entities = await this.getEntities(document);
+    let entities = await this._getEntities(document);
     for (const entity of entities) {
       if (entity instanceof ElementDescriptor) {
         entity.applyLocationOffset(locationOffset);
@@ -215,7 +208,7 @@ export class Analyzer {
    * Loads and parses a single file, deduplicating any requrests for the same
    * URL.
    */
-  async load(url: string): Promise<Document<any, any>> {
+  private async _load(url: string): Promise<Document<any, any>> {
     return this._loadResolved(this._resolveUrl(url));
   }
 
@@ -258,7 +251,8 @@ export class Analyzer {
     }
   }
 
-  async getEntities(document: Document<any, any>): Promise<Descriptor[]> {
+  private async _getEntities(document: Document<any, any>):
+      Promise<Descriptor[]> {
     let finders = this._entityFinders.get(document.type);
     if (finders) {
       return findEntities(document, finders);

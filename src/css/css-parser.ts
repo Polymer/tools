@@ -20,11 +20,9 @@ import {Parser} from '../parser/parser';
 import {CssDocument} from './css-document';
 
 export class CssParser implements Parser<CssDocument> {
-  analyzer: Analyzer;
   private _parser: shadyCss.Parser;
 
-  constructor(analyzer: Analyzer) {
-    this.analyzer = analyzer;
+  constructor() {
     this._parser = new shadyCss.Parser();
   }
 

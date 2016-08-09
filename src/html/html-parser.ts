@@ -22,12 +22,6 @@ import {Parser} from '../parser/parser';
 import {HtmlDocument} from './html-document';
 
 export class HtmlParser implements Parser<HtmlDocument> {
-  analyzer: Analyzer;
-
-  constructor(analyzer: Analyzer) {
-    this.analyzer = analyzer;
-  }
-
   /**
   * Parse html into ASTs.
   *
@@ -36,8 +30,6 @@ export class HtmlParser implements Parser<HtmlDocument> {
   */
   parse(contents: string, url: string): HtmlDocument {
     let ast = parseHtml(contents, {locationInfo: true});
-    return new HtmlDocument({
-        url, contents, ast,
-    });
+    return new HtmlDocument({url, contents, ast});
   }
 }
