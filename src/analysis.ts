@@ -93,8 +93,19 @@ export class Analysis {
     return this._elementsByPackageDir.get(dirName);
   }
 
-  getBehavior(identifier: string): BehaviorDescriptor|undefined {
-    return this._behaviorsByIdentifierName.get(identifier);
+  /**
+   * Get the behavior corresponding to the given name.
+   *
+   * e.g. this would be identified as 'My.Behavior'
+   * /* @polymerBehavior \*\/
+   * var My.Behavior = {...};
+   *
+   * and this would be identifier as 'AwesomeBehavior'
+   * /* @polymerBehavior AwesomeBehavior \*\/
+   * var My.Behavior = {...};
+   */
+  getBehavior(name: string): BehaviorDescriptor|undefined {
+    return this._behaviorsByIdentifierName.get(name);
   }
 
   /**
@@ -117,13 +128,12 @@ export class Analysis {
   }
 }
 
-
+const packageFileNames = new Set(['package.json', 'bower.json']);
 class PackageGatherer implements AnalysisVisitor {
   packageDirs = new Set<string>();
   visitDocumentDescriptor(dd: DocumentDescriptor): void {
     if (dd.document instanceof JsonDocument &&
-        (dd.document.url.endsWith('package.json') ||
-         dd.document.url.endsWith('bower.json'))) {
+        packageFileNames.has(path.basename(dd.document.url))) {
       const dirname = path.dirname(dd.document.url);
       if (!this.packageDirs.has(dirname)) {
         this.packageDirs.add(dirname);
@@ -132,29 +142,33 @@ class PackageGatherer implements AnalysisVisitor {
   }
 }
 
+/**
+ * Visit the descriptor forest and gather up all elements and behaviors, as
+ * well as their resolved urls.
+ */
 class ElementGatherer implements AnalysisVisitor {
   elementDescriptors: ElementDescriptor[] = [];
   elementPaths = new Map<ElementDescriptor, string>();
-
   behaviorDescriptors: BehaviorDescriptor[] = [];
   behaviorPaths = new Map<BehaviorDescriptor, string>();
+
   visitElement(elementDescriptor: ElementDescriptor, ancestors: Descriptor[]):
       void {
-    const path = this._getPathFromAncestors(ancestors);
-    if (!path) {
+    const elementPath = this._getPathFromAncestors(ancestors);
+    if (!elementPath) {
       throw new Error(
           `Unable to determine path to element: ${elementDescriptor}`);
     }
     if (this.elementPaths.has(elementDescriptor)) {
-      if (this.elementPaths.get(elementDescriptor) !== path) {
+      if (this.elementPaths.get(elementDescriptor) !== elementPath) {
         throw new Error(
             `Found element ${elementDescriptor} at distinct paths: ` +
-            `${path} and ${this.elementPaths.get(elementDescriptor)}`);
+            `${elementPath} and ${this.elementPaths.get(elementDescriptor)}`);
       }
       return;
     }
 
-    this.elementPaths.set(elementDescriptor, path);
+    this.elementPaths.set(elementDescriptor, elementPath);
     this.elementDescriptors.push(elementDescriptor);
   }
 
@@ -178,14 +192,15 @@ class ElementGatherer implements AnalysisVisitor {
     this.behaviorDescriptors.push(behaviorDescriptor);
   }
 
-  _getPathFromAncestors(ancestors: Descriptor[]) {
-    let pathToElement: string|null = null;
-    for (const descriptor of ancestors) {
-      if (descriptor instanceof DocumentDescriptor) {
-        pathToElement = descriptor.document.url;
-      }
-    }
-    return pathToElement;
+  /**
+   * The path of an element is the path of the closest containing document
+   * parent that has a url.
+   */
+  _getPathFromAncestors(ancestors: Descriptor[]): string|undefined {
+    const documentAncestors = <DocumentDescriptor[]>ancestors.filter(
+        d => d instanceof DocumentDescriptor && d.url);
+    const nearestDocument = documentAncestors[documentAncestors.length - 1];
+    return nearestDocument && nearestDocument.url;
   }
 }
 
@@ -201,9 +216,15 @@ abstract class AnalysisVisitor {
   done?(): void;
 }
 
+/**
+ * Walks the descriptor forest and calls into any visitors it's given.
+ *
+ * Keeps track of the ancestors of the current node.
+ */
 class AnalysisWalker {
   private _documents: DocumentDescriptor[];
   private _ancestors: Descriptor[] = [];
+
   constructor(descriptors: DocumentDescriptor[]) {
     this._documents = descriptors;
   }
