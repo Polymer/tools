@@ -19,7 +19,6 @@ import {Analyzer, Options as AnalyzerOptions} from './analyzer';
 import {Element, Property, ScannedDocument, ScannedProperty} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {ParsedHtmlDocument} from './html/html-document';
-import {PolymerElement} from './polymer/element-descriptor';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Position {
@@ -133,24 +132,19 @@ export class EditorService {
       if (element.extends) {
         sortPrefixes.set(element.extends, 'ccc-');
       }
-      if (element instanceof PolymerElement) {
-        for (const behaviorName of element.behaviors) {
-          sortPrefixes.set(behaviorName, 'ddd-');
-        }
-      }
       return {
         kind: 'attributes',
         attributes:
             element.attributes
-                .map(
-                    p => ({
-                      name: p.name,
-                      description: p.description,
-                      type: p.type,
-                      inheritedFrom: p.inheritedFrom,
-                      sortKey:
-                          `${sortPrefixes.get(p.inheritedFrom) || 'eee-'}${p.name}`
-                    }))
+                .map(p => ({
+                       name: p.name,
+                       description: p.description,
+                       type: p.type,
+                       inheritedFrom: p.inheritedFrom,
+                       sortKey:
+                           `${sortPrefixes.get(p.inheritedFrom) || 'ddd-'}` +
+                           `${p.name}`
+                     }))
                 .concat(element.events.map(
                     e => ({
                       name: `on-${e.name}`,
@@ -158,7 +152,8 @@ export class EditorService {
                       type: e.type || 'CustomEvent',
                       inheritedFrom: e.inheritedFrom,
                       sortKey:
-                          `fff-${sortPrefixes.get(e.inheritedFrom) || 'eee-'}on-${e.name}`
+                          `eee-${sortPrefixes.get(e.inheritedFrom) || 'ddd-'}` +
+                          `on-${e.name}`
                     })))
       };
     }

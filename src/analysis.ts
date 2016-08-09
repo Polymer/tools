@@ -22,7 +22,6 @@ import {Elements as ElementsFormat} from './elements-format';
 import {ParsedJsonDocument} from './json/json-document';
 import {ScannedBehavior} from './polymer/behavior-descriptor';
 import {DomModuleDescriptor} from './polymer/dom-module-finder';
-import {ScannedPolymerElement} from './polymer/element-descriptor';
 
 const validator = new jsonschema.Validator();
 const schema = JSON.parse(
@@ -71,7 +70,7 @@ export class Analysis {
 
     // Index the elements that we found by their tag names and package names.
     for (const originalElement of elementsGatherer.elementDescriptors) {
-      const element = resolveElement(originalElement, this);
+      const element = originalElement.resolve(this);
       if (element.tagName) {
         this._elementsByTagName.set(element.tagName, element);
       }
@@ -362,88 +361,4 @@ function max<T>(arr: T[], comparison: (t1: T | undefined, t2: T) => number): T|
   return arr.reduce((prev, cur) => {
     return comparison(prev, cur) > 0 ? prev : cur;
   }, undefined);
-}
-
-function resolveElement(
-    elementDescriptor: ScannedElement, analysis: Analysis): Element {
-  let properties: Property[] = elementDescriptor.properties;
-  let attributes: Attribute[] = elementDescriptor.attributes;
-  let events: Event[] = elementDescriptor.events;
-  if (elementDescriptor instanceof ScannedPolymerElement) {
-    const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
-        elementDescriptor.behaviors, analysis));
-
-    properties = mergeByName(
-        properties,
-        behaviors.map(b => ({name: b.className, vals: b.properties})));
-    attributes = mergeByName(
-        attributes,
-        behaviors.map(b => ({name: b.className, vals: b.attributes})));
-    events = mergeByName(
-        events, behaviors.map(b => ({name: b.className, vals: b.events})));
-
-    const domModule = analysis.getDomModule(elementDescriptor.tagName);
-    if (domModule) {
-      elementDescriptor.description =
-          elementDescriptor.description || domModule.comment;
-    }
-  }
-
-  const clone = <Element>{};
-  for (const key in elementDescriptor) {
-    clone[key] = elementDescriptor[key];
-  }
-  clone.properties = properties;
-  clone.attributes = attributes;
-  clone.events = events;
-  return clone;
-}
-
-function getFlattenedAndResolvedBehaviors(
-    behaviors: (string | ScannedBehavior)[], analysis: Analysis) {
-  const resolvedBehaviors = new Set<ScannedBehavior>();
-  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
-  return resolvedBehaviors;
-}
-
-function _getFlattenedAndResolvedBehaviors(
-    behaviors: (string | ScannedBehavior)[], analysis: Analysis,
-    resolvedBehaviors: Set<ScannedBehavior>) {
-  const toLookup = behaviors.slice();
-  for (let behavior of toLookup) {
-    if (typeof behavior === 'string') {
-      const behaviorName = behavior;
-      behavior = analysis.getBehavior(behavior);
-      if (!behavior) {
-        throw new Error(
-            `Unable to resolve behavior \`${behaviorName}\` ` +
-            `Did you import it? Is it annotated with @polymerBehavior?`);
-      }
-    }
-    if (resolvedBehaviors.has(behavior)) {
-      continue;
-    }
-    resolvedBehaviors.add(behavior);
-    _getFlattenedAndResolvedBehaviors(
-        behavior.behaviors, analysis, resolvedBehaviors);
-  }
-}
-
-function mergeByName<B extends{name: string, inheritedFrom?: string}, I
-                     extends{name: string}>(
-    base: B[], inheritFrom: {name: string, vals: I[]}[]): B[] {
-  const byName = new Map<string, B>();
-  for (const initial of base) {
-    byName.set(initial.name, initial);
-  }
-  for (const source of inheritFrom) {
-    for (const item of source.vals) {
-      if (!byName.has(item.name)) {
-        const copy = <B><any>Object.assign({}, item);
-        copy.inheritedFrom = source.name;
-        byName.set(copy.name, copy);
-      }
-    }
-  }
-  return Array.from(byName.values());
 }

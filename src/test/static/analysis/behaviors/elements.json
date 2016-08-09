@@ -14,7 +14,8 @@
             "line": 9,
             "column": 6
           },
-          "type": "boolean"
+          "type": "boolean",
+          "metadata": {}
         },
         {
           "name": "inherit-please",
@@ -24,7 +25,8 @@
             "column": 6,
             "file": "../behavior.html"
           },
-          "type": "number"
+          "type": "number",
+          "metadata": {}
         },
         {
           "name": "deeply-inherited-property",
@@ -34,7 +36,8 @@
             "column": 6,
             "file": "../subdir/subbehavior.html"
           },
-          "type": "Array"
+          "type": "Array",
+          "metadata": {}
         }
       ],
       "properties": [
@@ -95,18 +98,21 @@
       "events": [
         {
           "name": "local-property-changed",
+          "description": "Fired when the `localProperty` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `localProperty` property changes."
+          "metadata": {}
         },
         {
           "name": "inherit-please-changed",
+          "description": "Fired when the `inheritPlease` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `inheritPlease` property changes."
+          "metadata": {}
         },
         {
           "name": "deeply-inherited-property-changed",
+          "description": "Fired when the `deeplyInheritedProperty` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `deeplyInheritedProperty` property changes."
+          "metadata": {}
         }
       ],
       "metadata": {},

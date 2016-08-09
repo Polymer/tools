@@ -87,28 +87,28 @@ suite('EditorService', function() {
         name: 'inherit-please',
         description: 'A property provided by SimpleBehavior.',
         type: 'number',
-        sortKey: 'eee-inherit-please',
+        sortKey: 'ddd-inherit-please',
         inheritedFrom: 'MyNamespace.SimpleBehavior',
       },
       {
         name: 'deeply-inherited-property',
         description: 'This is a deeply inherited property.',
         type: 'Array',
-        sortKey: 'eee-deeply-inherited-property',
+        sortKey: 'ddd-deeply-inherited-property',
         inheritedFrom: 'MyNamespace.SubBehavior',
       },
       {
         name: 'on-local-property-changed',
         description: 'Fired when the `localProperty` property changes.',
         type: 'CustomEvent',
-        sortKey: 'fff-aaa-on-local-property-changed',
+        sortKey: 'eee-aaa-on-local-property-changed',
         inheritedFrom: undefined,
       },
       {
         name: 'on-inherit-please-changed',
         description: 'Fired when the `inheritPlease` property changes.',
         type: 'CustomEvent',
-        sortKey: 'fff-eee-on-inherit-please-changed',
+        sortKey: 'eee-ddd-on-inherit-please-changed',
         inheritedFrom: 'MyNamespace.SimpleBehavior',
       },
       {
@@ -116,7 +116,7 @@ suite('EditorService', function() {
         description:
             'Fired when the `deeplyInheritedProperty` property changes.',
         type: 'CustomEvent',
-        sortKey: 'fff-eee-on-deeply-inherited-property-changed',
+        sortKey: 'eee-ddd-on-deeply-inherited-property-changed',
         inheritedFrom: 'MyNamespace.SubBehavior',
       },
     ]

@@ -2,10 +2,13 @@ import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Element, LiteralValue, LocationOffset, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {Analysis} from '../analysis';
+import {Attribute, Element, Event, LiteralValue, LocationOffset, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
+
+import {ScannedBehavior} from './behavior-descriptor';
 
 export interface BasePolymerProperty {
   published?: boolean;
@@ -102,6 +105,10 @@ export class ScannedPolymerElement extends ScannedElement {
       });
     }
   }
+
+  resolve(analysis: Analysis): PolymerElement {
+    return resolveElement(this, analysis);
+  }
 }
 
 export class PolymerElement extends Element {
@@ -116,6 +123,17 @@ export class PolymerElement extends Element {
   scriptElement?: dom5.Node;
 
   abstract?: boolean;
+
+  emitPropertyMetadata(property: PolymerProperty) {
+    const polymerMetadata: any = {};
+    const polymerMetadataFields = ['notify', 'observer', 'readOnly'];
+    for (const field of polymerMetadataFields) {
+      if (field in property) {
+        polymerMetadata[field] = property[field];
+      }
+    }
+    return {polymer: polymerMetadata};
+  }
 }
 
 /**
@@ -131,4 +149,77 @@ function propertyToAttributeName(propertyName: string): string|null {
   }
   return propertyName.replace(
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
+}
+
+function resolveElement(
+    elementDescriptor: ScannedPolymerElement,
+    analysis: Analysis): PolymerElement {
+  const clone: PolymerElement =
+      Object.assign(new PolymerElement(), elementDescriptor);
+
+  const behaviors = Array.from(
+      getFlattenedAndResolvedBehaviors(elementDescriptor.behaviors, analysis));
+  clone.properties = mergeByName(
+      elementDescriptor.properties,
+      behaviors.map(b => ({name: b.className, vals: b.properties})));
+  clone.attributes = mergeByName(
+      elementDescriptor.attributes,
+      behaviors.map(b => ({name: b.className, vals: b.attributes})));
+  clone.events = mergeByName(
+      elementDescriptor.events,
+      behaviors.map(b => ({name: b.className, vals: b.events})));
+
+  const domModule = analysis.getDomModule(elementDescriptor.tagName);
+  if (domModule) {
+    clone.description = elementDescriptor.description || domModule.comment;
+    clone.domModule = domModule.node;
+  }
+
+  return clone;
+}
+
+function getFlattenedAndResolvedBehaviors(
+    behaviors: string[], analysis: Analysis) {
+  const resolvedBehaviors = new Set<ScannedBehavior>();
+  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
+  return resolvedBehaviors;
+}
+
+function _getFlattenedAndResolvedBehaviors(
+    behaviors: string[], analysis: Analysis,
+    resolvedBehaviors: Set<ScannedBehavior>) {
+  const toLookup = behaviors.slice();
+  for (let behaviorName of toLookup) {
+    const behavior = analysis.getBehavior(behaviorName);
+    if (!behavior) {
+      throw new Error(
+          `Unable to resolve behavior \`${behaviorName}\` ` +
+          `Did you import it? Is it annotated with @polymerBehavior?`);
+    }
+    if (resolvedBehaviors.has(behavior)) {
+      continue;
+    }
+    resolvedBehaviors.add(behavior);
+    _getFlattenedAndResolvedBehaviors(
+        behavior.behaviors, analysis, resolvedBehaviors);
+  }
+}
+
+function mergeByName<B extends{name: string, inheritedFrom?: string}, I
+                     extends{name: string}>(
+    base: B[], inheritFrom: {name: string, vals: I[]}[]): B[] {
+  const byName = new Map<string, B>();
+  for (const initial of base) {
+    byName.set(initial.name, initial);
+  }
+  for (const source of inheritFrom) {
+    for (const item of source.vals) {
+      if (!byName.has(item.name)) {
+        const copy = <B><any>Object.assign({}, item);
+        copy.inheritedFrom = source.name;
+        byName.set(copy.name, copy);
+      }
+    }
+  }
+  return Array.from(byName.values());
 }

@@ -15,6 +15,7 @@
 import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
+import {Analysis} from '../analysis';
 
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
@@ -64,6 +65,12 @@ export class ScannedElement implements ScannedFeature {
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText;
   }
+
+  resolve(_analysis: Analysis): Element {
+    const element = new Element();
+    Object.assign(element, this);
+    return element;
+  }
 }
 
 
@@ -81,4 +88,20 @@ export class Element {
   events: Event[] = [];
   sourceLocation: SourceLocation;
   jsdoc?: jsdoc.Annotation;
+
+  emitMetadata(): Object {
+    return {};
+  }
+
+  emitAttributeMetadata(attribute: Attribute): Object {
+    return {};
+  }
+
+  emitPropertyMetadata(property: Property): Object {
+    return {};
+  }
+
+  emitEventMetadata(event: Event): Object {
+    return {};
+  }
 }

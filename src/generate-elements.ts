@@ -18,11 +18,9 @@ import * as pathLib from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {ScannedAttribute as AttributeDescriptor, Element as LinkedElement, ScannedFeature, ScannedDocument, ScannedElement, ScannedImport, InlineParsedDocument, ScannedProperty as PropertyDescriptor} from './ast/ast';
+import {Element as LinkedElement, InlineParsedDocument, ScannedAttribute as AttributeDescriptor, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedProperty as PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {ParsedJsonDocument} from './json/json-document';
-import {ScannedBehavior} from './polymer/behavior-descriptor';
-import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer/element-descriptor';
 import {trimLeft} from './utils';
 
 
@@ -51,16 +49,21 @@ function serializeElementDescriptor(
       pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
 
   const attributes = elementDescriptor.attributes.map(
-      a => serializeAttributeDescriptor(path, a));
+      a => serializeAttributeDescriptor(elementDescriptor, path, a));
   const properties =
       elementDescriptor.properties
           .filter(
               p => !p.private &&
                   // Blacklist functions until we figure out what to do.
                   p.type !== 'Function')
-          .map(p => serializePropertyDescriptor(path, p));
+          .map(p => serializePropertyDescriptor(elementDescriptor, path, p));
   const events = elementDescriptor.events.map(
-      e => ({name: e.name, description: e.description, type: 'CustomEvent'}));
+      e => ({
+        name: e.name,
+        description: e.description,
+        type: 'CustomEvent',
+        metadata: elementDescriptor.emitEventMetadata(e)
+      }));
 
   return {
     tagname: elementDescriptor.tagName,
@@ -76,14 +79,15 @@ function serializeElementDescriptor(
     demos: (elementDescriptor.demos || []).map(d => d.path),
     slots: [],
     events: events,
-    metadata: {},
+    metadata: elementDescriptor.emitMetadata(),
     sourceLocation:
         resolveSourceLocationPath(path, elementDescriptor.sourceLocation)
   };
 }
 
 function serializePropertyDescriptor(
-    elementPath: string, propertyDescriptor: PropertyDescriptor): Property {
+    element: LinkedElement, elementPath: string,
+    propertyDescriptor: PropertyDescriptor): Property {
   const property: Property = {
     name: propertyDescriptor.name,
     type: propertyDescriptor.type || '?',
@@ -94,19 +98,13 @@ function serializePropertyDescriptor(
   if (propertyDescriptor.default) {
     property.defaultValue = propertyDescriptor.default;
   }
-  const polymerMetadata: any = {};
-  const polymerMetadataFields = ['notify', 'observer', 'readOnly'];
-  for (const field of polymerMetadataFields) {
-    if (field in propertyDescriptor) {
-      polymerMetadata[field] = propertyDescriptor[field];
-    }
-  }
-  property.metadata = {polymer: polymerMetadata};
+  property.metadata = element.emitPropertyMetadata(propertyDescriptor);
   return property;
 }
 
 function serializeAttributeDescriptor(
-    elementPath: string, attributeDescriptor: AttributeDescriptor): Attribute {
+    element: LinkedElement, elementPath: string,
+    attributeDescriptor: AttributeDescriptor): Attribute {
   const attribute: Attribute = {
     name: attributeDescriptor.name,
     description: attributeDescriptor.description || '',
@@ -116,6 +114,7 @@ function serializeAttributeDescriptor(
   if (attributeDescriptor.type) {
     attribute.type = attributeDescriptor.type;
   }
+  attribute.metadata = element.emitAttributeMetadata(attributeDescriptor);
   return attribute;
 }
 
