@@ -16,11 +16,10 @@ import * as parse5 from 'parse5';
 
 import {Analysis} from './analysis';
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
-import {ElementDescriptor} from './ast/ast';
-import {ScannedDocument, Property} from './ast/ast';
+import {Element, Property, ScannedDocument, ScannedProperty} from './ast/ast';
 import {SourceLocation} from './elements-format';
-import {HtmlDocument} from './html/html-document';
-import {PolymerElementDescriptor} from './polymer/element-descriptor';
+import {ParsedHtmlDocument} from './html/html-document';
+import {PolymerElement} from './polymer/element-descriptor';
 import {UrlLoader} from './url-loader/url-loader';
 
 export interface Position {
@@ -134,7 +133,7 @@ export class EditorService {
       if (element.extends) {
         sortPrefixes.set(element.extends, 'ccc-');
       }
-      if (element instanceof PolymerElementDescriptor) {
+      if (element instanceof PolymerElement) {
         for (const behaviorName of element.behaviors) {
           sortPrefixes.set(behaviorName, 'ddd-');
         }
@@ -166,7 +165,7 @@ export class EditorService {
   }
 
   private async _getDescriptorAt(localPath: string, position: Position):
-      Promise<ElementDescriptor|Property|undefined> {
+      Promise<Element|Property|undefined> {
     const analysis = await this._analyzer.resolvePermissive();
     const location =
         await this._getLocationResult(localPath, position, analysis);
@@ -192,7 +191,7 @@ export class EditorService {
       return;
     }
     const document = documentDesc.document;
-    if (!(document instanceof HtmlDocument)) {
+    if (!(document instanceof ParsedHtmlDocument)) {
       return;
     }
     return getLocationInfoForPosition(document.ast, position);
@@ -295,6 +294,6 @@ function isElementLocationInfo(location: parse5.LocationInfo|
   return location['startTag'] && location['endTag'];
 }
 
-function isPropertyDescriptor(d: any): d is Property {
+function isPropertyDescriptor(d: any): d is(ScannedProperty | Property) {
   return 'type' in d;
 }

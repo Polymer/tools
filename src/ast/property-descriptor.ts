@@ -17,6 +17,17 @@ import * as estree from 'estree';
 import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
+export interface ScannedProperty {
+  name: string;
+  type?: string;
+  description?: string;
+  jsdoc?: jsdoc.Annotation;
+  private?: boolean;
+  'default'?: string;
+  readOnly?: boolean;
+  sourceLocation: SourceLocation;
+}
+
 export interface Property {
   name: string;
   type?: string;
@@ -25,7 +36,6 @@ export interface Property {
   private?: boolean;
   'default'?: string;
   readOnly?: boolean;
-  javascriptNode?: estree.Node;
   sourceLocation: SourceLocation;
   inheritedFrom?: string;
 }

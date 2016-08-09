@@ -16,10 +16,10 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {EventDescriptor} from '../ast/ast';
-import {Property} from '../ast/ast';
+import {ScannedEvent} from '../ast/ast';
+import {ScannedProperty} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
-import {FunctionDescriptor, PolymerElementDescriptor, PolymerProperty} from '../polymer/element-descriptor';
+import {FunctionDescriptor, ScannedPolymerProperty, ScannedPolymerElement} from '../polymer/element-descriptor';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
@@ -150,7 +150,7 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node: estree.Property): PolymerProperty {
+export function toPropertyDescriptor(node: estree.Property): ScannedPolymerProperty {
   let type = closureType(node.value);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {
@@ -161,11 +161,10 @@ export function toPropertyDescriptor(node: estree.Property): PolymerProperty {
   let description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
 
-  const result: PolymerProperty = {
+  const result: ScannedPolymerProperty = {
     name: objectKeyToString(node.key),
     type: type,
     description: description,
-    javascriptNode: node,
     sourceLocation: getSourceLocation(node)
   };
 

@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {Descriptor, ElementDescriptor, Property} from '../ast/ast';
+import {ScannedProperty, ScannedElement, ScannedFeature} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -25,7 +25,7 @@ import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-do
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
-export interface AttributeDescriptor extends Descriptor {
+export interface AttributeDescriptor extends ScannedFeature {
   name: string;
   sourceLocation: SourceLocation;
   type?: string;
@@ -34,7 +34,7 @@ export interface AttributeDescriptor extends Descriptor {
 export class ElementFinder implements JavaScriptEntityFinder {
   async findEntities(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ElementDescriptor[]> {
+      Promise<ScannedElement[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.getRegisteredElements();
@@ -42,9 +42,9 @@ export class ElementFinder implements JavaScriptEntityFinder {
 }
 
 class ElementVisitor implements Visitor {
-  private _possibleElements = new Map<string, ElementDescriptor>();
+  private _possibleElements = new Map<string, ScannedElement>();
   private _registeredButNotFound = new Map<string, string>();
-  private _elements: ElementDescriptor[] = [];
+  private _elements: ScannedElement[] = [];
 
   enterClassExpression(node: estree.ClassExpression, parent: estree.Node) {
     if (parent.type !== 'AssignmentExpression' &&
@@ -72,7 +72,7 @@ class ElementVisitor implements Visitor {
   }
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
-    const element = new ElementDescriptor();
+    const element = new ScannedElement();
     element.description =
         jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
             .description.trim();
@@ -114,7 +114,7 @@ class ElementVisitor implements Visitor {
     if (elementDefn == null) {
       return;
     }
-    const element: ElementDescriptor|null =
+    const element: ScannedElement|null =
         this._getElement(tagName, elementDefn);
     if (!element) {
       return;
@@ -124,7 +124,7 @@ class ElementVisitor implements Visitor {
   }
 
   private _getElement(tagName: string, elementDefn: estree.Node):
-      ElementDescriptor|null {
+      ScannedElement|null {
     const className = astValue.getIdentifierName(elementDefn);
     if (className) {
       const element = this._possibleElements.get(className);
@@ -192,7 +192,7 @@ class ElementVisitor implements Visitor {
   /**
    * Gets all found elements. Can only be called once.
    */
-  getRegisteredElements(): ElementDescriptor[] {
+  getRegisteredElements(): ScannedElement[] {
     const results = this._elements;
     for (const classAndTag of this._registeredButNotFound.entries()) {
       const className = classAndTag[0];

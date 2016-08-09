@@ -16,10 +16,10 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Descriptor} from '../../ast/descriptor';
+import {ScannedFeature} from '../../ast/descriptor';
 import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
-import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {ParsedHtmlDocument, HtmlVisitor} from '../../html/html-document';
 import {HtmlImportFinder} from '../../html/html-import-finder';
 import {HtmlParser} from '../../html/html-parser';
 import {invertPromise} from '../test-utils';

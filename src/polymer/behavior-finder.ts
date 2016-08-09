@@ -15,7 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {Descriptor, LiteralValue, Property} from '../ast/ast';
+import {ScannedFeature, LiteralValue, ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -24,10 +24,10 @@ import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
 import * as analyzeProperties from './analyze-properties';
-import {BehaviorDescriptor} from './behavior-descriptor';
+import {ScannedBehavior} from './behavior-descriptor';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {PolymerElementDescriptor} from './element-descriptor';
+import {ScannedPolymerElement} from './element-descriptor';
 
 interface KeyFunc<T> {
   (value: T): any;
@@ -54,7 +54,7 @@ const templatizer = 'Polymer.Templatizer';
 export class BehaviorFinder implements JavaScriptEntityFinder {
   async findEntities(
       document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<Descriptor[]> {
+      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedFeature[]> {
     let visitor = new BehaviorVisitor();
     await visit(visitor);
     return Array.from(visitor.behaviors);
@@ -63,9 +63,9 @@ export class BehaviorFinder implements JavaScriptEntityFinder {
 
 class BehaviorVisitor implements Visitor {
   /** The behaviors we've found. */
-  behaviors = new Set<BehaviorDescriptor>();
+  behaviors = new Set<ScannedBehavior>();
 
-  currentBehavior: BehaviorDescriptor = null;
+  currentBehavior: ScannedBehavior = null;
   propertyHandlers: PropertyHandlers = null;
 
   /**
@@ -117,7 +117,7 @@ class BehaviorVisitor implements Visitor {
     this._finishBehavior();
   }
 
-  private _startBehavior(behavior: BehaviorDescriptor) {
+  private _startBehavior(behavior: ScannedBehavior) {
     console.assert(this.currentBehavior == null);
     this.currentBehavior = behavior;
   }
@@ -144,7 +144,7 @@ class BehaviorVisitor implements Visitor {
       }
     }
 
-    this._startBehavior(new BehaviorDescriptor({
+    this._startBehavior(new ScannedBehavior({
       description: comment,
       events: esutil.getEventComments(node),
     }));
@@ -183,7 +183,7 @@ class BehaviorVisitor implements Visitor {
    * here to support multiple @polymerBehavior tags referring
    * to same behavior. See iron-multi-selectable for example.
    */
-  mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
+  mergeBehavior(newBehavior: ScannedBehavior): ScannedBehavior {
     const isBehaviorImpl = (b: string) => {
       // filter out BehaviorImpl
       return b.indexOf(newBehavior.className) === -1;

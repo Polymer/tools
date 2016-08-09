@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {Descriptor, ElementDescriptor} from '../../ast/ast';
+import {ScannedFeature, ScannedElement} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
@@ -28,8 +28,8 @@ suite('VanillaElementFinder', () => {
 
   let document: JavaScriptDocument;
   let analyzer: Analyzer;
-  let elements: Map<string, ElementDescriptor>;
-  let elementsList: ElementDescriptor[];
+  let elements: Map<string, ScannedElement>;
+  let elementsList: ScannedElement[];
 
   suiteSetup(() => {
     let parser = new JavaScriptParser();
@@ -41,10 +41,10 @@ suite('VanillaElementFinder', () => {
         Promise.resolve(document.visit([visitor]));
 
     return finder.findEntities(document, visit)
-        .then((entities: Descriptor[]) => {
+        .then((entities: ScannedFeature[]) => {
           elements = new Map();
-          elementsList = <ElementDescriptor[]>entities.filter(
-              (e) => e instanceof ElementDescriptor);
+          elementsList = <ScannedElement[]>entities.filter(
+              (e) => e instanceof ScannedElement);
           for (let element of elementsList) {
             elements.set(element.tagName, element);
           }

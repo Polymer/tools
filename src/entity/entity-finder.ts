@@ -13,12 +13,12 @@
  */
 
 import {Analyzer} from '../analyzer';
-import {Descriptor} from '../ast/ast';
+import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
 export interface EntityFinder<D extends ParsedDocument<A, V>, A, V> {
   findEntities<D>(document: D, visit: (visitor: V) => Promise<void>):
-      Promise<Descriptor[]>;
+      Promise<ScannedFeature[]>;
 }
 
 export interface EntityFinderConstructor {

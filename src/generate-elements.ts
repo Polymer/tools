@@ -18,11 +18,11 @@ import * as pathLib from 'path';
 import * as util from 'util';
 
 import {Analysis} from './analysis';
-import {Attribute as AttributeDescriptor, Descriptor, ScannedDocument, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property as PropertyDescriptor} from './ast/ast';
+import {ScannedAttribute as AttributeDescriptor, Element as LinkedElement, ScannedFeature, ScannedDocument, ScannedElement, ScannedImport, InlineParsedDocument, ScannedProperty as PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
-import {JsonDocument} from './json/json-document';
-import {BehaviorDescriptor} from './polymer/behavior-descriptor';
-import {PolymerElementDescriptor, PolymerProperty} from './polymer/element-descriptor';
+import {ParsedJsonDocument} from './json/json-document';
+import {ScannedBehavior} from './polymer/behavior-descriptor';
+import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer/element-descriptor';
 import {trimLeft} from './utils';
 
 
@@ -40,7 +40,7 @@ export function generateElementMetadata(
 }
 
 function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, packagePath: string): Element|null {
+    elementDescriptor: LinkedElement, packagePath: string): Element|null {
   if (!elementDescriptor.tagName) {
     return null;
   }

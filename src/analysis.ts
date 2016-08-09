@@ -17,12 +17,12 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {Descriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property, ScannedDocument} from './ast/ast';
-import {Elements} from './elements-format';
-import {JsonDocument} from './json/json-document';
-import {BehaviorDescriptor} from './polymer/behavior-descriptor';
+import {Attribute, Element, Event, InlineParsedDocument, Property, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedProperty} from './ast/ast';
+import {Elements as ElementsFormat} from './elements-format';
+import {ParsedJsonDocument} from './json/json-document';
+import {ScannedBehavior} from './polymer/behavior-descriptor';
 import {DomModuleDescriptor} from './polymer/dom-module-finder';
-import {PolymerElementDescriptor} from './polymer/element-descriptor';
+import {ScannedPolymerElement} from './polymer/element-descriptor';
 
 const validator = new jsonschema.Validator();
 const schema = JSON.parse(
@@ -42,9 +42,9 @@ export class ValidationError extends Error {
 
 export class Analysis {
   private _descriptors: ScannedDocument[];
-  private _elementsByTagName = new Map<string, ElementDescriptor>();
-  private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
-  private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
+  private _elementsByTagName = new Map<string, Element>();
+  private _elementsByPackageDir = new Map<string, Element[]>();
+  private _behaviorsByIdentifierName = new Map<string, ScannedBehavior>();
   private _documentsByLocalPath = new Map<string, ScannedDocument>();
   private _domModulesById = new Map<string, DomModuleDescriptor>();
 
@@ -96,15 +96,15 @@ export class Analysis {
     }
   }
 
-  getElement(tag: string): ElementDescriptor|undefined {
+  getElement(tag: string): Element|undefined {
     return this._elementsByTagName.get(tag);
   }
 
-  getElements(): ElementDescriptor[] {
+  getElements(): Element[] {
     return Array.from(this._elementsByTagName.values());
   }
 
-  getElementsForPackage(dirName: string): ElementDescriptor[]|undefined {
+  getElementsForPackage(dirName: string): Element[]|undefined {
     return this._elementsByPackageDir.get(dirName);
   }
 
@@ -119,7 +119,7 @@ export class Analysis {
    * /* @polymerBehavior AwesomeBehavior \*\/
    * var My.Behavior = {...};
    */
-  getBehavior(name: string): BehaviorDescriptor|undefined {
+  getBehavior(name: string): ScannedBehavior|undefined {
     return this._behaviorsByIdentifierName.get(name);
   }
 
@@ -135,7 +135,7 @@ export class Analysis {
    * Throws if the given object isn't a valid AnalyzedPackage according to
    * the JSON schema.
    */
-  static validate(analyzedPackage: Elements|null|undefined) {
+  static validate(analyzedPackage: ElementsFormat|null|undefined) {
     const result = validator.validate(analyzedPackage, schema);
     if (result.throwError) {
       throw result.throwError;
@@ -155,7 +155,7 @@ const packageFileNames = new Set(['package.json', 'bower.json']);
 class PackageGatherer implements AnalysisVisitor {
   packageDirs = new Set<string>();
   visitDocumentDescriptor(dd: ScannedDocument): void {
-    if (dd.document instanceof JsonDocument &&
+    if (dd.document instanceof ParsedJsonDocument &&
         packageFileNames.has(path.basename(dd.document.url))) {
       const dirname = path.dirname(dd.document.url);
       if (!this.packageDirs.has(dirname)) {
@@ -170,12 +170,12 @@ class PackageGatherer implements AnalysisVisitor {
  * well as their resolved urls.
  */
 class ElementGatherer implements AnalysisVisitor {
-  elementDescriptors: ElementDescriptor[] = [];
-  elementPaths = new Map<ElementDescriptor, string>();
+  elementDescriptors: ScannedElement[] = [];
+  elementPaths = new Map<ScannedElement, string>();
 
-  behaviorDescriptors: BehaviorDescriptor[] = [];
-  behaviorPaths = new Map<BehaviorDescriptor, string>();
-  visitElement(elementDescriptor: ElementDescriptor, ancestors: Descriptor[]):
+  behaviorDescriptors: ScannedBehavior[] = [];
+  behaviorPaths = new Map<ScannedBehavior, string>();
+  visitElement(elementDescriptor: ScannedElement, ancestors: ScannedFeature[]):
       void {
     const elementPath = this._getPathFromAncestors(ancestors);
     if (!elementPath) {
@@ -196,7 +196,7 @@ class ElementGatherer implements AnalysisVisitor {
   }
 
   visitBehavior(
-      behaviorDescriptor: BehaviorDescriptor, ancestors: Descriptor[]): void {
+      behaviorDescriptor: ScannedBehavior, ancestors: ScannedFeature[]): void {
     const path = this._getPathFromAncestors(ancestors);
     if (!path) {
       throw new Error(
@@ -219,7 +219,7 @@ class ElementGatherer implements AnalysisVisitor {
    * The path of an element is the path of the closest containing document
    * parent that has a url.
    */
-  _getPathFromAncestors(ancestors: Descriptor[]): string|undefined {
+  _getPathFromAncestors(ancestors: ScannedFeature[]): string|undefined {
     const documentAncestors = <ScannedDocument[]>ancestors.filter(
         d => d instanceof ScannedDocument && d.url);
     const nearestDocument = documentAncestors[documentAncestors.length - 1];
@@ -236,15 +236,16 @@ class DomModuleGatherer implements AnalysisVisitor {
 }
 
 abstract class AnalysisVisitor {
-  visitDocumentDescriptor?(dd: ScannedDocument, ancestors: Descriptor[]): void;
+  visitDocumentDescriptor?
+      (dd: ScannedDocument, ancestors: ScannedFeature[]): void;
   visitInlineDocumentDescriptor?
-      (dd: InlineDocumentDescriptor<any>, ancestors: Descriptor[]): void;
-  visitElement?(element: ElementDescriptor, ancestors: Descriptor[]): void;
-  visitBehavior?(behavior: BehaviorDescriptor, ancestors: Descriptor[]): void;
+      (dd: InlineParsedDocument<any>, ancestors: ScannedFeature[]): void;
+  visitElement?(element: ScannedElement, ancestors: ScannedFeature[]): void;
+  visitBehavior?(behavior: ScannedBehavior, ancestors: ScannedFeature[]): void;
   visitDomModule?
-      (domModule: DomModuleDescriptor, ancestors: Descriptor[]): void;
+      (domModule: DomModuleDescriptor, ancestors: ScannedFeature[]): void;
   visitImportDescriptor?
-      (importDesc: ImportDescriptor<any>, ancestors: Descriptor[]): void;
+      (importDesc: ScannedImport<any>, ancestors: ScannedFeature[]): void;
   done?(): void;
 }
 
@@ -255,7 +256,7 @@ abstract class AnalysisVisitor {
  */
 class AnalysisWalker {
   private _documents: ScannedDocument[];
-  private _ancestors: Descriptor[] = [];
+  private _ancestors: ScannedFeature[] = [];
 
   constructor(descriptors: ScannedDocument[]) {
     this._documents = descriptors;
@@ -292,7 +293,7 @@ class AnalysisWalker {
   }
 
   private _walkInlineDocumentDescriptor(
-      dd: InlineDocumentDescriptor<any>, visitors: AnalysisVisitor[]) {
+      dd: InlineParsedDocument<any>, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitInlineDocumentDescriptor) {
         visitor.visitInlineDocumentDescriptor(dd, this._ancestors);
@@ -300,19 +301,19 @@ class AnalysisWalker {
     }
   }
 
-  private _walkEntity(entity: Descriptor, visitors: AnalysisVisitor[]) {
+  private _walkEntity(entity: ScannedFeature, visitors: AnalysisVisitor[]) {
     if (entity == null) {
       return;
     }
     if (entity instanceof ScannedDocument) {
       return this._walkDocumentDescriptor(entity, visitors);
-    } else if (entity instanceof InlineDocumentDescriptor) {
+    } else if (entity instanceof InlineParsedDocument) {
       return this._walkInlineDocumentDescriptor(entity, visitors);
-    } else if (entity instanceof BehaviorDescriptor) {
+    } else if (entity instanceof ScannedBehavior) {
       return this._walkBehavior(entity, visitors);
-    } else if (entity instanceof ElementDescriptor) {
+    } else if (entity instanceof ScannedElement) {
       return this._walkElement(entity, visitors);
-    } else if (entity instanceof ImportDescriptor) {
+    } else if (entity instanceof ScannedImport) {
       return this._walkImportDescriptor(entity, visitors);
     } else if (entity instanceof DomModuleDescriptor) {
       return this._walkDomModuleDescriptor(entity, visitors);
@@ -320,8 +321,7 @@ class AnalysisWalker {
     throw new Error(`Unknown kind of descriptor: ${util.inspect(entity)}`);
   }
 
-  private _walkElement(
-      element: ElementDescriptor, visitors: AnalysisVisitor[]) {
+  private _walkElement(element: ScannedElement, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitElement) {
         visitor.visitElement(element, this._ancestors);
@@ -330,7 +330,7 @@ class AnalysisWalker {
   }
 
   private _walkBehavior(
-      behavior: BehaviorDescriptor, visitors: AnalysisVisitor[]) {
+      behavior: ScannedBehavior, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitBehavior) {
         visitor.visitBehavior(behavior, this._ancestors);
@@ -348,7 +348,7 @@ class AnalysisWalker {
   }
 
   private _walkImportDescriptor(
-      importDesc: ImportDescriptor<any>, visitors: AnalysisVisitor[]) {
+      importDesc: ScannedImport<any>, visitors: AnalysisVisitor[]) {
     for (const visitor of visitors) {
       if (visitor.visitImportDescriptor) {
         visitor.visitImportDescriptor(importDesc, this._ancestors);
@@ -365,11 +365,11 @@ function max<T>(arr: T[], comparison: (t1: T | undefined, t2: T) => number): T|
 }
 
 function resolveElement(
-    elementDescriptor: ElementDescriptor, analysis: Analysis) {
-  let properties = elementDescriptor.properties;
-  let attributes = elementDescriptor.attributes;
-  let events = elementDescriptor.events;
-  if (elementDescriptor instanceof PolymerElementDescriptor) {
+    elementDescriptor: ScannedElement, analysis: Analysis): Element {
+  let properties: Property[] = elementDescriptor.properties;
+  let attributes: Attribute[] = elementDescriptor.attributes;
+  let events: Event[] = elementDescriptor.events;
+  if (elementDescriptor instanceof ScannedPolymerElement) {
     const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
         elementDescriptor.behaviors, analysis));
 
@@ -389,7 +389,7 @@ function resolveElement(
     }
   }
 
-  const clone = <ElementDescriptor>{};
+  const clone = <Element>{};
   for (const key in elementDescriptor) {
     clone[key] = elementDescriptor[key];
   }
@@ -400,15 +400,15 @@ function resolveElement(
 }
 
 function getFlattenedAndResolvedBehaviors(
-    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis) {
-  const resolvedBehaviors = new Set<BehaviorDescriptor>();
+    behaviors: (string | ScannedBehavior)[], analysis: Analysis) {
+  const resolvedBehaviors = new Set<ScannedBehavior>();
   _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
   return resolvedBehaviors;
 }
 
 function _getFlattenedAndResolvedBehaviors(
-    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis,
-    resolvedBehaviors: Set<BehaviorDescriptor>) {
+    behaviors: (string | ScannedBehavior)[], analysis: Analysis,
+    resolvedBehaviors: Set<ScannedBehavior>) {
   const toLookup = behaviors.slice();
   for (let behavior of toLookup) {
     if (typeof behavior === 'string') {
@@ -429,16 +429,17 @@ function _getFlattenedAndResolvedBehaviors(
   }
 }
 
-function mergeByName<T extends{name: string, inheritedFrom?: string}>(
-    base: T[], inheritFrom: {name: string, vals: T[]}[]): T[] {
-  const byName = new Map<string, T>();
+function mergeByName<B extends{name: string, inheritedFrom?: string}, I
+                     extends{name: string}>(
+    base: B[], inheritFrom: {name: string, vals: I[]}[]): B[] {
+  const byName = new Map<string, B>();
   for (const initial of base) {
     byName.set(initial.name, initial);
   }
   for (const source of inheritFrom) {
     for (const item of source.vals) {
       if (!byName.has(item.name)) {
-        const copy = Object.assign({}, item);
+        const copy = <B><any>Object.assign({}, item);
         copy.inheritedFrom = source.name;
         byName.set(copy.name, copy);
       }

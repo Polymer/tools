@@ -12,11 +12,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Descriptor} from './descriptor';
+import {ScannedFeature} from './descriptor';
 
-export interface EventDescriptor extends Descriptor {
+export interface ScannedEvent extends ScannedFeature {
   name: string;
   type?: string;
   params?: {type: string, desc: string, name: string}[];
+}
+
+export interface Event {
+  name: string;
+  type?: string;
+  // TODO: represent detail object properly
+  description?: string;
   inheritedFrom?: string;
 }

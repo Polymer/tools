@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PolymerElementDescriptor} from '../polymer/element-descriptor';
+import {ScannedPolymerElement} from '../polymer/element-descriptor';
 
 /**
  * The metadata for a Polymer core feature.
  */
-export interface FeatureDescriptor extends PolymerElementDescriptor {}
+export interface FeatureDescriptor extends ScannedPolymerElement {}

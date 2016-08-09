@@ -12,14 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Options as ElementOptions, PolymerElementDescriptor} from '../polymer/element-descriptor';
+import {Options as ElementOptions, ScannedPolymerElement} from '../polymer/element-descriptor';
 
 export interface Options extends ElementOptions {}
 
 /**
  * The metadata for a Polymer behavior mixin.
  */
-export class BehaviorDescriptor extends PolymerElementDescriptor {
+export class ScannedBehavior extends ScannedPolymerElement {
   tagName: undefined;
   className: string;
   constructor(options: Options) {

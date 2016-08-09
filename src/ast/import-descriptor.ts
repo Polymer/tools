@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Descriptor} from './descriptor';
+import {ScannedFeature} from './descriptor';
 
 /**
  * Represents an import, such as an HTML import, an external script or style
@@ -20,7 +20,7 @@ import {Descriptor} from './descriptor';
  *
  * @template N The AST node type
  */
-export class ImportDescriptor<N> implements Descriptor {
+export class ScannedImport<N> implements ScannedFeature {
   type: 'html-import'|'html-script'|'html-style'|string;
 
   /**

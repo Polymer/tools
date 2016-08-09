@@ -13,21 +13,21 @@
  */
 
 import {ParsedDocument} from '../parser/document';
-import {Descriptor} from './descriptor';
+import {ScannedFeature} from './descriptor';
 import {LocationOffset} from './inline-document-descriptor';
 
 /**
  * The metadata for all features and elements defined in one document
  */
-export class ScannedDocument implements Descriptor {
+export class ScannedDocument implements ScannedFeature {
   document: ParsedDocument<any, any>;
-  dependencies: Descriptor[];
-  entities: Descriptor[];
+  dependencies: ScannedFeature[];
+  entities: ScannedFeature[];
   locationOffset?: LocationOffset;
 
   constructor(
-      document: ParsedDocument<any, any>, dependencies: Descriptor[],
-      entities: Descriptor[], locationOffset?: LocationOffset) {
+      document: ParsedDocument<any, any>, dependencies: ScannedFeature[],
+      entities: ScannedFeature[], locationOffset?: LocationOffset) {
     this.document = document;
     this.dependencies = dependencies;
     this.entities = entities;

@@ -18,19 +18,19 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {Descriptor} from '../../ast/ast';
+import {ScannedFeature} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {BehaviorDescriptor} from '../../polymer/behavior-descriptor';
+import {ScannedBehavior} from '../../polymer/behavior-descriptor';
 import {BehaviorFinder} from '../../polymer/behavior-finder';
 
 suite('BehaviorFinder', () => {
 
   let document: JavaScriptDocument;
   let analyzer: Analyzer;
-  let behaviors: Map<string, BehaviorDescriptor>;
-  let behaviorsList: BehaviorDescriptor[];
+  let behaviors: Map<string, ScannedBehavior>;
+  let behaviorsList: ScannedBehavior[];
 
   suiteSetup(() => {
     let parser = new JavaScriptParser();
@@ -42,10 +42,10 @@ suite('BehaviorFinder', () => {
         Promise.resolve(document.visit([visitor]));
 
     return finder.findEntities(document, visit)
-        .then((entities: Descriptor[]) => {
+        .then((entities: ScannedFeature[]) => {
           behaviors = new Map();
-          behaviorsList = <BehaviorDescriptor[]>entities.filter(
-              (e) => e instanceof BehaviorDescriptor);
+          behaviorsList = <ScannedBehavior[]>entities.filter(
+              (e) => e instanceof ScannedBehavior);
           for (let behavior of behaviorsList) {
             behaviors.set(behavior.className, behavior);
           }

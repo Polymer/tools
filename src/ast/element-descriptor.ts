@@ -20,28 +20,27 @@ import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {Descriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation} from './ast';
+import {Event, LiteralValue, LocationOffset, Property, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
-export interface Attribute {
+export interface ScannedAttribute {
   name: string;
   sourceLocation: SourceLocation;
   description?: string;
   type?: string;
-  inheritedFrom?: string;
 }
 
-export class ElementDescriptor implements Descriptor {
+export class ScannedElement implements ScannedFeature {
   tagName?: string;
   className?: string;
   superClass?: string;
   extends?: string;
-  properties: Property[] = [];
-  attributes: Attribute[] = [];
+  properties: ScannedProperty[] = [];
+  attributes: ScannedAttribute[] = [];
   description = '';
   demos: {desc?: string; path: string}[] = [];
-  events: EventDescriptor[] = [];
+  events: ScannedEvent[] = [];
   sourceLocation: SourceLocation;
 
   jsdoc?: jsdoc.Annotation;
@@ -65,4 +64,21 @@ export class ElementDescriptor implements Descriptor {
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText;
   }
+}
+
+
+export interface Attribute extends ScannedAttribute { inheritedFrom?: string; }
+
+export class Element {
+  tagName?: string;
+  className?: string;
+  superClass?: string;
+  extends?: string;
+  properties: Property[] = [];
+  attributes: Attribute[] = [];
+  description = '';
+  demos: {desc?: string; path: string}[] = [];
+  events: Event[] = [];
+  sourceLocation: SourceLocation;
+  jsdoc?: jsdoc.Annotation;
 }

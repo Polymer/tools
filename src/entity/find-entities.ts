@@ -12,14 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Descriptor} from '../ast/ast';
+import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
 import {EntityFinder} from './entity-finder';
 
 export async function findEntities(
     document: ParsedDocument<any, any>,
-    finders: EntityFinder<any, any, any>[]): Promise<Descriptor[]> {
+    finders: EntityFinder<any, any, any>[]): Promise<ScannedFeature[]> {
   // Finders register a visitor to run via the `visit` callback passed to
   // `findEntities()`. We run these visitors in a batch, then pass control back
   // to the `findEntities` methods by resolving a single Promise return for
@@ -94,9 +94,9 @@ export async function findEntities(
 
 function orderEntities(
     document: ParsedDocument<any, any>,
-    unorderedEntities: Descriptor[][]): Descriptor[] {
+    unorderedEntities: ScannedFeature[][]): ScannedFeature[] {
   // Build a map of node -> entities
-  let entitiesByNode = new Map<any, Descriptor[]>();
+  let entitiesByNode = new Map<any, ScannedFeature[]>();
   for (let entitySet of unorderedEntities) {
     for (let entity of entitySet) {
       let node = entity.node || null;  // convert undefined to null
@@ -110,7 +110,7 @@ function orderEntities(
   }
 
   // Walk the document to build document ordered entities list
-  let orderedEntities: Descriptor[][] = [];
+  let orderedEntities: ScannedFeature[][] = [];
   document.forEachNode((node: any) => {
     const entities = entitiesByNode.get(node);
     if (entities) {

@@ -16,9 +16,9 @@ import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
+import {ScannedFeature, ScannedImport, InlineParsedDocument, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 
-import {HtmlDocument, HtmlVisitor} from './html-document';
+import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
 
 const p = dom5.predicates;
@@ -36,10 +36,10 @@ const isStyleNode = p.OR(isStyleElement, isStyleLink);
 
 export class HtmlStyleFinder implements HtmlEntityFinder {
   async findEntities(
-      document: HtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
+      document: ParsedHtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<ScannedFeature[]> {
     let entities:
-        (ImportDescriptor<ASTNode>| InlineDocumentDescriptor<ASTNode>)[] = [];
+        (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] = [];
 
     await visit(async(node) => {
       if (isStyleNode(node)) {
@@ -48,12 +48,12 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
           let href = dom5.getAttribute(node, 'href');
           let importUrl = resolveUrl(document.url, href);
           entities.push(
-              new ImportDescriptor<ASTNode>('html-style', importUrl, node));
+              new ScannedImport<ASTNode>('html-style', importUrl, node));
         } else {
           let contents = dom5.getTextContent(node);
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const commentText = getAttachedCommentText(node);
-          entities.push(new InlineDocumentDescriptor<ASTNode>(
+          entities.push(new InlineParsedDocument<ASTNode>(
               'css', contents, node, locationOffset, commentText));
         }
       }

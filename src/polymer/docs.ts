@@ -15,11 +15,11 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 
-import {Descriptor, EventDescriptor, Property} from '../ast/ast';
+import {ScannedFeature, ScannedEvent, ScannedProperty} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {BehaviorDescriptor} from './behavior-descriptor';
-import {FunctionDescriptor, PolymerElementDescriptor, PolymerProperty} from './element-descriptor';
+import {ScannedBehavior} from './behavior-descriptor';
+import {FunctionDescriptor, ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 import {FeatureDescriptor} from './feature-descriptor';
 
 
@@ -50,7 +50,7 @@ const HANDLED_TAGS = [
  * @param {Object} descriptor The descriptor node to process.
  * @return {Object} The descriptor that was given.
  */
-export function annotate(descriptor: Descriptor): Descriptor {
+export function annotate(descriptor: ScannedFeature): ScannedFeature {
   if (!descriptor || descriptor.jsdoc)
     return descriptor;
 
@@ -66,7 +66,7 @@ export function annotate(descriptor: Descriptor): Descriptor {
 /**
  * Annotates @event, @hero, & @demo tags
  */
-export function annotateElementHeader(descriptor: PolymerElementDescriptor) {
+export function annotateElementHeader(descriptor: ScannedPolymerElement) {
   descriptor.demos = [];
   if (descriptor.jsdoc && descriptor.jsdoc.tags) {
     descriptor.jsdoc.tags.forEach(function(tag) {
@@ -87,8 +87,8 @@ export function annotateElementHeader(descriptor: PolymerElementDescriptor) {
  * @param {Object} descriptor behavior descriptor
  * @return {Object} descriptor passed in as param
  */
-export function annotateBehavior(descriptor: BehaviorDescriptor):
-    BehaviorDescriptor {
+export function annotateBehavior(descriptor: ScannedBehavior):
+    ScannedBehavior {
   annotate(descriptor);
   annotateElementHeader(descriptor);
 
@@ -98,9 +98,9 @@ export function annotateBehavior(descriptor: BehaviorDescriptor):
 /**
  * Annotates event documentation
  */
-export function annotateEvent(annotation: jsdoc.Annotation): EventDescriptor {
+export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
   const eventTag = jsdoc.getTag(annotation, 'event');
-  const eventDescriptor: EventDescriptor = {
+  const eventDescriptor: ScannedEvent = {
     name: (eventTag && eventTag.description) ?
         (eventTag.description || '').match(/^\S*/)[0] :
         'N/A',
@@ -130,8 +130,8 @@ export function annotateEvent(annotation: jsdoc.Annotation): EventDescriptor {
  * @return {Object} The descriptior that was given.
  */
 function annotateProperty(
-    descriptor: PolymerProperty,
-    ignoreConfiguration: boolean): PolymerProperty {
+    descriptor: ScannedPolymerProperty,
+    ignoreConfiguration: boolean): ScannedPolymerProperty {
   annotate(descriptor);
   if (descriptor.name[0] === '_' || jsdoc.hasTag(descriptor.jsdoc, 'private')) {
     descriptor.private = true;
@@ -201,12 +201,12 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  * @return {ElementDescriptor}
  */
 export function featureElement(features: FeatureDescriptor[]):
-    PolymerElementDescriptor {
-  const properties = features.reduce<PolymerProperty[]>((result, feature) => {
+    ScannedPolymerElement {
+  const properties = features.reduce<ScannedPolymerProperty[]>((result, feature) => {
     return result.concat(feature.properties);
   }, []);
 
-  return new PolymerElementDescriptor({
+  return new ScannedPolymerElement({
     className: 'Polymer.Base',
     abstract: true,
     properties: properties,
@@ -226,7 +226,7 @@ export function featureElement(features: FeatureDescriptor[]):
  *
  * @param {Object} descriptor
  */
-export function clean(descriptor: Descriptor) {
+export function clean(descriptor: ScannedFeature) {
   if (!descriptor.jsdoc)
     return;
   // The doctext was written to `descriptor.desc`
@@ -254,7 +254,7 @@ export function clean(descriptor: Descriptor) {
  *
  * @param {ElementDescriptor|BehaviorDescriptor} element
  */
-export function cleanElement(element: PolymerElementDescriptor) {
+export function cleanElement(element: ScannedPolymerElement) {
   clean(element);
   element.properties.forEach(cleanProperty);
 }
@@ -265,7 +265,7 @@ export function cleanElement(element: PolymerElementDescriptor) {
  *
  * @param {PropertyDescriptor} property
  */
-function cleanProperty(property: Property) {
+function cleanProperty(property: ScannedProperty) {
   clean(property);
 }
 
@@ -275,13 +275,13 @@ function cleanProperty(property: Property) {
  * @return {ElementDescriptor}      A list of pseudo-elements.
  */
 export function parsePseudoElements(comments: string[]):
-    PolymerElementDescriptor[] {
-  const elements: PolymerElementDescriptor[] = [];
+    ScannedPolymerElement[] {
+  const elements: ScannedPolymerElement[] = [];
   comments.forEach(function(comment) {
     const parsedJsdoc = jsdoc.parseJsdoc(comment);
     const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
     if (pseudoTag) {
-      let element = new PolymerElementDescriptor({
+      let element = new ScannedPolymerElement({
         tagName: pseudoTag,
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
         properties: [],

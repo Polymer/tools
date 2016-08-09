@@ -18,11 +18,11 @@ import * as path from 'path';
 import * as urlLib from 'url';
 
 import {Analysis} from './analysis';
-import {Descriptor, ScannedDocument, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
+import {InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
-import {HtmlDocument} from './html/html-document';
+import {ParsedHtmlDocument} from './html/html-document';
 import {HtmlImportFinder} from './html/html-import-finder';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptFinder} from './html/html-script-finder';
@@ -33,6 +33,7 @@ import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
 import {DomModuleFinder} from './polymer/dom-module-finder';
+import {ScannedPolymerElement} from './polymer/element-descriptor';
 import {PolymerElementFinder} from './polymer/polymer-element-finder';
 import {PackageUrlResolver} from './url-loader/package-url-resolver';
 import {UrlLoader} from './url-loader/url-loader';
@@ -167,22 +168,22 @@ export class Analyzer {
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     let entities = await this._getEntities(document);
     for (const entity of entities) {
-      if (entity instanceof ElementDescriptor) {
+      if (entity instanceof ScannedElement) {
         entity.applyLocationOffset(locationOffset);
       }
     }
     // If there's an HTML comment that applies to this document then we assume
     // that it applies to the first entity.
     const firstEntity = entities[0];
-    if (firstEntity && firstEntity instanceof ElementDescriptor) {
+    if (firstEntity && firstEntity instanceof ScannedElement) {
       firstEntity.applyHtmlComment(maybeAttachedComment);
     }
 
-    let dependencyDescriptors: Descriptor[] = entities.filter(
-        (e) => e instanceof InlineDocumentDescriptor ||
-            e instanceof ImportDescriptor);
+    let dependencyDescriptors: ScannedFeature[] = entities.filter(
+        (e) => e instanceof InlineParsedDocument ||
+            e instanceof ScannedImport);
     let analyzeDependencies = dependencyDescriptors.map((d) => {
-      if (d instanceof InlineDocumentDescriptor) {
+      if (d instanceof InlineParsedDocument) {
         const locationOffset: LocationOffset = {
           line: d.locationOffset.line,
           col: d.locationOffset.col,
@@ -191,7 +192,7 @@ export class Analyzer {
         return this._analyzeSource(
             d.type, d.contents, document.url, locationOffset,
             d.attachedComment);
-      } else if (d instanceof ImportDescriptor) {
+      } else if (d instanceof ScannedImport) {
         return this.analyze(d.url);
       } else {
         throw new Error(`Unexpected dependency type: ${d}`);
@@ -252,7 +253,7 @@ export class Analyzer {
   }
 
   private async _getEntities(document: ParsedDocument<any, any>):
-      Promise<Descriptor[]> {
+      Promise<ScannedFeature[]> {
     let finders = this._entityFinders.get(document.type);
     if (finders) {
       return findEntities(document, finders);

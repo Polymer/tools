@@ -18,11 +18,11 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {ImportDescriptor, InlineDocumentDescriptor, ScannedDocument} from '../ast/ast';
-import {HtmlDocument} from '../html/html-document';
+import {ScannedImport, InlineParsedDocument, ScannedDocument} from '../ast/ast';
+import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {PolymerElementDescriptor} from '../polymer/element-descriptor';
+import {ScannedPolymerElement} from '../polymer/element-descriptor';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 
@@ -121,7 +121,7 @@ suite('Analyzer', () => {
 
     test('loads and parses an HTML document', async() => {
       const doc = await analyzer['_load']('/static/html-parse-target.html');
-      assert.instanceOf(doc, HtmlDocument);
+      assert.instanceOf(doc, ParsedHtmlDocument);
       assert.equal(doc.url, '/static/html-parse-target.html');
     });
 
@@ -157,7 +157,7 @@ suite('Analyzer', () => {
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const entities =
-          <ImportDescriptor<any>[]>(await analyzer['_getEntities'](document));
+          <ScannedImport<any>[]>(await analyzer['_getEntities'](document));
       assert.deepEqual(
           entities.map(e => e.type),
           ['html-import', 'html-script', 'html-style']);
@@ -172,12 +172,12 @@ suite('Analyzer', () => {
           <style>body { color: red; }</style>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const entities = <InlineDocumentDescriptor<any>[]>(
+      const entities = <InlineParsedDocument<any>[]>(
           await analyzer['_getEntities'](document));
 
       assert.equal(entities.length, 2);
-      assert.instanceOf(entities[0], InlineDocumentDescriptor);
-      assert.instanceOf(entities[1], InlineDocumentDescriptor);
+      assert.instanceOf(entities[0], InlineParsedDocument);
+      assert.instanceOf(entities[1], InlineParsedDocument);
     });
 
   });
@@ -187,8 +187,8 @@ suite('Analyzer', () => {
     // ported from old js-parser_test.js
     test('parses classes', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
-        let elements = <PolymerElementDescriptor[]>document.entities.filter(
-            (e) => e instanceof PolymerElementDescriptor);
+        let elements = <ScannedPolymerElement[]>document.entities.filter(
+            (e) => e instanceof ScannedPolymerElement);
         assert.equal(elements.length, 2);
 
         let element1 = elements[0];
@@ -209,8 +209,8 @@ suite('Analyzer', () => {
     // ported from old js-parser_test.js
     test('parses events from classes', () => {
       return analyzer.analyze('static/es6-support.js').then((document) => {
-        let elements = <PolymerElementDescriptor[]>document.entities.filter(
-            (e) => e instanceof PolymerElementDescriptor);
+        let elements = <ScannedPolymerElement[]>document.entities.filter(
+            (e) => e instanceof ScannedPolymerElement);
         assert.deepEqual(
             elements.map(e => e.tagName), ['test-seed', 'test-element']);
         assert.deepEqual(

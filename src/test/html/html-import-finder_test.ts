@@ -15,10 +15,10 @@
 import {assert} from 'chai';
 import * as parse5 from 'parse5';
 
-import {Descriptor} from '../../ast/descriptor';
+import {ScannedFeature} from '../../ast/descriptor';
 import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
-import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {ParsedHtmlDocument, HtmlVisitor} from '../../html/html-document';
 import {HtmlImportFinder} from '../../html/html-import-finder';
 import {invertPromise} from '../test-utils';
 
@@ -39,7 +39,7 @@ suite('HtmlImportFinder', () => {
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
       let ast = parse5.parse(contents);
-      let document = new HtmlDocument({
+      let document = new ParsedHtmlDocument({
         url: 'test.html',
         contents,
         ast,

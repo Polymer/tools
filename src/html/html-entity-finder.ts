@@ -14,10 +14,10 @@
 
 import {ASTNode} from 'parse5';
 
-import {Descriptor} from '../ast/ast';
+import {ScannedFeature} from '../ast/ast';
 import {EntityFinder} from '../entity/entity-finder';
 
-import {HtmlDocument, HtmlVisitor} from './html-document';
+import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
 
 export interface HtmlEntityFinder extends
-    EntityFinder<HtmlDocument, ASTNode, HtmlVisitor> {}
+    EntityFinder<ParsedHtmlDocument, ASTNode, HtmlVisitor> {}

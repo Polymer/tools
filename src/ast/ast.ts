@@ -12,6 +12,26 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * This directory exposes our underlying models. The naming scheme is based on
+ * the stage of the processing pipeline that an object is produced by.
+ *
+ * The pipeline looks like:
+ *   load: reads in bytes from filesystem/network
+ *   parse: convert bytes to abstract syntax trees
+ *   scan: extract entirely local features from a single ast
+ *   link: integrate cross-file information to produce the final result
+ *
+ * Importantly, we can cache everything before `link` at the file level, making
+ * incremental analysis efficient.
+ *
+ * Because the output of the link phase is the API that will get the most use,
+ * its results have clear, unprefixed names. So a linked document is just a
+ * Document, a linked element is an Element.
+ *
+ * Earlier stages have the longer names, like ParsedDocument and ScannedElement.
+ */
+
 export * from './descriptor';
 export * from './document-descriptor';
 export * from './element-descriptor';

@@ -19,8 +19,16 @@ export type LiteralValue =
 export interface LiteralArray extends Array<LiteralValue> {}
 export interface LiteralObj { [key: string]: LiteralValue; }
 
-export interface Descriptor {
-  jsdoc?: jsdoc.Annotation;
+export interface ScannedFeature {
   description?: string;
+
+  // TODO(rictic): this is the wrong place to put a jsdoc annotation.
+  jsdoc?: jsdoc.Annotation;
+  /**
+   * The AST Node for this feature.
+   *
+   * Used to sort features by the order of their appearance in their containing
+   * document.
+   */
   node?: any;
 }

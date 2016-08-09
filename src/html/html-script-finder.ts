@@ -17,9 +17,9 @@ import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 import * as util from 'util';
 
-import {Descriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
+import {ScannedFeature, ScannedImport, InlineParsedDocument, LocationOffset, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 
-import {HtmlDocument, HtmlVisitor} from './html-document';
+import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
 
 const p = dom5.predicates;
@@ -33,10 +33,10 @@ const isJsScriptNode = p.AND(
 
 export class HtmlScriptFinder implements HtmlEntityFinder {
   async findEntities(
-      document: HtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<Descriptor[]> {
+      document: ParsedHtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<ScannedFeature[]> {
     let entities:
-        (ImportDescriptor<ASTNode>| InlineDocumentDescriptor<ASTNode>)[] = [];
+        (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] = [];
 
     await visit((node) => {
       if (isJsScriptNode(node)) {
@@ -44,13 +44,13 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
         if (src) {
           let importUrl = resolveUrl(document.url, src);
           entities.push(
-              new ImportDescriptor<ASTNode>('html-script', importUrl, node));
+              new ScannedImport<ASTNode>('html-script', importUrl, node));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const attachedCommentText = getAttachedCommentText(node);
           let contents = dom5.getTextContent(node);
 
-          entities.push(new InlineDocumentDescriptor<ASTNode>(
+          entities.push(new InlineParsedDocument<ASTNode>(
               'js', contents, node, locationOffset, attachedCommentText));
         }
       }

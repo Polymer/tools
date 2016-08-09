@@ -16,19 +16,19 @@ import * as shadyCss from 'shady-css-parser';
 
 import {Analyzer} from '../analyzer';
 import {Parser} from '../parser/parser';
-import {CssDocument} from './css-document';
+import {ParsedCssDocument} from './css-document';
 
-export class CssParser implements Parser<CssDocument> {
+export class CssParser implements Parser<ParsedCssDocument> {
   private _parser: shadyCss.Parser;
 
   constructor() {
     this._parser = new shadyCss.Parser();
   }
 
-  parse(contents: string, url: string): CssDocument {
+  parse(contents: string, url: string): ParsedCssDocument {
     let ast = this._parser.parse(contents);
 
-    return new CssDocument({
+    return new ParsedCssDocument({
         url, contents, ast,
     });
   }

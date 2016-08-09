@@ -15,16 +15,16 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import {Descriptor, getAttachedCommentText} from '../ast/ast';
+import {ScannedFeature, getAttachedCommentText} from '../ast/ast';
 
-import {HtmlDocument, HtmlVisitor} from '../html/html-document';
+import {ParsedHtmlDocument, HtmlVisitor} from '../html/html-document';
 import {HtmlEntityFinder} from '../html/html-entity-finder';
 
 const p = dom5.predicates;
 
 const isDomModule = p.hasTagName('dom-module');
 
-export class DomModuleDescriptor implements Descriptor {
+export class DomModuleDescriptor implements ScannedFeature {
   id?: string;
   node: ASTNode;
   comment?: string;
@@ -39,7 +39,7 @@ export class DomModuleDescriptor implements Descriptor {
 
 export class DomModuleFinder implements HtmlEntityFinder {
   async findEntities(
-      document: HtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>):
+      document: ParsedHtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<DomModuleDescriptor[]> {
     let domModules: DomModuleDescriptor[] = [];
 

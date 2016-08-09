@@ -162,6 +162,12 @@ export function expressionToValue(valueExpression: estree.Node): LiteralValue {
   }
 }
 
+/**
+ * Extracts the name of the identifier or `.` separated chain of identifiers.
+ *
+ * Returns undefined if the given node isn't a simple identifier or chain of
+ * simple identifiers.
+ */
 export function getIdentifierName(node: estree.Node): string|undefined {
   if (node.type === 'Identifier') {
     return node.name;

@@ -14,12 +14,12 @@
 
 import * as estree from 'estree';
 
-import {Property} from '../ast/ast';
+import {ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import * as esutil from '../javascript/esutil';
 
 export function analyzeProperties(node: estree.Node) {
-  const analyzedProps: Property[] = [];
+  const analyzedProps: ScannedProperty[] = [];
 
   if (node.type !== 'ObjectExpression') {
     return analyzedProps;

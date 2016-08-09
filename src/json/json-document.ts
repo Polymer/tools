@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ParsedDocument, Options} from '../parser/document';
+import {Options, ParsedDocument} from '../parser/document';
 
 export type Json = JsonObject | JsonArray | number | string | boolean | null;
 export interface JsonObject { [key: string]: Json; }
@@ -20,7 +20,7 @@ export interface JsonArray extends Array<Json> {}
 
 export interface Visitor { visit(node: Json): void; }
 
-export class JsonDocument extends ParsedDocument<Json, Visitor> {
+export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
   type = 'json';
 
   constructor(from: Options<Json>) {

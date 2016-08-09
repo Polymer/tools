@@ -20,7 +20,7 @@ import * as util from 'util';
 import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {Descriptor} from './descriptor';
+import {ScannedFeature} from './descriptor';
 
 export interface LocationOffset {
   /** Zero based line index. */
@@ -39,7 +39,7 @@ export interface LocationOffset {
  *
  * @template N The AST node type
  */
-export class InlineDocumentDescriptor<N> implements Descriptor {
+export class InlineParsedDocument<N> implements ScannedFeature {
   type: 'html'|'javascript'|'css'|/* etc */ string;
 
   contents: string;

@@ -2,13 +2,13 @@ import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue, LocationOffset, Property} from '../ast/ast';
+import {Element, LiteralValue, LocationOffset, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 
-export interface PolymerProperty extends Property {
-  published?: boolean;  // what does this mean?
+export interface BasePolymerProperty {
+  published?: boolean;
   notify?: boolean;
   observer?: string;
   observerNode?: estree.Expression|estree.Pattern;
@@ -19,13 +19,18 @@ export interface PolymerProperty extends Property {
   function?: boolean;
 }
 
-export interface FunctionDescriptor extends PolymerProperty {
+export interface ScannedPolymerProperty extends ScannedProperty,
+                                                BasePolymerProperty {}
+export interface PolymerProperty extends Property, BasePolymerProperty {}
+
+export interface FunctionDescriptor extends ScannedPolymerProperty {
   function: boolean;  // true
   params: {name: string, type?: string}[];
   return: {type: string | null; desc: string};
 }
 
-export function isFunctionDescriptor(d: Property): d is FunctionDescriptor {
+export function isFunctionDescriptor(d: ScannedProperty):
+    d is FunctionDescriptor {
   return d['function'] === true;
 }
 
@@ -36,8 +41,8 @@ export interface Options {
   extends?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
-  properties?: Property[];
-  attributes?: Attribute[];
+  properties?: ScannedProperty[];
+  attributes?: ScannedAttribute[];
   observers?: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
@@ -45,7 +50,7 @@ export interface Options {
   behaviors?: string[];
 
   demos?: {desc: string; path: string}[];
-  events?: EventDescriptor[];
+  events?: ScannedEvent[];
 
   abstract?: boolean;
   sourceLocation?: SourceLocation;
@@ -54,13 +59,15 @@ export interface Options {
 /**
  * The metadata for a single polymer element
  */
-export class PolymerElementDescriptor extends ElementDescriptor {
-  properties: PolymerProperty[] = [];
+export class ScannedPolymerElement extends ScannedElement {
+  properties: ScannedPolymerProperty[] = [];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
   }[] = [];
   behaviors: string[] = [];
+  // FIXME(rictic): domModule and scriptElement aren't known at a file local
+  //     level. Remove them here, they should only exist on PolymerElement.
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
 
@@ -71,7 +78,7 @@ export class PolymerElementDescriptor extends ElementDescriptor {
     Object.assign(this, options);
   }
 
-  addProperty(prop: PolymerProperty) {
+  addProperty(prop: ScannedPolymerProperty) {
     if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
       prop.private = true;
     }
@@ -97,6 +104,19 @@ export class PolymerElementDescriptor extends ElementDescriptor {
   }
 }
 
+export class PolymerElement extends Element {
+  properties: PolymerProperty[];
+
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[];
+  behaviors: string[];
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+
+  abstract?: boolean;
+}
 
 /**
  * Implements Polymer core's translation of property names to attribute names.

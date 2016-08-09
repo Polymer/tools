@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 
-import {Descriptor} from '../../ast/descriptor';
+import {ScannedFeature} from '../../ast/descriptor';
 import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
 import {ParsedDocument} from '../../parser/document';
@@ -127,8 +127,8 @@ function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
  */
 class EntityFinderStub implements EntityFinder<any, any, any> {
   calls: {document: ParsedDocument<any, any>}[];
-  entities: Descriptor[];
-  constructor(entities: Descriptor[]) {
+  entities: ScannedFeature[];
+  constructor(entities: ScannedFeature[]) {
     this.entities = entities;
     this.calls = [];
   }
