@@ -14,7 +14,7 @@
       "problemMatcher": {
         "fileLocation": ["relative", "${workspaceRoot}/src"],
         "watchedTaskBeginsRegExp": "\\[npm\\] INFO Spawning\\.\\.\\.",
-        "watchedTaskEndsRegExp": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly)",
+        "watchedTaskEndsRegExp": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)",
         "pattern": [
           {
             "regexp": "^  (\\d+)\\) ((\\w+).*)",
