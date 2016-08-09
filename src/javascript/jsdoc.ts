@@ -38,7 +38,6 @@ export interface Tag {
 export interface Annotation {
   description?: string;
   tags: Tag[]|null;
-  orig?: string;
 }
 
 /**

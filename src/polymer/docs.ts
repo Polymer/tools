@@ -57,7 +57,6 @@ export function annotate(descriptor: Descriptor): Descriptor {
   if (typeof descriptor.description === 'string') {
     descriptor.jsdoc = jsdoc.parseJsdoc(descriptor.description);
     // We want to present the normalized form of a descriptor.
-    descriptor.jsdoc.orig = descriptor.description;
     descriptor.description = descriptor.jsdoc.description;
   }
 
@@ -232,7 +231,6 @@ export function clean(descriptor: Descriptor) {
     return;
   // The doctext was written to `descriptor.desc`
   delete descriptor.jsdoc.description;
-  delete descriptor.jsdoc.orig;
 
   const cleanTags: jsdoc.Tag[] = [];
   (descriptor.jsdoc.tags || []).forEach(function(tag) {
@@ -294,72 +292,4 @@ export function parsePseudoElements(comments: string[]):
     }
   });
   return elements;
-}
-
-/**
- * @param {DocumentAST} domModule
- * @param {DocumentAST} scriptElement The script that the element was
- *     defined in.
- */
-function _findElementDocs(
-    domModule: dom5.Node|null|undefined,
-    scriptElement: dom5.Node|null|undefined): string|null {
-  // Note that we concatenate docs from all sources if we find them.
-  // element can be defined in:
-  // html comment right before dom-module
-  // html commnet right before script defining the module,
-  // if dom-module is empty
-
-  const found: string[] = [];
-
-  // Do we have a HTML comment on the `<dom-module>` or `<script>`?
-  //
-  // Confusingly, with our current style, the comment will be attached to
-  // `<head>`, rather than being a sibling to the `<dom-module>`
-  const searchRoot = domModule || scriptElement;
-  if (!searchRoot) {
-    return null;
-  }
-  const parents = <{data: string}[]><any>dom5.nodeWalkAllPrior(
-      searchRoot, dom5.isCommentNode);
-  const comment = parents.length > 0 ? parents[0] : null;
-  if (comment && comment.data) {
-    found.push(comment.data);
-  }
-  if (found.length === 0)
-    return null;
-  return found
-      .filter(function(comment) {
-        // skip @license comments
-        if (comment && comment.indexOf('@license') === -1) {
-          return true;
-        } else {
-          return false;
-        }
-      })
-      .map(jsdoc.unindent)
-      .join('\n');
-}
-
-function _findLastChildNamed(name: string, parent: dom5.Node) {
-  const children = parent.childNodes;
-  if (!children) {
-    return null;
-  }
-  for (let i = children.length - 1; i >= 0; i--) {
-    let child = children[i];
-    if (child.nodeName === name)
-      return child;
-  }
-  return null;
-}
-
-// TODO(nevir): parse5-utils!
-function _getNodeAttribute(node: dom5.Node, name: string) {
-  for (let i = 0; i < node.attrs.length; i++) {
-    let attr = node.attrs[i];
-    if (attr.name === name) {
-      return attr.value;
-    }
-  }
 }
