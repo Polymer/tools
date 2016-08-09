@@ -13,12 +13,12 @@
  */
 
 import {Descriptor} from '../ast/ast';
-import {Document} from '../parser/document';
+import {ParsedDocument} from '../parser/document';
 
 import {EntityFinder} from './entity-finder';
 
 export async function findEntities(
-    document: Document<any, any>,
+    document: ParsedDocument<any, any>,
     finders: EntityFinder<any, any, any>[]): Promise<Descriptor[]> {
   // Finders register a visitor to run via the `visit` callback passed to
   // `findEntities()`. We run these visitors in a batch, then pass control back
@@ -93,7 +93,7 @@ export async function findEntities(
 }
 
 function orderEntities(
-    document: Document<any, any>,
+    document: ParsedDocument<any, any>,
     unorderedEntities: Descriptor[][]): Descriptor[] {
   // Build a map of node -> entities
   let entitiesByNode = new Map<any, Descriptor[]>();

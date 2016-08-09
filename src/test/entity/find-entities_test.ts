@@ -17,7 +17,7 @@ import {assert} from 'chai';
 import {Descriptor} from '../../ast/descriptor';
 import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
-import {Document} from '../../parser/document';
+import {ParsedDocument} from '../../parser/document';
 import {invertPromise} from '../test-utils';
 
 suite('findEntities()', () => {
@@ -39,7 +39,7 @@ suite('findEntities()', () => {
     let visitor3 = Symbol('visitor3');
     let finder: EntityFinder<any, any, any> = {
       async findEntities(
-          document: Document<any, any>,
+          document: ParsedDocument<any, any>,
           visit: (visitor: any) => Promise<void>) {
         // two visitors in one batch
         await Promise.all([visit(visitor1), visit(visitor2)]);
@@ -96,7 +96,7 @@ interface TestDocumentMakerOptions {
   url?: string;
 }
 function makeTestDocument(options: TestDocumentMakerOptions):
-    Document<string, any> {
+    ParsedDocument<string, any> {
   return {
     type: options.type || 'test-type',
     contents: options.contents || 'test-contents',
@@ -109,11 +109,11 @@ function makeTestDocument(options: TestDocumentMakerOptions):
 
 interface TestEntityFinderMakerOptions {
   findEntities?:
-      (document: Document<string, any>,
+      (document: ParsedDocument<string, any>,
        visit: (visitor: any) => Promise<void>) => Promise<any[]>;
 }
 function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
-    EntityFinder<Document<string, any>, any, any> {
+    EntityFinder<ParsedDocument<string, any>, any, any> {
   const simpleFindEntities = (async(doc: any, visit: () => Promise<any>) => {
     const promise = visit();
     return ['test-entity'];
@@ -126,14 +126,14 @@ function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
  * findEntities is called.
  */
 class EntityFinderStub implements EntityFinder<any, any, any> {
-  calls: {document: Document<any, any>}[];
+  calls: {document: ParsedDocument<any, any>}[];
   entities: Descriptor[];
   constructor(entities: Descriptor[]) {
     this.entities = entities;
     this.calls = [];
   }
 
-  async findEntities(document: Document<any, any>, visit: any) {
+  async findEntities(document: ParsedDocument<any, any>, visit: any) {
     this.calls.push({document});
     return this.entities;
   }

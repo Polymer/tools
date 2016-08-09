@@ -22,7 +22,6 @@ import {findEntities} from '../../entity/find-entities';
 import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
 import {HtmlImportFinder} from '../../html/html-import-finder';
 import {HtmlParser} from '../../html/html-parser';
-import {Document} from '../../parser/document';
 import {invertPromise} from '../test-utils';
 
 suite('HtmlParser', () => {
@@ -31,13 +30,7 @@ suite('HtmlParser', () => {
     let parser: HtmlParser;
 
     setup(() => {
-      parser = new HtmlParser(<any>{
-        findImports(url: string) {
-          return [{type: 'html', url: 'abc'}];
-        },
-        parse: (type: string, content: string, url: string):
-                   Document<any, any> => <any>null,
-      });
+      parser = new HtmlParser();
     });
 
     test('parses a well-formed document', () => {

@@ -14,7 +14,7 @@
 
 import * as shady from 'shady-css-parser';
 
-import {Document, Options} from '../parser/document';
+import {ParsedDocument, Options} from '../parser/document';
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
 
@@ -66,7 +66,7 @@ class ShadyVisitor extends shady.NodeVisitor<void> {
   }
 }
 
-export class CssDocument extends Document<shady.Node, Visitor> {
+export class CssDocument extends ParsedDocument<shady.Node, Visitor> {
   type = 'css';
 
   constructor(from: Options<shady.Node>) {

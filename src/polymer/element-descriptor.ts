@@ -6,7 +6,6 @@ import {Attribute, Descriptor, ElementDescriptor, EventDescriptor, LiteralValue,
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
-import {Document} from '../parser/document';
 
 export interface PolymerProperty extends Property {
   published?: boolean;  // what does this mean?

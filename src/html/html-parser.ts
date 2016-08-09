@@ -16,7 +16,6 @@ import {ASTNode, parse as parseHtml} from 'parse5';
 
 import {Analyzer} from '../analyzer';
 import {ImportDescriptor} from '../ast/ast';
-import {Document} from '../parser/document';
 import {Parser} from '../parser/parser';
 
 import {HtmlDocument} from './html-document';

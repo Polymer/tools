@@ -21,7 +21,6 @@ import {Analysis} from './analysis';
 import {Attribute as AttributeDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property as PropertyDescriptor} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {JsonDocument} from './json/json-document';
-import {Document} from './parser/document';
 import {BehaviorDescriptor} from './polymer/behavior-descriptor';
 import {PolymerElementDescriptor, PolymerProperty} from './polymer/element-descriptor';
 import {trimLeft} from './utils';

@@ -29,7 +29,7 @@ import {HtmlScriptFinder} from './html/html-script-finder';
 import {HtmlStyleFinder} from './html/html-style-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {JsonParser} from './json/json-parser';
-import {Document} from './parser/document';
+import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
 import {DomModuleFinder} from './polymer/dom-module-finder';
@@ -81,7 +81,7 @@ export class Analyzer {
 
   private _loader: UrlLoader;
   private _resolver: UrlResolver|undefined;
-  private _documents = new Map<string, Promise<Document<any, any>>>();
+  private _documents = new Map<string, Promise<ParsedDocument<any, any>>>();
   private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
 
   constructor(options: Options) {
@@ -161,7 +161,7 @@ export class Analyzer {
    * Analyzes a parsed Document object.
    */
   private async _analyzeDocument(
-      document: Document<any, any>, maybeLocationOffset?: LocationOffset,
+      document: ParsedDocument<any, any>, maybeLocationOffset?: LocationOffset,
       maybeAttachedComment?: string): Promise<DocumentDescriptor> {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
@@ -208,12 +208,12 @@ export class Analyzer {
    * Loads and parses a single file, deduplicating any requrests for the same
    * URL.
    */
-  private async _load(url: string): Promise<Document<any, any>> {
+  private async _load(url: string): Promise<ParsedDocument<any, any>> {
     return this._loadResolved(this._resolveUrl(url));
   }
 
   private async _loadResolved(resolvedUrl: string, providedContents?: string):
-      Promise<Document<any, any>> {
+      Promise<ParsedDocument<any, any>> {
     const cachedResult = this._documents.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
@@ -239,7 +239,7 @@ export class Analyzer {
   }
 
   private _parse(type: string, contents: string, url: string):
-      Document<any, any> {
+      ParsedDocument<any, any> {
     let parser = this._parsers.get(type);
     if (parser == null) {
       throw new Error(`No parser for for file type ${type}`);
@@ -251,7 +251,7 @@ export class Analyzer {
     }
   }
 
-  private async _getEntities(document: Document<any, any>):
+  private async _getEntities(document: ParsedDocument<any, any>):
       Promise<Descriptor[]> {
     let finders = this._entityFinders.get(document.type);
     if (finders) {

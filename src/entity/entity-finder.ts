@@ -14,9 +14,9 @@
 
 import {Analyzer} from '../analyzer';
 import {Descriptor} from '../ast/ast';
-import {Document} from '../parser/document';
+import {ParsedDocument} from '../parser/document';
 
-export interface EntityFinder<D extends Document<A, V>, A, V> {
+export interface EntityFinder<D extends ParsedDocument<A, V>, A, V> {
   findEntities<D>(document: D, visit: (visitor: V) => Promise<void>):
       Promise<Descriptor[]>;
 }

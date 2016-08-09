@@ -16,7 +16,7 @@ import {VisitorOption, traverse} from 'estraverse';
 import {Node, Program} from 'estree';
 
 import {SourceLocation} from '../elements-format';
-import {Document, Options} from '../parser/document';
+import {ParsedDocument, Options} from '../parser/document';
 
 import {VisitResult, Visitor} from './estree-visitor';
 
@@ -28,7 +28,7 @@ interface SkipRecord {
   depth: number;
 }
 
-export class JavaScriptDocument extends Document<Program, Visitor> {
+export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
   type = 'js';
   private visitorSkips = new Map<Visitor, SkipRecord>();
 

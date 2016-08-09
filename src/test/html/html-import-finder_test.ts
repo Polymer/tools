@@ -20,7 +20,6 @@ import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
 import {HtmlDocument, HtmlVisitor} from '../../html/html-document';
 import {HtmlImportFinder} from '../../html/html-import-finder';
-import {Document} from '../../parser/document';
 import {invertPromise} from '../test-utils';
 
 suite('HtmlImportFinder', () => {

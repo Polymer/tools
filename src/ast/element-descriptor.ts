@@ -19,7 +19,6 @@ import * as estree from 'estree';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
-import {Document} from '../parser/document';
 
 import {Descriptor, EventDescriptor, LiteralValue, LocationOffset, Property, correctSourceLocation} from './ast';
 
