@@ -18,10 +18,9 @@ import * as parse5 from 'parse5';
 import {Descriptor, EventDescriptor, Property} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {FeatureDescriptor} from './feature-descriptor';
 import {BehaviorDescriptor} from './behavior-descriptor';
 import {FunctionDescriptor, PolymerElementDescriptor, PolymerProperty} from './element-descriptor';
-
+import {FeatureDescriptor} from './feature-descriptor';
 
 
 /** Properties on element prototypes that are purely configuration. */
@@ -97,10 +96,6 @@ export function annotateBehavior(descriptor: BehaviorDescriptor):
   return descriptor;
 }
 
-export interface PartialEvent {
-  description: string;
-  jsdoc: jsdoc.Annotation;
-}
 /**
  * Annotates event documentation
  */
