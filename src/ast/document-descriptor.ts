@@ -19,7 +19,7 @@ import {LocationOffset} from './inline-document-descriptor';
 /**
  * The metadata for all features and elements defined in one document
  */
-export class DocumentDescriptor implements Descriptor {
+export class ScannedDocument implements Descriptor {
   document: ParsedDocument<any, any>;
   dependencies: Descriptor[];
   entities: Descriptor[];

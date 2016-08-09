@@ -34,8 +34,7 @@ suite('HtmlScriptFinder', () => {
           <script src="foo.js"></script>
           <script>console.log('hi')</script>
         </head></html>`;
-      const document =
-          new HtmlParser(null).parse(contents, 'test-document.html');
+      const document = new HtmlParser().parse(contents, 'test-document.html');
       let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const entities = await finder.findEntities(document, visit);

@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as urlLib from 'url';
 
 import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
+import {Descriptor, ScannedDocument, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
@@ -82,7 +82,7 @@ export class Analyzer {
   private _loader: UrlLoader;
   private _resolver: UrlResolver|undefined;
   private _documents = new Map<string, Promise<ParsedDocument<any, any>>>();
-  private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
+  private _documentDescriptors = new Map<string, Promise<ScannedDocument>>();
 
   constructor(options: Options) {
     this._loader = options.urlLoader;
@@ -94,7 +94,7 @@ export class Analyzer {
   /**
    * Loads, parses and analyzes a document and its transitive dependencies.
    */
-  async analyze(url: string): Promise<DocumentDescriptor|null> {
+  async analyze(url: string): Promise<ScannedDocument|null> {
     return this._analyzeResolved(this._resolveUrl(url));
   }
 
@@ -104,7 +104,7 @@ export class Analyzer {
    * even have unsaved in-memory contents to use for the given file.
    */
   async analyzeChangedFile(url: string, contents?: string):
-      Promise<DocumentDescriptor|null> {
+      Promise<ScannedDocument|null> {
     const resolved = this._resolveUrl(url);
     this._documentDescriptors.delete(resolved);
     this._documents.delete(resolved);
@@ -112,7 +112,7 @@ export class Analyzer {
   }
 
   private async _analyzeResolved(resolvedUrl: string, contents?: string):
-      Promise<DocumentDescriptor|null> {
+      Promise<ScannedDocument|null> {
     let cachedResult = this._documentDescriptors.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
@@ -133,7 +133,7 @@ export class Analyzer {
   }
 
   async resolvePermissive(): Promise<Analysis> {
-    const docDescriptors: DocumentDescriptor[] = [];
+    const docDescriptors: ScannedDocument[] = [];
     for (const descriptorPromise of this._documentDescriptors.values()) {
       try {
         docDescriptors.push(await descriptorPromise);
@@ -150,7 +150,7 @@ export class Analyzer {
   private async _analyzeSource(
       type: string, contents: string, url: string,
       locationOffset?: LocationOffset,
-      attachedComment?: string): Promise<DocumentDescriptor> {
+      attachedComment?: string): Promise<ScannedDocument> {
     let resolvedUrl = this._resolveUrl(url);
     let document = this._parse(type, contents, resolvedUrl);
     return await this._analyzeDocument(
@@ -162,7 +162,7 @@ export class Analyzer {
    */
   private async _analyzeDocument(
       document: ParsedDocument<any, any>, maybeLocationOffset?: LocationOffset,
-      maybeAttachedComment?: string): Promise<DocumentDescriptor> {
+      maybeAttachedComment?: string): Promise<ScannedDocument> {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     let entities = await this._getEntities(document);
@@ -200,7 +200,7 @@ export class Analyzer {
 
     let dependencies = await Promise.all(analyzeDependencies);
 
-    return new DocumentDescriptor(
+    return new ScannedDocument(
         document, dependencies, entities, locationOffset);
   }
 

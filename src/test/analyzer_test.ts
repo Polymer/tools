@@ -18,7 +18,7 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {DocumentDescriptor, ImportDescriptor, InlineDocumentDescriptor} from '../ast/ast';
+import {ImportDescriptor, InlineDocumentDescriptor, ScannedDocument} from '../ast/ast';
 import {HtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -79,33 +79,31 @@ suite('Analyzer', () => {
     test('analyzes transitive dependencies', async() => {
       const root = await analyzer.analyze('static/dependencies/root.html');
       // check first level dependencies
-      assert.deepEqual(
-          root.dependencies.map((d: DocumentDescriptor) => d.url), [
-            'static/dependencies/inline-only.html',
-            'static/dependencies/leaf.html',
-            'static/dependencies/inline-and-imports.html',
-            'static/dependencies/subfolder/in-folder.html',
-          ]);
+      assert.deepEqual(root.dependencies.map((d: ScannedDocument) => d.url), [
+        'static/dependencies/inline-only.html',
+        'static/dependencies/leaf.html',
+        'static/dependencies/inline-and-imports.html',
+        'static/dependencies/subfolder/in-folder.html',
+      ]);
 
-      let inlineOnly = <DocumentDescriptor>root.dependencies[0];
+      let inlineOnly = <ScannedDocument>root.dependencies[0];
       assert.deepEqual(
-          inlineOnly.dependencies.map(
-              (d: DocumentDescriptor) => d.document.type),
+          inlineOnly.dependencies.map((d: ScannedDocument) => d.document.type),
           ['js', 'css']);
 
-      let leaf = <DocumentDescriptor>root.dependencies[1];
+      let leaf = <ScannedDocument>root.dependencies[1];
       assert.equal(leaf.dependencies.length, 0);
 
-      let inlineAndImports = <DocumentDescriptor>root.dependencies[2];
+      let inlineAndImports = <ScannedDocument>root.dependencies[2];
       assert.deepEqual(
           inlineAndImports.dependencies.map(
-              (d: DocumentDescriptor) => d.document.type),
+              (d: ScannedDocument) => d.document.type),
           ['js', 'html', 'css']);
 
-      let inFolder = <DocumentDescriptor>root.dependencies[3];
+      let inFolder = <ScannedDocument>root.dependencies[3];
       assert.equal(inFolder.dependencies.length, 1);
       assert.equal(
-          (<DocumentDescriptor>inFolder.dependencies[0]).url,
+          (<ScannedDocument>inFolder.dependencies[0]).url,
           'static/dependencies/subfolder/subfolder-sibling.html');
 
       // check de-duplication

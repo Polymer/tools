@@ -17,7 +17,7 @@ import * as parse5 from 'parse5';
 import {Analysis} from './analysis';
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
 import {ElementDescriptor} from './ast/ast';
-import {DocumentDescriptor, Property} from './ast/ast';
+import {ScannedDocument, Property} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {HtmlDocument} from './html/html-document';
 import {PolymerElementDescriptor} from './polymer/element-descriptor';
@@ -73,7 +73,7 @@ export class EditorService {
   }
 
   async fileChanged(localPath: string, contents?: string):
-      Promise<DocumentDescriptor> {
+      Promise<ScannedDocument> {
     return this._analyzer.analyzeChangedFile(localPath, contents);
   }
 

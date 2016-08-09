@@ -17,7 +17,7 @@ import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as util from 'util';
 
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property} from './ast/ast';
+import {Descriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, Property, ScannedDocument} from './ast/ast';
 import {Elements} from './elements-format';
 import {JsonDocument} from './json/json-document';
 import {BehaviorDescriptor} from './polymer/behavior-descriptor';
@@ -41,14 +41,14 @@ export class ValidationError extends Error {
 
 
 export class Analysis {
-  private _descriptors: DocumentDescriptor[];
+  private _descriptors: ScannedDocument[];
   private _elementsByTagName = new Map<string, ElementDescriptor>();
   private _elementsByPackageDir = new Map<string, ElementDescriptor[]>();
   private _behaviorsByIdentifierName = new Map<string, BehaviorDescriptor>();
-  private _documentsByLocalPath = new Map<string, DocumentDescriptor>();
+  private _documentsByLocalPath = new Map<string, ScannedDocument>();
   private _domModulesById = new Map<string, DomModuleDescriptor>();
 
-  constructor(descriptors: DocumentDescriptor[]) {
+  constructor(descriptors: ScannedDocument[]) {
     this._descriptors = descriptors;
     const packageGatherer = new PackageGatherer();
     const elementsGatherer = new ElementGatherer();
@@ -123,7 +123,7 @@ export class Analysis {
     return this._behaviorsByIdentifierName.get(name);
   }
 
-  getDocument(path: string): DocumentDescriptor|undefined {
+  getDocument(path: string): ScannedDocument|undefined {
     return this._documentsByLocalPath.get(path);
   }
 
@@ -154,7 +154,7 @@ export class Analysis {
 const packageFileNames = new Set(['package.json', 'bower.json']);
 class PackageGatherer implements AnalysisVisitor {
   packageDirs = new Set<string>();
-  visitDocumentDescriptor(dd: DocumentDescriptor): void {
+  visitDocumentDescriptor(dd: ScannedDocument): void {
     if (dd.document instanceof JsonDocument &&
         packageFileNames.has(path.basename(dd.document.url))) {
       const dirname = path.dirname(dd.document.url);
@@ -220,8 +220,8 @@ class ElementGatherer implements AnalysisVisitor {
    * parent that has a url.
    */
   _getPathFromAncestors(ancestors: Descriptor[]): string|undefined {
-    const documentAncestors = <DocumentDescriptor[]>ancestors.filter(
-        d => d instanceof DocumentDescriptor && d.url);
+    const documentAncestors = <ScannedDocument[]>ancestors.filter(
+        d => d instanceof ScannedDocument && d.url);
     const nearestDocument = documentAncestors[documentAncestors.length - 1];
     return nearestDocument && nearestDocument.url;
   }
@@ -236,8 +236,7 @@ class DomModuleGatherer implements AnalysisVisitor {
 }
 
 abstract class AnalysisVisitor {
-  visitDocumentDescriptor?
-      (dd: DocumentDescriptor, ancestors: Descriptor[]): void;
+  visitDocumentDescriptor?(dd: ScannedDocument, ancestors: Descriptor[]): void;
   visitInlineDocumentDescriptor?
       (dd: InlineDocumentDescriptor<any>, ancestors: Descriptor[]): void;
   visitElement?(element: ElementDescriptor, ancestors: Descriptor[]): void;
@@ -255,10 +254,10 @@ abstract class AnalysisVisitor {
  * Keeps track of the ancestors of the current node.
  */
 class AnalysisWalker {
-  private _documents: DocumentDescriptor[];
+  private _documents: ScannedDocument[];
   private _ancestors: Descriptor[] = [];
 
-  constructor(descriptors: DocumentDescriptor[]) {
+  constructor(descriptors: ScannedDocument[]) {
     this._documents = descriptors;
   }
   walk(visitors: AnalysisVisitor[]) {
@@ -274,7 +273,7 @@ class AnalysisWalker {
   }
 
   private _walkDocumentDescriptor(
-      dd: DocumentDescriptor, visitors: AnalysisVisitor[]) {
+      dd: ScannedDocument, visitors: AnalysisVisitor[]) {
     this._ancestors.push(dd);
 
     for (const visitor of visitors) {
@@ -305,7 +304,7 @@ class AnalysisWalker {
     if (entity == null) {
       return;
     }
-    if (entity instanceof DocumentDescriptor) {
+    if (entity instanceof ScannedDocument) {
       return this._walkDocumentDescriptor(entity, visitors);
     } else if (entity instanceof InlineDocumentDescriptor) {
       return this._walkInlineDocumentDescriptor(entity, visitors);
