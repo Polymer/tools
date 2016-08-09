@@ -54,6 +54,7 @@ export class Analysis {
       packageGatherer, elementsGatherer
     ]);
 
+    // Index the elements that we found by their tag names and package names.
     for (const element of elementsGatherer.elementDescriptors) {
       if (element.is) {
         this._elementsByTagName.set(element.is, element);
@@ -63,7 +64,9 @@ export class Analysis {
           Array.from(packageGatherer.packageDirs)
               .filter(dir => elementPath.startsWith(dir));
       const longestMatchingPackageDir =
-          matchingPackageDirs.sort((a, b) => b.length - a.length)[0] || '';
+          max(matchingPackageDirs,
+              (a, b) => a != null && a.length - b.length || -1) ||
+          '';
 
       const elementsInPackage =
           this._elementsByPackageDir.get(longestMatchingPackageDir) || [];
@@ -285,4 +288,11 @@ class AnalysisWalker {
       }
     }
   }
+}
+
+function max<T>(arr: T[], comparison: (t1: T | undefined, t2: T) => number): T|
+    undefined {
+  return arr.reduce((prev, cur) => {
+    return comparison(prev, cur) > 0 ? prev : cur;
+  }, undefined);
 }
