@@ -102,19 +102,19 @@ function arrayExpressionToValue(arry: estree.ArrayExpression): LiteralValue {
  * Make it look like an object
  */
 function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
-  let value: LiteralObj = {};
+  let evaluatedObjectExpression: LiteralObj = {};
   for (const prop of obj.properties) {
     if (prop.key.type !== 'Literal') {
       return undefined;
     }
-    const k = literalToValue(prop.key).toString();
-    const v = expressionToValue(prop.value);
-    if (v === undefined) {
+    const evaluatedKey = literalToValue(prop.key).toString();
+    const evaluatedValue = expressionToValue(prop.value);
+    if (evaluatedValue === undefined) {
       return;
     }
-    value[k] = v;
+    evaluatedObjectExpression[evaluatedKey] = evaluatedValue;
   }
-  return value;
+  return evaluatedObjectExpression;
 }
 
 /**
