@@ -27,7 +27,7 @@ const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 // TODO(rictic): work out how we want to handle ignoring elements from other
 //     packages in the world of Document rather than Analysis.
 const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
-suite('Analysis', function() {
+suite('elements.json generation', function() {
   const basedir = path.join(__dirname, 'static', 'analysis');
   const analysisFixtureDirs = fs.readdirSync(basedir)
                                   .map(p => path.join(basedir, p))
@@ -40,7 +40,7 @@ suite('Analysis', function() {
     const testDefiner = onlyTests.has(testBaseName) ?
         test.only :
         skipTests.has(testBaseName) ? test.skip : test;
-    const testName = `correctly produces a serialized elements.json ` +
+    const testName = `produces a correct elements.json ` +
         `for fixture dir \`${testBaseName}\``;
 
     testDefiner(testName, async function() {
@@ -80,7 +80,7 @@ suite('Analysis', function() {
     });
   }
 
-  test('throws when validating a valid AnalyzedPackage', function() {
+  test('throws when validating valid elements.json', function() {
     try {
       validateElements(<any>{});
     } catch (err) {
@@ -93,7 +93,7 @@ suite('Analysis', function() {
     throw new Error('expected Analysis validation to fail!');
   });
 
-  test(`doesn't throw when validating a valid AnalyzedPackage`, function() {
+  test(`doesn't throw when validating a valid elements.json`, function() {
     validateElements({elements: [], schema_version: '1.0.0'});
   });
 
