@@ -19,7 +19,7 @@ import * as estree from 'estree';
 import {ScannedEvent} from '../ast/ast';
 import {ScannedProperty} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
-import {FunctionDescriptor, ScannedPolymerElement, ScannedPolymerProperty} from '../polymer/element-descriptor';
+import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
@@ -31,8 +31,7 @@ import * as jsdoc from './jsdoc';
  *
  * e.g. you have a MemberExpression node, and want to see whether it represents
  * `Foo.Bar.Baz`:
- *
- *     matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
+ *    matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
  *
  * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
@@ -150,7 +149,7 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node: estree.Property):
+export function toScannedPolymerProperty(node: estree.Property):
     ScannedPolymerProperty {
   let type = closureType(node.value);
   if (type === 'Function') {
@@ -172,7 +171,7 @@ export function toPropertyDescriptor(node: estree.Property):
 
   if (type === 'Function') {
     const value = <estree.Function>node.value;
-    (<FunctionDescriptor><any>result).params =
+    (<ScannedFunction><any>result).params =
         (value.params || []).map((param) => {
           // With ES6 we can have a lot of param patterns. Best to leave the
           // formatting to escodegen.

@@ -77,24 +77,24 @@ export class EditorService {
 
   async getDocumentationFor(localPath: string, position: Position):
       Promise<string|undefined> {
-    const descriptor = await this._getDescriptorAt(localPath, position);
-    if (!descriptor) {
+    const feature = await this._getFeatureAt(localPath, position);
+    if (!feature) {
       return;
     }
-    if (isPropertyDescriptor(descriptor)) {
-      if (descriptor.type) {
-        return `{${descriptor.type}} ${descriptor.description}`;
+    if (isProperty(feature)) {
+      if (feature.type) {
+        return `{${feature.type}} ${feature.description}`;
       }
     }
-    return descriptor.description;
+    return feature.description;
   }
 
   async getDefinitionFor(localPath: string, position: Position) {
-    const descriptor = await this._getDescriptorAt(localPath, position);
-    if (!descriptor) {
+    const feature = await this._getFeatureAt(localPath, position);
+    if (!feature) {
       return;
     }
-    return descriptor.sourceLocation;
+    return feature.sourceLocation;
   }
 
   async getTypeaheadCompletionsFor(localPath: string, position: Position):
@@ -157,7 +157,7 @@ export class EditorService {
     };
   }
 
-  private async _getDescriptorAt(localPath: string, position: Position):
+  private async _getFeatureAt(localPath: string, position: Position):
       Promise<Element|Property|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
@@ -282,7 +282,7 @@ function isElementLocationInfo(location: parse5.LocationInfo|
   return location['startTag'] && location['endTag'];
 }
 
-function isPropertyDescriptor(d: any): d is(ScannedProperty | Property) {
+function isProperty(d: any): d is(ScannedProperty | Property) {
   return 'type' in d;
 }
 

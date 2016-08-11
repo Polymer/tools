@@ -25,14 +25,13 @@ export interface ScannedPolymerProperty extends ScannedProperty,
                                                 BasePolymerProperty {}
 export interface PolymerProperty extends Property, BasePolymerProperty {}
 
-export interface FunctionDescriptor extends ScannedPolymerProperty {
+export interface ScannedFunction extends ScannedPolymerProperty {
   function: boolean;  // true
   params: {name: string, type?: string}[];
   return: {type: string | null; desc: string};
 }
 
-export function isFunctionDescriptor(d: ScannedProperty):
-    d is FunctionDescriptor {
+export function isScannedFunction(d: ScannedProperty): d is ScannedFunction {
   return d['function'] === true;
 }
 
@@ -90,7 +89,7 @@ export class ScannedPolymerElement extends ScannedElement {
     if (prop.private || !attributeName || !prop.published) {
       return;
     }
-    if (!isFunctionDescriptor(prop)) {
+    if (!isScannedFunction(prop)) {
       this.attributes.push({
         name: attributeName,
         sourceLocation: prop.sourceLocation,

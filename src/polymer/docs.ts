@@ -19,10 +19,11 @@ import {ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedBehavior} from './behavior-descriptor';
-import {FunctionDescriptor, ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
-import {FeatureDescriptor} from './feature-descriptor';
+import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
+import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
-
+// TODO(rictic): destroy this file with great abadon. It's the oldest and
+//     hardest to understand in the repo at this point I think.
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [
@@ -40,42 +41,41 @@ const HANDLED_TAGS = [
 ];
 
 /**
- * Annotates Hydrolysis descriptors, processing any `desc` properties as JSDoc.
+ * Annotates Hydrolysis scanned features, processing any descriptions as
+ * JSDoc.
  *
  * You probably want to use a more specialized version of this, such as
  * `annotateElement`.
  *
  * Processed JSDoc values will be made available via the `jsdoc` property on a
- * descriptor node.
- *
- * @param {Object} descriptor The descriptor node to process.
- * @return {Object} The descriptor that was given.
+ * scanned feature.
  */
 export function
 annotate<Scanned extends{jsdoc?: jsdoc.Annotation, description?: string}>(
-    descriptor: Scanned): Scanned {
-  if (!descriptor || descriptor.jsdoc)
-    return descriptor;
-
-  if (typeof descriptor.description === 'string') {
-    descriptor.jsdoc = jsdoc.parseJsdoc(descriptor.description);
-    // We want to present the normalized form of a descriptor.
-    descriptor.description = descriptor.jsdoc.description;
+    feature: Scanned): Scanned {
+  if (!feature || feature.jsdoc) {
+    return feature;
   }
 
-  return descriptor;
+  if (typeof feature.description === 'string') {
+    feature.jsdoc = jsdoc.parseJsdoc(feature.description);
+    // We want to present the normalized form of a feature.
+    feature.description = feature.jsdoc.description;
+  }
+
+  return feature;
 }
 
 /**
  * Annotates @event, @hero, & @demo tags
  */
-export function annotateElementHeader(descriptor: ScannedPolymerElement) {
-  descriptor.demos = [];
-  if (descriptor.jsdoc && descriptor.jsdoc.tags) {
-    descriptor.jsdoc.tags.forEach(function(tag) {
+export function annotateElementHeader(scannedElement: ScannedPolymerElement) {
+  scannedElement.demos = [];
+  if (scannedElement.jsdoc && scannedElement.jsdoc.tags) {
+    scannedElement.jsdoc.tags.forEach(function(tag) {
       switch (tag.tag) {
         case 'demo':
-          descriptor.demos.push({
+          scannedElement.demos.push({
             desc: tag.description || 'demo',
             path: tag.name || 'demo/index.html'
           });
@@ -85,16 +85,12 @@ export function annotateElementHeader(descriptor: ScannedPolymerElement) {
   }
 }
 
-/**
- * Annotates behavior descriptor.
- * @param {Object} descriptor behavior descriptor
- * @return {Object} descriptor passed in as param
- */
-export function annotateBehavior(descriptor: ScannedBehavior): ScannedBehavior {
-  annotate(descriptor);
-  annotateElementHeader(descriptor);
+export function annotateBehavior(scannedBehavior: ScannedBehavior):
+    ScannedBehavior {
+  annotate(scannedBehavior);
+  annotateElementHeader(scannedBehavior);
 
-  return descriptor;
+  return scannedBehavior;
 }
 
 /**
@@ -102,7 +98,7 @@ export function annotateBehavior(descriptor: ScannedBehavior): ScannedBehavior {
  */
 export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
   const eventTag = jsdoc.getTag(annotation, 'event');
-  const eventDescriptor: ScannedEvent = {
+  const scannedEvent: ScannedEvent = {
     name: (eventTag && eventTag.description) ?
         (eventTag.description || '').match(/^\S*/)[0] :
         'N/A',
@@ -113,7 +109,7 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
 
   const tags = (annotation && annotation.tags || []);
   // process @params
-  eventDescriptor.params =
+  scannedEvent.params =
       tags.filter((tag) => tag.tag === 'param').map(function(param) {
         return {
           type: param.type || 'N/A',
@@ -122,66 +118,65 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
         };
       });
   // process @params
-  return eventDescriptor;
+  return scannedEvent;
 }
 
 /**
- * Annotates documentation found about a Hydrolysis property descriptor.
+ * Annotates documentation found about a scanned polymer property.
  *
- * @param {Object} descriptor The property descriptor.
- * @param {boolean} ignoreConfiguration If true, `configuration` is not set.
- * @return {Object} The descriptior that was given.
+ * @param feature
+ * @param ignoreConfiguration If true, `configuration` is not set.
+ * @return The descriptior that was given.
  */
 function annotateProperty(
-    descriptor: ScannedPolymerProperty,
+    feature: ScannedPolymerProperty,
     ignoreConfiguration: boolean): ScannedPolymerProperty {
-  annotate(descriptor);
-  if (descriptor.name[0] === '_' || jsdoc.hasTag(descriptor.jsdoc, 'private')) {
-    descriptor.private = true;
+  annotate(feature);
+  if (feature.name[0] === '_' || jsdoc.hasTag(feature.jsdoc, 'private')) {
+    feature.private = true;
   }
 
   if (!ignoreConfiguration &&
-      ELEMENT_CONFIGURATION.indexOf(descriptor.name) !== -1) {
-    descriptor.private = true;
-    descriptor.configuration = true;
+      ELEMENT_CONFIGURATION.indexOf(feature.name) !== -1) {
+    feature.private = true;
+    feature.configuration = true;
   }
 
   // @type JSDoc wins
-  descriptor.type =
-      jsdoc.getTag(descriptor.jsdoc, 'type', 'type') || descriptor.type;
+  feature.type = jsdoc.getTag(feature.jsdoc, 'type', 'type') || feature.type;
 
-  if (descriptor.type.match(/^function/i)) {
-    _annotateFunctionProperty(<FunctionDescriptor><any>descriptor);
+  if (feature.type.match(/^function/i)) {
+    _annotateFunctionProperty(<ScannedFunction><any>feature);
   }
 
   // @default JSDoc wins
-  const defaultTag = jsdoc.getTag(descriptor.jsdoc, 'default');
+  const defaultTag = jsdoc.getTag(feature.jsdoc, 'default');
   if (defaultTag !== null) {
     const newDefault = (defaultTag.name || '') + (defaultTag.description || '');
     if (newDefault !== '') {
-      descriptor.default = newDefault;
+      feature.default = newDefault;
     }
   }
 
-  return descriptor;
+  return feature;
 }
 
-function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
-  descriptor.function = true;
+function _annotateFunctionProperty(scannedFunction: ScannedFunction) {
+  scannedFunction.function = true;
 
-  const returnTag = jsdoc.getTag(descriptor.jsdoc, 'return');
+  const returnTag = jsdoc.getTag(scannedFunction.jsdoc, 'return');
   if (returnTag) {
-    descriptor.return = {
+    scannedFunction.return = {
       type: returnTag.type,
       desc: returnTag.description || '',
     };
   }
 
   const paramsByName = {};
-  (descriptor.params || []).forEach((param) => {
+  (scannedFunction.params || []).forEach((param) => {
     paramsByName[param.name] = param;
   });
-  (descriptor.jsdoc && descriptor.jsdoc.tags || []).forEach((tag) => {
+  (scannedFunction.jsdoc && scannedFunction.jsdoc.tags || []).forEach((tag) => {
     if (tag.tag !== 'param' || tag.name == null)
       return;
     const param = paramsByName[tag.name];
@@ -199,11 +194,8 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  *
  * Note that docs on this element _are not processed_. You must call
  * `annotateElement` on it yourself if you wish that.
- *
- * @param {Array<FeatureDescriptor>} features
- * @return {ElementDescriptor}
  */
-export function featureElement(features: FeatureDescriptor[]):
+export function featureElement(features: ScannedPolymerCoreFeature[]):
     ScannedPolymerElement {
   const properties =
       features.reduce<ScannedPolymerProperty[]>((result, feature) => {
@@ -226,19 +218,17 @@ export function featureElement(features: FeatureDescriptor[]):
 }
 
 /**
- * Cleans redundant properties from a descriptor, assuming that you have already
+ * Cleans redundant properties from a feature, assuming that you have already
  * called `annotate`.
- *
- * @param {Object} descriptor
  */
-export function clean(descriptor: ScannedFeature) {
-  if (!descriptor.jsdoc)
+export function clean(scannedFeature: ScannedFeature) {
+  if (!scannedFeature.jsdoc)
     return;
-  // The doctext was written to `descriptor.desc`
-  delete descriptor.jsdoc.description;
+  // The doctext was written to `scannedFeature.description`
+  delete scannedFeature.jsdoc.description;
 
   const cleanTags: jsdoc.Tag[] = [];
-  (descriptor.jsdoc.tags || []).forEach(function(tag) {
+  (scannedFeature.jsdoc.tags || []).forEach(function(tag) {
     // Drop any tags we've consumed.
     if (HANDLED_TAGS.indexOf(tag.tag) !== -1)
       return;
@@ -247,17 +237,15 @@ export function clean(descriptor: ScannedFeature) {
 
   if (cleanTags.length === 0) {
     // No tags? no docs left!
-    delete descriptor.jsdoc;
+    delete scannedFeature.jsdoc;
   } else {
-    descriptor.jsdoc.tags = cleanTags;
+    scannedFeature.jsdoc.tags = cleanTags;
   }
 }
 
 /**
  * Cleans redundant properties from an element, assuming that you have already
  * called `annotateElement`.
- *
- * @param {ElementDescriptor|BehaviorDescriptor} element
  */
 export function cleanElement(element: ScannedPolymerElement) {
   clean(element);
@@ -267,8 +255,6 @@ export function cleanElement(element: ScannedPolymerElement) {
 /**
  * Cleans redundant properties from a property, assuming that you have already
  * called `annotateProperty`.
- *
- * @param {PropertyDescriptor} property
  */
 function cleanProperty(property: ScannedProperty) {
   clean(property);
@@ -276,8 +262,6 @@ function cleanProperty(property: ScannedProperty) {
 
 /**
  * Parse elements defined only in comments.
- * @param  {comments} Array<string> A list of comments to parse.
- * @return {ElementDescriptor}      A list of pseudo-elements.
  */
 export function parsePseudoElements(comments: string[]):
     ScannedPolymerElement[] {

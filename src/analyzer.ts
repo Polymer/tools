@@ -81,8 +81,9 @@ export class Analyzer {
 
   private _loader: UrlLoader;
   private _resolver: UrlResolver|undefined;
-  private _documents = new Map<string, Promise<ParsedDocument<any, any>>>();
-  private _documentDescriptors = new Map<string, Promise<ScannedDocument>>();
+  private _parsedDocuments =
+      new Map<string, Promise<ParsedDocument<any, any>>>();
+  private _scannedDocuments = new Map<string, Promise<ScannedDocument>>();
 
   constructor(options: Options) {
     this._loader = options.urlLoader;
@@ -107,8 +108,8 @@ export class Analyzer {
   async analyzeChangedFile(url: string, contents?: string):
       Promise<Document|null> {
     const resolved = this._resolveUrl(url);
-    this._documentDescriptors.delete(resolved);
-    this._documents.delete(resolved);
+    this._scannedDocuments.delete(resolved);
+    this._parsedDocuments.delete(resolved);
     const scannedDocument =
         await this._analyzeResolved(this._resolveUrl(url), contents);
     return Document.makeRootDocument(scannedDocument);
@@ -116,7 +117,7 @@ export class Analyzer {
 
   private async _analyzeResolved(resolvedUrl: string, contents?: string):
       Promise<ScannedDocument|null> {
-    let cachedResult = this._documentDescriptors.get(resolvedUrl);
+    let cachedResult = this._scannedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -127,7 +128,7 @@ export class Analyzer {
       let document = await this._loadResolved(resolvedUrl, contents);
       return this._analyzeDocument(document);
     })();
-    this._documentDescriptors.set(resolvedUrl, promise);
+    this._scannedDocuments.set(resolvedUrl, promise);
     return promise;
   }
 
@@ -169,10 +170,10 @@ export class Analyzer {
       firstEntity.applyHtmlComment(maybeAttachedComment);
     }
 
-    let dependencyDescriptors: ScannedFeature[] = entities.filter(
+    let scannedDependencies: ScannedFeature[] = entities.filter(
         (e) => e instanceof InlineParsedDocument || e instanceof ScannedImport);
     let analyzeDependencies =
-        dependencyDescriptors.map(async(scannedDependency) => {
+        scannedDependencies.map(async(scannedDependency) => {
           if (scannedDependency instanceof InlineParsedDocument) {
             const locationOffset: LocationOffset = {
               line: scannedDependency.locationOffset.line,
@@ -211,7 +212,7 @@ export class Analyzer {
 
   private async _loadResolved(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
-    const cachedResult = this._documents.get(resolvedUrl);
+    const cachedResult = this._parsedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -231,7 +232,7 @@ export class Analyzer {
       let extension = path.extname(resolvedUrl).substring(1);
       return this._parse(extension, content, resolvedUrl);
     })();
-    this._documents.set(resolvedUrl, promise);
+    this._parsedDocuments.set(resolvedUrl, promise);
     return promise;
   }
 

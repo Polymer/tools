@@ -17,4 +17,4 @@ import {ScannedPolymerElement} from '../polymer/element-descriptor';
 /**
  * The metadata for a Polymer core feature.
  */
-export interface FeatureDescriptor extends ScannedPolymerElement {}
+export interface ScannedPolymerCoreFeature extends ScannedPolymerElement {}

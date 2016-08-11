@@ -27,13 +27,9 @@ export type PropertyHandlers = {
 /**
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.
- *
- * @param  {ElementDescriptor} declaration The descriptor to annotate.
- * @return {object.<string,function>}      An object containing property
- *                                         handlers.
  */
-export function declarationPropertyHandlers(
-    declaration: ScannedPolymerElement): PropertyHandlers {
+export function declarationPropertyHandlers(declaration: ScannedPolymerElement):
+    PropertyHandlers {
   return {
     is(node: estree.Node) {
       if (node.type === 'Literal') {

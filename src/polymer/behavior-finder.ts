@@ -15,7 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedFeature, LiteralValue, ScannedProperty} from '../ast/ast';
+import {LiteralValue, ScannedFeature, ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -111,7 +111,7 @@ class BehaviorVisitor implements Visitor {
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else {
-        this.currentBehavior.addProperty(esutil.toPropertyDescriptor(prop));
+        this.currentBehavior.addProperty(esutil.toScannedPolymerProperty(prop));
       }
     }
     this._finishBehavior();
@@ -202,7 +202,7 @@ class BehaviorVisitor implements Visitor {
           behavior.description = newBehavior.description;
         }
       }
-      // TODO(justinfagnani): move into BehaviorDescriptor
+      // TODO(justinfagnani): move into ScannedBehavior
       behavior.demos = behavior.demos.concat(newBehavior.demos);
       behavior.events = behavior.events.concat(newBehavior.events);
       behavior.events = dedupe(behavior.events, (e) => e.name);

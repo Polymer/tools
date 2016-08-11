@@ -28,7 +28,7 @@ export function generateElementMetadata(
     elements: LinkedElement[], packagePath: string): Elements|undefined {
   return {
     schema_version: '1.0.0',
-    elements: elements.map(e => serializeElementDescriptor(e, packagePath))
+    elements: elements.map(e => serializeElement(e, packagePath))
   };
 }
 
@@ -67,37 +67,36 @@ export function validateElements(analyzedPackage: Elements|null|undefined) {
 }
 
 
-function serializeElementDescriptor(
-    elementDescriptor: LinkedElement, packagePath: string): Element|null {
-  if (!elementDescriptor.tagName) {
+function serializeElement(
+    linkedElement: LinkedElement, packagePath: string): Element|null {
+  if (!linkedElement.tagName) {
     return null;
   }
 
-
-  const path = elementDescriptor.sourceLocation.file;
+  const path = linkedElement.sourceLocation.file;
   const packageRelativePath =
-      pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
+      pathLib.relative(packagePath, linkedElement.sourceLocation.file);
 
-  const attributes = elementDescriptor.attributes.map(
-      a => serializeAttributeDescriptor(elementDescriptor, path, a));
+  const attributes = linkedElement.attributes.map(
+      a => serializeAttribute(linkedElement, path, a));
   const properties =
-      elementDescriptor.properties
+      linkedElement.properties
           .filter(
               p => !p.private &&
                   // Blacklist functions until we figure out what to do.
                   p.type !== 'Function')
-          .map(p => serializePropertyDescriptor(elementDescriptor, path, p));
-  const events = elementDescriptor.events.map(
-      e => ({
-        name: e.name,
-        description: e.description,
-        type: 'CustomEvent',
-        metadata: elementDescriptor.emitEventMetadata(e)
-      }));
+          .map(p => serializeProperty(linkedElement, path, p));
+  const events =
+      linkedElement.events.map(e => ({
+                                 name: e.name,
+                                 description: e.description,
+                                 type: 'CustomEvent',
+                                 metadata: linkedElement.emitEventMetadata(e)
+                               }));
 
   return {
-    tagname: elementDescriptor.tagName,
-    description: elementDescriptor.description || '',
+    tagname: linkedElement.tagName,
+    description: linkedElement.description || '',
     superclass: 'HTMLElement',
     path: packageRelativePath,
     attributes: attributes,
@@ -106,45 +105,45 @@ function serializeElementDescriptor(
       cssVariables: [],
       selectors: [],
     },
-    demos: (elementDescriptor.demos || []).map(d => d.path),
+    demos: (linkedElement.demos || []).map(d => d.path),
     slots: [],
     events: events,
-    metadata: elementDescriptor.emitMetadata(),
+    metadata: linkedElement.emitMetadata(),
     sourceLocation:
-        resolveSourceLocationPath(path, elementDescriptor.sourceLocation)
+        resolveSourceLocationPath(path, linkedElement.sourceLocation)
   };
 }
 
-function serializePropertyDescriptor(
-    element: LinkedElement, elementPath: string,
-    propertyDescriptor: LinkedProperty): Property {
+function serializeProperty(
+    linkedElement: LinkedElement, elementPath: string,
+    linkedProperty: LinkedProperty): Property {
   const property: Property = {
-    name: propertyDescriptor.name,
-    type: propertyDescriptor.type || '?',
-    description: propertyDescriptor.description || '',
-    sourceLocation: resolveSourceLocationPath(
-        elementPath, propertyDescriptor.sourceLocation)
+    name: linkedProperty.name,
+    type: linkedProperty.type || '?',
+    description: linkedProperty.description || '',
+    sourceLocation:
+        resolveSourceLocationPath(elementPath, linkedProperty.sourceLocation)
   };
-  if (propertyDescriptor.default) {
-    property.defaultValue = propertyDescriptor.default;
+  if (linkedProperty.default) {
+    property.defaultValue = linkedProperty.default;
   }
-  property.metadata = element.emitPropertyMetadata(propertyDescriptor);
+  property.metadata = linkedElement.emitPropertyMetadata(linkedProperty);
   return property;
 }
 
-function serializeAttributeDescriptor(
-    element: LinkedElement, elementPath: string,
-    attributeDescriptor: LinkedAttribute): Attribute {
+function serializeAttribute(
+    linkedElement: LinkedElement, elementPath: string,
+    linkedAttribute: LinkedAttribute): Attribute {
   const attribute: Attribute = {
-    name: attributeDescriptor.name,
-    description: attributeDescriptor.description || '',
-    sourceLocation: resolveSourceLocationPath(
-        elementPath, attributeDescriptor.sourceLocation)
+    name: linkedAttribute.name,
+    description: linkedAttribute.description || '',
+    sourceLocation:
+        resolveSourceLocationPath(elementPath, linkedAttribute.sourceLocation)
   };
-  if (attributeDescriptor.type) {
-    attribute.type = attributeDescriptor.type;
+  if (linkedAttribute.type) {
+    attribute.type = linkedAttribute.type;
   }
-  attribute.metadata = element.emitAttributeMetadata(attributeDescriptor);
+  attribute.metadata = linkedElement.emitAttributeMetadata(linkedAttribute);
   return attribute;
 }
 

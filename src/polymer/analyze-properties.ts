@@ -25,7 +25,7 @@ export function analyzeProperties(node: estree.Node) {
     return analyzedProps;
   }
   for (const property of node.properties) {
-    const prop = esutil.toPropertyDescriptor(property);
+    const prop = esutil.toScannedPolymerProperty(property);
     prop.published = true;
 
     if (property.value.type !== 'ObjectExpression') {

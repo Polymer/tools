@@ -25,7 +25,7 @@ import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-do
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
-export interface AttributeDescriptor extends ScannedFeature {
+export interface ScannedAttribute extends ScannedFeature {
   name: string;
   sourceLocation: SourceLocation;
   type?: string;
@@ -159,7 +159,7 @@ class ElementVisitor implements Visitor {
    */
   private _extractAttributesFromObservedAttributes(arry:
                                                        estree.ArrayExpression) {
-    const results: AttributeDescriptor[] = [];
+    const results: ScannedAttribute[] = [];
     for (const expr of arry.elements) {
       const value = astValue.expressionToValue(expr);
       if (value && typeof value === 'string') {
@@ -176,7 +176,7 @@ class ElementVisitor implements Visitor {
             description = description || tag.description;
           }
         }
-        const attribute: AttributeDescriptor = {
+        const attribute: ScannedAttribute = {
           name: value,
           description: description,
           sourceLocation: getSourceLocation(expr),

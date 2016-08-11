@@ -52,13 +52,6 @@ suite('Analyzer', () => {
 
   suite('analyze()', () => {
 
-    test('returns a Promise that resolves to a DocumentDescriptor', async() => {
-      const descriptor =
-          await analyzer.analyze('/static/html-parse-target.html');
-      // TODO(justinfagnani): add a lot more checks, especially for
-      // transitive dependencies
-    });
-
     test('returns a Promise that rejects for malformed files', async() => {
       const error =
           await invertPromise(analyzer.analyze('static/malformed.html'));

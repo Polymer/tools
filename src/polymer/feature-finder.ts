@@ -18,22 +18,22 @@ import * as estree from 'estree';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 
-import {FeatureDescriptor} from './feature-descriptor';
+import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
 const numFeatures = 0;
 
 export function featureFinder() {
   /** The features we've found. */
-  const features: FeatureDescriptor[] = [];
+  const features: ScannedPolymerCoreFeature[] = [];
 
   function _extractDesc(
-      feature: FeatureDescriptor, node: estree.CallExpression,
+      feature: ScannedPolymerCoreFeature, node: estree.CallExpression,
       parent: estree.Node) {
     feature.description = esutil.getAttachedComment(parent);
   }
 
   function _extractProperties(
-      feature: FeatureDescriptor, node: estree.CallExpression,
+      feature: ScannedPolymerCoreFeature, node: estree.CallExpression,
       parent: estree.Node) {
     const featureNode = node.arguments[0];
     if (featureNode.type !== 'ObjectExpression') {
@@ -47,7 +47,7 @@ export function featureFinder() {
     }
 
     for (const prop of featureNode.properties.map(
-             esutil.toPropertyDescriptor)) {
+             esutil.toScannedPolymerProperty)) {
       feature.addProperty(prop);
     }
   }
@@ -61,8 +61,7 @@ export function featureFinder() {
       if (!isAddFeatureCall) {
         return;
       }
-      /** @type {!FeatureDescriptor} */
-      const feature = <FeatureDescriptor>{};
+      const feature = <ScannedPolymerCoreFeature>{};
       _extractDesc(feature, node, parent);
       _extractProperties(feature, node, parent);
 

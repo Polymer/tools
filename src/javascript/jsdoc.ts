@@ -19,11 +19,6 @@ import * as doctrine from 'doctrine';
  * the tag:
  *
  *     @TAG {TYPE} NAME DESC
- *
- * `line` and `col` indicate the position of the first character of text that
- * the tag was extracted from - relative to the first character of the comment
- * contents (e.g. the value of `desc` on a descriptor node). Lines are
- * 1-indexed.
  */
 export interface Tag {
   tag: string;
