@@ -18,7 +18,7 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {ScannedImport, InlineParsedDocument, ScannedDocument} from '../ast/ast';
+import {InlineParsedDocument, ScannedDocument, ScannedImport} from '../ast/ast';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -59,17 +59,6 @@ suite('Analyzer', () => {
       // transitive dependencies
     });
 
-    test('resolves URLs', async() => {
-      const docs = await Promise.all([
-        analyzer.analyze('test.com/test.html'),
-        analyzer.analyze('/static/html-parse-target.html'),
-      ]);
-      let doc1 = docs[0];
-      let doc2 = docs[1];
-      assert.equal(doc1.url, '/static/html-parse-target.html');
-      assert.equal(doc1, doc2);
-    });
-
     test('returns a Promise that rejects for malformed files', async() => {
       const error =
           await invertPromise(analyzer.analyze('static/malformed.html'));
@@ -78,36 +67,69 @@ suite('Analyzer', () => {
 
     test('analyzes transitive dependencies', async() => {
       const root = await analyzer.analyze('static/dependencies/root.html');
-      // check first level dependencies
-      assert.deepEqual(root.dependencies.map((d: ScannedDocument) => d.url), [
+
+      // If we ask for documents we get every document in evaluation order.
+      assert.deepEqual(
+          Array.from(root.getByKind('document'))
+              .map((d) => [d.url, d.parsedDocument.type, d.isInline]),
+          [
+            ['static/dependencies/root.html', 'html', false],
+            ['static/dependencies/inline-only.html', 'html', false],
+            ['static/dependencies/inline-only.html', 'js', true],
+            ['static/dependencies/inline-only.html', 'css', true],
+            ['static/dependencies/leaf.html', 'html', false],
+            ['static/dependencies/inline-and-imports.html', 'html', false],
+            ['static/dependencies/inline-and-imports.html', 'js', true],
+            ['static/dependencies/subfolder/in-folder.html', 'html', false],
+            [
+              'static/dependencies/subfolder/subfolder-sibling.html', 'html',
+              false
+            ],
+            ['static/dependencies/inline-and-imports.html', 'css', true],
+          ]);
+
+      // If we ask for imports we get the import statements in evaluation order.
+      // Unlike documents, we can have duplicates here because imports exist
+      // in distinct places in their containing docs.
+      assert.deepEqual(Array.from(root.getByKind('import')).map((d) => d.url), [
         'static/dependencies/inline-only.html',
         'static/dependencies/leaf.html',
         'static/dependencies/inline-and-imports.html',
         'static/dependencies/subfolder/in-folder.html',
+        'static/dependencies/subfolder/subfolder-sibling.html',
+        'static/dependencies/subfolder/in-folder.html',
       ]);
 
-      let inlineOnly = <ScannedDocument>root.dependencies[0];
+      const inlineOnly =
+          root.getOnlyAtId('document', 'static/dependencies/inline-only.html');
       assert.deepEqual(
-          inlineOnly.dependencies.map((d: ScannedDocument) => d.document.type),
-          ['js', 'css']);
+          Array.from(inlineOnly.getByKind('document'))
+              .map((d) => d.parsedDocument.type),
+          ['html', 'js', 'css']);
 
-      let leaf = <ScannedDocument>root.dependencies[1];
-      assert.equal(leaf.dependencies.length, 0);
+      const leaf =
+          root.getOnlyAtId('document', 'static/dependencies/leaf.html');
+      assert.deepEqual(Array.from(leaf.getByKind('document')), [leaf]);
 
-      let inlineAndImports = <ScannedDocument>root.dependencies[2];
+      const inlineAndImports = root.getOnlyAtId(
+          'document', 'static/dependencies/inline-and-imports.html');
       assert.deepEqual(
-          inlineAndImports.dependencies.map(
-              (d: ScannedDocument) => d.document.type),
-          ['js', 'html', 'css']);
-
-      let inFolder = <ScannedDocument>root.dependencies[3];
-      assert.equal(inFolder.dependencies.length, 1);
-      assert.equal(
-          (<ScannedDocument>inFolder.dependencies[0]).url,
-          'static/dependencies/subfolder/subfolder-sibling.html');
+          Array.from(inlineAndImports.getByKind('document'))
+              .map((d) => d.parsedDocument.type),
+          ['html', 'js', 'html', 'html', 'css']);
+      const inFolder = root.getOnlyAtId(
+          'document', 'static/dependencies/subfolder/in-folder.html');
+      assert.deepEqual(
+          Array.from(inFolder.getByKind('document')).map(d => d.url), [
+            'static/dependencies/subfolder/in-folder.html',
+            'static/dependencies/subfolder/subfolder-sibling.html'
+          ]);
 
       // check de-duplication
-      assert.equal(inlineAndImports.dependencies[1], leaf);
+      assert.equal(
+          inlineAndImports.getOnlyAtId(
+              'document', 'static/dependencies/subfolder/in-folder.html'),
+          inFolder);
     });
 
     test('returns a Promise that rejects for malformed files', async() => {
@@ -185,40 +207,25 @@ suite('Analyzer', () => {
   suite('legacy tests', () => {
 
     // ported from old js-parser_test.js
-    test('parses classes', () => {
-      return analyzer.analyze('static/es6-support.js').then((document) => {
-        let elements = <ScannedPolymerElement[]>document.entities.filter(
-            (e) => e instanceof ScannedPolymerElement);
-        assert.equal(elements.length, 2);
+    // FIXME(rictic): I've temporarily disabled most recognition of Polymer ES6
+    //     classes because the finder is buggy and triggers when it shouldn't.
+    test.skip('parses classes', async() => {
+      const document = await analyzer.analyze('static/es6-support.js');
 
-        let element1 = elements[0];
-        assert.equal(element1.behaviors.length, 2);
-        assert.equal(element1.behaviors[0], 'Behavior1');
-        assert.equal(element1.behaviors[1], 'Behavior2');
-        assert.equal(element1.tagName, 'test-seed');
+      const elements = Array.from(document.getByKind('polymer-element'));
+      assert.deepEqual(
+          elements.map(e => e.tagName), ['test-seed', 'test-element']);
+      const testSeed = elements[0];
+      const testElement = elements[1];
 
-        assert.equal(element1.observers.length, 2);
-        assert.equal(element1.properties.length, 4);
+      assert.deepEqual(testSeed.behaviors, ['Behavior1', 'Behavior2']);
+      assert.equal(testSeed.tagName, 'test-seed');
 
-        // TODO(justinfagnani): fix events
-        // assert.equal(elements[0].events.length, 1);
-        assert.equal(elements[1].tagName, 'test-element');
-      });
+      assert.equal(testSeed.observers.length, 2);
+      assert.equal(testSeed.properties.length, 4);
+
+      assert.deepEqual(
+          testSeed.events.map(e => e.name), ['fired-event', 'data-changed']);
     });
-
-    // ported from old js-parser_test.js
-    test('parses events from classes', () => {
-      return analyzer.analyze('static/es6-support.js').then((document) => {
-        let elements = <ScannedPolymerElement[]>document.entities.filter(
-            (e) => e instanceof ScannedPolymerElement);
-        assert.deepEqual(
-            elements.map(e => e.tagName), ['test-seed', 'test-element']);
-        assert.deepEqual(
-            elements[0].events.map(e => e.name),
-            ['fired-event', 'data-changed']);
-      });
-    });
-
   });
-
 });

@@ -17,11 +17,9 @@ import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 import * as util from 'util';
 
-import {ScannedFeature, ScannedImport, InlineParsedDocument, LocationOffset, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
-
-import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
+import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
+import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
-
 const p = dom5.predicates;
 
 const isJsScriptNode = p.AND(
@@ -34,11 +32,12 @@ const isJsScriptNode = p.AND(
 export class HtmlScriptFinder implements HtmlEntityFinder {
   async findEntities(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<ScannedFeature[]> {
-    let entities:
-        (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] = [];
+      visit: (visitor: HtmlVisitor) => Promise<void>):
+      Promise<ScannedFeature[]> {
+    let entities: (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] =
+        [];
 
-    await visit((node) => {
+    const myVisitor: HtmlVisitor = (node) => {
       if (isJsScriptNode(node)) {
         let src = dom5.getAttribute(node, 'src');
         if (src) {
@@ -54,7 +53,9 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
               'js', contents, node, locationOffset, attachedCommentText));
         }
       }
-    });
+    };
+
+    await visit(myVisitor);
 
     return entities;
   }

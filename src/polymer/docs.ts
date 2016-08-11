@@ -15,12 +15,13 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 
-import {ScannedFeature, ScannedEvent, ScannedProperty} from '../ast/ast';
+import {ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedBehavior} from './behavior-descriptor';
 import {FunctionDescriptor, ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 import {FeatureDescriptor} from './feature-descriptor';
+
 
 
 /** Properties on element prototypes that are purely configuration. */
@@ -50,7 +51,9 @@ const HANDLED_TAGS = [
  * @param {Object} descriptor The descriptor node to process.
  * @return {Object} The descriptor that was given.
  */
-export function annotate(descriptor: ScannedFeature): ScannedFeature {
+export function
+annotate<Scanned extends{jsdoc?: jsdoc.Annotation, description?: string}>(
+    descriptor: Scanned): Scanned {
   if (!descriptor || descriptor.jsdoc)
     return descriptor;
 
@@ -87,8 +90,7 @@ export function annotateElementHeader(descriptor: ScannedPolymerElement) {
  * @param {Object} descriptor behavior descriptor
  * @return {Object} descriptor passed in as param
  */
-export function annotateBehavior(descriptor: ScannedBehavior):
-    ScannedBehavior {
+export function annotateBehavior(descriptor: ScannedBehavior): ScannedBehavior {
   annotate(descriptor);
   annotateElementHeader(descriptor);
 
@@ -105,7 +107,8 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
         (eventTag.description || '').match(/^\S*/)[0] :
         'N/A',
     description: eventTag.description || annotation.description,
-    jsdoc: annotation
+    jsdoc: annotation,
+    node: null
   };
 
   const tags = (annotation && annotation.tags || []);
@@ -202,9 +205,10 @@ function _annotateFunctionProperty(descriptor: FunctionDescriptor) {
  */
 export function featureElement(features: FeatureDescriptor[]):
     ScannedPolymerElement {
-  const properties = features.reduce<ScannedPolymerProperty[]>((result, feature) => {
-    return result.concat(feature.properties);
-  }, []);
+  const properties =
+      features.reduce<ScannedPolymerProperty[]>((result, feature) => {
+        return result.concat(feature.properties);
+      }, []);
 
   return new ScannedPolymerElement({
     className: 'Polymer.Base',
@@ -217,6 +221,7 @@ export function featureElement(features: FeatureDescriptor[]):
         'The properties reflected here are the combined view of all ' +
         'features found in this library. There may be more properties ' +
         'added via other libraries, as well.',
+    node: null
   });
 }
 
@@ -285,7 +290,8 @@ export function parsePseudoElements(comments: string[]):
         tagName: pseudoTag,
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
         properties: [],
-        description: parsedJsdoc.description
+        description: parsedJsdoc.description,
+        node: null
       });
       annotateElementHeader(element);
       elements.push(element);

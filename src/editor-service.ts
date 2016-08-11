@@ -14,9 +14,8 @@
 
 import * as parse5 from 'parse5';
 
-import {Analysis} from './analysis';
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
-import {Element, Property, ScannedDocument, ScannedProperty} from './ast/ast';
+import {Document, Element, Property, ScannedDocument, ScannedProperty} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {ParsedHtmlDocument} from './html/html-document';
 import {UrlLoader} from './url-loader/url-loader';
@@ -28,20 +27,22 @@ export interface Position {
   column: number;
 }
 
-export type TypeaheadCompletion = ElementCompletion | AttributeCompletion;
+export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
 export interface ElementCompletion {
   kind: 'element-tags';
   elements: {tagname: string, description: string, expandTo?: string}[];
 }
-export interface AttributeCompletion {
+export interface AttributesCompletion {
   kind: 'attributes';
-  attributes: {
-    name: string,
-    description: string,
-    type: string|undefined,
-    sortKey: string;
-    inheritedFrom?: string;
-  }[];
+  attributes: AttributeCompletion[];
+}
+
+export interface AttributeCompletion {
+  name: string;
+  description: string;
+  type: string|undefined;
+  sortKey: string;
+  inheritedFrom?: string;
 }
 
 class PermissiveUrlLoader implements UrlLoader {
@@ -70,8 +71,7 @@ export class EditorService {
     }));
   }
 
-  async fileChanged(localPath: string, contents?: string):
-      Promise<ScannedDocument> {
+  async fileChanged(localPath: string, contents?: string): Promise<Document> {
     return this._analyzer.analyzeChangedFile(localPath, contents);
   }
 
@@ -99,13 +99,13 @@ export class EditorService {
 
   async getTypeaheadCompletionsFor(localPath: string, position: Position):
       Promise<TypeaheadCompletion|undefined> {
-    const analysis = await this._analyzer.resolvePermissive();
-    const location =
-        await this._getLocationResult(localPath, position, analysis);
+    const document = await this._analyzer.analyze(localPath);
+    const location = await this._getLocationResult(document, position);
     if (location.kind === 'tagName' || location.kind === 'text') {
+      const elements = Array.from(document.getByKind('element'));
       return {
         kind: 'element-tags',
-        elements: analysis.getElements().map(e => {
+        elements: elements.map(e => {
           let attributesSpace = e.attributes.length > 0 ? ' ' : '';
           return {
             tagname: e.tagName,
@@ -117,24 +117,21 @@ export class EditorService {
         })
       };
     } else if (location.kind === 'attribute') {
-      const element = analysis.getElement(location.element.nodeName);
-      if (!element) {
-        return;
-      }
-      // A map from the inheritedFrom to a sort prefix.
-      let sortPrefixes = new Map<string, string>();
-      // Not inherited, that means local! Sort it early.
-      sortPrefixes.set(undefined, 'aaa-');
-      sortPrefixes.set(null, 'aaa-');
-      if (element.superClass) {
-        sortPrefixes.set(element.superClass, 'bbb-');
-      }
-      if (element.extends) {
-        sortPrefixes.set(element.extends, 'ccc-');
-      }
-      return {
-        kind: 'attributes',
-        attributes:
+      const elements = document.getById('element', location.element.nodeName);
+      let attributes: AttributeCompletion[] = [];
+      for (const element of elements) {
+        // A map from the inheritedFrom to a sort prefix.
+        let sortPrefixes = new Map<string, string>();
+        // Not inherited, that means local! Sort it early.
+        sortPrefixes.set(undefined, 'aaa-');
+        sortPrefixes.set(null, 'aaa-');
+        if (element.superClass) {
+          sortPrefixes.set(element.superClass, 'bbb-');
+        }
+        if (element.extends) {
+          sortPrefixes.set(element.extends, 'ccc-');
+        }
+        attributes = attributes.concat(
             element.attributes
                 .map(p => ({
                        name: p.name,
@@ -154,42 +151,38 @@ export class EditorService {
                       sortKey:
                           `eee-${sortPrefixes.get(e.inheritedFrom) || 'ddd-'}` +
                           `on-${e.name}`
-                    })))
-      };
-    }
+                    }))));
+      }
+      return {kind: 'attributes', attributes};
+    };
   }
 
   private async _getDescriptorAt(localPath: string, position: Position):
       Promise<Element|Property|undefined> {
-    const analysis = await this._analyzer.resolvePermissive();
-    const location =
-        await this._getLocationResult(localPath, position, analysis);
+    const document = await this._analyzer.analyze(localPath);
+    const location = await this._getLocationResult(document, position);
     if (!location) {
       return;
     }
     if (location.kind === 'tagName') {
-      return analysis.getElement(location.element.nodeName);
+      return document.getOnlyAtId('element', location.element.nodeName);
     } else if (location.kind === 'attribute') {
-      return analysis.getElement(location.element.nodeName)
-          .properties.find(
-              (p) => p && p.name &&
-                  p.name.replace(
-                      /[A-Z]/g, (c: string) => `-${c.toLowerCase()}`) ===
-                      location.attribute);
+      const elements = document.getById('element', location.element.nodeName);
+      if (elements.size === 0) {
+        return;
+      }
+
+      return concatMap(elements, (el) => el.attributes)
+          .find(at => at.name === location.attribute);
     }
   }
 
-  private async _getLocationResult(
-      localPath: string, position: Position, analysis: Analysis) {
-    const documentDesc = await analysis.getDocument(localPath);
-    if (!documentDesc) {
+  private async _getLocationResult(document: Document, position: Position) {
+    const parsedDocument = document.parsedDocument;
+    if (!(parsedDocument instanceof ParsedHtmlDocument)) {
       return;
     }
-    const document = documentDesc.document;
-    if (!(document instanceof ParsedHtmlDocument)) {
-      return;
-    }
-    return getLocationInfoForPosition(document.ast, position);
+    return getLocationInfoForPosition(parsedDocument.ast, position);
   }
 }
 
@@ -291,4 +284,12 @@ function isElementLocationInfo(location: parse5.LocationInfo|
 
 function isPropertyDescriptor(d: any): d is(ScannedProperty | Property) {
   return 'type' in d;
+}
+
+function concatMap<I, O>(inputs: Iterable<I>, f: (i: I) => O[]): O[] {
+  let results: O[] = [];
+  for (const input of inputs) {
+    results = results.concat(f(input));
+  }
+  return results;
 }

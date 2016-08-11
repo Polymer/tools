@@ -17,6 +17,7 @@ import {ScannedFeature} from './descriptor';
 export interface ScannedEvent extends ScannedFeature {
   name: string;
   type?: string;
+  description?: string;
   params?: {type: string, desc: string, name: string}[];
 }
 

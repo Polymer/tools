@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Options as ElementOptions, ScannedPolymerElement} from '../polymer/element-descriptor';
+import {Document} from '../ast/ast';
+import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/element-descriptor';
 
 export interface Options extends ElementOptions {}
 
@@ -24,5 +25,17 @@ export class ScannedBehavior extends ScannedPolymerElement {
   className: string;
   constructor(options: Options) {
     super(options);
+  }
+  resolve(document: Document) {
+    return Object.assign(new Behavior(), this);
+  }
+}
+
+export class Behavior extends PolymerElement {
+  tagName: undefined;
+  className: string;
+  constructor() {
+    super();
+    this.kinds = new Set(['behavior']);
   }
 }

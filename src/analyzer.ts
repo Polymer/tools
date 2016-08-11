@@ -17,8 +17,7 @@
 import * as path from 'path';
 import * as urlLib from 'url';
 
-import {Analysis} from './analysis';
-import {InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
+import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
@@ -95,8 +94,9 @@ export class Analyzer {
   /**
    * Loads, parses and analyzes a document and its transitive dependencies.
    */
-  async analyze(url: string): Promise<ScannedDocument|null> {
-    return this._analyzeResolved(this._resolveUrl(url));
+  async analyze(url: string): Promise<Document|null> {
+    const scannedDocument = await this._analyzeResolved(this._resolveUrl(url));
+    return Document.makeRootDocument(scannedDocument);
   }
 
   /**
@@ -105,11 +105,13 @@ export class Analyzer {
    * even have unsaved in-memory contents to use for the given file.
    */
   async analyzeChangedFile(url: string, contents?: string):
-      Promise<ScannedDocument|null> {
+      Promise<Document|null> {
     const resolved = this._resolveUrl(url);
     this._documentDescriptors.delete(resolved);
     this._documents.delete(resolved);
-    return this._analyzeResolved(this._resolveUrl(url), contents);
+    const scannedDocument =
+        await this._analyzeResolved(this._resolveUrl(url), contents);
+    return Document.makeRootDocument(scannedDocument);
   }
 
   private async _analyzeResolved(resolvedUrl: string, contents?: string):
@@ -129,20 +131,8 @@ export class Analyzer {
     return promise;
   }
 
-  async resolve(): Promise<Analysis> {
-    return new Analysis(await Promise.all(this._documentDescriptors.values()));
-  }
-
-  async resolvePermissive(): Promise<Analysis> {
-    const docDescriptors: ScannedDocument[] = [];
-    for (const descriptorPromise of this._documentDescriptors.values()) {
-      try {
-        docDescriptors.push(await descriptorPromise);
-      } catch (_) {
-        // deliberately ignore error
-      }
-    }
-    return new Analysis(docDescriptors);
+  private async _resolve(url: string): Promise<ScannedDocument|null> {
+    return this._analyzeResolved(this._resolveUrl(url));
   }
 
   /**
@@ -180,24 +170,30 @@ export class Analyzer {
     }
 
     let dependencyDescriptors: ScannedFeature[] = entities.filter(
-        (e) => e instanceof InlineParsedDocument ||
-            e instanceof ScannedImport);
-    let analyzeDependencies = dependencyDescriptors.map((d) => {
-      if (d instanceof InlineParsedDocument) {
-        const locationOffset: LocationOffset = {
-          line: d.locationOffset.line,
-          col: d.locationOffset.col,
-          filename: document.url
-        };
-        return this._analyzeSource(
-            d.type, d.contents, document.url, locationOffset,
-            d.attachedComment);
-      } else if (d instanceof ScannedImport) {
-        return this.analyze(d.url);
-      } else {
-        throw new Error(`Unexpected dependency type: ${d}`);
-      }
-    });
+        (e) => e instanceof InlineParsedDocument || e instanceof ScannedImport);
+    let analyzeDependencies =
+        dependencyDescriptors.map(async(scannedDependency) => {
+          if (scannedDependency instanceof InlineParsedDocument) {
+            const locationOffset: LocationOffset = {
+              line: scannedDependency.locationOffset.line,
+              col: scannedDependency.locationOffset.col,
+              filename: document.url
+            };
+            const scannedDocument = await this._analyzeSource(
+                scannedDependency.type, scannedDependency.contents,
+                document.url, locationOffset,
+                scannedDependency.attachedComment);
+            scannedDependency.scannedDocument = scannedDocument;
+            scannedDependency.scannedDocument.isInline = true;
+            return scannedDocument;
+          } else if (scannedDependency instanceof ScannedImport) {
+            const scannedDocument = await this._resolve(scannedDependency.url);
+            scannedDependency.scannedDocument = scannedDocument;
+            return scannedDocument;
+          } else {
+            throw new Error(`Unexpected dependency type: ${scannedDependency}`);
+          }
+        });
 
     let dependencies = await Promise.all(analyzeDependencies);
 

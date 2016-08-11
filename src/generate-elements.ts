@@ -17,25 +17,55 @@ import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 import * as util from 'util';
 
-import {Analysis} from './analysis';
-import {Element as LinkedElement, InlineParsedDocument, ScannedAttribute as AttributeDescriptor, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedProperty as PropertyDescriptor} from './ast/ast';
+import {Attribute as LinkedAttribute, Element as LinkedElement, Property as LinkedProperty} from './ast/ast';
 import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
 import {ParsedJsonDocument} from './json/json-document';
 import {trimLeft} from './utils';
 
 
+
 export function generateElementMetadata(
-    analysis: Analysis, packagePath: string): Elements|undefined {
-  const elementDescriptors = analysis.getElementsForPackage(packagePath);
-  if (!elementDescriptors) {
-    return undefined;
-  }
+    elements: LinkedElement[], packagePath: string): Elements|undefined {
   return {
     schema_version: '1.0.0',
-    elements:
-        elementDescriptors.map(e => serializeElementDescriptor(e, packagePath))
+    elements: elements.map(e => serializeElementDescriptor(e, packagePath))
   };
 }
+
+const validator = new jsonschema.Validator();
+const schema = JSON.parse(
+    fs.readFileSync(pathLib.join(__dirname, 'analysis.schema.json'), 'utf-8'));
+
+export class ValidationError extends Error {
+  errors: jsonschema.ValidationError[];
+  constructor(result: jsonschema.ValidationResult) {
+    const message = `Unable to validate serialized Polymer analysis. ` +
+        `Got ${result.errors.length} errors: ` +
+        `${result.errors.map(err => '    ' + (err.message || err)).join('\n')}`;
+    super(message);
+    this.errors = result.errors;
+  }
+}
+
+/**
+ * Throws if the given object isn't a valid AnalyzedPackage according to
+ * the JSON schema.
+ */
+export function validateElements(analyzedPackage: Elements|null|undefined) {
+  const result = validator.validate(analyzedPackage, schema);
+  if (result.throwError) {
+    throw result.throwError;
+  }
+  if (result.errors.length > 0) {
+    throw new ValidationError(result);
+  }
+  if (!/^1\.\d+\.\d+$/.test(analyzedPackage!.schema_version)) {
+    throw new Error(
+        `Invalid schema_version in AnalyzedPackage. ` +
+        `Expected 1.x.x, got ${analyzedPackage!.schema_version}`);
+  }
+}
+
 
 function serializeElementDescriptor(
     elementDescriptor: LinkedElement, packagePath: string): Element|null {
@@ -87,7 +117,7 @@ function serializeElementDescriptor(
 
 function serializePropertyDescriptor(
     element: LinkedElement, elementPath: string,
-    propertyDescriptor: PropertyDescriptor): Property {
+    propertyDescriptor: LinkedProperty): Property {
   const property: Property = {
     name: propertyDescriptor.name,
     type: propertyDescriptor.type || '?',
@@ -104,7 +134,7 @@ function serializePropertyDescriptor(
 
 function serializeAttributeDescriptor(
     element: LinkedElement, elementPath: string,
-    attributeDescriptor: AttributeDescriptor): Attribute {
+    attributeDescriptor: LinkedAttribute): Attribute {
   const attribute: Attribute = {
     name: attributeDescriptor.name,
     description: attributeDescriptor.description || '',

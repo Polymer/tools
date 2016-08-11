@@ -17,7 +17,9 @@ import * as estree from 'estree';
 import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
-export interface ScannedProperty {
+import {ScannedFeature} from './ast';
+
+export interface ScannedProperty extends ScannedFeature {
   name: string;
   type?: string;
   description?: string;

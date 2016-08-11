@@ -15,13 +15,12 @@
 import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
-import {Analysis} from '../analysis';
 
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {Event, LiteralValue, LocationOffset, Property, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation} from './ast';
+import {Document, Event, Feature, LiteralValue, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -32,7 +31,7 @@ export interface ScannedAttribute {
   type?: string;
 }
 
-export class ScannedElement implements ScannedFeature {
+export class ScannedElement implements ScannedFeature, Resolvable {
   tagName?: string;
   className?: string;
   superClass?: string;
@@ -43,6 +42,7 @@ export class ScannedElement implements ScannedFeature {
   demos: {desc?: string; path: string}[] = [];
   events: ScannedEvent[] = [];
   sourceLocation: SourceLocation;
+  node: estree.Node;
 
   jsdoc?: jsdoc.Annotation;
 
@@ -63,10 +63,10 @@ export class ScannedElement implements ScannedFeature {
   }
 
   applyHtmlComment(commentText: string|undefined) {
-    this.description = this.description || commentText;
+    this.description = this.description || commentText || '';
   }
 
-  resolve(_analysis: Analysis): Element {
+  resolve(_document: Document): Element {
     const element = new Element();
     Object.assign(element, this);
     return element;
@@ -76,7 +76,7 @@ export class ScannedElement implements ScannedFeature {
 
 export interface Attribute extends ScannedAttribute { inheritedFrom?: string; }
 
-export class Element {
+export class Element implements Feature {
   tagName?: string;
   className?: string;
   superClass?: string;
@@ -88,6 +88,17 @@ export class Element {
   events: Event[] = [];
   sourceLocation: SourceLocation;
   jsdoc?: jsdoc.Annotation;
+  kinds: Iterable<string> = ['element'];
+  get identifiers(): Iterable<string> {
+    const result: string[] = [];
+    if (this.tagName) {
+      result.push(this.tagName);
+    }
+    if (this.className) {
+      result.push(this.className);
+    }
+    return result;
+  }
 
   emitMetadata(): Object {
     return {};

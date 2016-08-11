@@ -2,13 +2,12 @@ import * as dom5 from 'dom5';
 import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Analysis} from '../analysis';
-import {Attribute, Element, Event, LiteralValue, LocationOffset, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {Attribute, Document, Element, Event, LiteralValue, LocationOffset, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {ScannedBehavior} from './behavior-descriptor';
+import {Behavior} from './behavior-descriptor';
 
 export interface BasePolymerProperty {
   published?: boolean;
@@ -51,6 +50,7 @@ export interface Options {
     expression: LiteralValue
   }[];
   behaviors?: string[];
+  node: estree.Node;
 
   demos?: {desc: string; path: string}[];
   events?: ScannedEvent[];
@@ -102,12 +102,13 @@ export class ScannedPolymerElement extends ScannedElement {
       this.events.push({
         name: `${attributeName}-changed`,
         description: `Fired when the \`${prop.name}\` property changes.`,
+        node: prop.node
       });
     }
   }
 
-  resolve(analysis: Analysis): PolymerElement {
-    return resolveElement(this, analysis);
+  resolve(document: Document): PolymerElement {
+    return resolveElement(this, document);
   }
 }
 
@@ -123,6 +124,12 @@ export class PolymerElement extends Element {
   scriptElement?: dom5.Node;
 
   abstract?: boolean;
+
+  constructor() {
+    super();
+    this.kinds = ['element', 'polymer-element'];
+    this.behaviors = [];
+  }
 
   emitPropertyMetadata(property: PolymerProperty) {
     const polymerMetadata: any = {};
@@ -152,26 +159,26 @@ function propertyToAttributeName(propertyName: string): string|null {
 }
 
 function resolveElement(
-    elementDescriptor: ScannedPolymerElement,
-    analysis: Analysis): PolymerElement {
+    scannedElement: ScannedPolymerElement, document: Document): PolymerElement {
+  // Copy over all properties better. Maybe exclude known properties not copied?
   const clone: PolymerElement =
-      Object.assign(new PolymerElement(), elementDescriptor);
+      Object.assign(new PolymerElement(), scannedElement);
 
   const behaviors = Array.from(
-      getFlattenedAndResolvedBehaviors(elementDescriptor.behaviors, analysis));
+      getFlattenedAndResolvedBehaviors(scannedElement.behaviors, document));
   clone.properties = mergeByName(
-      elementDescriptor.properties,
+      scannedElement.properties,
       behaviors.map(b => ({name: b.className, vals: b.properties})));
   clone.attributes = mergeByName(
-      elementDescriptor.attributes,
+      scannedElement.attributes,
       behaviors.map(b => ({name: b.className, vals: b.attributes})));
   clone.events = mergeByName(
-      elementDescriptor.events,
+      scannedElement.events,
       behaviors.map(b => ({name: b.className, vals: b.events})));
 
-  const domModule = analysis.getDomModule(elementDescriptor.tagName);
+  const domModule = document.getOnlyAtId('dom-module', scannedElement.tagName);
   if (domModule) {
-    clone.description = elementDescriptor.description || domModule.comment;
+    clone.description = scannedElement.description || domModule.comment;
     clone.domModule = domModule.node;
   }
 
@@ -179,18 +186,20 @@ function resolveElement(
 }
 
 function getFlattenedAndResolvedBehaviors(
-    behaviors: string[], analysis: Analysis) {
-  const resolvedBehaviors = new Set<ScannedBehavior>();
-  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
+    behaviors: string[], document: Document) {
+  const resolvedBehaviors = new Set<Behavior>();
+  _getFlattenedAndResolvedBehaviors(behaviors, document, resolvedBehaviors);
   return resolvedBehaviors;
 }
 
 function _getFlattenedAndResolvedBehaviors(
-    behaviors: string[], analysis: Analysis,
-    resolvedBehaviors: Set<ScannedBehavior>) {
+    behaviors: string[], document: Document, resolvedBehaviors: Set<Behavior>) {
   const toLookup = behaviors.slice();
   for (let behaviorName of toLookup) {
-    const behavior = analysis.getBehavior(behaviorName);
+    // TODO(rictic): once we have a system for passing warnings through, this
+    //     could be a mild warning and we could just take the last one in the
+    //     array, which should be the most recently defined one.
+    const behavior = document.getOnlyAtId('behavior', behaviorName);
     if (!behavior) {
       throw new Error(
           `Unable to resolve behavior \`${behaviorName}\` ` +
@@ -201,21 +210,27 @@ function _getFlattenedAndResolvedBehaviors(
     }
     resolvedBehaviors.add(behavior);
     _getFlattenedAndResolvedBehaviors(
-        behavior.behaviors, analysis, resolvedBehaviors);
+        behavior.behaviors, document, resolvedBehaviors);
   }
 }
 
-function mergeByName<B extends{name: string, inheritedFrom?: string}, I
-                     extends{name: string}>(
-    base: B[], inheritFrom: {name: string, vals: I[]}[]): B[] {
-  const byName = new Map<string, B>();
+interface PropertyOrSimilar {
+  name: string;
+  inheritedFrom?: string;
+}
+interface HasName {
+  name: string;
+}
+function mergeByName<Prop extends PropertyOrSimilar>(
+    base: Prop[], inheritFrom: {name: string, vals: HasName[]}[]): Prop[] {
+  const byName = new Map<string, Prop>();
   for (const initial of base) {
     byName.set(initial.name, initial);
   }
   for (const source of inheritFrom) {
     for (const item of source.vals) {
       if (!byName.has(item.name)) {
-        const copy = <B><any>Object.assign({}, item);
+        const copy = <Prop><any>Object.assign({}, item);
         copy.inheritedFrom = source.name;
         byName.set(copy.name, copy);
       }

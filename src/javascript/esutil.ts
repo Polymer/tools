@@ -19,7 +19,7 @@ import * as estree from 'estree';
 import {ScannedEvent} from '../ast/ast';
 import {ScannedProperty} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
-import {FunctionDescriptor, ScannedPolymerProperty, ScannedPolymerElement} from '../polymer/element-descriptor';
+import {FunctionDescriptor, ScannedPolymerElement, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
@@ -150,7 +150,8 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node: estree.Property): ScannedPolymerProperty {
+export function toPropertyDescriptor(node: estree.Property):
+    ScannedPolymerProperty {
   let type = closureType(node.value);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {
@@ -165,7 +166,8 @@ export function toPropertyDescriptor(node: estree.Property): ScannedPolymerPrope
     name: objectKeyToString(node.key),
     type: type,
     description: description,
-    sourceLocation: getSourceLocation(node)
+    sourceLocation: getSourceLocation(node),
+    node: node
   };
 
   if (type === 'Function') {

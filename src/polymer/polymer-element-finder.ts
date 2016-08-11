@@ -15,7 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedFeature, ScannedEvent, ScannedProperty} from '../ast/ast';
+import {ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -26,7 +26,7 @@ import * as jsdoc from '../javascript/jsdoc';
 import * as analyzeProperties from './analyze-properties';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {ScannedPolymerProperty, ScannedPolymerElement} from './element-descriptor';
+import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(
@@ -53,7 +53,8 @@ class ElementVisitor implements Visitor {
     this.element = new ScannedPolymerElement({
       description: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node),
-      sourceLocation: getSourceLocation(node)
+      sourceLocation: getSourceLocation(node),
+      node: node
     });
     this.propertyHandlers = declarationPropertyHandlers(this.element);
   }
@@ -64,12 +65,8 @@ class ElementVisitor implements Visitor {
     // so a definition in a method in a Polymer() declaration would end the
     // declaration early. We should track which class induced the current
     // element and finish the element when leaving _that_ class.
-    if (this.element) {
-      docs.annotate(this.element);
-      this.entities.push(this.element);
-      this.element = null;
-      this.propertyHandlers = null;
-    }
+    this.element = null;
+    this.propertyHandlers = null;
     this.classDetected = false;
   }
 
@@ -105,7 +102,8 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc = <ScannedProperty>docs.annotate(esutil.toPropertyDescriptor(prop));
+    const propDesc =
+        <ScannedProperty>docs.annotate(esutil.toPropertyDescriptor(prop));
     if (prop && prop.kind === 'get' &&
         (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
       let returnStatement = <estree.ReturnStatement>node.value.body.body[0];
@@ -138,7 +136,8 @@ class ElementVisitor implements Visitor {
         this.element = new ScannedPolymerElement({
           description: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent),
-          sourceLocation: getSourceLocation(node.arguments[0])
+          sourceLocation: getSourceLocation(node.arguments[0]),
+          node: node.arguments[0]
         });
         docs.annotate(this.element);
         this.element.description = (this.element.description || '').trim();

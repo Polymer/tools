@@ -24,7 +24,7 @@ suite('findEntities()', () => {
 
   test('calls EntityFinder.findEntities', async() => {
     let entity = Symbol('entity');
-    let finder = new EntityFinderStub([entity]);
+    let finder = new EntityFinderStub(<any>[entity]);
     let document = makeTestDocument({});
 
     const entities = await findEntities(document, [finder]);

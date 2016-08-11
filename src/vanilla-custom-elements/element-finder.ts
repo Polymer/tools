@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
-import {ScannedProperty, ScannedElement, ScannedFeature} from '../ast/ast';
+import {ScannedElement, ScannedFeature, ScannedProperty} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -33,8 +33,8 @@ export interface AttributeDescriptor extends ScannedFeature {
 
 export class ElementFinder implements JavaScriptEntityFinder {
   async findEntities(
-      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ScannedElement[]> {
+      document: JavaScriptDocument,
+      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedElement[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.getRegisteredElements();
@@ -73,9 +73,11 @@ class ElementVisitor implements Visitor {
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const element = new ScannedElement();
+    element.node = node;
     element.description =
-        jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
-            .description.trim();
+        (jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
+             .description.trim() ||
+         '');
     element.events = esutil.getEventComments(node);
     element.sourceLocation = getSourceLocation(node);
     if (node.superClass && node.superClass.type === 'Identifier') {
@@ -114,8 +116,7 @@ class ElementVisitor implements Visitor {
     if (elementDefn == null) {
       return;
     }
-    const element: ScannedElement|null =
-        this._getElement(tagName, elementDefn);
+    const element: ScannedElement|null = this._getElement(tagName, elementDefn);
     if (!element) {
       return;
     }
@@ -123,8 +124,8 @@ class ElementVisitor implements Visitor {
     this._elements.push(element);
   }
 
-  private _getElement(tagName: string, elementDefn: estree.Node):
-      ScannedElement|null {
+  private _getElement(tagName: string, elementDefn: estree.Node): ScannedElement
+      |null {
     const className = astValue.getIdentifierName(elementDefn);
     if (className) {
       const element = this._possibleElements.get(className);
@@ -167,7 +168,7 @@ class ElementVisitor implements Visitor {
         const comment = esutil.getAttachedComment(expr);
         if (comment) {
           const annotation = jsdoc.parseJsdoc(comment);
-          description = annotation.description;
+          description = annotation.description || description;
           for (const tag of annotation.tags) {
             if (tag.tag === 'type') {
               type = type || tag.type;
@@ -178,7 +179,8 @@ class ElementVisitor implements Visitor {
         const attribute: AttributeDescriptor = {
           name: value,
           description: description,
-          sourceLocation: getSourceLocation(expr)
+          sourceLocation: getSourceLocation(expr),
+          node: expr
         };
         if (type) {
           attribute.type = type;

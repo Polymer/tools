@@ -30,5 +30,5 @@ export interface ScannedFeature {
    * Used to sort features by the order of their appearance in their containing
    * document.
    */
-  node?: any;
+  node: any;
 }

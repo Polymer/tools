@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {AttributeCompletion, EditorService, ElementCompletion} from '../editor-service';
+import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {SourceLocation} from '../elements-format';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
@@ -42,11 +42,6 @@ suite('EditorService', function() {
       {description: '', tagname: 'anonymous-class', expandTo: undefined},
       {description: '', tagname: 'class-expression', expandTo: undefined},
       {
-        description: 'This is a description of WithObservedAttributes.',
-        tagname: 'vanilla-with-observed-attributes',
-        expandTo: undefined
-      },
-      {
         description: '',
         tagname: 'register-before-declaration',
         expandTo: undefined
@@ -54,6 +49,11 @@ suite('EditorService', function() {
       {
         description: '',
         tagname: 'register-before-expression',
+        expandTo: undefined
+      },
+      {
+        description: 'This is a description of WithObservedAttributes.',
+        tagname: 'vanilla-with-observed-attributes',
         expandTo: undefined
       },
     ]
@@ -73,7 +73,7 @@ suite('EditorService', function() {
         copy.expandTo = `<${e.tagname}${space}></${e.tagname}>`;
         return copy;
       });
-  const attributeTypeahead: AttributeCompletion = {
+  const attributeTypeahead: AttributesCompletion = {
     kind: 'attributes',
     attributes: [
       {
@@ -162,11 +162,6 @@ suite('EditorService', function() {
               {line: tagPosition.line + 1, column: tagPosition.column}),
           tagDescription, );
     });
-    test(`it can't get element info before reading the file`, async function() {
-      assert.equal(
-          await editorService.getDocumentationFor(indexFile, tagPosition),
-          undefined);
-    });
     test('it supports getting an attribute description', async function() {
       editorService.fileChanged(indexFile);
       assert.equal(
@@ -251,7 +246,8 @@ suite('EditorService', function() {
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       const incompleteText = `<behav>`;
-      editorService.fileChanged(indexFile, incompleteText);
+      editorService.fileChanged(
+          indexFile, `${incompleteText}\n${indexContents}`);
       assert.deepEqual(
           await editorService.getTypeaheadCompletionsFor(
               indexFile, {line: 0, column: incompleteText.length - 2}),
@@ -284,7 +280,7 @@ suite('EditorService', function() {
         `<behavior-test-elem existing-attr></wrong-closing-tag>`
       ];
       for (const partial of partialContents) {
-        editorService.fileChanged(indexFile, partial);
+        editorService.fileChanged(indexFile, `${partial}\n${indexContents}`);
         assert.deepEqual(
             await editorService.getTypeaheadCompletionsFor(indexFile, {
               line: 0,

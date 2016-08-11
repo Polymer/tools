@@ -16,13 +16,17 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Analysis, ValidationError} from '../analysis';
 import {Analyzer} from '../analyzer';
-import {generateElementMetadata} from '../generate-elements';
+// import {Analysis, ValidationError} from '../analysis';
+import {Element} from '../ast/ast';
+import {ValidationError, generateElementMetadata, validateElements} from '../generate-elements';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
+// TODO(rictic): work out how we want to handle ignoring elements from other
+//     packages in the world of Document rather than Analysis.
+const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 suite('Analysis', function() {
   const basedir = path.join(__dirname, 'static', 'analysis');
   const analysisFixtureDirs = fs.readdirSync(basedir)
@@ -33,13 +37,15 @@ suite('Analysis', function() {
     // Generate a test from the goldens found in every dir in
     // src/test/static/analysis/
     const testBaseName = path.basename(analysisFixtureDir);
-    const testDefiner = onlyTests.has(testBaseName) ? test.only : test;
+    const testDefiner = onlyTests.has(testBaseName) ?
+        test.only :
+        skipTests.has(testBaseName) ? test.skip : test;
     const testName = `correctly produces a serialized elements.json ` +
         `for fixture dir \`${testBaseName}\``;
 
     testDefiner(testName, async function() {
       // Test body here:
-      const analysis = await analyzeDir(analysisFixtureDir).resolve();
+      const elements = await analyzeDir(analysisFixtureDir);
 
       const packages = new Set<string>(mapI(
           filterI(
@@ -55,8 +61,8 @@ suite('Analysis', function() {
             packagePath.substring(analysisFixtureDir.length + 1) :
             packagePath;
         const analyzedPackages =
-            generateElementMetadata(analysis, renormedPackagePath);
-        Analysis.validate(analyzedPackages);
+            generateElementMetadata(elements, renormedPackagePath);
+        validateElements(analyzedPackages);
 
         try {
           assert.deepEqual(
@@ -76,7 +82,7 @@ suite('Analysis', function() {
 
   test('throws when validating a valid AnalyzedPackage', function() {
     try {
-      Analysis.validate(<any>{});
+      validateElements(<any>{});
     } catch (err) {
       assert.instanceOf(err, ValidationError);
       let valError: ValidationError = err;
@@ -88,17 +94,17 @@ suite('Analysis', function() {
   });
 
   test(`doesn't throw when validating a valid AnalyzedPackage`, function() {
-    Analysis.validate({elements: [], schema_version: '1.0.0'});
+    validateElements({elements: [], schema_version: '1.0.0'});
   });
 
   test(`doesn't throw when validating a version from the future`, function() {
-    Analysis.validate(
+    validateElements(
         <any>{elements: [], schema_version: '1.0.1', new_field: 'stuff here'});
   });
 
   test(`throws when validating a bad version`, function() {
     try {
-      Analysis.validate(<any>{
+      validateElements(<any>{
         elements: [],
         schema_version: '5.1.1',
         new_field: 'stuff here'
@@ -111,17 +117,6 @@ suite('Analysis', function() {
   });
 
 });
-
-function analyzeDir(baseDir: string): Analyzer {
-  const analyzer = new Analyzer({
-    urlLoader: new FSUrlLoader(baseDir),
-    urlResolver: new PackageUrlResolver(),
-  });
-  for (const filename of walkRecursively(baseDir)) {
-    analyzer.analyze(filename.substring(baseDir.length));
-  }
-  return analyzer;
-}
 
 function* filterI<T>(it: Iterable<T>, pred: (t: T) => boolean): Iterable<T> {
   for (const inst of it) {
@@ -148,4 +143,18 @@ function* walkRecursively(dir: string): Iterable<string> {
       yield fullPath;
     }
   }
+}
+
+async function analyzeDir(baseDir: string) {
+  const analyzer = new Analyzer({
+    urlLoader: new FSUrlLoader(baseDir),
+    urlResolver: new PackageUrlResolver(),
+  });
+  let importStatements =
+      Array.from(filterI(walkRecursively(baseDir), (f) => f.endsWith('.html')))
+          .map(
+              fn => `<link rel="import" href="${path.relative(baseDir, fn)}">`);
+  const document = await analyzer.analyzeChangedFile(
+      path.join('ephemeral.html'), importStatements.join('\n'));
+  return Array.from(document.getByKind('element'));
 }

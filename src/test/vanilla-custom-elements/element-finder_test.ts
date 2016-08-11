@@ -13,16 +13,19 @@
  */
 
 
+import * as chai from 'chai';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {ScannedFeature, ScannedElement} from '../../ast/ast';
+import {ScannedElement, ScannedFeature} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ElementFinder} from '../../vanilla-custom-elements/element-finder';
+
+chai.use(require('chai-subset'));
 
 suite('VanillaElementFinder', () => {
 
@@ -74,7 +77,7 @@ suite('VanillaElementFinder', () => {
 
   test('Extracts attributes from observedAttributes', () => {
     const element = elements.get('vanilla-with-observed-attributes');
-    assert.deepEqual(element.attributes, [
+    assert.containSubset(element.attributes, [
       {
         description: 'When given the element is totally inactive',
         name: 'disabled',

@@ -147,6 +147,7 @@ class BehaviorVisitor implements Visitor {
     this._startBehavior(new ScannedBehavior({
       description: comment,
       events: esutil.getEventComments(node),
+      node: node,
     }));
     this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
 

@@ -13,6 +13,9 @@
  */
 
 import {ScannedFeature} from './descriptor';
+import {Document, Feature, Resolvable, ScannedDocument} from './document-descriptor';
+
+
 
 /**
  * Represents an import, such as an HTML import, an external script or style
@@ -20,7 +23,7 @@ import {ScannedFeature} from './descriptor';
  *
  * @template N The AST node type
  */
-export class ScannedImport<N> implements ScannedFeature {
+export class ScannedImport<N> implements ScannedFeature, Resolvable {
   type: 'html-import'|'html-script'|'html-style'|string;
 
   /**
@@ -34,9 +37,34 @@ export class ScannedImport<N> implements ScannedFeature {
    */
   node: N;
 
+  scannedDocument: ScannedDocument;
   constructor(type: string, url: string, node: N) {
     this.type = type;
     this.url = url;
     this.node = node;
+  }
+
+  resolve(contextDocument: Document): Import {
+    // The caller will set import.document;
+    return new Import(this.url, this.type);
+  }
+}
+
+const emptyArray: Iterable<string> = [];
+export class Import implements Feature {
+  type: 'html-import'|'html-script'|'html-style'|string;
+  url: string;
+  document: Document;
+  identifiers = emptyArray;
+  kinds: Iterable<string>;
+
+  constructor(url: string, type: string) {
+    this.url = url;
+    this.type = type;
+    this.kinds = ['import', this.type];
+  }
+
+  toString() {
+    return `<Import type="${this.type}" url="${this.url}">`;
   }
 }

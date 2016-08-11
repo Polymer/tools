@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as util from 'util';
 import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 

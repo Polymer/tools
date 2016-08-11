@@ -15,16 +15,15 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import {ScannedFeature, getAttachedCommentText} from '../ast/ast';
-
-import {ParsedHtmlDocument, HtmlVisitor} from '../html/html-document';
+import {Feature, Resolvable, ScannedFeature, getAttachedCommentText} from '../ast/ast';
+import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlEntityFinder} from '../html/html-entity-finder';
 
 const p = dom5.predicates;
 
 const isDomModule = p.hasTagName('dom-module');
 
-export class DomModuleDescriptor implements ScannedFeature {
+export class ScannedDomModule implements ScannedFeature, Resolvable {
   id?: string;
   node: ASTNode;
   comment?: string;
@@ -33,20 +32,40 @@ export class DomModuleDescriptor implements ScannedFeature {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
-    console.log(`found dom module ${id} with comment: ${this.comment}`);
+  }
+
+  resolve() {
+    return new DomModule(this.node, this.id, this.comment);
+  }
+}
+
+export class DomModule implements Feature {
+  kinds = ['dom-module'];
+  identifiers: string[] = [];
+  node: ASTNode;
+  id: string|undefined;
+  comment: string|undefined;
+  constructor(node: ASTNode, id?: string, comment?: string) {
+    this.node = node;
+    this.id = id;
+    this.comment = comment;
+    if (this.id) {
+      this.identifiers.push(id);
+    }
   }
 }
 
 export class DomModuleFinder implements HtmlEntityFinder {
   async findEntities(
-      document: ParsedHtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<DomModuleDescriptor[]> {
-    let domModules: DomModuleDescriptor[] = [];
+      document: ParsedHtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>):
+      Promise<ScannedDomModule[]> {
+    let domModules: ScannedDomModule[] = [];
 
     await visit((node) => {
       if (isDomModule(node)) {
         domModules.push(
-            new DomModuleDescriptor(dom5.getAttribute(node, 'id'), node));
+            new ScannedDomModule(dom5.getAttribute(node, 'id'), node));
       }
     });
     return domModules;
