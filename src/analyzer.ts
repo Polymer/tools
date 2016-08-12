@@ -129,10 +129,6 @@ export class Analyzer {
     return promise;
   }
 
-  private async _resolve(url: string): Promise<ScannedDocument> {
-    return this._analyzeResolved(this._resolveUrl(url));
-  }
-
   /**
    * Parses and analyzes a document from source.
    */
@@ -185,7 +181,7 @@ export class Analyzer {
             scannedDependency.scannedDocument.isInline = true;
             return scannedDocument;
           } else if (scannedDependency instanceof ScannedImport) {
-            const scannedDocument = await this._resolve(scannedDependency.url);
+            const scannedDocument = await this._analyzeResolved(scannedDependency.url);
             scannedDependency.scannedDocument = scannedDocument;
             return scannedDocument;
           } else {
