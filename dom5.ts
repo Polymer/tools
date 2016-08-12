@@ -437,7 +437,7 @@ export function query(node: Node, predicate: Predicate): Node|null {
  * Equivalent to `nodeWalkAll`, but only matches elements
  */
 export function queryAll(
-    node: Node, predicate: Predicate, matches: Node[]): Node[] {
+    node: Node, predicate: Predicate, matches?: Node[]): Node[] {
   const elementPredicate = AND(isElement, predicate);
   return nodeWalkAll(node, elementPredicate, matches);
 }
