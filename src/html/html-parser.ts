@@ -12,10 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode, parse as parseHtml} from 'parse5';
+import {parse as parseHtml} from 'parse5';
 
-import {Analyzer} from '../analyzer';
-import {ScannedImport} from '../ast/ast';
 import {Parser} from '../parser/parser';
 
 import {ParsedHtmlDocument} from './html-document';

@@ -16,7 +16,7 @@ import {VisitorOption, traverse} from 'estraverse';
 import {Node, Program} from 'estree';
 
 import {SourceLocation} from '../elements-format';
-import {ParsedDocument, Options} from '../parser/document';
+import {Options, ParsedDocument} from '../parser/document';
 
 import {VisitResult, Visitor} from './estree-visitor';
 
@@ -117,7 +117,7 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
 
   forEachNode(callback: (node: Node) => void) {
     traverse(this.ast, {
-      enter(node, parent) {
+      enter(node, _parent) {
         callback(node);
       },
       fallback: 'iteration',

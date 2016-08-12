@@ -15,13 +15,9 @@
 import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
-import * as util from 'util';
 
 import {Attribute as LinkedAttribute, Element as LinkedElement, Property as LinkedProperty} from './ast/ast';
-import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
-import {ParsedJsonDocument} from './json/json-document';
-import {trimLeft} from './utils';
-
+import {Attribute, Element, Elements, Property, SourceLocation} from './elements-format';
 
 
 export function generateElementMetadata(

@@ -1,10 +1,8 @@
 import * as dom5 from 'dom5';
-import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
-import {Attribute, Document, Element, Event, LiteralValue, LocationOffset, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
-import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {Behavior} from './behavior-descriptor';

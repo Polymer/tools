@@ -14,7 +14,6 @@
 
 import * as shadyCss from 'shady-css-parser';
 
-import {Analyzer} from '../analyzer';
 import {Parser} from '../parser/parser';
 import {ParsedCssDocument} from './css-document';
 

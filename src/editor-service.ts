@@ -15,7 +15,7 @@
 import * as parse5 from 'parse5';
 
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
-import {Document, Element, Property, ScannedDocument, ScannedProperty} from './ast/ast';
+import {Document, Element, Property, ScannedProperty} from './ast/ast';
 import {SourceLocation} from './elements-format';
 import {ParsedHtmlDocument} from './html/html-document';
 import {UrlLoader} from './url-loader/url-loader';
@@ -89,7 +89,8 @@ export class EditorService {
     return feature.description;
   }
 
-  async getDefinitionFor(localPath: string, position: Position) {
+  async getDefinitionFor(localPath: string, position: Position):
+      Promise<SourceLocation> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
       return;

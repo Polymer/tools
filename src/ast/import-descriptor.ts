@@ -44,7 +44,7 @@ export class ScannedImport<N> implements ScannedFeature, Resolvable {
     this.node = node;
   }
 
-  resolve(contextDocument: Document): Import {
+  resolve(_contextDocument: Document): Import {
     // The caller will set import.document;
     return new Import(this.url, this.type);
   }

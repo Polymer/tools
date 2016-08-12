@@ -12,11 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {Analyzer} from '../analyzer';
-import {ScannedElement, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {ScannedElement, ScannedFeature} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -33,7 +31,7 @@ export interface ScannedAttribute extends ScannedFeature {
 
 export class ElementFinder implements JavaScriptEntityFinder {
   async findEntities(
-      document: JavaScriptDocument,
+      _: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedElement[]> {
     let visitor = new ElementVisitor();
     await visit(visitor);

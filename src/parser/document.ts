@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer} from '../analyzer';
-
 /**
  * A parsed Document.
  *

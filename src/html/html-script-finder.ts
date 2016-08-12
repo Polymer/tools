@@ -13,9 +13,8 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode, ElementLocationInfo, LocationInfo} from 'parse5';
+import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
-import * as util from 'util';
 
 import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';

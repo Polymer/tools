@@ -14,7 +14,6 @@
 
 import {Program} from 'estree';
 
-import {ScannedFeature} from '../ast/ast';
 import {EntityFinder} from '../entity/entity-finder';
 
 import {Visitor} from './estree-visitor';

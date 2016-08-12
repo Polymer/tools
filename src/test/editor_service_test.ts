@@ -16,9 +16,7 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Analyzer} from '../analyzer';
 import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
-import {SourceLocation} from '../elements-format';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
 import {invertPromise} from './test-utils';

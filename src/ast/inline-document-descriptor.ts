@@ -21,7 +21,7 @@ import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedFeature} from './descriptor';
-import {Document, Resolvable, ScannedDocument} from './document-descriptor';
+import {ScannedDocument} from './document-descriptor';
 
 export interface LocationOffset {
   /** Zero based line index. */

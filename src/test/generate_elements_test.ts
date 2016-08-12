@@ -17,16 +17,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-// import {Analysis, ValidationError} from '../analysis';
-import {Element} from '../ast/ast';
 import {ValidationError, generateElementMetadata, validateElements} from '../generate-elements';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
+
 // TODO(rictic): work out how we want to handle ignoring elements from other
 //     packages in the world of Document rather than Analysis.
 const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
+
+
 suite('elements.json generation', function() {
   const basedir = path.join(__dirname, 'static', 'analysis');
   const analysisFixtureDirs = fs.readdirSync(basedir)

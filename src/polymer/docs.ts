@@ -12,9 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import * as parse5 from 'parse5';
-
 import {ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
@@ -24,6 +21,14 @@ import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
 // TODO(rictic): destroy this file with great abadon. It's the oldest and
 //     hardest to understand in the repo at this point I think.
+
+// This is to prevent warnings that annotateProperty is unused.
+// It is unused, but we want to extract the good bits from this file
+// before we delete the whole thing.
+if (false === true) {
+  annotateProperty.name;
+}
+
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [

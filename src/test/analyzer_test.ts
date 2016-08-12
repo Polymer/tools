@@ -15,14 +15,12 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
-import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {InlineParsedDocument, ScannedDocument, ScannedImport} from '../ast/ast';
+import {InlineParsedDocument, ScannedImport} from '../ast/ast';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {ScannedPolymerElement} from '../polymer/element-descriptor';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 
@@ -135,30 +133,20 @@ suite('Analyzer', () => {
   suite('_load()', () => {
 
     test('loads and parses an HTML document', async() => {
-      const doc = await analyzer['_load']('/static/html-parse-target.html');
+      const doc =
+          await analyzer['_loadResolved']('static/html-parse-target.html');
       assert.instanceOf(doc, ParsedHtmlDocument);
-      assert.equal(doc.url, '/static/html-parse-target.html');
+      assert.equal(doc.url, 'static/html-parse-target.html');
     });
 
     test('loads and parses a JavaScript document', async() => {
-      const doc = await analyzer['_load']('/static/js-elements.js');
+      const doc = await analyzer['_loadResolved']('static/js-elements.js');
       assert.instanceOf(doc, JavaScriptDocument);
-      assert.equal(doc.url, '/static/js-elements.js');
-    });
-
-    test('resolves URLs', async() => {
-      const docs = await Promise.all([
-        analyzer['_load']('test.com/test.html'),
-        analyzer['_load']('/static/html-parse-target.html'),
-      ]);
-      let doc1 = docs[0];
-      let doc2 = docs[1];
-      assert.equal(doc1.url, '/static/html-parse-target.html');
-      assert.equal(doc1, doc2);
+      assert.equal(doc.url, 'static/js-elements.js');
     });
 
     test('returns a Promise that rejects for non-existant files', async() => {
-      await invertPromise(analyzer['_load']('/static/not-found'));
+      await invertPromise(analyzer['_loadResolved']('static/not-found'));
     });
 
   });
@@ -209,7 +197,6 @@ suite('Analyzer', () => {
       assert.deepEqual(
           elements.map(e => e.tagName), ['test-seed', 'test-element']);
       const testSeed = elements[0];
-      const testElement = elements[1];
 
       assert.deepEqual(testSeed.behaviors, ['Behavior1', 'Behavior2']);
       assert.equal(testSeed.tagName, 'test-seed');

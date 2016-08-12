@@ -15,12 +15,8 @@
 import {assert} from 'chai';
 import * as parse5 from 'parse5';
 
-import {ScannedFeature} from '../../ast/descriptor';
-import {EntityFinder} from '../../entity/entity-finder';
-import {findEntities} from '../../entity/find-entities';
-import {ParsedHtmlDocument, HtmlVisitor} from '../../html/html-document';
+import {HtmlVisitor, ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlImportFinder} from '../../html/html-import-finder';
-import {invertPromise} from '../test-utils';
 
 suite('HtmlImportFinder', () => {
 

@@ -17,9 +17,8 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {ScannedEvent} from '../ast/ast';
-import {ScannedProperty} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
-import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from '../polymer/element-descriptor';
+import {ScannedFunction, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
@@ -115,16 +114,15 @@ export function getAttachedComment(node: estree.Node): string {
 /**
  * Returns all comments from a tree defined with @event.
  */
-export function getEventComments(node: estree.Node) {
+export function getEventComments(node: estree.Node): ScannedEvent[] {
   const eventComments = new Set<string>();
   estraverse.traverse(node, {
     enter: (node: estree.Node) => {
-      const comments =
-          (node.leadingComments || [])
-              .concat(node.trailingComments || [])
-              .map((commentAST) => commentAST.value)
-              .filter((comment) => comment.indexOf('@event') !== -1)
-              .forEach((comment) => eventComments.add(comment));
+      (node.leadingComments || [])
+          .concat(node.trailingComments || [])
+          .map((commentAST) => commentAST.value)
+          .filter((comment) => comment.indexOf('@event') !== -1)
+          .forEach((comment) => eventComments.add(comment));
     },
     keys: {Super: []}
   });

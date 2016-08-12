@@ -15,13 +15,11 @@
 /// <reference path="../custom_typings/main.d.ts" />
 
 import * as path from 'path';
-import * as urlLib from 'url';
 
 import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
-import {ParsedHtmlDocument} from './html/html-document';
 import {HtmlImportFinder} from './html/html-import-finder';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptFinder} from './html/html-script-finder';
@@ -32,9 +30,7 @@ import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
 import {DomModuleFinder} from './polymer/dom-module-finder';
-import {ScannedPolymerElement} from './polymer/element-descriptor';
 import {PolymerElementFinder} from './polymer/polymer-element-finder';
-import {PackageUrlResolver} from './url-loader/package-url-resolver';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
 import {ElementFinder as VanillaElementFinder} from './vanilla-custom-elements/element-finder';
@@ -200,14 +196,6 @@ export class Analyzer {
 
     return new ScannedDocument(
         document, dependencies, entities, locationOffset);
-  }
-
-  /**
-   * Loads and parses a single file, deduplicating any requrests for the same
-   * URL.
-   */
-  private async _load(url: string): Promise<ParsedDocument<any, any>> {
-    return this._loadResolved(this._resolveUrl(url));
   }
 
   private async _loadResolved(resolvedUrl: string, providedContents?: string):

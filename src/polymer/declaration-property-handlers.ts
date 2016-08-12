@@ -14,7 +14,6 @@
 
 import * as estree from 'estree';
 
-import {ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 
 import {analyzeProperties} from './analyze-properties';

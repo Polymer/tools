@@ -12,17 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as util from 'util';
-
-import {SourceLocation} from '../elements-format';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior-descriptor';
-import {ScannedDomModule} from '../polymer/dom-module-finder';
 import {DomModule} from '../polymer/dom-module-finder';
 import {PolymerElement} from '../polymer/element-descriptor';
 
 import {ScannedFeature} from './descriptor';
-import {Element, ScannedElement} from './element-descriptor';
+import {Element} from './element-descriptor';
 import {Import, ScannedImport} from './import-descriptor';
 import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
 
@@ -65,7 +61,6 @@ function isResolvable(x: any): x is Resolvable {
   return x.resolve && typeof x.resolve === 'function';
 }
 
-const documentKinds = ['document'];
 export class Document implements Feature {
   url: string;
   parsedDocument: ParsedDocument<any, any>;

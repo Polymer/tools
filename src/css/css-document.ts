@@ -78,7 +78,7 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     shadyVisitor.visit(this.ast);
   }
 
-  forEachNode(callback: (node: shady.Node) => void) {
+  forEachNode(_callback: (node: shady.Node) => void) {
     throw new Error('Not implemented');
   }
 }

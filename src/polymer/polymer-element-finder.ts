@@ -15,22 +15,20 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
-import * as jsdoc from '../javascript/jsdoc';
 
-import * as analyzeProperties from './analyze-properties';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(
-      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
+      _: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
       Promise<ScannedPolymerElement[]> {
     const visitor = new ElementVisitor();
     await visit(visitor);
@@ -48,7 +46,7 @@ class ElementVisitor implements Visitor {
   propertyHandlers: PropertyHandlers = null;
   classDetected: boolean = false;
 
-  enterClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
+  enterClassDeclaration(node: estree.ClassDeclaration, _: estree.Node) {
     this.classDetected = true;
     this.element = new ScannedPolymerElement({
       description: esutil.getAttachedComment(node),
@@ -59,7 +57,7 @@ class ElementVisitor implements Visitor {
     this.propertyHandlers = declarationPropertyHandlers(this.element);
   }
 
-  leaveClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
+  leaveClassDeclaration(_: estree.ClassDeclaration, _parent: estree.Node) {
     this.element.properties.map((property) => docs.annotate(property));
     // TODO(justinfagnani): this looks wrong, class definitions can be nested
     // so a definition in a method in a Polymer() declaration would end the
@@ -70,8 +68,7 @@ class ElementVisitor implements Visitor {
     this.classDetected = false;
   }
 
-  enterAssignmentExpression(
-      node: estree.AssignmentExpression, parent: estree.Node) {
+  enterAssignmentExpression(node: estree.AssignmentExpression, _: estree.Node) {
     if (!this.element) {
       return;
     }
@@ -88,7 +85,7 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterMethodDefinition(node: estree.MethodDefinition, parent: estree.Node) {
+  enterMethodDefinition(node: estree.MethodDefinition, _: estree.Node) {
     if (!this.element) {
       return;
     }
@@ -146,7 +143,7 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  leaveCallExpression(node: estree.CallExpression, parent: estree.Node) {
+  leaveCallExpression(node: estree.CallExpression, _: estree.Node) {
     const callee = node.callee;
     const args = node.arguments;
     if (callee.type === 'Identifier' && args.length === 1 &&
@@ -161,7 +158,7 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterObjectExpression(node: estree.ObjectExpression, parent: estree.Node) {
+  enterObjectExpression(node: estree.ObjectExpression, _: estree.Node) {
     // When dealing with a class, there is no single object that we can parse to
     // retrieve all properties
     if (this.classDetected) {

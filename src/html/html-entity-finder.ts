@@ -14,7 +14,6 @@
 
 import {ASTNode} from 'parse5';
 
-import {ScannedFeature} from '../ast/ast';
 import {EntityFinder} from '../entity/entity-finder';
 
 import {ParsedHtmlDocument, HtmlVisitor} from './html-document';

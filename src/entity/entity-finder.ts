@@ -17,7 +17,7 @@ import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
 export interface EntityFinder<D extends ParsedDocument<A, V>, A, V> {
-  findEntities<D>(document: D, visit: (visitor: V) => Promise<void>):
+  findEntities(document: D, visit: (visitor: V) => Promise<void>):
       Promise<ScannedFeature[]>;
 }
 

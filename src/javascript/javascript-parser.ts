@@ -13,13 +13,10 @@
  */
 
 import * as espree from 'espree';
-import * as estraverse from 'estraverse';
 import {Program} from 'estree';
 
-import {Analyzer} from '../analyzer';
 import {Parser} from '../parser/parser';
 
-import {Visitor} from './estree-visitor';
 import {JavaScriptDocument} from './javascript-document';
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {

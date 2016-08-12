@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-
 import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 

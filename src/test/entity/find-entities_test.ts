@@ -39,14 +39,13 @@ suite('findEntities()', () => {
     let visitor3 = Symbol('visitor3');
     let finder: EntityFinder<any, any, any> = {
       async findEntities(
-          document: ParsedDocument<any, any>,
-          visit: (visitor: any) => Promise<void>) {
+          _: ParsedDocument<any, any>, visit: (visitor: any) => Promise<void>) {
         // two visitors in one batch
         await Promise.all([visit(visitor1), visit(visitor2)]);
 
         // one visitor in a subsequent batch, delayed a turn to make sure
         // we can call visit() truly async
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve, _reject) => {
           setTimeout(() => {
             visit(visitor3).then(resolve);
           }, 0);
@@ -69,7 +68,7 @@ suite('findEntities()', () => {
 
   test('propagates exceptions in entity finders', () => {
     let finder = {
-      findEntities(document: any, visit: any) {
+      findEntities(_doc: any, _visit: any) {
         throw new Error('expected');
       },
     };
@@ -114,8 +113,8 @@ interface TestEntityFinderMakerOptions {
 }
 function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
     EntityFinder<ParsedDocument<string, any>, any, any> {
-  const simpleFindEntities = (async(doc: any, visit: () => Promise<any>) => {
-    const promise = visit();
+  const simpleFindEntities = (async(_doc: any, visit: () => Promise<any>) => {
+    await visit();
     return ['test-entity'];
   });
   return {findEntities: options.findEntities || simpleFindEntities};
@@ -133,7 +132,7 @@ class EntityFinderStub implements EntityFinder<any, any, any> {
     this.calls = [];
   }
 
-  async findEntities(document: ParsedDocument<any, any>, visit: any) {
+  async findEntities(document: ParsedDocument<any, any>, _visit: any) {
     this.calls.push({document});
     return this.entities;
   }

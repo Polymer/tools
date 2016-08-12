@@ -17,7 +17,6 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
 import {ScannedFeature} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
@@ -28,7 +27,6 @@ import {BehaviorFinder} from '../../polymer/behavior-finder';
 suite('BehaviorFinder', () => {
 
   let document: JavaScriptDocument;
-  let analyzer: Analyzer;
   let behaviors: Map<string, ScannedBehavior>;
   let behaviorsList: ScannedBehavior[];
 

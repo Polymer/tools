@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as util from 'util';
 import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
@@ -56,7 +55,6 @@ export async function findEntities(
     // a fresh batch.
     const currentVisitors = visitors;
     const currentDoneCallback = batchDone;
-    const currentVisitorsPromise = visitorsPromise;
     setup();
 
     try {

@@ -57,8 +57,7 @@ export class DomModule implements Feature {
 
 export class DomModuleFinder implements HtmlEntityFinder {
   async findEntities(
-      document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>):
+      _: ParsedHtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedDomModule[]> {
     let domModules: ScannedDomModule[] = [];
 

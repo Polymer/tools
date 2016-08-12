@@ -26,7 +26,7 @@ export class ScannedBehavior extends ScannedPolymerElement {
   constructor(options: Options) {
     super(options);
   }
-  resolve(document: Document) {
+  resolve(_document: Document) {
     return Object.assign(new Behavior(), this);
   }
 }

@@ -12,15 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
 import {SourceLocation} from '../elements-format';
-import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {Document, Event, Feature, LiteralValue, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation} from './ast';
+import {Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -104,15 +101,15 @@ export class Element implements Feature {
     return {};
   }
 
-  emitAttributeMetadata(attribute: Attribute): Object {
+  emitAttributeMetadata(_attribute: Attribute): Object {
     return {};
   }
 
-  emitPropertyMetadata(property: Property): Object {
+  emitPropertyMetadata(_property: Property): Object {
     return {};
   }
 
-  emitEventMetadata(event: Event): Object {
+  emitEventMetadata(_event: Event): Object {
     return {};
   }
 }

@@ -12,10 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {LiteralValue, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {ScannedFeature} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -23,11 +22,9 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
-import * as analyzeProperties from './analyze-properties';
 import {ScannedBehavior} from './behavior-descriptor';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {ScannedPolymerElement} from './element-descriptor';
 
 interface KeyFunc<T> {
   (value: T): any;
@@ -53,7 +50,7 @@ const templatizer = 'Polymer.Templatizer';
 
 export class BehaviorFinder implements JavaScriptEntityFinder {
   async findEntities(
-      document: JavaScriptDocument,
+      _: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedFeature[]> {
     let visitor = new BehaviorVisitor();
     await visit(visitor);
@@ -72,7 +69,7 @@ class BehaviorVisitor implements Visitor {
    * Look for object declarations with @behavior in the docs.
    */
   enterVariableDeclaration(
-      node: estree.VariableDeclaration, parent: estree.Node) {
+      node: estree.VariableDeclaration, _parent: estree.Node) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
@@ -93,7 +90,7 @@ class BehaviorVisitor implements Visitor {
    * We assume that the object expression after such an assignment is the
    * behavior's declaration. Seems to be a decent assumption for now.
    */
-  enterObjectExpression(node: estree.ObjectExpression, parent: estree.Node) {
+  enterObjectExpression(node: estree.ObjectExpression, _parent: estree.Node) {
     // TODO(justinfagnani): is the second clause required? No test fails w/o it
     if (!this.currentBehavior /* || this.currentBehavior.properties */) {
       return;

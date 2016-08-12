@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Visitor} from '../javascript/estree-visitor';
@@ -20,21 +19,19 @@ import * as esutil from '../javascript/esutil';
 
 import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
-const numFeatures = 0;
-
 export function featureFinder() {
   /** The features we've found. */
   const features: ScannedPolymerCoreFeature[] = [];
 
   function _extractDesc(
-      feature: ScannedPolymerCoreFeature, node: estree.CallExpression,
+      feature: ScannedPolymerCoreFeature, _node: estree.CallExpression,
       parent: estree.Node) {
     feature.description = esutil.getAttachedComment(parent);
   }
 
   function _extractProperties(
       feature: ScannedPolymerCoreFeature, node: estree.CallExpression,
-      parent: estree.Node) {
+      _parent: estree.Node) {
     const featureNode = node.arguments[0];
     if (featureNode.type !== 'ObjectExpression') {
       console.warn(
