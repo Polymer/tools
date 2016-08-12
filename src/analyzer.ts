@@ -91,7 +91,7 @@ export class Analyzer {
   /**
    * Loads, parses and analyzes a document and its transitive dependencies.
    */
-  async analyze(url: string): Promise<Document|null> {
+  async analyze(url: string): Promise<Document> {
     const scannedDocument = await this._analyzeResolved(this._resolveUrl(url));
     return Document.makeRootDocument(scannedDocument);
   }
@@ -101,8 +101,7 @@ export class Analyzer {
    * the file has changed since the last time it was analyzed, and you may
    * even have unsaved in-memory contents to use for the given file.
    */
-  async analyzeChangedFile(url: string, contents?: string):
-      Promise<Document|null> {
+  async analyzeChangedFile(url: string, contents?: string): Promise<Document> {
     const resolved = this._resolveUrl(url);
     this._scannedDocuments.delete(resolved);
     this._parsedDocuments.delete(resolved);
@@ -112,7 +111,7 @@ export class Analyzer {
   }
 
   private async _analyzeResolved(resolvedUrl: string, contents?: string):
-      Promise<ScannedDocument|null> {
+      Promise<ScannedDocument> {
     let cachedResult = this._scannedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
@@ -128,7 +127,7 @@ export class Analyzer {
     return promise;
   }
 
-  private async _resolve(url: string): Promise<ScannedDocument|null> {
+  private async _resolve(url: string): Promise<ScannedDocument> {
     return this._analyzeResolved(this._resolveUrl(url));
   }
 
