@@ -462,7 +462,7 @@ function newCommentNode(comment: string): parse5.CommentNode {
   };
 }
 
-function newElement(tagName: string, namespace: string): Node {
+function newElement(tagName: string, namespace?: string): Node {
   return {
     nodeName: tagName,
     tagName: tagName,
