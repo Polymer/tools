@@ -16,12 +16,12 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute as LinkedAttribute, Element as LinkedElement, Property as LinkedProperty} from './ast/ast';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty} from './ast/ast';
 import {Attribute, Element, Elements, Property, SourceLocation} from './elements-format';
 
 
 export function generateElementMetadata(
-    elements: LinkedElement[], packagePath: string): Elements|undefined {
+    elements: ResolvedElement[], packagePath: string): Elements|undefined {
   return {
     schema_version: '1.0.0',
     elements: elements.map(e => serializeElement(e, packagePath))
@@ -64,35 +64,35 @@ export function validateElements(analyzedPackage: Elements|null|undefined) {
 
 
 function serializeElement(
-    linkedElement: LinkedElement, packagePath: string): Element|null {
-  if (!linkedElement.tagName) {
+    resolvedElement: ResolvedElement, packagePath: string): Element|null {
+  if (!resolvedElement.tagName) {
     return null;
   }
 
-  const path = linkedElement.sourceLocation.file;
+  const path = resolvedElement.sourceLocation.file;
   const packageRelativePath =
-      pathLib.relative(packagePath, linkedElement.sourceLocation.file);
+      pathLib.relative(packagePath, resolvedElement.sourceLocation.file);
 
-  const attributes = linkedElement.attributes.map(
-      a => serializeAttribute(linkedElement, path, a));
+  const attributes = resolvedElement.attributes.map(
+      a => serializeAttribute(resolvedElement, path, a));
   const properties =
-      linkedElement.properties
+      resolvedElement.properties
           .filter(
               p => !p.private &&
                   // Blacklist functions until we figure out what to do.
                   p.type !== 'Function')
-          .map(p => serializeProperty(linkedElement, path, p));
-  const events =
-      linkedElement.events.map(e => ({
-                                 name: e.name,
-                                 description: e.description,
-                                 type: 'CustomEvent',
-                                 metadata: linkedElement.emitEventMetadata(e)
-                               }));
+          .map(p => serializeProperty(resolvedElement, path, p));
+  const events = resolvedElement.events.map(
+      e => ({
+        name: e.name,
+        description: e.description,
+        type: 'CustomEvent',
+        metadata: resolvedElement.emitEventMetadata(e)
+      }));
 
   return {
-    tagname: linkedElement.tagName,
-    description: linkedElement.description || '',
+    tagname: resolvedElement.tagName,
+    description: resolvedElement.description || '',
     superclass: 'HTMLElement',
     path: packageRelativePath,
     attributes: attributes,
@@ -101,45 +101,45 @@ function serializeElement(
       cssVariables: [],
       selectors: [],
     },
-    demos: (linkedElement.demos || []).map(d => d.path),
+    demos: (resolvedElement.demos || []).map(d => d.path),
     slots: [],
     events: events,
-    metadata: linkedElement.emitMetadata(),
+    metadata: resolvedElement.emitMetadata(),
     sourceLocation:
-        resolveSourceLocationPath(path, linkedElement.sourceLocation)
+        resolveSourceLocationPath(path, resolvedElement.sourceLocation)
   };
 }
 
 function serializeProperty(
-    linkedElement: LinkedElement, elementPath: string,
-    linkedProperty: LinkedProperty): Property {
+    resolvedElement: ResolvedElement, elementPath: string,
+    resolvedProperty: ResolvedProperty): Property {
   const property: Property = {
-    name: linkedProperty.name,
-    type: linkedProperty.type || '?',
-    description: linkedProperty.description || '',
+    name: resolvedProperty.name,
+    type: resolvedProperty.type || '?',
+    description: resolvedProperty.description || '',
     sourceLocation:
-        resolveSourceLocationPath(elementPath, linkedProperty.sourceLocation)
+        resolveSourceLocationPath(elementPath, resolvedProperty.sourceLocation)
   };
-  if (linkedProperty.default) {
-    property.defaultValue = linkedProperty.default;
+  if (resolvedProperty.default) {
+    property.defaultValue = resolvedProperty.default;
   }
-  property.metadata = linkedElement.emitPropertyMetadata(linkedProperty);
+  property.metadata = resolvedElement.emitPropertyMetadata(resolvedProperty);
   return property;
 }
 
 function serializeAttribute(
-    linkedElement: LinkedElement, elementPath: string,
-    linkedAttribute: LinkedAttribute): Attribute {
+    resolvedElement: ResolvedElement, elementPath: string,
+    resolvedAttribute: ResolvedAttribute): Attribute {
   const attribute: Attribute = {
-    name: linkedAttribute.name,
-    description: linkedAttribute.description || '',
+    name: resolvedAttribute.name,
+    description: resolvedAttribute.description || '',
     sourceLocation:
-        resolveSourceLocationPath(elementPath, linkedAttribute.sourceLocation)
+        resolveSourceLocationPath(elementPath, resolvedAttribute.sourceLocation)
   };
-  if (linkedAttribute.type) {
-    attribute.type = linkedAttribute.type;
+  if (resolvedAttribute.type) {
+    attribute.type = resolvedAttribute.type;
   }
-  attribute.metadata = linkedElement.emitAttributeMetadata(linkedAttribute);
+  attribute.metadata = resolvedElement.emitAttributeMetadata(resolvedAttribute);
   return attribute;
 }
 

@@ -20,14 +20,14 @@
  *   load: reads in bytes from filesystem/network
  *   parse: convert bytes to abstract syntax trees
  *   scan: extract entirely local features from a single ast
- *   link: integrate cross-file information to produce the final result
+ *   resolve: integrate cross-file information to produce the final result
  *
- * Importantly, we can cache everything before `link` at the file level, making
- * incremental analysis efficient.
+ * Importantly, we can cache everything before `resolve` at the file level,
+ * making incremental analysis efficient.
  *
- * Because the output of the link phase is the API that will get the most use,
- * its results have clear, unprefixed names. So a linked document is just a
- * Document, a linked element is an Element.
+ * Because the output of the resolve phase is the API that will get the most
+ * use, its results have clear, unprefixed names. So a resolved document is just
+ * a Document, a resolved element is an Element.
  *
  * Earlier stages have the longer names, like ParsedDocument and ScannedElement.
  */
