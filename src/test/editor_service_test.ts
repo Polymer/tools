@@ -137,19 +137,21 @@ suite('EditorService', function() {
 
     let testName = 'it supports getting the element description ' +
         'when asking for docs at its tag name';
+
     test(testName, async function() {
-      editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile);
       assert.equal(
           await editorService.getDocumentationFor(indexFile, tagPosition),
           tagDescription);
     });
+
     testName = 'it can still get element info after changing a file in memory';
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       const contents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       // Add a newline at the beginning of the file, shifting the lines
       // down.
-      editorService.fileChanged(indexFile, `\n${contents}`);
+      await editorService.fileChanged(indexFile, `\n${contents}`);
 
       assert.equal(
           await editorService.getDocumentationFor(indexFile, tagPosition),
@@ -160,6 +162,7 @@ suite('EditorService', function() {
               {line: tagPosition.line + 1, column: tagPosition.column}),
           tagDescription, );
     });
+
     test('it supports getting an attribute description', async function() {
       editorService.fileChanged(indexFile);
       assert.equal(

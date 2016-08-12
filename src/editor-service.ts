@@ -72,7 +72,7 @@ export class EditorService {
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<Document> {
-    return this._analyzer.analyzeChangedFile(localPath, contents);
+    return this._analyzer.analyze(localPath, contents);
   }
 
   async getDocumentationFor(localPath: string, position: Position):

@@ -90,23 +90,25 @@ export class Analyzer {
 
   /**
    * Loads, parses and analyzes a document and its transitive dependencies.
+   *
+   * @param contents Optional contents of the file when it is known without
+   * reading it from disk. Clears the caches so that the news contents is used
+   * and reanalyzed. Useful for editors that want to re-analyze changed files.
    */
-  async analyze(url: string): Promise<Document> {
-    const scannedDocument = await this._analyzeResolved(this._resolveUrl(url));
-    return Document.makeRootDocument(scannedDocument);
-  }
+  async analyze(url: string, contents?: string): Promise<Document> {
+    const resolvedUrl = this._resolveUrl(url);
 
-  /**
-   * Like `analyze`, but for use cases like editors where the caller believes
-   * the file has changed since the last time it was analyzed, and you may
-   * even have unsaved in-memory contents to use for the given file.
-   */
-  async analyzeChangedFile(url: string, contents?: string): Promise<Document> {
-    const resolved = this._resolveUrl(url);
-    this._scannedDocuments.delete(resolved);
-    this._parsedDocuments.delete(resolved);
-    const scannedDocument =
-        await this._analyzeResolved(this._resolveUrl(url), contents);
+    // if we're given new contents, clear the cache
+    // TODO(justinfagnani): It might be better to preserve a single code path
+    // for loading file contents via UrlLoaders, and just offer a method to
+    // re-analyze a particular file. Editors can use a UrlLoader that reads from
+    // it's internal buffers.
+    if (contents != null) {
+      this._scannedDocuments.delete(resolvedUrl);
+      this._parsedDocuments.delete(resolvedUrl);
+    }
+
+    const scannedDocument = await this._analyzeResolved(resolvedUrl, contents);
     return Document.makeRootDocument(scannedDocument);
   }
 
