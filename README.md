@@ -25,12 +25,14 @@ Consider using polymer-build instead of the CLI if you:
 
 While polymer-build was built to work easily with Gulp, it can be used in any Node.js environment. polymer-build is built on Node.js streams, and the build pipeline that you create with it is not much more than a series of connected streams. Files are represented as [Vinyl](https://github.com/gulpjs/vinyl) file objects, which means that polymer-build can interop with any existing Gulp/Vinyl streams.
 
+Check out the [custom-build generator](https://github.com/PolymerElements/generator-polymer-init-custom-build) for an example of how polymer-build can be used to build a project.
+
 
 ### PolymerProject
 
 `PolymerProject` represents your project in the build pipeline. Once configured, it will give you access to a collection of streams and helpers for building your project.
 
-To create a new instance of PolymerProject, you'll need to give it some information about your project. See the [`ProjectOptions`](src/polymer-project.ts#L33) definition for a full list of all supported options.
+To create a new instance of PolymerProject, you'll need to give it some information about your project. See the [`ProjectOptions`](src/polymer-project.ts) definition for a full list of all supported options.
 
 ```js
 const project = new PolymerProject({
@@ -52,11 +54,11 @@ const project = new PolymerProject(require('./polymer.json'));
 
 #### project.sources()
 
-Returns a readable stream of your project's source files. By default, these are the files in your project's `src/` directory, but if you have additional source files this can be configured via the `sourceGlobs` property in [`ProjectOptions`](src/polymer-project.ts#L33).
+Returns a readable stream of your project's source files. By default, these are the files in your project's `src/` directory, but if you have additional source files this can be configured via the `sourceGlobs` property in [`ProjectOptions`](src/polymer-project.ts).
 
 #### project.dependencies()
 
-Returns a readable stream of your project's dependencies. This stream is automatically populated based on the files loaded inside of your project. You can include additional dependencies via the `includeDependencies` property in [`ProjectOptions`](src/polymer-project.ts#L33) (this can be useful when the analyzer fails to detect a necessary dependency.)
+Returns a readable stream of your project's dependencies. This stream is automatically populated based on the files loaded inside of your project. You can include additional dependencies via the `includeDependencies` property in [`ProjectOptions`](src/polymer-project.ts) (this can be useful when the analyzer fails to detect a necessary dependency.)
 
 #### project.analyzer
 
@@ -143,7 +145,9 @@ const generateServiceWorker = require('polymer-build').generateServiceWorker;
 generateServiceWorker({
   buildRoot: 'build/',
   project: polymerProject,
+  bundled: true // set if `polymerProject.bundler` was used
   swConfig: {
+    // See https://github.com/GoogleChrome/sw-precache for all supported options
     navigateFallback: '/index.html',
   }
 }).then(() => { // ...
