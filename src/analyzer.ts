@@ -89,13 +89,19 @@ export class Analyzer {
   }
 
   /**
-   * Loads, parses and analyzes a document and its transitive dependencies.
+   * Loads, parses and analyzes the root document of a dependency graph and its
+   * transitive dependencies.
+   *
+   * Note: The analyzer only supports analyzing a single root for now. This
+   * is because each analyzed document in the dependency graph has a single
+   * root. This mean that we can't properly analyze app-shell-style, lazy
+   * loading apps.
    *
    * @param contents Optional contents of the file when it is known without
    * reading it from disk. Clears the caches so that the news contents is used
    * and reanalyzed. Useful for editors that want to re-analyze changed files.
    */
-  async analyze(url: string, contents?: string): Promise<Document> {
+  async analyzeRoot(url: string, contents?: string): Promise<Document> {
     const resolvedUrl = this._resolveUrl(url);
 
     // if we're given new contents, clear the cache

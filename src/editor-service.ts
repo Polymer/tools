@@ -72,7 +72,7 @@ export class EditorService {
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<Document> {
-    return this._analyzer.analyze(localPath, contents);
+    return this._analyzer.analyzeRoot(localPath, contents);
   }
 
   async getDocumentationFor(localPath: string, position: Position):
@@ -100,7 +100,7 @@ export class EditorService {
 
   async getTypeaheadCompletionsFor(localPath: string, position: Position):
       Promise<TypeaheadCompletion|undefined> {
-    const document = await this._analyzer.analyze(localPath);
+    const document = await this._analyzer.analyzeRoot(localPath);
     const location = await this._getLocationResult(document, position);
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements = Array.from(document.getByKind('element'));
@@ -160,7 +160,7 @@ export class EditorService {
 
   private async _getFeatureAt(localPath: string, position: Position):
       Promise<Element|Property|undefined> {
-    const document = await this._analyzer.analyze(localPath);
+    const document = await this._analyzer.analyzeRoot(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {
       return;

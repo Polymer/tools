@@ -52,12 +52,12 @@ suite('Analyzer', () => {
 
     test('returns a Promise that rejects for malformed files', async() => {
       const error =
-          await invertPromise(analyzer.analyze('static/malformed.html'));
+          await invertPromise(analyzer.analyzeRoot('static/malformed.html'));
       assert.include(error.message, 'malformed.html');
     });
 
     test('analyzes transitive dependencies', async() => {
-      const root = await analyzer.analyze('static/dependencies/root.html');
+      const root = await analyzer.analyzeRoot('static/dependencies/root.html');
 
       // If we ask for documents we get every document in evaluation order.
       assert.deepEqual(
@@ -124,7 +124,7 @@ suite('Analyzer', () => {
     });
 
     test('returns a Promise that rejects for malformed files', async() => {
-      await invertPromise(analyzer.analyze('/static/malformed.html'));
+      await invertPromise(analyzer.analyzeRoot('/static/malformed.html'));
     });
 
   });
@@ -191,7 +191,7 @@ suite('Analyzer', () => {
     // FIXME(rictic): I've temporarily disabled most recognition of Polymer ES6
     //     classes because the finder is buggy and triggers when it shouldn't.
     test.skip('parses classes', async() => {
-      const document = await analyzer.analyze('static/es6-support.js');
+      const document = await analyzer.analyzeRoot('static/es6-support.js');
 
       const elements = Array.from(document.getByKind('polymer-element'));
       assert.deepEqual(
