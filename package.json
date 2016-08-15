@@ -53,6 +53,7 @@
     "watchy": "^0.6.6"
   },
   "dependencies": {
+    "@types/doctrine": "0.0.1",
     "@types/escodegen": "0.0.2",
     "@types/estraverse": "0.0.2",
     "@types/estree": "0.0.30",
