@@ -556,7 +556,7 @@ export function append(parent: Node, newNode: Node) {
   insertNode(parent, parent.childNodes!.length, newNode);
 }
 
-export function parse(text: string, options: parse5.ParserOptions) {
+export function parse(text: string, options?: parse5.ParserOptions) {
   const parser = new parse5.Parser(parse5.TreeAdapters.default, options);
   return parser.parse(text);
 }
