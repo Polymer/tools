@@ -50,18 +50,17 @@ export class ScannedImport<N> implements ScannedFeature, Resolvable {
   }
 }
 
-const emptyArray: Iterable<string> = [];
 export class Import implements Feature {
   type: 'html-import'|'html-script'|'html-style'|string;
   url: string;
   document: Document;
-  identifiers = emptyArray;
-  kinds: Iterable<string>;
+  identifiers = new Set();
+  kinds: Set<string>;
 
   constructor(url: string, type: string) {
     this.url = url;
     this.type = type;
-    this.kinds = ['import', this.type];
+    this.kinds = new Set(['import', this.type]);
   }
 
   toString() {

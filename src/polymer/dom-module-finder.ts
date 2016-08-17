@@ -40,8 +40,8 @@ export class ScannedDomModule implements ScannedFeature, Resolvable {
 }
 
 export class DomModule implements Feature {
-  kinds = ['dom-module'];
-  identifiers: string[] = [];
+  kinds = new Set(['dom-module']);
+  identifiers = new Set<string>();
   node: ASTNode;
   id: string|undefined;
   comment: string|undefined;
@@ -50,7 +50,7 @@ export class DomModule implements Feature {
     this.id = id;
     this.comment = comment;
     if (this.id) {
-      this.identifiers.push(id);
+      this.identifiers.add(id);
     }
   }
 }

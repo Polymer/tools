@@ -85,14 +85,14 @@ export class Element implements Feature {
   events: Event[] = [];
   sourceLocation: SourceLocation;
   jsdoc?: jsdoc.Annotation;
-  kinds: Iterable<string> = ['element'];
-  get identifiers(): Iterable<string> {
-    const result: string[] = [];
+  kinds: Set<string> = new Set(['element']);
+  get identifiers(): Set<string> {
+    const result: Set<string> = new Set();
     if (this.tagName) {
-      result.push(this.tagName);
+      result.add(this.tagName);
     }
     if (this.className) {
-      result.push(this.className);
+      result.add(this.className);
     }
     return result;
   }

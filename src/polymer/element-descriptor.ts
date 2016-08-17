@@ -124,7 +124,7 @@ export class PolymerElement extends Element {
 
   constructor() {
     super();
-    this.kinds = ['element', 'polymer-element'];
+    this.kinds = new Set(['element', 'polymer-element']);
     this.behaviors = [];
   }
 

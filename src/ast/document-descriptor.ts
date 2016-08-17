@@ -48,8 +48,8 @@ export class ScannedDocument {
 }
 
 export interface Feature {
-  kinds: Iterable<string>;
-  identifiers?: Iterable<string>;
+  kinds: Set<string>;
+  identifiers?: Set<string>;
   // sourceLocation: SourceLocation;
 }
 
@@ -66,7 +66,7 @@ export class Document implements Feature {
   parsedDocument: ParsedDocument<any, any>;
   isInline: boolean;
 
-  kinds: Iterable<string>;
+  kinds: Set<string>;
   identifiers: Set<string>;
 
   private _rootDocument: Document;
@@ -102,7 +102,7 @@ export class Document implements Feature {
     } else {
       this.identifiers = new Set([this.url]);
     }
-    this.kinds = ['document', `${this.parsedDocument.type}-document`];
+    this.kinds = new Set(['document', `${this.parsedDocument.type}-document`]);
     this._addFeature(this);
   }
 
@@ -158,7 +158,7 @@ export class Document implements Feature {
   getById(kind: string, identifier: string): Set<Feature> {
     const result = new Set<Feature>();
     for (const featureOfKind of this.getByKind(kind)) {
-      if (iterableHas(featureOfKind.identifiers, identifier)) {
+      if (featureOfKind.identifiers.has(identifier)) {
         result.add(featureOfKind);
       }
     }
@@ -190,7 +190,7 @@ export class Document implements Feature {
     }
     documentsWalked.add(this);
     for (const feature of this._localFeatures) {
-      if (iterableHas(feature.kinds, kind)) {
+      if (feature.kinds.has(kind)) {
         result.add(feature);
       }
       if (feature instanceof Document) {
@@ -234,18 +234,4 @@ export class Document implements Feature {
 
     return result;
   }
-}
-
-function iterableHas<Elem>(haystack: Iterable<Elem>, needle: Elem): boolean {
-  if (haystack instanceof Set) {
-    return haystack.has(needle);
-  } else if (Array.isArray(haystack)) {
-    return haystack.indexOf(needle) >= 0;
-  }
-  for (const element of haystack) {
-    if (element === needle) {
-      return true;
-    }
-  }
-  return false;
 }
