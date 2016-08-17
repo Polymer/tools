@@ -15,167 +15,132 @@
 import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
-import * as util from 'util';
 
-import {Analysis} from './analysis';
-import {BehaviorDescriptor, Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, PropertyDescriptor} from './ast/ast';
-import {Attribute, Element, Elements, Event, Property, SourceLocation} from './elements-format';
-import {JsonDocument} from './json/json-document';
-import {Document} from './parser/document';
-import {trimLeft} from './utils';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty} from './ast/ast';
+import {Attribute, Element, Elements, Property, SourceLocation} from './elements-format';
 
 
 export function generateElementMetadata(
-    analysis: Analysis, packagePath: string): Elements|undefined {
-  const elementDescriptors = analysis.getElementsForPackage(packagePath);
-  if (!elementDescriptors) {
-    return undefined;
-  }
+    elements: ResolvedElement[], packagePath: string): Elements|undefined {
   return {
     schema_version: '1.0.0',
-    elements: elementDescriptors.map(
-        e => serializeElementDescriptor(e, analysis, packagePath))
+    elements: elements.map(e => serializeElement(e, packagePath))
   };
 }
 
-function serializeElementDescriptor(
-    elementDescriptor: ElementDescriptor, analysis: Analysis,
-    packagePath: string): Element|null {
-  if (!elementDescriptor.is) {
+const validator = new jsonschema.Validator();
+const schema = JSON.parse(
+    fs.readFileSync(pathLib.join(__dirname, 'analysis.schema.json'), 'utf-8'));
+
+export class ValidationError extends Error {
+  errors: jsonschema.ValidationError[];
+  constructor(result: jsonschema.ValidationResult) {
+    const message = `Unable to validate serialized Polymer analysis. ` +
+        `Got ${result.errors.length} errors: ` +
+        `${result.errors.map(err => '    ' + (err.message || err)).join('\n')}`;
+    super(message);
+    this.errors = result.errors;
+  }
+}
+
+/**
+ * Throws if the given object isn't a valid AnalyzedPackage according to
+ * the JSON schema.
+ */
+export function validateElements(analyzedPackage: Elements|null|undefined) {
+  const result = validator.validate(analyzedPackage, schema);
+  if (result.throwError) {
+    throw result.throwError;
+  }
+  if (result.errors.length > 0) {
+    throw new ValidationError(result);
+  }
+  if (!/^1\.\d+\.\d+$/.test(analyzedPackage!.schema_version)) {
+    throw new Error(
+        `Invalid schema_version in AnalyzedPackage. ` +
+        `Expected 1.x.x, got ${analyzedPackage!.schema_version}`);
+  }
+}
+
+
+function serializeElement(
+    resolvedElement: ResolvedElement, packagePath: string): Element|null {
+  if (!resolvedElement.tagName) {
     return null;
   }
-  const behaviors =
-      getFlattenedAndResolvedBehaviors(elementDescriptor.behaviors, analysis);
-  const propertiesByName = new Map<string, PropertyDescriptor>();
-  for (const prop of elementDescriptor.properties) {
-    propertiesByName.set(prop.name, prop);
-  }
-  for (const behavior of behaviors) {
-    for (const prop of behavior.properties) {
-      if (!propertiesByName.has(prop.name)) {
-        propertiesByName.set(prop.name, prop);
-      }
-    }
-  }
 
-  const path = elementDescriptor.sourceLocation.file;
+  const path = resolvedElement.sourceLocation.file;
   const packageRelativePath =
-      pathLib.relative(packagePath, elementDescriptor.sourceLocation.file);
+      pathLib.relative(packagePath, resolvedElement.sourceLocation.file);
 
-  const properties = Array.from(propertiesByName.values());
-  const propChangeEvents: Event[] =
-      properties.filter(p => p.notify && propertyToAttributeName(p.name))
-          .map(p => ({
-                 name: `${propertyToAttributeName(p.name)}-changed`,
-                 type: 'CustomEvent',
-                 description: `Fired when the \`${p.name}\` property changes.`
-               }));
+  const attributes = resolvedElement.attributes.map(
+      a => serializeAttribute(resolvedElement, path, a));
+  const properties =
+      resolvedElement.properties
+          .filter(
+              p => !p.private &&
+                  // Blacklist functions until we figure out what to do.
+                  p.type !== 'Function')
+          .map(p => serializeProperty(resolvedElement, path, p));
+  const events = resolvedElement.events.map(
+      e => ({
+        name: e.name,
+        description: e.description,
+        type: 'CustomEvent',
+        metadata: resolvedElement.emitEventMetadata(e)
+      }));
 
   return {
-    tagname: elementDescriptor.is,
-    description: elementDescriptor.desc || '',
+    tagname: resolvedElement.tagName,
+    description: resolvedElement.description || '',
     superclass: 'HTMLElement',
     path: packageRelativePath,
-    attributes: computeAttributesFromPropertyDescriptors(path, properties),
-    properties: properties.map(p => serializePropertyDescriptor(path, p)),
+    attributes: attributes,
+    properties: properties,
     styling: {
       cssVariables: [],
       selectors: [],
     },
-    demos: (elementDescriptor.demos || []).map(d => d.path),
+    demos: (resolvedElement.demos || []).map(d => d.path),
     slots: [],
-    events: propChangeEvents,
-    metadata: {},
+    events: events,
+    metadata: resolvedElement.emitMetadata(),
     sourceLocation:
-        resolveSourceLocationPath(path, elementDescriptor.sourceLocation)
+        resolveSourceLocationPath(path, resolvedElement.sourceLocation)
   };
 }
 
-function serializePropertyDescriptor(
-    elementPath: string, propertyDescriptor: PropertyDescriptor): Property {
+function serializeProperty(
+    resolvedElement: ResolvedElement, elementPath: string,
+    resolvedProperty: ResolvedProperty): Property {
   const property: Property = {
-    name: propertyDescriptor.name,
-    type: propertyDescriptor.type || '?',
-    description: propertyDescriptor.desc || '',
-    sourceLocation: resolveSourceLocationPath(
-        elementPath, propertyDescriptor.sourceLocation)
+    name: resolvedProperty.name,
+    type: resolvedProperty.type || '?',
+    description: resolvedProperty.description || '',
+    sourceLocation:
+        resolveSourceLocationPath(elementPath, resolvedProperty.sourceLocation)
   };
-  if (propertyDescriptor.default) {
-    property.defaultValue = propertyDescriptor.default;
+  if (resolvedProperty.default) {
+    property.defaultValue = resolvedProperty.default;
   }
-  const polymerMetadata: any = {};
-  const polymerMetadataFields = ['notify', 'observer', 'readOnly'];
-  for (const field of polymerMetadataFields) {
-    if (field in propertyDescriptor) {
-      polymerMetadata[field] = propertyDescriptor[field];
-    }
-  }
-  property.metadata = {polymer: polymerMetadata};
+  property.metadata = resolvedElement.emitPropertyMetadata(resolvedProperty);
   return property;
 }
 
-function getFlattenedAndResolvedBehaviors(
-    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis) {
-  const resolvedBehaviors = new Set<BehaviorDescriptor>();
-  _getFlattenedAndResolvedBehaviors(behaviors, analysis, resolvedBehaviors);
-  return resolvedBehaviors;
-}
-
-function _getFlattenedAndResolvedBehaviors(
-    behaviors: (string | BehaviorDescriptor)[], analysis: Analysis,
-    resolvedBehaviors: Set<BehaviorDescriptor>) {
-  const toLookup = behaviors.slice();
-  for (let behavior of toLookup) {
-    if (typeof behavior === 'string') {
-      const behaviorName = behavior;
-      behavior = analysis.getBehavior(behavior);
-      if (!behavior) {
-        throw new Error(
-            `Unable to resolve behavior \`${behaviorName}\` ` +
-            `Did you import it? Is it annotated with @polymerBehavior?`);
-      }
-    }
-    if (resolvedBehaviors.has(behavior)) {
-      continue;
-    }
-    resolvedBehaviors.add(behavior);
-    _getFlattenedAndResolvedBehaviors(
-        behavior.behaviors, analysis, resolvedBehaviors);
+function serializeAttribute(
+    resolvedElement: ResolvedElement, elementPath: string,
+    resolvedAttribute: ResolvedAttribute): Attribute {
+  const attribute: Attribute = {
+    name: resolvedAttribute.name,
+    description: resolvedAttribute.description || '',
+    sourceLocation:
+        resolveSourceLocationPath(elementPath, resolvedAttribute.sourceLocation)
+  };
+  if (resolvedAttribute.type) {
+    attribute.type = resolvedAttribute.type;
   }
-}
-
-function computeAttributesFromPropertyDescriptors(
-    elementPath: string, props: PropertyDescriptor[]): Attribute[] {
-  return props.filter(prop => propertyToAttributeName(prop.name)).map(prop => {
-    const attribute: Attribute = {
-      name: propertyToAttributeName(prop.name),
-      description: prop.desc || '',
-      sourceLocation:
-          resolveSourceLocationPath(elementPath, prop.sourceLocation)
-    };
-    if (prop.type) {
-      attribute.type = prop.type;
-    }
-    if (prop.default) {
-      attribute.type = prop.type;
-    }
-    return attribute;
-  });
-}
-
-/**
- * Implements Polymer core's translation of property names to attribute names.
- *
- * Returns null if the property name cannot be so converted.
- */
-function propertyToAttributeName(propertyName: string): string|null {
-  // Polymer core will not map a property name that starts with an uppercase
-  // character onto an attribute.
-  if (propertyName[0].toUpperCase() === propertyName[0]) {
-    return null;
-  }
-  return propertyName.replace(
-      /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
+  attribute.metadata = resolvedElement.emitAttributeMetadata(resolvedAttribute);
+  return attribute;
 }
 
 function resolveSourceLocationPath(

@@ -14,7 +14,7 @@
 
 import * as shady from 'shady-css-parser';
 
-import {Document, Options} from '../parser/document';
+import {Options, ParsedDocument} from '../parser/document';
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
 
@@ -66,7 +66,7 @@ class ShadyVisitor extends shady.NodeVisitor<void> {
   }
 }
 
-export class CssDocument extends Document<shady.Node, Visitor> {
+export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
   type = 'css';
 
   constructor(from: Options<shady.Node>) {
@@ -78,7 +78,7 @@ export class CssDocument extends Document<shady.Node, Visitor> {
     shadyVisitor.visit(this.ast);
   }
 
-  forEachNode(callback: (node: shady.Node) => void) {
+  forEachNode(_callback: (node: shady.Node) => void) {
     throw new Error('Not implemented');
   }
 }

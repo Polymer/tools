@@ -12,10 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, BehaviorOrName, Descriptor, ElementDescriptor, LiteralValue, PropertyDescriptor} from '../ast/ast';
+import {ScannedFeature} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -23,7 +22,7 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
-import * as analyzeProperties from './analyze-properties';
+import {ScannedBehavior} from './behavior-descriptor';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 
@@ -51,26 +50,26 @@ const templatizer = 'Polymer.Templatizer';
 
 export class BehaviorFinder implements JavaScriptEntityFinder {
   async findEntities(
-      document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<Descriptor[]> {
+      _: JavaScriptDocument,
+      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedFeature[]> {
     let visitor = new BehaviorVisitor();
     await visit(visitor);
-    return visitor.behaviors;
+    return Array.from(visitor.behaviors);
   }
 }
 
 class BehaviorVisitor implements Visitor {
   /** The behaviors we've found. */
-  behaviors: BehaviorDescriptor[] = [];
+  behaviors = new Set<ScannedBehavior>();
 
-  currentBehavior: BehaviorDescriptor = null;
+  currentBehavior: ScannedBehavior = null;
   propertyHandlers: PropertyHandlers = null;
 
   /**
    * Look for object declarations with @behavior in the docs.
    */
   enterVariableDeclaration(
-      node: estree.VariableDeclaration, parent: estree.Node) {
+      node: estree.VariableDeclaration, _parent: estree.Node) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
@@ -91,14 +90,12 @@ class BehaviorVisitor implements Visitor {
    * We assume that the object expression after such an assignment is the
    * behavior's declaration. Seems to be a decent assumption for now.
    */
-  enterObjectExpression(node: estree.ObjectExpression, parent: estree.Node) {
+  enterObjectExpression(node: estree.ObjectExpression, _parent: estree.Node) {
     // TODO(justinfagnani): is the second clause required? No test fails w/o it
     if (!this.currentBehavior /* || this.currentBehavior.properties */) {
       return;
     }
 
-    this.currentBehavior.properties = this.currentBehavior.properties || [];
-    this.currentBehavior.observers = this.currentBehavior.observers || [];
     for (let i = 0; i < node.properties.length; i++) {
       const prop = node.properties[i];
       const name = esutil.objectKeyToString(prop.key);
@@ -111,20 +108,20 @@ class BehaviorVisitor implements Visitor {
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else {
-        this.currentBehavior.properties.push(esutil.toPropertyDescriptor(prop));
+        this.currentBehavior.addProperty(esutil.toScannedPolymerProperty(prop));
       }
     }
     this._finishBehavior();
   }
 
-  private _startBehavior(behavior: BehaviorDescriptor) {
+  private _startBehavior(behavior: ScannedBehavior) {
     console.assert(this.currentBehavior == null);
     this.currentBehavior = behavior;
   }
 
   private _finishBehavior() {
     console.assert(this.currentBehavior != null);
-    this.behaviors.push(this.currentBehavior);
+    this.behaviors.add(this.currentBehavior);
     this.currentBehavior = null;
   }
 
@@ -144,12 +141,10 @@ class BehaviorVisitor implements Visitor {
       }
     }
 
-    this._startBehavior(new BehaviorDescriptor({
-      type: 'behavior',
-      desc: comment,
-      events: esutil.getEventComments(node).map(function(event) {
-        return {desc: event};
-      }),
+    this._startBehavior(new ScannedBehavior({
+      description: comment,
+      events: esutil.getEventComments(node),
+      node: node,
     }));
     this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
 
@@ -161,16 +156,13 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    let name =
+    let explicitName =
         jsdoc.getTag(this.currentBehavior.jsdoc, 'polymerBehavior', 'name');
-    this.currentBehavior.symbol = symbol;
-    if (!name) {
-      name = this.currentBehavior.symbol;
+    this.currentBehavior.className = explicitName || symbol;
+    if (!this.currentBehavior.className) {
+      throw new Error(
+          `Unable to determine name for @polymerBehavior: ${comment}`);
     }
-    if (!name) {
-      console.warn('Unable to determine name for @polymerBehavior:', comment);
-    }
-    this.currentBehavior.is = name;
 
     this._parseChainedBehaviors(node);
 
@@ -189,39 +181,36 @@ class BehaviorVisitor implements Visitor {
    * here to support multiple @polymerBehavior tags referring
    * to same behavior. See iron-multi-selectable for example.
    */
-  mergeBehavior(newBehavior: BehaviorDescriptor): BehaviorDescriptor {
+  mergeBehavior(newBehavior: ScannedBehavior): ScannedBehavior {
     const isBehaviorImpl = (b: string) => {
       // filter out BehaviorImpl
-      return b.indexOf(newBehavior.is) === -1;
+      return b.indexOf(newBehavior.className) === -1;
     };
-    for (let i = 0; i < this.behaviors.length; i++) {
-      if (newBehavior.is !== this.behaviors[i].is) {
+    for (const behavior of this.behaviors) {
+      if (newBehavior.className !== behavior.className) {
         continue;
       }
       // merge desc, longest desc wins
-      if (newBehavior.desc) {
-        if (this.behaviors[i].desc) {
-          if (newBehavior.desc.length > this.behaviors[i].desc.length)
-            this.behaviors[i].desc = newBehavior.desc;
+      if (newBehavior.description) {
+        if (behavior.description) {
+          if (newBehavior.description.length > behavior.description.length)
+            behavior.description = newBehavior.description;
         } else {
-          this.behaviors[i].desc = newBehavior.desc;
+          behavior.description = newBehavior.description;
         }
       }
-      // TODO(justinfagnani): move into BehaviorDescriptor
-      this.behaviors[i].demos =
-          this.behaviors[i].demos.concat(newBehavior.demos);
-      this.behaviors[i].events =
-          this.behaviors[i].events.concat(newBehavior.events);
-      this.behaviors[i].events =
-          dedupe(this.behaviors[i].events, (e) => e.name);
-      this.behaviors[i].properties =
-          this.behaviors[i].properties.concat(newBehavior.properties);
-      this.behaviors[i].observers =
-          this.behaviors[i].observers.concat(newBehavior.observers);
-      this.behaviors[i].behaviors = (this.behaviors[i].behaviors)
-                                        .concat(newBehavior.behaviors)
-                                        .filter(isBehaviorImpl);
-      return this.behaviors[i];
+      // TODO(justinfagnani): move into ScannedBehavior
+      behavior.demos = behavior.demos.concat(newBehavior.demos);
+      behavior.events = behavior.events.concat(newBehavior.events);
+      behavior.events = dedupe(behavior.events, (e) => e.name);
+      for (const property of newBehavior.properties) {
+        behavior.addProperty(property);
+      }
+      behavior.observers = behavior.observers.concat(newBehavior.observers);
+      behavior.behaviors = (behavior.behaviors)
+                               .concat(newBehavior.behaviors)
+                               .filter(isBehaviorImpl);
+      return behavior;
     }
     return newBehavior;
   }
@@ -234,7 +223,7 @@ class BehaviorVisitor implements Visitor {
     // Polymer.IronSelectableBehavior]
     // We add these to behaviors array
     const expression = behaviorExpression(node);
-    const chained: BehaviorOrName[] = [];
+    const chained: string[] = [];
     if (expression && expression.type === 'ArrayExpression') {
       for (const element of expression.elements) {
         const behaviorName = astValue.getIdentifierName(element);

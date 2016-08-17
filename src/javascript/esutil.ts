@@ -16,10 +16,13 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {BehaviorDescriptor, PropertyDescriptor} from '../ast/ast';
+import {ScannedEvent} from '../ast/ast';
+import {annotateEvent} from '../polymer/docs';
+import {ScannedFunction, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
+
 
 
 /**
@@ -27,8 +30,7 @@ import * as jsdoc from './jsdoc';
  *
  * e.g. you have a MemberExpression node, and want to see whether it represents
  * `Foo.Bar.Baz`:
- *
- *     matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
+ *    matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
  *
  * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
@@ -112,24 +114,26 @@ export function getAttachedComment(node: estree.Node): string {
 /**
  * Returns all comments from a tree defined with @event.
  */
-export function getEventComments(node: estree.Node) {
-  let eventComments: string[] = [];
+export function getEventComments(node: estree.Node): ScannedEvent[] {
+  const eventComments = new Set<string>();
   estraverse.traverse(node, {
     enter: (node: estree.Node) => {
-      const comments =
-          (node.leadingComments || [])
-              .concat(node.trailingComments || [])
-              .map((commentAST) => commentAST.value)
-              .filter((comment) => comment.indexOf('@event') !== -1);
-      eventComments = eventComments.concat(comments);
+      (node.leadingComments || [])
+          .concat(node.trailingComments || [])
+          .map((commentAST) => commentAST.value)
+          .filter((comment) => comment.indexOf('@event') !== -1)
+          .forEach((comment) => eventComments.add(comment));
     },
     keys: {Super: []}
   });
-  // TODO(justinfagnani): use a Map, this is n^2
-  // dedup
-  return eventComments.filter((el, index, array) => {
-    return array.indexOf(el) === index;
-  });
+  return Array.from(eventComments)
+      .map(function(comment) {
+        const annotation =
+            jsdoc.parseJsdoc(jsdoc.removeLeadingAsterisks(comment).trim());
+        return annotateEvent(annotation);
+      })
+      .filter((ev) => !!ev)
+      .sort((ev1, ev2) => ev1.name.localeCompare(ev2.name));
 }
 
 function getLeadingComments(node: estree.Node): string[] {
@@ -143,8 +147,8 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toPropertyDescriptor(node: estree.Property):
-    PropertyDescriptor {
+export function toScannedPolymerProperty(node: estree.Property):
+    ScannedPolymerProperty {
   let type = closureType(node.value);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {
@@ -155,21 +159,22 @@ export function toPropertyDescriptor(node: estree.Property):
   let description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
 
-  const result: PropertyDescriptor = {
+  const result: ScannedPolymerProperty = {
     name: objectKeyToString(node.key),
     type: type,
-    desc: description,
-    javascriptNode: node,
-    sourceLocation: getSourceLocation(node)
+    description: description,
+    sourceLocation: getSourceLocation(node),
+    node: node
   };
 
   if (type === 'Function') {
     const value = <estree.Function>node.value;
-    result.params = (value.params || []).map((param) => {
-      // With ES6 we can have a constiety of param patterns. Best to leave the
-      // formatting to escodegen.
-      return {name: escodegen.generate(param)};
-    });
+    (<ScannedFunction><any>result).params =
+        (value.params || []).map((param) => {
+          // With ES6 we can have a lot of param patterns. Best to leave the
+          // formatting to escodegen.
+          return {name: escodegen.generate(param)};
+        });
   }
 
   return result;

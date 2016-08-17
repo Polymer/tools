@@ -14,17 +14,17 @@
 
 import {assert} from 'chai';
 
-import {Descriptor} from '../../ast/descriptor';
+import {ScannedFeature} from '../../ast/descriptor';
 import {EntityFinder} from '../../entity/entity-finder';
 import {findEntities} from '../../entity/find-entities';
-import {Document} from '../../parser/document';
+import {ParsedDocument} from '../../parser/document';
 import {invertPromise} from '../test-utils';
 
 suite('findEntities()', () => {
 
   test('calls EntityFinder.findEntities', async() => {
     let entity = Symbol('entity');
-    let finder = new EntityFinderStub([entity]);
+    let finder = new EntityFinderStub(<any>[entity]);
     let document = makeTestDocument({});
 
     const entities = await findEntities(document, [finder]);
@@ -39,14 +39,13 @@ suite('findEntities()', () => {
     let visitor3 = Symbol('visitor3');
     let finder: EntityFinder<any, any, any> = {
       async findEntities(
-          document: Document<any, any>,
-          visit: (visitor: any) => Promise<void>) {
+          _: ParsedDocument<any, any>, visit: (visitor: any) => Promise<void>) {
         // two visitors in one batch
         await Promise.all([visit(visitor1), visit(visitor2)]);
 
         // one visitor in a subsequent batch, delayed a turn to make sure
         // we can call visit() truly async
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve, _reject) => {
           setTimeout(() => {
             visit(visitor3).then(resolve);
           }, 0);
@@ -69,7 +68,7 @@ suite('findEntities()', () => {
 
   test('propagates exceptions in entity finders', () => {
     let finder = {
-      findEntities(document: any, visit: any) {
+      findEntities(_doc: any, _visit: any) {
         throw new Error('expected');
       },
     };
@@ -96,7 +95,7 @@ interface TestDocumentMakerOptions {
   url?: string;
 }
 function makeTestDocument(options: TestDocumentMakerOptions):
-    Document<string, any> {
+    ParsedDocument<string, any> {
   return {
     type: options.type || 'test-type',
     contents: options.contents || 'test-contents',
@@ -109,13 +108,13 @@ function makeTestDocument(options: TestDocumentMakerOptions):
 
 interface TestEntityFinderMakerOptions {
   findEntities?:
-      (document: Document<string, any>,
+      (document: ParsedDocument<string, any>,
        visit: (visitor: any) => Promise<void>) => Promise<any[]>;
 }
 function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
-    EntityFinder<Document<string, any>, any, any> {
-  const simpleFindEntities = (async(doc: any, visit: () => Promise<any>) => {
-    const promise = visit();
+    EntityFinder<ParsedDocument<string, any>, any, any> {
+  const simpleFindEntities = (async(_doc: any, visit: () => Promise<any>) => {
+    await visit();
     return ['test-entity'];
   });
   return {findEntities: options.findEntities || simpleFindEntities};
@@ -126,14 +125,14 @@ function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
  * findEntities is called.
  */
 class EntityFinderStub implements EntityFinder<any, any, any> {
-  calls: {document: Document<any, any>}[];
-  entities: Descriptor[];
-  constructor(entities: Descriptor[]) {
+  calls: {document: ParsedDocument<any, any>}[];
+  entities: ScannedFeature[];
+  constructor(entities: ScannedFeature[]) {
     this.entities = entities;
     this.calls = [];
   }
 
-  async findEntities(document: Document<any, any>, visit: any) {
+  async findEntities(document: ParsedDocument<any, any>, _visit: any) {
     this.calls.push({document});
     return this.entities;
   }

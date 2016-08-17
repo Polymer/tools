@@ -15,27 +15,25 @@
 /// <reference path="../custom_typings/main.d.ts" />
 
 import * as path from 'path';
-import * as urlLib from 'url';
 
-import {Analysis} from './analysis';
-import {Descriptor, DocumentDescriptor, ElementDescriptor, ImportDescriptor, InlineDocumentDescriptor, LocationOffset} from './ast/ast';
+import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
-import {HtmlDocument} from './html/html-document';
 import {HtmlImportFinder} from './html/html-import-finder';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptFinder} from './html/html-script-finder';
 import {HtmlStyleFinder} from './html/html-style-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {JsonParser} from './json/json-parser';
-import {Document} from './parser/document';
+import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {BehaviorFinder} from './polymer/behavior-finder';
+import {DomModuleFinder} from './polymer/dom-module-finder';
 import {PolymerElementFinder} from './polymer/polymer-element-finder';
-import {PackageUrlResolver} from './url-loader/package-url-resolver';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
+import {ElementFinder as VanillaElementFinder} from './vanilla-custom-elements/element-finder';
 
 export interface Options {
   urlLoader: UrlLoader;
@@ -54,24 +52,34 @@ export interface Options {
  */
 export class Analyzer {
   private _parsers: Map<string, Parser<any>> = new Map<string, Parser<any>>([
-    ['html', new HtmlParser(this)],
+    ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
-    ['css', new CssParser(this)],
+    ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);
 
   private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
     [
       'html',
-      [new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder()]
+      [
+        new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder(),
+        new DomModuleFinder()
+      ]
     ],
-    ['js', [new PolymerElementFinder(), new BehaviorFinder()]],
+    [
+      'js',
+      [
+        new PolymerElementFinder(), new BehaviorFinder(),
+        new VanillaElementFinder()
+      ]
+    ],
   ]);
 
   private _loader: UrlLoader;
-  private _resolver: UrlResolver;
-  private _documents = new Map<string, Promise<Document<any, any>>>();
-  private _documentDescriptors = new Map<string, Promise<DocumentDescriptor>>();
+  private _resolver: UrlResolver|undefined;
+  private _parsedDocuments =
+      new Map<string, Promise<ParsedDocument<any, any>>>();
+  private _scannedDocuments = new Map<string, Promise<ScannedDocument>>();
 
   constructor(options: Options) {
     this._loader = options.urlLoader;
@@ -81,39 +89,50 @@ export class Analyzer {
   }
 
   /**
-   * Loads, parses and analyzes a document and its transitive dependencies.
+   * Loads, parses and analyzes the root document of a dependency graph and its
+   * transitive dependencies.
    *
-   * @param {string} url the location of the file to analyze
-   * @return {Promise<DocumentDescriptor>}
+   * Note: The analyzer only supports analyzing a single root for now. This
+   * is because each analyzed document in the dependency graph has a single
+   * root. This mean that we can't properly analyze app-shell-style, lazy
+   * loading apps.
+   *
+   * @param contents Optional contents of the file when it is known without
+   * reading it from disk. Clears the caches so that the news contents is used
+   * and reanalyzed. Useful for editors that want to re-analyze changed files.
    */
-  async analyze(url: string): Promise<DocumentDescriptor> {
-    return this._analyzeResolved(this._resolveUrl(url));
+  async analyzeRoot(url: string, contents?: string): Promise<Document> {
+    const resolvedUrl = this._resolveUrl(url);
+
+    // if we're given new contents, clear the cache
+    // TODO(justinfagnani): It might be better to preserve a single code path
+    // for loading file contents via UrlLoaders, and just offer a method to
+    // re-analyze a particular file. Editors can use a UrlLoader that reads from
+    // it's internal buffers.
+    if (contents != null) {
+      this._scannedDocuments.delete(resolvedUrl);
+      this._parsedDocuments.delete(resolvedUrl);
+    }
+
+    const scannedDocument = await this._analyzeResolved(resolvedUrl, contents);
+    return Document.makeRootDocument(scannedDocument);
   }
 
-  private async _analyzeResolved(resolvedUrl: string):
-      Promise<DocumentDescriptor> {
-    let isExternalUrl = urlLib.parse(resolvedUrl).protocol !== null ||
-        resolvedUrl.startsWith('//');
-    if (isExternalUrl) {
-      return null;
-    }
-    let cachedResult = this._documentDescriptors.get(resolvedUrl);
+  private async _analyzeResolved(resolvedUrl: string, contents?: string):
+      Promise<ScannedDocument> {
+    let cachedResult = this._scannedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
     let promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
-      // the Promise can be cached.
+      // the Promise is cached before anything else happens.
       await Promise.resolve();
-      let document = await this._loadResolved(resolvedUrl);
+      let document = await this._loadResolved(resolvedUrl, contents);
       return this._analyzeDocument(document);
     })();
-    this._documentDescriptors.set(resolvedUrl, promise);
+    this._scannedDocuments.set(resolvedUrl, promise);
     return promise;
-  }
-
-  async resolve(): Promise<Analysis> {
-    return new Analysis(await Promise.all(this._documentDescriptors.values()));
   }
 
   /**
@@ -121,63 +140,70 @@ export class Analyzer {
    */
   private async _analyzeSource(
       type: string, contents: string, url: string,
-      locationOffset?: LocationOffset): Promise<DocumentDescriptor> {
+      locationOffset?: LocationOffset,
+      attachedComment?: string): Promise<ScannedDocument> {
     let resolvedUrl = this._resolveUrl(url);
     let document = this._parse(type, contents, resolvedUrl);
-    return await this._analyzeDocument(document, locationOffset);
+    return await this._analyzeDocument(
+        document, locationOffset, attachedComment);
   }
 
   /**
    * Analyzes a parsed Document object.
    */
   private async _analyzeDocument(
-      document: Document<any, any>,
-      maybeLocationOffset?: LocationOffset): Promise<DocumentDescriptor> {
+      document: ParsedDocument<any, any>, maybeLocationOffset?: LocationOffset,
+      maybeAttachedComment?: string): Promise<ScannedDocument> {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
-    let entities = await this.getEntities(document);
+    let entities = await this._getEntities(document);
     for (const entity of entities) {
-      if (entity instanceof ElementDescriptor) {
+      if (entity instanceof ScannedElement) {
         entity.applyLocationOffset(locationOffset);
       }
     }
+    // If there's an HTML comment that applies to this document then we assume
+    // that it applies to the first entity.
+    const firstEntity = entities[0];
+    if (firstEntity && firstEntity instanceof ScannedElement) {
+      firstEntity.applyHtmlComment(maybeAttachedComment);
+    }
 
-    let dependencyDescriptors: Descriptor[] = entities.filter(
-        (e) => e instanceof InlineDocumentDescriptor ||
-            e instanceof ImportDescriptor);
-    let analyzeDependencies = dependencyDescriptors.map((d) => {
-      if (d instanceof InlineDocumentDescriptor) {
-        const locationOffset: LocationOffset = {
-          line: d.locationOffset.line,
-          col: d.locationOffset.col,
-          filename: document.url
-        };
-        return this._analyzeSource(
-            d.type, d.contents, document.url, locationOffset);
-      } else if (d instanceof ImportDescriptor) {
-        return this.analyze(d.url);
-      } else {
-        throw new Error(`Unexpected dependency type: ${d}`);
-      }
-    });
+    let scannedDependencies: ScannedFeature[] = entities.filter(
+        (e) => e instanceof InlineParsedDocument || e instanceof ScannedImport);
+    let analyzeDependencies =
+        scannedDependencies.map(async(scannedDependency) => {
+          if (scannedDependency instanceof InlineParsedDocument) {
+            const locationOffset: LocationOffset = {
+              line: scannedDependency.locationOffset.line,
+              col: scannedDependency.locationOffset.col,
+              filename: document.url
+            };
+            const scannedDocument = await this._analyzeSource(
+                scannedDependency.type, scannedDependency.contents,
+                document.url, locationOffset,
+                scannedDependency.attachedComment);
+            scannedDependency.scannedDocument = scannedDocument;
+            scannedDependency.scannedDocument.isInline = true;
+            return scannedDocument;
+          } else if (scannedDependency instanceof ScannedImport) {
+            const scannedDocument = await this._analyzeResolved(scannedDependency.url);
+            scannedDependency.scannedDocument = scannedDocument;
+            return scannedDocument;
+          } else {
+            throw new Error(`Unexpected dependency type: ${scannedDependency}`);
+          }
+        });
 
     let dependencies = await Promise.all(analyzeDependencies);
 
-    return new DocumentDescriptor(
+    return new ScannedDocument(
         document, dependencies, entities, locationOffset);
   }
 
-  /**
-   * Loads and parses a single file, deduplicating any requrests for the same
-   * URL.
-   */
-  async load(url: string): Promise<Document<any, any>> {
-    return this._loadResolved(this._resolveUrl(url));
-  }
-
-  private async _loadResolved(resolvedUrl: string):
-      Promise<Document<any, any>> {
-    const cachedResult = this._documents.get(resolvedUrl);
+  private async _loadResolved(resolvedUrl: string, providedContents?: string):
+      Promise<ParsedDocument<any, any>> {
+    const cachedResult = this._parsedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -191,16 +217,18 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      let content = await this._loader.load(resolvedUrl);
+      let content = providedContents == null ?
+          await this._loader.load(resolvedUrl) :
+          providedContents;
       let extension = path.extname(resolvedUrl).substring(1);
       return this._parse(extension, content, resolvedUrl);
     })();
-    this._documents.set(resolvedUrl, promise);
+    this._parsedDocuments.set(resolvedUrl, promise);
     return promise;
   }
 
   private _parse(type: string, contents: string, url: string):
-      Document<any, any> {
+      ParsedDocument<any, any> {
     let parser = this._parsers.get(type);
     if (parser == null) {
       throw new Error(`No parser for for file type ${type}`);
@@ -212,7 +240,8 @@ export class Analyzer {
     }
   }
 
-  async getEntities(document: Document<any, any>): Promise<Descriptor[]> {
+  private async _getEntities(document: ParsedDocument<any, any>):
+      Promise<ScannedFeature[]> {
     let finders = this._entityFinders.get(document.type);
     if (finders) {
       return findEntities(document, finders);

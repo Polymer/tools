@@ -30,14 +30,21 @@ suite('JavaScriptParser', () => {
     });
 
     test('parses classes', () => {
-      let file = fs.readFileSync(
-          path.resolve(__dirname, '../static/es6-support.js'), 'utf8');
-      let document = parser.parse(file, '/static/es6-support.js');
+      let contents = `
+        class Foo extends HTMLElement {
+          constructor() {
+            super();
+            this.bar = () => {};
+            const let = 'let const';
+          }
+        }
+      `;
+      let document = parser.parse(contents, '/static/es6-support.js');
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
-      // first statement after "use strict" is a class
-      assert.equal(document.ast.body[1].type, 'ClassDeclaration');
+      // First statement is a class declaration
+      assert.equal(document.ast.body[0].type, 'ClassDeclaration');
     });
 
     test('throws syntax errors', () => {

@@ -189,3 +189,10 @@ const paperButton: Elements = {
   schema_version: '1.0.0',
   elements: [paperButtonElement]
 };
+
+// We want to keep these local values as is, because they serve as
+// documentation and compilation tests.
+// So there's this hack to prevent a warning about unused code.
+if (false !== true) {
+  console.log(JSON.stringify(paperButton, null, 2));
+}

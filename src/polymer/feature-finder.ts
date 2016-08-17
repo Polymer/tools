@@ -12,28 +12,26 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {FeatureDescriptor} from '../ast/ast';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 
-const numFeatures = 0;
+import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
 export function featureFinder() {
   /** The features we've found. */
-  const features: FeatureDescriptor[] = [];
+  const features: ScannedPolymerCoreFeature[] = [];
 
   function _extractDesc(
-      feature: FeatureDescriptor, node: estree.CallExpression,
+      feature: ScannedPolymerCoreFeature, _node: estree.CallExpression,
       parent: estree.Node) {
-    feature.desc = esutil.getAttachedComment(parent);
+    feature.description = esutil.getAttachedComment(parent);
   }
 
   function _extractProperties(
-      feature: FeatureDescriptor, node: estree.CallExpression,
-      parent: estree.Node) {
+      feature: ScannedPolymerCoreFeature, node: estree.CallExpression,
+      _parent: estree.Node) {
     const featureNode = node.arguments[0];
     if (featureNode.type !== 'ObjectExpression') {
       console.warn(
@@ -45,8 +43,10 @@ export function featureFinder() {
       return;
     }
 
-    feature.properties =
-        featureNode.properties.map(esutil.toPropertyDescriptor);
+    for (const prop of featureNode.properties.map(
+             esutil.toScannedPolymerProperty)) {
+      feature.addProperty(prop);
+    }
   }
 
   const visitors: Visitor = {
@@ -58,8 +58,7 @@ export function featureFinder() {
       if (!isAddFeatureCall) {
         return;
       }
-      /** @type {!FeatureDescriptor} */
-      const feature = <FeatureDescriptor>{};
+      const feature = <ScannedPolymerCoreFeature>{};
       _extractDesc(feature, node, parent);
       _extractProperties(feature, node, parent);
 

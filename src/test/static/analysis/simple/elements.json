@@ -14,7 +14,8 @@
             "line": 9,
             "column": 6
           },
-          "type": "string"
+          "type": "string",
+          "metadata": {}
         }
       ],
       "properties": [
@@ -42,8 +43,9 @@
       "events": [
         {
           "name": "the-value-changed",
+          "description": "Fired when the `theValue` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `theValue` property changes."
+          "metadata": {}
         }
       ],
       "metadata": {},

@@ -31,7 +31,7 @@ export class FetchUrlLoader implements UrlLoader {
     return this.baseUrl ? resolveUrl(this.baseUrl, url) : url;
   }
 
-  canLoad(url: string): boolean {
+  canLoad(_: string): boolean {
     return true;
   }
 

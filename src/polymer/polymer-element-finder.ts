@@ -15,68 +15,60 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {Analyzer} from '../analyzer';
-import {Descriptor, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
+import {ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 
-import * as analyzeProperties from './analyze-properties';
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
+import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(
-      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ElementDescriptor[]> {
-    let visitor = new ElementVisitor();
+      _: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
+      Promise<ScannedPolymerElement[]> {
+    const visitor = new ElementVisitor();
     await visit(visitor);
     return visitor.entities;
   }
 }
 
 class ElementVisitor implements Visitor {
-  entities: ElementDescriptor[] = [];
+  entities: ScannedPolymerElement[] = [];
 
   /**
    * The element being built during a traversal;
    */
-  element: ElementDescriptor = null;
+  element: ScannedPolymerElement = null;
   propertyHandlers: PropertyHandlers = null;
   classDetected: boolean = false;
 
-  enterClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
+  enterClassDeclaration(node: estree.ClassDeclaration, _: estree.Node) {
     this.classDetected = true;
-    this.element = new ElementDescriptor({
-      type: 'element',
-      desc: esutil.getAttachedComment(node),
-      events: esutil.getEventComments(node).map(function(event) {
-        return {desc: event};
-      }),
-      sourceLocation: getSourceLocation(node)
+    this.element = new ScannedPolymerElement({
+      description: esutil.getAttachedComment(node),
+      events: esutil.getEventComments(node),
+      sourceLocation: getSourceLocation(node),
+      node: node
     });
     this.propertyHandlers = declarationPropertyHandlers(this.element);
   }
 
-  leaveClassDeclaration(node: estree.ClassDeclaration, parent: estree.Node) {
+  leaveClassDeclaration(_: estree.ClassDeclaration, _parent: estree.Node) {
     this.element.properties.map((property) => docs.annotate(property));
     // TODO(justinfagnani): this looks wrong, class definitions can be nested
     // so a definition in a method in a Polymer() declaration would end the
     // declaration early. We should track which class induced the current
     // element and finish the element when leaving _that_ class.
-    if (this.element) {
-      docs.annotate(this.element);
-      this.entities.push(this.element);
-      this.element = null;
-      this.propertyHandlers = null;
-    }
+    this.element = null;
+    this.propertyHandlers = null;
     this.classDetected = false;
   }
 
-  enterAssignmentExpression(
-      node: estree.AssignmentExpression, parent: estree.Node) {
+  enterAssignmentExpression(node: estree.AssignmentExpression, _: estree.Node) {
     if (!this.element) {
       return;
     }
@@ -86,18 +78,18 @@ class ElementVisitor implements Visitor {
     }
     const prop = <estree.Identifier>left.property;
     if (prop && prop.name) {
-      let name = prop.name;
+      const name = prop.name;
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](node.right);
       }
     }
   }
 
-  enterMethodDefinition(node: estree.MethodDefinition, parent: estree.Node) {
+  enterMethodDefinition(node: estree.MethodDefinition, _: estree.Node) {
     if (!this.element) {
       return;
     }
-    let prop = <estree.Property>{
+    const prop = <estree.Property>{
       key: node.key,
       value: node.value,
       kind: node.kind,
@@ -108,11 +100,11 @@ class ElementVisitor implements Visitor {
       type: 'Property'
     };
     const propDesc =
-        <PropertyDescriptor>docs.annotate(esutil.toPropertyDescriptor(prop));
+        <ScannedProperty>docs.annotate(esutil.toScannedPolymerProperty(prop));
     if (prop && prop.kind === 'get' &&
         (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
-      let returnStatement = <estree.ReturnStatement>node.value.body.body[0];
-      let argument = <estree.ArrayExpression>returnStatement.argument;
+      const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
+      const argument = <estree.ArrayExpression>returnStatement.argument;
       if (propDesc.name === 'behaviors') {
         argument.elements.forEach((elementNode) => {
           this.element.behaviors.push(astValue.getIdentifierName(elementNode));
@@ -124,7 +116,7 @@ class ElementVisitor implements Visitor {
         });
       }
     } else {
-      this.element.properties.push(propDesc);
+      this.element.addProperty(propDesc);
     }
   }
 
@@ -135,27 +127,25 @@ class ElementVisitor implements Visitor {
       return estraverse.VisitorOption.Skip;
     }
 
-    let callee = node.callee;
+    const callee = node.callee;
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
-        this.element = new ElementDescriptor({
-          type: 'element',
-          desc: esutil.getAttachedComment(parent),
-          events: esutil.getEventComments(parent).map(function(event) {
-            return {desc: event};
-          }),
-          sourceLocation: getSourceLocation(node.arguments[0])
+        this.element = new ScannedPolymerElement({
+          description: esutil.getAttachedComment(parent),
+          events: esutil.getEventComments(parent),
+          sourceLocation: getSourceLocation(node.arguments[0]),
+          node: node.arguments[0]
         });
         docs.annotate(this.element);
-        this.element.desc = (this.element.desc || '').trim();
+        this.element.description = (this.element.description || '').trim();
         this.propertyHandlers = declarationPropertyHandlers(this.element);
       }
     }
   }
 
-  leaveCallExpression(node: estree.CallExpression, parent: estree.Node) {
-    let callee = node.callee;
-    let args = node.arguments;
+  leaveCallExpression(node: estree.CallExpression, _: estree.Node) {
+    const callee = node.callee;
+    const args = node.arguments;
     if (callee.type === 'Identifier' && args.length === 1 &&
         args[0].type === 'ObjectExpression') {
       if (callee.name === 'Polymer') {
@@ -168,7 +158,7 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterObjectExpression(node: estree.ObjectExpression, parent: estree.Node) {
+  enterObjectExpression(node: estree.ObjectExpression, _: estree.Node) {
     // When dealing with a class, there is no single object that we can parse to
     // retrieve all properties
     if (this.classDetected) {
@@ -177,12 +167,11 @@ class ElementVisitor implements Visitor {
 
     // TODO(justinfagnani): is the second clause needed?
     if (this.element) {
-      let getters: {[name: string]: PropertyDescriptor} = {};
-      let setters: {[name: string]: PropertyDescriptor} = {};
-      let definedProperties: {[name: string]: PropertyDescriptor} = {};
-      for (let i = 0; i < node.properties.length; i++) {
-        let prop = node.properties[i];
-        let name = esutil.objectKeyToString(prop.key);
+      const getters: {[name: string]: ScannedPolymerProperty} = {};
+      const setters: {[name: string]: ScannedPolymerProperty} = {};
+      const definedProperties: {[name: string]: ScannedPolymerProperty} = {};
+      for (const prop of node.properties) {
+        const name = esutil.objectKeyToString(prop.key);
         if (!name) {
           throw {
             message: 'Cant determine name for property key.',
@@ -194,21 +183,21 @@ class ElementVisitor implements Visitor {
           this.propertyHandlers[name](prop.value);
           continue;
         }
-        let descriptor = esutil.toPropertyDescriptor(prop);
-        if (descriptor.getter) {
-          getters[descriptor.name] = descriptor;
-        } else if (descriptor.setter) {
-          setters[descriptor.name] = descriptor;
+        const scannedPolymerProperty = esutil.toScannedPolymerProperty(prop);
+        if (scannedPolymerProperty.getter) {
+          getters[scannedPolymerProperty.name] = scannedPolymerProperty;
+        } else if (scannedPolymerProperty.setter) {
+          setters[scannedPolymerProperty.name] = scannedPolymerProperty;
         } else {
-          this.element.properties.push(esutil.toPropertyDescriptor(prop));
+          this.element.addProperty(esutil.toScannedPolymerProperty(prop));
         }
       }
       Object.keys(getters).forEach((getter) => {
-        let get = getters[getter];
+        const get = getters[getter];
         definedProperties[get.name] = get;
       });
       Object.keys(setters).forEach((setter) => {
-        let set = setters[setter];
+        const set = setters[setter];
         if (!(set.name in definedProperties)) {
           definedProperties[set.name] = set;
         } else {
@@ -216,8 +205,8 @@ class ElementVisitor implements Visitor {
         }
       });
       Object.keys(definedProperties).forEach((p) => {
-        let prop = definedProperties[p];
-        this.element.properties.push(prop);
+        const prop = definedProperties[p];
+        this.element.addProperty(prop);
       });
       return estraverse.VisitorOption.Skip;
     }

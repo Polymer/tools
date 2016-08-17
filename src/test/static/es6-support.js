@@ -1,5 +1,11 @@
 'use strict';
-class A {
+
+/** @polymerBehavior */
+const Behavior1 = {};
+/** @polymerBehavior */
+const Behavior2 = {};
+
+Polymer(class A{
   constructor() {
     super();
   }
@@ -24,9 +30,9 @@ class A {
         type: 'String',
         notify: true,
       },
-    }
+    };
 
-                      this.observers = [
+    this.observers = [
       '_observer1(string)',
       '_observer2(string)',
     ]
@@ -46,9 +52,7 @@ class A {
   test(string) {
     this.data = 'Hello World';
   }
-}
-
-Polymer(A);
+});
 
 /**
  * I am a description of test-element.

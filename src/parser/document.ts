@@ -12,15 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer} from '../analyzer';
-
 /**
  * A parsed Document.
  *
  * @template A The AST type of the document
  * @template V The Visitor type of the document
  */
-export abstract class Document<A, V> {
+export abstract class ParsedDocument<A, V> {
   // abstract type: string; // argh, how do I declare an abstract field?
   type: string;
   url: string;

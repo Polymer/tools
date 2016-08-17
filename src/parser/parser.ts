@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from './document';
+import {ParsedDocument} from './document';
 
-export interface Parser<D extends Document<any, any>> {
+export interface Parser<D extends ParsedDocument<any, any>> {
   parse(contents: string, url: string): D;
 }

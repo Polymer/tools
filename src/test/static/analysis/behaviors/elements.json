@@ -9,12 +9,13 @@
       "attributes": [
         {
           "name": "local-property",
-          "description": "",
+          "description": "A property defined directly on behavior-test-elem.",
           "sourceLocation": {
-            "line": 8,
+            "line": 9,
             "column": 6
           },
-          "type": "boolean"
+          "type": "boolean",
+          "metadata": {}
         },
         {
           "name": "inherit-please",
@@ -24,26 +25,28 @@
             "column": 6,
             "file": "../behavior.html"
           },
-          "type": "number"
+          "type": "number",
+          "metadata": {}
         },
         {
           "name": "deeply-inherited-property",
-          "description": "",
+          "description": "This is a deeply inherited property.",
           "sourceLocation": {
-            "line": 4,
+            "line": 5,
             "column": 6,
             "file": "../subdir/subbehavior.html"
           },
-          "type": "Array"
+          "type": "Array",
+          "metadata": {}
         }
       ],
       "properties": [
         {
           "name": "localProperty",
           "type": "boolean",
-          "description": "",
+          "description": "A property defined directly on behavior-test-elem.",
           "sourceLocation": {
-            "line": 8,
+            "line": 9,
             "column": 6
           },
           "defaultValue": "true",
@@ -72,9 +75,9 @@
         {
           "name": "deeplyInheritedProperty",
           "type": "Array",
-          "description": "",
+          "description": "This is a deeply inherited property.",
           "sourceLocation": {
-            "line": 4,
+            "line": 5,
             "column": 6,
             "file": "../subdir/subbehavior.html"
           },
@@ -95,18 +98,21 @@
       "events": [
         {
           "name": "local-property-changed",
+          "description": "Fired when the `localProperty` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `localProperty` property changes."
+          "metadata": {}
         },
         {
           "name": "inherit-please-changed",
+          "description": "Fired when the `inheritPlease` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `inheritPlease` property changes."
+          "metadata": {}
         },
         {
           "name": "deeply-inherited-property-changed",
+          "description": "Fired when the `deeplyInheritedProperty` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `deeplyInheritedProperty` property changes."
+          "metadata": {}
         }
       ],
       "metadata": {},

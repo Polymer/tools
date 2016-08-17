@@ -12,32 +12,30 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-
 import {SourceLocation} from '../elements-format';
+import * as jsdoc from '../javascript/jsdoc';
 
-import {BehaviorOrName} from './behavior-descriptor';
-import {Descriptor, LiteralValue} from './descriptor';
+import {ScannedFeature} from './ast';
 
-// TODO(justinfagnani): Rename, this name clashes with ES6's PropertyDescriptor
-export interface PropertyDescriptor extends Descriptor {
+export interface ScannedProperty extends ScannedFeature {
   name: string;
-  type: string;
-  desc: string;
-  javascriptNode: estree.Node;
-  params?: {name: string}[];
-  published?: boolean;
-  notify?: boolean;
-  observer?: string;
-  observerNode?: estree.Expression|estree.Pattern;
-  readOnly?: boolean;
-  reflectToAttribute?: boolean;
-  'default'?: string;
+  type?: string;
+  description?: string;
+  jsdoc?: jsdoc.Annotation;
   private?: boolean;
-  configuration?: boolean;
-  getter?: boolean;
-  setter?: boolean;
-  sourceLocation?: SourceLocation;
+  'default'?: string;
+  readOnly?: boolean;
+  sourceLocation: SourceLocation;
+}
 
-  __fromBehavior?: BehaviorOrName;
+export interface Property {
+  name: string;
+  type?: string;
+  description?: string;
+  jsdoc?: jsdoc.Annotation;
+  private?: boolean;
+  'default'?: string;
+  readOnly?: boolean;
+  sourceLocation: SourceLocation;
+  inheritedFrom?: string;
 }

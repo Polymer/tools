@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import {Document, Options} from '../parser/document';
+import {Options, ParsedDocument} from '../parser/document';
 
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
@@ -23,7 +23,7 @@ import {Document, Options} from '../parser/document';
 
 export interface HtmlVisitor { (node: ASTNode): void; }
 
-export class HtmlDocument extends Document<ASTNode, HtmlVisitor> {
+export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
   type = 'html';
 
   constructor(from: Options<ASTNode>) {

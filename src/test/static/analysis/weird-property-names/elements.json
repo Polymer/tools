@@ -14,7 +14,8 @@
             "line": 7,
             "column": 6
           },
-          "type": "string"
+          "type": "string",
+          "metadata": {}
         },
         {
           "name": "g--h--i",
@@ -23,7 +24,8 @@
             "line": 11,
             "column": 6
           },
-          "type": "string"
+          "type": "string",
+          "metadata": {}
         }
       ],
       "properties": [
@@ -79,13 +81,15 @@
       "events": [
         {
           "name": "d-e-f-changed",
+          "description": "Fired when the `dEF` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `dEF` property changes."
+          "metadata": {}
         },
         {
           "name": "g--h--i-changed",
+          "description": "Fired when the `g-H--i` property changes.",
           "type": "CustomEvent",
-          "description": "Fired when the `g-H--i` property changes."
+          "metadata": {}
         }
       ],
       "metadata": {},

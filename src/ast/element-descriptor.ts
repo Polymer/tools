@@ -12,72 +12,36 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import {VisitorOption, traverse} from 'estraverse';
 import * as estree from 'estree';
 
 import {SourceLocation} from '../elements-format';
-import {VisitResult, Visitor} from '../javascript/estree-visitor';
 import * as jsdoc from '../javascript/jsdoc';
-import {Document} from '../parser/document';
 
-import {BehaviorOrName, Descriptor, EventDescriptor, LiteralValue, LocationOffset, PropertyDescriptor, correctSourceLocation} from './ast';
+import {Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
-export interface Options {
-  type: 'element'|'behavior';
-  is?: string;
-
-  jsdoc?: jsdoc.Annotation;
-  desc?: string;
-  contentHref?: string;
-  properties?: PropertyDescriptor[];
-  observers?: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[];
-  behaviors?: BehaviorOrName[];
-
-  demos?: {desc: string; path: string}[];
-  events?: EventDescriptor[];
-  hero?: string;
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
-
-  abstract?: boolean;
-  sourceLocation?: SourceLocation;
+export interface ScannedAttribute {
+  name: string;
+  sourceLocation: SourceLocation;
+  description?: string;
+  type?: string;
 }
 
-/**
- * The metadata for a single polymer element
- */
-export class ElementDescriptor implements Descriptor {
-  type: 'element'|'behavior';
-  is: string;
+export class ScannedElement implements ScannedFeature, Resolvable {
+  tagName?: string;
+  className?: string;
+  superClass?: string;
+  extends?: string;
+  properties: ScannedProperty[] = [];
+  attributes: ScannedAttribute[] = [];
+  description = '';
+  demos: {desc?: string; path: string}[] = [];
+  events: ScannedEvent[] = [];
+  sourceLocation: SourceLocation;
+  node: estree.Node;
 
   jsdoc?: jsdoc.Annotation;
-  desc?: string;
-  contentHref?: string;
-  properties: PropertyDescriptor[] = [];
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[] = [];
-  behaviors: BehaviorOrName[] = [];
-
-  demos: {desc: string; path: string}[] = [];
-  events: EventDescriptor[] = [];
-  hero?: string;
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
-
-  abstract?: boolean;
-  sourceLocation?: SourceLocation;
-
-  constructor(options: Options) {
-    Object.assign(this, options);
-  }
 
   applyLocationOffset(locationOffset?: LocationOffset) {
     if (!locationOffset) {
@@ -89,5 +53,63 @@ export class ElementDescriptor implements Descriptor {
       prop.sourceLocation =
           correctSourceLocation(prop.sourceLocation, locationOffset);
     }
+    for (const attribute of this.attributes) {
+      attribute.sourceLocation =
+          correctSourceLocation(attribute.sourceLocation, locationOffset);
+    }
+  }
+
+  applyHtmlComment(commentText: string|undefined) {
+    this.description = this.description || commentText || '';
+  }
+
+  resolve(_document: Document): Element {
+    const element = new Element();
+    Object.assign(element, this);
+    return element;
+  }
+}
+
+
+export interface Attribute extends ScannedAttribute { inheritedFrom?: string; }
+
+export class Element implements Feature {
+  tagName?: string;
+  className?: string;
+  superClass?: string;
+  extends?: string;
+  properties: Property[] = [];
+  attributes: Attribute[] = [];
+  description = '';
+  demos: {desc?: string; path: string}[] = [];
+  events: Event[] = [];
+  sourceLocation: SourceLocation;
+  jsdoc?: jsdoc.Annotation;
+  kinds: Set<string> = new Set(['element']);
+  get identifiers(): Set<string> {
+    const result: Set<string> = new Set();
+    if (this.tagName) {
+      result.add(this.tagName);
+    }
+    if (this.className) {
+      result.add(this.className);
+    }
+    return result;
+  }
+
+  emitMetadata(): Object {
+    return {};
+  }
+
+  emitAttributeMetadata(_attribute: Attribute): Object {
+    return {};
+  }
+
+  emitPropertyMetadata(_property: Property): Object {
+    return {};
+  }
+
+  emitEventMetadata(_event: Event): Object {
+    return {};
   }
 }

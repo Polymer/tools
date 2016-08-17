@@ -14,10 +14,10 @@
 
 import {Parser} from '../parser/parser';
 
-import {JsonDocument} from './json-document';
+import {ParsedJsonDocument} from './json-document';
 
-export class JsonParser implements Parser<JsonDocument> {
-  parse(contents: string, url: string): JsonDocument {
-    return new JsonDocument({url, contents, ast: JSON.parse(contents)});
+export class JsonParser implements Parser<ParsedJsonDocument> {
+  parse(contents: string, url: string): ParsedJsonDocument {
+    return new ParsedJsonDocument({url, contents, ast: JSON.parse(contents)});
   }
 }

@@ -14,10 +14,10 @@
 
 import * as estree from 'estree';
 
-import {BehaviorOrName, ElementDescriptor, PropertyDescriptor} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 
 import {analyzeProperties} from './analyze-properties';
+import {ScannedPolymerElement} from './element-descriptor';
 
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void
@@ -26,22 +26,18 @@ export type PropertyHandlers = {
 /**
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.
- *
- * @param  {ElementDescriptor} declaration The descriptor to annotate.
- * @return {object.<string,function>}      An object containing property
- *                                         handlers.
  */
-export function declarationPropertyHandlers(declaration: ElementDescriptor):
+export function declarationPropertyHandlers(declaration: ScannedPolymerElement):
     PropertyHandlers {
   return {
     is(node: estree.Node) {
       if (node.type === 'Literal') {
-        declaration.is = node.value.toString();
+        declaration.tagName = node.value.toString();
       }
     },
     properties(node: estree.Node) {
       for (const prop of analyzeProperties(node)) {
-        declaration.properties.push(prop);
+        declaration.addProperty(prop);
       }
     },
     behaviors(node: estree.Node) {

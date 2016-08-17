@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PropertyDescriptor} from './property-descriptor';
+import {ScannedPolymerElement} from '../polymer/element-descriptor';
 
-export interface FunctionDescriptor extends PropertyDescriptor {
-  function: boolean;  // true
-  return: {type: string | null; desc: string};
-}
+/**
+ * The metadata for a Polymer core feature.
+ */
+export interface ScannedPolymerCoreFeature extends ScannedPolymerElement {}

@@ -12,24 +12,30 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ElementDescriptor, Options as ElementOptions} from './element-descriptor';
+import {Document} from '../ast/ast';
+import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/element-descriptor';
 
-export interface Options extends ElementOptions { symbol?: string; }
+export interface Options extends ElementOptions {}
 
 /**
  * The metadata for a Polymer behavior mixin.
  */
-export class BehaviorDescriptor extends ElementDescriptor {
-  symbol?: string;
-
+export class ScannedBehavior extends ScannedPolymerElement {
+  tagName: undefined;
+  className: string;
   constructor(options: Options) {
     super(options);
-    this.symbol = options.symbol;
+  }
+  resolve(_document: Document) {
+    return Object.assign(new Behavior(), this);
   }
 }
 
-export type BehaviorOrName = BehaviorDescriptor | string;
-
-export type BehaviorsByName = {
-  [name: string]: BehaviorDescriptor
-};
+export class Behavior extends PolymerElement {
+  tagName: undefined;
+  className: string;
+  constructor() {
+    super();
+    this.kinds = new Set(['behavior']);
+  }
+}

@@ -12,32 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode, parse as parseHtml} from 'parse5';
+import {parse as parseHtml} from 'parse5';
 
-import {Analyzer} from '../analyzer';
-import {ImportDescriptor} from '../ast/ast';
-import {Document} from '../parser/document';
 import {Parser} from '../parser/parser';
 
-import {HtmlDocument} from './html-document';
+import {ParsedHtmlDocument} from './html-document';
 
-export class HtmlParser implements Parser<HtmlDocument> {
-  analyzer: Analyzer;
-
-  constructor(analyzer: Analyzer) {
-    this.analyzer = analyzer;
-  }
-
+export class HtmlParser implements Parser<ParsedHtmlDocument> {
   /**
   * Parse html into ASTs.
   *
   * @param {string} htmlString an HTML document.
   * @param {string} href is the path of the document.
   */
-  parse(contents: string, url: string): HtmlDocument {
+  parse(contents: string, url: string): ParsedHtmlDocument {
     let ast = parseHtml(contents, {locationInfo: true});
-    return new HtmlDocument({
-        url, contents, ast,
-    });
+    return new ParsedHtmlDocument({url, contents, ast});
   }
 }

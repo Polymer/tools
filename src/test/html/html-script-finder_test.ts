@@ -14,8 +14,8 @@
 
 import {assert} from 'chai';
 
-import {InlineDocumentDescriptor} from '../../ast/ast';
-import {ImportDescriptor} from '../../ast/import-descriptor';
+import {InlineParsedDocument} from '../../ast/ast';
+import {ScannedImport} from '../../ast/import-descriptor';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {HtmlScriptFinder} from '../../html/html-script-finder';
@@ -34,18 +34,17 @@ suite('HtmlScriptFinder', () => {
           <script src="foo.js"></script>
           <script>console.log('hi')</script>
         </head></html>`;
-      const document =
-          new HtmlParser(null).parse(contents, 'test-document.html');
+      const document = new HtmlParser().parse(contents, 'test-document.html');
       let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const entities = await finder.findEntities(document, visit);
       assert.equal(entities.length, 2);
-      assert.instanceOf(entities[0], ImportDescriptor);
-      const entity0 = <ImportDescriptor<any>>entities[0];
+      assert.instanceOf(entities[0], ScannedImport);
+      const entity0 = <ScannedImport<any>>entities[0];
       assert.equal(entity0.type, 'html-script');
       assert.equal(entity0.url, 'foo.js');
-      assert.instanceOf(entities[1], InlineDocumentDescriptor);
-      const entity1 = <InlineDocumentDescriptor<any>>entities[1];
+      assert.instanceOf(entities[1], InlineParsedDocument);
+      const entity1 = <InlineParsedDocument<any>>entities[1];
       assert.equal(entity1.type, 'js');
       assert.equal(entity1.contents, `console.log('hi')`);
       assert.deepEqual(entity1.locationOffset, {line: 2, col: 19});
