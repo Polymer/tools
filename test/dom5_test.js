@@ -329,6 +329,15 @@ suite('dom5', function() {
         assert.equal(div.childNodes.indexOf(span), 1);
         assert.equal(div.childNodes.indexOf(text), 2);
       });
+
+      test('append to node with no children', function() {
+        var emptyBody = dom5.parse('<head></head><body></body>');
+        var body = emptyBody.childNodes[0].childNodes[1];
+        var span = dom5.constructors.element('span');
+        dom5.append(body, span);
+
+        assert.equal(body.childNodes.length, 1);
+      });
     });
 
     suite('InsertBefore', function() {
@@ -378,7 +387,7 @@ suite('dom5', function() {
 
         assert.equal(clone.tagName, 'span');
         assert.equal(dom5.getAttribute(clone, 'foo'), 'bar');
-        
+
         assert.equal(clone.childNodes[0].nodeName, '#text');
         assert.equal(clone.childNodes[0].value, 'a');
         assert.equal(span.childNodes[0].nodeName, '#text');

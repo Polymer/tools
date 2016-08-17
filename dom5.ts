@@ -377,9 +377,9 @@ export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
     undefined {
   // Search our earlier siblings and their descendents.
   const parent = node.parentNode;
-  if (parent) {
-    const idx = parent.childNodes!.indexOf(node);
-    const siblings = parent.childNodes!.slice(0, idx);
+  if (parent && parent.childNodes) {
+    const idx = parent.childNodes.indexOf(node);
+    const siblings = parent.childNodes.slice(0, idx);
     for (let i = siblings.length - 1; i >= 0; i--) {
       const sibling = siblings[i];
       if (predicate(sibling)) {
@@ -501,7 +501,7 @@ export function cloneNode(node: Node): Node {
 function insertNode(
     parent: Node, index: number, newNode: Node, replace?: boolean) {
   if (!parent.childNodes) {
-    throw new Error(`Parent node has no childNodes, can't insert.`);
+    parent.childNodes = [];
   }
   let newNodes: Node[] = [];
   let removedNode = replace ? parent.childNodes[index] : null;
@@ -553,7 +553,8 @@ export function insertBefore(parent: Node, oldNode: Node, newNode: Node) {
 }
 
 export function append(parent: Node, newNode: Node) {
-  insertNode(parent, parent.childNodes!.length, newNode);
+  const index = parent.childNodes && parent.childNodes.length || 0;
+  insertNode(parent, index, newNode);
 }
 
 export function parse(text: string, options?: parse5.ParserOptions) {
