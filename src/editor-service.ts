@@ -44,6 +44,19 @@ export interface AttributeCompletion {
   inheritedFrom?: string;
 }
 
+export interface Warning {
+  message: string;
+  sourceRange: SourceRange;
+  severity: Severity;
+  code: string;
+}
+
+export enum Severity {
+  ERROR,
+  WARNING,
+  INFO
+}
+
 class PermissiveUrlLoader implements UrlLoader {
   private _realLoader: UrlLoader;
   constructor(realLoader: UrlLoader) {
@@ -155,6 +168,22 @@ export class EditorService {
       }
       return {kind: 'attributes', attributes};
     };
+  }
+
+  async getWarningsFor(_localPath: string): Promise<Warning[]> {
+    const sever = Math.random() > 0.3 ?
+        Math.random() > 0.5 ? Severity.ERROR : Severity.WARNING :
+        Severity.INFO;
+    return [{
+      code: 'test-warning-code',
+      message: 'This is several characters of text.',
+      severity: sever,
+      sourceRange: {
+        file: _localPath,
+        start: {line: 0, column: 2},
+        end: {line: 0, column: 7}
+      }
+    }];
   }
 
   private async _getFeatureAt(localPath: string, position: Position):
