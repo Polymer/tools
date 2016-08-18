@@ -21,6 +21,7 @@ const eslint_lib = require('gulp-eslint');
 const mocha = require('gulp-mocha');
 const newer = require('gulp-newer');
 const shell = require('gulp-shell');
+const sourcemaps = require('gulp-sourcemaps');
 const tslint_lib = require('gulp-tslint');
 const typescript = require('gulp-typescript');
 const mergeStream = require('merge-stream');
@@ -76,7 +77,9 @@ task('compile', function() {
   // Use this once typescript-gulp supports `include` in tsconfig:
   // const srcs = tsProject.src();
   return mergeStream(
-             srcs.pipe(typescript(tsProject)),
+             srcs.pipe(sourcemaps.init())
+                 .pipe(typescript(tsProject))
+                 .pipe(sourcemaps.write('../lib')),
              gulp.src(['src/**/*', '!src/**/*.ts']))
       .pipe(gulp.dest('lib'));
 });
