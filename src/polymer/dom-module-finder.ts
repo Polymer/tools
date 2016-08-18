@@ -37,7 +37,7 @@ export class ScannedDomModule implements ScannedFeature, Resolvable {
   }
 
   resolve() {
-    return new DomModule(this.node, this.id, this.comment);
+    return new DomModule(this.node, this.id, this.comment, this.sourceRange);
   }
 }
 
@@ -47,13 +47,16 @@ export class DomModule implements Feature {
   node: ASTNode;
   id: string|undefined;
   comment: string|undefined;
-  constructor(node: ASTNode, id?: string, comment?: string) {
+  sourceRange: SourceRange;
+  constructor(
+      node: ASTNode, id: string, comment: string, sourceRange: SourceRange) {
     this.node = node;
     this.id = id;
     this.comment = comment;
     if (this.id) {
       this.identifiers.add(id);
     }
+    this.sourceRange = sourceRange;
   }
 }
 

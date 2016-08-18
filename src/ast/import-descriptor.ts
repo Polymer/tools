@@ -51,7 +51,7 @@ export class ScannedImport<N> implements ScannedFeature, Resolvable {
 
   resolve(_contextDocument: Document): Import {
     // The caller will set import.document;
-    return new Import(this.url, this.type);
+    return new Import(this.url, this.type, this.sourceRange);
   }
 }
 
@@ -61,11 +61,13 @@ export class Import implements Feature {
   document: Document;
   identifiers = new Set();
   kinds: Set<string>;
+  sourceRange: SourceRange;
 
-  constructor(url: string, type: string) {
+  constructor(url: string, type: string, sourceRange: SourceRange) {
     this.url = url;
     this.type = type;
     this.kinds = new Set(['import', this.type]);
+    this.sourceRange = sourceRange;
   }
 
   toString() {

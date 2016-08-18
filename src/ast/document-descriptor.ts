@@ -21,6 +21,8 @@ import {ScannedFeature} from './descriptor';
 import {Element} from './element-descriptor';
 import {Import, ScannedImport} from './import-descriptor';
 import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
+import {SourceRange} from './source-range';
+
 
 
 /**
@@ -32,6 +34,7 @@ export class ScannedDocument {
   entities: ScannedFeature[];
   locationOffset?: LocationOffset;
   isInline = false;
+  sourceRange: SourceRange = null;  // TODO(rictic): track this
 
   constructor(
       document: ParsedDocument<any, any>, dependencies: ScannedDocument[],
@@ -50,7 +53,7 @@ export class ScannedDocument {
 export interface Feature {
   kinds: Set<string>;
   identifiers?: Set<string>;
-  // sourceRange: SourceRange;
+  sourceRange: SourceRange;
 }
 
 
@@ -68,6 +71,7 @@ export class Document implements Feature {
 
   kinds: Set<string>;
   identifiers: Set<string>;
+  sourceRange: SourceRange;
 
   private _rootDocument: Document;
   // Should be able to emulate this once every Feature has a SourceLocation by
@@ -102,6 +106,7 @@ export class Document implements Feature {
     this.url = base.url;
     this.isInline = base.isInline;
     this.parsedDocument = base.document;
+    this.sourceRange = base.sourceRange;
 
     if (base.isInline) {
       this.identifiers = new Set();

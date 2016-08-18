@@ -16,10 +16,12 @@ import * as estree from 'estree';
 
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
+import {JavaScriptDocument} from '../javascript/javascript-document';
+
 
 import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
-export function featureFinder() {
+export function featureFinder(document: JavaScriptDocument) {
   /** The features we've found. */
   const features: ScannedPolymerCoreFeature[] = [];
 
@@ -43,14 +45,15 @@ export function featureFinder() {
       return;
     }
 
-    for (const prop of featureNode.properties.map(
-             esutil.toScannedPolymerProperty)) {
+    const polymerProps = featureNode.properties.map(
+        p =>
+            esutil.toScannedPolymerProperty(p, document.sourceRangeForNode(p)));
+    for (const prop of polymerProps) {
       feature.addProperty(prop);
     }
   }
 
   const visitors: Visitor = {
-
     enterCallExpression: function enterCallExpression(node, parent) {
       const isAddFeatureCall = esutil.matchesCallExpression(
           <estree.MemberExpression>node.callee,
@@ -66,5 +69,5 @@ export function featureFinder() {
     },
   };
 
-  return {visitors: visitors, features: features};
+  return {visitors, features};
 };
