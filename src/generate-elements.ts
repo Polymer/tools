@@ -34,7 +34,7 @@ const schema = JSON.parse(
 
 export class ValidationError extends Error {
   errors: jsonschema.ValidationError[];
-  constructor(result: jsonschema.ValidationResult) {
+  constructor(result: jsonschema.ValidatorResult) {
     const message = `Unable to validate serialized Polymer analysis. ` +
         `Got ${result.errors.length} errors: ` +
         `${result.errors.map(err => '    ' + (err.message || err)).join('\n')}`;
