@@ -15,7 +15,6 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -28,9 +27,9 @@ import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descripto
 
 export class PolymerElementFinder implements JavaScriptEntityFinder {
   async findEntities(
-      _: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
+      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
       Promise<ScannedPolymerElement[]> {
-    const visitor = new ElementVisitor();
+    const visitor = new ElementVisitor(document);
     await visit(visitor);
     return visitor.entities;
   }
@@ -46,6 +45,11 @@ class ElementVisitor implements Visitor {
   propertyHandlers: PropertyHandlers = null;
   classDetected: boolean = false;
 
+  document: JavaScriptDocument;
+  constructor(document: JavaScriptDocument) {
+    this.document = document;
+  }
+
   enterClassDeclaration(node: estree.ClassDeclaration, _: estree.Node) {
     this.classDetected = true;
     this.element = new ScannedPolymerElement({
@@ -54,7 +58,8 @@ class ElementVisitor implements Visitor {
       sourceLocation: getSourceLocation(node),
       node: node
     });
-    this.propertyHandlers = declarationPropertyHandlers(this.element);
+    this.propertyHandlers =
+        declarationPropertyHandlers(this.element, this.document);
   }
 
   leaveClassDeclaration(_: estree.ClassDeclaration, _parent: estree.Node) {
@@ -99,8 +104,8 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc =
-        <ScannedProperty>docs.annotate(esutil.toScannedPolymerProperty(prop));
+    const propDesc = docs.annotate(esutil.toScannedPolymerProperty(
+        prop, this.document.sourceRangeForNode(prop)));
     if (prop && prop.kind === 'get' &&
         (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
@@ -138,7 +143,8 @@ class ElementVisitor implements Visitor {
         });
         docs.annotate(this.element);
         this.element.description = (this.element.description || '').trim();
-        this.propertyHandlers = declarationPropertyHandlers(this.element);
+        this.propertyHandlers =
+            declarationPropertyHandlers(this.element, this.document);
       }
     }
   }
@@ -183,13 +189,15 @@ class ElementVisitor implements Visitor {
           this.propertyHandlers[name](prop.value);
           continue;
         }
-        const scannedPolymerProperty = esutil.toScannedPolymerProperty(prop);
+        const scannedPolymerProperty = esutil.toScannedPolymerProperty(
+            prop, this.document.sourceRangeForNode(prop));
         if (scannedPolymerProperty.getter) {
           getters[scannedPolymerProperty.name] = scannedPolymerProperty;
         } else if (scannedPolymerProperty.setter) {
           setters[scannedPolymerProperty.name] = scannedPolymerProperty;
         } else {
-          this.element.addProperty(esutil.toScannedPolymerProperty(prop));
+          this.element.addProperty(esutil.toScannedPolymerProperty(
+              prop, this.document.sourceRangeForNode(prop)));
         }
       }
       Object.keys(getters).forEach((getter) => {

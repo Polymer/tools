@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {SourceRange} from './ast';
 import {ScannedFeature} from './descriptor';
 import {Document, Feature, Resolvable, ScannedDocument} from './document-descriptor';
 
@@ -38,10 +39,14 @@ export class ScannedImport<N> implements ScannedFeature, Resolvable {
   node: N;
 
   scannedDocument: ScannedDocument;
-  constructor(type: string, url: string, node: N) {
+
+  sourceRange: SourceRange;
+
+  constructor(type: string, url: string, node: N, sourceRange: SourceRange) {
     this.type = type;
     this.url = url;
     this.node = node;
+    this.sourceRange = sourceRange;
   }
 
   resolve(_contextDocument: Document): Import {

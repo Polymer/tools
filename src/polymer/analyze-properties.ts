@@ -17,15 +17,18 @@ import * as estree from 'estree';
 import {ScannedProperty} from '../ast/ast';
 import * as astValue from '../javascript/ast-value';
 import * as esutil from '../javascript/esutil';
+import {JavaScriptDocument} from '../javascript/javascript-document';
 
-export function analyzeProperties(node: estree.Node) {
+export function analyzeProperties(
+    node: estree.Node, document: JavaScriptDocument) {
   const analyzedProps: ScannedProperty[] = [];
 
   if (node.type !== 'ObjectExpression') {
     return analyzedProps;
   }
   for (const property of node.properties) {
-    const prop = esutil.toScannedPolymerProperty(property);
+    const prop = esutil.toScannedPolymerProperty(
+        property, document.sourceRangeForNode(property));
     prop.published = true;
 
     if (property.value.type !== 'ObjectExpression') {

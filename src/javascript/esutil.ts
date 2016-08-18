@@ -16,13 +16,12 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedEvent} from '../ast/ast';
+import {ScannedEvent, SourceRange} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
 import {ScannedFunction, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
 import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
-
 
 
 /**
@@ -147,8 +146,8 @@ function getLeadingComments(node: estree.Node): string[] {
 /**
  * Converts a estree Property AST node into its Hydrolysis representation.
  */
-export function toScannedPolymerProperty(node: estree.Property):
-    ScannedPolymerProperty {
+export function toScannedPolymerProperty(
+    node: estree.Property, sourceRange: SourceRange): ScannedPolymerProperty {
   let type = closureType(node.value);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {
@@ -164,6 +163,7 @@ export function toScannedPolymerProperty(node: estree.Property):
     type: type,
     description: description,
     sourceLocation: getSourceLocation(node),
+    sourceRange: sourceRange,
     node: node
   };
 

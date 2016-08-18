@@ -13,6 +13,7 @@
  */
 
 import * as jsdoc from '../javascript/jsdoc';
+import {SourceRange} from './source-range';
 
 export type LiteralValue =
     string | number | boolean | RegExp | undefined | LiteralArray | LiteralObj;
@@ -31,4 +32,7 @@ export interface ScannedFeature {
    * document.
    */
   node: any;
+
+  /** Tracks the source that this feature came from. */
+  sourceRange: SourceRange;
 }

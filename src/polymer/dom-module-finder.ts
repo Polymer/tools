@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import {Feature, Resolvable, ScannedFeature, getAttachedCommentText} from '../ast/ast';
+import {Feature, Resolvable, ScannedFeature, SourceRange, getAttachedCommentText} from '../ast/ast';
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlEntityFinder} from '../html/html-entity-finder';
 
@@ -27,11 +27,13 @@ export class ScannedDomModule implements ScannedFeature, Resolvable {
   id?: string;
   node: ASTNode;
   comment?: string;
+  sourceRange: SourceRange;
 
-  constructor(id: string, node: ASTNode) {
+  constructor(id: string, node: ASTNode, sourceRange: SourceRange) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
+    this.sourceRange = sourceRange;
   }
 
   resolve() {
@@ -57,14 +59,16 @@ export class DomModule implements Feature {
 
 export class DomModuleFinder implements HtmlEntityFinder {
   async findEntities(
-      _: ParsedHtmlDocument, visit: (visitor: HtmlVisitor) => Promise<void>):
+      document: ParsedHtmlDocument,
+      visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedDomModule[]> {
     let domModules: ScannedDomModule[] = [];
 
     await visit((node) => {
       if (isDomModule(node)) {
-        domModules.push(
-            new ScannedDomModule(dom5.getAttribute(node, 'id'), node));
+        domModules.push(new ScannedDomModule(
+            dom5.getAttribute(node, 'id'), node,
+            document.sourceRangeForNode(node)));
       }
     });
     return domModules;

@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {SourceRange} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
@@ -26,6 +27,7 @@ export interface ScannedProperty extends ScannedFeature {
   'default'?: string;
   readOnly?: boolean;
   sourceLocation: SourceLocation;
+  sourceRange: SourceRange;
 }
 
 export interface Property {
@@ -37,5 +39,6 @@ export interface Property {
   'default'?: string;
   readOnly?: boolean;
   sourceLocation: SourceLocation;
+  sourceRange: SourceRange;
   inheritedFrom?: string;
 }

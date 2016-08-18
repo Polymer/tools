@@ -16,9 +16,9 @@ import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
-import {ScannedFeature, ScannedImport, InlineParsedDocument, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
+import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 
-import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
+import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlEntityFinder} from './html-entity-finder';
 
 const p = dom5.predicates;
@@ -37,9 +37,10 @@ const isStyleNode = p.OR(isStyleElement, isStyleLink);
 export class HtmlStyleFinder implements HtmlEntityFinder {
   async findEntities(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>): Promise<ScannedFeature[]> {
-    let entities:
-        (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] = [];
+      visit: (visitor: HtmlVisitor) => Promise<void>):
+      Promise<ScannedFeature[]> {
+    let entities: (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] =
+        [];
 
     await visit(async(node) => {
       if (isStyleNode(node)) {
@@ -47,14 +48,16 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
         if (tagName === 'link') {
           let href = dom5.getAttribute(node, 'href');
           let importUrl = resolveUrl(document.url, href);
-          entities.push(
-              new ScannedImport<ASTNode>('html-style', importUrl, node));
+          entities.push(new ScannedImport<ASTNode>(
+              'html-style', importUrl, node,
+              document.sourceRangeForNode(node)));
         } else {
           let contents = dom5.getTextContent(node);
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const commentText = getAttachedCommentText(node);
           entities.push(new InlineParsedDocument<ASTNode>(
-              'css', contents, node, locationOffset, commentText));
+              'css', contents, node, locationOffset, commentText,
+              document.sourceRangeForNode(node)));
         }
       }
     });

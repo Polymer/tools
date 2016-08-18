@@ -15,6 +15,7 @@
 import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
+import {JavaScriptDocument} from '../javascript/javascript-document';
 
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerElement} from './element-descriptor';
@@ -27,8 +28,9 @@ export type PropertyHandlers = {
  * Returns an object containing functions that will annotate `declaration` with
  * the polymer-specificmeaning of the value nodes for the named properties.
  */
-export function declarationPropertyHandlers(declaration: ScannedPolymerElement):
-    PropertyHandlers {
+export function declarationPropertyHandlers(
+    declaration: ScannedPolymerElement,
+    document: JavaScriptDocument): PropertyHandlers {
   return {
     is(node: estree.Node) {
       if (node.type === 'Literal') {
@@ -36,7 +38,7 @@ export function declarationPropertyHandlers(declaration: ScannedPolymerElement):
       }
     },
     properties(node: estree.Node) {
-      for (const prop of analyzeProperties(node)) {
+      for (const prop of analyzeProperties(node, document)) {
         declaration.addProperty(prop);
       }
     },

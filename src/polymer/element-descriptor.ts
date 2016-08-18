@@ -91,6 +91,7 @@ export class ScannedPolymerElement extends ScannedElement {
       this.attributes.push({
         name: attributeName,
         sourceLocation: prop.sourceLocation,
+        sourceRange: prop.sourceRange,
         description: prop.description,
         type: prop.type,
       });
@@ -99,7 +100,8 @@ export class ScannedPolymerElement extends ScannedElement {
       this.events.push({
         name: `${attributeName}-changed`,
         description: `Fired when the \`${prop.name}\` property changes.`,
-        node: prop.node
+        node: prop.node,
+        sourceRange: prop.sourceRange
       });
     }
   }

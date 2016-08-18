@@ -124,7 +124,7 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
     });
   }
 
-  sourceRangeForNode(node: Node): SourceRange {
+  sourceRangeForNode(node: Node): SourceRange|undefined {
     if (!node || !node.loc) {
       return;
     }

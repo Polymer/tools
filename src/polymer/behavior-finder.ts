@@ -50,9 +50,9 @@ const templatizer = 'Polymer.Templatizer';
 
 export class BehaviorFinder implements JavaScriptEntityFinder {
   async findEntities(
-      _: JavaScriptDocument,
+      document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedFeature[]> {
-    let visitor = new BehaviorVisitor();
+    let visitor = new BehaviorVisitor(document);
     await visit(visitor);
     return Array.from(visitor.behaviors);
   }
@@ -64,6 +64,11 @@ class BehaviorVisitor implements Visitor {
 
   currentBehavior: ScannedBehavior = null;
   propertyHandlers: PropertyHandlers = null;
+
+  document: JavaScriptDocument;
+  constructor(document: JavaScriptDocument) {
+    this.document = document;
+  }
 
   /**
    * Look for object declarations with @behavior in the docs.
@@ -108,7 +113,8 @@ class BehaviorVisitor implements Visitor {
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else {
-        this.currentBehavior.addProperty(esutil.toScannedPolymerProperty(prop));
+        this.currentBehavior.addProperty(esutil.toScannedPolymerProperty(
+            prop, this.document.sourceRangeForNode(prop)));
       }
     }
     this._finishBehavior();
@@ -146,7 +152,8 @@ class BehaviorVisitor implements Visitor {
       events: esutil.getEventComments(node),
       node: node,
     }));
-    this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
+    this.propertyHandlers =
+        declarationPropertyHandlers(this.currentBehavior, this.document);
 
     docs.annotateBehavior(this.currentBehavior);
     // Make sure that we actually parsed a behavior tag!
@@ -167,7 +174,8 @@ class BehaviorVisitor implements Visitor {
     this._parseChainedBehaviors(node);
 
     this.currentBehavior = this.mergeBehavior(this.currentBehavior);
-    this.propertyHandlers = declarationPropertyHandlers(this.currentBehavior);
+    this.propertyHandlers =
+        declarationPropertyHandlers(this.currentBehavior, this.document);
 
     // Some behaviors are just lists of other behaviors. If this is one then
     // add it to behaviors right away.

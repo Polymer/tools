@@ -50,7 +50,7 @@ export class ScannedDocument {
 export interface Feature {
   kinds: Set<string>;
   identifiers?: Set<string>;
-  // sourceLocation: SourceLocation;
+  // sourceRange: SourceRange;
 }
 
 

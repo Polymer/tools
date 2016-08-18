@@ -41,15 +41,17 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
         let src = dom5.getAttribute(node, 'src');
         if (src) {
           let importUrl = resolveUrl(document.url, src);
-          entities.push(
-              new ScannedImport<ASTNode>('html-script', importUrl, node));
+          entities.push(new ScannedImport<ASTNode>(
+              'html-script', importUrl, node,
+              document.sourceRangeForNode(node)));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const attachedCommentText = getAttachedCommentText(node);
           let contents = dom5.getTextContent(node);
 
           entities.push(new InlineParsedDocument<ASTNode>(
-              'js', contents, node, locationOffset, attachedCommentText));
+              'js', contents, node, locationOffset, attachedCommentText,
+              document.sourceRangeForNode(node)));
         }
       }
     };

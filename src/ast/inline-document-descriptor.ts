@@ -22,6 +22,7 @@ import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedFeature} from './descriptor';
 import {ScannedDocument} from './document-descriptor';
+import {Position, SourceRange} from './source-range';
 
 export interface LocationOffset {
   /** Zero based line index. */
@@ -57,14 +58,17 @@ export class InlineParsedDocument<N> implements ScannedFeature {
 
   scannedDocument: ScannedDocument;
 
+  sourceRange: SourceRange;
+
   constructor(
       type: string, contents: string, node: N, locationOffset: LocationOffset,
-      attachedComment: string) {
+      attachedComment: string, sourceRange: SourceRange) {
     this.type = type;
     this.contents = contents;
     this.node = node;
     this.locationOffset = locationOffset;
     this.attachedComment = attachedComment;
+    this.sourceRange = sourceRange;
   }
 }
 
@@ -84,6 +88,27 @@ export function correctSourceLocation(
     result.file = locationOffset.filename || sourceLocation.file;
   }
   return result;
+}
+
+export function correctSourceRange(
+    sourceRange: SourceRange, locationOffset?: LocationOffset): SourceRange|
+    undefined {
+  if (!locationOffset || !sourceRange) {
+    return sourceRange;
+  }
+  return <SourceRange>{
+    file: locationOffset.filename || sourceRange.file,
+    start: correctPosition(sourceRange.start, locationOffset),
+    end: correctPosition(sourceRange.end, locationOffset)
+  };
+}
+
+function correctPosition(
+    position: Position, locationOffset: LocationOffset): Position {
+  return {
+    line: position.line + locationOffset.line,
+    column: position.column + (position.line === 0 ? locationOffset.col : 0)
+  };
 }
 
 export function getAttachedCommentText(node: ASTNode): string|undefined {

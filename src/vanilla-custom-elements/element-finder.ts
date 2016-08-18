@@ -31,9 +31,9 @@ export interface ScannedAttribute extends ScannedFeature {
 
 export class ElementFinder implements JavaScriptEntityFinder {
   async findEntities(
-      _: JavaScriptDocument,
+      document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedElement[]> {
-    let visitor = new ElementVisitor();
+    let visitor = new ElementVisitor(document);
     await visit(visitor);
     return visitor.getRegisteredElements();
   }
@@ -43,6 +43,11 @@ class ElementVisitor implements Visitor {
   private _possibleElements = new Map<string, ScannedElement>();
   private _registeredButNotFound = new Map<string, string>();
   private _elements: ScannedElement[] = [];
+  private _document: JavaScriptDocument;
+
+  constructor(document: JavaScriptDocument) {
+    this._document = document;
+  }
 
   enterClassExpression(node: estree.ClassExpression, parent: estree.Node) {
     if (parent.type !== 'AssignmentExpression' &&
@@ -178,7 +183,8 @@ class ElementVisitor implements Visitor {
           name: value,
           description: description,
           sourceLocation: getSourceLocation(expr),
-          node: expr
+          node: expr,
+          sourceRange: this._document.sourceRangeForNode(expr)
         };
         if (type) {
           attribute.type = type;
