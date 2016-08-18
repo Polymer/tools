@@ -13,8 +13,10 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
+import {SourceRange} from '../ast/ast';
 import {Options, ParsedDocument} from '../parser/document';
 
 /**
@@ -43,4 +45,34 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       return false;
     });
   }
+
+  sourceRangeForNode(node: ASTNode): SourceRange {
+    if (!node || !node.__location) {
+      return;
+    }
+    const location = node.__location;
+    if (isElementLocationInfo(location)) {
+      return {
+        file: this.url,
+        start:
+            {line: location.startTag.line - 1, column: location.startTag.col},
+        end: {line: location.endTag.line - 1, column: location.endTag.col}
+      };
+    }
+    return {
+      file: this.url,
+      // one indexed to zero indexed
+      start: {line: location.line - 1, column: location.col},
+      end: {
+        line: location.line - 1,
+        column: location.col + (location.endOffset - location.startOffset)
+      }
+    };
+  }
+}
+
+function isElementLocationInfo(location: parse5.LocationInfo|
+                               parse5.ElementLocationInfo):
+    location is parse5.ElementLocationInfo {
+  return location['startTag'] && location['endTag'];
 }

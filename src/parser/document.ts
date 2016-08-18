@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {SourceRange} from '../ast/source-range';
+
 /**
  * A parsed Document.
  *
@@ -43,6 +45,8 @@ export abstract class ParsedDocument<A, V> {
    * in document order.
    */
   abstract forEachNode(callback: (node: A) => void): void;
+
+  abstract sourceRangeForNode(node: A): SourceRange;
 }
 
 export interface Options<A> {
@@ -50,3 +54,4 @@ export interface Options<A> {
   contents: string;
   ast: A;
 }
+

@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {SourceRange} from '../ast/ast';
 import {Options, ParsedDocument} from '../parser/document';
 
 export type Json = JsonObject | JsonArray | number | string | boolean | null;
@@ -46,7 +47,11 @@ export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
     }
   }
 
-  forEachNode(callback: (node: any) => void) {
+  forEachNode(callback: (node: Json) => void) {
     this.visit([{visit: callback}]);
+  }
+
+  sourceRangeForNode(_node: Json): SourceRange {
+    throw new Error('Not Implemented.');
   }
 }

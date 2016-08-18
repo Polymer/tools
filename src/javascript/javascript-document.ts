@@ -15,6 +15,7 @@
 import {VisitorOption, traverse} from 'estraverse';
 import {Node, Program} from 'estree';
 
+import {SourceRange} from '../ast/ast';
 import {SourceLocation} from '../elements-format';
 import {Options, ParsedDocument} from '../parser/document';
 
@@ -54,7 +55,6 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
       }
     };
 
-    // These two methods deal with emulating the Visitor behavior of allowing
     // a visitor to break early, or to skip a subtree of the AST. We need to
     // track this ourselves because we're running all the visitors at once.
     const _shouldSkip =
@@ -122,6 +122,18 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
       },
       fallback: 'iteration',
     });
+  }
+
+  sourceRangeForNode(node: Node): SourceRange {
+    if (!node || !node.loc) {
+      return;
+    }
+    return {
+      file: this.url,
+      // Note: estree uses 1-indexed lines, but SourceRange uses 0 indexed.
+      start: {line: (node.loc.start.line - 1), column: node.loc.start.column},
+      end: {line: (node.loc.end.line - 1), column: node.loc.end.column}
+    };
   }
 }
 

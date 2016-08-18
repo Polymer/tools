@@ -14,6 +14,7 @@
 
 import * as shady from 'shady-css-parser';
 
+import {SourceRange} from '../ast/ast';
 import {Options, ParsedDocument} from '../parser/document';
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
@@ -79,6 +80,10 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
   }
 
   forEachNode(_callback: (node: shady.Node) => void) {
+    throw new Error('Not implemented');
+  }
+
+  sourceRangeForNode(_node: shady.Node): SourceRange {
     throw new Error('Not implemented');
   }
 }
