@@ -39,6 +39,7 @@
     "gulp-mocha": "^2.2.0",
     "gulp-newer": "^1.2.0",
     "gulp-shell": "^0.5.2",
+    "gulp-sourcemaps": "^1.6.0",
     "gulp-tslint": "^5.0.0",
     "gulp-typescript": "^2.13.4",
     "jsdoc-to-markdown": "^1.0.3",
