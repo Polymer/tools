@@ -50,6 +50,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     if (!node || !node.__location) {
       return;
     }
+    // dom5 locations are 1 based but ours are 0 based.
     const location = node.__location;
     if (isElementLocationInfo(location)) {
       return {

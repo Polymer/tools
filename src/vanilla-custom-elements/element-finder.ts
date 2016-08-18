@@ -15,17 +15,15 @@
 import * as estree from 'estree';
 
 import {ScannedElement, ScannedFeature} from '../ast/ast';
-import {SourceLocation} from '../elements-format';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
-import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-document';
+import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
-  sourceLocation: SourceLocation;
   type?: string;
 }
 
@@ -82,7 +80,7 @@ class ElementVisitor implements Visitor {
              .description.trim() ||
          '');
     element.events = esutil.getEventComments(node);
-    element.sourceLocation = getSourceLocation(node);
+    element.sourceRange = this._document.sourceRangeForNode(node);
     if (node.superClass && node.superClass.type === 'Identifier') {
       element.superClass = node.superClass.name;
     }
@@ -182,7 +180,6 @@ class ElementVisitor implements Visitor {
         const attribute: ScannedAttribute = {
           name: value,
           description: description,
-          sourceLocation: getSourceLocation(expr),
           node: expr,
           sourceRange: this._document.sourceRangeForNode(expr)
         };

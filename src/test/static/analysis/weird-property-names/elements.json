@@ -10,9 +10,15 @@
         {
           "name": "d-e-f",
           "description": "",
-          "sourceLocation": {
-            "line": 7,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 7,
+              "column": 6
+            },
+            "end": {
+              "line": 10,
+              "column": 7
+            }
           },
           "type": "string",
           "metadata": {}
@@ -20,9 +26,15 @@
         {
           "name": "g--h--i",
           "description": "",
-          "sourceLocation": {
-            "line": 11,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 11,
+              "column": 6
+            },
+            "end": {
+              "line": 14,
+              "column": 7
+            }
           },
           "type": "string",
           "metadata": {}
@@ -33,9 +45,15 @@
           "name": "ABC",
           "type": "string",
           "description": "",
-          "sourceLocation": {
-            "line": 3,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 3,
+              "column": 6
+            },
+            "end": {
+              "line": 6,
+              "column": 7
+            }
           },
           "metadata": {
             "polymer": {
@@ -47,9 +65,15 @@
           "name": "dEF",
           "type": "string",
           "description": "",
-          "sourceLocation": {
-            "line": 7,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 7,
+              "column": 6
+            },
+            "end": {
+              "line": 10,
+              "column": 7
+            }
           },
           "metadata": {
             "polymer": {
@@ -61,9 +85,15 @@
           "name": "g-H--i",
           "type": "string",
           "description": "",
-          "sourceLocation": {
-            "line": 11,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 11,
+              "column": 6
+            },
+            "end": {
+              "line": 14,
+              "column": 7
+            }
           },
           "metadata": {
             "polymer": {
@@ -93,9 +123,15 @@
         }
       ],
       "metadata": {},
-      "sourceLocation": {
-        "line": 1,
-        "column": 10
+      "sourceRange": {
+        "start": {
+          "line": 1,
+          "column": 10
+        },
+        "end": {
+          "line": 17,
+          "column": 3
+        }
       }
     }
   ]

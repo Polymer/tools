@@ -46,7 +46,7 @@ export function featureFinder(document: JavaScriptDocument) {
     }
 
     const polymerProps = featureNode.properties.map(
-        p =>
+        (p) =>
             esutil.toScannedPolymerProperty(p, document.sourceRangeForNode(p)));
     for (const prop of polymerProps) {
       feature.addProperty(prop);

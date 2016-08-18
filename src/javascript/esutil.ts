@@ -20,7 +20,6 @@ import {ScannedEvent, SourceRange} from '../ast/ast';
 import {annotateEvent} from '../polymer/docs';
 import {ScannedFunction, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
-import {getSourceLocation} from './javascript-document';
 import * as jsdoc from './jsdoc';
 
 
@@ -162,7 +161,6 @@ export function toScannedPolymerProperty(
     name: objectKeyToString(node.key),
     type: type,
     description: description,
-    sourceLocation: getSourceLocation(node),
     sourceRange: sourceRange,
     node: node
   };

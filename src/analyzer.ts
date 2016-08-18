@@ -172,6 +172,9 @@ export class Analyzer {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     let entities = await this._getEntities(document);
+    // TODO(rictic): invert this and push the location offsets into the inline
+    // documents so that the source ranges are correct when they're first
+    // created.
     for (const entity of entities) {
       if (entity instanceof ScannedElement) {
         entity.applyLocationOffset(locationOffset);

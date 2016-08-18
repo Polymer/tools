@@ -16,8 +16,8 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty} from './ast/ast';
-import {Attribute, Element, Elements, Property, SourceLocation} from './elements-format';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './ast/ast';
+import {Attribute, Element, Elements, Property, SourceRange} from './elements-format';
 
 
 export function generateElementMetadata(
@@ -69,9 +69,9 @@ function serializeElement(
     return null;
   }
 
-  const path = resolvedElement.sourceLocation.file;
+  const path = resolvedElement.sourceRange.file;
   const packageRelativePath =
-      pathLib.relative(packagePath, resolvedElement.sourceLocation.file);
+      pathLib.relative(packagePath, resolvedElement.sourceRange.file);
 
   const attributes = resolvedElement.attributes.map(
       a => serializeAttribute(resolvedElement, path, a));
@@ -105,8 +105,7 @@ function serializeElement(
     slots: [],
     events: events,
     metadata: resolvedElement.emitMetadata(),
-    sourceLocation:
-        resolveSourceLocationPath(path, resolvedElement.sourceLocation)
+    sourceRange: resolveSourceRangePath(path, resolvedElement.sourceRange)
   };
 }
 
@@ -117,8 +116,8 @@ function serializeProperty(
     name: resolvedProperty.name,
     type: resolvedProperty.type || '?',
     description: resolvedProperty.description || '',
-    sourceLocation:
-        resolveSourceLocationPath(elementPath, resolvedProperty.sourceLocation)
+    sourceRange:
+        resolveSourceRangePath(elementPath, resolvedProperty.sourceRange)
   };
   if (resolvedProperty.default) {
     property.defaultValue = resolvedProperty.default;
@@ -133,8 +132,8 @@ function serializeAttribute(
   const attribute: Attribute = {
     name: resolvedAttribute.name,
     description: resolvedAttribute.description || '',
-    sourceLocation:
-        resolveSourceLocationPath(elementPath, resolvedAttribute.sourceLocation)
+    sourceRange:
+        resolveSourceRangePath(elementPath, resolvedAttribute.sourceRange)
   };
   if (resolvedAttribute.type) {
     attribute.type = resolvedAttribute.type;
@@ -143,25 +142,21 @@ function serializeAttribute(
   return attribute;
 }
 
-function resolveSourceLocationPath(
+function resolveSourceRangePath(
     elementPath: string,
-    sourceLocation: SourceLocation|undefined): SourceLocation|undefined {
-  if (!sourceLocation) {
-    return undefined;
+    sourceRange?: ResolvedSourceRange): (SourceRange | undefined) {
+  if (!sourceRange) {
+    return;
   }
-  if (!sourceLocation.file) {
-    return sourceLocation;
+  if (!sourceRange.file) {
+    return sourceRange;
   }
-  if (elementPath === sourceLocation.file) {
-    return {line: sourceLocation.line, column: sourceLocation.column};
+  if (elementPath === sourceRange.file) {
+    return {start: sourceRange.start, end: sourceRange.end};
   }
   // The source location's path is relative to file resolver's base, so first
-  // we need to make it relative to the package dir so that it's
+  // we need to make it relative to the element.
   const filePath =
-      pathLib.relative(pathLib.dirname(elementPath), sourceLocation.file);
-  return {
-    line: sourceLocation.line,
-    column: sourceLocation.column,
-    file: filePath
-  };
+      pathLib.relative(pathLib.dirname(elementPath), sourceRange.file);
+  return {file: filePath, start: sourceRange.start, end: sourceRange.end};
 }

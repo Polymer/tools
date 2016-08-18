@@ -15,16 +15,14 @@
 import * as estree from 'estree';
 
 import {SourceRange} from '../ast/ast';
-import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceLocation, correctSourceRange} from './ast';
+import {Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceRange} from './ast';
 
 export {Visitor} from '../javascript/estree-visitor';
 
 export interface ScannedAttribute {
   name: string;
-  sourceLocation: SourceLocation;
   sourceRange: SourceRange;
   description?: string;
   type?: string;
@@ -40,7 +38,6 @@ export class ScannedElement implements ScannedFeature, Resolvable {
   description = '';
   demos: {desc?: string; path: string}[] = [];
   events: ScannedEvent[] = [];
-  sourceLocation: SourceLocation;
   node: estree.Node;
   sourceRange: SourceRange;
 
@@ -50,17 +47,11 @@ export class ScannedElement implements ScannedFeature, Resolvable {
     if (!locationOffset) {
       return;
     }
-    this.sourceLocation =
-        correctSourceLocation(this.sourceLocation, locationOffset);
     this.sourceRange = correctSourceRange(this.sourceRange, locationOffset);
     for (const prop of this.properties) {
-      prop.sourceLocation =
-          correctSourceLocation(prop.sourceLocation, locationOffset);
       prop.sourceRange = correctSourceRange(prop.sourceRange, locationOffset);
     }
     for (const attribute of this.attributes) {
-      attribute.sourceLocation =
-          correctSourceLocation(attribute.sourceLocation, locationOffset);
       attribute.sourceRange =
           correctSourceRange(attribute.sourceRange, locationOffset);
     }
@@ -94,7 +85,6 @@ export class Element implements Feature {
   demos: {desc?: string; path: string}[] = [];
   events: Event[] = [];
   sourceRange: SourceRange;
-  sourceLocation: SourceLocation;
   jsdoc?: jsdoc.Annotation;
   kinds: Set<string> = new Set(['element']);
   get identifiers(): Set<string> {

@@ -16,9 +16,15 @@
       "slots": [],
       "events": [],
       "metadata": {},
-      "sourceLocation": {
-        "line": 4,
-        "column": 8
+      "sourceRange": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 26
+        }
       }
     }
   ]

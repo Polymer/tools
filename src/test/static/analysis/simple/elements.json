@@ -10,9 +10,15 @@
         {
           "name": "the-value",
           "description": "This is a simple test property named theValue.",
-          "sourceLocation": {
-            "line": 9,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 9,
+              "column": 6
+            },
+            "end": {
+              "line": 12,
+              "column": 7
+            }
           },
           "type": "string",
           "metadata": {}
@@ -23,9 +29,15 @@
           "name": "theValue",
           "type": "string",
           "description": "This is a simple test property named theValue.",
-          "sourceLocation": {
-            "line": 9,
-            "column": 6
+          "sourceRange": {
+            "start": {
+              "line": 9,
+              "column": 6
+            },
+            "end": {
+              "line": 12,
+              "column": 7
+            }
           },
           "metadata": {
             "polymer": {
@@ -49,9 +61,15 @@
         }
       ],
       "metadata": {},
-      "sourceLocation": {
-        "line": 4,
-        "column": 10
+      "sourceRange": {
+        "start": {
+          "line": 4,
+          "column": 10
+        },
+        "end": {
+          "line": 15,
+          "column": 3
+        }
       }
     }
   ]

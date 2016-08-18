@@ -14,41 +14,40 @@
 
 import {assert} from 'chai';
 
-import {LocationOffset, correctSourceLocation} from '../../ast/ast';
-import {SourceLocation} from '../../elements-format';
+import {LocationOffset, Position, SourceRange, correctPosition, correctSourceRange} from '../../ast/ast';
 
 
-suite('correctSourceLocation', function() {
+suite('correctSourceRange', function() {
   test('handles undefined gracefully', function() {
-    const zeroSourceLocation: SourceLocation = {line: 0, column: 0};
+    const zeroPosition = {line: 0, column: 0};
+    const zeroSourceRange:
+        SourceRange = {file: 'foo', start: zeroPosition, end: zeroPosition};
     const zeroLocationOffset: LocationOffset = {line: 0, col: 0};
 
-    assert.equal(undefined, correctSourceLocation(undefined, undefined));
-    assert.equal(
-        undefined, correctSourceLocation(undefined, zeroLocationOffset));
+    assert.equal(correctSourceRange(undefined, undefined), undefined);
+    assert.equal(correctSourceRange(undefined, zeroLocationOffset), undefined);
     assert.deepEqual(
-        zeroSourceLocation,
-        correctSourceLocation(zeroSourceLocation, undefined));
+        correctSourceRange(zeroSourceRange, undefined), zeroSourceRange);
   });
   test('handles source locations on the first line', function() {
     assert.deepEqual(
-        {line: 1, column: 2},
-        correctSourceLocation({line: 0, column: 1}, {line: 1, col: 1}));
+        correctPosition({line: 0, column: 1}, {line: 1, col: 1}),
+        {line: 1, column: 2});
   });
   test(
       'does not change column offsets for ' +
           'source locations after the first',
       function() {
         assert.deepEqual(
-            {line: 2, column: 1},
-            correctSourceLocation({line: 1, column: 1}, {line: 1, col: 1}));
+            correctPosition({line: 1, column: 1}, {line: 1, col: 1}),
+            {line: 2, column: 1}, );
       });
 
   test('does not modify its input', function() {
-    const input: SourceLocation = {line: 5, column: 5};
+    const input: Position = {line: 5, column: 5};
     const offset: LocationOffset = {line: 5, col: 5};
-    const expected: SourceLocation = {line: 10, column: 5};
-    assert.deepEqual(expected, correctSourceLocation(input, offset));
-    assert.deepEqual({line: 5, column: 5}, input);
+    const expected: Position = {line: 10, column: 5};
+    assert.deepEqual(correctPosition(input, offset), expected);
+    assert.deepEqual(input, {line: 5, column: 5});
   });
 });

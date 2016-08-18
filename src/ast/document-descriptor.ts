@@ -74,8 +74,6 @@ export class Document implements Feature {
   sourceRange: SourceRange;
 
   private _rootDocument: Document;
-  // Should be able to emulate this once every Feature has a SourceLocation by
-  // just filtering out by feature.sourceLocation.file === this.url;
   private _localFeatures = new Set<Feature>();
 
   /**

@@ -151,6 +151,7 @@ class BehaviorVisitor implements Visitor {
       description: comment,
       events: esutil.getEventComments(node),
       node: node,
+      sourceRange: this.document.sourceRangeForNode(node)
     }));
     this.propertyHandlers =
         declarationPropertyHandlers(this.currentBehavior, this.document);

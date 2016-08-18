@@ -16,9 +16,15 @@
       "slots": [],
       "events": [],
       "metadata": {},
-      "sourceLocation": {
-        "line": 1,
-        "column": 10
+      "sourceRange": {
+        "start": {
+          "line": 1,
+          "column": 10
+        },
+        "end": {
+          "line": 3,
+          "column": 3
+        }
       }
     },
     {
@@ -36,9 +42,15 @@
       "slots": [],
       "events": [],
       "metadata": {},
-      "sourceLocation": {
-        "line": 1,
-        "column": 10
+      "sourceRange": {
+        "start": {
+          "line": 1,
+          "column": 10
+        },
+        "end": {
+          "line": 3,
+          "column": 3
+        }
       }
     }
   ]

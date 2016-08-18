@@ -15,8 +15,7 @@
 import * as parse5 from 'parse5';
 
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
-import {Document, Element, Property, ScannedProperty} from './ast/ast';
-import {SourceLocation} from './elements-format';
+import {Document, Element, Property, ScannedProperty, SourceRange} from './ast/ast';
 import {ParsedHtmlDocument} from './html/html-document';
 import {UrlLoader} from './url-loader/url-loader';
 
@@ -90,12 +89,12 @@ export class EditorService {
   }
 
   async getDefinitionFor(localPath: string, position: Position):
-      Promise<SourceLocation> {
+      Promise<SourceRange> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
       return;
     }
-    return feature.sourceLocation;
+    return feature.sourceRange;
   }
 
   async getTypeaheadCompletionsFor(localPath: string, position: Position):

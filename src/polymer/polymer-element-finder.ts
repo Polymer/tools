@@ -18,7 +18,7 @@ import * as estree from 'estree';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
-import {JavaScriptDocument, getSourceLocation} from '../javascript/javascript-document';
+import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
 
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
@@ -55,8 +55,8 @@ class ElementVisitor implements Visitor {
     this.element = new ScannedPolymerElement({
       description: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node),
-      sourceLocation: getSourceLocation(node),
-      node: node
+      node: node,
+      sourceRange: this.document.sourceRangeForNode(node)
     });
     this.propertyHandlers =
         declarationPropertyHandlers(this.element, this.document);
@@ -138,8 +138,8 @@ class ElementVisitor implements Visitor {
         this.element = new ScannedPolymerElement({
           description: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent),
-          sourceLocation: getSourceLocation(node.arguments[0]),
-          node: node.arguments[0]
+          node: node.arguments[0],
+          sourceRange: this.document.sourceRangeForNode(node.arguments[0])
         });
         docs.annotate(this.element);
         this.element.description = (this.element.description || '').trim();

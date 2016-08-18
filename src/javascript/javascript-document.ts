@@ -16,7 +16,6 @@ import {VisitorOption, traverse} from 'estraverse';
 import {Node, Program} from 'estree';
 
 import {SourceRange} from '../ast/ast';
-import {SourceLocation} from '../elements-format';
 import {Options, ParsedDocument} from '../parser/document';
 
 import {VisitResult, Visitor} from './estree-visitor';
@@ -135,16 +134,4 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
       end: {line: (node.loc.end.line - 1), column: node.loc.end.column}
     };
   }
-}
-
-export function getSourceLocation(node: (Node | null | undefined)):
-    (SourceLocation | undefined) {
-  if (!node || !node.loc) {
-    return;
-  }
-  return {
-    // Note: estree uses 1-indexed lines, but SourceLocation uses 0 indexed.
-    line: (node.loc.start.line - 1),
-    column: node.loc.start.column
-  };
 }

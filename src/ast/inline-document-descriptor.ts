@@ -13,11 +13,10 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
-import {ElementLocationInfo, LocationInfo} from 'parse5';
 import * as util from 'util';
 
-import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedFeature} from './descriptor';
@@ -72,38 +71,31 @@ export class InlineParsedDocument<N> implements ScannedFeature {
   }
 }
 
-export function correctSourceLocation(
-    sourceLocation: SourceLocation,
-    locationOffset?: LocationOffset): SourceLocation|undefined {
-  if (!locationOffset || !sourceLocation) {
-    return sourceLocation;
-  }
-  const result: SourceLocation = {
-    line: sourceLocation.line + locationOffset.line,
-    // The location offset column only matters for the first line.
-    column: sourceLocation.column +
-        (sourceLocation.line === 0 ? locationOffset.col : 0),
-  };
-  if (locationOffset.filename != null || sourceLocation.file != null) {
-    result.file = locationOffset.filename || sourceLocation.file;
-  }
-  return result;
-}
-
+/**
+ * Corrects source ranges based on an offset.
+ *
+ * Source ranges for inline documents need to be corrected relative to their
+ * positions in their containing documents.
+ *
+ * For example, if a <script> tag appears in the fifth line of its containing
+ * document, we need to move all the source ranges inside that script tag down
+ * by 5 lines. We also need to correct the column offsets, but only for the
+ * first line of the <script> contents.
+ */
 export function correctSourceRange(
-    sourceRange: SourceRange, locationOffset?: LocationOffset): SourceRange|
+    sourceRange?: SourceRange, locationOffset?: LocationOffset): SourceRange|
     undefined {
   if (!locationOffset || !sourceRange) {
     return sourceRange;
   }
-  return <SourceRange>{
+  return {
     file: locationOffset.filename || sourceRange.file,
     start: correctPosition(sourceRange.start, locationOffset),
     end: correctPosition(sourceRange.end, locationOffset)
   };
 }
 
-function correctPosition(
+export function correctPosition(
     position: Position, locationOffset: LocationOffset): Position {
   return {
     line: position.line + locationOffset.line,
@@ -125,8 +117,9 @@ export function getAttachedCommentText(node: ASTNode): string|undefined {
   return jsdoc.unindent(comment).trim();
 }
 
-function isLocationInfo(loc: (LocationInfo | ElementLocationInfo)):
-    loc is LocationInfo {
+function isLocationInfo(
+    loc: (parse5.LocationInfo | parse5.ElementLocationInfo)):
+    loc is parse5.LocationInfo {
   return 'line' in loc;
 }
 

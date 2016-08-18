@@ -190,8 +190,8 @@ suite('EditorService', function() {
       assert.deepEqual(
           await editorService.getDefinitionFor(indexFile, tagPosition), {
             file: 'analysis/behaviors/elementdir/element.html',
-            line: 4,
-            column: 10
+            start: {line: 4, column: 10},
+            end: {line: 24, column: 3}
           });
     });
 
@@ -203,8 +203,8 @@ suite('EditorService', function() {
               indexFile, localAttributePosition),
           {
             file: 'analysis/behaviors/elementdir/element.html',
-            line: 9,
-            column: 6
+            start: {line: 9, column: 6},
+            end: {line: 13, column: 7}
           });
     });
 
@@ -216,9 +216,9 @@ suite('EditorService', function() {
           await editorService.getDefinitionFor(
               indexFile, deepAttributePosition),
           {
-            line: 5,
-            column: 6,
-            file: 'analysis/behaviors/subdir/subbehavior.html'
+            file: 'analysis/behaviors/subdir/subbehavior.html',
+            start: {line: 5, column: 6},
+            end: {line: 11, column: 7}
           });
     });
 

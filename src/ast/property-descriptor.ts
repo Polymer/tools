@@ -13,7 +13,6 @@
  */
 
 import {SourceRange} from '../ast/ast';
-import {SourceLocation} from '../elements-format';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedFeature} from './ast';
@@ -26,7 +25,6 @@ export interface ScannedProperty extends ScannedFeature {
   private?: boolean;
   'default'?: string;
   readOnly?: boolean;
-  sourceLocation: SourceLocation;
   sourceRange: SourceRange;
 }
 
@@ -38,7 +36,6 @@ export interface Property {
   private?: boolean;
   'default'?: string;
   readOnly?: boolean;
-  sourceLocation: SourceLocation;
   sourceRange: SourceRange;
   inheritedFrom?: string;
 }

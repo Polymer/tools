@@ -1,8 +1,7 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
-import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty} from '../ast/ast';
-import {SourceLocation} from '../elements-format';
+import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {Behavior} from './behavior-descriptor';
@@ -53,7 +52,7 @@ export interface Options {
   events?: ScannedEvent[];
 
   abstract?: boolean;
-  sourceLocation?: SourceLocation;
+  sourceRange: SourceRange;
 }
 
 /**
@@ -90,7 +89,6 @@ export class ScannedPolymerElement extends ScannedElement {
     if (!isScannedFunction(prop)) {
       this.attributes.push({
         name: attributeName,
-        sourceLocation: prop.sourceLocation,
         sourceRange: prop.sourceRange,
         description: prop.description,
         type: prop.type,

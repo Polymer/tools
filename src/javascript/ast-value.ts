@@ -105,7 +105,7 @@ function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
   let evaluatedObjectExpression: LiteralObj = {};
   for (const prop of obj.properties) {
     if (prop.key.type !== 'Literal') {
-      return undefined;
+      return;
     }
     const evaluatedKey = literalToValue(prop.key).toString();
     const evaluatedValue = expressionToValue(prop.value);
@@ -125,7 +125,7 @@ function binaryExpressionToValue(member: estree.BinaryExpression):
   const left = expressionToValue(member.left);
   const right = expressionToValue(member.right);
   if (left == null || right == null) {
-    return undefined;
+    return;
   }
   if (member.operator === '+') {
     // We need to cast to `any` here because, while it's usually not the right

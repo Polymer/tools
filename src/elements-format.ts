@@ -15,9 +15,9 @@
 /**
  * The base interface, holding properties common to many nodes.
  */
-export interface Node {
+export interface Feature {
   /** Where this feature is defined in source code. */
-  sourceLocation?: SourceLocation;
+  sourceRange?: SourceRange;
 
   /**
    * An extension point for framework-specific metadata, as well as any
@@ -31,16 +31,26 @@ export interface Node {
   metadata?: any;
 }
 
-export interface SourceLocation {
-  /** Line number, zero indexed. */
-  line: number;
-  /** Column number, zero indexed. */
-  column: number;
+export interface SourceRange {
   /**
-   * Path to file, relative to the package base. If not present, is the
-   * element's file.
+   * Path to the file containing the definition of the feature,
+   * relative to the parent feature, or the package if the feature has no parent
+   * (e.g. elements).
+   *
+   * If blank, the feature is defined in the same file as its parent.
    */
   file?: string;
+  /* The start of the feature. */
+  start: Position;
+  /* The end of the feature. */
+  end: Position;
+}
+
+export interface Position {
+  /** Line number, starting from zero. */
+  line: number;
+  /** Column offset within the line, starting from zero. */
+  column: number;
 }
 
 export interface Elements {
@@ -51,7 +61,7 @@ export interface Elements {
   elements: Element[];
 }
 
-export interface Element extends Node {
+export interface Element extends Feature {
   /**
    * The path, relative to the base directory of the package.
    *
@@ -153,7 +163,7 @@ export interface Element extends Node {
   };
 }
 
-export interface Attribute extends Node {
+export interface Attribute extends Feature {
   /** The name of the attribute. e.g. `value`, `icon`, `should-collapse`. */
   name: string;
 
@@ -179,7 +189,7 @@ export interface Attribute extends Node {
   // property. TBD.
 }
 
-export interface Property extends Node {
+export interface Property extends Feature {
   /** The name of the property. e.g. `value`, `icon`, `shouldCollapse`. */
   name: string;
 
@@ -204,7 +214,7 @@ export interface Property extends Node {
   properties?: Property[];
 }
 
-export interface Event extends Node {
+export interface Event extends Feature {
   /** The name of the event. */
   name: string;
 
@@ -224,7 +234,7 @@ export interface Event extends Node {
   // property?
 }
 
-export interface Slot extends Node {
+export interface Slot extends Feature {
   /** The name of the slot. e.g. `banner`, `body`, `tooltipContents` */
   name: string;
 

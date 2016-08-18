@@ -80,23 +80,39 @@ suite('VanillaElementFinder', () => {
         description: 'When given the element is totally inactive',
         name: 'disabled',
         type: 'boolean',
-        sourceLocation: {column: 6, line: 25}
+        sourceRange: {
+          file: '/static/vanilla-elements.js',
+          start: {column: 6, line: 25},
+          end: {column: 16, line: 25}
+        }
       },
       {
         description: 'When given the element is expanded',
         name: 'open',
         type: 'boolean',
-        sourceLocation: {column: 6, line: 27}
+        sourceRange: {
+          file: '/static/vanilla-elements.js',
+          start: {column: 6, line: 27},
+          end: {column: 12, line: 27}
+        }
       },
       {
         description: '',
         name: 'foo',
-        sourceLocation: {column: 14, line: 27},
+        sourceRange: {
+          file: '/static/vanilla-elements.js',
+          start: {column: 14, line: 27},
+          end: {column: 19, line: 27}
+        },
       },
       {
         description: '',
         name: 'bar',
-        sourceLocation: {column: 21, line: 27},
+        sourceRange: {
+          file: '/static/vanilla-elements.js',
+          start: {column: 21, line: 27},
+          end: {column: 26, line: 27}
+        },
       }
     ]);
   });
