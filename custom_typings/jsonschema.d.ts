@@ -4,7 +4,7 @@
 // https://github.com/tdegrunt/jsonschema/blob/master/LICENSE
 
 declare module 'jsonschema' {
-  export declare class Validator {
+  export class Validator {
     constructor();
     customFormats: CustomFormat[];
     schemas: {[id: string]: Schema};
@@ -18,7 +18,7 @@ declare module 'jsonschema' {
         ctx?: SchemaContext): ValidatorResult;
   }
 
-  export declare class ValidatorResult {
+  export class ValidatorResult {
     constructor(
         instance: any, schema: Schema, options: Options, ctx: SchemaContext)
     instance: any;
@@ -32,7 +32,7 @@ declare module 'jsonschema' {
     toString(): string;
   }
 
-  export declare class ValidationError {
+  export class ValidationError {
     constructor(
         message?: string, instance?: any, schema?: Schema, propertyPath?: any,
         name?: string, argument?: any);
@@ -45,13 +45,13 @@ declare module 'jsonschema' {
     toString(): string;
   }
 
-  export declare class SchemaError extends Error {
+  export class SchemaError extends Error {
     constructor(msg: string, schema: Schema);
     schema: Schema;
     message: string;
   }
 
-  export declare function validate(
+  export function validate(
       instance: any, schema: any, options?: Options): ValidatorResult
 
   export interface Schema {
@@ -76,10 +76,11 @@ declare module 'jsonschema' {
     minProperties?: number
     required?: string[]
     additionalProperties?: boolean|Schema
-    definitions?: {[name: string]: Schema} properties?:
-        {[name: string]: Schema} patternProperties?:
-            {[name: string]: Schema} dependencies?:
-                {[name: string]: Schema | string[]} 'enum'?: any[]
+    definitions?: {[name: string]: Schema};
+    properties?: {[name: string]: Schema};
+    patternProperties?: {[name: string]: Schema};
+    dependencies?: {[name: string]: Schema | string[]};
+    'enum'?: any[]
     type?: string|string[]
     allOf?: Schema[]
     anyOf?: Schema[]
