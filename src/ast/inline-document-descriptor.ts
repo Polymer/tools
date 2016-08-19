@@ -49,7 +49,7 @@ export class InlineParsedDocument implements ScannedFeature {
   locationOffset: LocationOffset;
   attachedComment?: string;
 
-  scannedDocument: ScannedDocument;
+  scannedDocument?: ScannedDocument;
 
   sourceRange: SourceRange;
 

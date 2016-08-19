@@ -55,6 +55,13 @@ export enum Severity {
   WARNING,
   INFO
 }
+export class WarningCarryingException extends Error {
+  warning: Warning;
+  constructor(warning: Warning) {
+    super(warning.message);
+    this.warning = warning;
+  }
+}
 
 export class EditorService {
   private _analyzer: Analyzer;

@@ -372,18 +372,17 @@ suite('EditorService', function() {
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
       const warnings = await editorService.getWarningsFor(indexFile);
-      assert.containSubset(warnings, <Warning[]>[{
-                             code: 'could-not-load',
-                             severity: Severity.ERROR,
-                             sourceRange: {
-                               file: 'editor-service/index.html',
-                               start: {line: 0, column: 0},
-                               end: {line: 0, column: 35}
-                             }
-                           }]);
-      assert.match(
-          warnings[0].message,
-          /Unable to load import:.*Error parsing js-parse-error.js/);
+      assert.containSubset(
+          warnings, <Warning[]>[{
+            code: 'could-not-load',
+            message: 'Unable to load import: Unexpected token ,',
+            severity: Severity.ERROR,
+            sourceRange: {
+              file: 'editor-service/index.html',
+              start: {line: 0, column: 0},
+              end: {line: 0, column: 35}
+            }
+          }]);
     });
 
     let testName = `Don't warn on imports of files with no known parser`;
@@ -392,6 +391,23 @@ suite('EditorService', function() {
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
       assert.containSubset(await editorService.getWarningsFor(indexFile), []);
+    });
+
+    testName = `Warn on syntax errors in inline javascript documents`;
+    test(testName, async function() {
+      const badScript = `\n<script>var var var var var let const;</script>`;
+      await editorService.fileChanged(indexFile, badScript);
+      const warnings = await editorService.getWarningsFor(indexFile);
+      assert.containSubset(warnings, <Warning[]>[{
+                             code: 'parse-error',
+                             severity: Severity.ERROR,
+                             message: 'Unexpected token var',
+                             sourceRange: {
+                               file: 'editor-service/index.html',
+                               start: {line: 1, column: 13},
+                               end: {line: 1, column: 13}
+                             }
+                           }]);
     });
   });
 });

@@ -16,9 +16,9 @@
 
 import * as path from 'path';
 
-import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
+import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, correctSourceRange} from './ast/ast';
 import {CssParser} from './css/css-parser';
-import {Severity, Warning} from './editor-service';
+import {Severity, Warning, WarningCarryingException} from './editor-service';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
 import {HtmlImportFinder} from './html/html-import-finder';
@@ -201,13 +201,24 @@ export class Analyzer {
               col: scannedDependency.locationOffset.col,
               filename: document.url
             };
-            const scannedDocument = await this._analyzeSource(
-                scannedDependency.type, scannedDependency.contents,
-                document.url, locationOffset,
-                scannedDependency.attachedComment);
-            scannedDependency.scannedDocument = scannedDocument;
-            scannedDependency.scannedDocument.isInline = true;
-            return scannedDocument;
+            try {
+              const scannedDocument = await this._analyzeSource(
+                  scannedDependency.type, scannedDependency.contents,
+                  document.url, locationOffset,
+                  scannedDependency.attachedComment);
+              scannedDependency.scannedDocument = scannedDocument;
+              scannedDependency.scannedDocument.isInline = true;
+              return scannedDocument;
+            } catch (err) {
+              if (err instanceof WarningCarryingException) {
+                const e: WarningCarryingException = err;
+                e.warning.sourceRange =
+                    correctSourceRange(e.warning.sourceRange, locationOffset);
+                warnings.push(e.warning);
+                return null;
+              }
+              throw err;
+            }
           } else if (scannedDependency instanceof ScannedImport) {
             let scannedDocument: ScannedDocument;
             try {
@@ -281,6 +292,9 @@ export class Analyzer {
     try {
       return parser.parse(contents, url);
     } catch (error) {
+      if (error instanceof WarningCarryingException) {
+        throw error;
+      }
       throw new Error(`Error parsing ${url}:\n ${error.stack}`);
     }
   }

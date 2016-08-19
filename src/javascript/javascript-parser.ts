@@ -15,18 +15,37 @@
 import * as espree from 'espree';
 import {Program} from 'estree';
 
+import {Severity, WarningCarryingException} from '../editor-service';
 import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   parse(contents: string, url: string): JavaScriptDocument {
-    const ast = <Program>espree.parse(contents, {
-      ecmaVersion: 7,
-      attachComment: true,
-      comment: true,
-      loc: true,
-    });
+    let ast: Program;
+    try {
+      ast = <Program>espree.parse(contents, {
+        ecmaVersion: 7,
+        attachComment: true,
+        comment: true,
+        loc: true,
+      });
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        throw new WarningCarryingException({
+          message: err.message.split('\n')[0],
+          severity: Severity.ERROR,
+          code: 'parse-error',
+          sourceRange: {
+            file: url,
+            start: {line: err.lineNumber - 1, column: err.column - 1},
+            end: {line: err.lineNumber - 1, column: err.column - 1}
+          }
+        });
+      }
+      throw err;
+    }
+
     return new JavaScriptDocument({url, contents, ast});
   }
 }

@@ -50,10 +50,9 @@ suite('Analyzer', () => {
 
   suite('analyze()', () => {
 
-    test('returns a Promise that rejects for malformed files', async() => {
-      const error =
-          await invertPromise(analyzer.analyzeRoot('static/malformed.html'));
-      assert.include(error.message, 'malformed.html');
+    test('returns a Document with warnings for malformed files', async() => {
+      const document = await analyzer.analyzeRoot('static/malformed.html');
+      assert(document.getWarnings().length >= 1);
     });
 
     test('analyzes transitive dependencies', async() => {
@@ -123,8 +122,8 @@ suite('Analyzer', () => {
           inFolder);
     });
 
-    test('returns a Promise that rejects for malformed files', async() => {
-      await invertPromise(analyzer.analyzeRoot('/static/malformed.html'));
+    test(`rejects for files that don't exist`, async() => {
+      await invertPromise(analyzer.analyzeRoot('/static/does_not_exist'));
     });
 
   });

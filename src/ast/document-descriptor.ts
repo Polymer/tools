@@ -150,6 +150,10 @@ export class Document implements Feature {
 
         document._resolve(scannedDoc);
       } else if (scannedFeature instanceof InlineParsedDocument) {
+        if (!scannedFeature.scannedDocument) {
+          // Parse error on the inline document.
+          continue;
+        }
         const document =
             new Document(scannedFeature.scannedDocument, this._rootDocument);
         this._addFeature(document);
