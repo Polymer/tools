@@ -18,6 +18,8 @@ import * as path from 'path';
 
 import {AttributesCompletion, EditorService, ElementCompletion, Severity, Warning} from '../editor-service';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {PackageUrlResolver} from '../url-loader/package-url-resolver';
+
 
 import {invertPromise} from './test-utils';
 
@@ -408,6 +410,18 @@ suite('EditorService', function() {
                                end: {line: 1, column: 13}
                              }
                            }]);
+    });
+
+    testName = `Do not warn on a sibling import ` +
+        `if configured with a package url resolver`;
+    test(testName, async function() {
+      const testBaseDir = path.join(basedir, 'package-url-resolver');
+      editorService = new EditorService({
+        urlLoader: new FSUrlLoader(testBaseDir),
+        urlResolver: new PackageUrlResolver()
+      });
+      const warnings = await editorService.getWarningsFor('simple-elem.html');
+      assert.deepEqual(warnings, []);
     });
   });
 });

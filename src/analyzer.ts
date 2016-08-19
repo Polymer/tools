@@ -222,8 +222,11 @@ export class Analyzer {
           } else if (scannedDependency instanceof ScannedImport) {
             let scannedDocument: ScannedDocument;
             try {
-              scannedDocument =
-                  await this._analyzeResolved(scannedDependency.url);
+              // HACK(rictic): this isn't quite right either, we need to get
+              //     the scanned dependency's url relative to the basedir don't
+              //     we?
+              scannedDocument = await this._analyzeResolved(
+                  this._resolveUrl(scannedDependency.url));
             } catch (error) {
               if (error instanceof NoKnownParserError) {
                 // We probably don't want to fail when importing something
