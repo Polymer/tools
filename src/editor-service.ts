@@ -17,7 +17,6 @@ import * as parse5 from 'parse5';
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
 import {Document, Element, Property, ScannedProperty, SourceRange} from './ast/ast';
 import {ParsedHtmlDocument} from './html/html-document';
-import {UrlLoader} from './url-loader/url-loader';
 
 export interface Position {
   /** Line number in file, starting from 0. */
@@ -57,30 +56,10 @@ export enum Severity {
   INFO
 }
 
-class PermissiveUrlLoader implements UrlLoader {
-  private _realLoader: UrlLoader;
-  constructor(realLoader: UrlLoader) {
-    this._realLoader = realLoader;
-  }
-  canLoad() {
-    return true;
-  }
-  async load(path: string) {
-    try {
-      return await this._realLoader.load(path);
-    } catch (_) {
-      // muddle on!
-    }
-    return '';
-  }
-}
-
 export class EditorService {
   private _analyzer: Analyzer;
   constructor(options: AnalyzerOptions) {
-    this._analyzer = new Analyzer(Object.assign({}, options, <AnalyzerOptions>{
-      urlLoader: new PermissiveUrlLoader(options.urlLoader)
-    }));
+    this._analyzer = new Analyzer(options);
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<Document> {
@@ -170,20 +149,9 @@ export class EditorService {
     };
   }
 
-  async getWarningsFor(_localPath: string): Promise<Warning[]> {
-    const sever = Math.random() > 0.3 ?
-        Math.random() > 0.5 ? Severity.ERROR : Severity.WARNING :
-        Severity.INFO;
-    return [{
-      code: 'test-warning-code',
-      message: 'This is several characters of text.',
-      severity: sever,
-      sourceRange: {
-        file: _localPath,
-        start: {line: 0, column: 2},
-        end: {line: 0, column: 7}
-      }
-    }];
+  async getWarningsFor(localPath: string): Promise<Warning[]> {
+    const doc = await this._analyzer.analyzeRoot(localPath);
+    return doc.getWarnings();
   }
 
   private async _getFeatureAt(localPath: string, position: Position):

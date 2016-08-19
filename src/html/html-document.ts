@@ -55,18 +55,20 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     if (isElementLocationInfo(location)) {
       return {
         file: this.url,
-        start:
-            {line: location.startTag.line - 1, column: location.startTag.col},
-        end: {line: location.endTag.line - 1, column: location.endTag.col}
+        start: {
+          line: location.startTag.line - 1,
+          column: location.startTag.col - 1
+        },
+        end: {line: location.endTag.line - 1, column: location.endTag.col - 1}
       };
     }
     return {
       file: this.url,
       // one indexed to zero indexed
-      start: {line: location.line - 1, column: location.col},
+      start: {line: location.line - 1, column: location.col - 1},
       end: {
         line: location.line - 1,
-        column: location.col + (location.endOffset - location.startOffset)
+        column: location.col + (location.endOffset - location.startOffset) - 1
       }
     };
   }

@@ -18,6 +18,7 @@ import * as path from 'path';
 
 import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './ast/ast';
 import {CssParser} from './css/css-parser';
+import {Severity, Warning} from './editor-service';
 import {EntityFinder} from './entity/entity-finder';
 import {findEntities} from './entity/find-entities';
 import {HtmlImportFinder} from './html/html-import-finder';
@@ -42,6 +43,8 @@ export interface Options {
   parsers?: Map<string, Parser<any>>;
   entityFinders?: Map<string, EntityFinder<any, any, any>[]>;
 }
+
+export class NoKnownParserError extends Error {};
 
 /**
  * A static analyzer for web projects.
@@ -171,6 +174,7 @@ export class Analyzer {
     }
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
+    const warnings: Warning[] = [];
     let entities = await this._getEntities(document);
     // TODO(rictic): invert this and push the location offsets into the inline
     // documents so that the source ranges are correct when they're first
@@ -186,12 +190,6 @@ export class Analyzer {
     if (firstEntity && firstEntity instanceof ScannedElement) {
       firstEntity.applyHtmlComment(maybeAttachedComment);
     }
-
-    // HACK HACK HACK(rictic): remote this in upcoming PR that propagates errors
-    //     correctly. This filter should be gone by end of August 2016.
-    entities = entities.filter(
-        e => !(
-            e instanceof ScannedImport && /fonts.googleapis.com/.test(e.url)));
 
     const scannedDependencies: ScannedFeature[] = entities.filter(
         (e) => e instanceof InlineParsedDocument || e instanceof ScannedImport);
@@ -211,8 +209,25 @@ export class Analyzer {
             scannedDependency.scannedDocument.isInline = true;
             return scannedDocument;
           } else if (scannedDependency instanceof ScannedImport) {
-            const scannedDocument =
-                await this._analyzeResolved(scannedDependency.url);
+            let scannedDocument: ScannedDocument;
+            try {
+              scannedDocument =
+                  await this._analyzeResolved(scannedDependency.url);
+            } catch (error) {
+              if (error instanceof NoKnownParserError) {
+                // We probably don't want to fail when importing something
+                // that we don't know about here.
+                return null;
+              }
+              error = error || '';
+              warnings.push({
+                code: 'could-not-load',
+                message: `Unable to load import: ${error.message || error}`,
+                sourceRange: scannedDependency.sourceRange,
+                severity: Severity.ERROR
+              });
+              return null;
+            }
             scannedDependency.scannedDocument = scannedDocument;
             return scannedDocument;
           } else {
@@ -224,7 +239,7 @@ export class Analyzer {
         (await Promise.all(analyzeDependencies)).filter(s => !!s);
 
     return new ScannedDocument(
-        document, dependencies, entities, locationOffset);
+        document, dependencies, entities, locationOffset, warnings);
   }
 
   private async _loadResolved(resolvedUrl: string, providedContents?: string):
@@ -261,7 +276,7 @@ export class Analyzer {
       ParsedDocument<any, any> {
     const parser = this._parsers.get(type);
     if (parser == null) {
-      throw new Error(`No parser for for file type ${type}`);
+      throw new NoKnownParserError(`No parser for for file type ${type}`);
     }
     try {
       return parser.parse(contents, url);

@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Warning} from '../editor-service';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior-descriptor';
 import {DomModule} from '../polymer/dom-module-finder';
@@ -35,14 +36,17 @@ export class ScannedDocument {
   locationOffset?: LocationOffset;
   isInline = false;
   sourceRange: SourceRange = null;  // TODO(rictic): track this
+  warnings: Warning[];
 
   constructor(
       document: ParsedDocument<any, any>, dependencies: ScannedDocument[],
-      entities: ScannedFeature[], locationOffset?: LocationOffset) {
+      entities: ScannedFeature[], locationOffset?: LocationOffset,
+      warnings?: Warning[]) {
     this.document = document;
     this.dependencies = dependencies;
     this.entities = entities;
     this.locationOffset = locationOffset;
+    this.warnings = warnings || [];
   }
 
   get url() {
@@ -75,6 +79,7 @@ export class Document implements Feature {
 
   private _rootDocument: Document;
   private _localFeatures = new Set<Feature>();
+  private _warnings: Warning[];
 
   /**
    * True after this document and all of its children are finished resolving.
@@ -105,6 +110,7 @@ export class Document implements Feature {
     this.isInline = base.isInline;
     this.parsedDocument = base.document;
     this.sourceRange = base.sourceRange;
+    this._warnings = base.warnings;
 
     if (base.isInline) {
       this.identifiers = new Set();
@@ -128,13 +134,16 @@ export class Document implements Feature {
     this._begunResolving = true;
     const dependenciesByUrl = new Map(
         base.dependencies.map((sd) => <[string, ScannedDocument]>[sd.url, sd]));
-    let i = 0;  // DELETE ME
     for (const scannedFeature of base.entities) {
-      i += 1;
       if (scannedFeature instanceof ScannedImport) {
-        const scannedDoc = dependenciesByUrl.get(scannedFeature.url)!;
         const imprt = scannedFeature.resolve(this._rootDocument);
         this._addFeature(imprt);
+
+        const scannedDoc = dependenciesByUrl.get(scannedFeature.url);
+        if (!scannedDoc) {
+          // There was a load or parse error, the scanned doc doesn't exist.
+          continue;
+        }
         const document = new Document(scannedDoc, this._rootDocument);
         imprt.document = document;
         this._addFeature(document);
@@ -214,6 +223,10 @@ export class Document implements Feature {
           `but found ${results.size}.`);
     }
     return results.values().next().value || undefined;
+  }
+
+  getWarnings(): Warning[] {
+    return this._warnings;
   }
 
   private _getByKind(kind: string, documentsWalked: Set<Document>):

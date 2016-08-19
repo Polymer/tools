@@ -16,7 +16,7 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
+import {AttributesCompletion, EditorService, ElementCompletion, Severity, Warning} from '../editor-service';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
 import {invertPromise} from './test-utils';
@@ -339,6 +339,59 @@ suite('EditorService', function() {
           await editorService.getTypeaheadCompletionsFor(
               indexFile, localAttributePosition),
           attributeTypeahead);
+    });
+  });
+
+  suite('getWarnings', function() {
+    test('For a good document we get no warnings', async function() {
+      await editorService.fileChanged(indexFile);
+      assert.deepEqual(await editorService.getWarningsFor(indexFile), []);
+    });
+
+    test(`Warn on imports of files that aren't found.`, async function() {
+      const badImport = `<link rel="import" href="./does-not-exist.html">`;
+      await editorService.fileChanged(
+          indexFile, `${badImport}\n\n${indexContents}`);
+      const warnings = await editorService.getWarningsFor(indexFile);
+      assert.containSubset(warnings, <Warning[]>[{
+                             code: 'could-not-load',
+                             severity: Severity.ERROR,
+                             sourceRange: {
+                               file: 'editor-service/index.html',
+                               start: {line: 0, column: 0},
+                               end: {line: 0, column: badImport.length}
+                             }
+                           }]);
+      assert.match(
+          warnings[0].message,
+          /Unable to load import:.*no such file or directory/);
+    });
+
+    test(`Warn on imports of files that don't parse.`, async function() {
+      const badImport = `<script src="../js-parse-error.js"></script>`;
+      await editorService.fileChanged(
+          indexFile, `${badImport}\n\n${indexContents}`);
+      const warnings = await editorService.getWarningsFor(indexFile);
+      assert.containSubset(warnings, <Warning[]>[{
+                             code: 'could-not-load',
+                             severity: Severity.ERROR,
+                             sourceRange: {
+                               file: 'editor-service/index.html',
+                               start: {line: 0, column: 0},
+                               end: {line: 0, column: 35}
+                             }
+                           }]);
+      assert.match(
+          warnings[0].message,
+          /Unable to load import:.*Error parsing js-parse-error.js/);
+    });
+
+    let testName = `Don't warn on imports of files with no known parser`;
+    test(testName, async function() {
+      const badImport = `<script src="./foo.unknown_extension"></script>`;
+      await editorService.fileChanged(
+          indexFile, `${badImport}\n\n${indexContents}`);
+      assert.containSubset(await editorService.getWarningsFor(indexFile), []);
     });
   });
 });
