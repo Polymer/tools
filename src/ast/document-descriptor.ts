@@ -132,14 +132,12 @@ export class Document implements Feature {
       return;
     }
     this._begunResolving = true;
-    const dependenciesByUrl = new Map(
-        base.dependencies.map((sd) => <[string, ScannedDocument]>[sd.url, sd]));
     for (const scannedFeature of base.entities) {
       if (scannedFeature instanceof ScannedImport) {
         const imprt = scannedFeature.resolve(this._rootDocument);
         this._addFeature(imprt);
 
-        const scannedDoc = dependenciesByUrl.get(scannedFeature.url);
+        const scannedDoc = scannedFeature.scannedDocument;
         if (!scannedDoc) {
           // There was a load or parse error, the scanned doc doesn't exist.
           continue;
