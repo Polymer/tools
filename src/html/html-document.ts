@@ -72,6 +72,35 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       }
     };
   }
+
+  sourceRangeForAttribute(node: ASTNode, attrName: string): SourceRange
+      |undefined {
+    if (!node || !node.__location) {
+      return;
+    }
+    let attrs: parse5.AttributesLocationInfo;
+    if (node.__location['startTag'] && node.__location['startTag'].attrs) {
+      attrs = node.__location['startTag'].attrs;
+    } else if (node.__location['attrs']) {
+      attrs = node.__location['attrs'];
+    }
+    if (!attrs) {
+      return;
+    }
+    const attrLocation = attrs[attrName];
+    if (!attrLocation) {
+      return;
+    }
+    return {
+      file: this.url,
+      start: {line: attrLocation.line - 1, column: attrLocation.col - 1},
+      end: {
+        line: attrLocation.line - 1,
+        column: attrLocation.col +
+            (attrLocation.endOffset - attrLocation.startOffset) - 1
+      }
+    };
+  }
 }
 
 function isElementLocationInfo(location: parse5.LocationInfo|

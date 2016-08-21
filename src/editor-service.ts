@@ -63,14 +63,34 @@ export class WarningCarryingException extends Error {
   }
 }
 
-export class EditorService {
+export abstract class BaseEditor {
+  abstract async fileChanged(localPath: string, contents?: string):
+      Promise<void>;
+
+  abstract async getDocumentationFor(localPath: string, position: Position):
+      Promise<string|undefined>;
+
+  abstract async getDefinitionFor(localPath: string, position: Position):
+      Promise<SourceRange>;
+
+  abstract async getTypeaheadCompletionsFor  // dang clang-format..
+      (localPath: string, position: Position):
+          Promise<TypeaheadCompletion|undefined>;
+
+  abstract async getWarningsFor(localPath: string): Promise<Warning[]>;
+
+  abstract async clearCaches(): Promise<void>;
+}
+
+export class EditorService extends BaseEditor {
   private _analyzer: Analyzer;
   constructor(options: AnalyzerOptions) {
+    super();
     this._analyzer = new Analyzer(options);
   }
 
-  async fileChanged(localPath: string, contents?: string): Promise<Document> {
-    return this._analyzer.analyzeRoot(localPath, contents);
+  async fileChanged(localPath: string, contents?: string): Promise<void> {
+    await this._analyzer.analyzeRoot(localPath, contents);
   }
 
   async getDocumentationFor(localPath: string, position: Position):
@@ -159,6 +179,10 @@ export class EditorService {
   async getWarningsFor(localPath: string): Promise<Warning[]> {
     const doc = await this._analyzer.analyzeRoot(localPath);
     return doc.getWarnings();
+  }
+
+  async clearCaches() {
+    this._analyzer.clearCaches();
   }
 
   private async _getFeatureAt(localPath: string, position: Position):
