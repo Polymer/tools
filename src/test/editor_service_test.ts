@@ -420,6 +420,22 @@ function editorTests(editorFactory: (basedir: string) => BaseEditor) {
       const warnings = await editorService.getWarningsFor('simple-elem.html');
       deepEqual(warnings, []);
     });
+
+    testName = `Warn about parse errors in the file ` +
+        `we're requesting errors for.`;
+    test(testName, async function() {
+      const warnings = await editorService.getWarningsFor('js-parse-error.js');
+      deepEqual(warnings, [{
+                  code: 'parse-error',
+                  message: 'Unexpected token ,',
+                  severity: Severity.ERROR,
+                  sourceRange: {
+                    file: 'js-parse-error.js',
+                    start: {line: 17, column: 8},
+                    end: {line: 17, column: 8}
+                  }
+                }]);
+    });
   });
 
   suite('getWarnings', function() {

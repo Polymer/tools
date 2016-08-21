@@ -18,12 +18,6 @@ import {Analyzer, Options as AnalyzerOptions} from './analyzer';
 import {Document, Element, Property, ScannedProperty, SourceRange} from './model/model';
 import {ParsedHtmlDocument} from './html/html-document';
 
-export interface Position {
-  /** Line number in file, starting from 0. */
-  line: number;
-  /** Column number in file, starting from 0. */
-  column: number;
-}
 
 export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
 export interface ElementCompletion {
@@ -55,6 +49,14 @@ export enum Severity {
   WARNING,
   INFO
 }
+
+export interface Position {
+  /** Line number in file, starting from 0. */
+  line: number;
+  /** Column number in file, starting from 0. */
+  column: number;
+}
+
 export class WarningCarryingException extends Error {
   warning: Warning;
   constructor(warning: Warning) {
@@ -63,6 +65,9 @@ export class WarningCarryingException extends Error {
   }
 }
 
+// Important note: all arguments to, and results returned from editor service
+//     methods MUST be serializable as JSON, as the editor service may be
+//     running out of process and communicating with JSON strings.
 export abstract class BaseEditor {
   abstract async fileChanged(localPath: string, contents?: string):
       Promise<void>;
@@ -177,8 +182,19 @@ export class EditorService extends BaseEditor {
   }
 
   async getWarningsFor(localPath: string): Promise<Warning[]> {
-    const doc = await this._analyzer.analyzeRoot(localPath);
-    return doc.getWarnings();
+    try {
+      const doc = await this._analyzer.analyzeRoot(localPath);
+      return doc.getWarnings();
+    } catch (e) {
+      // This might happen if, e.g. `localPath` has a parse error. In that case
+      // we can't construct a valid Document, but we might still be able to give
+      // a reasonable warning.
+      if (e instanceof WarningCarryingException) {
+        const warnException: WarningCarryingException = e;
+        return [warnException.warning];
+      }
+      throw e;
+    }
   }
 
   async clearCaches() {
