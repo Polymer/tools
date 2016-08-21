@@ -231,11 +231,11 @@ if (!module.parent) {
       return;
     }
     server = new EditorServer(initRequest.value.basedir);
-  });
 
-  process.on('message', async(request: Request) => {
-    const result = await getSettledValue(request.value);
-    process.send(<Response>{id: request.id, value: result});
+    process.on('message', async(request: Request) => {
+      const result = await getSettledValue(request.value);
+      process.send(<Response>{id: request.id, value: result});
+    });
   });
 
   async function getSettledValue(message: Message): Promise<SettledValue> {
