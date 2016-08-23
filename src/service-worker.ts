@@ -59,15 +59,17 @@ function getBundledPrecachedAssets(project: PolymerProject) {
  * contents), based off of the options provided.
  */
 export function generateServiceWorker(options: AddServiceWorkerOptions): Promise<Buffer> {
+  console.assert(!!options, '`project` & `buildRoot` options are required');
   console.assert(!!options.project, '`project` option is required');
   console.assert(!!options.buildRoot, '`buildRoot` option is required');
 
+  options = Object.assign({}, options);
   let project = options.project;
   let buildRoot = options.buildRoot;
-  let swConfig: SWConfig = options.swConfig || {};
+  let swConfig: SWConfig = Object.assign({}, options.swConfig);
 
   return project.analyzer.analyzeDependencies.then((depsIndex: DepsIndex) => {
-    let staticFileGlobs = swConfig.staticFileGlobs || [];
+    let staticFileGlobs = Array.from(swConfig.staticFileGlobs || []);
     let precachedAssets = (options.bundled)
       ? getBundledPrecachedAssets(project)
       : getPrecachedAssets(depsIndex, project);

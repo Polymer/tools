@@ -63,30 +63,46 @@ suite('service-worker', () => {
 
   suite('generateServiceWorker()', () => {
 
-    test('should throw when project is not provided', () => {
+    test('should throw when options are not provided', () => {
       assert.throws(() => {
-        serviceWorker.generateServiceWorker({buildRoot: testBuildRoot})
+        serviceWorker.generateServiceWorker();
+      }, Error.AssertionError, '`project` & `buildRoot` options are required');
+    });
+
+    test('should throw when options.project is not provided', () => {
+      assert.throws(() => {
+        serviceWorker.generateServiceWorker({buildRoot: testBuildRoot});
       }, Error.AssertionError, '`project` option is required');
     });
 
-    test('should throw when buildRoot is not provided', () => {
+    test('should throw when options.buildRoot is not provided', () => {
       assert.throws(() => {
-        serviceWorker.generateServiceWorker({project: defaultProject})
+        serviceWorker.generateServiceWorker({project: defaultProject});
       }, Error.AssertionError, '`buildRoot` option is required');
     });
 
-    test('should resolve with a Buffer representing the generated service worker code', (done) => {
-      serviceWorker.generateServiceWorker({
+    test('should not modify the options object provided when called', () => {
+      let swConfig = {staticFileGlobs: []};
+      return serviceWorker.generateServiceWorker({
+          project: defaultProject,
+          buildRoot: testBuildRoot,
+          swConfig: swConfig,
+        }).then((swCode) => {
+          assert.equal(swConfig.staticFileGlobs.length, 0);
+        });
+    });
+
+    test('should resolve with a Buffer representing the generated service worker code', () => {
+      return serviceWorker.generateServiceWorker({
         project: defaultProject,
         buildRoot: testBuildRoot,
       }).then((swCode) => {
         assert.ok(swCode instanceof Buffer);
-        done();
-      }).catch(done);
+      });
     });
 
-    test('should add unbundled precached assets when options.unbundled is not provided', (done) => {
-      serviceWorker.generateServiceWorker({
+    test('should add unbundled precached assets when options.unbundled is not provided', () => {
+      return serviceWorker.generateServiceWorker({
         project: defaultProject,
         buildRoot: testBuildRoot,
       }).then((swFile) => {
@@ -95,12 +111,11 @@ suite('service-worker', () => {
         assert.include(fileContents, path.join('"/shell.html"'));
         assert.include(fileContents, path.join('"/bower_components/dep.html"'));
         assert.notInclude(fileContents, path.join('"/source-dir/my-app.html"'));
-        done();
-      }).catch(done);
+      });
     });
 
-    test('should add bundled precached assets when options.bundled is provided', (done) => {
-      serviceWorker.generateServiceWorker({
+    test('should add bundled precached assets when options.bundled is provided', () => {
+      return serviceWorker.generateServiceWorker({
         project: defaultProject,
         buildRoot: testBuildRoot,
         bundled: true,
@@ -111,12 +126,11 @@ suite('service-worker', () => {
         assert.notInclude(fileContents, path.join('"shared-bundle.html"'));
         assert.notInclude(fileContents, path.join('"/bower_components/dep.html"'));
         assert.notInclude(fileContents, path.join('"/source-dir/my-app.html"'));
-        done();
-      }).catch(done);
+      });
     });
 
-    test('should add provided staticFileGlobs paths to the final list', (done) => {
-      serviceWorker.generateServiceWorker({
+    test('should add provided staticFileGlobs paths to the final list', () => {
+      return serviceWorker.generateServiceWorker({
         project: defaultProject,
         buildRoot: testBuildRoot,
         bundled: true,
@@ -130,23 +144,21 @@ suite('service-worker', () => {
         assert.notInclude(fileContents, path.join('"shared-bundle.html"'));
         assert.include(fileContents, path.join('"/bower_components/dep.html"'));
         assert.notInclude(fileContents, path.join('"/source-dir/my-app.html"'));
-        done();
-      }).catch(done);
+      });
     });
 
   });
 
   suite('addServiceWorker()', () => {
 
-    test('should write generated service worker to file system', (done) => {
-      serviceWorker.addServiceWorker({
+    test('should write generated service worker to file system', () => {
+      return serviceWorker.addServiceWorker({
         project: defaultProject,
         buildRoot: testBuildRoot,
       }).then(() => {
         let content = fs.readFileSync(path.join(testBuildRoot, 'service-worker.js'), 'utf-8');
         assert.include(content, '// This generated service worker JavaScript will precache your site\'s resources.');
-        done();
-      }).catch(done);
+      });
     });
 
   });
