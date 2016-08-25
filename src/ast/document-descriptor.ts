@@ -74,6 +74,11 @@ export class Document implements Feature {
   // just filtering out by feature.sourceLocation.file === this.url;
   private _localFeatures = new Set<Feature>();
 
+  /**
+   * True after this document and all of its children are finished resolving.
+   */
+  private _doneResolving = false;
+
   static makeRootDocument(scannedDocument: ScannedDocument): Document {
     const result = new Document(scannedDocument);
     result._addFeature(result);
@@ -84,6 +89,7 @@ export class Document implements Feature {
   private constructor(base: ScannedDocument, rootDocument?: Document) {
     if (rootDocument == null) {
       this._rootDocument = this;
+      this._initIndexes();
     } else {
       if (!base.isInline) {
         const existingInstance = rootDocument.getOnlyAtId('document', base.url);
@@ -106,12 +112,17 @@ export class Document implements Feature {
     this._addFeature(this);
   }
 
-  private _isResolved = false;
+  /**
+   * To handle recursive dependency graphs we must track whether we've started
+   * resolving this Document so that we can reliably early exit even if one
+   * of our dependencies tries to resolve this document.
+   */
+  private _begunResolving = false;
   private _resolve(base: ScannedDocument) {
-    if (this._isResolved) {
+    if (this._begunResolving) {
       return;
     }
-    this._isResolved = true;
+    this._begunResolving = true;
     const dependenciesByUrl = new Map(
         base.dependencies.map((sd) => <[string, ScannedDocument]>[sd.url, sd]));
     let i = 0;  // DELETE ME
@@ -136,6 +147,7 @@ export class Document implements Feature {
         this._addFeature(feature);
       }
     }
+    this._doneResolving = true;
   }
 
   getByKind(kind: 'element'): Set<Element>;
@@ -146,6 +158,15 @@ export class Document implements Feature {
   getByKind(kind: 'import'): Set<Import>;
   getByKind(kind: string): Set<Feature>;
   getByKind(kind: string): Set<Feature> {
+    if (this._featuresByKind) {
+      // We have a fast index! Use that.
+      return this._featuresByKind.get(kind) || new Set();
+    } else if (this._doneResolving) {
+      // We're done discovering features in this document and its children so
+      // we can safely build up the indexes.
+      this._buildIndexes();
+      return this.getByKind(kind);
+    }
     return this._getByKind(kind, new Set());
   }
 
@@ -156,6 +177,16 @@ export class Document implements Feature {
   getById(kind: 'document', url: string): Set<Document>;
   getById(kind: string, identifier: string): Set<Feature>;
   getById(kind: string, identifier: string): Set<Feature> {
+    if (this._featuresByKindAndId) {
+      // We have a fast index! Use that.
+      const idMap = this._featuresByKindAndId.get(kind);
+      return (idMap && idMap.get(identifier)) || new Set();
+    } else if (this._doneResolving) {
+      // We're done discovering features in this document and its children so
+      // we can safely build up the indexes.
+      this._buildIndexes();
+      return this.getById(kind, identifier);
+    }
     const result = new Set<Feature>();
     for (const featureOfKind of this.getByKind(kind)) {
       if (featureOfKind.identifiers.has(identifier)) {
@@ -202,7 +233,28 @@ export class Document implements Feature {
     return result;
   }
 
+  getFeatures(): Set<Feature> {
+    const result = new Set<Feature>();
+    this._getFeatures(result, new Set<Document>());
+    return result;
+  }
+
+  private _getFeatures(
+      inProgress: Set<Feature>, documentsWalked: Set<Document>) {
+    if (documentsWalked.has(this)) {
+      return;
+    }
+    documentsWalked.add(this);
+    for (const feature of this._localFeatures) {
+      inProgress.add(feature);
+      if (feature instanceof Document) {
+        feature._getFeatures(inProgress, documentsWalked);
+      }
+    }
+  }
+
   private _addFeature(feature: Feature) {
+    this._rootDocument._indexFeature(feature);
     this._localFeatures.add(feature);
   }
 
@@ -233,5 +285,48 @@ export class Document implements Feature {
     }
 
     return result;
+  }
+
+  private _featuresByKind: Map<string, Set<Feature>> = null;
+  private _featuresByKindAndId: Map<string, Map<string, Set<Feature>>> = null;
+  private _initIndexes() {
+    this._featuresByKind = new Map<string, Set<Feature>>();
+    this._featuresByKindAndId = new Map<string, Map<string, Set<Feature>>>();
+  }
+
+  private _indexFeature(feature: Feature) {
+    for (const kind of feature.kinds) {
+      const kindSet = this._featuresByKind.get(kind) || new Set<Feature>();
+      kindSet.add(feature);
+      this._featuresByKind.set(kind, kindSet);
+      for (const id of feature.identifiers) {
+        const identifiersMap = this._featuresByKindAndId.get(kind) ||
+            new Map<string, Set<Feature>>();
+        this._featuresByKindAndId.set(kind, identifiersMap);
+        const idSet = identifiersMap.get(id) || new Set<Feature>();
+        identifiersMap.set(id, idSet);
+        idSet.add(feature);
+      }
+    }
+  }
+
+  private _buildIndexes() {
+    if (this._rootDocument === this) {
+      throw new Error(
+          '_buildIndexes should only be called on non-root documents.');
+    }
+    if (this._featuresByKind) {
+      throw new Error(
+          'Tried to build indexes multiple times. This should never happen.');
+    }
+    if (!this._doneResolving) {
+      throw new Error(
+          `Tried to build indexes before finished resolving. ` +
+          `Need to wait until afterwards or the indexes would be incomplete.`);
+    }
+    this._initIndexes();
+    for (const feature of this.getFeatures()) {
+      this._indexFeature(feature);
+    }
   }
 }
