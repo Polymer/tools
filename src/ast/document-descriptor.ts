@@ -228,6 +228,7 @@ export class Document implements Feature {
   }
 
   getWarnings(): Warning[] {
+    // TODO(rictic): crawl (local?) features and grab their warnings too.
     return this._warnings;
   }
 
