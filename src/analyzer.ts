@@ -119,7 +119,7 @@ export class Analyzer {
       this._parsedDocuments.delete(resolvedUrl);
     }
 
-    const scannedDocument = await this._analyzeResolved(resolvedUrl, contents);
+    const scannedDocument = await this._scanResolved(resolvedUrl, contents);
     const doneTiming =
         this._telemetryTracker.start('Document.makeRootDocument', url);
     const document = Document.makeRootDocument(scannedDocument);
@@ -131,7 +131,7 @@ export class Analyzer {
     return this._telemetryTracker.getMeasurements();
   }
 
-  private async _analyzeResolved(resolvedUrl: string, contents?: string):
+  private async _scanResolved(resolvedUrl: string, contents?: string):
       Promise<ScannedDocument> {
     const cachedResult = this._scannedDocuments.get(resolvedUrl);
     if (cachedResult) {
@@ -142,32 +142,31 @@ export class Analyzer {
       // the Promise is cached before anything else happens.
       await Promise.resolve();
       const document = await this._loadResolved(resolvedUrl, contents);
-      return this._analyzeDocument(document);
+      return this._scanDocument(document);
     })();
     this._scannedDocuments.set(resolvedUrl, promise);
     return promise;
   }
 
   /**
-   * Parses and analyzes a document from source.
+   * Parses and scans a document from source.
    */
-  private async _analyzeSource(
+  private async _scanSource(
       type: string, contents: string, url: string,
       locationOffset?: LocationOffset,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
     const document = this._parse(type, contents, resolvedUrl);
-    return await this._analyzeDocument(
-        document, locationOffset, attachedComment);
+    return await this._scanDocument(document, locationOffset, attachedComment);
   }
 
   /**
-   * Analyzes a parsed Document object.
+   * Scans a parsed Document object.
    */
-  private async _analyzeDocument(
+  private async _scanDocument(
       document: ParsedDocument<any, any>, maybeLocationOffset?: LocationOffset,
       maybeAttachedComment?: string): Promise<ScannedDocument> {
-    // TODO(rictic): We shouldn't be calling _analyzeDocument with
+    // TODO(rictic): We shouldn't be calling _scanDocument with
     // null/undefined.
     if (document == null) {
       return null;
@@ -175,85 +174,101 @@ export class Analyzer {
     const locationOffset =
         maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     const warnings: Warning[] = [];
-    let entities = await this._getEntities(document);
+    let scannedFeatures = await this._getScannedFeatures(document);
     // TODO(rictic): invert this and push the location offsets into the inline
     // documents so that the source ranges are correct when they're first
     // created.
-    for (const entity of entities) {
-      if (entity instanceof ScannedElement) {
-        entity.applyLocationOffset(locationOffset);
+    for (const scannedFeature of scannedFeatures) {
+      if (scannedFeature instanceof ScannedElement) {
+        scannedFeature.applyLocationOffset(locationOffset);
       }
     }
     // If there's an HTML comment that applies to this document then we assume
     // that it applies to the first entity.
-    const firstEntity = entities[0];
-    if (firstEntity && firstEntity instanceof ScannedElement) {
-      firstEntity.applyHtmlComment(maybeAttachedComment);
+    const firstScannedFeature = scannedFeatures[0];
+    if (firstScannedFeature && firstScannedFeature instanceof ScannedElement) {
+      firstScannedFeature.applyHtmlComment(maybeAttachedComment);
     }
 
-    const scannedDependencies: ScannedFeature[] = entities.filter(
+    const scannedDependencies: ScannedFeature[] = scannedFeatures.filter(
         (e) => e instanceof InlineParsedDocument || e instanceof ScannedImport);
-    const analyzeDependencies =
+    const scannedSubDocuments =
         scannedDependencies.map(async(scannedDependency) => {
           if (scannedDependency instanceof InlineParsedDocument) {
-            const locationOffset: LocationOffset = {
-              line: scannedDependency.locationOffset.line,
-              col: scannedDependency.locationOffset.col,
-              filename: document.url
-            };
-            try {
-              const scannedDocument = await this._analyzeSource(
-                  scannedDependency.type, scannedDependency.contents,
-                  document.url, locationOffset,
-                  scannedDependency.attachedComment);
-              scannedDependency.scannedDocument = scannedDocument;
-              scannedDependency.scannedDocument.isInline = true;
-              return scannedDocument;
-            } catch (err) {
-              if (err instanceof WarningCarryingException) {
-                const e: WarningCarryingException = err;
-                e.warning.sourceRange =
-                    correctSourceRange(e.warning.sourceRange, locationOffset);
-                warnings.push(e.warning);
-                return null;
-              }
-              throw err;
-            }
+            return this._scanInlineDocument(
+                scannedDependency, document, warnings);
           } else if (scannedDependency instanceof ScannedImport) {
-            let scannedDocument: ScannedDocument;
-            try {
-              // HACK(rictic): this isn't quite right either, we need to get
-              //     the scanned dependency's url relative to the basedir don't
-              //     we?
-              scannedDocument = await this._analyzeResolved(
-                  this._resolveUrl(scannedDependency.url));
-            } catch (error) {
-              if (error instanceof NoKnownParserError) {
-                // We probably don't want to fail when importing something
-                // that we don't know about here.
-                return null;
-              }
-              error = error || '';
-              warnings.push({
-                code: 'could-not-load',
-                message: `Unable to load import: ${error.message || error}`,
-                sourceRange: scannedDependency.sourceRange,
-                severity: Severity.ERROR
-              });
-              return null;
-            }
-            scannedDependency.scannedDocument = scannedDocument;
-            return scannedDocument;
+            return this._scanImport(scannedDependency, warnings);
           } else {
             throw new Error(`Unexpected dependency type: ${scannedDependency}`);
           }
         });
 
     const dependencies =
-        (await Promise.all(analyzeDependencies)).filter(s => !!s);
+        (await Promise.all(scannedSubDocuments)).filter(s => !!s);
 
     return new ScannedDocument(
-        document, dependencies, entities, locationOffset, warnings);
+        document, dependencies, scannedFeatures, locationOffset, warnings);
+  }
+
+  /**
+   * Scan an inline document found within a containing parsed doc.
+   */
+  private async _scanInlineDocument(
+      inlineDoc: InlineParsedDocument<any>,
+      containingDocument: ParsedDocument<any, any>,
+      warnings: Warning[]): Promise<ScannedDocument|null> {
+    const locationOffset: LocationOffset = {
+      line: inlineDoc.locationOffset.line,
+      col: inlineDoc.locationOffset.col,
+      filename: containingDocument.url
+    };
+    try {
+      const scannedDocument = await this._scanSource(
+          inlineDoc.type, inlineDoc.contents, containingDocument.url,
+          locationOffset, inlineDoc.attachedComment);
+      inlineDoc.scannedDocument = scannedDocument;
+      inlineDoc.scannedDocument.isInline = true;
+      return scannedDocument;
+    } catch (err) {
+      if (err instanceof WarningCarryingException) {
+        const e: WarningCarryingException = err;
+        e.warning.sourceRange =
+            correctSourceRange(e.warning.sourceRange, locationOffset);
+        warnings.push(e.warning);
+        return null;
+      }
+      throw err;
+    }
+  }
+
+  private async _scanImport(
+      scannedImport: ScannedImport<any>,
+      warnings: Warning[]): Promise<ScannedDocument|null> {
+    let scannedDocument: ScannedDocument;
+    try {
+      // HACK(rictic): this isn't quite right either, we need to get
+      //     the scanned dependency's url relative to the basedir don't
+      //     we?
+      scannedDocument =
+          await this._scanResolved(this._resolveUrl(scannedImport.url));
+    } catch (error) {
+      if (error instanceof NoKnownParserError) {
+        // We probably don't want to fail when importing something
+        // that we don't know about here.
+        return null;
+      }
+      error = error || '';
+      warnings.push({
+        code: 'could-not-load',
+        message: `Unable to load import: ${error.message || error}`,
+        sourceRange: scannedImport.sourceRange,
+        severity: Severity.ERROR
+      });
+      return null;
+    }
+    scannedImport.scannedDocument = scannedDocument;
+    return scannedDocument;
   }
 
   private async _loadResolved(resolvedUrl: string, providedContents?: string):
@@ -302,7 +317,7 @@ export class Analyzer {
     }
   }
 
-  private async _getEntities(document: ParsedDocument<any, any>):
+  private async _getScannedFeatures(document: ParsedDocument<any, any>):
       Promise<ScannedFeature[]> {
     const finders = this._entityFinders.get(document.type);
     if (finders) {

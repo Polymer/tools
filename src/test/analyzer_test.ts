@@ -150,7 +150,7 @@ suite('Analyzer', () => {
 
   });
 
-  suite('_getEntities()', () => {
+  suite('_getScannedFeatures()', () => {
     test('default import finders', async() => {
       let contents = `<html><head>
           <link rel="import" href="polymer.html">
@@ -159,7 +159,7 @@ suite('Analyzer', () => {
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const entities =
-          <ScannedImport[]>(await analyzer['_getEntities'](document));
+          <ScannedImport[]>(await analyzer['_getScannedFeatures'](document));
       assert.deepEqual(
           entities.map(e => e.type),
           ['html-import', 'html-script', 'html-style']);
@@ -174,8 +174,8 @@ suite('Analyzer', () => {
           <style>body { color: red; }</style>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const entities =
-          <InlineParsedDocument[]>(await analyzer['_getEntities'](document));
+      const entities = <InlineParsedDocument[]>(
+          await analyzer['_getScannedFeatures'](document));
 
       assert.equal(entities.length, 2);
       assert.instanceOf(entities[0], InlineParsedDocument);
