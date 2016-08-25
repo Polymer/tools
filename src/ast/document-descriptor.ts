@@ -134,34 +134,45 @@ export class Document implements Feature {
     this._begunResolving = true;
     for (const scannedFeature of base.entities) {
       if (scannedFeature instanceof ScannedImport) {
-        const imprt = scannedFeature.resolve(this._rootDocument);
-        this._addFeature(imprt);
+        this._resolveScannedImport(scannedFeature);
 
-        const scannedDoc = scannedFeature.scannedDocument;
-        if (!scannedDoc) {
-          // There was a load or parse error, the scanned doc doesn't exist.
-          continue;
-        }
-        const document = new Document(scannedDoc, this._rootDocument);
-        imprt.document = document;
-        this._addFeature(document);
-
-        document._resolve(scannedDoc);
       } else if (scannedFeature instanceof InlineParsedDocument) {
-        if (!scannedFeature.scannedDocument) {
-          // Parse error on the inline document.
-          continue;
-        }
-        const document =
-            new Document(scannedFeature.scannedDocument, this._rootDocument);
-        this._addFeature(document);
-        document._resolve(scannedFeature.scannedDocument);
+        this._resolveInlineDocument(scannedFeature);
+
       } else if (isResolvable(scannedFeature)) {
         const feature = scannedFeature.resolve(this._rootDocument);
         this._addFeature(feature);
       }
     }
     this._doneResolving = true;
+  }
+
+  private _resolveScannedImport(scannedImport: ScannedImport<any>) {
+    const imprt = scannedImport.resolve(this._rootDocument);
+    this._addFeature(imprt);
+
+    const scannedDoc = scannedImport.scannedDocument;
+    if (!scannedDoc) {
+      // There was a load or parse error, the scanned doc doesn't exist.
+      return;
+    }
+
+    const document = new Document(scannedDoc, this._rootDocument);
+    imprt.document = document;
+    this._addFeature(document);
+
+    document._resolve(scannedDoc);
+  }
+
+  private _resolveInlineDocument(inlineDoc: InlineParsedDocument<any>) {
+    if (!inlineDoc.scannedDocument) {
+      // Parse error on the inline document.
+      return;
+    }
+    const document =
+        new Document(inlineDoc.scannedDocument, this._rootDocument);
+    this._addFeature(document);
+    document._resolve(inlineDoc.scannedDocument);
   }
 
   getByKind(kind: 'element'): Set<Element>;
