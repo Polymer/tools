@@ -14,9 +14,9 @@
 
 import {ASTNode} from 'parse5';
 
-import {Scanner} from '../entity/entity-finder';
+import {Scanner} from '../scanning/scanner';
 
-import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
+import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 
 export interface HtmlScanner extends
     Scanner<ParsedHtmlDocument, ASTNode, HtmlVisitor> {}

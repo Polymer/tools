@@ -18,11 +18,11 @@ import {InlineParsedDocument} from '../../ast/ast';
 import {ScannedImport} from '../../ast/import-descriptor';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
-import {HtmlScriptScanner} from '../../html/html-script-finder';
+import {HtmlScriptScanner} from '../../html/html-script-scanner';
 
 suite('HtmlScriptScanner', () => {
 
-  suite('findImports()', () => {
+  suite('scan()', () => {
     let scanner: HtmlScriptScanner;
 
     setup(() => {

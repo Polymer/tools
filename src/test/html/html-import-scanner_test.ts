@@ -16,11 +16,11 @@ import {assert} from 'chai';
 import * as parse5 from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../../html/html-document';
-import {HtmlImportScanner} from '../../html/html-import-finder';
+import {HtmlImportScanner} from '../../html/html-import-scanner';
 
 suite('HtmlImportScanner', () => {
 
-  suite('findImports()', () => {
+  suite('scan()', () => {
     let scanner: HtmlImportScanner;
 
     setup(() => {

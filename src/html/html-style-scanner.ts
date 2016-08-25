@@ -16,44 +16,48 @@ import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
 import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
+
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
-import {HtmlScanner} from './html-entity-finder';
+import {HtmlScanner} from './html-scanner';
+
 const p = dom5.predicates;
 
-const isJsScriptNode = p.AND(
-    p.hasTagName('script'),
-    p.OR(
-        p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/javascript'),
-        p.hasAttrValue('type', 'application/javascript'),
-        p.hasAttrValue('type', 'module')));
+const isStyleElement = p.AND(
+    p.hasTagName('style'),
+    p.OR(p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/css')));
 
-export class HtmlScriptScanner implements HtmlScanner {
+const isStyleLink = p.AND(p.hasTagName('link'), (node) => {
+  const rel = dom5.getAttribute(node, 'rel') || '';
+  return rel.split(' ').indexOf('stylesheet') !== -1;
+});
+
+const isStyleNode = p.OR(isStyleElement, isStyleLink);
+
+export class HtmlStyleScanner implements HtmlScanner {
   async scan(
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedFeature[]> {
     const features: (ScannedImport | InlineParsedDocument)[] = [];
 
-    const myVisitor: HtmlVisitor = (node) => {
-      if (isJsScriptNode(node)) {
-        const src = dom5.getAttribute(node, 'src');
-        if (src) {
-          const importUrl = resolveUrl(document.url, src);
+    await visit(async(node) => {
+      if (isStyleNode(node)) {
+        const tagName = node.nodeName;
+        if (tagName === 'link') {
+          const href = dom5.getAttribute(node, 'href');
+          const importUrl = resolveUrl(document.url, href);
           features.push(new ScannedImport(
-              'html-script', importUrl, document.sourceRangeForNode(node)));
+              'html-style', importUrl, document.sourceRangeForNode(node)));
         } else {
-          const locationOffset = getLocationOffsetOfStartOfTextContent(node);
-          const attachedCommentText = getAttachedCommentText(node);
           const contents = dom5.getTextContent(node);
-
+          const locationOffset = getLocationOffsetOfStartOfTextContent(node);
+          const commentText = getAttachedCommentText(node);
           features.push(new InlineParsedDocument(
-              'js', contents, locationOffset, attachedCommentText,
+              'css', contents, locationOffset, commentText,
               document.sourceRangeForNode(node)));
         }
       }
-    };
-
-    await visit(myVisitor);
+    });
 
     return features;
   }

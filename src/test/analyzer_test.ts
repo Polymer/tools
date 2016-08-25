@@ -188,7 +188,7 @@ suite('Analyzer', () => {
 
     // ported from old js-parser_test.js
     // FIXME(rictic): I've temporarily disabled most recognition of Polymer ES6
-    //     classes because the finder is buggy and triggers when it shouldn't.
+    //     classes because the scanner is buggy and triggers when it shouldn't.
     test.skip('parses classes', async() => {
       const document = await analyzer.analyzeRoot('static/es6-support.js');
 

@@ -14,7 +14,7 @@
 
 import {Program} from 'estree';
 
-import {Scanner} from '../entity/entity-finder';
+import {Scanner} from '../scanning/scanner';
 
 import {Visitor} from './estree-visitor';
 import {JavaScriptDocument} from './javascript-document';

@@ -22,7 +22,7 @@ import {ScannedElement, ScannedFeature} from '../../ast/ast';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ElementScanner} from '../../vanilla-custom-elements/element-finder';
+import {ElementScanner} from '../../vanilla-custom-elements/element-scanner';
 
 chai.use(require('chai-subset'));
 

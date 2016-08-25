@@ -18,7 +18,7 @@ import {resolve as resolveUrl} from 'url';
 import {ScannedImport} from '../ast/ast';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
-import {HtmlScanner} from './html-entity-finder';
+import {HtmlScanner} from './html-scanner';
 
 const p = dom5.predicates;
 

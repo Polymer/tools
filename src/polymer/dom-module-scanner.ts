@@ -17,7 +17,7 @@ import {ASTNode} from 'parse5';
 
 import {Feature, Resolvable, ScannedFeature, SourceRange, getAttachedCommentText} from '../ast/ast';
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
-import {HtmlScanner} from '../html/html-entity-finder';
+import {HtmlScanner} from '../html/html-scanner';
 
 const p = dom5.predicates;
 

@@ -15,7 +15,7 @@
 import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
-import {Scanner} from './entity-finder';
+import {Scanner} from './scanner';
 
 export async function scan(
     document: ParsedDocument<any, any>,

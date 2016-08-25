@@ -15,7 +15,7 @@
 import {Warning} from '../editor-service';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior-descriptor';
-import {DomModule} from '../polymer/dom-module-finder';
+import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
 
 import {ScannedFeature} from './descriptor';

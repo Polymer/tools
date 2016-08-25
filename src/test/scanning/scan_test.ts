@@ -15,9 +15,9 @@
 import {assert} from 'chai';
 
 import {ScannedFeature} from '../../ast/descriptor';
-import {Scanner} from '../../entity/entity-finder';
-import {scan} from '../../entity/find-entities';
 import {ParsedDocument} from '../../parser/document';
+import {scan} from '../../scanning/scan';
+import {Scanner} from '../../scanning/scanner';
 import {invertPromise} from '../test-utils';
 
 suite('scan()', () => {
