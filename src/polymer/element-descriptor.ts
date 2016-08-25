@@ -46,7 +46,6 @@ export interface Options {
     expression: LiteralValue
   }[];
   behaviors?: string[];
-  node: estree.Node;
 
   demos?: {desc: string; path: string}[];
   events?: ScannedEvent[];
@@ -98,7 +97,6 @@ export class ScannedPolymerElement extends ScannedElement {
       this.events.push({
         name: `${attributeName}-changed`,
         description: `Fired when the \`${prop.name}\` property changes.`,
-        node: prop.node,
         sourceRange: prop.sourceRange
       });
     }

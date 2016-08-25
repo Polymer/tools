@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-
 import {SourceRange} from '../ast/ast';
 import * as jsdoc from '../javascript/jsdoc';
 
@@ -38,7 +36,6 @@ export class ScannedElement implements ScannedFeature, Resolvable {
   description = '';
   demos: {desc?: string; path: string}[] = [];
   events: ScannedEvent[] = [];
-  node: estree.Node;
   sourceRange: SourceRange;
 
   jsdoc?: jsdoc.Annotation;

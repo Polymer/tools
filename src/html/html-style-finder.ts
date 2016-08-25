@@ -13,7 +13,6 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
@@ -28,7 +27,7 @@ const isStyleElement = p.AND(
     p.OR(p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/css')));
 
 const isStyleLink = p.AND(p.hasTagName('link'), (node) => {
-  let rel = dom5.getAttribute(node, 'rel') || '';
+  const rel = dom5.getAttribute(node, 'rel') || '';
   return rel.split(' ').indexOf('stylesheet') !== -1;
 });
 
@@ -39,24 +38,22 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedFeature[]> {
-    let entities: (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] =
-        [];
+    const entities: (ScannedImport | InlineParsedDocument)[] = [];
 
     await visit(async(node) => {
       if (isStyleNode(node)) {
-        let tagName = node.nodeName;
+        const tagName = node.nodeName;
         if (tagName === 'link') {
-          let href = dom5.getAttribute(node, 'href');
-          let importUrl = resolveUrl(document.url, href);
-          entities.push(new ScannedImport<ASTNode>(
-              'html-style', importUrl, node,
-              document.sourceRangeForNode(node)));
+          const href = dom5.getAttribute(node, 'href');
+          const importUrl = resolveUrl(document.url, href);
+          entities.push(new ScannedImport(
+              'html-style', importUrl, document.sourceRangeForNode(node)));
         } else {
-          let contents = dom5.getTextContent(node);
+          const contents = dom5.getTextContent(node);
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const commentText = getAttachedCommentText(node);
-          entities.push(new InlineParsedDocument<ASTNode>(
-              'css', contents, node, locationOffset, commentText,
+          entities.push(new InlineParsedDocument(
+              'css', contents, locationOffset, commentText,
               document.sourceRangeForNode(node)));
         }
       }

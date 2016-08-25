@@ -25,13 +25,6 @@ export interface ScannedFeature {
 
   // TODO(rictic): this is the wrong place to put a jsdoc annotation.
   jsdoc?: jsdoc.Annotation;
-  /**
-   * The AST Node for this feature.
-   *
-   * Used to sort features by the order of their appearance in their containing
-   * document.
-   */
-  node: any;
 
   /** Tracks the source that this feature came from. */
   sourceRange: SourceRange;

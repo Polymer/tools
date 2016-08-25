@@ -88,43 +88,40 @@ export async function findEntities(
     throw visitError;
   }
 
-  return orderEntities(document, nestedEntities);
+  return orderEntities(nestedEntities);
 }
 
-function orderEntities(
-    document: ParsedDocument<any, any>,
-    unorderedEntities: ScannedFeature[][]): ScannedFeature[] {
-  // Build a map of node -> entities
-  let entitiesByNode = new Map<any, ScannedFeature[]>();
-  for (let entitySet of unorderedEntities) {
-    for (let entity of entitySet) {
-      let node = entity.node || null;  // convert undefined to null
-      let entities = entitiesByNode.get(node);
-      if (!entities) {
-        entities = [];
-        entitiesByNode.set(node, entities);
-      }
-      entities.push(entity);
-    }
+function compareEntitiesBySourceLocation(
+    ent1: ScannedFeature, ent2: ScannedFeature): number {
+  const range1 = ent1.sourceRange;
+  const range2 = ent2.sourceRange;
+  if (range1 === range2) {
+    // Should only be true in the `both null` case
+    return 0;
   }
-
-  // Walk the document to build document ordered entities list
-  let orderedEntities: ScannedFeature[][] = [];
-  document.forEachNode((node: any) => {
-    const entities = entitiesByNode.get(node);
-    if (entities) {
-      orderedEntities.push(entities);
-      entitiesByNode.delete(node);
-    }
-  });
-
-  // All entities not associated with a node, or associated with a node that
-  // wasn't visited by document.forEachNode come last.
-  // TODO(justinfagnani): shouldn't this be a warning?
-  let orhphanedEntities = entitiesByNode.values();
-  for (let entitySet of orhphanedEntities) {
-    orderedEntities.push(entitySet);
+  if (range2 == null) {
+    // ent1 comes first
+    return -1;
   }
+  if (range1 == null) {
+    // ent1 comes second
+    return 1;
+  }
+  const position1 = range1.start;
+  const position2 = range2.start;
+  if (position1.line < position2.line) {
+    return -1;
+  }
+  if (position1.line > position2.line) {
+    return 1;
+  }
+  // Lines are equal, compare by column.
+  return position1.column - position2.column;
+}
 
-  return Array.prototype.concat.apply([], orderedEntities);
+function orderEntities(unorderedEntities: ScannedFeature[][]):
+    ScannedFeature[] {
+  const allEntities: ScannedFeature[] =
+      Array.prototype.concat.apply([], unorderedEntities);
+  return allEntities.sort(compareEntitiesBySourceLocation);
 }

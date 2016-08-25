@@ -55,7 +55,6 @@ class ElementVisitor implements Visitor {
     this.element = new ScannedPolymerElement({
       description: esutil.getAttachedComment(node),
       events: esutil.getEventComments(node),
-      node: node,
       sourceRange: this.document.sourceRangeForNode(node)
     });
     this.propertyHandlers =
@@ -138,7 +137,6 @@ class ElementVisitor implements Visitor {
         this.element = new ScannedPolymerElement({
           description: esutil.getAttachedComment(parent),
           events: esutil.getEventComments(parent),
-          node: node.arguments[0],
           sourceRange: this.document.sourceRangeForNode(node.arguments[0])
         });
         docs.annotate(this.element);

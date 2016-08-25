@@ -109,7 +109,6 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
         'N/A',
     description: eventTag.description || annotation.description,
     jsdoc: annotation,
-    node: null,
     sourceRange: null
   };
 
@@ -219,7 +218,6 @@ export function featureElement(features: ScannedPolymerCoreFeature[]):
         'The properties reflected here are the combined view of all ' +
         'features found in this library. There may be more properties ' +
         'added via other libraries, as well.',
-    node: null,
     sourceRange: null
   });
 }
@@ -282,7 +280,6 @@ export function parsePseudoElements(comments: string[]):
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
         properties: [],
         description: parsedJsdoc.description,
-        node: null,
         sourceRange: null
       });
       annotateElementHeader(element);

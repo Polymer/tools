@@ -13,7 +13,6 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
@@ -33,24 +32,22 @@ export class HtmlScriptFinder implements HtmlEntityFinder {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedFeature[]> {
-    let entities: (ScannedImport<ASTNode>| InlineParsedDocument<ASTNode>)[] =
-        [];
+    const entities: (ScannedImport | InlineParsedDocument)[] = [];
 
     const myVisitor: HtmlVisitor = (node) => {
       if (isJsScriptNode(node)) {
-        let src = dom5.getAttribute(node, 'src');
+        const src = dom5.getAttribute(node, 'src');
         if (src) {
-          let importUrl = resolveUrl(document.url, src);
-          entities.push(new ScannedImport<ASTNode>(
-              'html-script', importUrl, node,
-              document.sourceRangeForNode(node)));
+          const importUrl = resolveUrl(document.url, src);
+          entities.push(new ScannedImport(
+              'html-script', importUrl, document.sourceRangeForNode(node)));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const attachedCommentText = getAttachedCommentText(node);
-          let contents = dom5.getTextContent(node);
+          const contents = dom5.getTextContent(node);
 
-          entities.push(new InlineParsedDocument<ASTNode>(
-              'js', contents, node, locationOffset, attachedCommentText,
+          entities.push(new InlineParsedDocument(
+              'js', contents, locationOffset, attachedCommentText,
               document.sourceRangeForNode(node)));
         }
       }

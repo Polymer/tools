@@ -13,7 +13,6 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {ScannedImport} from '../ast/ast';
@@ -24,7 +23,7 @@ import {HtmlEntityFinder} from './html-entity-finder';
 const p = dom5.predicates;
 
 const isHtmlImportNode = p.AND(p.hasTagName('link'), (node) => {
-  let rel = dom5.getAttribute(node, 'rel') || '';
+  const rel = dom5.getAttribute(node, 'rel') || '';
   return rel.split(' ').indexOf('import') !== -1;
 }, p.NOT(p.hasAttrValue('type', 'css')));
 
@@ -32,15 +31,15 @@ export class HtmlImportFinder implements HtmlEntityFinder {
   async findEntities(
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<ScannedImport<ASTNode>[]> {
-    let imports: ScannedImport<ASTNode>[] = [];
+      Promise<ScannedImport[]> {
+    const imports: ScannedImport[] = [];
 
     await visit((node) => {
       if (isHtmlImportNode(node)) {
-        let href = dom5.getAttribute(node, 'href');
-        let importUrl = resolveUrl(document.url, href);
-        imports.push(new ScannedImport<ASTNode>(
-            'html-import', importUrl, node, document.sourceRangeForNode(node)));
+        const href = dom5.getAttribute(node, 'href');
+        const importUrl = resolveUrl(document.url, href);
+        imports.push(new ScannedImport(
+            'html-import', importUrl, document.sourceRangeForNode(node)));
       }
     });
     return imports;

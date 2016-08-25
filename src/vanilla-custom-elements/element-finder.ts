@@ -74,7 +74,6 @@ class ElementVisitor implements Visitor {
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const element = new ScannedElement();
-    element.node = node;
     element.description =
         (jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
              .description.trim() ||
@@ -180,7 +179,6 @@ class ElementVisitor implements Visitor {
         const attribute: ScannedAttribute = {
           name: value,
           description: description,
-          node: expr,
           sourceRange: this._document.sourceRangeForNode(expr)
         };
         if (type) {

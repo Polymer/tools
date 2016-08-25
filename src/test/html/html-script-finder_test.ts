@@ -40,11 +40,11 @@ suite('HtmlScriptFinder', () => {
       const entities = await finder.findEntities(document, visit);
       assert.equal(entities.length, 2);
       assert.instanceOf(entities[0], ScannedImport);
-      const entity0 = <ScannedImport<any>>entities[0];
+      const entity0 = <ScannedImport>entities[0];
       assert.equal(entity0.type, 'html-script');
       assert.equal(entity0.url, 'foo.js');
       assert.instanceOf(entities[1], InlineParsedDocument);
-      const entity1 = <InlineParsedDocument<any>>entities[1];
+      const entity1 = <InlineParsedDocument>entities[1];
       assert.equal(entity1.type, 'js');
       assert.equal(entity1.contents, `console.log('hi')`);
       assert.deepEqual(entity1.locationOffset, {line: 2, col: 19});
