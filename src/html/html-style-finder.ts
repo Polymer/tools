@@ -18,7 +18,7 @@ import {resolve as resolveUrl} from 'url';
 import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
-import {HtmlEntityFinder} from './html-entity-finder';
+import {HtmlScanner} from './html-entity-finder';
 
 const p = dom5.predicates;
 
@@ -33,12 +33,12 @@ const isStyleLink = p.AND(p.hasTagName('link'), (node) => {
 
 const isStyleNode = p.OR(isStyleElement, isStyleLink);
 
-export class HtmlStyleFinder implements HtmlEntityFinder {
-  async findEntities(
+export class HtmlStyleScanner implements HtmlScanner {
+  async scan(
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedFeature[]> {
-    const entities: (ScannedImport | InlineParsedDocument)[] = [];
+    const features: (ScannedImport | InlineParsedDocument)[] = [];
 
     await visit(async(node) => {
       if (isStyleNode(node)) {
@@ -46,19 +46,19 @@ export class HtmlStyleFinder implements HtmlEntityFinder {
         if (tagName === 'link') {
           const href = dom5.getAttribute(node, 'href');
           const importUrl = resolveUrl(document.url, href);
-          entities.push(new ScannedImport(
+          features.push(new ScannedImport(
               'html-style', importUrl, document.sourceRangeForNode(node)));
         } else {
           const contents = dom5.getTextContent(node);
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const commentText = getAttachedCommentText(node);
-          entities.push(new InlineParsedDocument(
+          features.push(new InlineParsedDocument(
               'css', contents, locationOffset, commentText,
               document.sourceRangeForNode(node)));
         }
       }
     });
 
-    return entities;
+    return features;
   }
 }

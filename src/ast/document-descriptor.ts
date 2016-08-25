@@ -32,7 +32,7 @@ import {SourceRange} from './source-range';
 export class ScannedDocument {
   document: ParsedDocument<any, any>;
   dependencies: ScannedDocument[];
-  entities: ScannedFeature[];
+  features: ScannedFeature[];
   locationOffset?: LocationOffset;
   isInline = false;
   sourceRange: SourceRange = null;  // TODO(rictic): track this
@@ -40,11 +40,11 @@ export class ScannedDocument {
 
   constructor(
       document: ParsedDocument<any, any>, dependencies: ScannedDocument[],
-      entities: ScannedFeature[], locationOffset?: LocationOffset,
+      features: ScannedFeature[], locationOffset?: LocationOffset,
       warnings?: Warning[]) {
     this.document = document;
     this.dependencies = dependencies;
-    this.entities = entities;
+    this.features = features;
     this.locationOffset = locationOffset;
     this.warnings = warnings || [];
   }
@@ -132,7 +132,7 @@ export class Document implements Feature {
       return;
     }
     this._begunResolving = true;
-    for (const scannedFeature of base.entities) {
+    for (const scannedFeature of base.features) {
       if (scannedFeature instanceof ScannedImport) {
         this._resolveScannedImport(scannedFeature);
 
@@ -147,7 +147,7 @@ export class Document implements Feature {
     this._doneResolving = true;
   }
 
-  private _resolveScannedImport(scannedImport: ScannedImport<any>) {
+  private _resolveScannedImport(scannedImport: ScannedImport) {
     const imprt = scannedImport.resolve(this._rootDocument);
     this._addFeature(imprt);
 
@@ -164,7 +164,7 @@ export class Document implements Feature {
     document._resolve(scannedDoc);
   }
 
-  private _resolveInlineDocument(inlineDoc: InlineParsedDocument<any>) {
+  private _resolveInlineDocument(inlineDoc: InlineParsedDocument) {
     if (!inlineDoc.scannedDocument) {
       // Parse error on the inline document.
       return;

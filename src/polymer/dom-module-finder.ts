@@ -17,7 +17,7 @@ import {ASTNode} from 'parse5';
 
 import {Feature, Resolvable, ScannedFeature, SourceRange, getAttachedCommentText} from '../ast/ast';
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
-import {HtmlEntityFinder} from '../html/html-entity-finder';
+import {HtmlScanner} from '../html/html-entity-finder';
 
 const p = dom5.predicates;
 
@@ -60,8 +60,8 @@ export class DomModule implements Feature {
   }
 }
 
-export class DomModuleFinder implements HtmlEntityFinder {
-  async findEntities(
+export class DomModuleScanner implements HtmlScanner {
+  async scan(
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedDomModule[]> {

@@ -19,7 +19,7 @@ import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
+import {JavaScriptScanner} from '../javascript/javascript-entity-finder';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedBehavior} from './behavior-descriptor';
@@ -48,8 +48,8 @@ function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
 
 const templatizer = 'Polymer.Templatizer';
 
-export class BehaviorFinder implements JavaScriptEntityFinder {
-  async findEntities(
+export class BehaviorScanner implements JavaScriptScanner {
+  async scan(
       document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedFeature[]> {
     let visitor = new BehaviorVisitor(document);

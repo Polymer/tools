@@ -16,11 +16,11 @@ import {Analyzer} from '../analyzer';
 import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
-export interface EntityFinder<D extends ParsedDocument<A, V>, A, V> {
-  findEntities(document: D, visit: (visitor: V) => Promise<void>):
+export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
+  scan(document: D, visit: (visitor: V) => Promise<void>):
       Promise<ScannedFeature[]>;
 }
 
-export interface EntityFinderConstructor {
-  new (analyzer: Analyzer): EntityFinder<any, any, any>;
+export interface ScannerConstructor {
+  new (analyzer: Analyzer): Scanner<any, any, any>;
 }

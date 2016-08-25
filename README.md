@@ -21,7 +21,7 @@ let analyzer = new Analyzer({
 
 analyzer.analyze('/path-to-polymer-element.html')
   .then((document) => {
-    console.log(document.entities);
+    console.log(document.getFeatures());
   });
 ```
 

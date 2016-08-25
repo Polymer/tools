@@ -15,14 +15,14 @@
 import {ScannedFeature} from '../ast/ast';
 import {ParsedDocument} from '../parser/document';
 
-import {EntityFinder} from './entity-finder';
+import {Scanner} from './entity-finder';
 
-export async function findEntities(
+export async function scan(
     document: ParsedDocument<any, any>,
-    finders: EntityFinder<any, any, any>[]): Promise<ScannedFeature[]> {
-  // Finders register a visitor to run via the `visit` callback passed to
-  // `findEntities()`. We run these visitors in a batch, then pass control back
-  // to the `findEntities` methods by resolving a single Promise return for
+    scanners: Scanner<any, any, any>[]): Promise<ScannedFeature[]> {
+  // Scanners register a visitor to run via the `visit` callback passed to
+  // `scan()`. We run these visitors in a batch, then pass control back
+  // to the `scan()` methods by resolving a single Promise return for
   // all calls to visit() in a batch when the visitors have run.
   // Then we repeat if any visitors have registered new visitors.
 
@@ -60,12 +60,12 @@ export async function findEntities(
     try {
       document.visit(currentVisitors);
     } finally {
-      // Let `findEntities` continue after calls to visit().then()
+      // Let `scan` continue after calls to visit().then()
       currentDoneCallback();
     }
   };
 
-  // The callback passed to `findEntities()`
+  // The callback passed to `scan()`
   function visit(visitor: any) {
     visitors.push(visitor);
     if (!runner) {
@@ -79,19 +79,19 @@ export async function findEntities(
 
   // Ok, go!
   setup();
-  const finderPromises = finders.map((f) => f.findEntities(document, visit));
+  const scannerPromises = scanners.map((f) => f.scan(document, visit));
 
-  // This waits for all `findEntities()` calls to finish
-  const nestedEntities = await Promise.all(finderPromises);
+  // This waits for all `scan()` calls to finish
+  const nestedFeatures = await Promise.all(scannerPromises);
 
   if (visitError) {
     throw visitError;
   }
 
-  return orderEntities(nestedEntities);
+  return sortFeatures(nestedFeatures);
 }
 
-function compareEntitiesBySourceLocation(
+function compareFeaturesBySourceLocation(
     ent1: ScannedFeature, ent2: ScannedFeature): number {
   const range1 = ent1.sourceRange;
   const range2 = ent2.sourceRange;
@@ -119,9 +119,8 @@ function compareEntitiesBySourceLocation(
   return position1.column - position2.column;
 }
 
-function orderEntities(unorderedEntities: ScannedFeature[][]):
-    ScannedFeature[] {
-  const allEntities: ScannedFeature[] =
-      Array.prototype.concat.apply([], unorderedEntities);
-  return allEntities.sort(compareEntitiesBySourceLocation);
+function sortFeatures(unorderedFeatures: ScannedFeature[][]): ScannedFeature[] {
+  const allFeatures: ScannedFeature[] =
+      Array.prototype.concat.apply([], unorderedFeatures);
+  return allFeatures.sort(compareFeaturesBySourceLocation);
 }

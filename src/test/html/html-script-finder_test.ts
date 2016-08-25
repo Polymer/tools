@@ -18,15 +18,15 @@ import {InlineParsedDocument} from '../../ast/ast';
 import {ScannedImport} from '../../ast/import-descriptor';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
-import {HtmlScriptFinder} from '../../html/html-script-finder';
+import {HtmlScriptScanner} from '../../html/html-script-finder';
 
-suite('HtmlScriptFinder', () => {
+suite('HtmlScriptScanner', () => {
 
   suite('findImports()', () => {
-    let finder: HtmlScriptFinder;
+    let scanner: HtmlScriptScanner;
 
     setup(() => {
-      finder = new HtmlScriptFinder();
+      scanner = new HtmlScriptScanner();
     });
 
     test('finds external and inline scripts', async() => {
@@ -37,17 +37,17 @@ suite('HtmlScriptFinder', () => {
       const document = new HtmlParser().parse(contents, 'test-document.html');
       let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const entities = await finder.findEntities(document, visit);
-      assert.equal(entities.length, 2);
-      assert.instanceOf(entities[0], ScannedImport);
-      const entity0 = <ScannedImport>entities[0];
-      assert.equal(entity0.type, 'html-script');
-      assert.equal(entity0.url, 'foo.js');
-      assert.instanceOf(entities[1], InlineParsedDocument);
-      const entity1 = <InlineParsedDocument>entities[1];
-      assert.equal(entity1.type, 'js');
-      assert.equal(entity1.contents, `console.log('hi')`);
-      assert.deepEqual(entity1.locationOffset, {line: 2, col: 19});
+      const features = await scanner.scan(document, visit);
+      assert.equal(features.length, 2);
+      assert.instanceOf(features[0], ScannedImport);
+      const feature0 = <ScannedImport>features[0];
+      assert.equal(feature0.type, 'html-script');
+      assert.equal(feature0.url, 'foo.js');
+      assert.instanceOf(features[1], InlineParsedDocument);
+      const feature1 = <InlineParsedDocument>features[1];
+      assert.equal(feature1.type, 'js');
+      assert.equal(feature1.contents, `console.log('hi')`);
+      assert.deepEqual(feature1.locationOffset, {line: 2, col: 19});
     });
 
   });

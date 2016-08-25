@@ -16,15 +16,15 @@ import {assert} from 'chai';
 import * as parse5 from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../../html/html-document';
-import {HtmlImportFinder} from '../../html/html-import-finder';
+import {HtmlImportScanner} from '../../html/html-import-finder';
 
-suite('HtmlImportFinder', () => {
+suite('HtmlImportScanner', () => {
 
   suite('findImports()', () => {
-    let finder: HtmlImportFinder;
+    let scanner: HtmlImportScanner;
 
     setup(() => {
-      finder = new HtmlImportFinder();
+      scanner = new HtmlImportScanner();
     });
 
     test('finds HTML Imports', async() => {
@@ -42,10 +42,10 @@ suite('HtmlImportFinder', () => {
       });
       let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const entities = await finder.findEntities(document, visit);
-      assert.equal(entities.length, 1);
-      assert.equal(entities[0].type, 'html-import');
-      assert.equal(entities[0].url, 'polymer.html');
+      const features = await scanner.scan(document, visit);
+      assert.equal(features.length, 1);
+      assert.equal(features[0].type, 'html-import');
+      assert.equal(features[0].url, 'polymer.html');
     });
 
   });

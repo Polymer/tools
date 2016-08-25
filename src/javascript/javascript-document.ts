@@ -40,7 +40,7 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
     /**
      * Applies all visiting callbacks from `visitors`.
      */
-    const applyFinders = (callbackName: string, node: Node, parent: Node) => {
+    const applyScanners = (callbackName: string, node: Node, parent: Node) => {
       for (let visitor of visitors) {
         if (_shouldSkip(visitor, callbackName, node.type)) {
           continue;
@@ -105,10 +105,10 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
 
     traverse(this.ast, {
       enter(node, parent) {
-        applyFinders(`enter${node.type}`, node, parent);
+        applyScanners(`enter${node.type}`, node, parent);
       },
       leave(node, parent) {
-        applyFinders(`leave${node.type}`, node, parent);
+        applyScanners(`leave${node.type}`, node, parent);
       },
       fallback: 'iteration',
     });

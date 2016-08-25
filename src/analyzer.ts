@@ -19,29 +19,29 @@ import * as path from 'path';
 import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, correctSourceRange} from './ast/ast';
 import {CssParser} from './css/css-parser';
 import {Severity, Warning, WarningCarryingException} from './editor-service';
-import {EntityFinder} from './entity/entity-finder';
-import {findEntities} from './entity/find-entities';
-import {HtmlImportFinder} from './html/html-import-finder';
+import {Scanner} from './entity/entity-finder';
+import {scan} from './entity/find-entities';
+import {HtmlImportScanner} from './html/html-import-finder';
 import {HtmlParser} from './html/html-parser';
-import {HtmlScriptFinder} from './html/html-script-finder';
-import {HtmlStyleFinder} from './html/html-style-finder';
+import {HtmlScriptScanner} from './html/html-script-finder';
+import {HtmlStyleScanner} from './html/html-style-finder';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {JsonParser} from './json/json-parser';
 import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {Measurement, TelemetryTracker} from './perf/telemetry';
-import {BehaviorFinder} from './polymer/behavior-finder';
-import {DomModuleFinder} from './polymer/dom-module-finder';
-import {PolymerElementFinder} from './polymer/polymer-element-finder';
+import {BehaviorScanner} from './polymer/behavior-finder';
+import {DomModuleScanner} from './polymer/dom-module-finder';
+import {PolymerElementScanner} from './polymer/polymer-element-finder';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
-import {ElementFinder as VanillaElementFinder} from './vanilla-custom-elements/element-finder';
+import {ElementScanner as VanillaElementScanner} from './vanilla-custom-elements/element-finder';
 
 export interface Options {
   urlLoader: UrlLoader;
   urlResolver?: UrlResolver;
   parsers?: Map<string, Parser<any>>;
-  entityFinders?: Map<string, EntityFinder<any, any, any>[]>;
+  scanners?: Map<string, Scanner<any, any, any>[]>;
 }
 
 export class NoKnownParserError extends Error {};
@@ -51,8 +51,8 @@ export class NoKnownParserError extends Error {};
  *
  * An Analyzer can load and parse documents of various types, and extract
  * arbitratrary information from the documents, and transitively load
- * dependencies. An Analyzer instance is configured with parsers, and entity
- * finders which do the actual work of understanding different file types.
+ * dependencies. An Analyzer instance is configured with parsers, and scanners
+ * which do the actual work of understanding different file types.
  */
 export class Analyzer {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
@@ -62,19 +62,19 @@ export class Analyzer {
     ['json', new JsonParser()],
   ]);
 
-  private _entityFinders = new Map<string, EntityFinder<any, any, any>[]>([
+  private scanners = new Map<string, Scanner<any, any, any>[]>([
     [
       'html',
       [
-        new HtmlImportFinder(), new HtmlScriptFinder(), new HtmlStyleFinder(),
-        new DomModuleFinder()
+        new HtmlImportScanner(), new HtmlScriptScanner(),
+        new HtmlStyleScanner(), new DomModuleScanner()
       ]
     ],
     [
       'js',
       [
-        new PolymerElementFinder(), new BehaviorFinder(),
-        new VanillaElementFinder()
+        new PolymerElementScanner(), new BehaviorScanner(),
+        new VanillaElementScanner()
       ]
     ],
   ]);
@@ -90,7 +90,7 @@ export class Analyzer {
     this._loader = options.urlLoader;
     this._resolver = options.urlResolver;
     this._parsers = options.parsers || this._parsers;
-    this._entityFinders = options.entityFinders || this._entityFinders;
+    this.scanners = options.scanners || this.scanners;
   }
 
   /**
@@ -184,7 +184,7 @@ export class Analyzer {
       }
     }
     // If there's an HTML comment that applies to this document then we assume
-    // that it applies to the first entity.
+    // that it applies to the first feature.
     const firstScannedFeature = scannedFeatures[0];
     if (firstScannedFeature && firstScannedFeature instanceof ScannedElement) {
       firstScannedFeature.applyHtmlComment(maybeAttachedComment);
@@ -215,7 +215,7 @@ export class Analyzer {
    * Scan an inline document found within a containing parsed doc.
    */
   private async _scanInlineDocument(
-      inlineDoc: InlineParsedDocument<any>,
+      inlineDoc: InlineParsedDocument,
       containingDocument: ParsedDocument<any, any>,
       warnings: Warning[]): Promise<ScannedDocument|null> {
     const locationOffset: LocationOffset = {
@@ -242,9 +242,8 @@ export class Analyzer {
     }
   }
 
-  private async _scanImport(
-      scannedImport: ScannedImport<any>,
-      warnings: Warning[]): Promise<ScannedDocument|null> {
+  private async _scanImport(scannedImport: ScannedImport, warnings: Warning[]):
+      Promise<ScannedDocument|null> {
     let scannedDocument: ScannedDocument;
     try {
       // HACK(rictic): this isn't quite right either, we need to get
@@ -319,9 +318,9 @@ export class Analyzer {
 
   private async _getScannedFeatures(document: ParsedDocument<any, any>):
       Promise<ScannedFeature[]> {
-    const finders = this._entityFinders.get(document.type);
-    if (finders) {
-      return findEntities(document, finders);
+    const scanners = this.scanners.get(document.type);
+    if (scanners) {
+      return scan(document, scanners);
     }
     return [];
   }
