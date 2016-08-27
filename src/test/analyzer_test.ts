@@ -151,35 +151,35 @@ suite('Analyzer', () => {
   });
 
   suite('_getScannedFeatures()', () => {
-    test('default import finders', async() => {
+    test('default import scanners', async() => {
       let contents = `<html><head>
           <link rel="import" href="polymer.html">
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const entities =
+      const features =
           <ScannedImport[]>(await analyzer['_getScannedFeatures'](document));
       assert.deepEqual(
-          entities.map(e => e.type),
+          features.map(e => e.type),
           ['html-import', 'html-script', 'html-style']);
       assert.deepEqual(
-          entities.map(e => e.url),  //
+          features.map(e => e.url),  //
           ['polymer.html', 'foo.js', 'foo.css']);
     });
 
-    test('HTML inline document finders', async() => {
+    test('HTML inline document scanners', async() => {
       let contents = `<html><head>
           <script>console.log('hi')</script>
           <style>body { color: red; }</style>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const entities = <InlineParsedDocument[]>(
+      const features = <InlineParsedDocument[]>(
           await analyzer['_getScannedFeatures'](document));
 
-      assert.equal(entities.length, 2);
-      assert.instanceOf(entities[0], InlineParsedDocument);
-      assert.instanceOf(entities[1], InlineParsedDocument);
+      assert.equal(features.length, 2);
+      assert.instanceOf(features[0], InlineParsedDocument);
+      assert.instanceOf(features[1], InlineParsedDocument);
     });
 
   });
@@ -188,7 +188,7 @@ suite('Analyzer', () => {
 
     // ported from old js-parser_test.js
     // FIXME(rictic): I've temporarily disabled most recognition of Polymer ES6
-    //     classes because the finder is buggy and triggers when it shouldn't.
+    //     classes because the scanner is buggy and triggers when it shouldn't.
     test.skip('parses classes', async() => {
       const document = await analyzer.analyzeRoot('static/es6-support.js');
 

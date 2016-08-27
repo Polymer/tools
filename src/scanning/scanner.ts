@@ -12,11 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode} from 'parse5';
+import {Analyzer} from '../analyzer';
+import {ScannedFeature} from '../ast/ast';
+import {ParsedDocument} from '../parser/document';
 
-import {EntityFinder} from '../entity/entity-finder';
+export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
+  scan(document: D, visit: (visitor: V) => Promise<void>):
+      Promise<ScannedFeature[]>;
+}
 
-import {ParsedHtmlDocument, HtmlVisitor} from './html-document';
-
-export interface HtmlEntityFinder extends
-    EntityFinder<ParsedHtmlDocument, ASTNode, HtmlVisitor> {}
+export interface ScannerConstructor {
+  new (analyzer: Analyzer): Scanner<any, any, any>;
+}

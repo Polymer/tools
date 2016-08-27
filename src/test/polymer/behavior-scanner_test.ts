@@ -22,9 +22,9 @@ import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedBehavior} from '../../polymer/behavior-descriptor';
-import {BehaviorFinder} from '../../polymer/behavior-finder';
+import {BehaviorScanner} from '../../polymer/behavior-scanner';
 
-suite('BehaviorFinder', () => {
+suite('BehaviorScanner', () => {
 
   let document: JavaScriptDocument;
   let behaviors: Map<string, ScannedBehavior>;
@@ -35,19 +35,18 @@ suite('BehaviorFinder', () => {
     let file = fs.readFileSync(
         path.resolve(__dirname, '../static/js-behaviors.js'), 'utf8');
     document = parser.parse(file, '/static/js-behaviors.js');
-    let finder = new BehaviorFinder();
+    let scanner = new BehaviorScanner();
     let visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    return finder.findEntities(document, visit)
-        .then((entities: ScannedFeature[]) => {
-          behaviors = new Map();
-          behaviorsList = <ScannedBehavior[]>entities.filter(
-              (e) => e instanceof ScannedBehavior);
-          for (let behavior of behaviorsList) {
-            behaviors.set(behavior.className, behavior);
-          }
-        });
+    return scanner.scan(document, visit).then((features: ScannedFeature[]) => {
+      behaviors = new Map();
+      behaviorsList = <ScannedBehavior[]>features.filter(
+          (e) => e instanceof ScannedBehavior);
+      for (let behavior of behaviorsList) {
+        behaviors.set(behavior.className, behavior);
+      }
+    });
   });
 
   test('Finds behavior object assignments', () => {

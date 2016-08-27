@@ -15,30 +15,30 @@
 import {assert} from 'chai';
 
 import {ScannedFeature} from '../../ast/descriptor';
-import {EntityFinder} from '../../entity/entity-finder';
-import {findEntities} from '../../entity/find-entities';
 import {ParsedDocument} from '../../parser/document';
+import {scan} from '../../scanning/scan';
+import {Scanner} from '../../scanning/scanner';
 import {invertPromise} from '../test-utils';
 
-suite('findEntities()', () => {
+suite('scan()', () => {
 
-  test('calls EntityFinder.findEntities', async() => {
-    let entity = Symbol('entity');
-    let finder = new EntityFinderStub(<any>[entity]);
+  test('calls Scanner.scan', async() => {
+    let feature = Symbol('feature');
+    let scanner = new ScannerStub(<any>[feature]);
     let document = makeTestDocument({});
 
-    const entities = await findEntities(document, [finder]);
-    assert.deepEqual(entities, [entity]);
-    assert.deepEqual(finder.calls, [{document}]);
-    assert.deepEqual(entities, [entity]);
+    const features = await scan(document, [scanner]);
+    assert.deepEqual(features, [feature]);
+    assert.deepEqual(scanner.calls, [{document}]);
+    assert.deepEqual(features, [feature]);
   });
 
   test('supports multiple and async calls to visit()', async() => {
     let visitor1 = Symbol('visitor1');
     let visitor2 = Symbol('visitor2');
     let visitor3 = Symbol('visitor3');
-    let finder: EntityFinder<any, any, any> = {
-      async findEntities(
+    let scanner: Scanner<any, any, any> = {
+      async scan(
           _: ParsedDocument<any, any>, visit: (visitor: any) => Promise<void>) {
         // two visitors in one batch
         await Promise.all([visit(visitor1), visit(visitor2)]);
@@ -51,7 +51,7 @@ suite('findEntities()', () => {
           }, 0);
         });
 
-        return [`an entity`];
+        return [`a feature`];
       },
     };
     let visitedVisitors: any[] = [];
@@ -61,18 +61,18 @@ suite('findEntities()', () => {
       }
     });
 
-    const entities = await findEntities(document, [finder]);
-    assert.deepEqual([`an entity`], entities);
+    const features = await scan(document, [scanner]);
+    assert.deepEqual([`a feature`], features);
     assert.deepEqual(visitedVisitors, [visitor1, visitor2, visitor3]);
   });
 
-  test('propagates exceptions in entity finders', () => {
-    let finder = {
-      findEntities(_doc: any, _visit: any) {
+  test('propagates exceptions in scanners', () => {
+    let scanner = {
+      scan(_doc: any, _visit: any) {
         throw new Error('expected');
       },
     };
-    return invertPromise(findEntities(makeTestDocument({}), <any>[finder]));
+    return invertPromise(scan(makeTestDocument({}), <any>[scanner]));
   });
 
   test('propagates exceptions in visitors', () => {
@@ -81,7 +81,7 @@ suite('findEntities()', () => {
         throw new Error('expected');
       },
     });
-    return invertPromise(findEntities(document, [makeTestEntityFinder({})]));
+    return invertPromise(scan(document, [makeTestScanner({})]));
   });
 
 });
@@ -109,34 +109,34 @@ function makeTestDocument(options: TestDocumentMakerOptions):
   };
 }
 
-interface TestEntityFinderMakerOptions {
-  findEntities?:
+interface TestScannerMakerOptions {
+  scan?:
       (document: ParsedDocument<string, any>,
        visit: (visitor: any) => Promise<void>) => Promise<any[]>;
 }
-function makeTestEntityFinder(options: TestEntityFinderMakerOptions):
-    EntityFinder<ParsedDocument<string, any>, any, any> {
-  const simpleFindEntities = (async(_doc: any, visit: () => Promise<any>) => {
+function makeTestScanner(options: TestScannerMakerOptions):
+    Scanner<ParsedDocument<string, any>, any, any> {
+  const simpleScan = (async(_doc: any, visit: () => Promise<any>) => {
     await visit();
-    return ['test-entity'];
+    return ['test-feature'];
   });
-  return {findEntities: options.findEntities || simpleFindEntities};
+  return {scan: options.scan || simpleScan};
 }
 
 /**
- * Entity finder that always returns the given entities and tracks when
- * findEntities is called.
+ * Scanner that always returns the given features and tracks when
+ * scan is called.
  */
-class EntityFinderStub implements EntityFinder<any, any, any> {
+class ScannerStub implements Scanner<any, any, any> {
   calls: {document: ParsedDocument<any, any>}[];
-  entities: ScannedFeature[];
-  constructor(entities: ScannedFeature[]) {
-    this.entities = entities;
+  features: ScannedFeature[];
+  constructor(features: ScannedFeature[]) {
+    this.features = features;
     this.calls = [];
   }
 
-  async findEntities(document: ParsedDocument<any, any>, _visit: any) {
+  async scan(document: ParsedDocument<any, any>, _visit: any) {
     this.calls.push({document});
-    return this.entities;
+    return this.features;
   }
 }

@@ -19,7 +19,7 @@ import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
+import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 
 export interface ScannedAttribute extends ScannedFeature {
@@ -27,8 +27,8 @@ export interface ScannedAttribute extends ScannedFeature {
   type?: string;
 }
 
-export class ElementFinder implements JavaScriptEntityFinder {
-  async findEntities(
+export class ElementScanner implements JavaScriptScanner {
+  async scan(
       document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedElement[]> {
     let visitor = new ElementVisitor(document);

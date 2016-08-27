@@ -18,7 +18,7 @@ import {resolve as resolveUrl} from 'url';
 import {ScannedImport} from '../ast/ast';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
-import {HtmlEntityFinder} from './html-entity-finder';
+import {HtmlScanner} from './html-scanner';
 
 const p = dom5.predicates;
 
@@ -27,8 +27,8 @@ const isHtmlImportNode = p.AND(p.hasTagName('link'), (node) => {
   return rel.split(' ').indexOf('import') !== -1;
 }, p.NOT(p.hasAttrValue('type', 'css')));
 
-export class HtmlImportFinder implements HtmlEntityFinder {
-  async findEntities(
+export class HtmlImportScanner implements HtmlScanner {
+  async scan(
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedImport[]> {

@@ -14,10 +14,10 @@
 
 import {Program} from 'estree';
 
-import {EntityFinder} from '../entity/entity-finder';
+import {Scanner} from '../scanning/scanner';
 
 import {Visitor} from './estree-visitor';
 import {JavaScriptDocument} from './javascript-document';
 
-export interface JavaScriptEntityFinder extends
-    EntityFinder<JavaScriptDocument, Program, Visitor>, Visitor {}
+export interface JavaScriptScanner extends
+    Scanner<JavaScriptDocument, Program, Visitor>, Visitor {}

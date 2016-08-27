@@ -19,24 +19,24 @@ import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptEntityFinder} from '../javascript/javascript-entity-finder';
+import {JavaScriptScanner} from '../javascript/javascript-scanner';
 
 import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 
-export class PolymerElementFinder implements JavaScriptEntityFinder {
-  async findEntities(
+export class PolymerElementScanner implements JavaScriptScanner {
+  async scan(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
       Promise<ScannedPolymerElement[]> {
     const visitor = new ElementVisitor(document);
     await visit(visitor);
-    return visitor.entities;
+    return visitor.features;
   }
 }
 
 class ElementVisitor implements Visitor {
-  entities: ScannedPolymerElement[] = [];
+  features: ScannedPolymerElement[] = [];
 
   /**
    * The element being built during a traversal;
@@ -154,7 +154,7 @@ class ElementVisitor implements Visitor {
         args[0].type === 'ObjectExpression') {
       if (callee.name === 'Polymer') {
         if (this.element) {
-          this.entities.push(this.element);
+          this.features.push(this.element);
           this.element = null;
           this.propertyHandlers = null;
         }

@@ -21,7 +21,7 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 
 import {ScannedPolymerCoreFeature} from './feature-descriptor';
 
-export function featureFinder(document: JavaScriptDocument) {
+export function featureScanner(document: JavaScriptDocument) {
   /** The features we've found. */
   const features: ScannedPolymerCoreFeature[] = [];
 
