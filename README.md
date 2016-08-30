@@ -1,5 +1,7 @@
 # polyserve
 
+[![Build Status](https://travis-ci.org/PolymerLabs/polyserve.svg?branch=master)](https://travis-ci.org/PolymerLabs/polyserve)
+
 A simple web server for using bower components locally. `polyserve` serves
 project files under `/components/{bower-name}/`. The local component defined in
 `bower.json` is served from the current directory, other component are served
