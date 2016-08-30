@@ -29,7 +29,16 @@ Navigate to `localhost:8080/components/my-element/demo.html`
   * `-b <browsername>` use this browser instead of default (ex: 'Google Chrome Canary')
   * `-H <hostname>` use this hostname instead of localhost
 
-## Run Tests
+## Contributing
+
+```
+git clone git@github.com:polymerlabs/polyserve.git
+cd polyserve/
+npm install
+npm run build
+```
+
+### Run Tests
 
 ```
 npm test

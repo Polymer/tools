@@ -51,14 +51,17 @@ suite('startServer', () => {
       .end(done);
   });
 
-  test('404s .html files', (done) => {
-    let app = getApp({
-      root: __dirname,
-    });
-    supertest(app)
-      .get('/foo.html')
+  ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach((ext) => {
+    test(`404s ${ext} files`, (done) => {
+      let app = getApp({
+        root: __dirname,
+      });
+
+      supertest(app)
+      .get('/foo.' + ext)
       .expect(404)
       .end(done);
+    })
   });
 
 });
