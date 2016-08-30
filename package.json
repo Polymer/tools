@@ -12,7 +12,7 @@
     "start": "./bin/polyserve",
     "init": "typings install",
     "build": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc",
-    "test": "gulp test; exit 0"
+    "test": "gulp test"
   },
   "keywords": [
     "polymer",
