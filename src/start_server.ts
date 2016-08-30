@@ -100,17 +100,13 @@ export function getApp(options: ServerOptions) {
 
   app.use('/components/', polyserve);
 
-  const isFileRequest = (filePath: String) => {
-    return ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].filter((ext) => {
-      return filePath.endsWith(ext);
-    }).length > 0;
-  };
+  const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
 
   app.get('/*', (req, res) => {
     let filePath = req.path;
     send(req, filePath, {root: root,})
       .on('error', (error: send.SendError) => {
-        if ((error).status == 404 && !isFileRequest(filePath.toLowerCase())) {
+        if ((error).status == 404 && !filePathRegex.test(filePath)) {
           send(req, '/', {root: root}).pipe(res);
         } else {
           res.statusCode = error.status || 500;
