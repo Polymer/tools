@@ -98,9 +98,9 @@ export function getApp(options: ServerOptions) {
   });
   options.packageName = polyserve.packageName;
 
-  app.use('/components/', polyserve);
-
   const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
+
+  app.use('/components/', polyserve);
 
   app.get('/*', (req, res) => {
     let filePath = req.path;
