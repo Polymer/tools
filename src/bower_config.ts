@@ -13,7 +13,11 @@ import * as fs from 'fs';
 
 function bowerConfigPath(root?: string): string {
   root = root || process.cwd();
-  return path.resolve(root, 'bower.json');
+  try {
+    return path.resolve(root, 'bower.json');
+  } catch (e) {
+    return null;
+  }
 }
 
 function bowerConfigContents(root?: string): string {
@@ -22,8 +26,7 @@ function bowerConfigContents(root?: string): string {
   try {
     contents = fs.readFileSync(bowerConfigPath(root)).toString();
   } catch (e) {
-    console.error('Error reading config at ' + bowerConfigPath());
-    console.error(e);
+    return '{}'
   }
 
   return contents || '{}';
@@ -31,7 +34,10 @@ function bowerConfigContents(root?: string): string {
 
 export function bowerConfig(root?: string) {
   try {
-    return JSON.parse(bowerConfigContents(root));
+    let config = bowerConfigContents(root);
+    if (config) {
+      return JSON.parse(config);
+    }
   } catch (e) {
     console.error('Could not parse bower.json');
     console.error(e);
