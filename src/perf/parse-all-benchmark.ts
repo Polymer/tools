@@ -18,31 +18,11 @@ import * as now from 'performance-now';
 
 import {Analyzer} from '../analyzer';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
-import {UrlLoader} from '../url-loader/url-loader';
 
 import {Measurement} from './telemetry';
 
-class PermissiveUrlLoader implements UrlLoader {
-  private _realLoader: UrlLoader;
-  constructor(realLoader: UrlLoader) {
-    this._realLoader = realLoader;
-  }
-  canLoad() {
-    return true;
-  }
-  async load(path: string) {
-    try {
-      return await this._realLoader.load(path);
-    } catch (_) {
-      // muddle on!
-    }
-    return '';
-  }
-}
-
 const bowerDir = path.resolve(__dirname, `../../bower_components`);
-const analyzer = new Analyzer(
-    {urlLoader: new PermissiveUrlLoader(new FSUrlLoader(bowerDir))});
+const analyzer = new Analyzer({urlLoader: new FSUrlLoader(bowerDir)});
 
 const filesToAnalyze: string[] = [];
 
