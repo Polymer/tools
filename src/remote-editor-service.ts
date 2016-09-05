@@ -20,11 +20,11 @@ import {BaseEditor, EditorService, Position, TypeaheadCompletion, Warning} from 
 import {FSUrlLoader} from './url-loader/fs-url-loader';
 import {PackageUrlResolver} from './url-loader/package-url-resolver';
 
-interface Request {
+interface RequestWrapper {
   id: number;
-  value: Message;
+  value: Request;
 }
-interface Response {
+interface ResponseWrapper {
   id: number;
   value: SettledValue;
 }
@@ -44,72 +44,81 @@ interface Deferred<V> {
   promise: Promise<V>;
 }
 
-type Message = InitMessage | FileChanged | GetWarningsMessage |
-    GetDocumentationMessage | GetDefinitionMessage |
-    GetTypeaheadCompletionsMessage | ClearCachesMessage;
-interface InitMessage {
+type Request = InitRequest | FileChangedRequest | GetWarningsRequest |
+    GetDocumentationRequest | GetDefinitionRequest |
+    GetTypeaheadCompletionsRequest | ClearCachesRequest;
+interface InitRequest {
   kind: 'init';
   basedir: string;
 }
-interface FileChanged {
+interface FileChangedRequest {
   kind: 'fileChanged';
   localPath: string;
   contents?: string;
 }
-interface GetWarningsMessage {
+interface GetWarningsRequest {
   kind: 'getWarningsFor';
   localPath: string;
 }
-interface GetDocumentationMessage {
+interface GetDocumentationRequest {
   kind: 'getDocumentationFor';
   localPath: string;
   position: Position;
 }
-interface GetDefinitionMessage {
+interface GetDefinitionRequest {
   kind: 'getDefinitionFor';
   localPath: string;
   position: Position;
 }
-interface GetTypeaheadCompletionsMessage {
+interface GetTypeaheadCompletionsRequest {
   kind: 'getTypeaheadCompletionsFor';
   localPath: string;
   position: Position;
 }
-interface ClearCachesMessage {
+interface ClearCachesRequest {
   kind: 'clearCaches';
 }
 
+/**
+ * Runs this file (remote-editor-service.js) in a new node process and
+ * exposes a promise based request API for communicating with it.
+ */
 class SelfChannel {
   private _child: child_process.ChildProcess;
   private _idCounter = 0;
   private _outstandingRequests = new Map<number, Deferred<any>>();
   constructor() {
     this._child = child_process.fork(__filename, [], {});
-    this._child.addListener('message', (m: Response) => this._handleMessage(m));
+    this._child.addListener(
+        'message', (m: ResponseWrapper) => this._handleResponse(m));
   }
 
-  async request(req: Message): Promise<any> {
+  async request(req: Request): Promise<any> {
     const id = this._idCounter++;
     const deferred = makeDeferred<any>();
     this._outstandingRequests.set(id, deferred);
-    await this._sendMessage(id, req);
+    await this._sendRequest(id, req);
     return deferred.promise;
   }
 
-  private _handleMessage(response: Response) {
+  private _handleResponse(response: ResponseWrapper): void {
     const deferred = this._outstandingRequests.get(response.id);
     if (!deferred) {
       return;
     }
-    if (response.value.kind === 'resolution') {
-      deferred.resolve(response.value.resolution);
-    } else if (response.value.kind === 'rejection') {
-      deferred.reject(response.value.rejection);
+    switch (response.value.kind) {
+      case 'resolution':
+        return deferred.resolve(response.value.resolution);
+      case 'rejection':
+        return deferred.reject(response.value.rejection);
+      default:
+        const never: never = response.value;
+        throw new Error(`Got unknown kind of response: ${util.inspect(never)}`);
     }
   }
 
-  private async _sendMessage(id: number, value: Message): Promise<void> {
-    const request: Request = {id, value: value};
+  private async _sendRequest(id: number, value: Request): Promise<void> {
+    const request: RequestWrapper = {id, value: value};
     await new Promise((resolve, reject) => {
       (<any>this._child.send)(
           request, (err: any) => err ? reject(err) : resolve());
@@ -123,6 +132,9 @@ class SelfChannel {
 
 /**
  * Provides a similar interface to EditorServer, but implemented out of process.
+ *
+ * This class runs in-process and communicates via SelfChannel with
+ * EditorServer, which runs in the child process.
  */
 export class RemoteEditorService extends BaseEditor {
   private _channel = new SelfChannel();
@@ -165,7 +177,7 @@ export class RemoteEditorService extends BaseEditor {
 }
 
 /**
- * Runs out of process and communicates with EditorProcess.
+ * Runs out of process and handles
  */
 class EditorServer {
   private _editorService: EditorService;
@@ -176,7 +188,7 @@ class EditorServer {
     });
   }
 
-  async handleMessage(message: Message): Promise<any> {
+  async handleMessage(message: Request): Promise<any> {
     switch (message.kind) {
       case 'getWarningsFor':
         return this._editorService.getWarningsFor(message.localPath);
@@ -198,6 +210,8 @@ class EditorServer {
       case 'clearCaches':
         return this._editorService.clearCaches();
       default:
+        // This assignment makes it a type error if we don't handle all possible
+        // values of `message.kind`.
         const never: never = message;
         throw new Error(`Got unknown kind of message: ${util.inspect(never)}`);
     }
@@ -214,13 +228,15 @@ function makeDeferred<V>(): Deferred<V> {
   return {resolve, reject, promise};
 }
 
-// If this file is being used as a separate node binary, rather than being
-// required.
 if (!module.parent) {
+  // We're in the child process! Or we're otherwise being run directly via
+  // `node lib/remote-editor-service.js`
+  // We're definitely not being imported as a library by other node code.
+
   let server: EditorServer;
-  process.once('message', (initRequest: Request) => {
+  process.once('message', (initRequest: RequestWrapper) => {
     if (initRequest.value.kind !== 'init') {
-      process.send(<Response>{
+      process.send(<ResponseWrapper>{
         id: initRequest.id,
         value: {
           kind: 'rejection',
@@ -232,13 +248,13 @@ if (!module.parent) {
     }
     server = new EditorServer(initRequest.value.basedir);
 
-    process.on('message', async(request: Request) => {
+    process.on('message', async(request: RequestWrapper) => {
       const result = await getSettledValue(request.value);
-      process.send(<Response>{id: request.id, value: result});
+      process.send(<ResponseWrapper>{id: request.id, value: result});
     });
   });
 
-  async function getSettledValue(message: Message): Promise<SettledValue> {
+  async function getSettledValue(message: Request): Promise<SettledValue> {
     try {
       const value = await server.handleMessage(message);
       return {kind: 'resolution', resolution: value};

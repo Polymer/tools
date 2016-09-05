@@ -132,6 +132,13 @@ export class Analyzer {
     return this._telemetryTracker.getMeasurements();
   }
 
+  /**
+   * Clear all cached information from this analyzer instance.
+   *
+   * Note: if at all possible, instead tell the analyzer about the specific
+   * files that changed rather than clearing caches like this. Caching provides
+   * large performance gains.
+   */
   clearCaches(): void {
     this._parsedDocuments.clear();
     this._scannedDocuments.clear();

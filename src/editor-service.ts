@@ -68,6 +68,9 @@ export class WarningCarryingException extends Error {
 // Important note: all arguments to, and results returned from editor service
 //     methods MUST be serializable as JSON, as the editor service may be
 //     running out of process and communicating with JSON strings.
+//
+//     Fortunately, editor-service_test will test that the results are JSON
+//     serializable.
 export abstract class BaseEditor {
   abstract async fileChanged(localPath: string, contents?: string):
       Promise<void>;

@@ -256,7 +256,7 @@ function editorTests(editorFactory: (basedir: string) => BaseEditor) {
           elementTypeahead);
     });
 
-    test('get element completions for the end of a tag', async function() {
+    test('Get element completions for the end of a tag', async function() {
       await editorService.fileChanged(indexFile);
       deepEqual(
           await editorService.getTypeaheadCompletionsFor(
