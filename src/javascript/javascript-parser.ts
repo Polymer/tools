@@ -21,6 +21,14 @@ import {Parser} from '../parser/parser';
 import {JavaScriptDocument} from './javascript-document';
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
+  sourceType: 'module'|'script';
+
+  constructor(options: {sourceType: 'module' | 'script'}) {
+    console.assert(options != null);
+    console.assert(options.sourceType != null);
+    this.sourceType = options.sourceType;
+  }
+
   parse(contents: string, url: string): JavaScriptDocument {
     let ast: Program;
     try {
@@ -29,6 +37,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
         attachComment: true,
         comment: true,
         loc: true,
+        sourceType: this.sourceType,
       });
     } catch (err) {
       if (err instanceof SyntaxError) {

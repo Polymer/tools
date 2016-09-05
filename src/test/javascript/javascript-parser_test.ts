@@ -26,7 +26,7 @@ suite('JavaScriptParser', () => {
     let parser: JavaScriptParser;
 
     setup(() => {
-      parser = new JavaScriptParser();
+      parser = new JavaScriptParser({sourceType: 'script'});
     });
 
     test('parses classes', () => {

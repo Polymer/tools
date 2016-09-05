@@ -57,7 +57,7 @@ export class NoKnownParserError extends Error {};
 export class Analyzer {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
-    ['js', new JavaScriptParser()],
+    ['js', new JavaScriptParser({sourceType: 'script'})],
     ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);

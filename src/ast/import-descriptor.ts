@@ -25,7 +25,7 @@ import {Document, Feature, Resolvable, ScannedDocument} from './document-descrip
  * @template N The AST node type
  */
 export class ScannedImport implements ScannedFeature, Resolvable {
-  type: 'html-import'|'html-script'|'html-style'|string;
+  type: 'html-import'|'html-script'|'html-style'|'js-import'|string;
 
   /**
    * URL of the import, relative to the document containing the import.
