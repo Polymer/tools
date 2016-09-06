@@ -98,13 +98,15 @@ export function getApp(options: ServerOptions) {
   });
   options.packageName = polyserve.packageName;
 
+  const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
+
   app.use('/components/', polyserve);
 
   app.get('/*', (req, res) => {
     let filePath = req.path;
     send(req, filePath, {root: root,})
       .on('error', (error: send.SendError) => {
-        if ((error).status == 404 && !filePath.endsWith('.html')) {
+        if ((error).status == 404 && !filePathRegex.test(filePath)) {
           send(req, '/', {root: root}).pipe(res);
         } else {
           res.statusCode = error.status || 500;

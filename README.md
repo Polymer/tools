@@ -9,14 +9,14 @@ from `./bower_components/`.
 
 ## Installation
 
-    npm install polyserve -g
+    $ npm install polyserve -g
 
 ## Usage
 
 ### Run `polyserve`
 
-    cd my-element/
-    polyserve
+    $ cd my-element/
+    $ polyserve
 
 ### Browse files
 
@@ -31,8 +31,12 @@ Navigate to `localhost:8080/components/my-element/demo.html`
   * `-b <browsername>` use this browser instead of default (ex: 'Google Chrome Canary')
   * `-H <hostname>` use this hostname instead of localhost
 
-## Run Tests
+## Compiling from Source
 
-```
-npm test
-```
+    $ npm run build
+
+You can compile and run Polyserve from source by cloning the repo from Github and then running `npm run build`. But make sure you have already run `npm install` before building.
+
+### Run Tests
+
+    $ npm test
