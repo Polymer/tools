@@ -15,7 +15,7 @@
 import * as espree from 'espree';
 import {Program} from 'estree';
 
-import {Severity, WarningCarryingException} from '../editor-service';
+import {Severity, WarningCarryingException} from '../editor-service/editor-service';
 import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';

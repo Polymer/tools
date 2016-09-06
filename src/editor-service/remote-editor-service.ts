@@ -15,10 +15,11 @@
 import * as child_process from 'child_process';
 import * as util from 'util';
 
-import {SourceRange} from './ast/ast';
+import {SourceRange} from '../model/model';
+import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {PackageUrlResolver} from '../url-loader/package-url-resolver';
+
 import {BaseEditor, EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
-import {FSUrlLoader} from './url-loader/fs-url-loader';
-import {PackageUrlResolver} from './url-loader/package-url-resolver';
 
 interface RequestWrapper {
   id: number;
@@ -28,7 +29,7 @@ interface ResponseWrapper {
   id: number;
   value: SettledValue;
 }
-type SettledValue = Resolution | Rejection;
+type SettledValue = Resolution|Rejection;
 interface Resolution {
   kind: 'resolution';
   resolution: any;
@@ -44,9 +45,9 @@ interface Deferred<V> {
   promise: Promise<V>;
 }
 
-type Request = InitRequest | FileChangedRequest | GetWarningsRequest |
-    GetDocumentationRequest | GetDefinitionRequest |
-    GetTypeaheadCompletionsRequest | ClearCachesRequest;
+type Request =
+    InitRequest|FileChangedRequest|GetWarningsRequest|GetDocumentationRequest|
+    GetDefinitionRequest|GetTypeaheadCompletionsRequest|ClearCachesRequest;
 interface InitRequest {
   kind: 'init';
   basedir: string;

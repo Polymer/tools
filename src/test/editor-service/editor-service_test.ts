@@ -16,15 +16,15 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {AttributesCompletion, BaseEditor, EditorService, ElementCompletion, Severity, Warning} from '../editor-service';
-import {RemoteEditorService} from '../remote-editor-service';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
-import {PackageUrlResolver} from '../url-loader/package-url-resolver';
+import {AttributesCompletion, BaseEditor, EditorService, ElementCompletion, Severity, Warning} from '../../editor-service/editor-service';
+import {RemoteEditorService} from '../../editor-service/remote-editor-service';
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
-import {invertPromise} from './test-utils';
+import {invertPromise} from '../test-utils';
 
 function editorTests(editorFactory: (basedir: string) => BaseEditor) {
-  const basedir = path.join(__dirname, 'static');
+  const basedir = path.join(__dirname, '../static');
   const indexFile = path.join('editor-service', 'index.html');
   const tagPosition = {line: 7, column: 9};
   const tagPositionEnd = {line: 7, column: 21};

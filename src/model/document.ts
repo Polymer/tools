@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Warning} from '../editor-service';
+import {Warning} from '../editor-service/editor-service';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior-descriptor';
 import {DomModule} from '../polymer/dom-module-scanner';

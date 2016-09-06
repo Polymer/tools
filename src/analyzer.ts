@@ -18,7 +18,7 @@ import * as path from 'path';
 
 import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, correctSourceRange} from './model/model';
 import {CssParser} from './css/css-parser';
-import {Severity, Warning, WarningCarryingException} from './editor-service';
+import {Severity, Warning, WarningCarryingException} from './editor-service/editor-service';
 import {HtmlImportScanner} from './html/html-import-scanner';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptScanner} from './html/html-script-scanner';

@@ -14,10 +14,9 @@
 
 import * as parse5 from 'parse5';
 
-import {Analyzer, Options as AnalyzerOptions} from './analyzer';
-import {Document, Element, Property, ScannedProperty, SourceRange} from './model/model';
-import {ParsedHtmlDocument} from './html/html-document';
-
+import {Analyzer, Options as AnalyzerOptions} from '../analyzer';
+import {ParsedHtmlDocument} from '../html/html-document';
+import {Document, Element, Property, ScannedProperty, SourceRange} from '../model/model';
 
 export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
 export interface ElementCompletion {
@@ -165,9 +164,10 @@ export class EditorService extends BaseEditor {
                        description: p.description,
                        type: p.type,
                        inheritedFrom: p.inheritedFrom,
-                       sortKey:
-                           `${sortPrefixes.get(p.inheritedFrom) || 'ddd-'}` +
-                           `${p.name}`
+                       sortKey: `${sortPrefixes.get(p.inheritedFrom) ||
+                           'ddd-'
+                           }` +
+                               `${p.name}`
                      }))
                 .concat(element.events.map(
                     e => ({
@@ -175,9 +175,10 @@ export class EditorService extends BaseEditor {
                       description: e.description,
                       type: e.type || 'CustomEvent',
                       inheritedFrom: e.inheritedFrom,
-                      sortKey:
-                          `eee-${sortPrefixes.get(e.inheritedFrom) || 'ddd-'}` +
-                          `on-${e.name}`
+                      sortKey: `eee-${sortPrefixes.get(e.inheritedFrom) ||
+                          'ddd-'
+                          }` +
+                              `on-${e.name}`
                     }))));
       }
       return {kind: 'attributes', attributes};
@@ -235,8 +236,7 @@ export class EditorService extends BaseEditor {
 }
 
 
-type LocationResult =
-    LocatedAttribute | LocatedTag | LocatedEndTag | LocatedInText;
+type LocationResult = LocatedAttribute|LocatedTag|LocatedEndTag|LocatedInText;
 interface LocatedAttribute {
   kind: 'attribute';
   attribute: string|null;
