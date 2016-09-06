@@ -34,6 +34,11 @@ export class ScannedImport implements ScannedFeature, Resolvable {
   scannedDocument: ScannedDocument;
 
   sourceRange: SourceRange;
+
+  /**
+   * The source range specifically for the URL or reference to the imported
+   * resource.
+   */
   urlSourceRange: SourceRange;
 
   constructor(

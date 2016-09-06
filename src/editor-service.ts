@@ -50,7 +50,7 @@ export enum Severity {
   INFO
 }
 
-export interface Position {
+export interface SourcePosition {
   /** Line number in file, starting from 0. */
   line: number;
   /** Column number in file, starting from 0. */
@@ -75,14 +75,14 @@ export abstract class BaseEditor {
   abstract async fileChanged(localPath: string, contents?: string):
       Promise<void>;
 
-  abstract async getDocumentationFor(localPath: string, position: Position):
-      Promise<string|undefined>;
+  abstract async getDocumentationFor(
+      localPath: string, position: SourcePosition): Promise<string|undefined>;
 
-  abstract async getDefinitionFor(localPath: string, position: Position):
+  abstract async getDefinitionFor(localPath: string, position: SourcePosition):
       Promise<SourceRange>;
 
   abstract async getTypeaheadCompletionsFor  // dang clang-format..
-      (localPath: string, position: Position):
+      (localPath: string, position: SourcePosition):
           Promise<TypeaheadCompletion|undefined>;
 
   abstract async getWarningsFor(localPath: string): Promise<Warning[]>;
@@ -101,7 +101,7 @@ export class EditorService extends BaseEditor {
     await this._analyzer.analyzeRoot(localPath, contents);
   }
 
-  async getDocumentationFor(localPath: string, position: Position):
+  async getDocumentationFor(localPath: string, position: SourcePosition):
       Promise<string|undefined> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
@@ -115,7 +115,7 @@ export class EditorService extends BaseEditor {
     return feature.description;
   }
 
-  async getDefinitionFor(localPath: string, position: Position):
+  async getDefinitionFor(localPath: string, position: SourcePosition):
       Promise<SourceRange> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
@@ -124,7 +124,7 @@ export class EditorService extends BaseEditor {
     return feature.sourceRange;
   }
 
-  async getTypeaheadCompletionsFor(localPath: string, position: Position):
+  async getTypeaheadCompletionsFor(localPath: string, position: SourcePosition):
       Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyzeRoot(localPath);
     const location = await this._getLocationResult(document, position);
@@ -204,7 +204,7 @@ export class EditorService extends BaseEditor {
     this._analyzer.clearCaches();
   }
 
-  private async _getFeatureAt(localPath: string, position: Position):
+  private async _getFeatureAt(localPath: string, position: SourcePosition):
       Promise<Element|Property|undefined> {
     const document = await this._analyzer.analyzeRoot(localPath);
     const location = await this._getLocationResult(document, position);
@@ -224,7 +224,8 @@ export class EditorService extends BaseEditor {
     }
   }
 
-  private async _getLocationResult(document: Document, position: Position) {
+  private async _getLocationResult(
+      document: Document, position: SourcePosition) {
     const parsedDocument = document.parsedDocument;
     if (!(parsedDocument instanceof ParsedHtmlDocument)) {
       return;
@@ -253,7 +254,7 @@ interface LocatedInText {
   kind: 'text';
 }
 function getLocationInfoForPosition(
-    node: parse5.ASTNode, position: Position): LocationResult {
+    node: parse5.ASTNode, position: SourcePosition): LocationResult {
   const location = _getLocationInfoForPosition(node, position);
   if (!location) {
     return {kind: 'text'};
@@ -261,7 +262,7 @@ function getLocationInfoForPosition(
   return location;
 }
 function _getLocationInfoForPosition(
-    node: parse5.ASTNode, position: Position): undefined|LocationResult {
+    node: parse5.ASTNode, position: SourcePosition): undefined|LocationResult {
   if (node.__location) {
     const location = node.__location;
     if (isElementLocationInfo(location)) {
@@ -306,7 +307,7 @@ function _getLocationInfoForPosition(
 }
 
 function isPositionInsideLocation(
-    position: Position, location: parse5.LocationInfo): boolean {
+    position: SourcePosition, location: parse5.LocationInfo): boolean {
   // wrong line
   if (location.line - 1 !== position.line) {
     return false;

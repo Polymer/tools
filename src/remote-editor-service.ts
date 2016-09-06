@@ -16,7 +16,7 @@ import * as child_process from 'child_process';
 import * as util from 'util';
 
 import {SourceRange} from './ast/ast';
-import {BaseEditor, EditorService, Position, TypeaheadCompletion, Warning} from './editor-service';
+import {BaseEditor, EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
 import {FSUrlLoader} from './url-loader/fs-url-loader';
 import {PackageUrlResolver} from './url-loader/package-url-resolver';
 
@@ -63,17 +63,17 @@ interface GetWarningsRequest {
 interface GetDocumentationRequest {
   kind: 'getDocumentationFor';
   localPath: string;
-  position: Position;
+  position: SourcePosition;
 }
 interface GetDefinitionRequest {
   kind: 'getDefinitionFor';
   localPath: string;
-  position: Position;
+  position: SourcePosition;
 }
 interface GetTypeaheadCompletionsRequest {
   kind: 'getTypeaheadCompletionsFor';
   localPath: string;
-  position: Position;
+  position: SourcePosition;
 }
 interface ClearCachesRequest {
   kind: 'clearCaches';
@@ -149,19 +149,19 @@ export class RemoteEditorService extends BaseEditor {
     return this._channel.request({kind: 'fileChanged', localPath, contents});
   }
 
-  async getDocumentationFor(localPath: string, position: Position):
+  async getDocumentationFor(localPath: string, position: SourcePosition):
       Promise<string|undefined> {
     return this._channel.request(
         {kind: 'getDocumentationFor', localPath, position});
   }
 
-  async getDefinitionFor(localPath: string, position: Position):
+  async getDefinitionFor(localPath: string, position: SourcePosition):
       Promise<SourceRange> {
     return this._channel.request(
         {kind: 'getDefinitionFor', localPath, position});
   }
 
-  async getTypeaheadCompletionsFor(localPath: string, position: Position):
+  async getTypeaheadCompletionsFor(localPath: string, position: SourcePosition):
       Promise<TypeaheadCompletion|undefined> {
     return this._channel.request(
         {kind: 'getTypeaheadCompletionsFor', localPath, position});
