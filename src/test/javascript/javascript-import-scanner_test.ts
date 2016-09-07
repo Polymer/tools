@@ -42,8 +42,11 @@ suite('JavaScriptImportScanner', () => {
 
   test('skips non-path imports', async() => {
     let file = fs.readFileSync(
-        path.resolve(__dirname, '../static/javascript/module-with-named-import.js'), 'utf8');
-    let document = parser.parse(file, '/static/javascript/module-with-named-import.js');
+        path.resolve(
+            __dirname, '../static/javascript/module-with-named-import.js'),
+        'utf8');
+    let document =
+        parser.parse(file, '/static/javascript/module-with-named-import.js');
 
     let visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));

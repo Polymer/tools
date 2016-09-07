@@ -54,4 +54,3 @@ export interface Options<A> {
   contents: string;
   ast: A;
 }
-
