@@ -22,6 +22,21 @@ import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
 import {LocalEditorService} from './local-editor-service';
 
+/**
+ * The remote editor service protocol is request/response based.
+ * Requests and responses are JSON serialized objects.
+ *
+ * Every request must have a unique identifier. For every request there
+ * will be at most one response with the corresponding identifier. Responses
+ * may come in any order.
+ *
+ * Responses are modeled on settled Promise values. A response is either
+ * successful and resolved or unsuccessful and rejected.
+ *
+ * The types of requests and responses obey the EditorService interface, with
+ * some modification of method calls for the JSON format. See the Request
+ * type for more information.
+ */
 interface RequestWrapper {
   id: number;
   value: Request;
@@ -40,11 +55,6 @@ interface Rejection {
   rejection: string;
 }
 
-interface Deferred<V> {
-  resolve: (resp: V) => void;
-  reject: (err: any) => void;
-  promise: Promise<V>;
-}
 
 type Request =
     InitRequest|FileChangedRequest|GetWarningsRequest|GetDocumentationRequest|
@@ -218,6 +228,12 @@ class EditorServer {
         throw new Error(`Got unknown kind of message: ${util.inspect(never)}`);
     }
   }
+}
+
+interface Deferred<V> {
+  resolve: (resp: V) => void;
+  reject: (err: any) => void;
+  promise: Promise<V>;
 }
 
 function makeDeferred<V>(): Deferred<V> {
