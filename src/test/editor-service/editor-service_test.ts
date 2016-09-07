@@ -16,7 +16,8 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {AttributesCompletion, BaseEditor, EditorService, ElementCompletion, Severity, Warning} from '../../editor-service/editor-service';
+import {AttributesCompletion, BaseEditor, ElementCompletion, Severity, Warning} from '../../editor-service/editor-service';
+import {EditorService} from '../../editor-service/local-editor-service';
 import {RemoteEditorService} from '../../editor-service/remote-editor-service';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';

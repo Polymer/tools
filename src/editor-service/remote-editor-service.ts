@@ -19,7 +19,8 @@ import {SourceRange} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
-import {BaseEditor, EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
+import {BaseEditor, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
+import {EditorService} from './local-editor-service';
 
 interface RequestWrapper {
   id: number;
