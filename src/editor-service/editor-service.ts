@@ -66,7 +66,7 @@ export class WarningCarryingException extends Error {
 //
 //     Fortunately, editor-service_test will test that the results are JSON
 //     serializable.
-export abstract class BaseEditor {
+export abstract class EditorService {
   abstract async fileChanged(localPath: string, contents?: string):
       Promise<void>;
 

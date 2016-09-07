@@ -19,8 +19,8 @@ import {SourceRange} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
-import {BaseEditor, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
-import {EditorService} from './local-editor-service';
+import {EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
+import {LocalEditorService} from './local-editor-service';
 
 interface RequestWrapper {
   id: number;
@@ -138,7 +138,7 @@ class SelfChannel {
  * This class runs in-process and communicates via SelfChannel with
  * EditorServer, which runs in the child process.
  */
-export class RemoteEditorService extends BaseEditor {
+export class RemoteEditorService extends EditorService {
   private _channel = new SelfChannel();
   constructor(basedir: string) {
     super();
@@ -179,12 +179,12 @@ export class RemoteEditorService extends BaseEditor {
 }
 
 /**
- * Runs out of process and handles
+ * Runs out of process and handles decoded Requests.
  */
 class EditorServer {
-  private _editorService: EditorService;
+  private _localEditorService: LocalEditorService;
   constructor(basedir: string) {
-    this._editorService = new EditorService({
+    this._localEditorService = new LocalEditorService({
       urlLoader: new FSUrlLoader(basedir),
       urlResolver: new PackageUrlResolver()
     });
@@ -193,24 +193,24 @@ class EditorServer {
   async handleMessage(message: Request): Promise<any> {
     switch (message.kind) {
       case 'getWarningsFor':
-        return this._editorService.getWarningsFor(message.localPath);
+        return this._localEditorService.getWarningsFor(message.localPath);
       case 'fileChanged':
-        await this._editorService.fileChanged(
+        await this._localEditorService.fileChanged(
             message.localPath, message.contents);
         return;
       case 'init':
         throw new Error('Already initialized!');
       case 'getDefinitionFor':
-        return this._editorService.getDefinitionFor(
+        return this._localEditorService.getDefinitionFor(
             message.localPath, message.position);
       case 'getDocumentationFor':
-        return this._editorService.getDocumentationFor(
+        return this._localEditorService.getDocumentationFor(
             message.localPath, message.position);
       case 'getTypeaheadCompletionsFor':
-        return this._editorService.getTypeaheadCompletionsFor(
+        return this._localEditorService.getTypeaheadCompletionsFor(
             message.localPath, message.position);
       case 'clearCaches':
-        return this._editorService.clearCaches();
+        return this._localEditorService.clearCaches();
       default:
         // This assignment makes it a type error if we don't handle all possible
         // values of `message.kind`.

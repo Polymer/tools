@@ -18,9 +18,9 @@ import {Analyzer, Options as AnalyzerOptions} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {Document, Element, Property, ScannedProperty, SourceRange} from '../model/model';
 
-import {AttributeCompletion, BaseEditor, SourcePosition, TypeaheadCompletion, Warning, WarningCarryingException} from './editor-service';
+import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion, Warning, WarningCarryingException} from './editor-service';
 
-export class EditorService extends BaseEditor {
+export class LocalEditorService extends EditorService {
   private _analyzer: Analyzer;
   constructor(options: AnalyzerOptions) {
     super();

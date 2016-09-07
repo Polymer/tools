@@ -16,15 +16,15 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {AttributesCompletion, BaseEditor, ElementCompletion, Severity, Warning} from '../../editor-service/editor-service';
-import {EditorService} from '../../editor-service/local-editor-service';
+import {AttributesCompletion, EditorService, ElementCompletion, Severity, Warning} from '../../editor-service/editor-service';
+import {LocalEditorService} from '../../editor-service/local-editor-service';
 import {RemoteEditorService} from '../../editor-service/remote-editor-service';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 import {invertPromise} from '../test-utils';
 
-function editorTests(editorFactory: (basedir: string) => BaseEditor) {
+function editorTests(editorFactory: (basedir: string) => EditorService) {
   const basedir = path.join(__dirname, '../static');
   const indexFile = path.join('editor-service', 'index.html');
   const tagPosition = {line: 7, column: 9};
@@ -126,7 +126,7 @@ function editorTests(editorFactory: (basedir: string) => BaseEditor) {
 
   // The weird cast is because the service will always be non-null when we
   // actually use it.
-  let editorService: BaseEditor = <EditorService><any>null;
+  let editorService: EditorService = <EditorService><any>null;
   setup(async function() {
     editorService = editorFactory(basedir);
   });
@@ -493,16 +493,16 @@ function editorTests(editorFactory: (basedir: string) => BaseEditor) {
 }
 
 /**
- * We need to use different deep equality functions when testing EditorService
- * and RemoteEditorService because RemoteEditorService has gone through a
- * JSON stringify/parse pass.
+ * We need to use different deep equality functions when testing
+ * LocalEditorService and RemoteEditorService because RemoteEditorService has
+ * gone through a JSON stringify/parse pass.
  */
 let deepEqual: (actual: any, expected: any, message?: string) => void;
-suite('EditorService', function() {
+suite('LocalEditorService', function() {
   suiteSetup(() => {
     deepEqual = assert.deepEqual;
   });
-  editorTests((basedir) => new EditorService({
+  editorTests((basedir) => new LocalEditorService({
                 urlLoader: new FSUrlLoader(basedir),
                 urlResolver: new PackageUrlResolver()
               }));
