@@ -193,6 +193,6 @@ const paperButton: Elements = {
 // We want to keep these local values as is, because they serve as
 // documentation and compilation tests.
 // So there's this hack to prevent a warning about unused code.
-if (false !== true) {
+if (Math.random() > 1000) {
   console.log(JSON.stringify(paperButton, null, 2));
 }

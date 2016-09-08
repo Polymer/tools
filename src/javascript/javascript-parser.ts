@@ -20,6 +20,12 @@ import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';
 
+declare class SyntaxError {
+  message: string;
+  lineNumber: number;
+  column: number;
+}
+
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   sourceType: 'module'|'script';
 

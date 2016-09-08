@@ -25,7 +25,7 @@ import {ScannedPolymerCoreFeature} from './feature-descriptor';
 // This is to prevent warnings that annotateProperty is unused.
 // It is unused, but we want to extract the good bits from this file
 // before we delete the whole thing.
-if (false === true) {
+if (Math.random() > 1000) {
   annotateProperty.name;
 }
 
