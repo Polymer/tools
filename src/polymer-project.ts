@@ -32,7 +32,9 @@ const extensionsForType: {[mimetype: string]: string} = {
 
 export interface ProjectOptions {
   /**
-   * Path to the root of the project on the filesystem.
+   * Path to the root of the project on the filesystem. This can be an absolute
+   * path, or a path relative to the current working directory. Defaults to the
+   * current working directory of the process.
    */
   root?: string;
 
@@ -112,7 +114,11 @@ export class PolymerProject {
   bundler: Bundler;
 
   constructor(options?: ProjectOptions) {
-    this.root = options.root || process.cwd();
+    this.root = process.cwd();
+
+    if (options.root) {
+      this.root = osPath.resolve(this.root, options.root);
+    }
     if (options.entrypoint) {
       this.entrypoint = osPath.resolve(this.root, options.entrypoint);
     }

@@ -17,17 +17,17 @@ const File = require('vinyl');
 const mergeStream = require('merge-stream');
 
 const PolymerProject = require('../lib/polymer-project').PolymerProject;
+const testProjectRoot = path.resolve(__dirname, 'test-project');
 
 suite('PolymerProject', () => {
 
   let defaultProject;
-  let root = path.resolve(__dirname, 'test-project');
 
-  let unroot = (p) => p.substring(root.length + 1);
+  let unroot = (p) => p.substring(testProjectRoot.length + 1);
 
   setup(() => {
     defaultProject = new PolymerProject({
-      root: path.resolve(__dirname, 'test-project'),
+      root: 'test/test-project/',
       entrypoint: 'index.html',
       shell: 'shell.html',
       sourceGlobs: [
@@ -40,8 +40,22 @@ suite('PolymerProject', () => {
 
   test('will not throw an exception when created with minimum options', () => {
     new PolymerProject({
-      root: path.resolve(__dirname, 'test-project'),
+      root: 'test/test-project/',
     });
+  });
+
+  test('will properly convert relative root path into full path', () => {
+    let projectWithRelativeRoot = new PolymerProject({
+      root: 'test/test-project/',
+    });
+    assert.equal(projectWithRelativeRoot.root, testProjectRoot);
+  });
+
+  test('will properly set full root path', () => {
+    let projectWithFullRootPath = new PolymerProject({
+      root: testProjectRoot,
+    });
+    assert.equal(projectWithFullRootPath.root, testProjectRoot);
   });
 
   test('reads sources', (done) => {
@@ -83,7 +97,7 @@ suite('PolymerProject', () => {
 
     test('reads dependencies in a monolithic (non-shell) application without timing out', (done) => {
       let project = new PolymerProject({
-        root: path.resolve(__dirname, 'test-project'),
+        root: testProjectRoot,
         entrypoint: 'index.html',
         sourceGlobs: [
           'source-dir/**',
@@ -103,7 +117,7 @@ suite('PolymerProject', () => {
     test('reads dependencies and includes additionally provided files', (done) => {
       let files = [];
       let projectWithIncludedDeps = new PolymerProject({
-        root: path.resolve(__dirname, 'test-project'),
+        root: testProjectRoot,
         entrypoint: 'index.html',
         shell: 'shell.html',
         sourceGlobs: [
