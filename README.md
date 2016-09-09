@@ -153,7 +153,7 @@ generateServiceWorker({
 }).then(() => { // ...
 ```
 
-In some cases you may need to whitelist 3rd party services so the Service Worker doesn't intercept them. For instance, to use Firebase Auth, you'll want to add the `navigateFallbackWhitelist: [/^(?!\/__auth)/]` option to your `swConfig`.
+In some cases you may need to whitelist 3rd party services so the Service Worker doesn't intercept them. For instance, if you're hosting your app on Firebase, you'll want to add the `navigateFallbackWhitelist: [/^(?!\/__)/]` option to your `swConfig` as Firebase owns the `__` namespace, and intercepting it will cause things like OAuth to fail.
 
 #### addServiceWorker()
 
