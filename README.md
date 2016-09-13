@@ -135,8 +135,6 @@ mergeStream(sourcesStream, project.dependencies())
 
 `generateServiceWorker()` will generate the service worker code based on your build. Unlike other parts of polymer-build, `generateServiceWorker()` returns a promise and not a stream. It can only be run **after** your build has finished writing to disk, so that it is able to analyze the entire build as it exists.
 
-`generateServiceWorker()` is built on top of the [sw-precache](https://github.com/GoogleChrome/sw-precache) library. Any options it supports can be passed directly to that library via the `swConfig` option.
-
 For bundled builds, be sure to set the bundled option to `true`. See [AddServiceWorkerOptions](src/service-worker.ts) for a list of all supported options.
 
 ```js
@@ -147,11 +145,15 @@ generateServiceWorker({
   project: polymerProject,
   bundled: true // set if `polymerProject.bundler` was used
   swConfig: {
-    // See https://github.com/GoogleChrome/sw-precache for all supported options
+    // See https://github.com/GoogleChrome/sw-precache#options-parameter for all supported options
     navigateFallback: '/index.html',
   }
 }).then(() => { // ...
 ```
+
+`generateServiceWorker()` is built on top of the [sw-precache](https://github.com/GoogleChrome/sw-precache) library. Any options it supports can be passed directly to that library via the `swConfig` option. See [sw-preache](https://github.com/GoogleChrome/sw-precache#options-parameter) for a list of all supported options
+
+In some cases you may need to whitelist 3rd party services with sw-precache, so the Service Worker doesn't intercept them. For instance, if you're hosting your app on Firebase, you'll want to add the `navigateFallbackWhitelist: [/^(?!\/__)/]` option to your `swConfig` as Firebase owns the `__` namespace, and intercepting it will cause things like OAuth to fail.
 
 #### addServiceWorker()
 
