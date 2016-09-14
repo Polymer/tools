@@ -38,6 +38,17 @@ export function hasAttribute(element: Node, name: string): boolean {
   return getAttributeIndex(element, name) !== -1;
 }
 
+export function hasSpaceSeparatedAttrValue(name: string, value: string): Predicate {
+  return function(element: Node) {
+    const attributeValue = getAttribute(element, name);
+    if (typeof attributeValue !== 'string') {
+      return false;
+    }
+    return attributeValue.split(' ').indexOf(value) !== -1;
+  };
+}
+
+
 /**
  * @returns The string value of attribute `name`, or `null`.
  */
@@ -90,13 +101,7 @@ function hasMatchingTagName(regex: RegExp): Predicate {
 }
 
 function hasClass(name: string): Predicate {
-  return function(node) {
-    const attr = getAttribute(node, 'class');
-    if (!attr) {
-      return false;
-    }
-    return attr.split(' ').indexOf(name) > -1;
-  };
+  return hasSpaceSeparatedAttrValue('class', name);
 }
 
 function collapseTextRange(parent: Node, start: number, end: number) {
@@ -576,6 +581,7 @@ export const predicates = {
   hasAttr: hasAttr,
   hasAttrValue: hasAttrValue,
   hasMatchingTagName: hasMatchingTagName,
+  hasSpaceSeparatedAttrValue: hasSpaceSeparatedAttrValue,
   hasTagName: hasTagName,
   hasTextValue: hasTextValue,
   AND: AND,

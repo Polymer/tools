@@ -57,7 +57,12 @@ suite('dom5', function() {
 
   suite('Parse5 Node Manipulation', function() {
 
-    var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
+    var docText =
+        "<!DOCTYPE html>" +
+        "<div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div>" +
+        "<div bar='b3 b4'>b3 b4</div>" +
+        "<!-- comment -->";
+
     var doc = null;
 
     setup(function () {
@@ -195,7 +200,7 @@ suite('dom5', function() {
       });
 
       test('recursive element', function() {
-        var expected = 'a1b1a2';
+        var expected = 'a1b1a2b3 b4';
         var actual = dom5.getTextContent(body);
         assert.equal(actual, expected);
       });
@@ -378,7 +383,7 @@ suite('dom5', function() {
 
         assert.equal(clone.tagName, 'span');
         assert.equal(dom5.getAttribute(clone, 'foo'), 'bar');
-        
+
         assert.equal(clone.childNodes[0].nodeName, '#text');
         assert.equal(clone.childNodes[0].value, 'a');
         assert.equal(span.childNodes[0].nodeName, '#text');
@@ -424,6 +429,16 @@ suite('dom5', function() {
       fn = dom5.predicates.hasAttrValue('id', 'b');
       assert.isFalse(fn(frag));
       fn = dom5.predicates.hasAttrValue('name', 'b');
+      assert.isFalse(fn(frag));
+    });
+
+    test('hasSpaceSeparatedAttrValue', function() {
+      var fn = dom5.predicates.hasSpaceSeparatedAttrValue('class', 'c');
+      assert.isFunction(fn);
+      assert.isTrue(fn(frag));
+      fn = dom5.predicates.hasAttr('class');
+      assert.isTrue(fn(frag));
+      fn = dom5.predicates.hasSpaceSeparatedAttrValue('id', '');
       assert.isFalse(fn(frag));
     });
 
