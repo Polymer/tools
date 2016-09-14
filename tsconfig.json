@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "isolatedModules": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "removeComments": false,
+     "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": false,
+    "outDir": "lib",
+    "rootDir": "src"
+  },
+  "filesGlob": [
+    "node_modules/typescript/lib/lib.es2016.d.ts",
+    "typings/index.d.ts",
+    "custom_typings/**",
+    "src/**"
+  ]
+}
