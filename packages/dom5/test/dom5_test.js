@@ -522,6 +522,16 @@ suite('dom5', function() {
       assert.isFunction(fn);
       assert.isTrue(fn(frag));
     });
+
+    test('parentMatches', function() {
+      var fragText =
+          '<div class="a"><div class="b"><div class="c"></div></div></div>';
+      var frag = dom5.parseFragment(fragText);
+      var fn = dom5.predicates.parentMatches(dom5.predicates.hasClass('a'));
+      assert.isFalse(fn(frag.childNodes[0])); // a
+      assert.isTrue(fn(frag.childNodes[0].childNodes[0])); // b
+      assert.isTrue(fn(frag.childNodes[0].childNodes[0].childNodes[0])); //c
+    });
   });
 
   suite('Query', function() {
