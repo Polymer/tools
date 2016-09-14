@@ -168,6 +168,21 @@ suite('Analyzer', () => {
           ['polymer.html', 'foo.js', 'foo.css']);
     });
 
+    test('polymer css import scanner', async() => {
+      let contents = `<html><head>
+          <link rel="import" type="css" href="bar.css">
+        </head></html>`;
+      const document = new HtmlParser().parse(contents, 'test.html');
+      const features =
+          <ScannedImport[]>(await analyzer['_getScannedFeatures'](document));
+      assert.deepEqual(
+          features.map(e => e.type),
+          ['css-import']);
+      assert.deepEqual(
+          features.map(e => e.url),
+          ['bar.css']);
+    });
+
     test('HTML inline document scanners', async() => {
       let contents = `<html><head>
           <script>console.log('hi')</script>

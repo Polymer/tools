@@ -29,6 +29,7 @@ import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {Measurement, TelemetryTracker} from './perf/telemetry';
 import {BehaviorScanner} from './polymer/behavior-scanner';
+import {CssImportScanner} from './polymer/css-import-scanner';
 import {DomModuleScanner} from './polymer/dom-module-scanner';
 import {PolymerElementScanner} from './polymer/polymer-element-scanner';
 import {scan} from './scanning/scan';
@@ -67,7 +68,8 @@ export class Analyzer {
       'html',
       [
         new HtmlImportScanner(), new HtmlScriptScanner(),
-        new HtmlStyleScanner(), new DomModuleScanner()
+        new HtmlStyleScanner(), new DomModuleScanner(),
+        new CssImportScanner()
       ]
     ],
     [
