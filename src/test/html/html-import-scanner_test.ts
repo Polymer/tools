@@ -13,9 +13,8 @@
  */
 
 import {assert} from 'chai';
-import * as parse5 from 'parse5';
-
-import {HtmlVisitor, ParsedHtmlDocument} from '../../html/html-document';
+import {HtmlParser} from '../../html/html-parser';
+import {HtmlVisitor} from '../../html/html-document';
 import {HtmlImportScanner} from '../../html/html-import-scanner';
 
 suite('HtmlImportScanner', () => {
@@ -28,19 +27,14 @@ suite('HtmlImportScanner', () => {
     });
 
     test('finds HTML Imports', async() => {
-      let contents = `<html><head>
+      const contents = `<html><head>
           <link rel="import" href="polymer.html">
           <link rel="import" type="css" href="polymer.css">
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      let ast = parse5.parse(contents);
-      let document = new ParsedHtmlDocument({
-        url: 'test.html',
-        contents,
-        ast,
-      });
-      let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const document = new HtmlParser().parse(contents, 'test.html');
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
       assert.equal(features.length, 1);

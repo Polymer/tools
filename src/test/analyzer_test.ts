@@ -170,17 +170,19 @@ suite('Analyzer', () => {
 
     test('polymer css import scanner', async() => {
       let contents = `<html><head>
-          <link rel="import" type="css" href="bar.css">
-        </head></html>`;
+          <link rel="import" type="css" href="foo.css">
+        </head>
+        <body>
+          <dom-module>
+            <link rel="import" type="css" href="bar.css">
+          </dom-module>
+        </body></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const features =
-          <ScannedImport[]>(await analyzer['_getScannedFeatures'](document));
-      assert.deepEqual(
-          features.map(e => e.type),
-          ['css-import']);
-      assert.deepEqual(
-          features.map(e => e.url),
-          ['bar.css']);
+      const features = <ScannedImport[]>(await analyzer['_getScannedFeatures'](document))
+          .filter(e => e instanceof ScannedImport);
+      assert.equal(features.length, 1);
+      assert.equal(features[0].type, 'css-import');
+      assert.equal(features[0].url, 'bar.css');
     });
 
     test('HTML inline document scanners', async() => {

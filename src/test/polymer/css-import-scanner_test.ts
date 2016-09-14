@@ -13,42 +13,45 @@
  */
 
 
- import {assert} from 'chai';
- import * as parse5 from 'parse5';
+import {assert} from 'chai';
+import {HtmlParser} from '../../html/html-parser';
+import {HtmlVisitor} from '../../html/html-document';
+import {CssImportScanner} from '../../polymer/css-import-scanner';
 
- import {HtmlVisitor, ParsedHtmlDocument} from '../../html/html-document';
- import {CssImportScanner} from '../../polymer/css-import-scanner';
+suite('CssImportScanner', () => {
 
- suite('CssImportScanner', () => {
+  suite('scan()', () => {
+    let scanner: CssImportScanner;
 
-   suite('scan()', () => {
-     let scanner: CssImportScanner;
+    setup(() => {
+      scanner = new CssImportScanner();
+    });
 
-     setup(() => {
-       scanner = new CssImportScanner();
-     });
+    test('finds CSS Imports', async() => {
+      const contents = `<html><head>
+          <link rel="import" href="polymer.html">
+          <link rel="import" type="css" href="ignored-outside-dom-module.css">
+          <script src="foo.js"></script>
+          <link rel="stylesheet" href="foo.css"></link>
+        </head>
+        <body>
+          <dom-module>
+            <link rel="import" type="css" href="polymer.css">
+            <template>
+              <link rel="import" type="css" href="ignored-in-template.css">
+            </template>
+          </dom-module>
+        </body>
+        </html>`;
+      const document = new HtmlParser().parse(contents, 'test.html');
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-     test('finds CSS Imports', async() => {
-       let contents = `<html><head>
-           <link rel="import" href="polymer.html">
-           <link rel="import" type="css" href="polymer.css">
-           <script src="foo.js"></script>
-           <link rel="stylesheet" href="foo.css"></link>
-         </head></html>`;
-       let ast = parse5.parse(contents);
-       let document = new ParsedHtmlDocument({
-         url: 'test.html',
-         contents,
-         ast,
-       });
-       let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const features = await scanner.scan(document, visit);
+      assert.equal(features.length, 1);
+      assert.equal(features[0].type, 'css-import');
+      assert.equal(features[0].url, 'polymer.css');
+    });
 
-       const features = await scanner.scan(document, visit);
-       assert.equal(features.length, 1);
-       assert.equal(features[0].type, 'css-import');
-       assert.equal(features[0].url, 'polymer.css');
-     });
-
-   });
+  });
 
  });
