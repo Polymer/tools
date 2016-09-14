@@ -57,7 +57,12 @@ suite('dom5', function() {
 
   suite('Parse5 Node Manipulation', function() {
 
-    var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
+    var docText =
+        "<!DOCTYPE html>" +
+        "<div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div>" +
+        "<div bar='b3 b4'>b3 b4</div>" +
+        "<!-- comment -->";
+
     var doc = null;
 
     setup(function () {
@@ -119,6 +124,24 @@ suite('dom5', function() {
       test('returns true for attribute with no value', function() {
         var divA = doc.childNodes[1].childNodes[1].childNodes[0];
         assert.equal(dom5.hasAttribute(divA, 'qux'), true);
+      });
+    });
+
+    suite('hasSpaceSeparatedAttributeValue', function() {
+
+      test('returns false for a non-set attribute', function() {
+        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
+        assert.equal(dom5.hasSpaceSeparatedAttributeValue(divA, 'bar', 'b1'), false);
+      });
+
+      test('returns true for a matching attribute value', function() {
+        var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
+        assert.equal(dom5.hasSpaceSeparatedAttributeValue(divB, 'bar', 'b1'), true);
+      });
+
+      test('returns true for a matching space separated value', function() {
+        var divC = doc.childNodes[1].childNodes[1].childNodes[1];
+        assert.equal(dom5.hasSpaceSeparatedAttributeValue(divC, 'bar', 'b4'), true);
       });
     });
 
@@ -195,7 +218,7 @@ suite('dom5', function() {
       });
 
       test('recursive element', function() {
-        var expected = 'a1b1a2';
+        var expected = 'a1b1a2b3 b4';
         var actual = dom5.getTextContent(body);
         assert.equal(actual, expected);
       });
