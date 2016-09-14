@@ -127,24 +127,6 @@ suite('dom5', function() {
       });
     });
 
-    suite('hasSpaceSeparatedAttributeValue', function() {
-
-      test('returns false for a non-set attribute', function() {
-        var divA = doc.childNodes[1].childNodes[1].childNodes[0];
-        assert.equal(dom5.hasSpaceSeparatedAttributeValue(divA, 'bar', 'b1'), false);
-      });
-
-      test('returns true for a matching attribute value', function() {
-        var divB = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
-        assert.equal(dom5.hasSpaceSeparatedAttributeValue(divB, 'bar', 'b1'), true);
-      });
-
-      test('returns true for a matching space separated value', function() {
-        var divC = doc.childNodes[1].childNodes[1].childNodes[1];
-        assert.equal(dom5.hasSpaceSeparatedAttributeValue(divC, 'bar', 'b4'), true);
-      });
-    });
-
     suite('setAttribute', function() {
 
       test('sets a non-set attribute', function() {
@@ -456,6 +438,16 @@ suite('dom5', function() {
       fn = dom5.predicates.hasAttrValue('id', 'b');
       assert.isFalse(fn(frag));
       fn = dom5.predicates.hasAttrValue('name', 'b');
+      assert.isFalse(fn(frag));
+    });
+
+    test('hasSpaceSeparatedAttrValue', function() {
+      var fn = dom5.predicates.hasSpaceSeparatedAttrValue('class', 'c');
+      assert.isFunction(fn);
+      assert.isTrue(fn(frag));
+      fn = dom5.predicates.hasAttr('class');
+      assert.isTrue(fn(frag));
+      fn = dom5.predicates.hasSpaceSeparatedAttrValue('id', '');
       assert.isFalse(fn(frag));
     });
 
