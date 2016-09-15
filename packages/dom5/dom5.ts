@@ -403,7 +403,12 @@ export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
   return undefined;
 }
 
-export function nodeWalkParent(node: Node, predicate: Predicate): Node|undefined {
+/**
+ * Walk the tree up from the parent of `node`, to its grandparent and so on to
+ * the root of the tree.  Return the first ancestor that matches the given
+ * predicate.
+ */
+export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|undefined {
   const parent = node.parentNode;
   if (!parent) {
     return undefined;
@@ -411,7 +416,7 @@ export function nodeWalkParent(node: Node, predicate: Predicate): Node|undefined
   if (predicate(parent)) {
     return parent;
   }
-  return nodeWalkParent(parent, predicate);
+  return nodeWalkAncestors(parent, predicate);
 }
 
 /**

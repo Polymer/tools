@@ -554,14 +554,19 @@ suite('dom5', function() {
       doc = dom5.parse(docText);
     });
 
-    test('nodeWalkParent', function() {
-      // a -> template -> dom-module -> link -> doc
+    test('nodeWalkAncestors', function() {
+      // doc -> dom-module -> template -> a
       var anchor = doc.childNodes[1].childNodes[1].childNodes[0]
           .childNodes[1].childNodes[0].childNodes[3];
       assert(dom5.predicates.hasTagName('a')(anchor));
       var domModule =
-          dom5.nodeWalkParent(anchor, dom5.predicates.hasTagName('dom-module'));
+          dom5.nodeWalkAncestors(
+              anchor, dom5.predicates.hasTagName('dom-module'));
       assert(domModule);
+      var theLinkIsNotAnAncestor =
+          dom5.nodeWalkAncestors(
+              anchor, dom5.predicates.hasTagName('link'));
+      assert.equal(theLinkIsNotAnAncestor, undefined);
     });
 
     test('nodeWalk', function() {
