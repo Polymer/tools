@@ -22,10 +22,9 @@ import {HtmlScanner} from './html-scanner';
 
 const p = dom5.predicates;
 
-const isHtmlImportNode = p.AND(p.hasTagName('link'), (node) => {
-  const rel = dom5.getAttribute(node, 'rel') || '';
-  return rel.split(' ').indexOf('import') !== -1;
-}, p.NOT(p.hasAttrValue('type', 'css')));
+const isHtmlImportNode = p.AND(
+    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    p.NOT(p.hasAttrValue('type', 'css')));
 
 export class HtmlImportScanner implements HtmlScanner {
   async scan(
