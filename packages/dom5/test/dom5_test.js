@@ -554,6 +554,16 @@ suite('dom5', function() {
       doc = dom5.parse(docText);
     });
 
+    test('nodeWalkParent', function() {
+      // a -> template -> dom-module -> link -> doc
+      var anchor = doc.childNodes[1].childNodes[1].childNodes[0]
+          .childNodes[1].childNodes[0].childNodes[3];
+      assert(dom5.predicates.hasTagName('a')(anchor));
+      var domModule =
+          dom5.nodeWalkParent(anchor, dom5.predicates.hasTagName('dom-module'));
+      assert(domModule);
+    });
+
     test('nodeWalk', function() {
       // doc -> body -> dom-module -> template -> template.content
       var templateContent = doc.childNodes[1].childNodes[1].childNodes[0]

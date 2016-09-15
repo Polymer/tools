@@ -403,6 +403,17 @@ export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
   return undefined;
 }
 
+export function nodeWalkParent(node: Node, predicate: Predicate): Node|undefined {
+  const parent = node.parentNode;
+  if (!parent) {
+    return undefined;
+  }
+  if (predicate(parent)) {
+    return parent;
+  }
+  return nodeWalkParent(parent, predicate);
+}
+
 /**
  * Equivalent to `nodeWalkAll`, but only returns nodes that are either
  * ancestors or earlier cousins/siblings in the document.
