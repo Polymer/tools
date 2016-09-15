@@ -26,10 +26,8 @@ const isStyleElement = p.AND(
     p.hasTagName('style'),
     p.OR(p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/css')));
 
-const isStyleLink = p.AND(p.hasTagName('link'), (node) => {
-  const rel = dom5.getAttribute(node, 'rel') || '';
-  return rel.split(' ').indexOf('stylesheet') !== -1;
-});
+const isStyleLink = p.AND(p.hasTagName('link'),
+    p.hasSpaceSeparatedAttrValue('rel', 'stylesheet'));
 
 const isStyleNode = p.OR(isStyleElement, isStyleLink);
 

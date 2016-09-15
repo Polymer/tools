@@ -12,36 +12,46 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+
 import {assert} from 'chai';
 import {HtmlParser} from '../../html/html-parser';
 import {HtmlVisitor} from '../../html/html-document';
-import {HtmlImportScanner} from '../../html/html-import-scanner';
+import {CssImportScanner} from '../../polymer/css-import-scanner';
 
-suite('HtmlImportScanner', () => {
+suite('CssImportScanner', () => {
 
   suite('scan()', () => {
-    let scanner: HtmlImportScanner;
+    let scanner: CssImportScanner;
 
     setup(() => {
-      scanner = new HtmlImportScanner();
+      scanner = new CssImportScanner();
     });
 
-    test('finds HTML Imports', async() => {
+    test('finds CSS Imports', async() => {
       const contents = `<html><head>
           <link rel="import" href="polymer.html">
-          <link rel="import" type="css" href="polymer.css">
+          <link rel="import" type="css" href="ignored-outside-dom-module.css">
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
-        </head></html>`;
+        </head>
+        <body>
+          <dom-module>
+            <link rel="import" type="css" href="polymer.css">
+            <template>
+              <link rel="import" type="css" href="ignored-in-template.css">
+            </template>
+          </dom-module>
+        </body>
+        </html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
-      assert.equal(features[0].type, 'html-import');
-      assert.equal(features[0].url, 'polymer.html');
+      assert.equal(features[0].type, 'css-import');
+      assert.equal(features[0].url, 'polymer.css');
     });
 
   });
 
-});
+ });

@@ -17,16 +17,15 @@ import {resolve as resolveUrl} from 'url';
 
 import {ScannedImport} from '../ast/ast';
 
-import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
-import {HtmlScanner} from './html-scanner';
+import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
+import {HtmlScanner} from '../html/html-scanner';
 
 const p = dom5.predicates;
 
-const isHtmlImportNode = p.AND(
-    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
-    p.NOT(p.hasAttrValue('type', 'css')));
+const isCssImportNode = p.AND(
+    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'), p.hasAttrValue('type', 'css'), p.parentMatches(p.hasTagName('dom-module')));
 
-export class HtmlImportScanner implements HtmlScanner {
+export class CssImportScanner implements HtmlScanner {
   async scan(
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
@@ -34,11 +33,11 @@ export class HtmlImportScanner implements HtmlScanner {
     const imports: ScannedImport[] = [];
 
     await visit((node) => {
-      if (isHtmlImportNode(node)) {
+      if (isCssImportNode(node)) {
         const href = dom5.getAttribute(node, 'href');
         const importUrl = resolveUrl(document.url, href);
         imports.push(new ScannedImport(
-            'html-import', importUrl, document.sourceRangeForNode(node)));
+            'css-import', importUrl, document.sourceRangeForNode(node)));
       }
     });
     return imports;
