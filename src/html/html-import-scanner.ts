@@ -22,9 +22,28 @@ import {HtmlScanner} from './html-scanner';
 
 const p = dom5.predicates;
 
+const linkTag = p.hasTagName('link');
+const notCssLink = p.NOT(p.hasAttrValue('type', 'css'));
+
 const isHtmlImportNode = p.AND(
-    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
-    p.NOT(p.hasAttrValue('type', 'css')));
+    linkTag,
+    p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    notCssLink,
+    p.NOT(
+      p.parentMatches(p.hasTagName('template')))
+);
+
+const isLazyImportNode = p.AND(
+    p.hasTagName('link'),
+    p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
+    notCssLink,
+    p.parentMatches(
+      p.AND(
+        p.hasTagName('dom-module'),
+        p.NOT(p.hasTagName('template'))
+      )
+    )
+  );
 
 export class HtmlImportScanner implements HtmlScanner {
   async scan(
@@ -34,12 +53,18 @@ export class HtmlImportScanner implements HtmlScanner {
     const imports: ScannedImport[] = [];
 
     await visit((node) => {
+      let type: string;
       if (isHtmlImportNode(node)) {
-        const href = dom5.getAttribute(node, 'href');
-        const importUrl = resolveUrl(document.url, href);
-        imports.push(new ScannedImport(
-            'html-import', importUrl, document.sourceRangeForNode(node)));
+        type = 'html-import';
+      } else if (isLazyImportNode(node)) {
+        type = 'lazy-html-import';
+      } else {
+        return;
       }
+      const href = dom5.getAttribute(node, 'href');
+      const importUrl = resolveUrl(document.url, href);
+      imports.push(new ScannedImport(
+          type, importUrl, document.sourceRangeForNode(node)));
     });
     return imports;
   }
