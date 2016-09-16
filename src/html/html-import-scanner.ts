@@ -28,6 +28,7 @@ const notCssLink = p.NOT(p.hasAttrValue('type', 'css'));
 const isHtmlImportNode = p.AND(
     linkTag,
     p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'lazy-import')),
     notCssLink,
     p.NOT(
       p.parentMatches(p.hasTagName('template')))
@@ -36,6 +37,7 @@ const isHtmlImportNode = p.AND(
 const isLazyImportNode = p.AND(
     p.hasTagName('link'),
     p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
+    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')),
     notCssLink,
     p.parentMatches(
       p.AND(
@@ -45,6 +47,9 @@ const isLazyImportNode = p.AND(
     )
   );
 
+/**
+ * Scans for <link rel="import"> and <link rel="lazy-import">
+ */
 export class HtmlImportScanner implements HtmlScanner {
   async scan(
       document: ParsedHtmlDocument,
