@@ -18,12 +18,12 @@ import {Behavior} from '../polymer/behavior-descriptor';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
 
-import {ScannedFeature} from './descriptor';
 import {Element} from './element-descriptor';
 import {Import, ScannedImport} from './import-descriptor';
 import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
+import {isResolvable} from './resolvable';
+import {ScannedFeature} from './scanned-feature';
 import {SourceRange} from './source-range';
-
 
 
 /**
@@ -58,14 +58,6 @@ export interface Feature {
   kinds: Set<string>;
   identifiers?: Set<string>;
   sourceRange: SourceRange;
-}
-
-
-export interface Resolvable extends ScannedFeature {
-  resolve(document: Document): Feature;
-}
-function isResolvable(x: any): x is Resolvable {
-  return x.resolve && typeof x.resolve === 'function';
 }
 
 export class Document implements Feature {

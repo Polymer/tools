@@ -12,19 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Document, Feature} from './document-descriptor';
 import {ScannedFeature} from './scanned-feature';
 
-export interface ScannedEvent extends ScannedFeature {
-  name: string;
-  type?: string;
-  description?: string;
-  params?: {type: string, desc: string, name: string}[];
+
+
+/**
+ * A ScannedFeature that needs to resolve other Features to build its final
+ * representation.
+ */
+export interface Resolvable extends ScannedFeature {
+  resolve(document: Document): Feature;
 }
 
-export interface Event {
-  name: string;
-  type?: string;
-  // TODO: represent detail object properly
-  description?: string;
-  inheritedFrom?: string;
+export function isResolvable(x: any): x is Resolvable {
+  return x.resolve && typeof x.resolve === 'function';
 }

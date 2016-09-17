@@ -13,9 +13,9 @@
  */
 
 import {SourceRange} from './ast';
-import {ScannedFeature} from './descriptor';
-import {Document, Feature, Resolvable, ScannedDocument} from './document-descriptor';
-
+import {Document, Feature, ScannedDocument} from './document-descriptor';
+import {Resolvable} from './resolvable';
+import {ScannedFeature} from './scanned-feature';
 
 
 /**

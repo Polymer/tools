@@ -13,9 +13,10 @@
  */
 
 import {assert} from 'chai';
-import {HtmlParser} from '../../html/html-parser';
+
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlImportScanner} from '../../html/html-import-scanner';
+import {HtmlParser} from '../../html/html-parser';
 
 suite('HtmlImportScanner', () => {
 

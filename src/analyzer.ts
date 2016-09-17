@@ -68,8 +68,7 @@ export class Analyzer {
       'html',
       [
         new HtmlImportScanner(), new HtmlScriptScanner(),
-        new HtmlStyleScanner(), new DomModuleScanner(),
-        new CssImportScanner()
+        new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner()
       ]
     ],
     [
