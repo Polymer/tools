@@ -39,4 +39,5 @@ export * from './event-descriptor';
 export * from './import-descriptor';
 export * from './inline-document-descriptor';
 export * from './property-descriptor';
+export * from './resolvable';
 export * from './source-range';
