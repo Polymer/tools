@@ -26,8 +26,8 @@ const isStyleElement = p.AND(
     p.hasTagName('style'),
     p.OR(p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/css')));
 
-const isStyleLink = p.AND(p.hasTagName('link'),
-    p.hasSpaceSeparatedAttrValue('rel', 'stylesheet'));
+const isStyleLink = p.AND(
+    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'stylesheet'));
 
 const isStyleNode = p.OR(isStyleElement, isStyleLink);
 

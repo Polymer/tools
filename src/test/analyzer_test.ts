@@ -178,8 +178,9 @@ suite('Analyzer', () => {
           </dom-module>
         </body></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const features = <ScannedImport[]>(await analyzer['_getScannedFeatures'](document))
-          .filter(e => e instanceof ScannedImport);
+      const features =
+          <ScannedImport[]>(await analyzer['_getScannedFeatures'](document))
+              .filter(e => e instanceof ScannedImport);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, 'bar.css');
