@@ -18,12 +18,13 @@ import {Behavior} from '../polymer/behavior-descriptor';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
 
-import {ScannedFeature} from './descriptor';
 import {Element} from './element-descriptor';
 import {Import, ScannedImport} from './import-descriptor';
 import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
 import {isResolvable} from './resolvable';
+import {ScannedFeature} from './scanned-feature';
 import {SourceRange} from './source-range';
+
 
 /**
  * The metadata for all features and elements defined in one document

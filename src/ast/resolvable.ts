@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ScannedFeature} from './descriptor';
 import {Document, Feature} from './document-descriptor';
+import {ScannedFeature} from './scanned-feature';
+
 
 
 /**

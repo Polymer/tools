@@ -13,9 +13,10 @@
  */
 
 import {SourceRange} from './ast';
-import {ScannedFeature} from './descriptor';
 import {Document, Feature, ScannedDocument} from './document-descriptor';
 import {Resolvable} from './resolvable';
+import {ScannedFeature} from './scanned-feature';
+
 
 /**
  * Represents an import, such as an HTML import, an external script or style

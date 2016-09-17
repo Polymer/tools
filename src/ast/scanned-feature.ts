@@ -12,19 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ScannedFeature} from './scanned-feature';
+import * as jsdoc from '../javascript/jsdoc';
+import {SourceRange} from './source-range';
 
-export interface ScannedEvent extends ScannedFeature {
-  name: string;
-  type?: string;
+export interface ScannedFeature {
   description?: string;
-  params?: {type: string, desc: string, name: string}[];
-}
 
-export interface Event {
-  name: string;
-  type?: string;
-  // TODO: represent detail object properly
-  description?: string;
-  inheritedFrom?: string;
+  // TODO(rictic): this is the wrong place to put a jsdoc annotation.
+  jsdoc?: jsdoc.Annotation;
+
+  /** Tracks the source that this feature came from. */
+  sourceRange: SourceRange;
 }

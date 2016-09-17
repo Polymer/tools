@@ -12,20 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as jsdoc from '../javascript/jsdoc';
-import {SourceRange} from './source-range';
-
 export type LiteralValue =
     string | number | boolean | RegExp | undefined | LiteralArray | LiteralObj;
 export interface LiteralArray extends Array<LiteralValue> {}
 export interface LiteralObj { [key: string]: LiteralValue; }
-
-export interface ScannedFeature {
-  description?: string;
-
-  // TODO(rictic): this is the wrong place to put a jsdoc annotation.
-  jsdoc?: jsdoc.Annotation;
-
-  /** Tracks the source that this feature came from. */
-  sourceRange: SourceRange;
-}

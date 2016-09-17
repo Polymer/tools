@@ -19,8 +19,8 @@ import * as util from 'util';
 
 import * as jsdoc from '../javascript/jsdoc';
 
-import {ScannedFeature} from './descriptor';
 import {ScannedDocument} from './document-descriptor';
+import {ScannedFeature} from './scanned-feature';
 import {Position, SourceRange} from './source-range';
 
 export interface LocationOffset {
