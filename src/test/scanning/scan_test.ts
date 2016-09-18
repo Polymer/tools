@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 
-import {ScannedFeature} from '../../ast/scanned-feature';
+import {ScannedFeature} from '../../ast/feature';
 import {ParsedDocument} from '../../parser/document';
 import {scan} from '../../scanning/scan';
 import {Scanner} from '../../scanning/scanner';

@@ -20,7 +20,7 @@ import * as util from 'util';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedDocument} from './document';
-import {ScannedFeature} from './scanned-feature';
+import {ScannedFeature} from './feature';
 import {Position, SourceRange} from './source-range';
 
 export interface LocationOffset {

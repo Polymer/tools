@@ -12,10 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Feature} from './document';
-import {ScannedFeature} from './scanned-feature';
-
-
+import {Document} from './document';
+import {Feature, ScannedFeature} from './feature';
 
 /**
  * A ScannedFeature that needs to resolve other Features to build its final

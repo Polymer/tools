@@ -15,6 +15,12 @@
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from './source-range';
 
+export interface Feature {
+  kinds: Set<string>;
+  identifiers?: Set<string>;
+  sourceRange: SourceRange;
+}
+
 export interface ScannedFeature {
   description?: string;
 
