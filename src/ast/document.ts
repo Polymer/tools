@@ -20,7 +20,7 @@ import {PolymerElement} from '../polymer/element-descriptor';
 
 import {Element} from './element';
 import {Import, ScannedImport} from './import';
-import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
+import {InlineParsedDocument, LocationOffset} from './inline-document';
 import {isResolvable} from './resolvable';
 import {ScannedFeature} from './scanned-feature';
 import {SourceRange} from './source-range';

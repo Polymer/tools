@@ -36,7 +36,7 @@ export * from './document';
 export * from './element';
 export * from './event';
 export * from './import';
-export * from './inline-document-descriptor';
+export * from './inline-document';
 export * from './literal';
 export * from './property-descriptor';
 export * from './resolvable';
