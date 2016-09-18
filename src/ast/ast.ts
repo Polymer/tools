@@ -34,7 +34,7 @@
 
 export * from './document';
 export * from './element';
-export * from './event-descriptor';
+export * from './event';
 export * from './import-descriptor';
 export * from './inline-document-descriptor';
 export * from './literal';
