@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../ast/ast';
+import {SourceRange} from '../model/model';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceRange} from './ast';
+import {Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty, correctSourceRange} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 

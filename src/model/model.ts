@@ -32,13 +32,13 @@
  * Earlier stages have the longer names, like ParsedDocument and ScannedElement.
  */
 
-export * from './document-descriptor';
-export * from './element-descriptor';
-export * from './event-descriptor';
-export * from './import-descriptor';
-export * from './inline-document-descriptor';
+export * from './document';
+export * from './element';
+export * from './event';
+export * from './feature';
+export * from './import';
+export * from './inline-document';
 export * from './literal';
-export * from './property-descriptor';
+export * from './property';
 export * from './resolvable';
-export * from './scanned-feature';
 export * from './source-range';

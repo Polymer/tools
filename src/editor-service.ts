@@ -15,7 +15,7 @@
 import * as parse5 from 'parse5';
 
 import {Analyzer, Options as AnalyzerOptions} from './analyzer';
-import {Document, Element, Property, ScannedProperty, SourceRange} from './ast/ast';
+import {Document, Element, Property, ScannedProperty, SourceRange} from './model/model';
 import {ParsedHtmlDocument} from './html/html-document';
 
 export interface Position {

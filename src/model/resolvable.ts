@@ -12,16 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export interface SourceRange {
-  /* The resolved path to the file. */
-  file: string;
-  start: Position;
-  end: Position;
+import {Document} from './document';
+import {Feature, ScannedFeature} from './feature';
+
+/**
+ * A ScannedFeature that needs to resolve other Features to build its final
+ * representation.
+ */
+export interface Resolvable extends ScannedFeature {
+  resolve(document: Document): Feature;
 }
 
-export interface Position {
-  /** The line number, starting from zero. */
-  line: number;
-  /** The column offset within the line, starting from zero. */
-  column: number;
+export function isResolvable(x: any): x is Resolvable {
+  return x.resolve && typeof x.resolve === 'function';
 }

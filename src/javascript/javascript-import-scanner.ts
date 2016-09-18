@@ -15,7 +15,7 @@
 import * as estree from 'estree';
 import {resolve as resolveUrl} from 'url';
 
-import {ScannedImport} from '../ast/ast';
+import {ScannedImport} from '../model/model';
 import {Visitor} from '../javascript/estree-visitor';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';

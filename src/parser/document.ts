@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../ast/source-range';
+import {SourceRange} from '../model/source-range';
 
 /**
  * A parsed Document.

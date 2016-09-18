@@ -12,19 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Feature} from './document-descriptor';
-import {ScannedFeature} from './scanned-feature';
+import * as jsdoc from '../javascript/jsdoc';
+import {SourceRange} from './source-range';
 
-
-
-/**
- * A ScannedFeature that needs to resolve other Features to build its final
- * representation.
- */
-export interface Resolvable extends ScannedFeature {
-  resolve(document: Document): Feature;
+export interface Feature {
+  kinds: Set<string>;
+  identifiers?: Set<string>;
+  sourceRange: SourceRange;
 }
 
-export function isResolvable(x: any): x is Resolvable {
-  return x.resolve && typeof x.resolve === 'function';
+export interface ScannedFeature {
+  description?: string;
+
+  // TODO(rictic): this is the wrong place to put a jsdoc annotation.
+  jsdoc?: jsdoc.Annotation;
+
+  /** Tracks the source that this feature came from. */
+  sourceRange: SourceRange;
 }

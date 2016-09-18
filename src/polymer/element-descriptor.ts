@@ -1,7 +1,7 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
-import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../ast/ast';
+import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {Behavior} from './behavior-descriptor';

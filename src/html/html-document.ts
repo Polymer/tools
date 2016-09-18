@@ -16,7 +16,7 @@ import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
-import {SourceRange} from '../ast/ast';
+import {SourceRange} from '../model/model';
 import {Options, ParsedDocument} from '../parser/document';
 
 /**
