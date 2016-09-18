@@ -36,3 +36,35 @@ export interface LocationOffset {
    */
   filename?: string;
 }
+
+/**
+ * Corrects source ranges based on an offset.
+ *
+ * Source ranges for inline documents need to be corrected relative to their
+ * positions in their containing documents.
+ *
+ * For example, if a <script> tag appears in the fifth line of its containing
+ * document, we need to move all the source ranges inside that script tag down
+ * by 5 lines. We also need to correct the column offsets, but only for the
+ * first line of the <script> contents.
+ */
+export function correctSourceRange(
+    sourceRange?: SourceRange, locationOffset?: LocationOffset): SourceRange|
+    undefined {
+  if (!locationOffset || !sourceRange) {
+    return sourceRange;
+  }
+  return {
+    file: locationOffset.filename || sourceRange.file,
+    start: correctPosition(sourceRange.start, locationOffset),
+    end: correctPosition(sourceRange.end, locationOffset)
+  };
+}
+
+export function correctPosition(
+    position: Position, locationOffset: LocationOffset): Position {
+  return {
+    line: position.line + locationOffset.line,
+    column: position.column + (position.line === 0 ? locationOffset.col : 0)
+  };
+}
