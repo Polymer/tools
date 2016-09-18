@@ -21,18 +21,7 @@ import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedDocument} from './document';
 import {ScannedFeature} from './feature';
-import {Position, SourceRange} from './source-range';
-
-export interface LocationOffset {
-  /** Zero based line index. */
-  line: number;
-  /** Zero based column index. */
-  col: number;
-  /**
-   * The url of the source file.
-   */
-  filename?: string;
-}
+import {LocationOffset, Position, SourceRange} from './source-range';
 
 /**
  * Represents an inline document, usually a <script> or <style> tag in an HTML

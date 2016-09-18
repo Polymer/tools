@@ -20,10 +20,10 @@ import {PolymerElement} from '../polymer/element-descriptor';
 
 import {Element} from './element';
 import {Import, ScannedImport} from './import';
-import {InlineParsedDocument, LocationOffset} from './inline-document';
+import {InlineParsedDocument} from './inline-document';
 import {isResolvable} from './resolvable';
 import {Feature, ScannedFeature} from './feature';
-import {SourceRange} from './source-range';
+import {LocationOffset, SourceRange} from './source-range';
 
 /**
  * The metadata for all features and elements defined in one document

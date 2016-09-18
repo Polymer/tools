@@ -25,3 +25,14 @@ export interface Position {
   /** The column offset within the line, starting from zero. */
   column: number;
 }
+
+export interface LocationOffset {
+  /** Zero based line index. */
+  line: number;
+  /** Zero based column index. */
+  col: number;
+  /**
+   * The url of the source file.
+   */
+  filename?: string;
+}
