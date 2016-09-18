@@ -33,7 +33,7 @@
  */
 
 export * from './document';
-export * from './element-descriptor';
+export * from './element';
 export * from './event-descriptor';
 export * from './import-descriptor';
 export * from './inline-document-descriptor';
