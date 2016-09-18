@@ -38,7 +38,7 @@ export * from './event';
 export * from './import';
 export * from './inline-document';
 export * from './literal';
-export * from './property-descriptor';
+export * from './property';
 export * from './resolvable';
 export * from './scanned-feature';
 export * from './source-range';
