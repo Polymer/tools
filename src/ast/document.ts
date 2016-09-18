@@ -19,7 +19,7 @@ import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
 
 import {Element} from './element';
-import {Import, ScannedImport} from './import-descriptor';
+import {Import, ScannedImport} from './import';
 import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
 import {isResolvable} from './resolvable';
 import {ScannedFeature} from './scanned-feature';

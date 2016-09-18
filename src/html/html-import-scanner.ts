@@ -26,26 +26,15 @@ const linkTag = p.hasTagName('link');
 const notCssLink = p.NOT(p.hasAttrValue('type', 'css'));
 
 const isHtmlImportNode = p.AND(
-    linkTag,
-    p.hasSpaceSeparatedAttrValue('rel', 'import'),
-    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'lazy-import')),
-    notCssLink,
-    p.NOT(
-      p.parentMatches(p.hasTagName('template')))
-);
+    linkTag, p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'lazy-import')), notCssLink,
+    p.NOT(p.parentMatches(p.hasTagName('template'))));
 
 const isLazyImportNode = p.AND(
-    p.hasTagName('link'),
-    p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
-    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')),
-    notCssLink,
+    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
+    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')), notCssLink,
     p.parentMatches(
-      p.AND(
-        p.hasTagName('dom-module'),
-        p.NOT(p.hasTagName('template'))
-      )
-    )
-  );
+        p.AND(p.hasTagName('dom-module'), p.NOT(p.hasTagName('template')))));
 
 /**
  * Scans for <link rel="import"> and <link rel="lazy-import">
