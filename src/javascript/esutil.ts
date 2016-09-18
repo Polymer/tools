@@ -16,7 +16,7 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedEvent, SourceRange} from '../ast/ast';
+import {ScannedEvent, SourceRange} from '../model/model';
 import {annotateEvent} from '../polymer/docs';
 import {ScannedFunction, ScannedPolymerProperty} from '../polymer/element-descriptor';
 

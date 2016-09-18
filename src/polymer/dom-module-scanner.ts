@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import {Feature, Resolvable, ScannedFeature, SourceRange, getAttachedCommentText} from '../ast/ast';
+import {Feature, Resolvable, ScannedFeature, SourceRange, getAttachedCommentText} from '../model/model';
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
 

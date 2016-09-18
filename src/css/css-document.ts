@@ -14,7 +14,7 @@
 
 import * as shady from 'shady-css-parser';
 
-import {SourceRange} from '../ast/ast';
+import {SourceRange} from '../model/model';
 import {Options, ParsedDocument} from '../parser/document';
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }

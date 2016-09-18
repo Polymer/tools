@@ -14,8 +14,8 @@
 
 import {assert} from 'chai';
 
-import {InlineParsedDocument} from '../../ast/ast';
-import {ScannedImport} from '../../ast/import';
+import {InlineParsedDocument} from '../../model/model';
+import {ScannedImport} from '../../model/import';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {HtmlScriptScanner} from '../../html/html-script-scanner';

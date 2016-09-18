@@ -17,7 +17,7 @@
 import {assert} from 'chai';
 
 import {Analyzer} from '../analyzer';
-import {InlineParsedDocument, ScannedImport} from '../ast/ast';
+import {InlineParsedDocument, ScannedImport} from '../model/model';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';

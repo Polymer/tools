@@ -13,7 +13,7 @@
  */
 
 import {Analyzer} from '../analyzer';
-import {ScannedFeature} from '../ast/ast';
+import {ScannedFeature} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 export interface Scanner<D extends ParsedDocument<A, V>, A, V> {

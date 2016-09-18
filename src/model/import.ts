@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from './ast';
+import {SourceRange} from './model';
 import {Document, ScannedDocument} from './document';
 import {Feature, ScannedFeature} from './feature';
 import {Resolvable} from './resolvable';

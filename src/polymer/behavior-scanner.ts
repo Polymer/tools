@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import {ScannedFeature} from '../ast/ast';
+import {ScannedFeature} from '../model/model';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
