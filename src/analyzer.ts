@@ -107,7 +107,7 @@ export class Analyzer {
    * reading it from disk. Clears the caches so that the news contents is used
    * and reanalyzed. Useful for editors that want to re-analyze changed files.
    */
-  async analyzeRoot(url: string, contents?: string): Promise<Document> {
+  async analyze(url: string, contents?: string): Promise<Document> {
     const resolvedUrl = this._resolveUrl(url);
 
     // if we're given new contents, clear the cache

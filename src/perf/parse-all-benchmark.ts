@@ -67,7 +67,7 @@ async function measure() {
   const start = now();
   let document: any;
   for (let i = 0; i < 10; i++) {
-    document = await analyzer.analyzeRoot('ephemeral.html', fakeFileContents);
+    document = await analyzer.analyze('ephemeral.html', fakeFileContents);
   }
 
   const measurements = await analyzer.getTelemetryMeasurements();

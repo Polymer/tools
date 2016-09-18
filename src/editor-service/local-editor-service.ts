@@ -29,7 +29,7 @@ export class LocalEditorService extends EditorService {
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<void> {
-    await this._analyzer.analyzeRoot(localPath, contents);
+    await this._analyzer.analyze(localPath, contents);
   }
 
   async getDocumentationAtPosition(localPath: string, position: SourcePosition):
@@ -58,7 +58,7 @@ export class LocalEditorService extends EditorService {
   async getTypeaheadCompletionsAtPosition(
       localPath: string,
       position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
-    const document = await this._analyzer.analyzeRoot(localPath);
+    const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements = Array.from(document.getByKind('element'));
@@ -120,7 +120,7 @@ export class LocalEditorService extends EditorService {
 
   async getWarningsForFile(localPath: string): Promise<Warning[]> {
     try {
-      const doc = await this._analyzer.analyzeRoot(localPath);
+      const doc = await this._analyzer.analyze(localPath);
       return doc.getWarnings();
     } catch (e) {
       // This might happen if, e.g. `localPath` has a parse error. In that case
@@ -140,7 +140,7 @@ export class LocalEditorService extends EditorService {
 
   private async _getFeatureAt(localPath: string, position: SourcePosition):
       Promise<Element|Property|undefined> {
-    const document = await this._analyzer.analyzeRoot(localPath);
+    const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {
       return;

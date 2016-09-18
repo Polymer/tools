@@ -155,7 +155,7 @@ async function analyzeDir(baseDir: string) {
       Array.from(filterI(walkRecursively(baseDir), (f) => f.endsWith('.html')))
           .map(
               fn => `<link rel="import" href="${path.relative(baseDir, fn)}">`);
-  const document = await analyzer.analyzeRoot(
+  const document = await analyzer.analyze(
       path.join('ephemeral.html'), importStatements.join('\n'));
   return Array.from(document.getByKind('element'));
 }
