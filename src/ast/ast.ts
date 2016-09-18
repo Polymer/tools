@@ -32,7 +32,7 @@
  * Earlier stages have the longer names, like ParsedDocument and ScannedElement.
  */
 
-export * from './document-descriptor';
+export * from './document';
 export * from './element-descriptor';
 export * from './event-descriptor';
 export * from './import-descriptor';

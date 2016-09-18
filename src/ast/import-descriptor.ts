@@ -13,7 +13,7 @@
  */
 
 import {SourceRange} from './ast';
-import {Document, Feature, ScannedDocument} from './document-descriptor';
+import {Document, Feature, ScannedDocument} from './document';
 import {Resolvable} from './resolvable';
 import {ScannedFeature} from './scanned-feature';
 

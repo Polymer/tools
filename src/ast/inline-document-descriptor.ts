@@ -19,7 +19,7 @@ import * as util from 'util';
 
 import * as jsdoc from '../javascript/jsdoc';
 
-import {ScannedDocument} from './document-descriptor';
+import {ScannedDocument} from './document';
 import {ScannedFeature} from './scanned-feature';
 import {Position, SourceRange} from './source-range';
 
