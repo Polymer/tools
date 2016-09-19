@@ -15,7 +15,7 @@
 import {VisitorOption, traverse} from 'estraverse';
 import {Node, Program} from 'estree';
 
-import {SourceRange} from '../ast/ast';
+import {SourceRange} from '../model/model';
 import {Options, ParsedDocument} from '../parser/document';
 
 import {VisitResult, Visitor} from './estree-visitor';

@@ -12,11 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from './ast';
-import {ScannedFeature} from './descriptor';
-import {Document, Feature, Resolvable, ScannedDocument} from './document-descriptor';
-
-
+import {SourceRange} from './model';
+import {Document, ScannedDocument} from './document';
+import {Feature, ScannedFeature} from './feature';
+import {Resolvable} from './resolvable';
 
 /**
  * Represents an import, such as an HTML import, an external script or style

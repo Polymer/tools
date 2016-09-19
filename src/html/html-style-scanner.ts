@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
-import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../ast/ast';
+import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../model/model';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlScanner} from './html-scanner';
@@ -26,8 +26,8 @@ const isStyleElement = p.AND(
     p.hasTagName('style'),
     p.OR(p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/css')));
 
-const isStyleLink = p.AND(p.hasTagName('link'),
-    p.hasSpaceSeparatedAttrValue('rel', 'stylesheet'));
+const isStyleLink = p.AND(
+    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'stylesheet'));
 
 const isStyleNode = p.OR(isStyleElement, isStyleLink);
 

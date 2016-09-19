@@ -12,15 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer} from '../analyzer';
-import {ScannedFeature} from '../model/model';
-import {ParsedDocument} from '../parser/document';
+import {Document} from './document';
+import {Feature, ScannedFeature} from './feature';
 
-export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
-  scan(document: D, visit: (visitor: V) => Promise<void>):
-      Promise<ScannedFeature[]>;
+/**
+ * A ScannedFeature that needs to resolve other Features to build its final
+ * representation.
+ */
+export interface Resolvable extends ScannedFeature {
+  resolve(document: Document): Feature;
 }
 
-export interface ScannerConstructor {
-  new (analyzer: Analyzer): Scanner<any, any, any>;
+export function isResolvable(x: any): x is Resolvable {
+  return x.resolve && typeof x.resolve === 'function';
 }

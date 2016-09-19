@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from '../ast/ast';
+import {Document} from '../model/model';
 import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/element-descriptor';
 
 export interface Options extends ElementOptions {}

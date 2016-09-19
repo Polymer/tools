@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 
-import {LocationOffset, Position, SourceRange, correctPosition, correctSourceRange} from '../../ast/ast';
+import {LocationOffset, Position, SourceRange, correctPosition, correctSourceRange} from '../../model/model';
 
 
 suite('correctSourceRange', function() {

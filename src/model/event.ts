@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ScannedFeature} from './descriptor';
+import {ScannedFeature} from './feature';
 
 export interface ScannedEvent extends ScannedFeature {
   name: string;

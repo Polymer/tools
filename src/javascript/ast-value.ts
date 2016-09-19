@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import {LiteralObj, LiteralValue} from '../ast/ast';
+import {LiteralObj, LiteralValue} from '../model/model';
 
 
 // useful tool to visualize AST: http://esprima.org/demo/parse.html

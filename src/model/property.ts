@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../ast/ast';
+import {SourceRange} from '../model/model';
 import * as jsdoc from '../javascript/jsdoc';
 
-import {ScannedFeature} from './ast';
+import {ScannedFeature} from './model';
 
 export interface ScannedProperty extends ScannedFeature {
   name: string;

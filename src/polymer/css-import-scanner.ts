@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
-import {ScannedImport} from '../ast/ast';
+import {ScannedImport} from '../model/model';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
@@ -23,7 +23,8 @@ import {HtmlScanner} from '../html/html-scanner';
 const p = dom5.predicates;
 
 const isCssImportNode = p.AND(
-    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'), p.hasAttrValue('type', 'css'), p.parentMatches(p.hasTagName('dom-module')));
+    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    p.hasAttrValue('type', 'css'), p.parentMatches(p.hasTagName('dom-module')));
 
 export class CssImportScanner implements HtmlScanner {
   async scan(

@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './ast/ast';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Attribute, Element, Elements, Property, SourceRange} from './elements-format';
 
 

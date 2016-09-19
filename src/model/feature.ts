@@ -12,16 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export interface SourceRange {
-  /* The resolved path to the file. */
-  file: string;
-  start: Position;
-  end: Position;
+import * as jsdoc from '../javascript/jsdoc';
+import {SourceRange} from './source-range';
+
+export interface Feature {
+  kinds: Set<string>;
+  identifiers?: Set<string>;
+  sourceRange: SourceRange;
 }
 
-export interface Position {
-  /** The line number, starting from zero. */
-  line: number;
-  /** The column offset within the line, starting from zero. */
-  column: number;
+export interface ScannedFeature {
+  description?: string;
+
+  // TODO(rictic): this is the wrong place to put a jsdoc annotation.
+  jsdoc?: jsdoc.Annotation;
+
+  /** Tracks the source that this feature came from. */
+  sourceRange: SourceRange;
 }

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../ast/ast';
+import {SourceRange} from '../model/model';
 import {Options, ParsedDocument} from '../parser/document';
 
 export type Json = JsonObject | JsonArray | number | string | boolean | null;

@@ -18,13 +18,12 @@ import {Behavior} from '../polymer/behavior-descriptor';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
 
-import {ScannedFeature} from './descriptor';
-import {Element} from './element-descriptor';
-import {Import, ScannedImport} from './import-descriptor';
-import {InlineParsedDocument, LocationOffset} from './inline-document-descriptor';
-import {SourceRange} from './source-range';
-
-
+import {Element} from './element';
+import {Import, ScannedImport} from './import';
+import {InlineParsedDocument} from './inline-document';
+import {isResolvable} from './resolvable';
+import {Feature, ScannedFeature} from './feature';
+import {LocationOffset, SourceRange} from './source-range';
 
 /**
  * The metadata for all features and elements defined in one document
@@ -52,20 +51,6 @@ export class ScannedDocument {
   get url() {
     return this.document.url;
   }
-}
-
-export interface Feature {
-  kinds: Set<string>;
-  identifiers?: Set<string>;
-  sourceRange: SourceRange;
-}
-
-
-export interface Resolvable extends ScannedFeature {
-  resolve(document: Document): Feature;
-}
-function isResolvable(x: any): x is Resolvable {
-  return x.resolve && typeof x.resolve === 'function';
 }
 
 export class Document implements Feature {

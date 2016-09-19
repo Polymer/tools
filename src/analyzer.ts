@@ -16,7 +16,7 @@
 
 import * as path from 'path';
 
-import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, correctSourceRange} from './ast/ast';
+import {Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, correctSourceRange} from './model/model';
 import {CssParser} from './css/css-parser';
 import {Severity, Warning, WarningCarryingException} from './editor-service';
 import {HtmlImportScanner} from './html/html-import-scanner';
@@ -68,8 +68,7 @@ export class Analyzer {
       'html',
       [
         new HtmlImportScanner(), new HtmlScriptScanner(),
-        new HtmlStyleScanner(), new DomModuleScanner(),
-        new CssImportScanner()
+        new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner()
       ]
     ],
     [

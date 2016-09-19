@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ScannedEvent, ScannedFeature, ScannedProperty} from '../ast/ast';
+import {ScannedEvent, ScannedFeature, ScannedProperty} from '../model/model';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedBehavior} from './behavior-descriptor';

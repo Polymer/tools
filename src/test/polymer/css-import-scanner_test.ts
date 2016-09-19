@@ -14,8 +14,9 @@
 
 
 import {assert} from 'chai';
-import {HtmlParser} from '../../html/html-parser';
+
 import {HtmlVisitor} from '../../html/html-document';
+import {HtmlParser} from '../../html/html-parser';
 import {CssImportScanner} from '../../polymer/css-import-scanner';
 
 suite('CssImportScanner', () => {
@@ -54,4 +55,4 @@ suite('CssImportScanner', () => {
 
   });
 
- });
+});
