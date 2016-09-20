@@ -19,6 +19,8 @@ import * as util from 'util';
 import {SourceRange} from '../model/model';
 
 import {EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
+import {Request, RequestWrapper, ResponseWrapper} from './remote-editor-protocol';
+
 
 /**
  * The remote editor service protocol is request/response based.
@@ -115,6 +117,9 @@ class EditorServerChannel {
   private _handleResponse(response: ResponseWrapper): void {
     const deferred = this._outstandingRequests.get(response.id);
     if (!deferred) {
+      console.error(
+          `EditorServer returned a response for unknown/previously` +
+          ` settled request id: ${response.id}`);
       return;
     }
     switch (response.value.kind) {
@@ -129,7 +134,7 @@ class EditorServerChannel {
   }
 
   private async _sendRequest(id: number, value: Request): Promise<void> {
-    const request: RequestWrapper = {id, value: value};
+    const request: RequestWrapper = {id, value};
     await new Promise((resolve, reject) => {
       (<any>this._child.send)(
           request, (err: any) => err ? reject(err) : resolve());
