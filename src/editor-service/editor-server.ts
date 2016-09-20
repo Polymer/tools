@@ -63,37 +63,32 @@ class EditorServer {
   }
 }
 
-if (!module.parent) {
-  let server: EditorServer;
-  process.once('message', (initRequest: RequestWrapper) => {
-    if (initRequest.value.kind !== 'init') {
-      process.send(<ResponseWrapper>{
-        id: initRequest.id,
-        value: {
-          kind: 'rejection',
-          rejection: `Expected first message to be 'init', ` +
-              `got ${initRequest.value.kind}`
-        }
-      });
-      return;
-    }
-    server = new EditorServer(initRequest.value.basedir);
-
-    process.on('message', async(request: RequestWrapper) => {
-      const result = await getSettledValue(request.value);
-      process.send(<ResponseWrapper>{id: request.id, value: result});
-    });
-  });
-
-  async function getSettledValue(message: Request): Promise<SettledValue> {
-    try {
-      const value = await server.handleMessage(message);
-      return {kind: 'resolution', resolution: value};
-    } catch (e) {
-      return {
+let server: EditorServer;
+process.once('message', (initRequest: RequestWrapper) => {
+  if (initRequest.value.kind !== 'init') {
+    process.send(<ResponseWrapper>{
+      id: initRequest.id,
+      value: {
         kind: 'rejection',
-        rejection: e.stack || e.message || e.toString()
-      };
-    }
+        rejection: `Expected first message to be 'init', ` +
+            `got ${initRequest.value.kind}`
+      }
+    });
+    return;
+  }
+  server = new EditorServer(initRequest.value.basedir);
+
+  process.on('message', async(request: RequestWrapper) => {
+    const result = await getSettledValue(request.value);
+    process.send(<ResponseWrapper>{id: request.id, value: result});
+  });
+});
+
+async function getSettledValue(message: Request): Promise<SettledValue> {
+  try {
+    const value = await server.handleMessage(message);
+    return {kind: 'resolution', resolution: value};
+  } catch (e) {
+    return {kind: 'rejection', rejection: e.stack || e.message || e.toString()};
   }
 }
