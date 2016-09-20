@@ -106,7 +106,7 @@ class EditorServerChannel {
 
   async request(req: Request): Promise<any> {
     const id = this._idCounter++;
-    const deferred = makeDeferred<any>();
+    const deferred = new Deferred<any>();
     this._outstandingRequests.set(id, deferred);
     await this._sendRequest(id, req);
     return deferred.promise;
@@ -186,18 +186,15 @@ export class RemoteEditorService extends EditorService {
   }
 }
 
-interface Deferred<V> {
+class Deferred<V> {
+  promise: Promise<V>;
   resolve: (resp: V) => void;
   reject: (err: any) => void;
-  promise: Promise<V>;
-}
 
-function makeDeferred<V>(): Deferred<V> {
-  let resolve: (value: V) => void;
-  let reject: (err: any) => void;
-  let promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return {resolve, reject, promise};
+  constructor() {
+    this.promise = new Promise((res, rej) => {
+      this.resolve = res;
+      this.reject = rej;
+    });
+  }
 }
