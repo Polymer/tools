@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
-import {InlineParsedDocument, ScannedFeature, ScannedImport, getAttachedCommentText, getLocationOffsetOfStartOfTextContent} from '../model/model';
+import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, InlineParsedDocument, ScannedFeature, ScannedImport} from '../model/model';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlScanner} from './html-scanner';
@@ -36,7 +36,7 @@ export class HtmlStyleScanner implements HtmlScanner {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedFeature[]> {
-    const features: (ScannedImport | InlineParsedDocument)[] = [];
+    const features: (ScannedImport|InlineParsedDocument)[] = [];
 
     await visit(async(node) => {
       if (isStyleNode(node)) {

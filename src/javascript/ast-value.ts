@@ -120,8 +120,8 @@ function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
 /**
  * BinaryExpressions are of the form "literal" + "literal"
  */
-function binaryExpressionToValue(member: estree.BinaryExpression):
-    (number | string) {
+function binaryExpressionToValue(member: estree.BinaryExpression): (number|
+                                                                    string) {
   const left = expressionToValue(member.left);
   const right = expressionToValue(member.right);
   if (left == null || right == null) {

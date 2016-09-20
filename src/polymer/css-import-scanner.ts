@@ -15,10 +15,9 @@
 import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
-import {ScannedImport} from '../model/model';
-
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
+import {ScannedImport} from '../model/model';
 
 const p = dom5.predicates;
 

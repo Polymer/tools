@@ -14,10 +14,10 @@
 
 import * as estree from 'estree';
 
-import {ScannedProperty} from '../model/model';
 import * as astValue from '../javascript/ast-value';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import {ScannedProperty} from '../model/model';
 
 export function analyzeProperties(
     node: estree.Node, document: JavaScriptDocument) {

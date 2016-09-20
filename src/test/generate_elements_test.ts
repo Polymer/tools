@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {ValidationError, generateElementMetadata, validateElements} from '../generate-elements';
+import {generateElementMetadata, validateElements, ValidationError} from '../generate-elements';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 

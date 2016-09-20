@@ -21,7 +21,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 
-import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
+import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 

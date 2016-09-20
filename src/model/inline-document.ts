@@ -67,8 +67,7 @@ export function getAttachedCommentText(node: ASTNode): string|undefined {
   return jsdoc.unindent(comment).trim();
 }
 
-function isLocationInfo(
-    loc: (parse5.LocationInfo | parse5.ElementLocationInfo)):
+function isLocationInfo(loc: (parse5.LocationInfo|parse5.ElementLocationInfo)):
     loc is parse5.LocationInfo {
   return 'line' in loc;
 }

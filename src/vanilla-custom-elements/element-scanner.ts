@@ -14,13 +14,13 @@
 
 import * as estree from 'estree';
 
-import {ScannedElement, ScannedFeature} from '../model/model';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {ScannedElement, ScannedFeature} from '../model/model';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;

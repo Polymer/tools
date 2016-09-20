@@ -17,10 +17,10 @@
 import {assert} from 'chai';
 
 import {Analyzer} from '../analyzer';
-import {InlineParsedDocument, ScannedImport} from '../model/model';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import {InlineParsedDocument, ScannedImport} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 

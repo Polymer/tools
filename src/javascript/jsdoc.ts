@@ -153,10 +153,10 @@ export function hasTag(
  * If `key` is omitted, the entire tag object is returned.
  */
 export function getTag(
-    jsdoc: Annotation|null|undefined, tagName: string): (Tag | null);
+    jsdoc: Annotation|null|undefined, tagName: string): (Tag|null);
 export function getTag(
     jsdoc: Annotation|null|undefined, tagName: string,
-    key: string): (string | null);
+    key: string): (string|null);
 export function getTag(
     jsdoc: Annotation|null|undefined, tagName: string, key?: string): any {
   if (!jsdoc || !jsdoc.tags)

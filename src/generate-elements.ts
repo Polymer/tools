@@ -16,8 +16,8 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Attribute, Element, Elements, Property, SourceRange} from './elements-format';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 
 
 export function generateElementMetadata(
@@ -144,7 +144,7 @@ function serializeAttribute(
 
 function resolveSourceRangePath(
     elementPath: string,
-    sourceRange?: ResolvedSourceRange): (SourceRange | undefined) {
+    sourceRange?: ResolvedSourceRange): (SourceRange|undefined) {
   if (!sourceRange) {
     return;
   }

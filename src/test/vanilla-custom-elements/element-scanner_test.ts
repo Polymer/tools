@@ -18,10 +18,10 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {ScannedElement, ScannedFeature} from '../../model/model';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {ScannedElement, ScannedFeature} from '../../model/model';
 import {ElementScanner} from '../../vanilla-custom-elements/element-scanner';
 
 chai.use(require('chai-subset'));

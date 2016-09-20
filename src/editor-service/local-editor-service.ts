@@ -45,8 +45,8 @@ export class LocalEditorService extends EditorService {
     return feature.description;
   }
 
-  async getDefinitionForFeatureAtPosition(localPath: string, position: SourcePosition):
-      Promise<SourceRange> {
+  async getDefinitionForFeatureAtPosition(
+      localPath: string, position: SourcePosition): Promise<SourceRange> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
       return;
@@ -54,8 +54,9 @@ export class LocalEditorService extends EditorService {
     return feature.sourceRange;
   }
 
-  async getTypeaheadCompletionsAtPosition(localPath: string, position: SourcePosition):
-      Promise<TypeaheadCompletion|undefined> {
+  async getTypeaheadCompletionsAtPosition(
+      localPath: string,
+      position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyzeRoot(localPath);
     const location = await this._getLocationResult(document, position);
     if (location.kind === 'tagName' || location.kind === 'text') {

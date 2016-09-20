@@ -19,11 +19,12 @@ import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
 
 import {Element} from './element';
+import {Feature, ScannedFeature} from './feature';
 import {Import, ScannedImport} from './import';
 import {InlineParsedDocument} from './inline-document';
 import {isResolvable} from './resolvable';
-import {Feature, ScannedFeature} from './feature';
 import {LocationOffset, SourceRange} from './source-range';
+
 
 /**
  * The metadata for all features and elements defined in one document
@@ -293,7 +294,10 @@ export class Document implements Feature {
         let subResult = localFeature.toString();
         if (subResult === '[object Object]') {
           subResult =
-              `<${localFeature.constructor.name} kinds="${Array.from(localFeature.kinds).join(', ')}" ids="${Array.from(localFeature.identifiers).join(',')}">}`;
+              `<${localFeature.constructor.name} kinds="${Array
+                  .from(localFeature.kinds)
+                  .join(', ')}" ids="${Array.from(localFeature.identifiers)
+                  .join(',')}">}`;
         }
         result.push(`  ${subResult}`);
       }

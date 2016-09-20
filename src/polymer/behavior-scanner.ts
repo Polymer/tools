@@ -14,16 +14,16 @@
 
 import * as estree from 'estree';
 
-import {ScannedFeature} from '../model/model';
 import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {ScannedFeature} from '../model/model';
 
 import {ScannedBehavior} from './behavior-descriptor';
-import {PropertyHandlers, declarationPropertyHandlers} from './declaration-property-handlers';
+import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 
 interface KeyFunc<T> {
