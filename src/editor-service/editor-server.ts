@@ -52,7 +52,7 @@ class EditorServer {
       case 'getTypeaheadCompletionsFor':
         return this._localEditorService.getTypeaheadCompletionsAtPosition(
             message.localPath, message.position);
-      case 'clearCaches':
+      case '_clearCaches':
         return this._localEditorService._clearCaches();
       default:
         // This assignment makes it a type error if we don't handle all possible

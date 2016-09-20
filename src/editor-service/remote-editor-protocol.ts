@@ -66,4 +66,4 @@ export interface GetTypeaheadCompletionsRequest {
   position: SourcePosition;
 }
 /** Internal, don't use this. May break in the future. */
-export interface ClearCachesRequest { kind: 'clearCaches'; }
+export interface ClearCachesRequest { kind: '_clearCaches'; }

@@ -186,7 +186,7 @@ export class RemoteEditorService extends EditorService {
   }
 
   async _clearCaches(): Promise<void> {
-    return this._channel.request({kind: 'clearCaches'});
+    return this._channel.request({kind: '_clearCaches'});
   }
 
   dispose(): void {
