@@ -133,7 +133,7 @@ export class LocalEditorService extends EditorService {
     }
   }
 
-  async clearCaches() {
+  async _clearCaches() {
     this._analyzer.clearCaches();
   }
 

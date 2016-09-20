@@ -67,24 +67,50 @@ export class WarningCarryingException extends Error {
 //     Fortunately, editor-service_test will test that the results are JSON
 //     serializable.
 export abstract class EditorService {
-  abstract async fileChanged(localPath: string, contents?: string):
+  /**
+   * Notify the editor service that the given file has changed, and give the
+   * updated contents that should be used. If this method is not called, then
+   * the editor service will assume that files do not change and their contents
+   * will be cached.
+   */
+  abstract async fileChanged(localPath: string, contents: string):
       Promise<void>;
 
+  /**
+   * Gives the documentation, as markdown encoded text, for the feature at
+   * the given position in the given file.
+   */
   abstract async getDocumentationAtPosition(
       localPath: string, position: SourcePosition): Promise<string|undefined>;
 
+  /**
+   * Gives the location for the definition for a feature. For example, for a
+   * v1 custom element, it will find its class.
+   */
   abstract async getDefinitionForFeatureAtPosition(
       localPath: string, position: SourcePosition): Promise<SourceRange>;
 
+  /**
+   * Assuming that the user is typing at the given location, what suggestions
+   * should we give for autocomplete?
+   */
   abstract async getTypeaheadCompletionsAtPosition(
       localPath: string,
       position: SourcePosition): Promise<TypeaheadCompletion|undefined>;
 
+  /**
+   * Gives all warnings, errors, info notices, etc for the given file.
+   */
   abstract async getWarningsForFile(localPath: string): Promise<Warning[]>;
 
-  abstract async clearCaches(): Promise<void>;
+  /**
+   * Internal method, do not call. May be removed in a future release.
+   *
+   * Instructs the editor service to clear out all caches. Use very sparingly,
+   * as this will dramatically reduce performance of the next request as all
+   * relevant source must be re-read, parsed, scanned, and resolved.
+   *
+   * Useful for tests.
+   */
+  abstract async _clearCaches(): Promise<void>;
 }
-
-
-
-//

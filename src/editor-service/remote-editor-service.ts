@@ -180,7 +180,7 @@ export class RemoteEditorService extends EditorService {
         {kind: 'getTypeaheadCompletionsFor', localPath, position});
   }
 
-  async clearCaches(): Promise<void> {
+  async _clearCaches(): Promise<void> {
     return this._channel.request({kind: 'clearCaches'});
   }
 

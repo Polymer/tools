@@ -121,7 +121,7 @@ class EditorServer {
         return this._localEditorService.getTypeaheadCompletionsAtPosition(
             message.localPath, message.position);
       case 'clearCaches':
-        return this._localEditorService.clearCaches();
+        return this._localEditorService._clearCaches();
       default:
         // This assignment makes it a type error if we don't handle all possible
         // values of `message.kind`.

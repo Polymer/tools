@@ -142,7 +142,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         'when asking for docs at its tag name';
 
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       assert.equal(
           await editorService.getDocumentationAtPosition(
               indexFile, tagPosition),
@@ -151,7 +151,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'it can still get element info after changing a file in memory';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       const contents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       // Add a newline at the beginning of the file, shifting the lines
       // down.
@@ -169,7 +169,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     });
 
     test('it supports getting an attribute description', async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       assert.equal(
           await editorService.getDocumentationAtPosition(
               indexFile, localAttributePosition),
@@ -179,7 +179,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     testName = 'it supports getting a description of an attribute ' +
         'defined in a behavior';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       assert.equal(
           await editorService.getDocumentationAtPosition(
               indexFile, deepAttributePosition),
@@ -191,7 +191,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     let testName = `it supports getting the definition of ` +
         `an element from its tag`;
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(
           await editorService.getDefinitionForFeatureAtPosition(
               indexFile, tagPosition),
@@ -204,7 +204,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'it supports getting the definition of a local attribute';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(
           await editorService.getDefinitionForFeatureAtPosition(
               indexFile, localAttributePosition),
@@ -218,7 +218,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     testName = 'it supports getting the definition of an attribute ' +
         'defined in a behavior';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(
           await editorService.getDefinitionForFeatureAtPosition(
               indexFile, deepAttributePosition),
@@ -243,7 +243,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'Get element completions for a start tag.';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, tagPosition),
@@ -252,7 +252,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'Gets element completions with an incomplete tag';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       const incompleteText = `<behav>`;
       editorService.fileChanged(
           indexFile, `${incompleteText}\n${indexContents}`);
@@ -263,7 +263,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     });
 
     test('Get element completions for the end of a tag', async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, tagPositionEnd),
@@ -272,7 +272,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'Get attribute completions when editing an existing attribute';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
@@ -281,7 +281,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'Get attribute completions when adding a new attribute';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       const partialContents = [
         `<behavior-test-elem >`, `<behavior-test-elem existing-attr>`,
         `<behavior-test-elem existing-attr></behavior-test-elem>`,
@@ -301,14 +301,14 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'Recover from references to undefined files.';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
 
       // Load a file that contains a reference error.
       await editorService.fileChanged(indexFile, `${indexContents}
            <script src="nonexistant.js"></script>`);
 
       // We recover after getting a good version of the file.
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
 
       deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
@@ -318,7 +318,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     testName = 'Remain useful in the face of unloadable files.';
     test(testName, async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
 
       // We load a file that contains a reference error.
       await editorService.fileChanged(indexFile, `${indexContents}
@@ -352,7 +352,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
   suite('getWarningsForFile', function() {
     test('For a good document we get no warnings', async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       deepEqual(await editorService.getWarningsForFile(indexFile), []);
     });
 
@@ -449,7 +449,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
   suite('getWarnings', function() {
     test('For a good document we get no warnings', async function() {
-      await editorService.fileChanged(indexFile);
+      await editorService.fileChanged(indexFile, indexContents);
       assert.deepEqual(await editorService.getWarningsForFile(indexFile), []);
     });
 
@@ -545,7 +545,7 @@ suite('RemoteEditorService', function() {
     if (sloppyTest) {
       // clear the caches to minimize inter-test interaction.
       for (const server of editors) {
-        await server.clearCaches();
+        await server._clearCaches();
       }
       return;
     }
