@@ -70,17 +70,21 @@ export abstract class EditorService {
   abstract async fileChanged(localPath: string, contents?: string):
       Promise<void>;
 
-  abstract async getDocumentationFor(
+  abstract async getDocumentationAtPosition(
       localPath: string, position: SourcePosition): Promise<string|undefined>;
 
-  abstract async getDefinitionFor(localPath: string, position: SourcePosition):
-      Promise<SourceRange>;
+  abstract async getDefinitionForFeatureAtPosition(
+      localPath: string, position: SourcePosition): Promise<SourceRange>;
 
-  abstract async getTypeaheadCompletionsFor  // dang clang-format..
+  abstract async getTypeaheadCompletionsAtPosition  // dang clang-format..
       (localPath: string, position: SourcePosition):
           Promise<TypeaheadCompletion|undefined>;
 
-  abstract async getWarningsFor(localPath: string): Promise<Warning[]>;
+  abstract async getWarningsForFile(localPath: string): Promise<Warning[]>;
 
   abstract async clearCaches(): Promise<void>;
 }
+
+
+
+//

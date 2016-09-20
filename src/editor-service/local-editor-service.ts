@@ -31,7 +31,7 @@ export class LocalEditorService extends EditorService {
     await this._analyzer.analyzeRoot(localPath, contents);
   }
 
-  async getDocumentationFor(localPath: string, position: SourcePosition):
+  async getDocumentationAtPosition(localPath: string, position: SourcePosition):
       Promise<string|undefined> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
@@ -45,7 +45,7 @@ export class LocalEditorService extends EditorService {
     return feature.description;
   }
 
-  async getDefinitionFor(localPath: string, position: SourcePosition):
+  async getDefinitionForFeatureAtPosition(localPath: string, position: SourcePosition):
       Promise<SourceRange> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
@@ -54,7 +54,7 @@ export class LocalEditorService extends EditorService {
     return feature.sourceRange;
   }
 
-  async getTypeaheadCompletionsFor(localPath: string, position: SourcePosition):
+  async getTypeaheadCompletionsAtPosition(localPath: string, position: SourcePosition):
       Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyzeRoot(localPath);
     const location = await this._getLocationResult(document, position);
@@ -116,7 +116,7 @@ export class LocalEditorService extends EditorService {
     };
   }
 
-  async getWarningsFor(localPath: string): Promise<Warning[]> {
+  async getWarningsForFile(localPath: string): Promise<Warning[]> {
     try {
       const doc = await this._analyzer.analyzeRoot(localPath);
       return doc.getWarnings();

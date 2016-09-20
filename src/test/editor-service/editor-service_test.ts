@@ -131,7 +131,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     editorService = editorFactory(basedir);
   });
 
-  suite('getDocumentationFor', function() {
+  suite('getDocumentationAtPosition', function() {
     const tagDescription = 'An element to test out behavior inheritance.';
     const localAttributeDescription =
         '{boolean} A property defined directly on behavior-test-elem.';
@@ -144,7 +144,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       assert.equal(
-          await editorService.getDocumentationFor(indexFile, tagPosition),
+          await editorService.getDocumentationAtPosition(
+              indexFile, tagPosition),
           tagDescription);
     });
 
@@ -157,10 +158,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       await editorService.fileChanged(indexFile, `\n${contents}`);
 
       assert.equal(
-          await editorService.getDocumentationFor(indexFile, tagPosition),
+          await editorService.getDocumentationAtPosition(
+              indexFile, tagPosition),
           undefined);
       assert.equal(
-          await editorService.getDocumentationFor(
+          await editorService.getDocumentationAtPosition(
               indexFile,
               {line: tagPosition.line + 1, column: tagPosition.column}),
           tagDescription, );
@@ -169,7 +171,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test('it supports getting an attribute description', async function() {
       await editorService.fileChanged(indexFile);
       assert.equal(
-          await editorService.getDocumentationFor(
+          await editorService.getDocumentationAtPosition(
               indexFile, localAttributePosition),
           localAttributeDescription);
     });
@@ -179,29 +181,32 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       assert.equal(
-          await editorService.getDocumentationFor(
+          await editorService.getDocumentationAtPosition(
               indexFile, deepAttributePosition),
           deepAttributeDescription);
     });
   });
 
-  suite('getDefinitionFor', function() {
+  suite('getDefinitionForFeatureAtPosition', function() {
     let testName = `it supports getting the definition of ` +
         `an element from its tag`;
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
-      deepEqual(await editorService.getDefinitionFor(indexFile, tagPosition), {
-        file: 'analysis/behaviors/elementdir/element.html',
-        start: {line: 4, column: 10},
-        end: {line: 24, column: 3}
-      });
+      deepEqual(
+          await editorService.getDefinitionForFeatureAtPosition(
+              indexFile, tagPosition),
+          {
+            file: 'analysis/behaviors/elementdir/element.html',
+            start: {line: 4, column: 10},
+            end: {line: 24, column: 3}
+          });
     });
 
     testName = 'it supports getting the definition of a local attribute';
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       deepEqual(
-          await editorService.getDefinitionFor(
+          await editorService.getDefinitionForFeatureAtPosition(
               indexFile, localAttributePosition),
           {
             file: 'analysis/behaviors/elementdir/element.html',
@@ -215,7 +220,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       deepEqual(
-          await editorService.getDefinitionFor(
+          await editorService.getDefinitionForFeatureAtPosition(
               indexFile, deepAttributePosition),
           {
             file: 'analysis/behaviors/subdir/subbehavior.html',
@@ -226,12 +231,12 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
   });
 
-  suite('getTypeaheadCompletionsFor', function() {
+  suite('getTypeaheadCompletionsAtPosition', function() {
     let testName = 'Get element completions for an empty text region.';
     test(testName, async function() {
       await editorService.fileChanged(indexFile, `\n${indexContents}`);
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, {line: 0, column: 0}),
           emptyStartElementTypeahead);
     });
@@ -240,7 +245,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, tagPosition),
           elementTypeahead);
     });
@@ -252,7 +257,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       editorService.fileChanged(
           indexFile, `${incompleteText}\n${indexContents}`);
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, {line: 0, column: incompleteText.length - 2}),
           elementTypeahead);
     });
@@ -260,7 +265,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test('Get element completions for the end of a tag', async function() {
       await editorService.fileChanged(indexFile);
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, tagPositionEnd),
           elementTypeahead);
     });
@@ -269,7 +274,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test(testName, async function() {
       await editorService.fileChanged(indexFile);
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
     });
@@ -286,7 +291,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         await editorService.fileChanged(
             indexFile, `${partial}\n${indexContents}`);
         deepEqual(
-            await editorService.getTypeaheadCompletionsFor(indexFile, {
+            await editorService.getTypeaheadCompletionsAtPosition(indexFile, {
               line: 0,
               column: 20 /* after the space after the element name */
             }),
@@ -306,7 +311,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       await editorService.fileChanged(indexFile);
 
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
     });
@@ -321,7 +326,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
       // Harder: can we give typeahead completion when there's errors?'
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
     });
@@ -339,23 +344,23 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           <script src="./syntax-error.js"></script>`);
       // Even with a reference to the bad file we can still get completions!
       deepEqual(
-          await editorService.getTypeaheadCompletionsFor(
+          await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
     });
   });
 
-  suite('getWarnings', function() {
+  suite('getWarningsForFile', function() {
     test('For a good document we get no warnings', async function() {
       await editorService.fileChanged(indexFile);
-      deepEqual(await editorService.getWarningsFor(indexFile), []);
+      deepEqual(await editorService.getWarningsForFile(indexFile), []);
     });
 
     test(`Warn on imports of files that aren't found.`, async function() {
       const badImport = `<link rel="import" href="./does-not-exist.html">`;
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
-      const warnings = await editorService.getWarningsFor(indexFile);
+      const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(warnings, <Warning[]>[{
                              code: 'could-not-load',
                              severity: Severity.ERROR,
@@ -374,7 +379,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const badImport = `<script src="../js-parse-error.js"></script>`;
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
-      const warnings = await editorService.getWarningsFor(indexFile);
+      const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
           warnings, <Warning[]>[{
             code: 'could-not-load',
@@ -393,14 +398,15 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const badImport = `<script src="./foo.unknown_extension"></script>`;
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
-      assert.containSubset(await editorService.getWarningsFor(indexFile), []);
+      assert.containSubset(
+          await editorService.getWarningsForFile(indexFile), []);
     });
 
     testName = `Warn on syntax errors in inline javascript documents`;
     test(testName, async function() {
       const badScript = `\n<script>var var var var var let const;</script>`;
       await editorService.fileChanged(indexFile, badScript);
-      const warnings = await editorService.getWarningsFor(indexFile);
+      const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(warnings, <Warning[]>[{
                              code: 'parse-error',
                              severity: Severity.ERROR,
@@ -418,14 +424,16 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test(testName, async function() {
       const testBaseDir = path.join(basedir, 'package-url-resolver');
       editorService = editorFactory(testBaseDir);
-      const warnings = await editorService.getWarningsFor('simple-elem.html');
+      const warnings =
+          await editorService.getWarningsForFile('simple-elem.html');
       deepEqual(warnings, []);
     });
 
     testName = `Warn about parse errors in the file ` +
         `we're requesting errors for.`;
     test(testName, async function() {
-      const warnings = await editorService.getWarningsFor('js-parse-error.js');
+      const warnings =
+          await editorService.getWarningsForFile('js-parse-error.js');
       deepEqual(warnings, [{
                   code: 'parse-error',
                   message: 'Unexpected token ,',
@@ -442,14 +450,14 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
   suite('getWarnings', function() {
     test('For a good document we get no warnings', async function() {
       await editorService.fileChanged(indexFile);
-      assert.deepEqual(await editorService.getWarningsFor(indexFile), []);
+      assert.deepEqual(await editorService.getWarningsForFile(indexFile), []);
     });
 
     test(`Warn on imports of files that aren't found.`, async function() {
       const badImport = `<link rel="import" href="./does-not-exist.html">`;
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
-      const warnings = await editorService.getWarningsFor(indexFile);
+      const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(warnings, <Warning[]>[{
                              code: 'could-not-load',
                              severity: Severity.ERROR,
@@ -468,7 +476,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const badImport = `<script src="../js-parse-error.js"></script>`;
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
-      const warnings = await editorService.getWarningsFor(indexFile);
+      const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
           warnings, <Warning[]>[{
             code: 'could-not-load',
@@ -487,7 +495,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const badImport = `<script src="./foo.unknown_extension"></script>`;
       await editorService.fileChanged(
           indexFile, `${badImport}\n\n${indexContents}`);
-      assert.containSubset(await editorService.getWarningsFor(indexFile), []);
+      assert.containSubset(
+          await editorService.getWarningsForFile(indexFile), []);
     });
   });
 }

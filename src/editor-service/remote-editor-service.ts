@@ -152,27 +152,30 @@ export class RemoteEditorService extends EditorService {
     super();
     this._channel.request({kind: 'init', basedir});
   }
-  async getWarningsFor(localPath: string): Promise<Warning[]> {
+
+  async getWarningsForFile(localPath: string): Promise<Warning[]> {
     return this._channel.request({kind: 'getWarningsFor', localPath});
   }
+
   async fileChanged(localPath: string, contents?: string): Promise<void> {
     return this._channel.request({kind: 'fileChanged', localPath, contents});
   }
 
-  async getDocumentationFor(localPath: string, position: SourcePosition):
+  async getDocumentationAtPosition(localPath: string, position: SourcePosition):
       Promise<string|undefined> {
     return this._channel.request(
         {kind: 'getDocumentationFor', localPath, position});
   }
 
-  async getDefinitionFor(localPath: string, position: SourcePosition):
-      Promise<SourceRange> {
+  async getDefinitionForFeatureAtPosition(
+      localPath: string, position: SourcePosition): Promise<SourceRange> {
     return this._channel.request(
         {kind: 'getDefinitionFor', localPath, position});
   }
 
-  async getTypeaheadCompletionsFor(localPath: string, position: SourcePosition):
-      Promise<TypeaheadCompletion|undefined> {
+  async getTypeaheadCompletionsAtPosition(
+      localPath: string,
+      position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
     return this._channel.request(
         {kind: 'getTypeaheadCompletionsFor', localPath, position});
   }

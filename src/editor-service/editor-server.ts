@@ -104,7 +104,7 @@ class EditorServer {
   async handleMessage(message: Request): Promise<any> {
     switch (message.kind) {
       case 'getWarningsFor':
-        return this._localEditorService.getWarningsFor(message.localPath);
+        return this._localEditorService.getWarningsForFile(message.localPath);
       case 'fileChanged':
         await this._localEditorService.fileChanged(
             message.localPath, message.contents);
@@ -112,13 +112,13 @@ class EditorServer {
       case 'init':
         throw new Error('Already initialized!');
       case 'getDefinitionFor':
-        return this._localEditorService.getDefinitionFor(
+        return this._localEditorService.getDefinitionForFeatureAtPosition(
             message.localPath, message.position);
       case 'getDocumentationFor':
-        return this._localEditorService.getDocumentationFor(
+        return this._localEditorService.getDocumentationAtPosition(
             message.localPath, message.position);
       case 'getTypeaheadCompletionsFor':
-        return this._localEditorService.getTypeaheadCompletionsFor(
+        return this._localEditorService.getTypeaheadCompletionsAtPosition(
             message.localPath, message.position);
       case 'clearCaches':
         return this._localEditorService.clearCaches();
