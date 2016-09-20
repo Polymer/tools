@@ -76,9 +76,9 @@ export abstract class EditorService {
   abstract async getDefinitionForFeatureAtPosition(
       localPath: string, position: SourcePosition): Promise<SourceRange>;
 
-  abstract async getTypeaheadCompletionsAtPosition  // dang clang-format..
-      (localPath: string, position: SourcePosition):
-          Promise<TypeaheadCompletion|undefined>;
+  abstract async getTypeaheadCompletionsAtPosition(
+      localPath: string,
+      position: SourcePosition): Promise<TypeaheadCompletion|undefined>;
 
   abstract async getWarningsForFile(localPath: string): Promise<Warning[]>;
 
