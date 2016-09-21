@@ -9,7 +9,6 @@
  */
 
 import * as dom5 from 'dom5';
-import * as gulpif from 'gulp-if';
 import * as path from 'path';
 import {posix as posixPath} from 'path';
 import {Transform} from 'stream';
@@ -104,68 +103,65 @@ export class Bundler extends Transform {
     return this.allFragments.indexOf(file.path) !== -1;
   }
 
-  _buildBundles(): Promise<Map<string, string>> {
-    return this._getBundles().then((bundles) => {
-      let sharedDepsBundle = (this.shell)
-          ? urlFromPath(this.root, this.shell)
-          : this.sharedBundleUrl;
-      let sharedDeps = bundles.get(sharedDepsBundle) || [];
-      let promises: Promise<any>[] = [];
+  async _buildBundles(): Promise<Map<string, string>> {
+    let bundles = await this._getBundles();
+    let sharedDepsBundle = (this.shell)
+        ? urlFromPath(this.root, this.shell)
+        : this.sharedBundleUrl;
+    let sharedDeps = bundles.get(sharedDepsBundle) || [];
+    let promises: Promise<any>[] = [];
 
-      if (this.shell) {
-        let shellFile = this.analyzer.getFile(this.shell);
-        console.assert(shellFile != null);
-        let newShellContent = this._addSharedImportsToShell(bundles);
-        shellFile.contents = new Buffer(newShellContent);
-      }
+    if (this.shell) {
+      let shellFile = this.analyzer.getFile(this.shell);
+      console.assert(shellFile != null);
+      let newShellContent = this._addSharedImportsToShell(bundles);
+      shellFile.contents = new Buffer(newShellContent);
+    }
 
-      for (let fragment of this.allFragments) {
-        let fragmentUrl = urlFromPath(this.root, fragment);
-        let addedImports = (fragment === this.shell && this.shell)
-            ? []
-            : [posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)];
-        let excludes = (fragment === this.shell && this.shell)
-            ? []
-            : sharedDeps.concat(sharedDepsBundle);
+    for (let fragment of this.allFragments) {
+      let fragmentUrl = urlFromPath(this.root, fragment);
+      let addedImports = (fragment === this.shell && this.shell)
+          ? []
+          : [posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)];
+      let excludes = (fragment === this.shell && this.shell)
+          ? []
+          : sharedDeps.concat(sharedDepsBundle);
 
-        promises.push(new Promise((resolve, reject) => {
-          let vulcanize = new Vulcanize({
-            abspath: null,
-            fsResolver: this.analyzer.resolver,
-            addedImports: addedImports,
-            stripExcludes: excludes,
-            inlineScripts: true,
-            inlineCss: true,
-            inputUrl: fragmentUrl,
-          });
-          vulcanize.process(null, (err: any, doc: string) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve({
-                url: fragment,
-                contents: doc,
-              });
-            }
-          });
-        }));
-      }
-      // vulcanize the shared bundle
-      if (!this.shell && sharedDeps && sharedDeps.length !== 0) {
-        logger.info(`generating shared bundle...`);
-        promises.push(this._generateSharedBundle(sharedDeps));
-      }
-      return Promise.all(promises).then((bundles) => {
-        // TODO(justinfagnani): remove at TypeScript 2.0
-        let _bundles = <any[]>bundles;
-        // convert {url,contents}[] into a Map
-        let contentsMap = new Map();
-        for (let bundle of _bundles) {
-          contentsMap.set(bundle.url, bundle.contents);
-        }
-        return contentsMap;
-      });
-    });
+      promises.push(new Promise((resolve, reject) => {
+        let vulcanize = new Vulcanize({
+          abspath: null,
+          fsResolver: this.analyzer.resolver,
+          addedImports: addedImports,
+          stripExcludes: excludes,
+          inlineScripts: true,
+          inlineCss: true,
+          inputUrl: fragmentUrl,
+        });
+        vulcanize.process(null, (err: any, doc: string) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({
+              url: fragment,
+              contents: doc,
+            });
+          }
+        });
+      }));
+    }
+
+    // vulcanize the shared bundle
+    if (!this.shell && sharedDeps && sharedDeps.length !== 0) {
+      logger.info(`generating shared bundle...`);
+      promises.push(this._generateSharedBundle(sharedDeps));
+    }
+
+    let vulcanizedBundles = await Promise.all(promises);
+    let contentsMap = new Map();
+    for (let bundle of vulcanizedBundles) {
+      contentsMap.set(bundle.url, bundle.contents);
+    }
+    return contentsMap;
   }
 
   _addSharedImportsToShell(bundles: Map<string, string[]>): string {

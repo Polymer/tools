@@ -64,21 +64,36 @@ suite('service-worker', () => {
   suite('generateServiceWorker()', () => {
 
     test('should throw when options are not provided', () => {
-      assert.throws(() => {
-        serviceWorker.generateServiceWorker();
-      }, Error.AssertionError, '`project` & `buildRoot` options are required');
+      return serviceWorker.generateServiceWorker()
+        .then(
+          () => { assert.fail('generateServiceWorker() resolved, expected rejection!'); },
+          (error) => {
+            assert.equal(error.name, 'AssertionError');
+            assert.equal(error.message, '`project` & `buildRoot` options are required');
+          }
+        );
     });
 
     test('should throw when options.project is not provided', () => {
-      assert.throws(() => {
-        serviceWorker.generateServiceWorker({buildRoot: testBuildRoot});
-      }, Error.AssertionError, '`project` option is required');
+      return serviceWorker.generateServiceWorker({buildRoot: testBuildRoot})
+        .then(
+          () => { assert.fail('generateServiceWorker() resolved, expected rejection!'); },
+          (error) => {
+            assert.equal(error.name, 'AssertionError');
+            assert.equal(error.message, '`project` option is required');
+          }
+        );
     });
 
     test('should throw when options.buildRoot is not provided', () => {
-      assert.throws(() => {
-        serviceWorker.generateServiceWorker({project: defaultProject});
-      }, Error.AssertionError, '`buildRoot` option is required');
+      return serviceWorker.generateServiceWorker({project: defaultProject})
+        .then(
+          () => { assert.fail('generateServiceWorker() resolved, expected rejection!'); },
+          (error) => {
+            assert.equal(error.name, 'AssertionError');
+            assert.equal(error.message, '`buildRoot` option is required');
+          }
+        );
     });
 
     test('should not modify the options object provided when called', () => {

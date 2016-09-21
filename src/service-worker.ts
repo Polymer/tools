@@ -8,11 +8,14 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/sw-precache.d.ts" />
+
 import {writeFile} from 'fs';
 import * as path from 'path';
 import * as logging from 'plylog';
 import {PolymerProject} from './polymer-project';
 import {DepsIndex} from './analyzer';
+
 import {SWConfig, generate as swPrecacheGenerate} from 'sw-precache';
 
 let logger = logging.getLogger('polymer-build.service-worker');
@@ -58,7 +61,7 @@ function getBundledPrecachedAssets(project: PolymerProject) {
  * Returns a promise that resolves with a generated service worker (the file
  * contents), based off of the options provided.
  */
-export function generateServiceWorker(options: AddServiceWorkerOptions): Promise<Buffer> {
+export async function generateServiceWorker(options: AddServiceWorkerOptions): Promise<Buffer> {
   console.assert(!!options, '`project` & `buildRoot` options are required');
   console.assert(!!options.project, '`project` option is required');
   console.assert(!!options.buildRoot, '`buildRoot` option is required');
@@ -68,38 +71,37 @@ export function generateServiceWorker(options: AddServiceWorkerOptions): Promise
   let buildRoot = options.buildRoot;
   let swConfig: SWConfig = Object.assign({}, options.swConfig);
 
-  return project.analyzer.analyzeDependencies.then((depsIndex: DepsIndex) => {
-    let staticFileGlobs = Array.from(swConfig.staticFileGlobs || []);
-    let precachedAssets = (options.bundled)
-      ? getBundledPrecachedAssets(project)
-      : getPrecachedAssets(depsIndex, project);
+  let depsIndex = await project.analyzer.analyzeDependencies;
+  let staticFileGlobs = Array.from(swConfig.staticFileGlobs || []);
+  let precachedAssets = (options.bundled)
+    ? getBundledPrecachedAssets(project)
+    : getPrecachedAssets(depsIndex, project);
 
-    staticFileGlobs = staticFileGlobs.concat(precachedAssets);
-    staticFileGlobs = staticFileGlobs.map((filePath: string) => {
-      if (filePath.startsWith(project.root)) {
-        filePath = filePath.substring(project.root.length);
-      }
-      return path.join(buildRoot, filePath);
-    });
-
-    // swPrecache will determine the right urls by stripping buildRoot
-    swConfig.stripPrefix = buildRoot;
-    // static files will be pre-cached
-    swConfig.staticFileGlobs = staticFileGlobs;
-    // Log service-worker helpful output at the debug log level
-    swConfig.logger = swConfig.logger || logger.debug;
-
-    return new Promise((resolve, reject) => {
-      logger.debug(`writing service worker...`, swConfig);
-      swPrecacheGenerate(swConfig, (err?: Error, fileContents?: string) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(new Buffer(fileContents));
-        }
-      });
-    });
+  staticFileGlobs = staticFileGlobs.concat(precachedAssets);
+  staticFileGlobs = staticFileGlobs.map((filePath: string) => {
+    if (filePath.startsWith(project.root)) {
+      filePath = filePath.substring(project.root.length);
+    }
+    return path.join(buildRoot, filePath);
   });
+
+  // swPrecache will determine the right urls by stripping buildRoot
+  swConfig.stripPrefix = buildRoot;
+  // static files will be pre-cached
+  swConfig.staticFileGlobs = staticFileGlobs;
+  // Log service-worker helpful output at the debug log level
+  swConfig.logger = swConfig.logger || logger.debug;
+
+  return await <Promise<Buffer>>(new Promise((resolve, reject) => {
+    logger.debug(`writing service worker...`, swConfig);
+    swPrecacheGenerate(swConfig, (err?: Error, fileContents?: string) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(new Buffer(fileContents));
+      }
+    });
+  }));
 }
 
 

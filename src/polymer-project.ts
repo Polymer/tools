@@ -180,7 +180,6 @@ export class PolymerProject {
    */
   sources(): NodeJS.ReadableStream {
     return vfs.src(this.allSourceGlobs, {
-      allowEmpty: true,
       cwdbase: true,
       nodir: true,
     });
@@ -195,7 +194,6 @@ export class PolymerProject {
     // stream and pipe our default dependencyStream through it to combine.
     if (this.includeDependencies.length > 0) {
       let includeStream = vfs.src(this.includeDependencies, {
-         allowEmpty: true,
          cwdbase: true,
          nodir: true,
          passthrough: true,
