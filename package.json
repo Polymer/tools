@@ -72,6 +72,7 @@
     "estraverse": "^3.1.0",
     "parse5": "^2.1.5",
     "performance-now": "^0.2.0",
-    "shady-css-parser": "0.0.8"
+    "shady-css-parser": "0.0.8",
+    "split": "^1.0.0"
   }
 }
