@@ -24,8 +24,24 @@ export interface AddServiceWorkerOptions {
   project: PolymerProject;
   buildRoot: string;
   bundled?: boolean;
-  serviceWorkerPath?: string;
-  swConfig?: SWConfig;
+  path?: string;
+  swPrecacheConfig?: SWConfig;
+}
+
+/**
+ * Given a user-provided AddServiceWorkerOptions object, check for deprecated
+ * options. When one is found, warn the user and fix if possible.
+ */
+function fixDeprecatedOptions(options: any): AddServiceWorkerOptions {
+  if (typeof options.serviceWorkerPath !== 'undefined') {
+    logger.warn('"serviceWorkerPath" config option has been renamed to "path" and will no longer be supported in future versions');
+    options.path = options.path || options.serviceWorkerPath;
+  }
+  if (typeof options.swConfig !== 'undefined') {
+    logger.warn('"swConfig" config option has been renamed to "swPrecacheConfig" and will no longer be supported in future versions');
+    options.swPrecacheConfig = options.swPrecacheConfig || options.swConfig;
+  }
+  return options;
 }
 
 /**
@@ -65,14 +81,15 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions): P
   console.assert(!!options, '`project` & `buildRoot` options are required');
   console.assert(!!options.project, '`project` option is required');
   console.assert(!!options.buildRoot, '`buildRoot` option is required');
+  options = fixDeprecatedOptions(options);
 
   options = Object.assign({}, options);
   let project = options.project;
   let buildRoot = options.buildRoot;
-  let swConfig: SWConfig = Object.assign({}, options.swConfig);
+  let swPrecacheConfig: SWConfig = Object.assign({}, options.swPrecacheConfig);
 
   let depsIndex = await project.analyzer.analyzeDependencies;
-  let staticFileGlobs = Array.from(swConfig.staticFileGlobs || []);
+  let staticFileGlobs = Array.from(swPrecacheConfig.staticFileGlobs || []);
   let precachedAssets = (options.bundled)
     ? getBundledPrecachedAssets(project)
     : getPrecachedAssets(depsIndex, project);
@@ -86,15 +103,15 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions): P
   });
 
   // swPrecache will determine the right urls by stripping buildRoot
-  swConfig.stripPrefix = buildRoot;
+  swPrecacheConfig.stripPrefix = buildRoot;
   // static files will be pre-cached
-  swConfig.staticFileGlobs = staticFileGlobs;
+  swPrecacheConfig.staticFileGlobs = staticFileGlobs;
   // Log service-worker helpful output at the debug log level
-  swConfig.logger = swConfig.logger || logger.debug;
+  swPrecacheConfig.logger = swPrecacheConfig.logger || logger.debug;
 
   return await <Promise<Buffer>>(new Promise((resolve, reject) => {
-    logger.debug(`writing service worker...`, swConfig);
-    swPrecacheGenerate(swConfig, (err?: Error, fileContents?: string) => {
+    logger.debug(`writing service worker...`, swPrecacheConfig);
+    swPrecacheGenerate(swPrecacheConfig, (err?: Error, fileContents?: string) => {
       if (err) {
         reject(err);
       } else {
@@ -109,12 +126,12 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions): P
  * Returns a promise that resolves when a service worker has been generated
  * and written to the build directory. This uses generateServiceWorker() to
  * generate a service worker, which it then writes to the file system based on
- * the buildRoot & serviceWorkerPath (if provided) options.
+ * the buildRoot & path (if provided) options.
  */
 export function addServiceWorker(options: AddServiceWorkerOptions): Promise<{}> {
   return generateServiceWorker(options).then((fileContents: Buffer) => {
     return new Promise((resolve, reject) => {
-      let serviceWorkerPath = path.join(options.buildRoot, options.serviceWorkerPath || 'service-worker.js');
+      let serviceWorkerPath = path.join(options.buildRoot, options.path || 'service-worker.js');
       writeFile(serviceWorkerPath, fileContents, (err) => {
         if (err) {
           reject(err);

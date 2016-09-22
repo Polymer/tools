@@ -79,8 +79,8 @@ gulp.task('test1', ['clean'], (cb) => {
     return addServiceWorker({
       project: project,
       buildRoot: 'build/unbundled',
-      swConfig: swConfig,
-      serviceWorkerPath: 'test-custom-sw-path.js',
+      path: 'test-custom-sw-path.js',
+      swPrecacheConfig: swConfig,
     });
   });
 

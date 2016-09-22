@@ -97,13 +97,13 @@ suite('service-worker', () => {
     });
 
     test('should not modify the options object provided when called', () => {
-      let swConfig = {staticFileGlobs: []};
+      let swPrecacheConfig = {staticFileGlobs: []};
       return serviceWorker.generateServiceWorker({
           project: defaultProject,
           buildRoot: testBuildRoot,
-          swConfig: swConfig,
+          swPrecacheConfig: swPrecacheConfig,
         }).then((swCode) => {
-          assert.equal(swConfig.staticFileGlobs.length, 0);
+          assert.equal(swPrecacheConfig.staticFileGlobs.length, 0);
         });
     });
 
@@ -149,7 +149,7 @@ suite('service-worker', () => {
         project: defaultProject,
         buildRoot: testBuildRoot,
         bundled: true,
-        swConfig: {
+        swPrecacheConfig: {
           staticFileGlobs: ['/bower_components/dep.html'],
         },
       }).then((swFile) => {

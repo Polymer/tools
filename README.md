@@ -144,7 +144,7 @@ generateServiceWorker({
   buildRoot: 'build/',
   project: polymerProject,
   bundled: true // set if `polymerProject.bundler` was used
-  swConfig: {
+  swPrecacheConfig: {
     // See https://github.com/GoogleChrome/sw-precache#options-parameter for all supported options
     navigateFallback: '/index.html',
   }
