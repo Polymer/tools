@@ -75,7 +75,10 @@ gulp.task('depcheck', () =>
       // "@types/*" dependencies are type declarations that are automatically
       // loaded by TypeScript during build. depcheck can't detect this
       // so we ignore them here.
-      ignoreMatches: ['@types/*']
+      // "hydrolosis" is being incorrectly matched because it is no longer
+      // used directly in code. TODO: remove from this list once we remove
+      // as dependency.
+      ignoreMatches: ['@types/*', 'hydrolysis']
     })
     .then((result) => {
       let invalidFiles = Object.keys(result.invalidFiles) || [];

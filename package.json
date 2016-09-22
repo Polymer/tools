@@ -32,6 +32,7 @@
     "minimatch-all": "^1.0.2",
     "multipipe": "^0.3.0",
     "plylog": "^0.4.0",
+    "polymer-analyzer": "2.0.0-alpha.6",
     "sw-precache": "^3.1.1",
     "through2": "^2.0.1",
     "vinyl": "^1.1.1",

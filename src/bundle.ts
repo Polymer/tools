@@ -130,7 +130,7 @@ export class Bundler extends Transform {
       promises.push(new Promise((resolve, reject) => {
         let vulcanize = new Vulcanize({
           abspath: null,
-          fsResolver: this.analyzer.resolver,
+          fsResolver: this.analyzer.loader,
           addedImports: addedImports,
           stripExcludes: excludes,
           inlineScripts: true,
@@ -149,13 +149,11 @@ export class Bundler extends Transform {
         });
       }));
     }
-
     // vulcanize the shared bundle
     if (!this.shell && sharedDeps && sharedDeps.length !== 0) {
       logger.info(`generating shared bundle...`);
       promises.push(this._generateSharedBundle(sharedDeps));
     }
-
     let vulcanizedBundles = await Promise.all(promises);
     let contentsMap = new Map();
     for (let bundle of vulcanizedBundles) {
@@ -231,7 +229,7 @@ export class Bundler extends Transform {
 
       let vulcanize = new Vulcanize({
         abspath: null,
-        fsResolver: this.analyzer.resolver,
+        fsResolver: this.analyzer.loader,
         inlineScripts: true,
         inlineCss: true,
         inputUrl: this.sharedBundleUrl,
