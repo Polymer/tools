@@ -44,9 +44,9 @@ export function urlFromPath(root: string, filepath: string) {
   }
 
   // On windows systems, convert filesystem path to URL by replacing slashes
-  let isPlatformWin = /^win/.test(process.platform);
-  let isExtendedLengthPath = /^\\\\\?\\/.test(filepath);
-  let hasNonAscii = /[^\x00-\x80]+/.test(filepath);
+  const isPlatformWin = /^win/.test(process.platform);
+  const isExtendedLengthPath = /^\\\\\?\\/.test(filepath);
+  const hasNonAscii = /[^\x00-\x80]+/.test(filepath);
   if (isPlatformWin && !isExtendedLengthPath && !hasNonAscii) {
     return path.win32.relative(root, filepath).replace(/\\/g, '/');
   }
@@ -56,7 +56,7 @@ export function urlFromPath(root: string, filepath: string) {
 }
 
 export function pathFromUrl(root: string, url: string) {
-  let isPlatformWin = /^win/.test(process.platform);
+  const isPlatformWin = /^win/.test(process.platform);
   let filepath: string;
 
   // On windows systems, convert URL to filesystem path by replacing slashes

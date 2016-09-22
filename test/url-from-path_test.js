@@ -28,22 +28,22 @@ suite('urlFromPath()', () => {
   if (isPlatformWin) {
 
     test('creates a URL path relative to root when called in a Windows environment', () => {
-      let shortPath = urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\shop-app.html');
+      const shortPath = urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\shop-app.html');
       assert.equal(shortPath, 'shop-app.html');
-      let medPath = urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\src\\shop-app.html');
+      const medPath = urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\src\\shop-app.html');
       assert.equal(medPath, 'src/shop-app.html');
-      let longPath = urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\bower_components\\app-layout\\docs.html');
+      const longPath = urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\bower_components\\app-layout\\docs.html');
       assert.equal(longPath, 'bower_components/app-layout/docs.html');
     });
 
   } else {
 
     test('creates a URL path relative to root when called in a Posix environment', () => {
-      let shortPath = urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/shop-app.html');
+      const shortPath = urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/shop-app.html');
       assert.equal(shortPath, 'shop-app.html');
-      let medPath = urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/src/shop-app.html');
+      const medPath = urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/src/shop-app.html');
       assert.equal(medPath, 'src/shop-app.html');
-      let longPath = urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/bower_components/app-layout/docs.html');
+      const longPath = urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/bower_components/app-layout/docs.html');
       assert.equal(longPath, 'bower_components/app-layout/docs.html');
     });
 

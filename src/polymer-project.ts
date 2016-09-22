@@ -77,7 +77,7 @@ export const defaultSourceGlobs = [
 
 function resolveGlob(fromPath: string, glob: string) {
   if (glob.startsWith('!')) {
-    let includeGlob = glob.substring(1);
+    const includeGlob = glob.substring(1);
     return '!' + osPath.resolve(fromPath, includeGlob);
   } else {
     return osPath.resolve(fromPath, glob);
@@ -193,7 +193,7 @@ export class PolymerProject {
     // If we need to include additional dependencies, create a new vfs.src
     // stream and pipe our default dependencyStream through it to combine.
     if (this.includeDependencies.length > 0) {
-      let includeStream = vfs.src(this.includeDependencies, {
+      const includeStream = vfs.src(this.includeDependencies, {
          cwdbase: true,
          nodir: true,
          passthrough: true,
@@ -240,7 +240,7 @@ export class PolymerProject {
   }
 
   addSplitPath(parentPath: string, childPath: string): void {
-    let splitFile = this.getSplitFile(parentPath);
+    const splitFile = this.getSplitFile(parentPath);
     splitFile.addPartPath(childPath);
     this._parts.set(childPath, splitFile);
   }
@@ -299,29 +299,29 @@ class HtmlSplitter extends Transform {
   }
 
   _transform(file: File, encoding: string, callback: FileCB): void {
-    let filePath = osPath.normalize(file.path);
+    const filePath = osPath.normalize(file.path);
     if (file.contents && filePath.endsWith('.html')) {
       try {
-        let contents = file.contents.toString();
-        let doc = dom5.parse(contents);
-        let body = dom5.query(doc, pred.hasTagName('body'));
-        let head = dom5.query(doc, pred.hasTagName('head'));
-        let scriptTags = dom5.queryAll(doc, HtmlSplitter.isInlineScript);
-        let styleTags = dom5.queryAll(doc, pred.hasTagName('style'));
+        const contents = file.contents.toString();
+        const doc = dom5.parse(contents);
+        const body = dom5.query(doc, pred.hasTagName('body'));
+        const head = dom5.query(doc, pred.hasTagName('head'));
+        const scriptTags = dom5.queryAll(doc, HtmlSplitter.isInlineScript);
+        const styleTags = dom5.queryAll(doc, pred.hasTagName('style'));
 
-        // let scripts = [];
-        // let styles = [];
+        // const scripts = [];
+        // const styles = [];
 
         for (let i = 0; i < scriptTags.length; i++) {
-          let scriptTag = scriptTags[i];
-          let source = dom5.getTextContent(scriptTag);
-          let typeAtribute = dom5.getAttribute(scriptTag, 'type');
-          let extension = typeAtribute && extensionsForType[typeAtribute] || 'js';
-          let childFilename = `${osPath.basename(filePath)}_script_${i}.${extension}`;
-          let childPath = osPath.join(osPath.dirname(filePath), childFilename);
+          const scriptTag = scriptTags[i];
+          const source = dom5.getTextContent(scriptTag);
+          const typeAtribute = dom5.getAttribute(scriptTag, 'type');
+          const extension = typeAtribute && extensionsForType[typeAtribute] || 'js';
+          const childFilename = `${osPath.basename(filePath)}_script_${i}.${extension}`;
+          const childPath = osPath.join(osPath.dirname(filePath), childFilename);
           scriptTag.childNodes = [];
           dom5.setAttribute(scriptTag, 'src', childFilename);
-          let scriptFile = new File({
+          const scriptFile = new File({
             cwd: file.cwd,
             base: file.base,
             path: childPath,
@@ -331,8 +331,8 @@ class HtmlSplitter extends Transform {
           this.push(scriptFile);
         }
 
-        let splitContents = dom5.serialize(doc);
-        let newFile = new File({
+        const splitContents = dom5.serialize(doc);
+        const newFile = new File({
           cwd: file.cwd,
           base: file.base,
           path: filePath,
@@ -368,10 +368,10 @@ class HtmlRejoiner extends Transform {
   }
 
   _transform(file: File, encoding: string, callback: FileCB): void {
-    let filePath = osPath.normalize(file.path);
+    const filePath = osPath.normalize(file.path);
     if (this._project.isSplitFile(filePath)) {
       // this is a parent file
-      let splitFile = this._project.getSplitFile(filePath);
+      const splitFile = this._project.getSplitFile(filePath);
       splitFile.vinylFile = file;
       if (splitFile.isComplete) {
         callback(null, this._rejoin(splitFile));
@@ -380,7 +380,7 @@ class HtmlRejoiner extends Transform {
         callback();
       }
     } else {
-      let parentFile = this._project.getParentFile(filePath);
+      const parentFile = this._project.getParentFile(filePath);
       if (parentFile) {
         // this is a child file
         parentFile.setPartContent(filePath, file.contents.toString());
@@ -396,27 +396,27 @@ class HtmlRejoiner extends Transform {
   }
 
   _rejoin(splitFile: SplitFile) {
-    let file = splitFile.vinylFile;
-    let filePath = osPath.normalize(file.path);
-    let contents = file.contents.toString();
-    let doc = dom5.parse(contents);
-    let body = dom5.query(doc, pred.hasTagName('body'));
-    let head = dom5.query(doc, pred.hasTagName('head'));
-    let scriptTags = dom5.queryAll(doc, HtmlRejoiner.isExternalScript);
-    let styleTags = dom5.queryAll(doc, pred.hasTagName('style'));
+    const file = splitFile.vinylFile;
+    const filePath = osPath.normalize(file.path);
+    const contents = file.contents.toString();
+    const doc = dom5.parse(contents);
+    const body = dom5.query(doc, pred.hasTagName('body'));
+    const head = dom5.query(doc, pred.hasTagName('head'));
+    const scriptTags = dom5.queryAll(doc, HtmlRejoiner.isExternalScript);
+    const styleTags = dom5.queryAll(doc, pred.hasTagName('style'));
 
     for (let i = 0; i < scriptTags.length; i++) {
-      let scriptTag = scriptTags[i];
-      let srcAttribute = dom5.getAttribute(scriptTag, 'src');
-      let scriptPath = osPath.join(osPath.dirname(splitFile.path), srcAttribute);
+      const scriptTag = scriptTags[i];
+      const srcAttribute = dom5.getAttribute(scriptTag, 'src');
+      const scriptPath = osPath.join(osPath.dirname(splitFile.path), srcAttribute);
       if (splitFile.parts.has(scriptPath)) {
-        let scriptSource = splitFile.parts.get(scriptPath);
+        const scriptSource = splitFile.parts.get(scriptPath);
         dom5.setTextContent(scriptTag, scriptSource);
         dom5.removeAttribute(scriptTag, 'src');
       }
     }
 
-    let joinedContents = dom5.serialize(doc);
+    const joinedContents = dom5.serialize(doc);
 
     return new File({
       cwd: file.cwd,

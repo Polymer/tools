@@ -128,7 +128,7 @@ export class StreamAnalyzer extends Transform {
   }
 
   _transform(file: File, encoding: string, callback: FileCB): void {
-    let filePath = file.path;
+    const filePath = file.path;
     this.addFile(file);
 
     // If our resolver is waiting for this file, resolve its deferred loader
@@ -157,7 +157,7 @@ export class StreamAnalyzer extends Transform {
   _flush(done: (error?: any) => void) {
     // If stream finished with files that still needed to be loaded, error out
     if (this.loader.hasDeferredFiles()) {
-      for (let fileUrl of this.loader.deferredFiles.keys()) {
+      for (const fileUrl of this.loader.deferredFiles.keys()) {
         logger.error(`${fileUrl} never loaded`);
       }
       done(new Error(`${this.loader.deferredFiles.size} deferred files were never loaded`));
@@ -169,7 +169,7 @@ export class StreamAnalyzer extends Transform {
   }
 
   getFile(filepath: string): File {
-    let url = urlFromPath(this.root, filepath);
+    const url = urlFromPath(this.root, filepath);
     return this.getFileByUrl(url);
   }
 
@@ -194,7 +194,7 @@ export class StreamAnalyzer extends Transform {
     logger.debug(`addFile: ${file.path}`);
     // Badly-behaved upstream transformers (looking at you gulp-html-minifier)
     // may use posix path separators on Windows.
-    let filepath = path.normalize(file.path);
+    const filepath = path.normalize(file.path);
     // Store only root-relative paths, in URL/posix format
     this.files.set(urlFromPath(this.root, filepath), file);
   }
@@ -247,7 +247,7 @@ export class StreamAnalyzer extends Transform {
     deps.imports.forEach((url) => {
       this.pushDependency(url);
 
-      let entrypointList: string[] = this._dependencyAnalysis.depsToFragments.get(url);
+      const entrypointList: string[] = this._dependencyAnalysis.depsToFragments.get(url);
       if (entrypointList) {
         entrypointList.push(filePath);
       } else {
@@ -266,7 +266,7 @@ export class StreamAnalyzer extends Transform {
       return;
     }
 
-    let dependencyFilePath = pathFromUrl(this.root, dependencyUrl);
+    const dependencyFilePath = pathFromUrl(this.root, dependencyUrl);
     if (minimatchAll(dependencyFilePath, this.sourceGlobs)) {
       logger.debug('dependency is a source file, ignoring...', {dep: dependencyUrl});
       return;
@@ -307,7 +307,7 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
   }
 
   resolveDeferredFile(filePath: string, file: File): void {
-    let deferred = this.deferredFiles.get(filePath);
+    const deferred = this.deferredFiles.get(filePath);
     deferred(file.contents.toString());
     this.deferredFiles.delete(filePath);
   }

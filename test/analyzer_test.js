@@ -21,12 +21,12 @@ suite('Analyzer', () => {
   suite('DepsIndex', () => {
 
     test('fragment to deps list has only uniques', (done) => {
-      let root = path.resolve('test/analyzer-data');
-      let fragments = [
+      const root = path.resolve('test/analyzer-data');
+      const fragments = [
         path.resolve(root, 'a.html'),
         path.resolve(root, 'b.html'),
       ];
-      let analyzer = new StreamAnalyzer(root, null, null, fragments, fragments);
+      const analyzer = new StreamAnalyzer(root, null, null, fragments, fragments);
       mergeStream(
           vfs.src(path.join(root, '**'), {cwdbase: true}),
           analyzer.dependencies
@@ -34,8 +34,8 @@ suite('Analyzer', () => {
         .pipe(analyzer)
         .on('finish', () => {
           analyzer.analyzeDependencies.then((depsIndex) => {
-            let ftd = depsIndex.fragmentToDeps;
-            for (let frag of ftd.keys()) {
+            const ftd = depsIndex.fragmentToDeps;
+            for (const frag of ftd.keys()) {
               assert.deepEqual(ftd.get(frag), ['shared-1.html', 'shared-2.html']);
             }
             done();
@@ -44,12 +44,12 @@ suite('Analyzer', () => {
     });
 
     test("analyzing shell and entrypoint doesn't double load files", (done) => {
-      let root = path.resolve('test/analyzer-data');
-      let sourceGlobs = [
+      const root = path.resolve('test/analyzer-data');
+      const sourceGlobs = [
         path.resolve(root, 'a.html'),
         path.resolve(root, 'b.html'),
       ];
-      let analyzer = new StreamAnalyzer(
+      const analyzer = new StreamAnalyzer(
           root,
           path.resolve(root, 'entrypoint.html'),
           path.resolve(root, 'shell.html'),
@@ -75,21 +75,21 @@ suite('Analyzer', () => {
   suite('.dependencies', () => {
 
     test('outputs all dependencies needed by source', (done) => {
-      let root = path.resolve('test/analyzer-data');
-      let shell = path.resolve(root, 'shell.html');
-      let entrypoint = path.resolve(root, 'entrypoint.html');
-      let sourceGlobs = [
+      const root = path.resolve('test/analyzer-data');
+      const shell = path.resolve(root, 'shell.html');
+      const entrypoint = path.resolve(root, 'entrypoint.html');
+      const sourceGlobs = [
         path.resolve(root, 'a.html'),
         path.resolve(root, 'b.html'),
       ];
-      let analyzer = new StreamAnalyzer(
+      const analyzer = new StreamAnalyzer(
           root,
           entrypoint,
           shell,
           undefined,
           sourceGlobs.concat(shell, entrypoint));
 
-      let foundDependencies = new Set();
+      const foundDependencies = new Set();
       analyzer.dependencies.on('data', (file) => {
         foundDependencies.add(file.path);
       });
@@ -110,21 +110,21 @@ suite('Analyzer', () => {
     });
 
     test('outputs all dependencies needed by source and given fragments', (done) => {
-      let root = path.resolve('test/analyzer-data');
-      let shell = path.resolve(root, 'shell.html');
-      let entrypoint = path.resolve(root, 'entrypoint.html');
-      let sourceGlobs = [
+      const root = path.resolve('test/analyzer-data');
+      const shell = path.resolve(root, 'shell.html');
+      const entrypoint = path.resolve(root, 'entrypoint.html');
+      const sourceGlobs = [
         path.resolve(root, 'a.html'),
         path.resolve(root, 'b.html'),
       ];
-      let analyzer = new StreamAnalyzer(
+      const analyzer = new StreamAnalyzer(
           root,
           entrypoint,
           shell,
           sourceGlobs,
           sourceGlobs.concat(shell, entrypoint));
 
-      let foundDependencies = new Set();
+      const foundDependencies = new Set();
       analyzer.dependencies.on('data', (file) => {
         foundDependencies.add(file.path);
       });

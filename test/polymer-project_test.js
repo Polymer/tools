@@ -23,7 +23,7 @@ suite('PolymerProject', () => {
 
   let defaultProject;
 
-  let unroot = (p) => p.substring(testProjectRoot.length + 1);
+  const unroot = (p) => p.substring(testProjectRoot.length + 1);
 
   setup(() => {
     defaultProject = new PolymerProject({
@@ -45,26 +45,26 @@ suite('PolymerProject', () => {
   });
 
   test('will properly convert relative root path into full path', () => {
-    let projectWithRelativeRoot = new PolymerProject({
+    const projectWithRelativeRoot = new PolymerProject({
       root: 'test/test-project/',
     });
     assert.equal(projectWithRelativeRoot.root, testProjectRoot);
   });
 
   test('will properly set full root path', () => {
-    let projectWithFullRootPath = new PolymerProject({
+    const projectWithFullRootPath = new PolymerProject({
       root: testProjectRoot,
     });
     assert.equal(projectWithFullRootPath.root, testProjectRoot);
   });
 
   test('reads sources', (done) => {
-    let files = [];
+    const files = [];
     defaultProject.sources()
       .on('data', (f) => files.push(f))
       .on('end', () => {
-        let names = files.map((f) => unroot(f.path));
-        let expected = [
+        const names = files.map((f) => unroot(f.path));
+        const expected = [
           'index.html',
           'shell.html',
           'source-dir/my-app.html',
@@ -77,12 +77,12 @@ suite('PolymerProject', () => {
   suite('.dependencies()', () => {
 
     test('reads dependencies', (done) => {
-      let files = [];
-      let dependencyStream = defaultProject.dependencies();
+      const files = [];
+      const dependencyStream = defaultProject.dependencies();
       dependencyStream.on('data', (f) => files.push(f));
       dependencyStream.on('end', () => {
-        let names = files.map((f) => unroot(f.path));
-        let expected = [
+        const names = files.map((f) => unroot(f.path));
+        const expected = [
           'bower_components/dep.html',
           'bower_components/loads-external-dependencies.html',
         ];
@@ -96,7 +96,7 @@ suite('PolymerProject', () => {
     });
 
     test('reads dependencies in a monolithic (non-shell) application without timing out', (done) => {
-      let project = new PolymerProject({
+      const project = new PolymerProject({
         root: testProjectRoot,
         entrypoint: 'index.html',
         sourceGlobs: [
@@ -115,8 +115,8 @@ suite('PolymerProject', () => {
     });
 
     test('reads dependencies and includes additionally provided files', (done) => {
-      let files = [];
-      let projectWithIncludedDeps = new PolymerProject({
+      const files = [];
+      const projectWithIncludedDeps = new PolymerProject({
         root: testProjectRoot,
         entrypoint: 'index.html',
         shell: 'shell.html',
@@ -128,11 +128,11 @@ suite('PolymerProject', () => {
         ],
       });
 
-      let dependencyStream = projectWithIncludedDeps.dependencies();
+      const dependencyStream = projectWithIncludedDeps.dependencies();
       dependencyStream.on('data', (f) => files.push(f));
       dependencyStream.on('end', () => {
-        let names = files.map((f) => unroot(f.path));
-        let expected = [
+        const names = files.map((f) => unroot(f.path));
+        const expected = [
           'bower_components/dep.html',
           'bower_components/unreachable-dep.html',
           'bower_components/loads-external-dependencies.html',
@@ -150,21 +150,21 @@ suite('PolymerProject', () => {
   });
 
   test('splits and rejoins scripts', (done) => {
-    let splitFiles = new Map();
-    let joinedFiles = new Map();
+    const splitFiles = new Map();
+    const joinedFiles = new Map();
     defaultProject.sources()
       .pipe(defaultProject.splitHtml())
       .on('data', (f) => splitFiles.set(unroot(f.path), f))
       .pipe(defaultProject.rejoinHtml())
       .on('data', (f) => joinedFiles.set(unroot(f.path), f))
       .on('end', () => {
-        let expectedSplitFiles = [
+        const expectedSplitFiles = [
           'index.html',
           'shell.html_script_0.js',
           'shell.html',
           'source-dir/my-app.html',
         ];
-        let expectedJoinedFiles = [
+        const expectedJoinedFiles = [
           'index.html',
           'shell.html',
           'source-dir/my-app.html',
@@ -185,14 +185,14 @@ suite('PolymerProject', () => {
   });
 
   test('split/rejoin deals with bad paths', (done) => {
-    let sourceStream = new stream.Readable({
+    const sourceStream = new stream.Readable({
       objectMode: true,
     });
-    let root = path.normalize('/foo');
-    let filepath = path.join(root, '/bar/baz.html');
-    let source =
+    const root = path.normalize('/foo');
+    const filepath = path.join(root, '/bar/baz.html');
+    const source =
       '<html><head><script>fooify();</script></head><body></body></html>';
-    let file = new File({
+    const file = new File({
       cwd: root,
       base: root,
       path: filepath,
@@ -209,7 +209,7 @@ suite('PolymerProject', () => {
       })
       .pipe(defaultProject.rejoinHtml())
       .on('data', (file) => {
-        let contents = file.contents.toString();
+        const contents = file.contents.toString();
         assert.equal(contents, source);
       })
       .on('finish', () => done())

@@ -18,7 +18,7 @@ import {DepsIndex} from './analyzer';
 
 import {SWConfig, generate as swPrecacheGenerate} from 'sw-precache';
 
-let logger = logging.getLogger('polymer-build.service-worker');
+const logger = logging.getLogger('polymer-build.service-worker');
 
 export interface AddServiceWorkerOptions {
   project: PolymerProject;
@@ -49,7 +49,7 @@ function fixDeprecatedOptions(options: any): AddServiceWorkerOptions {
  * the information provided in the DepsIndex object.
  */
 function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject): string[] {
-  let precachedAssets = new Set<string>(project.analyzer.allFragments);
+  const precachedAssets = new Set<string>(project.analyzer.allFragments);
   precachedAssets.add(project.entrypoint);
 
   for (let depImports of depsIndex.fragmentToFullDeps.values()) {
@@ -66,7 +66,7 @@ function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject): stri
  * BUNDLED build, based on the information provided in the DepsIndex object.
  */
 function getBundledPrecachedAssets(project: PolymerProject) {
-  let precachedAssets = new Set<string>(project.analyzer.allFragments);
+  const precachedAssets = new Set<string>(project.analyzer.allFragments);
   precachedAssets.add(project.entrypoint);
   precachedAssets.add(project.bundler.sharedBundleUrl);
 
@@ -84,13 +84,13 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions): P
   options = fixDeprecatedOptions(options);
 
   options = Object.assign({}, options);
-  let project = options.project;
-  let buildRoot = options.buildRoot;
-  let swPrecacheConfig: SWConfig = Object.assign({}, options.swPrecacheConfig);
+  const project = options.project;
+  const buildRoot = options.buildRoot;
+  const swPrecacheConfig: SWConfig = Object.assign({}, options.swPrecacheConfig);
 
-  let depsIndex = await project.analyzer.analyzeDependencies;
+  const depsIndex = await project.analyzer.analyzeDependencies;
   let staticFileGlobs = Array.from(swPrecacheConfig.staticFileGlobs || []);
-  let precachedAssets = (options.bundled)
+  const precachedAssets = (options.bundled)
     ? getBundledPrecachedAssets(project)
     : getPrecachedAssets(depsIndex, project);
 
@@ -131,7 +131,7 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions): P
 export function addServiceWorker(options: AddServiceWorkerOptions): Promise<{}> {
   return generateServiceWorker(options).then((fileContents: Buffer) => {
     return new Promise((resolve, reject) => {
-      let serviceWorkerPath = path.join(options.buildRoot, options.path || 'service-worker.js');
+      const serviceWorkerPath = path.join(options.buildRoot, options.path || 'service-worker.js');
       writeFile(serviceWorkerPath, fileContents, (err) => {
         if (err) {
           reject(err);

@@ -22,7 +22,7 @@ import {compose} from './streams';
 const minimatchAll = require('minimatch-all');
 const through = require('through2').obj;
 const Vulcanize = require('vulcanize');
-let logger = logging.getLogger('cli.build.bundle');
+const logger = logging.getLogger('cli.build.bundle');
 
 export class Bundler extends Transform {
 
@@ -81,16 +81,16 @@ export class Bundler extends Transform {
 
   _flush(done: (error?: any) => void) {
     this._buildBundles().then((bundles: Map<string, string>) => {
-      for (let fragment of this.allFragments) {
-        let file = this.analyzer.getFile(fragment);
+      for (const fragment of this.allFragments) {
+        const file = this.analyzer.getFile(fragment);
         console.assert(file != null);
-        let contents = bundles.get(fragment);
+        const contents = bundles.get(fragment);
         file.contents = new Buffer(contents);
         this.push(file);
       }
-      let sharedBundle = bundles.get(this.sharedBundleUrl);
+      const sharedBundle = bundles.get(this.sharedBundleUrl);
       if (sharedBundle) {
-        let contents = bundles.get(this.sharedBundleUrl);
+        const contents = bundles.get(this.sharedBundleUrl);
         this.sharedFile.contents = new Buffer(contents);
         this.push(this.sharedFile);
       }
@@ -104,31 +104,31 @@ export class Bundler extends Transform {
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
-    let bundles = await this._getBundles();
-    let sharedDepsBundle = (this.shell)
+    const bundles = await this._getBundles();
+    const sharedDepsBundle = (this.shell)
         ? urlFromPath(this.root, this.shell)
         : this.sharedBundleUrl;
-    let sharedDeps = bundles.get(sharedDepsBundle) || [];
-    let promises: Promise<any>[] = [];
+    const sharedDeps = bundles.get(sharedDepsBundle) || [];
+    const promises: Promise<any>[] = [];
 
     if (this.shell) {
-      let shellFile = this.analyzer.getFile(this.shell);
+      const shellFile = this.analyzer.getFile(this.shell);
       console.assert(shellFile != null);
-      let newShellContent = this._addSharedImportsToShell(bundles);
+      const newShellContent = this._addSharedImportsToShell(bundles);
       shellFile.contents = new Buffer(newShellContent);
     }
 
-    for (let fragment of this.allFragments) {
-      let fragmentUrl = urlFromPath(this.root, fragment);
-      let addedImports = (fragment === this.shell && this.shell)
+    for (const fragment of this.allFragments) {
+      const fragmentUrl = urlFromPath(this.root, fragment);
+      const addedImports = (fragment === this.shell && this.shell)
           ? []
           : [posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)];
-      let excludes = (fragment === this.shell && this.shell)
+      const excludes = (fragment === this.shell && this.shell)
           ? []
           : sharedDeps.concat(sharedDepsBundle);
 
       promises.push(new Promise((resolve, reject) => {
-        let vulcanize = new Vulcanize({
+        const vulcanize = new Vulcanize({
           abspath: null,
           fsResolver: this.analyzer.loader,
           addedImports: addedImports,
@@ -154,9 +154,9 @@ export class Bundler extends Transform {
       logger.info(`generating shared bundle...`);
       promises.push(this._generateSharedBundle(sharedDeps));
     }
-    let vulcanizedBundles = await Promise.all(promises);
-    let contentsMap = new Map();
-    for (let bundle of vulcanizedBundles) {
+    const vulcanizedBundles = await Promise.all(promises);
+    const contentsMap = new Map();
+    for (const bundle of vulcanizedBundles) {
       contentsMap.set(bundle.url, bundle.contents);
     }
     return contentsMap;
@@ -164,9 +164,9 @@ export class Bundler extends Transform {
 
   _addSharedImportsToShell(bundles: Map<string, string[]>): string {
     console.assert(this.shell != null);
-    let shellUrl = urlFromPath(this.root, this.shell);
-    let shellUrlDir = posixPath.dirname(shellUrl);
-    let shellDeps = bundles.get(shellUrl)
+    const shellUrl = urlFromPath(this.root, this.shell);
+    const shellUrlDir = posixPath.dirname(shellUrl);
+    const shellDeps = bundles.get(shellUrl)
       .map((d) => posixPath.relative(shellUrlDir, d));
     logger.debug('found shell dependencies', {
       shellUrl: shellUrl,
@@ -174,11 +174,11 @@ export class Bundler extends Transform {
       shellDeps: shellDeps,
     });
 
-    let file = this.analyzer.getFile(this.shell);
+    const file = this.analyzer.getFile(this.shell);
     console.assert(file != null);
-    let contents = file.contents.toString();
-    let doc = dom5.parse(contents);
-    let imports = dom5.queryAll(doc, dom5.predicates.AND(
+    const contents = file.contents.toString();
+    const doc = dom5.parse(contents);
+    const imports = dom5.queryAll(doc, dom5.predicates.AND(
       dom5.predicates.hasTagName('link'),
       dom5.predicates.hasAttrValue('rel', 'import')
     ));
@@ -189,9 +189,9 @@ export class Bundler extends Transform {
     // Remove all imports that are in the shared deps list so that we prefer
     // the ordering or shared deps. Any imports left should be independent of
     // ordering of shared deps.
-    let shellDepsSet = new Set(shellDeps);
-    for (let _import of imports) {
-      let importHref = dom5.getAttribute(_import, 'href');
+    const shellDepsSet = new Set(shellDeps);
+    for (const _import of imports) {
+      const importHref = dom5.getAttribute(_import, 'href');
       if (shellDepsSet.has(importHref)) {
         logger.debug(`removing duplicate import element "${importHref}"...`);
         dom5.remove(_import);
@@ -199,24 +199,24 @@ export class Bundler extends Transform {
     }
 
     // Append all shared imports to the end of <head>
-    let head = dom5.query(doc, dom5.predicates.hasTagName('head'));
-    for (let dep of shellDeps) {
-      let newImport = dom5.constructors.element('link');
+    const head = dom5.query(doc, dom5.predicates.hasTagName('head'));
+    for (const dep of shellDeps) {
+      const newImport = dom5.constructors.element('link');
       dom5.setAttribute(newImport, 'rel', 'import');
       dom5.setAttribute(newImport, 'href', dep);
       dom5.append(head, newImport);
     }
-    let newContents = dom5.serialize(doc);
+    const newContents = dom5.serialize(doc);
     return newContents;
   }
 
   _generateSharedBundle(sharedDeps: string[]): Promise<any> {
     return new Promise((resolve, reject) => {
-      let contents = sharedDeps
+      const contents = sharedDeps
           .map((d) => `<link rel="import" href="${d}">`)
           .join('\n');
 
-      let sharedFsPath = path.resolve(this.root, this.sharedBundleUrl);
+      const sharedFsPath = path.resolve(this.root, this.sharedBundleUrl);
       this.sharedFile = new File({
         cwd: this.root,
         base: this.root,
@@ -227,7 +227,7 @@ export class Bundler extends Transform {
       // make the shared bundle visible to vulcanize
       this.analyzer.addFile(this.sharedFile);
 
-      let vulcanize = new Vulcanize({
+      const vulcanize = new Vulcanize({
         abspath: null,
         fsResolver: this.analyzer.loader,
         inlineScripts: true,
@@ -249,11 +249,11 @@ export class Bundler extends Transform {
 
   _getBundles() {
     return this.analyzer.analyzeDependencies.then((indexes) => {
-      let depsToEntrypoints = indexes.depsToFragments;
-      let fragmentToDeps = indexes.fragmentToDeps;
-      let bundles = new Map<string, string[]>();
+      const depsToEntrypoints = indexes.depsToFragments;
+      const fragmentToDeps = indexes.fragmentToDeps;
+      const bundles = new Map<string, string[]>();
 
-      let addImport = (from: string, to: string) => {
+      const addImport = (from: string, to: string) => {
         let imports: string[];
         if (!bundles.has(from)) {
           imports = [];
@@ -275,12 +275,12 @@ export class Bundler extends Transform {
       // This assumes an ordering between fragments, since they could have
       // conflicting orders between their top level imports. The shell should
       // always come first.
-      for (let fragment of fragmentToDeps.keys()) {
+      for (const fragment of fragmentToDeps.keys()) {
 
-        let fragmentUrl = urlFromPath(this.root, fragment);
-        let dependencies = fragmentToDeps.get(fragment);
-        for (let dep of dependencies) {
-          let fragmentCount = depsToEntrypoints.get(dep).length;
+        const fragmentUrl = urlFromPath(this.root, fragment);
+        const dependencies = fragmentToDeps.get(fragment);
+        for (const dep of dependencies) {
+          const fragmentCount = depsToEntrypoints.get(dep).length;
           if (fragmentCount > 1) {
             if (this.shell) {
               addImport(urlFromPath(this.root, this.shell), dep);

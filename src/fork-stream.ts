@@ -15,7 +15,7 @@ import {FileCB} from './streams';
 
 export function forkStream(stream: NodeJS.ReadableStream):
     NodeJS.ReadableStream {
-  let fork = new ForkedVinylStream();
+  const fork = new ForkedVinylStream();
   stream.pipe(fork);
   return fork;
 }

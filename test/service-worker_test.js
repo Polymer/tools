@@ -97,7 +97,7 @@ suite('service-worker', () => {
     });
 
     test('should not modify the options object provided when called', () => {
-      let swPrecacheConfig = {staticFileGlobs: []};
+      const swPrecacheConfig = {staticFileGlobs: []};
       return serviceWorker.generateServiceWorker({
           project: defaultProject,
           buildRoot: testBuildRoot,
@@ -121,7 +121,7 @@ suite('service-worker', () => {
         project: defaultProject,
         buildRoot: testBuildRoot,
       }).then((swFile) => {
-        let fileContents = swFile.toString();
+        const fileContents = swFile.toString();
         assert.include(fileContents, path.join('"/index.html"'));
         assert.include(fileContents, path.join('"/shell.html"'));
         assert.include(fileContents, path.join('"/bower_components/dep.html"'));
@@ -135,7 +135,7 @@ suite('service-worker', () => {
         buildRoot: testBuildRoot,
         bundled: true,
       }).then((swFile) => {
-        let fileContents = swFile.toString();
+        const fileContents = swFile.toString();
         assert.include(fileContents, path.join('"/index.html"'));
         assert.include(fileContents, path.join('"/shell.html"'));
         assert.notInclude(fileContents, path.join('"shared-bundle.html"'));
@@ -153,7 +153,7 @@ suite('service-worker', () => {
           staticFileGlobs: ['/bower_components/dep.html'],
         },
       }).then((swFile) => {
-        let fileContents = swFile.toString();
+        const fileContents = swFile.toString();
         assert.include(fileContents, path.join('"/index.html"'));
         assert.include(fileContents, path.join('"/shell.html"'));
         assert.notInclude(fileContents, path.join('"shared-bundle.html"'));
@@ -171,7 +171,7 @@ suite('service-worker', () => {
         project: defaultProject,
         buildRoot: testBuildRoot,
       }).then(() => {
-        let content = fs.readFileSync(path.join(testBuildRoot, 'service-worker.js'), 'utf-8');
+        const content = fs.readFileSync(path.join(testBuildRoot, 'service-worker.js'), 'utf-8');
         assert.include(content, '// This generated service worker JavaScript will precache your site\'s resources.');
       });
     });
