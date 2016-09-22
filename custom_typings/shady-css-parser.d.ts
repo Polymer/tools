@@ -1,10 +1,7 @@
 declare module 'shady-css-parser' {
-  export class Parser {
-    parse(cssText: string): Stylesheet;
-  }
-  export type Node =
-      Stylesheet | AtRule | Comment | Rulelist | Ruleset | Declaration |
-      Expression | Discarded;
+  export class Parser { parse(cssText: string): Stylesheet; }
+  export type Node = Stylesheet | AtRule | Comment | Rulelist | Ruleset |
+      Declaration | Expression | Discarded;
   export type Rule = Comment | AtRule | Ruleset | Declaration | Discarded;
 
   export interface Stylesheet {
@@ -45,7 +42,7 @@ declare module 'shady-css-parser' {
     type: 'declaration';
     /** The property name of the Declaration (e.g., `color`). */
     name: string;
-    value: Expression | Rulelist;
+    value: Expression|Rulelist;
   }
   export interface Expression {
     type: 'expression';
@@ -73,5 +70,17 @@ declare module 'shady-css-parser' {
     abstract declaration(declaration: Declaration): T;
     abstract expression(expression: Expression): T;
     abstract discarded(discarded: Discarded): T;
+  }
+
+  export class Stringifier extends NodeVisitor<string> {
+    stringify(node: Node): string;
+    stylesheet(stylesheet: Stylesheet): string;
+    atRule(atRule: AtRule): string;
+    comment(comment: Comment): string;
+    rulelist(rulelist: Rulelist): string;
+    ruleset(ruleset: Ruleset): string;
+    declaration(declaration: Declaration): string;
+    expression(expression: Expression): string;
+    discarded(discarded: Discarded): string;
   }
 }
