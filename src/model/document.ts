@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Warning} from '../editor-service/editor-service';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior-descriptor';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/element-descriptor';
+import {Warning} from '../warning/warning';
 
 import {Element} from './element';
 import {Feature, ScannedFeature} from './feature';
@@ -24,6 +24,7 @@ import {Import, ScannedImport} from './import';
 import {InlineParsedDocument} from './inline-document';
 import {isResolvable} from './resolvable';
 import {LocationOffset, SourceRange} from './source-range';
+
 
 
 /**

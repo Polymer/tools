@@ -18,7 +18,8 @@ import * as util from 'util';
 
 import {SourceRange} from '../model/model';
 
-import {EditorService, SourcePosition, TypeaheadCompletion, Warning} from './editor-service';
+import {Warning} from '../warning/warning';
+import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
 import {Request, RequestWrapper, ResponseWrapper} from './remote-editor-protocol';
 
 

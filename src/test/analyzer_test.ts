@@ -129,23 +129,22 @@ suite('Analyzer', () => {
   });
 
   // TODO: reconsider whether we should test these private methods.
-  suite('_load()', () => {
+  suite('_parse()', () => {
 
     test('loads and parses an HTML document', async() => {
-      const doc =
-          await analyzer['_loadResolved']('static/html-parse-target.html');
+      const doc = await analyzer['_parse']('static/html-parse-target.html');
       assert.instanceOf(doc, ParsedHtmlDocument);
       assert.equal(doc.url, 'static/html-parse-target.html');
     });
 
     test('loads and parses a JavaScript document', async() => {
-      const doc = await analyzer['_loadResolved']('static/js-elements.js');
+      const doc = await analyzer['_parse']('static/js-elements.js');
       assert.instanceOf(doc, JavaScriptDocument);
       assert.equal(doc.url, 'static/js-elements.js');
     });
 
     test('returns a Promise that rejects for non-existant files', async() => {
-      await invertPromise(analyzer['_loadResolved']('static/not-found'));
+      await invertPromise(analyzer['_parse']('static/not-found'));
     });
 
   });

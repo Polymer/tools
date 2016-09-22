@@ -13,6 +13,7 @@
  */
 
 import {SourceRange} from '../model/model';
+import {Warning} from '../warning/warning';
 
 export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
 export interface ElementCompletion {
@@ -32,32 +33,11 @@ export interface AttributeCompletion {
   inheritedFrom?: string;
 }
 
-export interface Warning {
-  message: string;
-  sourceRange: SourceRange;
-  severity: Severity;
-  code: string;
-}
-
-export enum Severity {
-  ERROR,
-  WARNING,
-  INFO
-}
-
 export interface SourcePosition {
   /** Line number in file, starting from 0. */
   line: number;
   /** Column number in file, starting from 0. */
   column: number;
-}
-
-export class WarningCarryingException extends Error {
-  warning: Warning;
-  constructor(warning: Warning) {
-    super(warning.message);
-    this.warning = warning;
-  }
 }
 
 // Important note: all arguments to, and results returned from editor service

@@ -17,8 +17,9 @@ import * as parse5 from 'parse5';
 import {Analyzer, Options as AnalyzerOptions} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {Document, Element, Property, ScannedProperty, SourceRange} from '../model/model';
+import {Warning, WarningCarryingException} from '../warning/warning';
 
-import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion, Warning, WarningCarryingException} from './editor-service';
+import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
 
 export class LocalEditorService extends EditorService {
   private _analyzer: Analyzer;

@@ -47,6 +47,7 @@
     "gulp-typescript": "^2.13.4",
     "jsdoc-to-markdown": "^1.0.3",
     "jsonschema": "^1.1.0",
+    "memory-streams": "^0.1.0",
     "merge-stream": "^1.0.0",
     "mocha": "^2.2.4",
     "run-sequence": "^1.2.0",
@@ -59,12 +60,14 @@
     "watchy": "^0.6.6"
   },
   "dependencies": {
+    "@types/chalk": "^0.4.28",
     "@types/doctrine": "0.0.1",
     "@types/escodegen": "0.0.2",
     "@types/estraverse": "0.0.2",
     "@types/estree": "0.0.30",
     "@types/node": "^4.0.30",
     "@types/parse5": "0.0.27",
+    "chalk": "^1.1.3",
     "doctrine": "^0.7.0",
     "dom5": "^1.3.5",
     "escodegen": "^1.7.0",

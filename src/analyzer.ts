@@ -17,7 +17,6 @@
 import * as path from 'path';
 
 import {CssParser} from './css/css-parser';
-import {Severity, Warning, WarningCarryingException} from './editor-service/editor-service';
 import {HtmlImportScanner} from './html/html-import-scanner';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptScanner} from './html/html-script-scanner';
@@ -37,6 +36,7 @@ import {Scanner} from './scanning/scanner';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
 import {ElementScanner as VanillaElementScanner} from './vanilla-custom-elements/element-scanner';
+import {Severity, Warning, WarningCarryingException} from './warning/warning';
 
 export interface Options {
   urlLoader: UrlLoader;
@@ -120,7 +120,7 @@ export class Analyzer {
       this._parsedDocuments.delete(resolvedUrl);
     }
 
-    const scannedDocument = await this._scanResolved(resolvedUrl, contents);
+    const scannedDocument = await this._scan(resolvedUrl, contents);
     const doneTiming =
         this._telemetryTracker.start('Document.makeRootDocument', url);
     const document = Document.makeRootDocument(scannedDocument);
@@ -144,7 +144,7 @@ export class Analyzer {
     this._scannedDocuments.clear();
   }
 
-  private async _scanResolved(resolvedUrl: string, contents?: string):
+  private async _scan(resolvedUrl: string, contents?: string):
       Promise<ScannedDocument> {
     const cachedResult = this._scannedDocuments.get(resolvedUrl);
     if (cachedResult) {
@@ -154,7 +154,7 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise is cached before anything else happens.
       await Promise.resolve();
-      const document = await this._loadResolved(resolvedUrl, contents);
+      const document = await this._parse(resolvedUrl, contents);
       return this._scanDocument(document);
     })();
     this._scannedDocuments.set(resolvedUrl, promise);
@@ -169,7 +169,7 @@ export class Analyzer {
       locationOffset?: LocationOffset,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
-    const document = this._parse(type, contents, resolvedUrl);
+    const document = this._parseContents(type, contents, resolvedUrl);
     return await this._scanDocument(document, locationOffset, attachedComment);
   }
 
@@ -262,8 +262,7 @@ export class Analyzer {
       // HACK(rictic): this isn't quite right either, we need to get
       //     the scanned dependency's url relative to the basedir don't
       //     we?
-      scannedDocument =
-          await this._scanResolved(this._resolveUrl(scannedImport.url));
+      scannedDocument = await this._scan(this._resolveUrl(scannedImport.url));
     } catch (error) {
       if (error instanceof NoKnownParserError) {
         // We probably don't want to fail when importing something
@@ -283,15 +282,28 @@ export class Analyzer {
     return scannedDocument;
   }
 
-  private async _loadResolved(resolvedUrl: string, providedContents?: string):
+  /**
+   * Loads the content at the provided resolved URL.
+   *
+   * Currently does no caching. If the provided contents are given then they
+   * are used instead of hitting the UrlLoader (e.g. when you have in-memory
+   * contents that should override disk).
+   */
+  async load(resolvedUrl: string, providedContents?: string) {
+    if (!this._loader.canLoad(resolvedUrl)) {
+      throw new Error(`Can't load URL: ${resolvedUrl}`);
+    }
+    return providedContents == null ? await this._loader.load(resolvedUrl) :
+                                      providedContents;
+  }
+
+  private async _parse(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
     const cachedResult = this._parsedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
-    if (!this._loader.canLoad(resolvedUrl)) {
-      throw new Error(`Can't load URL: ${resolvedUrl}`);
-    }
+
     // Use an immediately executed async function to create the final Promise
     // synchronously so we can store it in this._documents before any other
     // async operations to avoid any race conditions.
@@ -299,13 +311,12 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise can be cached.
       await Promise.resolve();
-      const content = providedContents == null ?
-          await this._loader.load(resolvedUrl) :
-          providedContents;
+
+      const content = await this.load(resolvedUrl, providedContents);
       const extension = path.extname(resolvedUrl).substring(1);
 
       const doneTiming = this._telemetryTracker.start('parse', 'resolvedUrl');
-      const parsedDoc = this._parse(extension, content, resolvedUrl);
+      const parsedDoc = this._parseContents(extension, content, resolvedUrl);
       doneTiming();
       return parsedDoc;
     })();
@@ -313,7 +324,7 @@ export class Analyzer {
     return promise;
   }
 
-  private _parse(type: string, contents: string, url: string):
+  private _parseContents(type: string, contents: string, url: string):
       ParsedDocument<any, any> {
     const parser = this._parsers.get(type);
     if (parser == null) {
