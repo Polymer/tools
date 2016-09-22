@@ -109,7 +109,7 @@ export class Bundler extends Transform {
         ? urlFromPath(this.root, this.shell)
         : this.sharedBundleUrl;
     const sharedDeps = bundles.get(sharedDepsBundle) || [];
-    const promises: Promise<any>[] = [];
+    const promises: Promise<{url: string, contents: string}>[] = [];
 
     if (this.shell) {
       const shellFile = this.analyzer.getFile(this.shell);
