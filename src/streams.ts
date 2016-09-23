@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {PassThrough, Readable, Transform} from 'stream';
+import {PassThrough, Transform} from 'stream';
 import File = require('vinyl');
 import * as fs from 'fs';
 
@@ -56,7 +56,7 @@ export class VinylReaderTransform extends Transform {
 
   _transform(
     filePath: string,
-    encoding: string,
+    _encoding: string,
     callback: (error?: Error, data?: File) => void
   ): void {
     fs.readFile(filePath, (err?: Error, data?: Buffer) => {

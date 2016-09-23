@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {PassThrough, Readable, Transform} from 'stream';
+import {Transform} from 'stream';
 import File = require('vinyl');
 
 import {FileCB} from './streams';
@@ -29,7 +29,7 @@ export class ForkedVinylStream extends Transform {
     super({objectMode: true});
   }
 
-  _transform(file: File, enc: string, callback: FileCB) {
+  _transform(file: File, _encoding: string, callback: FileCB) {
     callback(null, file.clone({deep: true, contents: true}));
   }
 }

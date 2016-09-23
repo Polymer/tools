@@ -298,16 +298,13 @@ class HtmlSplitter extends Transform {
     this._project = project;
   }
 
-  _transform(file: File, encoding: string, callback: FileCB): void {
+  _transform(file: File, _encoding: string, callback: FileCB): void {
     const filePath = osPath.normalize(file.path);
     if (file.contents && filePath.endsWith('.html')) {
       try {
         const contents = file.contents.toString();
         const doc = dom5.parse(contents);
-        const body = dom5.query(doc, pred.hasTagName('body'));
-        const head = dom5.query(doc, pred.hasTagName('head'));
         const scriptTags = dom5.queryAll(doc, HtmlSplitter.isInlineScript);
-        const styleTags = dom5.queryAll(doc, pred.hasTagName('style'));
 
         // const scripts = [];
         // const styles = [];
@@ -367,7 +364,7 @@ class HtmlRejoiner extends Transform {
     this._project = project;
   }
 
-  _transform(file: File, encoding: string, callback: FileCB): void {
+  _transform(file: File, _encoding: string, callback: FileCB): void {
     const filePath = osPath.normalize(file.path);
     if (this._project.isSplitFile(filePath)) {
       // this is a parent file
@@ -400,10 +397,7 @@ class HtmlRejoiner extends Transform {
     const filePath = osPath.normalize(file.path);
     const contents = file.contents.toString();
     const doc = dom5.parse(contents);
-    const body = dom5.query(doc, pred.hasTagName('body'));
-    const head = dom5.query(doc, pred.hasTagName('head'));
     const scriptTags = dom5.queryAll(doc, HtmlRejoiner.isExternalScript);
-    const styleTags = dom5.queryAll(doc, pred.hasTagName('style'));
 
     for (let i = 0; i < scriptTags.length; i++) {
       const scriptTag = scriptTags[i];

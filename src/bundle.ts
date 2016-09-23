@@ -62,7 +62,7 @@ export class Bundler extends Transform {
 
   _transform(
       file: File,
-      encoding: string,
+      _encoding: string,
       callback: (error?: any, data?: File) => void
     ): void {
 

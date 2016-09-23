@@ -8,17 +8,14 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as fs from 'fs';
 import {Deferred, Resolver as HydrolysisResolver} from 'hydrolysis';
 import {Analyzer} from 'polymer-analyzer';
 import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
-import {Import} from 'polymer-analyzer/lib/model/import';
 import * as path from 'path';
 import {PassThrough, Transform} from 'stream';
 import File = require('vinyl');
 import {parse as parseUrl} from 'url';
 import * as logging from 'plylog';
-import {Node, queryAll, predicates, getAttribute} from 'dom5';
 
 import {FileCB, VinylReaderTransform} from './streams';
 import {urlFromPath, pathFromUrl} from './path-transformers';
@@ -112,7 +109,7 @@ export class StreamAnalyzer extends Transform {
     this._dependenciesStream.pipe(this._dependenciesProcessingStream);
 
     this.allFragmentsToAnalyze = new Set(this.allFragments);
-    this.analyzeDependencies = new Promise((resolve, reject) => {
+    this.analyzeDependencies = new Promise((resolve, _reject) => {
       this._resolveDependencyAnalysis = resolve;
     });
   }
@@ -127,7 +124,7 @@ export class StreamAnalyzer extends Transform {
     return this._dependenciesProcessingStream;
   }
 
-  _transform(file: File, encoding: string, callback: FileCB): void {
+  _transform(file: File, _encoding: string, callback: FileCB): void {
     const filePath = file.path;
     this.addFile(file);
 
@@ -312,7 +309,7 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
     this.deferredFiles.delete(filePath);
   }
 
-  canLoad(url: string): boolean {
+  canLoad(_url: string): boolean {
     // We want to return true for all files. Even external files, so that we
     // can resolve them as empty strings for now.
     return true;
@@ -338,7 +335,7 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
 
     let callback: DeferredFileCallback;
     const waitForFile =
-      new Promise((resolve: DeferredFileCallback, reject: () => any) => {
+      new Promise((resolve: DeferredFileCallback, _reject: () => any) => {
         callback = resolve;
       });
     this.deferredFiles.set(filePath, callback);
