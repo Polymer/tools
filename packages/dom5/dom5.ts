@@ -529,8 +529,10 @@ function insertNode(
 
   if (newNode) {
     if (isDocumentFragment(newNode)) {
-      newNodes = newNode.childNodes || [];
-      newNode.childNodes = [];
+      if (newNode.childNodes) {
+        newNodes = Array.from(newNode.childNodes);
+        newNode.childNodes.length = 0;
+      }
     } else {
       newNodes = [newNode];
       remove(newNode);
