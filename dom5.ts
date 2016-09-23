@@ -529,8 +529,10 @@ function insertNode(
 
   if (newNode) {
     if (isDocumentFragment(newNode)) {
-      newNodes = newNode.childNodes || [];
-      newNode.childNodes = [];
+      if (newNode.childNodes) {
+        newNodes = Array.from(newNode.childNodes);
+        newNode.childNodes.length = 0;
+      }
     } else {
       newNodes = [newNode];
       remove(newNode);
@@ -576,21 +578,6 @@ export function insertBefore(parent: Node, oldNode: Node, newNode: Node) {
 export function append(parent: Node, newNode: Node) {
   const index = parent.childNodes && parent.childNodes.length || 0;
   insertNode(parent, index, newNode);
-}
-
-export function parse(text: string, options?: parse5.ParserOptions) {
-  const parser = new parse5.Parser(parse5.TreeAdapters.default, options);
-  return parser.parse(text);
-}
-
-export function parseFragment(text: string) {
-  const parser = new parse5.Parser();
-  return parser.parseFragment(text);
-}
-
-export function serialize(ast: Node) {
-  const serializer = new parse5.Serializer();
-  return serializer.serialize(ast);
 }
 
 export const predicates = {
