@@ -1,0 +1,21 @@
+{
+  "name": "polymer-project-config",
+  "version": "1.0.0",
+  "description": "reads, validates, and shapes your polymer.json project configuration",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && mocha --ui tdd"
+  },
+  "dependencies": {
+    "plylog": "^0.4.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2",
+    "typescript": "^2.0.2"
+  }
+}
