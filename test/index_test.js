@@ -25,6 +25,7 @@ suite('Project Config', () => {
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
+          fragments: [],
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
           extraDependencies: [],
           sources: [
@@ -41,6 +42,7 @@ suite('Project Config', () => {
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
+          fragments: [],
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
           extraDependencies: [],
           sources: [
@@ -60,6 +62,7 @@ suite('Project Config', () => {
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'foo.html'),
+          fragments: [],
           allFragments: [path.resolve(absoluteRoot, 'foo.html')],
           extraDependencies: [],
           sources: [
@@ -77,6 +80,7 @@ suite('Project Config', () => {
           root: process.cwd(),
           entrypoint: path.resolve('index.html'),
           shell: path.resolve('foo.html'),
+          fragments: [],
           allFragments: [
             path.resolve('foo.html')
           ],
@@ -124,6 +128,7 @@ suite('Project Config', () => {
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
+          fragments: [],
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
           extraDependencies: [],
           sources: [
@@ -147,6 +152,7 @@ suite('Project Config', () => {
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
+          fragments: [],
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
           extraDependencies: [
             path.resolve(absoluteRoot, 'bower_components/**/*.js'),

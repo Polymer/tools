@@ -91,7 +91,7 @@ export class ProjectConfig {
 
   readonly root: string;
   readonly entrypoint: string;
-  readonly shell: string;
+  readonly shell?: string;
   readonly fragments: string[];
   readonly sources: string[];
   readonly extraDependencies: string[];
@@ -107,7 +107,7 @@ export class ProjectConfig {
     let configParsed: ProjectOptions;
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
-      configParsed = JSON.parse(configContent);
+      return JSON.parse(configContent);
     } catch (error) {
       // swallow "not found" errors because they are so common / expected
       if (error.code === 'ENOENT') {
@@ -117,8 +117,6 @@ export class ProjectConfig {
       // otherwise, throw an exception
       throw error;
     }
-
-    return configParsed;
   }
 
   /**
@@ -140,8 +138,7 @@ export class ProjectConfig {
    * calculating some additional properties.
    */
   constructor(options: ProjectOptions) {
-    options = options || {};
-    options = fixDeprecatedOptions(options);
+    options = (options) ? fixDeprecatedOptions(options) : {};
 
     /**
      * root
@@ -173,6 +170,8 @@ export class ProjectConfig {
      */
     if (options.fragments) {
       this.fragments = options.fragments.map((e) => path.resolve(this.root, e));
+    } else {
+      this.fragments = [];
     }
 
     /**
@@ -215,7 +214,7 @@ export class ProjectConfig {
   }
 
   isShell(filepath: string): boolean {
-    return !!(!!this.shell && (this.shell === filepath));
+    return (!!this.shell && (this.shell === filepath));
   }
 
 }
