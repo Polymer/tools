@@ -580,21 +580,6 @@ export function append(parent: Node, newNode: Node) {
   insertNode(parent, index, newNode);
 }
 
-export function parse(text: string, options?: parse5.ParserOptions) {
-  const parser = new parse5.Parser(parse5.TreeAdapters.default, options);
-  return parser.parse(text);
-}
-
-export function parseFragment(text: string) {
-  const parser = new parse5.Parser();
-  return parser.parseFragment(text);
-}
-
-export function serialize(ast: Node) {
-  const serializer = new parse5.Serializer();
-  return serializer.serialize(ast);
-}
-
 export const predicates = {
   hasClass: hasClass,
   hasAttr: hasAttr,

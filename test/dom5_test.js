@@ -10,6 +10,7 @@
 
 var chai = require('chai');
 var fs = require('fs');
+var parse5 = require('parse5');
 
 var dom5 = require('../dom5');
 
@@ -18,37 +19,35 @@ var assert = chai.assert;
 suite('dom5', function() {
 
   suite('Parse5 Wrapper Functions', function() {
-    var parse5 = require('parse5');
     var docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
     var fragText = '<template><span>Foo</span></template><!-- comment --><my-bar></my-bar>';
-    var parser = new parse5.Parser();
 
     test('parse', function() {
-      var doc_expected = parser.parse(docText);
-      var doc_actual = dom5.parse(docText);
+      var doc_expected = parse5.parse(docText);
+      var doc_actual = parse5.parse(docText);
 
       assert.deepEqual(doc_expected, doc_actual);
     });
 
     test('parseFragment', function() {
-      var frag_expected = parser.parseFragment(fragText);
-      var frag_actual = dom5.parseFragment(fragText);
+      var frag_expected = parse5.parseFragment(fragText);
+      var frag_actual = parse5.parseFragment(fragText);
 
       assert.deepEqual(frag_expected, frag_actual);
     });
 
     test('serialize', function() {
-      var serializer = new parse5.Serializer();
+      // var serializer = new parse5.Serializer();
 
-      var ast = parser.parse(docText);
-      var expected = serializer.serialize(ast);
-      var actual = dom5.serialize(ast);
+      var ast = parse5.parse(docText);
+      var expected = parse5.serialize(ast);
+      var actual = parse5.serialize(ast);
 
       assert.equal(expected, actual);
 
-      ast = parser.parseFragment(fragText);
-      expected = serializer.serialize(ast);
-      actual = dom5.serialize(ast);
+      ast = parse5.parseFragment(fragText);
+      expected = parse5.serialize(ast);
+      actual = parse5.serialize(ast);
 
       assert.equal(expected, actual);
     });
@@ -66,7 +65,7 @@ suite('dom5', function() {
     var doc = null;
 
     setup(function () {
-      doc = dom5.parse(docText);
+      doc = parse5.parse(docText);
     });
 
     suite('Node Identity', function() {
@@ -292,7 +291,7 @@ suite('dom5', function() {
       var dom, div, span;
 
       setup(function() {
-        dom = dom5.parseFragment('<div>a</div><span></span>b');
+        dom = parse5.parseFragment('<div>a</div><span></span>b');
         div = dom.childNodes[0];
         span = dom.childNodes[1];
       });
@@ -340,7 +339,7 @@ suite('dom5', function() {
       });
 
       test('append to node with no children', function() {
-        var emptyBody = dom5.parse('<head></head><body></body>');
+        var emptyBody = parse5.parse('<head></head><body></body>');
         var body = emptyBody.childNodes[0].childNodes[1];
         var span = dom5.constructors.element('span');
         dom5.append(body, span);
@@ -353,7 +352,7 @@ suite('dom5', function() {
       var dom, div, span, text;
 
       setup(function() {
-        dom = dom5.parseFragment('<div></div><span></span>text');
+        dom = parse5.parseFragment('<div></div><span></span>text');
         div = dom.childNodes[0];
         span = dom.childNodes[1];
         text = dom.childNodes[2];
@@ -362,7 +361,7 @@ suite('dom5', function() {
       test('ordering is correct', function() {
         dom5.insertBefore(dom, span, text);
         assert.equal(dom.childNodes.indexOf(text), 1);
-        var newHtml = dom5.serialize(dom);
+        var newHtml = parse5.serialize(dom);
         assert.equal(newHtml, '<div></div>text<span></span>');
         dom5.insertBefore(dom, div, text);
         assert.equal(dom.childNodes.indexOf(text), 0);
@@ -388,7 +387,7 @@ suite('dom5', function() {
     suite('cloneNode', function() {
 
       test('clones a node', function() {
-        var dom = dom5.parseFragment('<div><span foo="bar">a</span></div>');
+        var dom = parse5.parseFragment('<div><span foo="bar">a</span></div>');
         var div = dom.childNodes[0];
         var span = div.childNodes[0];
 
@@ -415,7 +414,7 @@ suite('dom5', function() {
     var fragText = '<div id="a" class="b c"><!-- nametag -->Hello World</div>';
     var frag = null;
     suiteSetup(function() {
-      frag = dom5.parseFragment(fragText).childNodes[0];
+      frag = parse5.parseFragment(fragText).childNodes[0];
     });
 
     test('hasTagName', function() {
@@ -533,7 +532,7 @@ suite('dom5', function() {
     test('parentMatches', function() {
       var fragText =
           '<div class="a"><div class="b"><div class="c"></div></div></div>';
-      var frag = dom5.parseFragment(fragText);
+      var frag = parse5.parseFragment(fragText);
       var fn = dom5.predicates.parentMatches(dom5.predicates.hasClass('a'));
       assert.isFalse(fn(frag.childNodes[0])); // a
       assert.isTrue(fn(frag.childNodes[0].childNodes[0])); // b
@@ -546,25 +545,26 @@ suite('dom5', function() {
       '<!DOCTYPE html>',
       '<link rel="import" href="polymer.html">',
       '<dom-module id="my-el">',
-      '<template>',
+      '<div>', // TODO(justinfagnani): this used to be a template, we should test templates
       '<img src="foo.jpg">',
       '<a href="next-page.html">Anchor</a>',
       'sample element',
       '<!-- comment node -->',
-      '</template>',
+      '</div>',
       '</dom-module>',
       '<script>Polymer({is: "my-el"})</script>'
     ].join('\n');
     var doc = null;
 
     setup(function() {
-      doc = dom5.parse(docText);
+      doc = parse5.parse(docText);
     });
 
     test('nodeWalkAncestors', function() {
-      // doc -> dom-module -> template -> a
+      // doc -> dom-module -> div -> a
       var anchor = doc.childNodes[1].childNodes[1].childNodes[0]
-          .childNodes[1].childNodes[0].childNodes[3];
+          .childNodes[1].childNodes[3];
+
       assert(dom5.predicates.hasTagName('a')(anchor));
       var domModule =
           dom5.nodeWalkAncestors(
@@ -577,9 +577,8 @@ suite('dom5', function() {
     });
 
     test('nodeWalk', function() {
-      // doc -> body -> dom-module -> template -> template.content
-      var templateContent = doc.childNodes[1].childNodes[1].childNodes[0]
-      .childNodes[1].childNodes[0];
+      // doc -> body -> dom-module -> div
+      var div = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
 
       var textNode = dom5.predicates.AND(
         dom5.isTextNode,
@@ -587,13 +586,13 @@ suite('dom5', function() {
       );
 
       // 'sample element' text node
-      var expected = templateContent.childNodes[4];
+      var expected = div.childNodes[4];
       var actual = dom5.nodeWalk(doc, textNode);
       assert.equal(expected, actual);
 
       // <!-- comment node -->
-      expected = templateContent.childNodes[5];
-      actual = dom5.nodeWalk(templateContent, dom5.isCommentNode);
+      expected = div.childNodes[5];
+      actual = dom5.nodeWalk(div, dom5.isCommentNode);
       assert.equal(expected, actual);
     });
 
@@ -617,7 +616,7 @@ suite('dom5', function() {
       );
 
       // serialize to count for inserted <head> and <body>
-      var serializedDoc = dom5.serialize(doc);
+      var serializedDoc = parse5.serialize(doc);
       // subtract one to get "gap" number
       var expected = serializedDoc.split('\n').length - 1;
       // add two for normalized text node "\nsample text\n"
@@ -637,14 +636,13 @@ suite('dom5', function() {
         )
       );
 
-      // doc -> body -> dom-module -> template -> template.content
-      var templateContent = doc.childNodes[1].childNodes[1].childNodes[0]
-      .childNodes[1].childNodes[0];
+      // doc -> body -> dom-module -> div
+      var div = doc.childNodes[1].childNodes[1].childNodes[0].childNodes[1];
 
       // img
-      var expected_1 = templateContent.childNodes[1];
+      var expected_1 = div.childNodes[1];
       // anchor
-      var expected_2 = templateContent.childNodes[3];
+      var expected_2 = div.childNodes[3];
       var actual = dom5.queryAll(doc, fn);
 
       assert.equal(actual.length, 2);
@@ -658,7 +656,7 @@ suite('dom5', function() {
     var doc = null;
 
     setup(function() {
-      doc = dom5.parse(docText);
+      doc = parse5.parse(docText);
     });
 
     test('nodeWalkAllPrior', function() {
@@ -781,7 +779,7 @@ suite('dom5', function() {
     });
 
     test('document can be normalized', function() {
-      var doc = dom5.parse('<!DOCTYPE html>');
+      var doc = parse5.parse('<!DOCTYPE html>');
       var body = doc.childNodes[1].childNodes[1];
       var div = con.element('div');
       var tn1 = con.text('foo');
