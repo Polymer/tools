@@ -326,13 +326,17 @@ suite('dom5', function() {
         var fragment = dom5.constructors.fragment();
         var span = dom5.constructors.element('span');
         var text = dom5.constructors.text('foo');
-        fragment.childNodes.push(span);
-        fragment.childNodes.push(text);
+        // hold a reference to make sure append() clears childNodes
+        var fragmentChildren = fragment.childNodes;
+        fragmentChildren.push(span);
+        fragmentChildren.push(text);
 
         dom5.append(div, fragment);
 
         assert.equal(div.childNodes.indexOf(span), 1);
         assert.equal(div.childNodes.indexOf(text), 2);
+        assert.equal(fragment.childNodes.length, 0);
+        assert.equal(fragmentChildren.length, 0);
       });
 
       test('append to node with no children', function() {
@@ -346,34 +350,37 @@ suite('dom5', function() {
     });
 
     suite('InsertBefore', function() {
-      var dom, div, span, a;
+      var dom, div, span, text;
 
       setup(function() {
-        dom = dom5.parseFragment('<div></div><span></span>a');
+        dom = dom5.parseFragment('<div></div><span></span>text');
         div = dom.childNodes[0];
         span = dom.childNodes[1];
-        a = dom.childNodes[2];
+        text = dom.childNodes[2];
       });
 
       test('ordering is correct', function() {
-        dom5.insertBefore(dom, span, a);
-        assert.equal(dom.childNodes.indexOf(a), 1);
-        dom5.insertBefore(dom, div, a);
-        assert.equal(dom.childNodes.indexOf(a), 0);
+        dom5.insertBefore(dom, span, text);
+        assert.equal(dom.childNodes.indexOf(text), 1);
+        var newHtml = dom5.serialize(dom);
+        assert.equal(newHtml, '<div></div>text<span></span>');
+        dom5.insertBefore(dom, div, text);
+        assert.equal(dom.childNodes.indexOf(text), 0);
       });
 
       test('accepts document fragments', function() {
         var fragment = dom5.constructors.fragment();
         var span2 = dom5.constructors.element('span');
-        var text = dom5.constructors.text('foo');
+        var text2 = dom5.constructors.text('foo');
         fragment.childNodes.push(span2);
-        fragment.childNodes.push(text);
+        fragment.childNodes.push(text2);
 
         dom5.insertBefore(dom, span, fragment);
         assert.equal(dom.childNodes.indexOf(span2), 1);
-        assert.equal(dom.childNodes.indexOf(text), 2);
+        assert.equal(dom.childNodes.indexOf(text2), 2);
         assert.equal(dom.childNodes.indexOf(span), 3);
-        assert.equal(dom.childNodes.indexOf(a), 4);
+        assert.equal(dom.childNodes.indexOf(text), 4);
+        assert.equal(fragment.childNodes.length, 0);
       });
 
     });
