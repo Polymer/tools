@@ -4,7 +4,7 @@
   "fragments": [
     "bar.html"
   ],
-  "dependencies": [
+  "extraDependencies": [
     "baz.html"
   ],
   "sources": [

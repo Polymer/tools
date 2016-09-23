@@ -26,7 +26,7 @@ suite('Project Config', () => {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'index.html'),
@@ -42,7 +42,7 @@ suite('Project Config', () => {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'index.html'),
@@ -61,7 +61,7 @@ suite('Project Config', () => {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'foo.html'),
           allFragments: [path.resolve(absoluteRoot, 'foo.html')],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'foo.html'),
@@ -80,7 +80,7 @@ suite('Project Config', () => {
           allFragments: [
             path.resolve('foo.html')
           ],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve('src/**/*'),
             path.resolve('index.html'),
@@ -104,7 +104,7 @@ suite('Project Config', () => {
             path.resolve('foo.html'),
             path.resolve('bar.html'),
           ],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve('src/**/*'),
             path.resolve('index.html'),
@@ -125,7 +125,7 @@ suite('Project Config', () => {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'images/**/*'),
@@ -134,12 +134,12 @@ suite('Project Config', () => {
         });
       });
 
-      test('sets dependencies relative to root when provided', () => {
+      test('sets extraDependencies relative to root when provided', () => {
         const relativeRoot = 'public';
         const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
-          dependencies: [
+          extraDependencies: [
             'bower_components/**/*.js',
             '!bower_components/ignore-big-package',
           ],
@@ -148,7 +148,7 @@ suite('Project Config', () => {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
           allFragments: [path.resolve(absoluteRoot, 'index.html')],
-          dependencies: [
+          extraDependencies: [
             path.resolve(absoluteRoot, 'bower_components/**/*.js'),
             '!' + path.resolve(absoluteRoot, 'bower_components/ignore-big-package'),
           ],
@@ -177,7 +177,7 @@ suite('Project Config', () => {
             path.resolve('foo.html'),
             path.resolve('bar.html'),
           ],
-          dependencies: [],
+          extraDependencies: [],
           sources: [
             path.resolve('src/**/*'),
             path.resolve('index.html'),
@@ -252,7 +252,7 @@ suite('Project Config', () => {
         root: 'public',
         entrypoint: 'foo.html',
         fragments: ['bar.html'],
-        dependencies: ['baz.html'],
+        extraDependencies: ['baz.html'],
         sources: ['src/**/*', 'images/**/*'],
       });
     });
@@ -280,7 +280,7 @@ suite('Project Config', () => {
         entrypoint: path.resolve(absoluteRoot, 'foo.html'),
         fragments: [path.resolve(absoluteRoot, 'bar.html')],
         allFragments: [path.resolve(absoluteRoot, 'bar.html')],
-        dependencies: [path.resolve(absoluteRoot, 'baz.html')],
+        extraDependencies: [path.resolve(absoluteRoot, 'baz.html')],
         sources: [
           path.resolve(absoluteRoot, 'src/**/*'),
           path.resolve(absoluteRoot, 'images/**/*'),

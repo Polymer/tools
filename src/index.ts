@@ -42,8 +42,8 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
     options.sources = options.sources || options.sourceGlobs;
   }
   if (typeof options.includeDependencies !== 'undefined') {
-    logger.warn('"includeDependencies" config option has been renamed to "dependencies" and will no longer be supported in future versions');
-    options.dependencies = options.dependencies || options.includeDependencies;
+    logger.warn('"includeDependencies" config option has been renamed to "extraDependencies" and will no longer be supported in future versions');
+    options.extraDependencies = options.extraDependencies || options.includeDependencies;
   }
   return options;
 }
@@ -82,9 +82,9 @@ export interface ProjectOptions {
 
   /**
    * List of file paths, relative to the project directory, that should be included
-   * as dependencies in the build target.
+   * as extraDependencies in the build target.
    */
-  dependencies?: string[];
+  extraDependencies?: string[];
 }
 
 export class ProjectConfig {
@@ -94,7 +94,7 @@ export class ProjectConfig {
   readonly shell: string;
   readonly fragments: string[];
   readonly sources: string[];
-  readonly dependencies: string[];
+  readonly extraDependencies: string[];
 
   readonly allFragments: string[];
 
@@ -176,9 +176,9 @@ export class ProjectConfig {
     }
 
     /**
-     * dependencies
+     * extraDependencies
      */
-    this.dependencies = (options.dependencies || [])
+    this.extraDependencies = (options.extraDependencies || [])
         .map((glob) => resolveGlob(this.root, glob));
 
     /**
