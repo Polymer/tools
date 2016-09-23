@@ -334,6 +334,15 @@ suite('dom5', function() {
         assert.equal(div.childNodes.indexOf(span), 1);
         assert.equal(div.childNodes.indexOf(text), 2);
       });
+
+      test('append to node with no children', function() {
+        var emptyBody = dom5.parse('<head></head><body></body>');
+        var body = emptyBody.childNodes[0].childNodes[1];
+        var span = dom5.constructors.element('span');
+        dom5.append(body, span);
+
+        assert.equal(body.childNodes.length, 1);
+      });
     });
 
     suite('InsertBefore', function() {
