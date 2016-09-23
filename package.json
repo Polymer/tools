@@ -19,6 +19,7 @@
     "test": "npm run build && mocha --ui tdd"
   },
   "dependencies": {
+    "@types/node": "^6.0.41",
     "plylog": "^0.4.0"
   },
   "devDependencies": {

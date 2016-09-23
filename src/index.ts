@@ -104,7 +104,6 @@ export class ProjectConfig {
    * but there is a problem reading or parsing it, throw an exception.
    */
   static loadOptionsFromFile(filepath: string): ProjectOptions {
-    let configParsed: ProjectOptions;
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
       return JSON.parse(configContent);
