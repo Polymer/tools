@@ -27,25 +27,19 @@ const tsProject = typescript.createProject('tsconfig.json', {
     typescript: require('typescript')
 });
 
-gulp.task('init', () => gulp.src("./typings.json").pipe(typings()));
-
 gulp.task('lint', ['tslint', 'eslint', 'depcheck']);
 
-gulp.task('build', () => {
+gulp.task('clean', (done) => {
+  fs.remove(path.join(__dirname, 'lib'), done);
+});
+
+gulp.task('build', ['clean'], () => {
   const tsResult = tsProject.src().pipe(typescript(tsProject));
 
   return mergeStream(
     tsResult.dts.pipe(gulp.dest('lib')),
     tsResult.js.pipe(gulp.dest('lib'))
   );
-});
-
-gulp.task('clean', (done) => {
-  fs.remove(path.join(__dirname, 'lib'), done);
-});
-
-gulp.task('build-all', (done) => {
-  runSeq('clean', 'init', 'lint', 'build', done);
 });
 
 gulp.task('test', ['build'], () =>

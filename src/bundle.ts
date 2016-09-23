@@ -15,12 +15,9 @@ import {Transform} from 'stream';
 import File = require('vinyl');
 import * as logging from 'plylog';
 import {urlFromPath} from './path-transformers';
-import {StreamAnalyzer, DepsIndex} from './analyzer';
-import {compose} from './streams';
+import {StreamAnalyzer} from './analyzer';
 
 // non-ES module
-const minimatchAll = require('minimatch-all');
-const through = require('through2').obj;
 const Vulcanize = require('vulcanize');
 const logger = logging.getLogger('cli.build.bundle');
 
