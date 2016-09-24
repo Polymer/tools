@@ -5,8 +5,6 @@
         "moduleResolution": "node",
         "isolatedModules": false,
         "noImplicitAny": true,
-        // TODO: enable these
-        // "strictNullChecks": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "removeComments": false,
@@ -20,5 +18,8 @@
     },
     "include": [
         "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
     ]
 }
