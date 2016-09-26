@@ -38,4 +38,8 @@ export class Behavior extends PolymerElement {
     super();
     this.kinds = new Set(['behavior']);
   }
+
+  toString() {
+    return `<Behavior className=${this.className}>`;
+  }
 }

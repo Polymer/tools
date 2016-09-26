@@ -15,10 +15,11 @@
 import * as dom5 from 'dom5';
 import {resolve as resolveUrl} from 'url';
 
-import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, InlineParsedDocument, ScannedFeature, ScannedImport} from '../model/model';
+import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlScanner} from './html-scanner';
+import {ScannedScriptTagImport} from './html-script-tag';
 
 const p = dom5.predicates;
 
@@ -34,14 +35,14 @@ export class HtmlScriptScanner implements HtmlScanner {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedFeature[]> {
-    const features: (ScannedImport|InlineParsedDocument)[] = [];
+    const features: (ScannedImport|ScannedInlineDocument)[] = [];
 
     const myVisitor: HtmlVisitor = (node) => {
       if (isJsScriptNode(node)) {
         const src = dom5.getAttribute(node, 'src');
         if (src) {
           const importUrl = resolveUrl(document.url, src);
-          features.push(new ScannedImport(
+          features.push(new ScannedScriptTagImport(
               'html-script', importUrl, document.sourceRangeForNode(node),
               document.sourceRangeForAttribute(node, 'src')));
         } else {
@@ -49,7 +50,7 @@ export class HtmlScriptScanner implements HtmlScanner {
           const attachedCommentText = getAttachedCommentText(node);
           const contents = dom5.getTextContent(node);
 
-          features.push(new InlineParsedDocument(
+          features.push(new ScannedInlineDocument(
               'js', contents, locationOffset, attachedCommentText,
               document.sourceRangeForNode(node)));
         }

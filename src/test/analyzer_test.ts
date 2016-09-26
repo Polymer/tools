@@ -19,8 +19,9 @@ import {assert} from 'chai';
 import {Analyzer} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
+import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {InlineParsedDocument, ScannedImport} from '../model/model';
+import {Document, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 
@@ -47,8 +48,136 @@ suite('Analyzer', () => {
     });
   });
 
-
   suite('analyze()', () => {
+
+    test(
+        'analyzes a document with an inline Polymer element feature',
+        async() => {
+          const document = await analyzer.analyze(
+              'static/analysis/simple/simple-element.html');
+          const elements = Array.from(document.getByKind('element'));
+          assert.deepEqual(elements.map(e => e.tagName), ['simple-element']);
+        });
+
+    test(
+        'analyzes a document with an external Polymer element feature',
+        async() => {
+          const document = await analyzer.analyze(
+              'static/analysis/separate-js/element.html');
+          const elements = Array.from(document.getByKind('element'));
+          assert.deepEqual(elements.map(e => e.tagName), ['my-element']);
+        });
+
+    test('analyzes a document with an import', async() => {
+      const document =
+          await analyzer.analyze('static/analysis/behaviors/behavior.html');
+
+      const behaviors = Array.from(document.getByKind('behavior'));
+      assert.deepEqual(behaviors.map(b => b.className),
+          ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
+    });
+
+    test(
+        'an inline document can find features from its container document',
+        async() => {
+          const document =
+              await analyzer.analyze('static/analysis/behaviors/behavior.html');
+
+          // TODO(justinfagnani): make a shallow option and check that this only
+          // has
+          // itself and an inline document, but not the sub-document. For now
+          // check
+          // that this fixture has 4 documents: behavior.html, subbehavior.html,
+          // and their inline js documents
+          const documents = document.getByKind('document');
+          assert.equal(documents.size, 4);
+
+          const inlineDocuments =
+              Array.from(document.getFeatures(false))
+                  .filter(
+                      (d) => d instanceof Document && d.isInline) as Document[];
+          assert.equal(inlineDocuments.length, 1);
+
+          // This is the main purpose of the test: get a feature from the inline
+          // document that's imported by the container document
+          const behaviorJsDocument = inlineDocuments[0];
+          const subBehavior = behaviorJsDocument.getOnlyAtId(
+              'behavior', 'MyNamespace.SubBehavior');
+          assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
+        });
+
+    test(
+        'an inline script can find features from its container document',
+        async() => {
+          const document = await analyzer.analyze(
+              'static/script-tags/inline/test-element.html');
+          // TODO(justinfagnani): this could be better with a shallow
+          // Document.getByKind()
+          const inlineDocuments =
+              Array.from(document.getFeatures(false))
+                  .filter(
+                      (d) => d instanceof Document && d.isInline) as Document[];
+          assert.equal(inlineDocuments.length, 1);
+          const inlineJsDocument = inlineDocuments[0];
+
+          // The inline document can find the container's imported features
+          const subBehavior =
+              inlineJsDocument.getOnlyAtId('behavior', 'TestBehavior');
+          assert.equal(subBehavior.className, 'TestBehavior');
+        });
+
+    test(
+        'an external script can find features from its container document',
+        async() => {
+          const document = await analyzer.analyze(
+              'static/script-tags/external/test-element.html');
+
+          const htmlScriptTags = Array.from(document.getByKind('html-script'));
+          assert.equal(htmlScriptTags.length, 1);
+
+          const htmlScriptTag = htmlScriptTags[0] as ScriptTagImport;
+          const scriptDocument = htmlScriptTag.document;
+
+          // The inline document can find the container's imported features
+          const subBehavior =
+              scriptDocument.getOnlyAtId('behavior', 'TestBehavior');
+          assert.equal(subBehavior.className, 'TestBehavior');
+        });
+
+
+    // This test is nearly identical to the previous, but covers a different
+    // issue.
+    // The Polymer element-descriptor must find behaviors while resolving,
+    // and if inline documents don't add a document feature for their container
+    // until after resolution, then the element can't find them and throws.
+    test(
+        'an inline document can find features from its container document',
+        async() => {
+          const document = await analyzer.analyze(
+              'static/analysis/behaviors/elementdir/element.html');
+
+          // TODO(justinfagnani): make a shallow option and check that this only
+          // has
+          // itself and an inline document, but not the sub-document. For now
+          // check
+          // that this fixture has 6 documents: element.html, behavior.html,
+          // subbehavior.html, and their inline js documents
+          const documents = document.getByKind('document');
+          assert.equal(documents.size, 6);
+
+          const inlineDocuments =
+              Array.from(document.getFeatures(false))
+                  .filter(
+                      (d) => d instanceof Document && d.isInline) as Document[];
+          assert.equal(inlineDocuments.length, 1);
+
+          // This is the main purpose of the test: get a feature from the inline
+          // document that's imported by the container document
+          const behaviorJsDocument = inlineDocuments[0];
+          const subBehavior = behaviorJsDocument.getOnlyAtId(
+              'behavior', 'MyNamespace.SubBehavior');
+          assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
+        });
 
     test('returns a Document with warnings for malformed files', async() => {
       const document = await analyzer.analyze('static/malformed.html');
@@ -191,12 +320,12 @@ suite('Analyzer', () => {
           <style>body { color: red; }</style>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const features = <InlineParsedDocument[]>(
+      const features = <ScannedInlineDocument[]>(
           await analyzer['_getScannedFeatures'](document));
 
       assert.equal(features.length, 2);
-      assert.instanceOf(features[0], InlineParsedDocument);
-      assert.instanceOf(features[1], InlineParsedDocument);
+      assert.instanceOf(features[0], ScannedInlineDocument);
+      assert.instanceOf(features[1], ScannedInlineDocument);
     });
 
   });

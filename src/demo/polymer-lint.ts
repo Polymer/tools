@@ -15,9 +15,8 @@
 import {Analyzer} from '../analyzer';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
-import {Severity, WarningCarryingException} from '../warning/warning';
+import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 import {WarningPrinter} from '../warning/warning-printer';
-
 
 /**
  * A basic demo of a linter CLI using the Analyzer API.
@@ -31,15 +30,15 @@ async function main() {
   const warnings = await getWarnings(analyzer, process.argv[2]);
   const warningPrinter = new WarningPrinter(process.stderr, {analyzer});
   await warningPrinter.printWarnings(warnings);
-  const worstSeverity = Math.min.apply(Math, warnings.map(m => m.severity));
+  const worstSeverity = Math.min.apply(Math, warnings.map((w) => w.severity));
   if (worstSeverity === Severity.ERROR) {
     process.exit(1);
   }
 };
 
-async function getWarnings(analyzer: Analyzer, localPath: string) {
+async function getWarnings(analyzer: Analyzer, localPath: string): Promise<Warning[]> {
   try {
-    const document = await analyzer.analyzeRoot(localPath);
+    const document = await analyzer.analyze(localPath);
     return document.getWarnings();
   } catch (e) {
     if (e instanceof WarningCarryingException) {

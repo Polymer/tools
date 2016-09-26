@@ -19,8 +19,9 @@ import * as util from 'util';
 
 import * as jsdoc from '../javascript/jsdoc';
 
-import {ScannedDocument} from './document';
+import {Document, ScannedDocument} from './document';
 import {ScannedFeature} from './feature';
+import {Resolvable} from './resolvable';
 import {LocationOffset, SourceRange} from './source-range';
 
 /**
@@ -29,7 +30,7 @@ import {LocationOffset, SourceRange} from './source-range';
  *
  * @template N The AST node type
  */
-export class InlineParsedDocument implements ScannedFeature {
+export class ScannedInlineDocument implements ScannedFeature, Resolvable {
   type: 'html'|'javascript'|'css'|/* etc */ string;
 
   contents: string;
@@ -50,6 +51,23 @@ export class InlineParsedDocument implements ScannedFeature {
     this.locationOffset = locationOffset;
     this.attachedComment = attachedComment;
     this.sourceRange = sourceRange;
+  }
+
+  resolve(document: Document): Document {
+    if (!this.scannedDocument) {
+      // Parse error on the inline document.
+      return;
+    }
+    const inlineDocument = new InlineDocument(this.scannedDocument, document);
+    inlineDocument.resolve();
+    return inlineDocument;
+  }
+}
+
+export class InlineDocument extends Document {
+  constructor(base: ScannedDocument, containerDocument: Document) {
+    super(base, containerDocument.analyzer);
+    this._addFeature(containerDocument);
   }
 }
 

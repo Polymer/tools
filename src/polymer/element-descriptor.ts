@@ -197,8 +197,10 @@ function _getFlattenedAndResolvedBehaviors(
     const behavior = document.getOnlyAtId('behavior', behaviorName);
     if (!behavior) {
       throw new Error(
-          `Unable to resolve behavior \`${behaviorName}\` ` +
-          `Did you import it? Is it annotated with @polymerBehavior?`);
+          `In ${document &&
+          document.url}:` +
+              `Unable to resolve behavior \`${behaviorName}\` ` +
+              `Did you import it? Is it annotated with @polymerBehavior?`);
     }
     if (resolvedBehaviors.has(behavior)) {
       continue;

@@ -23,7 +23,7 @@ import {HtmlScriptScanner} from './html/html-script-scanner';
 import {HtmlStyleScanner} from './html/html-style-scanner';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {JsonParser} from './json/json-parser';
-import {correctSourceRange, Document, InlineParsedDocument, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport} from './model/model';
+import {correctSourceRange, Document, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from './model/model';
 import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {Measurement, TelemetryTracker} from './perf/telemetry';
@@ -82,9 +82,16 @@ export class Analyzer {
 
   private _loader: UrlLoader;
   private _resolver: UrlResolver|undefined;
-  private _parsedDocuments =
+
+  private _parsedDocumentPromises =
       new Map<string, Promise<ParsedDocument<any, any>>>();
-  private _scannedDocuments = new Map<string, Promise<ScannedDocument>>();
+  private _scannedDocumentPromises =
+      new Map<string, Promise<ScannedDocument>>();
+  private _analyzedDocumentPromises = new Map<string, Promise<Document>>();
+
+  private _scannedDocuments = new Map<string, ScannedDocument>();
+  private _analyzedDocuments = new Map<string, Document>();
+
   private _telemetryTracker = new TelemetryTracker();
 
   constructor(options: Options) {
@@ -116,16 +123,65 @@ export class Analyzer {
     // re-analyze a particular file. Editors can use a UrlLoader that reads from
     // it's internal buffers.
     if (contents != null) {
+      this._scannedDocumentPromises.delete(resolvedUrl);
       this._scannedDocuments.delete(resolvedUrl);
-      this._parsedDocuments.delete(resolvedUrl);
+      this._parsedDocumentPromises.delete(resolvedUrl);
+      this._analyzedDocuments.delete(resolvedUrl);
+      this._analyzedDocumentPromises.delete(resolvedUrl);
     }
 
-    const scannedDocument = await this._scan(resolvedUrl, contents);
-    const doneTiming =
-        this._telemetryTracker.start('Document.makeRootDocument', url);
-    const document = Document.makeRootDocument(scannedDocument);
-    doneTiming();
+    const cachedResult = this._analyzedDocumentPromises.get(resolvedUrl);
+    if (cachedResult) {
+      return cachedResult;
+    }
+    // TODO(justinfagnani): also check _analyzedDocuments?
+
+    const promise = (async() => {
+      // Make sure we wait and return a Promise before doing any work, so that
+      // the Promise is cached before anything else happens.
+      await Promise.resolve();
+      const doneTiming = this._telemetryTracker.start('analyze: make document', url);
+      const scannedDocument = await this._scan(resolvedUrl, contents);
+      const document = this._makeDocument(scannedDocument);
+      doneTiming();
+      return document;
+    })();
+    this._analyzedDocumentPromises.set(resolvedUrl, promise);
+    return promise;
+  }
+
+  /**
+   * Constructs a new analyzed Document and adds it to the analyzed Document
+   * cache.
+   */
+  private _makeDocument(scannedDocument: ScannedDocument): Document {
+    if (this._analyzedDocuments.has(scannedDocument.url)) {
+      throw new Error(
+          `Internal error: document ${scannedDocument.url} already exists`);
+    }
+    const document = new Document(scannedDocument, this);
+    document.resolve();
+    // TODO(justinfagnani): should this add to _analyzedDocumentPromises?
+    this._analyzedDocuments.set(scannedDocument.url, document);
     return document;
+  }
+
+  /**
+   * Gets an analyzed Document from the document cache. This is only useful for
+   * Analyzer plugins. You almost certainly want to use `analyze()` instead.
+   *
+   * If a document has been analyzed, it returns the analyzed Document. If not
+   * the scanned document cache is used and a new analyzed Document is returned.
+   * If a file is in neither cache, it returns `null`.
+   */
+  _getDocument(url: string): Document {
+    const resolvedUrl = this._resolveUrl(url);
+    let document = this._analyzedDocuments.get(resolvedUrl);
+    if (document) {
+      return document;
+    }
+    const scannedDocument = this._scannedDocuments.get(resolvedUrl);
+    return scannedDocument && this._makeDocument(scannedDocument);
   }
 
   async getTelemetryMeasurements(): Promise<Measurement[]> {
@@ -140,13 +196,16 @@ export class Analyzer {
    * large performance gains.
    */
   clearCaches(): void {
-    this._parsedDocuments.clear();
+    this._scannedDocumentPromises.clear();
     this._scannedDocuments.clear();
+    this._parsedDocumentPromises.clear();
+    this._analyzedDocuments.clear();
+    this._analyzedDocumentPromises.clear();
   }
 
   private async _scan(resolvedUrl: string, contents?: string):
       Promise<ScannedDocument> {
-    const cachedResult = this._scannedDocuments.get(resolvedUrl);
+    const cachedResult = this._scannedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -157,7 +216,7 @@ export class Analyzer {
       const document = await this._parse(resolvedUrl, contents);
       return this._scanDocument(document);
     })();
-    this._scannedDocuments.set(resolvedUrl, promise);
+    this._scannedDocumentPromises.set(resolvedUrl, promise);
     return promise;
   }
 
@@ -204,10 +263,11 @@ export class Analyzer {
     }
 
     const scannedDependencies: ScannedFeature[] = scannedFeatures.filter(
-        (e) => e instanceof InlineParsedDocument || e instanceof ScannedImport);
+        (e) =>
+            e instanceof ScannedInlineDocument || e instanceof ScannedImport);
     const scannedSubDocuments =
         scannedDependencies.map(async(scannedDependency) => {
-          if (scannedDependency instanceof InlineParsedDocument) {
+          if (scannedDependency instanceof ScannedInlineDocument) {
             return this._scanInlineDocument(
                 scannedDependency, document, warnings);
           } else if (scannedDependency instanceof ScannedImport) {
@@ -220,15 +280,17 @@ export class Analyzer {
     const dependencies =
         (await Promise.all(scannedSubDocuments)).filter(s => !!s);
 
-    return new ScannedDocument(
+    const scannedDocument = new ScannedDocument(
         document, dependencies, scannedFeatures, locationOffset, warnings);
+    this._scannedDocuments.set(scannedDocument.url, scannedDocument);
+    return scannedDocument;
   }
 
   /**
    * Scan an inline document found within a containing parsed doc.
    */
   private async _scanInlineDocument(
-      inlineDoc: InlineParsedDocument,
+      inlineDoc: ScannedInlineDocument,
       containingDocument: ParsedDocument<any, any>,
       warnings: Warning[]): Promise<ScannedDocument|null> {
     const locationOffset: LocationOffset = {
@@ -299,7 +361,7 @@ export class Analyzer {
 
   private async _parse(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
-    const cachedResult = this._parsedDocuments.get(resolvedUrl);
+    const cachedResult = this._parsedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -320,7 +382,7 @@ export class Analyzer {
       doneTiming();
       return parsedDoc;
     })();
-    this._parsedDocuments.set(resolvedUrl, promise);
+    this._parsedDocumentPromises.set(resolvedUrl, promise);
     return promise;
   }
 

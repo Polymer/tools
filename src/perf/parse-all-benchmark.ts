@@ -90,7 +90,7 @@ function printMeasurements(measurements: Measurement[]) {
   const averager = new Averager<string>();
   console.log(`${padLeft('elapsed ms', 10)} - ${padLeft('operation', 30)}`);
   for (const m of measurements) {
-    if (m.kind === 'Document.makeRootDocument') {
+    if (m.kind === 'analyze: make document') {
       console.log(
           `${padLeft(m.elapsedTime.toFixed(0), 10)} - ${padLeft(m.kind, 30)}`);
     }

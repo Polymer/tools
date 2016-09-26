@@ -17,8 +17,7 @@ import {assert} from 'chai';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {HtmlScriptScanner} from '../../html/html-script-scanner';
-import {ScannedImport} from '../../model/import';
-import {InlineParsedDocument} from '../../model/model';
+import {ScannedImport, ScannedInlineDocument} from '../../model/model';
 
 suite('HtmlScriptScanner', () => {
 
@@ -43,8 +42,8 @@ suite('HtmlScriptScanner', () => {
       const feature0 = <ScannedImport>features[0];
       assert.equal(feature0.type, 'html-script');
       assert.equal(feature0.url, 'foo.js');
-      assert.instanceOf(features[1], InlineParsedDocument);
-      const feature1 = <InlineParsedDocument>features[1];
+      assert.instanceOf(features[1], ScannedInlineDocument);
+      const feature1 = <ScannedInlineDocument>features[1];
       assert.equal(feature1.type, 'js');
       assert.equal(feature1.contents, `console.log('hi')`);
       assert.deepEqual(feature1.locationOffset, {line: 2, col: 19});
