@@ -3,8 +3,8 @@
   "clang-format.style": "file",
   "clang-format.formatOnSave": true,
   "search.exclude": {
-    "**/node_modules": true,
-    "**/lib": true
+    "node_modules/": true,
+    "lib/": true
   },
   "json.schemas": [{
     "fileMatch": [
