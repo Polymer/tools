@@ -15,19 +15,21 @@
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
+import stripIndent = require('strip-indent');
 
 import * as esutil from '../../javascript/esutil';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 
 suite('JavaScriptParser', () => {
+  let parser: JavaScriptParser;
+
+  setup(() => {
+    parser = new JavaScriptParser({sourceType: 'script'});
+  });
+
 
   suite('parse()', () => {
-    let parser: JavaScriptParser;
-
-    setup(() => {
-      parser = new JavaScriptParser({sourceType: 'script'});
-    });
 
     test('parses classes', () => {
       let contents = `
@@ -65,4 +67,20 @@ suite('JavaScriptParser', () => {
 
   });
 
+  suite(`stringify()`, () => {
+    test('pretty prints output', () => {
+      const contents = stripIndent(`
+        class Foo extends HTMLElement {
+          constructor() {
+            super();
+            this.bar = () => {
+            };
+            const let = 'let const';
+          }
+        }`).trim() +
+          '\n';
+      const document = parser.parse(contents, 'test-file.js');
+      assert.deepEqual(document.stringify(), contents);
+    });
+  });
 });

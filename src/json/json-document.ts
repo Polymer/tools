@@ -54,4 +54,8 @@ export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
   sourceRangeForNode(_node: Json): SourceRange {
     throw new Error('Not Implemented.');
   }
+
+  stringify() {
+    return JSON.stringify(this.ast, null, 2);
+  }
 }

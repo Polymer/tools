@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as cssbeautify from 'cssbeautify';
 import * as shady from 'shady-css-parser';
 
 import {SourceRange} from '../model/model';
@@ -86,4 +87,13 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
   sourceRangeForNode(_node: shady.Node): SourceRange {
     throw new Error('Not implemented');
   }
+
+  stringify() {
+    return cssbeautify(
+               shadyStringifier.stringify(this.ast),
+               {indent: '  ', autosemicolon: true, openbrace: 'end-of-line'}) +
+        '\n';
+  }
 }
+
+const shadyStringifier = new shady.Stringifier();

@@ -105,6 +105,9 @@ function makeTestDocument(options: TestDocumentMakerOptions):
     forEachNode: options.forEachNode || (() => null),
     sourceRangeForNode: () => {
       throw new Error('not implemented in test doc');
+    },
+    stringify() {
+      return 'test stringify output';
     }
   };
 }

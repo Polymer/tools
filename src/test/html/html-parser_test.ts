@@ -34,6 +34,13 @@ suite('HtmlParser', () => {
       assert.equal(document.url, '/static/html-parse-target.html');
     });
 
+    test('can stringify back a well-formed document', () => {
+      let file = fs.readFileSync(
+          path.resolve(__dirname, '../static/html-parse-target.html'), 'utf8');
+      let document = parser.parse(file, '/static/html-parse-target.html');
+      assert.deepEqual(document.stringify(), file);
+    });
+
   });
 
 });

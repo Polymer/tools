@@ -21,8 +21,7 @@ import {SourceRange} from '../model/source-range';
  * @template V The Visitor type of the document
  */
 export abstract class ParsedDocument<A, V> {
-  // abstract type: string; // argh, how do I declare an abstract field?
-  type: string;
+  abstract type: string;
   url: string;
   contents: string;
   ast: A;
@@ -47,6 +46,11 @@ export abstract class ParsedDocument<A, V> {
   abstract forEachNode(callback: (node: A) => void): void;
 
   abstract sourceRangeForNode(node: A): SourceRange;
+
+  /**
+   * Convert `this.ast` back into a string document.
+   */
+  abstract stringify(): string;
 }
 
 export interface Options<A> {

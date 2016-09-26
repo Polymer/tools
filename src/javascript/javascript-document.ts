@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as escodegen from 'escodegen';
 import {traverse, VisitorOption} from 'estraverse';
 import {Node, Program} from 'estree';
 
@@ -133,5 +134,17 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
       start: {line: (node.loc.start.line - 1), column: node.loc.start.column},
       end: {line: (node.loc.end.line - 1), column: node.loc.end.column}
     };
+  }
+
+  stringify(indent?: number) {
+    const formatOptions = {
+      comment: true,
+      format: {indent: {style: '  ', adjustMultilineComment: true, base: 0}}
+    };
+    if (indent != null) {
+      formatOptions.format.indent.base = indent;
+    }
+
+    return escodegen.generate(this.ast, formatOptions) + '\n';
   }
 }

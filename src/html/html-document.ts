@@ -101,6 +101,22 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       }
     };
   }
+
+  stringify() {
+    // TODO(issues/315): serialize inline documents correctly.
+    let result = parse5.serialize(this.ast);
+
+    // Strip out inferred boilerplate nodes that are injected.
+    const injectedTagNames = ['html', 'head', 'body'];
+    for (const tagName of injectedTagNames) {
+      if (!this.contents.includes(`<${tagName}`)) {
+        result =
+            result.replace(RegExp(`<${tagName}>([^]*)?</${tagName}>`), '$1');
+      }
+    }
+
+    return result;
+  }
 }
 
 function isElementLocationInfo(location: parse5.LocationInfo|
