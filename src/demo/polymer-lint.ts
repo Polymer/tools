@@ -30,7 +30,7 @@ async function main() {
   });
   const warnings = await getWarnings(analyzer, process.argv[2]);
   const warningPrinter = new WarningPrinter(process.stderr, {analyzer});
-  warningPrinter.printWarnings(warnings);
+  await warningPrinter.printWarnings(warnings);
   const worstSeverity = Math.min.apply(Math, warnings.map(m => m.severity));
   if (worstSeverity === Severity.ERROR) {
     process.exit(1);
