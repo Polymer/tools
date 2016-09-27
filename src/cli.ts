@@ -45,6 +45,7 @@ export async function run(): Promise<void> {
     protocol: cliOptions['protocol'],
     keyPath: cliOptions['key'],
     certPath: cliOptions['cert'],
+    pushManifestPath: cliOptions['manifest'],
   }
 
   if (cliOptions.help) {

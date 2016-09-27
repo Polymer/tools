@@ -8,7 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import * as express from 'express';
+import * as mime from 'mime';
 // TODO: Switch to node-http2 when compatible with express
 // https://github.com/molnarg/node-http2/issues/100
 import * as http from 'spdy';
@@ -22,6 +24,9 @@ import { makeApp } from './make_app';
 
 import findPort = require('find-port');
 import opn = require('opn');
+
+/** h2 push manifest cache */
+let _pushManifest = {};
 
 export interface ServerOptions {
 
@@ -57,6 +62,9 @@ export interface ServerOptions {
 
   /** Path to TLS certificate for HTTPS */
   certPath?: string;
+
+  /** Path to H2 push-manifest file */
+  pushManifestPath?: string;
 }
 
 function applyDefaultOptions(options: ServerOptions): ServerOptions {
@@ -102,6 +110,11 @@ Please choose another port, or let an unused port be chosen automatically.
 `;
 
 export function getApp(options: ServerOptions): express.Express {
+  // Preload the h2-push manifest to avoid the cost on first push
+  if (options.pushManifestPath) {
+    getPushManifest(options.root, options.pushManifestPath);
+  }
+
   const port = options.port;
   const root = options.root;
   const app = express();
@@ -123,8 +136,9 @@ export function getApp(options: ServerOptions): express.Express {
   app.use('/components/', polyserve);
 
   app.get('/*', (req, res) => {
+    pushResources(options, req, res);
     const filePath = req.path;
-    send(req, filePath, {root: root,})
+    send(req, filePath, {root: root})
       .on('error', (error: send.SendError) => {
         if ((error).status == 404 && !filePathRegex.test(filePath)) {
           send(req, '/', {root: root}).pipe(res);
@@ -339,4 +353,86 @@ function startWithPort(userOptions: ServerOptions): Promise<http.Server> {
           });
         })
       );
+}
+
+/**
+ * Asserts file existence for all specified files in a push-manifest
+ * @param {string} root path to root directory
+ * @param {string} manifest manifest object
+ */
+function assertValidManifest(root: string, manifest: {[path: string]: any}) {
+
+  function assertExists(filename: string) {
+    const fname = path.join(root, filename);
+    try {
+      // Ignore root path, since that always exists for the router
+      if (filename !== '/') {
+        assert(fs.existsSync(fname), `not found: ${fname}`);
+      }
+    } catch (err) {
+      throw new Error(`invalid h2-push manifest: ${err}`);
+    }
+  }
+
+  for (const refFile of Object.keys(manifest)) {
+    assertExists(refFile);
+    for (const pushFile of Object.keys(manifest[refFile])) {
+      assertExists(pushFile);
+    }
+  }
+}
+
+/**
+ * Reads a push-manifest from the specified path, or a cached version
+ * of the file
+ * @param {string} root path to root directory
+ * @param {string} manifestPath path to manifest file
+ * @returns {any} the manifest
+ */
+function getPushManifest(root: string, manifestPath: string): {[path: string]: any} {
+  if (!_pushManifest[manifestPath]) {
+    const data = fs.readFileSync(manifestPath);
+    const manifest = JSON.parse(data.toString());
+    assertValidManifest(root, manifest);
+    _pushManifest[manifestPath] = manifest;
+  }
+  return _pushManifest[manifestPath];
+}
+
+/**
+ * Pushes any resources for the requested file
+ * @param options server options
+ * @param req HTTP request
+ * @param res HTTP response
+ */
+function pushResources(options: ServerOptions, req: any, res: any) {
+  if (res.push
+      && options.protocol === 'h2'
+      && options.pushManifestPath
+      && !req.get('x-is-push')) {
+
+    // TODO: Handle preload link headers
+
+    const pushManifest = getPushManifest(options.root, options.pushManifestPath);
+    const resources = pushManifest[req.path];
+    if (resources) {
+      const root = options.root;
+      for (const filename of Object.keys(resources)) {
+        const stream: NodeJS.WritableStream = res.push(filename,
+          {
+            request: {
+             accept: '*/*'
+            },
+            response: {
+             'content-type': mime.lookup(filename),
+
+             // Add an X-header to the pushed request so we don't trigger pushes for pushes
+             'x-is-push': 'true'
+            }
+          })
+          .on('error', (err: any) => console.error('failed to push', filename, err));
+        fs.createReadStream(path.join(root, filename)).pipe(stream);
+      }
+    }
+  }
 }

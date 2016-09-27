@@ -91,4 +91,9 @@ export let args : ArgDescriptor[] = [
     defaultValue: 'cert.pem',
     type: String,
   },
+  {
+    name: 'manifest',
+    description: 'Path to h2-push manifest',
+    type: String,
+  },
 ];
