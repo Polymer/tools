@@ -28,7 +28,7 @@ suite('service-worker', () => {
   setup((done) => {
 
     defaultProject = new PolymerProject({
-      root: path.resolve(__dirname, 'test-project'),
+      root: path.resolve(__dirname, 'static/test-project'),
       entrypoint: 'index.html',
       shell: 'shell.html',
       sources: [
@@ -41,7 +41,7 @@ suite('service-worker', () => {
         return done(err);
       }
       testBuildRoot = dir;
-      vfs.src(path.join(__dirname, 'test-project/**'))
+      vfs.src(path.join(__dirname, 'static/test-project/**'))
         .pipe(vfs.dest(dir))
         .on('finish', () => {
           mergeStream(

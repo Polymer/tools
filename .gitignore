@@ -3,4 +3,3 @@
 npm-debug.log*
 node_modules/
 lib/
-test/test-project/build

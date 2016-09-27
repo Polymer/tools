@@ -17,7 +17,7 @@ const File = require('vinyl');
 const mergeStream = require('merge-stream');
 
 const PolymerProject = require('../lib/polymer-project').PolymerProject;
-const testProjectRoot = path.resolve(__dirname, 'test-project');
+const testProjectRoot = path.resolve(__dirname, 'static/test-project');
 
 suite('PolymerProject', () => {
 
@@ -27,7 +27,7 @@ suite('PolymerProject', () => {
 
   setup(() => {
     defaultProject = new PolymerProject({
-      root: 'test/test-project/',
+      root: 'test/static/test-project/',
       entrypoint: 'index.html',
       shell: 'shell.html',
       sources: [
@@ -38,7 +38,7 @@ suite('PolymerProject', () => {
 
   test('will not throw an exception when created with minimum options', () => {
     new PolymerProject({
-      root: 'test/test-project/',
+      root: 'test/static/test-project/',
     });
   });
 

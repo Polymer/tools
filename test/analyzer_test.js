@@ -22,7 +22,7 @@ suite('Analyzer', () => {
   suite('DepsIndex', () => {
 
     test('fragment to deps list has only uniques', (done) => {
-      const root = `test/analyzer-data`;
+      const root = `test/static/analyzer-data`;
       const sourceFiles = ['a.html', 'b.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
       const config = new ProjectConfig({
         root: root,
@@ -51,7 +51,7 @@ suite('Analyzer', () => {
     });
 
     test("analyzing shell and entrypoint doesn't double load files", (done) => {
-      const root = `test/analyzer-data`;
+      const root = `test/static/analyzer-data`;
       const sourceFiles = ['shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
       const config = new ProjectConfig({
         root: root,
@@ -80,7 +80,7 @@ suite('Analyzer', () => {
   suite('.dependencies', () => {
 
     test('outputs all dependencies needed by source', (done) => {
-      const root = `test/analyzer-data`;
+      const root = `test/static/analyzer-data`;
       const sourceFiles = ['shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
       const config = new ProjectConfig({
         root: root,
@@ -110,7 +110,7 @@ suite('Analyzer', () => {
     });
 
     test('outputs all dependencies needed by source and given fragments', (done) => {
-      const root = `test/analyzer-data`;
+      const root = `test/static/analyzer-data`;
       const sourceFiles = ['a.html', 'b.html', 'shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
       const config = new ProjectConfig({
         root: root,
