@@ -30,10 +30,8 @@ suite('PolymerProject', () => {
       root: 'test/test-project/',
       entrypoint: 'index.html',
       shell: 'shell.html',
-      sourceGlobs: [
+      sources: [
         'source-dir/**',
-        'index.html',
-        'shell.html',
       ],
     });
   })
@@ -42,20 +40,6 @@ suite('PolymerProject', () => {
     new PolymerProject({
       root: 'test/test-project/',
     });
-  });
-
-  test('will properly convert relative root path into full path', () => {
-    const projectWithRelativeRoot = new PolymerProject({
-      root: 'test/test-project/',
-    });
-    assert.equal(projectWithRelativeRoot.root, testProjectRoot);
-  });
-
-  test('will properly set full root path', () => {
-    const projectWithFullRootPath = new PolymerProject({
-      root: testProjectRoot,
-    });
-    assert.equal(projectWithFullRootPath.root, testProjectRoot);
   });
 
   test('reads sources', (done) => {
@@ -99,7 +83,7 @@ suite('PolymerProject', () => {
       const project = new PolymerProject({
         root: testProjectRoot,
         entrypoint: 'index.html',
-        sourceGlobs: [
+        sources: [
           'source-dir/**',
           'index.html',
           'shell.html',
@@ -120,10 +104,10 @@ suite('PolymerProject', () => {
         root: testProjectRoot,
         entrypoint: 'index.html',
         shell: 'shell.html',
-        sourceGlobs: [
+        sources: [
           'source-dir/**',
         ],
-        includeDependencies: [
+        extraDependencies: [
           'bower_components/unreachable*',
         ],
       });

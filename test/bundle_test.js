@@ -16,6 +16,7 @@ const File = require('vinyl');
 const path = require('path');
 const stream = require('stream');
 const mergeStream = require('merge-stream');
+const ProjectConfig = require('polymer-project-config').ProjectConfig;
 
 const analyzer = require('../lib/analyzer');
 const bundle = require('../lib/bundle');
@@ -32,28 +33,13 @@ suite('Bundler', () => {
   let bundledStream;
   let files;
 
-  const setupTest = (options) => new Promise((resolve, reject) => {
-    const fragments = options.fragments
-        ? options.fragments.map((f) => path.resolve(root, f))
-        : [];
-    const entrypoint = options.entrypoint
-        && path.resolve(root, options.entrypoint);
-    const shell = options.shell
-        && path.resolve(root, options.shell);
-    const analyzer = new StreamAnalyzer(
-      root,
-      entrypoint,
-      shell,
-      fragments,
-      options.files.map((f) => f.path)
-    );
-    bundler = new Bundler(
-      root,
-      entrypoint,
-      shell,
-      fragments,
-      analyzer
-    );
+  let setupTest = (options) => new Promise((resolve, reject) => {
+    options.root = root;
+    options.sources = options.files.map((f) => f.path);
+
+    let config = new ProjectConfig(options);
+    let analyzer = new StreamAnalyzer(config);
+    bundler = new Bundler(config, analyzer);
     sourceStream = new stream.Readable({
       objectMode: true,
     });

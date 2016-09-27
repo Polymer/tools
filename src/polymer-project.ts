@@ -14,6 +14,8 @@ import * as logging from 'plylog';
 import {Transform} from 'stream';
 import File = require('vinyl');
 import * as vfs from 'vinyl-fs';
+import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
+
 import {StreamAnalyzer} from './analyzer';
 import {Bundler} from './bundle';
 import {FileCB} from './streams';
@@ -30,68 +32,9 @@ const extensionsForType: {[mimetype: string]: string} = {
   'text/x-typescript': 'ts',
 };
 
-export interface ProjectOptions {
-  /**
-   * Path to the root of the project on the filesystem. This can be an absolute
-   * path, or a path relative to the current working directory. Defaults to the
-   * current working directory of the process.
-   */
-  root?: string;
-
-  /**
-   * The path relative to `root` of the entrypoint file that will be served for
-   * app-shell style projects. Usually this is index.html.
-   */
-  entrypoint?: string;
-
-  /**
-   * The path relative to `root` of the app shell element.
-   */
-  shell?: string;
-
-  /**
-   * The path relative to `root` of the lazily loaded fragments. Usually the
-   * pages of an app or other bundles of on-demand resources.
-   */
-  fragments?: string[];
-
-  /**
-   * List of glob patterns, relative to root, of this project's sources to read
-   * from the file system.
-   */
-  sourceGlobs?: string[];
-
-  /**
-   * List of file paths, relative to the project directory, that should be included
-   * as dependencies in the build target.
-   */
-  includeDependencies?: string[];
-}
-
-export const defaultSourceGlobs = [
-  'src/**/*',
-  // NOTE(fks) 06-29-2016: `polymer-cli serve` uses a bower.json file to display
-  // information about the project. The file is included here by default.
-  'bower.json',
-];
-
-function resolveGlob(fromPath: string, glob: string) {
-  if (glob.startsWith('!')) {
-    const includeGlob = glob.substring(1);
-    return '!' + osPath.resolve(fromPath, includeGlob);
-  } else {
-    return osPath.resolve(fromPath, glob);
-  }
-}
-
 export class PolymerProject {
 
-  root: string;
-  entrypoint: string;
-  shell: string;
-  fragments: string[];
-  sourceGlobs: string[];
-  includeDependencies: string[];
+  config: ProjectConfig;
 
   private _splitFiles: Map<string, SplitFile> = new Map();
   private _parts: Map<string, SplitFile> = new Map();
@@ -113,63 +56,20 @@ export class PolymerProject {
    */
   bundler: Bundler;
 
-  constructor(options?: ProjectOptions) {
-    this.root = process.cwd();
+  constructor(config: ProjectConfig | ProjectOptions | string) {
 
-    if (options.root) {
-      this.root = osPath.resolve(this.root, options.root);
+    if (config.constructor.name === 'ProjectConfig') {
+      this.config = <ProjectConfig>config;
+    } else if (typeof config === 'string') {
+      this.config = ProjectConfig.loadConfigFromFile(config);
+    } else {
+      this.config = new ProjectConfig(config);
     }
-    if (options.entrypoint) {
-      this.entrypoint = osPath.resolve(this.root, options.entrypoint);
-    }
-    if (options.shell) {
-      this.shell = osPath.resolve(this.root, options.shell);
-    }
-    this.fragments = (options.fragments || [])
-        .map((f) => osPath.resolve(this.root, f));
-    this.sourceGlobs = (options.sourceGlobs || defaultSourceGlobs)
-        .map((glob) => resolveGlob(this.root, glob));
-    this.includeDependencies = (options.includeDependencies || [])
-        .map((path) => osPath.resolve(this.root, path));
 
-    this.analyzer = new StreamAnalyzer(
-      this.root,
-      this.entrypoint,
-      this.shell,
-      this.fragments,
-      this.allSourceGlobs);
+    logger.debug(`config: ${this.config}`);
 
-    this.bundler = new Bundler(
-      this.root,
-      this.entrypoint,
-      this.shell,
-      this.fragments,
-      this.analyzer);
-
-    logger.debug(`root: ${this.root}`);
-    logger.debug(`shell: ${this.shell}`);
-    logger.debug(`entrypoint: ${this.entrypoint}`);
-    logger.debug(`fragments: ${this.fragments}`);
-    logger.debug(`sources: ${this.sourceGlobs}`);
-    logger.debug(`includeDependencies: ${this.includeDependencies}`);
-  }
-
-  /**
-   * An array of globs composed of `entrypoint`, `shell`, `fragments`,
-   * and `sourceGlobs`.
-   */
-  get allSourceGlobs(): string[] {
-    let globs: string[] = [];
-    if (this.entrypoint) globs.push(this.entrypoint);
-    if (this.shell) globs.push(this.shell);
-    if (this.fragments && this.fragments.length) {
-      globs = globs.concat(this.fragments);
-    }
-    if (this.sourceGlobs && this.sourceGlobs.length > 0) {
-      globs = globs.concat(this.sourceGlobs);
-    }
-    logger.debug(`sourceGlobs: \n\t${globs.join('\n\t')}`);
-    return globs;
+    this.analyzer = new StreamAnalyzer(this.config);
+    this.bundler = new Bundler(this.config, this.analyzer);
   }
 
   // TODO(justinfagnani): add options, pass to vfs.src()
@@ -179,7 +79,7 @@ export class PolymerProject {
    * `getDependencyGlobs` (which are inverted and appended to the source globs).
    */
   sources(): NodeJS.ReadableStream {
-    return vfs.src(this.allSourceGlobs, {
+    return vfs.src(this.config.sources, {
       cwdbase: true,
       nodir: true,
     });
@@ -192,8 +92,8 @@ export class PolymerProject {
 
     // If we need to include additional dependencies, create a new vfs.src
     // stream and pipe our default dependencyStream through it to combine.
-    if (this.includeDependencies.length > 0) {
-      const includeStream = vfs.src(this.includeDependencies, {
+    if (this.config.extraDependencies.length > 0) {
+      const includeStream = vfs.src(this.config.extraDependencies, {
          cwdbase: true,
          nodir: true,
          passthrough: true,

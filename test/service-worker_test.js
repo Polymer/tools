@@ -31,7 +31,7 @@ suite('service-worker', () => {
       root: path.resolve(__dirname, 'test-project'),
       entrypoint: 'index.html',
       shell: 'shell.html',
-      sourceGlobs: [
+      sources: [
         'source-dir/**',
       ],
     });

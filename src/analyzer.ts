@@ -16,9 +16,11 @@ import {PassThrough, Transform} from 'stream';
 import File = require('vinyl');
 import {parse as parseUrl} from 'url';
 import * as logging from 'plylog';
+import {ProjectConfig} from 'polymer-project-config';
 
 import {FileCB, VinylReaderTransform} from './streams';
 import {urlFromPath, pathFromUrl} from './path-transformers';
+
 
 const minimatchAll = require('minimatch-all');
 const logger = logging.getLogger('cli.build.analyzer');
@@ -52,12 +54,7 @@ function isDependencyExternal(url: string) {
 
 export class StreamAnalyzer extends Transform {
 
-  root: string;
-  entrypoint: string;
-  shell: string;
-  fragments: string[];
-  allFragments: string[];
-  sourceGlobs: string[];
+  config: ProjectConfig;
 
   loader: StreamLoader;
   analyzer: Analyzer;
@@ -77,27 +74,10 @@ export class StreamAnalyzer extends Transform {
   };
   _resolveDependencyAnalysis: (index: DepsIndex) => void;
 
-  constructor(root: string, entrypoint: string, shell: string,
-      fragments: string[], sourceGlobs: string[]) {
+  constructor(config: ProjectConfig) {
     super({objectMode: true});
 
-    this.root = root;
-    this.entrypoint = entrypoint;
-    this.shell = shell;
-    this.fragments = fragments;
-    this.sourceGlobs = sourceGlobs;
-    this.allFragments = [];
-
-    // It's important that shell is first for document-ordering of imports
-    if (shell) {
-      this.allFragments.push(shell);
-    }
-    if (entrypoint && !shell && fragments.length === 0) {
-      this.allFragments.push(entrypoint);
-    }
-    if (fragments) {
-      this.allFragments = this.allFragments.concat(fragments);
-    }
+    this.config = config;
 
     this.loader = new StreamLoader(this);
     this.analyzer = new Analyzer({
@@ -108,7 +88,7 @@ export class StreamAnalyzer extends Transform {
     // processing stream which loads each file and attaches the file contents.
     this._dependenciesStream.pipe(this._dependenciesProcessingStream);
 
-    this.allFragmentsToAnalyze = new Set(this.allFragments);
+    this.allFragmentsToAnalyze = new Set(this.config.allFragments);
     this.analyzeDependencies = new Promise((resolve, _reject) => {
       this._resolveDependencyAnalysis = resolve;
     });
@@ -137,9 +117,9 @@ export class StreamAnalyzer extends Transform {
     callback(null, file);
 
     // If the file is a fragment, begin analysis on its dependencies
-    if (this.isFragment(file)) {
+    if (this.config.isFragment(file.path)) {
       (async () => {
-        const deps = await this._getDependencies(urlFromPath(this.root, filePath));
+        const deps = await this._getDependencies(urlFromPath(this.config.root, filePath));
         // Add all found dependencies to our index
         this._addDependencies(filePath, deps);
         this.allFragmentsToAnalyze.delete(filePath);
@@ -166,7 +146,7 @@ export class StreamAnalyzer extends Transform {
   }
 
   getFile(filepath: string): File {
-    const url = urlFromPath(this.root, filepath);
+    const url = urlFromPath(this.config.root, filepath);
     return this.getFileByUrl(url);
   }
 
@@ -175,10 +155,6 @@ export class StreamAnalyzer extends Transform {
       url = url.substring(1);
     }
     return this.files.get(url);
-  }
-
-  isFragment(file: File): boolean {
-    return this.allFragments.indexOf(file.path) !== -1;
   }
 
   /**
@@ -193,7 +169,7 @@ export class StreamAnalyzer extends Transform {
     // may use posix path separators on Windows.
     const filepath = path.normalize(file.path);
     // Store only root-relative paths, in URL/posix format
-    this.files.set(urlFromPath(this.root, filepath), file);
+    this.files.set(urlFromPath(this.config.root, filepath), file);
   }
 
   /**
@@ -263,8 +239,8 @@ export class StreamAnalyzer extends Transform {
       return;
     }
 
-    const dependencyFilePath = pathFromUrl(this.root, dependencyUrl);
-    if (minimatchAll(dependencyFilePath, this.sourceGlobs)) {
+    const dependencyFilePath = pathFromUrl(this.config.root, dependencyUrl);
+    if (minimatchAll(dependencyFilePath, this.config.sources)) {
       logger.debug('dependency is a source file, ignoring...', {dep: dependencyUrl});
       return;
     }
@@ -282,7 +258,7 @@ export type DeferredFileCallback = (a: string) => string;
 
 export class StreamLoader implements BackwardsCompatibleUrlLoader {
 
-  root: string;
+  config: ProjectConfig;
   analyzer: StreamAnalyzer;
 
   // Store files that have not yet entered the Analyzer stream here.
@@ -292,7 +268,7 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
 
   constructor(analyzer: StreamAnalyzer) {
     this.analyzer = analyzer;
-    this.root = this.analyzer.root;
+    this.config = this.analyzer.config;
   }
 
   hasDeferredFile(filePath: string): boolean {
@@ -326,7 +302,7 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
     }
 
     const urlPath = decodeURIComponent(urlObject.pathname);
-    const filePath = pathFromUrl(this.root, urlPath);
+    const filePath = pathFromUrl(this.config.root, urlPath);
     const file = this.analyzer.getFile(filePath);
 
     if (file) {

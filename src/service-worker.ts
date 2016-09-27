@@ -49,8 +49,8 @@ function fixDeprecatedOptions(options: any): AddServiceWorkerOptions {
  * the information provided in the DepsIndex object.
  */
 function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject): string[] {
-  const precachedAssets = new Set<string>(project.analyzer.allFragments);
-  precachedAssets.add(project.entrypoint);
+  const precachedAssets = new Set<string>(project.config.allFragments);
+  precachedAssets.add(project.config.entrypoint);
 
   for (let depImports of depsIndex.fragmentToFullDeps.values()) {
     depImports.imports.forEach((s) => precachedAssets.add(s));
@@ -66,8 +66,8 @@ function getPrecachedAssets(depsIndex: DepsIndex, project: PolymerProject): stri
  * BUNDLED build, based on the information provided in the DepsIndex object.
  */
 function getBundledPrecachedAssets(project: PolymerProject) {
-  const precachedAssets = new Set<string>(project.analyzer.allFragments);
-  precachedAssets.add(project.entrypoint);
+  const precachedAssets = new Set<string>(project.config.allFragments);
+  precachedAssets.add(project.config.entrypoint);
   precachedAssets.add(project.bundler.sharedBundleUrl);
 
   return Array.from(precachedAssets);
@@ -96,8 +96,8 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions): P
 
   staticFileGlobs = staticFileGlobs.concat(precachedAssets);
   staticFileGlobs = staticFileGlobs.map((filePath: string) => {
-    if (filePath.startsWith(project.root)) {
-      filePath = filePath.substring(project.root.length);
+    if (filePath.startsWith(project.config.root)) {
+      filePath = filePath.substring(project.config.root.length);
     }
     return path.join(buildRoot, filePath);
   });

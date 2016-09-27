@@ -14,8 +14,11 @@ import {posix as posixPath} from 'path';
 import {Transform} from 'stream';
 import File = require('vinyl');
 import * as logging from 'plylog';
+import {ProjectConfig} from 'polymer-project-config';
+
 import {urlFromPath} from './path-transformers';
 import {StreamAnalyzer} from './analyzer';
+
 
 // non-ES module
 const Vulcanize = require('vulcanize');
@@ -23,39 +26,17 @@ const logger = logging.getLogger('cli.build.bundle');
 
 export class Bundler extends Transform {
 
-  entrypoint: string;
-  root: string;
-  shell: string;
-  fragments: string[];
-  allFragments: string[];
+  config: ProjectConfig;
 
   sharedBundleUrl: string;
 
   analyzer: StreamAnalyzer;
   sharedFile: File;
 
-  constructor(root: string, entrypoint: string,
-      shell: string, fragments: string[], analyzer: StreamAnalyzer) {
+  constructor(config: ProjectConfig, analyzer: StreamAnalyzer) {
     super({objectMode: true});
-    this.root = root;
-    this.entrypoint = entrypoint;
-    this.shell = shell;
-    this.fragments = fragments;
 
-    this.allFragments = [];
-    // It's important that shell is first for document-ordering of imports
-    if (shell) {
-      this.allFragments.push(shell);
-    }
-
-    if (entrypoint && !shell && fragments.length === 0) {
-      this.allFragments.push(entrypoint);
-    }
-
-    if (fragments) {
-      this.allFragments = this.allFragments.concat(fragments);
-    }
-
+    this.config = config;
     this.analyzer = analyzer;
     this.sharedBundleUrl = 'shared-bundle.html';
   }
@@ -66,9 +47,9 @@ export class Bundler extends Transform {
       callback: (error?: any, data?: File) => void
     ): void {
 
-    // If this is the entrypoint, hold on to the file, so that it's fully
+    // If this file is a fragment, hold on to the file so that it's fully
     // analyzed by the time down-stream transforms see it.
-    if (this.isEntrypoint(file)) {
+    if (this.config.isFragment(file.path)) {
       callback(null, null);
     } else {
       callback(null, file);
@@ -78,7 +59,7 @@ export class Bundler extends Transform {
 
   _flush(done: (error?: any) => void) {
     this._buildBundles().then((bundles: Map<string, string>) => {
-      for (const fragment of this.allFragments) {
+      for (const fragment of this.config.allFragments) {
         const file = this.analyzer.getFile(fragment);
         console.assert(file != null);
         const contents = bundles.get(fragment);
@@ -96,31 +77,27 @@ export class Bundler extends Transform {
     });
   }
 
-  isEntrypoint(file: File): boolean {
-    return this.allFragments.indexOf(file.path) !== -1;
-  }
-
   async _buildBundles(): Promise<Map<string, string>> {
     const bundles = await this._getBundles();
-    const sharedDepsBundle = (this.shell)
-        ? urlFromPath(this.root, this.shell)
+    const sharedDepsBundle = (this.config.shell)
+        ? urlFromPath(this.config.root, this.config.shell)
         : this.sharedBundleUrl;
     const sharedDeps = bundles.get(sharedDepsBundle) || [];
     const promises: Promise<{url: string, contents: string}>[] = [];
 
-    if (this.shell) {
-      const shellFile = this.analyzer.getFile(this.shell);
+    if (this.config.shell) {
+      const shellFile = this.analyzer.getFile(this.config.shell);
       console.assert(shellFile != null);
       const newShellContent = this._addSharedImportsToShell(bundles);
       shellFile.contents = new Buffer(newShellContent);
     }
 
-    for (const fragment of this.allFragments) {
-      const fragmentUrl = urlFromPath(this.root, fragment);
-      const addedImports = (fragment === this.shell && this.shell)
+    for (const fragment of this.config.allFragments) {
+      const fragmentUrl = urlFromPath(this.config.root, fragment);
+      const addedImports = (this.config.isShell(fragment))
           ? []
           : [posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)];
-      const excludes = (fragment === this.shell && this.shell)
+      const excludes = (this.config.isShell(fragment))
           ? []
           : sharedDeps.concat(sharedDepsBundle);
 
@@ -147,7 +124,7 @@ export class Bundler extends Transform {
       }));
     }
     // vulcanize the shared bundle
-    if (!this.shell && sharedDeps && sharedDeps.length !== 0) {
+    if (!this.config.shell && sharedDeps && sharedDeps.length !== 0) {
       logger.info(`generating shared bundle...`);
       promises.push(this._generateSharedBundle(sharedDeps));
     }
@@ -160,8 +137,8 @@ export class Bundler extends Transform {
   }
 
   _addSharedImportsToShell(bundles: Map<string, string[]>): string {
-    console.assert(this.shell != null);
-    const shellUrl = urlFromPath(this.root, this.shell);
+    console.assert(this.config.shell != null);
+    const shellUrl = urlFromPath(this.config.root, this.config.shell);
     const shellUrlDir = posixPath.dirname(shellUrl);
     const shellDeps = bundles.get(shellUrl)
       .map((d) => posixPath.relative(shellUrlDir, d));
@@ -171,7 +148,7 @@ export class Bundler extends Transform {
       shellDeps: shellDeps,
     });
 
-    const file = this.analyzer.getFile(this.shell);
+    const file = this.analyzer.getFile(this.config.shell);
     console.assert(file != null);
     const contents = file.contents.toString();
     const doc = dom5.parse(contents);
@@ -213,10 +190,10 @@ export class Bundler extends Transform {
           .map((d) => `<link rel="import" href="${d}">`)
           .join('\n');
 
-      const sharedFsPath = path.resolve(this.root, this.sharedBundleUrl);
+      const sharedFsPath = path.resolve(this.config.root, this.sharedBundleUrl);
       this.sharedFile = new File({
-        cwd: this.root,
-        base: this.root,
+        cwd: this.config.root,
+        base: this.config.root,
         path: sharedFsPath,
         contents: new Buffer(contents),
       });
@@ -274,14 +251,13 @@ export class Bundler extends Transform {
       // always come first.
       for (const fragment of fragmentToDeps.keys()) {
 
-        const fragmentUrl = urlFromPath(this.root, fragment);
+        const fragmentUrl = urlFromPath(this.config.root, fragment);
         const dependencies = fragmentToDeps.get(fragment);
         for (const dep of dependencies) {
           const fragmentCount = depsToEntrypoints.get(dep).length;
           if (fragmentCount > 1) {
-            if (this.shell) {
-              addImport(urlFromPath(this.root, this.shell), dep);
-              // addImport(entrypoint, this.shell);
+            if (this.config.shell) {
+              addImport(urlFromPath(this.config.root, this.config.shell), dep);
             } else {
               addImport(this.sharedBundleUrl, dep);
               addImport(fragmentUrl, this.sharedBundleUrl);
