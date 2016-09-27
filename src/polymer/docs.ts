@@ -16,8 +16,9 @@ import * as jsdoc from '../javascript/jsdoc';
 import {ScannedEvent, ScannedFeature, ScannedProperty} from '../model/model';
 
 import {ScannedBehavior} from './behavior-descriptor';
-import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
 import {ScannedPolymerCoreFeature} from './feature-descriptor';
+import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
+
 
 
 // TODO(rictic): destroy this file with great abadon. It's the oldest and

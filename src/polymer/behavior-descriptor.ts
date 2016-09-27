@@ -13,7 +13,7 @@
  */
 
 import {Document} from '../model/model';
-import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/element-descriptor';
+import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
 
 export interface Options extends ElementOptions {}
 

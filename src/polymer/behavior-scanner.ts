@@ -24,6 +24,7 @@ import * as jsdoc from '../javascript/jsdoc';
 import {ScannedBehavior} from './behavior-descriptor';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
+import {toScannedPolymerProperty} from './js-utils';
 
 interface KeyFunc<T> {
   (value: T): any;
@@ -112,7 +113,7 @@ class BehaviorVisitor implements Visitor {
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else {
-        this.currentBehavior.addProperty(esutil.toScannedPolymerProperty(
+        this.currentBehavior.addProperty(toScannedPolymerProperty(
             prop, this.document.sourceRangeForNode(prop)));
       }
     }

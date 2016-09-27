@@ -154,9 +154,9 @@ suite('Analyzer', () => {
 
     // This test is nearly identical to the previous, but covers a different
     // issue.
-    // The Polymer element-descriptor must find behaviors while resolving,
-    // and if inline documents don't add a document feature for their container
-    // until after resolution, then the element can't find them and throws.
+    // PolymerElement must find behaviors while resolving, and if inline
+    // documents don't add a document feature for their container until after
+    // resolution, then the element can't find them and throws.
     test(
         'an inline document can find features from its container document',
         async() => {

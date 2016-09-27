@@ -23,7 +23,8 @@ import {JavaScriptScanner} from '../javascript/javascript-scanner';
 
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {ScannedPolymerElement, ScannedPolymerProperty} from './element-descriptor';
+import {toScannedPolymerProperty} from './js-utils';
+import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 export class PolymerElementScanner implements JavaScriptScanner {
   async scan(
@@ -103,8 +104,8 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc = docs.annotate(esutil.toScannedPolymerProperty(
-        prop, this.document.sourceRangeForNode(prop)));
+    const propDesc = docs.annotate(
+        toScannedPolymerProperty(prop, this.document.sourceRangeForNode(prop)));
     if (prop && prop.kind === 'get' &&
         (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
@@ -187,14 +188,14 @@ class ElementVisitor implements Visitor {
           this.propertyHandlers[name](prop.value);
           continue;
         }
-        const scannedPolymerProperty = esutil.toScannedPolymerProperty(
+        const scannedPolymerProperty = toScannedPolymerProperty(
             prop, this.document.sourceRangeForNode(prop));
         if (scannedPolymerProperty.getter) {
           getters[scannedPolymerProperty.name] = scannedPolymerProperty;
         } else if (scannedPolymerProperty.setter) {
           setters[scannedPolymerProperty.name] = scannedPolymerProperty;
         } else {
-          this.element.addProperty(esutil.toScannedPolymerProperty(
+          this.element.addProperty(toScannedPolymerProperty(
               prop, this.document.sourceRangeForNode(prop)));
         }
       }

@@ -12,16 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedEvent, SourceRange} from '../model/model';
+import {ScannedEvent} from '../model/model';
 import {annotateEvent} from '../polymer/docs';
-import {ScannedFunction, ScannedPolymerProperty} from '../polymer/element-descriptor';
 
 import * as jsdoc from './jsdoc';
-
 
 /**
  * Returns whether an Espree node matches a particular object path.
@@ -140,40 +137,4 @@ function getLeadingComments(node: estree.Node): string[] {
   }
   const comments = node.leadingComments;
   return comments && comments.map((comment) => comment.value);
-}
-
-/**
- * Converts a estree Property AST node into its Hydrolysis representation.
- */
-export function toScannedPolymerProperty(
-    node: estree.Property, sourceRange: SourceRange): ScannedPolymerProperty {
-  let type = closureType(node.value);
-  if (type === 'Function') {
-    if (node.kind === 'get' || node.kind === 'set') {
-      type = '';
-      node[`${node.kind}ter`] = true;
-    }
-  }
-  let description =
-      jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
-
-  const result: ScannedPolymerProperty = {
-    name: objectKeyToString(node.key),
-    type: type,
-    description: description,
-    sourceRange: sourceRange,
-    astNode: node
-  };
-
-  if (type === 'Function') {
-    const value = <estree.Function>node.value;
-    (<ScannedFunction><any>result).params =
-        (value.params || []).map((param) => {
-          // With ES6 we can have a lot of param patterns. Best to leave the
-          // formatting to escodegen.
-          return {name: escodegen.generate(param)};
-        });
-  }
-
-  return result;
 }

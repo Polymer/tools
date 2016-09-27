@@ -19,6 +19,8 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {ScannedProperty} from '../model/model';
 
+import {toScannedPolymerProperty} from './js-utils';
+
 export function analyzeProperties(
     node: estree.Node, document: JavaScriptDocument) {
   const analyzedProps: ScannedProperty[] = [];
@@ -27,7 +29,7 @@ export function analyzeProperties(
     return analyzedProps;
   }
   for (const property of node.properties) {
-    const prop = esutil.toScannedPolymerProperty(
+    const prop = toScannedPolymerProperty(
         property, document.sourceRangeForNode(property));
     prop.published = true;
 

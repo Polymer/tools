@@ -18,7 +18,7 @@ import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 
 import {analyzeProperties} from './analyze-properties';
-import {ScannedPolymerElement} from './element-descriptor';
+import {ScannedPolymerElement} from './polymer-element';
 
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void

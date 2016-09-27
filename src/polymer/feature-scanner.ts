@@ -18,8 +18,8 @@ import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 
-
 import {ScannedPolymerCoreFeature} from './feature-descriptor';
+import {toScannedPolymerProperty} from './js-utils';
 
 export function featureScanner(document: JavaScriptDocument) {
   /** The features we've found. */
@@ -46,8 +46,7 @@ export function featureScanner(document: JavaScriptDocument) {
     }
 
     const polymerProps = featureNode.properties.map(
-        (p) =>
-            esutil.toScannedPolymerProperty(p, document.sourceRangeForNode(p)));
+        (p) => toScannedPolymerProperty(p, document.sourceRangeForNode(p)));
     for (const prop of polymerProps) {
       feature.addProperty(prop);
     }
