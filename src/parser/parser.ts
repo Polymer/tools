@@ -12,8 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {LocationOffset} from '../model/model';
+
 import {ParsedDocument} from './document';
 
 export interface Parser<D extends ParsedDocument<any, any>> {
-  parse(contents: string, url: string): D;
+  parse(contents: string, url: string, locationOffset?: LocationOffset): D;
 }

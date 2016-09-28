@@ -14,7 +14,9 @@
 
 import * as shadyCss from 'shady-css-parser';
 
+import {LocationOffset} from '../model/model';
 import {Parser} from '../parser/parser';
+
 import {ParsedCssDocument} from './css-document';
 
 export class CssParser implements Parser<ParsedCssDocument> {
@@ -24,11 +26,10 @@ export class CssParser implements Parser<ParsedCssDocument> {
     this._parser = new shadyCss.Parser();
   }
 
-  parse(contents: string, url: string): ParsedCssDocument {
+  parse(contents: string, url: string, locationOffset?: LocationOffset):
+      ParsedCssDocument {
     let ast = this._parser.parse(contents);
 
-    return new ParsedCssDocument({
-        url, contents, ast,
-    });
+    return new ParsedCssDocument({url, contents, ast, locationOffset});
   }
 }

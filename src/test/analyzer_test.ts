@@ -73,7 +73,8 @@ suite('Analyzer', () => {
           await analyzer.analyze('static/analysis/behaviors/behavior.html');
 
       const behaviors = Array.from(document.getByKind('behavior'));
-      assert.deepEqual(behaviors.map(b => b.className),
+      assert.deepEqual(
+          behaviors.map(b => b.className),
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
     });
 

@@ -140,7 +140,8 @@ export class Analyzer {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise is cached before anything else happens.
       await Promise.resolve();
-      const doneTiming = this._telemetryTracker.start('analyze: make document', url);
+      const doneTiming =
+          this._telemetryTracker.start('analyze: make document', url);
       const scannedDocument = await this._scan(resolvedUrl, contents);
       const document = this._makeDocument(scannedDocument);
       doneTiming();
@@ -228,33 +229,23 @@ export class Analyzer {
       locationOffset?: LocationOffset,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
-    const document = this._parseContents(type, contents, resolvedUrl);
-    return await this._scanDocument(document, locationOffset, attachedComment);
+    const document =
+        this._parseContents(type, contents, resolvedUrl, locationOffset);
+    return await this._scanDocument(document, attachedComment);
   }
 
   /**
    * Scans a parsed Document object.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>, maybeLocationOffset?: LocationOffset,
-      maybeAttachedComment?: string): Promise<ScannedDocument> {
+      document: ParsedDocument<any, any>, maybeAttachedComment?: string): Promise<ScannedDocument> {
     // TODO(rictic): We shouldn't be calling _scanDocument with
     // null/undefined.
     if (document == null) {
       return null;
     }
-    const locationOffset =
-        maybeLocationOffset || {line: 0, col: 0, filename: document.url};
     const warnings: Warning[] = [];
-    let scannedFeatures = await this._getScannedFeatures(document);
-    // TODO(rictic): invert this and push the location offsets into the inline
-    // documents so that the source ranges are correct when they're first
-    // created.
-    for (const scannedFeature of scannedFeatures) {
-      if (scannedFeature instanceof ScannedElement) {
-        scannedFeature.applyLocationOffset(locationOffset);
-      }
-    }
+    const scannedFeatures = await this._getScannedFeatures(document);
     // If there's an HTML comment that applies to this document then we assume
     // that it applies to the first feature.
     const firstScannedFeature = scannedFeatures[0];
@@ -281,7 +272,7 @@ export class Analyzer {
         (await Promise.all(scannedSubDocuments)).filter(s => !!s);
 
     const scannedDocument = new ScannedDocument(
-        document, dependencies, scannedFeatures, locationOffset, warnings);
+        document, dependencies, scannedFeatures, warnings);
     this._scannedDocuments.set(scannedDocument.url, scannedDocument);
     return scannedDocument;
   }
@@ -378,7 +369,8 @@ export class Analyzer {
       const extension = path.extname(resolvedUrl).substring(1);
 
       const doneTiming = this._telemetryTracker.start('parse', 'resolvedUrl');
-      const parsedDoc = this._parseContents(extension, content, resolvedUrl);
+      const parsedDoc =
+          this._parseContents(extension, content, resolvedUrl, null);
       doneTiming();
       return parsedDoc;
     })();
@@ -386,14 +378,15 @@ export class Analyzer {
     return promise;
   }
 
-  private _parseContents(type: string, contents: string, url: string):
-      ParsedDocument<any, any> {
+  private _parseContents(
+      type: string, contents: string, url: string,
+      locationOffset: LocationOffset|null): ParsedDocument<any, any> {
     const parser = this._parsers.get(type);
     if (parser == null) {
       throw new NoKnownParserError(`No parser for for file type ${type}`);
     }
     try {
-      return parser.parse(contents, url);
+      return parser.parse(contents, url, locationOffset);
     } catch (error) {
       if (error instanceof WarningCarryingException) {
         throw error;

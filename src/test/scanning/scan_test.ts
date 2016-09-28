@@ -109,7 +109,7 @@ function makeTestDocument(options: TestDocumentMakerOptions):
     stringify() {
       return 'test stringify output';
     }
-  };
+  } as any;
 }
 
 interface TestScannerMakerOptions {

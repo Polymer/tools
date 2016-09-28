@@ -15,7 +15,7 @@
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
 
-import {correctSourceRange, Document, Event, Feature, LocationOffset, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty} from './model';
+import {Document, Event, Feature, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -39,23 +39,6 @@ export class ScannedElement implements ScannedFeature, Resolvable {
   sourceRange: SourceRange;
 
   jsdoc?: jsdoc.Annotation;
-
-  applyLocationOffset(locationOffset?: LocationOffset) {
-    if (!locationOffset) {
-      return;
-    }
-    this.sourceRange = correctSourceRange(this.sourceRange, locationOffset);
-    for (const prop of this.properties) {
-      prop.sourceRange = correctSourceRange(prop.sourceRange, locationOffset);
-    }
-    for (const attribute of this.attributes) {
-      attribute.sourceRange =
-          correctSourceRange(attribute.sourceRange, locationOffset);
-    }
-    for (const event of this.events) {
-      event.sourceRange = correctSourceRange(event.sourceRange, locationOffset);
-    }
-  }
 
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText || '';

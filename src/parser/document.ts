@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../model/source-range';
+import {correctSourceRange, LocationOffset, SourceRange} from '../model/source-range';
 
 /**
  * A parsed Document.
@@ -25,11 +25,13 @@ export abstract class ParsedDocument<A, V> {
   url: string;
   contents: string;
   ast: A;
+  private _locationOffset: LocationOffset|null;
 
   constructor(from: Options<A>) {
     this.url = from.url;
     this.contents = from.contents;
     this.ast = from.ast;
+    this._locationOffset = from.locationOffset;
   }
 
   /**
@@ -45,7 +47,12 @@ export abstract class ParsedDocument<A, V> {
    */
   abstract forEachNode(callback: (node: A) => void): void;
 
-  abstract sourceRangeForNode(node: A): SourceRange;
+  sourceRangeForNode(node: A): SourceRange {
+    const baseSource = this._sourceRangeForNode(node);
+    return correctSourceRange(baseSource, this._locationOffset);
+  };
+
+  abstract _sourceRangeForNode(node: A): SourceRange;
 
   /**
    * Convert `this.ast` back into a string document.
@@ -57,4 +64,5 @@ export interface Options<A> {
   url: string;
   contents: string;
   ast: A;
+  locationOffset: LocationOffset|null;
 }

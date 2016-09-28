@@ -29,9 +29,10 @@ interface SkipRecord {
   depth: number;
 }
 
-export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
+export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
   type = 'js';
   private visitorSkips = new Map<Visitor, SkipRecord>();
+  ast: Program;
 
   constructor(from: Options<Program>) {
     super(from);
@@ -124,7 +125,7 @@ export class JavaScriptDocument extends ParsedDocument<Program, Visitor> {
     });
   }
 
-  sourceRangeForNode(node: Node): SourceRange|undefined {
+  _sourceRangeForNode(node: Node): SourceRange|undefined {
     if (!node || !node.loc) {
       return;
     }

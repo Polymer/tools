@@ -15,6 +15,7 @@
 import * as espree from 'espree';
 import {Program} from 'estree';
 
+import {LocationOffset} from '../model/model';
 import {Parser} from '../parser/parser';
 import {Severity, WarningCarryingException} from '../warning/warning';
 
@@ -35,7 +36,8 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
     this.sourceType = options.sourceType;
   }
 
-  parse(contents: string, url: string): JavaScriptDocument {
+  parse(contents: string, url: string, locationOffset?: LocationOffset):
+      JavaScriptDocument {
     let ast: Program;
     try {
       ast = <Program>espree.parse(contents, {
@@ -61,6 +63,6 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       throw err;
     }
 
-    return new JavaScriptDocument({url, contents, ast});
+    return new JavaScriptDocument({url, contents, ast, locationOffset});
   }
 }

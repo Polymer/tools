@@ -84,7 +84,7 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     throw new Error('Not implemented');
   }
 
-  sourceRangeForNode(_node: shady.Node): SourceRange {
+  _sourceRangeForNode(_node: shady.Node): SourceRange {
     throw new Error('Not implemented');
   }
 

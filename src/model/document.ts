@@ -23,7 +23,7 @@ import {Element} from './element';
 import {Feature, ScannedFeature} from './feature';
 import {Import} from './import';
 import {isResolvable} from './resolvable';
-import {LocationOffset, SourceRange} from './source-range';
+import {SourceRange} from './source-range';
 
 /**
  * The metadata for all features and elements defined in one document
@@ -32,19 +32,16 @@ export class ScannedDocument {
   document: ParsedDocument<any, any>;
   dependencies: ScannedDocument[];
   features: ScannedFeature[];
-  locationOffset?: LocationOffset;
   isInline = false;
   sourceRange: SourceRange = null;  // TODO(rictic): track this
   warnings: Warning[];
 
   constructor(
       document: ParsedDocument<any, any>, dependencies: ScannedDocument[],
-      features: ScannedFeature[], locationOffset?: LocationOffset,
-      warnings?: Warning[]) {
+      features: ScannedFeature[], warnings?: Warning[]) {
     this.document = document;
     this.dependencies = dependencies;
     this.features = features;
-    this.locationOffset = locationOffset;
     this.warnings = warnings || [];
   }
 
@@ -124,7 +121,7 @@ export class Document implements Feature {
    *
    * This method can only be called once
    */
-   // TODO(justinfagnani): move to ScannedDocument
+  // TODO(justinfagnani): move to ScannedDocument
   resolve() {
     if (this._doneResolving) {
       throw new Error('resolve can only be called once');
@@ -239,6 +236,7 @@ export class Document implements Feature {
         }
       }
     }
+
     return result;
   }
 
@@ -271,8 +269,7 @@ export class Document implements Feature {
   }
 
   /**
-   * Adds and indexes a feature to this document. Thie method can only be
-   * called before resolve().
+   * Adds and indexes a feature to this documentled before resolve().
    */
   _addFeature(feature: Feature) {
     if (this._doneResolving) {

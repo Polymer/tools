@@ -12,12 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {LocationOffset} from '../model/model';
 import {Parser} from '../parser/parser';
 
 import {ParsedJsonDocument} from './json-document';
 
 export class JsonParser implements Parser<ParsedJsonDocument> {
-  parse(contents: string, url: string): ParsedJsonDocument {
-    return new ParsedJsonDocument({url, contents, ast: JSON.parse(contents)});
+  parse(contents: string, url: string, locationOffset?: LocationOffset):
+      ParsedJsonDocument {
+    return new ParsedJsonDocument(
+        {url, contents, ast: JSON.parse(contents), locationOffset});
   }
 }

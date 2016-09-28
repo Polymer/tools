@@ -46,7 +46,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     });
   }
 
-  sourceRangeForNode(node: ASTNode): SourceRange {
+  _sourceRangeForNode(node: ASTNode): SourceRange {
     if (!node || !node.__location) {
       return;
     }
