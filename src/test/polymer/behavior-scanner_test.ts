@@ -20,7 +20,7 @@ import * as path from 'path';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedBehavior} from '../../polymer/behavior-descriptor';
+import {ScannedBehavior} from '../../polymer/behavior';
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
 
 suite('BehaviorScanner', () => {

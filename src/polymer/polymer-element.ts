@@ -18,7 +18,7 @@ import * as estree from 'estree';
 import * as jsdoc from '../javascript/jsdoc';
 import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
 
-import {Behavior} from './behavior-descriptor';
+import {Behavior} from './behavior';
 
 export interface BasePolymerProperty {
   published?: boolean;

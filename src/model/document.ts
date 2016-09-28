@@ -14,7 +14,7 @@
 
 import {Analyzer} from '../analyzer';
 import {ParsedDocument} from '../parser/document';
-import {Behavior} from '../polymer/behavior-descriptor';
+import {Behavior} from '../polymer/behavior';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/polymer-element';
 import {Warning} from '../warning/warning';
