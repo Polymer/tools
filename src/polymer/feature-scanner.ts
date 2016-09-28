@@ -18,7 +18,7 @@ import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 
-import {ScannedPolymerCoreFeature} from './feature-descriptor';
+import {ScannedPolymerCoreFeature} from './polymer-core-feature';
 import {toScannedPolymerProperty} from './js-utils';
 
 export function featureScanner(document: JavaScriptDocument) {

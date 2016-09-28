@@ -16,7 +16,7 @@ import * as jsdoc from '../javascript/jsdoc';
 import {ScannedEvent, ScannedFeature, ScannedProperty} from '../model/model';
 
 import {ScannedBehavior} from './behavior';
-import {ScannedPolymerCoreFeature} from './feature-descriptor';
+import {ScannedPolymerCoreFeature} from './polymer-core-feature';
 import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 
