@@ -26,7 +26,7 @@ export type PropertyHandlers = {
 
 /**
  * Returns an object containing functions that will annotate `declaration` with
- * the polymer-specificmeaning of the value nodes for the named properties.
+ * the polymer-specific meaning of the value nodes for the named properties.
  */
 export function declarationPropertyHandlers(
     declaration: ScannedPolymerElement,

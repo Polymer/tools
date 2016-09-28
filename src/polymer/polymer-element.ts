@@ -87,7 +87,14 @@ export class ScannedPolymerElement extends ScannedElement {
 
   constructor(options: Options) {
     super();
-    Object.assign(this, options);
+    // TODO(justinfagnani): fix this constructor to not be crazy, or remove
+    // class altogether.
+    const optionsCopy = Object.assign({}, options);
+    delete optionsCopy.properties;
+    Object.assign(this, optionsCopy);
+    if (options.properties) {
+      options.properties.forEach((p) => this.addProperty(p));
+    }
   }
 
   addProperty(prop: ScannedPolymerProperty) {

@@ -138,3 +138,12 @@ function getLeadingComments(node: estree.Node): string[] {
   const comments = node.leadingComments;
   return comments && comments.map((comment) => comment.value);
 }
+
+export function getPropertyValue(node: estree.ObjectExpression, name: string): estree.Node {
+  const properties = node.properties;
+  for (const property of properties) {
+    if (objectKeyToString(property.key) === name) {
+      return property.value;
+    }
+  }
+}
