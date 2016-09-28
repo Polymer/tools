@@ -15,8 +15,9 @@
 import * as chalk from 'chalk';
 
 import {Analyzer} from '../analyzer';
-import {Severity, Warning} from './warning';
 import {SourceRange} from '../model/source-range';
+
+import {Severity, Warning} from './warning';
 
 export type Verbosity = 'one-line' | 'full';
 
@@ -32,15 +33,12 @@ const defaultPrinterOptions = {
 };
 
 export class WarningPrinter {
-  _chalk: typeof chalk;
+  _chalk: chalk.Chalk;
 
   constructor(
       private _outStream: NodeJS.WritableStream, private _options?: Options) {
     this._options = Object.assign({}, defaultPrinterOptions, _options);
-    // TODO(rictic): remove cast to `any` here once upstream PR has landed:
-    //     https://github.com/DefinitelyTyped/DefinitelyTyped/pull/11411
-    this._chalk =
-        new (chalk.constructor as any)({enabled: this._options.color});
+    this._chalk = new chalk.constructor({enabled: this._options.color});
   }
 
   /**
