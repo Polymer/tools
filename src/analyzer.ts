@@ -238,7 +238,8 @@ export class Analyzer {
    * Scans a parsed Document object.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>, maybeAttachedComment?: string): Promise<ScannedDocument> {
+      document: ParsedDocument<any, any>,
+      maybeAttachedComment?: string): Promise<ScannedDocument> {
     // TODO(rictic): We shouldn't be calling _scanDocument with
     // null/undefined.
     if (document == null) {
@@ -271,8 +272,8 @@ export class Analyzer {
     const dependencies =
         (await Promise.all(scannedSubDocuments)).filter(s => !!s);
 
-    const scannedDocument = new ScannedDocument(
-        document, dependencies, scannedFeatures, warnings);
+    const scannedDocument =
+        new ScannedDocument(document, dependencies, scannedFeatures, warnings);
     this._scannedDocuments.set(scannedDocument.url, scannedDocument);
     return scannedDocument;
   }

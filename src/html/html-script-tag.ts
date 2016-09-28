@@ -20,12 +20,9 @@ import {Document, Import, ScannedImport} from '../model/model';
  * represents a script tag with a `src` attribute as an import, so that the
  * analyzer loads and parses the referenced document.
  */
-export class ScriptTagImport extends Import {
-  type: 'html-script';
-}
+export class ScriptTagImport extends Import { type: 'html-script'; }
 
 export class ScannedScriptTagImport extends ScannedImport {
-
   resolve(document: Document): ScriptTagImport {
     // TODO(justinfagnani): warn if the same URL is loaded from more than one
     // non-module script tag

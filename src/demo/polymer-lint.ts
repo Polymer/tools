@@ -36,17 +36,18 @@ async function main() {
   }
 };
 
-async function getWarnings(analyzer: Analyzer, localPath: string): Promise<Warning[]> {
-  try {
-    const document = await analyzer.analyze(localPath);
-    return document.getWarnings();
-  } catch (e) {
-    if (e instanceof WarningCarryingException) {
-      return [e.warning];
+async function getWarnings(analyzer: Analyzer, localPath: string):
+    Promise<Warning[]> {
+      try {
+        const document = await analyzer.analyze(localPath);
+        return document.getWarnings();
+      } catch (e) {
+        if (e instanceof WarningCarryingException) {
+          return [e.warning];
+        }
+        throw e;
+      }
     }
-    throw e;
-  }
-}
 
 main()
     .catch(err => {
