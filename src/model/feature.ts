@@ -18,7 +18,15 @@ import {SourceRange} from './source-range';
 export interface Feature {
   kinds: Set<string>;
   identifiers?: Set<string>;
+
+  /** Tracks the source that this feature came from. */
   sourceRange: SourceRange;
+
+  /**
+   * The AST Node, if any, that corresponds to this feature in its containing
+   * document.
+   */
+  astNode: any;
 }
 
 export interface ScannedFeature {
@@ -29,4 +37,10 @@ export interface ScannedFeature {
 
   /** Tracks the source that this feature came from. */
   sourceRange: SourceRange;
+
+  /**
+   * The AST Node, if any, that corresponds to this feature in its containing
+   * document.
+   */
+  astNode: any;
 }

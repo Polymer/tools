@@ -15,12 +15,18 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
+import * as clone from 'clone';
+import * as shady from 'shady-css-parser';
+
+import stripIndent = require('strip-indent');
+import * as estree from 'estree';
 
 import {Analyzer} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import {ParsedCssDocument} from '../css/css-document';
 import {Document, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
@@ -329,6 +335,64 @@ suite('Analyzer', () => {
       assert.instanceOf(features[1], ScannedInlineDocument);
     });
 
+    const testName =
+        'HTML inline documents can be cloned, modified, and stringified';
+    test(testName, async() => {
+      const contents = stripIndent(`
+        <div>
+          <script>
+            console.log('foo');
+          </script>
+          <style>
+            body {
+              color: blue;
+            }
+          </style>
+        </div>
+      `).trim();
+      const expectedContents = stripIndent(`
+        <div>
+          <script>
+            console.log('bar');
+          </script>
+          <style>
+            body {
+              color: red;
+            }
+          </style>
+        </div>
+      `).trim();
+      const origDocument = await analyzer.analyze('test-doc.html', contents);
+      const document = clone(origDocument);
+
+      // In document, we'll change `foo` to `bar` in the js and `blue` to
+      // `red` in the css.
+      const jsDocs = document.getByKind('js-document') as Set<Document>;
+      assert.equal(1, jsDocs.size);
+      const jsDoc = jsDocs.values().next().value;
+      (jsDoc.parsedDocument as JavaScriptDocument).visit([{
+        enterCallExpression(node: estree.CallExpression) {
+          node.arguments =
+              [{type: 'Literal', value: 'bar'}] as estree.Literal[];
+        }
+      }]);
+
+      const cssDocs = document.getByKind('css-document') as Set<Document>;
+      assert.equal(1, cssDocs.size);
+      const cssDoc = cssDocs.values().next().value;
+      (cssDoc.parsedDocument as ParsedCssDocument).visit([{
+        visit(node: shady.Node) {
+          if (node.type === 'expression' && node.text === 'blue') {
+            node.text = 'red';
+          }
+        }
+      }]);
+
+      // We can stringify the clone and get the modified contents, and
+      // stringify the original and still get the original contents.
+      assert.deepEqual(document.stringify(), expectedContents);
+      assert.deepEqual(origDocument.stringify(), contents);
+    });
   });
 
   suite('legacy tests', () => {

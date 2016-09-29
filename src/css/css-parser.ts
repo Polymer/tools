@@ -14,7 +14,7 @@
 
 import * as shadyCss from 'shady-css-parser';
 
-import {LocationOffset} from '../model/model';
+import {InlineDocInfo} from '../model/model';
 import {Parser} from '../parser/parser';
 
 import {ParsedCssDocument} from './css-document';
@@ -26,10 +26,16 @@ export class CssParser implements Parser<ParsedCssDocument> {
     this._parser = new shadyCss.Parser();
   }
 
-  parse(contents: string, url: string, locationOffset?: LocationOffset):
+  parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       ParsedCssDocument {
     let ast = this._parser.parse(contents);
-
-    return new ParsedCssDocument({url, contents, ast, locationOffset});
+    inlineInfo = inlineInfo || {};
+    return new ParsedCssDocument({
+      url,
+      contents,
+      ast,
+      locationOffset: inlineInfo.astNode,
+      astNode: inlineInfo.astNode
+    });
   }
 }

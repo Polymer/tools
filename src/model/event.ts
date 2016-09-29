@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as estree from 'estree';
 import {ScannedFeature} from './feature';
 
 export interface ScannedEvent extends ScannedFeature {
@@ -19,6 +20,7 @@ export interface ScannedEvent extends ScannedFeature {
   type?: string;
   description?: string;
   params?: {type: string, desc: string, name: string}[];
+  astNode: estree.Node|null;
 }
 
 export interface Event {
@@ -27,4 +29,5 @@ export interface Event {
   // TODO: represent detail object properly
   description?: string;
   inheritedFrom?: string;
+  astNode: estree.Node|null;
 }

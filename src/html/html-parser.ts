@@ -14,7 +14,7 @@
 
 import {parse as parseHtml} from 'parse5';
 
-import {LocationOffset} from '../model/model';
+import {InlineDocInfo} from '../model/model';
 import {Parser} from '../parser/parser';
 
 import {ParsedHtmlDocument} from './html-document';
@@ -26,9 +26,16 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
   * @param {string} htmlString an HTML document.
   * @param {string} href is the path of the document.
   */
-  parse(contents: string, url: string, locationOffset?: LocationOffset):
+  parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       ParsedHtmlDocument {
     let ast = parseHtml(contents, {locationInfo: true});
-    return new ParsedHtmlDocument({url, contents, ast, locationOffset});
+    inlineInfo = inlineInfo || {};
+    return new ParsedHtmlDocument({
+      url,
+      contents,
+      ast,
+      locationOffset: inlineInfo.locationOffset,
+      astNode: inlineInfo.astNode
+    });
   }
 }

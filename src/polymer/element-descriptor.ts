@@ -97,7 +97,8 @@ export class ScannedPolymerElement extends ScannedElement {
       this.events.push({
         name: `${attributeName}-changed`,
         description: `Fired when the \`${prop.name}\` property changes.`,
-        sourceRange: prop.sourceRange
+        sourceRange: prop.sourceRange,
+        astNode: prop.astNode
       });
     }
   }

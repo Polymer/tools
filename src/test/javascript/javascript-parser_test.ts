@@ -80,7 +80,7 @@ suite('JavaScriptParser', () => {
         }`).trim() +
           '\n';
       const document = parser.parse(contents, 'test-file.js');
-      assert.deepEqual(document.stringify(), contents);
+      assert.deepEqual(document.stringify({}), contents);
     });
   });
 });

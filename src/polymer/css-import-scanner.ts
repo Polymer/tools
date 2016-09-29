@@ -38,7 +38,7 @@ export class CssImportScanner implements HtmlScanner {
         const importUrl = resolveUrl(document.url, href);
         imports.push(new ScannedImport(
             'css-import', importUrl, document.sourceRangeForNode(node),
-            document.sourceRangeForAttribute(node, 'href')));
+            document.sourceRangeForAttribute(node, 'href'), node));
       }
     });
     return imports;

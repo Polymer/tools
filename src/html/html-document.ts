@@ -12,12 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument} from '../parser/document';
+import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
 
 /**
  * The ASTs of the HTML elements needed to represent Polymer elements.
@@ -102,20 +103,54 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     };
   }
 
-  stringify() {
-    // TODO(issues/315): serialize inline documents correctly.
-    let result = parse5.serialize(this.ast);
+  stringify(options?: StringifyOptions) {
+    options = options || {};
+    /**
+     * We want to mutate this.ast with the results of stringifying our inline
+     * documents. This will mutate this.ast even if no one else has mutated it
+     * yet, because our inline documents' stringifiers may not perfectly
+     * reproduce their input. However, we don't want to mutate any analyzer
+     * object after they've been produced and cached, ParsedHtmlDocuments
+     * included. So we want to clone first.
+     *
+     * Because our inline documents contain references into this.ast, we need to
+     * make of copy of `this` and the inline documents such the
+     * inlineDoc.astNode references into this.ast are maintained. Fortunately,
+     * clone() does this! So we'll clone them all together in a single call by
+     * putting them all into an array.
+     */
+    const immutableDocuments = options.inlineDocuments || [];
+    immutableDocuments.unshift(this);
 
-    // Strip out inferred boilerplate nodes that are injected.
-    const injectedTagNames = ['html', 'head', 'body'];
-    for (const tagName of injectedTagNames) {
-      if (!this.contents.includes(`<${tagName}`)) {
-        result =
-            result.replace(RegExp(`<${tagName}>([^]*)?</${tagName}>`), '$1');
-      }
+    // We can modify these, as they don't escape this method.
+    const mutableDocuments = clone(immutableDocuments);
+    const selfClone = mutableDocuments.shift();
+
+    for (const doc of mutableDocuments) {
+      // TODO(rictic): infer this from doc.astNode's indentation.
+      const expectedIndentation = 2;
+
+      dom5.setTextContent(
+          doc.astNode, '\n' + doc.stringify({indent: expectedIndentation}) +
+              '  '.repeat(expectedIndentation - 1));
     }
 
-    return result;
+    removeFakeNodes(selfClone.ast);
+    return parse5.serialize(selfClone.ast);
+  }
+}
+
+const injectedTagNames = new Set(['html', 'head', 'body']);
+function removeFakeNodes(ast: dom5.Node) {
+  const children = (ast.childNodes || []).slice();
+  if (ast.parentNode && !ast.__location && injectedTagNames.has(ast.nodeName)) {
+    for (const child of children) {
+      dom5.insertBefore(ast.parentNode, ast, child);
+    }
+    dom5.remove(ast);
+  }
+  for (const child of children) {
+    removeFakeNodes(child);
   }
 }
 

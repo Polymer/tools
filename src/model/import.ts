@@ -13,7 +13,7 @@
  */
 
 import {Document, ScannedDocument} from './document';
-import {Feature, ScannedFeature} from './feature';
+import {Feature} from './feature';
 import {SourceRange} from './model';
 import {Resolvable} from './resolvable';
 
@@ -24,7 +24,7 @@ import {Resolvable} from './resolvable';
  *
  * @template N The AST node type
  */
-export class ScannedImport implements ScannedFeature, Resolvable {
+export class ScannedImport implements Resolvable {
   type: 'html-import'|'html-script'|'html-style'|'js-import'|string;
 
   /**
@@ -42,20 +42,24 @@ export class ScannedImport implements ScannedFeature, Resolvable {
    */
   urlSourceRange: SourceRange;
 
+  astNode: any|null;
+
   constructor(
       type: string, url: string, sourceRange: SourceRange,
-      urlSourceRange: SourceRange) {
+      urlSourceRange: SourceRange, ast: any|null) {
     this.type = type;
     this.url = url;
     this.sourceRange = sourceRange;
     this.urlSourceRange = urlSourceRange;
+    this.astNode = ast;
   }
 
   resolve(document: Document): Import {
     const importedDocument = document.analyzer._getDocument(this.url);
-    return importedDocument && new Import(
-                                   this.url, this.type, importedDocument,
-                                   this.sourceRange, this.urlSourceRange);
+    return importedDocument &&
+        new Import(
+               this.url, this.type, importedDocument, this.sourceRange,
+               this.urlSourceRange, this.astNode);
   }
 }
 
@@ -67,16 +71,18 @@ export class Import implements Feature {
   kinds = new Set(['import']);
   sourceRange: SourceRange;
   urlSourceRange: SourceRange;
+  astNode: any|null;
 
   constructor(
       url: string, type: string, document: Document, sourceRange: SourceRange,
-      urlSourceRange: SourceRange) {
+      urlSourceRange: SourceRange, ast: any) {
     this.url = url;
     this.type = type;
     this.document = document;
     this.kinds.add(this.type);
     this.sourceRange = sourceRange;
     this.urlSourceRange = urlSourceRange;
+    this.astNode = ast;
   }
 
   toString() {

@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as estree from 'estree';
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
 
@@ -26,6 +27,7 @@ export interface ScannedProperty extends ScannedFeature {
   'default'?: string;
   readOnly?: boolean;
   sourceRange: SourceRange;
+  astNode: estree.Node|null;
 }
 
 export interface Property {

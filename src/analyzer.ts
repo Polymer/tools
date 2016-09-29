@@ -23,7 +23,7 @@ import {HtmlScriptScanner} from './html/html-script-scanner';
 import {HtmlStyleScanner} from './html/html-style-scanner';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {JsonParser} from './json/json-parser';
-import {correctSourceRange, Document, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from './model/model';
+import {correctSourceRange, Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from './model/model';
 import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {Measurement, TelemetryTracker} from './perf/telemetry';
@@ -226,11 +226,11 @@ export class Analyzer {
    */
   private async _scanSource(
       type: string, contents: string, url: string,
-      locationOffset?: LocationOffset,
+      inlineInfo?: InlineDocInfo<any>,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
     const document =
-        this._parseContents(type, contents, resolvedUrl, locationOffset);
+        this._parseContents(type, contents, resolvedUrl, inlineInfo);
     return await this._scanDocument(document, attachedComment);
   }
 
@@ -290,10 +290,11 @@ export class Analyzer {
       col: inlineDoc.locationOffset.col,
       filename: containingDocument.url
     };
+    const inlineInfo = {locationOffset, astNode: inlineDoc.astNode};
     try {
       const scannedDocument = await this._scanSource(
           inlineDoc.type, inlineDoc.contents, containingDocument.url,
-          locationOffset, inlineDoc.attachedComment);
+          inlineInfo, inlineDoc.attachedComment);
       inlineDoc.scannedDocument = scannedDocument;
       inlineDoc.scannedDocument.isInline = true;
       return scannedDocument;
@@ -381,13 +382,13 @@ export class Analyzer {
 
   private _parseContents(
       type: string, contents: string, url: string,
-      locationOffset: LocationOffset|null): ParsedDocument<any, any> {
+      inlineInfo: InlineDocInfo<any>|null): ParsedDocument<any, any> {
     const parser = this._parsers.get(type);
     if (parser == null) {
       throw new NoKnownParserError(`No parser for for file type ${type}`);
     }
     try {
-      return parser.parse(contents, url, locationOffset);
+      return parser.parse(contents, url, inlineInfo);
     } catch (error) {
       if (error instanceof WarningCarryingException) {
         throw error;

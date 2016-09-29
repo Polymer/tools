@@ -25,6 +25,12 @@ export abstract class ParsedDocument<A, V> {
   url: string;
   contents: string;
   ast: A;
+
+  /**
+   * If not null, this is an inline document, and astNode is the AST Node of
+   * this document inside of the parent. (e.g. the <style> or <script> tag)
+   */
+  astNode: any;
   private _locationOffset: LocationOffset|null;
 
   constructor(from: Options<A>) {
@@ -32,6 +38,7 @@ export abstract class ParsedDocument<A, V> {
     this.contents = from.contents;
     this.ast = from.ast;
     this._locationOffset = from.locationOffset;
+    this.astNode = from.astNode;
   }
 
   /**
@@ -57,7 +64,7 @@ export abstract class ParsedDocument<A, V> {
   /**
    * Convert `this.ast` back into a string document.
    */
-  abstract stringify(): string;
+  abstract stringify(options: StringifyOptions): string;
 }
 
 export interface Options<A> {
@@ -65,4 +72,16 @@ export interface Options<A> {
   contents: string;
   ast: A;
   locationOffset: LocationOffset|null;
+  astNode: any|null;
+}
+
+export interface StringifyOptions {
+  /** The desired level of indentation of to stringify at. */
+  indent?: number;
+
+  /**
+   * Parsed (and possibly modified) documents that exist inside this document
+   * whose stringified contents should be used instead of what is in `ast`.
+   */
+  inlineDocuments?: ParsedDocument<any, any>[];
 }

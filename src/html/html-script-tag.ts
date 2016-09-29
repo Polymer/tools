@@ -41,7 +41,7 @@ export class ScannedScriptTagImport extends ScannedImport {
       importedDocument.resolve();
       return new ScriptTagImport(
           this.url, this.type, importedDocument, this.sourceRange,
-          this.urlSourceRange);
+          this.urlSourceRange, this.astNode);
     } else {
       // not found or syntax error
       return null;

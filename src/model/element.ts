@@ -12,10 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as estree from 'estree';
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
 
-import {Document, Event, Feature, Property, Resolvable, ScannedEvent, ScannedFeature, ScannedProperty} from './model';
+import {Document, Event, Feature, Property, Resolvable, ScannedEvent, ScannedProperty} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -26,7 +27,7 @@ export interface ScannedAttribute {
   type?: string;
 }
 
-export class ScannedElement implements ScannedFeature, Resolvable {
+export class ScannedElement implements Resolvable {
   tagName?: string;
   className?: string;
   superClass?: string;
@@ -37,6 +38,7 @@ export class ScannedElement implements ScannedFeature, Resolvable {
   demos: {desc?: string; path: string}[] = [];
   events: ScannedEvent[] = [];
   sourceRange: SourceRange;
+  astNode: estree.Node|null;
 
   jsdoc?: jsdoc.Annotation;
 
@@ -66,6 +68,7 @@ export class Element implements Feature {
   events: Event[] = [];
   sourceRange: SourceRange;
   jsdoc?: jsdoc.Annotation;
+  astNode: estree.Node|null;
   kinds: Set<string> = new Set(['element']);
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();

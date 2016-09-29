@@ -21,34 +21,32 @@ import * as path from 'path';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedElement, ScannedFeature} from '../../model/model';
+import {ScannedElement} from '../../model/model';
 import {ElementScanner} from '../../vanilla-custom-elements/element-scanner';
 
 chai.use(require('chai-subset'));
 
 suite('VanillaElementScanner', () => {
 
+  const elements = new Map<string, ScannedElement>();
   let document: JavaScriptDocument;
-  let elements: Map<string, ScannedElement>;
   let elementsList: ScannedElement[];
 
-  suiteSetup(() => {
-    let parser = new JavaScriptParser({sourceType: 'script'});
-    let file = fs.readFileSync(
+  suiteSetup(async() => {
+    const parser = new JavaScriptParser({sourceType: 'script'});
+    const file = fs.readFileSync(
         path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
     document = parser.parse(file, '/static/vanilla-elements.js');
-    let scanner = new ElementScanner();
-    let visit = (visitor: Visitor) =>
+    const scanner = new ElementScanner();
+    const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    return scanner.scan(document, visit).then((features: ScannedFeature[]) => {
-      elements = new Map();
-      elementsList =
-          <ScannedElement[]>features.filter((e) => e instanceof ScannedElement);
-      for (let element of elementsList) {
-        elements.set(element.tagName, element);
-      }
-    });
+    const features = await scanner.scan(document, visit);
+    elementsList =
+        <ScannedElement[]>features.filter((e) => e instanceof ScannedElement);
+    for (const element of elementsList) {
+      elements.set(element.tagName, element);
+    }
   });
 
   test('Finds elements', () => {

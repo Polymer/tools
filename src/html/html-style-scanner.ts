@@ -46,14 +46,14 @@ export class HtmlStyleScanner implements HtmlScanner {
           const importUrl = resolveUrl(document.url, href);
           features.push(new ScannedImport(
               'html-style', importUrl, document.sourceRangeForNode(node),
-              document.sourceRangeForAttribute(node, 'href')));
+              document.sourceRangeForAttribute(node, 'href'), node));
         } else {
           const contents = dom5.getTextContent(node);
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const commentText = getAttachedCommentText(node);
           features.push(new ScannedInlineDocument(
               'css', contents, locationOffset, commentText,
-              document.sourceRangeForNode(node)));
+              document.sourceRangeForNode(node), node));
         }
       }
     });

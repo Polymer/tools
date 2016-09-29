@@ -17,7 +17,7 @@ import {traverse, VisitorOption} from 'estraverse';
 import {Node, Program} from 'estree';
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument} from '../parser/document';
+import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
 
 import {Visitor, VisitResult} from './estree-visitor';
 
@@ -137,13 +137,14 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
     };
   }
 
-  stringify(indent?: number) {
+  stringify(options: StringifyOptions) {
+    options = options || {};
     const formatOptions = {
       comment: true,
       format: {indent: {style: '  ', adjustMultilineComment: true, base: 0}}
     };
-    if (indent != null) {
-      formatOptions.format.indent.base = indent;
+    if (options.indent != null) {
+      formatOptions.format.indent.base = options.indent;
     }
 
     return escodegen.generate(this.ast, formatOptions) + '\n';

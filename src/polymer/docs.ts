@@ -110,7 +110,8 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
         'N/A',
     description: eventTag.description || annotation.description,
     jsdoc: annotation,
-    sourceRange: null
+    sourceRange: null,
+    astNode: null
   };
 
   const tags = (annotation && annotation.tags || []);
@@ -228,8 +229,9 @@ export function featureElement(features: ScannedPolymerCoreFeature[]):
  * called `annotate`.
  */
 export function clean(scannedFeature: ScannedFeature) {
-  if (!scannedFeature.jsdoc)
+  if (!scannedFeature.jsdoc) {
     return;
+  }
   // The doctext was written to `scannedFeature.description`
   delete scannedFeature.jsdoc.description;
 

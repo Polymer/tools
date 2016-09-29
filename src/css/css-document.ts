@@ -16,7 +16,7 @@ import * as cssbeautify from 'cssbeautify';
 import * as shady from 'shady-css-parser';
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument} from '../parser/document';
+import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
 
@@ -88,10 +88,17 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     throw new Error('Not implemented');
   }
 
-  stringify() {
-    return cssbeautify(
-               shadyStringifier.stringify(this.ast),
-               {indent: '  ', autosemicolon: true, openbrace: 'end-of-line'}) +
+  stringify(options?: StringifyOptions) {
+    options = options || {};
+    const beautifulResults = cssbeautify(
+        shadyStringifier.stringify(this.ast),
+        {indent: '  ', autosemicolon: true, openbrace: 'end-of-line'});
+
+    const indent = '  '.repeat(options.indent || 0);
+
+    return beautifulResults.split('\n')
+               .map(line => line === '' ? '' : indent + line)
+               .join('\n') +
         '\n';
   }
 }

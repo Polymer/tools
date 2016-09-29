@@ -17,27 +17,31 @@ import {ASTNode} from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
-import {Feature, getAttachedCommentText, Resolvable, ScannedFeature, SourceRange} from '../model/model';
+import {Feature, getAttachedCommentText, Resolvable, SourceRange} from '../model/model';
 
 const p = dom5.predicates;
 
 const isDomModule = p.hasTagName('dom-module');
 
-export class ScannedDomModule implements ScannedFeature, Resolvable {
+export class ScannedDomModule implements Resolvable {
   id?: string;
   node: ASTNode;
   comment?: string;
   sourceRange: SourceRange;
+  astNode: dom5.Node;
 
-  constructor(id: string, node: ASTNode, sourceRange: SourceRange) {
+  constructor(
+      id: string, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
     this.sourceRange = sourceRange;
+    this.astNode = ast;
   }
 
   resolve() {
-    return new DomModule(this.node, this.id, this.comment, this.sourceRange);
+    return new DomModule(
+        this.node, this.id, this.comment, this.sourceRange, this.astNode);
   }
 }
 
@@ -48,8 +52,10 @@ export class DomModule implements Feature {
   id: string|undefined;
   comment: string|undefined;
   sourceRange: SourceRange;
+  astNode: dom5.Node;
   constructor(
-      node: ASTNode, id: string, comment: string, sourceRange: SourceRange) {
+      node: ASTNode, id: string, comment: string, sourceRange: SourceRange,
+      ast: dom5.Node) {
     this.node = node;
     this.id = id;
     this.comment = comment;
@@ -57,6 +63,7 @@ export class DomModule implements Feature {
       this.identifiers.add(id);
     }
     this.sourceRange = sourceRange;
+    this.astNode = ast;
   }
 }
 
@@ -71,7 +78,7 @@ export class DomModuleScanner implements HtmlScanner {
       if (isDomModule(node)) {
         domModules.push(new ScannedDomModule(
             dom5.getAttribute(node, 'id'), node,
-            document.sourceRangeForNode(node)));
+            document.sourceRangeForNode(node), node));
       }
     });
     return domModules;

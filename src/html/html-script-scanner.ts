@@ -44,7 +44,7 @@ export class HtmlScriptScanner implements HtmlScanner {
           const importUrl = resolveUrl(document.url, src);
           features.push(new ScannedScriptTagImport(
               'html-script', importUrl, document.sourceRangeForNode(node),
-              document.sourceRangeForAttribute(node, 'src')));
+              document.sourceRangeForAttribute(node, 'src'), node));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const attachedCommentText = getAttachedCommentText(node);
@@ -52,7 +52,7 @@ export class HtmlScriptScanner implements HtmlScanner {
 
           features.push(new ScannedInlineDocument(
               'js', contents, locationOffset, attachedCommentText,
-              document.sourceRangeForNode(node)));
+              document.sourceRangeForNode(node), node));
         }
       }
     };

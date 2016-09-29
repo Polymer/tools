@@ -59,7 +59,7 @@ export class HtmlImportScanner implements HtmlScanner {
       const importUrl = resolveUrl(document.url, href);
       imports.push(new ScannedImport(
           type, importUrl, document.sourceRangeForNode(node),
-          document.sourceRangeForAttribute(node, 'href')));
+          document.sourceRangeForAttribute(node, 'href'), node));
     });
     return imports;
   }

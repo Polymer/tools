@@ -20,7 +20,6 @@ import * as path from 'path';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedFeature} from '../../model/model';
 import {ScannedBehavior} from '../../polymer/behavior-descriptor';
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
 
@@ -30,23 +29,22 @@ suite('BehaviorScanner', () => {
   let behaviors: Map<string, ScannedBehavior>;
   let behaviorsList: ScannedBehavior[];
 
-  suiteSetup(() => {
-    let parser = new JavaScriptParser({sourceType: 'script'});
-    let file = fs.readFileSync(
+  suiteSetup(async() => {
+    const parser = new JavaScriptParser({sourceType: 'script'});
+    const file = fs.readFileSync(
         path.resolve(__dirname, '../static/js-behaviors.js'), 'utf8');
     document = parser.parse(file, '/static/js-behaviors.js');
-    let scanner = new BehaviorScanner();
-    let visit = (visitor: Visitor) =>
+    const scanner = new BehaviorScanner();
+    const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    return scanner.scan(document, visit).then((features: ScannedFeature[]) => {
-      behaviors = new Map();
-      behaviorsList = <ScannedBehavior[]>features.filter(
-          (e) => e instanceof ScannedBehavior);
-      for (let behavior of behaviorsList) {
-        behaviors.set(behavior.className, behavior);
-      }
-    });
+    const features = await scanner.scan(document, visit);
+    behaviors = new Map();
+    behaviorsList =
+        <ScannedBehavior[]>features.filter((e) => e instanceof ScannedBehavior);
+    for (const behavior of behaviorsList) {
+      behaviors.set(behavior.className, behavior);
+    }
   });
 
   test('Finds behavior object assignments', () => {
@@ -86,7 +84,7 @@ suite('BehaviorScanner', () => {
 
   test('Supports chained behaviors', function() {
     assert(behaviors.has('CustomBehaviorList'));
-    let childBehaviors = behaviors.get('CustomBehaviorList').behaviors;
+    const childBehaviors = behaviors.get('CustomBehaviorList').behaviors;
     assert.deepEqual(childBehaviors, [
       'SimpleBehavior', 'CustomNamedBehavior', 'Really.Really.Deep.Behavior'
     ]);
