@@ -12,8 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from '../model/model';
+import {Document, SourceRange} from '../model/model';
 import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
+
+/**
+ * A scanned behavior assignment of a Polymer element. This is only a
+ * reference to the behavior and not the actual behavior definition itself.
+ *
+ * Example:
+ *
+ *   Polymer({
+ *     is: 'custom-element',
+ *     behaviors: [Polymer.SomeBehavior]
+ *                 ^^^^^^^^^^^^^^^^^^^^
+ *   });
+ */
+export interface ScannedBehaviorAssignment {
+  name: string;
+  sourceRange: SourceRange;
+}
 
 export interface Options extends ElementOptions {}
 

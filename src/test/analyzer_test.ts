@@ -30,6 +30,7 @@ import {ParsedCssDocument} from '../css/css-document';
 import {Document, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
+import {Warning, WarningCarryingException} from '../warning/warning';
 
 import {invertPromise} from './test-utils';
 
@@ -82,6 +83,32 @@ suite('Analyzer', () => {
       assert.deepEqual(
           behaviors.map(b => b.className),
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
+    });
+
+    // TODO(fks) 09-28-2016: Fix off-by-one error in warning sourceRange line
+    // numbers.
+    test('throws when cant find behavior', async() => {
+      try {
+        await analyzer.analyze('static/html-missing-behaviors.html');
+      } catch (err) {
+        assert.instanceOf(err, WarningCarryingException);
+        const warning: Warning = err.warning;
+        assert.equal(
+            err.message,
+            'Unable to resolve behavior `Polymer.ExpectedMissingBehavior`. ' +
+                'Did you import it? Is it annotated with @polymerBehavior?');
+        assert.deepEqual(warning.sourceRange, {
+          file: 'static/html-missing-behaviors.html',
+          start: {
+            line: 23,  // Actual Expected: 24
+            column: 8,
+          },
+          end: {
+            line: 23,  // Actual Expected: 24
+            column: 39,
+          }
+        });
+      }
     });
 
     test(
@@ -408,7 +435,8 @@ suite('Analyzer', () => {
           elements.map(e => e.tagName), ['test-seed', 'test-element']);
       const testSeed = elements[0];
 
-      assert.deepEqual(testSeed.behaviors, ['Behavior1', 'Behavior2']);
+      assert.deepEqual(
+          testSeed.behaviorAssignments, ['Behavior1', 'Behavior2']);
       assert.equal(testSeed.tagName, 'test-seed');
 
       assert.equal(testSeed.observers.length, 2);

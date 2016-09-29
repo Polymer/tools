@@ -17,8 +17,9 @@ import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
 import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {Severity, WarningCarryingException} from '../warning/warning';
 
-import {Behavior} from './behavior';
+import {Behavior, ScannedBehaviorAssignment} from './behavior';
 
 export interface BasePolymerProperty {
   published?: boolean;
@@ -59,7 +60,7 @@ export interface Options {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
   }[];
-  behaviors?: string[];
+  behaviors?: ScannedBehaviorAssignment[];
 
   demos?: {desc: string; path: string}[];
   events?: ScannedEvent[];
@@ -77,7 +78,7 @@ export class ScannedPolymerElement extends ScannedElement {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
   }[] = [];
-  behaviors: string[] = [];
+  behaviorAssignments: ScannedBehaviorAssignment[] = [];
   // FIXME(rictic): domModule and scriptElement aren't known at a file local
   //     level. Remove them here, they should only exist on PolymerElement.
   domModule?: dom5.Node;
@@ -136,7 +137,7 @@ export class PolymerElement extends Element {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
   }[];
-  behaviors: string[];
+  behaviorAssignments: ScannedBehaviorAssignment[];
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
 
@@ -145,7 +146,7 @@ export class PolymerElement extends Element {
   constructor() {
     super();
     this.kinds = new Set(['element', 'polymer-element']);
-    this.behaviors = [];
+    this.behaviorAssignments = [];
   }
 
   emitPropertyMetadata(property: PolymerProperty) {
@@ -180,9 +181,8 @@ function resolveElement(
   // Copy over all properties better. Maybe exclude known properties not copied?
   const clone: PolymerElement =
       Object.assign(new PolymerElement(), scannedElement);
-
-  const behaviors = Array.from(
-      getFlattenedAndResolvedBehaviors(scannedElement.behaviors, document));
+  const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
+      scannedElement.behaviorAssignments, document));
   clone.properties = mergeByName(
       scannedElement.properties,
       behaviors.map(b => ({name: b.className, vals: b.properties})));
@@ -203,33 +203,37 @@ function resolveElement(
 }
 
 function getFlattenedAndResolvedBehaviors(
-    behaviors: string[], document: Document) {
+    behaviorAssignments: ScannedBehaviorAssignment[], document: Document) {
   const resolvedBehaviors = new Set<Behavior>();
-  _getFlattenedAndResolvedBehaviors(behaviors, document, resolvedBehaviors);
+  _getFlattenedAndResolvedBehaviors(
+      behaviorAssignments, document, resolvedBehaviors);
   return resolvedBehaviors;
 }
 
 function _getFlattenedAndResolvedBehaviors(
-    behaviors: string[], document: Document, resolvedBehaviors: Set<Behavior>) {
-  const toLookup = behaviors.slice();
-  for (let behaviorName of toLookup) {
+    behaviorAssignments: ScannedBehaviorAssignment[], document: Document,
+    resolvedBehaviors: Set<Behavior>) {
+  for (const behavior of behaviorAssignments) {
     // TODO(rictic): once we have a system for passing warnings through, this
     //     could be a mild warning and we could just take the last one in the
     //     array, which should be the most recently defined one.
-    const behavior = document.getOnlyAtId('behavior', behaviorName);
-    if (!behavior) {
-      throw new Error(
-          `In ${document &&
-          document.url}:` +
-              `Unable to resolve behavior \`${behaviorName}\` ` +
-              `Did you import it? Is it annotated with @polymerBehavior?`);
+    const foundBehavior = document.getOnlyAtId('behavior', behavior.name);
+    if (!foundBehavior) {
+      throw new WarningCarryingException({
+        message: `Unable to resolve behavior ` +
+            `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
+            `@polymerBehavior?`,
+        severity: Severity.ERROR,
+        code: 'parse-error',
+        sourceRange: behavior.sourceRange
+      });
     }
-    if (resolvedBehaviors.has(behavior)) {
+    if (resolvedBehaviors.has(foundBehavior)) {
       continue;
     }
-    resolvedBehaviors.add(behavior);
+    resolvedBehaviors.add(foundBehavior);
     _getFlattenedAndResolvedBehaviors(
-        behavior.behaviors, document, resolvedBehaviors);
+        foundBehavior.behaviorAssignments, document, resolvedBehaviors);
   }
 }
 
