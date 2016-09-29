@@ -33,7 +33,7 @@ export class ScannedDocument {
   dependencies: ScannedDocument[];
   features: ScannedFeature[];
   isInline = false;
-  sourceRange: SourceRange = null;  // TODO(rictic): track this
+  sourceRange: SourceRange|undefined = undefined;  // TODO(rictic): track this
   warnings: Warning[];
 
   constructor(
@@ -54,6 +54,7 @@ export class Document implements Feature {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
   analyzer: Analyzer;
+  warnings: Warning[] = [];
 
   private _localFeatures = new Set<Feature>();
   private _scannedDocument: ScannedDocument;
@@ -102,7 +103,7 @@ export class Document implements Feature {
     return this._scannedDocument.document;
   }
 
-  get sourceRange(): SourceRange {
+  get sourceRange(): SourceRange|undefined {
     return this._scannedDocument.sourceRange;
   }
 
@@ -322,16 +323,18 @@ export class Document implements Feature {
     return this.parsedDocument.stringify({inlineDocuments: inlineDocuments});
   }
 
-  private _featuresByKind: Map<string, Set<Feature>> = null;
-  private _featuresByKindAndId: Map<string, Map<string, Set<Feature>>> = null;
+  private _featuresByKind: Map<string, Set<Feature>>|null = null;
+  private _featuresByKindAndId: Map<string, Map<string, Set<Feature>>>|null =
+      null;
   private _initIndexes() {
     this._featuresByKind = new Map<string, Set<Feature>>();
     this._featuresByKindAndId = new Map<string, Map<string, Set<Feature>>>();
   }
 
   private _indexFeature(feature: Feature) {
-    if (!this._featuresByKind)
+    if (!this._featuresByKind || !this._featuresByKindAndId) {
       return;
+    }
     for (const kind of feature.kinds) {
       const kindSet = this._featuresByKind.get(kind) || new Set<Feature>();
       kindSet.add(feature);

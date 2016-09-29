@@ -34,11 +34,12 @@ const defaultPrinterOptions = {
 
 export class WarningPrinter {
   _chalk: chalk.Chalk;
+  private _options: Options;
 
-  constructor(
-      private _outStream: NodeJS.WritableStream, private _options?: Options) {
-    this._options = Object.assign({}, defaultPrinterOptions, _options);
-    this._chalk = new chalk.constructor({enabled: this._options.color});
+  constructor(private _outStream: NodeJS.WritableStream, _options?: Options) {
+    this._options =
+        Object.assign({}, defaultPrinterOptions, _options) as Options;
+    this._chalk = new chalk.constructor({enabled: !!this._options.color});
   }
 
   /**

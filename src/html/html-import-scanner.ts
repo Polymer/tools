@@ -26,13 +26,14 @@ const linkTag = p.hasTagName('link');
 const notCssLink = p.NOT(p.hasAttrValue('type', 'css'));
 
 const isHtmlImportNode = p.AND(
-    linkTag, p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    linkTag, p.hasAttr('href'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
     p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'lazy-import')), notCssLink,
     p.NOT(p.parentMatches(p.hasTagName('template'))));
 
 const isLazyImportNode = p.AND(
     p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
-    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')), notCssLink,
+    p.hasAttr('href'), p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')),
+    notCssLink,
     p.parentMatches(
         p.AND(p.hasTagName('dom-module'), p.NOT(p.hasTagName('template')))));
 
@@ -55,11 +56,11 @@ export class HtmlImportScanner implements HtmlScanner {
       } else {
         return;
       }
-      const href = dom5.getAttribute(node, 'href');
+      const href = dom5.getAttribute(node, 'href')!;
       const importUrl = resolveUrl(document.url, href);
       imports.push(new ScannedImport(
-          type, importUrl, document.sourceRangeForNode(node),
-          document.sourceRangeForAttribute(node, 'href'), node));
+          type, importUrl, document.sourceRangeForNode(node)!,
+          document.sourceRangeForAttribute(node, 'href')!, node));
     });
     return imports;
   }

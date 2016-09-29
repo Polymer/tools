@@ -18,6 +18,7 @@ import * as astValue from '../javascript/ast-value';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {ScannedProperty} from '../model/model';
+import {Severity} from '../warning/warning';
 
 import {toScannedPolymerProperty} from './js-utils';
 
@@ -30,7 +31,7 @@ export function analyzeProperties(
   }
   for (const property of node.properties) {
     const prop = toScannedPolymerProperty(
-        property, document.sourceRangeForNode(property));
+        property, document.sourceRangeForNode(property)!);
     prop.published = true;
 
     if (property.value.type !== 'ObjectExpression') {
@@ -54,12 +55,14 @@ export function analyzeProperties(
       switch (propertyKey) {
         case 'type':
           prop.type = esutil.objectKeyToString(propertyArg.value);
-          prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP[prop.type] || prop.type;
+          prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP[prop.type!] || prop.type;
           if (prop.type === undefined) {
-            throw {
+            prop.warnings.push({
+              code: 'invalid-property-type',
               message: 'Invalid type in property object.',
-              location: propertyArg.loc.start
-            };
+              severity: Severity.ERROR,
+              sourceRange: document.sourceRangeForNode(propertyArg)!
+            });
           }
           break;
         case 'notify':
@@ -90,10 +93,12 @@ export function analyzeProperties(
     }
 
     if (!prop.type) {
-      throw {
-        message: 'Unable to determine name for property key.',
-        location: node.loc.start
-      };
+      prop.warnings.push({
+        code: 'no-type-for-property',
+        message: 'Unable to determine type for property.',
+        severity: Severity.WARNING,
+        sourceRange: document.sourceRangeForNode(property)!
+      });
     }
 
     analyzedProps.push(prop);

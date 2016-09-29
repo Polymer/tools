@@ -91,7 +91,8 @@ function blockStatementToValue(block: estree.BlockStatement): LiteralValue {
  * Evaluates return's argument
  */
 function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
-  return expressionToValue(ret.argument);
+  return expressionToValue(
+      ret.argument || {type: 'Literal', value: null, raw: 'null'});
 }
 
 /**
@@ -118,7 +119,7 @@ function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
     if (prop.key.type !== 'Literal') {
       return;
     }
-    const evaluatedKey = literalToValue(prop.key).toString();
+    const evaluatedKey = '' + literalToValue(prop.key);
     const evaluatedValue = expressionToValue(prop.value);
     if (evaluatedValue === undefined) {
       return;
@@ -131,8 +132,8 @@ function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
 /**
  * Binary expressions, like 5 + 5
  */
-function binaryExpressionToValue(member: estree.BinaryExpression): (number|
-                                                                    string) {
+function binaryExpressionToValue(member: estree.BinaryExpression):
+    (number|string|undefined) {
   const left = expressionToValue(member.left);
   const right = expressionToValue(member.right);
   if (left == null || right == null) {

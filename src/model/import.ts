@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Warning} from '../warning/warning';
+
 import {Document, ScannedDocument} from './document';
 import {Feature} from './feature';
 import {SourceRange} from './model';
@@ -44,6 +46,8 @@ export class ScannedImport implements Resolvable {
 
   astNode: any|null;
 
+  warnings: Warning[] = [];
+
   constructor(
       type: string, url: string, sourceRange: SourceRange,
       urlSourceRange: SourceRange, ast: any|null) {
@@ -54,12 +58,12 @@ export class ScannedImport implements Resolvable {
     this.astNode = ast;
   }
 
-  resolve(document: Document): Import {
+  resolve(document: Document): Import|undefined {
     const importedDocument = document.analyzer._getDocument(this.url);
     return importedDocument &&
         new Import(
                this.url, this.type, importedDocument, this.sourceRange,
-               this.urlSourceRange, this.astNode);
+               this.urlSourceRange, this.astNode, this.warnings);
   }
 }
 
@@ -72,10 +76,11 @@ export class Import implements Feature {
   sourceRange: SourceRange;
   urlSourceRange: SourceRange;
   astNode: any|null;
+  warnings: Warning[];
 
   constructor(
       url: string, type: string, document: Document, sourceRange: SourceRange,
-      urlSourceRange: SourceRange, ast: any) {
+      urlSourceRange: SourceRange, ast: any, warnings: Warning[]) {
     this.url = url;
     this.type = type;
     this.document = document;
@@ -83,6 +88,7 @@ export class Import implements Feature {
     this.sourceRange = sourceRange;
     this.urlSourceRange = urlSourceRange;
     this.astNode = ast;
+    this.warnings = warnings;
   }
 
   toString() {

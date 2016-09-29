@@ -26,7 +26,7 @@ export interface ScannedProperty extends ScannedFeature {
   private?: boolean;
   'default'?: string;
   readOnly?: boolean;
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
   astNode: estree.Node|null;
 }
 
@@ -38,6 +38,6 @@ export interface Property {
   private?: boolean;
   'default'?: string;
   readOnly?: boolean;
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
   inheritedFrom?: string;
 }

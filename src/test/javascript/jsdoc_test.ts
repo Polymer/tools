@@ -39,7 +39,7 @@ suite('jsdoc', function() {
       assert.deepEqual(parsed, {
         description: '',
         tags: [
-          {tag: 'atag', description: null, name: undefined, type: null},
+          {tag: 'atag', description: null, name: null, type: null},
         ],
       });
     });
@@ -49,7 +49,7 @@ suite('jsdoc', function() {
       assert.deepEqual(parsed, {
         description: '',
         tags: [
-          {tag: 'do', description: 'stuff', name: undefined, type: null},
+          {tag: 'do', description: 'stuff', name: null, type: null},
         ],
       });
     });
@@ -59,7 +59,7 @@ suite('jsdoc', function() {
       assert.deepEqual(parsed, {
         description: '',
         tags: [
-          {tag: 'do', description: 'a thing', name: undefined, type: null},
+          {tag: 'do', description: 'a thing', name: null, type: null},
         ],
       });
     });

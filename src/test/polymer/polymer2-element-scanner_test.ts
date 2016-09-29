@@ -20,25 +20,27 @@ import * as path from 'path';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedFeature, ScannedElement} from '../../model/model';
+import {ScannedElement, ScannedFeature} from '../../model/model';
 import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
 
 function compareTagNames(a: {tagName?: string}, b: {tagName?: string}): number {
   const tagNameA = a && a.tagName;
   const tagNameB = b && b.tagName;
 
-  if (tagNameA == null) return (tagNameB == null) ? 0 : -1;
-  if (tagNameB == null) return 1;
+  if (tagNameA == null)
+    return (tagNameB == null) ? 0 : -1;
+  if (tagNameB == null)
+    return 1;
   return tagNameA.localeCompare(tagNameB);
 };
 
 suite('Polymer2ElementScanner', () => {
 
   let document: JavaScriptDocument;
-  let elements: Map<string, ScannedElement>;
+  let elements: Map<string|undefined, ScannedElement>;
   let elementsList: ScannedElement[];
 
-  suiteSetup(async () => {
+  suiteSetup(async() => {
     let parser = new JavaScriptParser({sourceType: 'script'});
     let file = fs.readFileSync(
         path.resolve(__dirname, '../static/polymer2/test-element.js'), 'utf8');
@@ -49,8 +51,8 @@ suite('Polymer2ElementScanner', () => {
 
     const features: ScannedFeature[] = await scanner.scan(document, visit);
     elements = new Map();
-    elementsList = <ScannedElement[]>features.filter(
-        (e) => e instanceof ScannedElement);
+    elementsList =
+        <ScannedElement[]>features.filter((e) => e instanceof ScannedElement);
     for (let element of elementsList) {
       elements.set(element.tagName, element);
     }
@@ -58,48 +60,41 @@ suite('Polymer2ElementScanner', () => {
 
   test('Finds elements', () => {
     const sortedElements = elementsList.sort(compareTagNames);
-    const elementData = sortedElements.map((e) => ({
-      tagName: e.tagName,
-      className: e.className,
-      superClass: e.superClass,
-      properties: e.properties.map((p) => ({
-        name: p.name,
-      })),
-      attributes: e.attributes.map((a) => ({
-        name: a.name,
-      })),
-    }));
+    const elementData =
+        sortedElements.map((e) => ({
+                             tagName: e.tagName,
+                             className: e.className,
+                             superClass: e.superClass,
+                             properties: e.properties.map((p) => ({
+                                                            name: p.name,
+                                                          })),
+                             attributes: e.attributes.map((a) => ({
+                                                            name: a.name,
+                                                          })),
+                           }));
 
     assert.deepEqual(elementData, [
       {
         tagName: undefined,
         className: 'BaseElement',
         superClass: 'Polymer.Element',
-        properties: [
-          {
-            name: 'foo',
-          }
-        ],
-        attributes: [
-          {
-            name: 'foo',
-          }
-        ],
+        properties: [{
+          name: 'foo',
+        }],
+        attributes: [{
+          name: 'foo',
+        }],
       },
       {
         tagName: 'test-element',
         className: 'TestElement',
         superClass: 'Polymer.Element',
-        properties: [
-          {
-            name: 'foo',
-          }
-        ],
-        attributes: [
-          {
-            name: 'foo',
-          }
-        ],
+        properties: [{
+          name: 'foo',
+        }],
+        attributes: [{
+          name: 'foo',
+        }],
       }
     ].sort(compareTagNames));
   });

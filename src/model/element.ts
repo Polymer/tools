@@ -15,6 +15,7 @@
 import * as estree from 'estree';
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
+import {Warning} from '../warning/warning';
 
 import {Document, Event, Feature, Property, Resolvable, ScannedEvent, ScannedProperty} from './model';
 
@@ -22,7 +23,7 @@ export {Visitor} from '../javascript/estree-visitor';
 
 export interface ScannedAttribute {
   name: string;
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
   description?: string;
   type?: string;
 }
@@ -37,8 +38,9 @@ export class ScannedElement implements Resolvable {
   description = '';
   demos: {desc?: string; path: string}[] = [];
   events: ScannedEvent[] = [];
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
   astNode: estree.Node|null;
+  warnings: Warning[] = [];
 
   jsdoc?: jsdoc.Annotation;
 
@@ -70,6 +72,7 @@ export class Element implements Feature {
   jsdoc?: jsdoc.Annotation;
   astNode: estree.Node|null;
   kinds: Set<string> = new Set(['element']);
+  warnings: Warning[] = [];
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();
     if (this.tagName) {

@@ -115,7 +115,7 @@ class Counter<K> {
     this._map.set(k, i + v);
   }
 
-  get(k: K): number {
+  get(k: K): number|undefined {
     return this._map.get(k);
   }
 

@@ -66,7 +66,7 @@ export interface Options {
   events?: ScannedEvent[];
 
   abstract?: boolean;
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
 }
 
 /**
@@ -120,7 +120,8 @@ export class ScannedPolymerElement extends ScannedElement {
         name: `${attributeName}-changed`,
         description: `Fired when the \`${prop.name}\` property changes.`,
         sourceRange: prop.sourceRange,
-        astNode: prop.astNode
+        astNode: prop.astNode,
+        warnings: []
       });
     }
   }
@@ -193,9 +194,10 @@ function resolveElement(
       scannedElement.events,
       behaviors.map(b => ({name: b.className, vals: b.events})));
 
-  const domModule = document.getOnlyAtId('dom-module', scannedElement.tagName);
+  const domModule =
+      document.getOnlyAtId('dom-module', scannedElement.tagName || '');
   if (domModule) {
-    clone.description = scannedElement.description || domModule.comment;
+    clone.description = scannedElement.description || domModule.comment || '';
     clone.domModule = domModule.node;
   }
 

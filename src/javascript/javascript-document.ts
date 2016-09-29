@@ -23,7 +23,14 @@ import {Visitor, VisitResult} from './estree-visitor';
 
 export {Visitor} from './estree-visitor';
 
-let __exampleNode: Node;
+/**
+ * estree.Node#type is one of around a hundred string literals. We don't have
+ * a direct reference to the type that represents any of those string literals
+ * though. We can get a reference by taking a Node and using the `typeof`
+ * operator, and it doesn't need to be a real Node as all of this happens at
+ * analysis time, and nothing happens at runtime.
+ */
+const __exampleNode: Node = <any>null;
 interface SkipRecord {
   type: typeof __exampleNode.type;
   depth: number;

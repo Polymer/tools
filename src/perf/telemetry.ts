@@ -63,7 +63,7 @@ export class TelemetryTracker {
   }
 
   start(kind: string, identifier: string): () => void {
-    let resolve: () => void;
+    let resolve: () => void = () => undefined;
     const promise = new Promise<void>((r) => {
       resolve = r;
     });

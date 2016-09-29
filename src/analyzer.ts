@@ -23,7 +23,7 @@ import {HtmlScriptScanner} from './html/html-script-scanner';
 import {HtmlStyleScanner} from './html/html-style-scanner';
 import {JavaScriptParser} from './javascript/javascript-parser';
 import {JsonParser} from './json/json-parser';
-import {correctSourceRange, Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from './model/model';
+import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from './model/model';
 import {ParsedDocument} from './parser/document';
 import {Parser} from './parser/parser';
 import {Measurement, TelemetryTracker} from './perf/telemetry';
@@ -173,9 +173,9 @@ export class Analyzer {
    *
    * If a document has been analyzed, it returns the analyzed Document. If not
    * the scanned document cache is used and a new analyzed Document is returned.
-   * If a file is in neither cache, it returns `null`.
+   * If a file is in neither cache, it returns `undefined`.
    */
-  _getDocument(url: string): Document {
+  _getDocument(url: string): Document|undefined {
     const resolvedUrl = this._resolveUrl(url);
     let document = this._analyzedDocuments.get(resolvedUrl);
     if (document) {
@@ -240,11 +240,6 @@ export class Analyzer {
   private async _scanDocument(
       document: ParsedDocument<any, any>,
       maybeAttachedComment?: string): Promise<ScannedDocument> {
-    // TODO(rictic): We shouldn't be calling _scanDocument with
-    // null/undefined.
-    if (document == null) {
-      return null;
-    }
     const warnings: Warning[] = [];
     const scannedFeatures = await this._getScannedFeatures(document);
     // If there's an HTML comment that applies to this document then we assume
@@ -269,8 +264,8 @@ export class Analyzer {
           }
         });
 
-    const dependencies =
-        (await Promise.all(scannedSubDocuments)).filter(s => !!s);
+    const dependencies = (await Promise.all(scannedSubDocuments))
+                             .filter(s => !!s) as ScannedDocument[];
 
     const scannedDocument =
         new ScannedDocument(document, dependencies, scannedFeatures, warnings);
@@ -300,10 +295,7 @@ export class Analyzer {
       return scannedDocument;
     } catch (err) {
       if (err instanceof WarningCarryingException) {
-        const e: WarningCarryingException = err;
-        e.warning.sourceRange =
-            correctSourceRange(e.warning.sourceRange, locationOffset);
-        warnings.push(e.warning);
+        warnings.push(err.warning);
         return null;
       }
       throw err;
@@ -371,8 +363,7 @@ export class Analyzer {
       const extension = path.extname(resolvedUrl).substring(1);
 
       const doneTiming = this._telemetryTracker.start('parse', 'resolvedUrl');
-      const parsedDoc =
-          this._parseContents(extension, content, resolvedUrl, null);
+      const parsedDoc = this._parseContents(extension, content, resolvedUrl);
       doneTiming();
       return parsedDoc;
     })();
@@ -382,7 +373,7 @@ export class Analyzer {
 
   private _parseContents(
       type: string, contents: string, url: string,
-      inlineInfo: InlineDocInfo<any>|null): ParsedDocument<any, any> {
+      inlineInfo?: InlineDocInfo<any>): ParsedDocument<any, any> {
     const parser = this._parsers.get(type);
     if (parser == null) {
       throw new NoKnownParserError(`No parser for for file type ${type}`);

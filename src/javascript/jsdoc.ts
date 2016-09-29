@@ -105,8 +105,8 @@ function _tagsToHydroTags(tags: doctrine.Tag[]|null): Tag[]|null {
       return {
         tag: tag.title,
         type: tag.type ? doctrine.type.stringify(tag.type) : null,
-        name: tag.name,
-        description: tag.description,
+        name: tag.name == null ? null : tag.name,
+        description: tag.description
       };
     }
   });

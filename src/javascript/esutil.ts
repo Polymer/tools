@@ -15,8 +15,9 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedEvent} from '../model/model';
+import {ScannedEvent, SourceRange} from '../model/model';
 import {annotateEvent} from '../polymer/docs';
+import {Severity, WarningCarryingException} from '../warning/warning';
 
 import * as jsdoc from './jsdoc';
 
@@ -25,23 +26,26 @@ import * as jsdoc from './jsdoc';
  *
  * e.g. you have a MemberExpression node, and want to see whether it represents
  * `Foo.Bar.Baz`:
- *    matchesCallExpression(node, ['Foo', 'Bar', 'Baz'])
+ *    matchesCallExpressio
+    (node, ['Foo', 'Bar', 'Baz'])
  *
  * @param {ESTree.Node} expression The Espree node to match against.
  * @param {Array<string>} path The path to look for.
  */
 export function matchesCallExpression(
     expression: estree.MemberExpression, path: string[]): boolean {
-  if (!expression.property || !expression.object)
-    return;
+  if (!expression.property || !expression.object) {
+    return false;
+  }
   console.assert(path.length >= 2);
 
   if (expression.property.type !== 'Identifier') {
-    return;
+    return false;
   }
   // Unravel backwards, make sure properties match each step of the way.
-  if (expression.property.name !== path[path.length - 1])
+  if (expression.property.name !== path[path.length - 1]) {
     return false;
+  }
   // We've got ourselves a final member expression.
   if (path.length === 2 && expression.object.type === 'Identifier') {
     return expression.object.name === path[0];
@@ -59,17 +63,18 @@ export function matchesCallExpression(
  * @param {Node} key The node representing an object key or expression.
  * @return {string} The name of that key.
  */
-export function objectKeyToString(key: estree.Node): string {
+export function objectKeyToString(key: estree.Node): string|undefined {
   if (key.type === 'Identifier') {
     return key.name;
   }
   if (key.type === 'Literal') {
-    return key.value.toString();
+    return '' + key.value;
   }
   if (key.type === 'MemberExpression') {
     return objectKeyToString(key.object) + '.' +
         objectKeyToString(key.property);
   }
+  return undefined;
 }
 
 export const CLOSURE_CONSTRUCTOR_MAP = {
@@ -86,7 +91,8 @@ export const CLOSURE_CONSTRUCTOR_MAP = {
  * @param {Node} node An Espree expression node.
  * @return {string} The type of that expression, in Closure terms.
  */
-export function closureType(node: estree.Node): string {
+export function closureType(
+    node: estree.Node, sourceRange: SourceRange): string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
@@ -94,15 +100,18 @@ export function closureType(node: estree.Node): string {
   } else if (node.type === 'Identifier') {
     return CLOSURE_CONSTRUCTOR_MAP[node.name] || node.name;
   } else {
-    throw {
-      message: 'Unknown Closure type for node: ' + node.type,
-      location: node.loc.start,
-    };
+    throw new WarningCarryingException({
+      code: 'no-closure-type',
+      message: `Unable to determine closure type for expression of type ${node
+                   .type}`,
+      severity: Severity.WARNING, sourceRange
+    });
   }
 }
 
-export function getAttachedComment(node: estree.Node): string {
-  const comments = getLeadingComments(node) || getLeadingComments(node['key']);
+export function getAttachedComment(node: estree.Node): string|undefined {
+  const comments =
+      getLeadingComments(node) || getLeadingComments(node['key']) || [];
   return comments && comments[comments.length - 1];
 }
 
@@ -131,7 +140,7 @@ export function getEventComments(node: estree.Node): ScannedEvent[] {
       .sort((ev1, ev2) => ev1.name.localeCompare(ev2.name));
 }
 
-function getLeadingComments(node: estree.Node): string[] {
+function getLeadingComments(node: estree.Node): string[]|undefined {
   if (!node) {
     return;
   }
@@ -139,7 +148,8 @@ function getLeadingComments(node: estree.Node): string[] {
   return comments && comments.map((comment) => comment.value);
 }
 
-export function getPropertyValue(node: estree.ObjectExpression, name: string): estree.Node {
+export function getPropertyValue(
+    node: estree.ObjectExpression, name: string): estree.Node|undefined {
   const properties = node.properties;
   for (const property of properties) {
     if (objectKeyToString(property.key) === name) {

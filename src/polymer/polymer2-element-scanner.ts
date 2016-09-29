@@ -24,10 +24,8 @@ import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedElement, ScannedFeature} from '../model/model';
 
-
-
 import {analyzeProperties} from './analyze-properties';
-import {ScannedPolymerElement, ScannedPolymerProperty, Options as PolymerElementOptions} from './polymer-element';
+import {Options as PolymerElementOptions, ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -85,10 +83,10 @@ class ElementVisitor implements Visitor {
     const config = this._getConfig(node);
 
     const elementOptions: PolymerElementOptions = {
-      description: docs.description.trim(),
+      description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
-      properties: this._getProperties(config) || [],
+      properties: (config && this._getProperties(config)) || [],
     };
 
     // TODO(justinfagnani): figure out how or if to reconcile attributes
@@ -152,44 +150,50 @@ class ElementVisitor implements Visitor {
   }
 
   private _hasPolymerDocTag(docs: jsdoc.Annotation) {
-    const elementTags = docs.tags.filter((t: jsdoc.Tag) => t.tag === 'polymerElement');
+    const tags = docs.tags || [];
+    const elementTags =
+        tags.filter((t: jsdoc.Tag) => t.tag === 'polymerElement');
     return elementTags.length >= 1;
   }
 
-  private _getConfig(node: estree.ClassDeclaration|estree.ClassExpression): estree.ObjectExpression|null {
-    const possibleConfigs = node.body.body.filter((n) =>
-        n.type === 'MethodDefinition' &&
-        n.static === true &&
-        n.kind === 'get' &&
-        getIdentifierName(n.key) === 'config');
+  private _getConfig(node: estree.ClassDeclaration|
+                     estree.ClassExpression): estree.ObjectExpression|null {
+    const possibleConfigs = node.body.body.filter(
+        (n) => n.type === 'MethodDefinition' && n.static === true &&
+            n.kind === 'get' && getIdentifierName(n.key) === 'config');
     const config = possibleConfigs.length === 1 && possibleConfigs[0];
-    if (!config) return;
+    if (!config) {
+      return null;
+    }
 
     const configBody = config.value.body;
     if (configBody.body.length !== 1) {
       // not a single statement function
-      return;
+      return null;
     }
     if (configBody.body[0].type !== 'ReturnStatement') {
-      return;
+      return null;
     }
 
     const returnStatement = configBody.body[0] as estree.ReturnStatement;
     const returnValue = returnStatement.argument;
-    if (returnValue.type !== 'ObjectExpression') {
+    if (!returnValue || returnValue.type !== 'ObjectExpression') {
       // TODO: warn
-      return;
+      return null;
     }
     return returnValue as estree.ObjectExpression;
   }
 
-  private _getProperties(node: estree.ObjectExpression): ScannedPolymerProperty[] {
+  private _getProperties(node: estree.ObjectExpression):
+      ScannedPolymerProperty[] {
     const propertiesNode = getPropertyValue(node, 'properties');
-    return analyzeProperties(propertiesNode, this._document);
+    return propertiesNode ? analyzeProperties(propertiesNode, this._document) :
+                            [];
   }
 
   // TODO(justinfagnani): move to vanilla element scanner
-  // private _getObservedAttributes(node: estree.ClassDeclaration|estree.ClassExpression) {
+  // private _getObservedAttributes(node:
+  // estree.ClassDeclaration|estree.ClassExpression) {
   //   const observedAttributesNode: estree.MethodDefinition =
   //       node.body.body.find((n) =>
   //         n.type === 'MethodDefinition' &&

@@ -49,8 +49,8 @@ export interface LocationOffset {
  * first line of the <script> contents.
  */
 export function correctSourceRange(
-    sourceRange?: SourceRange, locationOffset?: LocationOffset): SourceRange|
-    undefined {
+    sourceRange?: SourceRange,
+    locationOffset?: LocationOffset|null): SourceRange|undefined {
   if (!locationOffset || !sourceRange) {
     return sourceRange;
   }

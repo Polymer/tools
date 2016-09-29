@@ -57,25 +57,25 @@ suite('BehaviorScanner', () => {
 
   test('Supports behaviors at local assignments', () => {
     assert(behaviors.has('SimpleBehavior'));
-    assert.equal(behaviors.get('SimpleBehavior').properties[0].name, 'simple');
+    assert.equal(behaviors.get('SimpleBehavior')!.properties[0].name, 'simple');
   });
 
   test('Supports behaviors with renamed paths', () => {
     assert(behaviors.has('AwesomeBehavior'));
-    assert(behaviors.get('AwesomeBehavior')
-               .properties.some((prop) => prop.name === 'custom'));
+    assert(behaviors.get('AwesomeBehavior')!.properties.some(
+        (prop) => prop.name === 'custom'));
   });
 
   test('Supports behaviors On.Property.Paths', () => {
     assert(behaviors.has('Really.Really.Deep.Behavior'));
     assert.equal(
-        behaviors.get('Really.Really.Deep.Behavior').properties[0].name,
+        behaviors.get('Really.Really.Deep.Behavior')!.properties[0].name,
         'deep');
   });
 
   test('Supports property array on behaviors', () => {
     let defaultValue: any;
-    behaviors.get('AwesomeBehavior').properties.forEach((prop) => {
+    behaviors.get('AwesomeBehavior')!.properties.forEach((prop) => {
       if (prop.name === 'a') {
         defaultValue = prop.default;
       }
@@ -86,9 +86,9 @@ suite('BehaviorScanner', () => {
   test('Supports chained behaviors', function() {
     assert(behaviors.has('CustomBehaviorList'));
     const childBehaviors =
-        behaviors.get('CustomBehaviorList').behaviorAssignments;
+        behaviors.get('CustomBehaviorList')!.behaviorAssignments;
     const deepChainedBehaviors =
-        behaviors.get('Really.Really.Deep.Behavior').behaviorAssignments;
+        behaviors.get('Really.Really.Deep.Behavior')!.behaviorAssignments;
     assert.deepEqual(
         childBehaviors.map((b: ScannedBehaviorAssignment) => b.name), [
           'SimpleBehavior', 'CustomNamedBehavior', 'Really.Really.Deep.Behavior'

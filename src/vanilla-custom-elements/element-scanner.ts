@@ -75,16 +75,16 @@ class ElementVisitor implements Visitor {
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const element = new ScannedElement();
+    const parsedJsdoc = jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '');
+
     element.description =
-        (jsdoc.parseJsdoc(esutil.getAttachedComment(node) || '')
-             .description.trim() ||
-         '');
+        (parsedJsdoc.description && parsedJsdoc.description.trim() || '');
     element.events = esutil.getEventComments(node);
     element.sourceRange = this._document.sourceRangeForNode(node);
     if (node.superClass && node.superClass.type === 'Identifier') {
       element.superClass = node.superClass.name;
     }
-    const observedAttributesDefn: estree.MethodDefinition =
+    const observedAttributesDefn: estree.MethodDefinition|undefined =
         node.body.body.find(m => {
           if (m.type !== 'MethodDefinition' || !m.static) {
             return false;
@@ -93,7 +93,7 @@ class ElementVisitor implements Visitor {
         });
     if (observedAttributesDefn) {
       const body = observedAttributesDefn.value.body.body[0];
-      if (body && body.type === 'ReturnStatement' &&
+      if (body && body.type === 'ReturnStatement' && body.argument &&
           body.argument.type === 'ArrayExpression') {
         element.attributes =
             this._extractAttributesFromObservedAttributes(body.argument);
@@ -170,18 +170,20 @@ class ElementVisitor implements Visitor {
         if (comment) {
           const annotation = jsdoc.parseJsdoc(comment);
           description = annotation.description || description;
-          for (const tag of annotation.tags) {
+          const tags = annotation.tags || [];
+          for (const tag of tags) {
             if (tag.tag === 'type') {
               type = type || tag.type;
             }
-            description = description || tag.description;
+            description = description || tag.description || '';
           }
         }
         const attribute: ScannedAttribute = {
           name: value,
           description: description,
           sourceRange: this._document.sourceRangeForNode(expr),
-          astNode: expr
+          astNode: expr,
+          warnings: [],
         };
         if (type) {
           attribute.type = type;

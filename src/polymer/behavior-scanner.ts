@@ -20,6 +20,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {Severity} from '../warning/warning';
 
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
@@ -62,8 +63,8 @@ class BehaviorVisitor implements Visitor {
   /** The behaviors we've found. */
   behaviors = new Set<ScannedBehavior>();
 
-  currentBehavior: ScannedBehavior = null;
-  propertyHandlers: PropertyHandlers = null;
+  currentBehavior: ScannedBehavior|null = null;
+  propertyHandlers: PropertyHandlers|null = null;
 
   document: JavaScriptDocument;
   constructor(document: JavaScriptDocument) {
@@ -79,7 +80,8 @@ class BehaviorVisitor implements Visitor {
       return;  // Ambiguous.
     }
     this._initBehavior(node, () => {
-      return esutil.objectKeyToString(node.declarations[0].id);
+      const id = node.declarations[0].id;
+      return esutil.objectKeyToString(id)!;
     });
   }
 
@@ -88,7 +90,7 @@ class BehaviorVisitor implements Visitor {
    */
   enterAssignmentExpression(
       node: estree.AssignmentExpression, parent: estree.Node) {
-    this._initBehavior(parent, () => esutil.objectKeyToString(node.left));
+    this._initBehavior(parent, () => esutil.objectKeyToString(node.left)!);
   }
 
   /**
@@ -96,8 +98,7 @@ class BehaviorVisitor implements Visitor {
    * behavior's declaration. Seems to be a decent assumption for now.
    */
   enterObjectExpression(node: estree.ObjectExpression, _parent: estree.Node) {
-    // TODO(justinfagnani): is the second clause required? No test fails w/o it
-    if (!this.currentBehavior /* || this.currentBehavior.properties */) {
+    if (!this.currentBehavior || !this.propertyHandlers) {
       return;
     }
 
@@ -105,16 +106,21 @@ class BehaviorVisitor implements Visitor {
       const prop = node.properties[i];
       const name = esutil.objectKeyToString(prop.key);
       if (!name) {
-        throw {
-          message: 'Cant determine name for property key.',
-          location: node.loc.start
-        };
+        this.currentBehavior.warnings.push({
+          code: 'cant-determine-name',
+          message:
+              `Unable to determine property name from expression of type ${node
+                  .type}`,
+          severity: Severity.WARNING,
+          sourceRange: this.document.sourceRangeForNode(node)!
+        });
+        continue;
       }
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else {
         this.currentBehavior.addProperty(toScannedPolymerProperty(
-            prop, this.document.sourceRangeForNode(prop)));
+            prop, this.document.sourceRangeForNode(prop)!));
       }
     }
     this._finishBehavior();
@@ -127,7 +133,7 @@ class BehaviorVisitor implements Visitor {
 
   private _finishBehavior() {
     console.assert(this.currentBehavior != null);
-    this.behaviors.add(this.currentBehavior);
+    this.behaviors.add(this.currentBehavior!);
     this.currentBehavior = null;
   }
 
@@ -152,28 +158,29 @@ class BehaviorVisitor implements Visitor {
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node)
     }));
-    this.propertyHandlers =
-        declarationPropertyHandlers(this.currentBehavior, this.document);
+    const behavior = this.currentBehavior!;
 
-    docs.annotateBehavior(this.currentBehavior);
+    this.propertyHandlers =
+        declarationPropertyHandlers(behavior, this.document);
+
+    docs.annotateBehavior(behavior);
     // Make sure that we actually parsed a behavior tag!
-    if (!jsdoc.hasTag(this.currentBehavior.jsdoc, 'polymerBehavior') &&
+    if (!jsdoc.hasTag(behavior.jsdoc, 'polymerBehavior') &&
         symbol !== templatizer) {
       this._abandonBehavior();
       return;
     }
 
-    let explicitName =
-        jsdoc.getTag(this.currentBehavior.jsdoc, 'polymerBehavior', 'name');
-    this.currentBehavior.className = explicitName || symbol;
-    if (!this.currentBehavior.className) {
+    let explicitName = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name');
+    behavior.className = explicitName || symbol;
+    if (!behavior.className) {
       throw new Error(
           `Unable to determine name for @polymerBehavior: ${comment}`);
     }
 
     this._parseChainedBehaviors(node);
 
-    this.currentBehavior = this.mergeBehavior(this.currentBehavior);
+    this.currentBehavior = this.mergeBehavior(behavior);
     this.propertyHandlers =
         declarationPropertyHandlers(this.currentBehavior, this.document);
 
@@ -225,6 +232,10 @@ class BehaviorVisitor implements Visitor {
   }
 
   _parseChainedBehaviors(node: estree.Node) {
+    if (this.currentBehavior == null) {
+      throw new Error(
+          `_parsedChainedBehaviors was called without a current behavior.`);
+    }
     // if current behavior is part of an array, it gets extended by other
     // behaviors
     // inside the array. Ex:
@@ -234,12 +245,12 @@ class BehaviorVisitor implements Visitor {
     const expression = behaviorExpression(node);
     const chained: Array<ScannedBehaviorAssignment> = [];
     if (expression && expression.type === 'ArrayExpression') {
-      for (const element of expression.elements) {
-        const behaviorName = astValue.getIdentifierName(element);
+      for (const arrElement of expression.elements) {
+        const behaviorName = astValue.getIdentifierName(arrElement);
         if (behaviorName) {
           chained.push({
             name: behaviorName,
-            sourceRange: this.document.sourceRangeForNode(element)
+            sourceRange: this.document.sourceRangeForNode(arrElement)!
           });
         }
       }
@@ -253,14 +264,15 @@ class BehaviorVisitor implements Visitor {
 /**
  * gets the expression representing a behavior from a node.
  */
-function behaviorExpression(node: estree.Node): estree.Node {
+function behaviorExpression(node: estree.Node): estree.Node|undefined {
   switch (node.type) {
     case 'ExpressionStatement':
       // need to cast to `any` here because ExpressionStatement is super
       // super general. this code is suspicious.
       return (<any>node).expression.right;
     case 'VariableDeclaration':
-      return node.declarations.length > 0 ? node.declarations[0].init : null;
+      return node.declarations.length > 0 ? node.declarations[0].init :
+                                            undefined;
   }
 }
 
@@ -268,7 +280,7 @@ function behaviorExpression(node: estree.Node): estree.Node {
  * checks whether an expression is a simple array containing only member
  * expressions or identifiers.
  */
-function isSimpleBehaviorArray(expression: estree.Node|null): boolean {
+function isSimpleBehaviorArray(expression: estree.Node|undefined): boolean {
   if (!expression || expression.type !== 'ArrayExpression') {
     return false;
   }

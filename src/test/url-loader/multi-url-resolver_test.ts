@@ -20,7 +20,7 @@ import {UrlResolver} from '../../url-loader/url-resolver';
 class MockResolver implements UrlResolver {
   canResolveCount: number;
   resolveCount: number;
-  constructor(private _resolution: string) {
+  constructor(private _resolution: string|null) {
     this.resetCounts();
   }
 
@@ -33,12 +33,15 @@ class MockResolver implements UrlResolver {
     return this._resolution != null;
   }
   resolve(): string {
+    if (this._resolution == null) {
+      throw new Error('tried to resolve to a null resolution!');
+    }
     this.resolveCount++;
     return this._resolution;
   }
 }
 
-const mockResolverArray = (resolutions: Array<string>) => {
+const mockResolverArray = (resolutions: Array<string|null>) => {
   return resolutions.map((resolution): MockResolver => {
     return new MockResolver(resolution);
   });

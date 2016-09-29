@@ -137,7 +137,7 @@ suite('Analyzer', () => {
           const behaviorJsDocument = inlineDocuments[0];
           const subBehavior = behaviorJsDocument.getOnlyAtId(
               'behavior', 'MyNamespace.SubBehavior');
-          assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
+          assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
         });
 
     test(
@@ -157,7 +157,7 @@ suite('Analyzer', () => {
           // The inline document can find the container's imported features
           const subBehavior =
               inlineJsDocument.getOnlyAtId('behavior', 'TestBehavior');
-          assert.equal(subBehavior.className, 'TestBehavior');
+          assert.equal(subBehavior!.className, 'TestBehavior');
         });
 
     test(
@@ -175,7 +175,7 @@ suite('Analyzer', () => {
           // The inline document can find the container's imported features
           const subBehavior =
               scriptDocument.getOnlyAtId('behavior', 'TestBehavior');
-          assert.equal(subBehavior.className, 'TestBehavior');
+          assert.equal(subBehavior!.className, 'TestBehavior');
         });
 
 
@@ -210,7 +210,7 @@ suite('Analyzer', () => {
           const behaviorJsDocument = inlineDocuments[0];
           const subBehavior = behaviorJsDocument.getOnlyAtId(
               'behavior', 'MyNamespace.SubBehavior');
-          assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
+          assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
         });
 
     test('returns a Document with warnings for malformed files', async() => {
@@ -256,31 +256,31 @@ suite('Analyzer', () => {
       const inlineOnly =
           root.getOnlyAtId('document', 'static/dependencies/inline-only.html');
       assert.deepEqual(
-          Array.from(inlineOnly.getByKind('document'))
+          Array.from(inlineOnly!.getByKind('document'))
               .map((d) => d.parsedDocument.type),
           ['html', 'js', 'css']);
 
       const leaf =
           root.getOnlyAtId('document', 'static/dependencies/leaf.html');
-      assert.deepEqual(Array.from(leaf.getByKind('document')), [leaf]);
+      assert.deepEqual(Array.from(leaf!.getByKind('document')), [leaf]);
 
       const inlineAndImports = root.getOnlyAtId(
           'document', 'static/dependencies/inline-and-imports.html');
       assert.deepEqual(
-          Array.from(inlineAndImports.getByKind('document'))
+          Array.from(inlineAndImports!.getByKind('document'))
               .map((d) => d.parsedDocument.type),
           ['html', 'js', 'html', 'html', 'css']);
       const inFolder = root.getOnlyAtId(
           'document', 'static/dependencies/subfolder/in-folder.html');
       assert.deepEqual(
-          Array.from(inFolder.getByKind('document')).map(d => d.url), [
+          Array.from(inFolder!.getByKind('document')).map(d => d.url), [
             'static/dependencies/subfolder/in-folder.html',
             'static/dependencies/subfolder/subfolder-sibling.html'
           ]);
 
       // check de-duplication
       assert.equal(
-          inlineAndImports.getOnlyAtId(
+          inlineAndImports!.getOnlyAtId(
               'document', 'static/dependencies/subfolder/in-folder.html'),
           inFolder);
     });

@@ -18,20 +18,23 @@ import {ASTNode} from 'parse5';
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
 import {Feature, getAttachedCommentText, Resolvable, SourceRange} from '../model/model';
+import {Warning} from '../warning/warning';
 
 const p = dom5.predicates;
 
 const isDomModule = p.hasTagName('dom-module');
 
 export class ScannedDomModule implements Resolvable {
-  id?: string;
+  id: string|null;
   node: ASTNode;
   comment?: string;
   sourceRange: SourceRange;
   astNode: dom5.Node;
+  warnings: Warning[] = [];
 
   constructor(
-      id: string, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node) {
+      id: string|null, node: ASTNode, sourceRange: SourceRange,
+      ast: dom5.Node) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
@@ -41,7 +44,8 @@ export class ScannedDomModule implements Resolvable {
 
   resolve() {
     return new DomModule(
-        this.node, this.id, this.comment, this.sourceRange, this.astNode);
+        this.node, this.id, this.comment, this.sourceRange, this.astNode,
+        this.warnings);
   }
 }
 
@@ -49,21 +53,24 @@ export class DomModule implements Feature {
   kinds = new Set(['dom-module']);
   identifiers = new Set<string>();
   node: ASTNode;
-  id: string|undefined;
-  comment: string|undefined;
+  id: string|null;
+  comment?: string;
   sourceRange: SourceRange;
   astNode: dom5.Node;
+  warnings: Warning[];
+
   constructor(
-      node: ASTNode, id: string, comment: string, sourceRange: SourceRange,
-      ast: dom5.Node) {
+      node: ASTNode, id: string|null, comment: string|undefined,
+      sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[]) {
     this.node = node;
     this.id = id;
     this.comment = comment;
-    if (this.id) {
+    if (id) {
       this.identifiers.add(id);
     }
     this.sourceRange = sourceRange;
     this.astNode = ast;
+    this.warnings = warnings;
   }
 }
 
@@ -78,7 +85,7 @@ export class DomModuleScanner implements HtmlScanner {
       if (isDomModule(node)) {
         domModules.push(new ScannedDomModule(
             dom5.getAttribute(node, 'id'), node,
-            document.sourceRangeForNode(node), node));
+            document.sourceRangeForNode(node)!, node));
       }
     });
     return domModules;

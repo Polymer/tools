@@ -13,20 +13,25 @@
  */
 
 import * as jsdoc from '../javascript/jsdoc';
+import {Warning} from '../warning/warning';
+
 import {SourceRange} from './source-range';
 
 export interface Feature {
   kinds: Set<string>;
-  identifiers?: Set<string>;
+  identifiers: Set<string>;
 
   /** Tracks the source that this feature came from. */
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
 
   /**
    * The AST Node, if any, that corresponds to this feature in its containing
    * document.
    */
   astNode: any;
+
+  /** Warnings that were encountered while processing this feature. */
+  warnings: Warning[];
 }
 
 export interface ScannedFeature {
@@ -36,11 +41,14 @@ export interface ScannedFeature {
   jsdoc?: jsdoc.Annotation;
 
   /** Tracks the source that this feature came from. */
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
 
   /**
    * The AST Node, if any, that corresponds to this feature in its containing
    * document.
    */
   astNode: any;
+
+  /** Warnings that were encountered while processing this feature. */
+  warnings: Warning[];
 }

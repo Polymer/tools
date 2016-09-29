@@ -18,6 +18,7 @@ import * as estree from 'estree';
 import {closureType, getAttachedComment, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
+import {Severity, Warning} from '../warning/warning';
 
 import {ScannedFunction, ScannedPolymerProperty} from './polymer-element';
 
@@ -27,7 +28,7 @@ import {ScannedFunction, ScannedPolymerProperty} from './polymer-element';
  */
 export function toScannedPolymerProperty(
     node: estree.Property, sourceRange: SourceRange): ScannedPolymerProperty {
-  let type = closureType(node.value);
+  let type = closureType(node.value, sourceRange);
   if (type === 'Function') {
     if (node.kind === 'get' || node.kind === 'set') {
       type = '';
@@ -37,12 +38,26 @@ export function toScannedPolymerProperty(
   let description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
 
+  const name = objectKeyToString(node.key);
+
+  const warnings: Warning[] = [];
+  if (!name) {
+    warnings.push({
+      code: 'unknown-prop-name',
+      message:
+          `Could not determine name of property from expression of type: ${node
+              .key.type}`,
+      sourceRange: sourceRange,
+      severity: Severity.WARNING
+    });
+  }
+
   const result: ScannedPolymerProperty = {
-    name: objectKeyToString(node.key),
+    name: name || '',
     type: type,
     description: description,
     sourceRange: sourceRange,
-    astNode: node
+    astNode: node, warnings
   };
 
   if (type === 'Function') {

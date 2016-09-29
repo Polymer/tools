@@ -15,7 +15,7 @@
 import * as espree from 'espree';
 import {Program} from 'estree';
 
-import {InlineDocInfo} from '../model/model';
+import {correctSourceRange, InlineDocInfo} from '../model/model';
 import {Parser} from '../parser/parser';
 import {Severity, WarningCarryingException} from '../warning/warning';
 
@@ -54,11 +54,13 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
           message: err.message.split('\n')[0],
           severity: Severity.ERROR,
           code: 'parse-error',
-          sourceRange: {
-            file: url,
-            start: {line: err.lineNumber - 1, column: err.column - 1},
-            end: {line: err.lineNumber - 1, column: err.column - 1}
-          }
+          sourceRange: correctSourceRange(
+              {
+                file: url,
+                start: {line: err.lineNumber - 1, column: err.column - 1},
+                end: {line: err.lineNumber - 1, column: err.column - 1}
+              },
+              inlineInfo.locationOffset)!
         });
       }
       throw err;

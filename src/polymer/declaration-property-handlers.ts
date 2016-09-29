@@ -34,7 +34,7 @@ export function declarationPropertyHandlers(
   return {
     is(node: estree.Node) {
       if (node.type === 'Literal') {
-        declaration.tagName = node.value.toString();
+        declaration.tagName = '' + node.value;
       }
     },
     properties(node: estree.Node) {
@@ -53,7 +53,7 @@ export function declarationPropertyHandlers(
         }
         declaration.behaviorAssignments.push({
           name: behaviorName,
-          sourceRange: document.sourceRangeForNode(element),
+          sourceRange: document.sourceRangeForNode(element)!,
         });
       }
     },

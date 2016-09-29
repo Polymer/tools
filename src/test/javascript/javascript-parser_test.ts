@@ -61,7 +61,7 @@ suite('JavaScriptParser', () => {
       let document = parser.parse(file, '/static/js-elements.js');
       let ast = document.ast;
       let element1 = ast.body[0];
-      let comment = esutil.getAttachedComment(element1);
+      let comment = esutil.getAttachedComment(element1)!;
       assert.isTrue(comment.indexOf('test-element') !== -1);
     });
 

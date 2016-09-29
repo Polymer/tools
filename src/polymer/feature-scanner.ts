@@ -18,8 +18,8 @@ import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 
-import {ScannedPolymerCoreFeature} from './polymer-core-feature';
 import {toScannedPolymerProperty} from './js-utils';
+import {ScannedPolymerCoreFeature} from './polymer-core-feature';
 
 export function featureScanner(document: JavaScriptDocument) {
   /** The features we've found. */
@@ -28,7 +28,7 @@ export function featureScanner(document: JavaScriptDocument) {
   function _extractDesc(
       feature: ScannedPolymerCoreFeature, _node: estree.CallExpression,
       parent: estree.Node) {
-    feature.description = esutil.getAttachedComment(parent);
+    feature.description = esutil.getAttachedComment(parent) || '';
   }
 
   function _extractProperties(
@@ -46,7 +46,7 @@ export function featureScanner(document: JavaScriptDocument) {
     }
 
     const polymerProps = featureNode.properties.map(
-        (p) => toScannedPolymerProperty(p, document.sourceRangeForNode(p)));
+        (p) => toScannedPolymerProperty(p, document.sourceRangeForNode(p)!));
     for (const prop of polymerProps) {
       feature.addProperty(prop);
     }

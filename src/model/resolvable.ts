@@ -20,7 +20,7 @@ import {Feature, ScannedFeature} from './feature';
  * representation.
  */
 export interface Resolvable extends ScannedFeature {
-  resolve(document: Document): Feature;
+  resolve(document: Document): Feature|undefined;
 }
 
 export function isResolvable(x: any): x is Resolvable {

@@ -20,6 +20,7 @@ import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
+import {Severity, WarningCarryingException} from '../warning/warning';
 
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
@@ -42,8 +43,8 @@ class ElementVisitor implements Visitor {
   /**
    * The element being built during a traversal;
    */
-  element: ScannedPolymerElement = null;
-  propertyHandlers: PropertyHandlers = null;
+  element: ScannedPolymerElement|null = null;
+  propertyHandlers: PropertyHandlers|null = null;
   classDetected: boolean = false;
 
   document: JavaScriptDocument;
@@ -63,7 +64,7 @@ class ElementVisitor implements Visitor {
   }
 
   leaveClassDeclaration(_: estree.ClassDeclaration, _parent: estree.Node) {
-    this.element.properties.map((property) => docs.annotate(property));
+    this.element!.properties.map((property) => docs.annotate(property));
     // TODO(justinfagnani): this looks wrong, class definitions can be nested
     // so a definition in a method in a Polymer() declaration would end the
     // declaration early. We should track which class induced the current
@@ -82,7 +83,7 @@ class ElementVisitor implements Visitor {
       return;
     }
     const prop = <estree.Identifier>left.property;
-    if (prop && prop.name) {
+    if (prop && prop.name && this.propertyHandlers) {
       const name = prop.name;
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](node.right);
@@ -91,7 +92,8 @@ class ElementVisitor implements Visitor {
   }
 
   enterMethodDefinition(node: estree.MethodDefinition, _: estree.Node) {
-    if (!this.element) {
+    const element = this.element;
+    if (!element) {
       return;
     }
     const prop = <estree.Property>{
@@ -104,27 +106,39 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc = docs.annotate(
-        toScannedPolymerProperty(prop, this.document.sourceRangeForNode(prop)));
+    const propDesc = docs.annotate(toScannedPolymerProperty(
+        prop, this.document.sourceRangeForNode(prop)!));
     if (prop && prop.kind === 'get' &&
         (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       const argument = <estree.ArrayExpression>returnStatement.argument;
       if (propDesc.name === 'behaviors') {
-        argument.elements.forEach((elementNode) => {
-          this.element.behaviorAssignments.push({
-            name: astValue.getIdentifierName(elementNode),
-            sourceRange: this.document.sourceRangeForNode(prop)
+        argument.elements.forEach((argNode) => {
+          const behaviorName = astValue.getIdentifierName(argNode);
+          if (!behaviorName) {
+            element.warnings.push({
+              code: 'could-not-determine-behavior-name',
+              message:
+                  `Could not determine behavior name from expression of type ${argNode
+                      .type}`,
+              severity: Severity.WARNING,
+              sourceRange: this.document.sourceRangeForNode(argNode)!
+            });
+            return;
+          }
+          element.behaviorAssignments.push({
+            name: behaviorName,
+            sourceRange: this.document.sourceRangeForNode(argNode)!
           });
         });
       } else {
         argument.elements.forEach((elementObject: estree.Literal) => {
-          this.element.observers.push(
+          element.observers.push(
               {javascriptNode: elementObject, expression: elementObject.raw});
         });
       }
     } else {
-      this.element.addProperty(propDesc);
+      element.addProperty(propDesc);
     }
   }
 
@@ -173,33 +187,51 @@ class ElementVisitor implements Visitor {
       return estraverse.VisitorOption.Skip;
     }
 
-    // TODO(justinfagnani): is the second clause needed?
-    if (this.element) {
+    const element = this.element;
+    if (element) {
       const getters: {[name: string]: ScannedPolymerProperty} = {};
       const setters: {[name: string]: ScannedPolymerProperty} = {};
       const definedProperties: {[name: string]: ScannedPolymerProperty} = {};
       for (const prop of node.properties) {
         const name = esutil.objectKeyToString(prop.key);
         if (!name) {
-          throw {
-            message: 'Cant determine name for property key.',
-            location: node.loc.start
-          };
+          element.warnings.push({
+            message:
+                `Can't determine name for property key from expression with type ${prop
+                    .key.type}.`,
+            code: 'cant-determine-property-name',
+            severity: Severity.WARNING,
+            sourceRange: this.document.sourceRangeForNode(prop.key)!
+          });
+          continue;
+        }
+
+        if (!this.propertyHandlers) {
+          continue;
         }
 
         if (name in this.propertyHandlers) {
           this.propertyHandlers[name](prop.value);
           continue;
         }
-        const scannedPolymerProperty = toScannedPolymerProperty(
-            prop, this.document.sourceRangeForNode(prop));
-        if (scannedPolymerProperty.getter) {
-          getters[scannedPolymerProperty.name] = scannedPolymerProperty;
-        } else if (scannedPolymerProperty.setter) {
-          setters[scannedPolymerProperty.name] = scannedPolymerProperty;
-        } else {
-          this.element.addProperty(toScannedPolymerProperty(
-              prop, this.document.sourceRangeForNode(prop)));
+
+        try {
+          const scannedPolymerProperty = toScannedPolymerProperty(
+              prop, this.document.sourceRangeForNode(prop)!);
+          if (scannedPolymerProperty.getter) {
+            getters[scannedPolymerProperty.name] = scannedPolymerProperty;
+          } else if (scannedPolymerProperty.setter) {
+            setters[scannedPolymerProperty.name] = scannedPolymerProperty;
+          } else {
+            element.addProperty(toScannedPolymerProperty(
+                prop, this.document.sourceRangeForNode(prop)!));
+          }
+        } catch (e) {
+          if (e instanceof WarningCarryingException) {
+            element.warnings.push(e.warning);
+            continue;
+          }
+          throw e;
         }
       }
       Object.keys(getters).forEach((getter) => {
@@ -216,7 +248,7 @@ class ElementVisitor implements Visitor {
       });
       Object.keys(definedProperties).forEach((p) => {
         const prop = definedProperties[p];
-        this.element.addProperty(prop);
+        element.addProperty(prop);
       });
       return estraverse.VisitorOption.Skip;
     }

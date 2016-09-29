@@ -26,21 +26,24 @@ export interface Options {
   minimumSeverity: Severity;
 }
 
-const defaultFilterOptions: Options = {
-  warningCodesToIgnore: new Set(),
-  minimumSeverity: Severity.INFO
-};
-
 export class WarningFilter {
-  constructor(private _options: Options) {
-    this._options = Object.assign({}, defaultFilterOptions, this._options);
+  warningCodesToIgnore = new Set<string>();
+  minimumSeverity = Severity.INFO;
+
+  constructor(_options: Options) {
+    if (_options.warningCodesToIgnore) {
+      this.warningCodesToIgnore = _options.warningCodesToIgnore;
+    }
+    if (_options.minimumSeverity != null) {
+      this.minimumSeverity = _options.minimumSeverity;
+    }
   }
 
   shouldIgnore(warning: Warning) {
-    if (this._options.warningCodesToIgnore.has(warning.code)) {
+    if (this.warningCodesToIgnore.has(warning.code)) {
       return true;
     }
-    if (warning.severity > this._options.minimumSeverity) {
+    if (warning.severity > this.minimumSeverity) {
       return true;
     }
     return false;

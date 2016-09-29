@@ -31,7 +31,8 @@ export abstract class ParsedDocument<A, V> {
    * this document inside of the parent. (e.g. the <style> or <script> tag)
    */
   astNode: any;
-  private _locationOffset: LocationOffset|null;
+
+  private _locationOffset: LocationOffset|undefined;
 
   constructor(from: Options<A>) {
     this.url = from.url;
@@ -54,12 +55,12 @@ export abstract class ParsedDocument<A, V> {
    */
   abstract forEachNode(callback: (node: A) => void): void;
 
-  sourceRangeForNode(node: A): SourceRange {
+  sourceRangeForNode(node: A): SourceRange|undefined {
     const baseSource = this._sourceRangeForNode(node);
     return correctSourceRange(baseSource, this._locationOffset);
   };
 
-  abstract _sourceRangeForNode(node: A): SourceRange;
+  abstract _sourceRangeForNode(node: A): SourceRange|undefined;
 
   /**
    * Convert `this.ast` back into a string document.
@@ -71,7 +72,7 @@ export interface Options<A> {
   url: string;
   contents: string;
   ast: A;
-  locationOffset: LocationOffset|null;
+  locationOffset: LocationOffset|undefined;
   astNode: any|null;
 }
 

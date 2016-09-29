@@ -97,7 +97,7 @@ process.stdin.pipe(split()).on('data', async function(line: string) {
 // node child_process.fork() IPC interface
 process.on('message', async function(request: RequestWrapper) {
   const result = await getSettledValue(request.value);
-  process.send(<ResponseWrapper>{id: request.id, value: result});
+  process.send!(<ResponseWrapper>{id: request.id, value: result});
 });
 
 

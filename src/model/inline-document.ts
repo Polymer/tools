@@ -18,6 +18,7 @@ import {ASTNode} from 'parse5';
 import * as util from 'util';
 
 import * as jsdoc from '../javascript/jsdoc';
+import {Warning} from '../warning/warning';
 
 import {Document, ScannedDocument} from './document';
 import {ScannedFeature} from './feature';
@@ -47,6 +48,7 @@ export class ScannedInlineDocument implements ScannedFeature, Resolvable {
   scannedDocument?: ScannedDocument;
 
   sourceRange: SourceRange;
+  warnings: Warning[] = [];
 
   astNode: dom5.Node;
 
@@ -61,7 +63,7 @@ export class ScannedInlineDocument implements ScannedFeature, Resolvable {
     this.astNode = ast;
   }
 
-  resolve(document: Document): Document {
+  resolve(document: Document): Document|undefined {
     if (!this.scannedDocument) {
       // Parse error on the inline document.
       return;
@@ -100,7 +102,8 @@ function isLocationInfo(loc: (parse5.LocationInfo|parse5.ElementLocationInfo)):
 
 export function getLocationOffsetOfStartOfTextContent(node: ASTNode):
     LocationOffset {
-  let firstChildNodeWithLocation = node.childNodes.find(n => !!n.__location);
+  const childNodes = node.childNodes || [];
+  let firstChildNodeWithLocation = childNodes.find(n => !!n.__location);
   let bestLocation = firstChildNodeWithLocation ?
       firstChildNodeWithLocation.__location :
       node.__location;

@@ -105,14 +105,19 @@ export function annotateBehavior(scannedBehavior: ScannedBehavior):
  */
 export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
   const eventTag = jsdoc.getTag(annotation, 'event');
+  let name: string;
+  if (eventTag && eventTag.description) {
+    name = (eventTag.description || '').match(/^\S*/)![0];
+  } else {
+    name = 'N/A';
+  }
   const scannedEvent: ScannedEvent = {
-    name: (eventTag && eventTag.description) ?
-        (eventTag.description || '').match(/^\S*/)[0] :
-        'N/A',
-    description: eventTag.description || annotation.description,
+    name: name,
+    description: (eventTag && eventTag.description) || annotation.description,
     jsdoc: annotation,
-    sourceRange: null,
-    astNode: null
+    sourceRange: undefined,
+    astNode: null,
+    warnings: [],
   };
 
   const tags = (annotation && annotation.tags || []);
@@ -153,7 +158,7 @@ function annotateProperty(
   // @type JSDoc wins
   feature.type = jsdoc.getTag(feature.jsdoc, 'type', 'type') || feature.type;
 
-  if (feature.type.match(/^function/i)) {
+  if (feature.type && feature.type.match(/^function/i)) {
     _annotateFunctionProperty(<ScannedFunction><any>feature);
   }
 
@@ -221,7 +226,7 @@ export function featureElement(features: ScannedPolymerCoreFeature[]):
         'The properties reflected here are the combined view of all ' +
         'features found in this library. There may be more properties ' +
         'added via other libraries, as well.',
-    sourceRange: null
+    sourceRange: undefined
   });
 }
 
@@ -284,7 +289,7 @@ export function parsePseudoElements(comments: string[]):
         jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
         properties: [],
         description: parsedJsdoc.description,
-        sourceRange: null
+        sourceRange: undefined
       });
       annotateElementHeader(element);
       elements.push(element);

@@ -47,7 +47,8 @@ export class LocalEditorService extends EditorService {
   }
 
   async getDefinitionForFeatureAtPosition(
-      localPath: string, position: SourcePosition): Promise<SourceRange> {
+      localPath: string,
+      position: SourcePosition): Promise<SourceRange|undefined> {
     const feature = await this._getFeatureAt(localPath, position);
     if (!feature) {
       return;
@@ -60,14 +61,18 @@ export class LocalEditorService extends EditorService {
       position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
+    if (!location) {
+      return;
+    }
     if (location.kind === 'tagName' || location.kind === 'text') {
-      const elements = Array.from(document.getByKind('element'));
+      const elements =
+          Array.from(document.getByKind('element')).filter(e => e.tagName);
       return {
         kind: 'element-tags',
         elements: elements.map(e => {
-          let attributesSpace = e.attributes.length > 0 ? ' ' : '';
+          const attributesSpace = e.attributes.length > 0 ? ' ' : '';
           return {
-            tagname: e.tagName,
+            tagname: e.tagName!,
             description: e.description,
             expandTo: location.kind === 'text' ?
                 `<${e.tagName}${attributesSpace}></${e.tagName}>` :
@@ -79,40 +84,42 @@ export class LocalEditorService extends EditorService {
       const elements = document.getById('element', location.element.nodeName);
       let attributes: AttributeCompletion[] = [];
       for (const element of elements) {
-        // A map from the inheritedFrom to a sort prefix.
-        let sortPrefixes = new Map<string, string>();
+        // A map from the inheritedFrom to a sort prefix. Note that
+        // `undefined` is a legal value for inheritedFrom.
+        const sortPrefixes = new Map<string|undefined, string>();
         // Not inherited, that means local! Sort it early.
         sortPrefixes.set(undefined, 'aaa-');
-        sortPrefixes.set(null, 'aaa-');
         if (element.superClass) {
           sortPrefixes.set(element.superClass, 'bbb-');
         }
         if (element.extends) {
           sortPrefixes.set(element.extends, 'ccc-');
         }
-        attributes = attributes.concat(
-            element.attributes
-                .map(p => ({
-                       name: p.name,
-                       description: p.description,
-                       type: p.type,
-                       inheritedFrom: p.inheritedFrom,
-                       sortKey: `${sortPrefixes.get(p.inheritedFrom) ||
-                           'ddd-'
-                           }` +
-                               `${p.name}`
-                     }))
-                .concat(element.events.map(
-                    e => ({
-                      name: `on-${e.name}`,
-                      description: e.description,
-                      type: e.type || 'CustomEvent',
-                      inheritedFrom: e.inheritedFrom,
-                      sortKey: `eee-${sortPrefixes.get(e.inheritedFrom) ||
-                          'ddd-'
-                          }` +
-                              `on-${e.name}`
-                    }))));
+        const elementAttributes: AttributeCompletion[] =
+            element.attributes.map(p => {
+              const sortKey =
+                  (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
+              return {
+                name: p.name,
+                description: p.description || '',
+                type: p.type,
+                inheritedFrom: p.inheritedFrom, sortKey
+              };
+            });
+
+        const eventAttributes: AttributeCompletion[] =
+            element.events.map((e) => {
+              const postfix = sortPrefixes.get(e.inheritedFrom) || 'ddd-';
+              const sortKey = `eee-${postfix}on-${e.name}`;
+              return {
+                name: `on-${e.name}`,
+                description: e.description || '',
+                type: e.type || 'CustomEvent',
+                inheritedFrom: e.inheritedFrom, sortKey
+              };
+            });
+        attributes =
+            attributes.concat(elementAttributes).concat(eventAttributes);
       }
       return {kind: 'attributes', attributes};
     };

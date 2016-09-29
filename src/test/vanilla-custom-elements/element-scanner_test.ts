@@ -28,7 +28,7 @@ chai.use(require('chai-subset'));
 
 suite('VanillaElementScanner', () => {
 
-  const elements = new Map<string, ScannedElement>();
+  const elements = new Map<string|undefined, ScannedElement>();
   let document: JavaScriptDocument;
   let elementsList: ScannedElement[];
 
@@ -71,7 +71,7 @@ suite('VanillaElementScanner', () => {
   });
 
   test('Extracts attributes from observedAttributes', () => {
-    const element = elements.get('vanilla-with-observed-attributes');
+    const element = elements.get('vanilla-with-observed-attributes')!;
     assert.containSubset(element.attributes, [
       {
         description: 'When given the element is totally inactive',
@@ -117,7 +117,7 @@ suite('VanillaElementScanner', () => {
   test('Extracts description from jsdoc', () => {
     const element = elements.get('vanilla-with-observed-attributes');
     assert.equal(
-        element.description,
+        element!.description,
         'This is a description of WithObservedAttributes.');
   });
 });

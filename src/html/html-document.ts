@@ -47,7 +47,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     });
   }
 
-  _sourceRangeForNode(node: ASTNode): SourceRange {
+  _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
     if (!node || !node.__location) {
       return;
     }
@@ -79,7 +79,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     if (!node || !node.__location) {
       return;
     }
-    let attrs: parse5.AttributesLocationInfo;
+    let attrs: parse5.AttributesLocationInfo|undefined = undefined;
     if (node.__location['startTag'] && node.__location['startTag'].attrs) {
       attrs = node.__location['startTag'].attrs;
     } else if (node.__location['attrs']) {
@@ -124,7 +124,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
 
     // We can modify these, as they don't escape this method.
     const mutableDocuments = clone(immutableDocuments);
-    const selfClone = mutableDocuments.shift();
+    const selfClone = mutableDocuments.shift()!;
 
     for (const doc of mutableDocuments) {
       // TODO(rictic): infer this from doc.astNode's indentation.

@@ -23,7 +23,7 @@ import {Document, Import, ScannedImport} from '../model/model';
 export class ScriptTagImport extends Import { type: 'html-script'; }
 
 export class ScannedScriptTagImport extends ScannedImport {
-  resolve(document: Document): ScriptTagImport {
+  resolve(document: Document): ScriptTagImport|undefined {
     // TODO(justinfagnani): warn if the same URL is loaded from more than one
     // non-module script tag
 
@@ -41,10 +41,10 @@ export class ScannedScriptTagImport extends ScannedImport {
       importedDocument.resolve();
       return new ScriptTagImport(
           this.url, this.type, importedDocument, this.sourceRange,
-          this.urlSourceRange, this.astNode);
+          this.urlSourceRange, this.astNode, this.warnings);
     } else {
       // not found or syntax error
-      return null;
+      return undefined;
     }
   }
 }

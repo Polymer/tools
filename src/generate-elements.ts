@@ -25,6 +25,7 @@ export function generateElementMetadata(
   return {
     schema_version: '1.0.0',
     elements: elements.map(e => serializeElement(e, packagePath))
+                  .filter(e => !!e) as Element[]
   };
 }
 
@@ -85,7 +86,7 @@ function serializeElement(
   const events = resolvedElement.events.map(
       e => ({
         name: e.name,
-        description: e.description,
+        description: e.description || '',
         type: 'CustomEvent',
         metadata: resolvedElement.emitEventMetadata(e)
       }));
@@ -105,7 +106,7 @@ function serializeElement(
     slots: [],
     events: events,
     metadata: resolvedElement.emitMetadata(),
-    sourceRange: resolveSourceRangePath(path, resolvedElement.sourceRange)
+    sourceRange: resolveSourceRangePath(path, resolvedElement.sourceRange),
   };
 }
 
