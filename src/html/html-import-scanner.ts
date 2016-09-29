@@ -64,10 +64,13 @@ export class HtmlImportScanner implements HtmlScanner {
           type, importUrl, document.sourceRangeForNode(node)!,
           document.sourceRangeForAttribute(node, 'href')!, node));
     });
-    if (this._lazyEdges && this._lazyEdges.has(document.url)) {
-      for (let edge of this._lazyEdges.get(document.url)) {
-        imports.push(new ScannedImport(
-          'lazy-html-import', edge, null, null));
+    if (this._lazyEdges) {
+      const edges = this._lazyEdges.get(document.url);
+      if (edges) {
+        for (const edge of edges) {
+          imports.push(new ScannedImport(
+            'lazy-html-import', edge, undefined, undefined, null));
+        }
       }
     }
     return imports;

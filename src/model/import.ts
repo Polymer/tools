@@ -36,21 +36,21 @@ export class ScannedImport implements Resolvable {
 
   scannedDocument: ScannedDocument;
 
-  sourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
 
   /**
    * The source range specifically for the URL or reference to the imported
    * resource.
    */
-  urlSourceRange: SourceRange;
+  urlSourceRange: SourceRange|undefined;
 
   astNode: any|null;
 
   warnings: Warning[] = [];
 
   constructor(
-      type: string, url: string, sourceRange: SourceRange,
-      urlSourceRange: SourceRange, ast: any|null) {
+      type: string, url: string, sourceRange: SourceRange|undefined,
+      urlSourceRange: SourceRange|undefined, ast: any|null) {
     this.type = type;
     this.url = url;
     this.sourceRange = sourceRange;
@@ -73,14 +73,15 @@ export class Import implements Feature {
   document: Document;
   identifiers = new Set();
   kinds = new Set(['import']);
-  sourceRange: SourceRange;
-  urlSourceRange: SourceRange;
+  sourceRange: SourceRange|undefined;
+  urlSourceRange: SourceRange|undefined;
   astNode: any|null;
   warnings: Warning[];
 
   constructor(
-      url: string, type: string, document: Document, sourceRange: SourceRange,
-      urlSourceRange: SourceRange, ast: any, warnings: Warning[]) {
+      url: string, type: string, document: Document,
+      sourceRange: SourceRange|undefined, urlSourceRange: SourceRange|undefined,
+      ast: any, warnings: Warning[]) {
     this.url = url;
     this.type = type;
     this.document = document;

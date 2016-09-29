@@ -72,7 +72,7 @@ export class Analyzer {
   ]);
 
   /** A map from import url to urls that document lazily depends on. */
-  private _lazyEdges: LazyEdgeMap;
+  private _lazyEdges: LazyEdgeMap|undefined;
 
   private _scanners: ScannerTable;
 
@@ -90,14 +90,13 @@ export class Analyzer {
 
   private _telemetryTracker = new TelemetryTracker();
 
-  private static _getDefaultScanners(lazyEdges: LazyEdgeMap) {
+  private static _getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
     return new Map<string, Scanner<any, any, any>[]>([
       [
         'html',
         [
           new HtmlImportScanner(lazyEdges), new HtmlScriptScanner(),
-          new HtmlStyleScanner(), new DomModuleScanner(),
-          new CssImportScanner()
+          new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner()
         ]
       ],
       [
@@ -115,7 +114,8 @@ export class Analyzer {
     this._resolver = options.urlResolver;
     this._parsers = options.parsers || this._parsers;
     this._lazyEdges = options.lazyEdges;
-    this._scanners = options.scanners || Analyzer._getDefaultScanners(this._lazyEdges);
+    this._scanners =
+        options.scanners || Analyzer._getDefaultScanners(this._lazyEdges);
   }
 
   /**
@@ -275,7 +275,8 @@ export class Analyzer {
             return this._scanInlineDocument(
                 scannedDependency, document, warnings);
           } else if (scannedDependency instanceof ScannedImport) {
-            // TODO(garlicnation): Move this logic into model/document. During the recursive feature walk, features from lazy imports
+            // TODO(garlicnation): Move this logic into model/document. During
+            // the recursive feature walk, features from lazy imports
             // should be marked.
             if (scannedDependency.type !== 'lazy-html-import') {
               return this._scanImport(scannedDependency, warnings);
@@ -342,7 +343,8 @@ export class Analyzer {
       warnings.push({
         code: 'could-not-load',
         message: `Unable to load import: ${error.message || error}`,
-        sourceRange: scannedImport.urlSourceRange || scannedImport.sourceRange,
+        sourceRange:
+            (scannedImport.urlSourceRange || scannedImport.sourceRange)!,
         severity: Severity.ERROR
       });
       return null;
