@@ -42,10 +42,18 @@ export interface Options {
   urlLoader: UrlLoader;
   urlResolver?: UrlResolver;
   parsers?: Map<string, Parser<any>>;
-  scanners?: Map<string, Scanner<any, any, any>[]>;
+  scanners?: ScannerTable;
+  /*
+   * Map from url of an HTML Document to another HTML document it lazily depends
+   * on.
+   */
+  lazyEdges?: LazyEdgeMap;
 }
 
 export class NoKnownParserError extends Error {};
+
+export type ScannerTable = Map<string, Scanner<any, any, any>[]>;
+export type LazyEdgeMap = Map<string, string[]>;
 
 /**
  * A static analyzer for web projects.
@@ -63,22 +71,10 @@ export class Analyzer {
     ['json', new JsonParser()],
   ]);
 
-  private scanners = new Map<string, Scanner<any, any, any>[]>([
-    [
-      'html',
-      [
-        new HtmlImportScanner(), new HtmlScriptScanner(),
-        new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner()
-      ]
-    ],
-    [
-      'js',
-      [
-        new PolymerElementScanner(), new BehaviorScanner(),
-        new VanillaElementScanner()
-      ]
-    ],
-  ]);
+  /** A map from import url to urls that document lazily depends on. */
+  private _lazyEdges: LazyEdgeMap;
+
+  private _scanners: ScannerTable;
 
   private _loader: UrlLoader;
   private _resolver: UrlResolver|undefined;
@@ -94,11 +90,32 @@ export class Analyzer {
 
   private _telemetryTracker = new TelemetryTracker();
 
+  private static _getDefaultScanners(lazyEdges: LazyEdgeMap) {
+    return new Map<string, Scanner<any, any, any>[]>([
+      [
+        'html',
+        [
+          new HtmlImportScanner(lazyEdges), new HtmlScriptScanner(),
+          new HtmlStyleScanner(), new DomModuleScanner(),
+          new CssImportScanner()
+        ]
+      ],
+      [
+        'js',
+        [
+          new PolymerElementScanner(), new BehaviorScanner(),
+          new VanillaElementScanner()
+        ]
+      ],
+    ]);
+  }
+
   constructor(options: Options) {
     this._loader = options.urlLoader;
     this._resolver = options.urlResolver;
     this._parsers = options.parsers || this._parsers;
-    this.scanners = options.scanners || this.scanners;
+    this._lazyEdges = options.lazyEdges;
+    this._scanners = options.scanners || Analyzer._getDefaultScanners(this._lazyEdges);
   }
 
   /**
@@ -258,7 +275,12 @@ export class Analyzer {
             return this._scanInlineDocument(
                 scannedDependency, document, warnings);
           } else if (scannedDependency instanceof ScannedImport) {
-            return this._scanImport(scannedDependency, warnings);
+            // TODO(garlicnation): Move this logic into model/document. During the recursive feature walk, features from lazy imports
+            // should be marked.
+            if (scannedDependency.type !== 'lazy-html-import') {
+              return this._scanImport(scannedDependency, warnings);
+            }
+            return null;
           } else {
             throw new Error(`Unexpected dependency type: ${scannedDependency}`);
           }
@@ -390,7 +412,7 @@ export class Analyzer {
 
   private async _getScannedFeatures(document: ParsedDocument<any, any>):
       Promise<ScannedFeature[]> {
-    const scanners = this.scanners.get(document.type);
+    const scanners = this._scanners.get(document.type);
     if (scanners) {
       return scan(document, scanners);
     }
