@@ -19,7 +19,8 @@
     "polyserve"
   ],
   "dependencies": {
-    "command-line-args": "^2.1.6",
+    "command-line-args": "^3.0.1",
+    "command-line-usage": "^3.0.3",
     "express": "^4.8.5",
     "find-port": "^1.0.1",
     "opn": "^3.0.2",

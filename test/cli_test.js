@@ -15,19 +15,16 @@ const cliRun = require('../lib/cli').run;
 
 suite('cli', () => {
 
-  test('unknown cmd parameter should not throw exception', (done) => {
-    var argv = process.argv;
-
+  test('unknown cmd parameter should not throw exception', () => {
+    const originalArgv = process.argv;
     process.argv = ["node", "polyserve", "--unknown-parameter"];
-    var result = cliRun();
 
-    result.then(function() {
-      process.argv = argv;
-      done();
-    }, function(err) {
-      process.argv = argv;
-      done(err);
-    });
+    try {
+      return cliRun();
+    } finally {
+      // restore process arguments for other readers
+      process.argv = originalArgv;
+    }
   });
 
 });

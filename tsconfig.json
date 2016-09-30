@@ -32,6 +32,7 @@
         "src/polyserve.ts",
         "src/start_server.ts",
         "custom_typings/command-line-args.d.ts",
+        "custom_typings/command-line-usage.d.ts",
         "custom_typings/find-port.d.ts",
         "custom_typings/node.d.ts",
         "custom_typings/send.d.ts",

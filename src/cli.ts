@@ -8,58 +8,58 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as commandLineArgs from 'command-line-args';
 import {ArgDescriptor} from 'command-line-args';
 import * as path from 'path';
 import * as fs from 'fs';
 import {args} from './args';
 import {startServer, ServerOptions} from './start_server';
 
-export function run(): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    let argsWithHelp : ArgDescriptor[] = args.concat({
-      name: 'help',
-      description: 'Shows this help message',
-      type: Boolean,
-    });
-    var cli = commandLineArgs(argsWithHelp);
-    try {
-      var cliOptions = cli.parse();
-    }
-    catch (e) {
-      printUsage(cli);
-      resolve(null);
-      return;
-    }
+import commandLineArgs = require('command-line-args');
+import commandLineUsage = require('command-line-usage');
 
-    var options: ServerOptions = {
-      root: cliOptions.root,
-      port: cliOptions.port,
-      hostname: cliOptions.hostname,
-      open: cliOptions.open,
-      browser: cliOptions['browser'],
-      openPath: cliOptions['open-path'],
-      componentDir: cliOptions['component-dir'],
-      packageName: cliOptions['package-name'],
-    }
-
-    if (cliOptions.help) {
-      printUsage(cli);
-      resolve(null);
-    } else if (cliOptions.version) {
-      console.log(getVersion());
-      resolve(null);
-    } else {
-      return startServer(options);
-    }
+export async function run(): Promise<void> {
+  const argsWithHelp : ArgDescriptor[] = args.concat({
+    name: 'help',
+    description: 'Shows this help message',
+    type: Boolean,
   });
+
+  let cliOptions: any;
+
+  try {
+    cliOptions = commandLineArgs(argsWithHelp);
+  } catch (e) {
+    printUsage(argsWithHelp);
+    return;
+  }
+
+  const options: ServerOptions = {
+    root: cliOptions.root,
+    port: cliOptions.port,
+    hostname: cliOptions.hostname,
+    open: cliOptions.open,
+    browser: cliOptions['browser'],
+    openPath: cliOptions['open-path'],
+    componentDir: cliOptions['component-dir'],
+    packageName: cliOptions['package-name'],
+  }
+
+  if (cliOptions.help) {
+    printUsage(argsWithHelp);
+  } else if (cliOptions.version) {
+    console.log(getVersion());
+  } else {
+    await startServer(options);
+  }
+
 }
 
-function printUsage(cli: any): void {
-  var usage = cli.getUsage({
+function printUsage(options: any): void {
+  const usage = commandLineUsage([{
     header: 'A development server for Polymer projects',
     title: 'polyserve',
-  });
+    optionList: options,
+  }]);
   console.log(usage);
 }
 
