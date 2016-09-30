@@ -2,10 +2,17 @@
 
 [![Build Status](https://travis-ci.org/PolymerLabs/polyserve.svg?branch=master)](https://travis-ci.org/PolymerLabs/polyserve)
 
-A simple web server for using bower components locally. `polyserve` serves
-project files under `/components/{bower-name}/`. The local component defined in
-`bower.json` is served from the current directory, other component are served
-from `./bower_components/`.
+A simple development server for web projects.
+
+`polyserve` serves project files from a URL root that allows relative URLs
+that reach out of the project, like those starting with `../`, to work. This is
+necessary for referencing other packages by path when stored as a flat directory
+such as how Bower works.
+
+The local package is served at the URL `/components/{bower-name}/`, with files
+served from the current directory. Other packages are served at
+`/components/{packageName}` with files served from their directory under
+`./bower_components/`.
 
 ## Installation
 
@@ -33,9 +40,10 @@ Navigate to `localhost:8080/components/my-element/demo.html`
 
 ## Compiling from Source
 
+    $ npm install
     $ npm run build
 
-You can compile and run Polyserve from source by cloning the repo from Github and then running `npm run build`. But make sure you have already run `npm install` before building.
+You can compile and run polyserve from source by cloning the repo from Github and then running `npm run build`. Make sure you have already run `npm install` before building.
 
 ### Run Tests
 
