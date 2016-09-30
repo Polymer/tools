@@ -10,8 +10,7 @@
   },
   "scripts": {
     "start": "./bin/polyserve",
-    "init": "typings install",
-    "build": "if [ ! -f typings/main.d.ts ]; then npm run init; fi; tsc",
+    "build": "tsc",
     "test": "gulp test"
   },
   "keywords": [
@@ -19,6 +18,11 @@
     "polyserve"
   ],
   "dependencies": {
+    "@types/express": "^4.0.33",
+    "@types/mime": "0.0.29",
+    "@types/node": "^4.0.30",
+    "@types/opn": "^3.0.28",
+    "@types/serve-static": "^1.7.31",
     "command-line-args": "^3.0.1",
     "command-line-usage": "^3.0.3",
     "express": "^4.8.5",
@@ -32,8 +36,7 @@
     "gulp": "^3.9.1",
     "gulp-mocha": "^2.2.0",
     "supertest": "^1.2.0",
-    "typescript": "^1.8.10",
-    "typings": "^0.8.1"
+    "typescript": "^2.0.3"
   },
   "typings": "./lib/polyserve.d.ts"
 }

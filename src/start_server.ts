@@ -79,7 +79,7 @@ ERROR: Port in use: ${port}
 Please choose another port, or let an unused port be chosen automatically.
 `;
 
-export function getApp(options: ServerOptions) {
+export function getApp(options: ServerOptions): express.Express {
   let port = options.port;
   let hostname = options.hostname;
   let root = options.root;
