@@ -13,8 +13,8 @@
   "typings": "lib/analyzer.d.ts",
   "files": [
     "LICENSE",
-    "lib/",
-    "custom_typings/"
+    "src/",
+    "tsconfig.json"
   ],
   "scripts": {
     "clean": "mkdir -p lib/ && rm -rf lib/ && mkdir -p lib/test && cp -r src/test/static lib/test/",
@@ -24,7 +24,8 @@
     "test": "npm run clean && npm run build && npm run lint && mocha",
     "quicktest": "export QUICK_TESTS=true; npm run build && mocha",
     "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
+    "postinstall": "tsc >/dev/null 2>&1 || true"
   },
   "devDependencies": {
     "@types/chai": "^3.4.29",
@@ -36,7 +37,6 @@
     "mocha": "^2.2.4",
     "source-map-support": "^0.4.2",
     "tslint": "^3.10.2",
-    "typescript": "^2.0.0",
     "watchy": "^0.6.6"
   },
   "dependencies": {
@@ -44,6 +44,7 @@
     "@types/parse5": "0.0.27",
     "@types/split": "^0.3.28",
     "polymer-analyzer": "^2.0.0-alpha.9",
-    "split": "^1.0.0"
+    "split": "^1.0.0",
+    "typescript": "^2.0.0"
   }
 }
