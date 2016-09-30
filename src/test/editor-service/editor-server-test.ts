@@ -21,7 +21,7 @@ import * as util from 'util';
 import {invertPromise} from '../test-utils';
 
 const pathToServer =
-    path.join(__dirname, '../../editor-service/editor-server.js');
+    path.join(__dirname, '../../editor-service/polymer-editor-server.js');
 
 suite('RemoteEditorService', () => {
   /**

@@ -32,7 +32,7 @@ class EditorServerChannel {
   private _idCounter = 0;
   private _outstandingRequests = new Map<number, Deferred<any>>();
   constructor() {
-    const serverJsFile = path.join(__dirname, 'editor-server.js');
+    const serverJsFile = path.join(__dirname, 'polymer-editor-server.js');
     this._child = child_process.fork(serverJsFile, [], {});
     this._child.addListener(
         'message', (m: ResponseWrapper) => this._handleResponse(m));
