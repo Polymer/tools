@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "simple-element",
+      "description": "",
+      "superclass": "HTMLElement",
+      "path": "simple-element.html",
+      "attributes": [
+        {
+          "name": "d-e-f",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 7,
+              "column": 6
+            },
+            "end": {
+              "line": 10,
+              "column": 7
+            }
+          },
+          "type": "string",
+          "metadata": {}
+        },
+        {
+          "name": "g--h--i",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 11,
+              "column": 6
+            },
+            "end": {
+              "line": 14,
+              "column": 7
+            }
+          },
+          "type": "string",
+          "metadata": {}
+        }
+      ],
+      "properties": [
+        {
+          "name": "ABC",
+          "type": "string",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 3,
+              "column": 6
+            },
+            "end": {
+              "line": 6,
+              "column": 7
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "dEF",
+          "type": "string",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 7,
+              "column": 6
+            },
+            "end": {
+              "line": 10,
+              "column": 7
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "g-H--i",
+          "type": "string",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 11,
+              "column": 6
+            },
+            "end": {
+              "line": 14,
+              "column": 7
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [
+        {
+          "name": "d-e-f-changed",
+          "description": "Fired when the `dEF` property changes.",
+          "type": "CustomEvent",
+          "metadata": {}
+        },
+        {
+          "name": "g--h--i-changed",
+          "description": "Fired when the `g-H--i` property changes.",
+          "type": "CustomEvent",
+          "metadata": {}
+        }
+      ],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 1,
+          "column": 10
+        },
+        "end": {
+          "line": 17,
+          "column": 3
+        }
+      }
+    }
+  ]
+}
