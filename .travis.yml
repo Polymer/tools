@@ -3,6 +3,8 @@ node_js:
   - "4"
   - "6"
 sudo: false
+before_install:
+  - npm install -g npm
 before_script:
   - npm install
   - npm run build
