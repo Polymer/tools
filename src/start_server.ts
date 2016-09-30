@@ -48,7 +48,7 @@ export interface ServerOptions {
 }
 
 function applyDefaultOptions(options: ServerOptions): ServerOptions {
-  let withDefaults = Object.assign({}, options);
+  const withDefaults = Object.assign({}, options);
   Object.assign(withDefaults, {
     port: options.port || 8080,
     hostname: options.hostname || "localhost",
@@ -80,18 +80,18 @@ Please choose another port, or let an unused port be chosen automatically.
 `;
 
 export function getApp(options: ServerOptions): express.Express {
-  let port = options.port;
-  let hostname = options.hostname;
-  let root = options.root;
+  const port = options.port;
+  const hostname = options.hostname;
+  const root = options.root;
 
-  let app = express();
+  const app = express();
 
   console.log(`Starting Polyserve...
     serving on port: ${port}
     from root: ${root}
   `);
 
-  let polyserve = makeApp({
+  const polyserve = makeApp({
     componentDir: options.componentDir,
     packageName: options.packageName,
     root,
@@ -103,7 +103,7 @@ export function getApp(options: ServerOptions): express.Express {
   app.use('/components/', polyserve);
 
   app.get('/*', (req, res) => {
-    let filePath = req.path;
+    const filePath = req.path;
     send(req, filePath, {root: root,})
       .on('error', (error: send.SendError) => {
         if ((error).status == 404 && !filePathRegex.test(filePath)) {
@@ -123,7 +123,7 @@ export function getApp(options: ServerOptions): express.Express {
  * the user's default browser.
  */
 function openWebPage(url: string, withBrowser?: string) {
-  let openOptions = {
+  const openOptions = {
     app: withBrowser
   };
   opn(url, openOptions, (err) => {
@@ -135,12 +135,12 @@ function openWebPage(url: string, withBrowser?: string) {
 }
 
 function startWithPort(userOptions: ServerOptions) {
-  let options = applyDefaultOptions(userOptions);
-  let app = getApp(options);
+  const options = applyDefaultOptions(userOptions);
+  const app = getApp(options);
   let server = http.createServer(app);
   let serverStartedResolve: (r: any) => void;
   let serverStartedReject: (r: any) => void;
-  let serverStartedPromise = new Promise((resolve, reject) => {
+  const serverStartedPromise = new Promise((resolve, reject) => {
     serverStartedResolve = resolve;
     serverStartedReject = reject;
   });
@@ -155,12 +155,12 @@ function startWithPort(userOptions: ServerOptions) {
     serverStartedReject(err);
   });
 
-  let serverUrl = {
+  const serverUrl = {
     protocol: 'http',
     hostname: options.hostname,
     port: `${options.port}`,
   };
-  let componentUrl: url.Url = Object.assign({}, serverUrl);
+  const componentUrl: url.Url = Object.assign({}, serverUrl);
   componentUrl.pathname = `components/${options.packageName}/`;
 
   console.log(`Files in this directory are available under the following URLs

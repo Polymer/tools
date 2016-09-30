@@ -38,17 +38,17 @@ export interface PolyserveApplication extends express.Express {
  */
 export function makeApp(options: AppOptions): PolyserveApplication {
   options = options || {};
-  let root = options.root;
-  let componentDir = options.componentDir || 'bower_components';
-  let packageName = options.packageName || bowerConfig(root).name
+  const root = options.root;
+  const componentDir = options.componentDir || 'bower_components';
+  const packageName = options.packageName || bowerConfig(root).name
       || path.basename(process.cwd());
-  let headers = options.headers || {};
+  const headers = options.headers || {};
 
-  let app: PolyserveApplication = <PolyserveApplication>express();
+  const app: PolyserveApplication = <PolyserveApplication>express();
 
   app.get('*', function (req, res) {
     // Serve local files from . and other components from bower_components
-    let url = parseUrl(req.url, true);
+    const url = parseUrl(req.url, true);
     let splitPath = url.pathname.split('/').slice(1);
 
     if (splitPath[0] === packageName) {
@@ -60,10 +60,10 @@ export function makeApp(options: AppOptions): PolyserveApplication {
     } else {
       splitPath = [componentDir].concat(splitPath);
     }
-    let filePath = splitPath.join('/');
+    const filePath = splitPath.join('/');
 
     if (headers) {
-      for (let header in headers) {
+      for (const header in headers) {
         (<any>res).append(header, headers[header]);
       }
     }

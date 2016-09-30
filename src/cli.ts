@@ -64,9 +64,9 @@ function printUsage(options: any): void {
 }
 
 function getVersion(): string {
-  let packageFilePath = path.resolve(__dirname, '../package.json');
-  let packageFile = fs.readFileSync(packageFilePath).toString()
-  let packageJson = JSON.parse(packageFile);
-  let version = packageJson['version'];
+  const packageFilePath = path.resolve(__dirname, '../package.json');
+  const packageFile = fs.readFileSync(packageFilePath).toString()
+  const packageJson = JSON.parse(packageFile);
+  const version = packageJson['version'];
   return version;
 }
