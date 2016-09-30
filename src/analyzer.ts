@@ -151,7 +151,6 @@ export class Analyzer {
     if (cachedResult) {
       return cachedResult;
     }
-    // TODO(justinfagnani): also check _analyzedDocuments?
 
     const promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
@@ -173,14 +172,19 @@ export class Analyzer {
    * cache.
    */
   private _makeDocument(scannedDocument: ScannedDocument): Document {
-    if (this._analyzedDocuments.has(scannedDocument.url)) {
+    const resolvedUrl = scannedDocument.url;
+
+    if (this._analyzedDocuments.has(resolvedUrl)) {
       throw new Error(
-          `Internal error: document ${scannedDocument.url} already exists`);
+          `Internal error: document ${resolvedUrl} already exists`);
     }
+
     const document = new Document(scannedDocument, this);
+    if (!this._analyzedDocumentPromises.has(resolvedUrl)) {
+      this._analyzedDocumentPromises.set(resolvedUrl, Promise.resolve(document));
+    }
+    this._analyzedDocuments.set(resolvedUrl, document);
     document.resolve();
-    // TODO(justinfagnani): should this add to _analyzedDocumentPromises?
-    this._analyzedDocuments.set(scannedDocument.url, document);
     return document;
   }
 
