@@ -11,14 +11,15 @@
 'use strict';
 
 import * as express from 'express';
-import * as findPort from 'find-port';
 import * as http from 'http';
-import * as opn from 'opn';
 import * as path from 'path';
 import * as send from 'send';
 import * as url from 'url';
 
 import { makeApp } from './make_app';
+
+import findPort = require('find-port');
+import opn = require('opn');
 
 export interface ServerOptions {
 

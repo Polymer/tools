@@ -11,9 +11,10 @@
 import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as send from 'send';
 import { parse as parseUrl } from 'url';
 import { bowerConfig } from './bower_config';
+
+import send = require('send');
 
 export interface AppOptions {
   componentDir?: string;
