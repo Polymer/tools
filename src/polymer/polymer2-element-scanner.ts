@@ -18,14 +18,13 @@ import * as astValue from '../javascript/ast-value';
 import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
-import {getPropertyValue} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedElement, ScannedFeature} from '../model/model';
 
-import {analyzeProperties} from './analyze-properties';
-import {Options as PolymerElementOptions, ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
+import {Options as PolymerElementOptions, ScannedPolymerElement} from './polymer-element';
+import {getConfig, getProperties} from './polymer2-config';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -80,13 +79,13 @@ class ElementVisitor implements Visitor {
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
-    const config = this._getConfig(node);
+    const config = getConfig(node);
 
     const elementOptions: PolymerElementOptions = {
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
-      properties: (config && this._getProperties(config)) || [],
+      properties: (config && getProperties(config, this._document)) || [],
     };
 
     // TODO(justinfagnani): figure out how or if to reconcile attributes
@@ -154,41 +153,6 @@ class ElementVisitor implements Visitor {
     const elementTags =
         tags.filter((t: jsdoc.Tag) => t.tag === 'polymerElement');
     return elementTags.length >= 1;
-  }
-
-  private _getConfig(node: estree.ClassDeclaration|
-                     estree.ClassExpression): estree.ObjectExpression|null {
-    const possibleConfigs = node.body.body.filter(
-        (n) => n.type === 'MethodDefinition' && n.static === true &&
-            n.kind === 'get' && getIdentifierName(n.key) === 'config');
-    const config = possibleConfigs.length === 1 && possibleConfigs[0];
-    if (!config) {
-      return null;
-    }
-
-    const configBody = config.value.body;
-    if (configBody.body.length !== 1) {
-      // not a single statement function
-      return null;
-    }
-    if (configBody.body[0].type !== 'ReturnStatement') {
-      return null;
-    }
-
-    const returnStatement = configBody.body[0] as estree.ReturnStatement;
-    const returnValue = returnStatement.argument;
-    if (!returnValue || returnValue.type !== 'ObjectExpression') {
-      // TODO: warn
-      return null;
-    }
-    return returnValue as estree.ObjectExpression;
-  }
-
-  private _getProperties(node: estree.ObjectExpression):
-      ScannedPolymerProperty[] {
-    const propertiesNode = getPropertyValue(node, 'properties');
-    return propertiesNode ? analyzeProperties(propertiesNode, this._document) :
-                            [];
   }
 
   // TODO(justinfagnani): move to vanilla element scanner

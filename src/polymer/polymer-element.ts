@@ -77,7 +77,7 @@ export interface Options {
   events?: ScannedEvent[];
 
   abstract?: boolean;
-  sourceRange: SourceRange|undefined;
+  sourceRange?: SourceRange|undefined;
 }
 
 /**
@@ -100,14 +100,14 @@ export class ScannedPolymerElement extends ScannedElement {
 
   abstract?: boolean;
 
-  constructor(options: Options) {
+  constructor(options?: Options) {
     super();
     // TODO(justinfagnani): fix this constructor to not be crazy, or remove
     // class altogether.
-    const optionsCopy = Object.assign({}, options);
+    const optionsCopy = Object.assign({}, options) as Options;
     delete optionsCopy.properties;
     Object.assign(this, optionsCopy);
-    if (options.properties) {
+    if (options && options.properties) {
       options.properties.forEach((p) => this.addProperty(p));
     }
   }

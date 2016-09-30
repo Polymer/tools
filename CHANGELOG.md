@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ### Added
+* Polymer 2.0 mixin scanner
 * HTML Documents now include a `baseUrl` property which is properly resolved
   from a `<base href="...">` tag, when present.
 * Add `localIds` to `PolymerElement`, tracking elements in its template by their id attributes.
