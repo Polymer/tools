@@ -289,7 +289,7 @@ suite('Analyzer', () => {
       await invertPromise(analyzer.analyze('/static/does_not_exist'));
     });
 
-    test.only('handles documents from multiple calls to analyze()', async() => {
+    test('handles documents from multiple calls to analyze()', async() => {
       await analyzer.analyze('static/caching/file1.html');
       await analyzer.analyze('static/caching/file2.html');
     });
