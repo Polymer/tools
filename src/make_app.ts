@@ -46,8 +46,8 @@ export function makeApp(options: AppOptions): PolyserveApplication {
     packageName = bowerConfig(root).name;
   }
   if (!packageName) {
-    console.log('bower.json not found, falling back to current path as package name');
-    packageName = path.basename(process.cwd());
+    packageName = path.basename(root || process.cwd());
+    console.log(`no bower.json detected, using name "${packageName}"`);
   }
   let headers = options.headers || {};
 

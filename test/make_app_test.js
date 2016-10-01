@@ -34,7 +34,7 @@ suite('makeApp', () => {
       root: resolve(__dirname, 'no_bower_json/')
     });
     assert.isFalse(called);
-    assert.equal(app.packageName, 'polyserve');
+    assert.equal(app.packageName, 'no_bower_json');
   });
 
   test('serves package files', (done) => {
