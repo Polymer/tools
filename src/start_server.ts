@@ -67,10 +67,10 @@ export interface ServerOptions {
   pushManifestPath?: string;
 }
 
-function applyDefaultOptions(options: ServerOptions): ServerOptions {
+async function applyDefaultOptions(options: ServerOptions): Promise<ServerOptions> {
   const withDefaults = Object.assign({}, options);
   Object.assign(withDefaults, {
-    port: options.port || 8080,
+    port: await nextOpenPort(options.port),
     hostname: options.hostname || 'localhost',
     root: path.resolve(options.root || '.'),
     certPath: options.certPath || 'cert.pem',
@@ -80,28 +80,36 @@ function applyDefaultOptions(options: ServerOptions): ServerOptions {
 }
 
 /**
+ * If port unspecified/negative, finds an open port on localhost
+ * @param {number} port
+ * @returns {Promise<number>} Promise of open port
+ */
+async function nextOpenPort(port: number): Promise<number> {
+  if (!port || port < 0) {
+    port = await new Promise<number>(resolve => {
+      // TODO: Switch from `find-port` to `get-port`. `find-port` always
+      // resolves a port number even if none are available. The error-event
+      // handler in `startWithPort` catches the issue.
+      findPort(8080, 8180, (ports: number[]) => {
+        resolve(ports[0]);
+      });
+    });
+  }
+  return port;
+}
+
+/**
  * @return {Promise} A Promise that completes when the server has started.
  */
-export function startServer(options: ServerOptions): Promise<http.Server> {
-  return new Promise((resolve) => {
-    options = options || {};
-
-    assertNodeVersion(options);
-
-    if (options.port) {
-      resolve(options);
-    } else {
-      findPort(8080, 8180, (ports) => {
-        options.port = ports[0];
-        resolve(options);
-      });
-    }
-  })
-  .then<http.Server>((opts) => startWithPort(opts))
-  .catch((e) => {
+export async function startServer(options: ServerOptions): Promise<http.Server> {
+  options = options || {};
+  assertNodeVersion(options);
+  try {
+    return await startWithPort(options)
+  } catch (e) {
     console.error('ERROR: Server failed to start:', e);
-    return Promise.reject(e);
-  });
+    throw new Error(e);
+  }
 }
 
 const portInUseMessage = (port: number) => `
@@ -232,25 +240,27 @@ function handleServerReady(options: ServerOptions) {
 
 /**
  * Generates a TLS certificate for HTTPS
- * @param {string} keyPath path to TLS service key
- * @param {string} certPath path to TLS certificate
- * @returns {Promise<{}>} Promise of {serviceKey: string, certificate: string}
+ * @returns {Promise<{}>} Promise of {key: string, cert: string}
  */
-function createTLSCertificate(keyPath: string, certPath: string) {
-  return new Promise<{}>((resolve, reject) => {
+async function createTLSCertificate(): Promise<{key: string, cert: string}> {
+  const keys: any = await new Promise((resolve, reject) => {
     console.log('Generating TLS certificate...');
-    pem.createCertificate({days: 1, selfSigned: true}, (err: any, keys: any) => {
+    pem.createCertificate({
+                            days: 365,
+                            selfSigned: true
+                          }, (err: any, keys: any) => {
       if (err) {
         reject(err);
       } else {
-        Promise.all([
-              fs.writeFile(certPath, keys.certificate),
-              fs.writeFile(keyPath, keys.serviceKey)
-            ])
-            .then(() => resolve(keys));
+        resolve(keys);
       }
     });
   });
+
+  return {
+    cert: keys.certificate,
+    key: keys.serviceKey,
+  };
 }
 
 /**
@@ -258,33 +268,53 @@ function createTLSCertificate(keyPath: string, certPath: string) {
  * or generates one if needed
  * @param {string} keyPath path to TLS service key
  * @param {string} certPath path to TLS certificate
- * @returns {Promise<{}>} Promise of {serviceKey: string, certificate: string}
+ * @returns {Promise<{}>} Promise of {key: string, cert: string}
  */
-function getTLSCertificate(keyPath: string, certPath: string) {
-  let certificate: string;
-  let serviceKey: string;
+async function getTLSCertificate(keyPath: string, certPath: string): Promise<{key: string, cert: string}> {
+  let certObj: {cert: string, key: string};
 
-  const validate = (data: string) => {
-    if (!data) {
-      throw new Error('invalid data');
-    } else {
-      return data;
+  if (keyPath && certPath) {
+    // TODO: Simplify code with ES6 destructuring when TypeScript 2.1 arrives.
+    //
+    // While TypeScript 2.0 already supports it, tsc does not transpile async/await
+    // to ES5, which is scheduled for TypeScript 2.1. The advantages of async/await
+    // outweigh that of array destructuring, so go the verbose way for now...
+
+    try {
+      const certData = await Promise.all([
+                                           fs.readFile(certPath)
+                                             .then((value: Buffer) => value.toString().trim()),
+                                           fs.readFile(keyPath)
+                                             .then((value: Buffer) => value.toString().trim())
+                                         ]);
+      const cert: string = certData[0];
+      const key: string = certData[1];
+      if (key && cert) {
+        certObj = {
+          cert: cert,
+          key: key,
+        };
+      }
+    } catch (err) {
+      // If the cert/key file doesn't exist, generate new TLS certificate
+      if (err.code !== 'ENOENT') {
+        throw new Error(`cannot read certificate ${err}`);
+      }
     }
-  };
+  }
 
-  return Promise.all([
-                    fs.readFile(certPath)
-                      .then((value: Buffer) => value.toString().trim())
-                      .then((data: string) => { certificate = validate(data); }),
-                    fs.readFile(keyPath)
-                      .then((value: Buffer) => value.toString().trim())
-                      .then((data: string) => { serviceKey = validate(data); })
-                  ])
-                  .then(() => ({
-                    certificate: certificate,
-                    serviceKey: serviceKey
-                  }))
-                  .catch(() => createTLSCertificate(keyPath, certPath));
+  if (!certObj) {
+    certObj = await createTLSCertificate();
+
+    if (keyPath && certPath) {
+      await Promise.all([
+                          fs.writeFile(certPath, certObj.cert),
+                          fs.writeFile(keyPath, certObj.key)
+                        ]);
+    }
+  }
+
+  return certObj;
 }
 
 /**
@@ -307,25 +337,21 @@ function assertNodeVersion(options: ServerOptions) {
  * @param {ServerOptions} options
  * @returns {Promise<http.Server>} Promise of server
  */
-function createServer(app: any, options: ServerOptions): Promise<http.Server> {
-  let p: Promise<http.Server>;
+async function createServer(app: any, options: ServerOptions): Promise<http.Server> {
+  const opt: any = {
+    spdy: {protocols: [options.protocol]}
+  };
+
   if (isHttps(options.protocol)) {
-    p = getTLSCertificate(options.keyPath, options.certPath)
-        .then((keys: any) => {
-          let opt = {
-            spdy: {protocols: [options.protocol]},
-            key: keys.serviceKey,
-            cert: keys.certificate
-          };
-          let server = http.createServer(opt, app);
-          return Promise.resolve(server);
-        });
+    const keys = await getTLSCertificate(options.keyPath, options.certPath);
+    opt.key = keys.key;
+    opt.cert = keys.cert;
   } else {
-    const spdyOptions = {protocols: [options.protocol], plain: true, ssl: false};
-    const server = http.createServer({spdy: spdyOptions}, app);
-    p = Promise.resolve(server);
+    opt.spdy.plain = true;
+    opt.spdy.ssl = false;
   }
-  return p;
+
+  return http.createServer(opt, app);
 }
 
 /**
@@ -333,26 +359,24 @@ function createServer(app: any, options: ServerOptions): Promise<http.Server> {
  * @param {ServerOptions} userOptions
  * @returns {Promise<http.Server>} Promise of server
  */
-function startWithPort(userOptions: ServerOptions): Promise<http.Server> {
-  const options = applyDefaultOptions(userOptions);
+async function startWithPort(userOptions: ServerOptions): Promise<http.Server> {
+  const options = await applyDefaultOptions(userOptions);
   const app = getApp(options);
+  const server = await createServer(app, options);
+  await new Promise((resolve, reject) => {
+    server.listen(options.port, options.hostname, () => {
+      handleServerReady(options);
+      resolve();
+    });
 
-  return createServer(app, options)
-      .then((server) => new Promise<http.Server>((resolve, reject) => {
-          server.listen(options.port, options.hostname, () => {
-            resolve(server);
-            handleServerReady(options);
-          });
-
-          server.on('error', (err: any) => {
-            if (err.code === 'EADDRINUSE') {
-              console.error(portInUseMessage(options.port));
-            }
-            console.warn('rejecting with err', err);
-            reject(err);
-          });
-        })
-      );
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(portInUseMessage(options.port));
+      }
+      reject(err);
+    });
+  });
+  return server;
 }
 
 /**
