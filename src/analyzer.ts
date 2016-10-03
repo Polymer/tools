@@ -176,7 +176,7 @@ export class StreamAnalyzer extends Transform {
    * Attempts to retreive document-order transitive dependencies for `url`.
    */
   async _getDependencies(url: string): Promise<DocumentDeps> {
-    const doc = await this.analyzer.analyzeRoot(url);
+    const doc = await this.analyzer.analyze(url);
     const scripts = new Set<string>();
     const styles = new Set<string>();
     const imports = new Set<string>();
