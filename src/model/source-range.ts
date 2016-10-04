@@ -12,6 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * Describes a range of text within a source file.
+ *
+ * NOTE: `line` and `column` Position properties are indexed from zero. Consider
+ * displaying them to users as one-indexed numbers to match text editor
+ * conventions.
+ */
 export interface SourceRange {
   /* The resolved path to the file. */
   file: string;
