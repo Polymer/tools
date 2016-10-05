@@ -42,6 +42,10 @@ export async function run(): Promise<void> {
     openPath: cliOptions['open-path'],
     componentDir: cliOptions['component-dir'],
     packageName: cliOptions['package-name'],
+    protocol: cliOptions['protocol'],
+    keyPath: cliOptions['key'],
+    certPath: cliOptions['cert'],
+    pushManifestPath: cliOptions['manifest'],
   }
 
   if (cliOptions.help) {

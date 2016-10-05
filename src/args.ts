@@ -69,4 +69,31 @@ export let args : ArgDescriptor[] = [
       ' Defaults to "index.html".',
     type: String,
   },
+  {
+    name: 'protocol',
+    alias: 'P',
+    description: 'The server protocol to use {h2, https/1.1, http/1.1}.' +
+      ' Defaults to "http/1.1".',
+    defaultValue: 'http/1.1',
+    type: String,
+  },
+  {
+    name: 'key',
+    description: 'Path to TLS certificate private key file for https.' +
+      ' Defaults to "key.pem".',
+    defaultValue: 'key.pem',
+    type: String,
+  },
+  {
+    name: 'cert',
+    description: 'Path to TLS certificate file for https.' +
+      ' Defaults to "cert.pem".',
+    defaultValue: 'cert.pem',
+    type: String,
+  },
+  {
+    name: 'manifest',
+    description: 'Path to h2-push manifest',
+    type: String,
+  },
 ];
