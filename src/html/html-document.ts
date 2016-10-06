@@ -53,6 +53,8 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     }
     // dom5 locations are 1 based but ours are 0 based.
     const location = node.__location;
+
+    // element node
     if (isElementLocationInfo(location)) {
       return {
         file: this.url,
@@ -63,17 +65,35 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
         end: {line: location.endTag.line - 1, column: location.endTag.col - 1}
       };
     }
-    // text node value can provide accurate line and column count
+
+    // text node
     if (parse5.treeAdapters.default.isTextNode(node)) {
       const lines = (node.value || '').split(/\n/);
-      const lastLine = lines[lines.length - 1];
-      const endColumn = lines.length === 1 ? location.col + lastLine.length - 1 : lastLine.length;
+      const lastLineLength = lines[lines.length - 1].length;
+      const endColumn = lines.length === 1 ? location.col + lastLineLength - 1
+          : lastLineLength;
       return {
         file: this.url,
         start: {line: location.line - 1, column: location.col - 1},
         end: {line: location.line + lines.length - 2, column: endColumn}
       };
     }
+
+    // comment node
+    if (parse5.treeAdapters.default.isCommentNode(node)) {
+      const lines = (parse5.treeAdapters.default.getCommentNodeContent(node) ||
+          '').split(/\n/);
+      const lastLineLength = lines[lines.length - 1].length;
+      const endColumn = lines.length === 1 ? location.col + lastLineLength + 6
+          : lastLineLength + 3;
+      return {
+        file: this.url,
+        start: {line: location.line - 1, column: location.col - 1},
+        end: {line: location.line + lines.length - 2, column: endColumn}
+      };
+    }
+
+    // other node type, using LocationInfo
     return {
       file: this.url,
       // one indexed to zero indexed

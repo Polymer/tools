@@ -15,6 +15,7 @@
 import {assert} from 'chai';
 import * as dom5 from 'dom5';
 import * as fs from 'fs';
+import * as parse5 from 'parse5';
 import * as path from 'path';
 import {HtmlParser} from '../../html/html-parser';
 import {ParsedHtmlDocument} from '../../html/html-document';
@@ -28,7 +29,21 @@ suite('ParsedHtmlDocument', () => {
         path.resolve(__dirname, `../${url}`), 'utf8');
     const document: ParsedHtmlDocument = parser.parse(file, url);
 
-    test.skip('can report correct range for comments', () => {});
+    test('can report correct range for comments', () => {
+      const comments = dom5.nodeWalkAll(document.ast,
+          parse5.treeAdapters.default.isCommentNode);
+
+      assert.equal(comments.length, 2);
+      assert.deepEqual(document.sourceRangeForNode(comments![0]!), {
+        file: url, start: {line: 16, column: 4}, end: {line: 16, column: 32}
+      });
+
+      console.log(comments![1]!);
+
+      assert.deepEqual(document.sourceRangeForNode(comments![1]!), {
+        file: url, start: {line: 17, column: 4}, end: {line: 19, column: 20}
+      });
+    });
 
     test.skip('can report correct range for elements', () => {
       // TODO(usergenic): If element source range includes their children,
