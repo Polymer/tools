@@ -47,14 +47,37 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     });
   }
 
-  _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
-    if (!node || !node.__location) {
-      return;
-    }
-    // dom5 locations are 1 based but ours are 0 based.
+  // For multi-line comment nodes, we must calculate the ending line and
+  // column ourselves.
+  _sourceRangeForCommentNode(node: ASTNode): SourceRange|undefined {
     const location = node.__location;
 
-    // element node
+    if (!location || isElementLocationInfo(location) ||
+        !parse5.treeAdapters.default.isCommentNode(node)) {
+      return;
+    }
+
+    const lines = (parse5.treeAdapters.default.getCommentNodeContent(node) ||
+        '').split(/\n/);
+    const endLength = lines[lines.length - 1].length;
+
+    // Adjust length for single-line comment by 6 for `<!---->` and adjust by 3
+    // for multi-line comment for `-->` only.
+    const endColumn =
+        lines.length === 1 ? location.col + endLength + 6 : endLength + 3;
+    return {
+      file: this.url,
+      start: {line: location.line - 1, column: location.col - 1},
+      end: {line: location.line + lines.length - 2, column: endColumn}
+    };
+  }
+
+  // An element node with end tag information will produce a source range that
+  // includes the closing tag.  It is assumed for offset calculation that the
+  // closing tag is always of the expected `</${tagName}>` form.
+  _sourceRangeForElementWithEndTag(node: ASTNode): SourceRange|undefined {
+    const location = node.__location;
+
     if (isElementLocationInfo(location)) {
       return {
         file: this.url,
@@ -62,46 +85,80 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
           line: location.startTag.line - 1,
           column: location.startTag.col - 1
         },
-        end: {line: location.endTag.line - 1, column: location.endTag.col - 1}
+        end: {
+          line: location.endTag.line - 1,
+          column: location.endTag.col + (node.tagName || '').length + 2
+        }
       };
     }
+  }
 
-    // text node
-    if (parse5.treeAdapters.default.isTextNode(node)) {
-      const lines = (node.value || '').split(/\n/);
-      const lastLineLength = lines[lines.length - 1].length;
-      const endColumn = lines.length === 1 ? location.col + lastLineLength - 1
-          : lastLineLength;
-      return {
-        file: this.url,
-        start: {line: location.line - 1, column: location.col - 1},
-        end: {line: location.line + lines.length - 2, column: endColumn}
-      };
+  // For multi-line text nodes, we must calculate the ending line and column
+  // ourselves.
+  _sourceRangeForTextNode(node: ASTNode): SourceRange|undefined {
+    const location = node.__location;
+
+    if (!location || isElementLocationInfo(location) ||
+        !parse5.treeAdapters.default.isTextNode(node)) {
+      return;
     }
 
-    // comment node
+    const lines = (node.value || '').split(/\n/);
+    const endLength = lines[lines.length - 1].length;
+    const endColumn =
+        lines.length === 1 ? location.col + endLength - 1 : endLength;
+
+    return {
+      file: this.url,
+      start: {line: location.line - 1, column: location.col - 1},
+      end: {line: location.line + lines.length - 2, column: endColumn}
+    };
+  }
+
+  // dom5 locations are 1 based but ours are 0 based.
+  _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
+    const location = node.__location;
+    if (!node.__location) {
+      return;
+    }
     if (parse5.treeAdapters.default.isCommentNode(node)) {
-      const lines = (parse5.treeAdapters.default.getCommentNodeContent(node) ||
-          '').split(/\n/);
-      const lastLineLength = lines[lines.length - 1].length;
-      const endColumn = lines.length === 1 ? location.col + lastLineLength + 6
-          : lastLineLength + 3;
-      return {
-        file: this.url,
-        start: {line: location.line - 1, column: location.col - 1},
-        end: {line: location.line + lines.length - 2, column: endColumn}
-      };
+      return this._sourceRangeForCommentNode(node);
+    }
+    if (parse5.treeAdapters.default.isTextNode(node)) {
+      return this._sourceRangeForTextNode(node);
+    }
+    if (isElementLocationInfo(location)) {
+      return this._sourceRangeForElementWithEndTag(node);
     }
 
-    // other node type, using LocationInfo
+    // If the node has child nodes, lets work out the end of its source range
+    // based on what we can find out about its last child.  This can be done
+    // recursively.
+    if (node.childNodes && node.childNodes.length > 0) {
+      const lastChild = node.childNodes[node.childNodes.length - 1];
+      const lastRange = this._sourceRangeForNode(lastChild);
+      if (lastRange) {
+        return {
+          file: this.url,
+          start: {line: location.line - 1, column: location.col - 1},
+          end: lastRange.end
+        };
+      }
+    }
+
+    // Fallback to determining the node's dimensions by serializing it.
+    const serialized = parse5.serialize(node);
+    const lines = serialized.split(/\n/);
+    const tagLength = node.tagName ? node.tagName.length + 2 : 0;
+    const endLength = lines[lines.length - 1].length;
+    const endColumn = lines.length === 1 ?
+        location.col + tagLength + endLength - 1 : endLength;
+
     return {
       file: this.url,
       // one indexed to zero indexed
       start: {line: location.line - 1, column: location.col - 1},
-      end: {
-        line: location.line - 1,
-        column: location.col + (location.endOffset - location.startOffset) - 1
-      }
+      end: {line: location.line + lines.length - 2, column: endColumn}
     };
   }
 

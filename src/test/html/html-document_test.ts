@@ -30,6 +30,7 @@ suite('ParsedHtmlDocument', () => {
     const document: ParsedHtmlDocument = parser.parse(file, url);
 
     test('can report correct range for comments', () => {
+
       const comments = dom5.nodeWalkAll(document.ast,
           parse5.treeAdapters.default.isCommentNode);
 
@@ -38,20 +39,58 @@ suite('ParsedHtmlDocument', () => {
         file: url, start: {line: 16, column: 4}, end: {line: 16, column: 32}
       });
 
-      console.log(comments![1]!);
-
       assert.deepEqual(document.sourceRangeForNode(comments![1]!), {
         file: url, start: {line: 17, column: 4}, end: {line: 19, column: 20}
       });
+
     });
 
-    test.skip('can report correct range for elements', () => {
-      // TODO(usergenic): If element source range includes their children,
-      // shouldn't they extend to include their closing tag as well?  They
-      // don't do so currently.  Add test after we discuss/and/or fix.
+    test('can report correct range for elements', () => {
+
+      const liTags = dom5.queryAll(document.ast,
+          dom5.predicates.hasTagName('li'));
+
+      assert.equal(liTags.length, 4);
+
+      // The first <li> tag has no end tag.
+      assert.deepEqual(document.sourceRangeForNode(liTags[0]!), {
+        file: url, start: {line: 26, column: 8}, end: {line: 27, column: 8}
+      });
+
+      // The second <li> tag has an end tag.
+      assert.deepEqual(document.sourceRangeForNode(liTags[1]!), {
+        file: url, start: {line: 27, column: 8}, end: {line: 27, column: 18}
+      });
+
+      // The third <li> tag has no end tag and no child nodes.
+      assert.deepEqual(document.sourceRangeForNode(liTags[2]!), {
+        file: url, start: {line: 28, column: 8}, end: {line: 28, column: 12}
+      });
+
+      // The fourth <li> tag starts immediately after the third, and it also
+      // has no end tag.
+      assert.deepEqual(document.sourceRangeForNode(liTags[3]!), {
+        file: url, start: {line: 28, column: 12}, end: {line: 29, column: 6}
+      });
+
+      const pTags = dom5.queryAll(document.ast,
+          dom5.predicates.hasTagName('p'));
+      assert.equal(pTags.length, 2);
+
+      // The first <p> tag has no end tag.
+      assert.deepEqual(document.sourceRangeForNode(pTags[0]!), {
+        file: url, start: {line: 13, column: 4}, end: {line: 15, column: 4}
+      });
+
+      // The second <p> tag has an end tag.
+      assert.deepEqual(document.sourceRangeForNode(pTags[1]!), {
+        file: url, start: {line: 15, column: 4}, end: {line: 15, column: 50}
+      });
+
     });
 
     test('can report correct range for text nodes', () => {
+
       const titleTag = dom5.query(document.ast,
           dom5.predicates.hasTagName('title'))!;
 
@@ -76,6 +115,7 @@ suite('ParsedHtmlDocument', () => {
       assert.deepEqual(document.sourceRangeForNode(pTags[1]!.childNodes![0]!), {
         file: url, start: {line: 15, column: 7}, end: {line: 15, column: 46}
       });
+
     });
   });
 });
