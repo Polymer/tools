@@ -63,6 +63,17 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
         end: {line: location.endTag.line - 1, column: location.endTag.col - 1}
       };
     }
+    // text node value can provide accurate line and column count
+    if (parse5.treeAdapters.default.isTextNode(node)) {
+      const lines = (node.value || '').split(/\n/);
+      const lastLine = lines[lines.length - 1];
+      const endColumn = lines.length === 1 ? location.col + lastLine.length - 1 : lastLine.length;
+      return {
+        file: this.url,
+        start: {line: location.line - 1, column: location.col - 1},
+        end: {line: location.line + lines.length - 2, column: endColumn}
+      };
+    }
     return {
       file: this.url,
       // one indexed to zero indexed
