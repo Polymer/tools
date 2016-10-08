@@ -33,6 +33,17 @@ const dumbNameWarning: Warning = {
   }
 };
 
+const goodJobWarning: Warning = {
+  message: 'Good job with this observedAttributes getter.',
+  code: 'cool-observed-attributes',
+  severity: Severity.INFO,
+  sourceRange: {
+    file: 'vanilla-elements.js',
+    start: {line: 22, column: 2},
+    end: {line: 29, column: 3}
+  }
+};
+
 const staticTestDir = path.join(__dirname, '../static');
 
 suite('WarningPrinter', () => {
@@ -49,7 +60,7 @@ suite('WarningPrinter', () => {
 
   test('can handle printing no warnings', async() => {
     await printer.printWarnings([]);
-    assert.equal(output.toString(), '');
+    assert.deepEqual(output.toString(), '');
   });
 
   test('can format and print a basic warning', async() => {
@@ -61,7 +72,7 @@ class ClassDeclaration extends HTMLElement {}
 
 vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for an element.
 `;
-    assert.equal(actual, expected);
+    assert.deepEqual(actual, expected);
   });
 
   test('can format and print one-line warnings', async() => {
@@ -71,7 +82,7 @@ vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for a
     const actual = output.toString();
     const expected =
         `vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for an element.\n`;
-    assert.equal(actual, expected);
+    assert.deepEqual(actual, expected);
   });
 
   test('it adds color if configured to do so', async() => {
@@ -85,6 +96,32 @@ class ClassDeclaration extends HTMLElement {}
 
 vanilla-elements.js(0,6) \u001b[33mwarning\u001b[39m [dumb-element-name] - This is a dumb name for an element.
 `;
-    assert.equal(actual, expected);
+    assert.deepEqual(actual, expected);
+  });
+
+  test('it can print a multiline range', async() => {
+    await printer.printWarnings([goodJobWarning]);
+    const actual = output.toString();
+    const expected = `
+  static get observedAttributes() {
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    return [
+~~~~~~~~~~~~
+      /** @type {boolean} When given the element is totally inactive */
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      'disabled',
+~~~~~~~~~~~~~~~~~
+      /** @type {boolean} When given the element is expanded */
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      'open', 'foo', 'bar'
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ];
+~~~~~~
+  }
+~~~
+
+vanilla-elements.js(22,2) info [cool-observed-attributes] - Good job with this observedAttributes getter.
+`;
+    assert.deepEqual(actual, expected);
   });
 });
