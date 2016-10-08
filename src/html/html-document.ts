@@ -58,7 +58,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     }
 
     const lines = (parse5.treeAdapters.default.getCommentNodeContent(node) ||
-        '').split(/\n/);
+                   '').split(/\n/);
     const endLength = lines[lines.length - 1].length;
 
     // Adjust length for single-line comment by 6 for `<!---->` and adjust by 3
@@ -127,6 +127,9 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     if (parse5.treeAdapters.default.isTextNode(node)) {
       return this._sourceRangeForTextNode(node);
     }
+    if (voidTagNames.has(node.tagName || '')) {
+      return this.sourceRangeForStartTag(node);
+    }
     if (isElementLocationInfo(location)) {
       return this._sourceRangeForElementWithEndTag(node);
     }
@@ -152,7 +155,8 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     const tagLength = node.tagName ? node.tagName.length + 2 : 0;
     const endLength = lines[lines.length - 1].length;
     const endColumn = lines.length === 1 ?
-        location.col + tagLength + endLength - 1 : endLength;
+        location.col + tagLength + endLength - 1 :
+        endLength;
 
     return {
       file: this.url,
@@ -164,30 +168,94 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
 
   sourceRangeForAttribute(node: ASTNode, attrName: string): SourceRange
       |undefined {
-    if (!node || !node.__location) {
+    return this._getSourceRangeForLocation(
+        getAttributeLocation(node, attrName));
+  }
+  sourceRangeForAttributeName(node: ASTNode, attrName: string): SourceRange
+      |undefined {
+    const range = this.sourceRangeForAttribute(node, attrName);
+    if (!range) {
       return;
     }
-    let attrs: parse5.AttributesLocationInfo|undefined = undefined;
-    if (node.__location['startTag'] && node.__location['startTag'].attrs) {
-      attrs = node.__location['startTag'].attrs;
-    } else if (node.__location['attrs']) {
-      attrs = node.__location['attrs'];
-    }
-    if (!attrs) {
+    // The attribute name can't have any spaces, newlines, or other funny
+    // business in it, so this is pretty simple.
+    range.end.line = range.start.line;
+    range.end.column = range.start.column + attrName.length;
+    return range;
+  }
+
+  sourceRangeForAttributeValue(node: ASTNode, attrName: string): SourceRange
+      |undefined {
+    const range = this.sourceRangeForAttribute(node, attrName);
+    if (!range) {
       return;
     }
-    const attrLocation = attrs[attrName];
-    if (!attrLocation) {
+    // For boolean attributes, with no value, treat the attribute name as the
+    // value.
+    if ((range.start.line === range.end.line) &&
+        (range.end.column - range.start.column === attrName.length)) {
+      return range;
+    }
+    const location = getAttributeLocation(node, attrName)!;
+    // This is complex because there may be whitespace around the = sign.
+    const fullAttribute =
+        this.contents.substring(location.startOffset, location.endOffset);
+    const equalsIndex = fullAttribute.indexOf('=');
+    if (equalsIndex === -1) {
+      // This is super weird and shouldn't happen, but it's probably better to
+      // just return the most reasonable thing we have here rather than
+      // throwing.
+      return range;
+    }
+    const whitespaceAfterEquals =
+        fullAttribute.substring(equalsIndex + 1).match(/[\s\n]*/)![0]!;
+    const textToSkip = this.contents.substring(
+        location.startOffset,
+        // the beginning of the attribute key value pair
+        location.startOffset +
+            // everything up to the equals sign
+            equalsIndex +
+            // plus one for the equals sign
+            1 +
+            // plus all the whitespace after the equals sign
+            whitespaceAfterEquals.length);
+    const lines = textToSkip.split('\n');
+    const lastLineToSkip = lines[lines.length - 1]!;
+    range.start.line += lines.length - 1;
+    range.start.column = lines.length > 1 ?
+        lastLineToSkip.length :
+        range.start.column + lastLineToSkip.length;
+    return range;
+  }
+
+  sourceRangeForStartTag(node: ASTNode): SourceRange|undefined {
+    return this._getSourceRangeForLocation(getStartTagLocation(node));
+  }
+
+  sourceRangeForEndTag(node: ASTNode): SourceRange|undefined {
+    return this._getSourceRangeForLocation(getEndTagLocation(node));
+  }
+
+
+
+  private _getSourceRangeForLocation(location: parse5.LocationInfo|
+                                     undefined): SourceRange|undefined {
+    if (!location) {
       return;
     }
+    const content =
+        this.contents.substring(location.startOffset, location.endOffset);
+    const lines = content.split('\n');
+    const lastLine = lines[lines.length - 1]!;
+    const startLine = location.line - 1;
+    const endLine = location.line + (lines.length - 2);
+    const endColOffset = (startLine === endLine) ? location.col - 1 : 0;
+
     return {
       file: this.url,
-      start: {line: attrLocation.line - 1, column: attrLocation.col - 1},
-      end: {
-        line: attrLocation.line - 1,
-        column: attrLocation.col +
-            (attrLocation.endOffset - attrLocation.startOffset) - 1
-      }
+      // one indexed to zero indexed
+      start: {line: startLine, column: location.col - 1},
+      end: {line: endLine, column: lastLine.length + endColOffset}
     };
   }
 
@@ -247,3 +315,48 @@ function isElementLocationInfo(location: parse5.LocationInfo|
     location is parse5.ElementLocationInfo {
   return location['startTag'] && location['endTag'];
 }
+
+function getStartTagLocation(node: parse5.ASTNode): parse5.LocationInfo|
+    undefined {
+  if (voidTagNames.has(node.tagName || '')) {
+    return node.__location as parse5.LocationInfo;
+  }
+  if ('startTag' in node.__location) {
+    return (node.__location as parse5.ElementLocationInfo).startTag;
+  }
+}
+
+function getEndTagLocation(node: parse5.ASTNode): parse5.LocationInfo|
+    undefined {
+  if ('endTag' in node.__location) {
+    return (node.__location as parse5.ElementLocationInfo).endTag;
+  }
+}
+
+function getAttributeLocation(
+    node: parse5.ASTNode, attrName: string): parse5.LocationInfo|undefined {
+  if (!node || !node.__location) {
+    return;
+  }
+  let attrs: parse5.AttributesLocationInfo|undefined = undefined;
+  if (node.__location['startTag'] && node.__location['startTag'].attrs) {
+    attrs = node.__location['startTag'].attrs;
+  } else if (node.__location['attrs']) {
+    attrs = node.__location['attrs'];
+  }
+  if (!attrs) {
+    return;
+  }
+  return attrs[attrName];
+}
+
+/**
+ * HTML5 treats these tags as *always* self-closing. This is relevant for
+ * getting start tag information.
+ *
+ * Source: https://www.w3.org/TR/html5/syntax.html#void-elements
+ */
+const voidTagNames = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link',
+  'meta', 'param', 'source', 'track', 'wbr'
+]);

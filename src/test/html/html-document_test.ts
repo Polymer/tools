@@ -17,105 +17,501 @@ import * as dom5 from 'dom5';
 import * as fs from 'fs';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {HtmlParser} from '../../html/html-parser';
+
+import {Analyzer} from '../../analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
+import {HtmlParser} from '../../html/html-parser';
+import {SourceRange} from '../../model/model';
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {WarningPrinter} from '../../warning/warning-printer';
 
 suite('ParsedHtmlDocument', () => {
+  const parser: HtmlParser = new HtmlParser();
+  const url = './source-ranges/html-complicated.html';
+  const basedir = path.join(__dirname, '../static/');
+  const file = fs.readFileSync(path.join(basedir, `${url}`), 'utf8');
+  const document: ParsedHtmlDocument = parser.parse(file, url);
+  const analyzer = new Analyzer({urlLoader: new FSUrlLoader(basedir)});
+  const warningPrinter = new WarningPrinter(null as any, {analyzer});
+
+  const getUnderlinedText = async(range: SourceRange | undefined) => {
+    if (range == null) {
+      return 'No source range produced.';
+    }
+    return '\n' + await warningPrinter.getUnderlinedText(range);
+  };
 
   suite('sourceRangeForNode()', () => {
-    const parser: HtmlParser = new HtmlParser();
-    const url = '/static/source-ranges/html-complicated.html';
-    const file = fs.readFileSync(
-        path.resolve(__dirname, `../${url}`), 'utf8');
-    const document: ParsedHtmlDocument = parser.parse(file, url);
 
-    test('can report correct range for comments', () => {
-
-      const comments = dom5.nodeWalkAll(document.ast,
-          parse5.treeAdapters.default.isCommentNode);
+    test('works for comments', async() => {
+      const comments = dom5.nodeWalkAll(
+          document.ast, parse5.treeAdapters.default.isCommentNode);
 
       assert.equal(comments.length, 2);
-      assert.deepEqual(document.sourceRangeForNode(comments![0]!), {
-        file: url, start: {line: 16, column: 4}, end: {line: 16, column: 32}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(comments![0]!)), `
+    <!-- Single Line Comment -->
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
 
-      assert.deepEqual(document.sourceRangeForNode(comments![1]!), {
-        file: url, start: {line: 17, column: 4}, end: {line: 19, column: 20}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(comments![1]!)), `
+    <!-- Multiple
+    ~~~~~~~~~~~~~
+         Line
+~~~~~~~~~~~~~
+         Comment -->
+~~~~~~~~~~~~~~~~~~~~`);
 
     });
 
-    test('can report correct range for elements', () => {
+    test('works for elements', async() => {
 
-      const liTags = dom5.queryAll(document.ast,
-          dom5.predicates.hasTagName('li'));
+      const liTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'));
 
       assert.equal(liTags.length, 4);
 
-      // The first <li> tag has no end tag.
-      assert.deepEqual(document.sourceRangeForNode(liTags[0]!), {
-        file: url, start: {line: 26, column: 8}, end: {line: 27, column: 8}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(liTags[0]!)), `
+        <li>1
+        ~~~~~
+        <li>2</li>
+~~~~~~~~`);
 
-      // The second <li> tag has an end tag.
-      assert.deepEqual(document.sourceRangeForNode(liTags[1]!), {
-        file: url, start: {line: 27, column: 8}, end: {line: 27, column: 18}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(liTags[1]!)), `
+        <li>2</li>
+        ~~~~~~~~~~`);
 
-      // The third <li> tag has no end tag and no child nodes.
-      assert.deepEqual(document.sourceRangeForNode(liTags[2]!), {
-        file: url, start: {line: 28, column: 8}, end: {line: 28, column: 12}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(liTags[2]!)), `
+        <li><li>
+        ~~~~`);
 
-      // The fourth <li> tag starts immediately after the third, and it also
-      // has no end tag.
-      assert.deepEqual(document.sourceRangeForNode(liTags[3]!), {
-        file: url, start: {line: 28, column: 12}, end: {line: 29, column: 6}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(liTags[3]!)), `
+        <li><li>
+            ~~~~
+      </ul>
+~~~~~~`);
 
-      const pTags = dom5.queryAll(document.ast,
-          dom5.predicates.hasTagName('p'));
+      const pTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('p'));
       assert.equal(pTags.length, 2);
 
-      // The first <p> tag has no end tag.
-      assert.deepEqual(document.sourceRangeForNode(pTags[0]!), {
-        file: url, start: {line: 13, column: 4}, end: {line: 15, column: 4}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(pTags[0]!)), `
+    <p>
+    ~~~
+      This is a paragraph without a closing tag.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    <p>This is a paragraph with a closing tag.</p>
+~~~~`);
 
-      // The second <p> tag has an end tag.
-      assert.deepEqual(document.sourceRangeForNode(pTags[1]!), {
-        file: url, start: {line: 15, column: 4}, end: {line: 15, column: 50}
-      });
-
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(pTags[1]!)), `
+    <p>This is a paragraph with a closing tag.</p>
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
     });
 
-    test('can report correct range for text nodes', () => {
+    test('works for void elements', async() => {
+      const linkTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+      assert.equal(linkTags.length, 2);
 
-      const titleTag = dom5.query(document.ast,
-          dom5.predicates.hasTagName('title'))!;
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(linkTags[0]!)), `
+    <link rel="has attributes">
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
 
-      // The <title> tag text node child is multiple lines and the end tag is
-      // indented 8 spaces.
-      assert.deepEqual(document.sourceRangeForNode(titleTag!.childNodes![0]!), {
-        file: url, start: {line: 3, column: 11}, end: {line: 6, column: 8}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(linkTags[1]!)), `
+    <link rel="multiline ones too"
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          foo=bar>
+~~~~~~~~~~~~~~~~~~`);
+    });
 
-      const pTags = dom5.queryAll(document.ast,
-          dom5.predicates.hasTagName('p'));
+    test('works for text nodes', async() => {
+      const titleTag =
+          dom5.query(document.ast, dom5.predicates.hasTagName('title'))!;
+
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForNode(titleTag!.childNodes![0]!)),
+          `
+    <title>
+           ~
+      This title is a little
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      complicated.
+~~~~~~~~~~~~~~~~~~
+        </title>
+~~~~~~~~`);
+
+      const pTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('p'));
       assert.equal(pTags.length, 2);
 
-      // The first <p> tag text node child is multiple lines and there is no
-      // end tag.  The next <p> tag is indended 4 spaces.
-      assert.deepEqual(document.sourceRangeForNode(pTags[0]!.childNodes![0]!), {
-        file: url, start: {line: 13, column: 7}, end: {line: 15, column: 4}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForNode(pTags[0]!.childNodes![0]!)),
+          `
+    <p>
+       ~
+      This is a paragraph without a closing tag.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    <p>This is a paragraph with a closing tag.</p>
+~~~~`);
 
-      // The second <p> tag text node child is single line, terminated by a
-      // closing tag.
-      assert.deepEqual(document.sourceRangeForNode(pTags[1]!.childNodes![0]!), {
-        file: url, start: {line: 15, column: 7}, end: {line: 15, column: 46}
-      });
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForNode(pTags[1]!.childNodes![0]!)),
+          `
+    <p>This is a paragraph with a closing tag.</p>
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+    });
+  });
 
+  suite('sourceRangeForStartTag', () => {
+    test('it works for tags with no attributes', async() => {
+      const liTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'));
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForStartTag(liTags[0]!)),
+          `
+        <li>1
+        ~~~~`);
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForStartTag(liTags[1]!)),
+          `
+        <li>2</li>
+        ~~~~`);
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForStartTag(liTags[2]!)),
+          `
+        <li><li>
+        ~~~~`);
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForStartTag(liTags[3]!)),
+          `
+        <li><li>
+            ~~~~`);
+    });
+
+    test('it works for void tags with no attributes', async() => {
+      const brTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('br'));
+      assert.equal(brTags.length, 1);
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForStartTag(brTags[0]!)),
+          `
+    <br>
+    ~~~~`);
+    });
+
+    test('it works for void tags with attributes', async() => {
+      const linkTags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+      assert.equal(linkTags.length, 2);
+
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForStartTag(linkTags[0]!)),
+          `
+    <link rel="has attributes">
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForStartTag(linkTags[1]!)),
+          `
+    <link rel="multiline ones too"
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          foo=bar>
+~~~~~~~~~~~~~~~~~~`);
+    });
+
+    test('it works for normal elements with attributes', async() => {
+      const h1Tags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('h1'));
+      assert.equal(h1Tags.length, 2);
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForStartTag(h1Tags[1]!)),
+          `
+    <h1 class="foo" id="bar">
+    ~~~~~~~~~~~~~~~~~~~~~~~~~`);
+
+      const complexTags = dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      assert.equal(complexTags.length, 1);
+
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForStartTag(complexTags[0]!)),
+          `
+    <complex-tag boolean-attr
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+                 string-attr="like this"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                 multi-line-attr="
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    can go on
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    for multiple lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                "
+~~~~~~~~~~~~~~~~~
+                whitespace-around-equals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                =
+~~~~~~~~~~~~~~~~~
+                "yes this is legal">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+    });
+  });
+  suite('sourceRangeForEndTag', () => {
+    test('it works for normal elements', async() => {
+      const h1Tags =
+          dom5.queryAll(document.ast, dom5.predicates.hasTagName('h1'));
+      assert.equal(h1Tags.length, 2);
+
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForEndTag(h1Tags[1]!)), `
+    </h1>
+    ~~~~~`);
+
+      const complexTags = dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      assert.equal(complexTags.length, 1);
+
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForEndTag(complexTags[0]!)),
+          `
+    </complex-tag
+    ~~~~~~~~~~~~~
+      >
+~~~~~~~`);
+    });
+  });
+
+  suite('sourceRangeForAttribute', () => {
+    const complexTags =
+        dom5.queryAll(document.ast, dom5.predicates.hasTagName('complex-tag'));
+    assert.equal(complexTags.length, 1);
+
+    test('works for boolean attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttribute(
+              complexTags[0]!, 'boolean-attr')),
+          `
+    <complex-tag boolean-attr
+                 ~~~~~~~~~~~~`);
+    });
+
+    test('works for one line string attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(
+              document.sourceRangeForAttribute(complexTags[0]!, 'string-attr')),
+          `
+                 string-attr="like this"
+                 ~~~~~~~~~~~~~~~~~~~~~~~`);
+    });
+
+    test('works for multiline string attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttribute(
+              complexTags[0]!, 'multi-line-attr')),
+          `
+                 multi-line-attr="
+                 ~~~~~~~~~~~~~~~~~
+                    can go on
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    for multiple lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                "
+~~~~~~~~~~~~~~~~~`);
+    });
+
+    test(
+        'works for attributes with whitespace around the equals sign',
+        async() => {
+          assert.deepEqual(
+              await getUnderlinedText(document.sourceRangeForAttribute(
+                  complexTags[0]!, 'whitespace-around-equals')),
+              `
+                whitespace-around-equals
+                ~~~~~~~~~~~~~~~~~~~~~~~~
+                =
+~~~~~~~~~~~~~~~~~
+                "yes this is legal">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+        });
+
+    suite('for a void element', async() => {
+      test('works for a string attribute', async() => {
+        const linkTags =
+            dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+        assert.equal(linkTags.length, 2);
+
+        assert.deepEqual(
+            await getUnderlinedText(
+                document.sourceRangeForAttribute(linkTags[0]!, 'rel')),
+            `
+    <link rel="has attributes">
+          ~~~~~~~~~~~~~~~~~~~~`);
+
+        assert.deepEqual(
+            await getUnderlinedText(
+                document.sourceRangeForAttribute(linkTags[1]!, 'foo')),
+            `
+          foo=bar>
+          ~~~~~~~`);
+      });
+    });
+  });
+
+  suite('sourceRangeForAttributeName', () => {
+    const complexTags =
+        dom5.queryAll(document.ast, dom5.predicates.hasTagName('complex-tag'));
+    assert.equal(complexTags.length, 1);
+
+    test('works for boolean attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttributeName(
+              complexTags[0]!, 'boolean-attr')),
+          `
+    <complex-tag boolean-attr
+                 ~~~~~~~~~~~~`);
+    });
+
+    test('works for one line string attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttributeName(
+              complexTags[0]!, 'string-attr')),
+          `
+                 string-attr="like this"
+                 ~~~~~~~~~~~`);
+    });
+
+    test('works for multiline string attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttributeName(
+              complexTags[0]!, 'multi-line-attr')),
+          `
+                 multi-line-attr="
+                 ~~~~~~~~~~~~~~~`);
+    });
+    test(
+        'works for attributes with whitespace around the equals sign',
+        async() => {
+          assert.deepEqual(
+              await getUnderlinedText(document.sourceRangeForAttributeName(
+                  complexTags[0]!, 'whitespace-around-equals')),
+              `
+                whitespace-around-equals
+                ~~~~~~~~~~~~~~~~~~~~~~~~`);
+        });
+
+    suite('for a void element', async() => {
+      test('works for a string attribute', async() => {
+        const linkTags =
+            dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+        assert.equal(linkTags.length, 2);
+
+        assert.deepEqual(
+            await getUnderlinedText(
+                document.sourceRangeForAttributeName(linkTags[0]!, 'rel')),
+            `
+    <link rel="has attributes">
+          ~~~`);
+
+        assert.deepEqual(
+            await getUnderlinedText(
+                document.sourceRangeForAttributeName(linkTags[1]!, 'foo')),
+            `
+          foo=bar>
+          ~~~`);
+      });
+    });
+  });
+
+  suite('sourceRangeForAttributeValue', () => {
+    const complexTags =
+        dom5.queryAll(document.ast, dom5.predicates.hasTagName('complex-tag'));
+    assert.equal(complexTags.length, 1);
+
+    test('works for boolean attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttributeValue(
+              complexTags[0]!, 'boolean-attr')),
+          `
+    <complex-tag boolean-attr
+                 ~~~~~~~~~~~~`);
+    });
+
+    test('works for one line string attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttributeValue(
+              complexTags[0]!, 'string-attr')),
+          `
+                 string-attr="like this"
+                             ~~~~~~~~~~~`);
+    });
+
+    test('works for multiline string attributes', async() => {
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForAttributeValue(
+              complexTags[0]!, 'multi-line-attr')),
+          `
+                 multi-line-attr="
+                                 ~
+                    can go on
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    for multiple lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                "
+~~~~~~~~~~~~~~~~~`);
+    });
+
+    test(
+        'works for attributes with whitespace around the equals sign',
+        async() => {
+          assert.deepEqual(
+              await getUnderlinedText(document.sourceRangeForAttributeValue(
+                  complexTags[0]!, 'whitespace-around-equals')),
+              `
+                "yes this is legal">
+                ~~~~~~~~~~~~~~~~~~~`);
+        });
+
+    suite('for a void element', async() => {
+      test('works for a string attribute', async() => {
+        const linkTags =
+            dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+        assert.equal(linkTags.length, 2);
+
+        assert.deepEqual(
+            await getUnderlinedText(
+                document.sourceRangeForAttributeValue(linkTags[0]!, 'rel')),
+            `
+    <link rel="has attributes">
+              ~~~~~~~~~~~~~~~~`);
+
+        assert.deepEqual(
+            await getUnderlinedText(
+                document.sourceRangeForAttributeValue(linkTags[1]!, 'foo')),
+            `
+          foo=bar>
+              ~~~`);
+      });
     });
   });
 });
