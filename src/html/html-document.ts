@@ -49,7 +49,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
 
   // For multi-line comment nodes, we must calculate the ending line and
   // column ourselves.
-  _sourceRangeForCommentNode(node: ASTNode): SourceRange|undefined {
+  protected _sourceRangeForCommentNode(node: ASTNode): SourceRange|undefined {
     const location = node.__location;
 
     if (!location || isElementLocationInfo(location) ||
@@ -75,7 +75,8 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
   // An element node with end tag information will produce a source range that
   // includes the closing tag.  It is assumed for offset calculation that the
   // closing tag is always of the expected `</${tagName}>` form.
-  _sourceRangeForElementWithEndTag(node: ASTNode): SourceRange|undefined {
+  protected _sourceRangeForElementWithEndTag(node: ASTNode): SourceRange
+      |undefined {
     const location = node.__location;
 
     if (isElementLocationInfo(location)) {
@@ -95,7 +96,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
 
   // For multi-line text nodes, we must calculate the ending line and column
   // ourselves.
-  _sourceRangeForTextNode(node: ASTNode): SourceRange|undefined {
+  protected _sourceRangeForTextNode(node: ASTNode): SourceRange|undefined {
     const location = node.__location;
 
     if (!location || isElementLocationInfo(location) ||
@@ -116,7 +117,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
   }
 
   // dom5 locations are 1 based but ours are 0 based.
-  _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
+  protected _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
     const location = node.__location;
     if (!node.__location) {
       return;
@@ -139,7 +140,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     // recursively.
     if (node.childNodes && node.childNodes.length > 0) {
       const lastChild = node.childNodes[node.childNodes.length - 1];
-      const lastRange = this._sourceRangeForNode(lastChild);
+      const lastRange = this.sourceRangeForNode(lastChild);
       if (lastRange) {
         return {
           file: this.url,
@@ -149,21 +150,11 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       }
     }
 
-    // Fallback to determining the node's dimensions by serializing it.
-    const serialized = parse5.serialize(node);
-    const lines = serialized.split(/\n/);
-    const tagLength = node.tagName ? node.tagName.length + 2 : 0;
-    const endLength = lines[lines.length - 1].length;
-    const endColumn = lines.length === 1 ?
-        location.col + tagLength + endLength - 1 :
-        endLength;
+    if ('attrs' in location) {
+      return this.sourceRangeForStartTag(node);
+    }
 
-    return {
-      file: this.url,
-      // one indexed to zero indexed
-      start: {line: location.line - 1, column: location.col - 1},
-      end: {line: location.line + lines.length - 2, column: endColumn}
-    };
+    return this._getSourceRangeForLocation(location);
   }
 
   sourceRangeForAttribute(node: ASTNode, attrName: string): SourceRange
@@ -190,11 +181,10 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     if (!range) {
       return;
     }
-    // For boolean attributes, with no value, treat the attribute name as the
-    // value.
+    // This is an attribute without a value.
     if ((range.start.line === range.end.line) &&
         (range.end.column - range.start.column === attrName.length)) {
-      return range;
+      return undefined;
     }
     const location = getAttributeLocation(node, attrName)!;
     // This is complex because there may be whitespace around the = sign.
@@ -205,7 +195,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       // This is super weird and shouldn't happen, but it's probably better to
       // just return the most reasonable thing we have here rather than
       // throwing.
-      return range;
+      return undefined;
     }
     const whitespaceAfterEquals =
         fullAttribute.substring(equalsIndex + 1).match(/[\s\n]*/)![0]!;
@@ -323,6 +313,13 @@ function getStartTagLocation(node: parse5.ASTNode): parse5.LocationInfo|
   }
   if ('startTag' in node.__location) {
     return (node.__location as parse5.ElementLocationInfo).startTag;
+  }
+  // Sometimes parse5 throws an attrs attribute on a location info that seems
+  // to correspond to an unclosed tag with attributes but no children.
+  // In that case, the node's location corresponds to the start tag. In other
+  // cases though, node.__location will include children.
+  if ('attrs' in node.__location) {
+    return node.__location as parse5.LocationInfo;
   }
 }
 

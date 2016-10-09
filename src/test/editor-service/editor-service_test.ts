@@ -353,6 +353,15 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               indexFile, localAttributePosition),
           attributeTypeahead);
     });
+
+    test(`Don't give HTML completions inside of script tags.`, async() => {
+      await editorService.fileChanged(
+          indexFile, '<script>\n\n</script>\n' + indexContents);
+      const completions = await editorService.getTypeaheadCompletionsAtPosition(
+          indexFile, {line: 1, column: 0});
+      assert.deepEqual(completions, undefined);
+    });
+
   });
 
   suite('getWarningsForFile', function() {

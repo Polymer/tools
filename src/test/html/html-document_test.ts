@@ -114,6 +114,19 @@ suite('ParsedHtmlDocument', () => {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
     });
 
+    let testName =
+        'works for unclosed tags with attributes and no text content';
+    test(testName, async() => {
+      let url = 'unclosed-tag-attributes.html';
+      const document = parser.parse(await analyzer.load(url), url);
+
+      const tag = dom5.query(document.ast, dom5.predicates.hasTagName('tag'))!;
+      assert.deepEqual(
+          await getUnderlinedText(document.sourceRangeForNode(tag)), `
+<tag attr>
+~~~~~~~~~~`);
+    });
+
     test('works for void elements', async() => {
       const linkTags =
           dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
@@ -448,13 +461,11 @@ suite('ParsedHtmlDocument', () => {
         dom5.queryAll(document.ast, dom5.predicates.hasTagName('complex-tag'));
     assert.equal(complexTags.length, 1);
 
-    test('works for boolean attributes', async() => {
+    test('returns undefined for boolean attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttributeValue(
-              complexTags[0]!, 'boolean-attr')),
-          `
-    <complex-tag boolean-attr
-                 ~~~~~~~~~~~~`);
+          document.sourceRangeForAttributeValue(
+              complexTags[0]!, 'boolean-attr'),
+          undefined);
     });
 
     test('works for one line string attributes', async() => {

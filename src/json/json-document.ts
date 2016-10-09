@@ -51,7 +51,7 @@ export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
     this.visit([{visit: callback}]);
   }
 
-  _sourceRangeForNode(_node: Json): SourceRange {
+  protected _sourceRangeForNode(_node: Json): SourceRange {
     throw new Error('Not Implemented.');
   }
 

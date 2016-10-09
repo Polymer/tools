@@ -60,7 +60,7 @@ export abstract class ParsedDocument<A, V> {
     return correctSourceRange(baseSource, this._locationOffset);
   };
 
-  abstract _sourceRangeForNode(node: A): SourceRange|undefined;
+  protected abstract _sourceRangeForNode(node: A): SourceRange|undefined;
 
   /**
    * Convert `this.ast` back into a string document.
