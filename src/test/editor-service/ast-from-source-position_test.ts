@@ -119,12 +119,12 @@ suite('getLocationInfoForPosition', () => {
     assert.equal(allKindsSpaceSeparated, 'text tagName tagName text text');
   });
 
-  test(`it can tell when it's inside a comment`, () => {
+  test(`works with comments`, () => {
     const allKindsSpaceSeparated = getAllKindsSpaceSeparated('<!-- foo -->');
     assert.match(allKindsSpaceSeparated, /^text (comment ){11}text$/);
   });
 
-  test(`it can tell when it's inside a script tag`, () => {
+  test(`works with script tags`, () => {
     let allKindsSpaceSeparated =
         getAllKindsSpaceSeparated('<script> </script>');
     assert.match(
@@ -137,7 +137,7 @@ suite('getLocationInfoForPosition', () => {
         /^text (tagName ){7}scriptTagContents (endTag ){8}text$/);
   });
 
-  test(`it can tell when it's inside a style tag`, () => {
+  test(`works with style tags`, () => {
     let allKindsSpaceSeparated = getAllKindsSpaceSeparated('<style> </style>');
     assert.match(
         allKindsSpaceSeparated,
@@ -147,6 +147,14 @@ suite('getLocationInfoForPosition', () => {
     assert.match(
         allKindsSpaceSeparated,
         /^text (tagName ){6}styleTagContents (endTag ){7}text$/);
+  });
+
+  test(`it can handle the contents of a template tag`, () => {
+    let allKindsSpaceSeparated =
+        getAllKindsSpaceSeparated('<template><t a=""> </t></template>');
+    assert.match(
+        allKindsSpaceSeparated,
+        /^text (tagName ){9}text (tagName ){2}(attribute ){2}(attributeValue ){3}(text ){2}(endTag ){3}text (endTag ){10}text$/);
   });
 
   /**

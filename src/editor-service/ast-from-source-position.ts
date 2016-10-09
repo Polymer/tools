@@ -239,9 +239,15 @@ function comparePositionAndRange(
 function _findLocationInChildren(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument) {
-  // TODO: if node is a template, dive into its contents
   for (const child of node.childNodes || []) {
     const result = _getLocationInfoForPosition(child, position, document);
+    if (result) {
+      return result;
+    }
+  }
+  if (node.tagName === 'template') {
+    const content = parse5.treeAdapters.default.getTemplateContent(node);
+    const result = _getLocationInfoForPosition(content, position, document);
     if (result) {
       return result;
     }
