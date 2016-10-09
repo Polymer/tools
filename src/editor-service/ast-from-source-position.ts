@@ -64,6 +64,16 @@ export interface LocatedInComment {
   kind: 'comment';
   commentNode: parse5.ASTNode;
 }
+
+/**
+ * Given a position and an HTML document, try to describe what new text typed
+ * at the given position would be.
+ *
+ * Where possible we try to return the ASTNode describing that position, but
+ * sometimes there does not actually exist one. (for a simple case, the empty
+ * string should be interpreted as a text node, but there is no text node in
+ * an empty document, but there would be after the first character was typed).
+ */
 export function getLocationInfoForPosition(
     document: ParsedHtmlDocument, position: SourcePosition): LocationResult {
   const location =
