@@ -40,9 +40,14 @@ export interface Options extends ElementOptions {}
 export class ScannedBehavior extends ScannedPolymerElement {
   tagName: undefined;
   className: string;
+
   constructor(options: Options) {
     super(options);
   }
+
+  // TODO(fks) 10-03-2016: Resolve & flatten dependent behaviors before
+  // resolving the ScannedBehavior itself. Add missing behaviors as warnings on
+  // _document.
   resolve(_document: Document) {
     return Object.assign(new Behavior(), this);
   }

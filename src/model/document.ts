@@ -54,7 +54,7 @@ export class Document implements Feature {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
   analyzer: Analyzer;
-  warnings: Warning[] = [];
+  warnings: Warning[];
 
   private _localFeatures = new Set<Feature>();
   private _scannedDocument: ScannedDocument;
@@ -88,7 +88,7 @@ export class Document implements Feature {
       this.identifiers.add(this.url);
     }
     this.kinds.add(`${this.parsedDocument.type}-document`);
-    // this._resolve();
+    this.warnings = Array.from(base.warnings);
   }
 
   get url(): string {
@@ -105,10 +105,6 @@ export class Document implements Feature {
 
   get sourceRange(): SourceRange|undefined {
     return this._scannedDocument.sourceRange;
-  }
-
-  get _warnings(): Warning[] {
-    return this._scannedDocument.warnings;
   }
 
   get resolved(): boolean {
@@ -144,6 +140,17 @@ export class Document implements Feature {
       }
     }
     this._doneResolving = true;
+  }
+
+  /**
+   * Adds and indexes a feature to this documentled before resolve().
+   */
+  _addFeature(feature: Feature) {
+    if (this._doneResolving) {
+      throw new Error('_addFeature can not be called after _resolve()');
+    }
+    this._indexFeature(feature);
+    this._localFeatures.add(feature);
   }
 
   getByKind(kind: 'element'): Set<Element>;
@@ -239,6 +246,10 @@ export class Document implements Feature {
     return result;
   }
 
+  /**
+   * Get features for all documents reachable via imports in this document.
+   * If `deep` is false, only return features in this document.
+   */
   getFeatures(deep?: boolean): Set<Feature> {
     if (deep == null) {
       deep = true;
@@ -268,14 +279,20 @@ export class Document implements Feature {
   }
 
   /**
-   * Adds and indexes a feature to this documentled before resolve().
+   * Get warnings for this document and all local features of this document. If
+   * `deep` is true, return warnings for all documents and features reachable
+   * via imports in this document.
    */
-  _addFeature(feature: Feature) {
-    if (this._doneResolving) {
-      throw new Error('_addFeature can not be called after _resolve()');
+  getWarnings(deep?: boolean): Warning[] {
+    const warnings: Warning[] = [];
+    if (deep == null) {
+      deep = false;
     }
-    this._indexFeature(feature);
-    this._localFeatures.add(feature);
+    warnings.push.apply(warnings, this.warnings);
+    for (const feature of this.getFeatures(deep)) {
+      warnings.push.apply(warnings, feature.warnings);
+    }
+    return warnings;
   }
 
   toString(): string {
@@ -297,8 +314,7 @@ export class Document implements Feature {
       } else {
         let subResult = localFeature.toString();
         if (subResult === '[object Object]') {
-          subResult =
-              `<${localFeature.constructor.name} kinds="${Array
+          subResult = `<${localFeature.constructor.name} kinds="${Array
                   .from(localFeature.kinds)
                   .join(', ')}" ids="${Array.from(localFeature.identifiers)
                   .join(',')}">}`;
@@ -308,11 +324,6 @@ export class Document implements Feature {
     }
 
     return result;
-  }
-
-  getWarnings(): Warning[] {
-    // TODO(rictic): crawl (local?) features and grab their warnings too.
-    return this._warnings;
   }
 
   stringify(): string {
