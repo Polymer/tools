@@ -284,15 +284,16 @@ export class Document implements Feature {
    * via imports in this document.
    */
   getWarnings(deep?: boolean): Warning[] {
-    const warnings: Warning[] = [];
+    const warnings: Set<Warning> = new Set(this.warnings);
     if (deep == null) {
       deep = false;
     }
-    warnings.push.apply(warnings, this.warnings);
     for (const feature of this.getFeatures(deep)) {
-      warnings.push.apply(warnings, feature.warnings);
+      for (const warning of feature.warnings) {
+        warnings.add(warning);
+      }
     }
-    return warnings;
+    return Array.from(warnings);
   }
 
   toString(): string {
