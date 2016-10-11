@@ -290,7 +290,11 @@ export class Document implements Feature {
     }
     warnings.push.apply(warnings, this.warnings);
     for (const feature of this.getFeatures(deep)) {
-      warnings.push.apply(warnings, feature.warnings);
+      for (const warning of feature.warnings) {
+        if (!warnings.includes(warning)) {
+          warnings.push(warning);
+        }
+      }
     }
     return warnings;
   }
