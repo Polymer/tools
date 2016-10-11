@@ -224,7 +224,7 @@ function _getFlattenedAndResolvedBehaviors(
               `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
               `@polymerBehavior?`,
           severity: Severity.ERROR,
-          code: 'parse-error',
+          code: 'unknown-polymer-behavior',
           sourceRange: behavior.sourceRange
         });
       }

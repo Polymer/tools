@@ -96,7 +96,7 @@ suite('Analyzer', () => {
                   'Unable to resolve behavior `Polymer.ExpectedMissingBehavior`. ' +
                   'Did you import it? Is it annotated with @polymerBehavior?',
               severity: 0,
-              code: 'parse-error',
+              code: 'unknown-polymer-behavior',
               sourceRange: {
                 file: 'static/html-missing-behaviors.html',
                 start: {

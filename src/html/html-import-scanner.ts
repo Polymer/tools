@@ -41,7 +41,8 @@ const isLazyImportNode = p.AND(
  * Scans for <link rel="import"> and <link rel="lazy-import">
  */
 export class HtmlImportScanner implements HtmlScanner {
-  constructor(private _lazyEdges?: Map<string, string[]>) {}
+  constructor(private _lazyEdges?: Map<string, string[]>) {
+  }
 
   async scan(
       document: ParsedHtmlDocument,
@@ -62,14 +63,14 @@ export class HtmlImportScanner implements HtmlScanner {
       const importUrl = resolveUrl(document.url, href);
       imports.push(new ScannedImport(
           type, importUrl, document.sourceRangeForNode(node)!,
-          document.sourceRangeForAttribute(node, 'href')!, node));
+          document.sourceRangeForAttributeValue(node, 'href')!, node));
     });
     if (this._lazyEdges) {
       const edges = this._lazyEdges.get(document.url);
       if (edges) {
         for (const edge of edges) {
           imports.push(new ScannedImport(
-            'lazy-html-import', edge, undefined, undefined, null));
+              'lazy-html-import', edge, undefined, undefined, null));
         }
       }
     }
