@@ -13,54 +13,62 @@
 
 import * as parse5 from 'parse5';
 
-import {ParsedHtmlDocument} from '../html/html-document';
-import {SourceRange} from '../model/model';
+import { ParsedHtmlDocument } from '../html/html-document';
+import { SourceRange } from '../model/model';
 
-import {SourcePosition} from './editor-service';
+import { SourcePosition } from './editor-service';
 
 
-export type LocationResult = LocatedAttribute | LocatedAttributeValue |
-    LocatedTag | LocatedEndTag | LocatedInText | LocatedInScript |
-    LocatedInStyle | LocatedInComment;
+export type LocationResult = AttributesSection | AttributeValue |
+  TagName | EndTag | TextNode | ScriptContents |
+  StyleContents | Comment;
+
 /** In the tagname of a start tag. */
-export interface LocatedTag {
+export interface TagName {
   kind: 'tagName';
   element: parse5.ASTNode;
 }
 /** In an end tag. */
-export interface LocatedEndTag {
+export interface EndTag {
   kind: 'endTag';
   element: parse5.ASTNode;
 }
+
 /** In the attributes section of a start tag. Maybe in an attribute name. */
-export interface LocatedAttribute {
+export interface AttributesSection {
   kind: 'attribute';
-  attribute: string|null;
+  /** The attribute name that we're hovering over, if any. */
+  attribute: string | null;
+  /** The element whose start tag we're in. */
   element: parse5.ASTNode;
 }
+
 /** In the value of an attribute of a start tag. */
-export interface LocatedAttributeValue {
+export interface AttributeValue {
   kind: 'attributeValue';
   attribute: string;
   element: parse5.ASTNode;
 }
+
 /** In a text node. */
-export interface LocatedInText {
+export interface TextNode {
   kind: 'text';
   textNode?: parse5.ASTNode;
 }
 /** In the text of a <script> */
-export interface LocatedInScript {
+export interface ScriptContents {
   kind: 'scriptTagContents';
   textNode?: parse5.ASTNode;
 }
+
 /** In the text of a <style> */
-export interface LocatedInStyle {
+export interface StyleContents {
   kind: 'styleTagContents';
   textNode?: parse5.ASTNode;
 }
-/** In a comment. */
-export interface LocatedInComment {
+
+/** In a <!-- comment --> */
+export interface Comment {
   kind: 'comment';
   commentNode: parse5.ASTNode;
 }
@@ -75,19 +83,28 @@ export interface LocatedInComment {
  * an empty document, but there would be after the first character was typed).
  */
 export function getLocationInfoForPosition(
-    document: ParsedHtmlDocument, position: SourcePosition): LocationResult {
+  document: ParsedHtmlDocument, position: SourcePosition): LocationResult {
   const location =
-      _getLocationInfoForPosition(document.ast, position, document);
+    _getLocationInfoForPosition(document.ast, position, document);
   if (!location) {
-    return {kind: 'text'};
+    /** Eh, we're probably in a text node. */
+    return { kind: 'text' };
   }
   return location;
 }
+
 function _getLocationInfoForPosition(
-    node: parse5.ASTNode, position: SourcePosition,
-    document: ParsedHtmlDocument): undefined|LocationResult {
+  node: parse5.ASTNode, position: SourcePosition,
+  document: ParsedHtmlDocument): undefined | LocationResult {
   const sourceRange = document.sourceRangeForNode(node);
   const location = node.__location;
+
+  /**
+   * An HTML5 parser must hallucinate certain nodes, even if they don't exist
+   * in the original source text. e.g. <html> or <body>. So we might have
+   * elements that have no sourceRange (because they don't exist in the text)
+   * but they do have children that do. So we should check those children.
+   */
   if (!(sourceRange && location)) {
     return _findLocationInChildren(node, position, document);
   }
@@ -102,24 +119,9 @@ function _getLocationInfoForPosition(
     return locationInChildren;
   }
 
-  /**
-   * TODO(rictic): upstream the fact that regular locations can have attrs
-   * sometimes.
-   */
-  const attrs: parse5.AttributesLocationInfo =
-      (isElementLocationInfo(location) && location.startTag.attrs) ||
-      location['attrs'] || {};
-
-  for (const attrName in attrs) {
-    const range = document.sourceRangeForAttribute(node, attrName);
-    if (isPositionInsideRange(position, range)) {
-      if (isPositionInsideRange(
-              position,
-              document.sourceRangeForAttributeValue(node, attrName))) {
-        return {kind: 'attributeValue', attribute: attrName, element: node};
-      }
-      return {kind: 'attribute', attribute: attrName, element: node};
-    }
+  const attributeLocation = getAttributeLocation(node, position, document, location);
+  if (attributeLocation) {
+    return attributeLocation;
   }
 
   const startTagRange = document.sourceRangeForStartTag(node);
@@ -127,37 +129,37 @@ function _getLocationInfoForPosition(
 
   // If we're in the end tag... we're in the end tag.
   if (isPositionInsideRange(position, endTagRange, false)) {
-    return {kind: 'endTag', element: node};
+    return { kind: 'endTag', element: node };
   }
 
   if (startTagRange && isPositionInsideRange(position, startTagRange, false)) {
     if (position.line === startTagRange.start.line) {
       // If the cursor is in the "<my-elem" part of the start tag.
       if (position.column <=
-          startTagRange.start.column + (node.tagName || '').length + 1) {
-        return {kind: 'tagName', element: node};
+        startTagRange.start.column + (node.tagName || '').length + 1) {
+        return { kind: 'tagName', element: node };
       }
     }
     // Otherwise we're in the start tag, but not in the tag name or any
     // particular attribute, but definitely in the attributes section.
-    return {kind: 'attribute', attribute: null, element: node};
+    return { kind: 'attribute', attribute: null, element: node };
   }
 
   // The edges of a comment aren't part of the comment.
   if (parse5.treeAdapters.default.isCommentNode(node) &&
-      isPositionInsideRange(position, sourceRange, false)) {
-    return {kind: 'comment', commentNode: node};
+    isPositionInsideRange(position, sourceRange, false)) {
+    return { kind: 'comment', commentNode: node };
   }
 
   if (parse5.treeAdapters.default.isTextNode(node)) {
     const parent = node.parentNode;
     if (parent && parent.tagName === 'script') {
-      return {kind: 'scriptTagContents', textNode: node};
+      return { kind: 'scriptTagContents', textNode: node };
     }
     if (parent && parent.tagName === 'style') {
-      return {kind: 'styleTagContents', textNode: node};
+      return { kind: 'styleTagContents', textNode: node };
     }
-    return {kind: 'text', textNode: node};
+    return { kind: 'text', textNode: node };
   }
 
 
@@ -172,15 +174,15 @@ function _getLocationInfoForPosition(
      * want to treat you as though you are.
      */
     if (startTagRange && endTagRange &&
-        comparePositionAndRange(position, startTagRange, false) > 0 &&
-        comparePositionAndRange(position, endTagRange, false) < 0) {
+      comparePositionAndRange(position, startTagRange, false) > 0 &&
+      comparePositionAndRange(position, endTagRange, false) < 0) {
       if (node.tagName === 'script') {
-        return {kind: 'scriptTagContents'};
+        return { kind: 'scriptTagContents' };
       }
       if (node.tagName === 'style') {
-        return {kind: 'styleTagContents'};
+        return { kind: 'styleTagContents' };
       }
-      return {kind: 'text'};
+      return { kind: 'text' };
     }
 
     /**
@@ -192,10 +194,10 @@ function _getLocationInfoForPosition(
      */
     if (node.tagName) {
       if (position.column <=
-          sourceRange.start.column + node.tagName.length + 1) {
-        return {kind: 'tagName', element: node};
+        sourceRange.start.column + node.tagName.length + 1) {
+        return { kind: 'tagName', element: node };
       }
-      return {kind: 'attribute', element: node, attribute: null};
+      return { kind: 'attribute', element: node, attribute: null };
     }
   }
 }
@@ -205,7 +207,7 @@ function _getLocationInfoForPosition(
  * it returns -1. If it comes after the range, it returns 1.
  */
 function comparePositionAndRange(
-    position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
+  position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
   // Usually we want to include the edges of a range as part
   // of the thing, but sometimes, e.g. for start and end tags,
   // we'd rather not.
@@ -247,8 +249,8 @@ function comparePositionAndRange(
 }
 
 function _findLocationInChildren(
-    node: parse5.ASTNode, position: SourcePosition,
-    document: ParsedHtmlDocument) {
+  node: parse5.ASTNode, position: SourcePosition,
+  document: ParsedHtmlDocument) {
   for (const child of node.childNodes || []) {
     const result = _getLocationInfoForPosition(child, position, document);
     if (result) {
@@ -265,16 +267,44 @@ function _findLocationInChildren(
 }
 
 function isPositionInsideRange(
-    position: SourcePosition, range: SourceRange|undefined,
-    includeEdges?: boolean) {
+  position: SourcePosition, range: SourceRange | undefined,
+  includeEdges?: boolean) {
   if (!range) {
     return false;
   }
   return comparePositionAndRange(position, range, includeEdges) === 0;
 }
 
-function isElementLocationInfo(location: parse5.LocationInfo|
-                               parse5.ElementLocationInfo):
-    location is parse5.ElementLocationInfo {
+function isElementLocationInfo(location: parse5.LocationInfo |
+  parse5.ElementLocationInfo):
+  location is parse5.ElementLocationInfo {
   return location['startTag'] && location['endTag'];
+}
+
+type Parse5Location = parse5.LocationInfo | parse5.ElementLocationInfo;
+
+/**
+ * If the position is inside of the node's attributes section, return the
+ * correct LocationResult.
+ */
+function getAttributeLocation(node: parse5.ASTNode, position: SourcePosition, document: ParsedHtmlDocument, location: Parse5Location): AttributesSection | AttributeValue | undefined {
+  /**
+   * TODO(rictic): upstream to @types the fact that regular locations (not just
+   * element locations) can have attrs sometimes.
+   */
+  const attrs: parse5.AttributesLocationInfo =
+    (isElementLocationInfo(location) && location.startTag.attrs) ||
+    location['attrs'] || {};
+
+  for (const attrName in attrs) {
+    const range = document.sourceRangeForAttribute(node, attrName);
+    if (isPositionInsideRange(position, range)) {
+      if (isPositionInsideRange(
+        position,
+        document.sourceRangeForAttributeValue(node, attrName))) {
+        return { kind: 'attributeValue', attribute: attrName, element: node };
+      }
+      return { kind: 'attribute', attribute: attrName, element: node };
+    }
+  }
 }
