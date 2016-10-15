@@ -34,6 +34,8 @@ export function analyzeProperties(
         property, document.sourceRangeForNode(property)!);
     prop.published = true;
 
+    let isComputed = false;
+
     if (property.value.type !== 'ObjectExpression') {
       continue;
     }
@@ -83,6 +85,9 @@ export function analyzeProperties(
         case 'reflectToAttribute':
           prop.reflectToAttribute = !!astValue.expressionToValue(propertyArg);
           break;
+        case 'computed':
+          isComputed = true;
+          break;
         case 'value':
           prop.default =
               JSON.stringify(astValue.expressionToValue(propertyArg.value));
@@ -90,6 +95,10 @@ export function analyzeProperties(
         default:
           break;
       }
+    }
+
+    if (isComputed) {
+      prop.readOnly = true;
     }
 
     if (!prop.type) {
