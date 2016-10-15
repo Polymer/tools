@@ -31,6 +31,7 @@ import {BehaviorScanner} from './polymer/behavior-scanner';
 import {CssImportScanner} from './polymer/css-import-scanner';
 import {DomModuleScanner} from './polymer/dom-module-scanner';
 import {PolymerElementScanner} from './polymer/polymer-element-scanner';
+import {HtmlCustomElementReferenceScanner} from './html/html-element-reference-scanner';
 import {scan} from './scanning/scan';
 import {Scanner} from './scanning/scanner';
 import {UrlLoader} from './url-loader/url-loader';
@@ -96,7 +97,8 @@ export class Analyzer {
         'html',
         [
           new HtmlImportScanner(lazyEdges), new HtmlScriptScanner(),
-          new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner()
+          new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner(),
+          new HtmlCustomElementReferenceScanner()
         ]
       ],
       [

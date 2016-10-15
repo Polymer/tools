@@ -82,8 +82,13 @@ suite('HtmlImportScanner', () => {
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
-      assert.deepEqual(features.map(f => f.type), ['html-import', 'lazy-html-import', 'lazy-html-import', 'lazy-html-import']);
-      assert.deepEqual(features.map(f => f.url), ['polymer.html', 'lazy1.html', 'lazy2.html', 'lazy3.html']);
+      assert.deepEqual(features.map(f => f.type), [
+        'html-import', 'lazy-html-import', 'lazy-html-import',
+        'lazy-html-import'
+      ]);
+      assert.deepEqual(
+          features.map(f => f.url),
+          ['polymer.html', 'lazy1.html', 'lazy2.html', 'lazy3.html']);
     });
 
   });
