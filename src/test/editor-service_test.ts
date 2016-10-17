@@ -16,19 +16,21 @@ import * as chai from 'chai';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
+import {Analyzer} from 'polymer-analyzer';
 import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {LocalEditorService} from '../local-editor-service';
 import {RemoteEditorService} from '../remote-editor-service';
+import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
+import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
+import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
+import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
+import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
 
 chai.use(require('chai-subset'));
 
 function editorTests(editorFactory: (basedir: string) => EditorService) {
-  const basedir = path.join(__dirname, './static');
+  const basedir = path.join(__dirname, 'static');
   const indexFile = path.join('editor-service', 'index.html');
 
   const tagPosition = {line: 7, column: 9};
@@ -354,9 +356,29 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               indexFile, localAttributePosition),
           attributeTypeahead);
     });
+
+    test(`Don't give HTML completions inside of script tags.`, async() => {
+      await editorService.fileChanged(
+          indexFile, '<script>\n\n</script>\n' + indexContents);
+      const completions = await editorService.getTypeaheadCompletionsAtPosition(
+          indexFile, {line: 1, column: 0});
+      assert.deepEqual(completions, undefined);
+    });
+
   });
 
   suite('getWarningsForFile', function() {
+    let fileContents = '';
+    const loader = {
+      canLoad: () => true,
+      load: () => Promise.resolve(fileContents)
+    };
+    const warningPrinter = new WarningPrinter(
+        null as any, {analyzer: new Analyzer({urlLoader: loader})});
+
+    async function getUnderlinedText(warning: Warning) {
+      return '\n' + await warningPrinter.getUnderlinedText(warning.sourceRange);
+    }
 
     test('For a good document we get no warnings', async() => {
       await editorService.fileChanged(indexFile, indexContents);
@@ -365,18 +387,18 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test(`Warn on imports of files that aren't found.`, async() => {
       const badImport = `<link rel="import" href="./does-not-exist.html">`;
-      await editorService.fileChanged(
-          indexFile, `${badImport}\n\n${indexContents}`);
+      fileContents = `${badImport}\n\n${indexContents}`;
+      await editorService.fileChanged(indexFile, fileContents);
       const warnings = await editorService.getWarningsForFile(indexFile);
-      assert.containSubset(warnings, <Warning[]>[{
-                             code: 'could-not-load',
-                             severity: Severity.ERROR,
-                             sourceRange: {
-                               file: 'editor-service/index.html',
-                               start: {line: 0, column: 19},
-                               end: {line: 0, column: 47}
-                             }
-                           }]);
+      assert.equal(
+          warnings.filter((warning) => warning.code === 'could-not-load')
+              .length,
+          1);
+      assert.containSubset(
+          warnings, [{code: 'could-not-load', severity: Severity.ERROR}]);
+      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+<link rel="import" href="./does-not-exist.html">
+                        ~~~~~~~~~~~~~~~~~~~~~~~`);
       assert.match(
           warnings[0].message,
           /Unable to load import:.*no such file or directory/);
@@ -384,8 +406,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test(`Warn on imports of files that don't parse.`, async() => {
       const badImport = `<script src="../js-parse-error.js"></script>`;
-      await editorService.fileChanged(
-          indexFile, `${badImport}\n\n${indexContents}`);
+      fileContents = `${badImport}\n\n${indexContents}`;
+      await editorService.fileChanged(indexFile, fileContents);
       const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
           warnings, <Warning[]>[{
@@ -394,10 +416,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             severity: Severity.ERROR,
             sourceRange: {
               file: 'editor-service/index.html',
-              start: {line: 0, column: 8},
-              end: {line: 0, column: 34}
             }
           }]);
+      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+<script src="../js-parse-error.js"></script>
+            ~~~~~~~~~~~~~~~~~~~~~~`);
     });
 
     test(`Don't warn on imports of files with no known parser`, async() => {
@@ -410,18 +433,19 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test(`Warn on syntax errors in inline javascript documents`, async() => {
       const badScript = `\n<script>var var var var var let const;</script>`;
-      await editorService.fileChanged(indexFile, badScript);
+      fileContents = badScript;
+      await editorService.fileChanged(indexFile, fileContents);
       const warnings = await editorService.getWarningsForFile(indexFile);
-      assert.containSubset(warnings, <Warning[]>[{
-                             code: 'parse-error',
-                             severity: Severity.ERROR,
-                             message: 'Unexpected token var',
-                             sourceRange: {
-                               file: 'editor-service/index.html',
-                               start: {line: 1, column: 13},
-                               end: {line: 1, column: 13}
-                             }
-                           }]);
+      assert.containSubset(
+          warnings, <Warning[]>[{
+            code: 'parse-error',
+            severity: Severity.ERROR,
+            message: 'Unexpected token var',
+            sourceRange: {file: 'editor-service/index.html'}
+          }]);
+      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+<script>var var var var var let const;</script>
+             ~`);
     });
 
     test(
@@ -452,59 +476,6 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
                       }
                     }]);
         });
-  });
-
-  suite('getWarnings', function() {
-
-    test('For a good document we get no warnings', async() => {
-      await editorService.fileChanged(indexFile, indexContents);
-      assert.deepEqual(await editorService.getWarningsForFile(indexFile), []);
-    });
-
-    test(`Warn on imports of files that aren't found.`, async() => {
-      const badImport = `<link rel="import" href="./does-not-exist.html">`;
-      await editorService.fileChanged(
-          indexFile, `${badImport}\n\n${indexContents}`);
-      const warnings = await editorService.getWarningsForFile(indexFile);
-      assert.containSubset(warnings, <Warning[]>[{
-                             code: 'could-not-load',
-                             severity: Severity.ERROR,
-                             sourceRange: {
-                               file: 'editor-service/index.html',
-                               start: {line: 0, column: 19},
-                               end: {line: 0, column: 47}
-                             }
-                           }]);
-      assert.match(
-          warnings[0].message,
-          /Unable to load import:.*no such file or directory/);
-    });
-
-    test(`Warn on imports of files that don't parse.`, async() => {
-      const badImport = `<script src="../js-parse-error.js"></script>`;
-      await editorService.fileChanged(
-          indexFile, `${badImport}\n\n${indexContents}`);
-      const warnings = await editorService.getWarningsForFile(indexFile);
-      assert.containSubset(
-          warnings, <Warning[]>[{
-            code: 'could-not-load',
-            severity: Severity.ERROR,
-            message: 'Unable to load import: Unexpected token ,',
-            sourceRange: {
-              file: 'editor-service/index.html',
-              start: {line: 0, column: 8},
-              end: {line: 0, column: 34}
-            }
-          }]);
-    });
-
-    test(`Don't warn on imports of files with no known parser`, async() => {
-      const badImport = `<script src="./foo.unknown_extension"></script>`;
-      await editorService.fileChanged(
-          indexFile, `${badImport}\n\n${indexContents}`);
-      assert.containSubset(
-          await editorService.getWarningsForFile(indexFile), []);
-    });
   });
 }
 

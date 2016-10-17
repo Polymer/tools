@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
@@ -22,7 +23,7 @@
  * See 'remote-editor-protocol.ts' for details on the communication protocol.
  */
 
-import split = require('split');
+import * as split from 'split';
 import * as util from 'util';
 
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
@@ -30,7 +31,6 @@ import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-re
 
 import {LocalEditorService} from './local-editor-service';
 import {Request, RequestWrapper, ResponseWrapper, SettledValue} from './remote-editor-protocol';
-
 
 /**
  * Handles decoded Requests, dispatching them to a local editor service.
@@ -87,16 +87,40 @@ const server: EditorServer = new EditorServer();
 process.stdin.setEncoding('utf8');
 process.stdin.resume();
 process.stdin.pipe(split()).on('data', async function(line: string) {
-  const request: RequestWrapper = JSON.parse(line);
-  const result = await getSettledValue(request.value);
-  process.stdout.write(
-      JSON.stringify(<ResponseWrapper>{id: request.id, value: result}) + '\n');
+  if (line.trim() === '') {
+    return;
+  }
+  let result: SettledValue;
+  let id: number|undefined = undefined;
+  try {
+    const request: RequestWrapper = JSON.parse(line);
+    id = request.id;
+    result = await getSettledValue(request.value);
+  } catch (e) {
+    if (id == null) {
+      id = -1;
+    }
+    result = {
+      kind: 'rejection',
+      rejection: e.message || e.stack || e.toString()
+    };
+  }
+
+  /** Have a respond function for type checking of ResponseWrapper */
+  function respond(response: ResponseWrapper) {
+    process.stdout.write(JSON.stringify(response) + '\n');
+  }
+  respond({id, value: result});
 });
 
 // node child_process.fork() IPC interface
 process.on('message', async function(request: RequestWrapper) {
   const result = await getSettledValue(request.value);
-  process.send!(<ResponseWrapper>{id: request.id, value: result});
+  /** Have a respond function for type checking of ResponseWrapper */
+  function respond(response: ResponseWrapper) {
+    process.send!(response);
+  }
+  respond({id: request.id, value: result});
 });
 
 

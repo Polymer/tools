@@ -24,8 +24,7 @@
     "test": "npm run clean && npm run build && npm run lint && mocha",
     "quicktest": "export QUICK_TESTS=true; npm run build && mocha",
     "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
-    "postinstall": "tsc >/dev/null 2>&1 || true"
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
     "@types/chai": "^3.4.29",
@@ -41,10 +40,10 @@
   },
   "dependencies": {
     "@types/node": "^4.0.30",
-    "@types/parse5": "0.0.27",
+    "@types/parse5": "^0.0.31",
     "@types/split": "^0.3.28",
-    "polymer-analyzer": "=2.0.0-alpha.9",
+    "polymer-analyzer": "=2.0.0-alpha.16",
     "split": "^1.0.0",
-    "typescript": "^2.0.0"
+    "typescript": "^2.0.3"
   }
 }
