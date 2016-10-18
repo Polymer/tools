@@ -62,6 +62,9 @@ class EditorServer {
         await localEditorService.fileChanged(
             message.localPath, message.contents);
         return;
+      case 'getReferencesFor':
+        return localEditorService.getReferencesForFeatureAtPosition(
+            message.localPath, message.position);
       case 'getDefinitionFor':
         return localEditorService.getDefinitionForFeatureAtPosition(
             message.localPath, message.position);

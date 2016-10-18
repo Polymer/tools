@@ -35,7 +35,7 @@ export interface Rejection {
 
 
 export type Request = InitRequest | FileChangedRequest | GetWarningsRequest |
-    GetDocumentationRequest | GetDefinitionRequest |
+    GetDocumentationRequest | GetDefinitionRequest | GetReferencesRequest |
     GetTypeaheadCompletionsRequest | ClearCachesRequest;
 export interface InitRequest {
   kind: 'init';
@@ -52,6 +52,11 @@ export interface GetWarningsRequest {
 }
 export interface GetDocumentationRequest {
   kind: 'getDocumentationFor';
+  localPath: string;
+  position: SourcePosition;
+}
+export interface GetReferencesRequest {
+  kind: 'getReferencesFor';
   localPath: string;
   position: SourcePosition;
 }

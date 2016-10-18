@@ -198,6 +198,21 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         });
   });
 
+  suite('getReferencesForFeatureAtPosition', function() {
+
+    test(
+        `it supports getting the references to ` +
+            `an element from its tag`,
+        async() => {
+          await editorService.fileChanged(indexFile, indexContents);
+          deepEqual(
+              await editorService.getReferencesForFeatureAtPosition(
+                  indexFile, tagPosition),
+              [
+              ]);
+        });
+  });
+
   suite('getDefinitionForFeatureAtPosition', function() {
 
     test(

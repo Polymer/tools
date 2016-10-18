@@ -63,6 +63,12 @@ export abstract class EditorService {
       localPath: string, position: SourcePosition): Promise<string|undefined>;
 
   /**
+   * Gives the locations for references of an element at a given location.
+   */
+  abstract async getReferencesForFeatureAtPosition(
+    localPath: string, position: SourcePosition): Promise<SourceRange[]>;
+
+  /**
    * Gives the location for the definition for a feature. For example, for a
    * v1 custom element, it will find its class.
    */
