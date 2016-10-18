@@ -20,6 +20,7 @@ import {PolymerElement} from '../polymer/polymer-element';
 import {Warning} from '../warning/warning';
 
 import {Element} from './element';
+import {ElementReference} from './element-reference';
 import {Feature, ScannedFeature} from './feature';
 import {Import} from './import';
 import {isResolvable} from './resolvable';
@@ -159,6 +160,7 @@ export class Document implements Feature {
   getByKind(kind: 'dom-module'): Set<DomModule>;
   getByKind(kind: 'document'): Set<Document>;
   getByKind(kind: 'import'): Set<Import>;
+  getByKind(kind: 'element-reference'): Set<ElementReference>;
   getByKind(kind: string): Set<Feature>;
   getByKind(kind: string): Set<Feature> {
     if (this._featuresByKind) {
@@ -178,6 +180,7 @@ export class Document implements Feature {
   getById(kind: 'behavior', className: string): Set<Behavior>;
   getById(kind: 'dom-module', idAttr: string): Set<DomModule>;
   getById(kind: 'document', url: string): Set<Document>;
+  getById(kind: 'element-reference', tagName: string): Set<ElementReference>;
   getById(kind: string, identifier: string): Set<Feature>;
   getById(kind: string, identifier: string): Set<Feature> {
     if (this._featuresByKindAndId) {
@@ -205,6 +208,7 @@ export class Document implements Feature {
   getOnlyAtId(kind: 'behavior', className: string): Behavior|undefined;
   getOnlyAtId(kind: 'dom-module', idAttr: string): DomModule|undefined;
   getOnlyAtId(kind: 'document', url: string): Document|undefined;
+  getOnlyAtId(kind: 'element-reference', tagName: string): ElementReference;
   getOnlyAtId(kind: string, identifier: string): Feature|undefined;
   getOnlyAtId(kind: string, identifier: string): Feature|undefined {
     const results = this.getById(kind, identifier);
