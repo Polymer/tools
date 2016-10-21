@@ -17,6 +17,7 @@
 import * as path from 'path';
 
 import {CssParser} from './css/css-parser';
+import {HtmlCustomElementReferenceScanner} from './html/html-element-reference-scanner';
 import {HtmlImportScanner} from './html/html-import-scanner';
 import {HtmlParser} from './html/html-parser';
 import {HtmlScriptScanner} from './html/html-script-scanner';
@@ -31,7 +32,6 @@ import {BehaviorScanner} from './polymer/behavior-scanner';
 import {CssImportScanner} from './polymer/css-import-scanner';
 import {DomModuleScanner} from './polymer/dom-module-scanner';
 import {PolymerElementScanner} from './polymer/polymer-element-scanner';
-import {HtmlCustomElementReferenceScanner} from './html/html-element-reference-scanner';
 import {scan} from './scanning/scan';
 import {Scanner} from './scanning/scanner';
 import {UrlLoader} from './url-loader/url-loader';
@@ -97,8 +97,8 @@ export class Analyzer {
         'html',
         [
           new HtmlImportScanner(lazyEdges), new HtmlScriptScanner(),
-          new HtmlStyleScanner(), new DomModuleScanner(), new CssImportScanner(),
-          new HtmlCustomElementReferenceScanner()
+          new HtmlStyleScanner(), new DomModuleScanner(),
+          new CssImportScanner(), new HtmlCustomElementReferenceScanner()
         ]
       ],
       [
@@ -177,13 +177,13 @@ export class Analyzer {
     const resolvedUrl = scannedDocument.url;
 
     if (this._analyzedDocuments.has(resolvedUrl)) {
-      throw new Error(
-          `Internal error: document ${resolvedUrl} already exists`);
+      throw new Error(`Internal error: document ${resolvedUrl} already exists`);
     }
 
     const document = new Document(scannedDocument, this);
     if (!this._analyzedDocumentPromises.has(resolvedUrl)) {
-      this._analyzedDocumentPromises.set(resolvedUrl, Promise.resolve(document));
+      this._analyzedDocumentPromises.set(
+          resolvedUrl, Promise.resolve(document));
     }
     this._analyzedDocuments.set(resolvedUrl, document);
     document.resolve();

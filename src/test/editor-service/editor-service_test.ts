@@ -388,8 +388,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       await editorService.fileChanged(indexFile, fileContents);
       const warnings = await editorService.getWarningsForFile(indexFile);
       assert.equal(
-          warnings.filter(
-              (warning) => warning.code === 'could-not-load').length, 1);
+          warnings.filter((warning) => warning.code === 'could-not-load')
+              .length,
+          1);
       assert.containSubset(
           warnings, [{code: 'could-not-load', severity: Severity.ERROR}]);
       assert.deepEqual(await getUnderlinedText(warnings[0]), `
