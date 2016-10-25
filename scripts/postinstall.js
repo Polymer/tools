@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var SELENIUM_VERSION = require('../package.json')['selenium-version'];
+var SELENIUM_OVERRIDES = require('../package.json')['selenium-overrides'];
 // Work around a potential npm race condition:
 // https://github.com/npm/npm/issues/6624
 function requireSelenium(done, attempt) {
@@ -27,10 +27,8 @@ function requireSelenium(done, attempt) {
   done(selenium);
 }
 
-var config = {
-  version: SELENIUM_VERSION,
-  logger:  console.log.bind(console),
-};
+var config = SELENIUM_OVERRIDES || {};
+config.logger = console.log.bind(console);
 
 if (!process.env.NOSELENIUM) {
   requireSelenium(function(selenium) {
