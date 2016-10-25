@@ -14,8 +14,7 @@
 
 import {Analyzer, Options as AnalyzerOptions} from 'polymer-analyzer';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document, Element, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
-import {ElementReference} from 'polymer-analyzer/lib/model/element-reference';
+import {Document, Element, ElementReference, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
 import {Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
 
 import {getLocationInfoForPosition} from './ast-from-source-position';
@@ -66,7 +65,7 @@ export class LocalEditorService extends EditorService {
     }
     if (location.kind === 'tagName') {
       return Array.from(document.getById('element-reference', location.element.nodeName))
-          .map(e => (e as ElementReference).sourceRange);
+          .map(e => e.sourceRange);
     }
   }
 
