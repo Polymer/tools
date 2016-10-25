@@ -43,7 +43,7 @@
     "@types/node": "^4.0.30",
     "@types/parse5": "0.0.27",
     "@types/split": "^0.3.28",
-    "polymer-analyzer": "^2.0.0-alpha.9",
+    "polymer-analyzer": "=2.0.0-alpha.9",
     "split": "^1.0.0",
     "typescript": "^2.0.0"
   }
