@@ -126,14 +126,13 @@ function chrome(browser: launchpad.Browser): wd.Capabilities {
  * @return A selenium capabilities object.
  */
 function firefox(browser: launchpad.Browser): wd.Capabilities {
-  const version = browser.version.match(/\d+/)[0];
-  if (parseInt(version, 10) > 46) {
-    return null;
-  }
+  const version = parseInt(browser.version.match(/\d+/)[0], 10);
+  const marionette = version >= 47;
   return {
-    'browserName':    'firefox',
-    'version':        browser.version.match(/\d+/)[0],
+    'browserName': 'firefox',
+    version,
     'firefox_binary': browser.binPath,
+    marionette
   };
 }
 

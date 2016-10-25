@@ -16,7 +16,7 @@ import * as child_process from 'child_process';
 import * as wct from 'wct';
 import * as promisify from 'promisify-node';
 
-const SELENIUM_VERSION: string = require('../package.json')['selenium-version'];
+const SELENIUM_OVERRIDES: any = require('../package.json')['selenium-overrides'];
 
 
 type Args = string[];
@@ -74,25 +74,25 @@ async function seleniumStart(
     wct.emit('log:debug', message);
   }
 
-  const config: selenium.StartOpts = {
-    seleniumArgs: ['-port', port.toString()].concat(opts.args),
-    // Bookkeeping once the process starts.
-    spawnCb: function(server: child_process.ChildProcess) {
-      // Make sure that we interrupt the selenium server ASAP.
-      cleankill.onInterrupt(function(done) {
-        server.kill();
-        done();
-      });
+  const config: selenium.StartOpts = SELENIUM_OVERRIDES || {};
+  config.seleniumArgs = ['-port', port.toString()].concat(opts.args);
+  // Bookkeeping once the process starts.
+  config.spawnCb = function(server: child_process.ChildProcess) {
+    // Make sure that we interrupt the selenium server ASAP.
+    cleankill.onInterrupt(function(done) {
+      server.kill();
+      done();
+    });
 
-      server.stdout.on('data', onOutput);
-      server.stderr.on('data', onOutput);
-    },
+    server.stdout.on('data', onOutput);
+    server.stderr.on('data', onOutput);
   };
 
   if (opts.install) {
     try {
-      await promisify(selenium.install)(
-          {version: SELENIUM_VERSION, logger: onOutput});
+      const options = SELENIUM_OVERRIDES || {};
+      options.logger = onOutput;
+      await promisify(selenium.install)(options);
     } catch (error) {
       log.forEach((line) => wct.emit('log:info', line));
       throw error;
