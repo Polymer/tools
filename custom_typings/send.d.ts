@@ -1,5 +1,5 @@
 declare module 'send' {
-  import {ServerRequest} from 'http';
+  import {IncomingMessage} from 'http';
   module send {
     interface SendError extends Error {
       status: number;
@@ -18,7 +18,7 @@ declare module 'send' {
   }
   // TODO(justinfagnani): any->Request
   function send(
-      req: ServerRequest,
+      req: IncomingMessage,
       path: string,
       options?: send.SendOptions): any;
   export = send;
