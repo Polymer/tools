@@ -1,0 +1,23 @@
+{
+  "engines": {
+    "node": ">=4.0"
+  },
+  "scripts": {
+    "clean": "mkdir -p lib/ && rm -rf lib/",
+    "build": "gulp build --silent",
+    "release": "npm run compile",
+    "lint": "gulp lint",
+    "test": "npm run clean && npm run build && npm run lint && mocha",
+    "test:watch": "watchy -w src/ -- npm test --loglevel=silent",
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
+    "prepublish": "tsc && npm test"
+  },
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "clang-format": "=1.0.45",
+    "mocha": "^3.1.0",
+    "typescript": "^2.0.6",
+    "watchy": "^0.6.6"
+  }
+}
