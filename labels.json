@@ -4,6 +4,7 @@
   { "name": "Browser: Firefox", "color": "#fad8c7" },
   { "name": "Browser: IE", "color": "#fef2c0" },
   { "name": "Browser: Other", "color": "#d4c5f9" },
+  { "name": "Browser: Safari", "color": "#4286f4" },
   { "name": "Platform: Linux", "color": "#bfe5bf" },
   { "name": "Platform: OS X", "color": "#f7c6c7" },
   { "name": "Platform: Windows", "color": "#207de5" },
