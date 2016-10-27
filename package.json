@@ -62,7 +62,7 @@
     "freeport": "^1.0.4",
     "launchpad": "^0.5.0",
     "promisify-node": "^0.4.0",
-    "selenium-standalone": "^5.0.0",
+    "selenium-standalone": "^5.8.0",
     "which": "^1.0.8"
   },
   "engines": {
