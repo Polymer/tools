@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [2.0.0-alpha.17] - 2016-10-28 - [minor]
+
+### Added
+* Improve the way we expose the `ElementReference` type.
 
 ## [2.0.0-alpha.16] - 2016-10-20
 
