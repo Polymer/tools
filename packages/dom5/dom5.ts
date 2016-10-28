@@ -496,12 +496,16 @@ function newElement(tagName: string, namespace?: string): Node {
   };
 }
 
-function newDocumentFragment() {
+function newDocumentFragment(): Node {
   return {
     nodeName: '#document-fragment',
     childNodes: [],
-    parentNode: null,
+    parentNode: undefined,
     quirksMode: false,
+    // TODO(rictic): update parse5 typings upstream to mention that attrs and
+    //     __location are optional and not always present.
+    attrs: undefined as any,
+    __location: null as any
   };
 }
 

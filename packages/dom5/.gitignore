@@ -1,3 +1,5 @@
 node_modules
 dom5.js
 dom5.d.ts
+test/dom5_test.js
+test/dom5_test.d.ts
