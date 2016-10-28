@@ -6,13 +6,14 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run test",
-    "test": "npm run build && tslint dom5.ts && jshint --verbose test/*.js && mocha --ui tdd",
+    "test": "npm run build && tslint dom5.ts && mocha --ui tdd",
     "format": "./node_modules/.bin/clang-format --style=file -i dom5.ts"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.32",
     "chai": "^3.3.0",
     "clang-format": "^1.0.42",
-    "jshint": "^2.6.3",
     "mocha": "^2.0.1",
     "tslint": "^3.14.0",
     "typescript": "^2.0.0"
