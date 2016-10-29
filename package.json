@@ -44,6 +44,7 @@
     "@types/split": "^0.3.28",
     "polymer-analyzer": "=2.0.0-alpha.16",
     "split": "^1.0.0",
-    "typescript": "^2.0.3"
+    "typescript": "^2.0.3",
+    "vscode-languageserver": "^3.0.0-alpha.1"
   }
 }
