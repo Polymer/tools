@@ -13,7 +13,7 @@
  */
 
 import {Document, SourceRange} from '../model/model';
-import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
+import {getFlattenedAndResolvedBehaviors, Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
 
 /**
  * A scanned behavior assignment of a Polymer element. This is only a
@@ -45,11 +45,12 @@ export class ScannedBehavior extends ScannedPolymerElement {
     super(options);
   }
 
-  // TODO(fks) 10-03-2016: Resolve & flatten dependent behaviors before
-  // resolving the ScannedBehavior itself. Add missing behaviors as warnings on
-  // _document.
-  resolve(_document: Document) {
-    return Object.assign(new Behavior(), this);
+  resolve(document: Document) {
+    const flatteningResult =
+        getFlattenedAndResolvedBehaviors(this.behaviorAssignments, document);
+    const behavior = Object.assign(new Behavior(), this);
+    behavior.warnings = behavior.warnings.concat(flatteningResult.warnings);
+    return behavior;
   }
 }
 

@@ -89,7 +89,9 @@ suite('Analyzer', () => {
         async() => {
           let document =
               await analyzer.analyze('static/html-missing-behaviors.html');
-          let warnings = document.getWarnings();
+          // TODO(#372): this should be false, we should treat inline documents
+          //     as not requiring `deep` to be true.
+          let warnings = document.getWarnings(true);
           assert.deepEqual(warnings, [
             {
               message:
@@ -112,9 +114,7 @@ suite('Analyzer', () => {
           ]);
         });
 
-    // TODO(fks) 10-02-2016: Test currently broken, unskip once missing
-    // behaviors are able to be reported as warnings on the correct document.
-    test.skip(
+    test(
         'creates "missing behavior" warnings on imported documents without elements',
         async() => {
           let document = await analyzer.analyze(
@@ -122,7 +122,7 @@ suite('Analyzer', () => {
           let chainedDocument = document.getOnlyAtId(
               'document', 'static/chained-missing-behavior/chained.html')!;
           let expectedWarning = {
-            code: 'parse-error',
+            code: 'unknown-polymer-behavior',
             message:
                 'Unable to resolve behavior `NotFoundBehavior`. Did you import it? Is it annotated with @polymerBehavior?',
             severity: 0,
@@ -134,8 +134,10 @@ suite('Analyzer', () => {
           };
           assert.deepEqual(document.getWarnings(false), []);
           assert.deepEqual(document.getWarnings(true), [expectedWarning]);
+          // TODO(#372): this should be false, we should treat inline documents
+          //     as not requiring `deep` to be true.
           assert.deepEqual(
-              chainedDocument.getWarnings(false), [expectedWarning]);
+              chainedDocument.getWarnings(true), [expectedWarning]);
         });
 
     test(

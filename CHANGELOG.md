@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed
+* [Polymer] A number of fixes around warnings when resolving behaviors
+  * Warn, don't throw when a behavior is declared twice.
+  * Warn when there's a problem mixing behaviors into other behaviors, the same way that we warn when mixing behaviors into elements.
+
 ## [2.0.0-alpha.17] - 2016-10-28 - [minor]
 
 ### Added

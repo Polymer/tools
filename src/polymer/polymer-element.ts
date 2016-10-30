@@ -17,7 +17,7 @@ import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
 import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
-import {Severity} from '../warning/warning';
+import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
 
@@ -179,11 +179,19 @@ function propertyToAttributeName(propertyName: string): string|null {
 
 function resolveElement(
     scannedElement: ScannedPolymerElement, document: Document): PolymerElement {
-  // Copy over all properties better. Maybe exclude known properties not copied?
+  // TODO: Copy over all properties better. Maybe exclude known properties not
+  //   copied?
   const clone: PolymerElement =
       Object.assign(new PolymerElement(), scannedElement);
-  const behaviors = Array.from(getFlattenedAndResolvedBehaviors(
-      scannedElement.behaviorAssignments, document));
+
+  const flatteningResult = getFlattenedAndResolvedBehaviors(
+      scannedElement.behaviorAssignments, document);
+
+  // This has the combined effects of copying the array of warnings from the
+  // ScannedElement, and adding in any new ones found when resolving behaviors.
+  clone.warnings = clone.warnings.concat(flatteningResult.warnings);
+
+  const behaviors = Array.from(flatteningResult.resolvedBehaviors);
   clone.properties = mergeByName(
       scannedElement.properties,
       behaviors.map(b => ({name: b.className, vals: b.properties})));
@@ -204,39 +212,53 @@ function resolveElement(
   return clone;
 }
 
-function getFlattenedAndResolvedBehaviors(
+export function getFlattenedAndResolvedBehaviors(
     behaviorAssignments: ScannedBehaviorAssignment[], document: Document) {
   const resolvedBehaviors = new Set<Behavior>();
-  _getFlattenedAndResolvedBehaviors(
+  const warnings = _getFlattenedAndResolvedBehaviors(
       behaviorAssignments, document, resolvedBehaviors);
-  return resolvedBehaviors;
+  return {resolvedBehaviors, warnings};
 }
 
 function _getFlattenedAndResolvedBehaviors(
     behaviorAssignments: ScannedBehaviorAssignment[], document: Document,
     resolvedBehaviors: Set<Behavior>) {
+  const warnings: Warning[] = [];
   for (const behavior of behaviorAssignments) {
-    const foundBehavior = document.getOnlyAtId('behavior', behavior.name);
-    if (!foundBehavior) {
-      if (behavior.sourceRange.file === document.url) {
-        document.warnings.push({
-          message: `Unable to resolve behavior ` +
-              `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
-              `@polymerBehavior?`,
-          severity: Severity.ERROR,
-          code: 'unknown-polymer-behavior',
-          sourceRange: behavior.sourceRange
-        });
-      }
+    const foundBehaviors = document.getById('behavior', behavior.name);
+    if (foundBehaviors.size === 0) {
+      warnings.push({
+        message: `Unable to resolve behavior ` +
+            `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
+            `@polymerBehavior?`,
+        severity: Severity.ERROR,
+        code: 'unknown-polymer-behavior',
+        sourceRange: behavior.sourceRange
+      });
+      // Skip processing this behavior.
       continue;
     }
+    if (foundBehaviors.size > 1) {
+      warnings.push({
+        message: `Found more than one behavior named ${behavior.name}.`,
+        severity: Severity.WARNING,
+        code: 'multiple-polymer-behaviors',
+        sourceRange: behavior.sourceRange
+      });
+      // Don't skip processing this behavior, just take the most recently
+      // declared instance.
+    }
+    const foundBehavior = Array.from(foundBehaviors)[foundBehaviors.size - 1];
     if (resolvedBehaviors.has(foundBehavior)) {
       continue;
     }
     resolvedBehaviors.add(foundBehavior);
+    // Note that we don't care about warnings from transitively resolved
+    // behaviors. Those should become warnings on those behaviors themselves.
     _getFlattenedAndResolvedBehaviors(
         foundBehavior.behaviorAssignments, document, resolvedBehaviors);
   }
+  return warnings;
 }
 
 interface PropertyOrSimilar {
