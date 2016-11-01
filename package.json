@@ -32,7 +32,7 @@
     "plylog": "^0.4.0",
     "polymer-analyzer": "2.0.0-alpha.17",
     "polymer-project-config": "^1.0.2",
-    "sw-precache": "^3.1.1",
+    "sw-precache": "^4.2.0",
     "vinyl": "^1.1.1",
     "vinyl-fs": "^2.4.3",
     "vulcanize": "^1.14.8"
