@@ -1,19 +1,7 @@
-import * as parse5 from 'parse5';
+import {ASTNode} from 'parse5';
 
 declare module 'parse5' {
-  interface TreeAdapter {}
-  export class Parser {
-    constructor(treeAdapter?: TreeAdapter, options?: ParserOptions);
-    parse(html: string): ASTNode;
-    parseFragment(html: string): ASTNode;
-  }
-  export class Serializer {
-    constructor();
-    serialize(node: ASTNode): string;
-  }
-  export const TreeAdapters: {
-    default: TreeAdapter;  //
-  };
+  // TODO(fks) 11-01-2016: Remove this once @types/parse5 includes `tagName`
+  // (https://github.com/DefinitelyTyped/DefinitelyTyped/pull/12424)
   export interface ASTNode { tagName?: string; }
-  export interface CommentNode extends ASTNode { data: string; }
 }

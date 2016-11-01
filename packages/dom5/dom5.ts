@@ -14,7 +14,6 @@
 
 /// <reference path="./custom_typings/main.d.ts" />
 import * as cloneObject from 'clone';
-import * as parse5 from 'parse5';
 import {ASTNode as Node} from 'parse5';
 export {ASTNode as Node} from 'parse5';
 
@@ -38,7 +37,8 @@ export function hasAttribute(element: Node, name: string): boolean {
   return getAttributeIndex(element, name) !== -1;
 }
 
-export function hasSpaceSeparatedAttrValue(name: string, value: string): Predicate {
+export function hasSpaceSeparatedAttrValue(
+    name: string, value: string): Predicate {
   return function(element: Node) {
     const attributeValue = getAttribute(element, name);
     if (typeof attributeValue !== 'string') {
@@ -163,7 +163,7 @@ export function normalize(node: Node) {
  */
 export function getTextContent(node: Node): string {
   if (isCommentNode(node)) {
-    return node.data;
+    return node.data || '';
   }
   if (isTextNode(node)) {
     return node.value || '';
@@ -295,7 +295,7 @@ export function isTextNode(node: Node): boolean {
   return node.nodeName === '#text';
 }
 
-export function isCommentNode(node: Node): node is parse5.CommentNode {
+export function isCommentNode(node: Node): boolean {
   return node.nodeName === '#comment';
 }
 
@@ -408,7 +408,8 @@ export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
  * the root of the tree.  Return the first ancestor that matches the given
  * predicate.
  */
-export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|undefined {
+export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|
+    undefined {
   const parent = node.parentNode;
   if (!parent) {
     return undefined;
@@ -473,7 +474,7 @@ function newTextNode(value: string): Node {
   };
 }
 
-function newCommentNode(comment: string): parse5.CommentNode {
+function newCommentNode(comment: string): Node {
   return {
     nodeName: '#comment',
     data: comment,
