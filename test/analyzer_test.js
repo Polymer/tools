@@ -15,6 +15,7 @@ const path = require('path');
 const StreamAnalyzer = require('../lib/analyzer').StreamAnalyzer;
 const mergeStream = require('merge-stream');
 const vfs = require('vinyl-fs-fake');
+const sinon = require('sinon');
 const ProjectConfig = require('polymer-project-config').ProjectConfig;
 
 suite('Analyzer', () => {
@@ -143,5 +144,66 @@ suite('Analyzer', () => {
         .on('error', done);
     });
   });
+
+  test('the analyzer stream will emit an error when an warning of type "error" occurs during analysis', () => {
+    const root = path.resolve('test/static/project-analysis-error');
+    const sourceFiles = path.join(root, '**');
+    const config = new ProjectConfig({
+      root: root,
+      sources: [sourceFiles],
+    });
+    const analyzer = new StreamAnalyzer(config);
+
+    return new Promise((resolve, reject) => {
+      mergeStream(
+          vfs.src(sourceFiles, {cwdbase: true}),
+          analyzer.dependencies
+        )
+        .pipe(analyzer)
+        .on('error', reject)
+        .on('finish', resolve);
+    }).then(
+      () => {
+        throw new Error('Parse error expected!');
+      },
+      (err) => {
+        assert.isDefined(err);
+        assert.equal(err.message, '1 error(s) occurred during build.');
+      }
+    );
+  });
+
+  test('the analyzer stream will log all analysis warnings at the end of the stream', () => {
+    const root = path.resolve('test/static/project-analysis-error');
+    const sourceFiles = path.join(root, '**');
+    const config = new ProjectConfig({
+      root: root,
+      sources: [sourceFiles],
+    });
+    const analyzer = new StreamAnalyzer(config);
+    const printWarningsSpy = sinon.spy(analyzer, 'printWarnings');
+
+    return new Promise((resolve, reject) => {
+      mergeStream(
+          vfs.src(sourceFiles, {cwdbase: true}),
+          analyzer.dependencies
+        )
+        .pipe(analyzer)
+        .on('data', () => assert.isFalse(printWarningsSpy.called))
+        .on('error', reject)
+        .on('finish', resolve);
+    }).then(
+      () => {
+        throw new Error('Parse error expected!');
+      },
+      (err) => {
+        assert.isTrue(printWarningsSpy.calledOnce);
+      }
+    );
+  });
+
+  // TODO(fks) 10-26-2016: Refactor logging to be testable, and configurable by
+  // the consumer.
+  suite.skip('.printWarnings()', () => {});
 
 });

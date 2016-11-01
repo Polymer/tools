@@ -11,6 +11,8 @@
 import {Deferred, Resolver as HydrolysisResolver} from 'hydrolysis';
 import {Analyzer} from 'polymer-analyzer';
 import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
+import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
+
 import * as path from 'path';
 import {PassThrough, Transform} from 'stream';
 import File = require('vinyl');
@@ -52,6 +54,19 @@ function isDependencyExternal(url: string) {
   return parseUrl(url).protocol !== null || url.startsWith('//');
 }
 
+/**
+ * Get a longer, single-line error message for logging and exeption-handling
+ * analysis Warning objects.
+ *
+ * Note: We cannot use WarningPrinter.printWarning() from the polymer-analyzer
+ * codebase because after minification & optimization its reported source
+ * ranges don't match the original source code. Instead we use this custom
+ * message generator that only includes the file name in the error message.
+ */
+function getFullWarningMessage(warning: Warning): string {
+  return `In ${warning.sourceRange.file}: [${warning.code}] - ${warning.message}`;
+}
+
 export class StreamAnalyzer extends Transform {
 
   config: ProjectConfig;
@@ -63,6 +78,7 @@ export class StreamAnalyzer extends Transform {
   private _dependenciesProcessingStream = new VinylReaderTransform();
 
   files = new Map<string, File>();
+  warnings = new Set<Warning>();
   allFragmentsToAnalyze: Set<string>;
   foundDependencies = new Set<string>();
 
@@ -119,19 +135,33 @@ export class StreamAnalyzer extends Transform {
     // If the file is a fragment, begin analysis on its dependencies
     if (this.config.isFragment(file.path)) {
       (async () => {
-        const deps = await this._getDependencies(urlFromPath(this.config.root, filePath));
-        // Add all found dependencies to our index
-        this._addDependencies(filePath, deps);
-        this.allFragmentsToAnalyze.delete(filePath);
-        // If there are no more fragments to analyze, close the dependency stream
-        if (this.allFragmentsToAnalyze.size === 0) {
-          this._dependenciesStream.end();
+        try {
+          const deps = await this._getDependencies(urlFromPath(this.config.root, filePath));
+          this._addDependencies(filePath, deps);
+          this.allFragmentsToAnalyze.delete(filePath);
+          // If there are no more fragments to analyze, close the dependency stream
+          if (this.allFragmentsToAnalyze.size === 0) {
+            this._dependenciesStream.end();
+          }
+        } catch (error) {
+          // Because we've already called the _transform callback, we need to
+          // propagate this error via an error on the analyzer stream itself.
+          this.emit('error', error);
         }
       })();
     }
   }
 
   _flush(done: (error?: any) => void) {
+
+    this.printWarnings();
+    const allWarningCount = this.countWarningsByType();
+    const errorWarningCount = allWarningCount.get(Severity.ERROR);
+    if (errorWarningCount > 0) {
+      done(new Error(`${errorWarningCount} error(s) occurred during build.`));
+      return;
+    }
+
     // If stream finished with files that still needed to be loaded, error out
     if (this.loader.hasDeferredFiles()) {
       for (const fileUrl of this.loader.deferredFiles.keys()) {
@@ -172,11 +202,39 @@ export class StreamAnalyzer extends Transform {
     this.files.set(urlFromPath(this.config.root, filepath), file);
   }
 
+  printWarnings(): void {
+    for (const warning of this.warnings) {
+      const message = getFullWarningMessage(warning);
+      if (warning.severity === Severity.ERROR) {
+        logger.error(message);
+      } else if (warning.severity === Severity.WARNING) {
+        logger.warn(message);
+      } else {
+        logger.debug(message);
+      }
+    }
+  }
+
+  private countWarningsByType(): Map<Severity, number> {
+    const errorCountMap = new Map<Severity, number>();
+    errorCountMap.set(Severity.INFO, 0);
+    errorCountMap.set(Severity.WARNING, 0);
+    errorCountMap.set(Severity.ERROR, 0);
+    for (const warning of this.warnings) {
+      errorCountMap.set(warning.severity, errorCountMap.get(warning.severity) + 1);
+    }
+    return errorCountMap;
+  }
+
+
   /**
    * Attempts to retreive document-order transitive dependencies for `url`.
    */
   async _getDependencies(url: string): Promise<DocumentDeps> {
     const doc = await this.analyzer.analyze(url);
+
+    doc.getWarnings(true).forEach(w => this.warnings.add(w));
+
     const scripts = new Set<string>();
     const styles = new Set<string>();
     const imports = new Set<string>();
