@@ -9,6 +9,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import * as path from 'path';
 import {posix as posixPath} from 'path';
 import {Transform} from 'stream';
@@ -151,7 +152,7 @@ export class Bundler extends Transform {
     const file = this.analyzer.getFile(this.config.shell);
     console.assert(file != null);
     const contents = file.contents.toString();
-    const doc = dom5.parse(contents);
+    const doc = parse5.parse(contents);
     const imports = dom5.queryAll(doc, dom5.predicates.AND(
       dom5.predicates.hasTagName('link'),
       dom5.predicates.hasAttrValue('rel', 'import')
@@ -180,7 +181,7 @@ export class Bundler extends Transform {
       dom5.setAttribute(newImport, 'href', dep);
       dom5.append(head, newImport);
     }
-    const newContents = dom5.serialize(doc);
+    const newContents = parse5.serialize(doc);
     return newContents;
   }
 

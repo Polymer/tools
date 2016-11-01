@@ -12,6 +12,7 @@
 
 const assert = require('chai').assert;
 const dom5 = require('dom5');
+const parse5 = require('parse5');
 const File = require('vinyl');
 const path = require('path');
 const stream = require('stream');
@@ -103,7 +104,7 @@ suite('Bundler', () => {
     entrypoint: 'entrypointA.html',
     files: [framework(), entrypointA()],
   }).then((files) => {
-    const doc = dom5.parse(getFile('entrypointA.html'));
+    const doc = parse5.parse(getFile('entrypointA.html'));
     assert.isTrue(hasMarker(doc, 'framework'));
     assert.isFalse(hasImport(doc, 'framework.html'));
     // TODO(justinfagnani): check that shared-bundle.html doesn't exist
@@ -115,17 +116,17 @@ suite('Bundler', () => {
     files: [framework(), shell(), entrypointA()],
   }).then((files) => {
     // shell doesn't import framework
-    const shellDoc = dom5.parse(getFile('shell.html'));
+    const shellDoc = parse5.parse(getFile('shell.html'));
     assert.isFalse(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = dom5.parse(getFile('entrypointA.html'));
+    const entrypointDoc = parse5.parse(getFile('entrypointA.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
     // No shared-bundle bundles framework
-    const sharedDoc = dom5.parse(getFile('shared-bundle.html'));
+    const sharedDoc = parse5.parse(getFile('shared-bundle.html'));
     assert.isTrue(hasMarker(sharedDoc, 'framework'));
     assert.isFalse(hasImport(sharedDoc, 'framework.html'));
 
@@ -140,12 +141,12 @@ suite('Bundler', () => {
     files: [framework(), shell(), entrypointA()],
   }).then((files) => {
     // shell bundles framework
-    const shellDoc = dom5.parse(getFile('shell.html'));
+    const shellDoc = parse5.parse(getFile('shell.html'));
     assert.isTrue(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, '/root/framework.html'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = dom5.parse(getFile('entrypointA.html'));
+    const entrypointDoc = parse5.parse(getFile('entrypointA.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, '/root/framework.html'));
 
@@ -162,7 +163,7 @@ suite('Bundler', () => {
     files: [framework(), shell(), entrypointB(), entrypointC(), commonDep()],
   }).then((files) => {
     // shell bundles framework
-    const shellDoc = dom5.parse(getFile('shell.html'));
+    const shellDoc = parse5.parse(getFile('shell.html'));
     assert.isTrue(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
@@ -171,12 +172,12 @@ suite('Bundler', () => {
     assert.isFalse(hasImport(shellDoc, 'commonDep.html'));
 
     // entrypoint B doesn't import commonDep
-    const entrypointBDoc = dom5.parse(getFile('entrypointB.html'));
+    const entrypointBDoc = parse5.parse(getFile('entrypointB.html'));
     assert.isFalse(hasMarker(entrypointBDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointBDoc, 'commonDep.html'));
 
     // entrypoint C doesn't import commonDep
-    const entrypointCDoc = dom5.parse(getFile('entrypointC.html'));
+    const entrypointCDoc = parse5.parse(getFile('entrypointC.html'));
     assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointCDoc, 'commonDep.html'));
 
@@ -196,7 +197,7 @@ suite('Bundler', () => {
     // shared bundle was emitted
     const bundle = getFile('shared-bundle.html');
     assert.ok(bundle);
-    const bundleDoc = dom5.parse(bundle);
+    const bundleDoc = parse5.parse(bundle);
 
     // shared-bundle bundles framework
     assert.isTrue(hasMarker(bundleDoc, 'framework'));
@@ -207,22 +208,22 @@ suite('Bundler', () => {
     assert.isFalse(hasImport(bundleDoc, '/root/commonDep.html'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = dom5.parse(getFile('entrypointA.html'));
+    const entrypointDoc = parse5.parse(getFile('entrypointA.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, '/root/framework.html'));
 
     // shell doesn't import framework
-    const shellDoc = dom5.parse(getFile('entrypointA.html'));
+    const shellDoc = parse5.parse(getFile('entrypointA.html'));
     assert.isFalse(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, '/root/framework.html'));
 
     // entrypoint B doesn't import commonDep
-    const entrypointBDoc = dom5.parse(getFile('entrypointB.html'));
+    const entrypointBDoc = parse5.parse(getFile('entrypointB.html'));
     assert.isFalse(hasMarker(entrypointBDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointBDoc, '/root/commonDep.html'));
 
     // entrypoint C doesn't import commonDep
-    const entrypointCDoc = dom5.parse(getFile('entrypointC.html'));
+    const entrypointCDoc = parse5.parse(getFile('entrypointC.html'));
     assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointCDoc, '/root/commonDep.html'));
 

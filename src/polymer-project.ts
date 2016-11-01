@@ -9,6 +9,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import * as osPath from 'path';
 import * as logging from 'plylog';
 import {Transform} from 'stream';
@@ -203,7 +204,7 @@ class HtmlSplitter extends Transform {
     if (file.contents && filePath.endsWith('.html')) {
       try {
         const contents = file.contents.toString();
-        const doc = dom5.parse(contents);
+        const doc = parse5.parse(contents);
         const scriptTags = dom5.queryAll(doc, HtmlSplitter.isInlineScript);
         for (let i = 0; i < scriptTags.length; i++) {
           const scriptTag = scriptTags[i];
@@ -229,7 +230,7 @@ class HtmlSplitter extends Transform {
           this.push(scriptFile);
         }
 
-        const splitContents = dom5.serialize(doc);
+        const splitContents = parse5.serialize(doc);
         const newFile = new File({
           cwd: file.cwd,
           base: file.base,
@@ -297,7 +298,7 @@ class HtmlRejoiner extends Transform {
     const file = splitFile.vinylFile;
     const filePath = osPath.normalize(file.path);
     const contents = file.contents.toString();
-    const doc = dom5.parse(contents);
+    const doc = parse5.parse(contents);
     const scriptTags = dom5.queryAll(doc, HtmlRejoiner.isExternalScript);
 
     for (let i = 0; i < scriptTags.length; i++) {
@@ -311,7 +312,7 @@ class HtmlRejoiner extends Transform {
       }
     }
 
-    const joinedContents = dom5.serialize(doc);
+    const joinedContents = parse5.serialize(doc);
 
     return new File({
       cwd: file.cwd,
