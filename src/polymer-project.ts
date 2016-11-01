@@ -205,15 +205,16 @@ class HtmlSplitter extends Transform {
         const contents = file.contents.toString();
         const doc = dom5.parse(contents);
         const scriptTags = dom5.queryAll(doc, HtmlSplitter.isInlineScript);
-
-        // const scripts = [];
-        // const styles = [];
-
         for (let i = 0; i < scriptTags.length; i++) {
           const scriptTag = scriptTags[i];
           const source = dom5.getTextContent(scriptTag);
-          const typeAtribute = dom5.getAttribute(scriptTag, 'type');
-          const extension = typeAtribute && extensionsForType[typeAtribute] || 'js';
+          const typeAtribute = dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
+          const extension = extensionsForType[typeAtribute];
+          // If we don't recognize the script type attribute, don't split out.
+          if (!extension) {
+            continue;
+          }
+
           const childFilename = `${osPath.basename(filePath)}_script_${i}.${extension}`;
           const childPath = osPath.join(osPath.dirname(filePath), childFilename);
           scriptTag.childNodes = [];

@@ -145,6 +145,7 @@ suite('PolymerProject', () => {
         const expectedSplitFiles = [
           'index.html',
           'shell.html_script_0.js',
+          'shell.html_script_1.js',
           'shell.html',
           'source-dir/my-app.html',
         ];
@@ -158,12 +159,18 @@ suite('PolymerProject', () => {
         assert.include(
           splitFiles.get('shell.html_script_0.js').contents.toString(),
           `console.log('shell');`);
+        assert.include(
+          splitFiles.get('shell.html_script_1.js').contents.toString(),
+          `console.log('shell 2');`);
         assert.notInclude(
           splitFiles.get('shell.html').contents.toString(),
-          `console.log('shell');`);
+          `console.log`);
+        assert.include(
+          splitFiles.get('shell.html').contents.toString(),
+          `# I am markdown`);
         assert.include(
           joinedFiles.get('shell.html').contents.toString(),
-          `console.log('shell');`);
+          `console.log`);
         done();
       });
   });
