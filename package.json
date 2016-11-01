@@ -34,8 +34,8 @@
   "dependencies": {
     "@types/clone": "^0.1.29",
     "@types/node": "^4.0.30",
-    "@types/parse5": "^0.0.31",
+    "@types/parse5": "^2.2.32",
     "clone": "^1.0.2",
-    "parse5": "^2.2.1"
+    "parse5": "^2.2.2"
   }
 }
