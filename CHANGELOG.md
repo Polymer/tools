@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  * `serviceWorkerPath` was renamed to `path`.
  * `swConfig` was renamed to `swPrecacheConfig`.
  * Old names are deprecated, and support for them will be removed in future versions.
-* polymer.json configuration now managed by `polymer-project-config`
+* polymer.json configuration now managed by [`polymer-project-config`](https://github.com/Polymer/polymer-project-config)
 * Upgrade outdated dependencies:
   * `sw-precache@4.2.0` generates a new kind of service-worker that will require all users to repopulate their cache. Otherwise it continues to behave the same as before.
 
