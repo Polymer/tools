@@ -55,23 +55,25 @@ export class LocalEditorService extends EditorService {
     return feature.sourceRange;
   }
 
-  async getReferencesForFeatureAtPosition(
-      localPath: string,
-      position: SourcePosition): Promise<SourceRange[]|undefined> {
+  async getReferencesForFeatureAtPosition(localPath: string,
+                                          position: SourcePosition):
+      Promise<SourceRange[]|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {
       return;
     }
     if (location.kind === 'tagName') {
-      return Array.from(document.getById('element-reference', location.element.tagName))
+      return Array
+          .from(
+              document.getById('element-reference', location.element.tagName!))
           .map(e => e.sourceRange);
     }
   }
 
-  async getTypeaheadCompletionsAtPosition(
-      localPath: string,
-      position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
+  async getTypeaheadCompletionsAtPosition(localPath: string,
+                                          position: SourcePosition):
+      Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {

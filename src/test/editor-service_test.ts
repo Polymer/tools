@@ -204,11 +204,42 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         `it supports getting the references to ` +
             `an element from its tag`,
         async() => {
-          await editorService.fileChanged(indexFile, indexContents);
+          const contentsPath = path.join('editor-service', 'references.html');
+          const contents =
+              fs.readFileSync(path.join(basedir, contentsPath), 'utf-8');
+
+          await editorService.fileChanged(indexFile, `${contents}`);
+
           deepEqual(
               await editorService.getReferencesForFeatureAtPosition(
-                  indexFile, tagPosition),
+                  indexFile, { line: 7, column: 3}),
               [
+                {
+                  file: 'editor-service/index.html',
+                  start: {column: 2, line: 7},
+                  end: {column: 37, line: 7}
+                },
+                {
+                  file: 'editor-service/index.html',
+                  start: {column: 2, line: 12},
+                  end: {column: 37, line: 12}
+                }
+              ]);
+
+          deepEqual(
+              await editorService.getReferencesForFeatureAtPosition(
+                  indexFile, { line: 8, column: 3}),
+              [
+                {
+                  file: 'editor-service/index.html',
+                  start: {column: 2, line: 8},
+                  end: {column: 35, line: 8}
+                },
+                {
+                  file: 'editor-service/index.html',
+                  start: {column: 4, line: 10},
+                  end: {column: 37, line: 10}
+                }
               ]);
         });
   });
