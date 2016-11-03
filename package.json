@@ -67,7 +67,7 @@
     "@types/estraverse": "0.0.2",
     "@types/estree": "0.0.30",
     "@types/node": "^4.0.30",
-    "@types/parse5": "^0.0.31",
+    "@types/parse5": "^2.2.34",
     "chalk": "^1.1.3",
     "clone": "^2.0.0",
     "cssbeautify": "^0.3.1",
