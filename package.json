@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@types/node": "^4.0.30",
-    "@types/parse5": "^0.0.31",
+    "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
     "polymer-analyzer": "=2.0.0-alpha.16",
     "split": "^1.0.0",
