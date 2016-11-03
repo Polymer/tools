@@ -64,7 +64,7 @@ export class LocalEditorService extends EditorService {
       return;
     }
     if (location.kind === 'tagName') {
-      return Array.from(document.getById('element-reference', location.element.nodeName))
+      return Array.from(document.getById('element-reference', location.element.tagName))
           .map(e => e.sourceRange);
     }
   }
