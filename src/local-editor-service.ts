@@ -14,7 +14,7 @@
 
 import {Analyzer, Options as AnalyzerOptions} from 'polymer-analyzer';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document, Element, ElementReference, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
+import {Document, Element, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
 import {Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
 
 import {getLocationInfoForPosition} from './ast-from-source-position';
