@@ -21,6 +21,7 @@ import {Analyzer} from 'polymer-analyzer';
 import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {LocalEditorService} from '../local-editor-service';
 import {RemoteEditorService} from '../remote-editor-service';
+import {SourceRange} from 'polymer-analyzer/lib/model/model';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
@@ -200,46 +201,59 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
   suite('getReferencesForFeatureAtPosition', function() {
 
+    const contentsPath = path.join('editor-service', 'references.html');
+    const contents =
+        fs.readFileSync(path.join(basedir, contentsPath), 'utf-8');
+    const loader = {canLoad: () => true, load: () => Promise.resolve(contents)};
+    const warningPrinter = new WarningPrinter(
+      null as any, {analyzer: new Analyzer({urlLoader: loader})});
+
+
+    async function getUnderlinedText(sourceRange: SourceRange | undefined) {
+      if (!sourceRange) {
+        return 'No source range produced';
+      }
+      return '\n' + await warningPrinter.getUnderlinedText(sourceRange);
+    }
+
     test(
         `it supports getting the references to ` +
             `an element from its tag`,
         async() => {
-          const contentsPath = path.join('editor-service', 'references.html');
-          const contents =
-              fs.readFileSync(path.join(basedir, contentsPath), 'utf-8');
+          await editorService.fileChanged(contentsPath, `${contents}`);
 
-          await editorService.fileChanged(indexFile, `${contents}`);
+          let references =
+              await editorService.getReferencesForFeatureAtPosition(
+                  contentsPath, { line: 7, column: 3});
+          let ranges = await Promise.all(references.map(
+            async r => await getUnderlinedText(r)));
 
           deepEqual(
-              await editorService.getReferencesForFeatureAtPosition(
-                  indexFile, { line: 7, column: 3}),
+              ranges,
               [
-                {
-                  file: 'editor-service/index.html',
-                  start: {column: 2, line: 7},
-                  end: {column: 37, line: 7}
-                },
-                {
-                  file: 'editor-service/index.html',
-                  start: {column: 2, line: 12},
-                  end: {column: 37, line: 12}
-                }
+                `
+  <anonymous-class></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                `
+  <anonymous-class></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
               ]);
 
-          deepEqual(
+          references =
               await editorService.getReferencesForFeatureAtPosition(
-                  indexFile, { line: 8, column: 3}),
+                  contentsPath, { line: 8, column: 3});
+          ranges = await Promise.all(references.map(
+            async r => await getUnderlinedText(r)));
+
+          deepEqual(
+              ranges,
               [
-                {
-                  file: 'editor-service/index.html',
-                  start: {column: 2, line: 8},
-                  end: {column: 35, line: 8}
-                },
-                {
-                  file: 'editor-service/index.html',
-                  start: {column: 4, line: 10},
-                  end: {column: 37, line: 10}
-                }
+                `
+  <simple-element></simple-element>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                `
+    <simple-element></simple-element>
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
               ]);
         });
   });
