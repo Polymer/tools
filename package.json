@@ -10,7 +10,8 @@
     "init": "gulp init",
     "build": "gulp build",
     "test": "gulp test",
-    "prepublish": "gulp build-all"
+    "prepublish": "gulp build-all",
+    "format": "find src/ test/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
@@ -30,6 +31,7 @@
     "gulp": "^3.9.1"
   },
   "devDependencies": {
-    "gulp": "^3.9.1"
+    "gulp": "^3.9.1",
+    "clang-format": "^1.0.45"
   }
 }
