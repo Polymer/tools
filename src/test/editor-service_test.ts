@@ -232,11 +232,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               ranges,
               [
                 `
-  <anonymous-class></anonymous-class>
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  <anonymous-class one></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
                 `
-  <anonymous-class></anonymous-class>
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+  <anonymous-class two></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
               ]);
 
           references =
@@ -249,11 +249,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               ranges,
               [
                 `
-  <simple-element></simple-element>
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  <simple-element one></simple-element>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
                 `
-    <simple-element></simple-element>
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+    <simple-element two></simple-element>
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
               ]);
         });
   });
