@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Please document PR changes here. -->
 
+### Added
+
+* Added support for finding references of the custom elements from an HTML usage of the element.
+
 ## 1.0.2 - 2016-11-07
 
 ### Fixed
