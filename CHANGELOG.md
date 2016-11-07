@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Please document PR changes here. -->
 
+## 1.0.1 - 2016-11-07
+
+### Fixed
+* Minor: fix the published assets in NPM. Add a missing dependency.
+
 ## 1.0.0 - 2016-11-07
 
 * Initial standalone release (was previously part of the [polymer analyzer](https://github.com/Polymer/polymer-analyzer)).
