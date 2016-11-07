@@ -9,10 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Please document PR changes here. -->
 
+## 1.0.2 - 2016-11-07
+
+### Fixed
+* Ok this time actually fix the contents of the NPM package. It turns out that the `files` property of `package.json` overrides all other configuration completelyin, including `.gitignore` and `.npmignore`. See `.npmignore` for how to test.
+
 ## 1.0.1 - 2016-11-07
 
 ### Fixed
-* Minor: fix the published assets in NPM. Add a missing dependency.
+* Fix the published assets in NPM. Add a missing dependency.
 
 ## 1.0.0 - 2016-11-07
 
