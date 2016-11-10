@@ -1,20 +1,24 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import {Deferred, Resolver as HydrolysisResolver} from 'hydrolysis';
+import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
 import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
-import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
-
-import * as path from 'path';
+import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 import {PassThrough, Transform} from 'stream';
+
 import File = require('vinyl');
 import {parse as parseUrl} from 'url';
 import * as logging from 'plylog';
@@ -64,17 +68,17 @@ function isDependencyExternal(url: string) {
  * message generator that only includes the file name in the error message.
  */
 function getFullWarningMessage(warning: Warning): string {
-  return `In ${warning.sourceRange.file}: [${warning.code}] - ${warning.message}`;
+  return `In ${warning.sourceRange.file}: [${warning.code}] - ${warning.message
+  }`;
 }
 
 export class StreamAnalyzer extends Transform {
-
   config: ProjectConfig;
 
   loader: StreamLoader;
   analyzer: Analyzer;
 
-  private _dependenciesStream = new PassThrough({ objectMode: true });
+  private _dependenciesStream = new PassThrough({objectMode: true});
   private _dependenciesProcessingStream = new VinylReaderTransform();
 
   files = new Map<string, File>();
@@ -134,12 +138,14 @@ export class StreamAnalyzer extends Transform {
 
     // If the file is a fragment, begin analysis on its dependencies
     if (this.config.isFragment(file.path)) {
-      (async () => {
+      (async() => {
         try {
-          const deps = await this._getDependencies(urlFromPath(this.config.root, filePath));
+          const deps = await this._getDependencies(
+              urlFromPath(this.config.root, filePath));
           this._addDependencies(filePath, deps);
           this.allFragmentsToAnalyze.delete(filePath);
-          // If there are no more fragments to analyze, close the dependency stream
+          // If there are no more fragments to analyze, close the dependency
+          // stream
           if (this.allFragmentsToAnalyze.size === 0) {
             this._dependenciesStream.end();
           }
@@ -153,7 +159,6 @@ export class StreamAnalyzer extends Transform {
   }
 
   _flush(done: (error?: any) => void) {
-
     this.printWarnings();
     const allWarningCount = this.countWarningsByType();
     const errorWarningCount = allWarningCount.get(Severity.ERROR);
@@ -167,8 +172,9 @@ export class StreamAnalyzer extends Transform {
       for (const fileUrl of this.loader.deferredFiles.keys()) {
         logger.error(`${fileUrl} never loaded`);
       }
-      done(new Error(`${this.loader.deferredFiles.size} deferred files were never loaded`));
-      return;
+      done(new Error(`${this.loader.deferredFiles.size
+                     } deferred files were never loaded`));
+                     return;
     }
     // Resolve our dependency analysis promise now that we have seen all files
     this._resolveDependencyAnalysis(this._dependencyAnalysis);
@@ -221,7 +227,8 @@ export class StreamAnalyzer extends Transform {
     errorCountMap.set(Severity.WARNING, 0);
     errorCountMap.set(Severity.ERROR, 0);
     for (const warning of this.warnings) {
-      errorCountMap.set(warning.severity, errorCountMap.get(warning.severity) + 1);
+      errorCountMap.set(
+          warning.severity, errorCountMap.get(warning.severity) + 1);
     }
     return errorCountMap;
   }
@@ -278,7 +285,8 @@ export class StreamAnalyzer extends Transform {
     deps.imports.forEach((url) => {
       this.pushDependency(url);
 
-      const entrypointList: string[] = this._dependencyAnalysis.depsToFragments.get(url);
+      const entrypointList: string[] =
+          this._dependencyAnalysis.depsToFragments.get(url);
       if (entrypointList) {
         entrypointList.push(filePath);
       } else {
@@ -293,29 +301,34 @@ export class StreamAnalyzer extends Transform {
    */
   pushDependency(dependencyUrl: string) {
     if (this.getFileByUrl(dependencyUrl)) {
-      logger.debug('dependency has already been pushed, ignoring...', {dep: dependencyUrl});
+      logger.debug(
+          'dependency has already been pushed, ignoring...',
+          {dep: dependencyUrl});
       return;
     }
 
     const dependencyFilePath = pathFromUrl(this.config.root, dependencyUrl);
     if (minimatchAll(dependencyFilePath, this.config.sources)) {
-      logger.debug('dependency is a source file, ignoring...', {dep: dependencyUrl});
+      logger.debug(
+          'dependency is a source file, ignoring...', {dep: dependencyUrl});
       return;
     }
 
-    logger.debug('new dependency found, pushing into dependency stream...', dependencyFilePath);
+    logger.debug(
+        'new dependency found, pushing into dependency stream...',
+        dependencyFilePath);
     this._dependenciesStream.push(dependencyFilePath);
   }
 }
 
 // TODO(fks) 09-21-2016: Remove once the move to polymer-analyzer is completed
-export interface BackwardsCompatibleUrlLoader
-  extends UrlLoader, HydrolysisResolver {};
+export interface BackwardsCompatibleUrlLoader extends UrlLoader,
+                                                      HydrolysisResolver {}
+;
 
 export type DeferredFileCallback = (a: string) => string;
 
 export class StreamLoader implements BackwardsCompatibleUrlLoader {
-
   config: ProjectConfig;
   analyzer: StreamAnalyzer;
 
@@ -369,9 +382,9 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
 
     let callback: DeferredFileCallback;
     const waitForFile =
-      new Promise((resolve: DeferredFileCallback, _reject: () => any) => {
-        callback = resolve;
-      });
+        new Promise((resolve: DeferredFileCallback, _reject: () => any) => {
+          callback = resolve;
+        });
     this.deferredFiles.set(filePath, callback);
     this.analyzer.pushDependency(urlPath);
     return waitForFile;
@@ -389,5 +402,4 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
     }
     return false;
   }
-
 }

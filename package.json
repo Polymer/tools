@@ -8,7 +8,8 @@
     "lint": "gulp lint",
     "build": "gulp build",
     "test": "gulp test",
-    "prepublish": "gulp lint test"
+    "prepublish": "gulp lint test",
+    "format": "find src/ test/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
   "repository": {
     "type": "git",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@types/fs-extra": "0.0.34",
     "chai": "^3.5.0",
+    "clang-format": "=1.0.45",
     "del": "^2.2.1",
     "depcheck": "^0.6.3",
     "fs-extra": "^1.0.0",

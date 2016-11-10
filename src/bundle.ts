@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as dom5 from 'dom5';
@@ -26,7 +30,6 @@ const Vulcanize = require('vulcanize');
 const logger = logging.getLogger('cli.build.bundle');
 
 export class Bundler extends Transform {
-
   config: ProjectConfig;
 
   sharedBundleUrl: string;
@@ -45,9 +48,7 @@ export class Bundler extends Transform {
   _transform(
       file: File,
       _encoding: string,
-      callback: (error?: any, data?: File) => void
-    ): void {
-
+      callback: (error?: any, data?: File) => void): void {
     // If this file is a fragment, hold on to the file so that it's fully
     // analyzed by the time down-stream transforms see it.
     if (this.config.isFragment(file.path)) {
@@ -55,7 +56,6 @@ export class Bundler extends Transform {
     } else {
       callback(null, file);
     }
-
   }
 
   _flush(done: (error?: any) => void) {
@@ -80,9 +80,9 @@ export class Bundler extends Transform {
 
   async _buildBundles(): Promise<Map<string, string>> {
     const bundles = await this._getBundles();
-    const sharedDepsBundle = (this.config.shell)
-        ? urlFromPath(this.config.root, this.config.shell)
-        : this.sharedBundleUrl;
+    const sharedDepsBundle = (this.config.shell) ?
+        urlFromPath(this.config.root, this.config.shell) :
+        this.sharedBundleUrl;
     const sharedDeps = bundles.get(sharedDepsBundle) || [];
     const promises: Promise<{url: string, contents: string}>[] = [];
 
@@ -95,12 +95,12 @@ export class Bundler extends Transform {
 
     for (const fragment of this.config.allFragments) {
       const fragmentUrl = urlFromPath(this.config.root, fragment);
-      const addedImports = (this.config.isShell(fragment))
-          ? []
-          : [posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)];
-      const excludes = (this.config.isShell(fragment))
-          ? []
-          : sharedDeps.concat(sharedDepsBundle);
+      const addedImports = (this.config.isShell(fragment)) ? [] : [
+        posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)
+      ];
+      const excludes = (this.config.isShell(fragment)) ?
+          [] :
+          sharedDeps.concat(sharedDepsBundle);
 
       promises.push(new Promise((resolve, reject) => {
         const vulcanize = new Vulcanize({
@@ -141,8 +141,8 @@ export class Bundler extends Transform {
     console.assert(this.config.shell != null);
     const shellUrl = urlFromPath(this.config.root, this.config.shell);
     const shellUrlDir = posixPath.dirname(shellUrl);
-    const shellDeps = bundles.get(shellUrl)
-      .map((d) => posixPath.relative(shellUrlDir, d));
+    const shellDeps =
+        bundles.get(shellUrl).map((d) => posixPath.relative(shellUrlDir, d));
     logger.debug('found shell dependencies', {
       shellUrl: shellUrl,
       shellUrlDir: shellUrlDir,
@@ -153,10 +153,11 @@ export class Bundler extends Transform {
     console.assert(file != null);
     const contents = file.contents.toString();
     const doc = parse5.parse(contents);
-    const imports = dom5.queryAll(doc, dom5.predicates.AND(
-      dom5.predicates.hasTagName('link'),
-      dom5.predicates.hasAttrValue('rel', 'import')
-    ));
+    const imports = dom5.queryAll(
+        doc,
+        dom5.predicates.AND(
+            dom5.predicates.hasTagName('link'),
+            dom5.predicates.hasAttrValue('rel', 'import')));
     logger.debug('found html import elements', {
       imports: imports.map((el) => dom5.getAttribute(el, 'href')),
     });
@@ -187,9 +188,8 @@ export class Bundler extends Transform {
 
   _generateSharedBundle(sharedDeps: string[]): Promise<any> {
     return new Promise((resolve, reject) => {
-      const contents = sharedDeps
-          .map((d) => `<link rel="import" href="${d}">`)
-          .join('\n');
+      const contents =
+          sharedDeps.map((d) => `<link rel="import" href="${d}">`).join('\n');
 
       const sharedFsPath = path.resolve(this.config.root, this.sharedBundleUrl);
       this.sharedFile = new File({
@@ -251,7 +251,6 @@ export class Bundler extends Transform {
       // conflicting orders between their top level imports. The shell should
       // always come first.
       for (const fragment of fragmentToDeps.keys()) {
-
         const fragmentUrl = urlFromPath(this.config.root, fragment);
         const dependencies = fragmentToDeps.get(fragment);
         for (const dep of dependencies) {
@@ -271,5 +270,4 @@ export class Bundler extends Transform {
       return bundles;
     });
   }
-
 }

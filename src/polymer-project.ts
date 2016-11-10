@@ -1,11 +1,15 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as dom5 from 'dom5';
@@ -34,7 +38,6 @@ const extensionsForType: {[mimetype: string]: string} = {
 };
 
 export class PolymerProject {
-
   config: ProjectConfig;
 
   private _splitFiles: Map<string, SplitFile> = new Map();
@@ -57,8 +60,7 @@ export class PolymerProject {
    */
   bundler: Bundler;
 
-  constructor(config: ProjectConfig | ProjectOptions | string) {
-
+  constructor(config: ProjectConfig|ProjectOptions|string) {
     if (config.constructor.name === 'ProjectConfig') {
       this.config = <ProjectConfig>config;
     } else if (typeof config === 'string') {
@@ -87,17 +89,16 @@ export class PolymerProject {
   }
 
   dependencies(): NodeJS.ReadableStream {
-    let dependenciesStream: NodeJS.ReadableStream = forkStream(
-      this.analyzer.dependencies
-    );
+    let dependenciesStream: NodeJS.ReadableStream =
+        forkStream(this.analyzer.dependencies);
 
     // If we need to include additional dependencies, create a new vfs.src
     // stream and pipe our default dependencyStream through it to combine.
     if (this.config.extraDependencies.length > 0) {
       const includeStream = vfs.src(this.config.extraDependencies, {
-         cwdbase: true,
-         nodir: true,
-         passthrough: true,
+        cwdbase: true,
+        nodir: true,
+        passthrough: true,
       });
       dependenciesStream = dependenciesStream.pipe(includeStream);
     }
@@ -149,7 +150,6 @@ export class PolymerProject {
   getParentFile(childPath: string): SplitFile {
     return this._parts.get(childPath);
   }
-
 }
 
 /**
@@ -186,11 +186,8 @@ export class SplitFile {
  * Splits HTML files, extracting scripts and styles into separate `File`s.
  */
 class HtmlSplitter extends Transform {
-
-  static isInlineScript = pred.AND(
-    pred.hasTagName('script'),
-    pred.NOT(pred.hasAttr('src'))
-  );
+  static isInlineScript =
+      pred.AND(pred.hasTagName('script'), pred.NOT(pred.hasAttr('src')));
 
   _project: PolymerProject;
 
@@ -209,15 +206,18 @@ class HtmlSplitter extends Transform {
         for (let i = 0; i < scriptTags.length; i++) {
           const scriptTag = scriptTags[i];
           const source = dom5.getTextContent(scriptTag);
-          const typeAtribute = dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
+          const typeAtribute =
+              dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
           const extension = extensionsForType[typeAtribute];
           // If we don't recognize the script type attribute, don't split out.
           if (!extension) {
             continue;
           }
 
-          const childFilename = `${osPath.basename(filePath)}_script_${i}.${extension}`;
-          const childPath = osPath.join(osPath.dirname(filePath), childFilename);
+          const childFilename =
+              `${osPath.basename(filePath)}_script_${i}.${extension}`;
+          const childPath =
+              osPath.join(osPath.dirname(filePath), childFilename);
           scriptTag.childNodes = [];
           dom5.setAttribute(scriptTag, 'src', childFilename);
           const scriptFile = new File({
@@ -253,11 +253,8 @@ class HtmlSplitter extends Transform {
  * Joins HTML files split by `Splitter`.
  */
 class HtmlRejoiner extends Transform {
-
-  static isExternalScript = pred.AND(
-    pred.hasTagName('script'),
-    pred.hasAttr('src')
-  );
+  static isExternalScript =
+      pred.AND(pred.hasTagName('script'), pred.hasAttr('src'));
 
   _project: PolymerProject;
 
@@ -304,7 +301,8 @@ class HtmlRejoiner extends Transform {
     for (let i = 0; i < scriptTags.length; i++) {
       const scriptTag = scriptTags[i];
       const srcAttribute = dom5.getAttribute(scriptTag, 'src');
-      const scriptPath = osPath.join(osPath.dirname(splitFile.path), srcAttribute);
+      const scriptPath =
+          osPath.join(osPath.dirname(splitFile.path), srcAttribute);
       if (splitFile.parts.has(scriptPath)) {
         const scriptSource = splitFile.parts.get(scriptPath);
         dom5.setTextContent(scriptTag, scriptSource);
@@ -320,6 +318,5 @@ class HtmlRejoiner extends Transform {
       path: filePath,
       contents: new Buffer(joinedContents),
     });
-
   }
 }

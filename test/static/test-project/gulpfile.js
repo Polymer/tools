@@ -45,36 +45,38 @@ gulp.task('test1', ['clean'], (cb) => {
 
   // process source files in the project
   let sources = project.sources()
-    .pipe(project.splitHtml())
-    // add compilers or optimizers here!
-    // TODO(justinfagnani): add in default optimizer passes
-    .pipe(project.rejoinHtml());
+                    .pipe(project.splitHtml())
+                    // add compilers or optimizers here!
+                    // TODO(justinfagnani): add in default optimizer passes
+                    .pipe(project.rejoinHtml());
 
   // process dependencies
   let dependencies = project.dependencies()
-    .pipe(project.splitHtml())
-    // add compilers or optimizers here!
-    // TODO(justinfagnani): add in default optimizer passes
-    .pipe(project.rejoinHtml());
+                         .pipe(project.splitHtml())
+                         // add compilers or optimizers here!
+                         // TODO(justinfagnani): add in default optimizer passes
+                         .pipe(project.rejoinHtml());
 
   // merge the source and dependencies streams to we can analyze the project
-  let allFiles = mergeStream(sources, dependencies)
-    .pipe(project.analyzer);
+  let allFiles = mergeStream(sources, dependencies).pipe(project.analyzer);
 
   // fork the stream in case downstream transformers mutate the files
   // this fork will vulcanize the project
-  let bundledPhase = fork(allFiles)
-    .pipe(project.bundler)
-    // write to the bundled folder
-    // TODO(justinfagnani): allow filtering of files before writing
-    .pipe(gulp.dest('build/bundled'));
+  let bundledPhase =
+      fork(allFiles)
+          .pipe(project.bundler)
+          // write to the bundled folder
+          // TODO(justinfagnani): allow filtering of files before writing
+          .pipe(gulp.dest('build/bundled'));
 
-  let unbundledPhase = fork(allFiles)
-    // write to the unbundled folder
-    // TODO(justinfagnani): allow filtering of files before writing
-    .pipe(gulp.dest('build/unbundled'));
+  let unbundledPhase =
+      fork(allFiles)
+          // write to the unbundled folder
+          // TODO(justinfagnani): allow filtering of files before writing
+          .pipe(gulp.dest('build/unbundled'));
 
-  // Once the unbundled build stream is complete, create a service worker for the build
+  // Once the unbundled build stream is complete, create a service worker for
+  // the build
   let unbundledPostProcessing = waitFor(unbundledPhase).then(() => {
     return addServiceWorker({
       project: project,
@@ -84,7 +86,8 @@ gulp.task('test1', ['clean'], (cb) => {
     });
   });
 
-  // Once the bundled build stream is complete, create a service worker for the build
+  // Once the bundled build stream is complete, create a service worker for the
+  // build
   let bundledPostProcessing = waitFor(bundledPhase).then(() => {
     return addServiceWorker({
       project: project,
