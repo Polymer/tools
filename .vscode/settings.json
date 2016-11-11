@@ -2,6 +2,7 @@
 {
   "clang-format.style": "file",
   "clang-format.formatOnSave": true,
+  "editor.formatOnType": true,
   "files.exclude": {
     "dom5.js": true,
     "dom5.d.ts": true
