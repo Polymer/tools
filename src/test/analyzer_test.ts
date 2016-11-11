@@ -27,7 +27,7 @@ import {HtmlParser} from '../html/html-parser';
 import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {ParsedCssDocument} from '../css/css-document';
-import {Document, ScannedImport, ScannedInlineDocument} from '../model/model';
+import {Document, Import, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 
@@ -145,13 +145,10 @@ suite('Analyzer', () => {
         async() => {
           const document =
               await analyzer.analyze('static/analysis/behaviors/behavior.html');
-
           // TODO(justinfagnani): make a shallow option and check that this only
-          // has
-          // itself and an inline document, but not the sub-document. For now
-          // check
-          // that this fixture has 4 documents: behavior.html, subbehavior.html,
-          // and their inline js documents
+          // has itself and an inline document, but not the sub-document. For
+          // now check that this fixture has 4 documents: behavior.html,
+          // subbehavior.html, and their inline js documents
           const documents = document.getByKind('document');
           assert.equal(documents.size, 4);
 
@@ -214,7 +211,7 @@ suite('Analyzer', () => {
     // documents don't add a document feature for their container until after
     // resolution, then the element can't find them and throws.
     test(
-        'an inline document can find features from its container document',
+        'an inline document can find behaviors from its container document',
         async() => {
           const document = await analyzer.analyze(
               'static/analysis/behaviors/elementdir/element.html');
@@ -324,6 +321,51 @@ suite('Analyzer', () => {
       await analyzer.analyze('static/caching/file2.html');
     });
 
+    test('handles mutually recursive documents', async() => {
+      const document = await analyzer.analyze('static/circular/mutual-a.html');
+      const shallowFeatures = document.getFeatures(false);
+      assert.deepEqual(
+          Array.from(shallowFeatures)
+              .filter(f => f.kinds.has('document'))
+              .map(f => (f as Document).url),
+          ['static/circular/mutual-a.html']);
+      assert.deepEqual(
+          Array.from(shallowFeatures)
+              .filter(f => f.kinds.has('import'))
+              .map(f => (f as Import).url),
+          ['static/circular/mutual-b.html']);
+
+      const deepFeatures = document.getFeatures(true);
+      assert.deepEqual(
+          Array.from(deepFeatures)
+              .filter(f => f.kinds.has('document'))
+              .map(f => (f as Document).url),
+          ['static/circular/mutual-a.html', 'static/circular/mutual-b.html']);
+      assert.deepEqual(
+          Array.from(deepFeatures)
+              .filter(f => f.kinds.has('import'))
+              .map(f => (f as Import).url),
+          ['static/circular/mutual-b.html', 'static/circular/mutual-a.html']);
+    });
+
+    test('handles a document importing itself', async() => {
+      const document =
+          await analyzer.analyze('static/circular/self-import.html');
+      const features = document.getFeatures(true);
+      assert.deepEqual(
+          Array.from(features)
+              .filter(f => f.kinds.has('document'))
+              .map(f => (f as Document).url),
+          ['static/circular/self-import.html']);
+      assert.deepEqual(
+          Array.from(features)
+              .filter(f => f.kinds.has('import'))
+              .map(f => (f as Import).url),
+          [
+            'static/circular/self-import.html',
+            'static/circular/self-import.html'
+          ]);
+    });
   });
 
   // TODO: reconsider whether we should test these private methods.

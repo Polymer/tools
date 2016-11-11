@@ -231,6 +231,9 @@ export class Analyzer {
     this._analyzedDocumentPromises.clear();
   }
 
+  /**
+   * Scan a toplevel document given its url and optionally its contents.
+   */
   private async _scan(resolvedUrl: string, contents?: string):
       Promise<ScannedDocument> {
     const cachedResult = this._scannedDocumentPromises.get(resolvedUrl);
@@ -242,30 +245,35 @@ export class Analyzer {
       // the Promise is cached before anything else happens.
       await Promise.resolve();
       const document = await this._parse(resolvedUrl, contents);
-      return this._scanDocument(document);
+      return this._scanDocument(document, false);
     })();
     this._scannedDocumentPromises.set(resolvedUrl, promise);
-    return promise;
+    const scannedDocument = await promise;
+    await this._scanDependencies(scannedDocument);
+    return scannedDocument;
   }
 
   /**
    * Parses and scans a document from source.
    */
-  private async _scanSource(
+  private async _scanInlineSource(
       type: string, contents: string, url: string,
       inlineInfo?: InlineDocInfo<any>,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
-    const document =
+    const parsedDoc =
         this._parseContents(type, contents, resolvedUrl, inlineInfo);
-    return await this._scanDocument(document, attachedComment);
+    const scannedDoc =
+        await this._scanDocument(parsedDoc, true, attachedComment);
+    await this._scanDependencies(scannedDoc);
+    return scannedDoc;
   }
 
   /**
    * Scans a parsed Document object.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>,
+      document: ParsedDocument<any, any>, isInline: boolean,
       maybeAttachedComment?: string): Promise<ScannedDocument> {
     const warnings: Warning[] = [];
     const scannedFeatures = await this._getScannedFeatures(document);
@@ -276,34 +284,47 @@ export class Analyzer {
       firstScannedFeature.applyHtmlComment(maybeAttachedComment);
     }
 
-    const scannedDependencies: ScannedFeature[] = scannedFeatures.filter(
-        (e) =>
-            e instanceof ScannedInlineDocument || e instanceof ScannedImport);
+    const scannedDocument =
+        new ScannedDocument(document, scannedFeatures, isInline, warnings);
+
+    if (!isInline) {
+      this._scannedDocuments.set(scannedDocument.url, scannedDocument);
+    }
+    return scannedDocument;
+  }
+
+  /**
+   * Scan all the dependencies of the given scanned document.
+   *
+   * This must be called exactly once per scanned document, as we mutate
+   * the given scannedDocument by adding warnings.
+   */
+  private async _scanDependencies(scannedDocument: ScannedDocument) {
+    const scannedDependencies: ScannedFeature[] =
+        scannedDocument.features.filter(
+            (e) => e instanceof ScannedInlineDocument ||
+                e instanceof ScannedImport);
     const scannedSubDocuments =
         scannedDependencies.map(async(scannedDependency) => {
           if (scannedDependency instanceof ScannedInlineDocument) {
             return this._scanInlineDocument(
-                scannedDependency, document, warnings);
+                scannedDependency,
+                scannedDocument.document,
+                scannedDocument.warnings);
           } else if (scannedDependency instanceof ScannedImport) {
             // TODO(garlicnation): Move this logic into model/document. During
             // the recursive feature walk, features from lazy imports
             // should be marked.
             if (scannedDependency.type !== 'lazy-html-import') {
-              return this._scanImport(scannedDependency, warnings);
+              return this._scanImport(
+                  scannedDependency, scannedDocument.warnings);
             }
             return null;
           } else {
             throw new Error(`Unexpected dependency type: ${scannedDependency}`);
           }
         });
-
-    const dependencies = (await Promise.all(scannedSubDocuments))
-                             .filter(s => !!s) as ScannedDocument[];
-
-    const scannedDocument =
-        new ScannedDocument(document, dependencies, scannedFeatures, warnings);
-    this._scannedDocuments.set(scannedDocument.url, scannedDocument);
-    return scannedDocument;
+    await Promise.all(scannedSubDocuments);
   }
 
   /**
@@ -320,14 +341,13 @@ export class Analyzer {
     };
     const inlineInfo = {locationOffset, astNode: inlineDoc.astNode};
     try {
-      const scannedDocument = await this._scanSource(
+      const scannedDocument = await this._scanInlineSource(
           inlineDoc.type,
           inlineDoc.contents,
           containingDocument.url,
           inlineInfo,
           inlineDoc.attachedComment);
       inlineDoc.scannedDocument = scannedDocument;
-      inlineDoc.scannedDocument.isInline = true;
       return scannedDocument;
     } catch (err) {
       if (err instanceof WarningCarryingException) {

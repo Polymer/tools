@@ -31,19 +31,18 @@ import {SourceRange} from './source-range';
  */
 export class ScannedDocument {
   document: ParsedDocument<any, any>;
-  dependencies: ScannedDocument[];
   features: ScannedFeature[];
   isInline = false;
   sourceRange: SourceRange|undefined = undefined;  // TODO(rictic): track this
   warnings: Warning[];
 
   constructor(
-      document: ParsedDocument<any, any>, dependencies: ScannedDocument[],
-      features: ScannedFeature[], warnings?: Warning[]) {
+      document: ParsedDocument<any, any>, features: ScannedFeature[],
+      isInline: boolean, warnings?: Warning[]) {
     this.document = document;
-    this.dependencies = dependencies;
     this.features = features;
     this.warnings = warnings || [];
+    this.isInline = isInline;
   }
 
   get url() {
