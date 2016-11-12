@@ -27,7 +27,8 @@ import {HtmlParser} from '../html/html-parser';
 import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {ParsedCssDocument} from '../css/css-document';
-import {Document, Import, ScannedImport, ScannedInlineDocument} from '../model/model';
+import {Document, ScannedImport, Import, ScannedInlineDocument} from '../model/model';
+import {UrlLoader} from '../url-loader/url-loader';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 
@@ -521,6 +522,65 @@ suite('Analyzer', () => {
 
       assert.deepEqual(
           testSeed.events.map(e => e.name), ['fired-event', 'data-changed']);
+    });
+  });
+
+  suite.skip('race conditions and caching', () => {
+    const wait = () =>
+        new Promise((resolve) => setTimeout(resolve, Math.random() * 30));
+    class RacyUrlLoader implements UrlLoader {
+      constructor(public map: Map<string, string>) {
+      }
+      canLoad() {
+        return true;
+      }
+      async load(path: string) {
+        await wait();
+        const result = this.map.get(path);
+        if (result != null) {
+          return result;
+        }
+        throw new Error(`no known contents for ${path}`);
+      }
+    }
+    test('editor simulator of imports that import a common dep', async() => {
+      // Here we're simulating a lot of noop-changes to base.html, which has
+      // two imports, which mutually import a common dep. This stresses the
+      // analyzer's caching.
+      const contentsMap = new Map<string, string>([
+        [
+          'base.html',
+          `<link rel="import" href="a.html">\n<link rel="import" href="b.html">`
+        ],
+        ['a.html', `<link rel="import" href="common.html">`],
+        ['b.html', `<link rel="import" href="common.html">`],
+        ['common.html', `<custom-el></custom-el>`],
+      ]);
+      const analyzer =
+          new Analyzer({urlLoader: new RacyUrlLoader(contentsMap)});
+      const promises: Promise<Document>[] = [];
+      for (let i = 0; i < 30; i++) {
+        await wait();
+        for (const key of contentsMap) {
+          if (Math.random() > 0.5) {
+            analyzer.analyze(key[0], key[1]);
+          }
+        }
+        promises.push(analyzer.analyze('base.html'));
+      }
+      const documents = await Promise.all(promises);
+      for (const document of documents) {
+        const imports = Array.from(document.getByKind('import'));
+        assert.deepEqual(
+            imports.map(m => m.url).sort(),
+            ['a.html', 'b.html', 'common.html', 'common.html']);
+        const docs = Array.from(document.getByKind('document'));
+        assert.deepEqual(
+            docs.map(d => d.url).sort(),
+            ['a.html', 'b.html', 'base.html', 'common.html']);
+        const refs = Array.from(document.getByKind('element-reference'));
+        assert.deepEqual(refs.map(ref => ref.tagName), ['custom-el']);
+      }
     });
   });
 });
