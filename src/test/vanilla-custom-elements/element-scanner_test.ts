@@ -51,13 +51,19 @@ suite('VanillaElementScanner', () => {
 
   test('Finds elements', () => {
     assert.deepEqual(elementsList.map(e => e.tagName).sort(), [
-      'anonymous-class', 'class-declaration', 'class-expression',
-      'vanilla-with-observed-attributes', 'register-before-declaration',
+      'anonymous-class',
+      'class-declaration',
+      'class-expression',
+      'vanilla-with-observed-attributes',
+      'register-before-declaration',
       'register-before-expression'
     ].sort());
     assert.deepEqual(elementsList.map(e => e.className).sort(), [
-      undefined, 'ClassDeclaration', 'ClassExpression',
-      'WithObservedAttributes', 'RegisterBeforeDeclaration',
+      undefined,
+      'ClassDeclaration',
+      'ClassExpression',
+      'WithObservedAttributes',
+      'RegisterBeforeDeclaration',
       'RegisterBeforeExpression'
     ].sort());
     assert.deepEqual(elementsList.map(e => e.superClass).sort(), [

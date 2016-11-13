@@ -50,7 +50,9 @@ suite('BehaviorScanner', () => {
 
   test('Finds behavior object assignments', () => {
     assert.deepEqual(behaviorsList.map(b => b.className).sort(), [
-      'SimpleBehavior', 'AwesomeBehavior', 'Really.Really.Deep.Behavior',
+      'SimpleBehavior',
+      'AwesomeBehavior',
+      'Really.Really.Deep.Behavior',
       'CustomBehaviorList'
     ].sort());
   });
@@ -91,7 +93,9 @@ suite('BehaviorScanner', () => {
         behaviors.get('Really.Really.Deep.Behavior')!.behaviorAssignments;
     assert.deepEqual(
         childBehaviors.map((b: ScannedBehaviorAssignment) => b.name), [
-          'SimpleBehavior', 'CustomNamedBehavior', 'Really.Really.Deep.Behavior'
+          'SimpleBehavior',
+          'CustomNamedBehavior',
+          'Really.Really.Deep.Behavior'
         ]);
     assert.deepEqual(
         deepChainedBehaviors.map((b: ScannedBehaviorAssignment) => b.name),

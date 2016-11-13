@@ -66,7 +66,8 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
     // a visitor to break early, or to skip a subtree of the AST. We need to
     // track this ourselves because we're running all the visitors at once.
     const _shouldSkip =
-        (visitor: Visitor, callbackName: string,
+        (visitor: Visitor,
+         callbackName: string,
          nodeType: typeof __exampleNode.type) => {
           const skipRecord = this.visitorSkips.get(visitor);
           if (!skipRecord) {
@@ -91,7 +92,9 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
         };
 
     const handleVisitorResult =
-        (visitorOption: VisitorOption, callbackName: string, visitor: Visitor,
+        (visitorOption: VisitorOption,
+         callbackName: string,
+         visitor: Visitor,
          nodeType: typeof __exampleNode.type) => {
           switch (visitorOption) {
             case VisitorOption.Remove:

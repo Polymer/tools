@@ -26,7 +26,8 @@ const p = dom5.predicates;
 const isJsScriptNode = p.AND(
     p.hasTagName('script'),
     p.OR(
-        p.NOT(p.hasAttr('type')), p.hasAttrValue('type', 'text/javascript'),
+        p.NOT(p.hasAttr('type')),
+        p.hasAttrValue('type', 'text/javascript'),
         p.hasAttrValue('type', 'application/javascript'),
         p.hasAttrValue('type', 'module')));
 
@@ -43,16 +44,23 @@ export class HtmlScriptScanner implements HtmlScanner {
         if (src) {
           const importUrl = resolveUrl(document.url, src);
           features.push(new ScannedScriptTagImport(
-              'html-script', importUrl, document.sourceRangeForNode(node)!,
-              document.sourceRangeForAttributeValue(node, 'src')!, node));
+              'html-script',
+              importUrl,
+              document.sourceRangeForNode(node)!,
+              document.sourceRangeForAttributeValue(node, 'src')!,
+              node));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const attachedCommentText = getAttachedCommentText(node) || '';
           const contents = dom5.getTextContent(node);
 
           features.push(new ScannedInlineDocument(
-              'js', contents, locationOffset, attachedCommentText,
-              document.sourceRangeForNode(node)!, node));
+              'js',
+              contents,
+              locationOffset,
+              attachedCommentText,
+              document.sourceRangeForNode(node)!,
+              node));
         }
       }
     };

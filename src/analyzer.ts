@@ -96,15 +96,19 @@ export class Analyzer {
       [
         'html',
         [
-          new HtmlImportScanner(lazyEdges), new HtmlScriptScanner(),
-          new HtmlStyleScanner(), new DomModuleScanner(),
-          new CssImportScanner(), new HtmlCustomElementReferenceScanner()
+          new HtmlImportScanner(lazyEdges),
+          new HtmlScriptScanner(),
+          new HtmlStyleScanner(),
+          new DomModuleScanner(),
+          new CssImportScanner(),
+          new HtmlCustomElementReferenceScanner()
         ]
       ],
       [
         'js',
         [
-          new PolymerElementScanner(), new BehaviorScanner(),
+          new PolymerElementScanner(),
+          new BehaviorScanner(),
           new VanillaElementScanner()
         ]
       ],
@@ -317,8 +321,11 @@ export class Analyzer {
     const inlineInfo = {locationOffset, astNode: inlineDoc.astNode};
     try {
       const scannedDocument = await this._scanSource(
-          inlineDoc.type, inlineDoc.contents, containingDocument.url,
-          inlineInfo, inlineDoc.attachedComment);
+          inlineDoc.type,
+          inlineDoc.contents,
+          containingDocument.url,
+          inlineInfo,
+          inlineDoc.attachedComment);
       inlineDoc.scannedDocument = scannedDocument;
       inlineDoc.scannedDocument.isInline = true;
       return scannedDocument;

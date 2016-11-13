@@ -44,7 +44,11 @@ export class ScannedDomModule implements Resolvable {
 
   resolve() {
     return new DomModule(
-        this.node, this.id, this.comment, this.sourceRange, this.astNode,
+        this.node,
+        this.id,
+        this.comment,
+        this.sourceRange,
+        this.astNode,
         this.warnings);
   }
 }
@@ -84,8 +88,10 @@ export class DomModuleScanner implements HtmlScanner {
     await visit((node) => {
       if (isDomModule(node)) {
         domModules.push(new ScannedDomModule(
-            dom5.getAttribute(node, 'id'), node,
-            document.sourceRangeForNode(node)!, node));
+            dom5.getAttribute(node, 'id'),
+            node,
+            document.sourceRangeForNode(node)!,
+            node));
       }
     });
     return domModules;

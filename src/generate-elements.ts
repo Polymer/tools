@@ -111,7 +111,8 @@ function serializeElement(
 }
 
 function serializeProperty(
-    resolvedElement: ResolvedElement, elementPath: string,
+    resolvedElement: ResolvedElement,
+    elementPath: string,
     resolvedProperty: ResolvedProperty): Property {
   const property: Property = {
     name: resolvedProperty.name,
@@ -128,7 +129,8 @@ function serializeProperty(
 }
 
 function serializeAttribute(
-    resolvedElement: ResolvedElement, elementPath: string,
+    resolvedElement: ResolvedElement,
+    elementPath: string,
     resolvedAttribute: ResolvedAttribute): Attribute {
   const attribute: Attribute = {
     name: resolvedAttribute.name,

@@ -93,7 +93,8 @@ export function getLocationInfoForPosition(
 }
 
 function _getLocationInfoForPosition(
-    node: parse5.ASTNode, position: SourcePosition,
+    node: parse5.ASTNode,
+    position: SourcePosition,
     document: ParsedHtmlDocument): undefined|LocationResult {
   const sourceRange = document.sourceRangeForNode(node);
   const location = node.__location;
@@ -249,7 +250,8 @@ function comparePositionAndRange(
 }
 
 function _findLocationInChildren(
-    node: parse5.ASTNode, position: SourcePosition,
+    node: parse5.ASTNode,
+    position: SourcePosition,
     document: ParsedHtmlDocument) {
   for (const child of node.childNodes || []) {
     const result = _getLocationInfoForPosition(child, position, document);
@@ -267,7 +269,8 @@ function _findLocationInChildren(
 }
 
 function isPositionInsideRange(
-    position: SourcePosition, range: SourceRange|undefined,
+    position: SourcePosition,
+    range: SourceRange|undefined,
     includeEdges?: boolean) {
   if (!range) {
     return false;
@@ -288,9 +291,10 @@ type Parse5Location = parse5.LocationInfo|parse5.ElementLocationInfo;
  * correct LocationResult.
  */
 function getAttributeLocation(
-    node: parse5.ASTNode, position: SourcePosition,
-    document: ParsedHtmlDocument, location: Parse5Location): AttributesSection|
-    AttributeValue|undefined {
+    node: parse5.ASTNode,
+    position: SourcePosition,
+    document: ParsedHtmlDocument,
+    location: Parse5Location): AttributesSection|AttributeValue|undefined {
   /**
    * TODO(rictic): upstream to @types the fact that regular locations (not just
    * element locations) can have attrs sometimes.

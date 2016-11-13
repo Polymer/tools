@@ -35,8 +35,11 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
         }
         const importUrl = resolveUrl(document.url, source);
         imports.push(new ScannedImport(
-            'js-import', importUrl, document.sourceRangeForNode(node)!,
-            document.sourceRangeForNode(node.source)!, node));
+            'js-import',
+            importUrl,
+            document.sourceRangeForNode(node)!,
+            document.sourceRangeForNode(node.source)!,
+            node));
       }
     });
     return imports;

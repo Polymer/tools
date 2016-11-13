@@ -26,13 +26,18 @@ const linkTag = p.hasTagName('link');
 const notCssLink = p.NOT(p.hasAttrValue('type', 'css'));
 
 const isHtmlImportNode = p.AND(
-    linkTag, p.hasAttr('href'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
-    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'lazy-import')), notCssLink,
+    linkTag,
+    p.hasAttr('href'),
+    p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'lazy-import')),
+    notCssLink,
     p.NOT(p.parentMatches(p.hasTagName('template'))));
 
 const isLazyImportNode = p.AND(
-    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
-    p.hasAttr('href'), p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')),
+    p.hasTagName('link'),
+    p.hasSpaceSeparatedAttrValue('rel', 'lazy-import'),
+    p.hasAttr('href'),
+    p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')),
     notCssLink,
     p.parentMatches(
         p.AND(p.hasTagName('dom-module'), p.NOT(p.hasTagName('template')))));
@@ -62,8 +67,11 @@ export class HtmlImportScanner implements HtmlScanner {
       const href = dom5.getAttribute(node, 'href')!;
       const importUrl = resolveUrl(document.url, href);
       imports.push(new ScannedImport(
-          type, importUrl, document.sourceRangeForNode(node)!,
-          document.sourceRangeForAttributeValue(node, 'href')!, node));
+          type,
+          importUrl,
+          document.sourceRangeForNode(node)!,
+          document.sourceRangeForAttributeValue(node, 'href')!,
+          node));
     });
     if (this._lazyEdges) {
       const edges = this._lazyEdges.get(document.url);

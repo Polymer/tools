@@ -26,19 +26,23 @@ export function featureScanner(document: JavaScriptDocument) {
   const features: ScannedPolymerCoreFeature[] = [];
 
   function _extractDesc(
-      feature: ScannedPolymerCoreFeature, _node: estree.CallExpression,
+      feature: ScannedPolymerCoreFeature,
+      _node: estree.CallExpression,
       parent: estree.Node) {
     feature.description = esutil.getAttachedComment(parent) || '';
   }
 
   function _extractProperties(
-      feature: ScannedPolymerCoreFeature, node: estree.CallExpression,
+      feature: ScannedPolymerCoreFeature,
+      node: estree.CallExpression,
       _parent: estree.Node) {
     const featureNode = node.arguments[0];
     if (featureNode.type !== 'ObjectExpression') {
       console.warn(
           'Expected first argument to Polymer.Base._addFeature to be an object.',
-          'Got', featureNode.type, 'instead.');
+          'Got',
+          featureNode.type,
+          'instead.');
       return;
     }
     if (!featureNode.properties) {

@@ -83,7 +83,9 @@ suite('HtmlImportScanner', () => {
 
       const features = await scanner.scan(document, visit);
       assert.deepEqual(features.map(f => f.type), [
-        'html-import', 'lazy-html-import', 'lazy-html-import',
+        'html-import',
+        'lazy-html-import',
+        'lazy-html-import',
         'lazy-html-import'
       ]);
       assert.deepEqual(

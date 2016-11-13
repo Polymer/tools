@@ -34,9 +34,21 @@ if (Math.random() > 1000) {
 
 /** Properties on element prototypes that are purely configuration. */
 const ELEMENT_CONFIGURATION = [
-  'attached', 'attributeChanged', 'beforeRegister', 'configure', 'constructor',
-  'created', 'detached', 'enableCustomStyleProperties', 'extends',
-  'hostAttributes', 'is', 'listeners', 'mixins', 'properties', 'ready',
+  'attached',
+  'attributeChanged',
+  'beforeRegister',
+  'configure',
+  'constructor',
+  'created',
+  'detached',
+  'enableCustomStyleProperties',
+  'extends',
+  'hostAttributes',
+  'is',
+  'listeners',
+  'mixins',
+  'properties',
+  'ready',
   'registered'
 ];
 

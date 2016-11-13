@@ -161,8 +161,8 @@ export function hasTag(
 export function getTag(
     jsdoc: Annotation|null|undefined, tagName: string): (Tag|null);
 export function getTag(
-    jsdoc: Annotation|null|undefined, tagName: string,
-    key: string): (string|null);
+    jsdoc: Annotation|null|undefined, tagName: string, key: string): (string|
+                                                                      null);
 export function getTag(
     jsdoc: Annotation|null|undefined, tagName: string, key?: string): any {
   if (!jsdoc || !jsdoc.tags)

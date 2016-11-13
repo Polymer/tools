@@ -291,7 +291,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     test('Get attribute completions when adding a new attribute', async() => {
       await editorService.fileChanged(indexFile, indexContents);
       const partialContents = [
-        `<behavior-test-elem >`, `<behavior-test-elem existing-attr>`,
+        `<behavior-test-elem >`,
+        `<behavior-test-elem existing-attr>`,
         `<behavior-test-elem existing-attr></behavior-test-elem>`,
         `<behavior-test-elem existing-attr></wrong-closing-tag>`
       ];

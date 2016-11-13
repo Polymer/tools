@@ -264,7 +264,8 @@ suite('Analyzer', () => {
             ['static/dependencies/inline-and-imports.html', 'js', true],
             ['static/dependencies/subfolder/in-folder.html', 'html', false],
             [
-              'static/dependencies/subfolder/subfolder-sibling.html', 'html',
+              'static/dependencies/subfolder/subfolder-sibling.html',
+              'html',
               false
             ],
             ['static/dependencies/inline-and-imports.html', 'css', true],

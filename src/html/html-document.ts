@@ -276,9 +276,9 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       // TODO(rictic): infer this from doc.astNode's indentation.
       const expectedIndentation = 2;
 
-      dom5.setTextContent(
-          doc.astNode, '\n' + doc.stringify({indent: expectedIndentation}) +
-              '  '.repeat(expectedIndentation - 1));
+      dom5.setTextContent(doc.astNode, '\n' + doc.stringify({
+        indent: expectedIndentation
+      }) + '  '.repeat(expectedIndentation - 1));
     }
 
     removeFakeNodes(selfClone.ast);
@@ -354,6 +354,19 @@ function getAttributeLocation(
  * Source: https://www.w3.org/TR/html5/syntax.html#void-elements
  */
 const voidTagNames = new Set([
-  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link',
-  'meta', 'param', 'source', 'track', 'wbr'
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'keygen',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr'
 ]);

@@ -221,7 +221,8 @@ export function getFlattenedAndResolvedBehaviors(
 }
 
 function _getFlattenedAndResolvedBehaviors(
-    behaviorAssignments: ScannedBehaviorAssignment[], document: Document,
+    behaviorAssignments: ScannedBehaviorAssignment[],
+    document: Document,
     resolvedBehaviors: Set<Behavior>) {
   const warnings: Warning[] = [];
   for (const behavior of behaviorAssignments) {

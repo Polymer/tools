@@ -22,8 +22,10 @@ import {ScannedImport} from '../model/model';
 const p = dom5.predicates;
 
 const isCssImportNode = p.AND(
-    p.hasTagName('link'), p.hasSpaceSeparatedAttrValue('rel', 'import'),
-    p.hasAttr('href'), p.hasAttrValue('type', 'css'),
+    p.hasTagName('link'),
+    p.hasSpaceSeparatedAttrValue('rel', 'import'),
+    p.hasAttr('href'),
+    p.hasAttrValue('type', 'css'),
     p.parentMatches(p.hasTagName('dom-module')));
 
 export class CssImportScanner implements HtmlScanner {
@@ -38,8 +40,11 @@ export class CssImportScanner implements HtmlScanner {
         const href = dom5.getAttribute(node, 'href')!;
         const importUrl = resolveUrl(document.url, href);
         imports.push(new ScannedImport(
-            'css-import', importUrl, document.sourceRangeForNode(node)!,
-            document.sourceRangeForAttributeValue(node, 'href')!, node));
+            'css-import',
+            importUrl,
+            document.sourceRangeForNode(node)!,
+            document.sourceRangeForAttributeValue(node, 'href')!,
+            node));
       }
     });
     return imports;
