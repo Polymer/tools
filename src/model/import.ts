@@ -60,14 +60,17 @@ export class ScannedImport implements Resolvable {
 
   resolve(document: Document): Import|undefined {
     const importedDocument = document.analyzer._getDocument(this.url);
-    return importedDocument && new Import(
-                                   this.url,
-                                   this.type,
-                                   importedDocument,
-                                   this.sourceRange,
-                                   this.urlSourceRange,
-                                   this.astNode,
-                                   this.warnings);
+    if (!importedDocument) {
+      throw new Error(`no imported document with url ${this.url}`);
+    }
+    return new Import(
+        this.url,
+        this.type,
+        importedDocument,
+        this.sourceRange,
+        this.urlSourceRange,
+        this.astNode,
+        this.warnings);
   }
 }
 

@@ -16,6 +16,7 @@
 
 import * as path from 'path';
 
+import {AnalysisCache, getImportersOf} from './analysis-cache';
 import {CssParser} from './css/css-parser';
 import {HtmlCustomElementReferenceScanner} from './html/html-element-reference-scanner';
 import {HtmlImportScanner} from './html/html-import-scanner';
@@ -65,6 +66,68 @@ export type LazyEdgeMap = Map<string, string[]>;
  * which do the actual work of understanding different file types.
  */
 export class Analyzer {
+  private _cacheContext: AnalyzerCacheContext;
+  constructor(options: Options) {
+    this._cacheContext = new AnalyzerCacheContext(options);
+  }
+
+  /**
+   * Loads, parses and analyzes the root document of a dependency graph and its
+   * transitive dependencies.
+   *
+   * Note: The analyzer only supports analyzing a single root for now. This
+   * is because each analyzed document in the dependency graph has a single
+   * root. This mean that we can't properly analyze app-shell-style, lazy
+   * loading apps.
+   *
+   * @param contents Optional contents of the file when it is known without
+   * reading it from disk. Clears the caches so that the news contents is used
+   * and reanalyzed. Useful for editors that want to re-analyze changed files.
+   */
+  async analyze(url: string, contents?: string): Promise<Document> {
+    if (contents != null) {
+      this._cacheContext = this._cacheContext.fileChanged(url);
+    }
+    return this._cacheContext.analyze(url, contents);
+  }
+
+  async getTelemetryMeasurements(): Promise<Measurement[]> {
+    return this._cacheContext.getTelemetryMeasurements();
+  }
+
+  /**
+   * Clear all cached information from this analyzer instance.
+   *
+   * Note: if at all possible, instead tell the analyzer about the specific
+   * files that changed rather than clearing caches like this. Caching provides
+   * large performance gains.
+   */
+  clearCaches(): void {
+    this._cacheContext = this._cacheContext.clearCaches();
+  }
+
+  /**
+   * Loads the content at the provided resolved URL.
+   *
+   * Currently does no caching. If the provided contents are given then they
+   * are used instead of hitting the UrlLoader (e.g. when you have in-memory
+   * contents that should override disk).
+   */
+  async load(resolvedUrl: string, providedContents?: string) {
+    return this._cacheContext.load(resolvedUrl, providedContents);
+  }
+}
+
+/**
+ * Represents an Analyzer with a given AnalysisCache instance.
+ *
+ * Used to provide a consistent cache in the face of updates happening in
+ * parallel with analysis work. A given AnalyzerCacheContext is forked via
+ * either the fileChanged or clearCaches methods.
+ *
+ * For almost all purposes this is an entirely internal implementation detail.
+ */
+export class AnalyzerCacheContext {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser({sourceType: 'script'})],
@@ -80,16 +143,10 @@ export class Analyzer {
   private _loader: UrlLoader;
   private _resolver: UrlResolver|undefined;
 
-  private _parsedDocumentPromises =
-      new Map<string, Promise<ParsedDocument<any, any>>>();
-  private _scannedDocumentPromises =
-      new Map<string, Promise<ScannedDocument>>();
-  private _analyzedDocumentPromises = new Map<string, Promise<Document>>();
-
-  private _scannedDocuments = new Map<string, ScannedDocument>();
-  private _analyzedDocuments = new Map<string, Document>();
+  private _cache = new AnalysisCache();
 
   private _telemetryTracker = new TelemetryTracker();
+  private _generation = 0;
 
   private static _getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
     return new Map<string, Scanner<any, any, any>[]>([
@@ -120,8 +177,23 @@ export class Analyzer {
     this._resolver = options.urlResolver;
     this._parsers = options.parsers || this._parsers;
     this._lazyEdges = options.lazyEdges;
-    this._scanners =
-        options.scanners || Analyzer._getDefaultScanners(this._lazyEdges);
+    this._scanners = options.scanners ||
+        AnalyzerCacheContext._getDefaultScanners(this._lazyEdges);
+  }
+
+  /**
+   * Returns a copy of this cache context with proper cache invalidation.
+   */
+  fileChanged(url: string) {
+    const resolvedUrl = this._resolveUrl(url);
+    const dependants =
+        getImportersOf(resolvedUrl, this._cache.analyzedDocuments.values());
+    console.log(`Analyzed documents: ${JSON.stringify(
+        Array.from(this._cache.analyzedDocuments.values()).map(d => d.url))}`);
+    console.log(
+        `Dependants of ${url}: ${JSON.stringify(Array.from(dependants))}`);
+    const newCache = this._cache.onPathChanged(resolvedUrl, dependants);
+    return this._fork(newCache);
   }
 
   /**
@@ -134,26 +206,13 @@ export class Analyzer {
    * loading apps.
    *
    * @param contents Optional contents of the file when it is known without
-   * reading it from disk. Clears the caches so that the news contents is used
-   * and reanalyzed. Useful for editors that want to re-analyze changed files.
+   * reading it from disk. You should call fileChanged first before passing in
+   * contents, or you may get a cached result.
    */
   async analyze(url: string, contents?: string): Promise<Document> {
     const resolvedUrl = this._resolveUrl(url);
 
-    // if we're given new contents, clear the cache
-    // TODO(justinfagnani): It might be better to preserve a single code path
-    // for loading file contents via UrlLoaders, and just offer a method to
-    // re-analyze a particular file. Editors can use a UrlLoader that reads from
-    // it's internal buffers.
-    if (contents != null) {
-      this._scannedDocumentPromises.delete(resolvedUrl);
-      this._scannedDocuments.delete(resolvedUrl);
-      this._parsedDocumentPromises.delete(resolvedUrl);
-      this._analyzedDocuments.delete(resolvedUrl);
-      this._analyzedDocumentPromises.delete(resolvedUrl);
-    }
-
-    const cachedResult = this._analyzedDocumentPromises.get(resolvedUrl);
+    const cachedResult = this._cache.analyzedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -169,7 +228,7 @@ export class Analyzer {
       doneTiming();
       return document;
     })();
-    this._analyzedDocumentPromises.set(resolvedUrl, promise);
+    this._cache.analyzedDocumentPromises.set(resolvedUrl, promise);
     return promise;
   }
 
@@ -180,16 +239,16 @@ export class Analyzer {
   private _makeDocument(scannedDocument: ScannedDocument): Document {
     const resolvedUrl = scannedDocument.url;
 
-    if (this._analyzedDocuments.has(resolvedUrl)) {
+    if (this._cache.analyzedDocuments.has(resolvedUrl)) {
       throw new Error(`Internal error: document ${resolvedUrl} already exists`);
     }
 
     const document = new Document(scannedDocument, this);
-    if (!this._analyzedDocumentPromises.has(resolvedUrl)) {
-      this._analyzedDocumentPromises.set(
+    if (!this._cache.analyzedDocumentPromises.has(resolvedUrl)) {
+      this._cache.analyzedDocumentPromises.set(
           resolvedUrl, Promise.resolve(document));
     }
-    this._analyzedDocuments.set(resolvedUrl, document);
+    this._cache.analyzedDocuments.set(resolvedUrl, document);
     document.resolve();
     return document;
   }
@@ -204,11 +263,15 @@ export class Analyzer {
    */
   _getDocument(url: string): Document|undefined {
     const resolvedUrl = this._resolveUrl(url);
-    let document = this._analyzedDocuments.get(resolvedUrl);
+    let document = this._cache.analyzedDocuments.get(resolvedUrl);
     if (document) {
       return document;
     }
-    const scannedDocument = this._scannedDocuments.get(resolvedUrl);
+    const scannedDocument = this._cache.scannedDocuments.get(resolvedUrl);
+    if (!scannedDocument) {
+      throw new Error(`unable to find scanned or analyzed document ${resolvedUrl
+                      } in the generation ${this._generation} cache`);
+    }
     return scannedDocument && this._makeDocument(scannedDocument);
   }
 
@@ -223,12 +286,25 @@ export class Analyzer {
    * files that changed rather than clearing caches like this. Caching provides
    * large performance gains.
    */
-  clearCaches(): void {
-    this._scannedDocumentPromises.clear();
-    this._scannedDocuments.clear();
-    this._parsedDocumentPromises.clear();
-    this._analyzedDocuments.clear();
-    this._analyzedDocumentPromises.clear();
+  clearCaches(): AnalyzerCacheContext {
+    return this._fork(new AnalysisCache());
+  }
+
+  /**
+   * Return a copy, but with the given cache.
+   */
+  private _fork(cache: AnalysisCache): AnalyzerCacheContext {
+    const copy = new AnalyzerCacheContext({
+      lazyEdges: this._lazyEdges,
+      parsers: this._parsers,
+      scanners: this._scanners,
+      urlLoader: this._loader,
+      urlResolver: this._resolver
+    });
+    copy._telemetryTracker = this._telemetryTracker;
+    copy._cache = cache;
+    copy._generation = this._generation + 1;
+    return copy;
   }
 
   /**
@@ -236,7 +312,7 @@ export class Analyzer {
    */
   private async _scan(resolvedUrl: string, contents?: string):
       Promise<ScannedDocument> {
-    const cachedResult = this._scannedDocumentPromises.get(resolvedUrl);
+    const cachedResult = this._cache.scannedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -247,7 +323,7 @@ export class Analyzer {
       const document = await this._parse(resolvedUrl, contents);
       return this._scanDocument(document);
     })();
-    this._scannedDocumentPromises.set(resolvedUrl, promise);
+    this._cache.scannedDocumentPromises.set(resolvedUrl, promise);
     const scannedDocument = await promise;
     await this._scanDependencies(scannedDocument);
     return scannedDocument;
@@ -287,8 +363,17 @@ export class Analyzer {
         new ScannedDocument(document, scannedFeatures, warnings);
 
     if (!scannedDocument.isInline) {
-      this._scannedDocuments.set(scannedDocument.url, scannedDocument);
+      if (this._cache.scannedDocuments.has(scannedDocument.url)) {
+        throw new Error(
+            'Scanned document already in cache. This should never happen.');
+      }
+      console.log(
+          `added ${scannedDocument.url}` +
+          `  to the generation ${this._generation} cache`);
+      this._cache.scannedDocuments.set(scannedDocument.url, scannedDocument);
     }
+
+
     return scannedDocument;
   }
 
@@ -403,7 +488,7 @@ export class Analyzer {
 
   private async _parse(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
-    const cachedResult = this._parsedDocumentPromises.get(resolvedUrl);
+    const cachedResult = this._cache.parsedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
@@ -424,7 +509,7 @@ export class Analyzer {
       doneTiming();
       return parsedDoc;
     })();
-    this._parsedDocumentPromises.set(resolvedUrl, promise);
+    this._cache.parsedDocumentPromises.set(resolvedUrl, promise);
     return promise;
   }
 

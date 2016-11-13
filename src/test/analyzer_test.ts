@@ -151,7 +151,7 @@ suite('Analyzer', () => {
       assert.deepEqual(documentB.getWarnings(true), []);
     });
 
-    test.skip(
+    test(
         'analyzes multiple imports of the same behavior simultaneously',
         async() => {
           const result = await Promise.all([
@@ -396,21 +396,23 @@ suite('Analyzer', () => {
   suite('_parse()', () => {
 
     test('loads and parses an HTML document', async() => {
-      const doc = await analyzer['_parse']('static/html-parse-target.html');
+      const doc = await analyzer['_cacheContext']['_parse'](
+          'static/html-parse-target.html');
       assert.instanceOf(doc, ParsedHtmlDocument);
       assert.equal(doc.url, 'static/html-parse-target.html');
     });
 
     test('loads and parses a JavaScript document', async() => {
-      const doc = await analyzer['_parse']('static/js-elements.js');
+      const doc =
+          await analyzer['_cacheContext']['_parse']('static/js-elements.js');
       assert.instanceOf(doc, JavaScriptDocument);
       assert.equal(doc.url, 'static/js-elements.js');
     });
 
     test('returns a Promise that rejects for non-existant files', async() => {
-      await invertPromise(analyzer['_parse']('static/not-found'));
+      await invertPromise(
+          analyzer['_cacheContext']['_parse']('static/not-found'));
     });
-
   });
 
   suite('_getScannedFeatures()', () => {
@@ -421,8 +423,8 @@ suite('Analyzer', () => {
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
-      const features =
-          <ScannedImport[]>(await analyzer['_getScannedFeatures'](document));
+      const features = <ScannedImport[]>(
+          await analyzer['_cacheContext']['_getScannedFeatures'](document));
       assert.deepEqual(
           features.map(e => e.type),
           ['html-import', 'html-script', 'html-style']);
@@ -442,7 +444,8 @@ suite('Analyzer', () => {
         </body></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const features =
-          <ScannedImport[]>(await analyzer['_getScannedFeatures'](document))
+          <ScannedImport[]>(
+              await analyzer['_cacheContext']['_getScannedFeatures'](document))
               .filter(e => e instanceof ScannedImport);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
@@ -456,7 +459,7 @@ suite('Analyzer', () => {
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const features = <ScannedInlineDocument[]>(
-          await analyzer['_getScannedFeatures'](document));
+          await analyzer['_cacheContext']['_getScannedFeatures'](document));
 
       assert.equal(features.length, 2);
       assert.instanceOf(features[0], ScannedInlineDocument);
@@ -548,7 +551,7 @@ suite('Analyzer', () => {
     });
   });
 
-  suite.skip('race conditions and caching', () => {
+  suite('race conditions and caching', () => {
 
     class RacyUrlLoader implements UrlLoader {
       constructor(
@@ -585,6 +588,7 @@ suite('Analyzer', () => {
       const analyzer =
           new Analyzer({urlLoader: new RacyUrlLoader(contentsMap, waitFn)});
       const promises: Promise<Document>[] = [];
+      const intermediatePromises: Promise<void>[] = [];
       for (let i = 0; i < 30; i++) {
         await waitFn();
         for (const entry of contentsMap) {
@@ -592,22 +596,42 @@ suite('Analyzer', () => {
           const contents = entry[1];
           if (Math.random() > 0.5) {
             analyzer.analyze(path, contents);
+            if (Math.random() > 0.5) {
+              const p = analyzer.analyze(path, contents);
+              const cacheContext = analyzer['_cacheContext'];
+              intermediatePromises.push((async() => {
+                await p;
+                const docs = Array.from(
+                    cacheContext['_cache'].analyzedDocuments.values());
+                assert.isTrue(new Set(docs.map(d => d.url).sort()).has(path));
+              })());
+            }
           }
+          promises.push(analyzer.analyze('base.html'));
+          await Promise.all(promises);
         }
-        promises.push(analyzer.analyze('base.html'));
       }
+      await Promise.all(intermediatePromises);
       const documents = await Promise.all(promises);
       for (const document of documents) {
-        const imports = Array.from(document.getByKind('import'));
-        assert.sameMembers(
-            imports.map(m => m.url),
-            ['a.html', 'b.html', 'common.html', 'common.html']);
-        const docs = Array.from(document.getByKind('document'));
-        assert.sameMembers(
-            docs.map(d => d.url),
-            ['a.html', 'b.html', 'base.html', 'common.html']);
-        const refs = Array.from(document.getByKind('element-reference'));
-        assert.sameMembers(refs.map(ref => ref.tagName), ['custom-el']);
+        assert.deepEqual(document.url, 'base.html');
+        const localFeatures = document.getFeatures(false);
+        const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+        assert.deepEqual(kinds, [
+          ['document', 'html-document'],
+          ['import', 'html-import'],
+          ['import', 'html-import']
+        ]);
+        // const imports = Array.from(document.getByKind('import'));
+        // assert.sameMembers(
+        //     imports.map(m => m.url),
+        //     ['a.html', 'b.html', 'common.html', 'common.html']);
+        // const docs = Array.from(document.getByKind('document'));
+        // assert.sameMembers(
+        //     docs.map(d => d.url),
+        //     ['a.html', 'b.html', 'base.html', 'common.html']);
+        // const refs = Array.from(document.getByKind('element-reference'));
+        // assert.sameMembers(refs.map(ref => ref.tagName), ['custom-el']);
       }
     };
 
@@ -634,7 +658,8 @@ suite('Analyzer', () => {
      * code with a defined list of wait times should not be checked in.
      *
      * It's also worth noting that this code will be dependent on many other
-     * system factors, so it's only somewhat more reproducible, and may not end
+     * system factors, so it's only somewhat more reproducible, and may not
+     * end
      * up being very useful. If it isn't, we should delete it.
      */
     test.skip('somewhat more reproducable editor simulator', async() => {
@@ -655,15 +680,18 @@ suite('Analyzer', () => {
     });
 
     suite('deterministic tests', () => {
-      // Deterministic tests extracted from various failures of the above random
+      // Deterministic tests extracted from various failures of the above
+      // random
       // test.
 
       /**
        * This is an asynchronous keyed queue, useful for controlling the order
        * of results in order to make tests more deterministic.
        *
-       * It's intended to be used in fake loaders, scanners, etc, where the test
-       * provides the intended result on a file by file basis, with control over
+       * It's intended to be used in fake loaders, scanners, etc, where the
+       * test
+       * provides the intended result on a file by file basis, with control
+       * over
        * the order in which the results come in.
        */
       class KeyedQueue<Key, Result> {
@@ -729,7 +757,8 @@ suite('Analyzer', () => {
 
       /**
        * This crashed the analyzer as there was a race to _makeDocument,
-       * violating its constraint that there not already be a resolved Document
+       * violating its constraint that there not already be a resolved
+       * Document
        * for a given path.
        *
        * This test came out of debugging this issue:
