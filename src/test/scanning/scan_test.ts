@@ -51,7 +51,7 @@ suite('scan()', () => {
           }, 0);
         });
 
-        return [`a feature`];
+        return [`a feature` as any];
       },
     };
     let visitedVisitors: any[] = [];
