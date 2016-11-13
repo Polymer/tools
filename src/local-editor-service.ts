@@ -91,6 +91,9 @@ export class LocalEditorService extends EditorService {
             description: e.description,
             expandTo: location.kind === 'text' ?
                 `<${e.tagName}${attributesSpace}></${e.tagName}>` :
+                undefined,
+            expandToSnippet: location.kind === 'text' ?
+                this._generateAutoCompletionForElement(e) :
                 undefined
           };
         })
@@ -138,6 +141,18 @@ export class LocalEditorService extends EditorService {
       }
       return {kind: 'attributes', attributes};
     };
+  }
+
+  _generateAutoCompletionForElement(e: Element): string {
+    let autocompletion = `<${e.tagName}`;
+    let tabindex = 1;
+    if (e.attributes.length) {
+      autocompletion += ` $${tabindex++}`;
+    }
+    autocompletion += `>`;
+    // TODO(timvdlippe): once insertionPoints are implemented in analyzer, expand
+    // snippet with autocompletion for slots
+    return autocompletion + `</${e.tagName}>$0`;
   }
 
   async getWarningsForFile(localPath: string): Promise<Warning[]> {

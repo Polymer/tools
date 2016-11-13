@@ -45,25 +45,29 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       {
         tagname: 'behavior-test-elem',
         description: 'An element to test out behavior inheritance.',
-        expandTo: undefined
+        expandTo: undefined,
+        expandToSnippet: undefined
       },
-      {description: '', tagname: 'class-declaration', expandTo: undefined},
-      {description: '', tagname: 'anonymous-class', expandTo: undefined},
-      {description: '', tagname: 'class-expression', expandTo: undefined},
+      {description: '', tagname: 'class-declaration', expandTo: undefined, expandToSnippet: undefined},
+      {description: '', tagname: 'anonymous-class', expandTo: undefined, expandToSnippet: undefined},
+      {description: '', tagname: 'class-expression', expandTo: undefined, expandToSnippet: undefined},
       {
         description: '',
         tagname: 'register-before-declaration',
-        expandTo: undefined
+        expandTo: undefined,
+        expandToSnippet: undefined
       },
       {
         description: '',
         tagname: 'register-before-expression',
-        expandTo: undefined
+        expandTo: undefined,
+        expandToSnippet: undefined
       },
       {
         description: 'This is a description of WithObservedAttributes.',
         tagname: 'vanilla-with-observed-attributes',
-        expandTo: undefined
+        expandTo: undefined,
+        expandToSnippet: undefined
       },
     ]
   };
@@ -80,6 +84,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           space = ' ';
         }
         copy.expandTo = `<${e.tagname}${space}></${e.tagname}>`;
+        copy.expandToSnippet = `<${e.tagname}${space ? space + '$1' : ''}></${e.tagname}>$0`;
         return copy;
       });
 

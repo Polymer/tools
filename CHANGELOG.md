@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Added support for finding references of the custom elements from an HTML usage of the element.
 
+### Changed
+
+* `expandToSnippet` of element typeahead autocompletions now returns a smart tabbing snippet.
+
 ## 1.0.2 - 2016-11-07
 
 ### Fixed
@@ -42,4 +46,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   * [vscode](https://github.com/Polymer/vscode-plugin)
   * [atom](https://github.com/Polymer/atom-plugin)
   * [sublime text](https://github.com/Polymer/polymer-sublime-plugin)
-
