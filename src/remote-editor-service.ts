@@ -105,7 +105,7 @@ export class RemoteEditorService extends EditorService {
   }
 
   async getReferencesForFeatureAtPosition(
-      localPath: string, position: SourcePosition): Promise<SourceRange> {
+      localPath: string, position: SourcePosition): Promise<SourceRange[]> {
     return this._channel.request(
         {kind: 'getReferencesFor', localPath, position});
   }

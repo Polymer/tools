@@ -15,7 +15,7 @@
 
 import * as path from 'path';
 
-import {CompletionList, Location, Range, createConnection, IConnection, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Position as LSPosition} from 'vscode-languageserver';
+import {CompletionList, Location, Range, createConnection, IConnection, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Position as LSPosition, Hover, Definition} from 'vscode-languageserver';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
@@ -84,10 +84,10 @@ documents.onDidChangeContent((change) => {
 
 
 connection.onHover(async(textPosition) => {
-  return handleErrors(getDocsForHover(textPosition));
+  return handleErrors(getDocsForHover(textPosition), undefined);
 });
 
-async function getDocsForHover(textPosition: TextDocumentPositionParams) {
+async function getDocsForHover(textPosition: TextDocumentPositionParams): Promise<Hover|undefined> {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
     const documentation = await editorService.getDocumentationAtPosition(
@@ -99,10 +99,10 @@ async function getDocsForHover(textPosition: TextDocumentPositionParams) {
 }
 
 connection.onDefinition(async(textPosition) => {
-  return handleErrors(getDefinition(textPosition));
+  return handleErrors(getDefinition(textPosition), undefined);
 });
 
-async function getDefinition(textPosition: TextDocumentPositionParams) {
+async function getDefinition(textPosition: TextDocumentPositionParams): Promise<Definition|undefined> {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
     const location = await editorService.getDefinitionForFeatureAtPosition(
@@ -119,20 +119,20 @@ async function getDefinition(textPosition: TextDocumentPositionParams) {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(async(textPosition) => {
-  return handleErrors(autoComplete(textPosition));
+  return handleErrors(autoComplete(textPosition), {isIncomplete: true, items: []});
 });
 
 async function autoComplete(textPosition: TextDocumentPositionParams):
-    Promise<CompletionList|undefined> {
+    Promise<CompletionList> {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (!localPath || !editorService) {
-    return;
+    return {isIncomplete: true, items: []};
   }
   const completions: (TypeaheadCompletion|undefined) =
       await editorService.getTypeaheadCompletionsAtPosition(
           localPath, convertPosition(textPosition.position));
   if (!completions) {
-    return;
+    return {isIncomplete: false, items: []};
   }
   if (completions.kind === 'element-tags') {
     return {
@@ -170,6 +170,7 @@ async function autoComplete(textPosition: TextDocumentPositionParams):
       }),
     };
   }
+  return {isIncomplete: false, items: []};
 }
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
@@ -222,7 +223,7 @@ function convertSeverity(severity: Severity): DiagnosticSeverity {
 }
 
 function scanDocument(document: TextDocument, connection?: IConnection) {
-  return handleErrors(_scanDocument(document, connection));
+  return handleErrors(_scanDocument(document, connection), undefined);
 }
 
 async function _scanDocument(document: TextDocument, connection?: IConnection) {
@@ -250,8 +251,8 @@ async function _scanDocument(document: TextDocument, connection?: IConnection) {
   }
 }
 
-async function handleErrors<Result>(promise: Promise<Result>):
-    Promise<Result|undefined> {
+async function handleErrors<Result, Fallback>(promise: Promise<Result>, fallbackValue: Fallback):
+    Promise<Result|Fallback> {
   try {
     return await promise;
   } catch (err) {
@@ -261,7 +262,7 @@ async function handleErrors<Result>(promise: Promise<Result>):
     if (connection && !(err instanceof WarningCarryingException)) {
       connection.console.error(err.stack || err.message || err);
     }
-    return undefined;
+    return fallbackValue;
   }
 }
 
