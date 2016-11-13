@@ -31,6 +31,7 @@ suite('AnalysisCache', () => {
         path, Promise.resolve(`scanned ${path} promise` as any));
     cache.analyzedDocumentPromises.set(
         path, Promise.resolve(`analyzed ${path} promise` as any));
+    cache.dependenciesScanned.set(path, Promise.resolve());
     cache.scannedDocuments.set(path, `scanned ${path}` as any);
     cache.analyzedDocuments.set(path, `analyzed ${path}` as any);
   }
@@ -41,6 +42,7 @@ suite('AnalysisCache', () => {
     assert.equal(
         await cache.scannedDocumentPromises.get(path),
         `scanned ${path} promise`);
+    assert.equal(await cache.dependenciesScanned.get(path), undefined);
     // caller must assert on cache.analyzedDocumentPromises themselves
     assert.equal(cache.scannedDocuments.get(path), `scanned ${path}`);
     assert.equal(cache.analyzedDocuments.get(path), `analyzed ${path}`);
@@ -49,6 +51,7 @@ suite('AnalysisCache', () => {
   function assertNotHasDocument(cache: AnalysisCache, path: string) {
     assert.isFalse(cache.parsedDocumentPromises.has(path));
     assert.isFalse(cache.scannedDocumentPromises.has(path));
+    assert.isFalse(cache.dependenciesScanned.has(path));
     // caller must assert on cache.analyzedDocumentPromises themselves
     assert.isFalse(cache.scannedDocuments.has(path));
     assert.isFalse(cache.analyzedDocuments.has(path));
@@ -64,6 +67,7 @@ suite('AnalysisCache', () => {
     assert.equal(cache.scannedDocuments.get(path), `scanned ${path}`);
     assert.isFalse(cache.analyzedDocuments.has(path));
     assert.isFalse(cache.analyzedDocumentPromises.has(path));
+    assert.isFalse(cache.dependenciesScanned.has(path));
   }
 
   test('it invalidates a path when asked to', async() => {
@@ -123,33 +127,43 @@ suite('getImportersOf', () => {
         {urlLoader: new FSUrlLoader(path.join(__dirname, 'static'))});
   });
 
-  test('it works with a basic document with no dependencies', async() => {
-    const document = await analyzer.analyze('dependencies/leaf.html');
+  async function assertImportersOf(path: string, expectedDependants: string[]) {
+    await analyzer.analyze(path);
+    const docs = Array.from(
+        analyzer['_cacheContext']['_cache']['analyzedDocuments'].values());
+    const scannedDocs = docs.map(d => d['_scannedDocument']);
+
+    const urlResolver = (url: string) => url;
+    expectedDependants.sort();
     assert.deepEqual(
-        Array.from(getImportersOf(
-            'dependencies/leaf.html', document.getByKind('document'))),
-        ['dependencies/leaf.html']);
+        Array.from(getImportersOf(path, docs, scannedDocs, urlResolver)).sort(),
+        expectedDependants,
+        'with both docs and scanned docs');
+    // Also works with no documents, just scanned documents.
+    assert.deepEqual(
+        Array.from(getImportersOf(path, [], scannedDocs, urlResolver)).sort(),
+        expectedDependants,
+        'with just scanned docs');
+  }
+
+  test('it works with a basic document with no dependencies', async() => {
+    await assertImportersOf(
+        'dependencies/leaf.html', ['dependencies/leaf.html']);
   });
 
   test('it works with a simple tree of dependencies', async() => {
-    const documents = (await analyzer.analyze('dependencies/root.html'))
-                          .getByKind('document');
-    assert.deepEqual(
-        Array.from(getImportersOf('dependencies/root.html', documents)),
-        ['dependencies/root.html']);
-    assert.deepEqual(
-        Array.from(getImportersOf('dependencies/leaf.html', documents)).sort(),
+    await analyzer.analyze('dependencies/root.html');
+    await assertImportersOf(
+        'dependencies/root.html', ['dependencies/root.html']);
+
+    await assertImportersOf(
+        'dependencies/leaf.html',
         ['dependencies/leaf.html', 'dependencies/root.html']);
-    assert.deepEqual(
-        Array
-            .from(getImportersOf(
-                'dependencies/subfolder/subfolder-sibling.html', documents))
-            .sort(),
-        [
-          'dependencies/subfolder/subfolder-sibling.html',
-          'dependencies/subfolder/in-folder.html',
-          'dependencies/inline-and-imports.html',
-          'dependencies/root.html'
-        ].sort());
+    await assertImportersOf('dependencies/subfolder/subfolder-sibling.html', [
+      'dependencies/subfolder/subfolder-sibling.html',
+      'dependencies/subfolder/in-folder.html',
+      'dependencies/inline-and-imports.html',
+      'dependencies/root.html'
+    ]);
   });
 });

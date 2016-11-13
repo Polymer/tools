@@ -186,12 +186,11 @@ export class AnalyzerCacheContext {
    */
   fileChanged(url: string) {
     const resolvedUrl = this._resolveUrl(url);
-    const dependants =
-        getImportersOf(resolvedUrl, this._cache.analyzedDocuments.values());
-    console.log(`Analyzed documents: ${JSON.stringify(
-        Array.from(this._cache.analyzedDocuments.values()).map(d => d.url))}`);
-    console.log(
-        `Dependants of ${url}: ${JSON.stringify(Array.from(dependants))}`);
+    const dependants = getImportersOf(
+        resolvedUrl,
+        this._cache.analyzedDocuments.values(),
+        this._cache.scannedDocuments.values(),
+        (url) => this._resolveUrl(url));
     const newCache = this._cache.onPathChanged(resolvedUrl, dependants);
     return this._fork(newCache);
   }
@@ -224,6 +223,14 @@ export class AnalyzerCacheContext {
       const doneTiming =
           this._telemetryTracker.start('analyze: make document', url);
       const scannedDocument = await this._scan(resolvedUrl, contents);
+      if (scannedDocument === 'visited') {
+        throw new Error(
+            `This should not happen. Got a cycle of length zero(!) scanning ${url
+            }`);
+      }
+      // Need to be sure that ScannedImport#scannedDocument has been set.
+      // Yes this is totally a hack.
+      await Promise.resolve();
       const document = this._makeDocument(scannedDocument);
       doneTiming();
       return document;
@@ -268,10 +275,6 @@ export class AnalyzerCacheContext {
       return document;
     }
     const scannedDocument = this._cache.scannedDocuments.get(resolvedUrl);
-    if (!scannedDocument) {
-      throw new Error(`unable to find scanned or analyzed document ${resolvedUrl
-                      } in the generation ${this._generation} cache`);
-    }
     return scannedDocument && this._makeDocument(scannedDocument);
   }
 
@@ -310,10 +313,18 @@ export class AnalyzerCacheContext {
   /**
    * Scan a toplevel document given its url and optionally its contents.
    */
-  private async _scan(resolvedUrl: string, contents?: string):
-      Promise<ScannedDocument> {
+  private async _scan(
+      resolvedUrl: string, contents?: string,
+      visited?: Set<string>): Promise<ScannedDocument|'visited'> {
+    if (visited && visited.has(resolvedUrl)) {
+      return 'visited';
+    }
+    const actualVisited = visited || new Set();
+    actualVisited.add(resolvedUrl);
     const cachedResult = this._cache.scannedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
+      await this._scanDependenciesOfToplevelDoc(
+          await cachedResult, actualVisited);
       return cachedResult;
     }
     const promise = (async() => {
@@ -325,7 +336,7 @@ export class AnalyzerCacheContext {
     })();
     this._cache.scannedDocumentPromises.set(resolvedUrl, promise);
     const scannedDocument = await promise;
-    await this._scanDependencies(scannedDocument);
+    await this._scanDependenciesOfToplevelDoc(scannedDocument, actualVisited);
     return scannedDocument;
   }
 
@@ -333,14 +344,14 @@ export class AnalyzerCacheContext {
    * Parses and scans a document from source.
    */
   private async _scanInlineSource(
-      type: string, contents: string, url: string,
-      inlineInfo: InlineDocInfo<any>,
+      type: string, contents: string, url: string, visited: Set<string>,
+      inlineInfo?: InlineDocInfo<any>,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
     const parsedDoc =
         this._parseContents(type, contents, resolvedUrl, inlineInfo);
     const scannedDoc = await this._scanDocument(parsedDoc, attachedComment);
-    await this._scanDependencies(scannedDoc);
+    await this._scanDependencies(scannedDoc, visited);
     return scannedDoc;
   }
 
@@ -367,14 +378,20 @@ export class AnalyzerCacheContext {
         throw new Error(
             'Scanned document already in cache. This should never happen.');
       }
-      console.log(
-          `added ${scannedDocument.url}` +
-          `  to the generation ${this._generation} cache`);
       this._cache.scannedDocuments.set(scannedDocument.url, scannedDocument);
     }
 
-
     return scannedDocument;
+  }
+
+  private async _scanDependenciesOfToplevelDoc(
+      scannedDocument: ScannedDocument, visited: Set<string>) {
+    const scanDepPromise =
+        this._cache.dependenciesScanned.get(scannedDocument.url) ||
+        this._scanDependencies(scannedDocument, visited);
+    this._cache.dependenciesScanned.set(scannedDocument.url, scanDepPromise);
+    await scanDepPromise;
+    return scanDepPromise;
   }
 
   /**
@@ -383,8 +400,8 @@ export class AnalyzerCacheContext {
    * This must be called exactly once per scanned document, as we mutate
    * the given scannedDocument by adding warnings.
    */
-  private async _scanDependencies(scannedDocument: ScannedDocument):
-      Promise<void> {
+  private async _scanDependencies(
+      scannedDocument: ScannedDocument, visited: Set<string>): Promise<void> {
     const scannedDependencies: ScannedFeature[] =
         scannedDocument.features.filter(
             (e) => e instanceof ScannedInlineDocument ||
@@ -395,14 +412,15 @@ export class AnalyzerCacheContext {
             return this._scanInlineDocument(
                 scannedDependency,
                 scannedDocument.document,
-                scannedDocument.warnings);
+                scannedDocument.warnings,
+                visited);
           } else if (scannedDependency instanceof ScannedImport) {
             // TODO(garlicnation): Move this logic into model/document. During
             // the recursive feature walk, features from lazy imports
             // should be marked.
             if (scannedDependency.type !== 'lazy-html-import') {
               return this._scanImport(
-                  scannedDependency, scannedDocument.warnings);
+                  scannedDependency, scannedDocument.warnings, visited);
             }
             return null;
           } else {
@@ -417,8 +435,8 @@ export class AnalyzerCacheContext {
    */
   private async _scanInlineDocument(
       inlineDoc: ScannedInlineDocument,
-      containingDocument: ParsedDocument<any, any>,
-      warnings: Warning[]): Promise<ScannedDocument|null> {
+      containingDocument: ParsedDocument<any, any>, warnings: Warning[],
+      visited: Set<string>): Promise<ScannedDocument|null> {
     const locationOffset: LocationOffset = {
       line: inlineDoc.locationOffset.line,
       col: inlineDoc.locationOffset.col,
@@ -430,6 +448,7 @@ export class AnalyzerCacheContext {
           inlineDoc.type,
           inlineDoc.contents,
           containingDocument.url,
+          visited,
           inlineInfo,
           inlineDoc.attachedComment);
       inlineDoc.scannedDocument = scannedDocument;
@@ -443,14 +462,12 @@ export class AnalyzerCacheContext {
     }
   }
 
-  private async _scanImport(scannedImport: ScannedImport, warnings: Warning[]):
-      Promise<ScannedDocument|null> {
-    let scannedDocument: ScannedDocument;
+  private async _scanImport(
+      scannedImport: ScannedImport, warnings: Warning[],
+      visited: Set<string>): Promise<null> {
+    const url = this._resolveUrl(scannedImport.url);
     try {
-      // HACK(rictic): this isn't quite right either, we need to get
-      //     the scanned dependency's url relative to the basedir don't
-      //     we?
-      scannedDocument = await this._scan(this._resolveUrl(scannedImport.url));
+      await this._scan(url, undefined, visited);
     } catch (error) {
       if (error instanceof NoKnownParserError) {
         // We probably don't want to fail when importing something
@@ -467,8 +484,10 @@ export class AnalyzerCacheContext {
       });
       return null;
     }
-    scannedImport.scannedDocument = scannedDocument;
-    return scannedDocument;
+    this._cache.scannedDocumentPromises.get(url)!.then((scannedDocument) => {
+      scannedImport.scannedDocument = scannedDocument;
+    });
+    return null;
   }
 
   /**

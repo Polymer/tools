@@ -30,7 +30,7 @@ export class ScannedImport implements Resolvable {
   type: 'html-import'|'html-script'|'html-style'|'js-import'|string;
 
   /**
-   * URL of the import, relative to the document containing the import.
+   * URL of the import, relative to the base directory.
    */
   url: string;
 
@@ -60,17 +60,14 @@ export class ScannedImport implements Resolvable {
 
   resolve(document: Document): Import|undefined {
     const importedDocument = document.analyzer._getDocument(this.url);
-    if (!importedDocument) {
-      throw new Error(`no imported document with url ${this.url}`);
-    }
-    return new Import(
-        this.url,
-        this.type,
-        importedDocument,
-        this.sourceRange,
-        this.urlSourceRange,
-        this.astNode,
-        this.warnings);
+    return importedDocument && new Import(
+                                   this.url,
+                                   this.type,
+                                   importedDocument,
+                                   this.sourceRange,
+                                   this.urlSourceRange,
+                                   this.astNode,
+                                   this.warnings);
   }
 }
 

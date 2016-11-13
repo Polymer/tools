@@ -12,13 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Import, InlineDocument, ScannedDocument} from './model/model';
+import {Document, Import, InlineDocument, ScannedDocument, ScannedImport, ScannedInlineDocument} from './model/model';
 import {ParsedDocument} from './parser/document';
 
 export class AnalysisCache {
   parsedDocumentPromises = new Map<string, Promise<ParsedDocument<any, any>>>();
   scannedDocumentPromises = new Map<string, Promise<ScannedDocument>>();
   analyzedDocumentPromises = new Map<string, Promise<Document>>();
+  dependenciesScanned = new Map<string, Promise<void>>();
 
   scannedDocuments = new Map<string, ScannedDocument>();
   analyzedDocuments = new Map<string, Document>();
@@ -31,13 +32,16 @@ export class AnalysisCache {
     const newCache = this._clone();
     newCache.parsedDocumentPromises.delete(path);
     newCache.scannedDocumentPromises.delete(path);
+    newCache.dependenciesScanned.delete(path);
     newCache.scannedDocuments.delete(path);
     newCache.analyzedDocuments.delete(path);
 
     // Analyzed documents need to be treated more carefully, because they have
     // relationships with other documents. So first we remove all documents
-    // which transitively import the changed document.
+    // which transitively import the changed document. We also need to mark
+    // all of those docs as needing to rescan their dependencies.
     for (const invalidatedPath of dependants) {
+      newCache.dependenciesScanned.delete(invalidatedPath);
       newCache.analyzedDocuments.delete(invalidatedPath);
     }
     // Then we clear out the analyzed document promises, which could have
@@ -61,6 +65,7 @@ export class AnalysisCache {
         this.scannedDocumentPromises, newCache.scannedDocumentPromises);
     this._copyMapInto(
         this.analyzedDocumentPromises, newCache.analyzedDocumentPromises);
+    this._copyMapInto(this.dependenciesScanned, newCache.dependenciesScanned);
     this._copyMapInto(this.scannedDocuments, newCache.scannedDocuments);
     this._copyMapInto(this.analyzedDocuments, newCache.analyzedDocuments);
     return newCache;
@@ -84,8 +89,12 @@ export class AnalysisCache {
  * getImportersOf.
  */
 export function getImportersOf(
-    path: string, documents: Iterable<Document>): Set<string> {
-  const invertedIndex = _buildInvertedIndex(documents);
+    path: string,
+    documents: Iterable<Document>,
+    scannedDocuments: Iterable<ScannedDocument>,
+    urlResolver: (url: string) => string): Set<string> {
+  const invertedIndex =
+      _buildInvertedIndex(documents, scannedDocuments, urlResolver);
   const visited = new Set<string>();
   const toVisit = new Set<string>([path]);
   while (toVisit.size > 0) {
@@ -105,11 +114,21 @@ export function getImportersOf(
   return visited;
 }
 
-function _buildInvertedIndex(docs: Iterable<Document>):
-    Map<string, Set<string>> {
+function _buildInvertedIndex(
+    docs: Iterable<Document>,
+    scannedDocuments: Iterable<ScannedDocument>,
+    urlResolver: (url: string) => string): Map<string, Set<string>> {
   const invertedIndex = new Map<string, Set<string>>();
+  const docsSeen = new Set<string>();
   for (const doc of docs) {
+    docsSeen.add(doc.url);
     _addFeaturesToInvertedIndex(doc, invertedIndex);
+  }
+  for (const scannedDoc of scannedDocuments) {
+    if (docsSeen.has(scannedDoc.url)) {
+      continue;
+    }
+    _addScannedFeaturesToInvertedIndex(scannedDoc, invertedIndex, urlResolver);
   }
   return invertedIndex;
 }
@@ -126,6 +145,25 @@ function _addFeaturesToInvertedIndex(
     }
     if (feature.kinds.has('inline-document') && feature !== doc) {
       _addFeaturesToInvertedIndex((feature as InlineDocument), invertedIndex);
+    }
+  }
+}
+
+function _addScannedFeaturesToInvertedIndex(
+    scannedDoc: ScannedDocument,
+    invertedIndex: Map<string, Set<string>>,
+    urlResolver: (url: string) => string) {
+  for (const feature of scannedDoc.features) {
+    if (feature instanceof ScannedImport) {
+      const imported = urlResolver(feature.url);
+      if (!invertedIndex.has(imported)) {
+        invertedIndex.set(imported, new Set());
+      }
+      invertedIndex.get(imported)!.add(scannedDoc.url);
+    } else if (
+        feature instanceof ScannedInlineDocument && feature.scannedDocument) {
+      _addScannedFeaturesToInvertedIndex(
+          feature.scannedDocument, invertedIndex, urlResolver);
     }
   }
 }
