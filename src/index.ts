@@ -240,9 +240,9 @@ export class ProjectConfig {
         `does not resolve within root (${this.root})`);
     }
     if (this.shell) {
-    console.assert(this.shell.startsWith(this.root),
-      `${validateErrorPrefix}: shell (${this.shell}) ` +
-      `does not resolve within root (${this.root})`);
+      console.assert(this.shell.startsWith(this.root),
+        `${validateErrorPrefix}: shell (${this.shell}) ` +
+        `does not resolve within root (${this.root})`);
     }
     this.fragments.forEach((f) => {
       console.assert(f.startsWith(this.root),
