@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * [Polymer] Extract 'listeners' from 1.0-style declarations.
 
+### Fixed
+* Fixed a class of race conditions and cache invalidation errors that can occur when there are concurrent analysis runs and edits to files.
+
+
 ## [2.0.0-alpha.19] - 2016-12-12
 
 ### Added
