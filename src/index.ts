@@ -33,6 +33,17 @@ function resolveGlob(fromPath: string, glob: string): string {
 }
 
 /**
+ * Returns a positive glob, even if glob is negative (begins with '!')
+ */
+function getPositiveGlob(glob: string): string {
+  if (glob.startsWith('!')) {
+    return glob.substring(1);
+  } else {
+    return glob;
+  }
+}
+
+/**
  * Given a user-provided options object, check for deprecated options. When one
  * is found, warn the user and fix if possible.
  */
@@ -214,6 +225,45 @@ export class ProjectConfig {
 
   isShell(filepath: string): boolean {
     return (!!this.shell && (this.shell === filepath));
+  }
+
+  /**
+   * Validates that a configuration is accurate, and that all paths are
+   * contained within the project root.
+   */
+  validate(): boolean {
+    const validateErrorPrefix = `Polymer Config Error`;
+    if (this.entrypoint) {
+      console.assert(
+        this.entrypoint.startsWith(this.root),
+        `${validateErrorPrefix}: entrypoint (${this.entrypoint}) ` +
+        `does not resolve within root (${this.root})`);
+    }
+    if (this.shell) {
+      console.assert(this.shell.startsWith(this.root),
+        `${validateErrorPrefix}: shell (${this.shell}) ` +
+        `does not resolve within root (${this.root})`);
+    }
+    this.fragments.forEach((f) => {
+      console.assert(f.startsWith(this.root),
+      `${validateErrorPrefix}: a "fragments" path (${f}) ` +
+      `does not resolve within root (${this.root})`);
+    });
+    this.sources.forEach((s) => {
+      console.assert(getPositiveGlob(s).startsWith(this.root),
+      `${validateErrorPrefix}: a "sources" path (${s}) ` +
+      `does not resolve within root (${this.root})`);
+    });
+    this.extraDependencies.forEach((d) => {
+      console.assert(getPositiveGlob(d).startsWith(this.root),
+      `${validateErrorPrefix}: an "extraDependencies" path (${d}) ` +
+      `does not resolve within root (${this.root})`);
+    });
+
+    // TODO(fks) 11-14-2016: Validate that files actually exist in the file
+    // system. Potentially become async function for this.
+
+    return true;
   }
 
 }

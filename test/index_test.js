@@ -238,6 +238,81 @@ suite('Project Config', () => {
 
     });
 
+    suite('validate()', () => {
+
+      test('returns true for valid configuration', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          entrypoint: 'foo.html',
+          fragments: ['bar.html'],
+          shell: 'baz.html',
+          sources: ['src/**/*', 'images/**/*'],
+          extraDependencies: [
+            'bower_components/**/*.js',
+          ],
+        });
+
+        const validateResult = config.validate();
+        assert.isTrue(validateResult);
+      });
+
+      test('returns true for negative globs that resolve within root', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          sources: [
+            'src/**/*',
+            'images/**/*',
+            '!images/ignore-some-images',
+          ],
+          extraDependencies: [
+            'bower_components/**/*.js',
+            '!bower_components/ignore-big-package',
+          ],
+        });
+
+        const validateResult = config.validate();
+        assert.isTrue(validateResult);
+      });
+
+      test('throws an exception when a fragment does not resolve within root', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          fragments: ['../bar.html'],
+        });
+
+        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: a "fragments" path \(.*bar.html\) does not resolve within root \(.*public\)/);
+      });
+
+      test('throws an exception when entrypoint does not resolve within root', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          entrypoint: '../bar.html',
+        });
+
+        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: entrypoint \(.*bar.html\) does not resolve within root \(.*public\)/);
+      });
+
+      test('throws an exception when shell does not resolve within root', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          shell: '/some/absolute/path/bar.html',
+        });
+
+        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: shell \(.*bar.html\) does not resolve within root \(.*public\)/);
+      });
+
+    });
+
   });
 
   suite('loadOptionsFromFile()', () => {
