@@ -245,7 +245,7 @@ export class Analyzer {
       // the Promise is cached before anything else happens.
       await Promise.resolve();
       const document = await this._parse(resolvedUrl, contents);
-      return this._scanDocument(document, false);
+      return this._scanDocument(document);
     })();
     this._scannedDocumentPromises.set(resolvedUrl, promise);
     const scannedDocument = await promise;
@@ -258,22 +258,21 @@ export class Analyzer {
    */
   private async _scanInlineSource(
       type: string, contents: string, url: string,
-      inlineInfo?: InlineDocInfo<any>,
+      inlineInfo: InlineDocInfo<any>,
       attachedComment?: string): Promise<ScannedDocument> {
     const resolvedUrl = this._resolveUrl(url);
     const parsedDoc =
         this._parseContents(type, contents, resolvedUrl, inlineInfo);
-    const scannedDoc =
-        await this._scanDocument(parsedDoc, true, attachedComment);
+    const scannedDoc = await this._scanDocument(parsedDoc, attachedComment);
     await this._scanDependencies(scannedDoc);
     return scannedDoc;
   }
 
   /**
-   * Scans a parsed Document object.
+   * Scans a ParsedDocument.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>, isInline: boolean,
+      document: ParsedDocument<any, any>,
       maybeAttachedComment?: string): Promise<ScannedDocument> {
     const warnings: Warning[] = [];
     const scannedFeatures = await this._getScannedFeatures(document);
@@ -285,9 +284,9 @@ export class Analyzer {
     }
 
     const scannedDocument =
-        new ScannedDocument(document, scannedFeatures, isInline, warnings);
+        new ScannedDocument(document, scannedFeatures, warnings);
 
-    if (!isInline) {
+    if (!scannedDocument.isInline) {
       this._scannedDocuments.set(scannedDocument.url, scannedDocument);
     }
     return scannedDocument;
@@ -299,7 +298,8 @@ export class Analyzer {
    * This must be called exactly once per scanned document, as we mutate
    * the given scannedDocument by adding warnings.
    */
-  private async _scanDependencies(scannedDocument: ScannedDocument) {
+  private async _scanDependencies(scannedDocument: ScannedDocument):
+      Promise<void> {
     const scannedDependencies: ScannedFeature[] =
         scannedDocument.features.filter(
             (e) => e instanceof ScannedInlineDocument ||

@@ -38,6 +38,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
 
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       JavaScriptDocument {
+    const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     let ast: Program;
     try {
@@ -71,7 +72,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       contents,
       ast,
       locationOffset: inlineInfo.locationOffset,
-      astNode: inlineInfo.astNode
+      astNode: inlineInfo.astNode, isInline,
     });
   }
 }

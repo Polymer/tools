@@ -38,11 +38,11 @@ export class ScannedDocument {
 
   constructor(
       document: ParsedDocument<any, any>, features: ScannedFeature[],
-      isInline: boolean, warnings?: Warning[]) {
+      warnings?: Warning[]) {
     this.document = document;
     this.features = features;
     this.warnings = warnings || [];
-    this.isInline = isInline;
+    this.isInline = document.isInline;
   }
 
   get url() {

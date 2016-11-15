@@ -20,13 +20,14 @@ import {ParsedJsonDocument} from './json-document';
 export class JsonParser implements Parser<ParsedJsonDocument> {
   parse(contents: string, url: string, inlineDocInfo: InlineDocInfo<any>):
       ParsedJsonDocument {
+    const isInline = !!inlineDocInfo;
     inlineDocInfo = inlineDocInfo || {};
     return new ParsedJsonDocument({
       url,
       contents,
       ast: JSON.parse(contents),
       locationOffset: inlineDocInfo.locationOffset,
-      astNode: inlineDocInfo.astNode
+      astNode: inlineDocInfo.astNode, isInline
     });
   }
 }

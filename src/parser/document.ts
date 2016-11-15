@@ -25,6 +25,7 @@ export abstract class ParsedDocument<A, V> {
   url: string;
   contents: string;
   ast: A;
+  isInline: boolean;
 
   /**
    * If not null, this is an inline document, and astNode is the AST Node of
@@ -40,6 +41,7 @@ export abstract class ParsedDocument<A, V> {
     this.ast = from.ast;
     this._locationOffset = from.locationOffset;
     this.astNode = from.astNode;
+    this.isInline = from.isInline;
   }
 
   /**
@@ -74,6 +76,7 @@ export interface Options<A> {
   ast: A;
   locationOffset: LocationOffset|undefined;
   astNode: any|null;
+  isInline: boolean;
 }
 
 export interface StringifyOptions {
