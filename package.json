@@ -11,7 +11,8 @@
   "scripts": {
     "start": "./bin/polyserve",
     "build": "tsc",
-    "test": "gulp test"
+    "test": "(tsc; gulp test)",
+    "test:watch": "watchy -w src/ -- npm test"
   },
   "keywords": [
     "polymer",
@@ -45,7 +46,8 @@
     "sinon": "^1.17.5",
     "supertest": "^1.2.0",
     "tmp": "0.0.28",
-    "typescript": "^2.0.3"
+    "typescript": "^2.0.3",
+    "watchy": "^0.6.6"
   },
   "typings": "./lib/polyserve.d.ts"
 }

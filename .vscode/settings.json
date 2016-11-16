@@ -1,3 +1,18 @@
 {
-  "typescript.tsdk": "./node_modules/typescript/lib"
+  "clang-format.style": "file",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "search.exclude": {
+    "node_modules/": true,
+    "lib/": true
+  },
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "elements.json"
+      ],
+      "url": "./lib/analysis.schema.json"
+    }
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
