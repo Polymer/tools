@@ -1,24 +1,29 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import {ArgDescriptor} from 'command-line-args';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+
 import {args} from './args';
-import {startServer, ServerOptions} from './start_server';
+import {ServerOptions, startServer} from './start_server';
 
 import commandLineArgs = require('command-line-args');
 import commandLineUsage = require('command-line-usage');
 
 export async function run(): Promise<void> {
-  const argsWithHelp : ArgDescriptor[] = args.concat({
+  const argsWithHelp: ArgDescriptor[] = args.concat({
     name: 'help',
     description: 'Shows this help message',
     type: Boolean,
@@ -50,12 +55,13 @@ export async function run(): Promise<void> {
 
   if (cliOptions.help) {
     printUsage(argsWithHelp);
-  } else if (cliOptions.version) {
+  }
+  else if (cliOptions.version) {
     console.log(getVersion());
-  } else {
+  }
+  else {
     await startServer(options);
   }
-
 }
 
 function printUsage(options: any): void {
@@ -69,7 +75,7 @@ function printUsage(options: any): void {
 
 function getVersion(): string {
   const packageFilePath = path.resolve(__dirname, '../package.json');
-  const packageFile = fs.readFileSync(packageFilePath).toString()
+  const packageFile = fs.readFileSync(packageFilePath).toString();
   const packageJson = JSON.parse(packageFile);
   const version = packageJson['version'];
   return version;

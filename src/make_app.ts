@@ -1,18 +1,22 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parse as parseUrl } from 'url';
-import { bowerConfig } from './bower_config';
+import {parse as parseUrl} from 'url';
+import {bowerConfig} from './bower_config';
 
 import send = require('send');
 
@@ -41,13 +45,13 @@ export function makeApp(options: AppOptions): PolyserveApplication {
   options = options || {};
   const root = options.root;
   const componentDir = options.componentDir || 'bower_components';
-  const packageName = options.packageName || bowerConfig(root).name
-      || path.basename(process.cwd());
+  const packageName = options.packageName || bowerConfig(root).name ||
+      path.basename(process.cwd());
   const headers = options.headers || {};
 
   const app: PolyserveApplication = <PolyserveApplication>express();
 
-  app.get('*', function (req, res) {
+  app.get('*', function(req, res) {
     // Serve local files from . and other components from bower_components
     const url = parseUrl(req.url, true);
     let splitPath = url.pathname.split('/').slice(1);

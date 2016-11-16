@@ -1,18 +1,22 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 /// <reference path="../custom_typings/command-line-args.d.ts" />
 
 import {ArgDescriptor} from 'command-line-args';
 
-export let args : ArgDescriptor[] = [
+export let args: ArgDescriptor[] = [
   {
     name: 'version',
     alias: 'v',
@@ -61,35 +65,35 @@ export let args : ArgDescriptor[] = [
     name: 'browser',
     alias: 'b',
     description: 'The browser(s) to open with when using the --open option.' +
-      ' Defaults to your default web browser.',
+        ' Defaults to your default web browser.',
     type: String,
     multiple: true,
   },
   {
     name: 'open-path',
     description: 'The URL path to open when using the --open option.' +
-      ' Defaults to "index.html".',
+        ' Defaults to "index.html".',
     type: String,
   },
   {
     name: 'protocol',
     alias: 'P',
     description: 'The server protocol to use {h2, https/1.1, http/1.1}.' +
-      ' Defaults to "http/1.1".',
+        ' Defaults to "http/1.1".',
     defaultValue: 'http/1.1',
     type: String,
   },
   {
     name: 'key',
     description: 'Path to TLS certificate private key file for https.' +
-      ' Defaults to "key.pem".',
+        ' Defaults to "key.pem".',
     defaultValue: 'key.pem',
     type: String,
   },
   {
     name: 'cert',
     description: 'Path to TLS certificate file for https.' +
-      ' Defaults to "cert.pem".',
+        ' Defaults to "cert.pem".',
     defaultValue: 'cert.pem',
     type: String,
   },
