@@ -11,13 +11,24 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-const fs = require('fs');
-const gulp = require('gulp');
-const mocha = require('gulp-spawn-mocha');
 
-gulp.task('test', function() {
-  return gulp.src('lib/test/*_test.js', {read: false}).pipe(mocha({
-    ui: 'tdd',
-    reporter: 'spec',
-  }))
+'use strict';
+
+import {assert} from 'chai';
+import {run as cliRun} from '../cli';
+
+suite('cli', () => {
+
+  test('unknown cmd parameter should not throw exception', () => {
+    const originalArgv = process.argv;
+    process.argv = ['node', 'polyserve', '--unknown-parameter'];
+
+    try {
+      return cliRun();
+    } finally {
+      // restore process arguments for other readers
+      process.argv = originalArgv;
+    }
+  });
+
 });
