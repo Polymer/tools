@@ -11,7 +11,7 @@
   "scripts": {
     "start": "./bin/polyserve",
     "build": "tsc",
-    "test": "(tsc; gulp test)",
+    "test": "npm run build && mocha",
     "test:watch": "watchy -w src/ -- npm test",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
   },
@@ -48,12 +48,9 @@
     "@types/tmp": "0.0.31",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
-    "gulp": "^3.9.1",
-    "gulp-mocha": "^2.2.0",
-    "gulp-spawn-mocha": "^3.1.0",
-    "istanbul": "^0.4.5",
     "mocha": "^3.1.0",
     "sinon": "^1.17.5",
+    "source-map-support": "^0.4.6",
     "supertest": "^1.2.0",
     "tmp": "0.0.28",
     "typescript": "^2.0.3",

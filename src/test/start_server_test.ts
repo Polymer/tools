@@ -234,7 +234,7 @@ suite('startServer', () => {
       }
     }
 
-    let createServerStub: Sinon.SinonStub;
+    let createServerStub: sinon.SinonStub;
     function _setupStubServer() {
       _stubServer =
           sinon.createStubInstance(http['Server']) as any as http.Server;
