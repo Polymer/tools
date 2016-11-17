@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-### Added
-* Support for HTTP2 and HTTP2 Push. PR #98
+## [0.14.0] - 2016-11-17
+
+* Added support for HTTP2 and HTTP2 Push. PR #98
+* TypeScript declaration fixes
 
 ## [0.13.0] - 2016-09-30
 
