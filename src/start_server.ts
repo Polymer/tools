@@ -8,6 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/spdy.d.ts" />
+
 import * as assert from 'assert';
 import * as express from 'express';
 import * as mime from 'mime';

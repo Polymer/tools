@@ -8,6 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/command-line-args.d.ts" />
+
 import {ArgDescriptor} from 'command-line-args';
 
 export let args : ArgDescriptor[] = [
