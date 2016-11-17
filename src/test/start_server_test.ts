@@ -157,8 +157,8 @@ suite('startServer', () => {
       });
 
       test('reuses TLS cert/key', (done) => {
-        _serverOptions.keyPath = path.join(__dirname, 'key.pem');
-        _serverOptions.certPath = path.join(__dirname, 'cert.pem');
+        _serverOptions.keyPath = path.join(root, 'key.pem');
+        _serverOptions.certPath = path.join(root, 'cert.pem');
 
         const createCertSpy = sinon.spy(pem, 'createCertificate');
 

@@ -10,7 +10,8 @@
   },
   "scripts": {
     "start": "./bin/polyserve",
-    "build": "tsc",
+    "clean": "mkdir -p lib && rm -r lib",
+    "build": "npm run clean && tsc",
     "test": "npm run build && mocha",
     "test:watch": "watchy -w src/ -- npm test",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
