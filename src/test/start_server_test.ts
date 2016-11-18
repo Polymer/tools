@@ -12,18 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {getApp, ServerOptions} from '../start_server';
-import {startServer} from '../start_server';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-
 import * as fs from 'mz/fs';
+import * as path from 'path';
 import * as pem from 'pem';
 import * as sinon from 'sinon';
-import * as tmp from 'tmp';
-import * as supertest from 'supertest';
 import * as http from 'spdy';
-import * as path from 'path';
+import * as supertest from 'supertest';
+import * as tmp from 'tmp';
+
+import {getApp, ServerOptions} from '../start_server';
+import {startServer} from '../start_server';
+
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;

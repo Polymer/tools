@@ -12,9 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as path from 'path';
-import {bowerConfig} from '../bower_config';
 import {assert} from 'chai';
+import * as path from 'path';
+
+import {bowerConfig} from '../bower_config';
 
 suite('bowerConfig', () => {
 

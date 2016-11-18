@@ -12,10 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as path from 'path';
-import {makeApp} from '../make_app';
 import {assert} from 'chai';
+import * as path from 'path';
 import * as supertest from 'supertest';
+
+import {makeApp} from '../make_app';
 
 const root = path.join(__dirname, '..', '..', 'test');
 
