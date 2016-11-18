@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import {getApp, ServerOptions} from '../start_server';
 import {startServer} from '../start_server';
 import * as chai from 'chai';

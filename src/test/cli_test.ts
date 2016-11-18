@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import {assert} from 'chai';
 import {run as cliRun} from '../cli';
 
