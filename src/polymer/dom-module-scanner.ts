@@ -13,11 +13,11 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
+import {ASTNode, treeAdapters} from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
-import {Feature, getAttachedCommentText, Resolvable, SourceRange} from '../model/model';
+import {Feature, getAttachedCommentText, Resolvable, SourceRange, Slot} from '../model/model';
 import {Warning} from '../warning/warning';
 
 const p = dom5.predicates;
@@ -31,15 +31,17 @@ export class ScannedDomModule implements Resolvable {
   sourceRange: SourceRange;
   astNode: dom5.Node;
   warnings: Warning[] = [];
+  slots: Slot[];
 
   constructor(
       id: string|null, node: ASTNode, sourceRange: SourceRange,
-      ast: dom5.Node) {
+      ast: dom5.Node, slots: Slot[]) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
     this.sourceRange = sourceRange;
     this.astNode = ast;
+    this.slots = slots;
   }
 
   resolve() {
@@ -49,7 +51,8 @@ export class ScannedDomModule implements Resolvable {
         this.comment,
         this.sourceRange,
         this.astNode,
-        this.warnings);
+        this.warnings,
+        this.slots);
   }
 }
 
@@ -62,10 +65,12 @@ export class DomModule implements Feature {
   sourceRange: SourceRange;
   astNode: dom5.Node;
   warnings: Warning[];
+  slots: Slot[];
 
   constructor(
       node: ASTNode, id: string|null, comment: string|undefined,
-      sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[]) {
+      sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[],
+      slots: Slot[]) {
     this.node = node;
     this.id = id;
     this.comment = comment;
@@ -75,6 +80,7 @@ export class DomModule implements Feature {
     this.sourceRange = sourceRange;
     this.astNode = ast;
     this.warnings = warnings;
+    this.slots = slots;
   }
 }
 
@@ -87,11 +93,20 @@ export class DomModuleScanner implements HtmlScanner {
 
     await visit((node) => {
       if (isDomModule(node)) {
+        const template = dom5.query(node, dom5.predicates.hasTagName('template'));
+        let slots: Slot[] = [];
+        if (template) {
+          slots = dom5.queryAll(
+            treeAdapters.default.getTemplateContent(template),
+            dom5.predicates.hasTagName('slot')
+          ).map(s => new Slot(dom5.getAttribute(s, 'name') || '', document.sourceRangeForNode(s)!));
+        }
         domModules.push(new ScannedDomModule(
             dom5.getAttribute(node, 'id'),
             node,
             document.sourceRangeForNode(node)!,
-            node));
+            node,
+            slots));
       }
     });
     return domModules;

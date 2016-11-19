@@ -207,6 +207,7 @@ function resolveElement(
   if (domModule) {
     clone.description = scannedElement.description || domModule.comment || '';
     clone.domModule = domModule.node;
+    clone.slots = domModule.slots.slice();
   }
 
   return clone;

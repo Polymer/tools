@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Fix some bugs with recursive and mutually recursive imports.
 
+### Added
+* Add `slots` to `Element`.
+
 ## [2.0.0-alpha.17] - 2016-10-28 - [minor]
 
 ### Added

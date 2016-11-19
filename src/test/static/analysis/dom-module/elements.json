@@ -13,16 +13,62 @@
         "selectors": []
       },
       "demos": [],
-      "slots": [],
+      "slots": [
+        {
+          "description": "",
+          "name": "slot1",
+          "range": {
+            "end": {
+              "column": 30,
+              "line": 6
+            },
+            "file": "documented.html",
+            "start": {
+              "column": 4,
+              "line": 6
+            }
+          }
+        },
+        {
+          "description": "",
+          "name": "slot2",
+          "range": {
+            "end": {
+              "column": 30,
+              "line": 7
+            },
+            "file": "documented.html",
+            "start": {
+              "column": 4,
+              "line": 7
+            }
+          }
+        },
+        {
+          "description": "",
+          "name": "",
+          "range": {
+            "end": {
+              "column": 17,
+              "line": 8
+            },
+            "file": "documented.html",
+            "start": {
+              "column": 4,
+              "line": 8
+            }
+          }
+        }
+      ],
       "events": [],
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 10,
+          "line": 12,
           "column": 12
         },
         "end": {
-          "line": 12,
+          "line": 14,
           "column": 5
         }
       }

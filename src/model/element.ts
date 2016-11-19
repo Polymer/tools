@@ -41,6 +41,7 @@ export class ScannedElement implements Resolvable {
   sourceRange: SourceRange|undefined;
   astNode: estree.Node|null;
   warnings: Warning[] = [];
+  slots: Slot[] = [];
 
   jsdoc?: jsdoc.Annotation;
 
@@ -58,6 +59,16 @@ export class ScannedElement implements Resolvable {
 
 export interface Attribute extends ScannedAttribute { inheritedFrom?: string; }
 
+export class Slot {
+  name: string;
+  range: SourceRange;
+
+  constructor(name: string, range: SourceRange) {
+    this.name = name;
+    this.range = range;
+  }
+}
+
 export class Element implements Feature {
   tagName?: string;
   className?: string;
@@ -73,6 +84,7 @@ export class Element implements Feature {
   astNode: estree.Node|null;
   kinds: Set<string> = new Set(['element']);
   warnings: Warning[] = [];
+  slots: Slot[] = [];
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();
     if (this.tagName) {

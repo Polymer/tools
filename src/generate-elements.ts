@@ -103,7 +103,9 @@ function serializeElement(
       selectors: [],
     },
     demos: (resolvedElement.demos || []).map(d => d.path),
-    slots: [],
+    slots: resolvedElement.slots.map(s => {
+      return {description: '', name: s.name, range: s.range};
+    }),
     events: events,
     metadata: resolvedElement.emitMetadata(),
     sourceRange: resolveSourceRangePath(path, resolvedElement.sourceRange),
