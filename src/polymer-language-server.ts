@@ -260,7 +260,7 @@ async function handleErrors<Result, Fallback>(promise: Promise<Result>, fallback
     //   to the user in a useful way. All other exceptions should be logged
     //   if possible.
     if (connection && !(err instanceof WarningCarryingException)) {
-      connection.console.error(err.stack || err.message || err);
+      connection.console.warn(err.stack || err.message || err);
     }
     return fallbackValue;
   }
