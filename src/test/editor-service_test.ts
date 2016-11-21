@@ -375,6 +375,39 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       }
     });
 
+    test('Inserts slots in autocompletion snippet', async() => {
+      const slotFile = path.join('editor-service', 'slot.html');
+      await editorService.fileChanged(slotFile, fs.readFileSync(path.join(basedir, slotFile), 'utf-8'));
+
+      deepEqual(
+          await editorService.getTypeaheadCompletionsAtPosition(slotFile, {
+            line: 1,
+            column: 0 /* after the space after the element name */
+          }),
+          {
+            'elements': [
+              {
+                'description': '',
+                'expandTo': '<slot-test-elem></slot-test-elem>',
+                'expandToSnippet': `<slot-test-elem>
+\t<$\{1:div\} slot="slot1">$2</$\{1:div\}>
+\t<$\{3:div\} slot="slot2">$4</$\{3:div\}>
+\t<$\{5:div\}>$6</$\{5:div\}>
+</slot-test-elem>$0`,
+                'tagname': 'slot-test-elem'
+              },
+              {
+                'description': '',
+                'expandTo': '<slot-one-test-elem></slot-one-test-elem>',
+                'expandToSnippet': `<slot-one-test-elem>$1</slot-one-test-elem>$0`,
+                'tagname': 'slot-one-test-elem'
+              }
+            ],
+            'kind': 'element-tags'
+          }
+      );
+    });
+
     test('Recover from references to undefined files.', async() => {
       await editorService.fileChanged(indexFile, indexContents);
 

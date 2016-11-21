@@ -150,8 +150,18 @@ export class LocalEditorService extends EditorService {
       autocompletion += ` $${tabindex++}`;
     }
     autocompletion += `>`;
-    // TODO(timvdlippe): once insertionPoints are implemented in analyzer, expand
-    // snippet with autocompletion for slots
+    if (e.slots.length === 1 && !e.slots[0].name) {
+      autocompletion += `$${tabindex++}`;
+    } else {
+      for (const slot of e.slots) {
+        const tagTabIndex = tabindex++;
+        const slotAttribute = slot.name ? ` slot="${slot.name}"` : '';
+        autocompletion += '\n\t<${' + tagTabIndex + ':div}' + slotAttribute + '>$' + tabindex++ + '</${' + tagTabIndex + ':div}>';
+      }
+      if (e.slots.length) {
+        autocompletion += '\n';
+      }
+    }
     return autocompletion + `</${e.tagName}>$0`;
   }
 

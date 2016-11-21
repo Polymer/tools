@@ -17,7 +17,7 @@
     "prepublish": "npm run clean && npm run build",
     "lint": "tslint --project ./tsconfig.json",
     "test": "npm run clean && npm run build && npm run lint && mocha",
-    "quicktest": "export QUICK_TESTS=true; npm run build && mocha",
+    "quicktest": "export QUICK_TESTS=true; npm run build || true && mocha",
     "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
@@ -38,7 +38,7 @@
     "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
     "parse5": "^2.2.3",
-    "polymer-analyzer": "=2.0.0-alpha.17",
+    "polymer-analyzer": "=2.0.0-alpha.18",
     "split": "^1.0.0",
     "typescript": "^2.0.3",
     "vscode-languageserver": "^3.0.0-alpha.1"

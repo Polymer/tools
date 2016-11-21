@@ -1,0 +1,27 @@
+<dom-module id="slot-test-elem">
+  <template>
+   <div>
+      <slot name="slot1"></slot>
+      <slot name="slot2"></slot>
+      <slot></slot>
+   </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'slot-test-elem',
+    });
+  </script>
+</dom-module>
+
+<dom-module id="slot-one-test-elem">
+  <template>
+   <div>
+      <slot></slot>
+   </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'slot-one-test-elem',
+    });
+  </script>
+</dom-module>
