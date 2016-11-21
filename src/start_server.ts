@@ -142,7 +142,8 @@ export function getApp(options: ServerOptions): express.Express {
 
   const polyserve = makeApp({
     componentDir: options.componentDir,
-    packageName: options.packageName, root,
+    packageName: options.packageName,
+    root: root,
   });
   options.packageName = polyserve.packageName;
 

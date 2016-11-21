@@ -45,9 +45,15 @@ export function makeApp(options: AppOptions): PolyserveApplication {
   options = options || {};
   const root = options.root;
   const componentDir = options.componentDir || 'bower_components';
-  const packageName = options.packageName || bowerConfig(root).name ||
-      path.basename(process.cwd());
-  const headers = options.headers || {};
+  let packageName = options.packageName;
+  if (!packageName) {
+    packageName = bowerConfig(root).name;
+  }
+  if (!packageName) {
+    packageName = path.basename(root || process.cwd());
+    console.log(`no bower.json detected, using name "${packageName}"`);
+  }
+  let headers = options.headers || {};
 
   const app: PolyserveApplication = <PolyserveApplication>express();
 

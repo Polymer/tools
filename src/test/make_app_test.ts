@@ -47,4 +47,14 @@ suite('makeApp', () => {
         .end(done)
   });
 
+  test('shows friendly error when bower.json does not exist', () => {
+    let called = false;
+    console.error = function(e) {
+      called = true;
+    };
+    const app = makeApp({root: path.resolve(__dirname, 'no_bower_json/')});
+    assert.isFalse(called);
+    assert.equal(app.packageName, 'no_bower_json');
+  });
+
 });

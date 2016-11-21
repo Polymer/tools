@@ -24,18 +24,16 @@ function bowerConfigContents(root?: string): string {
   let contents: string;
 
   try {
-    contents = fs.readFileSync(bowerConfigPath(root)).toString();
+    return fs.readFileSync(bowerConfigPath(root)).toString();
   } catch (e) {
-    console.error('Error reading config at ' + bowerConfigPath());
-    console.error(e);
+    return '{}';
   }
-
-  return contents || '{}';
 }
 
 export function bowerConfig(root?: string) {
+  const config = bowerConfigContents(root);
   try {
-    return JSON.parse(bowerConfigContents(root));
+    return JSON.parse(config);
   } catch (e) {
     console.error('Could not parse bower.json');
     console.error(e);
