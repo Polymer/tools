@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Please document PR changes here. -->
 
+## 1.1.1 - 2016-11-21
+
 ### Changed
 
 * `expandToSnippet` of element typeahead autocompletions now includes children corresponding to shadow dom slots.
