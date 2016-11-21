@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+<!--
+   PRs should document their user-visible changes (if any) below
+   this comment.
+-->
+
+## [2.0.0-alpha.18] - 2016-11-21
+
 ### Fixed
 * [Polymer] A number of fixes around warnings when resolving behaviors
   * Warn, don't throw when a behavior is declared twice.
