@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "lib": ["es2016"],
+        "target": "es5",
+        "lib": [
+            "es2016"
+        ],
         "module": "commonjs",
         "moduleResolution": "node",
         "isolatedModules": false,
@@ -15,7 +17,7 @@
         "outDir": "lib"
     },
     "include": [
-      "custom_typings/**/*.ts",
-      "src/**/*.ts"
+        "custom_typings/**/*.ts",
+        "src/**/*.ts"
     ]
 }

@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as pem from 'pem';
 import * as sinon from 'sinon';
 import * as http from 'spdy';
-import * as supertest from 'supertest';
+import * as supertest from 'supertest-as-promised';
 import * as tmp from 'tmp';
 
 import {getApp, ServerOptions} from '../start_server';
@@ -34,33 +34,63 @@ const root = path.join(__dirname, '..', '..', 'test');
 suite('startServer', () => {
 
   test('returns an app', () => {
-    let app = getApp({});
+    const app = getApp({});
     assert.isOk(app);
   });
 
-  test('serves root application files', (done) => {
-    let app = getApp({root});
-    supertest(app).get('/test-file.txt').expect(200, 'PASS\n').end(done);
+  test('serves root application files', async() => {
+    const app = getApp({root});
+    await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
   });
 
-  test('serves component files', (done) => {
-    let app = getApp({root});
-    supertest(app)
+  test('serves component files', async() => {
+    const app = getApp({root});
+    await supertest(app)
         .get('/bower_components/test-component/test-file.txt')
-        .expect(200, 'TEST COMPONENT\n')
-        .end(done);
+        .expect(200, 'TEST COMPONENT\n');
   });
 
-  test('serves index.html, not 404', (done) => {
-    let app = getApp({root});
-    supertest(app).get('/foo').expect(200, 'INDEX\n').end(done);
+  suite('variants', () => {
+
+    const variantsRoot = path.join(root, 'variants');
+
+    let prevCwd: string;
+    setup(() => {
+      prevCwd = process.cwd();
+      process.chdir(variantsRoot);
+    });
+
+    teardown(() => {
+      process.chdir(prevCwd);
+    });
+
+    test('serves files out of a given components directory', async() => {
+      await supertest(getApp({}))
+          .get('/components/contents.txt')
+          .expect(200, 'mainline\n');
+
+      await supertest(getApp({componentDir: 'bower_components-foo'}))
+          .get('/components/contents.txt')
+          .expect(200, 'foo\n');
+
+      await supertest(getApp({componentDir: 'bower_components-bar'}))
+          .get('/components/contents.txt')
+          .expect(200, 'bar\n');
+    });
+
+  });
+
+
+  test('serves index.html, not 404', async() => {
+    const app = getApp({root});
+    await supertest(app).get('/foo').expect(200, 'INDEX\n');
   });
 
   ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach(
-      (ext) => {test(`404s ${ext} files`, (done) => {
-        let app = getApp({root});
+      (ext) => {test(`404s ${ext} files`, async() => {
+        const app = getApp({root});
 
-        supertest(app).get('/foo.' + ext).expect(404).end(done);
+        await supertest(app).get('/foo.' + ext).expect(404);
       })});
 
   suite('h2', () => {
@@ -96,7 +126,7 @@ suite('startServer', () => {
         _setupServerOptions();
       });
 
-      test('generates new TLS cert/key if unspecified', (done) => {
+      test('generates new TLS cert/key if unspecified', async() => {
         const createCertSpy = sinon.spy(pem, 'createCertificate');
 
         // reset paths to key/cert files so that default paths are used
@@ -107,75 +137,60 @@ suite('startServer', () => {
         const keyFilePath = 'key.pem';
         _deleteFiles([certFilePath, keyFilePath]);
 
-        let server: http.server.Server;
-        let error: any;
-        _startStubServer(_serverOptions)
-            .then(s => {
-              assert.isOk(s);
-              server = s;
-            })
-            .then(() => sinon.assert.calledOnce(createCertSpy))
-            .then(() => Promise.all([
-              fs.readFile(certFilePath)
-                  .then(buf => _assertValidCert(buf.toString())),
-              fs.readFile(keyFilePath)
-                  .then(buf => _assertValidKey(buf.toString()))
-            ]))
-            .catch(e => error = e)
-            .then(() => _deleteFiles([certFilePath, keyFilePath]))
-            .then(() => {
-              createCertSpy.restore();
-              server.close(() => done(error));
-            });
+        try {
+          const server = await _startStubServer(_serverOptions)
+          assert.isOk(server);
+          await sinon.assert.calledOnce(createCertSpy);
+          await Promise.all([
+            fs.readFile(certFilePath)
+                .then(buf => _assertValidCert(buf.toString())),
+            fs.readFile(keyFilePath)
+                .then(buf => _assertValidKey(buf.toString()))
+          ]);
+          await _deleteFiles([certFilePath, keyFilePath]);
+          await new Promise((resolve) => server.close(resolve));
+        } finally {
+          createCertSpy.restore();
+        }
       });
 
-      test('generates new TLS cert/key if specified files blank', (done) => {
+      test('generates new TLS cert/key if specified files blank', async() => {
         const createCertSpy = sinon.spy(pem, 'createCertificate');
 
-        let server: http.server.Server;
-        let error: any;
-        _startStubServer(_serverOptions)
-            .then(s => {
-              assert.isOk(s);
-              server = s;
-            })
-            .then(() => sinon.assert.calledOnce(createCertSpy))
-            .then(() => Promise.all([
-              // _certFile and _keyFile point to newly created (blank) temp
-              // files
-              fs.readFile(_certFile.name)
-                  .then(buf => _assertValidCert(buf.toString())),
-              fs.readFile(_keyFile.name)
-                  .then(buf => _assertValidKey(buf.toString()))
-            ]))
-            .catch(e => error = e)
-            .then(() => {
-              createCertSpy.restore();
-              server.close(() => done(error));
-            });
+        try {
+          const server = await _startStubServer(_serverOptions);
+          assert.isOk(server);
+          await sinon.assert.calledOnce(createCertSpy);
+          await Promise.all([
+            // _certFile and _keyFile point to newly created (blank) temp
+            // files
+            fs.readFile(_certFile.name)
+                .then(buf => _assertValidCert(buf.toString())),
+            fs.readFile(_keyFile.name)
+                .then(buf => _assertValidKey(buf.toString()))
+          ]);
+          await new Promise((resolve) => server.close(resolve));
+        } finally {
+          createCertSpy.restore();
+        }
       });
 
-      test('reuses TLS cert/key', (done) => {
+      test('reuses TLS cert/key', async() => {
         _serverOptions.keyPath = path.join(root, 'key.pem');
         _serverOptions.certPath = path.join(root, 'cert.pem');
 
         const createCertSpy = sinon.spy(pem, 'createCertificate');
 
-        let server: http.server.Server;
-        let error: any;
-        _startStubServer(_serverOptions)
-            .then(s => {
-              assert.isOk(s);
-              server = s;
-            })
-            .then(() => {
-              sinon.assert.notCalled(createCertSpy);
-            })
-            .catch(e => error = e)
-            .then(() => {
-              createCertSpy.restore();
-              server.close(() => done(error));
-            });
+
+        try {
+          let error: any;
+          const server = await _startStubServer(_serverOptions);
+          assert.isOk(server);
+          await sinon.assert.notCalled(createCertSpy);
+          await new Promise((resolve) => server.close(resolve));
+        } finally {
+          createCertSpy.restore();
+        }
       });
 
       test('throws error for blank h2-push manifest', () => {
@@ -278,7 +293,7 @@ suite('startServer', () => {
       });
     }
 
-    function _deleteFiles(files: Iterable<string>) {
+    function _deleteFiles(files: string[]) {
       for (const file of files) {
         try {
           fs.unlinkSync(file);

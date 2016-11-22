@@ -46,6 +46,7 @@
     "@types/mocha": "^2.2.33",
     "@types/sinon": "^1.16.31",
     "@types/supertest": "^1.1.31",
+    "@types/supertest-as-promised": "^2.0.32",
     "@types/tmp": "0.0.31",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
@@ -54,8 +55,9 @@
     "sinon": "^1.17.5",
     "source-map-support": "^0.4.6",
     "supertest": "^1.2.0",
+    "supertest-as-promised": "^4.0.2",
     "tmp": "0.0.28",
-    "typescript": "^2.0.3",
+    "typescript": "^2.1.1",
     "watchy": "^0.6.6"
   },
   "typings": "./lib/polyserve.d.ts"

@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import * as supertest from 'supertest';
+import * as supertest from 'supertest-as-promised';
 
 import {makeApp} from '../make_app';
 
@@ -28,23 +28,21 @@ suite('makeApp', () => {
     assert.equal(app.packageName, 'polyserve-test');
   });
 
-  test('serves package files', (done) => {
+  test('serves package files', async() => {
     let app = makeApp({root});
-    const wrappedApp: typeof app = supertest(app) as any;
-    wrappedApp.get('/polyserve-test/test-file.txt')
-        .expect(200, 'PASS\n')
-        .end(done)
+    await supertest(app)
+        .get('/polyserve-test/test-file.txt')
+        .expect(200, 'PASS\n');
   });
 
-  test('serves component files', (done) => {
+  test('serves component files', async() => {
     let app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),
     });
-    const wrappedApp: typeof app = supertest(app) as any;
-    wrappedApp.get('/test-component/test-file.txt')
-        .expect(200, 'TEST COMPONENT\n')
-        .end(done)
+    await supertest(app)
+        .get('/test-component/test-file.txt')
+        .expect(200, 'TEST COMPONENT\n');
   });
 
   test('shows friendly error when bower.json does not exist', () => {
