@@ -44,6 +44,9 @@ export interface ServerOptions {
   /** The hostname to serve from */
   hostname?: string;
 
+  /** Headers to send with every response */
+  headers?: {[name: string]: string};
+
   /** Whether to open the browser when run **/
   open?: boolean;
 
@@ -289,6 +292,7 @@ export function getApp(options: ServerOptions): express.Express {
     packageName: options.packageName,
     root: root,
     compile: options.compile,
+    headers: options.headers,
   });
   options.packageName = polyserve.packageName;
 
