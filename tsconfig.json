@@ -1,23 +1,21 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "lib": [
-            "es2016"
-        ],
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "isolatedModules": false,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "declaration": true,
-        "noImplicitAny": true,
-        "removeComments": false,
-        "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "outDir": "lib"
-    },
-    "include": [
-        "custom_typings/**/*.ts",
-        "src/**/*.ts"
-    ]
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["es2016"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "isolatedModules": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "lib"
+  },
+  "include": [
+    "custom_typings/**/*.ts",
+    "src/**/*.ts"
+  ]
 }

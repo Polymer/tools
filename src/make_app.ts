@@ -15,10 +15,13 @@
 import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-import {parse as parseUrl} from 'url';
-import {bowerConfig} from './bower_config';
+import { parse as parseUrl } from 'url';
+import { bowerConfig } from './bower_config';
+import { babelCompile } from './compile-middleware';
+import { Response, Request } from 'express';
 
 import send = require('send');
+import mime = require('mime');
 
 export interface AppOptions {
   componentDir?: string;
@@ -57,7 +60,10 @@ export function makeApp(options: AppOptions): PolyserveApplication {
 
   const app: PolyserveApplication = <PolyserveApplication>express();
 
-  app.get('*', function(req, res) {
+  // TODO(justinfagnani): make configurable with flag
+  app.use('*', babelCompile);
+
+  app.get('*', (req, res) => {
     // Serve local files from . and other components from bower_components
     const url = parseUrl(req.url, true);
     let splitPath = url.pathname.split('/').slice(1);
@@ -75,10 +81,15 @@ export function makeApp(options: AppOptions): PolyserveApplication {
 
     if (headers) {
       for (const header in headers) {
-        (<any>res).append(header, headers[header]);
+        (<any>res).setHeader(header, headers[header]);
       }
     }
-    send(req, filePath).pipe(res);
+
+    const _send = send(req, filePath);
+    // Uncomment this to disable 304s from send() and always compile. Useful
+    // for working on the compilation middleware.
+    // _send.isFresh = () => false;
+    _send.pipe(res);
   });
   app.packageName = packageName;
   return app;

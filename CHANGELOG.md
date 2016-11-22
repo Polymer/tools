@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Compile JavaScript with Babel for browsers that don't support ES6
+
 ## [0.14.0] - 2016-11-17
 
 * Added support for HTTP2 and HTTP2 Push. PR #98
