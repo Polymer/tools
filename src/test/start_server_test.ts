@@ -153,7 +153,6 @@ suite('startServer', () => {
 
 
         try {
-          let error: any;
           const server = await _startStubServer(_serverOptions);
           assert.isOk(server);
           await sinon.assert.notCalled(createCertSpy);

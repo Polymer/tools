@@ -13,8 +13,6 @@
  */
 
 import * as express from 'express';
-import {Request, Response} from 'express';
-import * as fs from 'fs';
 import * as path from 'path';
 import {parse as parseUrl} from 'url';
 
@@ -22,7 +20,6 @@ import {bowerConfig} from './bower_config';
 import {babelCompile} from './compile-middleware';
 
 import send = require('send');
-import mime = require('mime');
 
 export interface AppOptions {
   componentDir?: string;

@@ -13,7 +13,6 @@
  */
 
 import {Request, RequestHandler, Response} from 'express';
-import {Transform} from 'stream';
 
 export function transformResponse(transformer: ResponseTransformer):
     RequestHandler {

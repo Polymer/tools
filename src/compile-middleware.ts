@@ -47,7 +47,7 @@ function isSuccessful(response: Response) {
 }
 
 export const babelCompile: RequestHandler = transformResponse({
-  shouldTransform(request: Request, response: Response) {
+  shouldTransform(_request: Request, response: Response) {
     return isSuccessful(response) &&
         compileMimeTypes.indexOf(getContentType(response)) >= 0;
   },
@@ -101,7 +101,6 @@ const isInlineJavaScript = dom5.predicates.AND(
     dom5.predicates.NOT(dom5.predicates.hasAttr('src')));
 
 function needCompilation(uaParser: UAParser): boolean {
-  const engine = uaParser.getEngine();
   const browser = uaParser.getBrowser();
   const versionSplit = browser.version && browser.version.split('.');
   const majorVersion = versionSplit ? parseInt(versionSplit[0], 10) : -1;

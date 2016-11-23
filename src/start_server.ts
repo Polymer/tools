@@ -16,7 +16,6 @@
 
 import * as assert from 'assert';
 import * as express from 'express';
-import * as mime from 'mime';
 import * as fs from 'mz/fs';
 import * as path from 'path';
 import * as send from 'send';
@@ -239,7 +238,7 @@ async function startControlServer(
     variantInfos: VariantServer[]) {
   const fullOptions = await applyDefaultOptions(options);
   const app = express();
-  app.get('/api/serverInfo', (req, res) => {
+  app.get('/api/serverInfo', (_req, res) => {
     res.contentType('json');
     res.send(JSON.stringify({
       packageName: fullOptions.packageName,
@@ -253,7 +252,7 @@ async function startControlServer(
     res.end();
   });
   const indexPath = path.join(__dirname, '..', 'static', 'index.html');
-  app.get('/', async(req, res) => {
+  app.get('/', async(_req, res) => {
     res.contentType('html');
     const indexContents = await fs.readFile(indexPath, 'utf-8');
     res.send(indexContents);
@@ -279,7 +278,6 @@ export function getApp(options: ServerOptions): express.Express {
     getPushManifest(options.root, options.pushManifestPath);
   }
 
-  const port = options.port;
   const root = options.root;
   const app = express();
 
