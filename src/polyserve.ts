@@ -14,4 +14,4 @@
 
 export {args} from './args';
 export {makeApp} from './make_app';
-export {startServer} from './start_server';
+export {ControlServer, MainlineServer, ServerInfo, ServerOptions, startServer, startServers, VariantServer} from './start_server';

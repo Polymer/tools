@@ -23,7 +23,7 @@ import * as supertest from 'supertest-as-promised';
 import * as tmp from 'tmp';
 
 import {getApp, ServerOptions} from '../start_server';
-import {startServer} from '../start_server';
+import {startServer, startServers} from '../start_server';
 
 
 chai.use(chaiAsPromised);
@@ -48,36 +48,6 @@ suite('startServer', () => {
     await supertest(app)
         .get('/bower_components/test-component/test-file.txt')
         .expect(200, 'TEST COMPONENT\n');
-  });
-
-  suite('variants', () => {
-
-    const variantsRoot = path.join(root, 'variants');
-
-    let prevCwd: string;
-    setup(() => {
-      prevCwd = process.cwd();
-      process.chdir(variantsRoot);
-    });
-
-    teardown(() => {
-      process.chdir(prevCwd);
-    });
-
-    test('serves files out of a given components directory', async() => {
-      await supertest(getApp({}))
-          .get('/components/contents.txt')
-          .expect(200, 'mainline\n');
-
-      await supertest(getApp({componentDir: 'bower_components-foo'}))
-          .get('/components/contents.txt')
-          .expect(200, 'foo\n');
-
-      await supertest(getApp({componentDir: 'bower_components-bar'}))
-          .get('/components/contents.txt')
-          .expect(200, 'bar\n');
-    });
-
   });
 
 
@@ -304,3 +274,59 @@ suite('startServer', () => {
     }
   });
 });
+
+suite('startServers', () => {
+  suite('variants', () => {
+    const variantsRoot = path.join(root, 'variants');
+
+    let prevCwd: string;
+    setup(() => {
+      prevCwd = process.cwd();
+      process.chdir(variantsRoot);
+    });
+
+    teardown(() => {
+      process.chdir(prevCwd);
+    });
+
+    test('serves files out of a given components directory', async() => {
+      const servers = await startServers({});
+
+      if (servers.kind !== 'MultipleServers') {
+        throw new Error('Expected startServers to start multiple servers');
+      }
+
+      const mainlineServer = servers.mainline;
+      await supertest(mainlineServer.server)
+          .get('/components/contents.txt')
+          .expect(200, 'mainline\n');
+
+      const fooServer = servers.variants.find(s => s.variantName === 'foo');
+      await supertest(fooServer.server)
+          .get('/components/contents.txt')
+          .expect(200, 'foo\n');
+
+      const barServer = servers.variants.find(s => s.variantName === 'bar');
+      await supertest(barServer.server)
+          .get('/components/contents.txt')
+          .expect(200, 'bar\n');
+
+      const dispatchServer = servers.control;
+      const dispatchTester = supertest(dispatchServer.server);
+      const apiResponse =
+          await dispatchTester.get('/api/serverInfo').expect(200);
+      assert.deepEqual(JSON.parse(apiResponse.text), {
+        packageName: 'variants-test',
+        mainlineServer: {port: mainlineServer.server.address().port},
+        variants: [
+          {name: 'bar', port: barServer.server.address().port},
+          {name: 'foo', port: fooServer.server.address().port}
+        ]
+      });
+      const pageResponse = await dispatchTester.get('/').expect(200);
+      // Assert that some polyserve html is served.
+      assert.match(pageResponse.text, /<html>/);
+      assert.match(pageResponse.text, /Polyserve/);
+    });
+  });
+})

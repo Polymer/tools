@@ -76,7 +76,6 @@ async function
 createTLSCertificate(): Promise<KeyAndCert> {
   type PemCertificate = {certificate: string, serviceKey: string};
   const keys = await new Promise<PemCertificate>((resolve, reject) => {
-    console.log('Generating TLS certificate...');
     pem.createCertificate(
         {days: 365, selfSigned: true}, (err: any, keys: PemCertificate) => {
           if (err) {

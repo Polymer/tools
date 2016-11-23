@@ -13,12 +13,13 @@
  */
 
 import * as express from 'express';
+import {Request, Response} from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parse as parseUrl } from 'url';
-import { bowerConfig } from './bower_config';
-import { babelCompile } from './compile-middleware';
-import { Response, Request } from 'express';
+import {parse as parseUrl} from 'url';
+
+import {bowerConfig} from './bower_config';
+import {babelCompile} from './compile-middleware';
 
 import send = require('send');
 import mime = require('mime');
@@ -46,6 +47,8 @@ export interface PolyserveApplication extends express.Express {
  */
 export function makeApp(options: AppOptions): PolyserveApplication {
   options = options || {};
+  // TODO(rictic): Doing option fallback here and in start_server is awkward. We
+  // should have just one.
   const root = options.root;
   const componentDir = options.componentDir || 'bower_components';
   let packageName = options.packageName;

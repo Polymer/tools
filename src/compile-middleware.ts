@@ -1,21 +1,25 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as babelCore from 'babel-core';
-import {RequestHandler, Request, Response} from 'express';
-import {transformResponse} from './transform-middleware';
-
-import {UAParser} from 'ua-parser-js';
-import * as parse5 from 'parse5';
-import * as dom5 from 'dom5';
 import {parse as parseContentType} from 'content-type';
+import * as dom5 from 'dom5';
+import {Request, RequestHandler, Response} from 'express';
+import * as parse5 from 'parse5';
+import {UAParser} from 'ua-parser-js';
+
+import {transformResponse} from './transform-middleware';
 
 const babelLatest = require('babel-preset-latest');
 
@@ -48,7 +52,7 @@ export const babelCompile: RequestHandler = transformResponse({
         compileMimeTypes.indexOf(getContentType(response)) >= 0;
   },
 
-  transform(request: Request, response: Response, body: string): string {
+  transform(request: Request, response: Response, body: string): string{
     const contentType = getContentType(response);
     const uaParser = new UAParser(request.headers['user-agent']);
     const compile = needCompilation(uaParser);
@@ -79,20 +83,22 @@ export const babelCompile: RequestHandler = transformResponse({
           console.warn(`Error compiling script in ${request.path}: ${e}`);
         }
       }
-    }
+    };
     return body;
   },
 });
 
 function compileScript(script: string): string {
-  return babelCore.transform(script, {
-    presets: [babelLatest],
-  }).code;
+  return babelCore
+      .transform(script, {
+        presets: [babelLatest],
+      })
+      .code;
 }
 
 const isInlineJavaScript = dom5.predicates.AND(
-  dom5.predicates.hasTagName('script'),
-  dom5.predicates.NOT(dom5.predicates.hasAttr('src')));
+    dom5.predicates.hasTagName('script'),
+    dom5.predicates.NOT(dom5.predicates.hasAttr('src')));
 
 function needCompilation(uaParser: UAParser): boolean {
   const engine = uaParser.getEngine();
@@ -100,8 +106,7 @@ function needCompilation(uaParser: UAParser): boolean {
   const versionSplit = browser.version && browser.version.split('.');
   const majorVersion = versionSplit ? parseInt(versionSplit[0], 10) : -1;
 
-  const supportsES2015 =
-      (browser.name === 'Chrome' && majorVersion >= 49) ||
+  const supportsES2015 = (browser.name === 'Chrome' && majorVersion >= 49) ||
       (browser.name === 'Safari' && majorVersion >= 10) ||
       (browser.name === 'Edge' && majorVersion >= 14) ||
       (browser.name === 'Firefox' && majorVersion >= 51);

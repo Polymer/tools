@@ -21,10 +21,8 @@ function bowerConfigPath(root?: string): string {
 }
 
 function bowerConfigContents(root?: string): string {
-  let contents: string;
-
   try {
-    return fs.readFileSync(bowerConfigPath(root)).toString();
+    return fs.readFileSync(bowerConfigPath(root), 'utf-8');
   } catch (e) {
     return '{}';
   }

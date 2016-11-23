@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ServerOptions} from '../start_server';
 import * as url from 'url';
+
+import {ServerOptions} from '../start_server';
 
 import opn = require('opn');
 

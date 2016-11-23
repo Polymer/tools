@@ -13,14 +13,18 @@
  */
 
 import {ArgDescriptor} from 'command-line-args';
-import * as fs from 'fs';
+import * as express from 'express';
+import * as fs from 'mz/fs';
 import * as path from 'path';
+import * as http from 'spdy';
+import * as url from 'url';
 
 import {args} from './args';
-import {ServerOptions, startServer} from './start_server';
+import {getServerUrls, ServerOptions, startServers, startWithPort} from './start_server';
 
 import commandLineArgs = require('command-line-args');
 import commandLineUsage = require('command-line-usage');
+
 
 export async function run(): Promise<void> {
   const argsWithHelp: ArgDescriptor[] = args.concat({
@@ -55,12 +59,28 @@ export async function run(): Promise<void> {
 
   if (cliOptions.help) {
     printUsage(argsWithHelp);
+    return;
   }
-  else if (cliOptions.version) {
+  if (cliOptions.version) {
     console.log(getVersion());
+    return;
   }
-  else {
-    await startServer(options);
+
+  const serverInfos = await startServers(options);
+
+  if (serverInfos.kind === 'mainline') {
+    const urls = getServerUrls(options, serverInfos[0]!.server);
+    console.log(`Files in this directory are available under the following URLs
+    applications: ${
+                  url.format(urls.serverUrl)}
+    reusable components: ${url.format(urls.componentUrl)}
+  `)
+  } else {
+    // We started multiple servers, just tell the user about the control server,
+    // it serves out human-readable info on how to access the others.
+    const urls = getServerUrls(options, serverInfos.control.server);
+    console.log(`Started multiple servers with different variants:
+    More info here: ${url.format(urls.serverUrl)}`);
   }
 }
 

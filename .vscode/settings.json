@@ -14,5 +14,6 @@
       "url": "./lib/analysis.schema.json"
     }
   ],
+  "html.format.wrapLineLength": 60,
   "typescript.tsdk": "node_modules/typescript/lib"
 }
