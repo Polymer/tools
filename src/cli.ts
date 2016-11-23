@@ -42,6 +42,7 @@ export async function run(): Promise<void> {
 
   const options: ServerOptions = {
     root: cliOptions.root,
+    compile: cliOptions.compile,
     port: cliOptions.port,
     hostname: cliOptions.hostname,
     open: cliOptions.open,

@@ -46,47 +46,52 @@ function isSuccessful(response: Response) {
   return (statusCode >= 200 && statusCode < 300);
 }
 
-export const babelCompile: RequestHandler = transformResponse({
-  shouldTransform(_request: Request, response: Response) {
-    return isSuccessful(response) &&
-        compileMimeTypes.indexOf(getContentType(response)) >= 0;
-  },
+export function babelCompile(forceCompile: boolean): RequestHandler {
+  if (forceCompile == null) {
+    forceCompile = false;
+  }
 
-  transform(request: Request, response: Response, body: string): string{
-    const contentType = getContentType(response);
-    const uaParser = new UAParser(request.headers['user-agent']);
-    const compile = needCompilation(uaParser);
+  return transformResponse({
+    shouldTransform(_request: Request, response: Response) {
+      return isSuccessful(response) &&
+          compileMimeTypes.indexOf(getContentType(response)) >= 0;
+    },
 
-    if (compile) {
-      // TODO(justinfagnani): cache compilation results
-      if (contentType === htmlMimeType) {
-        const document = parse5.parse(body);
-        const scriptTags = dom5.queryAll(document, isInlineJavaScript);
-        for (const scriptTag of scriptTags) {
+    transform(request: Request, response: Response, body: string): string{
+      const contentType = getContentType(response);
+      const uaParser = new UAParser(request.headers['user-agent']);
+      const compile = forceCompile || needCompilation(uaParser);
+
+      if (compile) {
+        // TODO(justinfagnani): cache compilation results
+        if (contentType === htmlMimeType) {
+          const document = parse5.parse(body);
+          const scriptTags = dom5.queryAll(document, isInlineJavaScript);
+          for (const scriptTag of scriptTags) {
+            try {
+              const script = dom5.getTextContent(scriptTag);
+              const compiledScriptResult = compileScript(script);
+              dom5.setTextContent(scriptTag, compiledScriptResult);
+            } catch (e) {
+              // By not setting textContent we keep the original script, which
+              // might work. We may want to fail the request so a better error
+              // shows up in the network panel of dev tools. If this is the main
+              // page we could also render a message in the browser.
+              console.warn(`Error compiling script in ${request.path}: ${e}`);
+            }
+          }
+          return parse5.serialize(document);
+        } else if (javaScriptMimeTypes.indexOf(contentType) >= 0) {
           try {
-            const script = dom5.getTextContent(scriptTag);
-            const compiledScriptResult = compileScript(script);
-            dom5.setTextContent(scriptTag, compiledScriptResult);
+            return compileScript(body);
           } catch (e) {
-            // By not setting textContent we keep the original script, which
-            // might work. We may want to fail the request so a better error
-            // shows up in the network panel of dev tools. If this is the main
-            // page we could also render a message in the browser.
             console.warn(`Error compiling script in ${request.path}: ${e}`);
           }
         }
-        return parse5.serialize(document);
-      } else if (javaScriptMimeTypes.indexOf(contentType) >= 0) {
-        try {
-          return compileScript(body);
-        } catch (e) {
-          console.warn(`Error compiling script in ${request.path}: ${e}`);
-        }
-      }
-    };
-    return body;
-  },
-});
+      } return body;
+    },
+  });
+}
 
 function compileScript(script: string): string {
   return babelCore

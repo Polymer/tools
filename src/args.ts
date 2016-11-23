@@ -30,6 +30,14 @@ export let args: ArgDescriptor[] = [
     defaultOption: true,
   },
   {
+    name: 'compile',
+    description: 'Compiler options. Valid values are "auto", "always" and ' +
+        '"never". "auto" compiles JavaScript to ES5 for browsers that don\'t ' +
+        'fully support ES6.',
+    type: String,
+    defaultValue: 'auto',
+  },
+  {
     name: 'port',
     alias: 'p',
     description: 'The port to serve from. Defaults to 8080',

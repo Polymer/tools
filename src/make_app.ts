@@ -26,6 +26,7 @@ export interface AppOptions {
   packageName?: string;
   headers?: {[name: string]: string};
   root?: string;
+  compile?: 'always'|'never'|'auto';
 }
 
 export interface PolyserveApplication extends express.Express {
@@ -60,8 +61,9 @@ export function makeApp(options: AppOptions): PolyserveApplication {
 
   const app: PolyserveApplication = <PolyserveApplication>express();
 
-  // TODO(justinfagnani): make configurable with flag
-  app.use('*', babelCompile);
+  if (options.compile === 'auto' || options.compile === 'always') {
+    app.use('*', babelCompile(options.compile === 'always'));
+  }
 
   app.get('*', (req, res) => {
     // Serve local files from . and other components from bower_components

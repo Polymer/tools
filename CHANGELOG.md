@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-* Compile JavaScript with Babel for browsers that don't support ES6
+* Compile JavaScript with Babel for browsers that don't support ES6. A new
+`--compile` flag controls compilation, with valid values of 'always', 'never',
+and 'auto'; and a default of 'auto'.
 * If the root dir contains directories that look like `bower_components-${foo}`, they will be treated as `dependency variants`. In that case, polyserve will start one server for each variant, enabling testing and development of your code against each set of dependencies.
 
 ## [0.14.0] - 2016-11-17

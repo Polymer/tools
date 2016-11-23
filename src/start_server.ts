@@ -35,6 +35,9 @@ export interface ServerOptions {
   /** The root directory to serve **/
   root?: string;
 
+  /** Whether or not to compile JavaScript **/
+  compile?: 'always'|'never'|'auto';
+
   /** The port to serve from */
   port?: number;
 
@@ -285,6 +288,7 @@ export function getApp(options: ServerOptions): express.Express {
     componentDir: options.componentDir,
     packageName: options.packageName,
     root: root,
+    compile: options.compile,
   });
   options.packageName = polyserve.packageName;
 
