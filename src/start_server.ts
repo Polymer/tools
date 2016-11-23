@@ -302,7 +302,7 @@ export function getApp(options: ServerOptions): express.Express {
     send(req, filePath, {root: root})
         .on('error',
             (error: send.SendError) => {
-              if ((error).status == 404 && !filePathRegex.test(filePath)) {
+              if ((error).status === 404 && !filePathRegex.test(filePath)) {
                 send(req, '/', {root: root}).pipe(res);
               } else {
                 res.statusCode = error.status || 500;

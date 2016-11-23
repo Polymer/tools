@@ -54,7 +54,7 @@ export async function run(): Promise<void> {
     keyPath: cliOptions['key'],
     certPath: cliOptions['cert'],
     pushManifestPath: cliOptions['manifest'],
-  }
+  };
 
   if (cliOptions.help) {
     printUsage(argsWithHelp);
@@ -73,7 +73,7 @@ export async function run(): Promise<void> {
     applications: ${
                   url.format(urls.serverUrl)}
     reusable components: ${url.format(urls.componentUrl)}
-  `)
+  `);
   } else {
     // We started multiple servers, just tell the user about the control server,
     // it serves out human-readable info on how to access the others.

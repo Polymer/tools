@@ -77,7 +77,7 @@ export function transformResponse(transformer: ResponseTransformer):
     };
 
     next();
-  }
+  };
 }
 
 export interface ResponseTransformer {

@@ -73,7 +73,7 @@ suite('makeApp', () => {
       });
       let request = supertest(app).get(url);
       if (agent) {
-        request = request.set('User-Agent', agent)
+        request = request.set('User-Agent', agent);
       }
       const response = await request;
       const isCompiled = response.text.indexOf('class A {}') === -1;

@@ -12,7 +12,7 @@
     "start": "./bin/polyserve",
     "clean": "mkdir -p lib && rm -r lib",
     "build": "npm run clean && tsc",
-    "test": "npm run build && mocha",
+    "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
     "test:watch": "watchy -w src/ -- npm test",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
   },
@@ -68,6 +68,7 @@
     "supertest": "^1.2.0",
     "supertest-as-promised": "^4.0.2",
     "tmp": "0.0.28",
+    "tslint": "^4.0.2",
     "typescript": "^2.1.1",
     "watchy": "^0.6.6"
   },

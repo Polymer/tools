@@ -56,12 +56,13 @@ suite('startServer', () => {
     await supertest(app).get('/foo').expect(200, 'INDEX\n');
   });
 
-  ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach(
-      (ext) => {test(`404s ${ext} files`, async() => {
-        const app = getApp({root});
+  ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach((ext) => {
+    test(`404s ${ext} files`, async() => {
+      const app = getApp({root});
 
-        await supertest(app).get('/foo.' + ext).expect(404);
-      })});
+      await supertest(app).get('/foo.' + ext).expect(404);
+    });
+  });
 
   suite('h2', () => {
     let _certFile: tmp.SynchrounousResult;
@@ -108,7 +109,7 @@ suite('startServer', () => {
         _deleteFiles([certFilePath, keyFilePath]);
 
         try {
-          const server = await _startStubServer(_serverOptions)
+          const server = await _startStubServer(_serverOptions);
           assert.isOk(server);
           await sinon.assert.calledOnce(createCertSpy);
           await Promise.all([
@@ -328,4 +329,4 @@ suite('startServers', () => {
       assert.match(pageResponse.text, /Polyserve/);
     });
   });
-})
+});
