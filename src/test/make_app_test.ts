@@ -47,7 +47,7 @@ suite('makeApp', () => {
 
   test('shows friendly error when bower.json does not exist', () => {
     let called = false;
-    console.error = function(e) {
+    console.error = function(_e) {
       called = true;
     };
     const app = makeApp({root: path.resolve(__dirname, 'no_bower_json/')});

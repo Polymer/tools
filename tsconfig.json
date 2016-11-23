@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "lib": ["es2016"],
+    "lib": [
+      "es2016"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "isolatedModules": false,
@@ -10,6 +12,8 @@
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "preserveConstEnums": true,
     "suppressImplicitAnyIndexErrors": true,
     "outDir": "lib"

@@ -13,14 +13,12 @@
  */
 
 import {ArgDescriptor} from 'command-line-args';
-import * as express from 'express';
 import * as fs from 'mz/fs';
 import * as path from 'path';
-import * as http from 'spdy';
 import * as url from 'url';
 
 import {args} from './args';
-import {getServerUrls, ServerOptions, startServers, startWithPort} from './start_server';
+import {getServerUrls, ServerOptions, startServers} from './start_server';
 
 import commandLineArgs = require('command-line-args');
 import commandLineUsage = require('command-line-usage');
