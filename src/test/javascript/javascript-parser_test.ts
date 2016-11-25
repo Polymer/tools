@@ -49,6 +49,24 @@ suite('JavaScriptParser', () => {
       assert.equal(document.ast.body[0].type, 'ClassDeclaration');
     });
 
+    test('parses async await', () => {
+      const contents = `
+        async function foo() {
+          await Promise.resolve();
+        }
+      `;
+      let document = parser.parse(contents, '/static/es6-support.js');
+      assert.instanceOf(document, JavaScriptDocument);
+      assert.equal(document.url, '/static/es6-support.js');
+      assert.equal(document.ast.type, 'Program');
+      // First statement is an async function declaration
+      const functionDecl = document.ast.body[0];
+      if (functionDecl.type !== 'FunctionDeclaration') {
+        throw new Error('Expected a function declaration.');
+      }
+      assert.equal(functionDecl.async, true);
+    });
+
     test('throws syntax errors', () => {
       let file = fs.readFileSync(
           path.resolve(__dirname, '../static/js-parse-error.js'), 'utf8');

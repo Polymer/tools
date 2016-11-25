@@ -43,7 +43,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
     let ast: Program;
     try {
       ast = <Program>espree.parse(contents, {
-        ecmaVersion: 7,
+        ecmaVersion: 8,
         attachComment: true,
         comment: true,
         loc: true,

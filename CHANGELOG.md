@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+### Fixed
+* Bump JS parser up to parse ES2017 (ES8).
+
 ## [2.0.0-alpha.18] - 2016-11-21
 
 ### Fixed
