@@ -18,13 +18,13 @@ import * as path from 'path';
 import * as url from 'url';
 
 import {args} from './args';
-import {getServerUrls, ServerOptions, startServers} from './start_server';
+import {getServerUrls, ServerOptions, StartServerResult, startServers} from './start_server';
 
 import commandLineArgs = require('command-line-args');
 import commandLineUsage = require('command-line-usage');
 
 
-export async function run(): Promise<void> {
+export async function run(): Promise<StartServerResult> {
   const argsWithHelp: ArgDescriptor[] = args.concat({
     name: 'help',
     description: 'Shows this help message',
@@ -67,7 +67,8 @@ export async function run(): Promise<void> {
   const serverInfos = await startServers(options);
 
   if (serverInfos.kind === 'mainline') {
-    const urls = getServerUrls(options, serverInfos[0]!.server);
+    const mainlineServer = serverInfos;
+    const urls = getServerUrls(options, mainlineServer.server);
     console.log(`Files in this directory are available under the following URLs
     applications: ${
                   url.format(urls.serverUrl)}
@@ -80,6 +81,7 @@ export async function run(): Promise<void> {
     console.log(`Started multiple servers with different variants:
     More info here: ${url.format(urls.serverUrl)}`);
   }
+  return serverInfos;
 }
 
 function printUsage(options: any): void {

@@ -21,6 +21,7 @@ resolve('polyserve', {basedir: process.cwd()}, function(error, libpath) {
   var cli = require(clipath);
   cli.run(process.argv)
     .catch(function(e) {
+      console.error(e);
       process.exit(69);
     });
 });
