@@ -43,6 +43,17 @@ suite('startServer', () => {
     await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
   });
 
+  test('serves root application files if root isn\t set', async() => {
+    const cwd = process.cwd();
+    try {
+      process.chdir(root);
+      const app = getApp({});
+      await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+
   test('serves component files', async() => {
     const app = getApp({root});
     await supertest(app)

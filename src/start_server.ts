@@ -278,7 +278,7 @@ export function getApp(options: ServerOptions): express.Express {
     getPushManifest(options.root, options.pushManifestPath);
   }
 
-  const root = options.root;
+  const root = options.root || '.';
   const app = express();
 
   const polyserve = makeApp({
