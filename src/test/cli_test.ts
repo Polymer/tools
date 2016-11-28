@@ -13,6 +13,7 @@
  */
 
 import {assert} from 'chai';
+import * as http from 'spdy';
 import {run as cliRun} from '../cli';
 import intercept = require('intercept-stdout');
 
@@ -40,8 +41,21 @@ suite('cli', () => {
       return '';
     });
 
+    const closeServer = (server: http.Server) =>
+        new Promise((resolve, reject) => server.close((e: Error) => {
+          e ? reject(e) : resolve();
+        }));
+
     try {
-      await cliRun();
+      const serverInfos = await cliRun();
+      if (serverInfos) {
+        if (serverInfos.kind === 'mainline') {
+          await closeServer(serverInfos.server);
+        } else {
+          await Promise.all(
+              serverInfos.servers.map((s) => closeServer(s.server)));
+        }
+      }
     } finally {
       unintercept();
       process.argv = originalArgv;
@@ -57,6 +71,10 @@ suite('cli', () => {
     assert.match(stdout, /A development server for Polymer projects/);
     assert.match(stdout, /--version/);
     assert.match(stdout, /--package-name/);
+  });
+
+  test('launches mainline server', async() => {
+    await runCli([]);
   });
 
 });

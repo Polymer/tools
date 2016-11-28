@@ -114,28 +114,27 @@ async function _startServer(options: ServerOptions) {
 
 export type ServerInfo = MainlineServer | VariantServer | ControlServer;
 
+export interface PolyserveServer {
+  kind: 'control'|'mainline'|'variant';
+  server: http.Server;
+  app: express.Application;
+  options: ServerOptions;
+}
+
 /**
  * The `default` or `primary` server. If only one ServerInfo is returned from
  * startServers it must be a MainlineServer. This is the server that's running
  * with the default configuration and not running a variant configuration.
  */
-export interface MainlineServer {
-  kind: 'mainline';
-  server: http.Server;
-  app: express.Application;
-  options: ServerOptions;
-}
+export interface MainlineServer extends PolyserveServer { kind: 'mainline'; }
 /**
  * These are servers which are running some named variant configuration. For
  * multiple variant dependency directories are detected/configured, there will
  * be one MainlineServer that serves out the default dependency directory, and
  * one VariantServer for each other dependency directory.
  */
-export interface VariantServer {
+export interface VariantServer extends PolyserveServer {
   kind: 'variant';
-  server: http.Server;
-  app: express.Application;
-  options: ServerOptions;
   variantName: string;
   dependencyDir: string;
 }
@@ -145,18 +144,14 @@ export interface VariantServer {
  * describes the other servers which have been started, and provides convenience
  * links to them.
  */
-export interface ControlServer {
-  kind: 'control';
-  server: http.Server;
-  app: express.Application;
-  options: ServerOptions;
-}
+export interface ControlServer extends PolyserveServer { kind: 'control'; }
 
 export interface MultipleServersInfo {
   kind: 'MultipleServers';
   mainline: MainlineServer;
   variants: VariantServer[];
   control: ControlServer;
+  servers: PolyserveServer[];
 }
 
 export type StartServerResult = MainlineServer | MultipleServersInfo;
@@ -226,12 +221,14 @@ async function startVariants(
 
       const controlServerInfo =
           await startControlServer(options, mainServerInfo, variantServerInfos);
+      const servers = ([controlServerInfo, mainServerInfo] as PolyserveServer[])
+                          .concat(variantServerInfos);
 
       return {
         kind: 'MultipleServers',
         control: controlServerInfo,
         mainline: mainServerInfo,
-        variants: variantServerInfos
+        variants: variantServerInfos, servers,
       };
     }
 

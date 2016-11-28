@@ -16,7 +16,8 @@
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "suppressImplicitAnyIndexErrors": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "sourceMap": true
   },
   "include": [
     "custom_typings/**/*.ts",
