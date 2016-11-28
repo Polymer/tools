@@ -21,7 +21,27 @@ import {UAParser} from 'ua-parser-js';
 
 import {transformResponse} from './transform-middleware';
 
-const babelLatest = require('babel-preset-latest');
+const babelTransformers = [
+  'babel-plugin-transform-es2015-arrow-functions',
+  'babel-plugin-transform-es2015-block-scoped-functions',
+  'babel-plugin-transform-es2015-block-scoping',
+  'babel-plugin-transform-es2015-classes',
+  'babel-plugin-transform-es2015-computed-properties',
+  'babel-plugin-transform-es2015-destructuring',
+  'babel-plugin-transform-es2015-duplicate-keys',
+  'babel-plugin-transform-es2015-for-of',
+  'babel-plugin-transform-es2015-function-name',
+  'babel-plugin-transform-es2015-literals',
+  'babel-plugin-transform-es2015-object-super',
+  'babel-plugin-transform-es2015-parameters',
+  'babel-plugin-transform-es2015-shorthand-properties',
+  'babel-plugin-transform-es2015-spread',
+  'babel-plugin-transform-es2015-sticky-regex',
+  'babel-plugin-transform-es2015-template-literals',
+  'babel-plugin-transform-es2015-typeof-symbol',
+  'babel-plugin-transform-es2015-unicode-regex',
+  'babel-plugin-transform-regenerator',
+].map((name) => require(name));
 
 const javaScriptMimeTypes = [
   'application/javascript',
@@ -96,7 +116,7 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
 function compileScript(script: string): string {
   return babelCore
       .transform(script, {
-        presets: [babelLatest],
+        plugins: babelTransformers,
       })
       .code;
 }
