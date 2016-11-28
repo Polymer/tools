@@ -68,8 +68,11 @@ export function transformResponse(transformer: ResponseTransformer):
         } catch (e) {
           console.warn('Error', e);
         }
+        // TODO(justinfagnani): re-enable setting of content-length when we know
+        // why it was causing truncated files. Could be multi-byte characters.
         // Assumes single-byte code points!
-        res.setHeader('Content-Length', `${newBody.length}`);
+        // res.setHeader('Content-Length', `${newBody.length}`);
+        res.removeHeader('Content-Length');
         return _end.call(this, newBody);
       } else {
         return _end.call(this, chunk, cbOrEncoding, cbOrFd);
