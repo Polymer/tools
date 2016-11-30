@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../custom_typings/spdy.d.ts" />
-
 import * as assert from 'assert';
 import * as express from 'express';
 import * as fs from 'mz/fs';
