@@ -40,6 +40,8 @@ export async function run(): Promise<StartServerResult> {
     return;
   }
 
+  const proxyArgs = {path: cliOptions['proxy-path'], target: cliOptions['proxy-target']};
+
   const options: ServerOptions = {
     root: cliOptions.root,
     compile: cliOptions.compile,
@@ -54,6 +56,7 @@ export async function run(): Promise<StartServerResult> {
     keyPath: cliOptions['key'],
     certPath: cliOptions['cert'],
     pushManifestPath: cliOptions['manifest'],
+    proxy: proxyArgs.path && proxyArgs.target && proxyArgs,
   };
 
   if (cliOptions.help) {

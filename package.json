@@ -59,6 +59,7 @@
     "dom5": "^2.0.1",
     "express": "^4.8.5",
     "find-port": "^1.0.1",
+    "http-proxy-middleware": "^0.17.2",
     "mime": "^1.3.4",
     "mz": "^2.4.0",
     "opn": "^3.0.2",

@@ -29,6 +29,8 @@ import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
 
+const httpProxy = require('http-proxy-middleware');
+
 export interface ServerOptions {
   /** The root directory to serve **/
   root?: string;
@@ -68,6 +70,9 @@ export interface ServerOptions {
 
   /** Path to H2 push-manifest file */
   pushManifestPath?: string;
+
+  /** Proxy to redirect for all matching `path` to `target` */
+  proxy?: {path: string, target: string};
 }
 
 async function applyDefaultOptions(options: ServerOptions):
@@ -290,6 +295,36 @@ export function getApp(options: ServerOptions): express.Express {
   const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
 
   app.use('/components/', polyserve);
+
+  if (options.proxy) {
+    if (options.proxy.path.startsWith('components')) {
+      console.error('proxy path can not start with components.');
+      return;
+    }
+
+    let escapedPath = options.proxy.path;
+
+    for (let char of ['*', '?', '+']) {
+      if (escapedPath.indexOf(char) > -1) {
+        console.warn(`Proxy path includes character "${char}" which can cause problems during route matching.`);
+      }
+    }
+
+    if (escapedPath.startsWith('/')) {
+      escapedPath = escapedPath.substring(1);
+    }
+    if (escapedPath.endsWith('/')) {
+      escapedPath = escapedPath.slice(0, -1);
+    }
+    const pathRewrite = {};
+    pathRewrite[`^/${escapedPath}`] = '';
+    const apiProxy = httpProxy(`/${escapedPath}`, {
+      target: options.proxy.target,
+      changeOrigin: true,
+      pathRewrite: pathRewrite
+    });
+    app.use(`/${escapedPath}/`, apiProxy);
+  }
 
   app.get('/*', (req, res) => {
     pushResources(options, req, res);
