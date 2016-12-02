@@ -84,6 +84,7 @@ suite('startServer', () => {
       app = await startServer({root});
 
       return proxyServer = await startServer({
+          port: 0,
           root: __dirname,
           proxy: {
             path: path,
@@ -97,11 +98,13 @@ suite('startServer', () => {
       consoleWarn = console.warn;
     });
 
-    teardown(() => {
+    teardown(async () => {
       console.error = consoleError;
       console.warn = consoleWarn;
-      proxyServer && proxyServer.close();
-      app.close();
+      await Promise.all([
+        proxyServer && new Promise((resolve, _) => proxyServer.close(resolve)),
+        new Promise((resolve, _) => app.close(resolve)),
+      ]);
     });
 
     test('rewrites directory with proxy', async() => {
