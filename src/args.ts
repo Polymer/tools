@@ -12,20 +12,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../custom_typings/command-line-args.d.ts" />
-
 import {ArgDescriptor} from 'command-line-args';
 
 export let args: ArgDescriptor[] = [
   {
     name: 'version',
-    alias: 'v',
     description: 'Print version info',
     type: Boolean,
   },
   {
     name: 'root',
-    description: 'The root directory. Defaults to cwd',
+    description: 'The root directory of your project. Defaults to the current' +
+        ' working directory',
     type: String,
     defaultOption: true,
   },
