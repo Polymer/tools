@@ -48,7 +48,10 @@ export function makeApp(options: AppOptions): PolyserveApplication {
   // TODO(rictic): Doing option fallback here and in start_server is awkward. We
   // should have just one.
   const root = options.root;
-  const componentDir = options.componentDir || 'bower_components';
+  const baseComponentDir = options.componentDir || 'bower_components';
+  const componentDir = path.isAbsolute(baseComponentDir) ?
+      baseComponentDir :
+      path.join(root, baseComponentDir);
   let packageName = options.packageName;
   if (!packageName) {
     packageName = bowerConfig(root).name;
@@ -86,7 +89,6 @@ export function makeApp(options: AppOptions): PolyserveApplication {
         (<any>res).setHeader(header, headers[header]);
       }
     }
-
     const _send = send(req, filePath);
     // Uncomment this to disable 304s from send() and always compile. Useful
     // for working on the compilation middleware.

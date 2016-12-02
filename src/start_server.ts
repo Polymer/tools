@@ -44,6 +44,9 @@ export interface ServerOptions {
   /** The hostname to serve from */
   hostname?: string;
 
+  /** Headers to send with every response */
+  headers?: {[name: string]: string};
+
   /** Whether to open the browser when run **/
   open?: boolean;
 
@@ -73,6 +76,10 @@ export interface ServerOptions {
 
   /** Proxy to redirect for all matching `path` to `target` */
   proxy?: {path: string, target: string};
+
+  /** An optional list of routes & route handlers to attach to the polyserve
+   * app, to be handled before all others */
+  additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
 async function applyDefaultOptions(options: ServerOptions):
@@ -284,11 +291,18 @@ export function getApp(options: ServerOptions): express.Express {
   const root = options.root || '.';
   const app = express();
 
+  if (options.additionalRoutes) {
+    options.additionalRoutes.forEach((handler, route) => {
+      app.get(route, handler);
+    });
+  }
+
   const polyserve = makeApp({
     componentDir: options.componentDir,
     packageName: options.packageName,
     root: root,
     compile: options.compile,
+    headers: options.headers,
   });
   options.packageName = polyserve.packageName;
 
@@ -306,7 +320,8 @@ export function getApp(options: ServerOptions): express.Express {
 
     for (let char of ['*', '?', '+']) {
       if (escapedPath.indexOf(char) > -1) {
-        console.warn(`Proxy path includes character "${char}" which can cause problems during route matching.`);
+        console.warn(
+            `Proxy path includes character "${char}" which can cause problems during route matching.`);
       }
     }
 

@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+export {RequestHandler} from 'express';
 export {args} from './args';
 export {makeApp} from './make_app';
-export {ControlServer, MainlineServer, ServerInfo, ServerOptions, startServer, startServers, VariantServer} from './start_server';
+export {ControlServer, MainlineServer, PolyserveServer, ServerInfo, ServerOptions, startServer, startServers, VariantServer} from './start_server';
