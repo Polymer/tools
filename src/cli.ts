@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/command-line-args.d.ts" />
+
 import {ArgDescriptor} from 'command-line-args';
 import * as fs from 'mz/fs';
 import * as path from 'path';
@@ -40,7 +42,10 @@ export async function run(): Promise<StartServerResult> {
     return;
   }
 
-  const proxyArgs = {path: cliOptions['proxy-path'], target: cliOptions['proxy-target']};
+  const proxyArgs = {
+    path: cliOptions['proxy-path'],
+    target: cliOptions['proxy-target']
+  };
 
   const options: ServerOptions = {
     root: cliOptions.root,
