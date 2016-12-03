@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../custom_typings/command-line-args.d.ts" />
 import {ArgDescriptor} from 'command-line-args';
 
 export let args: ArgDescriptor[] = [
@@ -110,12 +111,16 @@ export let args: ArgDescriptor[] = [
   },
   {
     name: 'proxy-path',
-    description: 'Top-level path that should be redirected to the proxy-target. E.g. `api/v1` when you want to redirect all requests of `https://localhost/api/v1/`',
+    description:
+        'Top-level path that should be redirected to the proxy-target. ' +
+        'E.g. `api/v1` when you want to redirect all requests of ' +
+        '`https://localhost/api/v1/`',
     type: String,
   },
   {
     name: 'proxy-target',
-    description: 'Host URL to proxy to, for example `https://myredirect:8080/foo`',
+    description:
+        'Host URL to proxy to, for example `https://myredirect:8080/foo`',
     type: String,
   },
 ];
