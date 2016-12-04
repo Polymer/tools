@@ -29,6 +29,7 @@ export function analyzeProperties(
   if (node.type !== 'ObjectExpression') {
     return analyzedProps;
   }
+
   for (const property of node.properties) {
     const prop = toScannedPolymerProperty(
         property, document.sourceRangeForNode(property)!);
@@ -36,70 +37,74 @@ export function analyzeProperties(
 
     let isComputed = false;
 
-    if (property.value.type !== 'ObjectExpression') {
+    if (property.value.type === 'Identifier') {
+      prop.type = property.value.name;
+    } else if (property.value.type !== 'ObjectExpression') {
       continue;
-    }
-    /**
-     * Parse the expression inside a property object block. e.g.
-     * property: {
-     *   key: {
-     *     type: String,
-     *     notify: true,
-     *     value: -1,
-     *     readOnly: true,
-     *     reflectToAttribute: true
-     *   }
-     * }
-     */
-    for (const propertyArg of property.value.properties) {
-      const propertyKey = esutil.objectKeyToString(propertyArg.key);
+    } else {
+      /**
+       * Parse the expression inside a property object block. e.g.
+       * property: {
+       *   key: {
+       *     type: String,
+       *     notify: true,
+       *     value: -1,
+       *     readOnly: true,
+       *     reflectToAttribute: true
+       *   }
+       * }
+       */
+      for (const propertyArg of property.value.properties) {
+        const propertyKey = esutil.objectKeyToString(propertyArg.key);
 
-      switch (propertyKey) {
-        case 'type':
-          prop.type = esutil.objectKeyToString(propertyArg.value);
-          prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP[prop.type!] || prop.type;
-          if (prop.type === undefined) {
-            prop.warnings.push({
-              code: 'invalid-property-type',
-              message: 'Invalid type in property object.',
-              severity: Severity.ERROR,
-              sourceRange: document.sourceRangeForNode(propertyArg)!
-            });
-          }
-          break;
-        case 'notify':
-          prop.notify = !!astValue.expressionToValue(propertyArg.value);
-          break;
-        case 'observer':
-          const val = astValue.expressionToValue(propertyArg.value);
-          prop.observerNode = propertyArg.value;
-          if (val === undefined) {
-            prop.observer = astValue.CANT_CONVERT;
-          } else {
-            prop.observer = JSON.stringify(val);
-          }
-          break;
-        case 'readOnly':
-          prop.readOnly = !!astValue.expressionToValue(propertyArg.value);
-          break;
-        case 'reflectToAttribute':
-          prop.reflectToAttribute = !!astValue.expressionToValue(propertyArg);
-          break;
-        case 'computed':
-          isComputed = true;
-          break;
-        case 'value':
-          prop.default =
-              JSON.stringify(astValue.expressionToValue(propertyArg.value));
-          break;
-        default:
-          break;
+        switch (propertyKey) {
+          case 'type':
+            prop.type = esutil.objectKeyToString(propertyArg.value);
+            if (prop.type === undefined) {
+              prop.warnings.push({
+                code: 'invalid-property-type',
+                message: 'Invalid type in property object.',
+                severity: Severity.ERROR,
+                sourceRange: document.sourceRangeForNode(propertyArg)!
+              });
+            }
+            break;
+          case 'notify':
+            prop.notify = !!astValue.expressionToValue(propertyArg.value);
+            break;
+          case 'observer':
+            const val = astValue.expressionToValue(propertyArg.value);
+            prop.observerNode = propertyArg.value;
+            if (val === undefined) {
+              prop.observer = astValue.CANT_CONVERT;
+            } else {
+              prop.observer = JSON.stringify(val);
+            }
+            break;
+          case 'readOnly':
+            prop.readOnly = !!astValue.expressionToValue(propertyArg.value);
+            break;
+          case 'reflectToAttribute':
+            prop.reflectToAttribute = !!astValue.expressionToValue(propertyArg);
+            break;
+          case 'computed':
+            isComputed = true;
+            break;
+          case 'value':
+            prop.default =
+                JSON.stringify(astValue.expressionToValue(propertyArg.value));
+            break;
+          default:
+            break;
+        }
       }
     }
 
     if (isComputed) {
       prop.readOnly = true;
     }
+
+    prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP[prop.type!] || prop.type;
 
     if (!prop.type) {
       prop.warnings.push({

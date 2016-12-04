@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Bump JS parser up to parse ES2017 (ES8).
+* [Polymer] Property descriptors are allowed to be just a type name, like `value: String`.
 
 ## [2.0.0-alpha.18] - 2016-11-21
 

@@ -61,6 +61,7 @@ suite('PolymerElementScanner', () => {
             computed: '_computeG()',
             readOnly: false
           },
+          h: String,
           all: {
             type: Object,
             notify: true,
@@ -91,7 +92,7 @@ suite('PolymerElementScanner', () => {
       assert.deepEqual(
           features[0].events.map(e => e.name), ['e-changed', 'all-changed']);
 
-      assert.equal(features[0].properties.length, 8);
+      assert.equal(features[0].properties.length, 9);
 
       assert.deepEqual(
           features[0]
@@ -113,6 +114,7 @@ suite('PolymerElementScanner', () => {
         ['e', 'string'],
         ['f', 'Object'],
         ['g', undefined],
+        ['h', 'string'],
         ['all', 'Object']
       ]);
 
