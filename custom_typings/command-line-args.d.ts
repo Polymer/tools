@@ -12,8 +12,14 @@ declare module 'command-line-args' {
     }
   }
 
+  /**
+   * @param descriptors An array of objects that describe the arguments that
+   *     we want to parse.
+   * @param args Optional arguments to parse. If not given, process.argv is
+   *     used.
+   */
   function commandLineArgs(
-      groups: commandLineArgs.ArgDescriptor[], args?: string[]): any;
+      descriptors: commandLineArgs.ArgDescriptor[], args?: string[]): any;
 
   export = commandLineArgs;
 }
