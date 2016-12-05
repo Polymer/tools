@@ -15,4 +15,4 @@
 export {RequestHandler} from 'express';
 export {args} from './args';
 export {makeApp} from './make_app';
-export {ControlServer, MainlineServer, PolyserveServer, ServerInfo, ServerOptions, startServer, startServers, VariantServer} from './start_server';
+export {ControlServer, getServerUrls, MainlineServer, PolyserveServer, ServerInfo, ServerOptions, startServer, startServers, VariantServer} from './start_server';
