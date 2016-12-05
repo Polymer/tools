@@ -14,6 +14,7 @@
     "build": "npm run clean && tsc",
     "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
     "test:watch": "watchy -w src/ -- npm test",
+    "prepublish": "npm run build",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
   },
   "keywords": [
