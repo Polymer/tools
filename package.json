@@ -1,6 +1,6 @@
 {
   "name": "polyserve",
-  "version": "0.16.0-prerelease.5",
+  "version": "0.16.0-prerelease.6",
   "description": "A simple dev server for bower components",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/polyserve",
