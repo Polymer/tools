@@ -130,7 +130,7 @@ function firefox(browser: launchpad.Browser): wd.Capabilities {
   const marionette = version >= 47;
   return {
     'browserName': 'firefox',
-    version,
+    'version': `${version}`,
     'firefox_binary': browser.binPath,
     marionette
   };
