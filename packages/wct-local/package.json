@@ -19,8 +19,7 @@
   "scripts": {
     "lint": "gulp lint",
     "build": "tsc",
-    "test": "gulp test",
-    "prepublish": "gulp build-all",
+    "prepublish": "tsc",
     "postinstall": "node scripts/postinstall.js"
   },
   "wct-plugin": {
