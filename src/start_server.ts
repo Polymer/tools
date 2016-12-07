@@ -24,7 +24,6 @@ import * as url from 'url';
 
 import {bowerConfig} from './bower_config';
 import {makeApp} from './make_app';
-import {nextOpenPort} from './util/next_open_port';
 import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
@@ -82,21 +81,19 @@ export interface ServerOptions {
   additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
-async function applyDefaultOptions(options: ServerOptions):
-    Promise<ServerOptions> {
-      const withDefaults = Object.assign({}, options);
-      Object.assign(withDefaults, {
-        port: await nextOpenPort(options.port),
-        hostname: options.hostname || 'localhost',
-        root: path.resolve(options.root || '.'),
-        certPath: options.certPath || 'cert.pem',
-        keyPath: options.keyPath || 'key.pem',
-      });
-      withDefaults.packageName = options.packageName ||
-          bowerConfig(withDefaults.root).name || path.basename(process.cwd());
-      return withDefaults;
-    }
-
+function applyDefaultOptions(options: ServerOptions) {
+  const withDefaults: ServerOptions = Object.assign({}, options);
+  Object.assign(withDefaults, {
+    port: options.port || 0,
+    hostname: options.hostname || 'localhost',
+    root: path.resolve(options.root || '.'),
+    certPath: options.certPath || 'cert.pem',
+    keyPath: options.keyPath || 'key.pem',
+  });
+  withDefaults.packageName = options.packageName ||
+      bowerConfig(withDefaults.root).name || path.basename(process.cwd());
+  return withDefaults;
+}
 
 /**
  * @return {Promise} A Promise that completes when the server has started.
@@ -105,16 +102,16 @@ async function applyDefaultOptions(options: ServerOptions):
  */
 export async function startServer(options: ServerOptions):
     Promise<http.Server> {
-      return (await _startServer(options)).server;
-    }
+  return (await _startServer(options)).server;
+}
 
 async function _startServer(options: ServerOptions) {
   options = options || {};
   assertNodeVersion(options);
   try {
-    const fullOptions = await applyDefaultOptions(options);
+    const fullOptions = applyDefaultOptions(options);
     const app = getApp(options);
-    const server = await startWithPort(fullOptions, app);
+    const server = await startWithApp(fullOptions, app);
     return {app, server};
   } catch (e) {
     console.error('ERROR: Server failed to start:', e);
@@ -201,52 +198,52 @@ async function findVariants(options: ServerOptions) {
 }
 
 async function startVariants(
-    options: ServerOptions, variants: {name: string, directory: string}[]):
-    Promise<MultipleServersInfo> {
-      const mainlineOptions = Object.assign({}, options);
-      mainlineOptions.port = 0;
-      const mainServer = await _startServer(mainlineOptions);
-      const mainServerInfo: MainlineServer = {
-        kind: 'mainline',
-        server: mainServer.server,
-        app: mainServer.app,
-        options: mainlineOptions,
-      };
+    options: ServerOptions, variants: {name: string, directory: string}[]) {
+  const mainlineOptions = Object.assign({}, options);
+  mainlineOptions.port = 0;
+  const mainServer = await _startServer(mainlineOptions);
+  const mainServerInfo: MainlineServer = {
+    kind: 'mainline',
+    server: mainServer.server,
+    app: mainServer.app,
+    options: mainlineOptions,
+  };
 
-      const variantServerInfos: VariantServer[] = [];
-      for (const variant of variants) {
-        const variantOpts = Object.assign({}, options);
-        variantOpts.port = 0;
-        variantOpts.componentDir = variant.directory;
-        const variantServer = await _startServer(variantOpts);
-        variantServerInfos.push({
-          kind: 'variant',
-          variantName: variant.name,
-          dependencyDir: variant.directory,
-          server: variantServer.server,
-          app: variantServer.app,
-          options: variantOpts
-        });
-      };
+  const variantServerInfos: VariantServer[] = [];
+  for (const variant of variants) {
+    const variantOpts = Object.assign({}, options);
+    variantOpts.port = 0;
+    variantOpts.componentDir = variant.directory;
+    const variantServer = await _startServer(variantOpts);
+    variantServerInfos.push({
+      kind: 'variant',
+      variantName: variant.name,
+      dependencyDir: variant.directory,
+      server: variantServer.server,
+      app: variantServer.app,
+      options: variantOpts
+    });
+  };
 
-      const controlServerInfo =
-          await startControlServer(options, mainServerInfo, variantServerInfos);
-      const servers = ([controlServerInfo, mainServerInfo] as PolyserveServer[])
-                          .concat(variantServerInfos);
+  const controlServerInfo =
+      await startControlServer(options, mainServerInfo, variantServerInfos);
+  const servers = ([controlServerInfo, mainServerInfo] as PolyserveServer[])
+                      .concat(variantServerInfos);
 
-      return {
-        kind: 'MultipleServers',
-        control: controlServerInfo,
-        mainline: mainServerInfo,
-        variants: variantServerInfos, servers,
-      };
-    }
+  const result: MultipleServersInfo = {
+    kind: 'MultipleServers',
+    control: controlServerInfo,
+    mainline: mainServerInfo,
+    variants: variantServerInfos, servers,
+  };
+  return result;
+};
 
-async function startControlServer(
+export async function startControlServer(
     options: ServerOptions,
     mainlineInfo: MainlineServer,
     variantInfos: VariantServer[]) {
-  const fullOptions = await applyDefaultOptions(options);
+  const fullOptions = applyDefaultOptions(options);
   const app = express();
   app.get('/api/serverInfo', (_req, res) => {
     res.contentType('json');
@@ -271,16 +268,10 @@ async function startControlServer(
   const controlServer: ControlServer = {
     kind: 'control',
     options: fullOptions,
-    server: await startWithPort(fullOptions, app), app
+    server: await startWithApp(fullOptions, app), app
   };
   return controlServer;
 }
-
-
-const portInUseMessage = (port: number) => `
-ERROR: Port in use: ${port}
-Please choose another port, or let an unused port be chosen automatically.
-`;
 
 export function getApp(options: ServerOptions): express.Express {
   // Preload the h2-push manifest to avoid the cost on first push
@@ -424,28 +415,54 @@ async function createServer(app: express.Application, options: ServerOptions):
       return http.createServer(opt, app as any);
     }
 
-/**
- * Starts an HTTP(S) server on a specific port
- * @param {ServerOptions} userOptions
- * @returns {Promise<http.Server>} Promise of server
- */
-export async function startWithPort(
-    options: ServerOptions, app: express.Application): Promise<http.Server> {
-  const server = await createServer(app, options);
-  await new Promise((resolve, reject) => {
-    server.listen(options.port, options.hostname, () => {
-      resolve();
-    });
+// Sauce Labs compatible ports taken from
+// https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS#SauceConnectProxyFAQS-CanIAccessApplicationsonlocalhost?
+// - 80, 443, 888: these ports must have root access
+// - 5555, 8080: not forwarded on Android
+const SAUCE_PORTS = [
+  8081, 8000, 8001, 8003, 8031,  // webbier-looking ports first
+  2000, 2001, 2020, 2109, 2222, 2310, 3000, 3001, 3030,  3210, 3333,
+  4000, 4001, 4040, 4321, 4502, 4503, 4567, 5000, 5001,  5050, 5432,
+  6000, 6001, 6060, 6666, 6543, 7000, 7070, 7774, 7777,  8765, 8777,
+  8888, 9000, 9001, 9080, 9090, 9876, 9877, 9999, 49221, 55001
+];
 
-    server.on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(portInUseMessage(options.port));
-      }
-      reject(err);
-    });
-  });
+/**
+ * Starts an HTTP(S) server serving the given app.
+ */
+export async function startWithApp(
+    options: ServerOptions, app: express.Application): Promise<http.Server> {
+  const ports = options.port ? [options.port] : SAUCE_PORTS;
+  const server = await startWithFirstAvailablePort(options, app, ports);
   const urls = getServerUrls(options, server);
   openBrowser(options, urls.serverUrl, urls.componentUrl);
 
   return server;
+}
+
+async function startWithFirstAvailablePort(
+    options: ServerOptions, app: express.Application, ports: number[]):
+    Promise<http.Server> {
+      for (const port of ports) {
+        const server = await tryStartWithPort(options, app, port);
+        if (server) {
+          return server;
+        }
+      }
+      throw new Error(
+          `No available ports. Ports tried: ${JSON.stringify(ports)}`);
+    }
+
+async function tryStartWithPort(
+    options: ServerOptions, app: express.Application, port: number) {
+  const server = await createServer(app, options);
+  return new Promise<http.Server|null>((resolve, _reject) => {
+    server.listen(port, options.hostname, () => {
+      resolve(server);
+    });
+
+    server.on('error', (_err: any) => {
+      resolve(null);
+    });
+  });
 }
