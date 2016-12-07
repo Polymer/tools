@@ -113,6 +113,7 @@ export class ScannedPolymerElement extends ScannedElement {
         sourceRange: prop.sourceRange,
         description: prop.description,
         type: prop.type,
+        changeEvent: prop.notify ? `${attributeName}-changed` : undefined
       });
     }
     if (prop.notify) {

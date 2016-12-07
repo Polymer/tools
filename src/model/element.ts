@@ -26,6 +26,7 @@ export interface ScannedAttribute {
   sourceRange: SourceRange|undefined;
   description?: string;
   type?: string;
+  changeEvent?: string;
 }
 
 export class ScannedElement implements Resolvable {

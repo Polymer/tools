@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+### Added
+* Add `changeEvent` to `Attribute`.
+
 ### Fixed
 * Bump JS parser up to parse ES2017 (ES8).
 * [Polymer] Property descriptors are allowed to be just a type name, like `value: String`.
