@@ -396,10 +396,22 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
    * hydrolosis to polymer-analyzer is complete.
    */
   accept(url: string, deferred: Deferred<string>): boolean {
+    // Vulcanize -> Hydrolysis -> Polymer Analyzer Path Compatability:
+    // The new analyzer expects all loaded loaded URLs to be relative to the
+    // application, but in certain scenarios Vulcanize can ask Hydrolosis to
+    // load URLs that are absolute to the user's file system. This fixes those
+    // paths before they reach the new polymer-analyzer to prevent loading
+    // breakage.
+    if (url.startsWith(this.config.root)) {
+      url = urlFromPath(this.config.root, url);
+    }
+
+    // Call into the new polymer-analyzer canLoad() & load() functions
     if (this.canLoad(url)) {
       this.load(url).then(deferred.resolve);
       return true;
     }
+
     return false;
   }
 }

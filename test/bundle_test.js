@@ -29,7 +29,7 @@ const bundle = require('../lib/bundle');
 const Bundler = bundle.Bundler;
 const StreamAnalyzer = analyzer.StreamAnalyzer;
 
-const root = path.resolve('/root');
+const root = path.resolve('root/');
 
 suite('Bundler', () => {
 
@@ -103,10 +103,10 @@ suite('Bundler', () => {
   };
 
   test('entrypoint only', () => setupTest({
-                                  entrypoint: 'entrypointA.html',
-                                  files: [framework(), entrypointA()],
+                                  entrypoint: 'entrypointOnly.html',
+                                  files: [framework(), entrypointOnly()],
                                 }).then((files) => {
-    const doc = parse5.parse(getFile('entrypointA.html'));
+    const doc = parse5.parse(getFile('entrypointOnly.html'));
     assert.isTrue(hasMarker(doc, 'framework'));
     assert.isFalse(hasImport(doc, 'framework.html'));
     // TODO(justinfagnani): check that shared-bundle.html doesn't exist
@@ -274,6 +274,10 @@ const framework = () => F('framework.html', `
 const shell = () => F('shell.html', `
 <link rel="import" href="framework.html">
 <div id="shell"></div>
+`);
+
+const entrypointOnly = () => F('entrypointOnly.html', `
+<link rel="import" href="/framework.html">
 `);
 
 const entrypointA = () => F('entrypointA.html', `

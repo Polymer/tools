@@ -93,31 +93,30 @@ export class Bundler extends Transform {
       shellFile.contents = new Buffer(newShellContent);
     }
 
-    for (const fragment of this.config.allFragments) {
-      const fragmentUrl = urlFromPath(this.config.root, fragment);
-      const addedImports = (this.config.isShell(fragment)) ? [] : [
+    for (const fragmentPath of this.config.allFragments) {
+      const fragmentUrl = urlFromPath(this.config.root, fragmentPath);
+      const addedImports = (this.config.isShell(fragmentPath)) ? [] : [
         posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)
       ];
-      const excludes = (this.config.isShell(fragment)) ?
+      const excludes = (this.config.isShell(fragmentPath)) ?
           [] :
           sharedDeps.concat(sharedDepsBundle);
 
       promises.push(new Promise((resolve, reject) => {
         const vulcanize = new Vulcanize({
-          abspath: null,
           fsResolver: this.analyzer.loader,
           addedImports: addedImports,
           stripExcludes: excludes,
           inlineScripts: true,
           inlineCss: true,
-          inputUrl: fragmentUrl,
+          inputUrl: fragmentPath,
         });
         vulcanize.process(null, (err: any, doc: string) => {
           if (err) {
             reject(err);
           } else {
             resolve({
-              url: fragment,
+              url: fragmentPath,
               contents: doc,
             });
           }
@@ -190,12 +189,13 @@ export class Bundler extends Transform {
     return new Promise((resolve, reject) => {
       const contents =
           sharedDeps.map((d) => `<link rel="import" href="${d}">`).join('\n');
+      const sharedBundlePath =
+          path.resolve(this.config.root, this.sharedBundleUrl);
 
-      const sharedFsPath = path.resolve(this.config.root, this.sharedBundleUrl);
       this.sharedFile = new File({
         cwd: this.config.root,
         base: this.config.root,
-        path: sharedFsPath,
+        path: sharedBundlePath,
         contents: new Buffer(contents),
       });
 
@@ -203,11 +203,10 @@ export class Bundler extends Transform {
       this.analyzer.addFile(this.sharedFile);
 
       const vulcanize = new Vulcanize({
-        abspath: null,
         fsResolver: this.analyzer.loader,
         inlineScripts: true,
         inlineCss: true,
-        inputUrl: this.sharedBundleUrl,
+        inputUrl: sharedBundlePath,
       });
       vulcanize.process(null, (err: any, doc: any) => {
         if (err) {
