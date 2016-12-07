@@ -81,21 +81,19 @@ export interface ServerOptions {
   additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
-async function applyDefaultOptions(options: ServerOptions):
-    Promise<ServerOptions> {
-      const withDefaults = Object.assign({}, options);
-      Object.assign(withDefaults, {
-        port: options.port || 0,
-        hostname: options.hostname || 'localhost',
-        root: path.resolve(options.root || '.'),
-        certPath: options.certPath || 'cert.pem',
-        keyPath: options.keyPath || 'key.pem',
-      });
-      withDefaults.packageName = options.packageName ||
-          bowerConfig(withDefaults.root).name || path.basename(process.cwd());
-      return withDefaults;
-    }
-
+async function applyDefaultOptions(options: ServerOptions) {
+  const withDefaults: ServerOptions = Object.assign({}, options);
+  Object.assign(withDefaults, {
+    port: options.port || 0,
+    hostname: options.hostname || 'localhost',
+    root: path.resolve(options.root || '.'),
+    certPath: options.certPath || 'cert.pem',
+    keyPath: options.keyPath || 'key.pem',
+  });
+  withDefaults.packageName = options.packageName ||
+      bowerConfig(withDefaults.root).name || path.basename(process.cwd());
+  return withDefaults;
+}
 
 /**
  * @return {Promise} A Promise that completes when the server has started.
@@ -195,48 +193,48 @@ async function findVariants(options: ServerOptions) {
 }
 
 async function startVariants(
-    options: ServerOptions, variants: {name: string, directory: string}[]):
-    Promise<MultipleServersInfo> {
-      const mainlineOptions = Object.assign({}, options);
-      mainlineOptions.port = 0;
-      const mainServer = await _startServer(mainlineOptions);
-      const mainServerInfo: MainlineServer = {
-        kind: 'mainline',
-        server: mainServer.server,
-        app: mainServer.app,
-        options: mainlineOptions,
-      };
+    options: ServerOptions, variants: {name: string, directory: string}[]) {
+  const mainlineOptions = Object.assign({}, options);
+  mainlineOptions.port = 0;
+  const mainServer = await _startServer(mainlineOptions);
+  const mainServerInfo: MainlineServer = {
+    kind: 'mainline',
+    server: mainServer.server,
+    app: mainServer.app,
+    options: mainlineOptions,
+  };
 
-      const variantServerInfos: VariantServer[] = [];
-      for (const variant of variants) {
-        const variantOpts = Object.assign({}, options);
-        variantOpts.port = 0;
-        variantOpts.componentDir = variant.directory;
-        const variantServer = await _startServer(variantOpts);
-        variantServerInfos.push({
-          kind: 'variant',
-          variantName: variant.name,
-          dependencyDir: variant.directory,
-          server: variantServer.server,
-          app: variantServer.app,
-          options: variantOpts
-        });
-      };
+  const variantServerInfos: VariantServer[] = [];
+  for (const variant of variants) {
+    const variantOpts = Object.assign({}, options);
+    variantOpts.port = 0;
+    variantOpts.componentDir = variant.directory;
+    const variantServer = await _startServer(variantOpts);
+    variantServerInfos.push({
+      kind: 'variant',
+      variantName: variant.name,
+      dependencyDir: variant.directory,
+      server: variantServer.server,
+      app: variantServer.app,
+      options: variantOpts
+    });
+  };
 
-      const controlServerInfo =
-          await startControlServer(options, mainServerInfo, variantServerInfos);
-      const servers = ([controlServerInfo, mainServerInfo] as PolyserveServer[])
-                          .concat(variantServerInfos);
+  const controlServerInfo =
+      await startControlServer(options, mainServerInfo, variantServerInfos);
+  const servers = ([controlServerInfo, mainServerInfo] as PolyserveServer[])
+                      .concat(variantServerInfos);
 
-      return {
-        kind: 'MultipleServers',
-        control: controlServerInfo,
-        mainline: mainServerInfo,
-        variants: variantServerInfos, servers,
-      };
-    }
+  const result: MultipleServersInfo = {
+    kind: 'MultipleServers',
+    control: controlServerInfo,
+    mainline: mainServerInfo,
+    variants: variantServerInfos, servers,
+  };
+  return result;
+};
 
-async function startControlServer(
+export async function startControlServer(
     options: ServerOptions,
     mainlineInfo: MainlineServer,
     variantInfos: VariantServer[]) {
@@ -270,94 +268,91 @@ async function startControlServer(
   return controlServer;
 }
 
+export function getApp(options: ServerOptions): express.Express {
+  // Preload the h2-push manifest to avoid the cost on first push
+  if (options.pushManifestPath) {
+    getPushManifest(options.root, options.pushManifestPath);
+  }
 
-export function getApp(options: ServerOptions):
-    express.Express {
-      // Preload the h2-push manifest to avoid the cost on first push
-      if (options.pushManifestPath) {
-        getPushManifest(options.root, options.pushManifestPath);
-      }
+  const root = options.root || '.';
+  const app = express();
 
-      const root = options.root || '.';
-      const app = express();
+  if (options.additionalRoutes) {
+    options.additionalRoutes.forEach((handler, route) => {
+      app.get(route, handler);
+    });
+  }
 
-      if (options.additionalRoutes) {
-        options.additionalRoutes.forEach((handler, route) => {
-          app.get(route, handler);
-        });
-      }
+  const polyserve = makeApp({
+    componentDir: options.componentDir,
+    packageName: options.packageName,
+    root: root,
+    compile: options.compile,
+    headers: options.headers,
+  });
+  options.packageName = polyserve.packageName;
 
-      const polyserve = makeApp({
-        componentDir: options.componentDir,
-        packageName: options.packageName,
-        root: root,
-        compile: options.compile,
-        headers: options.headers,
-      });
-      options.packageName = polyserve.packageName;
+  const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
 
-      const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
+  app.use('/components/', polyserve);
 
-      app.use('/components/', polyserve);
-
-      if (options.proxy) {
-        if (options.proxy.path.startsWith('components')) {
-          console.error('proxy path can not start with components.');
-          return;
-        }
-
-        let escapedPath = options.proxy.path;
-
-        for (let char of ['*', '?', '+']) {
-          if (escapedPath.indexOf(char) > -1) {
-            console.warn(
-                `Proxy path includes character "${char}" which can cause problems during route matching.`);
-          }
-        }
-
-        if (escapedPath.startsWith('/')) {
-          escapedPath = escapedPath.substring(1);
-        }
-        if (escapedPath.endsWith('/')) {
-          escapedPath = escapedPath.slice(0, -1);
-        }
-        const pathRewrite = {};
-        pathRewrite[`^/${escapedPath}`] = '';
-        const apiProxy = httpProxy(`/${escapedPath}`, {
-          target: options.proxy.target,
-          changeOrigin: true,
-          pathRewrite: pathRewrite
-        });
-        app.use(`/${escapedPath}/`, apiProxy);
-      }
-
-      app.get('/*', (req, res) => {
-        pushResources(options, req, res);
-        const filePath = req.path;
-        send(req, filePath, {root: root})
-            .on('error',
-                (error: send.SendError) => {
-                  if ((error).status === 404 && !filePathRegex.test(filePath)) {
-                    send(req, '/', {root: root}).pipe(res);
-                  } else {
-                    res.statusCode = error.status || 500;
-                    res.end(error.message);
-                  }
-                })
-            .pipe(res);
-      });
-      return app;
+  if (options.proxy) {
+    if (options.proxy.path.startsWith('components')) {
+      console.error('proxy path can not start with components.');
+      return;
     }
+
+    let escapedPath = options.proxy.path;
+
+    for (let char of ['*', '?', '+']) {
+      if (escapedPath.indexOf(char) > -1) {
+        console.warn(
+            `Proxy path includes character "${char}" which can cause problems during route matching.`);
+      }
+    }
+
+    if (escapedPath.startsWith('/')) {
+      escapedPath = escapedPath.substring(1);
+    }
+    if (escapedPath.endsWith('/')) {
+      escapedPath = escapedPath.slice(0, -1);
+    }
+    const pathRewrite = {};
+    pathRewrite[`^/${escapedPath}`] = '';
+    const apiProxy = httpProxy(`/${escapedPath}`, {
+      target: options.proxy.target,
+      changeOrigin: true,
+      pathRewrite: pathRewrite
+    });
+    app.use(`/${escapedPath}/`, apiProxy);
+  }
+
+  app.get('/*', (req, res) => {
+    pushResources(options, req, res);
+    const filePath = req.path;
+    send(req, filePath, {root: root})
+        .on('error',
+            (error: send.SendError) => {
+              if ((error).status === 404 && !filePathRegex.test(filePath)) {
+                send(req, '/', {root: root}).pipe(res);
+              } else {
+                res.statusCode = error.status || 500;
+                res.end(error.message);
+              }
+            })
+        .pipe(res);
+  });
+  return app;
+}
 
 /**
  * Determines whether a protocol requires HTTPS
  * @param {string} protocol Protocol to evaluate.
  * @returns {boolean}
  */
-function isHttps(protocol: string):
-    boolean {
-      return ['https/1.1', 'https', 'h2'].indexOf(protocol) > -1;
-    }
+function isHttps(protocol: string): boolean {
+  return ['https/1.1', 'https', 'h2'].indexOf(protocol) > -1;
+}
 
 /**
  * Gets the URLs for the main and component pages
