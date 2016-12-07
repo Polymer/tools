@@ -24,7 +24,6 @@ import * as url from 'url';
 
 import {bowerConfig} from './bower_config';
 import {makeApp} from './make_app';
-import {findPort} from './util/find-port';
 import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
@@ -111,15 +110,10 @@ export async function startServer(options: ServerOptions):
 async function _startServer(options: ServerOptions) {
   options = options || {};
   assertNodeVersion(options);
-  try {
-    const fullOptions = await applyDefaultOptions(options);
-    const app = getApp(options);
-    const server = await startWithPort(fullOptions, app);
-    return {app, server};
-  } catch (e) {
-    console.error('ERROR: Server failed to start:', e);
-    throw new Error(e);
-  }
+  const fullOptions = await applyDefaultOptions(options);
+  const app = getApp(options);
+  const server = await startWithApp(fullOptions, app);
+  return {app, server};
 }
 
 export type ServerInfo = MainlineServer | VariantServer | ControlServer;
@@ -271,102 +265,99 @@ async function startControlServer(
   const controlServer: ControlServer = {
     kind: 'control',
     options: fullOptions,
-    server: await startWithPort(fullOptions, app), app
+    server: await startWithApp(fullOptions, app), app
   };
   return controlServer;
 }
 
 
-const portInUseMessage = (port: number) => `
-ERROR: Port in use: ${port}
-Please choose another port, or let an unused port be chosen automatically.
-`;
-
-export function getApp(options: ServerOptions): express.Express {
-  // Preload the h2-push manifest to avoid the cost on first push
-  if (options.pushManifestPath) {
-    getPushManifest(options.root, options.pushManifestPath);
-  }
-
-  const root = options.root || '.';
-  const app = express();
-
-  if (options.additionalRoutes) {
-    options.additionalRoutes.forEach((handler, route) => {
-      app.get(route, handler);
-    });
-  }
-
-  const polyserve = makeApp({
-    componentDir: options.componentDir,
-    packageName: options.packageName,
-    root: root,
-    compile: options.compile,
-    headers: options.headers,
-  });
-  options.packageName = polyserve.packageName;
-
-  const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
-
-  app.use('/components/', polyserve);
-
-  if (options.proxy) {
-    if (options.proxy.path.startsWith('components')) {
-      console.error('proxy path can not start with components.');
-      return;
-    }
-
-    let escapedPath = options.proxy.path;
-
-    for (let char of ['*', '?', '+']) {
-      if (escapedPath.indexOf(char) > -1) {
-        console.warn(
-            `Proxy path includes character "${char}" which can cause problems during route matching.`);
+export function getApp(options: ServerOptions):
+    express.Express {
+      // Preload the h2-push manifest to avoid the cost on first push
+      if (options.pushManifestPath) {
+        getPushManifest(options.root, options.pushManifestPath);
       }
-    }
 
-    if (escapedPath.startsWith('/')) {
-      escapedPath = escapedPath.substring(1);
-    }
-    if (escapedPath.endsWith('/')) {
-      escapedPath = escapedPath.slice(0, -1);
-    }
-    const pathRewrite = {};
-    pathRewrite[`^/${escapedPath}`] = '';
-    const apiProxy = httpProxy(`/${escapedPath}`, {
-      target: options.proxy.target,
-      changeOrigin: true,
-      pathRewrite: pathRewrite
-    });
-    app.use(`/${escapedPath}/`, apiProxy);
-  }
+      const root = options.root || '.';
+      const app = express();
 
-  app.get('/*', (req, res) => {
-    pushResources(options, req, res);
-    const filePath = req.path;
-    send(req, filePath, {root: root})
-        .on('error',
-            (error: send.SendError) => {
-              if ((error).status === 404 && !filePathRegex.test(filePath)) {
-                send(req, '/', {root: root}).pipe(res);
-              } else {
-                res.statusCode = error.status || 500;
-                res.end(error.message);
-              }
-            })
-        .pipe(res);
-  });
-  return app;
-}
+      if (options.additionalRoutes) {
+        options.additionalRoutes.forEach((handler, route) => {
+          app.get(route, handler);
+        });
+      }
+
+      const polyserve = makeApp({
+        componentDir: options.componentDir,
+        packageName: options.packageName,
+        root: root,
+        compile: options.compile,
+        headers: options.headers,
+      });
+      options.packageName = polyserve.packageName;
+
+      const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
+
+      app.use('/components/', polyserve);
+
+      if (options.proxy) {
+        if (options.proxy.path.startsWith('components')) {
+          console.error('proxy path can not start with components.');
+          return;
+        }
+
+        let escapedPath = options.proxy.path;
+
+        for (let char of ['*', '?', '+']) {
+          if (escapedPath.indexOf(char) > -1) {
+            console.warn(
+                `Proxy path includes character "${char}" which can cause problems during route matching.`);
+          }
+        }
+
+        if (escapedPath.startsWith('/')) {
+          escapedPath = escapedPath.substring(1);
+        }
+        if (escapedPath.endsWith('/')) {
+          escapedPath = escapedPath.slice(0, -1);
+        }
+        const pathRewrite = {};
+        pathRewrite[`^/${escapedPath}`] = '';
+        const apiProxy = httpProxy(`/${escapedPath}`, {
+          target: options.proxy.target,
+          changeOrigin: true,
+          pathRewrite: pathRewrite
+        });
+        app.use(`/${escapedPath}/`, apiProxy);
+      }
+
+      app.get('/*', (req, res) => {
+        pushResources(options, req, res);
+        const filePath = req.path;
+        send(req, filePath, {root: root})
+            .on('error',
+                (error: send.SendError) => {
+                  if ((error).status === 404 && !filePathRegex.test(filePath)) {
+                    send(req, '/', {root: root}).pipe(res);
+                  } else {
+                    res.statusCode = error.status || 500;
+                    res.end(error.message);
+                  }
+                })
+            .pipe(res);
+      });
+      return app;
+    }
 
 /**
  * Determines whether a protocol requires HTTPS
  * @param {string} protocol Protocol to evaluate.
  * @returns {boolean}
  */
-function isHttps(protocol: string): boolean {
-  return ['https/1.1', 'https', 'h2'].indexOf(protocol) > -1;
-}
+function isHttps(protocol: string):
+    boolean {
+      return ['https/1.1', 'https', 'h2'].indexOf(protocol) > -1;
+    }
 
 /**
  * Gets the URLs for the main and component pages
@@ -424,29 +415,54 @@ async function createServer(app: express.Application, options: ServerOptions):
       return http.createServer(opt, app as any);
     }
 
-/**
- * Starts an HTTP(S) server on a specific port
- * @param {ServerOptions} userOptions
- * @returns {Promise<http.Server>} Promise of server
- */
-export async function startWithPort(
-    options: ServerOptions, app: express.Application): Promise<http.Server> {
-  const server = await createServer(app, options);
-  const port = options.port || await findPort();
-  await new Promise((resolve, reject) => {
-    server.listen(port, options.hostname, () => {
-      resolve();
-    });
+// Sauce Labs compatible ports taken from
+// https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS#SauceConnectProxyFAQS-CanIAccessApplicationsonlocalhost?
+// - 80, 443, 888: these ports must have root access
+// - 5555, 8080: not forwarded on Android
+const SAUCE_PORTS = [
+  8081, 8000, 8001, 8003, 8031,  // webbier-looking ports first
+  2000, 2001, 2020, 2109, 2222, 2310, 3000, 3001, 3030,  3210, 3333,
+  4000, 4001, 4040, 4321, 4502, 4503, 4567, 5000, 5001,  5050, 5432,
+  6000, 6001, 6060, 6666, 6543, 7000, 7070, 7774, 7777,  8765, 8777,
+  8888, 9000, 9001, 9080, 9090, 9876, 9877, 9999, 49221, 55001
+];
 
-    server.on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(portInUseMessage(options.port));
-      }
-      reject(err);
-    });
-  });
+/**
+ * Starts an HTTP(S) server serving the given app.
+ */
+export async function startWithApp(
+    options: ServerOptions, app: express.Application): Promise<http.Server> {
+  const ports = options.port ? [options.port] : SAUCE_PORTS;
+  const server = await startWithFirstAvailablePort(options, app, ports);
   const urls = getServerUrls(options, server);
   openBrowser(options, urls.serverUrl, urls.componentUrl);
 
   return server;
+}
+
+async function startWithFirstAvailablePort(
+    options: ServerOptions, app: express.Application, ports: number[]):
+    Promise<http.Server> {
+      for (const port of ports) {
+        const server = await tryStartWithPort(options, app, port);
+        if (server) {
+          return server;
+        }
+      }
+      throw new Error(
+          `No available ports. Ports tried: ${JSON.stringify(ports)}`);
+    }
+
+async function tryStartWithPort(
+    options: ServerOptions, app: express.Application, port: number) {
+  const server = await createServer(app, options);
+  return new Promise<http.Server|null>((resolve, _reject) => {
+    server.listen(port, options.hostname, () => {
+      resolve(server);
+    });
+
+    server.on('error', (_err: any) => {
+      resolve(null);
+    });
+  });
 }
