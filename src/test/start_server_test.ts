@@ -75,7 +75,7 @@ suite('startServer', () => {
     });
   });
 
-  suite('proxy', () =>  {
+  suite('proxy', () => {
     let consoleError: (message?: any) => void;
     let consoleWarn: (message?: any) => void;
     let proxyServer: http.Server;
@@ -84,13 +84,13 @@ suite('startServer', () => {
       app = await startServer({root});
 
       return proxyServer = await startServer({
-          port: 0,
-          root: __dirname,
-          proxy: {
-            path: path,
-            target: `http://localhost:${app.address().port}/`
-          }
-        });
+               port: 0,
+               root: __dirname,
+               proxy: {
+                 path: path,
+                 target: `http://localhost:${app.address().port}/`
+               }
+             });
     }
 
     setup(() => {
@@ -98,7 +98,7 @@ suite('startServer', () => {
       consoleWarn = console.warn;
     });
 
-    teardown(async () => {
+    teardown(async() => {
       console.error = consoleError;
       console.warn = consoleWarn;
       await Promise.all([
@@ -110,48 +110,37 @@ suite('startServer', () => {
     test('rewrites directory with proxy', async() => {
       await setUpProxy('normally-non-existing-path');
       await supertest(proxyServer)
-        .get('/normally-non-existing-path/bower_components/test-component/test-file.txt')
-        .expect(200, 'TEST COMPONENT\n');
+          .get(
+              '/normally-non-existing-path/bower_components/test-component/test-file.txt')
+          .expect(200, 'TEST COMPONENT\n');
     });
 
     test('warns when path contains special regex characters', async() => {
       const spy = sinon.spy();
       console.warn = spy;
-      app = await startServer({
-        root: __dirname,
-        proxy: {
-          path: '+regex?path*',
-          target: 'target'
-        }
-      });
+      app = await startServer(
+          {root: __dirname, proxy: {path: '+regex?path*', target: 'target'}});
       assert.equal(spy.callCount, 3);
     });
 
     test('handles additional slashes at start or end of path', async() => {
       await setUpProxy('/api/v1/');
       await supertest(proxyServer)
-        .get('/api/v1/bower_components/test-component/test-file.txt')
-        .expect(200, 'TEST COMPONENT\n');
+          .get('/api/v1/bower_components/test-component/test-file.txt')
+          .expect(200, 'TEST COMPONENT\n');
     });
 
-    test('does not set up proxy that starts with components', async () => {
+    test('does not set up proxy that starts with components', async() => {
       const spy = sinon.spy();
       console.error = spy;
-      app = await startServer({
-        root: __dirname,
-        proxy: {
-          path: 'components',
-          target: 'target'
-        }
-      });
+      app = await startServer(
+          {root: __dirname, proxy: {path: 'components', target: 'target'}});
       assert.isTrue(spy.calledOnce);
     });
 
     test('redirects to root of proxy', async() => {
       await setUpProxy('api/v1');
-      await supertest(proxyServer)
-        .get('/api/v1/')
-        .expect(200, 'INDEX\n');
+      await supertest(proxyServer).get('/api/v1/').expect(200, 'INDEX\n');
     });
   });
 
