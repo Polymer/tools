@@ -108,10 +108,15 @@ export async function startServer(options: ServerOptions):
 async function _startServer(options: ServerOptions) {
   options = options || {};
   assertNodeVersion(options);
-  const fullOptions = await applyDefaultOptions(options);
-  const app = getApp(options);
-  const server = await startWithApp(fullOptions, app);
-  return {app, server};
+  try {
+    const fullOptions = await applyDefaultOptions(options);
+    const app = getApp(options);
+    const server = await startWithApp(fullOptions, app);
+    return {app, server};
+  } catch (e) {
+    console.error('ERROR: Server failed to start:', e);
+    throw new Error(e);
+  }
 }
 
 export type ServerInfo = MainlineServer | VariantServer | ControlServer;
