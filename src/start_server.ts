@@ -24,7 +24,7 @@ import * as url from 'url';
 
 import {bowerConfig} from './bower_config';
 import {makeApp} from './make_app';
-import {nextOpenPort} from './util/next_open_port';
+import {findPort} from './util/find-port';
 import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
@@ -86,7 +86,7 @@ async function applyDefaultOptions(options: ServerOptions):
     Promise<ServerOptions> {
       const withDefaults = Object.assign({}, options);
       Object.assign(withDefaults, {
-        port: await nextOpenPort(options.port),
+        port: options.port || 0,
         hostname: options.hostname || 'localhost',
         root: path.resolve(options.root || '.'),
         certPath: options.certPath || 'cert.pem',
@@ -432,8 +432,9 @@ async function createServer(app: express.Application, options: ServerOptions):
 export async function startWithPort(
     options: ServerOptions, app: express.Application): Promise<http.Server> {
   const server = await createServer(app, options);
+  const port = options.port || await findPort();
   await new Promise((resolve, reject) => {
-    server.listen(options.port, options.hostname, () => {
+    server.listen(port, options.hostname, () => {
       resolve();
     });
 
