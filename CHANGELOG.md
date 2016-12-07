@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- New PRs should document their changes here. -->
 
+## [0.5.1] - 2016-12-02
+
+* Updated polymer-analyzer to `2.0.0-alpha.18`
+
 ## [0.5.0] - 2016-11-01
 
 * **New Analyzer!** Should fix most reported bugs that were caused by bad analysis, but may introduce new ones. Be sure to test your build after upgrading to confirm that your build is still functioning. See [`polymer-analyzer`](https://github.com/Polymer/polymer-analyzer) for more information.
