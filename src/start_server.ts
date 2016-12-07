@@ -81,7 +81,7 @@ export interface ServerOptions {
   additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
-async function applyDefaultOptions(options: ServerOptions) {
+function applyDefaultOptions(options: ServerOptions) {
   const withDefaults: ServerOptions = Object.assign({}, options);
   Object.assign(withDefaults, {
     port: options.port || 0,
@@ -102,14 +102,14 @@ async function applyDefaultOptions(options: ServerOptions) {
  */
 export async function startServer(options: ServerOptions):
     Promise<http.Server> {
-      return (await _startServer(options)).server;
-    }
+  return (await _startServer(options)).server;
+}
 
 async function _startServer(options: ServerOptions) {
   options = options || {};
   assertNodeVersion(options);
   try {
-    const fullOptions = await applyDefaultOptions(options);
+    const fullOptions = applyDefaultOptions(options);
     const app = getApp(options);
     const server = await startWithApp(fullOptions, app);
     return {app, server};
@@ -243,7 +243,7 @@ export async function startControlServer(
     options: ServerOptions,
     mainlineInfo: MainlineServer,
     variantInfos: VariantServer[]) {
-  const fullOptions = await applyDefaultOptions(options);
+  const fullOptions = applyDefaultOptions(options);
   const app = express();
   app.get('/api/serverInfo', (_req, res) => {
     res.contentType('json');
