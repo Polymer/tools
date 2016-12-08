@@ -86,7 +86,7 @@ export class Analyzer {
    */
   async analyze(url: string, contents?: string): Promise<Document> {
     if (contents != null) {
-      this._cacheContext = this._cacheContext.fileChanged(url);
+      this._cacheContext = this._cacheContext.filesChanged([url]);
     }
     return this._cacheContext.analyze(url, contents);
   }
@@ -184,14 +184,19 @@ export class AnalyzerCacheContext {
   /**
    * Returns a copy of this cache context with proper cache invalidation.
    */
-  fileChanged(url: string) {
-    const resolvedUrl = this._resolveUrl(url);
-    const dependants = getImportersOf(
-        resolvedUrl,
-        this._cache.analyzedDocuments.values(),
-        this._cache.scannedDocuments.values(),
-        (url) => this._resolveUrl(url));
-    const newCache = this._cache.onPathChanged(resolvedUrl, dependants);
+  filesChanged(urls: string[]) {
+    const invalidationRequests = [];
+    for (const url of urls) {
+      const resolvedUrl = this._resolveUrl(url);
+      const dependants = getImportersOf(
+          resolvedUrl,
+          this._cache.analyzedDocuments.values(),
+          this._cache.scannedDocuments.values(),
+          (url) => this._resolveUrl(url));
+      invalidationRequests.push({path: resolvedUrl, dependants});
+    }
+
+    const newCache = this._cache.invalidatePaths(invalidationRequests);
     return this._fork(newCache);
   }
 

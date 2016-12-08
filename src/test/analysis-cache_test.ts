@@ -77,7 +77,8 @@ suite('AnalysisCache', () => {
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
 
-    const forkedCache = cache.onPathChanged('index.html', []);
+    const forkedCache =
+        cache.invalidatePaths([{path: 'index.html', dependants: []}]);
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
     assertNotHasDocument(forkedCache, 'index.html');
@@ -103,8 +104,8 @@ suite('AnalysisCache', () => {
     await assertHasDocument(cache, 'behavior.html');
     await assertHasDocument(cache, 'unrelated.html');
 
-    const forkedCache =
-        cache.onPathChanged('behavior.html', ['index.html', 'element.html']);
+    const forkedCache = cache.invalidatePaths(
+        [{path: 'behavior.html', dependants: ['index.html', 'element.html']}]);
     // The original cache is untouched.
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');

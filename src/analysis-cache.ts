@@ -27,31 +27,39 @@ export class AnalysisCache {
   /**
    * Returns a copy of this cache, with the given path and all of its transitive
    * dependants invalidated.
+   *
+   * Must be called whenever a path changes.
    */
-  onPathChanged(path: string, dependants: Iterable<string>): AnalysisCache {
+  invalidatePaths(invalidationRequests:
+                      Array<{path: string, dependants: Iterable<string>}>):
+      AnalysisCache {
     const newCache = this._clone();
-    newCache.parsedDocumentPromises.delete(path);
-    newCache.scannedDocumentPromises.delete(path);
-    newCache.dependenciesScanned.delete(path);
-    newCache.scannedDocuments.delete(path);
-    newCache.analyzedDocuments.delete(path);
+    for (const invalidationRequest of invalidationRequests) {
+      const path = invalidationRequest.path;
+      const dependants = invalidationRequest.dependants;
+      newCache.parsedDocumentPromises.delete(path);
+      newCache.scannedDocumentPromises.delete(path);
+      newCache.dependenciesScanned.delete(path);
+      newCache.scannedDocuments.delete(path);
+      newCache.analyzedDocuments.delete(path);
 
-    // Analyzed documents need to be treated more carefully, because they have
-    // relationships with other documents. So first we remove all documents
-    // which transitively import the changed document. We also need to mark
-    // all of those docs as needing to rescan their dependencies.
-    for (const invalidatedPath of dependants) {
-      newCache.dependenciesScanned.delete(invalidatedPath);
-      newCache.analyzedDocuments.delete(invalidatedPath);
-    }
-    // Then we clear out the analyzed document promises, which could have
-    // in-progress results that don't cohere with the state of the new cache.
-    // Only populate the new analyzed promise cache with results that are
-    // definite, and not invalidated.
-    newCache.analyzedDocumentPromises.clear();
-    for (const keyValue of newCache.analyzedDocuments) {
-      newCache.analyzedDocumentPromises.set(
-          keyValue[0], Promise.resolve(keyValue[1]));
+      // Analyzed documents need to be treated more carefully, because they have
+      // relationships with other documents. So first we remove all documents
+      // which transitively import the changed document. We also need to mark
+      // all of those docs as needing to rescan their dependencies.
+      for (const invalidatedPath of dependants) {
+        newCache.dependenciesScanned.delete(invalidatedPath);
+        newCache.analyzedDocuments.delete(invalidatedPath);
+      }
+      // Then we clear out the analyzed document promises, which could have
+      // in-progress results that don't cohere with the state of the new cache.
+      // Only populate the new analyzed promise cache with results that are
+      // definite, and not invalidated.
+      newCache.analyzedDocumentPromises.clear();
+      for (const keyValue of newCache.analyzedDocuments) {
+        newCache.analyzedDocumentPromises.set(
+            keyValue[0], Promise.resolve(keyValue[1]));
+      }
     }
 
     return newCache;
@@ -98,7 +106,7 @@ export function getImportersOf(
   const visited = new Set<string>();
   const toVisit = new Set<string>([path]);
   while (toVisit.size > 0) {
-    const path = toVisit.keys().next().value!;
+    const path = toVisit.values().next().value!;
     toVisit.delete(path);
     visited.add(path);
     const importers = invertedIndex.get(path);
