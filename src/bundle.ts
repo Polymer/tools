@@ -22,22 +22,23 @@ import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
 
 import {urlFromPath} from './path-transformers';
-import {StreamAnalyzer} from './analyzer';
+import {BuildAnalyzer} from './analyzer';
 
 
 // non-ES module
 const Vulcanize = require('vulcanize');
 const logger = logging.getLogger('cli.build.bundle');
 
+// TODO(fks) 11-11-2016: Rename Bundler to BuildBundler
 export class Bundler extends Transform {
   config: ProjectConfig;
 
   sharedBundleUrl: string;
 
-  analyzer: StreamAnalyzer;
+  analyzer: BuildAnalyzer;
   sharedFile: File;
 
-  constructor(config: ProjectConfig, analyzer: StreamAnalyzer) {
+  constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
     super({objectMode: true});
 
     this.config = config;

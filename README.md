@@ -60,19 +60,12 @@ Returns a readable stream of your project's source files. By default, these are 
 
 Returns a readable stream of your project's dependencies. This stream is automatically populated based on the files loaded inside of your project. You can include additional dependencies via the `extraDependencies` property in [`ProjectOptions`](src/polymer-project.ts) (this can be useful when the analyzer fails to detect a necessary dependency.)
 
-#### project.analyzer
-
-A stream that analyzes your project as files pass through it. Files pass through it untouched (although they may exit in a different order than they entered). The analyzer enables a lot of the more powerful features of polymer-build, like smart dependency analysis & bundling.
-
-**polymer.analyzer is a required step in your build-pipeline!** Be sure to pipe all files through it before piping out to your build destination(s). If dependencies aren't piped to `project.analyzer` the analyzer will hang.
-
 ```js
 const gulp = require('gulp');
 const mergeStream = require('merge-stream');
 
-// pipe both streams
+// Create a build pipeline to pipe both streams together to the 'build/' dir
 mergeStream(project.sources(), project.dependencies())
-  .pipe(project.analyzer)
   .pipe(gulp.dest('build/'));
 ```
 
@@ -89,9 +82,8 @@ By default, the bundler will create one "shared-bundle.html" containing all shar
 const gulp = require('gulp');
 const mergeStream = require('merge-stream');
 
-// pipe both streams
+// Create a build pipeline to bundle our application before writing to the 'build/' dir
 mergeStream(project.sources(), project.dependencies())
-  .pipe(project.analyzer)
   .pipe(project.bundler)
   .pipe(gulp.dest('build/'));
 ```
@@ -121,10 +113,9 @@ const sourcesStream = polymerProject.sources()
   .pipe(gulpif(/\.html$/, htmlMinifier()))
   .pipe(polymerProject.rejoinHtml());
 
-// not shown: project.dependencies() can also be split & optimized
-
+// Create a build pipeline to write our dependencies & optimized sources streams to the 'build/' dir
+// (not shown: project.dependencies() can also be split & optimized)
 mergeStream(sourcesStream, project.dependencies())
-  .pipe(project.analyzer)
   .pipe(gulp.dest('build/'));
 ```
 
@@ -179,12 +170,14 @@ Sometimes you'll want to pipe a build to multiple destinations. `forkStream()` c
 const mergeStream = require('merge-stream');
 const forkStream = require('polymer-build').forkStream;
 
-const buildStream = mergeStream(project.sources(), project.dependencies())
-  .pipe(project.analyzer);
+// Create a combined build stream of your application files
+const buildStream = mergeStream(project.sources(), project.dependencies());
 
+// Fork your build stream to write directly to the 'build/unbundled' dir
 const unbundledBuildStream = forkStream(buildStream)
   .pipe(dest('build/unbundled'));
 
+// Fork your build stream to bundle your application and write to the 'build/bundled' dir
 const bundledBuildStream = forkStream(buildStream)
   .pipe(polymerProject.bundler)
   .pipe(dest('build/bundled'));

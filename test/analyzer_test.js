@@ -16,81 +16,59 @@
 
 const assert = require('chai').assert;
 const path = require('path');
-const StreamAnalyzer = require('../lib/analyzer').StreamAnalyzer;
-const mergeStream = require('merge-stream');
-const vfs = require('vinyl-fs-fake');
+const BuildAnalyzer = require('../lib/analyzer').BuildAnalyzer;
+const waitForAll = require('../lib/streams').waitForAll;
 const sinon = require('sinon');
 const ProjectConfig = require('polymer-project-config').ProjectConfig;
+const Writable = require('stream').Writable;
+
+/**
+ * Streams will remain paused unless something is listening for it's data.
+ * NoopStream is useful for piping to if you just want the stream to run and end
+ * successfully without checking the data passed through it.
+ */
+class NoopStream extends Writable {
+  constructor() {
+    super({objectMode: true});
+  }
+  _write(chunk, encoding, callback) {
+    callback();
+  }
+}
 
 suite('Analyzer', () => {
 
   suite('DepsIndex', () => {
 
-    test('fragment to deps list has only uniques', (done) => {
-      const root = `test/static/analyzer-data`;
-      const sourceFiles = ['a.html', 'b.html', 'entrypoint.html'].map(
-          (p) => path.resolve(root, p));
+    test('fragment to deps list has only uniques', () => {
       const config = new ProjectConfig({
-        root: root,
+        root: `test/static/analyzer-data`,
         entrypoint: 'entrypoint.html',
         fragments: [
           'a.html',
           'b.html',
         ],
-        sources: sourceFiles,
+        sources: ['a.html', 'b.html', 'entrypoint.html'],
       });
-      const analyzer = new StreamAnalyzer(config);
-      mergeStream(vfs.src(sourceFiles, {cwdbase: true}), analyzer.dependencies)
-          .pipe(analyzer)
-          .on('finish', () => {
-            analyzer.analyzeDependencies
-                .then((depsIndex) => {
-                  const ftd = depsIndex.fragmentToDeps;
-                  for (const frag of ftd.keys()) {
-                    assert.deepEqual(
-                        ftd.get(frag), ['shared-1.html', 'shared-2.html']);
-                  }
-                  done();
-                })
-                .catch((err) => done(err));
+
+      const analyzer = new BuildAnalyzer(config);
+      analyzer.sources.pipe(new NoopStream());
+      analyzer.dependencies.pipe(new NoopStream());
+
+      return waitForAll([analyzer.sources, analyzer.dependencies])
+          .then(() => {
+            return analyzer.analyzeDependencies;
+          })
+          .then((depsIndex) => {
+            const ftd = depsIndex.fragmentToDeps;
+            for (const frag of ftd.keys()) {
+              assert.deepEqual(
+                  ftd.get(frag), ['shared-1.html', 'shared-2.html']);
+            }
           });
     });
 
-    test(
-        'analyzing shell and entrypoint doesn\'t double load files', (done) => {
-          const root = `test/static/analyzer-data`;
-          const sourceFiles = ['shell.html', 'entrypoint.html'].map(
-              (p) => path.resolve(root, p));
-          const config = new ProjectConfig({
-            root: root,
-            entrypoint: 'entrypoint.html',
-            shell: 'shell.html',
-            sources: sourceFiles,
-          });
-          let analyzer = new StreamAnalyzer(config);
-          mergeStream(
-              vfs.src(sourceFiles, {cwdbase: true}), analyzer.dependencies)
-              .pipe(analyzer)
-              .on('finish', () => {
-                analyzer.analyzeDependencies
-                    .then((depsIndex) => {
-                      assert.isTrue(
-                          depsIndex.depsToFragments.has('shared-2.html'));
-                      assert.isFalse(
-                          depsIndex.depsToFragments.has('/shell.html'));
-                      assert.isFalse(
-                          depsIndex.depsToFragments.has('/shared-2.html'));
-                      done();
-                    })
-                    .catch(done);
-              });
-        });
-
-  });
-
-  suite('.dependencies', () => {
-
-    test('outputs all dependencies needed by source', (done) => {
+    test('analyzing shell and entrypoint doesn\'t double load files', () => {
       const root = `test/static/analyzer-data`;
       const sourceFiles =
           ['shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
@@ -100,31 +78,58 @@ suite('Analyzer', () => {
         shell: 'shell.html',
         sources: sourceFiles,
       });
-      let analyzer = new StreamAnalyzer(config);
-      let foundDependencies = new Set();
+
+      let analyzer = new BuildAnalyzer(config);
+      analyzer.sources.pipe(new NoopStream());
+      analyzer.dependencies.pipe(new NoopStream());
+
+      return waitForAll([analyzer.sources, analyzer.dependencies])
+          .then(() => {
+            return analyzer.analyzeDependencies;
+          })
+          .then((depsIndex) => {
+            assert.isTrue(depsIndex.depsToFragments.has('shared-2.html'));
+            assert.isFalse(depsIndex.depsToFragments.has('/shell.html'));
+            assert.isFalse(depsIndex.depsToFragments.has('/shared-2.html'));
+          });
+    });
+
+  });
+
+  suite('.dependencies', () => {
+
+    test('outputs all dependencies needed by source', () => {
+      const foundDependencies = new Set();
+      const root = `test/static/analyzer-data`;
+      const sourceFiles =
+          ['shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
+      const config = new ProjectConfig({
+        root: root,
+        entrypoint: 'entrypoint.html',
+        shell: 'shell.html',
+        sources: sourceFiles,
+      });
+
+      let analyzer = new BuildAnalyzer(config);
+      analyzer.sources.pipe(new NoopStream());
       analyzer.dependencies.on('data', (file) => {
         foundDependencies.add(file.path);
       });
 
-      mergeStream(vfs.src(sourceFiles, {cwdbase: true}), analyzer.dependencies)
-          .pipe(analyzer)
-          .on('finish',
-              () => {
-                // shared-1 is never imported by shell/entrypoint, so it is not
-                // included as a dep.
-                assert.isFalse(
-                    foundDependencies.has(path.resolve(root, 'shared-1.html')));
-                // shared-2 is imported by shell, so it is included as a dep.
-                assert.isTrue(
-                    foundDependencies.has(path.resolve(root, 'shared-2.html')));
-                done();
-              })
-          .on('error', done);
+      return waitForAll([analyzer.sources, analyzer.dependencies]).then(() => {
+        // shared-1 is never imported by shell/entrypoint, so it is not
+        // included as a dep.
+        assert.isFalse(
+            foundDependencies.has(path.resolve(root, 'shared-1.html')));
+        // shared-2 is imported by shell, so it is included as a dep.
+        assert.isTrue(
+            foundDependencies.has(path.resolve(root, 'shared-2.html')));
+      });
     });
 
     test(
-        'outputs all dependencies needed by source and given fragments',
-        (done) => {
+        'outputs all dependencies needed by source and given fragments', () => {
+          const foundDependencies = new Set();
           const root = `test/static/analyzer-data`;
           const sourceFiles =
               ['a.html', 'b.html', 'shell.html', 'entrypoint.html'].map(
@@ -139,28 +144,23 @@ suite('Analyzer', () => {
             ],
             sources: sourceFiles,
           });
-          let analyzer = new StreamAnalyzer(config);
-          let foundDependencies = new Set();
+          const analyzer = new BuildAnalyzer(config);
+          analyzer.sources.pipe(new NoopStream());
           analyzer.dependencies.on('data', (file) => {
             foundDependencies.add(file.path);
           });
 
-          mergeStream(
-              vfs.src(sourceFiles, {cwdbase: true}), analyzer.dependencies)
-              .pipe(analyzer)
-              .on('finish',
-                  () => {
-                    // shared-1 is imported by 'a' & 'b', so it is included as a
-                    // dep.
-                    assert.isTrue(foundDependencies.has(
-                        path.resolve(root, 'shared-1.html')));
-                    // shared-1 is imported by 'a' & 'b', so it is included as a
-                    // dep.
-                    assert.isTrue(foundDependencies.has(
-                        path.resolve(root, 'shared-2.html')));
-                    done();
-                  })
-              .on('error', done);
+          return waitForAll([analyzer.sources, analyzer.dependencies])
+              .then(() => {
+                // shared-1 is imported by 'a' & 'b', so it is included as a
+                // dep.
+                assert.isTrue(
+                    foundDependencies.has(path.resolve(root, 'shared-1.html')));
+                // shared-1 is imported by 'a' & 'b', so it is included as a
+                // dep.
+                assert.isTrue(
+                    foundDependencies.has(path.resolve(root, 'shared-2.html')));
+              });
         });
   });
 
@@ -173,16 +173,12 @@ suite('Analyzer', () => {
           root: root,
           sources: [sourceFiles],
         });
-        const analyzer = new StreamAnalyzer(config);
 
-        return new Promise((resolve, reject) => {
-                 mergeStream(
-                     vfs.src(sourceFiles, {cwdbase: true}),
-                     analyzer.dependencies)
-                     .pipe(analyzer)
-                     .on('error', reject)
-                     .on('finish', resolve);
-               })
+        const analyzer = new BuildAnalyzer(config);
+        analyzer.sources.pipe(new NoopStream());
+        analyzer.dependencies.pipe(new NoopStream());
+
+        return waitForAll([analyzer.sources, analyzer.dependencies])
             .then(
                 () => {
                   throw new Error('Parse error expected!');
@@ -203,18 +199,15 @@ suite('Analyzer', () => {
           root: root,
           sources: [sourceFiles],
         });
-        const analyzer = new StreamAnalyzer(config);
-        const printWarningsSpy = sinon.spy(analyzer, 'printWarnings');
 
-        return new Promise((resolve, reject) => {
-                 mergeStream(
-                     vfs.src(sourceFiles, {cwdbase: true}),
-                     analyzer.dependencies)
-                     .pipe(analyzer)
-                     .on('data', () => assert.isFalse(printWarningsSpy.called))
-                     .on('error', reject)
-                     .on('finish', resolve);
-               })
+        const analyzer = new BuildAnalyzer(config);
+        const printWarningsSpy = sinon.spy(analyzer, 'printWarnings');
+        analyzer.sources.on(
+            'data', () => assert.isFalse(printWarningsSpy.called));
+        analyzer.dependencies.on(
+            'data', () => assert.isFalse(printWarningsSpy.called));
+
+        return waitForAll([analyzer.sources, analyzer.dependencies])
             .then(
                 () => {
                   throw new Error('Parse error expected!');
@@ -224,8 +217,31 @@ suite('Analyzer', () => {
                 });
       });
 
+  test('the source/dependency streams remain paused until use', () => {
+    const config = new ProjectConfig({
+      root: `test/static/analyzer-data`,
+      entrypoint: 'entrypoint.html',
+      fragments: [
+        'a.html',
+        'b.html',
+      ],
+      sources: ['a.html', 'b.html', 'entrypoint.html'],
+    });
+
+    const analyzer = new BuildAnalyzer(config);
+
+    // Check that data isn't flowing through sources until consumer usage
+    assert.isNull(analyzer.sources._readableState.flowing);
+    analyzer.sources.on('data', () => {});
+    assert.isTrue(analyzer.sources._readableState.flowing);
+
+    // Check that data isn't flowing through dependencies until consumer usage
+    assert.isNull(analyzer.dependencies._readableState.flowing);
+    analyzer.dependencies.on('data', () => {});
+    assert.isTrue(analyzer.dependencies._readableState.flowing);
+  });
+
   // TODO(fks) 10-26-2016: Refactor logging to be testable, and configurable by
   // the consumer.
   suite.skip('.printWarnings()', () => {});
-
 });

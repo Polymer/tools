@@ -1,6 +1,6 @@
 export {SWConfig} from 'sw-precache';
 // Export types for upstream TypeScript projects
-export {DepsIndex, StreamAnalyzer} from './analyzer';
+export {BuildAnalyzer, DepsIndex} from './analyzer';
 export {Bundler} from './bundle';
 export {forkStream} from './fork-stream';
 export {PolymerProject} from './polymer-project';

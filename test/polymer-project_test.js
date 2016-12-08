@@ -18,8 +18,8 @@ const assert = require('chai').assert;
 const path = require('path');
 const stream = require('stream');
 const File = require('vinyl');
-const mergeStream = require('merge-stream');
 
+const waitFor = require('../lib/streams').waitFor;
 const PolymerProject = require('../lib/polymer-project').PolymerProject;
 const testProjectRoot = path.resolve(__dirname, 'static/test-project');
 
@@ -60,6 +60,21 @@ suite('PolymerProject', () => {
     });
   });
 
+  test('the sources & dependencies streams remain paused until use', () => {
+    // Check that data isn't flowing through sources until consumer usage
+    const sourcesStream = defaultProject.sources();
+    assert.isNull(sourcesStream._readableState.flowing);
+    sourcesStream.on('data', () => {});
+    assert.isTrue(sourcesStream._readableState.flowing);
+
+    // Check that data isn't flowing through dependencies until consumer
+    // usage
+    const dependencyStream = defaultProject.dependencies();
+    assert.isNull(dependencyStream._readableState.flowing);
+    dependencyStream.on('data', () => {});
+    assert.isTrue(dependencyStream._readableState.flowing);
+  });
+
   suite('.dependencies()', () => {
 
     test('reads dependencies', (done) => {
@@ -75,13 +90,11 @@ suite('PolymerProject', () => {
         assert.sameMembers(names, expected);
         done();
       });
-      mergeStream(defaultProject.sources(), dependencyStream)
-          .pipe(defaultProject.analyzer);
     });
 
     test(
         'reads dependencies in a monolithic (non-shell) application without timing out',
-        (done) => {
+        () => {
           const project = new PolymerProject({
             root: testProjectRoot,
             entrypoint: 'index.html',
@@ -92,9 +105,9 @@ suite('PolymerProject', () => {
             ],
           });
 
-          mergeStream(project.sources(), project.dependencies())
-              .pipe(project.analyzer)
-              .on('finish', done);
+          let dependencyStream = project.dependencies();
+          dependencyStream.on('data', () => {});
+          return waitFor(dependencyStream);
         });
 
     test(
@@ -115,6 +128,7 @@ suite('PolymerProject', () => {
 
           const dependencyStream = projectWithIncludedDeps.dependencies();
           dependencyStream.on('data', (f) => files.push(f));
+          dependencyStream.on('error', done);
           dependencyStream.on('end', () => {
             const names = files.map((f) => unroot(f.path));
             const expected = [
@@ -125,9 +139,6 @@ suite('PolymerProject', () => {
             assert.sameMembers(names, expected);
             done();
           });
-
-          mergeStream(projectWithIncludedDeps.sources(), dependencyStream)
-              .pipe(projectWithIncludedDeps.analyzer);
         });
 
   });
