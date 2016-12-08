@@ -141,6 +141,30 @@ suite('Analyzer', () => {
               chainedDocument.getWarnings(true), [expectedWarning]);
         });
 
+    // currently passing
+    test('analyzes multiple imports of the same behavior', async() => {
+      const documentA = await analyzer.analyze(
+          'static/multiple-behavior-imports/element-a.html');
+      const documentB = await analyzer.analyze(
+          'static/multiple-behavior-imports/element-b.html');
+      assert.deepEqual(documentA.getWarnings(true), []);
+      assert.deepEqual(documentB.getWarnings(true), []);
+    });
+
+    // currently failing
+    test(
+        'analyzes multiple imports of the same behavior simultaneously',
+        async() => {
+          const result = await Promise.all([
+            analyzer.analyze('static/multiple-behavior-imports/element-a.html'),
+            analyzer.analyze('static/multiple-behavior-imports/element-b.html')
+          ]);
+          const documentA = result[0];
+          const documentB = result[1];
+          assert.deepEqual(documentA.getWarnings(true), []);
+          assert.deepEqual(documentB.getWarnings(true), []);
+        });
+
     test(
         'an inline document can find features from its container document',
         async() => {
