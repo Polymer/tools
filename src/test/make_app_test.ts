@@ -19,17 +19,18 @@ import * as supertest from 'supertest-as-promised';
 import {makeApp} from '../make_app';
 
 const root = path.join(__dirname, '..', '..', 'test');
+const componentDir = path.join(root, 'components');
 
 suite('makeApp', () => {
 
   test('returns an app', () => {
-    let app = makeApp({root});
+    let app = makeApp({root, componentDir});
     assert.isOk(app);
     assert.equal(app.packageName, 'polyserve-test');
   });
 
   test('serves package files', async() => {
-    let app = makeApp({root});
+    let app = makeApp({root, componentDir});
     await supertest(app)
         .get('/polyserve-test/test-file.txt')
         .expect(200, 'PASS\n');
@@ -50,7 +51,8 @@ suite('makeApp', () => {
     console.error = function(_e: any) {
       called = true;
     };
-    const app = makeApp({root: path.resolve(__dirname, 'no_bower_json/')});
+    const app = makeApp(
+        {root: path.resolve(__dirname, 'no_bower_json/'), componentDir});
     assert.isFalse(called);
     assert.equal(app.packageName, 'no_bower_json');
   });

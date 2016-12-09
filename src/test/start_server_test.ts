@@ -183,6 +183,7 @@ suite('startServer', () => {
         // reset paths to key/cert files so that default paths are used
         _serverOptions.keyPath = undefined;
         _serverOptions.certPath = undefined;
+        _serverOptions = _serverOptions;
 
         const certFilePath = 'cert.pem';
         const keyFilePath = 'key.pem';

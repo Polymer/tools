@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Added `-u`/`--component-url` option to support expressing different url to
+  fetch components from than `components`.
+
 ### Fixed
 * When no port is given, do a better job of finding an available port.
  * Uses the list of [sauce-legal](https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS#SauceConnectProxyFAQS-CanIAccessApplicationsonlocalhost?) ports.

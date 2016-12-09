@@ -57,6 +57,7 @@ export async function run(): Promise<StartServerResult> {
     browser: cliOptions['browser'],
     openPath: cliOptions['open-path'],
     componentDir: cliOptions['component-dir'],
+    componentUrl: cliOptions['component-url'],
     packageName: cliOptions['package-name'],
     protocol: cliOptions['protocol'],
     keyPath: cliOptions['key'],
