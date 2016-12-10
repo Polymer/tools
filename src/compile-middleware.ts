@@ -22,7 +22,6 @@ import {UAParser} from 'ua-parser-js';
 
 import {transformResponse} from './transform-middleware';
 
-
 const babelTransformers = [
   'babel-plugin-transform-es2015-arrow-functions',
   'babel-plugin-transform-es2015-block-scoped-functions',

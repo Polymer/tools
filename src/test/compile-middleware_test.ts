@@ -61,7 +61,8 @@ suite('compile-middleware', () => {
       const responseFromCache = await request();
       assert.equal(responseFromCache.text, 'IM IN UR CACHE');
 
-      // Evict the cached value to max length exceeded.
+      // Set the max size of the cache to something small and evict the cached
+      // value due to max cache length exceeded.
       const originalCacheMax = babelCompileCache['max'];
       babelCompileCache['max'] = 60;
       babelCompileCache.set(
@@ -109,7 +110,8 @@ suite('compile-middleware', () => {
       const responseFromCache = await request();
       assert.equal(responseFromCache.text, 'IM IN UR CACHE');
 
-      // Evict the cached value to max length exceeded.
+      // Set the max size of the cache to something small and evict the cached
+      // value due to max cache length exceeded.
       const originalCacheMax = babelCompileCache['max'];
       babelCompileCache['max'] = 60;
       babelCompileCache.set(
