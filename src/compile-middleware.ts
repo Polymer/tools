@@ -16,10 +16,12 @@ import * as babelCore from 'babel-core';
 import {parse as parseContentType} from 'content-type';
 import * as dom5 from 'dom5';
 import {Request, RequestHandler, Response} from 'express';
+import * as LRU from 'lru-cache';
 import * as parse5 from 'parse5';
 import {UAParser} from 'ua-parser-js';
 
 import {transformResponse} from './transform-middleware';
+
 
 const babelTransformers = [
   'babel-plugin-transform-es2015-arrow-functions',
@@ -66,6 +68,11 @@ function isSuccessful(response: Response) {
   return (statusCode >= 200 && statusCode < 300);
 }
 
+export const babelCompileCache = LRU<string>(<LRU.Options<string>>{
+  max: (10 * Math.pow(2, 20)),  // 10MB Cache Size
+  length: (n: string, key: string) => n.length + key.length
+});
+
 export function babelCompile(forceCompile: boolean): RequestHandler {
   if (forceCompile == null) {
     forceCompile = false;
@@ -83,7 +90,10 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
       const compile = forceCompile || needCompilation(uaParser);
 
       if (compile) {
-        // TODO(justinfagnani): cache compilation results
+        const cached = babelCompileCache.get(body);
+        if (cached !== undefined) {
+          return cached;
+        }
         if (contentType === htmlMimeType) {
           const document = parse5.parse(body);
           const scriptTags = dom5.queryAll(document, isInlineJavaScript);
@@ -100,10 +110,14 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
               console.warn(`Error compiling script in ${request.path}: ${e}`);
             }
           }
-          return parse5.serialize(document);
+          const compiledHtml = parse5.serialize(document);
+          babelCompileCache.set(body, compiledHtml);
+          return compiledHtml;
         } else if (javaScriptMimeTypes.indexOf(contentType) >= 0) {
           try {
-            return compileScript(body);
+            const compiledJs = compileScript(body);
+            babelCompileCache.set(body, compiledJs);
+            return compiledJs;
           } catch (e) {
             console.warn(`Error compiling script in ${request.path}: ${e}`);
           }
