@@ -17,14 +17,14 @@ import {correctSourceRange, LocationOffset, SourceRange} from '../model/source-r
 /**
  * A parsed Document.
  *
- * @template A The AST type of the document
- * @template V The Visitor type of the document
+ * @template AstNode The AST type of the document.
+ * @template Visitor The type of the visitors that can walk the document.
  */
-export abstract class ParsedDocument<A, V> {
+export abstract class ParsedDocument<AstNode, Visitor> {
   abstract type: string;
   url: string;
   contents: string;
-  ast: A;
+  ast: AstNode;
   isInline: boolean;
 
   /**
@@ -35,7 +35,7 @@ export abstract class ParsedDocument<A, V> {
 
   private _locationOffset: LocationOffset|undefined;
 
-  constructor(from: Options<A>) {
+  constructor(from: Options<AstNode>) {
     this.url = from.url;
     this.contents = from.contents;
     this.ast = from.ast;
@@ -47,7 +47,7 @@ export abstract class ParsedDocument<A, V> {
   /**
    * Runs a set of document-type specific visitors against the document.
    */
-  abstract visit(visitors: V[]): void;
+  abstract visit(visitors: Visitor[]): void;
 
   /**
    * Calls `callback` for each AST node in the document in document order.
@@ -55,14 +55,14 @@ export abstract class ParsedDocument<A, V> {
    * Implementations _must_ call the callback with every node, and must do so
    * in document order.
    */
-  abstract forEachNode(callback: (node: A) => void): void;
+  abstract forEachNode(callback: (node: AstNode) => void): void;
 
-  sourceRangeForNode(node: A): SourceRange|undefined {
+  sourceRangeForNode(node: AstNode): SourceRange|undefined {
     const baseSource = this._sourceRangeForNode(node);
     return correctSourceRange(baseSource, this._locationOffset);
   };
 
-  protected abstract _sourceRangeForNode(node: A): SourceRange|undefined;
+  protected abstract _sourceRangeForNode(node: AstNode): SourceRange|undefined;
 
   /**
    * Convert `this.ast` back into a string document.

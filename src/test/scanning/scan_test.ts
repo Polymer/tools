@@ -77,7 +77,7 @@ suite('scan()', () => {
 
   test('propagates exceptions in visitors', () => {
     let document: any = makeTestDocument({
-      visit: (): Promise<any> => {
+      visit: (): void => {
         throw new Error('expected');
       },
     });
