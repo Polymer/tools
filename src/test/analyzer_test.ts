@@ -141,7 +141,6 @@ suite('Analyzer', () => {
               chainedDocument.getWarnings(true), [expectedWarning]);
         });
 
-    // currently passing
     test('analyzes multiple imports of the same behavior', async() => {
       const documentA = await analyzer.analyze(
           'static/multiple-behavior-imports/element-a.html');
@@ -151,7 +150,6 @@ suite('Analyzer', () => {
       assert.deepEqual(documentB.getWarnings(true), []);
     });
 
-    // currently failing
     test.skip(
         'analyzes multiple imports of the same behavior simultaneously',
         async() => {
@@ -550,28 +548,29 @@ suite('Analyzer', () => {
   });
 
   suite.skip('race conditions and caching', () => {
-    test('editor simulator of imports that import a common dep', async() => {
+
+    class RacyUrlLoader implements UrlLoader {
+      constructor(
+          public map: Map<string, string>,
+          private waitFunction: () => Promise<void>) {
+      }
+      canLoad() {
+        return true;
+      }
+      async load(path: string) {
+        await this.waitFunction();
+        const result = this.map.get(path);
+        if (result != null) {
+          return result;
+        }
+        throw new Error(`no known contents for ${path}`);
+      }
+    }
+
+    const editorSimulator = async(waitFn: () => Promise<void>) => {
       // Here we're simulating a lot of noop-changes to base.html, which has
       // two imports, which mutually import a common dep. This stresses the
       // analyzer's caching.
-
-      const wait = () =>
-          new Promise((resolve) => setTimeout(resolve, Math.random() * 30));
-      class RacyUrlLoader implements UrlLoader {
-        constructor(public map: Map<string, string>) {
-        }
-        canLoad() {
-          return true;
-        }
-        async load(path: string) {
-          await wait();
-          const result = this.map.get(path);
-          if (result != null) {
-            return result;
-          }
-          throw new Error(`no known contents for ${path}`);
-        }
-      }
 
       const contentsMap = new Map<string, string>([
         [
@@ -583,10 +582,10 @@ suite('Analyzer', () => {
         ['common.html', `<custom-el></custom-el>`],
       ]);
       const analyzer =
-          new Analyzer({urlLoader: new RacyUrlLoader(contentsMap)});
+          new Analyzer({urlLoader: new RacyUrlLoader(contentsMap, waitFn)});
       const promises: Promise<Document>[] = [];
       for (let i = 0; i < 30; i++) {
-        await wait();
+        await waitFn();
         for (const key of contentsMap) {
           if (Math.random() > 0.5) {
             analyzer.analyze(key[0], key[1]);
@@ -607,6 +606,49 @@ suite('Analyzer', () => {
         const refs = Array.from(document.getByKind('element-reference'));
         assert.deepEqual(refs.map(ref => ref.tagName), ['custom-el']);
       }
+    };
+
+    test('editor simulator of imports that import a common dep', async() => {
+      const waitTimes: number[] = [];
+      const randomWait = () => new Promise<void>((resolve) => {
+        const waitTime = Math.random() * 30;
+        waitTimes.push(waitTime);
+        setTimeout(resolve, waitTime);
+      });
+      try {
+        await editorSimulator(randomWait);
+      } catch (err) {
+        console.error('Wait times to reproduce this failure:');
+        console.error(JSON.stringify(waitTimes));
+        throw err;
+      }
+    });
+
+    /**
+     * This is a tool for reproducing and debugging a failure of the editor
+     * simulator test above, but only at the exact same commit, as it's
+     * sensitive to the order of internal operations of the analyzer. So this
+     * code with a defined list of wait times should not be checked in.
+     *
+     * It's also worth noting that this code will be dependent on many other
+     * system factors, so it's only somewhat more reproducible, and may not end
+     * up being very useful. If it isn't, we should delete it.
+     */
+    test.skip('somewhat more reproducable editor simulator', async() => {
+      // Replace waitTimes' value with the array of wait times that's logged
+      // to the console when the random editor test fails.
+      const waitTimes: number[] = [];
+
+      const reproducableWait = () => new Promise<void>((resolve) => {
+        const waitTime = waitTimes.shift();
+        if (waitTime == null) {
+          throw new Error(
+              'Was asked for more random waits than the ' +
+              'given array of wait times');
+        }
+        setTimeout(resolve, waitTime);
+      });
+      await editorSimulator(reproducableWait);
     });
 
     suite('deterministic tests', () => {
