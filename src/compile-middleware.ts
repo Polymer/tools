@@ -124,9 +124,7 @@ function compileHtml(source: string, location: string): string {
       // might work. We may want to fail the request so a better error
       // shows up in the network panel of dev tools. If this is the main
       // page we could also render a message in the browser.
-      const tagLoc = scriptTag['location'];
-      const lineCol = tagLoc ? ` on line ${tagLoc.line} col ${tagLoc.col}` : '';
-      console.warn(`Error compiling script in ${location}${lineCol}: ${e}`);
+      console.warn(`Error compiling script in ${location}: ${e}`);
     }
   }
   return parse5.serialize(document);
