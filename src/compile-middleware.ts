@@ -70,7 +70,6 @@ function isSuccessful(response: Response) {
 // NOTE: To change the max length of the cache at runtime, just use bracket
 // notation, i.e. `babelCompileCache['max'] = 64 * 1024` for 64KB limit.
 export const babelCompileCache = LRU<string>(<LRU.Options<string>>{
-  max: (50 * Math.pow(2, 20)),  // 50MB Default cache size (incl keys & values)
   length: (n: string, key: string) => n.length + key.length
 });
 
