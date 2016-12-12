@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as supertest from 'supertest-as-promised';
 import {babelCompileCache} from '../compile-middleware';
-import {makeApp} from '../make_app';
+import {makeApp, PolyserveApplication} from '../make_app';
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
@@ -27,102 +27,64 @@ const root = path.join(__dirname, '..', '..', 'test');
 suite('compile-middleware', () => {
 
   suite('babelCompileCache', () => {
-    test('caches html compilation results', async() => {
-      const app =
+
+    let app: PolyserveApplication;
+
+    const uncompiledHtml =
+        fs.readFileSync(
+              path.join(root, 'bower_components/test-component/test.html'))
+            .toString();
+    const uncompiledJs =
+        fs.readFileSync(
+              path.join(root, 'bower_components/test-component/test.js'))
+            .toString();
+
+    beforeEach(() => {
+      app =
           makeApp({root, compile: 'always', componentDir: 'bower_components'});
+      // Ensure a fresh cache for each test.
+      babelCompileCache.reset();
+    });
 
-      // We'll make this request three times
-      const request = () => supertest(app).get('/test-component/test.html');
+    test('caches html compilation results', async() => {
+      assert(!babelCompileCache.has(uncompiledHtml));
+      const response = await supertest(app).get('/test-component/test.html');
+      assert(babelCompileCache.has(uncompiledHtml));
+      assert.equal(response.text, babelCompileCache.get(uncompiledHtml));
+      assert.equal(response.text.indexOf('class A {}'), -1, 'Did not compile');
+    });
 
-      // This is the uncompiled source.  The cache uses this as the key.
-      const uncompiledHtml =
-          fs.readFileSync(
-                path.join(root, 'bower_components/test-component/test.html'))
-              .toString();
-
-      // Response of initial request
-      const responseAfterCompile = await request();
-
-      // Expect the output to be compiled
-      assert.equal(
-          responseAfterCompile.text.indexOf('class A {}'),
-          -1,
-          'Did not compile');
-
-      // Expect the compiled output to be in the cache, keyed by the uncompiled
-      // source html.
-      assert.equal(
-          responseAfterCompile.text, babelCompileCache.get(uncompiledHtml));
-
-      // Set the cached value to something else.
+    test('returns cached html compilation results', async() => {
       babelCompileCache.set(uncompiledHtml, 'IM IN UR CACHE');
-
-      // Make the request again, this time expect the value in cache as result.
-      const responseFromCache = await request();
-      assert.equal(responseFromCache.text, 'IM IN UR CACHE');
-
-      // Set the max size of the cache to something small and evict the cached
-      // value due to max cache length exceeded.
-      const originalCacheMax = babelCompileCache['max'];
-      babelCompileCache['max'] = 60;
-      babelCompileCache.set(
-          'this is a fairly long entry', 'it will push out the LRU entry');
-      babelCompileCache['max'] = originalCacheMax;
-      assert.equal(babelCompileCache.has(uncompiledHtml), false);
-
-      // Request again and expect the output to match the original compiled
-      // response.
-      const responseFromCacheMiss = await request();
-      assert.equal(responseFromCacheMiss.text, responseAfterCompile.text);
+      const response = await supertest(app).get('/test-component/test.html');
+      assert.equal(response.text, 'IM IN UR CACHE');
     });
 
     test('caches javascript compilation results', async() => {
-      const app =
-          makeApp({root, compile: 'always', componentDir: 'bower_components'});
+      assert(!babelCompileCache.has(uncompiledJs));
+      const response = await supertest(app).get('/test-component/test.js');
+      assert(babelCompileCache.has(uncompiledJs));
+      assert.equal(response.text, babelCompileCache.get(uncompiledJs));
+      assert.equal(response.text.indexOf('class A {}'), -1, 'Did not compile');
+    });
 
-      // We'll make this request three times
-      const request = () => supertest(app).get('/test-component/test.js');
-
-      // This is the uncompiled source.  The cache uses this as the key.
-      const uncompiledJs =
-          fs.readFileSync(
-                path.join(root, 'bower_components/test-component/test.js'))
-              .toString();
-
-      // Response of initial request
-      const responseAfterCompile = await request();
-
-      // Expect the output to be compiled
-      assert.equal(
-          responseAfterCompile.text.indexOf('class A {}'),
-          -1,
-          'Did not compile');
-
-      // Expect the compiled output to be in the cache, keyed by the uncompiled
-      // source javascript.
-      assert.equal(
-          responseAfterCompile.text, babelCompileCache.get(uncompiledJs));
-
-      // Set the cached value to something else.
+    test('returns cached js compilation results', async() => {
       babelCompileCache.set(uncompiledJs, 'IM IN UR CACHE');
+      const response = await supertest(app).get('/test-component/test.js');
+      assert.equal(response.text, 'IM IN UR CACHE');
+    });
 
-      // Make the request again, this time expect the value in cache as result.
-      const responseFromCache = await request();
-      assert.equal(responseFromCache.text, 'IM IN UR CACHE');
-
-      // Set the max size of the cache to something small and evict the cached
-      // value due to max cache length exceeded.
-      const originalCacheMax = babelCompileCache['max'];
-      babelCompileCache['max'] = 60;
-      babelCompileCache.set(
-          'this is a fairly long entry', 'it will push out the LRU entry');
-      babelCompileCache['max'] = originalCacheMax;
-      assert.equal(babelCompileCache.has(uncompiledJs), false);
-
-      // Request again and expect the output to match the original compiled
-      // response.
-      const responseFromCacheMiss = await request();
-      assert.equal(responseFromCacheMiss.text, responseAfterCompile.text);
+    test('honors the cache max evicting least recently used', async() => {
+      await supertest(app).get('/test-component/test.html');
+      assert(babelCompileCache.has(uncompiledHtml));
+      const originalMax = babelCompileCache['max'];
+      babelCompileCache['max'] = babelCompileCache.length;
+      try {
+        await supertest(app).get('/test-component/test.js');
+        assert(!babelCompileCache.has(uncompiledHtml), 'cached html evicted');
+      } finally {
+        babelCompileCache['max'] = originalMax;
+      }
     });
   });
 });
