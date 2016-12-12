@@ -19,3 +19,25 @@ export function trimLeft(str: string, char: string): string {
   }
   return str.substring(leftEdge);
 }
+
+export class Deferred<T> {
+  promise: Promise<T>;
+  resolve: (result: T) => void;
+  reject: (error: Error) => void;
+  constructor() {
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
+  }
+
+  toNodeCallback() {
+    return (error: any, value: T) => {
+      if (error) {
+        this.reject(error);
+      } else {
+        this.resolve(value);
+      }
+    };
+  }
+}

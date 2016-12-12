@@ -16,23 +16,24 @@
 
 import {assert} from 'chai';
 import * as clone from 'clone';
+import * as estree from 'estree';
 import * as shady from 'shady-css-parser';
 
-import stripIndent = require('strip-indent');
-import * as estree from 'estree';
-
 import {Analyzer} from '../analyzer';
+import {ParsedCssDocument} from '../css/css-document';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {ParsedCssDocument} from '../css/css-document';
-import {Document, ScannedImport, Import, ScannedInlineDocument} from '../model/model';
-import {UrlLoader} from '../url-loader/url-loader';
+import {Document, Import, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
+import {Deferred} from '../utils';
 
 import {invertPromise} from './test-utils';
+
+import stripIndent = require('strip-indent');
 
 class TestUrlResolver implements UrlResolver {
   canResolve(url: string) {
@@ -551,7 +552,7 @@ suite('Analyzer', () => {
 
     class RacyUrlLoader implements UrlLoader {
       constructor(
-          public map: Map<string, string>,
+          public pathToContentsMap: Map<string, string>,
           private waitFunction: () => Promise<void>) {
       }
       canLoad() {
@@ -559,9 +560,9 @@ suite('Analyzer', () => {
       }
       async load(path: string) {
         await this.waitFunction();
-        const result = this.map.get(path);
-        if (result != null) {
-          return result;
+        const contents = this.pathToContentsMap.get(path);
+        if (contents != null) {
+          return contents;
         }
         throw new Error(`no known contents for ${path}`);
       }
@@ -586,9 +587,11 @@ suite('Analyzer', () => {
       const promises: Promise<Document>[] = [];
       for (let i = 0; i < 30; i++) {
         await waitFn();
-        for (const key of contentsMap) {
+        for (const entry of contentsMap) {
+          const path = entry[0];
+          const contents = entry[1];
           if (Math.random() > 0.5) {
-            analyzer.analyze(key[0], key[1]);
+            analyzer.analyze(path, contents);
           }
         }
         promises.push(analyzer.analyze('base.html'));
@@ -596,15 +599,15 @@ suite('Analyzer', () => {
       const documents = await Promise.all(promises);
       for (const document of documents) {
         const imports = Array.from(document.getByKind('import'));
-        assert.deepEqual(
-            imports.map(m => m.url).sort(),
+        assert.sameMembers(
+            imports.map(m => m.url),
             ['a.html', 'b.html', 'common.html', 'common.html']);
         const docs = Array.from(document.getByKind('document'));
-        assert.deepEqual(
-            docs.map(d => d.url).sort(),
+        assert.sameMembers(
+            docs.map(d => d.url),
             ['a.html', 'b.html', 'base.html', 'common.html']);
         const refs = Array.from(document.getByKind('element-reference'));
-        assert.deepEqual(refs.map(ref => ref.tagName), ['custom-el']);
+        assert.sameMembers(refs.map(ref => ref.tagName), ['custom-el']);
       }
     };
 
@@ -655,20 +658,18 @@ suite('Analyzer', () => {
       // Deterministic tests extracted from various failures of the above random
       // test.
 
-      class Deferred<T> {
-        promise: Promise<T>;
-        resolve: (result: T) => void;
-        reject: (error: Error) => void;
-        constructor() {
-          this.promise = new Promise((resolve, reject) => {
-            this.resolve = resolve;
-            this.reject = reject;
-          });
-        }
-      }
+      /**
+       * This is an asynchronous keyed queue, useful for controlling the order
+       * of results in order to make tests more deterministic.
+       *
+       * It's intended to be used in fake loaders, scanners, etc, where the test
+       * provides the intended result on a file by file basis, with control over
+       * the order in which the results come in.
+       */
       class KeyedQueue<Key, Result> {
         private _requests = new Map<Key, Deferred<Result>[]>();
         private _results = new Map<Key, Result[]>();
+
         async request(key: Key): Promise<Result> {
           const results = this._results.get(key) || [];
           if (results.length > 0) {
@@ -704,16 +705,18 @@ suite('Analyzer', () => {
           });
         }
       }
+
       class DeterministicUrlLoader implements UrlLoader {
-        outstandingRequests = new KeyedQueue<string, string>();
+        queue = new KeyedQueue<string, string>();
         canLoad(_url: string) {
           return true;
         }
 
         async load(url: string) {
-          return this.outstandingRequests.request(url);
+          return this.queue.request(url);
         }
       }
+
       class NoopUrlLoader implements UrlLoader {
         canLoad() {
           return true;
@@ -724,6 +727,14 @@ suite('Analyzer', () => {
         }
       }
 
+      /**
+       * This crashed the analyzer as there was a race to _makeDocument,
+       * violating its constraint that there not already be a resolved Document
+       * for a given path.
+       *
+       * This test came out of debugging this issue:
+       *     https://github.com/Polymer/polymer-analyzer/issues/406
+       */
       test('two edits of the same file back to back', async() => {
         const analyzer = new Analyzer({urlLoader: new NoopUrlLoader()});
         await Promise.all([
@@ -747,7 +758,7 @@ suite('Analyzer', () => {
 <link rel="import" href="b.html">
 `));
 
-        urlLoader.outstandingRequests.resolve('common.html', '');
+        urlLoader.queue.resolve('common.html', '');
         await Promise.all(promises);
       });
 
