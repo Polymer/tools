@@ -50,6 +50,29 @@ export class ScannedDocument {
   }
 }
 
+// A map between kind string literal types and their feature types.
+export interface FeatureKinds {
+  'document': Document;
+  'element': Element;
+  'polymer-element': PolymerElement;
+  'behavior': Behavior;
+  'dom-module': DomModule;
+  'element-reference': ElementReference;
+  'import': Import;
+
+  // Document specializations.
+  'html-document': Document;
+  'js-document': Document;
+  'json-document': Document;
+  'css-document': Document;
+
+  // Import specializations.
+  'html-import': Import;
+  'html-script': Import;
+  'html-style': Import;
+  'js-import': Import;
+}
+
 export class Document implements Feature {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
@@ -153,13 +176,7 @@ export class Document implements Feature {
     this._localFeatures.add(feature);
   }
 
-  getByKind(kind: 'element'): Set<Element>;
-  getByKind(kind: 'polymer-element'): Set<PolymerElement>;
-  getByKind(kind: 'behavior'): Set<Behavior>;
-  getByKind(kind: 'dom-module'): Set<DomModule>;
-  getByKind(kind: 'document'): Set<Document>;
-  getByKind(kind: 'import'): Set<Import>;
-  getByKind(kind: 'element-reference'): Set<ElementReference>;
+  getByKind<K extends keyof FeatureKinds>(kind: K): Set<FeatureKinds[K]>;
   getByKind(kind: string): Set<Feature>;
   getByKind(kind: string): Set<Feature> {
     if (this._featuresByKind) {
@@ -174,12 +191,8 @@ export class Document implements Feature {
     return this._getByKind(kind, new Set());
   }
 
-  getById(kind: 'element', tagName: string): Set<Element>;
-  getById(kind: 'polymer-element', tagName: string): Set<Document>;
-  getById(kind: 'behavior', className: string): Set<Behavior>;
-  getById(kind: 'dom-module', idAttr: string): Set<DomModule>;
-  getById(kind: 'document', url: string): Set<Document>;
-  getById(kind: 'element-reference', tagName: string): Set<ElementReference>;
+  getById<K extends keyof FeatureKinds>(kind: K, identifier: string):
+      Set<FeatureKinds[K]>;
   getById(kind: string, identifier: string): Set<Feature>;
   getById(kind: string, identifier: string): Set<Feature> {
     if (this._featuresByKindAndId) {
@@ -201,13 +214,8 @@ export class Document implements Feature {
     return result;
   }
 
-  getOnlyAtId(kind: 'element', tagName: string): Element|undefined;
-  getOnlyAtId(kind: 'polymer-element', tagName: string): PolymerElement
-      |undefined;
-  getOnlyAtId(kind: 'behavior', className: string): Behavior|undefined;
-  getOnlyAtId(kind: 'dom-module', idAttr: string): DomModule|undefined;
-  getOnlyAtId(kind: 'document', url: string): Document|undefined;
-  getOnlyAtId(kind: 'element-reference', tagName: string): ElementReference;
+  getOnlyAtId<K extends keyof FeatureKinds>(kind: K, identifier: string):
+      FeatureKinds[K]|undefined;
   getOnlyAtId(kind: string, identifier: string): Feature|undefined;
   getOnlyAtId(kind: string, identifier: string): Feature|undefined {
     const results = this.getById(kind, identifier);
