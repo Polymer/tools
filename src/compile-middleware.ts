@@ -100,7 +100,7 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
         if (contentType === htmlMimeType) {
           body = compileHtml(source, request.path);
         }
-        if (javaScriptMimeTypes.includes(contentType)) {
+        if (javaScriptMimeTypes.indexOf(contentType) !== -1) {
           body = compileScript(source);
         }
         babelCompileCache.set(source, body);
