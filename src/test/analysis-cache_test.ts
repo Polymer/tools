@@ -13,18 +13,16 @@
  */
 
 import {assert} from 'chai';
-import * as path from 'path';
 
-import {AnalysisCache, getImportersOf} from '../analysis-cache';
-import {Analyzer} from '../analyzer';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {AnalysisCache} from '../analysis-cache';
 
 suite('AnalysisCache', () => {
   test('it can be constructed', () => {
     new AnalysisCache();
   });
 
-  function addFakeDocumentToCache(cache: AnalysisCache, path: string) {
+  function addFakeDocumentToCache(
+      cache: AnalysisCache, path: string, dependencies: string[]) {
     cache.parsedDocumentPromises.set(
         path, Promise.resolve(`parsed ${path} promise` as any));
     cache.scannedDocumentPromises.set(
@@ -34,6 +32,7 @@ suite('AnalysisCache', () => {
     cache.dependenciesScanned.set(path, Promise.resolve());
     cache.scannedDocuments.set(path, `scanned ${path}` as any);
     cache.analyzedDocuments.set(path, `analyzed ${path}` as any);
+    cache.dependencyGraph.addDependenciesOf(path, dependencies);
   }
 
   async function assertHasDocument(cache: AnalysisCache, path: string) {
@@ -72,13 +71,12 @@ suite('AnalysisCache', () => {
 
   test('it invalidates a path when asked to', async() => {
     const cache = new AnalysisCache();
-    addFakeDocumentToCache(cache, 'index.html');
-    addFakeDocumentToCache(cache, 'unrelated.html');
+    addFakeDocumentToCache(cache, 'index.html', []);
+    addFakeDocumentToCache(cache, 'unrelated.html', []);
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
 
-    const forkedCache =
-        cache.invalidatePaths([{path: 'index.html', dependants: []}]);
+    const forkedCache = cache.invalidatePaths(['index.html']);
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
     assertNotHasDocument(forkedCache, 'index.html');
@@ -94,18 +92,19 @@ suite('AnalysisCache', () => {
   test('it invalidates the dependants of a path when asked to', async() => {
     const cache = new AnalysisCache();
     // Picture a graph where
-    addFakeDocumentToCache(cache, 'index.html');
-    addFakeDocumentToCache(cache, 'element.html');
-    addFakeDocumentToCache(cache, 'behavior.html');
-    addFakeDocumentToCache(cache, 'unrelated.html');
+    addFakeDocumentToCache(cache, 'index.html', ['element.html']);
+    addFakeDocumentToCache(cache, 'element.html', ['behavior.html']);
+    addFakeDocumentToCache(cache, 'behavior.html', []);
+    addFakeDocumentToCache(cache, 'unrelated.html', []);
+
     // We added the documents.
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
     await assertHasDocument(cache, 'behavior.html');
     await assertHasDocument(cache, 'unrelated.html');
 
-    const forkedCache = cache.invalidatePaths(
-        [{path: 'behavior.html', dependants: ['index.html', 'element.html']}]);
+
+    const forkedCache = cache.invalidatePaths(['behavior.html']);
     // The original cache is untouched.
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
@@ -118,53 +117,5 @@ suite('AnalysisCache', () => {
     await assertDocumentScannedButNotResolved(forkedCache, 'index.html');
     await assertDocumentScannedButNotResolved(forkedCache, 'element.html');
     await assertHasDocument(forkedCache, 'unrelated.html');
-  });
-});
-
-suite('getImportersOf', () => {
-  let analyzer: Analyzer;
-  setup(() => {
-    analyzer = new Analyzer(
-        {urlLoader: new FSUrlLoader(path.join(__dirname, 'static'))});
-  });
-
-  async function assertImportersOf(path: string, expectedDependants: string[]) {
-    await analyzer.analyze(path);
-    const docs = Array.from(
-        analyzer['_cacheContext']['_cache']['analyzedDocuments'].values());
-    const scannedDocs = docs.map(d => d['_scannedDocument']);
-
-    const urlResolver = (url: string) => url;
-    expectedDependants.sort();
-    assert.deepEqual(
-        Array.from(getImportersOf(path, docs, scannedDocs, urlResolver)).sort(),
-        expectedDependants,
-        'with both docs and scanned docs');
-    // Also works with no documents, just scanned documents.
-    assert.deepEqual(
-        Array.from(getImportersOf(path, [], scannedDocs, urlResolver)).sort(),
-        expectedDependants,
-        'with just scanned docs');
-  }
-
-  test('it works with a basic document with no dependencies', async() => {
-    await assertImportersOf(
-        'dependencies/leaf.html', ['dependencies/leaf.html']);
-  });
-
-  test('it works with a simple tree of dependencies', async() => {
-    await analyzer.analyze('dependencies/root.html');
-    await assertImportersOf(
-        'dependencies/root.html', ['dependencies/root.html']);
-
-    await assertImportersOf(
-        'dependencies/leaf.html',
-        ['dependencies/leaf.html', 'dependencies/root.html']);
-    await assertImportersOf('dependencies/subfolder/subfolder-sibling.html', [
-      'dependencies/subfolder/subfolder-sibling.html',
-      'dependencies/subfolder/in-folder.html',
-      'dependencies/inline-and-imports.html',
-      'dependencies/root.html'
-    ]);
   });
 });

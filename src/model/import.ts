@@ -14,7 +14,7 @@
 
 import {Warning} from '../warning/warning';
 
-import {Document, ScannedDocument} from './document';
+import {Document} from './document';
 import {Feature} from './feature';
 import {SourceRange} from './model';
 import {Resolvable} from './resolvable';
@@ -33,8 +33,6 @@ export class ScannedImport implements Resolvable {
    * URL of the import, relative to the base directory.
    */
   url: string;
-
-  scannedDocument: ScannedDocument;
 
   sourceRange: SourceRange|undefined;
 

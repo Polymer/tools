@@ -48,6 +48,21 @@ export class ScannedDocument {
   get url() {
     return this.document.url;
   }
+
+  getNestedFeatures(): ScannedFeature[] {
+    let features: ScannedFeature[] = [];
+    for (const feature of this.features) {
+      // Ad hoc test needed here to avoid a problematic import loop.
+      if (feature.constructor.name === 'ScannedDocument' &&
+          feature['scannedDocument']) {
+        const innerDoc = feature['scannedDocument'] as ScannedDocument;
+        features = features.concat(innerDoc.getNestedFeatures());
+      } else {
+        features.push(feature);
+      }
+    }
+    return features;
+  }
 }
 
 // A map between kind string literal types and their feature types.

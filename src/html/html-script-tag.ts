@@ -34,9 +34,9 @@ export class ScannedScriptTagImport extends ScannedImport {
     // producing document objects. This will fit better with JS modules, where
     // the type attribute drives how the document is parsed.
 
-    if (this.scannedDocument) {
-      const importedDocument =
-          new Document(this.scannedDocument, document.analyzer);
+    const scannedDocument = document.analyzer._getScannedDocument(this.url);
+    if (scannedDocument) {
+      const importedDocument = new Document(scannedDocument, document.analyzer);
       importedDocument._addFeature(document);
       importedDocument.resolve();
       return new ScriptTagImport(

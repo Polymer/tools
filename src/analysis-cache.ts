@@ -12,17 +12,47 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Import, InlineDocument, ScannedDocument, ScannedImport, ScannedInlineDocument} from './model/model';
+import {DependencyGraph} from './dependency-graph';
+import {Document, ScannedDocument} from './model/model';
 import {ParsedDocument} from './parser/document';
 
 export class AnalysisCache {
-  parsedDocumentPromises = new Map<string, Promise<ParsedDocument<any, any>>>();
-  scannedDocumentPromises = new Map<string, Promise<ScannedDocument>>();
-  analyzedDocumentPromises = new Map<string, Promise<Document>>();
-  dependenciesScanned = new Map<string, Promise<void>>();
+  /**
+   * These are maps from resolved URLs to Promises of various stages of the
+   * analysis pipeline.
+   */
 
-  scannedDocuments = new Map<string, ScannedDocument>();
-  analyzedDocuments = new Map<string, Document>();
+  parsedDocumentPromises: Map<string, Promise<ParsedDocument<any, any>>>;
+  scannedDocumentPromises: Map<string, Promise<ScannedDocument>>;
+  analyzedDocumentPromises: Map<string, Promise<Document>>;
+
+  /**
+   * This is a map from a resolved url to a promise that will resolve when
+   * that document's dependencies have been scanned.
+   *
+   * We need to keep track of this separate from just the scanned document
+   * promise because when one of a document's transitive dependencies changes,
+   * and then analysis of the document is requested, we shouldn't need to rescan
+   * the document itself, but we do need to rescan its dependencies.
+   */
+  dependenciesScanned: Map<string, Promise<void>>;
+
+  scannedDocuments: Map<string, ScannedDocument>;
+  analyzedDocuments: Map<string, Document>;
+
+  dependencyGraph: DependencyGraph;
+
+  constructor(from?: AnalysisCache, newDependencyGraph?: DependencyGraph) {
+    let f: Partial<AnalysisCache> = from || {};
+    this.parsedDocumentPromises = shallowCopyMap(f.parsedDocumentPromises);
+    this.scannedDocumentPromises = shallowCopyMap(f.scannedDocumentPromises);
+    this.analyzedDocumentPromises = shallowCopyMap(f.analyzedDocumentPromises);
+    this.dependenciesScanned = shallowCopyMap(f.dependenciesScanned);
+
+    this.scannedDocuments = shallowCopyMap(f.scannedDocuments);
+    this.analyzedDocuments = shallowCopyMap(f.analyzedDocuments);
+    this.dependencyGraph = newDependencyGraph || new DependencyGraph();
+  }
 
   /**
    * Returns a copy of this cache, with the given path and all of its transitive
@@ -30,13 +60,13 @@ export class AnalysisCache {
    *
    * Must be called whenever a path changes.
    */
-  invalidatePaths(invalidationRequests:
-                      Array<{path: string, dependants: Iterable<string>}>):
-      AnalysisCache {
-    const newCache = this._clone();
-    for (const invalidationRequest of invalidationRequests) {
-      const path = invalidationRequest.path;
-      const dependants = invalidationRequest.dependants;
+  invalidatePaths(paths: string[]): AnalysisCache {
+    const newCache =
+        new AnalysisCache(this, this.dependencyGraph.invalidatePaths(paths));
+    for (const path of paths) {
+      // Note that we must calculate the dependency graph based on the parent,
+      // not the forked newCache.
+      const dependants = this.dependencyGraph.getAllDependantsOf(path);
       newCache.parsedDocumentPromises.delete(path);
       newCache.scannedDocumentPromises.delete(path);
       newCache.dependenciesScanned.delete(path);
@@ -64,114 +94,11 @@ export class AnalysisCache {
 
     return newCache;
   }
-
-  private _clone(): AnalysisCache {
-    const newCache = new AnalysisCache();
-    this._copyMapInto(
-        this.parsedDocumentPromises, newCache.parsedDocumentPromises);
-    this._copyMapInto(
-        this.scannedDocumentPromises, newCache.scannedDocumentPromises);
-    this._copyMapInto(
-        this.analyzedDocumentPromises, newCache.analyzedDocumentPromises);
-    this._copyMapInto(this.dependenciesScanned, newCache.dependenciesScanned);
-    this._copyMapInto(this.scannedDocuments, newCache.scannedDocuments);
-    this._copyMapInto(this.analyzedDocuments, newCache.analyzedDocuments);
-    return newCache;
-  }
-
-  private _copyMapInto<K, V>(from: Map<K, V>, into: Map<K, V>) {
-    for (const kv of from) {
-      into.set(kv[0], kv[1]);
-    }
-  }
 }
 
-/**
- * Trawl the import graph and return the paths of (transitive) dependants on
- * the given path.
- *
- * This should eventually live somewhere like Document, but we really need
- * something like a Project, which encapsulates all of the known Documents
- * inside a basedir, and which has the same interface as Document. That is the
- * object that the AnalysisCache needs to know the results of calling
- * getImportersOf.
- */
-export function getImportersOf(
-    path: string,
-    documents: Iterable<Document>,
-    scannedDocuments: Iterable<ScannedDocument>,
-    urlResolver: (url: string) => string): Set<string> {
-  const invertedIndex =
-      _buildInvertedIndex(documents, scannedDocuments, urlResolver);
-  const visited = new Set<string>();
-  const toVisit = new Set<string>([path]);
-  while (toVisit.size > 0) {
-    const path = toVisit.values().next().value!;
-    toVisit.delete(path);
-    visited.add(path);
-    const importers = invertedIndex.get(path);
-    if (!importers) {
-      continue;
-    }
-    for (const importer of importers) {
-      if (!visited.has(importer)) {
-        toVisit.add(importer);
-      }
-    }
+function shallowCopyMap<K, V>(from?: Map<K, V>) {
+  if (from) {
+    return new Map(from);
   }
-  return visited;
-}
-
-function _buildInvertedIndex(
-    docs: Iterable<Document>,
-    scannedDocuments: Iterable<ScannedDocument>,
-    urlResolver: (url: string) => string): Map<string, Set<string>> {
-  const invertedIndex = new Map<string, Set<string>>();
-  const docsSeen = new Set<string>();
-  for (const doc of docs) {
-    docsSeen.add(doc.url);
-    _addFeaturesToInvertedIndex(doc, invertedIndex);
-  }
-  for (const scannedDoc of scannedDocuments) {
-    if (docsSeen.has(scannedDoc.url)) {
-      continue;
-    }
-    _addScannedFeaturesToInvertedIndex(scannedDoc, invertedIndex, urlResolver);
-  }
-  return invertedIndex;
-}
-
-function _addFeaturesToInvertedIndex(
-    doc: Document, invertedIndex: Map<string, Set<string>>) {
-  for (const feature of doc.getFeatures(false)) {
-    if (feature.kinds.has('import')) {
-      const imported = (feature as Import).url;
-      if (!invertedIndex.has(imported)) {
-        invertedIndex.set(imported, new Set());
-      }
-      invertedIndex.get(imported)!.add(doc.url);
-    }
-    if (feature.kinds.has('inline-document') && feature !== doc) {
-      _addFeaturesToInvertedIndex((feature as InlineDocument), invertedIndex);
-    }
-  }
-}
-
-function _addScannedFeaturesToInvertedIndex(
-    scannedDoc: ScannedDocument,
-    invertedIndex: Map<string, Set<string>>,
-    urlResolver: (url: string) => string) {
-  for (const feature of scannedDoc.features) {
-    if (feature instanceof ScannedImport) {
-      const imported = urlResolver(feature.url);
-      if (!invertedIndex.has(imported)) {
-        invertedIndex.set(imported, new Set());
-      }
-      invertedIndex.get(imported)!.add(scannedDoc.url);
-    } else if (
-        feature instanceof ScannedInlineDocument && feature.scannedDocument) {
-      _addScannedFeaturesToInvertedIndex(
-          feature.scannedDocument, invertedIndex, urlResolver);
-    }
-  }
+  return new Map();
 }
