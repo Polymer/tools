@@ -74,6 +74,7 @@ export const babelCompileCache = LRU<string>(<LRU.Options<string>>{
   length: (n: string, key: string) => n.length + key.length
 });
 
+
 export function babelCompile(forceCompile: boolean): RequestHandler {
   if (forceCompile == null) {
     forceCompile = false;
@@ -91,41 +92,44 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
       const compile = forceCompile || needCompilation(uaParser);
 
       if (compile) {
-        const cached = babelCompileCache.get(body);
+        const source = body;
+        const cached = babelCompileCache.get(source);
         if (cached !== undefined) {
           return cached;
         }
         if (contentType === htmlMimeType) {
-          const document = parse5.parse(body);
-          const scriptTags = dom5.queryAll(document, isInlineJavaScript);
-          for (const scriptTag of scriptTags) {
-            try {
-              const script = dom5.getTextContent(scriptTag);
-              const compiledScriptResult = compileScript(script);
-              dom5.setTextContent(scriptTag, compiledScriptResult);
-            } catch (e) {
-              // By not setting textContent we keep the original script, which
-              // might work. We may want to fail the request so a better error
-              // shows up in the network panel of dev tools. If this is the main
-              // page we could also render a message in the browser.
-              console.warn(`Error compiling script in ${request.path}: ${e}`);
-            }
-          }
-          const compiledHtml = parse5.serialize(document);
-          babelCompileCache.set(body, compiledHtml);
-          return compiledHtml;
-        } else if (javaScriptMimeTypes.indexOf(contentType) >= 0) {
-          try {
-            const compiledJs = compileScript(body);
-            babelCompileCache.set(body, compiledJs);
-            return compiledJs;
-          } catch (e) {
-            console.warn(`Error compiling script in ${request.path}: ${e}`);
-          }
+          body = compileHtml(source, request.path);
         }
-      } return body;
+        if (javaScriptMimeTypes.includes(contentType)) {
+          body = compileScript(source);
+        }
+        babelCompileCache.set(source, body);
+      }
+
+      return body;
     },
   });
+}
+
+function compileHtml(source: string, location: string): string {
+  const document = parse5.parse(source);
+  const scriptTags = dom5.queryAll(document, isInlineJavaScript);
+  for (const scriptTag of scriptTags) {
+    try {
+      const script = dom5.getTextContent(scriptTag);
+      const compiledScriptResult = compileScript(script);
+      dom5.setTextContent(scriptTag, compiledScriptResult);
+    } catch (e) {
+      // By not setting textContent we keep the original script, which
+      // might work. We may want to fail the request so a better error
+      // shows up in the network panel of dev tools. If this is the main
+      // page we could also render a message in the browser.
+      const tagLoc = scriptTag['location'];
+      const lineCol = tagLoc ? ` on line ${tagLoc.line} col ${tagLoc.col}` : '';
+      console.warn(`Error compiling script in ${location}${lineCol}: ${e}`);
+    }
+  }
+  return parse5.serialize(document);
 }
 
 function compileScript(script: string): string {
