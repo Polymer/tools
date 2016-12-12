@@ -86,5 +86,20 @@ suite('compile-middleware', () => {
         babelCompileCache['max'] = originalMax;
       }
     });
+
+    test('script tags with invalid javascript are unchanged', async() => {
+      const uncompiled =
+          fs
+              .readFileSync(path.join(
+                  root, 'bower_components/compile-test/script-tags.html'))
+              .toString();
+      assert(!babelCompileCache.has(uncompiled), 'Unexpected entry in cache');
+      const response =
+          await supertest(app).get('/compile-test/script-tags.html');
+      assert(babelCompileCache.has(uncompiled), 'Missing cache entry');
+      assert.include(response.text, `<script>\nthis is not valid\n</script>`);
+      // The valid script tag should still be compiled.
+      assert.notInclude(response.text, `<script>\nclass A {}\n</script>`);
+    });
   });
 });
