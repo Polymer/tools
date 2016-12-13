@@ -123,7 +123,7 @@ function compileHtml(source: string, location: string): string {
       // might work. We may want to fail the request so a better error
       // shows up in the network panel of dev tools. If this is the main
       // page we could also render a message in the browser.
-      console.warn(`Error compiling script in ${location}: ${e}`);
+      console.warn(`Error compiling script in ${location}: ${e.message}`);
     }
   }
   return parse5.serialize(document);
