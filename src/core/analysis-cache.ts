@@ -12,9 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Document, ScannedDocument} from '../model/model';
+import {ParsedDocument} from '../parser/document';
+
 import {DependencyGraph} from './dependency-graph';
-import {Document, ScannedDocument} from './model/model';
-import {ParsedDocument} from './parser/document';
 
 export class AnalysisCache {
   /**

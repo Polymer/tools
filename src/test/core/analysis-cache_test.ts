@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 
-import {AnalysisCache} from '../analysis-cache';
+import {AnalysisCache} from '../../core/analysis-cache';
 
 suite('AnalysisCache', () => {
   test('it can be constructed', () => {

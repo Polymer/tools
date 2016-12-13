@@ -15,9 +15,9 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../analyzer';
-import {DependencyGraph} from '../dependency-graph';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {Analyzer} from '../../analyzer';
+import {DependencyGraph} from '../../core/dependency-graph';
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('DependencyGraph', () => {
   function assertStringSetsEqual(
@@ -56,7 +56,7 @@ suite('DependencyGraph', () => {
     let analyzer: Analyzer;
     setup(() => {
       analyzer = new Analyzer(
-          {urlLoader: new FSUrlLoader(path.join(__dirname, 'static'))});
+          {urlLoader: new FSUrlLoader(path.join(__dirname, '..', 'static'))});
     });
 
     function assertImportersOf(path: string, expectedDependants: string[]) {

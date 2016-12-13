@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AnalyzerCacheContext} from '../analyzer';
+import {AnalyzerCacheContext} from '../core/analyzer-cache-context';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior';
 import {DomModule} from '../polymer/dom-module-scanner';
