@@ -55,15 +55,15 @@ export class AnalysisCache {
   }
 
   /**
-   * Returns a copy of this cache, with the given path and all of its transitive
-   * dependants invalidated.
+   * Returns a copy of this cache, with the given document and all of its
+   * transitive dependants invalidated.
    *
-   * Must be called whenever a path changes.
+   * Must be called whenever a document changes.
    */
-  invalidatePaths(paths: string[]): AnalysisCache {
-    const newCache =
-        new AnalysisCache(this, this.dependencyGraph.invalidatePaths(paths));
-    for (const path of paths) {
+  invalidatePaths(documentPaths: string[]): AnalysisCache {
+    const newCache = new AnalysisCache(
+        this, this.dependencyGraph.invalidatePaths(documentPaths));
+    for (const path of documentPaths) {
       // Note that we must calculate the dependency graph based on the parent,
       // not the forked newCache.
       const dependants = this.dependencyGraph.getAllDependantsOf(path);
@@ -77,10 +77,11 @@ export class AnalysisCache {
       // relationships with other documents. So first we remove all documents
       // which transitively import the changed document. We also need to mark
       // all of those docs as needing to rescan their dependencies.
-      for (const invalidatedPath of dependants) {
-        newCache.dependenciesScanned.delete(invalidatedPath);
-        newCache.analyzedDocuments.delete(invalidatedPath);
+      for (const partiallyInvalidatedPath of dependants) {
+        newCache.dependenciesScanned.delete(partiallyInvalidatedPath);
+        newCache.analyzedDocuments.delete(partiallyInvalidatedPath);
       }
+
       // Then we clear out the analyzed document promises, which could have
       // in-progress results that don't cohere with the state of the new cache.
       // Only populate the new analyzed promise cache with results that are
