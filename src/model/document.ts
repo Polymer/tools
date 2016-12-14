@@ -49,19 +49,27 @@ export class ScannedDocument {
     return this.document.url;
   }
 
+  /**
+   * Gets all features in this scanned document and all inline documents it
+   * contains.
+   */
   getNestedFeatures(): ScannedFeature[] {
-    let features: ScannedFeature[] = [];
+    const result: ScannedFeature[] = [];
+    this._getNestedFeatures(result);
+    return result;
+  }
+
+  private _getNestedFeatures(features: ScannedFeature[]): void {
     for (const feature of this.features) {
       // Ad hoc test needed here to avoid a problematic import loop.
       if (feature.constructor.name === 'ScannedDocument' &&
           feature['scannedDocument']) {
         const innerDoc = feature['scannedDocument'] as ScannedDocument;
-        features = features.concat(innerDoc.getNestedFeatures());
+        innerDoc._getNestedFeatures(features);
       } else {
         features.push(feature);
       }
     }
-    return features;
   }
 }
 

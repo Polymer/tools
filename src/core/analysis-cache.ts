@@ -43,8 +43,15 @@ export class AnalysisCache {
 
   dependencyGraph: DependencyGraph;
 
+  /**
+   * @param from Another AnalysisCache to copy the caches from. The new
+   *   AnalysisCache will have an independent copy of everything but from's
+   *   dependency graph, which is passed in separately.
+   * @param newDependencyGraph If given, use this dependency graph. We pass
+   *   this in like this purely as an optimization. See `invalidatePaths`.
+   */
   constructor(from?: AnalysisCache, newDependencyGraph?: DependencyGraph) {
-    let f: Partial<AnalysisCache> = from || {};
+    const f: Partial<AnalysisCache> = from || {};
     this.parsedDocumentPromises = shallowCopyMap(f.parsedDocumentPromises);
     this.scannedDocumentPromises = shallowCopyMap(f.scannedDocumentPromises);
     this.analyzedDocumentPromises = shallowCopyMap(f.analyzedDocumentPromises);
@@ -61,7 +68,7 @@ export class AnalysisCache {
    *
    * Must be called whenever a document changes.
    */
-  invalidatePaths(documentPaths: string[]): AnalysisCache {
+  invalidate(documentPaths: string[]): AnalysisCache {
     const newCache = new AnalysisCache(
         this, this.dependencyGraph.invalidatePaths(documentPaths));
     for (const path of documentPaths) {

@@ -108,7 +108,7 @@ export class AnalyzerCacheContext {
    */
   filesChanged(urls: string[]) {
     const newCache =
-        this._cache.invalidatePaths(urls.map(url => this._resolveUrl(url)));
+        this._cache.invalidate(urls.map(url => this._resolveUrl(url)));
     return this._fork(newCache);
   }
 
@@ -226,7 +226,7 @@ export class AnalyzerCacheContext {
   }
 
   /**
-   * Scan a toplevel document given its url and optionally its contents.
+   * Scan a toplevel document and all of its transitive dependencies.
    */
   private async _scan(
       resolvedUrl: string, contents?: string,
@@ -236,37 +236,23 @@ export class AnalyzerCacheContext {
     }
     visited = visited || new Set();
     visited.add(resolvedUrl);
-    const cachedResult = this._cache.scannedDocumentPromises.get(resolvedUrl);
+    const cachedResult =
+        await this._cache.scannedDocumentPromises.get(resolvedUrl);
     if (cachedResult) {
-      await this._scanDependenciesOfToplevelDoc(await cachedResult, visited);
+      await this._scanImportsOfToplevelDoc(cachedResult, visited);
       return cachedResult;
     }
     const promise = (async() => {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise is cached before anything else happens.
       await Promise.resolve();
-      const document = await this._parse(resolvedUrl, contents);
-      return this._scanDocument(document, visited);
+      const parsedDoc = await this._parse(resolvedUrl, contents);
+      return this._scanDocument(parsedDoc, visited);
     })();
     this._cache.scannedDocumentPromises.set(resolvedUrl, promise);
     const scannedDocument = await promise;
-    await this._scanDependenciesOfToplevelDoc(scannedDocument, visited);
+    await this._scanImportsOfToplevelDoc(scannedDocument, visited);
     return scannedDocument;
-  }
-
-  /**
-   * Parses and scans a document from source.
-   */
-  private async _scanInlineSource(
-      type: string, contents: string, url: string, visited: Set<string>,
-      inlineInfo?: InlineDocInfo<any>,
-      attachedComment?: string): Promise<ScannedDocument> {
-    const resolvedUrl = this._resolveUrl(url);
-    const parsedDoc =
-        this._parseContents(type, contents, resolvedUrl, inlineInfo);
-    const scannedDoc =
-        await this._scanDocument(parsedDoc, visited, attachedComment);
-    return scannedDoc;
   }
 
   /**
@@ -299,7 +285,28 @@ export class AnalyzerCacheContext {
     return scannedDocument;
   }
 
-  private async _scanDependenciesOfToplevelDoc(
+  private async _getScannedFeatures(document: ParsedDocument<any, any>):
+      Promise<ScannedFeature[]> {
+    const scanners = this._scanners.get(document.type);
+    if (scanners) {
+      return scan(document, scanners);
+    }
+    return [];
+  }
+
+
+  /**
+   * A caching wrapper around _scanImports.
+   *
+   * When this method's result resolves then all of the document's transitive
+   * dependencies have been scanned.
+   *
+   * We cache the act of scanning dependencies separately from the act of
+   * scanning a single file because while scanning is purely local to the file,
+   * we need to rescan a file's transitive dependencies before resolving if any
+   * of them have changed.
+   */
+  private async _scanImportsOfToplevelDoc(
       scannedDocument: ScannedDocument, visited: Set<string>) {
     const scanDepPromise =
         this._cache.dependenciesScanned.get(scannedDocument.url);
@@ -307,6 +314,8 @@ export class AnalyzerCacheContext {
       return scanDepPromise;
     }
     const promise = (async() => {
+      // Make sure we wait and return a Promise before doing any work, so that
+      // the Promise is cached before anything else happens.
       await Promise.resolve();
       await this._scanImports(scannedDocument, visited);
     })();
@@ -314,20 +323,52 @@ export class AnalyzerCacheContext {
     return promise;
   }
 
+  /**
+   * Scans all of the transitive dependencies of the given document.
+   *
+   * Uses the `visited` set to break cycles.
+   */
   private async _scanImports(
       scannedDocument: ScannedDocument, visited: Set<string>) {
+    if (scannedDocument.isInline) {
+      throw new Error(
+          'Internal Error: _scanImports must only be called with a toplevel ' +
+          'document, never an inline document.');
+    }
     const scannedImports = scannedDocument.getNestedFeatures().filter(
         (e) => e instanceof ScannedImport) as ScannedImport[];
     for (const scannedImport of scannedImports) {
       // TODO(garlicnation): Move this logic into model/document. During
       // the recursive feature walk, features from lazy imports
       // should be marked.
-      if (scannedImport.type !== 'lazy-html-import') {
-        await this._scanImport(
-            scannedImport, scannedDocument.warnings, visited);
+      if (scannedImport.type === 'lazy-html-import') {
+        continue;
+      }
+
+      const url = this._resolveUrl(scannedImport.url);
+      try {
+        await this._scan(url, undefined, visited);
+      } catch (error) {
+        if (error instanceof NoKnownParserError) {
+          // We probably don't want to fail when importing something
+          // that we don't know about here.
+          continue;
+        }
+        error = error || '';
+        // TODO(rictic): move this to the resolve phase, it will be improperly
+        //     cached as it is.
+        scannedDocument.warnings.push({
+          code: 'could-not-load',
+          message: `Unable to load import: ${error.message || error}`,
+          sourceRange:
+              (scannedImport.urlSourceRange || scannedImport.sourceRange)!,
+          severity: Severity.ERROR
+        });
       }
     }
 
+    // Add the found dependencies to the dependency graph so that we can
+    // do cache expiry when a file changes.
     this._cache.dependencyGraph.addDependenciesOf(
         scannedDocument.url,
         scannedImports.map(imp => this._resolveUrl(imp.url)));
@@ -339,68 +380,29 @@ export class AnalyzerCacheContext {
       if (!(feature instanceof ScannedInlineDocument)) {
         continue;
       }
-      await this._scanInlineDocument(
-          feature,
-          containingDocument.url,
-          containingDocument.warnings,
-          visited);
-    }
-  }
+      const locationOffset: LocationOffset = {
+        line: feature.locationOffset.line,
+        col: feature.locationOffset.col,
+        filename: containingDocument.url
+      };
+      try {
+        const parsedDoc = this._parseContents(
+            feature.type,
+            feature.contents,
+            containingDocument.url,
+            {locationOffset, astNode: feature.astNode});
+        const scannedDoc = await this._scanDocument(
+            parsedDoc, visited, feature.attachedComment);
 
-  /**
-   * Scan an inline document found within a containing parsed doc.
-   */
-  private async _scanInlineDocument(
-      inlineDoc: ScannedInlineDocument, url: string, warnings: Warning[],
-      visited: Set<string>): Promise<ScannedDocument|null> {
-    const locationOffset: LocationOffset = {
-      line: inlineDoc.locationOffset.line,
-      col: inlineDoc.locationOffset.col,
-      filename: url
-    };
-    const inlineInfo = {locationOffset, astNode: inlineDoc.astNode};
-    try {
-      const scannedDocument = await this._scanInlineSource(
-          inlineDoc.type,
-          inlineDoc.contents,
-          url,
-          visited,
-          inlineInfo,
-          inlineDoc.attachedComment);
-      inlineDoc.scannedDocument = scannedDocument;
-      return scannedDocument;
-    } catch (err) {
-      if (err instanceof WarningCarryingException) {
-        warnings.push(err.warning);
-        return null;
+        feature.scannedDocument = scannedDoc;
+      } catch (err) {
+        if (err instanceof WarningCarryingException) {
+          containingDocument.warnings.push(err.warning);
+          continue;
+        }
+        throw err;
       }
-      throw err;
     }
-  }
-
-  private async _scanImport(
-      scannedImport: ScannedImport, warnings: Warning[],
-      visited: Set<string>): Promise<null> {
-    const url = this._resolveUrl(scannedImport.url);
-    try {
-      await this._scan(url, undefined, visited);
-    } catch (error) {
-      if (error instanceof NoKnownParserError) {
-        // We probably don't want to fail when importing something
-        // that we don't know about here.
-        return null;
-      }
-      error = error || '';
-      warnings.push({
-        code: 'could-not-load',
-        message: `Unable to load import: ${error.message || error}`,
-        sourceRange:
-            (scannedImport.urlSourceRange || scannedImport.sourceRange)!,
-        severity: Severity.ERROR
-      });
-      return null;
-    }
-    return null;
   }
 
   /**
@@ -418,6 +420,9 @@ export class AnalyzerCacheContext {
                                       providedContents;
   }
 
+  /**
+   * Caching + loading wrapper around _parseContents.
+   */
   private async _parse(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
     const cachedResult = this._cache.parsedDocumentPromises.get(resolvedUrl);
@@ -445,6 +450,10 @@ export class AnalyzerCacheContext {
     return promise;
   }
 
+  /**
+   * Parse the given string into the Abstract Syntax Tree (AST) corresponding
+   * to its type.
+   */
   private _parseContents(
       type: string, contents: string, url: string,
       inlineInfo?: InlineDocInfo<any>): ParsedDocument<any, any> {
@@ -460,15 +469,6 @@ export class AnalyzerCacheContext {
       }
       throw new Error(`Error parsing ${url}:\n ${error.stack}`);
     }
-  }
-
-  private async _getScannedFeatures(document: ParsedDocument<any, any>):
-      Promise<ScannedFeature[]> {
-    const scanners = this._scanners.get(document.type);
-    if (scanners) {
-      return scan(document, scanners);
-    }
-    return [];
   }
 
   /**
