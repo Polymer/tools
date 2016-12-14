@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
+
 import {assert} from 'chai';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
@@ -73,9 +75,18 @@ suite('PolymerElementScanner', () => {
         observers: [
           '_anObserver()',
           '_anotherObserver()'
-        ]
+        ],
+        listeners: {
+          'event-a': '_handleA',
+          eventb: '_handleB',
+          'event-c': _handleC,
+          [['event', 'd'].join('-')]: '_handleD'
+        }
       });
-      Polymer({ is: 'x-bar' });`;
+      Polymer({
+        is: 'x-bar',
+        listeners: []
+      });`;
 
       const document = new JavaScriptParser({
                          sourceType: 'script'
@@ -143,6 +154,16 @@ suite('PolymerElementScanner', () => {
       assert.deepEqual(
           features[0].properties.filter(p => p.notify).map(p => p.name),
           ['e', 'all']);
+
+      assert.deepEqual(features[0].listeners, [
+        {event: 'event-a', handler: '_handleA'},
+        {event: 'eventb', handler: '_handleB'}
+      ]);
+
+      // Skip not statically analizable entries without emitting a warning
+      assert.equal(features[0].warnings.filter(w => w.code === 'invalid-listeners-declaration').length, 0);
+      // Emit warning for non-object `listeners` literal
+      assert.equal(features[1].warnings.filter(w => w.code === 'invalid-listeners-declaration').length, 1);
     });
   });
 

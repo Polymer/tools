@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+### Added
+* [Polymer] Extract 'listeners' from 1.0-style declarations.
+
 ## [2.0.0-alpha.19] - 2016-12-12
 
 ### Added

@@ -60,6 +60,10 @@ export interface Options {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
   }[];
+  listeners?: {
+    event: string,
+    handler: string
+  }[];
   behaviors?: ScannedBehaviorAssignment[];
 
   demos?: {desc: string; path: string}[];
@@ -77,6 +81,10 @@ export class ScannedPolymerElement extends ScannedElement {
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
+  }[] = [];
+  listeners: {
+    event: string,
+    handler: string
   }[] = [];
   behaviorAssignments: ScannedBehaviorAssignment[] = [];
   // FIXME(rictic): domModule and scriptElement aren't known at a file local
@@ -138,6 +146,10 @@ export class PolymerElement extends Element {
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
+  }[];
+  listeners: {
+    event: string,
+    handler: string
   }[];
   behaviorAssignments: ScannedBehaviorAssignment[];
   domModule?: dom5.Node;

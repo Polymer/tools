@@ -19,6 +19,7 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerElement} from './polymer-element';
+import {Severity} from '../warning/warning';
 
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void
@@ -67,6 +68,33 @@ export function declarationPropertyHandlers(
           v = astValue.CANT_CONVERT;
         }
         declaration.observers.push({javascriptNode: element, expression: v});
+      }
+    },
+    listeners(node: estree.Node) {
+
+      if (node.type !== 'ObjectExpression') {
+        declaration.warnings.push({
+          code: 'invalid-listeners-declaration',
+          message: '`listeners` property should be an object expression',
+          severity: Severity.ERROR,
+          sourceRange: document.sourceRangeForNode(node)!
+        });
+        return;
+      }
+
+      for (let p of node.properties) {
+        const evtName = p.key.type === 'Literal' && p.key.value ||
+            p.key.type === 'Identifier' && p.key.name;
+        const handler = p.value.type !== 'Literal' || p.value.value;
+
+        if (typeof evtName !== 'string' || typeof handler !== 'string') {
+            // TODO (maklesoft): Notifiy the user somehow that a listener entry was not extracted
+            // because the event or handler namecould not be statically analyzed. E.g. add a low-severity
+            // warning once opting out of rules is supported.
+            continue;
+        }
+
+        declaration.listeners.push({event: evtName, handler: handler});
       }
     }
   };
