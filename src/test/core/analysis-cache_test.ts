@@ -23,13 +23,10 @@ suite('AnalysisCache', () => {
 
   function addFakeDocumentToCache(
       cache: AnalysisCache, path: string, dependencies: string[]) {
-    cache.parsedDocumentPromises.set(
-        path, Promise.resolve(`parsed ${path} promise` as any));
-    cache.scannedDocumentPromises.set(
-        path, Promise.resolve(`scanned ${path} promise` as any));
-    cache.analyzedDocumentPromises.set(
-        path, Promise.resolve(`analyzed ${path} promise` as any));
-    cache.dependenciesScanned.set(path, Promise.resolve());
+    cache.parsedDocumentPromises.set(path, `parsed ${path} promise` as any);
+    cache.scannedDocumentPromises.set(path, `scanned ${path} promise` as any);
+    cache.analyzedDocumentPromises.set(path, `analyzed ${path} promise` as any);
+    cache.dependenciesScanned.set(path, undefined);
     cache.scannedDocuments.set(path, `scanned ${path}` as any);
     cache.analyzedDocuments.set(path, `analyzed ${path}` as any);
     cache.dependencyGraph.addDependenciesOf(path, dependencies);
@@ -37,11 +34,14 @@ suite('AnalysisCache', () => {
 
   async function assertHasDocument(cache: AnalysisCache, path: string) {
     assert.equal(
-        await cache.parsedDocumentPromises.get(path), `parsed ${path} promise`);
+        await cache.parsedDocumentPromises.getOrCompute(path, null as any),
+        `parsed ${path} promise`);
     assert.equal(
-        await cache.scannedDocumentPromises.get(path),
+        await cache.scannedDocumentPromises.getOrCompute(path, null as any),
         `scanned ${path} promise`);
-    assert.equal(await cache.dependenciesScanned.get(path), undefined);
+    assert.equal(
+        await cache.dependenciesScanned.getOrCompute(path, null as any),
+        undefined);
     // caller must assert on cache.analyzedDocumentPromises themselves
     assert.equal(cache.scannedDocuments.get(path), `scanned ${path}`);
     assert.equal(cache.analyzedDocuments.get(path), `analyzed ${path}`);
@@ -59,9 +59,10 @@ suite('AnalysisCache', () => {
   async function assertDocumentScannedButNotResolved(
       cache: AnalysisCache, path: string) {
     assert.equal(
-        await cache.parsedDocumentPromises.get(path), `parsed ${path} promise`);
+        await cache.parsedDocumentPromises.getOrCompute(path, null as any),
+        `parsed ${path} promise`);
     assert.equal(
-        await cache.scannedDocumentPromises.get(path),
+        await cache.scannedDocumentPromises.getOrCompute(path, null as any),
         `scanned ${path} promise`);
     assert.equal(cache.scannedDocuments.get(path), `scanned ${path}`);
     assert.isFalse(cache.analyzedDocuments.has(path));
@@ -85,7 +86,8 @@ suite('AnalysisCache', () => {
     // The promise of unrelated.html's result has been turned into
     // a Promise.resolve() of its non-promise cache.
     assert.equal(
-        await forkedCache.analyzedDocumentPromises.get('unrelated.html'),
+        await forkedCache.analyzedDocumentPromises.getOrCompute(
+            'unrelated.html', null as any),
         `analyzed unrelated.html`);
   });
 

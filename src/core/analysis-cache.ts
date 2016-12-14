@@ -39,6 +39,10 @@ export class AnalysisCache {
    */
   dependenciesScanned: AsyncWorkCache<string, void>;
 
+  /**
+   * TODO(rictic): These synchronous caches need to be kept in sync with their
+   *     async work cache analogues above.
+   */
   scannedDocuments: Map<string, ScannedDocument>;
   analyzedDocuments: Map<string, Document>;
 
@@ -100,8 +104,7 @@ export class AnalysisCache {
       // definite, and not invalidated.
       newCache.analyzedDocumentPromises.clear();
       for (const keyValue of newCache.analyzedDocuments) {
-        newCache.analyzedDocumentPromises.set(
-            keyValue[0], Promise.resolve(keyValue[1]));
+        newCache.analyzedDocumentPromises.set(keyValue[0], keyValue[1]);
       }
     }
 

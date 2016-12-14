@@ -119,29 +119,20 @@ export class AnalyzerCacheContext {
   async analyze(url: string, contents?: string): Promise<Document> {
     const resolvedUrl = this._resolveUrl(url);
 
-    const cachedResult = this._cache.analyzedDocumentPromises.get(resolvedUrl);
-    if (cachedResult) {
-      return cachedResult;
-    }
-
-    const promise = (async() => {
-      // Make sure we wait and return a Promise before doing any work, so that
-      // the Promise is cached before anything else happens.
-      await Promise.resolve();
-      const doneTiming =
-          this._telemetryTracker.start('analyze: make document', url);
-      const scannedDocument = await this._scan(resolvedUrl, contents);
-      if (scannedDocument === 'visited') {
+    return this._cache.analyzedDocumentPromises.getOrCompute(
+        resolvedUrl, async() => {
+          const doneTiming =
+              this._telemetryTracker.start('analyze: make document', url);
+          const scannedDocument = await this._scan(resolvedUrl, contents);
+          if (scannedDocument === 'visited') {
         throw new Error(
             `This should not happen. Got a cycle of length zero(!) scanning ${url
             }`);
-      }
-      const document = this._makeDocument(scannedDocument);
-      doneTiming();
-      return document;
-    })();
-    this._cache.analyzedDocumentPromises.set(resolvedUrl, promise);
-    return promise;
+          }
+          const document = this._makeDocument(scannedDocument);
+          doneTiming();
+          return document;
+        });
   }
 
   /**
@@ -156,11 +147,10 @@ export class AnalyzerCacheContext {
     }
 
     const document = new Document(scannedDocument, this);
-    if (!this._cache.analyzedDocumentPromises.has(resolvedUrl)) {
-      this._cache.analyzedDocumentPromises.set(
-          resolvedUrl, Promise.resolve(document));
-    }
     this._cache.analyzedDocuments.set(resolvedUrl, document);
+    this._cache.analyzedDocumentPromises.getOrCompute(
+        resolvedUrl, async() => document);
+
     document.resolve();
     return document;
   }
@@ -236,13 +226,12 @@ export class AnalyzerCacheContext {
     }
     const actualVisited = visited || new Set();
     actualVisited.add(resolvedUrl);
-    const computeScannedDocument = async() => {
-      const parsedDoc = await this._parse(resolvedUrl, contents);
-      return this._scanDocument(parsedDoc, actualVisited);
-    };
     const scannedDocument =
         await this._cache.scannedDocumentPromises.getOrCompute(
-            resolvedUrl, computeScannedDocument);
+            resolvedUrl, async() => {
+              const parsedDoc = await this._parse(resolvedUrl, contents);
+              return this._scanDocument(parsedDoc, actualVisited);
+            });
 
     /**
      * We cache the act of scanning dependencies separately from the act of
@@ -398,17 +387,18 @@ export class AnalyzerCacheContext {
    */
   private async _parse(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
-    const computeParsedDoc = async() => {
-      const content = await this.load(resolvedUrl, providedContents);
-      const extension = path.extname(resolvedUrl).substring(1);
-
-      const doneTiming = this._telemetryTracker.start('parse', 'resolvedUrl');
-      const parsedDoc = this._parseContents(extension, content, resolvedUrl);
-      doneTiming();
-      return parsedDoc;
-    };
     return this._cache.parsedDocumentPromises.getOrCompute(
-        resolvedUrl, computeParsedDoc);
+        resolvedUrl, async() => {
+          const content = await this.load(resolvedUrl, providedContents);
+          const extension = path.extname(resolvedUrl).substring(1);
+
+          const doneTiming =
+              this._telemetryTracker.start('parse', 'resolvedUrl');
+          const parsedDoc =
+              this._parseContents(extension, content, resolvedUrl);
+          doneTiming();
+          return parsedDoc;
+        });
   }
 
   /**

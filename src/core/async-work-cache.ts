@@ -15,7 +15,16 @@
 /**
  * A map from keys to promises of values. Used for caching asynchronous work.
  */
-export class AsyncWorkCache<K, V> extends Map<K, Promise<V>> {
+export class AsyncWorkCache<K, V> {
+  private _keyToResultMap: Map<K, Promise<V>>;
+  constructor(from?: AsyncWorkCache<K, V>) {
+    if (from) {
+      this._keyToResultMap = new Map(from._keyToResultMap);
+    } else {
+      this._keyToResultMap = new Map();
+    }
+  }
+
   /**
    * If work has already begun to compute the given key, return a promise for
    * the result of that work.
@@ -27,7 +36,7 @@ export class AsyncWorkCache<K, V> extends Map<K, Promise<V>> {
    * recursively.
    */
   async getOrCompute(key: K, compute: () => Promise<V>) {
-    const cachedResult = this.get(key);
+    const cachedResult = this._keyToResultMap.get(key);
     if (cachedResult) {
       return cachedResult;
     }
@@ -37,7 +46,23 @@ export class AsyncWorkCache<K, V> extends Map<K, Promise<V>> {
       await Promise.resolve();
       return compute();
     })();
-    this.set(key, promise);
+    this._keyToResultMap.set(key, promise);
     return promise;
+  }
+
+  delete (key: K) {
+    this._keyToResultMap.delete(key);
+  }
+
+  clear() {
+    this._keyToResultMap.clear();
+  }
+
+  set(key: K, value: V) {
+    this._keyToResultMap.set(key, Promise.resolve(value));
+  }
+
+  has(key: K) {
+    return this._keyToResultMap.has(key);
   }
 }
