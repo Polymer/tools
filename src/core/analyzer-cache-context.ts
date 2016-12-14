@@ -234,24 +234,26 @@ export class AnalyzerCacheContext {
     if (visited && visited.has(resolvedUrl)) {
       return 'visited';
     }
-    visited = visited || new Set();
-    visited.add(resolvedUrl);
-    const cachedResult =
-        await this._cache.scannedDocumentPromises.get(resolvedUrl);
-    if (cachedResult) {
-      await this._scanImportsOfToplevelDoc(cachedResult, visited);
-      return cachedResult;
-    }
-    const promise = (async() => {
-      // Make sure we wait and return a Promise before doing any work, so that
-      // the Promise is cached before anything else happens.
-      await Promise.resolve();
+    const actualVisited = visited || new Set();
+    actualVisited.add(resolvedUrl);
+    const computeScannedDocument = async() => {
       const parsedDoc = await this._parse(resolvedUrl, contents);
-      return this._scanDocument(parsedDoc, visited);
-    })();
-    this._cache.scannedDocumentPromises.set(resolvedUrl, promise);
-    const scannedDocument = await promise;
-    await this._scanImportsOfToplevelDoc(scannedDocument, visited);
+      return this._scanDocument(parsedDoc, actualVisited);
+    };
+    const scannedDocument =
+        await this._cache.scannedDocumentPromises.getOrCompute(
+            resolvedUrl, computeScannedDocument);
+
+    /**
+     * We cache the act of scanning dependencies separately from the act of
+     * scanning a single file because while scanning is purely local to the
+     * file, we need to rescan a file's transitive dependencies before
+     * resolving if any of them have changed.
+     */
+    await this._cache.dependenciesScanned.getOrCompute(
+        scannedDocument.url, async() => {
+          await this._scanImports(scannedDocument, actualVisited);
+        });
     return scannedDocument;
   }
 
@@ -292,35 +294,6 @@ export class AnalyzerCacheContext {
       return scan(document, scanners);
     }
     return [];
-  }
-
-
-  /**
-   * A caching wrapper around _scanImports.
-   *
-   * When this method's result resolves then all of the document's transitive
-   * dependencies have been scanned.
-   *
-   * We cache the act of scanning dependencies separately from the act of
-   * scanning a single file because while scanning is purely local to the file,
-   * we need to rescan a file's transitive dependencies before resolving if any
-   * of them have changed.
-   */
-  private async _scanImportsOfToplevelDoc(
-      scannedDocument: ScannedDocument, visited: Set<string>) {
-    const scanDepPromise =
-        this._cache.dependenciesScanned.get(scannedDocument.url);
-    if (scanDepPromise) {
-      return scanDepPromise;
-    }
-    const promise = (async() => {
-      // Make sure we wait and return a Promise before doing any work, so that
-      // the Promise is cached before anything else happens.
-      await Promise.resolve();
-      await this._scanImports(scannedDocument, visited);
-    })();
-    this._cache.dependenciesScanned.set(scannedDocument.url, promise);
-    return promise;
   }
 
   /**
@@ -425,19 +398,7 @@ export class AnalyzerCacheContext {
    */
   private async _parse(resolvedUrl: string, providedContents?: string):
       Promise<ParsedDocument<any, any>> {
-    const cachedResult = this._cache.parsedDocumentPromises.get(resolvedUrl);
-    if (cachedResult) {
-      return cachedResult;
-    }
-
-    // Use an immediately executed async function to create the final Promise
-    // synchronously so we can store it in this._documents before any other
-    // async operations to avoid any race conditions.
-    const promise = (async() => {
-      // Make sure we wait and return a Promise before doing any work, so that
-      // the Promise can be cached.
-      await Promise.resolve();
-
+    const computeParsedDoc = async() => {
       const content = await this.load(resolvedUrl, providedContents);
       const extension = path.extname(resolvedUrl).substring(1);
 
@@ -445,9 +406,9 @@ export class AnalyzerCacheContext {
       const parsedDoc = this._parseContents(extension, content, resolvedUrl);
       doneTiming();
       return parsedDoc;
-    })();
-    this._cache.parsedDocumentPromises.set(resolvedUrl, promise);
-    return promise;
+    };
+    return this._cache.parsedDocumentPromises.getOrCompute(
+        resolvedUrl, computeParsedDoc);
   }
 
   /**

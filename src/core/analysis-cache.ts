@@ -15,6 +15,7 @@
 import {Document, ScannedDocument} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
+import {AsyncWorkCache} from './async-work-cache';
 import {DependencyGraph} from './dependency-graph';
 
 export class AnalysisCache {
@@ -23,9 +24,9 @@ export class AnalysisCache {
    * analysis pipeline.
    */
 
-  parsedDocumentPromises: Map<string, Promise<ParsedDocument<any, any>>>;
-  scannedDocumentPromises: Map<string, Promise<ScannedDocument>>;
-  analyzedDocumentPromises: Map<string, Promise<Document>>;
+  parsedDocumentPromises: AsyncWorkCache<string, ParsedDocument<any, any>>;
+  scannedDocumentPromises: AsyncWorkCache<string, ScannedDocument>;
+  analyzedDocumentPromises: AsyncWorkCache<string, Document>;
 
   /**
    * This is a map from a resolved url to a promise that will resolve when
@@ -36,7 +37,7 @@ export class AnalysisCache {
    * and then analysis of the document is requested, we shouldn't need to rescan
    * the document itself, but we do need to rescan its dependencies.
    */
-  dependenciesScanned: Map<string, Promise<void>>;
+  dependenciesScanned: AsyncWorkCache<string, void>;
 
   scannedDocuments: Map<string, ScannedDocument>;
   analyzedDocuments: Map<string, Document>;
@@ -52,10 +53,13 @@ export class AnalysisCache {
    */
   constructor(from?: AnalysisCache, newDependencyGraph?: DependencyGraph) {
     const f: Partial<AnalysisCache> = from || {};
-    this.parsedDocumentPromises = shallowCopyMap(f.parsedDocumentPromises);
-    this.scannedDocumentPromises = shallowCopyMap(f.scannedDocumentPromises);
-    this.analyzedDocumentPromises = shallowCopyMap(f.analyzedDocumentPromises);
-    this.dependenciesScanned = shallowCopyMap(f.dependenciesScanned);
+    this.parsedDocumentPromises =
+        shallowCopyAsyncWorkCache(f.parsedDocumentPromises);
+    this.scannedDocumentPromises =
+        shallowCopyAsyncWorkCache(f.scannedDocumentPromises);
+    this.analyzedDocumentPromises =
+        shallowCopyAsyncWorkCache(f.analyzedDocumentPromises);
+    this.dependenciesScanned = shallowCopyAsyncWorkCache(f.dependenciesScanned);
 
     this.scannedDocuments = shallowCopyMap(f.scannedDocuments);
     this.analyzedDocuments = shallowCopyMap(f.analyzedDocuments);
@@ -110,4 +114,11 @@ function shallowCopyMap<K, V>(from?: Map<K, V>) {
     return new Map(from);
   }
   return new Map();
+}
+
+function shallowCopyAsyncWorkCache<K, V>(from?: AsyncWorkCache<K, V>) {
+  if (from) {
+    return new AsyncWorkCache<K, V>(from);
+  }
+  return new AsyncWorkCache<K, V>();
 }
