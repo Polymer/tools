@@ -37,6 +37,15 @@ export let args: ArgDescriptor[] = [
     defaultValue: 'auto',
   },
   {
+    name: 'compile-cache',
+    description: 'Maximum size in bytes (actually, UTF-8 characters) of ' +
+        'the cache used to store results for JavaScript compilation. Cache ' +
+        'size includes the uncompiled and compiled file content lengths. ' +
+        'Defaults to 52428800 (50MB)',
+    type: Number,
+    defaultValue: 52428800,
+  },
+  {
     name: 'port',
     alias: 'p',
     description: 'The port to serve from. Defaults to 8080',

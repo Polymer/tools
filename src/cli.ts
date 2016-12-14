@@ -20,6 +20,7 @@ import * as path from 'path';
 import * as url from 'url';
 
 import {args} from './args';
+import {babelCompileCache} from './compile-middleware';
 import {getServerUrls, ServerOptions, StartServerResult, startServers} from './start_server';
 
 import commandLineArgs = require('command-line-args');
@@ -71,6 +72,11 @@ export async function run(): Promise<StartServerResult> {
   if (cliOptions.version) {
     console.log(getVersion());
     return;
+  }
+
+  if (typeof cliOptions['compile-cache'] === 'number') {
+    console.log(`compile cache set to ${cliOptions['compile-cache']}`);
+    babelCompileCache['max'] = cliOptions['compiler-cache'];
   }
 
   const serverInfos = await startServers(options);
