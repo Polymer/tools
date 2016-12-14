@@ -57,16 +57,15 @@ export class AnalysisCache {
    */
   constructor(from?: AnalysisCache, newDependencyGraph?: DependencyGraph) {
     const f: Partial<AnalysisCache> = from || {};
-    this.parsedDocumentPromises =
-        shallowCopyAsyncWorkCache(f.parsedDocumentPromises);
+    this.parsedDocumentPromises = new AsyncWorkCache(f.parsedDocumentPromises);
     this.scannedDocumentPromises =
-        shallowCopyAsyncWorkCache(f.scannedDocumentPromises);
+        new AsyncWorkCache(f.scannedDocumentPromises);
     this.analyzedDocumentPromises =
-        shallowCopyAsyncWorkCache(f.analyzedDocumentPromises);
-    this.dependenciesScanned = shallowCopyAsyncWorkCache(f.dependenciesScanned);
+        new AsyncWorkCache(f.analyzedDocumentPromises);
+    this.dependenciesScanned = new AsyncWorkCache(f.dependenciesScanned);
 
-    this.scannedDocuments = shallowCopyMap(f.scannedDocuments);
-    this.analyzedDocuments = shallowCopyMap(f.analyzedDocuments);
+    this.scannedDocuments = new Map(f.scannedDocuments!);
+    this.analyzedDocuments = new Map(f.analyzedDocuments!);
     this.dependencyGraph = newDependencyGraph || new DependencyGraph();
   }
 
@@ -110,18 +109,4 @@ export class AnalysisCache {
 
     return newCache;
   }
-}
-
-function shallowCopyMap<K, V>(from?: Map<K, V>) {
-  if (from) {
-    return new Map(from);
-  }
-  return new Map();
-}
-
-function shallowCopyAsyncWorkCache<K, V>(from?: AsyncWorkCache<K, V>) {
-  if (from) {
-    return new AsyncWorkCache<K, V>(from);
-  }
-  return new AsyncWorkCache<K, V>();
 }
