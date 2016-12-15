@@ -39,8 +39,8 @@ function requireSauceConnectLauncher(done, attempt) {
 var sauce = require('../lib/sauce');
 
 // don't download our own sauce connect binary if travis is running the
-// sauce_connect addon
-if (!sauce.isTravisSauceConnectRunning()) {
+// sauce_connect addon, or they explicitly opt out via an environment variable
+if (!(sauce.isTravisSauceConnectRunning() || process.env.SKIP_WCT_SAUCE_POSTINSTALL_DOWNLOAD)) {
   console.log('Prefetching the Sauce Connect binary.');
 
   sauce.setSauceConnectDownloadVersion();
