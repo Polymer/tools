@@ -65,6 +65,13 @@ export let args: ArgDescriptor[] = [
     type: String,
   },
   {
+    name: 'component-url',
+    alias: 'u',
+    description: 'The component url to use. Defaults to reading from' +
+        ' the Bower config (usually bower_components/)',
+    type: String,
+  },
+  {
     name: 'package-name',
     alias: 'n',
     description: 'The package name to use for the root directory. Defaults to' +

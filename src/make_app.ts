@@ -22,7 +22,7 @@ import {babelCompile} from './compile-middleware';
 import send = require('send');
 
 export interface AppOptions {
-  componentDir?: string;
+  componentDir: string;
   packageName?: string;
   headers?: {[name: string]: string};
   root?: string;
@@ -44,11 +44,8 @@ export interface PolyserveApplication extends express.Express {
  * @return {Object} An express app which can be served with `app.get`
  */
 export function makeApp(options: AppOptions): PolyserveApplication {
-  options = options || {};
-  // TODO(rictic): Doing option fallback here and in start_server is awkward. We
-  // should have just one.
   const root = options.root;
-  const baseComponentDir = options.componentDir || 'bower_components';
+  const baseComponentDir = options.componentDir;
   const componentDir = path.isAbsolute(baseComponentDir) ?
       baseComponentDir :
       path.join(root, baseComponentDir);

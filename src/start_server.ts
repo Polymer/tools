@@ -58,6 +58,9 @@ export interface ServerOptions {
   /** The component directory to use **/
   componentDir?: string;
 
+  /** The component url to serve **/
+  componentUrl?: string;
+
   /** The package name to use for the root directory **/
   packageName?: string;
 
@@ -81,7 +84,7 @@ export interface ServerOptions {
   additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
-function applyDefaultOptions(options: ServerOptions) {
+function applyDefaultServerOptions(options: ServerOptions) {
   const withDefaults: ServerOptions = Object.assign({}, options);
   Object.assign(withDefaults, {
     port: options.port || 0,
@@ -89,6 +92,12 @@ function applyDefaultOptions(options: ServerOptions) {
     root: path.resolve(options.root || '.'),
     certPath: options.certPath || 'cert.pem',
     keyPath: options.keyPath || 'key.pem',
+    // TODO(usergenic): The current behavior of polyserve is to use
+    // bower_components for directory and components for url. We should
+    // honor the value of `directory` of `.bowerrc` if found in the root dir
+    // of the app, to get user-defined defaults.
+    componentDir: options.componentDir || 'bower_components',
+    componentUrl: options.componentUrl || 'components'
   });
   withDefaults.packageName = options.packageName ||
       bowerConfig(withDefaults.root).name || path.basename(process.cwd());
@@ -109,9 +118,8 @@ async function _startServer(options: ServerOptions) {
   options = options || {};
   assertNodeVersion(options);
   try {
-    const fullOptions = applyDefaultOptions(options);
     const app = getApp(options);
-    const server = await startWithApp(fullOptions, app);
+    const server = await startWithApp(options, app);
     return {app, server};
   } catch (e) {
     console.error('ERROR: Server failed to start:', e);
@@ -169,6 +177,7 @@ export type StartServerResult = MainlineServer | MultipleServersInfo;
  */
 export async function startServers(options: ServerOptions):
     Promise<StartServerResult> {
+  options = applyDefaultServerOptions(options);
   const variants = await findVariants(options);
   // TODO(rictic): support manually configuring variants? tracking more
   //   metadata about them besides their names?
@@ -185,6 +194,8 @@ export async function startServers(options: ServerOptions):
   };
 }
 
+// TODO(usergenic): Variants should support the directory naming convention in
+// the .bowerrc instead of hardcoded 'bower_components' form seen here.
 async function findVariants(options: ServerOptions) {
   const root = options.root || process.cwd();
   const filesInRoot = await fs.readdir(root);
@@ -243,12 +254,12 @@ export async function startControlServer(
     options: ServerOptions,
     mainlineInfo: MainlineServer,
     variantInfos: VariantServer[]) {
-  const fullOptions = applyDefaultOptions(options);
+  options = applyDefaultServerOptions(options);
   const app = express();
   app.get('/api/serverInfo', (_req, res) => {
     res.contentType('json');
     res.send(JSON.stringify({
-      packageName: fullOptions.packageName,
+      packageName: options.packageName,
       mainlineServer: {
         port: mainlineInfo.server.address().port,
       },
@@ -267,13 +278,15 @@ export async function startControlServer(
   });
   const controlServer: ControlServer = {
     kind: 'control',
-    options: fullOptions,
-    server: await startWithApp(fullOptions, app), app
+    options: options,
+    server: await startWithApp(options, app), app
   };
   return controlServer;
 }
 
 export function getApp(options: ServerOptions): express.Express {
+  options = applyDefaultServerOptions(options);
+
   // Preload the h2-push manifest to avoid the cost on first push
   if (options.pushManifestPath) {
     getPushManifest(options.root, options.pushManifestPath);
@@ -288,6 +301,8 @@ export function getApp(options: ServerOptions): express.Express {
     });
   }
 
+  const componentUrl = options.componentUrl;
+
   const polyserve = makeApp({
     componentDir: options.componentDir,
     packageName: options.packageName,
@@ -299,11 +314,11 @@ export function getApp(options: ServerOptions): express.Express {
 
   const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
 
-  app.use('/components/', polyserve);
+  app.use(`/${componentUrl}/`, polyserve);
 
   if (options.proxy) {
-    if (options.proxy.path.startsWith('components')) {
-      console.error('proxy path can not start with components.');
+    if (options.proxy.path.startsWith(componentUrl)) {
+      console.error(`proxy path can not start with ${componentUrl}.`);
       return;
     }
 
@@ -366,6 +381,7 @@ function isHttps(protocol: string): boolean {
  * componentUrl: url.Url}}
  */
 export function getServerUrls(options: ServerOptions, server: http.Server) {
+  options = applyDefaultServerOptions(options);
   const address = server.address();
   const serverUrl: url.Url = {
     protocol: isHttps(options.protocol) ? 'https' : 'http',
@@ -373,7 +389,7 @@ export function getServerUrls(options: ServerOptions, server: http.Server) {
     port: String(address.port),
   };
   const componentUrl: url.Url = Object.assign({}, serverUrl);
-  componentUrl.pathname = `components/${options.packageName}/`;
+  componentUrl.pathname = `${options.componentUrl}/${options.packageName}/`;
   return {serverUrl, componentUrl};
 }
 
@@ -432,6 +448,7 @@ const SAUCE_PORTS = [
  */
 export async function startWithApp(
     options: ServerOptions, app: express.Application): Promise<http.Server> {
+  options = applyDefaultServerOptions(options);
   const ports = options.port ? [options.port] : SAUCE_PORTS;
   const server = await startWithFirstAvailablePort(options, app, ports);
   const urls = getServerUrls(options, server);
