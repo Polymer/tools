@@ -1,6 +1,6 @@
 {
   "name": "polyserve",
-  "version": "0.16.0-prerelease.7",
+  "version": "0.16.0-prerelease.8",
   "description": "A simple dev server for bower components",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/polyserve",
@@ -93,7 +93,7 @@
     "supertest-as-promised": "^4.0.2",
     "tmp": "0.0.28",
     "tslint": "^4.0.2",
-    "typescript": "^2.1.1",
+    "typescript": "^2.1.4",
     "watchy": "^0.6.6"
   },
   "typings": "./lib/polyserve.d.ts"
