@@ -35,6 +35,8 @@ Check out the [custom-build generator](https://github.com/PolymerElements/genera
 To create a new instance of PolymerProject, you'll need to give it some information about your project. See the [`ProjectOptions`](src/polymer-project.ts) definition for a full list of all supported options.
 
 ```js
+const PolymerProject = require('polymer-build').PolymerProject;
+
 const project = new PolymerProject({
   entrypoint: 'index.html',
   shell: 'src/my-app.html',
