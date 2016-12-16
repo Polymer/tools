@@ -285,27 +285,3 @@ export function cleanElement(element: ScannedPolymerElement) {
 function cleanProperty(property: ScannedProperty) {
   clean(property);
 }
-
-/**
- * Parse elements defined only in comments.
- */
-export function parsePseudoElements(comments: string[]):
-    ScannedPolymerElement[] {
-  const elements: ScannedPolymerElement[] = [];
-  comments.forEach(function(comment) {
-    const parsedJsdoc = jsdoc.parseJsdoc(comment);
-    const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
-    if (pseudoTag) {
-      let element = new ScannedPolymerElement({
-        tagName: pseudoTag,
-        jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
-        properties: [],
-        description: parsedJsdoc.description,
-        sourceRange: undefined
-      });
-      annotateElementHeader(element);
-      elements.push(element);
-    }
-  });
-  return elements;
-}

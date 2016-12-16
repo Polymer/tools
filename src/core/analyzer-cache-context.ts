@@ -31,6 +31,7 @@ import {BehaviorScanner} from '../polymer/behavior-scanner';
 import {CssImportScanner} from '../polymer/css-import-scanner';
 import {DomModuleScanner} from '../polymer/dom-module-scanner';
 import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
+import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
 import {UrlLoader} from '../url-loader/url-loader';
@@ -80,7 +81,8 @@ export class AnalyzerCacheContext {
           new HtmlStyleScanner(),
           new DomModuleScanner(),
           new CssImportScanner(),
-          new HtmlCustomElementReferenceScanner()
+          new HtmlCustomElementReferenceScanner(),
+          new PseudoElementScanner()
         ]
       ],
       [

@@ -91,6 +91,8 @@ export class ScannedPolymerElement extends ScannedElement {
   //     level. Remove them here, they should only exist on PolymerElement.
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
+  // Indicates if an element is a pseudo element
+  pseudo: boolean = false;
 
   abstract?: boolean;
 
@@ -221,6 +223,10 @@ function resolveElement(
     clone.description = scannedElement.description || domModule.comment || '';
     clone.domModule = domModule.node;
     clone.slots = domModule.slots.slice();
+  }
+
+  if (scannedElement.pseudo) {
+    clone.kinds.add('pseudo-element');
   }
 
   return clone;
