@@ -32,7 +32,15 @@ Check out the [custom-build generator](https://github.com/PolymerElements/genera
 
 `PolymerProject` represents your project in the build pipeline. Once configured, it will give you access to a collection of streams and helpers for building your project.
 
-To create a new instance of PolymerProject, you'll need to give it some information about your project. See the [`ProjectOptions`](src/polymer-project.ts) definition for a full list of all supported options.
+To create a new instance of `PolymerProject`, you'll need to give it some information about your application. If you already have a [`polymer.json`](https://www.polymer-project.org/1.0/docs/tools/polymer-cli#build) configuration file in your project, you can create a new `PolymerProject` instance by loading it directly:
+
+```js
+const PolymerProject = require('polymer-build').PolymerProject;
+
+const project = new PolymerProject(require('./polymer.json'));
+```
+
+Or, you can pass in configuration options directly to the `PolymerProject` constructor:
 
 ```js
 const PolymerProject = require('polymer-build').PolymerProject;
@@ -46,12 +54,6 @@ const project = new PolymerProject({
     'src/my-view3.html'
   ]
 });
-```
-
-> **NOTE:** If you've previously used the Polymer CLI to build your project, these options are the same information that's held in your project's `polymer.json` file. If you prefer, you can continue to store these values in that file and then load them here.
-
-> ```js
-const project = new PolymerProject(require('./polymer.json'));
 ```
 
 #### project.sources()
