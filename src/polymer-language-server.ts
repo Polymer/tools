@@ -14,16 +14,13 @@
  */
 
 import * as path from 'path';
-
-import {CompletionList, Location, Range, createConnection, IConnection, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Position as LSPosition, Hover, Definition} from 'vscode-languageserver';
+import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service/editor-service';
+import {LocalEditorService} from 'polymer-analyzer/lib/editor-service/local-editor-service';
+import {SourceRange} from 'polymer-analyzer/lib/model/model';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
-
-import {LocalEditorService} from 'polymer-analyzer/lib/editor-service/local-editor-service';
-import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service/editor-service';
-
-import {SourceRange} from 'polymer-analyzer/lib/model/model';
+import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 
 interface SettingsWrapper {
   polymerVscodePlugin: Settings;
@@ -87,146 +84,162 @@ connection.onHover(async(textPosition) => {
   return handleErrors(getDocsForHover(textPosition), undefined);
 });
 
-async function getDocsForHover(textPosition: TextDocumentPositionParams): Promise<Hover|undefined> {
-  const localPath = getWorkspacePathToFile(textPosition.textDocument);
-  if (localPath && editorService) {
-    const documentation = await editorService.getDocumentationAtPosition(
-        localPath, convertPosition(textPosition.position));
-    if (documentation) {
-      return {contents: documentation};
+async function getDocsForHover(textPosition: TextDocumentPositionParams):
+    Promise<Hover|undefined> {
+      const localPath = getWorkspacePathToFile(textPosition.textDocument);
+      if (localPath && editorService) {
+        const documentation = await editorService.getDocumentationAtPosition(
+            localPath, convertPosition(textPosition.position));
+        if (documentation) {
+          return {contents: documentation};
+        }
+      }
     }
-  }
-}
 
 connection.onDefinition(async(textPosition) => {
   return handleErrors(getDefinition(textPosition), undefined);
 });
 
-async function getDefinition(textPosition: TextDocumentPositionParams): Promise<Definition|undefined> {
-  const localPath = getWorkspacePathToFile(textPosition.textDocument);
-  if (localPath && editorService) {
-    const location = await editorService.getDefinitionForFeatureAtPosition(
-        localPath, convertPosition(textPosition.position));
-    if (location && location.file) {
-      let definition: Location = {
-        uri: getUriForLocalPath(location.file),
-        range: convertRange(location)
-      };
-      return definition;
+async function getDefinition(textPosition: TextDocumentPositionParams):
+    Promise<Definition|undefined> {
+      const localPath = getWorkspacePathToFile(textPosition.textDocument);
+      if (localPath && editorService) {
+        const location = await editorService.getDefinitionForFeatureAtPosition(
+            localPath, convertPosition(textPosition.position));
+        if (location && location.file) {
+          let definition: Location = {
+            uri: getUriForLocalPath(location.file),
+            range: convertRange(location)
+          };
+          return definition;
+        }
+      }
     }
-  }
-}
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(async(textPosition) => {
-  return handleErrors(autoComplete(textPosition), {isIncomplete: true, items: []});
+  return handleErrors(
+      autoComplete(textPosition), {isIncomplete: true, items: []});
 });
 
 async function autoComplete(textPosition: TextDocumentPositionParams):
     Promise<CompletionList> {
-  const localPath = getWorkspacePathToFile(textPosition.textDocument);
-  if (!localPath || !editorService) {
-    return {isIncomplete: true, items: []};
-  }
-  const completions: (TypeaheadCompletion|undefined) =
-      await editorService.getTypeaheadCompletionsAtPosition(
-          localPath, convertPosition(textPosition.position));
-  if (!completions) {
-    return {isIncomplete: false, items: []};
-  }
-  if (completions.kind === 'element-tags') {
-    return {
-      isIncomplete: false,
-      items: completions.elements.map(c => {
-        return <CompletionItem>{
-          label: `<${c.tagname}>`,
-          kind: CompletionItemKind.Class,
-          documentation: c.description,
-          insertText: c.expandTo
+      const localPath = getWorkspacePathToFile(textPosition.textDocument);
+      if (!localPath || !editorService) {
+        return {isIncomplete: true, items: []};
+      }
+      const completions: (TypeaheadCompletion|undefined) =
+          await editorService.getTypeaheadCompletionsAtPosition(
+              localPath, convertPosition(textPosition.position));
+      if (!completions) {
+        return {isIncomplete: false, items: []};
+      }
+      if (completions.kind === 'element-tags') {
+        return {
+          isIncomplete: false,
+          items: completions.elements.map(c => {
+            return <CompletionItem>{
+              label: `<${c.tagname}>`,
+              kind: CompletionItemKind.Class,
+              documentation: c.description,
+              insertText: c.expandTo
+            };
+          }),
         };
-      }),
-    };
-  } else if (completions.kind === 'attributes') {
-    return {
-      isIncomplete: false,
-      items: completions.attributes.map(a => {
-        const item: CompletionItem = {
-          label: a.name,
-          kind: CompletionItemKind.Field,
-          documentation: a.description,
-          sortText: a.sortKey
+      } else if (completions.kind === 'attributes') {
+        return {
+          isIncomplete: false,
+          items: completions.attributes.map(a => {
+            const item: CompletionItem = {
+              label: a.name,
+              kind: CompletionItemKind.Field,
+              documentation: a.description,
+              sortText: a.sortKey
+            };
+            if (a.type) {
+              item.detail = `{${a.type}}`;
+            }
+            if (a.inheritedFrom) {
+              if (item.detail) {
+                item.detail = `${item.detail} ⊃ ${a.inheritedFrom}`;
+              } else {
+                item.detail = `⊃ ${a.inheritedFrom}`;
+              }
+            }
+            return item;
+          }),
         };
-        if (a.type) {
-          item.detail = `{${a.type}}`;
-        }
-        if (a.inheritedFrom) {
-          if (item.detail) {
-            item.detail = `${item.detail} ⊃ ${a.inheritedFrom}`;
-          } else {
-            item.detail = `⊃ ${a.inheritedFrom}`;
-          }
-        }
-        return item;
-      }),
-    };
-  }
-  return {isIncomplete: false, items: []};
-}
+      }
+      return {isIncomplete: false, items: []};
+    }
 
-function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
-  // We only support file urls. Extract everything after file:///
-  // Note the third slash. We pull that out too. See the absolute path
-  // generation code below.
-  const match = doc.uri.match(/^file:\/\/\/?(.*)/);
-  if (!match || !match[1] || !workspaceRoot) {
-    return undefined;
-  }
-  // Decode the URI encoding. TODO: something something unicode?
-  const decodedPath = decodeURIComponent(match[1]);
-  // We've stripped off the leading `/`, which on unix means that we have a
-  // relative-looking path, but on Windows we still have an absolute path that
-  // starts with e.g. `C:\`. We can normalize these two by forcing both into
-  // an absolute path, like so:
-  const absolutePath = path.resolve('/', decodedPath);
-  // But what the editor service really wants is a path relative to the
-  // workspace root. So do that.
-  return path.relative(workspaceRoot, absolutePath);
-}
+function
+getWorkspacePathToFile(doc: {uri: string}):
+    string|undefined {
+      // We only support file urls. Extract everything after file:///
+      // Note the third slash. We pull that out too. See the absolute path
+      // generation code below.
+      const match = doc.uri.match(/^file:\/\/\/?(.*)/);
+      if (!match || !match[1] || !workspaceRoot) {
+        return undefined;
+      }
+      // Decode the URI encoding. TODO: something something unicode?
+      const decodedPath = decodeURIComponent(match[1]);
+      // We've stripped off the leading `/`, which on unix means that we have a
+      // relative-looking path, but on Windows we still have an absolute path
+      // that
+      // starts with e.g. `C:\`. We can normalize these two by forcing both into
+      // an absolute path, like so:
+      const absolutePath = path.resolve('/', decodedPath);
+      // But what the editor service really wants is a path relative to the
+      // workspace root. So do that.
+      return path.relative(workspaceRoot, absolutePath);
+    }
 
-function getUriForLocalPath(localPath: string): string {
-  return `file://${workspaceRoot}/${localPath}`;
-}
+function
+getUriForLocalPath(localPath: string):
+    string {
+      return `file://${workspaceRoot}/${localPath}`;
+    }
 
-function convertPosition(position: LSPosition): SourcePosition {
-  return {line: position.line, column: position.character};
-}
+function
+convertPosition(position: LSPosition):
+    SourcePosition {
+      return {line: position.line, column: position.character};
+    }
 
-function convertRange(range: SourceRange): Range {
-  return {
-    start: {line: range.start.line, character: range.start.column},
-    end: {line: range.end.line, character: range.end.column}
-  };
-}
+function
+convertRange(range: SourceRange):
+    Range {
+      return {
+        start: {line: range.start.line, character: range.start.column},
+        end: {line: range.end.line, character: range.end.column}
+      };
+    }
 
-function convertSeverity(severity: Severity): DiagnosticSeverity {
-  switch (severity) {
-    case Severity.ERROR:
-      return DiagnosticSeverity.Error;
-    case Severity.WARNING:
-      return DiagnosticSeverity.Warning;
-    case Severity.INFO:
-      return DiagnosticSeverity.Information;
-    default:
-      throw new Error(
-          `This should never happen. Got a severity of ${severity}`);
-  }
-}
+function
+convertSeverity(severity: Severity):
+    DiagnosticSeverity {
+      switch (severity) {
+        case Severity.ERROR:
+          return DiagnosticSeverity.Error;
+        case Severity.WARNING:
+          return DiagnosticSeverity.Warning;
+        case Severity.INFO:
+          return DiagnosticSeverity.Information;
+        default:
+          throw new Error(
+              `This should never happen. Got a severity of ${severity}`);
+      }
+    }
 
-function scanDocument(document: TextDocument, connection?: IConnection) {
+function
+scanDocument(document: TextDocument, connection?: IConnection) {
   return handleErrors(_scanDocument(document, connection), undefined);
 }
 
-async function _scanDocument(document: TextDocument, connection?: IConnection) {
+async function
+_scanDocument(document: TextDocument, connection?: IConnection) {
   if (editorService) {
     const localPath = getWorkspacePathToFile(document);
     if (!localPath) {
@@ -251,7 +264,9 @@ async function _scanDocument(document: TextDocument, connection?: IConnection) {
   }
 }
 
-async function handleErrors<Result, Fallback>(promise: Promise<Result>, fallbackValue: Fallback):
+async function
+handleErrors<Result, Fallback>(
+    promise: Promise<Result>, fallbackValue: Fallback):
     Promise<Result|Fallback> {
   try {
     return await promise;

@@ -266,7 +266,7 @@ function _findLocationInChildren(
   }
 }
 
-function isPositionInsideRange(
+export function isPositionInsideRange(
     position: SourcePosition, range: SourceRange|undefined,
     includeEdges?: boolean) {
   if (!range) {

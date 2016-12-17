@@ -38,9 +38,9 @@
     "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
     "parse5": "^2.2.3",
-    "polymer-analyzer": "=2.0.0-alpha.18",
+    "polymer-analyzer": "=2.0.0-alpha.19",
     "split": "^1.0.0",
-    "typescript": "^2.0.3",
+    "typescript": "^2.1.4",
     "vscode-languageserver": "^3.0.0-alpha.1"
   }
 }

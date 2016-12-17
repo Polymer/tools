@@ -11,13 +11,14 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
+import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import {Analyzer, Options as AnalyzerOptions} from 'polymer-analyzer';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
 import {Document, Element, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
 import {Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
 
-import {getLocationInfoForPosition} from './ast-from-source-position';
+import {getLocationInfoForPosition, isPositionInsideRange} from './ast-from-source-position';
 import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
 
 export class LocalEditorService extends EditorService {
@@ -55,9 +56,9 @@ export class LocalEditorService extends EditorService {
     return feature.sourceRange;
   }
 
-  async getReferencesForFeatureAtPosition(localPath: string,
-                                          position: SourcePosition):
-      Promise<SourceRange[]|undefined> {
+  async getReferencesForFeatureAtPosition(
+      localPath: string,
+      position: SourcePosition): Promise<SourceRange[]|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {
@@ -71,9 +72,9 @@ export class LocalEditorService extends EditorService {
     }
   }
 
-  async getTypeaheadCompletionsAtPosition(localPath: string,
-                                          position: SourcePosition):
-      Promise<TypeaheadCompletion|undefined> {
+  async getTypeaheadCompletionsAtPosition(
+      localPath: string,
+      position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {
@@ -98,21 +99,59 @@ export class LocalEditorService extends EditorService {
           };
         })
       };
-    } else if (location.kind === 'attribute') {
+    }
+
+    if (location.kind === 'attributeValue') {
+      const domModule =
+          this.getAncestorDomModuleForElement(document, location.element);
+      if (!domModule || !domModule.id)
+        return;
+      const outerElement = document.getOnlyAtId('element', domModule.id);
+      if (!outerElement)
+        return;
+      const sortPrefixes = this._createSortPrefixes(outerElement);
+      const innerElement =
+          document.getOnlyAtId('element', location.element.nodeName);
+      if (!innerElement)
+        return;
+      const innerAttribute = innerElement.attributes.find(
+          (value) => value.name === location.attribute);
+      if (!innerAttribute)
+        return;
+      const attributeValue =
+          dom5.getAttribute(location.element, innerAttribute.name)!;
+      const hasDelimeters = /^\s*(\{\{|\[\[)/.test(attributeValue);
+      return {
+        kind: 'attribute-values',
+        attributes: outerElement.properties.map(p => {
+          const sortKey =
+              (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
+          let autocompletion: string;
+          if (attributeValue && hasDelimeters) {
+            autocompletion = p.name;
+          } else {
+            if (innerAttribute.changeEvent) {
+              autocompletion = `{{${p.name}}}`;
+            } else {
+              autocompletion = `[[${p.name}]]`;
+            }
+          }
+          return {
+            name: p.name,
+            description: p.description || '',
+            type: p.type,
+            autocompletion: autocompletion,
+            inheritedFrom: p.inheritedFrom, sortKey
+          };
+        })
+      };
+    }
+
+    if (location.kind === 'attribute') {
       const elements = document.getById('element', location.element.nodeName);
       let attributes: AttributeCompletion[] = [];
       for (const element of elements) {
-        // A map from the inheritedFrom to a sort prefix. Note that
-        // `undefined` is a legal value for inheritedFrom.
-        const sortPrefixes = new Map<string|undefined, string>();
-        // Not inherited, that means local! Sort it early.
-        sortPrefixes.set(undefined, 'aaa-');
-        if (element.superClass) {
-          sortPrefixes.set(element.superClass, 'bbb-');
-        }
-        if (element.extends) {
-          sortPrefixes.set(element.extends, 'ccc-');
-        }
+        const sortPrefixes = this._createSortPrefixes(element);
         const elementAttributes: AttributeCompletion[] =
             element.attributes.map(p => {
               const sortKey =
@@ -143,6 +182,21 @@ export class LocalEditorService extends EditorService {
     };
   }
 
+  _createSortPrefixes(element: Element): Map<string|undefined, string> {
+    // A map from the inheritedFrom to a sort prefix. Note that
+    // `undefined` is a legal value for inheritedFrom.
+    const sortPrefixes = new Map<string|undefined, string>();
+    // Not inherited, that means local! Sort it early.
+    sortPrefixes.set(undefined, 'aaa-');
+    if (element.superClass) {
+      sortPrefixes.set(element.superClass, 'bbb-');
+    }
+    if (element.extends) {
+      sortPrefixes.set(element.extends, 'ccc-');
+    }
+    return sortPrefixes;
+  }
+
   _generateAutoCompletionForElement(e: Element): string {
     let autocompletion = `<${e.tagName}`;
     let tabindex = 1;
@@ -156,13 +210,32 @@ export class LocalEditorService extends EditorService {
       for (const slot of e.slots) {
         const tagTabIndex = tabindex++;
         const slotAttribute = slot.name ? ` slot="${slot.name}"` : '';
-        autocompletion += '\n\t<${' + tagTabIndex + ':div}' + slotAttribute + '>$' + tabindex++ + '</${' + tagTabIndex + ':div}>';
+        autocompletion += '\n\t<${' + tagTabIndex + ':div}' + slotAttribute +
+            '>$' + tabindex++ + '</${' + tagTabIndex + ':div}>';
       }
       if (e.slots.length) {
         autocompletion += '\n';
       }
     }
     return autocompletion + `</${e.tagName}>$0`;
+  }
+
+  private getAncestorDomModuleForElement(
+      document: Document, element: parse5.ASTNode) {
+    const parsedDocument = document.parsedDocument;
+    if (!(parsedDocument instanceof ParsedHtmlDocument)) {
+      return;
+    }
+    const elementSourcePosition =
+        parsedDocument.sourceRangeForNode(element)!.start;
+    const domModules = document.getByKind('dom-module');
+    for (const domModule of domModules) {
+      if (isPositionInsideRange(
+              elementSourcePosition,
+              parsedDocument.sourceRangeForNode(domModule.node))) {
+        return domModule;
+      }
+    }
   }
 
   async getWarningsForFile(localPath: string): Promise<Warning[]> {

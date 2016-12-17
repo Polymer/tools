@@ -1,0 +1,22 @@
+<link rel="import" href="../analysis/behaviors/elementdir/element.html">
+
+<dom-module id="behavior-user">
+  <template>
+    <behavior-test-elem non-notifying-property="" notifying-property="" inherit-please="{{}}"></behavior-test-elem>
+  </template>
+  <script>
+    Polymer({
+      is: 'behavior-user',
+      properties: {
+        foo: {
+          type: String
+        },
+        bar: {
+          type: String
+        }
+      }
+    });
+  </script>
+</dom-module>
+
+<dom-module id="different-dom-module"></dom-module>

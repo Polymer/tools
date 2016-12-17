@@ -16,17 +16,17 @@ import * as chai from 'chai';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-
 import {Analyzer} from 'polymer-analyzer';
-import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
-import {LocalEditorService} from '../local-editor-service';
-import {RemoteEditorService} from '../remote-editor-service';
 import {SourceRange} from 'polymer-analyzer/lib/model/model';
+import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
-import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
+
+import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
+import {LocalEditorService} from '../local-editor-service';
+import {RemoteEditorService} from '../remote-editor-service';
 
 chai.use(require('chai-subset'));
 
@@ -48,9 +48,24 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         expandTo: undefined,
         expandToSnippet: undefined
       },
-      {description: '', tagname: 'class-declaration', expandTo: undefined, expandToSnippet: undefined},
-      {description: '', tagname: 'anonymous-class', expandTo: undefined, expandToSnippet: undefined},
-      {description: '', tagname: 'class-expression', expandTo: undefined, expandToSnippet: undefined},
+      {
+        description: '',
+        tagname: 'class-declaration',
+        expandTo: undefined,
+        expandToSnippet: undefined
+      },
+      {
+        description: '',
+        tagname: 'anonymous-class',
+        expandTo: undefined,
+        expandToSnippet: undefined
+      },
+      {
+        description: '',
+        tagname: 'class-expression',
+        expandTo: undefined,
+        expandToSnippet: undefined
+      },
       {
         description: '',
         tagname: 'register-before-declaration',
@@ -84,7 +99,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           space = ' ';
         }
         copy.expandTo = `<${e.tagname}${space}></${e.tagname}>`;
-        copy.expandToSnippet = `<${e.tagname}${space ? space + '$1' : ''}></${e.tagname}>$0`;
+        copy.expandToSnippet = `<${e.tagname}${space ? space + '$1' : ''
+        }></${e.tagname}>$0`;
         return copy;
       });
 
@@ -96,6 +112,20 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         description: 'A property defined directly on behavior-test-elem.',
         type: 'boolean',
         sortKey: 'aaa-local-property',
+        inheritedFrom: undefined,
+      },
+      {
+        name: 'non-notifying-property',
+        description: '',
+        type: 'string',
+        sortKey: 'aaa-non-notifying-property',
+        inheritedFrom: undefined,
+      },
+      {
+        name: 'notifying-property',
+        description: '',
+        type: 'string',
+        sortKey: 'aaa-notifying-property',
         inheritedFrom: undefined,
       },
       {
@@ -117,6 +147,13 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         description: 'Fired when the `localProperty` property changes.',
         type: 'CustomEvent',
         sortKey: 'eee-aaa-on-local-property-changed',
+        inheritedFrom: undefined,
+      },
+      {
+        name: 'on-notifying-property-changed',
+        description: 'Fired when the `notifyingProperty` property changes.',
+        type: 'CustomEvent',
+        sortKey: 'eee-aaa-on-notifying-property-changed',
         inheritedFrom: undefined,
       },
       {
@@ -207,14 +244,13 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
   suite('getReferencesForFeatureAtPosition', function() {
 
     const contentsPath = path.join('editor-service', 'references.html');
-    const contents =
-        fs.readFileSync(path.join(basedir, contentsPath), 'utf-8');
+    const contents = fs.readFileSync(path.join(basedir, contentsPath), 'utf-8');
     const loader = {canLoad: () => true, load: () => Promise.resolve(contents)};
     const warningPrinter = new WarningPrinter(
-      null as any, {analyzer: new Analyzer({urlLoader: loader})});
+        null as any, {analyzer: new Analyzer({urlLoader: loader})});
 
 
-    async function getUnderlinedText(sourceRange: SourceRange | undefined) {
+    async function getUnderlinedText(sourceRange: SourceRange|undefined) {
       if (!sourceRange) {
         return 'No source range produced';
       }
@@ -229,37 +265,32 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
           let references =
               await editorService.getReferencesForFeatureAtPosition(
-                  contentsPath, { line: 7, column: 3});
-          let ranges = await Promise.all(references.map(
-            async r => await getUnderlinedText(r)));
+                  contentsPath, {line: 7, column: 3});
+          let ranges = await Promise.all(
+              references.map(async r => await getUnderlinedText(r)));
 
-          deepEqual(
-              ranges,
-              [
-                `
+          deepEqual(ranges, [
+            `
   <anonymous-class one></anonymous-class>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-                `
+            `
   <anonymous-class two></anonymous-class>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-              ]);
+          ]);
 
-          references =
-              await editorService.getReferencesForFeatureAtPosition(
-                  contentsPath, { line: 8, column: 3});
-          ranges = await Promise.all(references.map(
-            async r => await getUnderlinedText(r)));
+          references = await editorService.getReferencesForFeatureAtPosition(
+              contentsPath, {line: 8, column: 3});
+          ranges = await Promise.all(
+              references.map(async r => await getUnderlinedText(r)));
 
-          deepEqual(
-              ranges,
-              [
-                `
+          deepEqual(ranges, [
+            `
   <simple-element one></simple-element>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-                `
+            `
     <simple-element two></simple-element>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-              ]);
+          ]);
         });
   });
 
@@ -276,7 +307,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               {
                 file: 'analysis/behaviors/elementdir/element.html',
                 start: {line: 4, column: 10},
-                end: {line: 24, column: 3}
+                end: {line: 31, column: 3}
               });
         });
 
@@ -375,9 +406,113 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       }
     });
 
+    test(
+        'Get attribute value completions for non-notifying property',
+        async() => {
+          const testFile = path.join('editor-service', 'value-completion.html');
+          const testContents =
+              fs.readFileSync(path.join(basedir, testFile), 'utf-8');
+          await editorService.fileChanged(testFile, testContents);
+          deepEqual(
+              await editorService.getTypeaheadCompletionsAtPosition(testFile, {
+                line: 4,
+                column: 49 /* after the space after the element name */
+              }),
+              {
+                'attributes': [
+                  {
+                    'autocompletion': '[[foo]]',
+                    'description': '',
+                    'name': 'foo',
+                    'sortKey': 'aaa-foo',
+                    'type': 'string',
+                    'inheritedFrom': undefined
+                  },
+                  {
+                    'autocompletion': '[[bar]]',
+                    'description': '',
+                    'name': 'bar',
+                    'sortKey': 'aaa-bar',
+                    'type': 'string',
+                    'inheritedFrom': undefined
+                  }
+                ],
+                'kind': 'attribute-values'
+              });
+        });
+
+    test('Get attribute value completions for notifying property', async() => {
+      const testFile = path.join('editor-service', 'value-completion.html');
+      const testContents =
+          fs.readFileSync(path.join(basedir, testFile), 'utf-8');
+      await editorService.fileChanged(testFile, testContents);
+      deepEqual(
+          await editorService.getTypeaheadCompletionsAtPosition(testFile, {
+            line: 4,
+            column: 71 /* after the space after the element name */
+          }),
+          {
+            'attributes': [
+              {
+                'autocompletion': '{{foo}}',
+                'description': '',
+                'name': 'foo',
+                'sortKey': 'aaa-foo',
+                'type': 'string',
+                'inheritedFrom': undefined
+              },
+              {
+                'autocompletion': '{{bar}}',
+                'description': '',
+                'name': 'bar',
+                'sortKey': 'aaa-bar',
+                'type': 'string',
+                'inheritedFrom': undefined
+              }
+            ],
+            'kind': 'attribute-values'
+          });
+    });
+
+    test(
+        'Get attribute value completions for notifying property without brackets',
+        async() => {
+          const testFile = path.join('editor-service', 'value-completion.html');
+          const testContents =
+              fs.readFileSync(path.join(basedir, testFile), 'utf-8');
+          await editorService.fileChanged(testFile, testContents);
+          deepEqual(
+              await editorService.getTypeaheadCompletionsAtPosition(testFile, {
+                line: 4,
+                column: 91 /* after the space after the element name */
+              }),
+              {
+                'attributes': [
+                  {
+                    'autocompletion': 'foo',
+                    'description': '',
+                    'name': 'foo',
+                    'sortKey': 'aaa-foo',
+                    'type': 'string',
+                    'inheritedFrom': undefined
+                  },
+                  {
+                    'autocompletion': 'bar',
+                    'description': '',
+                    'name': 'bar',
+                    'sortKey': 'aaa-bar',
+                    'type': 'string',
+                    'inheritedFrom': undefined
+                  }
+                ],
+                'kind': 'attribute-values'
+              });
+        });
+
     test('Inserts slots in autocompletion snippet', async() => {
       const slotFile = path.join('editor-service', 'slot.html');
-      await editorService.fileChanged(slotFile, fs.readFileSync(path.join(basedir, slotFile), 'utf-8'));
+      await editorService.fileChanged(
+          slotFile, fs.readFileSync(path.join(basedir, slotFile), 'utf-8'));
 
       deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(slotFile, {
@@ -399,13 +534,13 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               {
                 'description': '',
                 'expandTo': '<slot-one-test-elem></slot-one-test-elem>',
-                'expandToSnippet': `<slot-one-test-elem>$1</slot-one-test-elem>$0`,
+                'expandToSnippet':
+                    `<slot-one-test-elem>$1</slot-one-test-elem>$0`,
                 'tagname': 'slot-one-test-elem'
               }
             ],
             'kind': 'element-tags'
-          }
-      );
+          });
     });
 
     test('Recover from references to undefined files.', async() => {

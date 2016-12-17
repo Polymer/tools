@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Please document PR changes here. -->
 
+### Added
+
+* Added autocompletion for attribute values based on property information.
+
 ## 1.1.1 - 2016-11-21
 
 ### Changed

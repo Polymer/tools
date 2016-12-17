@@ -12,10 +12,10 @@
  */
 
 import {assert} from 'chai';
+import {HtmlParser} from 'polymer-analyzer/lib/html/html-parser';
 
 import {getLocationInfoForPosition} from '../ast-from-source-position';
 import {SourcePosition} from '../editor-service';
-import {HtmlParser} from 'polymer-analyzer/lib/html/html-parser';
 
 suite('getLocationInfoForPosition', () => {
   const parser = new HtmlParser();

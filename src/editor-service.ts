@@ -14,14 +14,22 @@
 import {SourceRange} from 'polymer-analyzer/lib/model/model';
 import {Warning} from 'polymer-analyzer/lib/warning/warning';
 
-export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
+export type TypeaheadCompletion =
+    ElementCompletion | AttributesCompletion | AttributeValuesCompletion;
 export interface ElementCompletion {
   kind: 'element-tags';
-  elements: {tagname: string, description: string, expandTo?: string, expandToSnippet?: string}[];
+  elements: {
+    tagname: string,
+    description: string, expandTo?: string, expandToSnippet?: string
+  }[];
 }
 export interface AttributesCompletion {
   kind: 'attributes';
   attributes: AttributeCompletion[];
+}
+export interface AttributeValuesCompletion {
+  kind: 'attribute-values';
+  attributes: AttributeValueCompletion[];
 }
 
 export interface AttributeCompletion {
@@ -30,6 +38,10 @@ export interface AttributeCompletion {
   type: string|undefined;
   sortKey: string;
   inheritedFrom?: string;
+}
+
+export interface AttributeValueCompletion extends AttributeCompletion {
+  autocompletion: string;
 }
 
 export interface SourcePosition {
@@ -66,7 +78,7 @@ export abstract class EditorService {
    * Gives the locations for references of an element at a given location.
    */
   abstract async getReferencesForFeatureAtPosition(
-    localPath: string, position: SourcePosition): Promise<SourceRange[]>;
+      localPath: string, position: SourcePosition): Promise<SourceRange[]>;
 
   /**
    * Gives the location for the definition for a feature. For example, for a
