@@ -23,6 +23,7 @@ import * as http from 'spdy';
 import * as url from 'url';
 
 import {bowerConfig} from './bower_config';
+import {babelCompile} from './compile-middleware';
 import {makeApp} from './make_app';
 import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
@@ -90,6 +91,7 @@ function applyDefaultServerOptions(options: ServerOptions) {
     port: options.port || 0,
     hostname: options.hostname || 'localhost',
     root: path.resolve(options.root || '.'),
+    compile: options.compile || 'auto',
     certPath: options.certPath || 'cert.pem',
     keyPath: options.keyPath || 'key.pem',
     // TODO(usergenic): The current behavior of polyserve is to use
@@ -307,14 +309,11 @@ export function getApp(options: ServerOptions): express.Express {
     componentDir: options.componentDir,
     packageName: options.packageName,
     root: root,
-    compile: options.compile,
     headers: options.headers,
   });
   options.packageName = polyserve.packageName;
 
   const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
-
-  app.use(`/${componentUrl}/`, polyserve);
 
   if (options.proxy) {
     if (options.proxy.path.startsWith(componentUrl)) {
@@ -346,6 +345,12 @@ export function getApp(options: ServerOptions): express.Express {
     });
     app.use(`/${escapedPath}/`, apiProxy);
   }
+
+  if (options.compile === 'auto' || options.compile === 'always') {
+    app.use('*', babelCompile(options.compile === 'always'));
+  }
+
+  app.use(`/${componentUrl}/`, polyserve);
 
   app.get('/*', (req, res) => {
     pushResources(options, req, res);

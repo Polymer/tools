@@ -64,7 +64,11 @@ suite('startServer', () => {
 
   test('serves index.html, not 404', async() => {
     const app = getApp({root});
-    await supertest(app).get('/foo').expect(200, 'INDEX\n');
+    await supertest(app).get('/foo').expect(200).expect((res: any) => {
+      if (!res.text.includes('INDEX')) {
+        throw new Error('Expected body to contain INDEX');
+      }
+    });
   });
 
   ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach((ext) => {
@@ -73,6 +77,80 @@ suite('startServer', () => {
 
       await supertest(app).get('/foo.' + ext).expect(404);
     });
+  });
+
+  suite('compilation', () => {
+
+    const testCompilation = (options: {
+      url: string,
+      agent?: string,
+      compile: 'always' | 'never' | 'auto',
+      result: 'compiled' | 'uncompiled'
+    }) => async() => {
+      const url = options.url;
+      const agent = options.agent;
+      const compile = options.compile;
+      const result = options.result;
+      const app = getApp({
+        root: root,
+        componentDir: path.join(root, 'bower_components'),
+        compile: compile,
+      });
+      let request = supertest(app).get(url);
+      if (agent) {
+        request = request.set('User-Agent', agent);
+      }
+      const response = await request;
+      const isCompiled = response.text.indexOf('class A {}') === -1;
+      const shouldCompile = result === 'compiled';
+      if (isCompiled && !shouldCompile) {
+        throw new Error('Source was compiled');
+      } else if (!isCompiled && shouldCompile) {
+        throw new Error('Source was not compiled');
+      }
+    };
+
+    test('compiles external JS when --compile=always', testCompilation({
+           url: '/components/test-component/test.js',
+           compile: 'always',
+           result: 'compiled',
+         }));
+
+    test('compiles inline JS when --compile=always', testCompilation({
+           url: '/components/test-component/test.html',
+           compile: 'always',
+           result: 'compiled',
+         }));
+
+    test('doesn\'t compile external JS when --compile=never', testCompilation({
+           url: '/components/test-component/test.js',
+           compile: 'never',
+           result: 'uncompiled',
+         }));
+
+    test('doesn\'t compile inline JS when --compile=never', testCompilation({
+           url: '/components/test-component/test.html',
+           compile: 'never',
+           result: 'uncompiled',
+         }));
+
+    test(
+        'doesn\'t compile external JS when --compile=auto and agent is Chrome',
+        testCompilation({
+          url: '/components/test-component/test.js',
+          agent:
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.52 Safari/537.36',
+          compile: 'auto',
+          result: 'uncompiled',
+        }));
+
+    test(
+        'compiles external JS when --compile=auto and agent is unknown',
+        testCompilation({
+          url: '/components/test-component/test.js',
+          compile: 'auto',
+          result: 'compiled',
+        }));
   });
 
   suite('proxy', () => {
@@ -140,7 +218,14 @@ suite('startServer', () => {
 
     test('redirects to root of proxy', async() => {
       await setUpProxy('api/v1');
-      await supertest(proxyServer).get('/api/v1/').expect(200, 'INDEX\n');
+      await supertest(proxyServer)
+          .get('/api/v1/')
+          .expect(200)
+          .expect((res: any) => {
+            if (!res.text.includes('INDEX')) {
+              throw new Error('Expected body to contain INDEX');
+            }
+          });
     });
   });
 

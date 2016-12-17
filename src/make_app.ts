@@ -17,7 +17,6 @@ import * as path from 'path';
 import {parse as parseUrl} from 'url';
 
 import {bowerConfig} from './bower_config';
-import {babelCompile} from './compile-middleware';
 
 import send = require('send');
 
@@ -61,10 +60,6 @@ export function makeApp(options: AppOptions): PolyserveApplication {
 
   const app: PolyserveApplication = <PolyserveApplication>express();
 
-  if (options.compile === 'auto' || options.compile === 'always') {
-    app.use('*', babelCompile(options.compile === 'always'));
-  }
-
   app.get('*', (req, res) => {
     // Serve local files from . and other components from bower_components
     const url = parseUrl(req.url, true);
@@ -87,8 +82,9 @@ export function makeApp(options: AppOptions): PolyserveApplication {
       }
     }
     const _send = send(req, filePath);
-    // Uncomment this to disable 304s from send() and always compile. Useful
-    // for working on the compilation middleware.
+    // Uncomment this to disable 304s from send(). This will make the
+    // compileMiddleware used in startServer always compile. Useful for testing
+    // and working on the compilation middleware.
     // _send.isFresh = () => false;
     _send.pipe(res);
   });
