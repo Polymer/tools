@@ -43,7 +43,7 @@ suite('startServer', () => {
     await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
   });
 
-  test('serves root application files if root isn\t set', async() => {
+  test('serves root application files if root isn\'t set', async() => {
     const cwd = process.cwd();
     try {
       process.chdir(root);
@@ -110,14 +110,28 @@ suite('startServer', () => {
       }
     };
 
-    test('compiles external JS when --compile=always', testCompilation({
-           url: '/components/test-component/test.js',
+    test(
+        'compiles external component JS when --compile=always',
+        testCompilation({
+          url: '/components/test-component/test.js',
+          compile: 'always',
+          result: 'compiled',
+        }));
+
+    test('compiles external app JS when --compile=always', testCompilation({
+           url: '/test.js',
            compile: 'always',
            result: 'compiled',
          }));
 
-    test('compiles inline JS when --compile=always', testCompilation({
+    test('compiles inline component JS when --compile=always', testCompilation({
            url: '/components/test-component/test.html',
+           compile: 'always',
+           result: 'compiled',
+         }));
+
+    test('compiles inline app JS when --compile=always', testCompilation({
+           url: '/test.html',
            compile: 'always',
            result: 'compiled',
          }));
