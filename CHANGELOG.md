@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [0.6.0-alpha.3] - 2016-12-19
+
+* Actually update the version of polymer-analyzer we use, fixing a number of errors. (alpha.2 was accidentally a noop release).
+
 ## [0.6.0-alpha.2] - 2016-12-19
 
 * Update the version of polymer-analyzer we use, fixing a number of errors.
