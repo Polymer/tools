@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+## [2.0.0-alpha.20] - 2016-12-19
+
 ### Added
 * [Polymer] Extract 'listeners' from 1.0-style declarations.
 * [Polymer] Extract pseudo elements from HTML comments
