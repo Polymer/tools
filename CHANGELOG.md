@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased - Breaking Changes
+## Unreleased
+
+## [0.6.0-alpha.2] - 2016-12-19
+
+* Update the version of polymer-analyzer we use, fixing a number of errors.
 
 ## [0.6.0-alpha.1] - 2016-12-13
 
