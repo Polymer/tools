@@ -29,7 +29,7 @@ export interface AddServiceWorkerOptions {
   buildRoot: string;
   bundled?: boolean;
   path?: string;
-  swPrecacheConfig?: SWConfig;
+  swPrecacheConfig?: SWConfig|null;
 }
 
 /**
