@@ -63,12 +63,27 @@ function padLeft(str: string, num: number): string {
   return str;
 }
 
+function MiB(usage: number) {
+  return `${(usage / (1024 * 1024)).toFixed(1)}MiB`;
+}
+
 async function measure() {
+  if (!global.gc) {
+    throw new Error(
+        'This benchmark must be run with node --expose-gc.\n' +
+        '      Just do:\n             npm run benchmark');
+  }
+  global.gc();
+  const initialMemUse = process.memoryUsage().rss;
+  console.log(`Initial rss: ${MiB(initialMemUse)}`);
   const start = now();
   let document: any;
   for (let i = 0; i < 10; i++) {
     document = await analyzer.analyze('ephemeral.html', fakeFileContents);
   }
+
+  global.gc();
+  const afterInitialAnalyses = process.memoryUsage().rss;
 
   const measurements = await analyzer.getTelemetryMeasurements();
   printMeasurements(measurements);
@@ -76,6 +91,33 @@ async function measure() {
   console.log(`\n\n\n${document.getFeatures().size} total features resolved.`);
   console.log(
       `${((now() - start) / 1000).toFixed(2)} seconds total elapsed time`);
+
+  for (let i = 0; i < 100; i++) {
+    await analyzer.analyze('ephemeral.html', fakeFileContents);
+  }
+
+  global.gc();
+  const afterMoreAnalyses = process.memoryUsage().rss;
+  console.log(
+      `Additional memory used in analyzing all Polymer-owned code: ${MiB(
+          afterInitialAnalyses - initialMemUse)}`);
+  const leakedMemory = afterMoreAnalyses - afterInitialAnalyses;
+  console.log(
+      `Additional memory used after 100 more incremental analyses: ${MiB(
+          afterMoreAnalyses - afterInitialAnalyses)}`);
+
+  // TODO(rictic): looks like we've got a memory leak. Need to track this down.
+  //   This should be < 10MiB, not < 100 MiB.
+  const threshold = 150 * (1024 * 1024);
+  if (leakedMemory > threshold) {
+    console.error(
+        `\n\n==========================================\n` +
+        `ERROR: Leaked ${MiB(leakedMemory)}, ` +
+        `which is more than the threshold of ${MiB(threshold)}. ` +
+        `Exiting with error code 1.` +
+        `\n==========================================\n\n`);
+    process.exit(1);
+  }
 };
 
 function printMeasurements(measurements: Measurement[]) {
