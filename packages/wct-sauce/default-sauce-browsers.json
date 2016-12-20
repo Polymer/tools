@@ -20,26 +20,26 @@
     "platform":     "OS X 10.11",
     "version":      "9"
   },
-
+  
   {
     "browserName":  "chrome",
     "platform":     "Linux",
     "version":      "dev"
-    },
+  },
   {
     "browserName":  "chrome",
-    "platform":     "Linux",
+    "platform":     "Windows 10",
     "version":      "beta"
   },
   {
     "browserName":  "chrome",
-    "platform":     "Linux",
+    "platform":     "Windows 10",
     "version":      ""
   },
 
   {
     "browserName":  "firefox",
-    "platform":     "Linux",
+    "platform":     "Windows 10",
     "version":      ""
   }
 ]
