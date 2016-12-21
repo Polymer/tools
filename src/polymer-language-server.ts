@@ -53,9 +53,12 @@ documents.listen(connection);
 // After the server has started the client sends an initilize request. The
 // server receives in the passed params the rootPath of the workspace plus the
 // client capabilites.
-let workspaceRoot: string;
+let workspaceRoot: string|null = null;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
+  if (!workspaceRoot) {
+    return {capabilities: {}};
+  }
   editorService = new LocalEditorService({
     urlLoader: new FSUrlLoader(workspaceRoot),
     urlResolver: new PackageUrlResolver()
