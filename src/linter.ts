@@ -42,6 +42,7 @@ export class Linter {
     const analysisWarnings = analysisResult.warnings;
     warnings = warnings.concat(analysisWarnings);
     for (const document of documents) {
+      warnings = warnings.concat(document.getWarnings());
       for (const rule of this._rules) {
         try {
           warnings = warnings.concat(await rule.check(document));

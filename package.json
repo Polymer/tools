@@ -9,19 +9,24 @@
     "polymer-analyzer": "^2.0.0-alpha.14"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.32",
+    "chai": "^3.5.0",
     "clang-format": "^1.0.45",
     "mocha": "^3.1.0",
     "source-map-support": "^0.4.3",
     "tslint": "^4.1.1",
-    "typescript": "^2.0.3"
+    "typescript": "^2.0.3",
+    "watchy": "^0.6.6"
   },
   "scripts": {
-    "build": "tsc",
+    "prepublish": "npm run build",
+    "build": "npm run clean && tsc",
     "clean": "rm -rf lib; mkdir -p lib",
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
-    "test": "npm run format && npm run clean && npm run build && npm run lint && mocha"
+    "test": "npm run build && npm run lint && mocha",
+    "test:watch": "watchy -w src/ -- npm test --loglevel=silent"
   },
   "repository": {
     "type": "git",
