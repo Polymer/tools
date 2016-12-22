@@ -91,7 +91,7 @@ suite('PolymerElementScanner', () => {
       const document = new JavaScriptParser({
                          sourceType: 'script'
                        }).parse(contents, 'test-document.html');
-      let visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async(visitor: Visitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
 

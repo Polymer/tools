@@ -28,7 +28,7 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
   */
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       ParsedHtmlDocument {
-    let ast = parseHtml(contents, {locationInfo: true});
+    const ast = parseHtml(contents, {locationInfo: true});
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     return new ParsedHtmlDocument({

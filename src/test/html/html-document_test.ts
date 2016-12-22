@@ -114,10 +114,10 @@ suite('ParsedHtmlDocument', () => {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
     });
 
-    let testName =
+    const testName =
         'works for unclosed tags with attributes and no text content';
     test(testName, async() => {
-      let url = 'unclosed-tag-attributes.html';
+      const url = 'unclosed-tag-attributes.html';
       const document = parser.parse(await analyzer.load(url), url);
 
       const tag = dom5.query(document.ast, dom5.predicates.hasTagName('tag'))!;

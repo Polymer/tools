@@ -63,8 +63,9 @@ task('tslint', function() {
   return gulp.src('src/**/*.ts')
       .pipe(tslint_lib({
         configuration: 'tslint.json',
+        formatter: 'verbose',
       }))
-      .pipe(tslint_lib.report('verbose'));
+      .pipe(tslint_lib.report());
 });
 
 const tsProject =

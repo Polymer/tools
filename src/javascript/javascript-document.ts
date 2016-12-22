@@ -50,7 +50,7 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
      * Applies all visiting callbacks from `visitors`.
      */
     const applyScanners = (callbackName: string, node: Node, parent: Node) => {
-      for (let visitor of visitors) {
+      for (const visitor of visitors) {
         if (_shouldSkip(visitor, callbackName, node.type)) {
           continue;
         }

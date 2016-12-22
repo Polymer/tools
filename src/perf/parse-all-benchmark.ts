@@ -153,7 +153,7 @@ class Counter<K> {
     if (v == null) {
       v = 1;
     }
-    let i = this._map.get(k) || 0;
+    const i = this._map.get(k) || 0;
     this._map.set(k, i + v);
   }
 

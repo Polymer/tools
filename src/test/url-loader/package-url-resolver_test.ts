@@ -21,7 +21,7 @@ suite('PackageUrlResolver', function() {
   suite('canResolve', () => {
 
     test('canResolve is true an in-package URL', () => {
-      let r = new PackageUrlResolver();
+      const r = new PackageUrlResolver();
       assert.isTrue(r.canResolve('foo.html'));
       assert.isTrue(r.canResolve('/foo.html'));
       assert.isTrue(r.canResolve('./foo.html'));
@@ -41,7 +41,7 @@ suite('PackageUrlResolver', function() {
     });
 
     test('canResolve is true for a URL with the right hostname', () => {
-      let r = new PackageUrlResolver({
+      const r = new PackageUrlResolver({
         hostname: 'abc.xyz',
       });
       assert.isTrue(r.canResolve('http://abc.xyz/foo.html'));
@@ -55,7 +55,7 @@ suite('PackageUrlResolver', function() {
   suite('resolve', () => {
 
     test('resolves an in-package URL', () => {
-      let r = new PackageUrlResolver();
+      const r = new PackageUrlResolver();
       assert.equal('foo.html', r.resolve('foo.html'));
       assert.equal('foo.html', r.resolve('/foo.html'));
       assert.equal('foo.html', r.resolve('./foo.html'));
@@ -78,7 +78,7 @@ suite('PackageUrlResolver', function() {
     });
 
     test('resolves a URL with the right hostname', () => {
-      let r = new PackageUrlResolver({
+      const r = new PackageUrlResolver({
         componentDir: 'components',
         hostname: 'abc.xyz',
       });

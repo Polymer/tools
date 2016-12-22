@@ -23,9 +23,9 @@ import {invertPromise} from '../test-utils';
 suite('scan()', () => {
 
   test('calls Scanner.scan', async() => {
-    let feature = Symbol('feature');
-    let scanner = new ScannerStub(<any>[feature]);
-    let document = makeTestDocument({});
+    const feature = Symbol('feature');
+    const scanner = new ScannerStub(<any>[feature]);
+    const document = makeTestDocument({});
 
     const features = await scan(document, [scanner]);
     assert.deepEqual(features, [feature]);
@@ -34,10 +34,10 @@ suite('scan()', () => {
   });
 
   test('supports multiple and async calls to visit()', async() => {
-    let visitor1 = Symbol('visitor1');
-    let visitor2 = Symbol('visitor2');
-    let visitor3 = Symbol('visitor3');
-    let scanner: Scanner<any, any, any> = {
+    const visitor1 = Symbol('visitor1');
+    const visitor2 = Symbol('visitor2');
+    const visitor3 = Symbol('visitor3');
+    const scanner: Scanner<any, any, any> = {
       async scan(
           _: ParsedDocument<any, any>, visit: (visitor: any) => Promise<void>) {
         // two visitors in one batch
@@ -54,8 +54,8 @@ suite('scan()', () => {
         return [`a feature` as any];
       },
     };
-    let visitedVisitors: any[] = [];
-    let document = makeTestDocument({
+    const visitedVisitors: any[] = [];
+    const document = makeTestDocument({
       async visit(visitors: any) {
         visitedVisitors.push.apply(visitedVisitors, visitors);
       }
@@ -67,7 +67,7 @@ suite('scan()', () => {
   });
 
   test('propagates exceptions in scanners', () => {
-    let scanner = {
+    const scanner = {
       scan(_doc: any, _visit: any) {
         throw new Error('expected');
       },
@@ -76,7 +76,7 @@ suite('scan()', () => {
   });
 
   test('propagates exceptions in visitors', () => {
-    let document: any = makeTestDocument({
+    const document: any = makeTestDocument({
       visit: (): void => {
         throw new Error('expected');
       },

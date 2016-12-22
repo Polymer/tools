@@ -89,11 +89,11 @@ suite('Analyzer', () => {
     test(
         'creates a document warning when a behavior cannot be found in that document',
         async() => {
-          let document =
+          const document =
               await analyzer.analyze('static/html-missing-behaviors.html');
           // TODO(#372): this should be false, we should treat inline documents
           //     as not requiring `deep` to be true.
-          let warnings = document.getWarnings(true);
+          const warnings = document.getWarnings(true);
           assert.deepEqual(warnings, [
             {
               message:
@@ -119,11 +119,11 @@ suite('Analyzer', () => {
     test(
         'creates "missing behavior" warnings on imported documents without elements',
         async() => {
-          let document = await analyzer.analyze(
+          const document = await analyzer.analyze(
               'static/chained-missing-behavior/index.html');
-          let chainedDocument = document.getOnlyAtId(
+          const chainedDocument = document.getOnlyAtId(
               'document', 'static/chained-missing-behavior/chained.html')!;
-          let expectedWarning = {
+          const expectedWarning = {
             code: 'unknown-polymer-behavior',
             message:
                 'Unable to resolve behavior `NotFoundBehavior`. Did you import it? Is it annotated with @polymerBehavior?',
@@ -395,7 +395,7 @@ suite('Analyzer', () => {
 
   suite('_getScannedFeatures()', () => {
     test('default import scanners', async() => {
-      let contents = `<html><head>
+      const contents = `<html><head>
           <link rel="import" href="polymer.html">
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
@@ -412,7 +412,7 @@ suite('Analyzer', () => {
     });
 
     test('polymer css import scanner', async() => {
-      let contents = `<html><head>
+      const contents = `<html><head>
           <link rel="import" type="css" href="foo.css">
         </head>
         <body>
@@ -431,7 +431,7 @@ suite('Analyzer', () => {
     });
 
     test('HTML inline document scanners', async() => {
-      let contents = `<html><head>
+      const contents = `<html><head>
           <script>console.log('hi')</script>
           <style>body { color: red; }</style>
         </head></html>`;

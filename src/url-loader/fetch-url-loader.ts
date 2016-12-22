@@ -15,7 +15,7 @@
 import {resolve as resolveUrl} from 'url';
 import {UrlLoader} from './url-loader';
 
-declare let window: any;
+declare const window: any;
 
 /**
  * Resolves requests via the the DOM fetch API.

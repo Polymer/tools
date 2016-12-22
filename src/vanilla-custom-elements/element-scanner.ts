@@ -32,7 +32,7 @@ export class ElementScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedElement[]> {
-    let visitor = new ElementVisitor(document);
+    const visitor = new ElementVisitor(document);
     await visit(visitor);
     return visitor.getRegisteredElements();
   }
@@ -53,7 +53,7 @@ class ElementVisitor implements Visitor {
         parent.type !== 'VariableDeclarator') {
       return;
     }
-    let className = astValue.getIdentifierName(
+    const className = astValue.getIdentifierName(
         parent.type === 'AssignmentExpression' ? parent.left : parent.id);
     if (className == null) {
       return;

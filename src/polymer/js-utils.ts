@@ -35,7 +35,7 @@ export function toScannedPolymerProperty(
       node[`${node.kind}ter`] = true;
     }
   }
-  let description =
+  const description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
 
   const name = objectKeyToString(node.key);

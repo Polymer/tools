@@ -22,17 +22,17 @@ suite('RedirectResolver', function() {
   suite('canResolve', () => {
 
     test('canResolve is true if the prefix matches with protocol', () => {
-      let resolver = new RedirectResolver('proto://site/', 'some/path');
+      const resolver = new RedirectResolver('proto://site/', 'some/path');
       assert.isTrue(resolver.canResolve('proto://site/something.html'));
     });
 
     test('canResolve is true if the prefix matches without protocol', () => {
-      let resolver = new RedirectResolver('/site/', 'some/path');
+      const resolver = new RedirectResolver('/site/', 'some/path');
       assert.isTrue(resolver.canResolve('/site/something.html'));
     });
 
     test('canResolve is false if the prefix doesn\'t match', () => {
-      let resolver = new RedirectResolver('proto://site/', 'some/path');
+      const resolver = new RedirectResolver('proto://site/', 'some/path');
       assert.isFalse(resolver.canResolve('/site/something.html'));
       assert.isFalse(resolver.canResolve('protzo://site/something.html'));
     });
@@ -41,13 +41,13 @@ suite('RedirectResolver', function() {
 
   suite('resolve', () => {
     test('if prefix matches, url is rewritten', () => {
-      let resolver = new RedirectResolver('proto://site/', 'some/path/');
+      const resolver = new RedirectResolver('proto://site/', 'some/path/');
       assert.equal(
           resolver.resolve('proto://site/something.html'),
           'some/path/something.html');
     });
     test('if prefix doesn\'t match, resolve throws', () => {
-      let resolver = new RedirectResolver('proto://site/', 'some/path/');
+      const resolver = new RedirectResolver('proto://site/', 'some/path/');
       assert.throws(
           () => resolver.resolve('protoz://site/something.html'),
           /RedirectResolver/);

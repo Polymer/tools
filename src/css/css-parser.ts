@@ -28,7 +28,7 @@ export class CssParser implements Parser<ParsedCssDocument> {
 
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       ParsedCssDocument {
-    let ast = this._parser.parse(contents);
+    const ast = this._parser.parse(contents);
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     return new ParsedCssDocument({

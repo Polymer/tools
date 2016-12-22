@@ -41,19 +41,19 @@ suite('Polymer2ElementScanner', () => {
   let elementsList: ScannedElement[];
 
   suiteSetup(async() => {
-    let parser = new JavaScriptParser({sourceType: 'script'});
-    let file = fs.readFileSync(
+    const parser = new JavaScriptParser({sourceType: 'script'});
+    const file = fs.readFileSync(
         path.resolve(__dirname, '../static/polymer2/test-element.js'), 'utf8');
     document = parser.parse(file, '/static/polymer2/test-element.js');
-    let scanner = new Polymer2ElementScanner();
-    let visit = (visitor: Visitor) =>
+    const scanner = new Polymer2ElementScanner();
+    const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
     const features: ScannedFeature[] = await scanner.scan(document, visit);
     elements = new Map();
     elementsList =
         <ScannedElement[]>features.filter((e) => e instanceof ScannedElement);
-    for (let element of elementsList) {
+    for (const element of elementsList) {
       elements.set(element.tagName, element);
     }
   });

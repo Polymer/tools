@@ -153,7 +153,7 @@ suite('getLocationInfoForPosition', () => {
   });
 
   test(`it can handle the contents of a template tag`, () => {
-    let allKindsSpaceSeparated =
+    const allKindsSpaceSeparated =
         getAllKindsSpaceSeparated('<template><t a=""> </t></template>');
     assert.match(
         allKindsSpaceSeparated,

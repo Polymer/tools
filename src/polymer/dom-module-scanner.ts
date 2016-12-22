@@ -89,7 +89,7 @@ export class DomModuleScanner implements HtmlScanner {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedDomModule[]> {
-    let domModules: ScannedDomModule[] = [];
+    const domModules: ScannedDomModule[] = [];
 
     await visit((node) => {
       if (isDomModule(node)) {

@@ -44,7 +44,7 @@
     "gulp-newer": "^1.2.0",
     "gulp-shell": "^0.5.2",
     "gulp-sourcemaps": "^1.6.0",
-    "gulp-tslint": "^5.0.0",
+    "gulp-tslint": "^7.0.1",
     "gulp-typescript": "^2.13.4",
     "jsdoc-to-markdown": "^1.0.3",
     "memory-streams": "^0.1.0",
@@ -54,7 +54,7 @@
     "sinon": "^1.17.4",
     "source-map-support": "^0.4.2",
     "temp": "^0.8.3",
-    "tslint": "^3.10.2",
+    "tslint": "^4.1.1",
     "typescript": "^2.1.4",
     "typescript-json-schema": "^0.1.1",
     "watchy": "^0.6.6"

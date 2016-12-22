@@ -53,7 +53,7 @@ export class BehaviorScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedBehavior[]> {
-    let visitor = new BehaviorVisitor(document);
+    const visitor = new BehaviorVisitor(document);
     await visit(visitor);
     return Array.from(visitor.behaviors);
   }
@@ -171,7 +171,7 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    let explicitName = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name');
+    const explicitName = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name');
     behavior.className = explicitName || symbol;
     if (!behavior.className) {
       throw new Error(

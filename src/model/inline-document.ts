@@ -108,8 +108,8 @@ function isLocationInfo(loc: (parse5.LocationInfo|parse5.ElementLocationInfo)):
 export function getLocationOffsetOfStartOfTextContent(node: ASTNode):
     LocationOffset {
   const childNodes = node.childNodes || [];
-  let firstChildNodeWithLocation = childNodes.find(n => !!n.__location);
-  let bestLocation = firstChildNodeWithLocation ?
+  const firstChildNodeWithLocation = childNodes.find(n => !!n.__location);
+  const bestLocation = firstChildNodeWithLocation ?
       firstChildNodeWithLocation.__location :
       node.__location;
   if (!bestLocation) {

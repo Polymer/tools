@@ -53,8 +53,8 @@ suite('MultiUrlResolver', function() {
   suite('canResolve', () => {
 
     test('canResolve is true if the first resolver is true', () => {
-      let resolvers = mockResolverArray(['resolved.html', null, null]);
-      let resolver = new MultiUrlResolver(resolvers);
+      const resolvers = mockResolverArray(['resolved.html', null, null]);
+      const resolver = new MultiUrlResolver(resolvers);
       assert.isTrue(resolver.canResolve('test.html'));
       // Verify only the first resolver is called
       assert.equal(resolvers[0].canResolveCount, 1);
@@ -63,8 +63,8 @@ suite('MultiUrlResolver', function() {
     });
 
     test('canResolve is true if the last resolver is true', () => {
-      let resolvers = mockResolverArray([null, null, 'resolved.html']);
-      let resolver = new MultiUrlResolver(resolvers);
+      const resolvers = mockResolverArray([null, null, 'resolved.html']);
+      const resolver = new MultiUrlResolver(resolvers);
       assert.isTrue(resolver.canResolve('test.html'));
       // Verify all resolvers are called
       assert.equal(resolvers[0].canResolveCount, 1);
@@ -73,9 +73,9 @@ suite('MultiUrlResolver', function() {
     });
 
     test('canResolve is true if all resolvers are true', () => {
-      let resolvers = mockResolverArray(
+      const resolvers = mockResolverArray(
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
-      let resolver = new MultiUrlResolver(resolvers);
+      const resolver = new MultiUrlResolver(resolvers);
       assert.isTrue(resolver.canResolve('test.html'));
       // Verify only the first resolver is called
       assert.equal(resolvers[0].canResolveCount, 1);
@@ -84,8 +84,8 @@ suite('MultiUrlResolver', function() {
     });
 
     test('canResolve is false if all resolvers are false', () => {
-      let resolvers = mockResolverArray([null, null, null]);
-      let resolver = new MultiUrlResolver(resolvers);
+      const resolvers = mockResolverArray([null, null, null]);
+      const resolver = new MultiUrlResolver(resolvers);
       assert.isFalse(resolver.canResolve('test.html'));
       // Verify only the first resolver is called
       assert.equal(resolvers[0].canResolveCount, 1);
@@ -97,9 +97,9 @@ suite('MultiUrlResolver', function() {
 
   suite('resolve', () => {
     test('only the first resolution is returned', () => {
-      let resolvers = mockResolverArray(
+      const resolvers = mockResolverArray(
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
-      let resolver = new MultiUrlResolver(resolvers);
+      const resolver = new MultiUrlResolver(resolvers);
       assert.equal(resolver.resolve('test.html'), 'resolved.html');
       // Verify only the first resolver is called
       assert.equal(resolvers[0].canResolveCount, 1);

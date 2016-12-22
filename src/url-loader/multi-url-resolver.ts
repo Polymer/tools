@@ -32,7 +32,7 @@ export class MultiUrlResolver implements UrlResolver {
 
   resolve(url: string): string {
     for (let i = 0; i < this._resolvers.length; i++) {
-      let resolver = this._resolvers[i];
+      const resolver = this._resolvers[i];
       if (resolver.canResolve(url)) {
         return resolver.resolve(url);
       }

@@ -167,7 +167,7 @@ export class AnalyzerCacheContext {
    */
   _getDocument(url: string): Document|undefined {
     const resolvedUrl = this._resolveUrl(url);
-    let document = this._cache.analyzedDocuments.get(resolvedUrl);
+    const document = this._cache.analyzedDocuments.get(resolvedUrl);
     if (document) {
       return document;
     }

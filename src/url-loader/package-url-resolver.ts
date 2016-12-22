@@ -36,8 +36,8 @@ export class PackageUrlResolver implements UrlResolver {
   }
 
   canResolve(url: string): boolean {
-    let urlObject = parseUrl(url);
-    let pathname =
+    const urlObject = parseUrl(url);
+    const pathname =
         pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
     return this._isValid(urlObject, pathname);
   }
@@ -48,7 +48,7 @@ export class PackageUrlResolver implements UrlResolver {
   }
 
   resolve(url: string): string {
-    let urlObject = parseUrl(url);
+    const urlObject = parseUrl(url);
     let pathname =
         pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
 

@@ -68,7 +68,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
   const emptyStartElementTypeahead = Object.assign({}, elementTypeahead);
   emptyStartElementTypeahead.elements =
       emptyStartElementTypeahead.elements.map(e => {
-        let copy = Object.assign({}, e);
+        const copy = Object.assign({}, e);
         let space = '';
         const elementsWithAttributes =
             new Set(['vanilla-with-observed-attributes', 'behavior-test-elem']);

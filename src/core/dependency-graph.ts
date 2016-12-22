@@ -68,7 +68,7 @@ export class DependencyGraph {
       }
       // Tell the dependencies that `path` is no longer one of their dependants.
       for (const dependency of dependencies) {
-        let dependants = fork._dependants.get(dependency);
+        const dependants = fork._dependants.get(dependency);
         if (dependants) {
           dependants.delete(path);
         }

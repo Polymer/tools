@@ -32,14 +32,14 @@ export class PseudoElementScanner implements HtmlScanner {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedPolymerElement[]> {
-    let elements: ScannedPolymerElement[] = [];
+    const elements: ScannedPolymerElement[] = [];
 
     await visit((node: ASTNode) => {
       if (dom5.isCommentNode(node) && node.data && node.data.includes('@pseudoElement')) {
         const parsedJsdoc = jsdoc.parseJsdoc(node.data);
         const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
         if (pseudoTag) {
-          let element = new ScannedPolymerElement({
+          const element = new ScannedPolymerElement({
             tagName: pseudoTag,
             jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
             properties: [],

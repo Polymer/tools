@@ -99,7 +99,7 @@ function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
  * Evaluate array expression
  */
 function arrayExpressionToValue(arry: estree.ArrayExpression): LiteralValue {
-  let value: LiteralValue[] = [];
+  const value: LiteralValue[] = [];
   for (let i = 0; i < arry.elements.length; i++) {
     const v = expressionToValue(arry.elements[i]);
     if (v === undefined) {
@@ -114,7 +114,7 @@ function arrayExpressionToValue(arry: estree.ArrayExpression): LiteralValue {
  * Evaluate object expression
  */
 function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
-  let evaluatedObjectExpression: LiteralObj = {};
+  const evaluatedObjectExpression: LiteralObj = {};
   for (const prop of obj.properties) {
     if (prop.key.type !== 'Literal') {
       return;
@@ -193,4 +193,4 @@ export function getIdentifierName(node: estree.Node): string|undefined {
   }
 }
 
-export var CANT_CONVERT = 'UNKNOWN';
+export const CANT_CONVERT = 'UNKNOWN';

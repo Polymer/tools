@@ -32,7 +32,7 @@ suite('JavaScriptParser', () => {
   suite('parse()', () => {
 
     test('parses classes', () => {
-      let contents = `
+      const contents = `
         class Foo extends HTMLElement {
           constructor() {
             super();
@@ -41,7 +41,7 @@ suite('JavaScriptParser', () => {
           }
         }
       `;
-      let document = parser.parse(contents, '/static/es6-support.js');
+      const document = parser.parse(contents, '/static/es6-support.js');
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
@@ -55,7 +55,7 @@ suite('JavaScriptParser', () => {
           await Promise.resolve();
         }
       `;
-      let document = parser.parse(contents, '/static/es6-support.js');
+      const document = parser.parse(contents, '/static/es6-support.js');
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
@@ -68,18 +68,18 @@ suite('JavaScriptParser', () => {
     });
 
     test('throws syntax errors', () => {
-      let file = fs.readFileSync(
+      const file = fs.readFileSync(
           path.resolve(__dirname, '../static/js-parse-error.js'), 'utf8');
       assert.throws(() => parser.parse(file, '/static/js-parse-error.js'));
     });
 
     test('attaches comments', () => {
-      let file = fs.readFileSync(
+      const file = fs.readFileSync(
           path.resolve(__dirname, '../static/js-elements.js'), 'utf8');
-      let document = parser.parse(file, '/static/js-elements.js');
-      let ast = document.ast;
-      let element1 = ast.body[0];
-      let comment = esutil.getAttachedComment(element1)!;
+      const document = parser.parse(file, '/static/js-elements.js');
+      const ast = document.ast;
+      const element1 = ast.body[0];
+      const comment = esutil.getAttachedComment(element1)!;
       assert.isTrue(comment.indexOf('test-element') !== -1);
     });
 

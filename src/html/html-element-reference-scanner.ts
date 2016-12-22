@@ -35,7 +35,7 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
       document: ParsedHtmlDocument,
       visit: (visitor: HtmlVisitor) => Promise<void>):
       Promise<ScannedElementReference[]> {
-    let elements: ScannedElementReference[] = [];
+    const elements: ScannedElementReference[] = [];
 
     await visit((node) => {
       if (node.tagName && this.matches(node)) {

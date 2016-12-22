@@ -86,7 +86,7 @@ suite('elements.json generation', function() {
       validateElements(<any>{});
     } catch (err) {
       assert.instanceOf(err, ValidationError);
-      let valError: ValidationError = err;
+      const valError: ValidationError = err;
       assert(valError.errors.length > 0);
       assert.include(valError.message, `requires property "elements"`);
       return;
@@ -151,7 +151,7 @@ async function analyzeDir(baseDir: string) {
     urlLoader: new FSUrlLoader(baseDir),
     urlResolver: new PackageUrlResolver(),
   });
-  let importStatements =
+  const importStatements =
       Array.from(filterI(walkRecursively(baseDir), (f) => f.endsWith('.html')))
           .map(
               fn => `<link rel="import" href="${path.relative(baseDir, fn)}">`);

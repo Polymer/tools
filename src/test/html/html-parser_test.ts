@@ -31,12 +31,12 @@ suite('HtmlParser', () => {
     });
 
     test('parses a well-formed document', () => {
-      let document = parser.parse(file, '/static/html-parse-target.html');
+      const document = parser.parse(file, '/static/html-parse-target.html');
       assert.equal(document.url, '/static/html-parse-target.html');
     });
 
     test('can stringify back a well-formed document', () => {
-      let document = parser.parse(file, '/static/html-parse-target.html');
+      const document = parser.parse(file, '/static/html-parse-target.html');
       assert.deepEqual(document.stringify(), file);
     });
 

@@ -31,8 +31,8 @@ export class FSUrlLoader implements UrlLoader {
   }
 
   canLoad(url: string): boolean {
-    let urlObject = parseUrl(url);
-    let pathname =
+    const urlObject = parseUrl(url);
+    const pathname =
         pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
     return this._isValid(urlObject, pathname);
   }
@@ -44,7 +44,7 @@ export class FSUrlLoader implements UrlLoader {
 
   load(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      let filepath = this.getFilePath(url);
+      const filepath = this.getFilePath(url);
       fs.readFile(filepath, 'utf8', (error: Error, contents: string) => {
         if (error) {
           reject(error);
@@ -56,8 +56,8 @@ export class FSUrlLoader implements UrlLoader {
   }
 
   getFilePath(url: string): string {
-    let urlObject = parseUrl(url);
-    let pathname =
+    const urlObject = parseUrl(url);
+    const pathname =
         pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
     if (!this._isValid(urlObject, pathname)) {
       throw new Error(`Invalid URL ${url}`);

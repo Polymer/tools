@@ -41,7 +41,7 @@ suite('HtmlElementReferenceScanner', () => {
       </body></html>`;
 
       const document = new HtmlParser().parse(contents, 'test-document.html');
-      let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
 
@@ -83,7 +83,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
         </body></html>`;
 
       const document = new HtmlParser().parse(contents, 'test-document.html');
-      let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
 

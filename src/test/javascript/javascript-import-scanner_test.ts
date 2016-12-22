@@ -23,35 +23,35 @@ import {JavaScriptParser} from '../../javascript/javascript-parser';
 
 suite('JavaScriptImportScanner', () => {
 
-  let parser = new JavaScriptParser({sourceType: 'module'});
-  let scanner = new JavaScriptImportScanner();
+  const parser = new JavaScriptParser({sourceType: 'module'});
+  const scanner = new JavaScriptImportScanner();
 
   test('finds imports', async() => {
-    let file = fs.readFileSync(
+    const file = fs.readFileSync(
         path.resolve(__dirname, '../static/javascript/module.js'), 'utf8');
-    let document = parser.parse(file, '/static/javascript/module.js');
+    const document = parser.parse(file, '/static/javascript/module.js');
 
-    let visit = (visitor: Visitor) =>
+    const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    let features = await scanner.scan(document, visit);
+    const features = await scanner.scan(document, visit);
     assert.equal(features.length, 1);
     assert.equal(features[0].type, 'js-import');
     assert.equal(features[0].url, '/static/javascript/submodule.js');
   });
 
   test('skips non-path imports', async() => {
-    let file = fs.readFileSync(
+    const file = fs.readFileSync(
         path.resolve(
             __dirname, '../static/javascript/module-with-named-import.js'),
         'utf8');
-    let document =
+    const document =
         parser.parse(file, '/static/javascript/module-with-named-import.js');
 
-    let visit = (visitor: Visitor) =>
+    const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    let features = await scanner.scan(document, visit);
+    const features = await scanner.scan(document, visit);
     assert.equal(features.length, 0);
   });
 

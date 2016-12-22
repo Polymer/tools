@@ -29,12 +29,12 @@ suite('HtmlScriptScanner', () => {
     });
 
     test('finds external and inline scripts', async() => {
-      let contents = `<html><head>
+      const contents = `<html><head>
           <script src="foo.js"></script>
           <script>console.log('hi')</script>
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test-document.html');
-      let visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const features = await scanner.scan(document, visit);
       assert.equal(features.length, 2);

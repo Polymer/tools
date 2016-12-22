@@ -62,7 +62,7 @@ export function declarationPropertyHandlers(
       if (node.type !== 'ArrayExpression') {
         return;
       }
-      for (let element of node.elements) {
+      for (const element of node.elements) {
         let v = astValue.expressionToValue(element);
         if (v === undefined) {
           v = astValue.CANT_CONVERT;
@@ -82,7 +82,7 @@ export function declarationPropertyHandlers(
         return;
       }
 
-      for (let p of node.properties) {
+      for (const p of node.properties) {
         const evtName = p.key.type === 'Literal' && p.key.value ||
             p.key.type === 'Identifier' && p.key.name;
         const handler = p.value.type !== 'Literal' || p.value.value;
