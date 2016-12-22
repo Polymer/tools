@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+## [2.0.0-alpha.21] - 2016-12-22
+
 ### Added
 * Add an analyzePackage() method, for getting a queryable representation of everything in a package.
 
