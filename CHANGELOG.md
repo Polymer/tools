@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+* Fix a deadlock when there are concurrent analysis runs of cyclic graphs.
+
 ## [2.0.0-alpha.20] - 2016-12-19
 
 ### Added
@@ -20,7 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Polymer] Extract pseudo elements from HTML comments
 
 ### Fixed
-* Fixed a class of race conditions and cache invalidation errors that can occur when there are concurrent analysis runs and edits to files.
+* Fix a class of race conditions and cache invalidation errors that can occur when there are concurrent analysis runs and edits to files.
 
 
 ## [2.0.0-alpha.19] - 2016-12-12

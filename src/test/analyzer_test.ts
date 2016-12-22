@@ -350,6 +350,16 @@ suite('Analyzer', () => {
           ['static/circular/mutual-b.html', 'static/circular/mutual-a.html']);
     });
 
+    test(
+        'handles parallel analyses of mutually recursive documents',
+        async() => {
+          // At one point this deadlocked, or threw a _makeDocument error.
+          await Promise.all([
+            analyzer.analyze('static/circular/mutual-a.html'),
+            analyzer.analyze('static/circular/mutual-b.html')
+          ]);
+        });
+
     test('handles a document importing itself', async() => {
       const document =
           await analyzer.analyze('static/circular/self-import.html');

@@ -114,7 +114,6 @@ export class AnalyzerCacheContext {
     return this._fork(newCache);
   }
 
-
   /**
    * Implements Analyzer#analyze, see its docs.
    */
@@ -127,34 +126,14 @@ export class AnalyzerCacheContext {
               this._telemetryTracker.start('analyze: make document', url);
           const scannedDocument = await this._scan(resolvedUrl, contents);
           if (scannedDocument === 'visited') {
-        throw new Error(
+            throw new Error(
             `This should not happen. Got a cycle of length zero(!) scanning ${url
             }`);
           }
-          const document = this._makeDocument(scannedDocument);
+          const document = this._getDocument(scannedDocument.url);
           doneTiming();
           return document;
         });
-  }
-
-  /**
-   * Constructs a new analyzed Document and adds it to the analyzed Document
-   * cache.
-   */
-  private _makeDocument(scannedDocument: ScannedDocument): Document {
-    const resolvedUrl = scannedDocument.url;
-
-    if (this._cache.analyzedDocuments.has(resolvedUrl)) {
-      throw new Error(`Internal error: document ${resolvedUrl} already exists`);
-    }
-
-    const document = new Document(scannedDocument, this);
-    this._cache.analyzedDocuments.set(resolvedUrl, document);
-    this._cache.analyzedDocumentPromises.getOrCompute(
-        resolvedUrl, async() => document);
-
-    document.resolve();
-    return document;
   }
 
   /**
@@ -167,12 +146,22 @@ export class AnalyzerCacheContext {
    */
   _getDocument(url: string): Document|undefined {
     const resolvedUrl = this._resolveUrl(url);
-    const document = this._cache.analyzedDocuments.get(resolvedUrl);
-    if (document) {
-      return document;
+    const cachedResult = this._cache.analyzedDocuments.get(resolvedUrl);
+    if (cachedResult) {
+      return cachedResult;
     }
     const scannedDocument = this._cache.scannedDocuments.get(resolvedUrl);
-    return scannedDocument && this._makeDocument(scannedDocument);
+    if (!scannedDocument) {
+      return;
+    }
+
+    const document = new Document(scannedDocument, this);
+    this._cache.analyzedDocuments.set(resolvedUrl, document);
+    this._cache.analyzedDocumentPromises.getOrCompute(
+        resolvedUrl, async() => document);
+
+    document.resolve();
+    return document;
   }
 
   /**
@@ -235,16 +224,10 @@ export class AnalyzerCacheContext {
               return this._scanDocument(parsedDoc, actualVisited);
             });
 
-    /**
-     * We cache the act of scanning dependencies separately from the act of
-     * scanning a single file because while scanning is purely local to the
-     * file, we need to rescan a file's transitive dependencies before
-     * resolving if any of them have changed.
-     */
-    await this._cache.dependenciesScanned.getOrCompute(
-        scannedDocument.url, async() => {
-          await this._scanImports(scannedDocument, actualVisited);
-        });
+    if (!this._cache.dependenciesScannedOf.has(scannedDocument.url)) {
+      await this._scanImports(scannedDocument, actualVisited);
+      this._cache.dependenciesScannedOf.add(scannedDocument.url);
+    }
     return scannedDocument;
   }
 
