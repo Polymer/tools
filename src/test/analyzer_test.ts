@@ -17,6 +17,7 @@
 import {assert} from 'chai';
 import * as clone from 'clone';
 import * as estree from 'estree';
+import * as path from 'path';
 import * as shady from 'shady-css-parser';
 
 import {Analyzer} from '../analyzer';
@@ -536,6 +537,36 @@ suite('Analyzer', () => {
 
       assert.deepEqual(
           testSeed.events.map(e => e.name), ['fired-event', 'data-changed']);
+    });
+  });
+
+  suite('analyzePackage', () => {
+    test('produces a project with the right documents', async() => {
+      const analyzer = new Analyzer({
+        urlLoader: new FSUrlLoader(path.join(__dirname, 'static', 'project'))
+      });
+      const project = await analyzer.analyzePackage();
+
+      // The root documents of the project are a minimal set of documents whose
+      // imports touch every document in the project.
+      assert.deepEqual(
+          Array.from(project['_documents']).map(d => d.url).sort(),
+          ['cyclic-a.html', 'root.html', 'subdir/root-in-subdir.html']
+              .sort(), );
+
+      // All elements in the project, as well as all elements in its
+      // bower_components directory that are reachable from imports in the
+      // project.
+      assert.deepEqual(
+          Array.from(project.getByKind('element')).map(e => e.tagName).sort(), [
+            'root-root',
+            'leaf-leaf',
+            'cyclic-a',
+            'cyclic-b',
+            'imported-dependency',
+            'root-in-subdir',
+            'subdir-leaf'
+          ].sort());
     });
   });
 

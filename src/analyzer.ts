@@ -15,7 +15,7 @@
 /// <reference path="../custom_typings/main.d.ts" />
 
 import {AnalyzerCacheContext} from './core/analyzer-cache-context';
-import {Document} from './model/model';
+import {Document, Package} from './model/model';
 import {Parser} from './parser/parser';
 import {Measurement} from './perf/telemetry';
 import {Scanner} from './scanning/scanner';
@@ -71,6 +71,10 @@ export class Analyzer {
       this._cacheContext = this._cacheContext.filesChanged([url]);
     }
     return this._cacheContext.analyze(url, contents);
+  }
+
+  async analyzePackage(): Promise<Package> {
+    return this._cacheContext.analyzePackage();
   }
 
   async getTelemetryMeasurements(): Promise<Measurement[]> {

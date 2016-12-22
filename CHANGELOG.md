@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+### Added
+* Add an analyzePackage() method, for getting a queryable representation of everything in a package.
+
+### Fixed
 * Fix a deadlock when there are concurrent analysis runs of cyclic graphs.
 
 ## [2.0.0-alpha.20] - 2016-12-19

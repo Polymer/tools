@@ -23,6 +23,7 @@ import {Element} from './element';
 import {ElementReference} from './element-reference';
 import {Feature, ScannedFeature} from './feature';
 import {Import} from './import';
+import {Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
 
@@ -96,7 +97,7 @@ export interface FeatureKinds {
   'js-import': Import;
 }
 
-export class Document implements Feature {
+export class Document implements Feature, Queryable {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
   analyzer: AnalyzerCacheContext;

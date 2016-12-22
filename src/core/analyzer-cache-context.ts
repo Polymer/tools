@@ -23,7 +23,7 @@ import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {JsonParser} from '../json/json-parser';
-import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
+import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {Measurement, TelemetryTracker} from '../perf/telemetry';
@@ -134,6 +134,58 @@ export class AnalyzerCacheContext {
           doneTiming();
           return document;
         });
+  }
+
+  private async _analyzeOrWarning(url: string): Promise<Document|Warning> {
+    try {
+      return await this.analyze(url);
+    } catch (e) {
+      if (e instanceof WarningCarryingException) {
+        return e.warning;
+      }
+      return {
+        sourceRange: {
+          file: this._resolveUrl(url),
+          start: {line: 0, column: 0},
+          end: {line: 0, column: 0}
+        },
+        code: 'unable-to-analyze',
+        message: `Unable to analyze file: ${e && e.message || e}`,
+        severity: Severity.ERROR
+      };
+    }
+  }
+
+  async analyzePackage(): Promise<Package> {
+    if (!this._loader.readDirectory) {
+      throw new Error(
+          `This analyzer doesn't support analyzerPackage, ` +
+          `the urlLoader can't list the files in a directory.`);
+    }
+    const allFiles = await this._loader.readDirectory('', true);
+    // TODO(rictic): parameterize this, perhaps with polymer.json.
+    const dependencyDirPrefixes: string[] =
+        ['bower_components', 'node_modules'];
+    const filesInPackage = allFiles.filter(file => {
+      const dirname = path.dirname(file);
+      return !dependencyDirPrefixes.some(prefix => dirname.startsWith(prefix));
+    });
+
+    const extensions = new Set(this._parsers.keys());
+    const filesWithParsers = filesInPackage.filter(
+        fn => extensions.has(path.extname(fn).substring(1)));
+    const documentsOrWarnings =
+        await Promise.all(filesWithParsers.map(f => this._analyzeOrWarning(f)));
+    const documents = [];
+    const warnings = [];
+    for (const docOrWarning of documentsOrWarnings) {
+      if (docOrWarning instanceof Document) {
+        documents.push(docOrWarning);
+      } else {
+        warnings.push(docOrWarning);
+      }
+    }
+    return new Package(documents, warnings);
   }
 
   /**
