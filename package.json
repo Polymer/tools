@@ -1,0 +1,41 @@
+{
+  "name": "polymer-linter",
+  "version": "1.0.0-alpha.1",
+  "description": "Lint Polymer!",
+  "main": "lib/linter.js",
+  "dependencies": {
+    "dom5": "^2.0.0",
+    "parse5": "^2.2.1",
+    "polymer-analyzer": "^2.0.0-alpha.14"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.32",
+    "clang-format": "^1.0.45",
+    "mocha": "^3.1.0",
+    "source-map-support": "^0.4.3",
+    "tslint": "^4.1.1",
+    "typescript": "^2.0.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf lib; mkdir -p lib",
+    "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
+    "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
+    "test": "npm run format && npm run clean && npm run build && npm run lint && mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/polymer-linter.git"
+  },
+  "keywords": [
+    "polymer",
+    "lint",
+    "linter"
+  ],
+  "author": "The Polymer Project authors",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Polymer/polymer-linter/issues"
+  },
+  "homepage": "https://github.com/Polymer/polymer-linter#readme"
+}
