@@ -379,6 +379,31 @@ suite('Analyzer', () => {
             'static/circular/self-import.html'
           ]);
     });
+
+    // TODO(justinfagnani): move into race condition tests?
+    test('handles a shared dependency', async() => {
+      let documents = await Promise.all([
+        analyzer.analyze('static/diamond/a.html'),
+        analyzer.analyze('static/diamond/root.html'),
+      ]);
+
+      const contents = documents.map((d) => d.parsedDocument.contents);
+      documents = await Promise.all([
+        analyzer.analyze('static/diamond/a.html', contents[0]),
+        analyzer.analyze('static/diamond/root.html'),
+      ]);
+
+      const root = documents[1];
+
+      const localFeatures = root.getFeatures(false);
+      const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+      assert.deepEqual(kinds, [
+        ['document', 'html-document'],
+        ['import', 'html-import'],
+        ['import', 'html-import']
+      ]);
+    });
+
   });
 
   // TODO: reconsider whether we should test these private methods.
@@ -608,7 +633,7 @@ suite('Analyzer', () => {
           new Analyzer({urlLoader: new RacyUrlLoader(contentsMap, waitFn)});
       const promises: Promise<Document>[] = [];
       const intermediatePromises: Promise<void>[] = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 1; i++) {
         await waitFn();
         for (const entry of contentsMap) {
           // Randomly edit some files.
@@ -643,11 +668,20 @@ suite('Analyzer', () => {
         assert.deepEqual(document.url, 'base.html');
         const localFeatures = document.getFeatures(false);
         const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
-        assert.deepEqual(kinds, [
-          ['document', 'html-document'],
-          ['import', 'html-import'],
-          ['import', 'html-import']
-        ]);
+        const message = `context: ${document['_context']._generation
+        } localFeatures: ${JSON.stringify(
+            Array.from(localFeatures).map((f) => ({
+                                            kinds: Array.from(f.kinds),
+                                            ids: Array.from(f.identifiers)
+                                          })))}`;
+        assert.deepEqual(
+            kinds,
+            [
+              ['document', 'html-document'],
+              ['import', 'html-import'],
+              ['import', 'html-import']
+            ],
+            message);
         const imports = Array.from(document.getByKind('import'));
         assert.sameMembers(
             imports.map(m => m.url),

@@ -50,6 +50,10 @@ export class AsyncWorkCache<K, V> {
     return promise;
   }
 
+  get(key: K) {
+    return this._keyToResultMap.get(key);
+  }
+
   delete (key: K) {
     this._keyToResultMap.delete(key);
   }

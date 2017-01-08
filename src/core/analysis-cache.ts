@@ -14,6 +14,7 @@
 
 import {Document, ScannedDocument} from '../model/model';
 import {ParsedDocument} from '../parser/document';
+import {PromiseGroup} from '../util/promise-group';
 
 import {AsyncWorkCache} from './async-work-cache';
 import {DependencyGraph} from './dependency-graph';
@@ -35,7 +36,7 @@ export class AnalysisCache {
    * not an AsyncWorkCache because scanning the same dependency cache twice is
    * idempotent, and subject to deadlocks with circular dependency graphs.
    */
-  dependenciesScannedOf: Set<string>;
+  dependenciesScannedOf: Map<string, PromiseGroup<ScannedDocument>>;
 
   /**
    * TODO(rictic): These synchronous caches need to be kept in sync with their
@@ -60,7 +61,7 @@ export class AnalysisCache {
         new AsyncWorkCache(f.scannedDocumentPromises);
     this.analyzedDocumentPromises =
         new AsyncWorkCache(f.analyzedDocumentPromises);
-    this.dependenciesScannedOf = new Set(f.dependenciesScannedOf!);
+    this.dependenciesScannedOf = new Map(f.dependenciesScannedOf!);
 
     this.scannedDocuments = new Map(f.scannedDocuments!);
     this.analyzedDocuments = new Map(f.analyzedDocuments!);
@@ -91,6 +92,16 @@ export class AnalysisCache {
       // which transitively import the changed document. We also need to mark
       // all of those docs as needing to rescan their dependencies.
       for (const partiallyInvalidatedPath of dependants) {
+        // TODO(justinfagnani): work into comment abbove:
+        // Scanning now (or already did) depends on transitive relationships
+        // because the scanned promise represents that all transitive
+        // dependencies
+        // are scanned as well. So when we invalidate a url we need to
+        // invalidate
+        // the scanned state of all transitive dependants.
+        // This could be changed if we separate local scanning from "linking"
+        newCache.scannedDocumentPromises.delete(partiallyInvalidatedPath);
+        newCache.scannedDocuments.delete(partiallyInvalidatedPath);
         newCache.dependenciesScannedOf.delete(partiallyInvalidatedPath);
         newCache.analyzedDocuments.delete(partiallyInvalidatedPath);
       }
