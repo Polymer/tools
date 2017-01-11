@@ -12,15 +12,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-const assert = require('chai').assert;
-const path = require('path');
-const BuildAnalyzer = require('../lib/analyzer').BuildAnalyzer;
-const waitForAll = require('../lib/streams').waitForAll;
-const sinon = require('sinon');
-const ProjectConfig = require('polymer-project-config').ProjectConfig;
-const Writable = require('stream').Writable;
+import {assert} from 'chai';
+import * as path from 'path';
+import File = require('vinyl');
+import {ProjectConfig} from 'polymer-project-config';
+import * as sinon from 'sinon';
+import {Writable} from 'stream';
+
+import {getFlowingState} from './util';
+import {BuildAnalyzer} from '../analyzer';
+import {waitForAll} from '../streams';
 
 /**
  * Streams will remain paused unless something is listening for it's data.
@@ -31,7 +34,7 @@ class NoopStream extends Writable {
   constructor() {
     super({objectMode: true});
   }
-  _write(chunk, encoding, callback) {
+  _write(_chunk: any, _encoding?: string, callback?: Function): void {
     callback();
   }
 }
@@ -42,7 +45,7 @@ suite('Analyzer', () => {
 
     test('fragment to deps list has only uniques', () => {
       const config = new ProjectConfig({
-        root: `test/static/analyzer-data`,
+        root: `test-fixtures/analyzer-data`,
         entrypoint: 'entrypoint.html',
         fragments: [
           'a.html',
@@ -69,7 +72,7 @@ suite('Analyzer', () => {
     });
 
     test('analyzing shell and entrypoint doesn\'t double load files', () => {
-      const root = `test/static/analyzer-data`;
+      const root = `test-fixtures/analyzer-data`;
       const sourceFiles =
           ['shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
       const config = new ProjectConfig({
@@ -100,7 +103,7 @@ suite('Analyzer', () => {
 
     test('outputs all dependencies needed by source', () => {
       const foundDependencies = new Set();
-      const root = `test/static/analyzer-data`;
+      const root = `test-fixtures/analyzer-data`;
       const sourceFiles =
           ['shell.html', 'entrypoint.html'].map((p) => path.resolve(root, p));
       const config = new ProjectConfig({
@@ -112,7 +115,7 @@ suite('Analyzer', () => {
 
       let analyzer = new BuildAnalyzer(config);
       analyzer.sources.pipe(new NoopStream());
-      analyzer.dependencies.on('data', (file) => {
+      analyzer.dependencies.on('data', (file: File) => {
         foundDependencies.add(file.path);
       });
 
@@ -130,7 +133,7 @@ suite('Analyzer', () => {
     test(
         'outputs all dependencies needed by source and given fragments', () => {
           const foundDependencies = new Set();
-          const root = `test/static/analyzer-data`;
+          const root = `test-fixtures/analyzer-data`;
           const sourceFiles =
               ['a.html', 'b.html', 'shell.html', 'entrypoint.html'].map(
                   (p) => path.resolve(root, p));
@@ -146,7 +149,7 @@ suite('Analyzer', () => {
           });
           const analyzer = new BuildAnalyzer(config);
           analyzer.sources.pipe(new NoopStream());
-          analyzer.dependencies.on('data', (file) => {
+          analyzer.dependencies.on('data', (file: File) => {
             foundDependencies.add(file.path);
           });
 
@@ -167,7 +170,7 @@ suite('Analyzer', () => {
   test(
       'the analyzer stream will emit an error when an warning of type "error" occurs during analysis',
       () => {
-        const root = path.resolve('test/static/project-analysis-error');
+        const root = path.resolve('test-fixtures/project-analysis-error');
         const sourceFiles = path.join(root, '**');
         const config = new ProjectConfig({
           root: root,
@@ -193,7 +196,7 @@ suite('Analyzer', () => {
   test(
       'the analyzer stream will log all analysis warnings at the end of the stream',
       () => {
-        const root = path.resolve('test/static/project-analysis-error');
+        const root = path.resolve('test-fixtures/project-analysis-error');
         const sourceFiles = path.join(root, '**');
         const config = new ProjectConfig({
           root: root,
@@ -212,14 +215,14 @@ suite('Analyzer', () => {
                 () => {
                   throw new Error('Parse error expected!');
                 },
-                (err) => {
+                (_err: Error) => {
                   assert.isTrue(printWarningsSpy.calledOnce);
                 });
       });
 
   test('the source/dependency streams remain paused until use', () => {
     const config = new ProjectConfig({
-      root: `test/static/analyzer-data`,
+      root: `test-fixtures/analyzer-data`,
       entrypoint: 'entrypoint.html',
       fragments: [
         'a.html',
@@ -231,14 +234,14 @@ suite('Analyzer', () => {
     const analyzer = new BuildAnalyzer(config);
 
     // Check that data isn't flowing through sources until consumer usage
-    assert.isNull(analyzer.sources._readableState.flowing);
+    assert.isNull(getFlowingState(analyzer.sources));
     analyzer.sources.on('data', () => {});
-    assert.isTrue(analyzer.sources._readableState.flowing);
+    assert.isTrue(getFlowingState(analyzer.sources));
 
     // Check that data isn't flowing through dependencies until consumer usage
-    assert.isNull(analyzer.dependencies._readableState.flowing);
+    assert.isNull(getFlowingState(analyzer.dependencies));
     analyzer.dependencies.on('data', () => {});
-    assert.isTrue(analyzer.dependencies._readableState.flowing);
+    assert.isTrue(getFlowingState(analyzer.dependencies));
   });
 
   // TODO(fks) 10-26-2016: Refactor logging to be testable, and configurable by

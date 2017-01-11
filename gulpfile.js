@@ -15,7 +15,6 @@
 'use strict';
 
 const depcheck = require('depcheck');
-const eslint = require('gulp-eslint');
 const fs = require('fs-extra');
 const gulp = require('gulp');
 const mergeStream = require('merge-stream');
@@ -30,7 +29,7 @@ const typings = require('gulp-typings');
 const tsProject = typescript.createProject(
     'tsconfig.json', {typescript: require('typescript')});
 
-gulp.task('lint', ['tslint', 'eslint', 'depcheck']);
+gulp.task('lint', ['tslint', 'depcheck']);
 
 gulp.task('clean', (done) => {
   fs.remove(path.join(__dirname, 'lib'), done);
@@ -39,12 +38,11 @@ gulp.task('clean', (done) => {
 gulp.task('build', ['clean'], () => {
   const tsResult = tsProject.src().pipe(typescript(tsProject));
 
-  return mergeStream(
-      tsResult.dts.pipe(gulp.dest('lib')), tsResult.js.pipe(gulp.dest('lib')));
+  return mergeStream(tsResult.dts, tsResult.js).pipe(gulp.dest('lib'));
 });
 
 gulp.task('test', ['build'], function() {
-  return gulp.src('test/**/*_test.js', {read: false}).pipe(mocha({
+  return gulp.src('lib/test/**/*_test.js', {read: false}).pipe(mocha({
     ui: 'tdd',
     reporter: 'spec',
   }))
@@ -54,13 +52,6 @@ gulp.task('tslint', function() {
   return gulp.src('src/**/*.ts')
       .pipe(tslint({configuration: 'tslint.json', formatter: 'verbose'}))
       .pipe(tslint.report())
-});
-
-gulp.task('eslint', function() {
-  return gulp.src('test/**/*.js')
-      .pipe(eslint({rules: {'comma-dangle': 2}}))
-      .pipe(eslint.format())
-      .pipe(eslint.failAfterError())
 });
 
 gulp.task('depcheck', function() {

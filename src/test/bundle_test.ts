@@ -12,47 +12,46 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-const assert = require('chai').assert;
-const dom5 = require('dom5');
-const parse5 = require('parse5');
-const path = require('path');
+import {assert} from 'chai';
+import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
+import File = require('vinyl');
+import * as dom5 from 'dom5';
+import {ASTNode, parse as parse5} from 'parse5';
+import * as path from 'path';
 const mergeStream = require('merge-stream');
-const ProjectConfig = require('polymer-project-config').ProjectConfig;
 
-const analyzer = require('../lib/analyzer');
-const bundle = require('../lib/bundle');
+import {BuildAnalyzer} from '../analyzer';
+import {Bundler} from '../bundle';
 
-const Bundler = bundle.Bundler;
-const BuildAnalyzer = analyzer.BuildAnalyzer;
-
-const root = path.resolve('test/static/bundler-data');
+const root = path.resolve('test-fixtures/bundler-data');
 
 suite('Bundler', () => {
 
   let bundler;
   let bundledStream;
-  let files;
+  let files: Map<string, File>;
 
-  let setupTest = (options) => new Promise((resolve, reject) => {
-    options.root = options.root || root;
-    let config = new ProjectConfig(options);
-    let analyzer = new BuildAnalyzer(config);
-    bundler = new Bundler(config, analyzer);
-    bundledStream =
-        mergeStream(analyzer.sources, analyzer.dependencies).pipe(bundler);
-    files = new Map();
-    bundledStream.on('data', (file) => {
-      files.set(file.path, file);
-    });
-    bundledStream.on('end', (data) => {
-      resolve(files);
-    });
-    bundledStream.on('error', (err) => {
-      reject(err);
-    });
-  });
+  let setupTest = (options: ProjectOptions) =>
+      new Promise((resolve, reject) => {
+        options.root = options.root || root;
+        let config = new ProjectConfig(options);
+        let analyzer = new BuildAnalyzer(config);
+        bundler = new Bundler(config, analyzer);
+        bundledStream =
+            mergeStream(analyzer.sources, analyzer.dependencies).pipe(bundler);
+        files = new Map();
+        bundledStream.on('data', (file: File) => {
+          files.set(file.path, file);
+        });
+        bundledStream.on('end', () => {
+          resolve(files);
+        });
+        bundledStream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
 
   teardown(() => {
     bundler = null;
@@ -60,14 +59,13 @@ suite('Bundler', () => {
     files = null;
   });
 
-  const getFile =
-      (filename) => {
-        // we're getting FS paths, so add root
-        const file = files.get(path.resolve(root, filename));
-        return file && file.contents && file.contents.toString();
-      }
+  const getFile = (filename: string) => {
+    // we're getting FS paths, so add root
+    const file = files.get(path.resolve(root, filename));
+    return file && file.contents && file.contents.toString();
+  };
 
-  const hasMarker = (doc, id) => {
+  const hasMarker = (doc: ASTNode, id: string) => {
     const marker = dom5.query(
         doc,
         dom5.predicates.AND(
@@ -76,7 +74,7 @@ suite('Bundler', () => {
     return marker != null;
   };
 
-  const hasImport = (doc, url) => {
+  const hasImport = (doc: ASTNode, url: string) => {
     const link = dom5.query(
         doc,
         dom5.predicates.AND(
@@ -91,8 +89,8 @@ suite('Bundler', () => {
       () => setupTest({
               entrypoint: 'entrypoint-only.html',
               sources: ['framework.html', 'entrypoint-only.html'],
-            }).then((files) => {
-        const doc = parse5.parse(getFile('entrypoint-only.html'));
+            }).then(() => {
+        const doc = parse5(getFile('entrypoint-only.html'));
         assert.isTrue(hasMarker(doc, 'framework'));
         assert.isFalse(hasImport(doc, 'framework.html'));
         assert.isNotOk(getFile('shared-bundle.html'));
@@ -104,19 +102,19 @@ suite('Bundler', () => {
               entrypoint: 'entrypoint-a.html',
               fragments: ['shell.html', 'entrypoint-a.html'],
               sources: ['shell.html', 'entrypoint-a.html', 'framework.html'],
-            }).then((files) => {
+            }).then(() => {
         // shell doesn't import framework
-        const shellDoc = parse5.parse(getFile('shell.html'));
+        const shellDoc = parse5(getFile('shell.html'));
         assert.isFalse(hasMarker(shellDoc, 'framework'));
         assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
         // entrypoint doesn't import framework
-        const entrypointDoc = parse5.parse(getFile('entrypoint-a.html'));
+        const entrypointDoc = parse5(getFile('entrypoint-a.html'));
         assert.isFalse(hasMarker(entrypointDoc, 'framework'));
         assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
         // No shared-bundle bundles framework
-        const sharedDoc = parse5.parse(getFile('shared-bundle.html'));
+        const sharedDoc = parse5(getFile('shared-bundle.html'));
         assert.isTrue(hasMarker(sharedDoc, 'framework'));
         assert.isFalse(hasImport(sharedDoc, 'framework.html'));
 
@@ -130,15 +128,15 @@ suite('Bundler', () => {
       () => setupTest({
               entrypoint: 'entrypoint-a.html',
               shell: 'shell.html',
-              files: ['framework.html', 'shell.html', 'entrypoint-a.html'],
-            }).then((files) => {
+              sources: ['framework.html', 'shell.html', 'entrypoint-a.html'],
+            }).then(() => {
 
         // shell bundles framework
-        const shellDoc = parse5.parse(getFile('shell.html'));
+        const shellDoc = parse5(getFile('shell.html'));
         assert.isTrue(hasMarker(shellDoc, 'framework'));
 
         // entrypoint doesn't import framework
-        const entrypointDoc = parse5.parse(getFile('entrypoint-a.html'));
+        const entrypointDoc = parse5(getFile('entrypoint-a.html'));
         assert.isFalse(hasMarker(entrypointDoc, 'framework'));
         assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
@@ -163,9 +161,9 @@ suite('Bundler', () => {
                 'entrypoint-c.html',
                 'common-dependency.html',
               ],
-            }).then((files) => {
+            }).then(() => {
         // shell bundles framework
-        const shellDoc = parse5.parse(getFile('shell.html'));
+        const shellDoc = parse5(getFile('shell.html'));
         assert.isTrue(hasMarker(shellDoc, 'framework'));
         assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
@@ -174,12 +172,12 @@ suite('Bundler', () => {
         assert.isFalse(hasImport(shellDoc, 'common-dependency.html'));
 
         // entrypoint B doesn't import commonDep
-        const entrypointBDoc = parse5.parse(getFile('entrypoint-b.html'));
+        const entrypointBDoc = parse5(getFile('entrypoint-b.html'));
         assert.isFalse(hasMarker(entrypointBDoc, 'commonDep'));
         assert.isFalse(hasImport(entrypointBDoc, 'common-dependency.html'));
 
         // entrypoint C doesn't import commonDep
-        const entrypointCDoc = parse5.parse(getFile('entrypoint-c.html'));
+        const entrypointCDoc = parse5(getFile('entrypoint-c.html'));
         assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
         assert.isFalse(hasImport(entrypointCDoc, 'common-dependency.html'));
 
@@ -198,18 +196,18 @@ suite('Bundler', () => {
                                                   'entrypoint-b.html',
                                                   'entrypoint-c.html',
                                                 ],
-                                                files: [
+                                                sources: [
                                                   'framework.html',
                                                   'shell.html',
                                                   'entrypoint-b.html',
                                                   'entrypoint-c.html',
                                                   'common-dependency.html',
                                                 ],
-                                              }).then((files) => {
+                                              }).then(() => {
     // shared bundle was emitted
     const bundle = getFile('shared-bundle.html');
     assert.ok(bundle);
-    const bundleDoc = parse5.parse(bundle);
+    const bundleDoc = parse5(bundle);
 
     // shared-bundle bundles framework
     assert.isTrue(hasMarker(bundleDoc, 'framework'));
@@ -220,22 +218,22 @@ suite('Bundler', () => {
     assert.isFalse(hasImport(bundleDoc, 'common-dependency.html'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = parse5.parse(getFile('entrypoint-a.html'));
+    const entrypointDoc = parse5(getFile('entrypoint-a.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
     // shell doesn't import framework
-    const shellDoc = parse5.parse(getFile('entrypoint-a.html'));
+    const shellDoc = parse5(getFile('entrypoint-a.html'));
     assert.isFalse(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
     // entrypoint B doesn't import commonDep
-    const entrypointBDoc = parse5.parse(getFile('entrypoint-b.html'));
+    const entrypointBDoc = parse5(getFile('entrypoint-b.html'));
     assert.isFalse(hasMarker(entrypointBDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointBDoc, 'common-dependency.html'));
 
     // entrypoint C doesn't import commonDep
-    const entrypointCDoc = parse5.parse(getFile('entrypoint-c.html'));
+    const entrypointCDoc = parse5(getFile('entrypoint-c.html'));
     assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointCDoc, 'common-dependency.html'));
 

@@ -12,20 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-const assert = require('chai').assert;
-const urlFromPath = require('../lib/path-transformers').urlFromPath;
+import {assert} from 'chai';
+import {urlFromPath} from '../path-transformers';
 
-const WIN_ROOT_PATH = 'C:\\Users\\TEST_USER\\TEST_ROOT';
-const MAC_ROOT_PATH = '/Users/TEST_USER/TEST_ROOT';
-var isPlatformWin = /^win/.test(process.platform);
+const WindowsRootPath = 'C:\\Users\\TEST_USER\\TEST_ROOT';
+const MacRootPath = '/Users/TEST_USER/TEST_ROOT';
+const isPlatformWin = /^win/.test(process.platform);
 
 suite('urlFromPath()', () => {
 
   test('throws error when path is not in root', () => {
     assert.throws(function() {
-      urlFromPath(MAC_ROOT_PATH, '/some/other/path/shop-app.html');
+      urlFromPath(MacRootPath, '/some/other/path/shop-app.html');
     });
   });
 
@@ -34,14 +34,14 @@ suite('urlFromPath()', () => {
         'creates a URL path relative to root when called in a Windows environment',
         () => {
           const shortPath =
-              urlFromPath(WIN_ROOT_PATH, WIN_ROOT_PATH + '\\shop-app.html');
+              urlFromPath(WindowsRootPath, WindowsRootPath + '\\shop-app.html');
           assert.equal(shortPath, 'shop-app.html');
           const medPath = urlFromPath(
-              WIN_ROOT_PATH, WIN_ROOT_PATH + '\\src\\shop-app.html');
+              WindowsRootPath, WindowsRootPath + '\\src\\shop-app.html');
           assert.equal(medPath, 'src/shop-app.html');
           const longPath = urlFromPath(
-              WIN_ROOT_PATH,
-              WIN_ROOT_PATH + '\\bower_components\\app-layout\\docs.html');
+              WindowsRootPath,
+              WindowsRootPath + '\\bower_components\\app-layout\\docs.html');
           assert.equal(longPath, 'bower_components/app-layout/docs.html');
         });
 
@@ -50,14 +50,14 @@ suite('urlFromPath()', () => {
         'creates a URL path relative to root when called in a Posix environment',
         () => {
           const shortPath =
-              urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/shop-app.html');
+              urlFromPath(MacRootPath, MacRootPath + '/shop-app.html');
           assert.equal(shortPath, 'shop-app.html');
           const medPath =
-              urlFromPath(MAC_ROOT_PATH, MAC_ROOT_PATH + '/src/shop-app.html');
+              urlFromPath(MacRootPath, MacRootPath + '/src/shop-app.html');
           assert.equal(medPath, 'src/shop-app.html');
           const longPath = urlFromPath(
-              MAC_ROOT_PATH,
-              MAC_ROOT_PATH + '/bower_components/app-layout/docs.html');
+              MacRootPath,
+              MacRootPath + '/bower_components/app-layout/docs.html');
           assert.equal(longPath, 'bower_components/app-layout/docs.html');
         });
   }
