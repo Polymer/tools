@@ -7,12 +7,13 @@
     "@types/node": "4.0.30",
     "dom5": "^2.0.0",
     "parse5": "^2.2.1",
-    "polymer-analyzer": "^2.0.0-alpha.14",
+    "polymer-analyzer": "^2.0.0-alpha.22",
     "strip-indent": "^2.0.0"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.32",
+    "bower": "^1.8.0",
     "chai": "^3.5.0",
     "clang-format": "^1.0.45",
     "mocha": "^3.1.0",
@@ -27,8 +28,9 @@
     "clean": "rm -rf lib; mkdir -p lib",
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
-    "test": "npm run build && npm run lint && mocha",
-    "test:watch": "watchy -w src/ -- npm test --loglevel=silent"
+    "test": "npm run build && npm run lint && mocha lib/test/**/*.js",
+    "test:watch": "watchy -w src/ -- npm test --loglevel=silent",
+    "test:integration": "npm run build && cd test/integration && bower install --silent && cd ../../ && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },
   "repository": {
     "type": "git",

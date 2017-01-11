@@ -13,6 +13,7 @@
  */
 
 import {Analyzer} from 'polymer-analyzer';
+import {Document} from 'polymer-analyzer/lib/model/model';
 import {Severity, Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
 
 import {Rule} from './rule';
@@ -36,13 +37,25 @@ export class Linter {
    * warnings produced evaluating the linter rules.
    */
   public async lint(files: string[]): Promise<Warning[]> {
-    let warnings: Warning[] = [];
     const analysisResult = await this._analyzeAll(files);
     const documents = analysisResult.documents;
-    const analysisWarnings = analysisResult.warnings;
-    warnings = warnings.concat(analysisWarnings);
+    let analysisWarnings = analysisResult.warnings;
     for (const document of documents) {
-      warnings = warnings.concat(document.getWarnings());
+      analysisWarnings = analysisWarnings.concat(document.getWarnings());
+    }
+    return analysisWarnings.concat(await this._lintDocuments(documents));
+  }
+
+  public async lintPackage(): Promise<Warning[]> {
+    const pckage = await this._analyzer.analyzePackage();
+    const analysisWarnings = pckage.getWarnings();
+    const warnings = await this._lintDocuments(pckage.getByKind('document'));
+    return analysisWarnings.concat(warnings);
+  }
+
+  private async _lintDocuments(documents: Iterable<Document>) {
+    let warnings: Warning[] = [];
+    for (const document of documents) {
       for (const rule of this._rules) {
         try {
           warnings = warnings.concat(await rule.check(document));
