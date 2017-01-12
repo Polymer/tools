@@ -1,6 +1,6 @@
 # polyserve
 
-[![Build Status](https://travis-ci.org/PolymerLabs/polyserve.svg?branch=master)](https://travis-ci.org/PolymerLabs/polyserve)
+[![Build Status](https://travis-ci.org/Polymer/polyserve.svg?branch=master)](https://travis-ci.org/Polymer/polyserve)
 
 A simple development server for web projects.
 
