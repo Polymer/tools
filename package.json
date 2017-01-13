@@ -37,7 +37,7 @@
     "sw-precache": "^4.2.0",
     "vinyl": "^1.1.1",
     "vinyl-fs": "^2.4.3",
-    "vulcanize": "^1.14.8"
+    "polymer-bundler": "2.0.0-pre.1"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
