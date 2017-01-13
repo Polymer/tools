@@ -238,6 +238,27 @@ suite('Project Config', () => {
 
     });
 
+    suite('isSource()', () => {
+
+      test('matches source file paths and does not match other file paths', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          entrypoint: 'foo.html',
+          fragments: ['bar.html'],
+          shell: 'baz.html',
+        });
+        assert.isTrue(config.isSource(config.entrypoint));
+        assert.isTrue(config.isSource(config.shell));
+        assert.isTrue(config.isSource(path.resolve(absoluteRoot, 'foo.html')));
+        assert.isTrue(config.isSource(path.resolve(absoluteRoot, 'bar.html')));
+        assert.isTrue(config.isSource(path.resolve(absoluteRoot, 'baz.html')));
+        assert.isFalse(config.isSource(path.resolve(absoluteRoot, 'not-a-fragment.html')));
+      });
+
+    });
+
     suite('validate()', () => {
 
       test('returns true for valid configuration', () => {
