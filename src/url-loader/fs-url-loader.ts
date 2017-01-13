@@ -24,10 +24,10 @@ import {UrlLoader} from './url-loader';
  * Resolves requests via the file system.
  */
 export class FSUrlLoader implements UrlLoader {
-  root: string|undefined;
+  root: string;
 
   constructor(root?: string) {
-    this.root = root;
+    this.root = root || '';
   }
 
   canLoad(url: string): boolean {

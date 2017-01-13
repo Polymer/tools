@@ -21,19 +21,19 @@ suite('FSUrlLoader', function() {
   suite('canLoad', () => {
 
     test('canLoad is true an in-package URL', () => {
-      assert.isTrue(new FSUrlLoader().canLoad('foo.html'));
+      assert.isTrue(new FSUrlLoader('').canLoad('foo.html'));
     });
 
     test('canLoad is false for a sibling URL', () => {
-      assert.isFalse(new FSUrlLoader().canLoad('../foo/foo.html'));
+      assert.isFalse(new FSUrlLoader('').canLoad('../foo/foo.html'));
     });
 
     test('canLoad is false for a cousin URL', () => {
-      assert.isFalse(new FSUrlLoader().canLoad('../../foo/foo.html'));
+      assert.isFalse(new FSUrlLoader('').canLoad('../../foo/foo.html'));
     });
 
     test('canLoad is false for URL with a hostname', () => {
-      assert.isFalse(new FSUrlLoader().canLoad('http://abc.xyz/foo.html'));
+      assert.isFalse(new FSUrlLoader('').canLoad('http://abc.xyz/foo.html'));
     });
 
   });
@@ -41,7 +41,7 @@ suite('FSUrlLoader', function() {
   suite('getFilePath', () => {
 
     test('resolves an in-package URL', () => {
-      assert.equal(new FSUrlLoader().getFilePath('foo.html'), 'foo.html');
+      assert.equal(new FSUrlLoader('').getFilePath('foo.html'), 'foo.html');
     });
 
     test('resolves an in-package URL', () => {
@@ -50,16 +50,17 @@ suite('FSUrlLoader', function() {
     });
 
     test('throws for a sibling URL', () => {
-      assert.throws(() => new FSUrlLoader().getFilePath('../foo/foo.html'));
+      assert.throws(() => new FSUrlLoader('').getFilePath('../foo/foo.html'));
     });
 
     test('throws for a cousin URL', () => {
-      assert.throws(() => new FSUrlLoader().getFilePath('../../foo/foo.html'));
+      assert.throws(
+          () => new FSUrlLoader('').getFilePath('../../foo/foo.html'));
     });
 
     test('throws for a URL with a hostname', () => {
       assert.throws(
-          () => new FSUrlLoader().getFilePath('http://abc.xyz/foo.html'));
+          () => new FSUrlLoader('').getFilePath('http://abc.xyz/foo.html'));
     });
 
   });

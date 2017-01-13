@@ -12,7 +12,9 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "lib": ["es2017"],
+        "lib": [
+            "es2017"
+        ],
         "outDir": "./lib",
         "declaration": true,
         "sourceMap": true,
@@ -22,6 +24,6 @@
         "src/**/*.ts"
     ],
     "exclude": [
-      "node_modules"
+        "node_modules"
     ]
 }
