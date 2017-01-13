@@ -23,11 +23,11 @@ import * as path from 'path';
 const mergeStream = require('merge-stream');
 
 import {BuildAnalyzer} from '../analyzer';
-import {Bundler} from '../bundle';
+import {BuildBundler} from '../bundle';
 
 const root = path.resolve('test-fixtures/bundler-data');
 
-suite('Bundler', () => {
+suite('BuildBundler', () => {
 
   let bundler;
   let bundledStream;
@@ -38,7 +38,7 @@ suite('Bundler', () => {
         options.root = options.root || root;
         let config = new ProjectConfig(options);
         let analyzer = new BuildAnalyzer(config);
-        bundler = new Bundler(config, analyzer);
+        bundler = new BuildBundler(config, analyzer);
         bundledStream =
             mergeStream(analyzer.sources, analyzer.dependencies).pipe(bundler);
         files = new Map();

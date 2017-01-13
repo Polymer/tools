@@ -29,8 +29,7 @@ import {BuildAnalyzer} from './analyzer';
 const Vulcanize = require('vulcanize');
 const logger = logging.getLogger('cli.build.bundle');
 
-// TODO(fks) 11-11-2016: Rename Bundler to BuildBundler
-export class Bundler extends Transform {
+export class BuildBundler extends Transform {
   config: ProjectConfig;
 
   sharedBundleUrl: string;
