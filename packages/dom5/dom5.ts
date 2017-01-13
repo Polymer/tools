@@ -21,7 +21,7 @@ function getAttributeIndex(element: Node, name: string): number {
   if (!element.attrs) {
     return -1;
   }
-  let n = name.toLowerCase();
+  const n = name.toLowerCase();
   for (let i = 0; i < element.attrs.length; i++) {
     if (element.attrs[i].name.toLowerCase() === n) {
       return i;

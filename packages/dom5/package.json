@@ -11,8 +11,9 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run test",
-    "test": "npm run build && tslint dom5.ts && mocha --ui tdd",
-    "format": "./node_modules/.bin/clang-format --style=file -i dom5.ts"
+    "test": "npm run build && npm run lint && mocha --ui tdd",
+    "format": "./node_modules/.bin/clang-format --style=file -i dom5.ts",
+    "lint": "tslint dom5.ts"
   },
   "dependencies": {
     "@types/clone": "^0.1.29",

@@ -5,6 +5,7 @@
             true,
             "spaces"
         ],
+        "prefer-const": true,
         "no-duplicate-variable": true,
         "no-eval": true,
         "no-internal-module": true,
