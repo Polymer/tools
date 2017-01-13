@@ -33,25 +33,25 @@ suite('Bundler', () => {
   let bundledStream;
   let files: Map<string, File>;
 
-  let setupTest = (options: ProjectOptions) =>
-      new Promise((resolve, reject) => {
-        options.root = options.root || root;
-        let config = new ProjectConfig(options);
-        let analyzer = new BuildAnalyzer(config);
-        bundler = new Bundler(config, analyzer);
-        bundledStream =
-            mergeStream(analyzer.sources, analyzer.dependencies).pipe(bundler);
-        files = new Map();
-        bundledStream.on('data', (file: File) => {
-          files.set(file.path, file);
-        });
-        bundledStream.on('end', () => {
-          resolve(files);
-        });
-        bundledStream.on('error', (err: Error) => {
-          reject(err);
-        });
-      });
+  let setupTest = (options:
+                       ProjectOptions) => new Promise((resolve, reject) => {
+    options.root = options.root || root;
+    let config = new ProjectConfig(options);
+    let analyzer = new BuildAnalyzer(config);
+    bundler = new Bundler(config, analyzer);
+    bundledStream =
+        mergeStream(analyzer.sources(), analyzer.dependencies()).pipe(bundler);
+    files = new Map();
+    bundledStream.on('data', (file: File) => {
+      files.set(file.path, file);
+    });
+    bundledStream.on('end', () => {
+      resolve(files);
+    });
+    bundledStream.on('error', (err: Error) => {
+      reject(err);
+    });
+  });
 
   teardown(() => {
     bundler = null;

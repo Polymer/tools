@@ -55,10 +55,10 @@ suite('Analyzer', () => {
       });
 
       const analyzer = new BuildAnalyzer(config);
-      analyzer.sources.pipe(new NoopStream());
-      analyzer.dependencies.pipe(new NoopStream());
+      analyzer.sources().pipe(new NoopStream());
+      analyzer.dependencies().pipe(new NoopStream());
 
-      return waitForAll([analyzer.sources, analyzer.dependencies])
+      return waitForAll([analyzer.sources(), analyzer.dependencies()])
           .then(() => {
             return analyzer.analyzeDependencies;
           })
@@ -83,10 +83,10 @@ suite('Analyzer', () => {
       });
 
       let analyzer = new BuildAnalyzer(config);
-      analyzer.sources.pipe(new NoopStream());
-      analyzer.dependencies.pipe(new NoopStream());
+      analyzer.sources().pipe(new NoopStream());
+      analyzer.dependencies().pipe(new NoopStream());
 
-      return waitForAll([analyzer.sources, analyzer.dependencies])
+      return waitForAll([analyzer.sources(), analyzer.dependencies()])
           .then(() => {
             return analyzer.analyzeDependencies;
           })
@@ -114,20 +114,21 @@ suite('Analyzer', () => {
       });
 
       let analyzer = new BuildAnalyzer(config);
-      analyzer.sources.pipe(new NoopStream());
-      analyzer.dependencies.on('data', (file: File) => {
+      analyzer.sources().pipe(new NoopStream());
+      analyzer.dependencies().on('data', (file: File) => {
         foundDependencies.add(file.path);
       });
 
-      return waitForAll([analyzer.sources, analyzer.dependencies]).then(() => {
-        // shared-1 is never imported by shell/entrypoint, so it is not
-        // included as a dep.
-        assert.isFalse(
-            foundDependencies.has(path.resolve(root, 'shared-1.html')));
-        // shared-2 is imported by shell, so it is included as a dep.
-        assert.isTrue(
-            foundDependencies.has(path.resolve(root, 'shared-2.html')));
-      });
+      return waitForAll([analyzer.sources(), analyzer.dependencies()])
+          .then(() => {
+            // shared-1 is never imported by shell/entrypoint, so it is not
+            // included as a dep.
+            assert.isFalse(
+                foundDependencies.has(path.resolve(root, 'shared-1.html')));
+            // shared-2 is imported by shell, so it is included as a dep.
+            assert.isTrue(
+                foundDependencies.has(path.resolve(root, 'shared-2.html')));
+          });
     });
 
     test(
@@ -148,12 +149,12 @@ suite('Analyzer', () => {
             sources: sourceFiles,
           });
           const analyzer = new BuildAnalyzer(config);
-          analyzer.sources.pipe(new NoopStream());
-          analyzer.dependencies.on('data', (file: File) => {
+          analyzer.sources().pipe(new NoopStream());
+          analyzer.dependencies().on('data', (file: File) => {
             foundDependencies.add(file.path);
           });
 
-          return waitForAll([analyzer.sources, analyzer.dependencies])
+          return waitForAll([analyzer.sources(), analyzer.dependencies()])
               .then(() => {
                 // shared-1 is imported by 'a' & 'b', so it is included as a
                 // dep.
@@ -178,10 +179,10 @@ suite('Analyzer', () => {
         });
 
         const analyzer = new BuildAnalyzer(config);
-        analyzer.sources.pipe(new NoopStream());
-        analyzer.dependencies.pipe(new NoopStream());
+        analyzer.sources().pipe(new NoopStream());
+        analyzer.dependencies().pipe(new NoopStream());
 
-        return waitForAll([analyzer.sources, analyzer.dependencies])
+        return waitForAll([analyzer.sources(), analyzer.dependencies()])
             .then(
                 () => {
                   throw new Error('Parse error expected!');
@@ -205,12 +206,12 @@ suite('Analyzer', () => {
 
         const analyzer = new BuildAnalyzer(config);
         const printWarningsSpy = sinon.spy(analyzer, 'printWarnings');
-        analyzer.sources.on(
+        analyzer.sources().on(
             'data', () => assert.isFalse(printWarningsSpy.called));
-        analyzer.dependencies.on(
+        analyzer.dependencies().on(
             'data', () => assert.isFalse(printWarningsSpy.called));
 
-        return waitForAll([analyzer.sources, analyzer.dependencies])
+        return waitForAll([analyzer.sources(), analyzer.dependencies()])
             .then(
                 () => {
                   throw new Error('Parse error expected!');
@@ -220,7 +221,7 @@ suite('Analyzer', () => {
                 });
       });
 
-  test('the source/dependency streams remain paused until use', () => {
+  test('calling sources() starts analysis', () => {
     const config = new ProjectConfig({
       root: `test-fixtures/analyzer-data`,
       entrypoint: 'entrypoint.html',
@@ -232,16 +233,65 @@ suite('Analyzer', () => {
     });
 
     const analyzer = new BuildAnalyzer(config);
+    assert.isFalse(analyzer.started);
+    analyzer.sources().pipe(new NoopStream());
+    assert.isTrue(analyzer.started);
+  });
 
-    // Check that data isn't flowing through sources until consumer usage
-    assert.isNull(getFlowingState(analyzer.sources));
-    analyzer.sources.on('data', () => {});
-    assert.isTrue(getFlowingState(analyzer.sources));
 
-    // Check that data isn't flowing through dependencies until consumer usage
-    assert.isNull(getFlowingState(analyzer.dependencies));
-    analyzer.dependencies.on('data', () => {});
-    assert.isTrue(getFlowingState(analyzer.dependencies));
+  test('calling dependencies() starts analysis', () => {
+    const config = new ProjectConfig({
+      root: `test-fixtures/analyzer-data`,
+      entrypoint: 'entrypoint.html',
+      fragments: [
+        'a.html',
+        'b.html',
+      ],
+      sources: ['a.html', 'b.html', 'entrypoint.html'],
+    });
+
+    const analyzer = new BuildAnalyzer(config);
+    assert.isFalse(analyzer.started);
+    analyzer.dependencies().pipe(new NoopStream());
+    assert.isTrue(analyzer.started);
+  });
+
+  test('the source/dependency streams remain paused until use', () => {
+    const config = new ProjectConfig({
+      root: `test-fixtures/analyzer-data`,
+      entrypoint: 'entrypoint.html',
+      fragments: [
+        'a.html',
+        'b.html',
+      ],
+      sources: ['a.html', 'b.html', 'entrypoint.html'],
+    });
+    const analyzer = new BuildAnalyzer(config);
+
+    // Cast analyzer to <any> so that we can check private properties of it.
+    // We need to access these private streams directly because the public
+    // `sources()` and `dependencies()` functions have intentional side effects
+    // related to these streams that we are trying to test here.
+    const analyzerWithPrivates: any = analyzer;
+    assert.isUndefined(analyzerWithPrivates._sourcesStream);
+    assert.isUndefined(analyzerWithPrivates._dependenciesStream);
+    analyzerWithPrivates.sources();
+    assert.isDefined(analyzerWithPrivates._sourcesStream);
+    assert.isDefined(analyzerWithPrivates._dependenciesStream);
+    assert.isTrue(getFlowingState(analyzerWithPrivates._sourcesStream));
+    assert.isTrue(getFlowingState(analyzerWithPrivates._dependenciesStream));
+
+    // Check that even though `sources()` has been called, the public file
+    // streams aren't flowing until data listeners are attached (directly or via
+    // piping) so that files are never lost).
+    assert.isNull(getFlowingState(analyzer.sources()));
+    assert.isNull(getFlowingState(analyzer.dependencies()));
+    analyzer.sources().on('data', () => {});
+    assert.isTrue(getFlowingState(analyzer.sources()));
+    assert.isNull(getFlowingState(analyzer.dependencies()));
+    analyzer.dependencies().pipe(new NoopStream());
+    assert.isTrue(getFlowingState(analyzer.sources()));
+    assert.isTrue(getFlowingState(analyzer.dependencies()));
   });
 
   // TODO(fks) 10-26-2016: Refactor logging to be testable, and configurable by
