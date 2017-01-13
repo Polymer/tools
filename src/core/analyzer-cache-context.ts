@@ -53,7 +53,7 @@ import {AnalysisCache} from './analysis-cache';
 export class AnalyzerCacheContext {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
-    ['js', new JavaScriptParser({sourceType: 'script'})],
+    ['js', new JavaScriptParser()],
     ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);

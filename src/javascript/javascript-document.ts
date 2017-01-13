@@ -17,7 +17,7 @@ import {traverse, VisitorOption} from 'estraverse';
 import {Node, Program} from 'estree';
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
+import {Options as ParsedDocumentOptions, ParsedDocument, StringifyOptions} from '../parser/document';
 
 import {Visitor, VisitResult} from './estree-visitor';
 
@@ -36,13 +36,26 @@ interface SkipRecord {
   depth: number;
 }
 
+export interface Options extends ParsedDocumentOptions<Program> {
+  parsedAsSourceType: 'script'|'module';
+}
+
 export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
   type = 'js';
   private visitorSkips = new Map<Visitor, SkipRecord>();
   ast: Program;
 
-  constructor(from: Options<Program>) {
+  /**
+   * How the js document was parsed. If 'module' then the source code is
+   * definitely an ES6 module, as it has imports or exports. If 'script' then
+   * it may be an ES6 module with no imports or exports, or it may be a
+   * script.
+   */
+  parsedAsSourceType: 'script'|'module';
+
+  constructor(from: Options) {
     super(from);
+    this.parsedAsSourceType = from.parsedAsSourceType;
   }
 
   visit(visitors: Visitor[]) {

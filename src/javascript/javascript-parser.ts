@@ -28,43 +28,42 @@ declare class SyntaxError {
 }
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
-  sourceType: 'module'|'script';
-
-  constructor(options: {sourceType: 'module' | 'script'}) {
-    console.assert(options != null);
-    console.assert(options.sourceType != null);
-    this.sourceType = options.sourceType;
-  }
-
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       JavaScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     let ast: Program;
+    const options = {
+      ecmaVersion: 8,
+      attachComment: true,
+      comment: true,
+      loc: true,
+      sourceType: 'script' as ('script' | 'module'),
+    };
+
     try {
-      ast = <Program>espree.parse(contents, {
-        ecmaVersion: 8,
-        attachComment: true,
-        comment: true,
-        loc: true,
-        sourceType: this.sourceType,
-      });
-    } catch (err) {
-      if (err instanceof SyntaxError) {
-        throw new WarningCarryingException({
-          message: err.message.split('\n')[0],
-          severity: Severity.ERROR,
-          code: 'parse-error',
-          sourceRange: correctSourceRange(
-              {
-                file: url,
-                start: {line: err.lineNumber - 1, column: err.column - 1},
-                end: {line: err.lineNumber - 1, column: err.column - 1}
-              },
-              inlineInfo.locationOffset)!
-        });
+      ast = <Program>espree.parse(contents, options);
+    } catch (_ignored) {
+      try {
+        options.sourceType = 'module';
+        ast = <Program>espree.parse(contents, options);
+      } catch (err) {
+        if (err instanceof SyntaxError) {
+          throw new WarningCarryingException({
+            message: err.message.split('\n')[0],
+            severity: Severity.ERROR,
+            code: 'parse-error',
+            sourceRange: correctSourceRange(
+                {
+                  file: url,
+                  start: {line: err.lineNumber - 1, column: err.column - 1},
+                  end: {line: err.lineNumber - 1, column: err.column - 1}
+                },
+                inlineInfo.locationOffset)!
+          });
+        }
+        throw err;
       }
-      throw err;
     }
 
     return new JavaScriptDocument({
@@ -73,6 +72,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       ast,
       locationOffset: inlineInfo.locationOffset,
       astNode: inlineInfo.astNode, isInline,
+      parsedAsSourceType: options.sourceType,
     });
   }
 }

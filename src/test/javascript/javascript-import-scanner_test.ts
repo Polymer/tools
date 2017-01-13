@@ -23,7 +23,7 @@ import {JavaScriptParser} from '../../javascript/javascript-parser';
 
 suite('JavaScriptImportScanner', () => {
 
-  const parser = new JavaScriptParser({sourceType: 'module'});
+  const parser = new JavaScriptParser();
   const scanner = new JavaScriptImportScanner();
 
   test('finds imports', async() => {

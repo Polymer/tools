@@ -33,7 +33,7 @@ suite('VanillaElementScanner', () => {
   let elementsList: ScannedElement[];
 
   suiteSetup(async() => {
-    const parser = new JavaScriptParser({sourceType: 'script'});
+    const parser = new JavaScriptParser();
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
     document = parser.parse(file, '/static/vanilla-elements.js');

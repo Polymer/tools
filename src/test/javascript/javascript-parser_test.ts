@@ -25,7 +25,7 @@ suite('JavaScriptParser', () => {
   let parser: JavaScriptParser;
 
   setup(() => {
-    parser = new JavaScriptParser({sourceType: 'script'});
+    parser = new JavaScriptParser();
   });
 
 
@@ -45,6 +45,7 @@ suite('JavaScriptParser', () => {
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
+      assert.equal(document.parsedAsSourceType, 'script');
       // First statement is a class declaration
       assert.equal(document.ast.body[0].type, 'ClassDeclaration');
     });
@@ -59,6 +60,7 @@ suite('JavaScriptParser', () => {
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
+      assert.equal(document.parsedAsSourceType, 'script');
       // First statement is an async function declaration
       const functionDecl = document.ast.body[0];
       if (functionDecl.type !== 'FunctionDeclaration') {
@@ -83,6 +85,16 @@ suite('JavaScriptParser', () => {
       assert.isTrue(comment.indexOf('test-element') !== -1);
     });
 
+    test('parses an ES module', () => {
+      const contents = `
+        import foo from 'foo';
+      `;
+      const document = parser.parse(contents, '/static/es6-support.js');
+      assert.instanceOf(document, JavaScriptDocument);
+      assert.equal(document.url, '/static/es6-support.js');
+      assert.equal(document.ast.type, 'Program');
+      assert.equal(document.parsedAsSourceType, 'module');
+    });
   });
 
   suite(`stringify()`, () => {
