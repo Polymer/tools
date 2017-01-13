@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+## [2.0.0-alpha.22] - 2017-01-13
+
 ### Fixed
 
 * Do not complain about ES6 module syntax, but store enough information that we can warn about referencing modules as scripts.
