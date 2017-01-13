@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Added** Option to node traversal methods to traverse templates
+
 ## [v2.0.1](https://github.com/PolymerLabs/dom5/tree/v2.0.1) (2016-11-01)
 - TypeScript type definition fixes
 
