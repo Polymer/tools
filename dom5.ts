@@ -14,7 +14,7 @@
 
 /// <reference path="./custom_typings/main.d.ts" />
 import * as cloneObject from 'clone';
-import {ASTNode as Node} from 'parse5';
+import {ASTNode as Node, treeAdapters} from 'parse5';
 export {ASTNode as Node} from 'parse5';
 
 function getAttributeIndex(element: Node, name: string): number {
@@ -312,20 +312,36 @@ export function treeMap<U>(node: Node, mapfn: (node: Node) => U[]): U[] {
   return results;
 }
 
+export type GetChildNodes = (node: Node) => Node[] | undefined;
+
+export const defaultChildNodes: GetChildNodes = node => node.childNodes;
+
+export const childNodesIncludeTemplate: GetChildNodes = node => {
+  if (node.nodeName === 'template') {
+    return treeAdapters.default.getTemplateContent(node).childNodes;
+  }
+
+  return node.childNodes;
+};
+
 /**
  * Walk the tree down from `node`, applying the `predicate` function.
  * Return the first node that matches the given predicate.
  *
  * @returns `null` if no node matches, parse5 node object if a node matches.
  */
-export function nodeWalk(node: Node, predicate: Predicate): Node|null {
+export function nodeWalk(
+    node: Node,
+    predicate: Predicate,
+    getChildNodes: GetChildNodes = defaultChildNodes): Node|null {
   if (predicate(node)) {
     return node;
   }
   let match: Node|null = null;
-  if (node.childNodes) {
-    for (let i = 0; i < node.childNodes.length; i++) {
-      match = nodeWalk(node.childNodes[i], predicate);
+  const childNodes = getChildNodes(node);
+  if (childNodes) {
+    for (let i = 0; i < childNodes.length; i++) {
+      match = nodeWalk(childNodes[i], predicate, getChildNodes);
       if (match) {
         break;
       }
@@ -340,29 +356,37 @@ export function nodeWalk(node: Node, predicate: Predicate): Node|null {
  * returned.
  */
 export function nodeWalkAll(
-    node: Node, predicate: Predicate, matches?: Node[]): Node[] {
+    node: Node,
+    predicate: Predicate,
+    matches?: Node[],
+    getChildNodes: GetChildNodes = defaultChildNodes): Node[] {
   if (!matches) {
     matches = [];
   }
   if (predicate(node)) {
     matches.push(node);
   }
-  if (node.childNodes) {
-    for (let i = 0; i < node.childNodes.length; i++) {
-      nodeWalkAll(node.childNodes[i], predicate, matches);
+  const childNodes = getChildNodes(node);
+  if (childNodes) {
+    for (let i = 0; i < childNodes.length; i++) {
+      nodeWalkAll(childNodes[i], predicate, matches, getChildNodes);
     }
   }
   return matches;
 }
 
 function _reverseNodeWalkAll(
-    node: Node, predicate: Predicate, matches: Node[]): Node[] {
+    node: Node,
+    predicate: Predicate,
+    matches: Node[],
+    getChildNodes: GetChildNodes = defaultChildNodes): Node[] {
   if (!matches) {
     matches = [];
   }
-  if (node.childNodes) {
-    for (let i = node.childNodes.length - 1; i >= 0; i--) {
-      nodeWalkAll(node.childNodes[i], predicate, matches);
+  const childNodes = getChildNodes(node);
+  if (childNodes) {
+    for (let i = childNodes.length - 1; i >= 0; i--) {
+      nodeWalkAll(childNodes[i], predicate, matches, getChildNodes);
     }
   }
   if (predicate(node)) {
@@ -450,18 +474,24 @@ export function nodeWalkAllPrior(
 /**
  * Equivalent to `nodeWalk`, but only matches elements
  */
-export function query(node: Node, predicate: Predicate): Node|null {
+export function query(
+    node: Node,
+    predicate: Predicate,
+    getChildNodes: GetChildNodes = defaultChildNodes): Node|null {
   const elementPredicate = AND(isElement, predicate);
-  return nodeWalk(node, elementPredicate);
+  return nodeWalk(node, elementPredicate, getChildNodes);
 }
 
 /**
  * Equivalent to `nodeWalkAll`, but only matches elements
  */
 export function queryAll(
-    node: Node, predicate: Predicate, matches?: Node[]): Node[] {
+    node: Node,
+    predicate: Predicate,
+    matches?: Node[],
+    getChildNodes: GetChildNodes = defaultChildNodes): Node[] {
   const elementPredicate = AND(isElement, predicate);
-  return nodeWalkAll(node, elementPredicate, matches);
+  return nodeWalkAll(node, elementPredicate, matches, getChildNodes);
 }
 
 function newTextNode(value: string): Node {
