@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [v2.1.0](https://github.com/Polymer/dom5/tree/v2.1.0) (2017-01-13)
 
 - **Added** Option to node traversal methods to traverse templates
 
