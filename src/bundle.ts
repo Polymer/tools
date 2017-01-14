@@ -12,22 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import * as parse5 from 'parse5';
-import * as path from 'path';
-import {posix as posixPath} from 'path';
 import {Transform} from 'stream';
 import File = require('vinyl');
-import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
+import {Analyzer} from 'polymer-analyzer';
+import {Bundler, Options as BundlerOptions} from 'polymer-bundler';
+import {generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
 
-import {urlFromPath} from './path-transformers';
+import {pathFromUrl, urlFromPath} from './path-transformers';
 import {BuildAnalyzer} from './analyzer';
+import * as parse5 from 'parse5';
 
-
-// non-ES module
-const Vulcanize = require('vulcanize');
-const logger = logging.getLogger('cli.build.bundle');
 
 export class BuildBundler extends Transform {
   config: ProjectConfig;
@@ -35,6 +30,7 @@ export class BuildBundler extends Transform {
   sharedBundleUrl: string;
 
   analyzer: BuildAnalyzer;
+  bundler: Bundler;
   sharedFile: File;
 
   constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
@@ -43,6 +39,11 @@ export class BuildBundler extends Transform {
     this.config = config;
     this.analyzer = analyzer;
     this.sharedBundleUrl = 'shared-bundle.html';
+    this.bundler = new Bundler(<BundlerOptions>{
+      analyzer: <Analyzer>analyzer.analyzer,
+      inlineCss: true,
+      inlineScripts: true,
+    });
   }
 
   _transform(
@@ -60,18 +61,13 @@ export class BuildBundler extends Transform {
 
   _flush(done: (error?: any) => void) {
     this._buildBundles().then((bundles: Map<string, string>) => {
-      for (const fragment of this.config.allFragments) {
-        const file = this.analyzer.getFile(fragment);
-        console.assert(file != null);
-        const contents = bundles.get(fragment);
+      for (const filename of bundles.keys()) {
+        const filepath = pathFromUrl(this.config.root, filename);
+        let file =
+            this.analyzer.getFile(filepath) || new File({path: filepath});
+        const contents = bundles.get(filename);
         file.contents = new Buffer(contents);
         this.push(file);
-      }
-      const sharedBundle = bundles.get(this.sharedBundleUrl);
-      if (sharedBundle) {
-        const contents = bundles.get(this.sharedBundleUrl);
-        this.sharedFile.contents = new Buffer(contents);
-        this.push(this.sharedFile);
       }
       // end the stream
       done();
@@ -79,194 +75,22 @@ export class BuildBundler extends Transform {
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
-    const bundles = await this._getBundles();
-    const sharedDepsBundle = (this.config.shell) ?
-        urlFromPath(this.config.root, this.config.shell) :
-        this.sharedBundleUrl;
-    const sharedDeps = bundles.get(sharedDepsBundle) || [];
-    const promises: Promise<{url: string, contents: string}>[] = [];
-
-    if (this.config.shell) {
-      const shellFile = this.analyzer.getFile(this.config.shell);
-      console.assert(shellFile != null);
-      const newShellContent = this._addSharedImportsToShell(bundles);
-      shellFile.contents = new Buffer(newShellContent);
-    }
-
-    for (const fragmentPath of this.config.allFragments) {
-      const fragmentUrl = urlFromPath(this.config.root, fragmentPath);
-      const addedImports = (this.config.isShell(fragmentPath)) ? [] : [
-        posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)
-      ];
-      const excludes = (this.config.isShell(fragmentPath)) ?
-          [] :
-          sharedDeps.concat(sharedDepsBundle);
-
-      promises.push(new Promise((resolve, reject) => {
-        const vulcanize = new Vulcanize({
-          fsResolver: this.analyzer.loader,
-          addedImports: addedImports,
-          stripExcludes: excludes,
-          inlineScripts: true,
-          inlineCss: true,
-          inputUrl: fragmentPath,
-        });
-        vulcanize.process(null, (err: any, doc: string) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({
-              url: fragmentPath,
-              contents: doc,
-            });
+    const strategy = this.config.shell ?
+        generateShellMergeStrategy(this.config.shell, 2) :
+        undefined;
+    return this.bundler
+        .bundle(
+            this.config.allFragments.map(
+                (f) => urlFromPath(this.config.root, f)),
+            strategy)
+        .then((docCollection) => {
+          const contentsMap = new Map();
+          for (const bundleName of docCollection.keys()) {
+            contentsMap.set(
+                bundleName,
+                parse5.serialize(docCollection.get(bundleName).ast));
           }
+          return contentsMap;
         });
-      }));
-    }
-    // vulcanize the shared bundle
-    if (!this.config.shell && sharedDeps && sharedDeps.length !== 0) {
-      logger.info(`generating shared bundle...`);
-      promises.push(this._generateSharedBundle(sharedDeps));
-    }
-    const vulcanizedBundles = await Promise.all(promises);
-    const contentsMap = new Map();
-    for (const bundle of vulcanizedBundles) {
-      contentsMap.set(bundle.url, bundle.contents);
-    }
-    return contentsMap;
-  }
-
-  _addSharedImportsToShell(bundles: Map<string, string[]>): string {
-    console.assert(this.config.shell != null);
-    const shellUrl = urlFromPath(this.config.root, this.config.shell);
-    const shellUrlDir = posixPath.dirname(shellUrl);
-    const shellDeps =
-        bundles.get(shellUrl).map((d) => posixPath.relative(shellUrlDir, d));
-    logger.debug('found shell dependencies', {
-      shellUrl: shellUrl,
-      shellUrlDir: shellUrlDir,
-      shellDeps: shellDeps,
-    });
-
-    const file = this.analyzer.getFile(this.config.shell);
-    console.assert(file != null);
-    const contents = file.contents.toString();
-    const doc = parse5.parse(contents);
-    const imports = dom5.queryAll(
-        doc,
-        dom5.predicates.AND(
-            dom5.predicates.hasTagName('link'),
-            dom5.predicates.hasAttrValue('rel', 'import')));
-    logger.debug('found html import elements', {
-      imports: imports.map((el) => dom5.getAttribute(el, 'href')),
-    });
-
-    // Remove all imports that are in the shared deps list so that we prefer
-    // the ordering or shared deps. Any imports left should be independent of
-    // ordering of shared deps.
-    const shellDepsSet = new Set(shellDeps);
-    for (const _import of imports) {
-      const importHref = dom5.getAttribute(_import, 'href');
-      if (shellDepsSet.has(importHref)) {
-        logger.debug(`removing duplicate import element "${importHref}"...`);
-        dom5.remove(_import);
-      }
-    }
-
-    // Append all shared imports to the end of <head>
-    const head = dom5.query(doc, dom5.predicates.hasTagName('head'));
-    for (const dep of shellDeps) {
-      const newImport = dom5.constructors.element('link');
-      dom5.setAttribute(newImport, 'rel', 'import');
-      dom5.setAttribute(newImport, 'href', dep);
-      dom5.append(head, newImport);
-    }
-    const newContents = parse5.serialize(doc);
-    return newContents;
-  }
-
-  _generateSharedBundle(sharedDeps: string[]): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const contents =
-          sharedDeps.map((d) => `<link rel="import" href="${d}">`).join('\n');
-      const sharedBundlePath =
-          path.resolve(this.config.root, this.sharedBundleUrl);
-
-      this.sharedFile = new File({
-        cwd: this.config.root,
-        base: this.config.root,
-        path: sharedBundlePath,
-        contents: new Buffer(contents),
-      });
-
-      // make the shared bundle visible to vulcanize
-      this.analyzer.addFile(this.sharedFile);
-
-      const vulcanize = new Vulcanize({
-        fsResolver: this.analyzer.loader,
-        inlineScripts: true,
-        inlineCss: true,
-        inputUrl: sharedBundlePath,
-      });
-      vulcanize.process(null, (err: any, doc: any) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({
-            url: this.sharedBundleUrl,
-            contents: doc,
-          });
-        }
-      });
-    });
-  }
-
-  _getBundles() {
-    return this.analyzer.analyzeDependencies.then((indexes) => {
-      const depsToEntrypoints = indexes.depsToFragments;
-      const fragmentToDeps = indexes.fragmentToDeps;
-      const bundles = new Map<string, string[]>();
-
-      const addImport = (from: string, to: string) => {
-        let imports: string[];
-        if (!bundles.has(from)) {
-          imports = [];
-          bundles.set(from, imports);
-        } else {
-          imports = bundles.get(from);
-        }
-        if (!imports.includes(to)) {
-          imports.push(to);
-        }
-      };
-
-      // We want to collect dependencies that appear in > 1 entrypoint, but
-      // we need to collect them in document order, so rather than iterate
-      // directly through each dependency in depsToEntrypoints, we iterate
-      // through fragments in fragmentToDeps, which has dependencies in
-      // order for each fragment. Then we iterate through dependencies for
-      // each fragment and look up how many fragments depend on it.
-      // This assumes an ordering between fragments, since they could have
-      // conflicting orders between their top level imports. The shell should
-      // always come first.
-      for (const fragment of fragmentToDeps.keys()) {
-        const fragmentUrl = urlFromPath(this.config.root, fragment);
-        const dependencies = fragmentToDeps.get(fragment);
-        for (const dep of dependencies) {
-          const fragmentCount = depsToEntrypoints.get(dep).length;
-          if (fragmentCount > 1) {
-            if (this.config.shell) {
-              addImport(urlFromPath(this.config.root, this.config.shell), dep);
-            } else {
-              addImport(this.sharedBundleUrl, dep);
-              addImport(fragmentUrl, this.sharedBundleUrl);
-            }
-          } else {
-            addImport(fragmentUrl, dep);
-          }
-        }
-      }
-      return bundles;
-    });
   }
 }

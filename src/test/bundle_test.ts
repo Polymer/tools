@@ -114,13 +114,13 @@ suite('BuildBundler', () => {
         assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
         // No shared-bundle bundles framework
-        const sharedDoc = parse5(getFile('shared-bundle.html'));
+        const sharedDoc = parse5(getFile('shared_bundle_1.html'));
         assert.isTrue(hasMarker(sharedDoc, 'framework'));
         assert.isFalse(hasImport(sharedDoc, 'framework.html'));
 
         // fragments import shared-bundle
-        assert.isTrue(hasImport(entrypointDoc, 'shared-bundle.html'));
-        assert.isTrue(hasImport(shellDoc, 'shared-bundle.html'));
+        assert.isTrue(hasImport(entrypointDoc, 'shared_bundle_1.html'));
+        assert.isTrue(hasImport(shellDoc, 'shared_bundle_1.html'));
       }));
 
   test.skip(
