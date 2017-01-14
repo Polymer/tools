@@ -26,7 +26,6 @@
     "@types/vinyl": "^1.1.29",
     "@types/vinyl-fs": "0.0.28",
     "dom5": "^2.0.1",
-    "hydrolysis": "^1.23.3",
     "merge-stream": "^1.0.1",
     "minimatch-all": "^1.0.2",
     "multipipe": "^1.0.2",
