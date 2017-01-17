@@ -61,7 +61,7 @@ gulp.task('test1', ['clean'], (cb) => {
   let allFiles = mergeStream(sources, dependencies).pipe(project.analyzer);
 
   // fork the stream in case downstream transformers mutate the files
-  // this fork will vulcanize the project
+  // this fork will generate the bundle files for the project
   let bundledPhase =
       fork(allFiles)
           .pipe(project.bundler)
