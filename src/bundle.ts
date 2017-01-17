@@ -17,7 +17,7 @@ import File = require('vinyl');
 import {ProjectConfig} from 'polymer-project-config';
 import {Analyzer} from 'polymer-analyzer';
 import {Bundler, Options as BundlerOptions} from 'polymer-bundler';
-import {generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
+import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
 
 import {pathFromUrl, urlFromPath} from './path-transformers';
 import {BuildAnalyzer} from './analyzer';
@@ -75,9 +75,13 @@ export class BuildBundler extends Transform {
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
-    const strategy = this.config.shell ?
-        generateShellMergeStrategy(this.config.shell, 2) :
-        undefined;
+    let strategy: BundleStrategy;
+    const fragments = Array.from(this.config.allFragments);
+    if (this.config.shell) {
+      strategy = generateShellMergeStrategy(
+          urlFromPath(this.config.root, this.config.shell), 2);
+      fragments.push(this.config.shell);
+    }
     return this.bundler
         .bundle(
             this.config.allFragments.map(
