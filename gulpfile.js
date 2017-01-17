@@ -55,7 +55,12 @@ gulp.task('tslint', function() {
 });
 
 gulp.task('depcheck', function() {
-  return depcheck(__dirname, {}).then((result) => {
+  return depcheck(__dirname, {
+    // "@types/*" dependencies are type declarations that are automatically
+    // loaded by TypeScript during build. depcheck can't detect this so we
+    // ignore them here.
+    ignoreMatches: ['@types/*']
+  }).then((result) => {
     let invalidFiles = Object.keys(result.invalidFiles) || [];
     let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
     if (invalidJsFiles.length > 0) {
