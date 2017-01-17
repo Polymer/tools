@@ -43,7 +43,7 @@ export class PolymerProject {
   private _parts: Map<string, SplitFile> = new Map();
 
   /**
-   * A `Transform` stream that runs Hydrolysis analysis on the files. It
+   * A `Transform` stream that uses polymer-analyzer to analyze the files. It
    * can be used to get information on dependencies and fragments for the
    * project once the source & dependency streams have been piped into it.
    */
