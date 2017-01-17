@@ -15,8 +15,7 @@
 import {Transform} from 'stream';
 import File = require('vinyl');
 import {ProjectConfig} from 'polymer-project-config';
-import {Analyzer} from 'polymer-analyzer';
-import {Bundler, Options as BundlerOptions} from 'polymer-bundler';
+import {Bundler} from 'polymer-bundler';
 import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
 
 import {pathFromUrl, urlFromPath} from './path-transformers';
@@ -39,8 +38,8 @@ export class BuildBundler extends Transform {
     this.config = config;
     this.analyzer = analyzer;
     this.sharedBundleUrl = 'shared-bundle.html';
-    this.bundler = new Bundler(<BundlerOptions>{
-      analyzer: <Analyzer>analyzer.analyzer,
+    this.bundler = new Bundler({
+      analyzer: analyzer.analyzer,
       inlineCss: true,
       inlineScripts: true,
     });
