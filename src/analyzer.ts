@@ -140,10 +140,11 @@ export class BuildAnalyzer {
   config: ProjectConfig;
   loader: StreamLoader;
   analyzer: Analyzer;
+  started: boolean = false;
 
   private _sourcesStream: NodeJS.ReadableStream;
   private _sourcesProcessingStream: NodeJS.ReadWriteStream;
-  private _dependenciesStream: Transform = new PassThrough({objectMode: true});
+  private _dependenciesStream: Transform;
   private _dependenciesProcessingStream: NodeJS.ReadWriteStream;
 
   files = new Map<string, File>();
@@ -171,8 +172,22 @@ export class BuildAnalyzer {
     this.analyzeDependencies = new Promise((resolve, _reject) => {
       this._resolveDependencyAnalysis = resolve;
     });
+  }
 
-    // Create the vinyl source stream of files to read out of.
+  /**
+   * Start analysis by setting up the sources and dependencies analysis
+   * pipelines and starting the source stream. Files will not be loaded from
+   * disk until this is called. Can be called multiple times but will only run
+   * set up once.
+   */
+  startAnalysis(): void {
+    if (this.started) {
+      return;
+    }
+    this.started = true;
+
+    // Create the base streams for sources & dependencies to be read from.
+    this._dependenciesStream = new PassThrough({objectMode: true});
     this._sourcesStream = vinylSrc(this.config.sources, {
       cwdbase: true,
       nodir: true,
@@ -184,6 +199,7 @@ export class BuildAnalyzer {
     this._sourcesProcessingStream =
         this._sourcesStream.pipe(new ResolveTransform(this))
             .pipe(new AnalyzeTransform(this));
+
 
     // _dependenciesProcessingStream: Pipe the dependencies stream through...
     //   1. The vinyl loading stream, to load file objects from file paths
@@ -197,7 +213,8 @@ export class BuildAnalyzer {
    * Return _dependenciesOutputStream, which will contain fully loaded file
    * objects for each dependency after analysis.
    */
-  get dependencies(): NodeJS.ReadableStream {
+  dependencies(): NodeJS.ReadableStream {
+    this.startAnalysis();
     return this._dependenciesProcessingStream;
   }
 
@@ -205,7 +222,8 @@ export class BuildAnalyzer {
    * Return _sourcesOutputStream, which will contain fully loaded file
    * objects for each source after analysis.
    */
-  get sources(): NodeJS.ReadableStream {
+  sources(): NodeJS.ReadableStream {
+    this.startAnalysis();
     return this._sourcesProcessingStream;
   }
 

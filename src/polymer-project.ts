@@ -79,7 +79,7 @@ export class PolymerProject {
    * matched by the project's `config.sources` value.
    */
   sources(): NodeJS.ReadableStream {
-    return this.analyzer.sources;
+    return this.analyzer.sources();
   }
 
   /**
@@ -87,7 +87,8 @@ export class PolymerProject {
    * loaded inside the analyzed project that are not considered source files.
    */
   dependencies(): NodeJS.ReadableStream {
-    let dependenciesStream: NodeJS.ReadableStream = this.analyzer.dependencies;
+    let dependenciesStream: NodeJS.ReadableStream =
+        this.analyzer.dependencies();
 
     // If we need to include additional dependencies, create a new vinyl source
     // stream and pipe our default dependencyStream through it to combine.
