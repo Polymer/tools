@@ -75,11 +75,9 @@ export class BuildBundler extends Transform {
 
   async _buildBundles(): Promise<Map<string, string>> {
     let strategy: BundleStrategy;
-    const fragments = Array.from(this.config.allFragments);
     if (this.config.shell) {
       strategy = generateShellMergeStrategy(
           urlFromPath(this.config.root, this.config.shell), 2);
-      fragments.push(this.config.shell);
     }
     return this.bundler
         .bundle(
