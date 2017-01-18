@@ -194,6 +194,53 @@ suite('Project Config', () => {
         });
       });
 
+      test('sets builds property to an array when `build` option is a single build object', () => {
+        const absoluteRoot = process.cwd();
+        const config = new ProjectConfig({
+          build: {
+            name: 'bundled',
+            bundle: true,
+            insertPrefetchLinks: true,
+          }
+        });
+        assert.property(config, 'builds');
+        assert.deepEqual(config.builds, [{
+          name: 'bundled',
+          bundle: true,
+          insertPrefetchLinks: true,
+        }]);
+      });
+
+      test('sets builds property to an array when `build` option is an array', () => {
+        const absoluteRoot = process.cwd();
+        const config = new ProjectConfig({
+          build: [
+            {
+              name: 'bundled',
+              bundle: true,
+              insertPrefetchLinks: true,
+            },
+            {
+              name: 'unbundled',
+              bundle: false,
+              insertPrefetchLinks: true,
+            }
+          ]
+        });
+        assert.property(config, 'builds');
+        assert.deepEqual(config.builds, [
+          {
+            name: 'bundled',
+            bundle: true,
+            insertPrefetchLinks: true,
+          },
+          {
+            name: 'unbundled',
+            bundle: false,
+            insertPrefetchLinks: true,
+          }
+        ]);
+      });
     });
 
     suite('isFragment()', () => {

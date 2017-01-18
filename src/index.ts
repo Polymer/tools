@@ -59,6 +59,15 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
   return options;
 }
 
+export interface ProjectBuildOptions {
+  addServiceWorker?: boolean;
+  swPrecacheConfig?: string;
+  insertPrefetchLinks?: boolean;
+  bundle?: boolean;
+  html?: {minify: boolean};
+  css?: {minify: boolean};
+  js?: {minify?: boolean, compile?: boolean};
+}
 
 export interface ProjectOptions {
   /**
@@ -96,6 +105,8 @@ export interface ProjectOptions {
    * as extraDependencies in the build target.
    */
   extraDependencies?: string[];
+
+  build?: ProjectBuildOptions|ProjectBuildOptions[];
 }
 
 export class ProjectConfig {
@@ -107,6 +118,7 @@ export class ProjectConfig {
   readonly sources: string[];
   readonly extraDependencies: string[];
 
+  readonly builds: ProjectBuildOptions[];
   readonly allFragments: string[];
 
   /**
@@ -216,6 +228,15 @@ export class ProjectConfig {
     }
     if (this.allFragments.length === 0) {
       this.allFragments.push(this.entrypoint);
+    }
+
+    /**
+     * builds
+     */
+    if (Array.isArray(options.build)) {
+      this.builds = options.build;
+    } else if (options.build) {
+      this.builds = [options.build];
     }
   }
 
