@@ -16,29 +16,30 @@ import {Warning} from '../warning/warning';
 import {FeatureKinds} from './document';
 import {Feature} from './feature';
 
+export type QueryOptions = {} & object;
+
 /**
  * Represents something like a Document or a Package. A container of features
  * and warnings that's queryable in a few different ways.
  */
 export interface Queryable {
-  getByKind<K extends keyof FeatureKinds>(kind: K): Set<FeatureKinds[K]>;
-  getByKind(kind: string): Set<Feature>;
-
-  getById<K extends keyof FeatureKinds>(kind: K, identifier: string):
+  getByKind<K extends keyof FeatureKinds>(kind: K, options?: QueryOptions):
       Set<FeatureKinds[K]>;
-  getById(kind: string, identifier: string): Set<Feature>;
+  getByKind(kind: string, options?: QueryOptions): Set<Feature>;
 
-  getOnlyAtId<K extends keyof FeatureKinds>(kind: K, identifier: string):
-      FeatureKinds[K]|undefined;
-  getOnlyAtId(kind: string, identifier: string): Feature|undefined;
+  getById<K extends keyof FeatureKinds>(
+      kind: K, identifier: string,
+      options?: QueryOptions): Set<FeatureKinds[K]>;
+  getById(kind: string, identifier: string, options?: QueryOptions):
+      Set<Feature>;
 
-  /**
-   * Get all transatively reachable features.
-   */
-  getFeatures(): Set<Feature>;
+  getOnlyAtId<K extends keyof FeatureKinds>(
+      kind: K, identifier: string,
+      options?: QueryOptions): FeatureKinds[K]|undefined;
+  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
+      |undefined;
 
-  /**
-   * Get all transatively reachable warnings.
-   */
-  getWarnings(): Warning[];
+  getFeatures(options?: QueryOptions): Set<Feature>;
+
+  getWarnings(options?: QueryOptions): Warning[];
 }

@@ -75,7 +75,7 @@ task('build', ['compile', 'json-schema']);
 
 task('compile', function() {
   const srcs = gulp.src('src/**/*.ts').pipe(newer({dest: 'lib', ext: '.js'}));
-  const tsResult = srcs.pipe(sourcemaps.init()).pipe(typescript(tsProject));
+  const tsResult = srcs.pipe(sourcemaps.init()).pipe(typescript(tsProject, [], typescript.reporter.nullReporter()));
 
   // Use this once typescript-gulp supports `include` in tsconfig:
   // const srcs = tsProject.src();

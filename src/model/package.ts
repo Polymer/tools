@@ -37,7 +37,7 @@ export class Package implements Queryable {
     // can be reached from them. That way we'll do less duplicate work when we
     // query over all documents.
     for (const doc of potentialRoots) {
-      for (const imprt of doc.getByKind('import')) {
+      for (const imprt of doc.getByKind('import', {lookInDependencies: true})) {
         // When there's cycles we can keep any element of the cycle, so why not
         // this one.
         if (imprt.document !== doc) {
@@ -52,8 +52,9 @@ export class Package implements Queryable {
   getByKind(kind: string): Set<Feature>;
   getByKind(kind: string): Set<Feature> {
     const result = new Set();
+    const docQueryOptions = {lookInDependencies: true};
     for (const doc of this._documents) {
-      addAll(result, doc.getByKind(kind));
+      addAll(result, doc.getByKind(kind, docQueryOptions));
     }
     return result;
   }
@@ -63,8 +64,9 @@ export class Package implements Queryable {
   getById(kind: string, identifier: string): Set<Feature>;
   getById(kind: string, identifier: string): Set<Feature> {
     const result = new Set();
+    const docQueryOptions = {lookInDependencies: true};
     for (const doc of this._documents) {
-      addAll(result, doc.getById(kind, identifier));
+      addAll(result, doc.getById(kind, identifier, docQueryOptions));
     }
     return result;
   }
@@ -87,8 +89,9 @@ export class Package implements Queryable {
    */
   getFeatures(): Set<Feature> {
     const result = new Set();
+    const docQueryOptions = {lookInDependencies: true};
     for (const doc of this._documents) {
-      addAll(result, doc.getFeatures(true));
+      addAll(result, doc.getFeatures(docQueryOptions));
     }
     return result;
   }
@@ -98,8 +101,9 @@ export class Package implements Queryable {
    */
   getWarnings(): Warning[] {
     const result = new Set(this._toplevelWarnings);
+    const docQueryOptions = {lookInDependencies: true};
     for (const doc of this._documents) {
-      addAll(result, new Set(doc.getWarnings(true)));
+      addAll(result, new Set(doc.getWarnings(docQueryOptions)));
     }
     return Array.from(result);
   }

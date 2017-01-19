@@ -157,5 +157,5 @@ async function analyzeDir(baseDir: string) {
               fn => `<link rel="import" href="${path.relative(baseDir, fn)}">`);
   const document = await analyzer.analyze(
       path.join('ephemeral.html'), importStatements.join('\n'));
-  return Array.from(document.getByKind('element'));
+  return Array.from(document.getByKind('element', {lookInDependencies: true}));
 }

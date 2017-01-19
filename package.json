@@ -85,6 +85,6 @@
     "shady-css-parser": "0.0.8",
     "split": "^1.0.0",
     "strip-indent": "^2.0.0",
-    "typescript": "^2.1.4"
+    "typescript": "^2.2.0"
   }
 }

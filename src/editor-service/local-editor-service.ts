@@ -65,7 +65,8 @@ export class LocalEditorService extends EditorService {
     }
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements =
-          Array.from(document.getByKind('element')).filter(e => e.tagName);
+          Array.from(document.getByKind('element', {lookInDependencies: true}))
+              .filter(e => e.tagName);
       return {
         kind: 'element-tags',
         elements: elements.map(e => {
@@ -80,7 +81,8 @@ export class LocalEditorService extends EditorService {
         })
       };
     } else if (location.kind === 'attribute') {
-      const elements = document.getById('element', location.element.nodeName);
+      const elements = document.getById(
+          'element', location.element.nodeName, {lookInDependencies: true});
       let attributes: AttributeCompletion[] = [];
       for (const element of elements) {
         // A map from the inheritedFrom to a sort prefix. Note that
@@ -127,7 +129,7 @@ export class LocalEditorService extends EditorService {
   async getWarningsForFile(localPath: string): Promise<Warning[]> {
     try {
       const doc = await this._analyzer.analyze(localPath);
-      return doc.getWarnings();
+      return doc.getWarnings({lookInDependencies: false});
     } catch (e) {
       // This might happen if, e.g. `localPath` has a parse error. In that case
       // we can't construct a valid Document, but we might still be able to give
@@ -152,9 +154,11 @@ export class LocalEditorService extends EditorService {
       return;
     }
     if (location.kind === 'tagName') {
-      return document.getOnlyAtId('element', location.element.nodeName);
+      return document.getOnlyAtId(
+          'element', location.element.nodeName, {lookInDependencies: true});
     } else if (location.kind === 'attribute') {
-      const elements = document.getById('element', location.element.nodeName);
+      const elements = document.getById(
+          'element', location.element.nodeName, {lookInDependencies: true});
       if (elements.size === 0) {
         return;
       }

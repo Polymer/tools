@@ -97,6 +97,14 @@ export interface FeatureKinds {
   'js-import': Import;
 }
 
+export type QueryOptions = object & {
+  /**
+   * If given and true, the query will return results from the document and its
+   * dependencies. Otherwise it will only include results from the document.
+   */
+  lookInDependencies?: boolean;
+};
+
 export class Document implements Feature, Queryable {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
@@ -204,37 +212,43 @@ export class Document implements Feature, Queryable {
     this._localFeatures.add(feature);
   }
 
-  getByKind<K extends keyof FeatureKinds>(kind: K): Set<FeatureKinds[K]>;
-  getByKind(kind: string): Set<Feature>;
-  getByKind(kind: string): Set<Feature> {
-    if (this._featuresByKind) {
+  getByKind<K extends keyof FeatureKinds>(kind: K, options?: QueryOptions):
+      Set<FeatureKinds[K]>;
+  getByKind(kind: string, options?: QueryOptions): Set<Feature>;
+  getByKind(kind: string, options?: QueryOptions): Set<Feature> {
+    options = options || {};
+    if (this._featuresByKind && options.lookInDependencies) {
       // We have a fast index! Use that.
       return this._featuresByKind.get(kind) || new Set();
-    } else if (this._doneResolving) {
+    } else if (this._doneResolving && options.lookInDependencies) {
       // We're done discovering features in this document and its children so
       // we can safely build up the indexes.
       this._buildIndexes();
-      return this.getByKind(kind);
+      return this.getByKind(kind, options);
     }
-    return this._getByKind(kind, new Set());
+    return this._getByKind(kind, new Set(), options);
   }
 
-  getById<K extends keyof FeatureKinds>(kind: K, identifier: string):
-      Set<FeatureKinds[K]>;
-  getById(kind: string, identifier: string): Set<Feature>;
-  getById(kind: string, identifier: string): Set<Feature> {
-    if (this._featuresByKindAndId) {
+  getById<K extends keyof FeatureKinds>(
+      kind: K, identifier: string,
+      options?: QueryOptions): Set<FeatureKinds[K]>;
+  getById(kind: string, identifier: string, options?: QueryOptions):
+      Set<Feature>;
+  getById(kind: string, identifier: string, options?: QueryOptions):
+      Set<Feature> {
+    options = options || {};
+    if (this._featuresByKindAndId && options.lookInDependencies) {
       // We have a fast index! Use that.
       const idMap = this._featuresByKindAndId.get(kind);
       return (idMap && idMap.get(identifier)) || new Set();
-    } else if (this._doneResolving) {
+    } else if (this._doneResolving && options.lookInDependencies) {
       // We're done discovering features in this document and its children so
       // we can safely build up the indexes.
       this._buildIndexes();
-      return this.getById(kind, identifier);
+      return this.getById(kind, identifier, options);
     }
     const result = new Set<Feature>();
-    for (const featureOfKind of this.getByKind(kind)) {
+    for (const featureOfKind of this.getByKind(kind, options)) {
       if (featureOfKind.identifiers.has(identifier)) {
         result.add(featureOfKind);
       }
@@ -242,11 +256,14 @@ export class Document implements Feature, Queryable {
     return result;
   }
 
-  getOnlyAtId<K extends keyof FeatureKinds>(kind: K, identifier: string):
-      FeatureKinds[K]|undefined;
-  getOnlyAtId(kind: string, identifier: string): Feature|undefined;
-  getOnlyAtId(kind: string, identifier: string): Feature|undefined {
-    const results = this.getById(kind, identifier);
+  getOnlyAtId<K extends keyof FeatureKinds>(
+      kind: K, identifier: string,
+      options?: QueryOptions): FeatureKinds[K]|undefined;
+  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
+      |undefined;
+  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
+      |undefined {
+    const results = this.getById(kind, identifier, options);
     if (results.size > 1) {
       throw new Error(
           `Expected to find at most one ${kind} with id ${identifier} ` +
@@ -255,8 +272,9 @@ export class Document implements Feature, Queryable {
     return results.values().next().value || undefined;
   }
 
-  private _getByKind(kind: string, documentsWalked: Set<Document>):
-      Set<Feature> {
+  private _getByKind(
+      kind: string, documentsWalked: Set<Document>,
+      options: QueryOptions): Set<Feature> {
     const result = new Set<Feature>();
     documentsWalked.add(this);
 
@@ -264,10 +282,11 @@ export class Document implements Feature, Queryable {
       if (feature.kinds.has(kind)) {
         result.add(feature);
       }
-      if (feature.kinds.has('import')) {
+      if (options.lookInDependencies && feature.kinds.has('import')) {
         const document = (feature as Import).document;
         if (!documentsWalked.has(document)) {
-          for (const subFeature of document._getByKind(kind, documentsWalked)) {
+          for (const subFeature of document._getByKind(
+                   kind, documentsWalked, options)) {
             result.add(subFeature);
           }
         }
@@ -275,7 +294,8 @@ export class Document implements Feature, Queryable {
       if (feature.kinds.has('document')) {
         const document = (feature as Document);
         if (!documentsWalked.has(document)) {
-          for (const subFeature of document._getByKind(kind, documentsWalked)) {
+          for (const subFeature of document._getByKind(
+                   kind, documentsWalked, options)) {
             result.add(subFeature);
           }
         }
@@ -285,49 +305,37 @@ export class Document implements Feature, Queryable {
     return result;
   }
 
-  /**
-   * Get features for all documents reachable via imports in this document.
-   * If `deep` is false, only return features in this document.
-   */
-  getFeatures(deep?: boolean): Set<Feature> {
-    if (deep == null) {
-      deep = true;
-    }
+  getFeatures(options?: QueryOptions): Set<Feature> {
+    options = options || {};
     const result = new Set<Feature>();
-    this._getFeatures(result, new Set<Document>(), deep);
+    this._getFeatures(result, new Set<Document>(), options);
     return result;
   }
 
   private _getFeatures(
-      result: Set<Feature>, visited: Set<Document>, deep: boolean) {
+      result: Set<Feature>, visited: Set<Document>, options: QueryOptions) {
     if (visited.has(this)) {
       return;
     }
     visited.add(this);
     for (const feature of this._localFeatures) {
       result.add(feature);
-      if (deep) {
-        if (feature.kinds.has('document')) {
-          (feature as Document)._getFeatures(result, visited, deep);
-        }
-        if (feature.kinds.has('import')) {
-          (feature as Import).document._getFeatures(result, visited, deep);
-        }
+      if (feature.kinds.has('document')) {
+        (feature as Document)._getFeatures(result, visited, options);
+      }
+      if (feature.kinds.has('import') && options.lookInDependencies) {
+        (feature as Import).document._getFeatures(result, visited, options);
       }
     }
   }
 
   /**
-   * Get warnings for this document and all local features of this document. If
-   * `deep` is true, return warnings for all documents and features reachable
-   * via imports in this document.
+   * Get warnings for the document and all matched features.
    */
-  getWarnings(deep?: boolean): Warning[] {
+  getWarnings(options?: QueryOptions): Warning[] {
+    options = options || {};
     const warnings: Set<Warning> = new Set(this.warnings);
-    if (deep == null) {
-      deep = false;
-    }
-    for (const feature of this.getFeatures(deep)) {
+    for (const feature of this.getFeatures(options)) {
       for (const warning of feature.warnings) {
         warnings.add(warning);
       }
@@ -413,7 +421,7 @@ export class Document implements Feature, Queryable {
           `Need to wait until afterwards or the indexes would be incomplete.`);
     }
     this._initIndexes();
-    for (const feature of this.getFeatures()) {
+    for (const feature of this.getFeatures({lookInDependencies: true})) {
       this._indexFeature(feature);
     }
   }
