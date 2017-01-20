@@ -11,6 +11,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as logging from 'plylog';
+import minimatchAll = require('minimatch-all');
 
 const logger = logging.getLogger('polymer-project-config');
 
@@ -225,6 +226,10 @@ export class ProjectConfig {
 
   isShell(filepath: string): boolean {
     return (!!this.shell && (this.shell === filepath));
+  }
+
+  isSource(filepath: string): boolean {
+    return minimatchAll(filepath, this.sources);
   }
 
   /**
