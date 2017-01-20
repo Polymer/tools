@@ -43,7 +43,7 @@ export type LazyEdgeMap = Map<string, string[]>;
  * A static analyzer for web projects.
  *
  * An Analyzer can load and parse documents of various types, and extract
- * arbitratrary information from the documents, and transitively load
+ * arbitrary information from the documents, and transitively load
  * dependencies. An Analyzer instance is configured with parsers, and scanners
  * which do the actual work of understanding different file types.
  */
