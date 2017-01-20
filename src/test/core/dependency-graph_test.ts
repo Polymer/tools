@@ -12,31 +12,38 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {assert} from 'chai';
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
+
+import {assert, use} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
 import {DependencyGraph} from '../../core/dependency-graph';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
+import chaiAsPromised = require('chai-as-promised');
+use(chaiAsPromised);
+
 suite('DependencyGraph', () => {
+
   function assertStringSetsEqual(
       actual: Set<string>, expected: Iterable<string>, message?: string) {
     assert.deepEqual(
         Array.from(actual).sort(), Array.from(expected).sort(), message);
   }
+
   test('can calculate dependants', () => {
     // Testing building up and then tearing back down the graph:
     // base.html -> a.html -> common.html
     // base.html -> b.html -> common.html
     let graph = new DependencyGraph();
     assertStringSetsEqual(graph.getAllDependantsOf('common.html'), []);
-    graph.addDependenciesOf('a.html', ['common.html']);
+    graph.addDocument('a.html', ['common.html']);
     assertStringSetsEqual(graph.getAllDependantsOf('common.html'), ['a.html']);
-    graph.addDependenciesOf('b.html', ['common.html']);
+    graph.addDocument('b.html', ['common.html']);
     assertStringSetsEqual(
         graph.getAllDependantsOf('common.html'), ['a.html', 'b.html']);
-    graph.addDependenciesOf('base.html', ['a.html', 'b.html']);
+    graph.addDocument('base.html', ['a.html', 'b.html']);
     assertStringSetsEqual(
         graph.getAllDependantsOf('common.html'),
         ['a.html', 'b.html', 'base.html']);
@@ -82,5 +89,68 @@ suite('DependencyGraph', () => {
         'dependencies/root.html'
       ]);
     });
+
   });
+
+  suite('whenReady', () => {
+
+    test('resolves for a single added document', () => {
+      const graph = new DependencyGraph();
+      assert.isFulfilled(graph.whenReady('a'));
+      graph.addDocument('a', []);
+    });
+
+    test('resolves for a single rejected document', () => {
+      const graph = new DependencyGraph();
+      const done = assert.isFulfilled(graph.whenReady('a'));
+      graph.rejectDocument('a', new Error('because'));
+      return done;
+    });
+
+    test('resolves for a document with an added dependency', () => {
+      const graph = new DependencyGraph();
+      const done = assert.isFulfilled(graph.whenReady('a'));
+      graph.addDocument('a', ['b']);
+      graph.addDocument('b', []);
+      return done;
+    });
+
+    test('resolves for a document with a rejected dependency', () => {
+      const graph = new DependencyGraph();
+      const done = assert.isFulfilled(graph.whenReady('a'));
+      graph.addDocument('a', ['b']);
+      graph.rejectDocument('b', new Error('because'));
+      return done;
+    });
+
+    test('resolves for a simple cycle', () => {
+      const graph = new DependencyGraph();
+      const promises = [
+        assert.isFulfilled(graph.whenReady('a')),
+        assert.isFulfilled(graph.whenReady('b'))
+      ];
+      graph.addDocument('a', ['b']);
+      graph.addDocument('b', ['a']);
+      return Promise.all(promises);
+    });
+
+    test('does not resolve early for a cycle with a leg', async() => {
+      const graph = new DependencyGraph();
+      let cResolved = false;
+      const aReady = graph.whenReady('a').then(() => {
+        assert.isTrue(cResolved);
+      });
+      const bReady = graph.whenReady('b').then(() => {
+        assert.isTrue(cResolved);
+      });
+      graph.addDocument('a', ['b', 'c']);
+      graph.addDocument('b', ['a']);
+      await Promise.resolve();
+      cResolved = true;
+      graph.addDocument('c', []);
+      await Promise.all([aReady, bReady]);
+    });
+
+  });
+
 });
