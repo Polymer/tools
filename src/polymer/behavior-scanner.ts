@@ -171,7 +171,8 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    const explicitName = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name');
+    const explicitName =
+        jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name');
     behavior.className = explicitName || symbol;
     if (!behavior.className) {
       throw new Error(

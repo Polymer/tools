@@ -17,7 +17,7 @@ import {ASTNode, treeAdapters} from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
-import {Feature, getAttachedCommentText, Resolvable, SourceRange, Slot} from '../model/model';
+import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange} from '../model/model';
 import {Warning} from '../warning/warning';
 
 const p = dom5.predicates;
@@ -31,11 +31,12 @@ export class ScannedDomModule implements Resolvable {
   sourceRange: SourceRange;
   astNode: dom5.Node;
   warnings: Warning[] = [];
-  slots: Slot[];
+  slots:
+  Slot[];
 
   constructor(
-      id: string|null, node: ASTNode, sourceRange: SourceRange,
-      ast: dom5.Node, slots: Slot[]) {
+      id: string|null, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node,
+      slots: Slot[]) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
@@ -65,7 +66,8 @@ export class DomModule implements Feature {
   sourceRange: SourceRange;
   astNode: dom5.Node;
   warnings: Warning[];
-  slots: Slot[];
+  slots:
+  Slot[];
 
   constructor(
       node: ASTNode, id: string|null, comment: string|undefined,
@@ -93,13 +95,17 @@ export class DomModuleScanner implements HtmlScanner {
 
     await visit((node) => {
       if (isDomModule(node)) {
-        const template = dom5.query(node, dom5.predicates.hasTagName('template'));
+        const template =
+            dom5.query(node, dom5.predicates.hasTagName('template'));
         let slots: Slot[] = [];
         if (template) {
           slots = dom5.queryAll(
-            treeAdapters.default.getTemplateContent(template),
-            dom5.predicates.hasTagName('slot')
-          ).map(s => new Slot(dom5.getAttribute(s, 'name') || '', document.sourceRangeForNode(s)!));
+                          treeAdapters.default.getTemplateContent(template),
+                          dom5.predicates.hasTagName('slot'))
+                      .map(
+                          s => new Slot(
+                              dom5.getAttribute(s, 'name') || '',
+                              document.sourceRangeForNode(s)!));
         }
         domModules.push(new ScannedDomModule(
             dom5.getAttribute(node, 'id'),

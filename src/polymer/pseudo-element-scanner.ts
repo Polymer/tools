@@ -15,15 +15,16 @@
 import * as dom5 from 'dom5';
 import {ASTNode} from 'parse5';
 
-import * as jsdoc from '../javascript/jsdoc';
-import {annotateElementHeader} from './docs';
-
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
+import * as jsdoc from '../javascript/jsdoc';
+
+import {annotateElementHeader} from './docs';
 import {ScannedPolymerElement} from './polymer-element';
 
 /**
- * A Polymer pseudo-element is an element that is declared in an unusual way, such
+ * A Polymer pseudo-element is an element that is declared in an unusual way,
+ * such
  * that the analyzer couldn't normally analyze it, so instead it is declared in
  * comments.
  */
@@ -35,13 +36,15 @@ export class PseudoElementScanner implements HtmlScanner {
     const elements: ScannedPolymerElement[] = [];
 
     await visit((node: ASTNode) => {
-      if (dom5.isCommentNode(node) && node.data && node.data.includes('@pseudoElement')) {
+      if (dom5.isCommentNode(node) && node.data &&
+          node.data.includes('@pseudoElement')) {
         const parsedJsdoc = jsdoc.parseJsdoc(node.data);
         const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
         if (pseudoTag) {
           const element = new ScannedPolymerElement({
             tagName: pseudoTag,
-            jsdoc: {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
+            jsdoc:
+                {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
             properties: [],
             description: parsedJsdoc.description,
             sourceRange: document.sourceRangeForNode(node)

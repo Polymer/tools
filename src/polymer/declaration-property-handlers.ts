@@ -16,10 +16,10 @@ import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import {Severity} from '../warning/warning';
 
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerElement} from './polymer-element';
-import {Severity} from '../warning/warning';
 
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void
@@ -88,10 +88,12 @@ export function declarationPropertyHandlers(
         const handler = p.value.type !== 'Literal' || p.value.value;
 
         if (typeof evtName !== 'string' || typeof handler !== 'string') {
-            // TODO (maklesoft): Notifiy the user somehow that a listener entry was not extracted
-            // because the event or handler namecould not be statically analyzed. E.g. add a low-severity
-            // warning once opting out of rules is supported.
-            continue;
+          // TODO (maklesoft): Notifiy the user somehow that a listener entry
+          // was not extracted
+          // because the event or handler namecould not be statically analyzed.
+          // E.g. add a low-severity
+          // warning once opting out of rules is supported.
+          continue;
         }
 
         declaration.listeners.push({event: evtName, handler: handler});
