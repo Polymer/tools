@@ -12,10 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from 'polymer-analyzer/lib/model/document';
-import {Warning} from 'polymer-analyzer/lib/warning/warning';
+import {MoveStyleIntoTemplate} from './html/move-style-into-template';
+import {Rule} from './rule';
 
-export abstract class Rule {
-  abstract code: string;
-  abstract check(document: Document): Promise<Warning[]>;
-}
+export const AllRules: Rule[] = [new MoveStyleIntoTemplate()];
