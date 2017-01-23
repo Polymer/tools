@@ -15,8 +15,6 @@
 import {assert} from 'chai';
 
 import {AnalysisCache} from '../../core/analysis-cache';
-import {ScannedDocument} from '../../model/document';
-import {PromiseGroup} from '../../util/promise-group';
 
 suite('AnalysisCache', () => {
   test('it can be constructed', () => {
@@ -28,8 +26,6 @@ suite('AnalysisCache', () => {
     cache.parsedDocumentPromises.set(path, `parsed ${path} promise` as any);
     cache.scannedDocumentPromises.set(path, `scanned ${path} promise` as any);
     cache.analyzedDocumentPromises.set(path, `analyzed ${path} promise` as any);
-    const dependenciesScanned = new PromiseGroup<ScannedDocument>();
-    dependenciesScanned.close();
     cache.scannedDocuments.set(path, `scanned ${path}` as any);
     cache.analyzedDocuments.set(path, `analyzed ${path}` as any);
     cache.dependencyGraph.addDocument(path, dependencies);
