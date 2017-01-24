@@ -464,7 +464,7 @@ export class AnalyzerCacheContext {
    * Resolves a URL with this Analyzer's `UrlResolver` if it has one, otherwise
    * returns the given URL.
    */
-  private _resolveUrl(url: string): string {
+  _resolveUrl(url: string): string {
     return this._resolver && this._resolver.canResolve(url) ?
         this._resolver.resolve(url) :
         url;
