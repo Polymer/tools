@@ -14,7 +14,7 @@
 
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-import {assert} from 'chai';
+import {assert, use} from 'chai';
 import * as clone from 'clone';
 import * as estree from 'estree';
 import * as path from 'path';
@@ -32,9 +32,10 @@ import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 import {Deferred} from '../utils';
 
-import {invertPromise} from './test-utils';
-
+import chaiAsPromised = require('chai-as-promised');
 import stripIndent = require('strip-indent');
+
+use(chaiAsPromised);
 
 class TestUrlResolver implements UrlResolver {
   canResolve(url: string) {
@@ -316,7 +317,7 @@ suite('Analyzer', () => {
     });
 
     test(`rejects for files that don't exist`, async() => {
-      await invertPromise(analyzer.analyze('/static/does_not_exist'));
+      await assert.isRejected(analyzer.analyze('/static/does_not_exist'));
     });
 
     test('handles documents from multiple calls to analyze()', async() => {
@@ -379,6 +380,7 @@ suite('Analyzer', () => {
             'static/circular/self-import.html'
           ]);
     });
+
   });
 
   // TODO: reconsider whether we should test these private methods.
@@ -399,7 +401,7 @@ suite('Analyzer', () => {
     });
 
     test('returns a Promise that rejects for non-existant files', async() => {
-      await invertPromise(
+      await assert.isRejected(
           analyzer['_cacheContext']['_parse']('static/not-found'));
     });
   });
@@ -608,7 +610,7 @@ suite('Analyzer', () => {
           new Analyzer({urlLoader: new RacyUrlLoader(contentsMap, waitFn)});
       const promises: Promise<Document>[] = [];
       const intermediatePromises: Promise<void>[] = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 1; i++) {
         await waitFn();
         for (const entry of contentsMap) {
           // Randomly edit some files.
@@ -643,11 +645,19 @@ suite('Analyzer', () => {
         assert.deepEqual(document.url, 'base.html');
         const localFeatures = document.getFeatures(false);
         const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
-        assert.deepEqual(kinds, [
-          ['document', 'html-document'],
-          ['import', 'html-import'],
-          ['import', 'html-import']
-        ]);
+        const message = `localFeatures: ${JSON.stringify(
+            Array.from(localFeatures).map((f) => ({
+                                            kinds: Array.from(f.kinds),
+                                            ids: Array.from(f.identifiers)
+                                          })))}`;
+        assert.deepEqual(
+            kinds,
+            [
+              ['document', 'html-document'],
+              ['import', 'html-import'],
+              ['import', 'html-import']
+            ],
+            message);
         const imports = Array.from(document.getByKind('import'));
         assert.sameMembers(
             imports.map(m => m.url),
@@ -796,6 +806,55 @@ suite('Analyzer', () => {
           analyzer.analyze('leaf.html', 'Hello'),
           analyzer.analyze('leaf.html', 'World')
         ]);
+      });
+
+      test('handles a shared dependency', async() => {
+        let documents = await Promise.all([
+          analyzer.analyze('static/diamond/a.html'),
+          analyzer.analyze('static/diamond/root.html'),
+        ]);
+
+        const contents = documents.map((d) => d.parsedDocument.contents);
+        documents = await Promise.all([
+          analyzer.analyze('static/diamond/a.html', contents[0]),
+          analyzer.analyze('static/diamond/root.html'),
+        ]);
+
+        const root = documents[1];
+
+        const localFeatures = root.getFeatures(false);
+        const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+        assert.deepEqual(kinds, [
+          ['document', 'html-document'],
+          ['import', 'html-import'],
+          ['import', 'html-import']
+        ]);
+      });
+
+      test('all files in a cycle wait for the whole cycle', async() => {
+        const loader = new DeterministicUrlLoader();
+        const analyzer = new Analyzer({urlLoader: loader});
+        const aAnalyzed = analyzer.analyze('a.html');
+        const bAnalyzed = analyzer.analyze('b.html');
+
+        loader.queue.resolve('a.html', `<link rel="import" href="b.html">
+            <link rel="import" href="c.html">`);
+        loader.queue.resolve('b.html', `<link rel="import" href="a.html">`);
+
+        let cResolved = false;
+        // Analysis shouldn't finish without c.html resolving
+        const aAnalyzedDone = aAnalyzed.then(() => {
+          assert.isTrue(cResolved);
+        });
+        const bAnalyzedDone = bAnalyzed.then(() => {
+          assert.isTrue(cResolved);
+        });
+        // flush the microtask queue
+        await Promise.resolve();
+        cResolved = true;
+        loader.queue.resolve('c.html', '');
+        // wait for the callback above to complete
+        await Promise.all([aAnalyzedDone, bAnalyzedDone]);
       });
 
       test.skip('something about the order of scanning?', async() => {

@@ -119,17 +119,11 @@ export class AnalyzerCacheContext {
    */
   async analyze(url: string, contents?: string): Promise<Document> {
     const resolvedUrl = this._resolveUrl(url);
-
     return this._cache.analyzedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
           const doneTiming =
               this._telemetryTracker.start('analyze: make document', url);
           const scannedDocument = await this._scan(resolvedUrl, contents);
-          if (scannedDocument === 'visited') {
-            throw new Error(
-            `This should not happen. Got a cycle of length zero(!) scanning ${url
-            }`);
-          }
           const document = this._getDocument(scannedDocument.url);
           doneTiming();
           return document;
@@ -259,35 +253,95 @@ export class AnalyzerCacheContext {
   }
 
   /**
+   * Scans a file locally, that is for features that do not depend
+   * on this files imports. Local features can be cached even when
+   * imports are invalidated. This method does not trigger transitive
+   * scanning, _scan() does that.
+   *
+   * TODO(justinfagnani): consider renaming this to something like
+   * _preScan, since about the only useful things it can find are
+   * imports, exports and other syntactic structures.
+   */
+  private async _scanLocal(resolvedUrl: string, contents?: string):
+      Promise<ScannedDocument> {
+    return this._cache.scannedDocumentPromises.getOrCompute(
+        resolvedUrl, async() => {
+          try {
+            const parsedDoc = await this._parse(resolvedUrl, contents);
+            const scannedDocument = await this._scanDocument(parsedDoc);
+
+            // Find all non-lazy imports
+            // TODO(justinfagnani): I think we should scan lazily imported
+            // documents since we know about them, we should load them. Their
+            // features should possibly be separated out at export time via
+            // better definition of scopes
+            const imports = scannedDocument.getNestedFeatures().filter(
+                (e) => e instanceof ScannedImport &&
+                    e.type !== 'lazy-html-import') as ScannedImport[];
+
+            // Update dependency graph
+            const importUrls = imports.map((i) => this._resolveUrl(i.url));
+            this._cache.dependencyGraph.addDocument(resolvedUrl, importUrls);
+
+            return scannedDocument;
+          } catch (e) {
+            this._cache.dependencyGraph.rejectDocument(resolvedUrl, e);
+            throw e;
+          }
+        });
+  }
+
+  /**
    * Scan a toplevel document and all of its transitive dependencies.
    */
-  private async _scan(
-      resolvedUrl: string, contents?: string,
-      visited?: Set<string>): Promise<ScannedDocument|'visited'> {
-    if (visited && visited.has(resolvedUrl)) {
-      return 'visited';
-    }
-    const actualVisited = visited || new Set();
-    actualVisited.add(resolvedUrl);
-    const scannedDocument =
-        await this._cache.scannedDocumentPromises.getOrCompute(
-            resolvedUrl, async() => {
-              const parsedDoc = await this._parse(resolvedUrl, contents);
-              return this._scanDocument(parsedDoc, actualVisited);
-            });
+  private async _scan(resolvedUrl: string, contents?: string):
+      Promise<ScannedDocument> {
+    return this._cache.dependenciesScannedPromises.getOrCompute(
+        resolvedUrl, async() => {
+          const scannedDocument = await this._scanLocal(resolvedUrl, contents);
+          // Find all non-lazy imports
+          // TODO(justinfagnani): I think we should scan lazily imported
+          // documents since we know about them, we should load them. Their
+          // features should possibly be separated out at export time via better
+          // definition of scopes
+          const imports = scannedDocument.getNestedFeatures().filter(
+              (e) => e instanceof ScannedImport &&
+                  e.type !== 'lazy-html-import') as ScannedImport[];
 
-    if (!this._cache.dependenciesScannedOf.has(scannedDocument.url)) {
-      await this._scanImports(scannedDocument, actualVisited);
-      this._cache.dependenciesScannedOf.add(scannedDocument.url);
-    }
-    return scannedDocument;
+          // Scan imports
+          for (const scannedImport of imports) {
+            const importUrl = this._resolveUrl(scannedImport.url);
+            // Request a scan of `importUrl` but do not wait for the results to
+            // avoid deadlock in the case of cycles. Later we use the
+            // DependencyGraph
+            // to wait for all transitive dependencies to load.
+            this._scan(importUrl).catch((error) => {
+              if (error instanceof NoKnownParserError) {
+                // We probably don't want to fail when importing something
+                // that we don't know about here.
+              }
+              error = error || '';
+              // TODO(rictic): move this to the resolve phase, it will be
+              // improperly cached as it is.
+              scannedDocument.warnings.push({
+                code: 'could-not-load',
+                message: `Unable to load import: ${error.message || error}`,
+                sourceRange: (
+                    scannedImport.urlSourceRange || scannedImport.sourceRange)!,
+                severity: Severity.ERROR
+              });
+            });
+          }
+          await this._cache.dependencyGraph.whenReady(resolvedUrl);
+          return scannedDocument;
+        });
   }
 
   /**
    * Scans a ParsedDocument.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>, visited: Set<string>,
+      document: ParsedDocument<any, any>,
       maybeAttachedComment?: string): Promise<ScannedDocument> {
     const warnings: Warning[] = [];
     const scannedFeatures = await this._getScannedFeatures(document);
@@ -308,8 +362,7 @@ export class AnalyzerCacheContext {
       }
       this._cache.scannedDocuments.set(scannedDocument.url, scannedDocument);
     }
-    await this._scanInlineDocuments(scannedDocument, visited);
-
+    await this._scanInlineDocuments(scannedDocument);
     return scannedDocument;
   }
 
@@ -322,59 +375,7 @@ export class AnalyzerCacheContext {
     return [];
   }
 
-  /**
-   * Scans all of the transitive dependencies of the given document.
-   *
-   * Uses the `visited` set to break cycles.
-   */
-  private async _scanImports(
-      scannedDocument: ScannedDocument, visited: Set<string>) {
-    if (scannedDocument.isInline) {
-      throw new Error(
-          'Internal Error: _scanImports must only be called with a toplevel ' +
-          'document, never an inline document.');
-    }
-    const scannedImports = scannedDocument.getNestedFeatures().filter(
-        (e) => e instanceof ScannedImport) as ScannedImport[];
-    for (const scannedImport of scannedImports) {
-      // TODO(garlicnation): Move this logic into model/document. During
-      // the recursive feature walk, features from lazy imports
-      // should be marked.
-      if (scannedImport.type === 'lazy-html-import') {
-        continue;
-      }
-
-      const url = this._resolveUrl(scannedImport.url);
-      try {
-        await this._scan(url, undefined, visited);
-      } catch (error) {
-        if (error instanceof NoKnownParserError) {
-          // We probably don't want to fail when importing something
-          // that we don't know about here.
-          continue;
-        }
-        error = error || '';
-        // TODO(rictic): move this to the resolve phase, it will be improperly
-        //     cached as it is.
-        scannedDocument.warnings.push({
-          code: 'could-not-load',
-          message: `Unable to load import: ${error.message || error}`,
-          sourceRange:
-              (scannedImport.urlSourceRange || scannedImport.sourceRange)!,
-          severity: Severity.ERROR
-        });
-      }
-    }
-
-    // Add the found dependencies to the dependency graph so that we can
-    // do cache expiry when a file changes.
-    this._cache.dependencyGraph.addDependenciesOf(
-        scannedDocument.url,
-        scannedImports.map(imp => this._resolveUrl(imp.url)));
-  }
-
-  private async _scanInlineDocuments(
-      containingDocument: ScannedDocument, visited: Set<string>) {
+  private async _scanInlineDocuments(containingDocument: ScannedDocument) {
     for (const feature of containingDocument.features) {
       if (!(feature instanceof ScannedInlineDocument)) {
         continue;
@@ -390,8 +391,8 @@ export class AnalyzerCacheContext {
             feature.contents,
             containingDocument.url,
             {locationOffset, astNode: feature.astNode});
-        const scannedDoc = await this._scanDocument(
-            parsedDoc, visited, feature.attachedComment);
+        const scannedDoc =
+            await this._scanDocument(parsedDoc, feature.attachedComment);
 
         feature.scannedDocument = scannedDoc;
       } catch (err) {

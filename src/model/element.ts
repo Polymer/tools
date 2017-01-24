@@ -42,7 +42,8 @@ export class ScannedElement implements Resolvable {
   sourceRange: SourceRange|undefined;
   astNode: estree.Node|null;
   warnings: Warning[] = [];
-  slots: Slot[] = [];
+  slots:
+  Slot[] = [];
 
   jsdoc?: jsdoc.Annotation;
 
@@ -85,7 +86,8 @@ export class Element implements Feature {
   astNode: estree.Node|null;
   kinds: Set<string> = new Set(['element']);
   warnings: Warning[] = [];
-  slots: Slot[] = [];
+  slots:
+  Slot[] = [];
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();
     if (this.tagName) {

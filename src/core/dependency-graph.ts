@@ -12,25 +12,73 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Deferred} from '../utils';
+
+class DocumentRecord {
+  url: string;
+  dependencies: Set<string>;
+  dependants: Set<string>;
+
+  // Represents the Promise that the dependencies are known, but nothing
+  // about their state (loaded, scanned, etc)
+  dependenciesDeferred: Deferred<Set<string>>;
+
+  static from(from: DocumentRecord) {
+    return new DocumentRecord(from);
+  }
+
+  constructor(urlOrFrom: string|DocumentRecord) {
+    if (typeof urlOrFrom === 'string') {
+      this.url = urlOrFrom;
+      this.dependencies = new Set();
+      this.dependants = new Set();
+      this.dependenciesDeferred = new Deferred<Set<string>>();
+    } else {
+      const from = urlOrFrom;
+      this.url = from.url;
+      this.dependencies = from.dependencies;
+      this.dependants = from.dependants;
+      this.dependenciesDeferred = new Deferred<Set<string>>();
+      if (from.dependenciesDeferred.resolved) {
+        this.dependenciesDeferred.resolve(this.dependencies);
+      } else if (from.dependenciesDeferred.rejected) {
+        this.dependenciesDeferred.reject(from.dependenciesDeferred.error);
+      }
+    }
+    this.dependenciesDeferred.promise.catch(
+        (_) => {
+            // no one listens for document rejections yet,
+        });
+  }
+
+  get dependenciesKnown(): Promise<Set<string>> {
+    return this.dependenciesDeferred.promise;
+  }
+}
+
 /**
  * Maintains bidirectional indexes of the dependency graph, for quick querying.
  */
 export class DependencyGraph {
-  private _dependencies = new Map<string, Set<string>>();
-  private _dependants = new Map<string, Set<string>>();
+  private _documents = new Map<string, DocumentRecord>();
 
   constructor(from?: DependencyGraph) {
-    if (!from) {
+    if (!from)
       return;
+
+    // Deep copy of `from`
+    for (const entry of from._documents.entries()) {
+      this._documents.set(entry[0], DocumentRecord.from(entry[1]));
     }
-    // This is a copy constructor, but we want to make a deep copy of the
-    // other graph, so we need to copy the sets.
-    for (const entry of from._dependencies.entries()) {
-      this._dependencies.set(entry[0], new Set(entry[1]));
+  }
+
+  private _getRecordFor(url: string) {
+    let record = this._documents.get(url);
+    if (record == null) {
+      record = new DocumentRecord(url);
+      this._documents.set(url, record);
     }
-    for (const entry of from._dependants.entries()) {
-      this._dependants.set(entry[0], new Set(entry[1]));
-    }
+    return record;
   }
 
   /**
@@ -39,20 +87,45 @@ export class DependencyGraph {
    * @param path The path (i.e. url) of a document.
    * @param newDependencies The paths of that document's direct dependencies.
    */
-  addDependenciesOf(path: string, newDependencies: Iterable<string>) {
-    let dependencies = this._dependencies.get(path);
-    if (!dependencies) {
-      dependencies = new Set();
-      this._dependencies.set(path, dependencies);
+  addDocument(url: string, dependencies: Iterable<string>) {
+    const record = this._getRecordFor(url);
+    for (const dependency of dependencies) {
+      record.dependencies.add(dependency);
+      const dependantRecord = this._getRecordFor(dependency);
+      dependantRecord.dependants.add(url);
     }
-    for (const newDependency of newDependencies) {
-      dependencies.add(newDependency);
-      let dependants = this._dependants.get(newDependency);
-      if (!dependants) {
-        dependants = new Set();
-        this._dependants.set(newDependency, dependants);
-      }
-      dependants.add(path);
+    try {
+      record.dependenciesDeferred.resolve(record.dependencies);
+    } catch (e) {
+      console.log(`error adding ${url}`);
+      throw e;
+    }
+  }
+
+  rejectDocument(url: string, error: Error) {
+    this._getRecordFor(url).dependenciesDeferred.reject(error);
+  }
+
+  /**
+   * Returns a Promise that resolves when the given document and all
+   * of its transitive dependencies have been resolved or rejected. This
+   * Promise never rejects, if the document or any dependencies are rejected,
+   * the Promise still resolves.
+   */
+  async whenReady(url: string): Promise<void> {
+    await this._whenReady(url, new Set<string>());
+  }
+
+  private async _whenReady(key: string, visited: Set<string>) {
+    if (visited.has(key)) {
+      return;
+    }
+    visited.add(key);
+    const dependenciesKnown = this._getRecordFor(key).dependenciesKnown;
+    const forgivingDependenciesKnown = dependenciesKnown.catch(_ => []);
+    const deps = await forgivingDependenciesKnown;
+    for (const dep of deps) {
+      await this._whenReady(dep, visited);
     }
   }
 
@@ -62,18 +135,18 @@ export class DependencyGraph {
   invalidatePaths(paths: string[]): DependencyGraph {
     const fork = new DependencyGraph(this);
     for (const path of paths) {
-      const dependencies = fork._dependencies.get(path);
-      if (!dependencies) {
+      const record = fork._documents.get(path);
+      if (!record) {
         continue;
       }
       // Tell the dependencies that `path` is no longer one of their dependants.
-      for (const dependency of dependencies) {
-        const dependants = fork._dependants.get(dependency);
-        if (dependants) {
-          dependants.delete(path);
+      for (const dependency of record.dependencies) {
+        const dependencyRecord = fork._documents.get(dependency);
+        if (dependencyRecord) {
+          dependencyRecord.dependants.delete(path);
         }
       }
-      fork._dependencies.delete(path);
+      fork._documents.delete(path);
     }
     return fork;
   }
@@ -96,10 +169,11 @@ export class DependencyGraph {
       return;
     }
     visited.add(path);
-    const dependants = this._dependants.get(path);
-    if (!dependants) {
+    const record = this._documents.get(path);
+    if (!record) {
       return;
     }
+    const dependants = record.dependants;
     for (const dependant of dependants) {
       result.add(dependant);
       this._getAllDependantsOf(dependant, visited, result);

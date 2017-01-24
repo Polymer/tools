@@ -24,10 +24,33 @@ export class Deferred<T> {
   promise: Promise<T>;
   resolve: (result: T) => void;
   reject: (error: Error) => void;
+  resolved = false;
+  rejected = false;
+  error: any;
+
   constructor() {
     this.promise = new Promise((resolve, reject) => {
-      this.resolve = resolve;
-      this.reject = reject;
+      this.resolve = (result: T) => {
+        if (this.resolved) {
+          throw new Error('Already resolved');
+        }
+        if (this.rejected) {
+          throw new Error('Already rejected');
+        }
+        this.resolved = true;
+        resolve(result);
+      };
+      this.reject = (error: Error) => {
+        if (this.resolved) {
+          throw new Error('Already resolved');
+        }
+        if (this.rejected) {
+          throw new Error('Already rejected');
+        }
+        this.rejected = true;
+        this.error = error;
+        reject(error);
+      };
     });
   }
 
