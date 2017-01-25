@@ -102,6 +102,7 @@ export class Document implements Feature, Queryable {
   identifiers: Set<string> = new Set();
   analyzer: AnalysisContext;
   warnings: Warning[];
+  languageAnalysis?: any;
 
   private _localFeatures = new Set<Feature>();
   private _scannedDocument: ScannedDocument;
@@ -121,7 +122,9 @@ export class Document implements Feature, Queryable {
    */
   private _doneResolving = false;
 
-  constructor(base: ScannedDocument, analyzer: AnalysisContext) {
+  constructor(
+      base: ScannedDocument, analyzer: AnalysisContext,
+      languageAnalysis?: any) {
     if (base == null) {
       throw new Error('base is null');
     }
@@ -130,6 +133,7 @@ export class Document implements Feature, Queryable {
     }
     this._scannedDocument = base;
     this.analyzer = analyzer;
+    this.languageAnalysis = languageAnalysis;
 
     if (!base.isInline) {
       this.identifiers.add(this.url);

@@ -34,12 +34,15 @@ import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
 import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
+import {TypeScriptAnalyzer} from '../typescript/typescript-analyzer';
+import {TypeScriptPreparser} from '../typescript/typescript-preparser';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 import {ElementScanner as VanillaElementScanner} from '../vanilla-custom-elements/element-scanner';
 import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 
 import {AnalysisCache} from './analysis-cache';
+import {LanguageAnalyzer} from './language-analyzer';
 
 /**
  * An analysis of a set of files at a specific point-in-time with respect to
@@ -58,8 +61,13 @@ export class AnalysisContext {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
+    ['ts', new TypeScriptPreparser()],
     ['css', new CssParser()],
     ['json', new JsonParser()],
+  ]);
+
+  private _languageAnalyzers = new Map<string, LanguageAnalyzer<any>>([
+    ['ts', new TypeScriptAnalyzer(this)],
   ]);
 
   /** A map from import url to urls that document lazily depends on. */
@@ -127,7 +135,7 @@ export class AnalysisContext {
         resolvedUrl, async() => {
           const doneTiming =
               this._telemetryTracker.start('analyze: make document', url);
-          const scannedDocument = await this._scan(resolvedUrl, contents);
+          const scannedDocument = await this.scan(resolvedUrl, contents);
           const document = this._getDocument(scannedDocument.url);
           doneTiming();
           return document;
@@ -205,7 +213,14 @@ export class AnalysisContext {
       return;
     }
 
-    const document = new Document(scannedDocument, this);
+    const extension = path.extname(resolvedUrl).substring(1);
+    const languageAnalyzer = this._languageAnalyzers.get(extension);
+    let analysisResult: any;
+    if (languageAnalyzer) {
+      analysisResult = languageAnalyzer.analyze(scannedDocument.url);
+    }
+
+    const document = new Document(scannedDocument, this, analysisResult);
     this._cache.analyzedDocuments.set(resolvedUrl, document);
     this._cache.analyzedDocumentPromises.getOrCompute(
         resolvedUrl, async() => document);
@@ -298,8 +313,7 @@ export class AnalysisContext {
   /**
    * Scan a toplevel document and all of its transitive dependencies.
    */
-  private async _scan(resolvedUrl: string, contents?: string):
-      Promise<ScannedDocument> {
+  async scan(resolvedUrl: string, contents?: string): Promise<ScannedDocument> {
     return this._cache.dependenciesScannedPromises.getOrCompute(
         resolvedUrl, async() => {
           const scannedDocument = await this._scanLocal(resolvedUrl, contents);
@@ -319,7 +333,7 @@ export class AnalysisContext {
             // avoid deadlock in the case of cycles. Later we use the
             // DependencyGraph
             // to wait for all transitive dependencies to load.
-            this._scan(importUrl).catch((error) => {
+            this.scan(importUrl).catch((error) => {
               if (error instanceof NoKnownParserError) {
                 // We probably don't want to fail when importing something
                 // that we don't know about here.
