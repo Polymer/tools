@@ -64,8 +64,8 @@ export interface ProjectBuildOptions {
   swPrecacheConfig?: string;
   insertPrefetchLinks?: boolean;
   bundle?: boolean;
-  html?: {minify: boolean};
-  css?: {minify: boolean};
+  html?: {minify?: boolean};
+  css?: {minify?: boolean};
   js?: {minify?: boolean, compile?: boolean};
 }
 
