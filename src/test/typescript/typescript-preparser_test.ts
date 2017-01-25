@@ -17,20 +17,14 @@ import * as ts from 'typescript';
 
 import stripIndent = require('strip-indent');
 
-import {Analyzer} from '../../analyzer';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
-import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {ParsedTypeScriptDocument} from '../../typescript/typescript-document';
-import {TypeScriptParser} from '../../typescript/typescript-parser';
+import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 
 suite('TypeScriptParser', () => {
-  let parser: TypeScriptParser;
+  let parser: TypeScriptPreparser;
 
   setup(() => {
-    const urlLoader = new FSUrlLoader();
-    const urlResolver = new PackageUrlResolver();
-    const analyzer = new Analyzer({urlLoader, urlResolver});
-    parser = new TypeScriptParser(analyzer);
+    parser = new TypeScriptPreparser();
   });
 
   suite('parse()', () => {

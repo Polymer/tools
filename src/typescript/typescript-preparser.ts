@@ -14,18 +14,11 @@
 
 import * as ts from 'typescript';
 
-import {Analyzer} from '../analyzer';
 import {Parser} from '../parser/parser';
 
 import {ParsedTypeScriptDocument} from './typescript-document';
 
-export class TypeScriptParser implements Parser<ParsedTypeScriptDocument> {
-  private _analyzer: Analyzer;
-
-  constructor(analyzer: Analyzer) {
-    this._analyzer = analyzer;
-  }
-
+export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
   parse(contents: string, url: string): ParsedTypeScriptDocument {
     const sourceFile =
         ts.createSourceFile(url, contents, ts.ScriptTarget.ES2016, true);

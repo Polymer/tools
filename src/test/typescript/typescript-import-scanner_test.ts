@@ -17,7 +17,7 @@ import {assert} from 'chai';
 import {Analyzer} from '../../analyzer';
 import {Visitor} from '../../typescript/typescript-document';
 import {TypeScriptImportScanner} from '../../typescript/typescript-import-scanner';
-import {TypeScriptParser} from '../../typescript/typescript-parser';
+import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 import {UrlLoader} from '../../url-loader/url-loader';
 
 class TestUrlLoader implements UrlLoader {
@@ -45,7 +45,7 @@ suite('TypeScriptImportScanner', () => {
       const analyzer = new Analyzer({
         urlLoader: new TestUrlLoader(),
       });
-      const parser = new TypeScriptParser(analyzer);
+      const parser = new TypeScriptPreparser(analyzer);
       const document = parser.parse(source, 'test.ts');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
       const features = await scanner.scan(document, visit);
@@ -61,7 +61,7 @@ suite('TypeScriptImportScanner', () => {
       const analyzer = new Analyzer({
         urlLoader: new TestUrlLoader(),
       });
-      const parser = new TypeScriptParser(analyzer);
+      const parser = new TypeScriptPreparser(analyzer);
       const document = parser.parse(source, 'test.ts');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
       const features = await scanner.scan(document, visit);
