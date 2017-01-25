@@ -106,7 +106,10 @@ export interface ProjectOptions {
    */
   extraDependencies?: string[];
 
-  build?: ProjectBuildOptions|ProjectBuildOptions[];
+  /**
+   * List of build option configurations.
+   */
+  builds?: ProjectBuildOptions[];
 }
 
 export class ProjectConfig {
@@ -161,7 +164,6 @@ export class ProjectConfig {
    */
   constructor(options: ProjectOptions) {
     options = (options) ? fixDeprecatedOptions(options) : {};
-
     /**
      * root
      */
@@ -233,10 +235,8 @@ export class ProjectConfig {
     /**
      * builds
      */
-    if (Array.isArray(options.build)) {
-      this.builds = options.build;
-    } else if (options.build) {
-      this.builds = [options.build];
+    if (options.builds) {
+      this.builds = options.builds;
     }
   }
 
@@ -283,6 +283,10 @@ export class ProjectConfig {
 
     // TODO(fks) 11-14-2016: Validate that files actually exist in the file
     // system. Potentially become async function for this.
+    console.assert(
+      !this.builds || Array.isArray(this.builds),
+      `${validateErrorPrefix}: "builds" (${this.builds}) ` +
+      `expected an array of build configurations.`);
 
     return true;
   }

@@ -194,27 +194,16 @@ suite('Project Config', () => {
         });
       });
 
-      test('sets builds property to an array when `build` option is a single build object', () => {
+      test('builds property is unset when `build` option is not provided', () => {
         const absoluteRoot = process.cwd();
-        const config = new ProjectConfig({
-          build: {
-            name: 'bundled',
-            bundle: true,
-            insertPrefetchLinks: true,
-          }
-        });
-        assert.property(config, 'builds');
-        assert.deepEqual(config.builds, [{
-          name: 'bundled',
-          bundle: true,
-          insertPrefetchLinks: true,
-        }]);
+        const config = new ProjectConfig();
+        assert.isUndefined(config.builds);
       });
 
       test('sets builds property to an array when `build` option is an array', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
-          build: [
+          builds: [
             {
               name: 'bundled',
               bundle: true,
@@ -358,6 +347,18 @@ suite('Project Config', () => {
         assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: shell \(.*bar.html\) does not resolve within root \(.*public\)/);
       });
 
+
+      test('throws an exception when builds property was not an array', () => {
+        const absoluteRoot = process.cwd();
+        const config = new ProjectConfig({
+          builds: {
+            name: 'bundled',
+            bundle: true,
+            insertPrefetchLinks: true,
+          }
+        });
+        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: "builds" \(\[object Object\]\) expected an array of build configurations\./);
+      });
     });
 
   });
