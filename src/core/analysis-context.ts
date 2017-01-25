@@ -42,15 +42,19 @@ import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 import {AnalysisCache} from './analysis-cache';
 
 /**
- * Represents an Analyzer with a given AnalysisCache instance.
+ * An analysis of a set of files at a specific point-in-time with respect to
+ * updates to those files. New files can be added to an existing context, but
+ * updates to files will cause a fork of the context with new analysis results.
  *
- * Used to provide a consistent cache in the face of updates happening in
- * parallel with analysis work. A given AnalyzerCacheContext is forked via
- * either the fileChanged or clearCaches methods.
+ * All file contents and analysis results are consistent within a single
+ * anaysis context. A context is forked via either the fileChanged or
+ * clearCaches methods.
  *
  * For almost all purposes this is an entirely internal implementation detail.
+ * An Analyzer instance has a reference to its current context, so it will
+ * appear to be statefull with respect to file updates.
  */
-export class AnalyzerCacheContext {
+export class AnalysisContext {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
@@ -102,7 +106,7 @@ export class AnalyzerCacheContext {
     this._parsers = options.parsers || this._parsers;
     this._lazyEdges = options.lazyEdges;
     this._scanners = options.scanners ||
-        AnalyzerCacheContext._getDefaultScanners(this._lazyEdges);
+        AnalysisContext._getDefaultScanners(this._lazyEdges);
   }
 
   /**
@@ -231,15 +235,15 @@ export class AnalyzerCacheContext {
    * files that changed rather than clearing caches like this. Caching provides
    * large performance gains.
    */
-  clearCaches(): AnalyzerCacheContext {
+  clearCaches(): AnalysisContext {
     return this._fork(new AnalysisCache());
   }
 
   /**
    * Return a copy, but with the given cache.
    */
-  private _fork(cache: AnalysisCache): AnalyzerCacheContext {
-    const copy = new AnalyzerCacheContext({
+  private _fork(cache: AnalysisCache): AnalysisContext {
+    const copy = new AnalysisContext({
       lazyEdges: this._lazyEdges,
       parsers: this._parsers,
       scanners: this._scanners,

@@ -68,8 +68,8 @@ suite('DependencyGraph', () => {
 
     function assertImportersOf(path: string, expectedDependants: string[]) {
       assertStringSetsEqual(
-          analyzer['_cacheContext']['_cache']['dependencyGraph']
-              .getAllDependantsOf(path),
+          analyzer['_context']['_cache']['dependencyGraph'].getAllDependantsOf(
+              path),
           expectedDependants);
     }
 

@@ -14,7 +14,7 @@
 
 /// <reference path="../custom_typings/main.d.ts" />
 
-import {AnalyzerCacheContext} from './core/analyzer-cache-context';
+import {AnalysisContext} from './core/analysis-context';
 import {Document, Package} from './model/model';
 import {Parser} from './parser/parser';
 import {Measurement} from './perf/telemetry';
@@ -48,9 +48,9 @@ export type LazyEdgeMap = Map<string, string[]>;
  * which do the actual work of understanding different file types.
  */
 export class Analyzer {
-  private _cacheContext: AnalyzerCacheContext;
+  private _context: AnalysisContext;
   constructor(options: Options) {
-    this._cacheContext = new AnalyzerCacheContext(options);
+    this._context = new AnalysisContext(options);
   }
 
   /**
@@ -68,17 +68,17 @@ export class Analyzer {
    */
   async analyze(url: string, contents?: string): Promise<Document> {
     if (contents != null) {
-      this._cacheContext = this._cacheContext.filesChanged([url]);
+      this._context = this._context.filesChanged([url]);
     }
-    return this._cacheContext.analyze(url, contents);
+    return this._context.analyze(url, contents);
   }
 
   async analyzePackage(): Promise<Package> {
-    return this._cacheContext.analyzePackage();
+    return this._context.analyzePackage();
   }
 
   async getTelemetryMeasurements(): Promise<Measurement[]> {
-    return this._cacheContext.getTelemetryMeasurements();
+    return this._context.getTelemetryMeasurements();
   }
 
   /**
@@ -89,7 +89,7 @@ export class Analyzer {
    * large performance gains.
    */
   clearCaches(): void {
-    this._cacheContext = this._cacheContext.clearCaches();
+    this._context = this._context.clearCaches();
   }
 
   /**
@@ -100,10 +100,10 @@ export class Analyzer {
    * contents that should override disk).
    */
   async load(resolvedUrl: string, providedContents?: string) {
-    return this._cacheContext.load(resolvedUrl, providedContents);
+    return this._context.load(resolvedUrl, providedContents);
   }
 
   resolveUrl(url: string): string {
-    return this._cacheContext.resolveUrl(url);
+    return this._context.resolveUrl(url);
   }
 }
