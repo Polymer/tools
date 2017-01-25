@@ -22,6 +22,7 @@ suite('Project Config', () => {
       test('sets minimum set of defaults when no options are provided', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig();
+        config.validate();
 
         assert.deepEqual(config, {
           root: absoluteRoot,
@@ -40,6 +41,8 @@ suite('Project Config', () => {
         const relativeRoot = 'public';
         const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({root: relativeRoot});
+        config.validate();
+
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
@@ -60,6 +63,8 @@ suite('Project Config', () => {
           root: relativeRoot,
           entrypoint: 'foo.html'
         });
+        config.validate();
+
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'foo.html'),
@@ -77,6 +82,8 @@ suite('Project Config', () => {
         const config = new ProjectConfig({
           shell: 'foo.html'
         });
+        config.validate();
+
         assert.deepEqual(config, {
           root: process.cwd(),
           entrypoint: path.resolve('index.html'),
@@ -98,6 +105,8 @@ suite('Project Config', () => {
         const config = new ProjectConfig({
           fragments: ['foo.html', 'bar.html']
         });
+        config.validate();
+
         assert.deepEqual(config, {
           root: process.cwd(),
           entrypoint: path.resolve('index.html'),
@@ -126,6 +135,8 @@ suite('Project Config', () => {
           root: relativeRoot,
           sources: ['src/**/*', 'images/**/*']
         });
+        config.validate();
+
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
@@ -150,6 +161,8 @@ suite('Project Config', () => {
             '!bower_components/ignore-big-package',
           ],
         });
+        config.validate();
+
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
@@ -171,6 +184,8 @@ suite('Project Config', () => {
           fragments: ['foo.html', 'bar.html'],
           shell: 'baz.html',
         });
+        config.validate();
+
         assert.deepEqual(config, {
           root: process.cwd(),
           entrypoint: path.resolve('index.html'),
@@ -198,6 +213,8 @@ suite('Project Config', () => {
       test('builds property is unset when `build` option is not provided', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig();
+        config.validate();
+
         assert.isUndefined(config.builds);
       });
 
@@ -217,6 +234,8 @@ suite('Project Config', () => {
             }
           ]
         });
+        config.validate();
+
         assert.property(config, 'builds');
         assert.deepEqual(config.builds, [
           {
@@ -244,6 +263,8 @@ suite('Project Config', () => {
           fragments: ['bar.html'],
           shell: 'baz.html',
         });
+        config.validate();
+
         assert.isTrue(config.isFragment(config.shell));
         assert.isTrue(config.isFragment(path.resolve(absoluteRoot, 'bar.html')));
         assert.isTrue(config.isFragment(path.resolve(absoluteRoot, 'baz.html')));
@@ -265,6 +286,8 @@ suite('Project Config', () => {
           fragments: ['bar.html'],
           shell: 'baz.html',
         });
+        config.validate();
+
         assert.isFalse(config.isShell(config.entrypoint));
         assert.isTrue(config.isShell(config.shell));
         assert.isFalse(config.isShell(path.resolve(absoluteRoot, 'foo.html')));
@@ -419,6 +442,8 @@ suite('Project Config', () => {
 
     test('creates config instance from config file options', () => {
       const config = ProjectConfig.loadConfigFromFile(path.join(__dirname, 'polymer.json'));
+      config.validate();
+
       const relativeRoot = 'public';
       const absoluteRoot = path.resolve(relativeRoot);
       assert.deepEqual(config, {
