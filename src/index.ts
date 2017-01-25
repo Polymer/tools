@@ -60,6 +60,7 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
 }
 
 export interface ProjectBuildOptions {
+  name?: string;
   addServiceWorker?: boolean;
   swPrecacheConfig?: string;
   insertPrefetchLinks?: boolean;
@@ -283,10 +284,23 @@ export class ProjectConfig {
 
     // TODO(fks) 11-14-2016: Validate that files actually exist in the file
     // system. Potentially become async function for this.
-    console.assert(
-      !this.builds || Array.isArray(this.builds),
-      `${validateErrorPrefix}: "builds" (${this.builds}) ` +
-      `expected an array of build configurations.`);
+
+    if (this.builds) {
+      console.assert(
+        Array.isArray(this.builds),
+        `${validateErrorPrefix}: "builds" (${this.builds}) ` +
+        `expected an array of build configurations.`);
+      const buildNames = new Set<string>();
+      for (const build of this.builds) {
+        const buildName = build.name;
+        if (buildName) {
+          console.assert(!buildNames.has(buildName),
+            `${validateErrorPrefix}: "builds" duplicate build name ` +
+            `"${buildName}" found. Build names must be unique.`);
+          buildNames.add(buildName);
+        }
+      }
+    }
 
     return true;
   }

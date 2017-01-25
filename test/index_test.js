@@ -22,6 +22,7 @@ suite('Project Config', () => {
       test('sets minimum set of defaults when no options are provided', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig();
+
         assert.deepEqual(config, {
           root: absoluteRoot,
           entrypoint: path.resolve(absoluteRoot, 'index.html'),
@@ -347,7 +348,6 @@ suite('Project Config', () => {
         assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: shell \(.*bar.html\) does not resolve within root \(.*public\)/);
       });
 
-
       test('throws an exception when builds property was not an array', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
@@ -358,6 +358,23 @@ suite('Project Config', () => {
           }
         });
         assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: "builds" \(\[object Object\]\) expected an array of build configurations\./);
+      });
+
+      test('throws an exception when builds array contains duplicate names', () => {
+        const absoluteRoot = process.cwd();
+        const config = new ProjectConfig({
+          builds: [
+            {
+              name: 'bundled',
+              bundle: true,
+            },
+            {
+              name: 'bundled',
+              bundle: false,
+            }
+          ]
+        });
+        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: "builds" duplicate build name "bundled" found. Build names must be unique\./);
       });
     });
 
