@@ -48,7 +48,7 @@ export class MoveStyleIntoTemplate extends HtmlRule {
     super();
   }
 
-  async checkFile(parsedDocument: ParsedHtmlDocument) {
+  async checkDocument(parsedDocument: ParsedHtmlDocument) {
     const warnings: Warning[] = [];
     const outOfPlaceStyle = p.AND(
         p.hasTagName('style'), p.parentMatches(p.hasTagName('dom-module')));

@@ -18,6 +18,7 @@ import {Warning} from 'polymer-analyzer/lib/warning/warning';
 
 import {Rule} from '../rule';
 
+
 /**
  * An abstract rule that operates only over HTML files.
  */
@@ -27,9 +28,10 @@ export abstract class HtmlRule extends Rule {
     if (!(parsedDocument instanceof ParsedHtmlDocument)) {
       return [];
     }
-    return this.checkFile(parsedDocument, document);
+    return this.checkDocument(parsedDocument, document);
   }
 
-  abstract checkFile(parsedDocument: ParsedHtmlDocument, document: Document):
-      Promise<Warning[]>;
+  abstract checkDocument(
+      parsedDocument: ParsedHtmlDocument,
+      document: Document): Promise<Warning[]>;
 }

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Rule that warns about `<style>` tags as direct children of `<dom-module>` tags (rather than being in `<template>` tags).
+- Rule that warns about `is` and `name` attributes on `<dom-module>` tags.
 
 <!--
 
