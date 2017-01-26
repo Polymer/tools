@@ -4,6 +4,7 @@
   "description": "Lint Polymer!",
   "main": "lib/linter.js",
   "dependencies": {
+    "@types/node": "4.0.30",
     "dom5": "^2.0.0",
     "parse5": "^2.2.1",
     "polymer-analyzer": "^2.0.0-alpha.14"
