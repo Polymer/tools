@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -47,7 +47,8 @@ export class DomModuleNameOrIs extends HtmlRule {
     const warnings: Warning[] = [];
     const badModule = p.AND(
         p.hasTagName('dom-module'), p.OR(p.hasAttr('is'), p.hasAttr('name')));
-    for (const domModule of dom5.nodeWalkAll(document.ast, badModule)) {
+    const badModules = dom5.nodeWalkAll(document.ast, badModule);
+    for (const domModule of badModules) {
       for (const badAttr of ['is', 'name']) {
         const attr = dom5.getAttribute(domModule, badAttr);
         if (attr != null) {

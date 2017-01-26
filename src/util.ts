@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -12,6 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * A utility for more easily writing long strings inline in code.
+ *
+ * Strips leading and trailing whitespace, and converts newlines followed
+ * by whitespace into a single space. Use like:
+ *
+ *     stripWhitespace(`
+ *         hello
+ *         world
+ *     `);
+ *
+ * This evaluates to "hello world".
+ */
 export function stripWhitespace(str: string) {
   return str.trim().replace(/\s*\n\s*/g, ' ');
 };
