@@ -15,7 +15,23 @@
 import {Document} from 'polymer-analyzer/lib/model/document';
 import {Warning} from 'polymer-analyzer/lib/warning/warning';
 
+/**
+ * A lint rule. Can take a package and find Warnings.
+ */
 export abstract class Rule {
+  /**
+   * A unique identifier for this lint rule, like "move-style-into-template".
+   */
   abstract code: string;
+
+  /**
+   * A description of the operation of this upgrade pass. Like "Moves style
+   * children of dom-modules into their templates."
+   */
+  abstract description: string;
+
+  /**
+   * Finds all warnings in the given document.
+   */
   abstract check(document: Document): Promise<Warning[]>;
 }

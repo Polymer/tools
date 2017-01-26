@@ -16,21 +16,22 @@ import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
 
 import {Linter} from '../linter';
 
-const fixtures_dir = path.join(__dirname, '..', '..', 'test');
+import {WarningPrettyPrinter} from './util';
+
+const fixtures_dir = path.resolve(path.join(__dirname, '../../test'));
 
 suite('Linter', () => {
 
   suite('.lint', () => {
     let analyzer: Analyzer;
-    let warningPrinter: WarningPrinter;
+    let warningPrinter: WarningPrettyPrinter;
 
     setup(() => {
       analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-      warningPrinter = new WarningPrinter(null as any, {analyzer: analyzer});
+      warningPrinter = new WarningPrettyPrinter(analyzer);
     });
 
     test('works in the trivial case', async() => {
@@ -51,18 +52,14 @@ suite('Linter', () => {
       const linter = new Linter([], analyzer);
       const warnings =
           await linter.lint(['missing-imports/missing-imports.html']);
-      assert.deepEqual(
-          await Promise.all(warnings.map(
-              async(w) => '\n' +
-                  await warningPrinter.getUnderlinedText(w.sourceRange))),
-          [
-            `
+      assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+        `
 <link rel="import" href="./does-not-exist.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~`,
-            `
+        `
 <link rel="import" href="./also-does-not-exist.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-          ]);
+      ]);
     });
   });
 });

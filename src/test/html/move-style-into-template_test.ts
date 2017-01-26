@@ -16,21 +16,21 @@ import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
 
 import {MoveStyleIntoTemplate} from '../../html/move-style-into-template';
 import {Linter} from '../../linter';
+import {WarningPrettyPrinter} from '../util';
 
-const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
+const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
 suite('MoveStyleIntoTemplate', () => {
   let analyzer: Analyzer;
-  let warningPrinter: WarningPrinter;
+  let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrinter(null as any, {analyzer: analyzer});
+    warningPrinter = new WarningPrettyPrinter(analyzer);
     linter = new Linter([new MoveStyleIntoTemplate()], analyzer);
   });
 
@@ -45,14 +45,9 @@ suite('MoveStyleIntoTemplate', () => {
   });
 
   test('warns for a file with a style outside template', async() => {
-    // Even without any rules we still get the warnings from the analyzer.
     const warnings = await linter.lint(
         ['move-style-into-template/style-child-of-dom-module.html']);
-    assert.deepEqual(
-        await Promise.all(warnings.map(
-            async(w) =>
-                '\n' + await warningPrinter.getUnderlinedText(w.sourceRange))),
-        [`
+    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
   <style>
   ~~~~~~~
     * {color: red;}
