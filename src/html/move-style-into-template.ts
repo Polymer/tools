@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -15,25 +15,28 @@
 import * as dom5 from 'dom5';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
 import {Document} from 'polymer-analyzer/lib/model/model';
-
-import stripIndent = require('strip-indent');
-import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
+import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
 import {Rule} from '../rule';
+
+import stripIndent = require('strip-indent');
+
 
 const p = dom5.predicates;
 
 export class MoveStyleIntoTemplate extends Rule {
   code = 'style-into-template';
   description = stripIndent(`
-      Transforms:
+      Warns about \`style\` tags in dom-modules but not in templates.
+
+      This:
 
           <dom-module>
             <style></style>
             <template>foo</template>
           <dom-module>
 
-      Into:
+      Should instead be written as:
 
           <dom-module>
             <template>

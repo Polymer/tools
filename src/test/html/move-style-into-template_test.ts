@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -33,6 +33,7 @@ suite('MoveStyleIntoTemplate', () => {
     warningPrinter = new WarningPrinter(null as any, {analyzer: analyzer});
     linter = new Linter([new MoveStyleIntoTemplate()], analyzer);
   });
+
   test('works in the trivial case', async() => {
     const warnings = await linter.lint([]);
     assert.deepEqual(warnings, []);
