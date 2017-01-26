@@ -290,10 +290,14 @@ export class ProjectConfig {
         Array.isArray(this.builds),
         `${validateErrorPrefix}: "builds" (${this.builds}) ` +
         `expected an array of build configurations.`);
-      const buildNames = new Set<string>();
-      for (const build of this.builds) {
-        const buildName = build.name;
-        if (buildName) {
+
+      if (this.builds.length > 1) {
+        const buildNames = new Set<string>();
+        for (const build of this.builds) {
+          const buildName = build.name;
+          console.assert(buildName,
+            `${validateErrorPrefix}: all "builds" require a "name" property ` +
+            `when there are multiple builds defined.`);
           console.assert(!buildNames.has(buildName),
             `${validateErrorPrefix}: "builds" duplicate build name ` +
             `"${buildName}" found. Build names must be unique.`);

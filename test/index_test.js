@@ -371,6 +371,21 @@ suite('Project Config', () => {
         assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: shell \(.*bar.html\) does not resolve within root \(.*public\)/);
       });
 
+      test('returns true when a single, unnamed build is defined', () => {
+        const relativeRoot = 'public';
+        const absoluteRoot = path.resolve(relativeRoot);
+        const config = new ProjectConfig({
+          root: relativeRoot,
+          builds: [{
+            bundle: true,
+            insertPrefetchLinks: true,
+          }],
+        });
+
+        const validateResult = config.validate();
+        assert.isTrue(validateResult);
+      });
+
       test('throws an exception when builds property was not an array', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
@@ -399,6 +414,23 @@ suite('Project Config', () => {
         });
         assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: "builds" duplicate build name "bundled" found. Build names must be unique\./);
       });
+
+      test('throws an exception when builds array contains an unnamed build', () => {
+        const absoluteRoot = process.cwd();
+        const config = new ProjectConfig({
+          builds: [
+            {
+              bundle: true,
+            },
+            {
+              name: 'bundled',
+              bundle: false,
+            }
+          ]
+        });
+        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: all "builds" require a "name" property when there are multiple builds defined\./);
+      });
+
     });
 
   });
