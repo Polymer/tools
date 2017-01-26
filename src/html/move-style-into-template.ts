@@ -14,17 +14,15 @@
 
 import * as dom5 from 'dom5';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document} from 'polymer-analyzer/lib/model/model';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
-import {Rule} from '../rule';
+import {HtmlRule} from './rule';
 
 import stripIndent = require('strip-indent');
 
-
 const p = dom5.predicates;
 
-export class MoveStyleIntoTemplate extends Rule {
+export class MoveStyleIntoTemplate extends HtmlRule {
   code = 'style-into-template';
   description = stripIndent(`
       Warns about \`style\` tags in dom-modules but not in templates.
@@ -45,16 +43,13 @@ export class MoveStyleIntoTemplate extends Rule {
             </template>
           <dom-module>
   `);
+
   constructor() {
     super();
   }
 
-  async check(document: Document) {
+  async checkFile(parsedDocument: ParsedHtmlDocument) {
     const warnings: Warning[] = [];
-    const parsedDocument = document.parsedDocument;
-    if (!(parsedDocument instanceof ParsedHtmlDocument)) {
-      return warnings;
-    }
     const outOfPlaceStyle = p.AND(
         p.hasTagName('style'), p.parentMatches(p.hasTagName('dom-module')));
     const outOfPlaceStyles =
