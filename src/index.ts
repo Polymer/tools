@@ -60,6 +60,16 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
   return options;
 }
 
+export interface ProjectBuildOptions {
+  name?: string;
+  addServiceWorker?: boolean;
+  swPrecacheConfig?: string;
+  insertPrefetchLinks?: boolean;
+  bundle?: boolean;
+  html?: {minify?: boolean};
+  css?: {minify?: boolean};
+  js?: {minify?: boolean, compile?: boolean};
+}
 
 export interface ProjectOptions {
   /**
@@ -97,6 +107,11 @@ export interface ProjectOptions {
    * as extraDependencies in the build target.
    */
   extraDependencies?: string[];
+
+  /**
+   * List of build option configurations.
+   */
+  builds?: ProjectBuildOptions[];
 }
 
 export class ProjectConfig {
@@ -108,6 +123,7 @@ export class ProjectConfig {
   readonly sources: string[];
   readonly extraDependencies: string[];
 
+  readonly builds: ProjectBuildOptions[];
   readonly allFragments: string[];
 
   /**
@@ -150,7 +166,6 @@ export class ProjectConfig {
    */
   constructor(options: ProjectOptions) {
     options = (options) ? fixDeprecatedOptions(options) : {};
-
     /**
      * root
      */
@@ -218,6 +233,13 @@ export class ProjectConfig {
     if (this.allFragments.length === 0) {
       this.allFragments.push(this.entrypoint);
     }
+
+    /**
+     * builds
+     */
+    if (options.builds) {
+      this.builds = options.builds;
+    }
   }
 
   isFragment(filepath: string): boolean {
@@ -267,6 +289,27 @@ export class ProjectConfig {
 
     // TODO(fks) 11-14-2016: Validate that files actually exist in the file
     // system. Potentially become async function for this.
+
+    if (this.builds) {
+      console.assert(
+        Array.isArray(this.builds),
+        `${validateErrorPrefix}: "builds" (${this.builds}) ` +
+        `expected an array of build configurations.`);
+
+      if (this.builds.length > 1) {
+        const buildNames = new Set<string>();
+        for (const build of this.builds) {
+          const buildName = build.name;
+          console.assert(buildName,
+            `${validateErrorPrefix}: all "builds" require a "name" property ` +
+            `when there are multiple builds defined.`);
+          console.assert(!buildNames.has(buildName),
+            `${validateErrorPrefix}: "builds" duplicate build name ` +
+            `"${buildName}" found. Build names must be unique.`);
+          buildNames.add(buildName);
+        }
+      }
+    }
 
     return true;
   }
