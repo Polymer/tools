@@ -13,7 +13,7 @@
  */
 
 import * as ts from 'typescript';
-import {Node, Program} from 'typescript';
+import {Node} from 'typescript';
 
 import {SourceRange} from '../model/model';
 import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
@@ -24,33 +24,34 @@ export {Node, Program} from 'typescript';
 export {Options} from '../parser/document';
 export {Visitor} from './typescript-visitor';
 
-export interface TSOptions extends Options<Node> { program: Program; }
-
 export class ParsedTypeScriptDocument extends ParsedDocument<Node, Visitor> {
   type = 'typescript';
-  program: Program;
 
-  constructor(from: TSOptions) {
+  constructor(from: Options<Node>) {
+    // This constructor is neccessary because the default constructor that
+    // TypeScript generates uses spread syntax which in unsupported by node 4.
     super(from);
-    this.program = from.program;
   }
 
   visit(visitors: Visitor[]) {
-    const sourceFile = this.program.getSourceFile(this.url);
+    const sourceFile = this.ast;
     for (const visitor of visitors) {
       ts.forEachChild(sourceFile, (node) => visitor.visitNode(node));
     }
   }
 
   forEachNode(_callback: (node: Node) => void) {
+    // TODO(justinfagnani): implement
     throw new Error('unsupported');
   }
 
   protected _sourceRangeForNode(_node: Node): SourceRange|undefined {
+    // TODO(justinfagnani): implement
     throw new Error('unsupported');
   }
 
   stringify(_options: StringifyOptions): string {
+    // TODO(justinfagnani): implement
     throw new Error('unsupported');
   }
 }

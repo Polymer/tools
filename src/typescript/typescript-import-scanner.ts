@@ -19,17 +19,14 @@ import {ScannedImport, SourceRange} from '../model/model';
 import {Scanner} from '../scanning/scanner';
 
 import {Node, ParsedTypeScriptDocument, Visitor} from './typescript-document';
-import {BaseVisitor} from './typescript-visitor';
 
 export class TypeScriptImportScanner implements
     Scanner<ParsedTypeScriptDocument, Node, Visitor> {
   async scan(
       document: ParsedTypeScriptDocument,
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedImport[]> {
-    console.log('TypeScriptImportScanner');
-
     const imports: ScannedImport[] = [];
-    class ImportVisitor extends BaseVisitor {
+    class ImportVisitor extends Visitor {
       visitImportDeclaration(node: ImportDeclaration):
           void {  // I can't figure out the proper way to get the text value
                   // here:
@@ -38,6 +35,7 @@ export class TypeScriptImportScanner implements
         imports.push(new ScannedImport(
             'js-import',
             importUrl,
+            // TODO(justinfagnani): make SourceRanges work
             null as any as SourceRange,
             null as any as SourceRange,
             node));
