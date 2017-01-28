@@ -104,6 +104,6 @@ export class Analyzer {
   }
 
   resolveUrl(url: string): string {
-    return this._cacheContext._resolveUrl(url);
+    return this._cacheContext.resolveUrl(url);
   }
 }

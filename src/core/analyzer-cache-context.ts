@@ -110,7 +110,7 @@ export class AnalyzerCacheContext {
    */
   filesChanged(urls: string[]) {
     const newCache =
-        this._cache.invalidate(urls.map(url => this._resolveUrl(url)));
+        this._cache.invalidate(urls.map(url => this.resolveUrl(url)));
     return this._fork(newCache);
   }
 
@@ -118,7 +118,7 @@ export class AnalyzerCacheContext {
    * Implements Analyzer#analyze, see its docs.
    */
   async analyze(url: string, contents?: string): Promise<Document> {
-    const resolvedUrl = this._resolveUrl(url);
+    const resolvedUrl = this.resolveUrl(url);
     return this._cache.analyzedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
           const doneTiming =
@@ -139,7 +139,7 @@ export class AnalyzerCacheContext {
       }
       return {
         sourceRange: {
-          file: this._resolveUrl(url),
+          file: this.resolveUrl(url),
           start: {line: 0, column: 0},
           end: {line: 0, column: 0}
         },
@@ -191,7 +191,7 @@ export class AnalyzerCacheContext {
    * If a file is in neither cache, it returns `undefined`.
    */
   _getDocument(url: string): Document|undefined {
-    const resolvedUrl = this._resolveUrl(url);
+    const resolvedUrl = this.resolveUrl(url);
     const cachedResult = this._cache.analyzedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
@@ -216,7 +216,7 @@ export class AnalyzerCacheContext {
    * If a url has been scanned, returns the ScannedDocument.
    */
   _getScannedDocument(url: string): ScannedDocument|undefined {
-    const resolvedUrl = this._resolveUrl(url);
+    const resolvedUrl = this.resolveUrl(url);
     return this._cache.scannedDocuments.get(resolvedUrl);
   }
 
@@ -280,7 +280,7 @@ export class AnalyzerCacheContext {
                     e.type !== 'lazy-html-import') as ScannedImport[];
 
             // Update dependency graph
-            const importUrls = imports.map((i) => this._resolveUrl(i.url));
+            const importUrls = imports.map((i) => this.resolveUrl(i.url));
             this._cache.dependencyGraph.addDocument(resolvedUrl, importUrls);
 
             return scannedDocument;
@@ -310,7 +310,7 @@ export class AnalyzerCacheContext {
 
           // Scan imports
           for (const scannedImport of imports) {
-            const importUrl = this._resolveUrl(scannedImport.url);
+            const importUrl = this.resolveUrl(scannedImport.url);
             // Request a scan of `importUrl` but do not wait for the results to
             // avoid deadlock in the case of cycles. Later we use the
             // DependencyGraph
@@ -464,7 +464,7 @@ export class AnalyzerCacheContext {
    * Resolves a URL with this Analyzer's `UrlResolver` if it has one, otherwise
    * returns the given URL.
    */
-  _resolveUrl(url: string): string {
+  resolveUrl(url: string): string {
     return this._resolver && this._resolver.canResolve(url) ?
         this._resolver.resolve(url) :
         url;
