@@ -27,11 +27,13 @@ export class TypeScriptImportScanner implements
       visit: (visitor: Visitor) => Promise<void>): Promise<ScannedImport[]> {
     const imports: ScannedImport[] = [];
     class ImportVisitor extends Visitor {
-      visitImportDeclaration(node: ImportDeclaration):
-          void {  // I can't figure out the proper way to get the text value
-                  // here:
-        const specifier = node.moduleSpecifier['text'];
-        const importUrl = resolveUrl(document.url, specifier);
+      visitImportDeclaration(node: ImportDeclaration): void { /* */
+        // If getText() throws it's because it requires parent references
+        const moduleSpecifier = node.moduleSpecifier.getText();
+        // The specifier includes the quote characters, remove them
+        const specifierUrl =
+            moduleSpecifier.substring(1, moduleSpecifier.length - 1);
+        const importUrl = resolveUrl(document.url, specifierUrl);
         imports.push(new ScannedImport(
             'js-import',
             importUrl,
