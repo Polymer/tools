@@ -17,54 +17,29 @@ import * as ts from 'typescript';
 
 import {AnalysisContext} from '../../core/analysis-context';
 import {TypeScriptAnalyzer} from '../../typescript/typescript-analyzer';
-import {UrlLoader} from '../../url-loader/url-loader';
-import {UrlResolver} from '../../url-loader/url-resolver';
+import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
+import {TestUrlLoader} from '../test-utils';
 
-class TestUrlResolver implements UrlResolver {
-  canResolve(url: string) {
-    return url === '/typescript/test.ts';
-  }
-
-  resolve(url: string) {
-    return url;
-  }
-}
-
-class TestUrlLoader implements UrlLoader {
-  canLoad(url: string) {
-    return url === '/typescript/test.ts';
-  }
-
-  load(url: string): Promise<string> {
-    if (url === '/typescript/test.ts') {
-      return Promise.resolve(`
-class A extends HTMLElement {
-  foo() { return 'bar'; }
-}
-`);
-    } else {
-      throw new Error(`cannot load file ${url}`);
-    }
-  }
+async function getTypeScriptAnalyzer(files: {[url: string]: string}) {
+  const urlLoader = new TestUrlLoader(files);
+  const urlResolver = new PackageUrlResolver();
+  const analysisContext = new AnalysisContext({urlLoader, urlResolver});
+  // This puts documents into the scanned document cache
+  await Promise.all(Object.keys(files).map((url) => analysisContext.scan(url)));
+  return new TypeScriptAnalyzer(analysisContext);
 }
 
 suite('TypeScriptParser', () => {
-  let typescriptAnalyzer: TypeScriptAnalyzer;
-  let analysisContext: AnalysisContext;
-
-  setup(() => {
-    const urlLoader = new TestUrlLoader();
-    const urlResolver = new TestUrlResolver();
-    analysisContext = new AnalysisContext({urlLoader, urlResolver});
-    typescriptAnalyzer = new TypeScriptAnalyzer(analysisContext);
-  });
-
   suite('parse()', () => {
 
     test('parses classes', async() => {
       const fileName = '/typescript/test.ts';
-      // This puts a document into the scanned document cache
-      await analysisContext.scan(fileName);
+      const typescriptAnalyzer = await getTypeScriptAnalyzer({
+        [fileName]: `
+          class A extends HTMLElement {
+            foo() { return 'bar'; }
+          }`
+      });
       const program = typescriptAnalyzer.analyze(fileName);
       const checker = program.getTypeChecker();
 
