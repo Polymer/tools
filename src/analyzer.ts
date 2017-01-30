@@ -102,4 +102,8 @@ export class Analyzer {
   async load(resolvedUrl: string, providedContents?: string) {
     return this._cacheContext.load(resolvedUrl, providedContents);
   }
+
+  resolveUrl(url: string): string {
+    return this._cacheContext.resolveUrl(url);
+  }
 }

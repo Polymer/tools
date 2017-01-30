@@ -16,6 +16,14 @@ import {Analyzer} from '../analyzer';
 import {ScannedFeature} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
+/**
+ * An object that can scan and find "features" in a particular
+ * document type.
+ *
+ * @template D The document type
+ * @template A the AST type
+ * @template V the visitor type
+ */
 export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
   scan(document: D, visit: (visitor: V) => Promise<void>):
       Promise<ScannedFeature[]>;
