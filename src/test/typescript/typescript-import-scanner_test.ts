@@ -14,21 +14,9 @@
 
 import {assert} from 'chai';
 
-import {Analyzer} from '../../analyzer';
 import {Visitor} from '../../typescript/typescript-document';
 import {TypeScriptImportScanner} from '../../typescript/typescript-import-scanner';
-import {TypeScriptParser} from '../../typescript/typescript-parser';
-import {UrlLoader} from '../../url-loader/url-loader';
-
-class TestUrlLoader implements UrlLoader {
-  canLoad(_url: string) {
-    return false;
-  }
-
-  async load(_url: string): Promise<string> {
-    throw new Error('unsupported');
-  }
-}
+import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 
 suite('TypeScriptImportScanner', () => {
 
@@ -42,10 +30,7 @@ suite('TypeScriptImportScanner', () => {
 
     test('finds no imports', async() => {
       const source = ``;
-      const analyzer = new Analyzer({
-        urlLoader: new TestUrlLoader(),
-      });
-      const parser = new TypeScriptParser(analyzer);
+      const parser = new TypeScriptPreparser();
       const document = parser.parse(source, 'test.ts');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
       const features = await scanner.scan(document, visit);
@@ -58,10 +43,7 @@ suite('TypeScriptImportScanner', () => {
         import * as y from '/y.ts';
         import * as z from '../z.ts';
       `;
-      const analyzer = new Analyzer({
-        urlLoader: new TestUrlLoader(),
-      });
-      const parser = new TypeScriptParser(analyzer);
+      const parser = new TypeScriptPreparser();
       const document = parser.parse(source, 'test.ts');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
       const features = await scanner.scan(document, visit);

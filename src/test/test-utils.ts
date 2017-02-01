@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {UrlLoader} from '../url-loader/url-loader';
+
 export class UnexpectedResolutionError extends Error {
   resolvedValue: any;
   constructor(message: string, resolvedValue: any) {
@@ -28,4 +30,23 @@ export async function invertPromise(promise: Promise<any>): Promise<any> {
     return e;
   }
   throw new UnexpectedResolutionError('Inverted Promise resolved', value);
+}
+
+export class TestUrlLoader implements UrlLoader {
+  files: {[path: string]: string};
+
+  constructor(files: {[path: string]: string}) {
+    this.files = files;
+  }
+
+  canLoad(url: string) {
+    return url in this.files;
+  }
+
+  async load(url: string): Promise<string> {
+    if (this.canLoad(url)) {
+      return this.files[url];
+    }
+    throw new Error(`cannot load file ${url}`);
+  }
 }

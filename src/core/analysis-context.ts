@@ -34,28 +34,40 @@ import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
 import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
+import {TypeScriptAnalyzer} from '../typescript/typescript-analyzer';
+import {TypeScriptPreparser} from '../typescript/typescript-preparser';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 import {ElementScanner as VanillaElementScanner} from '../vanilla-custom-elements/element-scanner';
 import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 
 import {AnalysisCache} from './analysis-cache';
+import {LanguageAnalyzer} from './language-analyzer';
 
 /**
- * Represents an Analyzer with a given AnalysisCache instance.
+ * An analysis of a set of files at a specific point-in-time with respect to
+ * updates to those files. New files can be added to an existing context, but
+ * updates to files will cause a fork of the context with new analysis results.
  *
- * Used to provide a consistent cache in the face of updates happening in
- * parallel with analysis work. A given AnalyzerCacheContext is forked via
- * either the fileChanged or clearCaches methods.
+ * All file contents and analysis results are consistent within a single
+ * anaysis context. A context is forked via either the fileChanged or
+ * clearCaches methods.
  *
  * For almost all purposes this is an entirely internal implementation detail.
+ * An Analyzer instance has a reference to its current context, so it will
+ * appear to be statefull with respect to file updates.
  */
-export class AnalyzerCacheContext {
+export class AnalysisContext {
   private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
+    ['ts', new TypeScriptPreparser()],
     ['css', new CssParser()],
     ['json', new JsonParser()],
+  ]);
+
+  private _languageAnalyzers = new Map<string, LanguageAnalyzer<any>>([
+    ['ts', new TypeScriptAnalyzer(this)],
   ]);
 
   /** A map from import url to urls that document lazily depends on. */
@@ -102,7 +114,7 @@ export class AnalyzerCacheContext {
     this._parsers = options.parsers || this._parsers;
     this._lazyEdges = options.lazyEdges;
     this._scanners = options.scanners ||
-        AnalyzerCacheContext._getDefaultScanners(this._lazyEdges);
+        AnalysisContext._getDefaultScanners(this._lazyEdges);
   }
 
   /**
@@ -123,7 +135,7 @@ export class AnalyzerCacheContext {
         resolvedUrl, async() => {
           const doneTiming =
               this._telemetryTracker.start('analyze: make document', url);
-          const scannedDocument = await this._scan(resolvedUrl, contents);
+          const scannedDocument = await this.scan(resolvedUrl, contents);
           const document = this._getDocument(scannedDocument.url);
           doneTiming();
           return document;
@@ -201,7 +213,14 @@ export class AnalyzerCacheContext {
       return;
     }
 
-    const document = new Document(scannedDocument, this);
+    const extension = path.extname(resolvedUrl).substring(1);
+    const languageAnalyzer = this._languageAnalyzers.get(extension);
+    let analysisResult: any;
+    if (languageAnalyzer) {
+      analysisResult = languageAnalyzer.analyze(scannedDocument.url);
+    }
+
+    const document = new Document(scannedDocument, this, analysisResult);
     this._cache.analyzedDocuments.set(resolvedUrl, document);
     this._cache.analyzedDocumentPromises.getOrCompute(
         resolvedUrl, async() => document);
@@ -231,15 +250,15 @@ export class AnalyzerCacheContext {
    * files that changed rather than clearing caches like this. Caching provides
    * large performance gains.
    */
-  clearCaches(): AnalyzerCacheContext {
+  clearCaches(): AnalysisContext {
     return this._fork(new AnalysisCache());
   }
 
   /**
    * Return a copy, but with the given cache.
    */
-  private _fork(cache: AnalysisCache): AnalyzerCacheContext {
-    const copy = new AnalyzerCacheContext({
+  private _fork(cache: AnalysisCache): AnalysisContext {
+    const copy = new AnalysisContext({
       lazyEdges: this._lazyEdges,
       parsers: this._parsers,
       scanners: this._scanners,
@@ -294,8 +313,7 @@ export class AnalyzerCacheContext {
   /**
    * Scan a toplevel document and all of its transitive dependencies.
    */
-  private async _scan(resolvedUrl: string, contents?: string):
-      Promise<ScannedDocument> {
+  async scan(resolvedUrl: string, contents?: string): Promise<ScannedDocument> {
     return this._cache.dependenciesScannedPromises.getOrCompute(
         resolvedUrl, async() => {
           const scannedDocument = await this._scanLocal(resolvedUrl, contents);
@@ -315,7 +333,7 @@ export class AnalyzerCacheContext {
             // avoid deadlock in the case of cycles. Later we use the
             // DependencyGraph
             // to wait for all transitive dependencies to load.
-            this._scan(importUrl).catch((error) => {
+            this.scan(importUrl).catch((error) => {
               if (error instanceof NoKnownParserError) {
                 // We probably don't want to fail when importing something
                 // that we don't know about here.
