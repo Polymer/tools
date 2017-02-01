@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AnalyzerCacheContext} from '../core/analyzer-cache-context';
+import {AnalysisContext} from '../core/analysis-context';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior';
 import {DomModule} from '../polymer/dom-module-scanner';
@@ -100,8 +100,9 @@ export interface FeatureKinds {
 export class Document implements Feature, Queryable {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
-  analyzer: AnalyzerCacheContext;
+  analyzer: AnalysisContext;
   warnings: Warning[];
+  languageAnalysis?: any;
 
   private _localFeatures = new Set<Feature>();
   private _scannedDocument: ScannedDocument;
@@ -121,7 +122,9 @@ export class Document implements Feature, Queryable {
    */
   private _doneResolving = false;
 
-  constructor(base: ScannedDocument, analyzer: AnalyzerCacheContext) {
+  constructor(
+      base: ScannedDocument, analyzer: AnalysisContext,
+      languageAnalysis?: any) {
     if (base == null) {
       throw new Error('base is null');
     }
@@ -130,6 +133,7 @@ export class Document implements Feature, Queryable {
     }
     this._scannedDocument = base;
     this.analyzer = analyzer;
+    this.languageAnalysis = languageAnalysis;
 
     if (!base.isInline) {
       this.identifiers.add(this.url);

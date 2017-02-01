@@ -387,22 +387,21 @@ suite('Analyzer', () => {
   suite('_parse()', () => {
 
     test('loads and parses an HTML document', async() => {
-      const doc = await analyzer['_cacheContext']['_parse'](
-          'static/html-parse-target.html');
+      const doc =
+          await analyzer['_context']['_parse']('static/html-parse-target.html');
       assert.instanceOf(doc, ParsedHtmlDocument);
       assert.equal(doc.url, 'static/html-parse-target.html');
     });
 
     test('loads and parses a JavaScript document', async() => {
-      const doc =
-          await analyzer['_cacheContext']['_parse']('static/js-elements.js');
+      const doc = await analyzer['_context']['_parse']('static/js-elements.js');
       assert.instanceOf(doc, JavaScriptDocument);
       assert.equal(doc.url, 'static/js-elements.js');
     });
 
     test('returns a Promise that rejects for non-existant files', async() => {
       await assert.isRejected(
-          analyzer['_cacheContext']['_parse']('static/not-found'));
+          analyzer['_context']['_parse']('static/not-found'));
     });
   });
 
@@ -415,7 +414,7 @@ suite('Analyzer', () => {
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const features = <ScannedImport[]>(
-          await analyzer['_cacheContext']['_getScannedFeatures'](document));
+          await analyzer['_context']['_getScannedFeatures'](document));
       assert.deepEqual(
           features.map(e => e.type),
           ['html-import', 'html-script', 'html-style']);
@@ -436,7 +435,7 @@ suite('Analyzer', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
       const features =
           <ScannedImport[]>(
-              await analyzer['_cacheContext']['_getScannedFeatures'](document))
+              await analyzer['_context']['_getScannedFeatures'](document))
               .filter(e => e instanceof ScannedImport);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
@@ -450,7 +449,7 @@ suite('Analyzer', () => {
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const features = <ScannedInlineDocument[]>(
-          await analyzer['_cacheContext']['_getScannedFeatures'](document));
+          await analyzer['_context']['_getScannedFeatures'](document));
 
       assert.equal(features.length, 2);
       assert.instanceOf(features[0], ScannedInlineDocument);
@@ -620,7 +619,7 @@ suite('Analyzer', () => {
             analyzer.analyze(path, contents);
             if (Math.random() > 0.5) {
               const p = analyzer.analyze(path, contents);
-              const cacheContext = analyzer['_cacheContext'];
+              const cacheContext = analyzer['_context'];
               intermediatePromises.push((async() => {
                 await p;
                 const docs = Array.from(
