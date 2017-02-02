@@ -19,6 +19,10 @@ import stripIndent = require('strip-indent');
 
 import {ParsedTypeScriptDocument} from '../../typescript/typescript-document';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
+import {WarningCarryingException, Warning} from '../../warning/warning';
+import {WarningPrinter} from '../../warning/warning-printer';
+import {Analyzer} from '../../analyzer';
+import {TestUrlLoader} from '../test-utils';
 
 suite('TypeScriptParser', () => {
   let parser: TypeScriptPreparser;
@@ -46,6 +50,37 @@ suite('TypeScriptParser', () => {
       assert.equal(sourceFile.statements.length, 2);
       assert.equal(
           sourceFile.statements[0].kind, ts.SyntaxKind.ImportDeclaration);
+    });
+
+    test('throws a WarningCarryingException for parse errors', async() => {
+      const contents = 'const const const const const #!@(~~)!();';
+      const url = 'ts-parse-error.ts';
+      let error: WarningCarryingException|undefined = undefined;
+      try {
+        parser.parse(contents, url);
+      } catch (e) {
+        if (!(e instanceof WarningCarryingException)) {
+          console.log(e);
+          throw new Error('Expected a warning carrying exception.');
+        }
+        error = e;
+      }
+      if (error === undefined) {
+        throw new Error('Parsing invalid file did not throw!');
+      }
+      const warningPrinter = new WarningPrinter(null as any, {
+        analyzer:
+            new Analyzer({urlLoader: new TestUrlLoader({[url]: contents})})
+      });
+
+      async function getUnderlinedText(warning: Warning) {
+        return '\n' +
+            await warningPrinter.getUnderlinedText(warning.sourceRange);
+      }
+
+      assert.deepEqual(await getUnderlinedText(error.warning), `
+const const const const const #!@(~~)!();
+      ~~~~~`);
     });
 
     // stringify() not implemented yet

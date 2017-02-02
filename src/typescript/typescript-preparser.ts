@@ -14,7 +14,9 @@
 
 import * as ts from 'typescript';
 
+import {correctSourceRange, InlineDocInfo} from '../model/model';
 import {Parser} from '../parser/parser';
+import {Severity, WarningCarryingException} from '../warning/warning';
 
 import {ParsedTypeScriptDocument} from './typescript-document';
 
@@ -32,16 +34,39 @@ import {ParsedTypeScriptDocument} from './typescript-document';
  * function, it could be that a full parse is needed anyway.
  */
 export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
-  parse(contents: string, url: string): ParsedTypeScriptDocument {
+  parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
+      ParsedTypeScriptDocument {
+    const isInline = !!inlineInfo;
+    inlineInfo = inlineInfo || {};
     const sourceFile =
         ts.createSourceFile(url, contents, ts.ScriptTarget.ES2016, true);
+    const diagnostics =
+        (sourceFile['parseDiagnostics'] || []) as ts.Diagnostic[];
+    const parseError =
+        diagnostics.find(d => d.category === ts.DiagnosticCategory.Error);
+    if (parseError) {
+      const start = sourceFile.getLineAndCharacterOfPosition(parseError.start);
+      const end = sourceFile.getLineAndCharacterOfPosition(
+          parseError.start + parseError.length);
+      throw new WarningCarryingException({
+        code: 'parse-error',
+        severity: Severity.ERROR,
+        message: ts.flattenDiagnosticMessageText(parseError.messageText, '\n'),
+        sourceRange: correctSourceRange(
+            {
+              file: url,
+              start: {column: start.character, line: start.line},
+              end: {column: end.character, line: end.line}
+            },
+            inlineInfo.locationOffset)!
+      });
+    }
     return new ParsedTypeScriptDocument({
       url,
       contents,
-      locationOffset: undefined,
       ast: sourceFile,
-      astNode: sourceFile,
-      isInline: false,
+      locationOffset: inlineInfo.locationOffset,
+      astNode: inlineInfo.astNode, isInline,
     });
   }
 }
