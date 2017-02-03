@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 <!-- List New Changes Here -->
+* Fix issue where larger projects would cause the sources stream to hang.
 
 ## [0.7.0] - 2017-01-31
 
