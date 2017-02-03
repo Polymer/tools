@@ -49,9 +49,10 @@ export class BuildBundler extends Transform {
       file: File,
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
-    // If this file is a fragment, hold on to the file so that it's fully
-    // analyzed by the time down-stream transforms see it.
-    if (this.config.isFragment(file.path)) {
+    // If this file is a fragment or an entrypoint, hold on to the file so that
+    // it's fully analyzed by the time down-stream transforms see it.
+    if (this.config.isFragment(file.path) ||
+        !!this.config.entrypoint && this.config.entrypoint === file.path) {
       callback(null, null);
     } else {
       callback(null, file);
@@ -77,12 +78,15 @@ export class BuildBundler extends Transform {
     let strategy: BundleStrategy;
     if (this.config.shell) {
       strategy = generateShellMergeStrategy(
-          urlFromPath(this.config.root, this.config.shell), 2);
+          urlFromPath(this.config.root, this.config.shell));
+    }
+    const bundleEntrypoints = Array.from(this.config.allFragments);
+    if (!!this.config.entrypoint) {
+      bundleEntrypoints.push(this.config.entrypoint);
     }
     return this.bundler
         .bundle(
-            this.config.allFragments.map(
-                (f) => urlFromPath(this.config.root, f)),
+            bundleEntrypoints.map(f => urlFromPath(this.config.root, f)),
             strategy)
         .then((docCollection) => {
           const contentsMap = new Map();
