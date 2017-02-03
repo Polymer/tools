@@ -113,7 +113,11 @@ class AnalyzeTransform extends Transform {
   analyzer: BuildAnalyzer;
 
   constructor(analyzer: BuildAnalyzer) {
-    super({objectMode: true});
+    // A high `highWaterMark` value is needed to keep this from pausing the
+    // entire source stream.
+    // TODO(fks) 02-02-2017: Move analysis out of the source stream itself so
+    // that it no longer blocks during analysis.
+    super({objectMode: true, highWaterMark: 10000});
     this.analyzer = analyzer;
   }
 

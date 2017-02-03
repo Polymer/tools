@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- List New Changes Here -->
 * Completed the migration away from `hydrolysis` to `polymer-analyzer` and `vulcanize` to `polymer-bundler`.
+* Fix issue where larger projects would cause the sources stream to hang.
 
 ## [0.7.0] - 2017-01-31
 
