@@ -1,6 +1,6 @@
 {
   "name": "polymer-build",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A library of Gulp build tasks",
   "main": "lib/polymer-build.js",
   "typings": "lib/polymer-build.d.ts",
@@ -27,16 +27,15 @@
     "@types/vinyl-fs": "0.0.28",
     "dom5": "^2.0.1",
     "merge-stream": "^1.0.1",
-    "minimatch-all": "^1.0.2",
     "multipipe": "^1.0.2",
     "parse5": "^2.2.2",
     "plylog": "^0.4.0",
     "polymer-analyzer": "2.0.0-alpha.20",
-    "polymer-project-config": "^1.0.2",
+    "polymer-project-config": "^1.2.0",
     "sw-precache": "^4.2.0",
     "vinyl": "^1.1.1",
     "vinyl-fs": "^2.4.3",
-    "polymer-bundler": "2.0.0-pre.2"
+    "polymer-bundler": "2.0.0-pre.3"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",

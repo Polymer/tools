@@ -68,7 +68,7 @@ export class PolymerProject {
       this.config = new ProjectConfig(config);
     }
 
-    logger.debug(`config: ${this.config}`);
+    logger.debug(`build config loaded:`, this.config);
 
     this.analyzer = new BuildAnalyzer(this.config);
     this.bundler = new BuildBundler(this.config, this.analyzer);

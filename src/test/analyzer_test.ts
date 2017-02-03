@@ -166,32 +166,79 @@ suite('Analyzer', () => {
                     foundDependencies.has(path.resolve(root, 'shared-2.html')));
               });
         });
+
   });
 
   test(
-      'the analyzer stream will emit an error when an warning of type "error" occurs during analysis',
-      () => {
+      'propagates an error when a dependency filepath is analyzed but cannot be found',
+      (done) => {
+        const root = `test-fixtures/bad-src-import`;
+        const config = new ProjectConfig({
+          root: root,
+          entrypoint: 'index.html',
+          sources: ['src/**/*'],
+        });
+        const analyzer = new BuildAnalyzer(config);
+
+        let errorCounter = 0;
+        const errorListener = (err: Error) => {
+          assert.equal(err.message, '1 error(s) occurred during build.');
+          errorCounter++;
+          if (errorCounter >= 2) {
+            done();
+          }
+        };
+
+        analyzer.sources().pipe(new NoopStream());
+        analyzer.sources().on('error', errorListener);
+        analyzer.dependencies().pipe(new NoopStream());
+        analyzer.dependencies().on('error', errorListener);
+      });
+
+  test(
+      'propagates an error when a source filepath is analyzed but cannot be found',
+      (done) => {
+        const root = `test-fixtures/bad-dependency-import`;
+        const config = new ProjectConfig({
+          root: root,
+          entrypoint: 'index.html',
+          sources: ['src/**/*'],
+        });
+        const analyzer = new BuildAnalyzer(config);
+
+        analyzer.dependencies().pipe(new NoopStream());
+        analyzer.dependencies().on('error', (err: Error) => {
+          assert.match(
+              err.message,
+              /ENOENT\: no such file or directory.*does\-not\-exist\-in\-dependencies\.html/);
+          done();
+        });
+      });
+
+  test(
+      'both file streams will emit a analysis warning of type "error"',
+      (done) => {
         const root = path.resolve('test-fixtures/project-analysis-error');
         const sourceFiles = path.join(root, '**');
         const config = new ProjectConfig({
           root: root,
           sources: [sourceFiles],
         });
-
         const analyzer = new BuildAnalyzer(config);
-        analyzer.sources().pipe(new NoopStream());
-        analyzer.dependencies().pipe(new NoopStream());
 
-        return waitForAll([analyzer.sources(), analyzer.dependencies()])
-            .then(
-                () => {
-                  throw new Error('Parse error expected!');
-                },
-                (err) => {
-                  assert.isDefined(err);
-                  assert.equal(
-                      err.message, '1 error(s) occurred during build.');
-                });
+        let errorCounter = 0;
+        const errorListener = (err: Error) => {
+          assert.equal(err.message, '1 error(s) occurred during build.');
+          errorCounter++;
+          if (errorCounter >= 2) {
+            done();
+          }
+        };
+
+        analyzer.sources().pipe(new NoopStream());
+        analyzer.sources().on('error', errorListener);
+        analyzer.dependencies().pipe(new NoopStream());
+        analyzer.dependencies().on('error', errorListener);
       });
 
   test(
