@@ -12,7 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Analyzer} from '../analyzer';
+import {SourceRange} from '../model/model';
 import {UrlLoader} from '../url-loader/url-loader';
+import {Warning} from '../warning/warning';
+import {WarningPrinter} from '../warning/warning-printer';
 
 export class UnexpectedResolutionError extends Error {
   resolvedValue: any;
@@ -49,4 +53,49 @@ export class TestUrlLoader implements UrlLoader {
     }
     throw new Error(`cannot load file ${url}`);
   }
+}
+
+export type Reference = Warning | SourceRange | undefined;
+
+/**
+ * Used for asserting that warnings or source ranges correspond to the right
+ * parts of the source code.
+ *
+ * Non-test code probably wants WarningPrinter instead.
+ */
+export class CodeUnderliner {
+  warningPrinter: WarningPrinter;
+  constructor(urlLoader: UrlLoader) {
+    this.warningPrinter =
+        new WarningPrinter(null as any, {analyzer: new Analyzer({urlLoader})});
+  }
+
+  static withMapping(url: string, contents: string) {
+    return new CodeUnderliner(new TestUrlLoader({[url]: contents}));
+  }
+
+  /**
+   * Converts one or more warnings/source ranges into underlined text.
+   *                                                  ~~~~~~~~~~ ~~~~
+   *
+   * This has a loose set of types that it will accept in order to make
+   * writing tests simple and legible.
+   */
+  async underline(reference: Reference): Promise<string>;
+  async underline(references: Reference[]): Promise<string[]>;
+  async underline(references: Reference|Reference[]): Promise<string|string[]> {
+    if (!Array.isArray(references)) {
+      if (references === undefined) {
+        return 'No source range given.';
+      }
+      const sourceRange =
+          isWarning(references) ? references.sourceRange : references;
+      return '\n' + await this.warningPrinter.getUnderlinedText(sourceRange);
+    }
+    return Promise.all(references.map(ref => this.underline(ref)));
+  }
+}
+
+function isWarning(wOrS: Warning|SourceRange): wOrS is Warning {
+  return 'code' in wOrS;
 }

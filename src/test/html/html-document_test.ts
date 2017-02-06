@@ -21,9 +21,8 @@ import * as path from 'path';
 import {Analyzer} from '../../analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
-import {SourceRange} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
-import {WarningPrinter} from '../../warning/warning-printer';
+import {CodeUnderliner} from '../test-utils';
 
 suite('ParsedHtmlDocument', () => {
   const parser: HtmlParser = new HtmlParser();
@@ -31,15 +30,9 @@ suite('ParsedHtmlDocument', () => {
   const basedir = path.join(__dirname, '../static/');
   const file = fs.readFileSync(path.join(basedir, `${url}`), 'utf8');
   const document: ParsedHtmlDocument = parser.parse(file, url);
-  const analyzer = new Analyzer({urlLoader: new FSUrlLoader(basedir)});
-  const warningPrinter = new WarningPrinter(null as any, {analyzer});
-
-  const getUnderlinedText = async(range: SourceRange | undefined) => {
-    if (range == null) {
-      return 'No source range produced.';
-    }
-    return '\n' + await warningPrinter.getUnderlinedText(range);
-  };
+  const urlLoader = new FSUrlLoader(basedir);
+  const analyzer = new Analyzer({urlLoader});
+  const underliner = new CodeUnderliner(urlLoader);
 
   suite('sourceRangeForNode()', () => {
 
@@ -49,12 +42,14 @@ suite('ParsedHtmlDocument', () => {
 
       assert.equal(comments.length, 2);
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(comments![0]!)), `
+          await underliner.underline(document.sourceRangeForNode(comments![0])),
+          `
     <!-- Single Line Comment -->
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(comments![1]!)), `
+          await underliner.underline(document.sourceRangeForNode(comments![1])),
+          `
     <!-- Multiple
     ~~~~~~~~~~~~~
          Line
@@ -72,24 +67,26 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(liTags.length, 4);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(liTags[0]!)), `
+          await underliner.underline(document.sourceRangeForNode(liTags[0]!)!),
+          `
         <li>1
         ~~~~~
         <li>2</li>
 ~~~~~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(liTags[1]!)), `
+          await underliner.underline(document.sourceRangeForNode(liTags[1]!)!),
+          `
         <li>2</li>
         ~~~~~~~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(liTags[2]!)), `
+          await underliner.underline(document.sourceRangeForNode(liTags[2]!)), `
         <li><li>
         ~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(liTags[3]!)), `
+          await underliner.underline(document.sourceRangeForNode(liTags[3]!)), `
         <li><li>
             ~~~~
       </ul>
@@ -100,7 +97,7 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(pTags.length, 2);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(pTags[0]!)), `
+          await underliner.underline(document.sourceRangeForNode(pTags[0]!)), `
     <p>
     ~~~
       This is a paragraph without a closing tag.
@@ -109,7 +106,7 @@ suite('ParsedHtmlDocument', () => {
 ~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(pTags[1]!)), `
+          await underliner.underline(document.sourceRangeForNode(pTags[1]!)), `
     <p>This is a paragraph with a closing tag.</p>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
     });
@@ -122,7 +119,7 @@ suite('ParsedHtmlDocument', () => {
 
       const tag = dom5.query(document.ast, dom5.predicates.hasTagName('tag'))!;
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(tag)), `
+          await underliner.underline(document.sourceRangeForNode(tag)), `
 <tag attr>
 ~~~~~~~~~~`);
     });
@@ -133,12 +130,14 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(linkTags.length, 2);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(linkTags[0]!)), `
+          await underliner.underline(document.sourceRangeForNode(linkTags[0]!)),
+          `
     <link rel="has attributes">
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForNode(linkTags[1]!)), `
+          await underliner.underline(document.sourceRangeForNode(linkTags[1]!)),
+          `
     <link rel="multiline ones too"
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           foo=bar>
@@ -150,7 +149,7 @@ suite('ParsedHtmlDocument', () => {
           dom5.query(document.ast, dom5.predicates.hasTagName('title'))!;
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForNode(titleTag!.childNodes![0]!)),
           `
     <title>
@@ -167,7 +166,7 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(pTags.length, 2);
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForNode(pTags[0]!.childNodes![0]!)),
           `
     <p>
@@ -178,7 +177,7 @@ suite('ParsedHtmlDocument', () => {
 ~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForNode(pTags[1]!.childNodes![0]!)),
           `
     <p>This is a paragraph with a closing tag.</p>
@@ -192,25 +191,29 @@ suite('ParsedHtmlDocument', () => {
           dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'));
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForStartTag(liTags[0]!)),
+          await underliner.underline(
+              document.sourceRangeForStartTag(liTags[0]!)),
           `
         <li>1
         ~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForStartTag(liTags[1]!)),
+          await underliner.underline(
+              document.sourceRangeForStartTag(liTags[1]!)),
           `
         <li>2</li>
         ~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForStartTag(liTags[2]!)),
+          await underliner.underline(
+              document.sourceRangeForStartTag(liTags[2]!)),
           `
         <li><li>
         ~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForStartTag(liTags[3]!)),
+          await underliner.underline(
+              document.sourceRangeForStartTag(liTags[3]!)),
           `
         <li><li>
             ~~~~`);
@@ -222,7 +225,8 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(brTags.length, 1);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForStartTag(brTags[0]!)),
+          await underliner.underline(
+              document.sourceRangeForStartTag(brTags[0]!)),
           `
     <br>
     ~~~~`);
@@ -234,14 +238,14 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(linkTags.length, 2);
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForStartTag(linkTags[0]!)),
           `
     <link rel="has attributes">
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForStartTag(linkTags[1]!)),
           `
     <link rel="multiline ones too"
@@ -256,7 +260,8 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(h1Tags.length, 2);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForStartTag(h1Tags[1]!)),
+          await underliner.underline(
+              document.sourceRangeForStartTag(h1Tags[1]!)),
           `
     <h1 class="foo" id="bar">
     ~~~~~~~~~~~~~~~~~~~~~~~~~`);
@@ -266,7 +271,7 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(complexTags.length, 1);
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForStartTag(complexTags[0]!)),
           `
     <complex-tag boolean-attr
@@ -296,7 +301,8 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(h1Tags.length, 2);
 
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForEndTag(h1Tags[1]!)), `
+          await underliner.underline(document.sourceRangeForEndTag(h1Tags[1]!)),
+          `
     </h1>
     ~~~~~`);
 
@@ -305,7 +311,7 @@ suite('ParsedHtmlDocument', () => {
       assert.equal(complexTags.length, 1);
 
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForEndTag(complexTags[0]!)),
           `
     </complex-tag
@@ -322,7 +328,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for boolean attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttribute(
+          await underliner.underline(document.sourceRangeForAttribute(
               complexTags[0]!, 'boolean-attr')),
           `
     <complex-tag boolean-attr
@@ -331,7 +337,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for one line string attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(
+          await underliner.underline(
               document.sourceRangeForAttribute(complexTags[0]!, 'string-attr')),
           `
                  string-attr="like this"
@@ -340,7 +346,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for multiline string attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttribute(
+          await underliner.underline(document.sourceRangeForAttribute(
               complexTags[0]!, 'multi-line-attr')),
           `
                  multi-line-attr="
@@ -357,7 +363,7 @@ suite('ParsedHtmlDocument', () => {
         'works for attributes with whitespace around the equals sign',
         async() => {
           assert.deepEqual(
-              await getUnderlinedText(document.sourceRangeForAttribute(
+              await underliner.underline(document.sourceRangeForAttribute(
                   complexTags[0]!, 'whitespace-around-equals')),
               `
                 whitespace-around-equals
@@ -375,14 +381,14 @@ suite('ParsedHtmlDocument', () => {
         assert.equal(linkTags.length, 2);
 
         assert.deepEqual(
-            await getUnderlinedText(
+            await underliner.underline(
                 document.sourceRangeForAttribute(linkTags[0]!, 'rel')),
             `
     <link rel="has attributes">
           ~~~~~~~~~~~~~~~~~~~~`);
 
         assert.deepEqual(
-            await getUnderlinedText(
+            await underliner.underline(
                 document.sourceRangeForAttribute(linkTags[1]!, 'foo')),
             `
           foo=bar>
@@ -398,7 +404,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for boolean attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttributeName(
+          await underliner.underline(document.sourceRangeForAttributeName(
               complexTags[0]!, 'boolean-attr')),
           `
     <complex-tag boolean-attr
@@ -407,7 +413,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for one line string attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttributeName(
+          await underliner.underline(document.sourceRangeForAttributeName(
               complexTags[0]!, 'string-attr')),
           `
                  string-attr="like this"
@@ -416,7 +422,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for multiline string attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttributeName(
+          await underliner.underline(document.sourceRangeForAttributeName(
               complexTags[0]!, 'multi-line-attr')),
           `
                  multi-line-attr="
@@ -426,7 +432,7 @@ suite('ParsedHtmlDocument', () => {
         'works for attributes with whitespace around the equals sign',
         async() => {
           assert.deepEqual(
-              await getUnderlinedText(document.sourceRangeForAttributeName(
+              await underliner.underline(document.sourceRangeForAttributeName(
                   complexTags[0]!, 'whitespace-around-equals')),
               `
                 whitespace-around-equals
@@ -440,14 +446,14 @@ suite('ParsedHtmlDocument', () => {
         assert.equal(linkTags.length, 2);
 
         assert.deepEqual(
-            await getUnderlinedText(
+            await underliner.underline(
                 document.sourceRangeForAttributeName(linkTags[0]!, 'rel')),
             `
     <link rel="has attributes">
           ~~~`);
 
         assert.deepEqual(
-            await getUnderlinedText(
+            await underliner.underline(
                 document.sourceRangeForAttributeName(linkTags[1]!, 'foo')),
             `
           foo=bar>
@@ -470,7 +476,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for one line string attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttributeValue(
+          await underliner.underline(document.sourceRangeForAttributeValue(
               complexTags[0]!, 'string-attr')),
           `
                  string-attr="like this"
@@ -479,7 +485,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for multiline string attributes', async() => {
       assert.deepEqual(
-          await getUnderlinedText(document.sourceRangeForAttributeValue(
+          await underliner.underline(document.sourceRangeForAttributeValue(
               complexTags[0]!, 'multi-line-attr')),
           `
                  multi-line-attr="
@@ -496,7 +502,7 @@ suite('ParsedHtmlDocument', () => {
         'works for attributes with whitespace around the equals sign',
         async() => {
           assert.deepEqual(
-              await getUnderlinedText(document.sourceRangeForAttributeValue(
+              await underliner.underline(document.sourceRangeForAttributeValue(
                   complexTags[0]!, 'whitespace-around-equals')),
               `
                 "yes this is legal">
@@ -510,14 +516,14 @@ suite('ParsedHtmlDocument', () => {
         assert.equal(linkTags.length, 2);
 
         assert.deepEqual(
-            await getUnderlinedText(
+            await underliner.underline(
                 document.sourceRangeForAttributeValue(linkTags[0]!, 'rel')),
             `
     <link rel="has attributes">
               ~~~~~~~~~~~~~~~~`);
 
         assert.deepEqual(
-            await getUnderlinedText(
+            await underliner.underline(
                 document.sourceRangeForAttributeValue(linkTags[1]!, 'foo')),
             `
           foo=bar>

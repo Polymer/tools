@@ -19,10 +19,8 @@ import stripIndent = require('strip-indent');
 
 import {ParsedTypeScriptDocument} from '../../typescript/typescript-document';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
-import {WarningCarryingException, Warning} from '../../warning/warning';
-import {WarningPrinter} from '../../warning/warning-printer';
-import {Analyzer} from '../../analyzer';
-import {TestUrlLoader} from '../test-utils';
+import {WarningCarryingException} from '../../warning/warning';
+import {CodeUnderliner} from '../test-utils';
 
 suite('TypeScriptParser', () => {
   let parser: TypeScriptPreparser;
@@ -68,17 +66,8 @@ suite('TypeScriptParser', () => {
       if (error === undefined) {
         throw new Error('Parsing invalid file did not throw!');
       }
-      const warningPrinter = new WarningPrinter(null as any, {
-        analyzer:
-            new Analyzer({urlLoader: new TestUrlLoader({[url]: contents})})
-      });
-
-      async function getUnderlinedText(warning: Warning) {
-        return '\n' +
-            await warningPrinter.getUnderlinedText(warning.sourceRange);
-      }
-
-      assert.deepEqual(await getUnderlinedText(error.warning), `
+      const underliner = CodeUnderliner.withMapping(url, contents);
+      assert.deepEqual(await underliner.underline(error.warning), `
 const const const const const #!@(~~)!();
       ~~~~~`);
     });

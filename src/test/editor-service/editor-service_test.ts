@@ -16,15 +16,13 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
 import {AttributesCompletion, EditorService, ElementCompletion} from '../../editor-service/editor-service';
 import {LocalEditorService} from '../../editor-service/local-editor-service';
 import {RemoteEditorService} from '../../editor-service/remote-editor-service';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {Severity, Warning} from '../../warning/warning';
-import {WarningPrinter} from '../../warning/warning-printer';
-import {invertPromise} from '../test-utils';
+import {CodeUnderliner, invertPromise} from '../test-utils';
 
 function editorTests(editorFactory: (basedir: string) => EditorService) {
   const basedir = path.join(__dirname, '../static');
@@ -371,12 +369,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       canLoad: () => true,
       load: () => Promise.resolve(fileContents),
     };
-    const warningPrinter = new WarningPrinter(
-        null as any, {analyzer: new Analyzer({urlLoader: loader})});
-
-    async function getUnderlinedText(warning: Warning) {
-      return '\n' + await warningPrinter.getUnderlinedText(warning.sourceRange);
-    }
+    const underliner = new CodeUnderliner(loader);
 
     test('For a good document we get no warnings', async() => {
       await editorService.fileChanged(indexFile, indexContents);
@@ -394,9 +387,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           1);
       assert.containSubset(
           warnings, [{code: 'could-not-load', severity: Severity.ERROR}]);
-      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+      assert.deepEqual(await underliner.underline(warnings), [`
 <link rel="import" href="./does-not-exist.html">
-                        ~~~~~~~~~~~~~~~~~~~~~~~`);
+                        ~~~~~~~~~~~~~~~~~~~~~~~`]);
       assert.match(
           warnings[0].message,
           /Unable to load import:.*no such file or directory/);
@@ -416,9 +409,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               file: 'editor-service/index.html',
             }
           }]);
-      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+      assert.deepEqual(await underliner.underline(warnings), [`
 <script src="../js-parse-error.js"></script>
-            ~~~~~~~~~~~~~~~~~~~~~~`);
+            ~~~~~~~~~~~~~~~~~~~~~~`]);
     });
 
     test(`Don't warn on imports of files with no known parser`, async() => {
@@ -441,9 +434,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             message: 'Unexpected token var',
             sourceRange: {file: 'editor-service/index.html'}
           }]);
-      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+      assert.deepEqual(await underliner.underline(warnings), [`
 <script>var var var var var let const;</script>
-             ~`);
+             ~`]);
     });
 
     test(

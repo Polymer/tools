@@ -14,12 +14,10 @@
 
 import {assert} from 'chai';
 
-import {Analyzer} from '../../analyzer';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlCustomElementReferenceScanner, HtmlElementReferenceScanner} from '../../html/html-element-reference-scanner';
 import {HtmlParser} from '../../html/html-parser';
-import {SourceRange} from '../../model/model';
-import {WarningPrinter} from '../../warning/warning-printer';
+import {CodeUnderliner} from '../test-utils';
 
 suite('HtmlElementReferenceScanner', () => {
 
@@ -58,15 +56,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
     let scanner: HtmlCustomElementReferenceScanner;
     let contents = '';
     const loader = {canLoad: () => true, load: () => Promise.resolve(contents)};
-    const warningPrinter = new WarningPrinter(
-        null as any, {analyzer: new Analyzer({urlLoader: loader})});
-
-    async function getUnderlinedText(sourceRange: SourceRange|undefined) {
-      if (!sourceRange) {
-        return 'No source range produced';
-      }
-      return '\n' + await warningPrinter.getUnderlinedText(sourceRange);
-    }
+    const underliner = new CodeUnderliner(loader);
 
     setup(() => {
       scanner = new HtmlCustomElementReferenceScanner();
@@ -98,7 +88,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
           [['a', '5'], ['b', 'test'], ['c', '']]);
 
       const sourceRanges = await Promise.all(
-          features.map(async f => await getUnderlinedText(f.sourceRange)));
+          features.map(async f => await underliner.underline(f.sourceRange)));
 
       assert.deepEqual(sourceRanges, [
         `
@@ -114,7 +104,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
 
       const attrRanges = await Promise.all(features.map(
           async f => await Promise.all(f.attributes.map(
-              async a => await getUnderlinedText(a.sourceRange)))));
+              async a => await underliner.underline(a.sourceRange)))));
 
       assert.deepEqual(attrRanges, [
         [
@@ -133,8 +123,8 @@ suite('HtmlCustomElementReferenceScanner', () => {
       ]);
 
       const attrNameRanges = await Promise.all(features.map(
-          async f => await Promise.all(f.attributes.map(
-              async a => await getUnderlinedText(a.nameSourceRange)))));
+          async f => await underliner.underline(
+              f.attributes.map(a => a.nameSourceRange))));
 
       assert.deepEqual(attrNameRanges, [
         [
@@ -154,7 +144,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
 
       const attrValueRanges = await Promise.all(features.map(
           async f => await Promise.all(f.attributes.map(
-              async a => await getUnderlinedText(a.valueSourceRange)))));
+              async a => await underliner.underline(a.valueSourceRange)))));
 
       assert.deepEqual(attrValueRanges, [
         [
@@ -164,7 +154,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
           `
           <x-foo a=5 b="test" c></x-foo>
                        ~~~~~~`,
-          `No source range produced`
+          `No source range given.`
         ],
         [],
         []
