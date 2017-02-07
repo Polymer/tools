@@ -49,7 +49,7 @@ function isLibraryPath(filename: string) {
   return filename.startsWith('/$lib/');
 }
 
-const libraryCache = new Map<string, string>();
+const libraryCache = new Map<string, string|undefined>();
 function getLibrarySource(filePath: string) {
   if (libraryCache.has(filePath)) {
     return libraryCache.get(filePath);

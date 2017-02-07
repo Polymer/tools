@@ -176,7 +176,7 @@ class Averager<K> {
 
   entries(): Iterable<[K, number]> {
     const entries = this.count.keys().map(
-        (k) => <[K, number]>[k, this.elapsed.get(k) / this.count.get(k)]);
+        (k) => <[K, number]>[k, this.elapsed.get(k)! / this.count.get(k)!]);
     return entries.sort((a, b) => a[1] - b[1]);
   }
 }

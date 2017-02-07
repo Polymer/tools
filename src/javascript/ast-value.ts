@@ -30,13 +30,13 @@ function unaryToValue(unary: estree.UnaryExpression): LiteralValue {
   const operand = expressionToValue(unary.argument);
   switch (unary.operator) {
     case '!':
-      return !operand;
+      return !(operand as any);
     case '-':
-      return -operand;
+      return -(operand as any);
     case '+':
-      return +operand;
+      return +(operand as any);
     case '~':
-      return ~operand;
+      return ~(operand as any);
     case 'typeof':
       return typeof operand;
     case 'void':
