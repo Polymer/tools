@@ -35,9 +35,11 @@ gulp.task('clean', (done) => {
 });
 
 gulp.task('build', ['clean'], () => {
-  const tsResult = tsProject.src().pipe(typescript(tsProject));
-
-  return mergeStream(tsResult.dts, tsResult.js).pipe(gulp.dest('lib'));
+  let tsReporter = typescript.reporter.defaultReporter();
+  return mergeStream(
+             tsProject.src().pipe(tsProject(tsReporter)),
+             gulp.src(['src/**/*', '!src/**/*.ts']))
+      .pipe(gulp.dest('lib'));
 });
 
 gulp.task('test', ['build'], function() {
@@ -55,18 +57,19 @@ gulp.task('tslint', function() {
 
 gulp.task('depcheck', function() {
   return depcheck(__dirname, {
-    // "@types/*" dependencies are type declarations that are automatically
-    // loaded by TypeScript during build. depcheck can't detect this so we
-    // ignore them here.
-    ignoreMatches: ['@types/*']
-  }).then((result) => {
-    let invalidFiles = Object.keys(result.invalidFiles) || [];
-    let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
-    if (invalidJsFiles.length > 0) {
-      throw new Error(`Invalid files: ${invalidJsFiles}`);
-    }
-    if (result.dependencies.length) {
-      throw new Error(`Unused dependencies: ${result.dependencies}`);
-    }
-  });
+           // "@types/*" dependencies are type declarations that are
+           // automatically loaded by TypeScript during build. depcheck can't
+           // detect this so we ignore them here.
+           ignoreMatches: ['@types/*']
+         })
+      .then((result) => {
+        let invalidFiles = Object.keys(result.invalidFiles) || [];
+        let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
+        if (invalidJsFiles.length > 0) {
+          throw new Error(`Invalid files: ${invalidJsFiles}`);
+        }
+        if (result.dependencies.length) {
+          throw new Error(`Unused dependencies: ${result.dependencies}`);
+        }
+      });
 });
