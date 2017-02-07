@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 * Properly cache warning for incorrect imports or when failing parsing an import.
+* Notice references to elements within `<template>` tags.
 
 ## [2.0.0-alpha.22] - 2017-01-13
 

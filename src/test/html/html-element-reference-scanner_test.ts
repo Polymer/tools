@@ -80,6 +80,9 @@ suite('HtmlCustomElementReferenceScanner', () => {
             <x-bar></x-bar>
           </div>
           <h1>Bar</h1>
+          <template>
+            <x-baz></x-baz>
+          </template>
         </body></html>`;
 
       const document = new HtmlParser().parse(contents, 'test-document.html');
@@ -87,7 +90,8 @@ suite('HtmlCustomElementReferenceScanner', () => {
 
       const features = await scanner.scan(document, visit);
 
-      assert.deepEqual(features.map(f => f.tagName), ['x-foo', 'x-bar']);
+      assert.deepEqual(
+          features.map(f => f.tagName), ['x-foo', 'x-bar', 'x-baz']);
 
       assert.deepEqual(
           features[0].attributes.map(a => [a.name, a.value]),
@@ -102,6 +106,9 @@ suite('HtmlCustomElementReferenceScanner', () => {
           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
         `
             <x-bar></x-bar>
+            ~~~~~~~~~~~~~~~`,
+        `
+            <x-baz></x-baz>
             ~~~~~~~~~~~~~~~`
       ]);
 
@@ -121,6 +128,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
           <x-foo a=5 b="test" c></x-foo>
                               ~`
         ],
+        [],
         []
       ]);
 
@@ -140,6 +148,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
           <x-foo a=5 b="test" c></x-foo>
                               ~`
         ],
+        [],
         []
       ]);
 
@@ -157,6 +166,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
                        ~~~~~~`,
           `No source range produced`
         ],
+        [],
         []
       ]);
     });

@@ -37,7 +37,7 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
       Promise<ScannedElementReference[]> {
     const elements: ScannedElementReference[] = [];
 
-    await visit((node) => {
+    const visitor = (node: ASTNode) => {
       if (node.tagName && this.matches(node)) {
         const element = new ScannedElementReference(
             node.tagName, document.sourceRangeForNode(node)!, node);
@@ -58,7 +58,18 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
 
         elements.push(element);
       }
-    });
+
+      // Descend into templates.
+      if (node.tagName === 'template' && node['content']) {
+        const content = node['content'] as ASTNode;
+        dom5.nodeWalk(content, (n) => {
+          visitor(n);
+          return false;
+        });
+      }
+    };
+
+    await visit(visitor);
 
     return elements;
   }
