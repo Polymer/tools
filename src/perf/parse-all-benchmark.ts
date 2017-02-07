@@ -19,8 +19,6 @@ import * as now from 'performance-now';
 import {Analyzer} from '../analyzer';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 
-import {Measurement} from './telemetry';
-
 const bowerDir = path.resolve(__dirname, `../../bower_components`);
 const analyzer = new Analyzer({urlLoader: new FSUrlLoader(bowerDir)});
 
@@ -78,14 +76,16 @@ async function measure() {
   console.log(`Initial rss: ${MiB(initialMemUse)}`);
   const start = now();
   let document: any;
+  const measurements = [];
   for (let i = 0; i < 10; i++) {
+    const before = now();
     document = await analyzer.analyze('ephemeral.html', fakeFileContents);
+    measurements.push(now() - before);
   }
 
   global.gc();
   const afterInitialAnalyses = process.memoryUsage().rss;
 
-  const measurements = await analyzer.getTelemetryMeasurements();
   printMeasurements(measurements);
 
   console.log(`\n\n\n${document.getFeatures().size} total features resolved.`);
@@ -108,7 +108,7 @@ async function measure() {
 
   // TODO(rictic): looks like we've got a memory leak. Need to track this down.
   //   This should be < 10MiB, not < 100 MiB.
-  const threshold = 150 * (1024 * 1024);
+  const threshold = 250 * (1024 * 1024);
   if (leakedMemory > threshold) {
     console.error(
         `\n\n==========================================\n` +
@@ -120,7 +120,7 @@ async function measure() {
   }
 };
 
-function printMeasurements(measurements: Measurement[]) {
+function printMeasurements(measurements: number[]) {
   console.log(`\n\n\n\n
       The most important thing to benchmark is the resolve step, as everything
       else is cacheable. Here are times for resolving every element in the
@@ -129,55 +129,10 @@ function printMeasurements(measurements: Measurement[]) {
       The total time for this benchmark will also include the initial parse and
       scan and so should be much much longer.
   `);
-  const averager = new Averager<string>();
-  console.log(`${padLeft('elapsed ms', 10)} - ${padLeft('operation', 30)}`);
-  for (const m of measurements) {
-    if (m.kind === 'analyze: make document') {
-      console.log(
-          `${padLeft(m.elapsedTime.toFixed(0), 10)} - ${padLeft(m.kind, 30)}`);
-    }
-    averager.addElapsed(m.kind, m.elapsedTime);
-  }
-
-  console.log('\n');
-  console.log(`${padLeft('average ms', 10)} - ${padLeft('operation', 30)}`);
-  for (const entry of averager.entries()) {
-    console.log(
-        `${padLeft(entry[1].toFixed(0), 10)} - ${padLeft(entry[0], 30)}`);
-  }
-}
-
-class Counter<K> {
-  private _map = new Map<K, number>();
-  add(k: K, v?: number) {
-    if (v == null) {
-      v = 1;
-    }
-    const i = this._map.get(k) || 0;
-    this._map.set(k, i + v);
-  }
-
-  get(k: K): number|undefined {
-    return this._map.get(k);
-  }
-
-  keys(): K[] {
-    return Array.from(this._map.keys());
-  }
-}
-class Averager<K> {
-  private count = new Counter<K>();
-  private elapsed = new Counter<K>();
-
-  addElapsed(k: K, elapsed: number) {
-    this.count.add(k);
-    this.elapsed.add(k, elapsed);
-  }
-
-  entries(): Iterable<[K, number]> {
-    const entries = this.count.keys().map(
-        (k) => <[K, number]>[k, this.elapsed.get(k)! / this.count.get(k)!]);
-    return entries.sort((a, b) => a[1] - b[1]);
+  console.log(`${padLeft(
+      'ms to analyze file that imports all polymer team\'s elements', 10)}}`);
+  for (const elapsed of measurements) {
+    console.log(`${padLeft(elapsed.toFixed(0), 10)}`);
   }
 }
 

@@ -26,7 +26,6 @@ import {JsonParser} from '../json/json-parser';
 import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
-import {Measurement, TelemetryTracker} from '../perf/telemetry';
 import {BehaviorScanner} from '../polymer/behavior-scanner';
 import {CssImportScanner} from '../polymer/css-import-scanner';
 import {DomModuleScanner} from '../polymer/dom-module-scanner';
@@ -80,7 +79,6 @@ export class AnalysisContext {
 
   private _cache = new AnalysisCache();
 
-  private _telemetryTracker = new TelemetryTracker();
   private _generation = 0;
 
   private static _getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
@@ -133,11 +131,8 @@ export class AnalysisContext {
     const resolvedUrl = this.resolveUrl(url);
     return this._cache.analyzedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
-          const doneTiming =
-              this._telemetryTracker.start('analyze: make document', url);
           const scannedDocument = await this.scan(resolvedUrl, contents);
           const document = this._getDocument(scannedDocument.url);
-          doneTiming();
           return document;
         });
   }
@@ -239,10 +234,6 @@ export class AnalysisContext {
     return this._cache.scannedDocuments.get(resolvedUrl);
   }
 
-  async getTelemetryMeasurements(): Promise<Measurement[]> {
-    return this._telemetryTracker.getMeasurements();
-  }
-
   /**
    * Clear all cached information from this analyzer instance.
    *
@@ -265,7 +256,6 @@ export class AnalysisContext {
       urlLoader: this._loader,
       urlResolver: this._resolver
     });
-    copy._telemetryTracker = this._telemetryTracker;
     copy._cache = cache;
     copy._generation = this._generation + 1;
     return copy;
@@ -434,13 +424,7 @@ export class AnalysisContext {
         resolvedUrl, async() => {
           const content = await this.load(resolvedUrl, providedContents);
           const extension = path.extname(resolvedUrl).substring(1);
-
-          const doneTiming =
-              this._telemetryTracker.start('parse', 'resolvedUrl');
-          const parsedDoc =
-              this._parseContents(extension, content, resolvedUrl);
-          doneTiming();
-          return parsedDoc;
+          return this._parseContents(extension, content, resolvedUrl);
         });
   }
 

@@ -17,7 +17,6 @@
 import {AnalysisContext} from './core/analysis-context';
 import {Document, Package} from './model/model';
 import {Parser} from './parser/parser';
-import {Measurement} from './perf/telemetry';
 import {Scanner} from './scanning/scanner';
 import {UrlLoader} from './url-loader/url-loader';
 import {UrlResolver} from './url-loader/url-resolver';
@@ -75,10 +74,6 @@ export class Analyzer {
 
   async analyzePackage(): Promise<Package> {
     return this._context.analyzePackage();
-  }
-
-  async getTelemetryMeasurements(): Promise<Measurement[]> {
-    return this._context.getTelemetryMeasurements();
   }
 
   /**
