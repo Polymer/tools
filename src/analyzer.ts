@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Deferred, Resolver as HydrolysisResolver} from 'hydrolysis';
 import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
 import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
@@ -481,18 +480,13 @@ export class BuildAnalyzer {
   }
 }
 
-// TODO(fks) 09-21-2016: Remove once the move to polymer-analyzer is completed
-export interface BackwardsCompatibleUrlLoader extends UrlLoader,
-                                                      HydrolysisResolver {}
-;
-
 export type ResolveFileCallback = (a: string) => void;
 export type RejectFileCallback = (err: Error) => void;
 export type DeferredFileCallbacks = {
   resolve: ResolveFileCallback; reject: RejectFileCallback;
 };
 
-export class StreamLoader implements BackwardsCompatibleUrlLoader {
+export class StreamLoader implements UrlLoader {
   config: ProjectConfig;
   analyzer: BuildAnalyzer;
 
@@ -563,30 +557,5 @@ export class StreamLoader implements BackwardsCompatibleUrlLoader {
             this.rejectDeferredFile(filePath, err);
           }
         });
-  }
-
-  /**
-   * Wraps the load() method to work in a way that is compliant with vulcanize
-   * & the old UrlResolver interface. To be removed once migration from
-   * hydrolosis to polymer-analyzer is complete.
-   */
-  accept(url: string, deferred: Deferred<string>): boolean {
-    // Vulcanize -> Hydrolysis -> Polymer Analyzer Path Compatability:
-    // The new analyzer expects all loaded loaded URLs to be relative to the
-    // application, but in certain scenarios Vulcanize can ask Hydrolosis to
-    // load URLs that are absolute to the user's file system. This fixes those
-    // paths before they reach the new polymer-analyzer to prevent loading
-    // breakage.
-    if (url.startsWith(this.config.root)) {
-      url = urlFromPath(this.config.root, url);
-    }
-
-    // Call into the new polymer-analyzer canLoad() & load() functions
-    if (this.canLoad(url)) {
-      this.load(url).then(deferred.resolve);
-      return true;
-    }
-
-    return false;
   }
 }

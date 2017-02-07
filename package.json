@@ -26,7 +26,6 @@
     "@types/vinyl": "^1.1.29",
     "@types/vinyl-fs": "0.0.28",
     "dom5": "^2.0.1",
-    "hydrolysis": "^1.23.3",
     "merge-stream": "^1.0.1",
     "multipipe": "^1.0.2",
     "parse5": "^2.2.2",
@@ -36,7 +35,7 @@
     "sw-precache": "^4.2.0",
     "vinyl": "^1.1.1",
     "vinyl-fs": "^2.4.3",
-    "vulcanize": "^1.14.8"
+    "polymer-bundler": "2.0.0-pre.4"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
