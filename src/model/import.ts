@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Warning} from '../warning/warning';
+import {Severity, Warning} from '../warning/warning';
 
 import {Document} from './document';
 import {Feature} from './feature';
@@ -36,6 +36,8 @@ export class ScannedImport implements Resolvable {
 
   sourceRange: SourceRange|undefined;
 
+  error: {message?: string}|undefined;
+
   /**
    * The source range specifically for the URL or reference to the imported
    * resource.
@@ -58,14 +60,23 @@ export class ScannedImport implements Resolvable {
 
   resolve(document: Document): Import|undefined {
     const importedDocument = document.analyzer._getDocument(this.url);
-    return importedDocument && new Import(
-                                   this.url,
-                                   this.type,
-                                   importedDocument,
-                                   this.sourceRange,
-                                   this.urlSourceRange,
-                                   this.astNode,
-                                   this.warnings);
+    if (!importedDocument) {
+      document.warnings.push({
+        code: 'could-not-load',
+        message: `Unable to load import: ${this.error ? (this.error.message || this.error) : ''}`,
+        sourceRange: (this.urlSourceRange || this.sourceRange)!,
+        severity: Severity.ERROR
+      });
+      return undefined;
+    }
+    return new Import(
+        this.url,
+        this.type,
+        importedDocument,
+        this.sourceRange,
+        this.urlSourceRange,
+        this.astNode,
+        this.warnings);
   }
 }
 

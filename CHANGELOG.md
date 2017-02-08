@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+### Fixed
+
+* Properly cache warning for incorrect imports or when failing parsing an import.
+
 ## [2.0.0-alpha.22] - 2017-01-13
 
 ### Fixed

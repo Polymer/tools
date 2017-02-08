@@ -334,20 +334,7 @@ export class AnalysisContext {
             // DependencyGraph
             // to wait for all transitive dependencies to load.
             this.scan(importUrl).catch((error) => {
-              if (error instanceof NoKnownParserError) {
-                // We probably don't want to fail when importing something
-                // that we don't know about here.
-              }
-              error = error || '';
-              // TODO(rictic): move this to the resolve phase, it will be
-              // improperly cached as it is.
-              scannedDocument.warnings.push({
-                code: 'could-not-load',
-                message: `Unable to load import: ${error.message || error}`,
-                sourceRange: (
-                    scannedImport.urlSourceRange || scannedImport.sourceRange)!,
-                severity: Severity.ERROR
-              });
+              scannedImport.error = error || '';
             });
           }
           await this._cache.dependencyGraph.whenReady(resolvedUrl);

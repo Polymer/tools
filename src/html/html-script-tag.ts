@@ -13,6 +13,7 @@
  */
 
 import {Document, Import, ScannedImport} from '../model/model';
+import {Severity} from '../warning/warning';
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
@@ -49,6 +50,12 @@ export class ScannedScriptTagImport extends ScannedImport {
           this.warnings);
     } else {
       // not found or syntax error
+      document.warnings.push({
+        code: 'could-not-load',
+        message: `Unable to load import: ${this.error ? (this.error.message || this.error) : ''}`,
+        sourceRange: (this.urlSourceRange || this.sourceRange)!,
+        severity: Severity.ERROR
+      });
       return undefined;
     }
   }
