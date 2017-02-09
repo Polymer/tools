@@ -85,7 +85,7 @@ class ElementVisitor implements Visitor {
       element.superClass = node.superClass.name;
     }
     const observedAttributesDefn: estree.MethodDefinition|undefined =
-        node.body.body.find(m => {
+        node.body.body.find((m) => {
           if (m.type !== 'MethodDefinition' || !m.static) {
             return false;
           }

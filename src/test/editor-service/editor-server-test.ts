@@ -145,7 +145,7 @@ suite('RemoteEditorService', () => {
 
     async function getNextResponse(expectedId: number) {
       const line =
-          await new Promise<string>(resolve => lines.once('data', resolve));
+          await new Promise<string>((resolve) => lines.once('data', resolve));
       const message = JSON.parse(line);
       assert.equal(message.id, expectedId);
       if (message.value.kind === 'resolution') {

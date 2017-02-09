@@ -24,8 +24,8 @@ export function generateElementMetadata(
     elements: ResolvedElement[], packagePath: string): Elements|undefined {
   return {
     schema_version: '1.0.0',
-    elements: elements.map(e => serializeElement(e, packagePath))
-                  .filter(e => !!e) as Element[]
+    elements: elements.map((e) => serializeElement(e, packagePath))
+                  .filter((e) => !!e) as Element[]
   };
 }
 
@@ -38,7 +38,8 @@ export class ValidationError extends Error {
   constructor(result: jsonschema.ValidatorResult) {
     const message = `Unable to validate serialized Polymer analysis. ` +
         `Got ${result.errors.length} errors: ` +
-        `${result.errors.map(err => '    ' + (err.message || err)).join('\n')}`;
+        `${result.errors.map((err) => '    ' + (err.message || err))
+            .join('\n')}`;
     super(message);
     this.errors = result.errors;
   }
@@ -75,16 +76,16 @@ function serializeElement(
       pathLib.relative(packagePath, resolvedElement.sourceRange.file);
 
   const attributes = resolvedElement.attributes.map(
-      a => serializeAttribute(resolvedElement, path, a));
+      (a) => serializeAttribute(resolvedElement, path, a));
   const properties =
       resolvedElement.properties
           .filter(
-              p => !p.private &&
+              (p) => !p.private &&
                   // Blacklist functions until we figure out what to do.
                   p.type !== 'Function')
-          .map(p => serializeProperty(resolvedElement, path, p));
+          .map((p) => serializeProperty(resolvedElement, path, p));
   const events = resolvedElement.events.map(
-      e => ({
+      (e) => ({
         name: e.name,
         description: e.description || '',
         type: 'CustomEvent',
@@ -102,8 +103,8 @@ function serializeElement(
       cssVariables: [],
       selectors: [],
     },
-    demos: (resolvedElement.demos || []).map(d => d.path),
-    slots: resolvedElement.slots.map(s => {
+    demos: (resolvedElement.demos || []).map((d) => d.path),
+    slots: resolvedElement.slots.map((s) => {
       return {description: '', name: s.name, range: s.range};
     }),
     events: events,

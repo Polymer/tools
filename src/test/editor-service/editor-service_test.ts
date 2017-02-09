@@ -65,7 +65,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
   // in a context where we don't have one.
   const emptyStartElementTypeahead = Object.assign({}, elementTypeahead);
   emptyStartElementTypeahead.elements =
-      emptyStartElementTypeahead.elements.map(e => {
+      emptyStartElementTypeahead.elements.map((e) => {
         const copy = Object.assign({}, e);
         let space = '';
         const elementsWithAttributes =

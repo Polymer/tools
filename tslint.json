@@ -1,5 +1,6 @@
 {
     "rules": {
+        "arrow-parens": true,
         "class-name": true,
         "indent": [
             true,

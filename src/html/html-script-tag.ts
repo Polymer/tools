@@ -52,7 +52,10 @@ export class ScannedScriptTagImport extends ScannedImport {
       // not found or syntax error
       document.warnings.push({
         code: 'could-not-load',
-        message: `Unable to load import: ${this.error ? (this.error.message || this.error) : ''}`,
+        message: `Unable to load import: ${this.error ?
+            (this.error.message || this.error) :
+            ''
+            }`,
         sourceRange: (this.urlSourceRange || this.sourceRange)!,
         severity: Severity.ERROR
       });

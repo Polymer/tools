@@ -44,7 +44,7 @@ suite('HtmlElementReferenceScanner', () => {
       const features = await scanner.scan(document, visit);
 
       assert.deepEqual(
-          features.map(f => f.tagName),
+          features.map((f) => f.tagName),
           ['html', 'head', 'body', 'div', 'x-foo', 'div', 'x-bar']);
     });
   });
@@ -81,14 +81,14 @@ suite('HtmlCustomElementReferenceScanner', () => {
       const features = await scanner.scan(document, visit);
 
       assert.deepEqual(
-          features.map(f => f.tagName), ['x-foo', 'x-bar', 'x-baz']);
+          features.map((f) => f.tagName), ['x-foo', 'x-bar', 'x-baz']);
 
       assert.deepEqual(
-          features[0].attributes.map(a => [a.name, a.value]),
+          features[0].attributes.map((a) => [a.name, a.value]),
           [['a', '5'], ['b', 'test'], ['c', '']]);
 
       const sourceRanges = await Promise.all(
-          features.map(async f => await underliner.underline(f.sourceRange)));
+          features.map(async(f) => await underliner.underline(f.sourceRange)));
 
       assert.deepEqual(sourceRanges, [
         `
@@ -103,8 +103,8 @@ suite('HtmlCustomElementReferenceScanner', () => {
       ]);
 
       const attrRanges = await Promise.all(features.map(
-          async f => await Promise.all(f.attributes.map(
-              async a => await underliner.underline(a.sourceRange)))));
+          async(f) => await Promise.all(f.attributes.map(
+              async(a) => await underliner.underline(a.sourceRange)))));
 
       assert.deepEqual(attrRanges, [
         [
@@ -123,8 +123,8 @@ suite('HtmlCustomElementReferenceScanner', () => {
       ]);
 
       const attrNameRanges = await Promise.all(features.map(
-          async f => await underliner.underline(
-              f.attributes.map(a => a.nameSourceRange))));
+          async(f) => await underliner.underline(
+              f.attributes.map((a) => a.nameSourceRange))));
 
       assert.deepEqual(attrNameRanges, [
         [
@@ -143,8 +143,8 @@ suite('HtmlCustomElementReferenceScanner', () => {
       ]);
 
       const attrValueRanges = await Promise.all(features.map(
-          async f => await Promise.all(f.attributes.map(
-              async a => await underliner.underline(a.valueSourceRange)))));
+          async(f) => await Promise.all(f.attributes.map(
+              async(a) => await underliner.underline(a.valueSourceRange)))));
 
       assert.deepEqual(attrValueRanges, [
         [

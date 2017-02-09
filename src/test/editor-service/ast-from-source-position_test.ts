@@ -170,7 +170,7 @@ suite('getLocationInfoForPosition', () => {
   function getAllKindsSpaceSeparated(text: string) {
     const doc = parser.parse(text, 'uninteresting file name.html');
     return getEveryPosition(text)
-        .map(pos => getLocationInfoForPosition(doc, pos).kind)
+        .map((pos) => getLocationInfoForPosition(doc, pos).kind)
         .join(' ');
   }
 });

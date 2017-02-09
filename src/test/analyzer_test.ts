@@ -67,7 +67,7 @@ suite('Analyzer', () => {
               'static/analysis/simple/simple-element.html');
           const elements = Array.from(
               document.getByKind('element', {lookInDependencies: false}));
-          assert.deepEqual(elements.map(e => e.tagName), ['simple-element']);
+          assert.deepEqual(elements.map((e) => e.tagName), ['simple-element']);
         });
 
     test(
@@ -77,7 +77,7 @@ suite('Analyzer', () => {
               'static/analysis/separate-js/element.html');
           const elements = Array.from(
               document.getByKind('element', {lookInDependencies: true}));
-          assert.deepEqual(elements.map(e => e.tagName), ['my-element']);
+          assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
         });
 
     test('analyzes a document with an import', async() => {
@@ -87,7 +87,7 @@ suite('Analyzer', () => {
       const behaviors = Array.from(
           document.getByKind('behavior', {lookInDependencies: true}));
       assert.deepEqual(
-          behaviors.map(b => b.className),
+          behaviors.map((b) => b.className),
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
     });
 
@@ -188,7 +188,7 @@ suite('Analyzer', () => {
               Array
                   .from(document.getByKind(
                       'document', {lookInDependencies: false}))
-                  .filter(d => d.isInline);
+                  .filter((d) => d.isInline);
           assert.equal(inlineDocuments.length, 1);
           const inlineJsDocument = inlineDocuments[0];
 
@@ -326,7 +326,7 @@ suite('Analyzer', () => {
           {lookInDependencies: true})!;
       assert.deepEqual(
           Array.from(inFolder.getByKind('document', {lookInDependencies: true}))
-              .map(d => d.url),
+              .map((d) => d.url),
           [
             'static/dependencies/subfolder/in-folder.html',
             'static/dependencies/subfolder/subfolder-sibling.html'
@@ -355,25 +355,25 @@ suite('Analyzer', () => {
       const shallowFeatures = document.getFeatures({lookInDependencies: false});
       assert.deepEqual(
           Array.from(shallowFeatures)
-              .filter(f => f.kinds.has('document'))
-              .map(f => (f as Document).url),
+              .filter((f) => f.kinds.has('document'))
+              .map((f) => (f as Document).url),
           ['static/circular/mutual-a.html']);
       assert.deepEqual(
           Array.from(shallowFeatures)
-              .filter(f => f.kinds.has('import'))
-              .map(f => (f as Import).url),
+              .filter((f) => f.kinds.has('import'))
+              .map((f) => (f as Import).url),
           ['static/circular/mutual-b.html']);
 
       const deepFeatures = document.getFeatures({lookInDependencies: true});
       assert.deepEqual(
           Array.from(deepFeatures)
-              .filter(f => f.kinds.has('document'))
-              .map(f => (f as Document).url),
+              .filter((f) => f.kinds.has('document'))
+              .map((f) => (f as Document).url),
           ['static/circular/mutual-a.html', 'static/circular/mutual-b.html']);
       assert.deepEqual(
           Array.from(deepFeatures)
-              .filter(f => f.kinds.has('import'))
-              .map(f => (f as Import).url),
+              .filter((f) => f.kinds.has('import'))
+              .map((f) => (f as Import).url),
           ['static/circular/mutual-b.html', 'static/circular/mutual-a.html']);
     });
 
@@ -393,13 +393,13 @@ suite('Analyzer', () => {
       const features = document.getFeatures({lookInDependencies: true});
       assert.deepEqual(
           Array.from(features)
-              .filter(f => f.kinds.has('document'))
-              .map(f => (f as Document).url),
+              .filter((f) => f.kinds.has('document'))
+              .map((f) => (f as Document).url),
           ['static/circular/self-import.html']);
       assert.deepEqual(
           Array.from(features)
-              .filter(f => f.kinds.has('import'))
-              .map(f => (f as Import).url),
+              .filter((f) => f.kinds.has('import'))
+              .map((f) => (f as Import).url),
           [
             'static/circular/self-import.html',
             'static/circular/self-import.html'
@@ -441,10 +441,10 @@ suite('Analyzer', () => {
       const features = <ScannedImport[]>(
           await analyzer['_context']['_getScannedFeatures'](document));
       assert.deepEqual(
-          features.map(e => e.type),
+          features.map((e) => e.type),
           ['html-import', 'html-script', 'html-style']);
       assert.deepEqual(
-          features.map(e => e.url),  //
+          features.map((e) => e.url),  //
           ['polymer.html', 'foo.js', 'foo.css']);
     });
 
@@ -461,7 +461,7 @@ suite('Analyzer', () => {
       const features =
           <ScannedImport[]>(
               await analyzer['_context']['_getScannedFeatures'](document))
-              .filter(e => e instanceof ScannedImport);
+              .filter((e) => e instanceof ScannedImport);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, 'bar.css');
@@ -554,7 +554,7 @@ suite('Analyzer', () => {
       const elements = Array.from(
           document.getByKind('polymer-element', {lookInDependencies: false}));
       assert.deepEqual(
-          elements.map(e => e.tagName), ['test-seed', 'test-element']);
+          elements.map((e) => e.tagName), ['test-seed', 'test-element']);
       const testSeed = elements[0];
 
       assert.deepEqual(
@@ -565,7 +565,7 @@ suite('Analyzer', () => {
       assert.equal(testSeed.properties.length, 4);
 
       assert.deepEqual(
-          testSeed.events.map(e => e.name), ['fired-event', 'data-changed']);
+          testSeed.events.map((e) => e.name), ['fired-event', 'data-changed']);
     });
   });
 
@@ -579,7 +579,7 @@ suite('Analyzer', () => {
       // The root documents of the project are a minimal set of documents whose
       // imports touch every document in the project.
       assert.deepEqual(
-          Array.from(project['_documents']).map(d => d.url).sort(),
+          Array.from(project['_documents']).map((d) => d.url).sort(),
           ['cyclic-a.html', 'root.html', 'subdir/root-in-subdir.html']
               .sort(), );
 
@@ -587,7 +587,8 @@ suite('Analyzer', () => {
       // bower_components directory that are reachable from imports in the
       // project.
       assert.deepEqual(
-          Array.from(project.getByKind('element')).map(e => e.tagName).sort(), [
+          Array.from(project.getByKind('element')).map((e) => e.tagName).sort(),
+          [
             'root-root',
             'leaf-leaf',
             'cyclic-a',
@@ -652,7 +653,7 @@ suite('Analyzer', () => {
                 await p;
                 const docs = Array.from(
                     cacheContext['_cache'].analyzedDocuments.values());
-                assert.isTrue(new Set(docs.map(d => d.url).sort()).has(path));
+                assert.isTrue(new Set(docs.map((d) => d.url).sort()).has(path));
               })());
             }
           }
@@ -671,7 +672,7 @@ suite('Analyzer', () => {
       for (const document of documents) {
         assert.deepEqual(document.url, 'base.html');
         const localFeatures = document.getFeatures({lookInDependencies: false});
-        const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+        const kinds = Array.from(localFeatures).map((f) => Array.from(f.kinds));
         const message = `localFeatures: ${JSON.stringify(
             Array.from(localFeatures).map((f) => ({
                                             kinds: Array.from(f.kinds),
@@ -688,16 +689,16 @@ suite('Analyzer', () => {
         const imports = Array.from(
             document.getByKind('import', {lookInDependencies: true}));
         assert.sameMembers(
-            imports.map(m => m.url),
+            imports.map((m) => m.url),
             ['a.html', 'b.html', 'common.html', 'common.html']);
         const docs = Array.from(
             document.getByKind('document', {lookInDependencies: true}));
         assert.sameMembers(
-            docs.map(d => d.url),
+            docs.map((d) => d.url),
             ['a.html', 'b.html', 'base.html', 'common.html']);
         const refs = Array.from(document.getByKind(
             'element-reference', {lookInDependencies: true}));
-        assert.sameMembers(refs.map(ref => ref.tagName), ['custom-el']);
+        assert.sameMembers(refs.map((ref) => ref.tagName), ['custom-el']);
       }
     };
 
@@ -853,7 +854,7 @@ suite('Analyzer', () => {
         const root = documents[1];
 
         const localFeatures = root.getFeatures({lookInDependencies: false});
-        const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+        const kinds = Array.from(localFeatures).map((f) => Array.from(f.kinds));
         assert.deepEqual(kinds, [
           ['document', 'html-document'],
           ['import', 'html-import'],

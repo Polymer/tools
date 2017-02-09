@@ -66,10 +66,10 @@ export class LocalEditorService extends EditorService {
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements =
           Array.from(document.getByKind('element', {lookInDependencies: true}))
-              .filter(e => e.tagName);
+              .filter((e) => e.tagName);
       return {
         kind: 'element-tags',
-        elements: elements.map(e => {
+        elements: elements.map((e) => {
           const attributesSpace = e.attributes.length > 0 ? ' ' : '';
           return {
             tagname: e.tagName!,
@@ -97,7 +97,7 @@ export class LocalEditorService extends EditorService {
           sortPrefixes.set(element.extends, 'ccc-');
         }
         const elementAttributes: AttributeCompletion[] =
-            element.attributes.map(p => {
+            element.attributes.map((p) => {
               const sortKey =
                   (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
               return {
@@ -164,7 +164,7 @@ export class LocalEditorService extends EditorService {
       }
 
       return concatMap(elements, (el) => el.attributes)
-          .find(at => at.name === location.attribute);
+          .find((at) => at.name === location.attribute);
     }
   }
 

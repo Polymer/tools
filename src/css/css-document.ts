@@ -98,7 +98,7 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     const indent = '  '.repeat(options.indent || 0);
 
     return beautifulResults.split('\n')
-               .map(line => line === '' ? '' : indent + line)
+               .map((line) => line === '' ? '' : indent + line)
                .join('\n') +
         '\n';
   }

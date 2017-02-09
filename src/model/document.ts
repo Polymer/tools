@@ -358,7 +358,7 @@ export class Document implements Feature, Queryable {
     for (const localFeature of this._localFeatures) {
       if (localFeature instanceof Document) {
         result = result.concat(
-            localFeature._toString(documentsWalked).map(line => `  ${line}`));
+            localFeature._toString(documentsWalked).map((line) => `  ${line}`));
       } else {
         let subResult = localFeature.toString();
         if (subResult === '[object Object]') {
@@ -378,8 +378,8 @@ export class Document implements Feature, Queryable {
   stringify(): string {
     const inlineDocuments =
         (Array.from(this._localFeatures)
-             .filter(f => f instanceof Document && f.isInline) as Document[])
-            .map(d => d.parsedDocument);
+             .filter((f) => f instanceof Document && f.isInline) as Document[])
+            .map((d) => d.parsedDocument);
     return this.parsedDocument.stringify({inlineDocuments: inlineDocuments});
   }
 

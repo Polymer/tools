@@ -43,7 +43,7 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
     const diagnostics =
         (sourceFile['parseDiagnostics'] || []) as ts.Diagnostic[];
     const parseError =
-        diagnostics.find(d => d.category === ts.DiagnosticCategory.Error);
+        diagnostics.find((d) => d.category === ts.DiagnosticCategory.Error);
     if (parseError) {
       const start = sourceFile.getLineAndCharacterOfPosition(parseError.start);
       const end = sourceFile.getLineAndCharacterOfPosition(

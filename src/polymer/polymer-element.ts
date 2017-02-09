@@ -200,13 +200,13 @@ function resolveElement(
   const behaviors = Array.from(flatteningResult.resolvedBehaviors);
   clone.properties = mergeByName(
       scannedElement.properties,
-      behaviors.map(b => ({name: b.className, vals: b.properties})));
+      behaviors.map((b) => ({name: b.className, vals: b.properties})));
   clone.attributes = mergeByName(
       scannedElement.attributes,
-      behaviors.map(b => ({name: b.className, vals: b.attributes})));
+      behaviors.map((b) => ({name: b.className, vals: b.attributes})));
   clone.events = mergeByName(
       scannedElement.events,
-      behaviors.map(b => ({name: b.className, vals: b.events})));
+      behaviors.map((b) => ({name: b.className, vals: b.events})));
 
   const domModule = document.getOnlyAtId(
       'dom-module', scannedElement.tagName || '', {lookInDependencies: true});

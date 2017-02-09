@@ -50,7 +50,7 @@ async function getWarnings(analyzer: Analyzer, localPath: string):
     }
 
 main()
-    .catch(err => {
+    .catch((err) => {
       console.error(err.stack || err.message || err);
       process.exit(1);
     });
