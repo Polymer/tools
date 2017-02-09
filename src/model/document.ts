@@ -99,10 +99,10 @@ export interface FeatureKinds {
 
 export type QueryOptions = object & {
   /**
-   * If given and true, the query will return results from the document and its
+   * If true, the query will return results from the document and its
    * dependencies. Otherwise it will only include results from the document.
    */
-  lookInDependencies?: boolean;
+  imported?: boolean;
 };
 
 export class Document implements Feature, Queryable {
@@ -217,10 +217,10 @@ export class Document implements Feature, Queryable {
   getByKind(kind: string, options?: QueryOptions): Set<Feature>;
   getByKind(kind: string, options?: QueryOptions): Set<Feature> {
     options = options || {};
-    if (this._featuresByKind && options.lookInDependencies) {
+    if (this._featuresByKind && options.imported) {
       // We have a fast index! Use that.
       return this._featuresByKind.get(kind) || new Set();
-    } else if (this._doneResolving && options.lookInDependencies) {
+    } else if (this._doneResolving && options.imported) {
       // We're done discovering features in this document and its children so
       // we can safely build up the indexes.
       this._buildIndexes();
@@ -237,11 +237,11 @@ export class Document implements Feature, Queryable {
   getById(kind: string, identifier: string, options?: QueryOptions):
       Set<Feature> {
     options = options || {};
-    if (this._featuresByKindAndId && options.lookInDependencies) {
+    if (this._featuresByKindAndId && options.imported) {
       // We have a fast index! Use that.
       const idMap = this._featuresByKindAndId.get(kind);
       return (idMap && idMap.get(identifier)) || new Set();
-    } else if (this._doneResolving && options.lookInDependencies) {
+    } else if (this._doneResolving && options.imported) {
       // We're done discovering features in this document and its children so
       // we can safely build up the indexes.
       this._buildIndexes();
@@ -282,7 +282,7 @@ export class Document implements Feature, Queryable {
       if (feature.kinds.has(kind)) {
         result.add(feature);
       }
-      if (options.lookInDependencies && feature.kinds.has('import')) {
+      if (options.imported && feature.kinds.has('import')) {
         const document = (feature as Import).document;
         if (!documentsWalked.has(document)) {
           for (const subFeature of document._getByKind(
@@ -323,7 +323,7 @@ export class Document implements Feature, Queryable {
       if (feature.kinds.has('document')) {
         (feature as Document)._getFeatures(result, visited, options);
       }
-      if (feature.kinds.has('import') && options.lookInDependencies) {
+      if (feature.kinds.has('import') && options.imported) {
         (feature as Import).document._getFeatures(result, visited, options);
       }
     }
@@ -421,7 +421,7 @@ export class Document implements Feature, Queryable {
           `Need to wait until afterwards or the indexes would be incomplete.`);
     }
     this._initIndexes();
-    for (const feature of this.getFeatures({lookInDependencies: true})) {
+    for (const feature of this.getFeatures({imported: true})) {
       this._indexFeature(feature);
     }
   }
