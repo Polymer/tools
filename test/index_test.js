@@ -458,8 +458,13 @@ suite('Project Config', () => {
 
   suite('loadOptionsFromFile()', () => {
 
-    test('throws an exception for invalid polymer.json', () => {
-      const filepath = path.join(__dirname, 'polymer-invalid.json');
+    test('throws an exception for polymer.json with invalid syntax', () => {
+      const filepath = path.join(__dirname, 'polymer-invalid-syntax.json');
+      assert.throws(() => ProjectConfig.loadOptionsFromFile(filepath));
+    });
+
+    test('throws an exception for polymer.json with invalid data', () => {
+      const filepath = path.join(__dirname, 'polymer-invalid-type.json');
       assert.throws(() => ProjectConfig.loadOptionsFromFile(filepath));
     });
 
@@ -479,12 +484,23 @@ suite('Project Config', () => {
       });
     });
 
+    test('reads options from a file with just {} in it', () => {
+      const options = ProjectConfig.loadOptionsFromFile(
+        path.join(__dirname, 'polymer-minimal.json'));
+      assert.deepEqual(options, {});
+    });
+
   });
 
   suite('loadConfigFromFile()', () => {
 
-    test('throws an exception for invalid polymer.json', () => {
-      const filepath = path.join(__dirname, 'polymer-invalid.json');
+    test('throws an exception for polymer.json with invalid syntax', () => {
+      const filepath = path.join(__dirname, 'polymer-invalid-syntax.json');
+      assert.throws(() => ProjectConfig.loadConfigFromFile(filepath));
+    });
+
+    test('throws an exception for polymer.json with invalid data', () => {
+      const filepath = path.join(__dirname, 'polymer-invalid-type.json');
       assert.throws(() => ProjectConfig.loadConfigFromFile(filepath));
     });
 
@@ -512,6 +528,13 @@ suite('Project Config', () => {
           path.resolve(absoluteRoot, 'bar.html'),
         ]
       });
+    });
+
+
+    test('reads a valid config from a file with just {} in it', () => {
+      const config = ProjectConfig.loadConfigFromFile(
+        path.join(__dirname, 'polymer-minimal.json'));
+      config.validate();
     });
 
   });

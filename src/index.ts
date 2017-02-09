@@ -11,9 +11,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as logging from 'plylog';
+import * as jsonschema from 'jsonschema';
+
 import minimatchAll = require('minimatch-all');
 
 const logger = logging.getLogger('polymer-project-config');
+
+const schema = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'schema.json'), 'utf-8'));
 
 /**
  * The default globs for matching all user application source files.
@@ -134,10 +139,19 @@ export class ProjectConfig {
   static loadOptionsFromFile(filepath: string): ProjectOptions {
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
-      return JSON.parse(configContent);
+      const contents = JSON.parse(configContent);
+      const validator = new jsonschema.Validator();
+      const result = validator.validate(contents, schema);
+      if (result.throwError) {
+        throw result.throwError;
+      }
+      if (result.errors.length > 0) {
+        throw result.errors[0];
+      }
+      return contents;
     } catch (error) {
       // swallow "not found" errors because they are so common / expected
-      if (error.code === 'ENOENT') {
+      if (error && error.code === 'ENOENT') {
         logger.debug('no polymer config file found', {file: filepath});
         return null;
       }
