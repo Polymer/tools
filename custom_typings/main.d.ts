@@ -3,5 +3,4 @@
 /// <reference path="./memory-streams.d.ts" />
 /// <reference path="./performance-now.d.ts" />
 /// <reference path="./shady-css-parser.d.ts" />
-/// <reference path="./split.d.ts" />
 /// <reference path="./strip-indent.d.ts" />

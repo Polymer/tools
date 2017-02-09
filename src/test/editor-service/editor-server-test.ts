@@ -15,10 +15,11 @@
 import {assert} from 'chai';
 import * as child_process from 'child_process';
 import * as path from 'path';
-import * as split from 'split';
 import * as util from 'util';
 
 import {invertPromise} from '../test-utils';
+
+import split = require('split');
 
 const pathToServer =
     path.join(__dirname, '../../editor-service/polymer-editor-server.js');
