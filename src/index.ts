@@ -17,9 +17,6 @@ import minimatchAll = require('minimatch-all');
 
 const logger = logging.getLogger('polymer-project-config');
 
-const schema = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'schema.json'), 'utf-8'));
-
 /**
  * The default globs for matching all user application source files.
  */
@@ -141,7 +138,7 @@ export class ProjectConfig {
       const configContent = fs.readFileSync(filepath, 'utf-8');
       const contents = JSON.parse(configContent);
       const validator = new jsonschema.Validator();
-      const result = validator.validate(contents, schema);
+      const result = validator.validate(contents, getSchema());
       if (result.throwError) {
         throw result.throwError;
       }
@@ -329,3 +326,18 @@ export class ProjectConfig {
   }
 
 }
+
+// Gets the json schema for polymer.json, generated from the typescript
+// interface for runtime validation. See the build script in package.json for
+// more info.
+const getSchema: () => jsonschema.Schema = (() => {
+  let schema: jsonschema.Schema | undefined = undefined;
+
+  return () => {
+    if (schema === undefined) {
+      schema = JSON.parse(
+          fs.readFileSync(path.join(__dirname, 'schema.json'), 'utf-8'));
+    }
+    return schema;
+  }
+})();
