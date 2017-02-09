@@ -12,11 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as cssbeautify from 'cssbeautify';
 import * as shady from 'shady-css-parser';
 
 import {SourceRange} from '../model/model';
 import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
+
+import cssbeautify = require('cssbeautify');
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
 

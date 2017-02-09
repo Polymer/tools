@@ -1,5 +1,4 @@
 /// <reference path="./chai.d.ts" />
-/// <reference path="./cssbeautify.d.ts" />
 /// <reference path="./espree.d.ts" />
 /// <reference path="./jsonschema.d.ts" />
 /// <reference path="./memory-streams.d.ts" />
