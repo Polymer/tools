@@ -132,6 +132,8 @@ export class ProjectConfig {
    * Given an absolute file path to a polymer.json-like ProjectOptions object,
    * read that file. If no file exists, null is returned. If the file exists
    * but there is a problem reading or parsing it, throw an exception.
+   *
+   * TODO: make this method and the one below async.
    */
   static loadOptionsFromFile(filepath: string): ProjectOptions {
     try {
