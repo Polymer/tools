@@ -1,3 +1,5 @@
+// Delete once https://github.com/PolymerLabs/shady-css-parser/pull/16 lands.
+
 declare module 'shady-css-parser' {
   export class Parser { parse(cssText: string): Stylesheet; }
   export type Node = Stylesheet | AtRule | Comment | Rulelist | Ruleset |
