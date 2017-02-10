@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+## [2.0.0-alpha.23] - 2017-02-10
+
 ### Added
 
 * [BREAKING] All methods on Document no longer return results from dependencies, but do return results from inline documents. Added a queryOptions param to all query methods to specify getting results from dependencies.
