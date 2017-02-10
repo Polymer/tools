@@ -16,6 +16,8 @@ import * as dom5 from 'dom5';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
+import {registry} from '../registry';
+
 import {HtmlRule} from './rule';
 
 import stripIndent = require('strip-indent');
@@ -66,3 +68,5 @@ export class MoveStyleIntoTemplate extends HtmlRule {
     return warnings;
   }
 }
+
+registry.register(new MoveStyleIntoTemplate());

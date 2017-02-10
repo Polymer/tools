@@ -18,6 +18,7 @@ import stripIndent = require('strip-indent');
 import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
 import {stripWhitespace} from '../util';
 import {HtmlRule} from './rule';
+import {registry} from '../registry';
 
 const p = dom5.predicates;
 
@@ -67,3 +68,5 @@ export class DomModuleNameOrIs extends HtmlRule {
     return warnings;
   }
 }
+
+registry.register(new DomModuleNameOrIs());

@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 # Unreleased
 
 ### Added
+- APIs for both linting by files and by package.
+- Rule collections. Semantic, intent-based collections of lint rules.
+- A queryable, extensible registry of rules and rule collections.
+
+### New Lint Rules
 - Rule that warns about `<style>` tags as direct children of `<dom-module>` tags (rather than being in `<template>` tags).
 - Rule that warns about `is` and `name` attributes on `<dom-module>` tags.
-- APIs for both linting by files and by package.
 
 <!--
 

@@ -12,11 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import './collections';
+
 import {Analyzer} from 'polymer-analyzer';
 import {Document} from 'polymer-analyzer/lib/model/model';
 import {Severity, Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
 
 import {Rule} from './rule';
+
+export {registry} from './registry';
+export {Rule, RuleCollection} from './rule';
 
 /**
  * The Linter is a simple class which groups together a set of Rules and applies
@@ -27,7 +32,7 @@ export class Linter {
   private _analyzer: Analyzer;
   private _rules: Rule[];
 
-  constructor(rules: Rule[], analyzer: Analyzer) {
+  constructor(rules: Iterable<Rule>, analyzer: Analyzer) {
     this._analyzer = analyzer;
     this._rules = Array.from(rules);
   }

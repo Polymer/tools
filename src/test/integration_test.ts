@@ -21,8 +21,7 @@ import {Warning} from 'polymer-analyzer/lib/warning/warning';
 import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
 
 import {Linter} from '../linter';
-
-import {AllRules} from './all-rules';
+import {registry} from '../registry';
 
 const fixtures_dir = path.resolve(
     path.join(__dirname, '../../test/integration/bower_components'));
@@ -40,7 +39,8 @@ if (process.env['INTEGRATION_TEST']) {
         urlLoader: new FSUrlLoader(fixtures_dir),
         urlResolver: new PackageUrlResolver()
       });
-      const linter = new Linter(AllRules, analyzer);
+      const linter =
+          new Linter(registry.getRules(['polymer-2-hybrid']), analyzer);
       const warnings = filterWarnings(await linter.lintPackage());
 
       const counts = new Map<string, number>();

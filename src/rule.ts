@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from 'polymer-analyzer/lib/model/document';
+import {Document} from 'polymer-analyzer/lib/model/model';
 import {Warning} from 'polymer-analyzer/lib/warning/warning';
 
 /**
@@ -25,8 +25,8 @@ export abstract class Rule {
   abstract code: string;
 
   /**
-   * A description of the operation of this upgrade pass. Like "Moves style
-   * children of dom-modules into their templates."
+   * A description of this lint rule. Like "Warns for style
+   * children of dom-modules outside of template tags."
    */
   abstract description: string;
 
@@ -34,4 +34,38 @@ export abstract class Rule {
    * Finds all warnings in the given document.
    */
   abstract check(document: Document): Promise<Warning[]>;
+}
+
+/**
+ * A named collection of lint rules. Useful for building collections of rules,
+ * like rules that note problems that may arise upgrading from Polymer 1.0 to
+ * 2.0.
+ */
+export class RuleCollection {
+  /**
+   * A unique string identifying this collection. Uses the same namespace as
+   * Rules.
+   */
+  code: string;
+
+  /**
+   * Describes the rule collection.
+   *
+   * A description should answer questions like: Who should use it? When? What
+   * should they expect?
+   */
+  description: string;
+
+  /**
+   * A list of codes that identify the rules in this collection.
+   *
+   * The codes can identify rules or rule collections.
+   */
+  rules: string[];
+
+  constructor(code: string, description: string, rules: string[]) {
+    this.code = code;
+    this.description = description;
+    this.rules = rules;
+  }
 }
