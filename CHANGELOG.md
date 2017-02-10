@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased - Breaking Changes
+## Unreleased
+
+## [2.0.0] - 2017-02-10
+
+* [BREAKING] polymer.json is validated upon being read and an error will be thrown if any fields are of the wrong type. All toplevel fields are optional, and no error is thrown on encountering extra fields.
+* Added "lint" config option for configuring polymer-lint.
 
 ## [1.2.0] - 2017-01-27
 
