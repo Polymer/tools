@@ -3,6 +3,7 @@
   "version": "1.0.0-alpha.1",
   "description": "Lint Polymer!",
   "main": "lib/linter.js",
+  "typings": "lib/linter.d.ts",
   "dependencies": {
     "@types/node": "4.0.30",
     "dom5": "^2.0.0",
