@@ -25,7 +25,7 @@
     "gulp-typings": "^2.0.0",
     "merge-stream": "^1.0.0",
     "run-sequence": "^1.2.0",
-    "tslint": "^3.10.2"
+    "tslint": "^4.1.1"
   },
   "peerDependencies": {
     "gulp": "^3.9.1"
