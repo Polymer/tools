@@ -168,7 +168,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
         return {resolvedFileName: null as any as string};
       }
       // since we have a path, we can simply resolve it
-      const fileName = path.resolve(containingFile, moduleName);
+      const fileName = path.resolve(path.dirname(containingFile), moduleName);
       const resolvedFileName = this.context.resolveUrl(fileName);
       return {resolvedFileName};
     });
