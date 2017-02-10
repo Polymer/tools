@@ -200,16 +200,16 @@ function resolveElement(
   const behaviors = Array.from(flatteningResult.resolvedBehaviors);
   clone.properties = mergeByName(
       scannedElement.properties,
-      behaviors.map(b => ({name: b.className, vals: b.properties})));
+      behaviors.map((b) => ({name: b.className, vals: b.properties})));
   clone.attributes = mergeByName(
       scannedElement.attributes,
-      behaviors.map(b => ({name: b.className, vals: b.attributes})));
+      behaviors.map((b) => ({name: b.className, vals: b.attributes})));
   clone.events = mergeByName(
       scannedElement.events,
-      behaviors.map(b => ({name: b.className, vals: b.events})));
+      behaviors.map((b) => ({name: b.className, vals: b.events})));
 
-  const domModule =
-      document.getOnlyAtId('dom-module', scannedElement.tagName || '');
+  const domModule = document.getOnlyAtId(
+      'dom-module', scannedElement.tagName || '', {imported: true});
   if (domModule) {
     clone.description = scannedElement.description || domModule.comment || '';
     clone.domModule = domModule.node;
@@ -237,7 +237,8 @@ function _getFlattenedAndResolvedBehaviors(
     resolvedBehaviors: Set<Behavior>) {
   const warnings: Warning[] = [];
   for (const behavior of behaviorAssignments) {
-    const foundBehaviors = document.getById('behavior', behavior.name);
+    const foundBehaviors =
+        document.getById('behavior', behavior.name, {imported: true});
     if (foundBehaviors.size === 0) {
       warnings.push({
         message: `Unable to resolve behavior ` +

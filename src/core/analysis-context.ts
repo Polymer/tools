@@ -120,7 +120,7 @@ export class AnalysisContext {
    */
   filesChanged(urls: string[]) {
     const newCache =
-        this._cache.invalidate(urls.map(url => this.resolveUrl(url)));
+        this._cache.invalidate(urls.map((url) => this.resolveUrl(url)));
     return this._fork(newCache);
   }
 
@@ -167,16 +167,17 @@ export class AnalysisContext {
     // TODO(rictic): parameterize this, perhaps with polymer.json.
     const dependencyDirPrefixes: string[] =
         ['bower_components', 'node_modules'];
-    const filesInPackage = allFiles.filter(file => {
+    const filesInPackage = allFiles.filter((file) => {
       const dirname = path.dirname(file);
-      return !dependencyDirPrefixes.some(prefix => dirname.startsWith(prefix));
+      return !dependencyDirPrefixes.some(
+          (prefix) => dirname.startsWith(prefix));
     });
 
     const extensions = new Set(this._parsers.keys());
     const filesWithParsers = filesInPackage.filter(
-        fn => extensions.has(path.extname(fn).substring(1)));
-    const documentsOrWarnings =
-        await Promise.all(filesWithParsers.map(f => this._analyzeOrWarning(f)));
+        (fn) => extensions.has(path.extname(fn).substring(1)));
+    const documentsOrWarnings = await Promise.all(
+        filesWithParsers.map((f) => this._analyzeOrWarning(f)));
     const documents = [];
     const warnings = [];
     for (const docOrWarning of documentsOrWarnings) {

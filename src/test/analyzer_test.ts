@@ -65,8 +65,9 @@ suite('Analyzer', () => {
         async() => {
           const document = await analyzer.analyze(
               'static/analysis/simple/simple-element.html');
-          const elements = Array.from(document.getByKind('element'));
-          assert.deepEqual(elements.map(e => e.tagName), ['simple-element']);
+          const elements =
+              Array.from(document.getByKind('element', {imported: false}));
+          assert.deepEqual(elements.map((e) => e.tagName), ['simple-element']);
         });
 
     test(
@@ -74,17 +75,19 @@ suite('Analyzer', () => {
         async() => {
           const document = await analyzer.analyze(
               'static/analysis/separate-js/element.html');
-          const elements = Array.from(document.getByKind('element'));
-          assert.deepEqual(elements.map(e => e.tagName), ['my-element']);
+          const elements =
+              Array.from(document.getByKind('element', {imported: true}));
+          assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
         });
 
     test('analyzes a document with an import', async() => {
       const document =
           await analyzer.analyze('static/analysis/behaviors/behavior.html');
 
-      const behaviors = Array.from(document.getByKind('behavior'));
+      const behaviors =
+          Array.from(document.getByKind('behavior', {imported: true}));
       assert.deepEqual(
-          behaviors.map(b => b.className),
+          behaviors.map((b) => b.className),
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
     });
 
@@ -93,9 +96,7 @@ suite('Analyzer', () => {
         async() => {
           const document =
               await analyzer.analyze('static/html-missing-behaviors.html');
-          // TODO(#372): this should be false, we should treat inline documents
-          //     as not requiring `deep` to be true.
-          const warnings = document.getWarnings(true);
+          const warnings = document.getWarnings({imported: false});
           assert.deepEqual(warnings, [
             {
               message:
@@ -124,7 +125,9 @@ suite('Analyzer', () => {
           const document = await analyzer.analyze(
               'static/chained-missing-behavior/index.html');
           const chainedDocument = document.getOnlyAtId(
-              'document', 'static/chained-missing-behavior/chained.html')!;
+              'document',
+              'static/chained-missing-behavior/chained.html',
+              {imported: true})!;
           const expectedWarning = {
             code: 'unknown-polymer-behavior',
             message:
@@ -136,12 +139,12 @@ suite('Analyzer', () => {
               file: 'static/chained-missing-behavior/chained.html'
             },
           };
-          assert.deepEqual(document.getWarnings(false), []);
-          assert.deepEqual(document.getWarnings(true), [expectedWarning]);
-          // TODO(#372): this should be false, we should treat inline documents
-          //     as not requiring `deep` to be true.
+          assert.deepEqual(document.getWarnings({imported: false}), []);
           assert.deepEqual(
-              chainedDocument.getWarnings(true), [expectedWarning]);
+              document.getWarnings({imported: true}), [expectedWarning]);
+          assert.deepEqual(
+              chainedDocument.getWarnings({imported: false}),
+              [expectedWarning]);
         });
 
     test(
@@ -149,15 +152,16 @@ suite('Analyzer', () => {
         async() => {
           const document =
               await analyzer.analyze('static/analysis/behaviors/behavior.html');
-          // TODO(justinfagnani): make a shallow option and check that this only
-          // has itself and an inline document, but not the sub-document. For
-          // now check that this fixture has 4 documents: behavior.html,
-          // subbehavior.html, and their inline js documents
-          const documents = document.getByKind('document');
-          assert.equal(documents.size, 4);
+
+          const localDocuments =
+              document.getByKind('document', {imported: false});
+          assert.equal(localDocuments.size, 2);  // behavior.html and its inline
+
+          const allDocuments = document.getByKind('document', {imported: true});
+          assert.equal(allDocuments.size, 4);
 
           const inlineDocuments =
-              Array.from(document.getFeatures(false))
+              Array.from(document.getFeatures({imported: false}))
                   .filter(
                       (d) => d instanceof Document && d.isInline) as Document[];
           assert.equal(inlineDocuments.length, 1);
@@ -166,7 +170,7 @@ suite('Analyzer', () => {
           // document that's imported by the container document
           const behaviorJsDocument = inlineDocuments[0];
           const subBehavior = behaviorJsDocument.getOnlyAtId(
-              'behavior', 'MyNamespace.SubBehavior');
+              'behavior', 'MyNamespace.SubBehavior', {imported: true});
           assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
         });
 
@@ -175,18 +179,15 @@ suite('Analyzer', () => {
         async() => {
           const document = await analyzer.analyze(
               'static/script-tags/inline/test-element.html');
-          // TODO(justinfagnani): this could be better with a shallow
-          // Document.getByKind()
           const inlineDocuments =
-              Array.from(document.getFeatures(false))
-                  .filter(
-                      (d) => d instanceof Document && d.isInline) as Document[];
+              Array.from(document.getByKind('document', {imported: false}))
+                  .filter((d) => d.isInline);
           assert.equal(inlineDocuments.length, 1);
           const inlineJsDocument = inlineDocuments[0];
 
           // The inline document can find the container's imported features
-          const subBehavior =
-              inlineJsDocument.getOnlyAtId('behavior', 'TestBehavior');
+          const subBehavior = inlineJsDocument.getOnlyAtId(
+              'behavior', 'TestBehavior', {imported: true});
           assert.equal(subBehavior!.className, 'TestBehavior');
         });
 
@@ -196,16 +197,17 @@ suite('Analyzer', () => {
           const document = await analyzer.analyze(
               'static/script-tags/external/test-element.html');
 
-          const htmlScriptTags = Array.from(document.getByKind('html-script'));
+          const htmlScriptTags =
+              Array.from(document.getByKind('html-script', {imported: false}));
           assert.equal(htmlScriptTags.length, 1);
 
           const htmlScriptTag = htmlScriptTags[0] as ScriptTagImport;
           const scriptDocument = htmlScriptTag.document;
 
           // The inline document can find the container's imported features
-          const subBehavior =
-              scriptDocument.getOnlyAtId('behavior', 'TestBehavior');
-          assert.equal(subBehavior!.className, 'TestBehavior');
+          const subBehavior = scriptDocument.getOnlyAtId(
+              'behavior', 'TestBehavior', {imported: true})!;
+          assert.equal(subBehavior.className, 'TestBehavior');
         });
 
 
@@ -220,32 +222,24 @@ suite('Analyzer', () => {
           const document = await analyzer.analyze(
               'static/analysis/behaviors/elementdir/element.html');
 
-          // TODO(justinfagnani): make a shallow option and check that this only
-          // has
-          // itself and an inline document, but not the sub-document. For now
-          // check
-          // that this fixture has 6 documents: element.html, behavior.html,
-          // subbehavior.html, and their inline js documents
-          const documents = document.getByKind('document');
-          assert.equal(documents.size, 6);
+          const documents = document.getByKind('document', {imported: false});
+          assert.equal(documents.size, 2);
 
-          const inlineDocuments =
-              Array.from(document.getFeatures(false))
-                  .filter(
-                      (d) => d instanceof Document && d.isInline) as Document[];
+          const inlineDocuments = Array.from(documents).filter(
+              (d) => d instanceof Document && d.isInline) as Document[];
           assert.equal(inlineDocuments.length, 1);
 
           // This is the main purpose of the test: get a feature from the inline
           // document that's imported by the container document
           const behaviorJsDocument = inlineDocuments[0];
           const subBehavior = behaviorJsDocument.getOnlyAtId(
-              'behavior', 'MyNamespace.SubBehavior');
-          assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
+              'behavior', 'MyNamespace.SubBehavior', {imported: true})!;
+          assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
         });
 
     test('returns a Document with warnings for malformed files', async() => {
       const document = await analyzer.analyze('static/malformed.html');
-      assert(document.getWarnings().length >= 1);
+      assert(document.getWarnings({imported: false}).length >= 1);
     });
 
     test('analyzes transitive dependencies', async() => {
@@ -253,7 +247,7 @@ suite('Analyzer', () => {
 
       // If we ask for documents we get every document in evaluation order.
       assert.deepEqual(
-          Array.from(root.getByKind('document'))
+          Array.from(root.getByKind('document', {imported: true}))
               .map((d) => [d.url, d.parsedDocument.type, d.isInline]),
           [
             ['static/dependencies/root.html', 'html', false],
@@ -275,36 +269,46 @@ suite('Analyzer', () => {
       // If we ask for imports we get the import statements in evaluation order.
       // Unlike documents, we can have duplicates here because imports exist
       // in distinct places in their containing docs.
-      assert.deepEqual(Array.from(root.getByKind('import')).map((d) => d.url), [
-        'static/dependencies/inline-only.html',
-        'static/dependencies/leaf.html',
-        'static/dependencies/inline-and-imports.html',
-        'static/dependencies/subfolder/in-folder.html',
-        'static/dependencies/subfolder/subfolder-sibling.html',
-        'static/dependencies/subfolder/in-folder.html',
-      ]);
-
-      const inlineOnly =
-          root.getOnlyAtId('document', 'static/dependencies/inline-only.html');
       assert.deepEqual(
-          Array.from(inlineOnly!.getByKind('document'))
+          Array.from(root.getByKind('import', {imported: true}))
+              .map((d) => d.url),
+          [
+            'static/dependencies/inline-only.html',
+            'static/dependencies/leaf.html',
+            'static/dependencies/inline-and-imports.html',
+            'static/dependencies/subfolder/in-folder.html',
+            'static/dependencies/subfolder/subfolder-sibling.html',
+            'static/dependencies/subfolder/in-folder.html',
+          ]);
+
+      const inlineOnly = root.getOnlyAtId(
+          'document', 'static/dependencies/inline-only.html', {imported: true});
+      assert.deepEqual(
+          Array.from(inlineOnly!.getByKind('document', {imported: true}))
               .map((d) => d.parsedDocument.type),
           ['html', 'js', 'css']);
 
-      const leaf =
-          root.getOnlyAtId('document', 'static/dependencies/leaf.html');
-      assert.deepEqual(Array.from(leaf!.getByKind('document')), [leaf]);
+      const leaf = root.getOnlyAtId(
+          'document', 'static/dependencies/leaf.html', {imported: true})!;
+      assert.deepEqual(
+          Array.from(leaf.getByKind('document', {imported: true})), [leaf]);
 
       const inlineAndImports = root.getOnlyAtId(
-          'document', 'static/dependencies/inline-and-imports.html');
+          'document',
+          'static/dependencies/inline-and-imports.html',
+          {imported: true})!;
       assert.deepEqual(
-          Array.from(inlineAndImports!.getByKind('document'))
+          Array.from(inlineAndImports.getByKind('document', {imported: true}))
               .map((d) => d.parsedDocument.type),
           ['html', 'js', 'html', 'html', 'css']);
       const inFolder = root.getOnlyAtId(
-          'document', 'static/dependencies/subfolder/in-folder.html');
+          'document',
+          'static/dependencies/subfolder/in-folder.html',
+          {imported: true})!;
       assert.deepEqual(
-          Array.from(inFolder!.getByKind('document')).map(d => d.url), [
+          Array.from(inFolder.getByKind('document', {imported: true}))
+              .map((d) => d.url),
+          [
             'static/dependencies/subfolder/in-folder.html',
             'static/dependencies/subfolder/subfolder-sibling.html'
           ]);
@@ -312,7 +316,9 @@ suite('Analyzer', () => {
       // check de-duplication
       assert.equal(
           inlineAndImports!.getOnlyAtId(
-              'document', 'static/dependencies/subfolder/in-folder.html'),
+              'document',
+              'static/dependencies/subfolder/in-folder.html',
+              {imported: true}),
           inFolder);
     });
 
@@ -327,28 +333,28 @@ suite('Analyzer', () => {
 
     test('handles mutually recursive documents', async() => {
       const document = await analyzer.analyze('static/circular/mutual-a.html');
-      const shallowFeatures = document.getFeatures(false);
+      const shallowFeatures = document.getFeatures({imported: false});
       assert.deepEqual(
           Array.from(shallowFeatures)
-              .filter(f => f.kinds.has('document'))
-              .map(f => (f as Document).url),
+              .filter((f) => f.kinds.has('document'))
+              .map((f) => (f as Document).url),
           ['static/circular/mutual-a.html']);
       assert.deepEqual(
           Array.from(shallowFeatures)
-              .filter(f => f.kinds.has('import'))
-              .map(f => (f as Import).url),
+              .filter((f) => f.kinds.has('import'))
+              .map((f) => (f as Import).url),
           ['static/circular/mutual-b.html']);
 
-      const deepFeatures = document.getFeatures(true);
+      const deepFeatures = document.getFeatures({imported: true});
       assert.deepEqual(
           Array.from(deepFeatures)
-              .filter(f => f.kinds.has('document'))
-              .map(f => (f as Document).url),
+              .filter((f) => f.kinds.has('document'))
+              .map((f) => (f as Document).url),
           ['static/circular/mutual-a.html', 'static/circular/mutual-b.html']);
       assert.deepEqual(
           Array.from(deepFeatures)
-              .filter(f => f.kinds.has('import'))
-              .map(f => (f as Import).url),
+              .filter((f) => f.kinds.has('import'))
+              .map((f) => (f as Import).url),
           ['static/circular/mutual-b.html', 'static/circular/mutual-a.html']);
     });
 
@@ -365,16 +371,16 @@ suite('Analyzer', () => {
     test('handles a document importing itself', async() => {
       const document =
           await analyzer.analyze('static/circular/self-import.html');
-      const features = document.getFeatures(true);
+      const features = document.getFeatures({imported: true});
       assert.deepEqual(
           Array.from(features)
-              .filter(f => f.kinds.has('document'))
-              .map(f => (f as Document).url),
+              .filter((f) => f.kinds.has('document'))
+              .map((f) => (f as Document).url),
           ['static/circular/self-import.html']);
       assert.deepEqual(
           Array.from(features)
-              .filter(f => f.kinds.has('import'))
-              .map(f => (f as Import).url),
+              .filter((f) => f.kinds.has('import'))
+              .map((f) => (f as Import).url),
           [
             'static/circular/self-import.html',
             'static/circular/self-import.html'
@@ -416,10 +422,10 @@ suite('Analyzer', () => {
       const features = <ScannedImport[]>(
           await analyzer['_context']['_getScannedFeatures'](document));
       assert.deepEqual(
-          features.map(e => e.type),
+          features.map((e) => e.type),
           ['html-import', 'html-script', 'html-style']);
       assert.deepEqual(
-          features.map(e => e.url),  //
+          features.map((e) => e.url),  //
           ['polymer.html', 'foo.js', 'foo.css']);
     });
 
@@ -436,7 +442,7 @@ suite('Analyzer', () => {
       const features =
           <ScannedImport[]>(
               await analyzer['_context']['_getScannedFeatures'](document))
-              .filter(e => e instanceof ScannedImport);
+              .filter((e) => e instanceof ScannedImport);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, 'bar.css');
@@ -488,7 +494,7 @@ suite('Analyzer', () => {
 
       // In document, we'll change `foo` to `bar` in the js and `blue` to
       // `red` in the css.
-      const jsDocs = document.getByKind('js-document') as Set<Document>;
+      const jsDocs = document.getByKind('js-document', {imported: true});
       assert.equal(1, jsDocs.size);
       const jsDoc = jsDocs.values().next().value;
       (jsDoc.parsedDocument as JavaScriptDocument).visit([{
@@ -498,7 +504,7 @@ suite('Analyzer', () => {
         }
       }]);
 
-      const cssDocs = document.getByKind('css-document') as Set<Document>;
+      const cssDocs = document.getByKind('css-document', {imported: true});
       assert.equal(1, cssDocs.size);
       const cssDoc = cssDocs.values().next().value;
       (cssDoc.parsedDocument as ParsedCssDocument).visit([{
@@ -524,9 +530,10 @@ suite('Analyzer', () => {
     test.skip('parses classes', async() => {
       const document = await analyzer.analyze('static/es6-support.js');
 
-      const elements = Array.from(document.getByKind('polymer-element'));
+      const elements =
+          Array.from(document.getByKind('polymer-element', {imported: false}));
       assert.deepEqual(
-          elements.map(e => e.tagName), ['test-seed', 'test-element']);
+          elements.map((e) => e.tagName), ['test-seed', 'test-element']);
       const testSeed = elements[0];
 
       assert.deepEqual(
@@ -537,7 +544,7 @@ suite('Analyzer', () => {
       assert.equal(testSeed.properties.length, 4);
 
       assert.deepEqual(
-          testSeed.events.map(e => e.name), ['fired-event', 'data-changed']);
+          testSeed.events.map((e) => e.name), ['fired-event', 'data-changed']);
     });
   });
 
@@ -551,7 +558,7 @@ suite('Analyzer', () => {
       // The root documents of the project are a minimal set of documents whose
       // imports touch every document in the project.
       assert.deepEqual(
-          Array.from(project['_documents']).map(d => d.url).sort(),
+          Array.from(project['_documents']).map((d) => d.url).sort(),
           ['cyclic-a.html', 'root.html', 'subdir/root-in-subdir.html']
               .sort(), );
 
@@ -559,7 +566,8 @@ suite('Analyzer', () => {
       // bower_components directory that are reachable from imports in the
       // project.
       assert.deepEqual(
-          Array.from(project.getByKind('element')).map(e => e.tagName).sort(), [
+          Array.from(project.getByKind('element')).map((e) => e.tagName).sort(),
+          [
             'root-root',
             'leaf-leaf',
             'cyclic-a',
@@ -624,7 +632,7 @@ suite('Analyzer', () => {
                 await p;
                 const docs = Array.from(
                     cacheContext['_cache'].analyzedDocuments.values());
-                assert.isTrue(new Set(docs.map(d => d.url).sort()).has(path));
+                assert.isTrue(new Set(docs.map((d) => d.url).sort()).has(path));
               })());
             }
           }
@@ -642,8 +650,8 @@ suite('Analyzer', () => {
       const documents = await Promise.all(promises);
       for (const document of documents) {
         assert.deepEqual(document.url, 'base.html');
-        const localFeatures = document.getFeatures(false);
-        const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+        const localFeatures = document.getFeatures({imported: false});
+        const kinds = Array.from(localFeatures).map((f) => Array.from(f.kinds));
         const message = `localFeatures: ${JSON.stringify(
             Array.from(localFeatures).map((f) => ({
                                             kinds: Array.from(f.kinds),
@@ -657,16 +665,19 @@ suite('Analyzer', () => {
               ['import', 'html-import']
             ],
             message);
-        const imports = Array.from(document.getByKind('import'));
+        const imports =
+            Array.from(document.getByKind('import', {imported: true}));
         assert.sameMembers(
-            imports.map(m => m.url),
+            imports.map((m) => m.url),
             ['a.html', 'b.html', 'common.html', 'common.html']);
-        const docs = Array.from(document.getByKind('document'));
+        const docs =
+            Array.from(document.getByKind('document', {imported: true}));
         assert.sameMembers(
-            docs.map(d => d.url),
+            docs.map((d) => d.url),
             ['a.html', 'b.html', 'base.html', 'common.html']);
-        const refs = Array.from(document.getByKind('element-reference'));
-        assert.sameMembers(refs.map(ref => ref.tagName), ['custom-el']);
+        const refs = Array.from(
+            document.getByKind('element-reference', {imported: true}));
+        assert.sameMembers(refs.map((ref) => ref.tagName), ['custom-el']);
       }
     };
 
@@ -821,8 +832,8 @@ suite('Analyzer', () => {
 
         const root = documents[1];
 
-        const localFeatures = root.getFeatures(false);
-        const kinds = Array.from(localFeatures).map(f => Array.from(f.kinds));
+        const localFeatures = root.getFeatures({imported: false});
+        const kinds = Array.from(localFeatures).map((f) => Array.from(f.kinds));
         assert.deepEqual(kinds, [
           ['document', 'html-document'],
           ['import', 'html-import'],
@@ -881,8 +892,8 @@ suite('Analyzer', () => {
             'static/multiple-behavior-imports/element-a.html');
         const documentB = await analyzer.analyze(
             'static/multiple-behavior-imports/element-b.html');
-        assert.deepEqual(documentA.getWarnings(true), []);
-        assert.deepEqual(documentB.getWarnings(true), []);
+        assert.deepEqual(documentA.getWarnings({imported: true}), []);
+        assert.deepEqual(documentB.getWarnings({imported: true}), []);
       });
 
       test(
@@ -896,8 +907,8 @@ suite('Analyzer', () => {
             ]);
             const documentA = result[0];
             const documentB = result[1];
-            assert.deepEqual(documentA.getWarnings(true), []);
-            assert.deepEqual(documentB.getWarnings(true), []);
+            assert.deepEqual(documentA.getWarnings({imported: true}), []);
+            assert.deepEqual(documentB.getWarnings({imported: true}), []);
           });
     });
   });

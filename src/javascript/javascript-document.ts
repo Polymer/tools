@@ -115,7 +115,7 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
                   `estraverse.VisitorOption.Remove not ` +
                   `supported by JavascriptDocument`);
             case VisitorOption.Break:
-              visitors = visitors.filter(v => v !== visitor);
+              visitors = visitors.filter((v) => v !== visitor);
               break;
             case VisitorOption.Skip:
               if (callbackName.startsWith('leave')) {

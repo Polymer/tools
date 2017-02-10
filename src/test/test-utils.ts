@@ -92,7 +92,7 @@ export class CodeUnderliner {
           isWarning(references) ? references.sourceRange : references;
       return '\n' + await this.warningPrinter.getUnderlinedText(sourceRange);
     }
-    return Promise.all(references.map(ref => this.underline(ref)));
+    return Promise.all(references.map((ref) => this.underline(ref)));
   }
 }
 

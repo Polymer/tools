@@ -122,7 +122,7 @@ export class DependencyGraph {
     }
     visited.add(key);
     const dependenciesKnown = this._getRecordFor(key).dependenciesKnown;
-    const forgivingDependenciesKnown = dependenciesKnown.catch(_ => []);
+    const forgivingDependenciesKnown = dependenciesKnown.catch((_) => []);
     const deps = await forgivingDependenciesKnown;
     for (const dep of deps) {
       await this._whenReady(dep, visited);

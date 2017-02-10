@@ -50,7 +50,7 @@ suite('VanillaElementScanner', () => {
   });
 
   test('Finds elements', () => {
-    assert.deepEqual(elementsList.map(e => e.tagName).sort(), [
+    assert.deepEqual(elementsList.map((e) => e.tagName).sort(), [
       'anonymous-class',
       'class-declaration',
       'class-expression',
@@ -58,7 +58,7 @@ suite('VanillaElementScanner', () => {
       'register-before-declaration',
       'register-before-expression'
     ].sort());
-    assert.deepEqual(elementsList.map(e => e.className).sort(), [
+    assert.deepEqual(elementsList.map((e) => e.className).sort(), [
       undefined,
       'ClassDeclaration',
       'ClassExpression',
@@ -66,7 +66,7 @@ suite('VanillaElementScanner', () => {
       'RegisterBeforeDeclaration',
       'RegisterBeforeExpression'
     ].sort());
-    assert.deepEqual(elementsList.map(e => e.superClass).sort(), [
+    assert.deepEqual(elementsList.map((e) => e.superClass).sort(), [
       'HTMLElement',
       'HTMLElement',
       'HTMLElement',

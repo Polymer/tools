@@ -161,7 +161,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
 
   resolveModuleNames(moduleNames: string[], containingFile: string):
       ts.ResolvedModule[] {
-    return moduleNames.map(moduleName => {
+    return moduleNames.map((moduleName) => {
       // We only support path resolution, not node resolution
       if (!(moduleName.startsWith('./') || moduleName.startsWith('../') ||
             moduleName.startsWith('/'))) {

@@ -103,7 +103,7 @@ export class DomModuleScanner implements HtmlScanner {
                           treeAdapters.default.getTemplateContent(template),
                           dom5.predicates.hasTagName('slot'))
                       .map(
-                          s => new Slot(
+                          (s) => new Slot(
                               dom5.getAttribute(s, 'name') || '',
                               document.sourceRangeForNode(s)!));
         }

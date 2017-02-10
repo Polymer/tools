@@ -40,7 +40,7 @@ async function getWarnings(analyzer: Analyzer, localPath: string):
     Promise<Warning[]> {
       try {
         const document = await analyzer.analyze(localPath);
-        return document.getWarnings();
+        return document.getWarnings({imported: false});
       } catch (e) {
         if (e instanceof WarningCarryingException) {
           return [e.warning];
@@ -50,7 +50,7 @@ async function getWarnings(analyzer: Analyzer, localPath: string):
     }
 
 main()
-    .catch(err => {
+    .catch((err) => {
       console.error(err.stack || err.message || err);
       process.exit(1);
     });

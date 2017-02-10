@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    this comment.
 -->
 
+### Added
+
+* [BREAKING] All methods on Document no longer return results from dependencies, but do return results from inline documents. Added a queryOptions param to all query methods to specify getting results from dependencies.
+
 ### Fixed
 
 * Properly cache warning for incorrect imports or when failing parsing an import.

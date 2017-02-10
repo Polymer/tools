@@ -31,8 +31,8 @@ const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 suite('elements.json generation', function() {
   const basedir = path.join(__dirname, 'static', 'analysis');
   const analysisFixtureDirs = fs.readdirSync(basedir)
-                                  .map(p => path.join(basedir, p))
-                                  .filter(p => fs.statSync(p).isDirectory());
+                                  .map((p) => path.join(basedir, p))
+                                  .filter((p) => fs.statSync(p).isDirectory());
 
   for (const analysisFixtureDir of analysisFixtureDirs) {
     // Generate a test from the goldens found in every dir in
@@ -154,8 +154,9 @@ async function analyzeDir(baseDir: string) {
   const importStatements =
       Array.from(filterI(walkRecursively(baseDir), (f) => f.endsWith('.html')))
           .map(
-              fn => `<link rel="import" href="${path.relative(baseDir, fn)}">`);
+              (fn) =>
+                  `<link rel="import" href="${path.relative(baseDir, fn)}">`);
   const document = await analyzer.analyze(
       path.join('ephemeral.html'), importStatements.join('\n'));
-  return Array.from(document.getByKind('element'));
+  return Array.from(document.getByKind('element', {imported: true}));
 }
