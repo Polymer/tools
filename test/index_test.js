@@ -34,6 +34,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'index.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -53,6 +54,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'index.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -75,6 +77,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'foo.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -98,6 +101,7 @@ suite('Project Config', () => {
             path.resolve('index.html'),
             path.resolve('foo.html')
           ],
+          lint: undefined,
         });
       });
 
@@ -125,6 +129,7 @@ suite('Project Config', () => {
             path.resolve('foo.html'),
             path.resolve('bar.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -148,6 +153,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'images/**/*'),
             path.resolve(absoluteRoot, 'index.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -176,6 +182,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'src/**/*'),
             path.resolve(absoluteRoot, 'index.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -207,6 +214,7 @@ suite('Project Config', () => {
             path.resolve('foo.html'),
             path.resolve('bar.html'),
           ],
+          lint: undefined,
         });
       });
 
@@ -526,7 +534,8 @@ suite('Project Config', () => {
           path.resolve(absoluteRoot, 'images/**/*'),
           path.resolve(absoluteRoot, 'foo.html'),
           path.resolve(absoluteRoot, 'bar.html'),
-        ]
+        ],
+        lint: undefined,
       });
     });
 
