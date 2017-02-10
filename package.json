@@ -15,17 +15,19 @@
   },
   "homepage": "https://github.com/Polymer/polymer-project-config#readme",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && typescript-json-schema src/index.ts ProjectOptions --ignoreErrors -o lib/schema.json",
     "test": "npm run build && mocha --ui tdd"
   },
   "dependencies": {
     "@types/node": "^6.0.41",
+    "jsonschema": "^1.1.1",
     "minimatch-all": "^1.1.0",
     "plylog": "^0.4.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^3.0.2",
-    "typescript": "^2.0.2"
+    "typescript": "^2.0.2",
+    "typescript-json-schema": "^0.9.0"
   }
 }

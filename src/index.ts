@@ -11,6 +11,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as logging from 'plylog';
+import * as jsonschema from 'jsonschema';
+
 import minimatchAll = require('minimatch-all');
 
 const logger = logging.getLogger('polymer-project-config');
@@ -130,14 +132,25 @@ export class ProjectConfig {
    * Given an absolute file path to a polymer.json-like ProjectOptions object,
    * read that file. If no file exists, null is returned. If the file exists
    * but there is a problem reading or parsing it, throw an exception.
+   *
+   * TODO: make this method and the one below async.
    */
   static loadOptionsFromFile(filepath: string): ProjectOptions {
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
-      return JSON.parse(configContent);
+      const contents = JSON.parse(configContent);
+      const validator = new jsonschema.Validator();
+      const result = validator.validate(contents, getSchema());
+      if (result.throwError) {
+        throw result.throwError;
+      }
+      if (result.errors.length > 0) {
+        throw result.errors[0];
+      }
+      return contents;
     } catch (error) {
       // swallow "not found" errors because they are so common / expected
-      if (error.code === 'ENOENT') {
+      if (error && error.code === 'ENOENT') {
         logger.debug('no polymer config file found', {file: filepath});
         return null;
       }
@@ -315,3 +328,18 @@ export class ProjectConfig {
   }
 
 }
+
+// Gets the json schema for polymer.json, generated from the typescript
+// interface for runtime validation. See the build script in package.json for
+// more info.
+const getSchema: () => jsonschema.Schema = (() => {
+  let schema: jsonschema.Schema | undefined = undefined;
+
+  return () => {
+    if (schema === undefined) {
+      schema = JSON.parse(
+          fs.readFileSync(path.join(__dirname, 'schema.json'), 'utf-8'));
+    }
+    return schema;
+  }
+})();
