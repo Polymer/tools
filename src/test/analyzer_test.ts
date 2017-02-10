@@ -549,33 +549,41 @@ suite('Analyzer', () => {
   });
 
   suite('analyzePackage', () => {
-    test('produces a project with the right documents', async() => {
+    test('produces a package with the right documents', async() => {
       const analyzer = new Analyzer({
         urlLoader: new FSUrlLoader(path.join(__dirname, 'static', 'project'))
       });
-      const project = await analyzer.analyzePackage();
+      const pckage = await analyzer.analyzePackage();
 
-      // The root documents of the project are a minimal set of documents whose
-      // imports touch every document in the project.
+      // The root documents of the package are a minimal set of documents whose
+      // imports touch every document in the package.
       assert.deepEqual(
-          Array.from(project['_documents']).map((d) => d.url).sort(),
+          Array.from(pckage['_documents']).map((d) => d.url).sort(),
           ['cyclic-a.html', 'root.html', 'subdir/root-in-subdir.html']
               .sort(), );
 
-      // All elements in the project, as well as all elements in its
-      // bower_components directory that are reachable from imports in the
-      // project.
+      const packageElements = [
+        'root-root',
+        'leaf-leaf',
+        'cyclic-a',
+        'cyclic-b',
+        'root-in-subdir',
+        'subdir-leaf'
+      ];
+
+      // All elements in the package
       assert.deepEqual(
-          Array.from(project.getByKind('element')).map((e) => e.tagName).sort(),
-          [
-            'root-root',
-            'leaf-leaf',
-            'cyclic-a',
-            'cyclic-b',
-            'imported-dependency',
-            'root-in-subdir',
-            'subdir-leaf'
-          ].sort());
+          Array.from(pckage.getByKind('element')).map((e) => e.tagName).sort(),
+          packageElements.sort());
+
+      // All elements in the package, as well as all elements in its
+      // bower_components directory that are reachable from imports in the
+      // package.
+      assert.deepEqual(
+          Array.from(pckage.getByKind('element', {externalPackages: true}))
+              .map((e) => e.tagName)
+              .sort(),
+          packageElements.concat(['imported-dependency']).sort());
     });
   });
 

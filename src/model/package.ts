@@ -13,9 +13,15 @@
  */
 import {Warning} from '../warning/warning';
 
-import {Document, FeatureKinds} from './document';
+import {Document, FeatureKinds, QueryOptions as DocumentQueryOptions} from './document';
 import {Feature} from './feature';
-import {Queryable} from './queryable';
+import {BaseQueryOptions, Queryable} from './queryable';
+
+export type QueryOptions = object & BaseQueryOptions;
+
+// A regexp that matches paths to external code.
+// TODO(rictic): Make this extensible (polymer.json?).
+const MATCHES_EXTERNAL = /(^|\/)(bower_components|node_modules)/;
 
 /**
  * Represents a queryable interface over all documents in a package/project.
@@ -27,6 +33,10 @@ import {Queryable} from './queryable';
 export class Package implements Queryable {
   private _documents: Set<Document>;
   private _toplevelWarnings: Warning[];
+
+  static isExternal(path: string) {
+    return MATCHES_EXTERNAL.test(path);
+  }
 
   constructor(documents: Iterable<Document>, warnings: Warning[]) {
     const potentialRoots = new Set(documents);
@@ -48,48 +58,55 @@ export class Package implements Queryable {
     this._documents = potentialRoots;
   }
 
-  getByKind<K extends keyof FeatureKinds>(kind: K): Set<FeatureKinds[K]>;
-  getByKind(kind: string): Set<Feature>;
-  getByKind(kind: string): Set<Feature> {
+  getByKind<K extends keyof FeatureKinds>(kind: K, options?: QueryOptions):
+      Set<FeatureKinds[K]>;
+  getByKind(kind: string, options?: QueryOptions): Set<Feature>;
+  getByKind(kind: string, options?: QueryOptions): Set<Feature> {
     const result = new Set();
-    const docQueryOptions = {imported: true};
+    const docQueryOptions = this._getDocumentQueryOptions(options);
     for (const doc of this._documents) {
       addAll(result, doc.getByKind(kind, docQueryOptions));
     }
     return result;
   }
 
-  getById<K extends keyof FeatureKinds>(kind: K, identifier: string):
-      Set<FeatureKinds[K]>;
-  getById(kind: string, identifier: string): Set<Feature>;
-  getById(kind: string, identifier: string): Set<Feature> {
+  getById<K extends keyof FeatureKinds>(
+      kind: K, identifier: string,
+      options?: QueryOptions): Set<FeatureKinds[K]>;
+  getById(kind: string, identifier: string, options?: QueryOptions):
+      Set<Feature>;
+  getById(kind: string, identifier: string, options?: QueryOptions):
+      Set<Feature> {
     const result = new Set();
-    const docQueryOptions = {imported: true};
+    const docQueryOptions = this._getDocumentQueryOptions(options);
     for (const doc of this._documents) {
       addAll(result, doc.getById(kind, identifier, docQueryOptions));
     }
     return result;
   }
 
-  getOnlyAtId<K extends keyof FeatureKinds>(kind: K, identifier: string):
-      FeatureKinds[K]|undefined;
-  getOnlyAtId(kind: string, identifier: string): Feature|undefined;
-  getOnlyAtId(kind: string, identifier: string): Feature|undefined {
-    const results = this.getById(kind, identifier);
+  getOnlyAtId<K extends keyof FeatureKinds>(
+      kind: K, identifier: string,
+      options?: QueryOptions): FeatureKinds[K]|undefined;
+  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
+      |undefined;
+  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
+      |undefined {
+    const results = this.getById(kind, identifier, options);
     if (results.size > 1) {
       throw new Error(
           `Expected to find at most one ${kind} with id ${identifier} ` +
           `but found ${results.size}.`);
-    }
+    };
     return results.values().next().value || undefined;
   }
 
   /**
    * Get all features for all documents in the project or their imports.
    */
-  getFeatures(): Set<Feature> {
+  getFeatures(options?: QueryOptions): Set<Feature> {
     const result = new Set();
-    const docQueryOptions = {imported: true};
+    const docQueryOptions = this._getDocumentQueryOptions(options);
     for (const doc of this._documents) {
       addAll(result, doc.getFeatures(docQueryOptions));
     }
@@ -99,13 +116,22 @@ export class Package implements Queryable {
   /**
    * Get all warnings in the project.
    */
-  getWarnings(): Warning[] {
+  getWarnings(options?: QueryOptions): Warning[] {
     const result = new Set(this._toplevelWarnings);
-    const docQueryOptions = {imported: true};
+    const docQueryOptions = this._getDocumentQueryOptions(options);
     for (const doc of this._documents) {
       addAll(result, new Set(doc.getWarnings(docQueryOptions)));
     }
+
     return Array.from(result);
+  }
+
+  private _getDocumentQueryOptions(options?: QueryOptions):
+      DocumentQueryOptions {
+    return {
+      imported: true,
+      externalPackages: !!(options && options.externalPackages)
+    };
   }
 }
 

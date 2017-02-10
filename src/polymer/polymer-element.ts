@@ -209,7 +209,9 @@ function resolveElement(
       behaviors.map((b) => ({name: b.className, vals: b.events})));
 
   const domModule = document.getOnlyAtId(
-      'dom-module', scannedElement.tagName || '', {imported: true});
+      'dom-module',
+      scannedElement.tagName || '',
+      {imported: true, externalPackages: true});
   if (domModule) {
     clone.description = scannedElement.description || domModule.comment || '';
     clone.domModule = domModule.node;
@@ -237,8 +239,8 @@ function _getFlattenedAndResolvedBehaviors(
     resolvedBehaviors: Set<Behavior>) {
   const warnings: Warning[] = [];
   for (const behavior of behaviorAssignments) {
-    const foundBehaviors =
-        document.getById('behavior', behavior.name, {imported: true});
+    const foundBehaviors = document.getById(
+        'behavior', behavior.name, {imported: true, externalPackages: true});
     if (foundBehaviors.size === 0) {
       warnings.push({
         message: `Unable to resolve behavior ` +

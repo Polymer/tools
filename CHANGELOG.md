@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 * [BREAKING] All methods on Document no longer return results from dependencies, but do return results from inline documents. Added a queryOptions param to all query methods to specify getting results from dependencies.
+* [BREAKING] All methods on both Document and Package no longer return results from external code. Must specify `externalPackages: true` to get features from code outside the current package.
 
 ### Fixed
 

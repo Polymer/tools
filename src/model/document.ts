@@ -23,7 +23,8 @@ import {Element} from './element';
 import {ElementReference} from './element-reference';
 import {Feature, ScannedFeature} from './feature';
 import {Import} from './import';
-import {Queryable} from './queryable';
+import {Package} from './package';
+import {BaseQueryOptions, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
 
@@ -97,13 +98,15 @@ export interface FeatureKinds {
   'js-import': Import;
 }
 
-export type QueryOptions = object & {
+export interface QueryOptionsInterface extends BaseQueryOptions {
   /**
    * If true, the query will return results from the document and its
    * dependencies. Otherwise it will only include results from the document.
    */
   imported?: boolean;
-};
+}
+
+export type QueryOptions = object & QueryOptionsInterface;
 
 export class Document implements Feature, Queryable {
   kinds: Set<string> = new Set(['document']);
@@ -219,14 +222,18 @@ export class Document implements Feature, Queryable {
     options = options || {};
     if (this._featuresByKind && options.imported) {
       // We have a fast index! Use that.
-      return this._featuresByKind.get(kind) || new Set();
+      const features = this._featuresByKind.get(kind) || new Set();
+      if (!options.externalPackages) {
+        return this._filterOutExternal(features);
+      }
+      return features;
     } else if (this._doneResolving && options.imported) {
       // We're done discovering features in this document and its children so
       // we can safely build up the indexes.
       this._buildIndexes();
       return this.getByKind(kind, options);
     }
-    return this._getByKind(kind, new Set(), options);
+    return this._getByKind(kind, options);
   }
 
   getById<K extends keyof FeatureKinds>(
@@ -240,7 +247,11 @@ export class Document implements Feature, Queryable {
     if (this._featuresByKindAndId && options.imported) {
       // We have a fast index! Use that.
       const idMap = this._featuresByKindAndId.get(kind);
-      return (idMap && idMap.get(identifier)) || new Set();
+      const features = (idMap && idMap.get(identifier)) || new Set();
+      if (!options.externalPackages) {
+        return this._filterOutExternal(features);
+      }
+      return features;
     } else if (this._doneResolving && options.imported) {
       // We're done discovering features in this document and its children so
       // we can safely build up the indexes.
@@ -272,43 +283,24 @@ export class Document implements Feature, Queryable {
     return results.values().next().value || undefined;
   }
 
-  private _getByKind(
-      kind: string, documentsWalked: Set<Document>,
-      options: QueryOptions): Set<Feature> {
-    const result = new Set<Feature>();
-    documentsWalked.add(this);
-
-    for (const feature of this._localFeatures) {
-      if (feature.kinds.has(kind)) {
-        result.add(feature);
-      }
-      if (options.imported && feature.kinds.has('import')) {
-        const document = (feature as Import).document;
-        if (!documentsWalked.has(document)) {
-          for (const subFeature of document._getByKind(
-                   kind, documentsWalked, options)) {
-            result.add(subFeature);
-          }
-        }
-      }
-      if (feature.kinds.has('document')) {
-        const document = (feature as Document);
-        if (!documentsWalked.has(document)) {
-          for (const subFeature of document._getByKind(
-                   kind, documentsWalked, options)) {
-            result.add(subFeature);
-          }
-        }
-      }
-    }
-
-    return result;
-  }
-
   getFeatures(options?: QueryOptions): Set<Feature> {
     options = options || {};
     const result = new Set<Feature>();
     this._getFeatures(result, new Set<Document>(), options);
+    return result;
+  }
+
+  private _getByKind(kind: string, options: QueryOptions): Set<Feature> {
+    const allFeatures = new Set<Feature>();
+    this._getFeatures(allFeatures, new Set(), options);
+
+    const result = new Set<Feature>();
+    for (const feature of allFeatures) {
+      if (feature.kinds.has(kind)) {
+        result.add(feature);
+      }
+    }
+
     return result;
   }
 
@@ -324,16 +316,29 @@ export class Document implements Feature, Queryable {
         (feature as Document)._getFeatures(result, visited, options);
       }
       if (feature.kinds.has('import') && options.imported) {
-        (feature as Import).document._getFeatures(result, visited, options);
+        const imprt = feature as Import;
+        if (options.externalPackages || !Package.isExternal(imprt.url)) {
+          imprt.document._getFeatures(result, visited, options);
+        }
       }
     }
+  }
+
+  private _filterOutExternal(features: Set<Feature>): Set<Feature> {
+    const result = new Set();
+    for (const feature of features) {
+      if (feature.sourceRange && Package.isExternal(feature.sourceRange.file)) {
+        continue;
+      }
+      result.add(feature);
+    }
+    return result;
   }
 
   /**
    * Get warnings for the document and all matched features.
    */
   getWarnings(options?: QueryOptions): Warning[] {
-    options = options || {};
     const warnings: Set<Warning> = new Set(this.warnings);
     for (const feature of this.getFeatures(options)) {
       for (const warning of feature.warnings) {
@@ -421,7 +426,8 @@ export class Document implements Feature, Queryable {
           `Need to wait until afterwards or the indexes would be incomplete.`);
     }
     this._initIndexes();
-    for (const feature of this.getFeatures({imported: true})) {
+    for (const feature of this.getFeatures(
+             {imported: true, externalPackages: true})) {
       this._indexFeature(feature);
     }
   }

@@ -161,17 +161,10 @@ export class AnalysisContext {
     if (!this._loader.readDirectory) {
       throw new Error(
           `This analyzer doesn't support analyzerPackage, ` +
-          `the urlLoader can't list the files in a directory.`);
+          `its urlLoader can't list the files in a directory.`);
     }
     const allFiles = await this._loader.readDirectory('', true);
-    // TODO(rictic): parameterize this, perhaps with polymer.json.
-    const dependencyDirPrefixes: string[] =
-        ['bower_components', 'node_modules'];
-    const filesInPackage = allFiles.filter((file) => {
-      const dirname = path.dirname(file);
-      return !dependencyDirPrefixes.some(
-          (prefix) => dirname.startsWith(prefix));
-    });
+    const filesInPackage = allFiles.filter((file) => !Package.isExternal(file));
 
     const extensions = new Set(this._parsers.keys());
     const filesWithParsers = filesInPackage.filter(

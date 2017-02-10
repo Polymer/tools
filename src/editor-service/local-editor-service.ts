@@ -65,7 +65,9 @@ export class LocalEditorService extends EditorService {
     }
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements =
-          Array.from(document.getByKind('element', {imported: true}))
+          Array
+              .from(document.getByKind(
+                  'element', {imported: true, externalPackages: true}))
               .filter((e) => e.tagName);
       return {
         kind: 'element-tags',
@@ -82,7 +84,9 @@ export class LocalEditorService extends EditorService {
       };
     } else if (location.kind === 'attribute') {
       const elements = document.getById(
-          'element', location.element.nodeName, {imported: true});
+          'element',
+          location.element.nodeName,
+          {imported: true, externalPackages: true});
       let attributes: AttributeCompletion[] = [];
       for (const element of elements) {
         // A map from the inheritedFrom to a sort prefix. Note that
@@ -155,10 +159,14 @@ export class LocalEditorService extends EditorService {
     }
     if (location.kind === 'tagName') {
       return document.getOnlyAtId(
-          'element', location.element.nodeName, {imported: true});
+          'element',
+          location.element.nodeName,
+          {imported: true, externalPackages: true});
     } else if (location.kind === 'attribute') {
       const elements = document.getById(
-          'element', location.element.nodeName, {imported: true});
+          'element',
+          location.element.nodeName,
+          {imported: true, externalPackages: true});
       if (elements.size === 0) {
         return;
       }

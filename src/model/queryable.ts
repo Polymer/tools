@@ -16,7 +16,18 @@ import {Warning} from '../warning/warning';
 import {FeatureKinds} from './document';
 import {Feature} from './feature';
 
-export type QueryOptions = {} & object;
+export interface BaseQueryOptions {
+  /**
+   * If true then results will include features from outside the package, e.g.
+   * from files in bower_components or node_modules directories.
+   *
+   * Note that even with this option you'll only get results from external files
+   * that are referenced from within the package.
+   */
+  externalPackages?: boolean;
+}
+
+export type QueryOptions = BaseQueryOptions & object;
 
 /**
  * Represents something like a Document or a Package. A container of features
