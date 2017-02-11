@@ -19,6 +19,7 @@ import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
 import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange} from '../model/model';
 import {Warning} from '../warning/warning';
+import {LocalId} from './polymer-element';
 
 const p = dom5.predicates;
 
@@ -33,16 +34,18 @@ export class ScannedDomModule implements Resolvable {
   warnings: Warning[] = [];
   slots:
   Slot[];
+  localIds: LocalId[];
 
   constructor(
       id: string|null, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node,
-      slots: Slot[]) {
+      slots: Slot[], localIds: LocalId[]) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
     this.sourceRange = sourceRange;
     this.astNode = ast;
     this.slots = slots;
+    this.localIds = localIds;
   }
 
   resolve() {
@@ -53,7 +56,8 @@ export class ScannedDomModule implements Resolvable {
         this.sourceRange,
         this.astNode,
         this.warnings,
-        this.slots);
+        this.slots,
+        this.localIds);
   }
 }
 
@@ -68,11 +72,12 @@ export class DomModule implements Feature {
   warnings: Warning[];
   slots:
   Slot[];
+  localIds: LocalId[];
 
   constructor(
       node: ASTNode, id: string|null, comment: string|undefined,
       sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[],
-      slots: Slot[]) {
+      slots: Slot[], localIds: LocalId[]) {
     this.node = node;
     this.id = id;
     this.comment = comment;
@@ -83,6 +88,7 @@ export class DomModule implements Feature {
     this.astNode = ast;
     this.warnings = warnings;
     this.slots = slots;
+    this.localIds = localIds;
   }
 }
 
@@ -98,21 +104,30 @@ export class DomModuleScanner implements HtmlScanner {
         const template =
             dom5.query(node, dom5.predicates.hasTagName('template'));
         let slots: Slot[] = [];
+        let localIds: LocalId[] = [];
         if (template) {
-          slots = dom5.queryAll(
-                          treeAdapters.default.getTemplateContent(template),
-                          dom5.predicates.hasTagName('slot'))
-                      .map(
-                          (s) => new Slot(
-                              dom5.getAttribute(s, 'name') || '',
-                              document.sourceRangeForNode(s)!));
+          const templateContent =
+              treeAdapters.default.getTemplateContent(template);
+          slots =
+              dom5.queryAll(templateContent, dom5.predicates.hasTagName('slot'))
+                  .map(
+                      s => new Slot(
+                          dom5.getAttribute(s, 'name') || '',
+                          document.sourceRangeForNode(s)!));
+          localIds =
+              dom5.queryAll(templateContent, dom5.predicates.hasAttr('id'))
+                  .map(
+                      e => new LocalId(
+                          dom5.getAttribute(e, 'id')!,
+                          document.sourceRangeForNode(e)!));
         }
         domModules.push(new ScannedDomModule(
             dom5.getAttribute(node, 'id'),
             node,
             document.sourceRangeForNode(node)!,
             node,
-            slots));
+            slots,
+            localIds));
       }
     });
     return domModules;

@@ -47,6 +47,16 @@ export function isScannedFunction(d: ScannedProperty): d is ScannedFunction {
   return d['function'] === true;
 }
 
+export class LocalId {
+  name: string;
+  range: SourceRange;
+
+  constructor(name: string, range: SourceRange) {
+    this.name = name;
+    this.range = range;
+  }
+}
+
 export interface Options {
   tagName?: string;
   className?: string;
@@ -147,6 +157,7 @@ export class PolymerElement extends Element {
   behaviorAssignments: ScannedBehaviorAssignment[];
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
+  localIds: LocalId[] = [];
 
   abstract?: boolean;
 
@@ -216,6 +227,7 @@ function resolveElement(
     clone.description = scannedElement.description || domModule.comment || '';
     clone.domModule = domModule.node;
     clone.slots = domModule.slots.slice();
+    clone.localIds = domModule.localIds.slice();
   }
 
   if (scannedElement.pseudo) {
