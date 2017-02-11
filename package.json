@@ -17,11 +17,11 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "depcheck": "^0.6.3",
-    "fs-extra": "^0.30.0",
-    "gulp-eslint": "^2.0.0",
-    "gulp-mocha": "^2.2.0",
-    "gulp-tslint": "^5.0.0",
-    "gulp-typescript": "^2.13.4",
+    "fs-extra": "^2.0.0",
+    "gulp-eslint": "^3.0.1",
+    "gulp-mocha": "^3.0.1",
+    "gulp-tslint": "^7.1.0",
+    "gulp-typescript": "^3.1.4",
     "gulp-typings": "^2.0.0",
     "merge-stream": "^1.0.0",
     "run-sequence": "^1.2.0",
@@ -31,7 +31,8 @@
     "gulp": "^3.9.1"
   },
   "devDependencies": {
+    "clang-format": "1.0.46",
     "gulp": "^3.9.1",
-    "clang-format": "=1.0.45"
+    "typescript": "^2.2.0"
   }
 }

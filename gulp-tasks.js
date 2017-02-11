@@ -102,8 +102,9 @@ module.exports.tslint = function(options) {
       options.tsSrcs
         .pipe(tslint_lib({
           configuration: tslintConfig,
+          formatter: 'verbose'
         }))
-        .pipe(tslint_lib.report('verbose')));
+        .pipe(tslint_lib.report()));
 }
 
 module.exports.eslint = function(options) {
@@ -130,7 +131,7 @@ module.exports.build = function(options) {
 
   task('build', () =>
     mergeStream(
-      options.tsSrcs.pipe(typescript(tsProject)),
+      options.tsSrcs.pipe(tsProject()),
       options.dataSrcs
     ).pipe(gulp.dest('lib'))
   );
