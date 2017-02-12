@@ -1,6 +1,6 @@
 {
   "name": "polymer-linter",
-  "version": "1.0.0-alpha.1",
+  "version": "0.1.0",
   "description": "Lint Polymer!",
   "main": "lib/linter.js",
   "typings": "lib/linter.d.ts",
@@ -8,10 +8,11 @@
     "@types/node": "4.0.30",
     "dom5": "^2.0.0",
     "parse5": "^2.2.1",
-    "polymer-analyzer": "^2.0.0-alpha.22",
+    "polymer-analyzer": "2.0.0-alpha.23",
     "strip-indent": "^2.0.0"
   },
   "devDependencies": {
+    "@polymer/tools-common": "^1.0.1",
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.32",
     "bower": "^1.8.0",
@@ -20,7 +21,7 @@
     "mocha": "^3.1.0",
     "source-map-support": "^0.4.3",
     "tslint": "^4.1.1",
-    "typescript": "^2.0.3",
+    "typescript": "^2.2.0",
     "watchy": "^0.6.6"
   },
   "scripts": {

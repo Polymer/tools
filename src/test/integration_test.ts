@@ -86,11 +86,40 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/iron-resizable-behavior/pull/25
   'iron-resizable-behavior/test/test-elements.html':
       new Set(['unknown-polymer-behavior']),
+
+  // https://github.com/Polymer/polymer-analyzer/issues/458
+  'hydrolysis/custom_typings/escodegen.d.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/custom_typings/espree.d.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/custom_typings/estraverse.d.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/analyzer.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/analyze-properties.ts':
+      new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/ast-value.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/behavior-finder.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/declaration-property-handlers.ts':
+      new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/descriptors.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/docs.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/element-finder.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/esutil.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/feature-finder.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/fluent-traverse.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/import-parse.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/js-parse.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/ast-utils/jsdoc.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/error-swallowing-fs-resolver.ts':
+      new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/file-loader.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/fs-resolver.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/redirect-resolver.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/noop-resolver.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/string-resolver.ts': new Set(['unable-to-analyze']),
+  'hydrolysis/src/loader/xhr-resolver.ts': new Set(['unable-to-analyze']),
 };
 
 // Filter out known issues in the codebase.
 function filterWarnings(warnings: Warning[]) {
-  return warnings.filter(w => {
+  return warnings.filter((w) => {
     if (ignoredCodes.has(w.code)) {
       return false;
     }

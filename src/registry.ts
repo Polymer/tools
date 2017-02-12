@@ -59,7 +59,7 @@ export class LintRegistry {
   private _getRules(
       ruleCodes: string[], alreadyExpanded: Set<string>,
       results: Set<Rule>): void {
-    ruleCodes = ruleCodes.filter(p => !alreadyExpanded.has(p));
+    ruleCodes = ruleCodes.filter((p) => !alreadyExpanded.has(p));
 
     for (const code of ruleCodes) {
       alreadyExpanded.add(code);

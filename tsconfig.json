@@ -1,22 +1,8 @@
 {
+    "extends": "./node_modules/@polymer/tools-common/tsconfig.json",
     "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "isolatedModules": false,
-        "noImplicitAny": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitThis": true,
-        "strictNullChecks": true,
-        "removeComments": false,
-        "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "lib": ["es2017"],
-        "outDir": "./lib",
-        "declaration": true,
-        "sourceMap": true,
-        "pretty": true
+        "baseUrl": "src",
+        "outDir": "lib"
     },
     "include": [
         "src/**/*.ts"
