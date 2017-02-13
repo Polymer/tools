@@ -16,16 +16,16 @@
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "depcheck": "^0.6.3",
+    "depcheck": "^0.6.0",
     "fs-extra": "^2.0.0",
-    "gulp-eslint": "^3.0.1",
-    "gulp-mocha": "^3.0.1",
-    "gulp-tslint": "^7.1.0",
-    "gulp-typescript": "^3.1.4",
+    "gulp-eslint": "^3.0.0",
+    "gulp-mocha": "^3.0.0",
+    "gulp-tslint": "^7.0.0",
+    "gulp-typescript": "^3.0.0",
     "gulp-typings": "^2.0.0",
     "merge-stream": "^1.0.0",
-    "run-sequence": "^1.2.0",
-    "tslint": "^4.1.1"
+    "run-sequence": "^1.0.0",
+    "tslint": "^4.0.0"
   },
   "peerDependencies": {
     "gulp": "^3.9.1"
