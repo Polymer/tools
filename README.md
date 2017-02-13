@@ -74,6 +74,37 @@ mergeStream(project.sources(), project.dependencies())
 ```
 
 
+### Handling Inlined CSS/JS
+
+#### HtmlSplitter
+
+Web components will sometimes include inlined CSS & JavaScript. This can pose a problem for tools that weren't built to read those languages from inside HTML. To solve this, you can create an `HtmlSplitter` instance to extract inlined CSS & JavaScript into individual files in your build stream for processing (and then rejoin them later).
+
+```js
+const gulpif = require('gulp-if');
+const uglify = require('gulp-uglify');
+const cssSlam = require('css-slam').gulp;
+const htmlMinifier = require('gulp-html-minifier');
+
+const HtmlSplitter = require('polymer-build').HtmlSplitter;
+const htmlSplitter = new HtmlSplitter();
+
+const sourcesStream = project.sources()
+  .pipe(htmlSplitter.split()) // split inline JS & CSS out into individual .js & .css files
+  .pipe(gulpif(/\.js$/, uglify()))
+  .pipe(gulpif(/\.css$/, cssSlam()))
+  .pipe(gulpif(/\.html$/, htmlMinifier())) // rejoins those files back into their original location
+  .pipe(htmlSplitter.rejoin());
+
+// write your optimized sources and unoptimized dependencies to build/
+mergeStream(sourcesStream, project.dependencies())
+  .pipe(gulp.dest('build/'));
+
+```
+
+You can add splitters to any part of your build stream. We recommend using them to optimize your `sources()` and `dependencies()` streams individually as in the example above, but you can also optimize after merging the two together or even after bundling.
+
+
 ### Bundling Files
 
 #### project.bundler
@@ -89,37 +120,6 @@ const mergeStream = require('merge-stream');
 // Create a build pipeline to bundle our application before writing to the 'build/' dir
 mergeStream(project.sources(), project.dependencies())
   .pipe(project.bundler)
-  .pipe(gulp.dest('build/'));
-```
-
-
-### Extracting Inlined CSS/JS
-
-#### project.splitHtml() & project.rejoinHtml()
-
-Web components will sometimes include inlined CSS & JavaScript. This can be a problem for tools that weren't built to read HTML. To get around this, you can include the optional `splitHtml()` and `rejoinHtml()` streams.
-
-`project.splitHtml()` returns a stream that extracts any inlined CSS & JS into individual files. This can be useful for running your files through additional tools that don't handle inline code very well.
-
-Note that this should be a temporary part of your overall build pipeline. Split files should always be rejoined with `project.rejoinHtml()` as soon as possible in the pipeline.
-
-```js
-const gulpif = require('gulp-if');
-const uglify = require('gulp-uglify');
-const cssSlam = require('css-slam').gulp;
-const htmlMinifier = require('gulp-html-minifier');
-const mergeStream = require('merge-stream');
-
-const sourcesStream = project.sources()
-  .pipe(project.splitHtml())
-  .pipe(gulpif(/\.js$/, uglify()))
-  .pipe(gulpif(/\.css$/, cssSlam()))
-  .pipe(gulpif(/\.html$/, htmlMinifier()))
-  .pipe(project.rejoinHtml());
-
-// Create a build pipeline to write our dependencies & optimized sources streams to the 'build/' dir
-// (not shown: project.dependencies() can also be split & optimized)
-mergeStream(sourcesStream, project.dependencies())
   .pipe(gulp.dest('build/'));
 ```
 

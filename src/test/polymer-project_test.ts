@@ -18,7 +18,6 @@
 import {assert} from 'chai';
 import File = require('vinyl');
 import * as path from 'path';
-import * as stream from 'stream';
 
 import {getFlowingState} from './util';
 import {PolymerProject} from '../polymer-project';
@@ -145,83 +144,6 @@ suite('PolymerProject', () => {
           });
         });
 
-  });
-
-  test('splits and rejoins scripts', (done) => {
-    const splitFiles = new Map();
-    const joinedFiles = new Map();
-    defaultProject.sources()
-        .pipe(defaultProject.splitHtml())
-        .on('data', (f: File) => splitFiles.set(unroot(f.path), f))
-        .pipe(defaultProject.rejoinHtml())
-        .on('data', (f: File) => joinedFiles.set(unroot(f.path), f))
-        .on('end', () => {
-          const expectedSplitFiles = [
-            'index.html',
-            'shell.html_script_0.js',
-            'shell.html_script_1.js',
-            'shell.html',
-            'source-dir/my-app.html',
-          ];
-          const expectedJoinedFiles = [
-            'index.html',
-            'shell.html',
-            'source-dir/my-app.html',
-          ];
-          assert.sameMembers(Array.from(splitFiles.keys()), expectedSplitFiles);
-          assert.sameMembers(
-              Array.from(joinedFiles.keys()), expectedJoinedFiles);
-          assert.include(
-              splitFiles.get('shell.html_script_0.js').contents.toString(),
-              `console.log('shell');`);
-          assert.include(
-              splitFiles.get('shell.html_script_1.js').contents.toString(),
-              `console.log('shell 2');`);
-          assert.notInclude(
-              splitFiles.get('shell.html').contents.toString(), `console.log`);
-          assert.include(
-              splitFiles.get('shell.html').contents.toString(),
-              `# I am markdown`);
-          assert.include(
-              joinedFiles.get('shell.html').contents.toString(), `console.log`);
-          done();
-        });
-  });
-
-  test('split/rejoin deals with bad paths', (done) => {
-    const sourceStream = new stream.Readable({
-      objectMode: true,
-    });
-    const root = path.normalize('/foo');
-    const filepath = path.join(root, '/bar/baz.html');
-    const source =
-        '<html><head><script>fooify();</script></head><body></body></html>';
-    const file = new File({
-      cwd: root,
-      base: root,
-      path: filepath,
-      contents: new Buffer(source),
-    });
-
-    sourceStream.pipe(defaultProject.splitHtml())
-        .on('data',
-            (file: File) => {
-              // this is what gulp-html-minifier does...
-              if (path.sep === '\\' && file.path.endsWith('.html')) {
-                file.path = file.path.replace('\\', '/');
-              }
-            })
-        .pipe(defaultProject.rejoinHtml())
-        .on('data',
-            (file: File) => {
-              const contents = file.contents.toString();
-              assert.equal(contents, source);
-            })
-        .on('finish', done)
-        .on('error', done);
-
-    sourceStream.push(file);
-    sourceStream.push(null);
   });
 
 });
