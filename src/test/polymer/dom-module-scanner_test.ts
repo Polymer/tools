@@ -36,6 +36,9 @@ suite('DomModuleScanner', () => {
               <div id="foo"></div>
               <span id="bar"></div>
               <div id2="nope"></div>
+              <template>
+                <div id="nada"></div>
+              </template>
             </template>
           </dom-module>
         </body>
@@ -45,9 +48,8 @@ suite('DomModuleScanner', () => {
 
       const domModules = await scanner.scan(document, visit);
       assert.equal(domModules.length, 1);
-      assert.equal(domModules[0].localIds.length, 2);
-      assert.equal(domModules[0].localIds[0].name, 'foo');
-      assert.equal(domModules[0].localIds[1].name, 'bar');
+      assert.deepEqual(
+          domModules[0].localIds.map((lid) => lid.name), ['foo', 'bar']);
     });
 
   });
