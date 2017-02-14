@@ -18,13 +18,12 @@ const depcheck = require('depcheck');
 const fs = require('fs-extra');
 const gulp = require('gulp');
 const mergeStream = require('merge-stream');
-const mocha = require('gulp-mocha');
+const mocha = require('gulp-spawn-mocha');
 const path = require('path');
 const runSeq = require('run-sequence');
 const stream = require('stream');
 const tslint = require('gulp-tslint');
 const typescript = require('gulp-typescript');
-const typings = require('gulp-typings');
 
 const tsProject = typescript.createProject(
     'tsconfig.json', {typescript: require('typescript')});

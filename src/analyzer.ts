@@ -394,24 +394,27 @@ export class BuildAnalyzer {
   async _getDependencies(url: string): Promise<DocumentDeps> {
     const doc = await this.analyzer.analyze(url);
 
-    doc.getWarnings(true).forEach(w => this.warnings.add(w));
+    doc.getWarnings({imported: true}).forEach(w => this.warnings.add(w));
 
     const scripts = new Set<string>();
     const styles = new Set<string>();
     const imports = new Set<string>();
 
-    for (const importDep of doc.getByKind('import')) {
-      const importUrl = importDep.url;
+    const importFeatures =
+        doc.getByKind('import', {externalPackages: true, imported: true});
+    for (const importFeature of importFeatures) {
+      const importUrl = importFeature.url;
       if (isDependencyExternal(importUrl)) {
         logger.debug(`ignoring external dependency: ${importUrl}`);
-      } else if (importDep.type === 'html-script') {
+      } else if (importFeature.type === 'html-script') {
         scripts.add(importUrl);
-      } else if (importDep.type === 'html-style') {
+      } else if (importFeature.type === 'html-style') {
         styles.add(importUrl);
-      } else if (importDep.type === 'html-import') {
+      } else if (importFeature.type === 'html-import') {
         imports.add(importUrl);
       } else {
-        logger.debug(`unexpected import type encountered: ${importDep.type}`);
+        logger.debug(
+            `unexpected import type encountered: ${importFeature.type}`);
       }
     }
 
