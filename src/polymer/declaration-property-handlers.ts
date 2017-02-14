@@ -16,14 +16,47 @@ import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {Severity} from '../warning/warning';
+import {ScannedBehaviorAssignment} from '../polymer/behavior';
+import {Severity, Warning} from '../warning/warning';
 
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerElement} from './polymer-element';
 
+export type BehaviorAssignmentOrWarning = {
+  kind: 'warning',
+  warning: Warning
+} | {kind: 'behaviorAssignment', assignment: ScannedBehaviorAssignment};
+
+export function getBehaviorAssignmentOrWarning(
+    argNode: estree.Node,
+    document: JavaScriptDocument): BehaviorAssignmentOrWarning {
+  const behaviorName = astValue.getIdentifierName(argNode);
+  if (!behaviorName) {
+    return {
+      kind: 'warning',
+      warning: {
+        code: 'could-not-determine-behavior-name',
+        message:
+            `Could not determine behavior name from expression of type ${argNode
+                .type}`,
+        severity: Severity.WARNING,
+        sourceRange: document.sourceRangeForNode(argNode)!
+      }
+    };
+  }
+  return {
+    kind: 'behaviorAssignment',
+    assignment: {
+      name: behaviorName,
+      sourceRange: document.sourceRangeForNode(argNode)!
+    }
+  };
+}
+
 export type PropertyHandlers = {
   [key: string]: (node: estree.Node) => void
 };
+
 
 /**
  * Returns an object containing functions that will annotate `declaration` with
@@ -48,14 +81,12 @@ export function declarationPropertyHandlers(
         return;
       }
       for (const element of node.elements) {
-        let behaviorName = astValue.getIdentifierName(element);
-        if (behaviorName === undefined) {
-          behaviorName = astValue.CANT_CONVERT;
+        const result = getBehaviorAssignmentOrWarning(element, document);
+        if (result.kind === 'warning') {
+          declaration.warnings.push(result.warning);
+        } else {
+          declaration.behaviorAssignments.push(result.assignment);
         }
-        declaration.behaviorAssignments.push({
-          name: behaviorName,
-          sourceRange: document.sourceRangeForNode(element)!,
-        });
       }
     },
     observers(node: estree.Node) {

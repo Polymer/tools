@@ -31,6 +31,8 @@ import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 import {Deferred} from '../utils';
+import {Severity} from '../warning/warning';
+import {CodeUnderliner} from './test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import stripIndent = require('strip-indent');
@@ -50,12 +52,15 @@ class TestUrlResolver implements UrlResolver {
 
 suite('Analyzer', () => {
   let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
 
   setup(() => {
+    const urlLoader = new FSUrlLoader(__dirname);
     analyzer = new Analyzer({
-      urlLoader: new FSUrlLoader(__dirname),
+      urlLoader,
       urlResolver: new TestUrlResolver(),
     });
+    underliner = new CodeUnderliner(urlLoader);
   });
 
   suite('analyze()', () => {
@@ -97,25 +102,28 @@ suite('Analyzer', () => {
           const document =
               await analyzer.analyze('static/html-missing-behaviors.html');
           const warnings = document.getWarnings({imported: false});
-          assert.deepEqual(warnings, [
+          assert.containSubset(warnings, [
             {
               message:
                   'Unable to resolve behavior `Polymer.ExpectedMissingBehavior`. ' +
                   'Did you import it? Is it annotated with @polymerBehavior?',
-              severity: 0,
+              severity: Severity.ERROR,
               code: 'unknown-polymer-behavior',
-              sourceRange: {
-                file: 'static/html-missing-behaviors.html',
-                start: {
-                  line: 23,
-                  column: 8,
-                },
-                end: {
-                  line: 23,
-                  column: 39,
-                }
-              }
+            },
+            {
+              code: 'could-not-determine-behavior-name',
+              message:
+                  'Could not determine behavior name from expression of type CallExpression',
+              severity: Severity.WARNING,
             }
+          ]);
+          assert.deepEqual(await underliner.underline(warnings), [
+            `
+        Polymer.ExpectedMissingBehavior
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+            `
+        BehaviorFactory('give me a behavior plz.')
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
           ]);
         });
 

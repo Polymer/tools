@@ -8,9 +8,7 @@ This code may only be used under the MIT style license found at http://gdg.es/LI
 
   <template>
 
-    <a href="https://example.com/"
-        target="_blank"
-        title="Multi-line anchor tag">
+    <a href="https://example.com/" target="_blank" title="Multi-line anchor tag">
       <span>Foobar</span>
     </a>
 
@@ -22,6 +20,16 @@ This code may only be used under the MIT style license found at http://gdg.es/LI
 
       behaviors: [
         Polymer.ExpectedMissingBehavior
+      ]
+    });
+  </script>
+
+  <script>
+    Polymer({
+      is: 'behavior-factory',
+
+      behaviors: [
+        BehaviorFactory('give me a behavior plz.')
       ]
     });
   </script>

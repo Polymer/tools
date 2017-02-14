@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Properly cache warning for incorrect imports or when failing parsing an import.
 * Notice references to elements within `<template>` tags.
+* [Polymer] Better handle unexpected behavior reference syntax.
 
 ## [2.0.0-alpha.22] - 2017-01-13
 

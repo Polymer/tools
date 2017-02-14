@@ -15,13 +15,13 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import * as astValue from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import {Severity, WarningCarryingException} from '../warning/warning';
 
+import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 import {toScannedPolymerProperty} from './js-utils';
@@ -114,22 +114,12 @@ class ElementVisitor implements Visitor {
       const argument = <estree.ArrayExpression>returnStatement.argument;
       if (propDesc.name === 'behaviors') {
         argument.elements.forEach((argNode) => {
-          const behaviorName = astValue.getIdentifierName(argNode);
-          if (!behaviorName) {
-            element.warnings.push({
-              code: 'could-not-determine-behavior-name',
-              message:
-                  `Could not determine behavior name from expression of type ${argNode
-                      .type}`,
-              severity: Severity.WARNING,
-              sourceRange: this.document.sourceRangeForNode(argNode)!
-            });
-            return;
+          const result = getBehaviorAssignmentOrWarning(argNode, this.document);
+          if (result.kind === 'warning') {
+            element.warnings.push(result.warning);
+          } else {
+            element.behaviorAssignments.push(result.assignment);
           }
-          element.behaviorAssignments.push({
-            name: behaviorName,
-            sourceRange: this.document.sourceRangeForNode(argNode)!
-          });
         });
       } else {
         argument.elements.forEach((elementObject: estree.Literal) => {
