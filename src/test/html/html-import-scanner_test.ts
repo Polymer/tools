@@ -43,6 +43,22 @@ suite('HtmlImportScanner', () => {
       assert.equal(features[0].url, 'polymer.html');
     });
 
+    test('resolves HTML Import URLs relative to baseUrl', async() => {
+      const contents = `<html><head><base href="/aybabtu/">
+          <link rel="import" href="polymer.html">
+          <link rel="import" type="css" href="polymer.css">
+          <script src="foo.js"></script>
+          <link rel="stylesheet" href="foo.css"></link>
+        </head></html>`;
+      const document = new HtmlParser().parse(contents, 'test.html');
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+
+      const features = await scanner.scan(document, visit);
+      assert.equal(features.length, 1);
+      assert.equal(features[0].type, 'html-import');
+      assert.equal(features[0].url, '/aybabtu/polymer.html');
+    });
+
     test('finds lazy HTML Imports', async() => {
       const contents = `<html><head>
           <link rel="import" href="polymer.html">
@@ -59,7 +75,6 @@ suite('HtmlImportScanner', () => {
       assert.equal(features[1].type, 'lazy-html-import');
       assert.equal(features[1].url, 'lazy-polymer.html');
     });
-
   });
 
   suite('scan() with lazy import map', () => {

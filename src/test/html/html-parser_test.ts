@@ -21,8 +21,6 @@ import {HtmlParser} from '../../html/html-parser';
 suite('HtmlParser', () => {
 
   suite('parse()', () => {
-    const file = fs.readFileSync(
-        path.resolve(__dirname, '../static/html-parse-target.html'), 'utf8');
 
     let parser: HtmlParser;
 
@@ -30,16 +28,29 @@ suite('HtmlParser', () => {
       parser = new HtmlParser();
     });
 
-    test('parses a well-formed document', () => {
-      const document = parser.parse(file, '/static/html-parse-target.html');
-      assert.equal(document.url, '/static/html-parse-target.html');
+    suite('on a well-formed document', () => {
+      const file = fs.readFileSync(
+          path.resolve(__dirname, '../static/html-parse-target.html'), 'utf8');
+
+      test('parses a well-formed document', () => {
+        const document = parser.parse(file, '/static/html-parse-target.html');
+        assert.equal(document.url, '/static/html-parse-target.html');
+      });
+
+      test('can stringify back a well-formed document', () => {
+        const document = parser.parse(file, '/static/html-parse-target.html');
+        assert.deepEqual(document.stringify(), file);
+      });
     });
 
-    test('can stringify back a well-formed document', () => {
-      const document = parser.parse(file, '/static/html-parse-target.html');
-      assert.deepEqual(document.stringify(), file);
+    test('can properly determine the base url of a document', () => {
+      const file = fs.readFileSync(
+          path.resolve(__dirname, '../static/base-href/doc-with-base.html'),
+          'utf8');
+      const document =
+          parser.parse(file, '/static/base-href/doc-with-base.html');
+      assert.equal(document.url, '/static/base-href/doc-with-base.html');
+      assert.equal(document.baseUrl, '/static/');
     });
-
   });
-
 });

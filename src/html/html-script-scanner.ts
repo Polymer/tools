@@ -42,7 +42,7 @@ export class HtmlScriptScanner implements HtmlScanner {
       if (isJsScriptNode(node)) {
         const src = dom5.getAttribute(node, 'src');
         if (src) {
-          const importUrl = resolveUrl(document.url, src);
+          const importUrl = resolveUrl(document.baseUrl, src);
           features.push(new ScannedScriptTagImport(
               'html-script',
               importUrl,

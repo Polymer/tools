@@ -23,6 +23,7 @@ import {correctSourceRange, LocationOffset, SourceRange} from '../model/source-r
 export abstract class ParsedDocument<AstNode, Visitor> {
   abstract type: string;
   url: string;
+  baseUrl: string;
   contents: string;
   ast: AstNode;
   isInline: boolean;
@@ -37,6 +38,7 @@ export abstract class ParsedDocument<AstNode, Visitor> {
 
   constructor(from: Options<AstNode>) {
     this.url = from.url;
+    this.baseUrl = from.baseUrl || this.url;
     this.contents = from.contents;
     this.ast = from.ast;
     this._locationOffset = from.locationOffset;
@@ -72,6 +74,7 @@ export abstract class ParsedDocument<AstNode, Visitor> {
 
 export interface Options<A> {
   url: string;
+  baseUrl?: string;
   contents: string;
   ast: A;
   locationOffset: LocationOffset|undefined;
