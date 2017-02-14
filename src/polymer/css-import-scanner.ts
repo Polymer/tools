@@ -38,7 +38,7 @@ export class CssImportScanner implements HtmlScanner {
     await visit((node) => {
       if (isCssImportNode(node)) {
         const href = dom5.getAttribute(node, 'href')!;
-        const importUrl = resolveUrl(document.url, href);
+        const importUrl = resolveUrl(document.baseUrl, href);
         imports.push(new ScannedImport(
             'css-import',
             importUrl,

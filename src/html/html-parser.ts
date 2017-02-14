@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {getAttribute, predicates as p, query} from 'dom5';
 import {parse as parseHtml} from 'parse5';
+import {resolve as resolveUrl} from 'url';
 
 import {InlineDocInfo} from '../model/model';
 import {Parser} from '../parser/parser';
@@ -29,10 +31,22 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       ParsedHtmlDocument {
     const ast = parseHtml(contents, {locationInfo: true});
+
+    // There should be at most one <base> tag and it must be inside <head> tag.
+    const baseTag = query(
+        ast,
+        p.AND(
+            p.parentMatches(p.hasTagName('head')),
+            p.hasTagName('base'),
+            p.hasAttr('href')));
+
+    const baseUrl =
+        baseTag ? resolveUrl(url, getAttribute(baseTag, 'href')!) : url;
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     return new ParsedHtmlDocument({
       url,
+      baseUrl,
       contents,
       ast,
       locationOffset: inlineInfo.locationOffset,
