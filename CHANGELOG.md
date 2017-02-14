@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 
-* Added `-u`/`--component-url` option to support expressing different url to
+## [0.16.0](https://github.com/PolymerLabs/polyserve/tree/v0.16.0) (2017-02-14)
+
+### Added
+* `-u`/`--component-url` option to support expressing different url to
   fetch components from than `components`.
 
 ### Fixed
