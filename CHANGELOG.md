@@ -14,12 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ### Added
- * Add `localIds` to `PolymerElement`, tracking elements in its template by their id attributes.
-
-
-
-* Document now includes a `baseUrl` property which is properly resolved
-  from an HTML document's `<base href="...">` tag, when present.
+* HTML Documents now include a `baseUrl` property which is properly resolved
+  from a `<base href="...">` tag, when present.
+* Add `localIds` to `PolymerElement`, tracking elements in its template by their id attributes.
+* Document now includes a `baseUrl` property which is properly resolved from an HTML document's `<base href="...">` tag, when present.
 
 ## [2.0.0-alpha.23] - 2017-02-10
 
