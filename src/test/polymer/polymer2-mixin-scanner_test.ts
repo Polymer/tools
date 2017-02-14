@@ -106,8 +106,9 @@ suite('Polymer2MixinScanner', () => {
                      }]);
   });
 
-  test.only(
-      'finds mixin with only name, does not use trailing function', async() => {
+  test(
+      'finds mixin variable declaration with only name, does not use trailing function',
+      async() => {
         const mixins = await getMixins('test-mixin-4.js');
         const mixinData = mixins.map(getTestProps);
         assert.deepEqual(mixinData, [{
@@ -116,5 +117,21 @@ suite('Polymer2MixinScanner', () => {
                            attributes: [],
                          }]);
       });
+
+  test('what to do on a class marked @polymerMixin?', async() => {
+    const mixins = await getMixins('test-mixin-5.js');
+    const mixinData = mixins.map(getTestProps);
+    assert.deepEqual(mixinData, []);
+  });
+
+  test('finds mixin function declaration with only name', async() => {
+    const mixins = await getMixins('test-mixin-6.js');
+    const mixinData = mixins.map(getTestProps);
+    assert.deepEqual(mixinData, [{
+                       name: 'TestMixin',
+                       properties: [],
+                       attributes: [],
+                     }]);
+  });
 
 });

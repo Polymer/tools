@@ -1,0 +1,5 @@
+/**
+ * @polymerMixin
+ */
+function TestMixin() {
+}
