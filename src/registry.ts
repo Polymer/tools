@@ -75,6 +75,16 @@ export class LintRegistry {
       }
     }
   }
+
+  get allRules(): Iterable<Rule> {
+    return Array.from(this._all.values())
+        .filter((r) => r instanceof Rule) as Rule[];
+  }
+
+  get allRuleCollections(): Iterable<RuleCollection> {
+    return Array.from(this._all.values())
+        .filter((r) => r instanceof RuleCollection) as RuleCollection[];
+  }
 }
 
 export const registry = new LintRegistry();
