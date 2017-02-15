@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [0.1.2] - 2017-02-14
+
 ### Added
 
 - allRules and allRuleCollections on the registry, for accessing all registered rules and collections.
 
-## [0.1.0] - 2017-02-10
+## [0.1.1] - 2017-02-10
 
 - The start of our rewrite of https://github.com/PolymerLabs/polylint on top of our new incremental static analysis framework.
 
