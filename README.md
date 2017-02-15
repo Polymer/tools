@@ -85,21 +85,17 @@ const gulpif = require('gulp-if');
 const uglify = require('gulp-uglify');
 const cssSlam = require('css-slam').gulp;
 const htmlMinifier = require('gulp-html-minifier');
-
 const HtmlSplitter = require('polymer-build').HtmlSplitter;
-const htmlSplitter = new HtmlSplitter();
 
+const sourcesHtmlSplitter = new HtmlSplitter();
 const sourcesStream = project.sources()
-  .pipe(htmlSplitter.split()) // split inline JS & CSS out into individual .js & .css files
+  .pipe(sourcesHtmlSplitter.split()) // split inline JS & CSS out into individual .js & .css files
   .pipe(gulpif(/\.js$/, uglify()))
   .pipe(gulpif(/\.css$/, cssSlam()))
-  .pipe(gulpif(/\.html$/, htmlMinifier())) // rejoins those files back into their original location
-  .pipe(htmlSplitter.rejoin());
+  .pipe(gulpif(/\.html$/, htmlMinifier())) 
+  .pipe(sourcesHtmlSplitter.rejoin()); // rejoins those files back into their original location
 
-// write your optimized sources and unoptimized dependencies to build/
-mergeStream(sourcesStream, project.dependencies())
-  .pipe(gulp.dest('build/'));
-
+// NOTE: If you want to split/rejoin your dependencies stream as well, you'll need to create a new HtmlSplitter for that stream.
 ```
 
 You can add splitters to any part of your build stream. We recommend using them to optimize your `sources()` and `dependencies()` streams individually as in the example above, but you can also optimize after merging the two together or even after bundling.
