@@ -12,23 +12,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, ElementBase, Feature, ScannedElementBase} from './model';
+import {SourceRange} from '../model/model';
+
 export {Visitor} from '../javascript/estree-visitor';
 
-export class ScannedElementMixin extends ScannedElementBase {
+export interface ScannedAttribute {
   name: string;
-
-  resolve(_document: Document): ElementMixin {
-    const element = new ElementMixin();
-    Object.assign(element, this);
-    return element;
-  }
+  sourceRange: SourceRange|undefined;
+  description?: string;
+  type?: string;
+  changeEvent?: string;
 }
 
-export class ElementMixin extends ElementBase implements Feature {
-  name: string;
-
-  get identifiers(): Set<string> {
-    return new Set([this.name]);
-  }
+export interface Attribute extends ScannedAttribute {  //
+  inheritedFrom?: string;
 }
