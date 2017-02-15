@@ -1,0 +1,59 @@
+<template is="dom-bind">
+  <div id="{db-foo}}"></div>
+  <div id="{{db-bar}"></div>
+  <div id="[db-baz]]"></div>
+  <div id="[[db-zod]"></div>
+
+  <template is="dom-repeat">
+    <div id="{db-dr-foo}}"></div>
+  </template>
+  <template is="dom-if">
+    <div id="{db-di-foo}}"></div>
+
+    <template is="dom-if">
+      <div id="{db-di-di-foo}}"></div>
+    </template>
+  </template>
+  <dom-if>
+    <template>
+      <div id="{db-di-t-foo}}"></div>
+
+      <template>
+        <!--
+          This template has a <dom-if> as an ancestor, but it isn't itself
+          known to polymer, and won't have data binding, so we should not lint
+          it.
+        -->
+        <div id="{nope}}"></div>
+      </template>
+    </template>
+  </dom-if>
+  <dom-repeat>
+    <template>
+      <div id="{db-dr-t-foo}}"></div>
+    </template>
+  </dom-repeat>
+</template>
+
+<dom-module>
+  <template>
+    <div id="{dm-foo}}"></div>
+    <template is="dom-repeat">
+      <div id="{dm-dr-foo}}"></div>
+    </template>
+  </template>
+</dom-module>
+
+<!-- No data binding context, so no linting. -->
+<template>
+  <div id="{nope}}"></div>
+</template>
+
+<!-- But these are legit-->
+<template is="dom-repeat">
+  <div id="{dr}}"></div>
+</template>
+
+<template is="dom-if">
+  <div id="{{di}"></div>
+</template>

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### New Lint Rules
+- `undefined-elements`: Warns when an HTML tag refers to a custom element with no known definition.
+- `unbalanced-polymer-delimiters`: finds unbalanced delimiters in polymer databinding expressions.
+
 ## [0.1.4] - 2017-02-24
 
 - bump version of the analyzer.

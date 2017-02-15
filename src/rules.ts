@@ -15,3 +15,4 @@
 import './html/dom-module-name-or-is';
 import './html/move-style-into-template';
 import './html/undefined-elements';
+import './polymer/unbalanced-delimiters';
