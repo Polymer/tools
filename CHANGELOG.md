@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.8.0] - 2017-02-14
 
-* `project.splitHtml()` & `project.rejoinHtml()` methods have been pulled off of `PolymerProject` so that multiple streams can split/rejoin in parallel. See [the new README section on `HTMLSplitter`](https://github.com/Polymer/polymer-build#extracting-inlined-cssjs) for updated instructions on how to split/rejoin inline scripts and styles in your build stream.
+* `project.splitHtml()` & `project.rejoinHtml()` methods have been pulled off of `PolymerProject` so that multiple streams can split/rejoin in parallel. See [the new README section on `HTMLSplitter`](https://github.com/Polymer/polymer-build#handling-inlined-cssjs) for updated instructions on how to split/rejoin inline scripts and styles in your build stream.
 * Completed the migration away from `hydrolysis` to `polymer-analyzer` and `vulcanize` to `polymer-bundler`.
 * Do a better job of only listing warnings for code in the package being built.
 
