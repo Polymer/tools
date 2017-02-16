@@ -86,7 +86,18 @@ export function makeApp(options: AppOptions): PolyserveApplication {
     // compileMiddleware used in startServer always compile. Useful for testing
     // and working on the compilation middleware.
     // _send.isFresh = () => false;
-    _send.pipe(res);
+
+    // The custom redirect is needed becuase send() redirects to the
+    // _file_ path plus a leading slash, not the URL. :(
+    // https://github.com/pillarjs/send/issues/132
+    _send
+        .on('directory',
+            () => {
+              res.statusCode = 301;
+              res.setHeader('Location', req.originalUrl + '/');
+              res.end('Redirecting to ' + req.originalUrl + '/');
+            })
+        .pipe(res);
   });
   app.packageName = packageName;
   return app;
