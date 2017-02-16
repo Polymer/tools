@@ -53,10 +53,10 @@ class MixinVisitor implements Visitor {
       const name = node.id.name;
       this._currentMixinFunction = node;
       this._currentMixin = new ScannedPolymerElementMixin({
-        tagName: name,
+        name: name,
       });
       this._currentMixinNode = node;
-      this._currentMixin.tagName = name;
+      this._currentMixin.name = name;
       this._mixins.push(this._currentMixin);
     }
   }
@@ -94,7 +94,7 @@ class MixinVisitor implements Visitor {
   enterVariableDeclarator(
       node: estree.VariableDeclarator, _parent: estree.Node) {
     if (this._currentMixin != null && this._currentMixinFunction == null) {
-      this._currentMixin.tagName = (node.id as estree.Identifier).name;
+      this._currentMixin.name = (node.id as estree.Identifier).name;
     }
   }
 

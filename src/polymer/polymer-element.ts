@@ -16,7 +16,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
-import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {Document, Element, ElementBase, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
 import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
@@ -80,10 +80,33 @@ export interface Options {
   sourceRange?: SourceRange|undefined;
 }
 
-/**
- * The metadata for a single polymer element
- */
-export class ScannedPolymerElement extends ScannedElement {
+export type Constructor<T extends object> = new (...args: any[]) => T;
+
+export interface ScannedPolymerExtension {
+  properties: ScannedPolymerProperty[];
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[];
+  listeners: {event: string, handler: string}[];
+  behaviorAssignments: ScannedBehaviorAssignment[];
+  // FIXME(rictic): domModule and scriptElement aren't known at a file local
+  //     level. Remove them here, they should only exist on PolymerElement.
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+  // TODO(justinfagnani): Not Polymer-specific, and hopefully not necessary
+  // Indicates if an element is a pseudo element
+  pseudo: boolean;
+  abstract?: boolean;
+
+  addProperty(prop: ScannedPolymerProperty): void;
+}
+
+export const ScannedPolymerExtension =
+    <T extends Constructor<ScannedElementBase>>(superclass: T):
+        Constructor<ScannedPolymerExtension>& T =>
+            class extends superclass implements ScannedPolymerExtension {  //
+
   properties: ScannedPolymerProperty[] = [];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -97,20 +120,7 @@ export class ScannedPolymerElement extends ScannedElement {
   scriptElement?: dom5.Node;
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
-
   abstract?: boolean;
-
-  constructor(options?: Options) {
-    super();
-    // TODO(justinfagnani): fix this constructor to not be crazy, or remove
-    // class altogether.
-    const optionsCopy = Object.assign({}, options) as Options;
-    delete optionsCopy.properties;
-    Object.assign(this, optionsCopy);
-    if (options && options.properties) {
-      options.properties.forEach((p) => this.addProperty(p));
-    }
-  }
 
   addProperty(prop: ScannedPolymerProperty) {
     if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
@@ -140,13 +150,31 @@ export class ScannedPolymerElement extends ScannedElement {
       });
     }
   }
+}
+
+/**
+ * The metadata for a single polymer element
+ */
+export class ScannedPolymerElement extends ScannedPolymerExtension
+(ScannedElement) {
+  constructor(options?: Options) {
+    super();
+    // TODO(justinfagnani): fix this constructor to not be crazy, or remove
+    // class altogether.
+    const optionsCopy = Object.assign({}, options) as Options;
+    delete optionsCopy.properties;
+    Object.assign(this, optionsCopy);
+    if (options && options.properties) {
+      options.properties.forEach((p) => this.addProperty(p));
+    }
+  }
 
   resolve(document: Document): PolymerElement {
     return resolveElement(this, document);
   }
 }
 
-export class PolymerElement extends Element {
+export interface PolymerExtension {
   properties: PolymerProperty[];
 
   observers: {
@@ -161,8 +189,28 @@ export class PolymerElement extends Element {
 
   abstract?: boolean;
 
-  constructor() {
-    super();
+  emitPropertyMetadata(property: PolymerProperty): any;
+}
+
+export const PolymerExtension = <T extends Constructor<ElementBase>>(
+    superclass: T): Constructor<PolymerExtension>& T =>
+    class extends superclass implements PolymerExtension {  //
+
+  properties: PolymerProperty[];
+
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[];
+  listeners: {event: string, handler: string}[];
+  behaviorAssignments: ScannedBehaviorAssignment[];
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+
+  abstract?: boolean;
+
+  constructor(...args: any[]) {
+    super(...args);
     this.kinds = new Set(['element', 'polymer-element']);
     this.behaviorAssignments = [];
   }
@@ -177,6 +225,10 @@ export class PolymerElement extends Element {
     }
     return {polymer: polymerMetadata};
   }
+}
+
+export class PolymerElement extends PolymerExtension
+(Element) {
 }
 
 /**

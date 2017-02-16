@@ -55,6 +55,7 @@ suite('Polymer2MixinScanner', () => {
   function getTestProps(mixin: ScannedPolymerElementMixin): any {
     return {
       name: mixin.name,
+      description: mixin.description,
       properties: mixin.properties.map((p) => ({
                                          name: p.name,
                                        })),
@@ -69,6 +70,7 @@ suite('Polymer2MixinScanner', () => {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
+                       description: '',  // A description',
                        properties: [{
                          name: 'foo',
                        }],
@@ -83,6 +85,7 @@ suite('Polymer2MixinScanner', () => {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
+                       description: '',
                        properties: [{
                          name: 'foo',
                        }],
@@ -97,6 +100,7 @@ suite('Polymer2MixinScanner', () => {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
+                       description: '',
                        properties: [{
                          name: 'foo',
                        }],
@@ -113,6 +117,7 @@ suite('Polymer2MixinScanner', () => {
         const mixinData = mixins.map(getTestProps);
         assert.deepEqual(mixinData, [{
                            name: 'TestMixin',
+                           description: '',
                            properties: [],
                            attributes: [],
                          }]);
@@ -129,6 +134,7 @@ suite('Polymer2MixinScanner', () => {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
+                       description: '',
                        properties: [],
                        attributes: [],
                      }]);

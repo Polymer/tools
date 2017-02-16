@@ -39,7 +39,9 @@ export abstract class ScannedElementBase implements Resolvable {
     this.description = this.description || commentText || '';
   }
 
-  abstract resolve(document: Document): any;
+  resolve(_document: Document): any {
+    throw new Error('abstract');
+  }
 }
 
 /**
@@ -57,5 +59,7 @@ export abstract class ElementBase implements Feature {
   kinds: Set<string> = new Set(['element']);
   warnings: Warning[] = [];
 
-  abstract get identifiers(): Set<string>;
+  get identifiers(): Set<string> {
+    throw new Error('abstract');
+  }
 }
