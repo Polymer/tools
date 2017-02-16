@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Fixed
+* When directory paths don't end in `/`, redirect to the right path, not a
+  filesystem path. https://github.com/Polymer/polyserve/issues/96
 
 ## [0.16.0](https://github.com/PolymerLabs/polyserve/tree/v0.16.0) (2017-02-14)
 

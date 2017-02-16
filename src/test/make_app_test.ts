@@ -46,6 +46,25 @@ suite('makeApp', () => {
         .expect(200, 'TEST COMPONENT\n');
   });
 
+  test('serves component indices', async() => {
+    let app = makeApp({
+      root,
+      componentDir: path.join(root, 'bower_components'),
+    });
+    await supertest(app).get('/test-component/').expect(200, 'INDEX\n');
+  });
+
+  test('redirects directories without trailing slashes', async() => {
+    let app = makeApp({
+      root,
+      componentDir: path.join(root, 'bower_components'),
+    });
+    await supertest(app)
+        .get('/test-component')
+        .expect(301)
+        .expect('Location', '/test-component/');
+  });
+
   test('shows friendly error when bower.json does not exist', () => {
     let called = false;
     console.error = function(_e: any) {
