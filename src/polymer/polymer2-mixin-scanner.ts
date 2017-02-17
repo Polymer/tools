@@ -27,7 +27,7 @@ export class Polymer2MixinScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
       Promise<ScannedPolymerElementMixin[]> {
-    let visitor = new MixinVisitor(document);
+    const visitor = new MixinVisitor(document);
     await visit(visitor);
     return visitor._mixins;
   }
@@ -65,7 +65,7 @@ class MixinVisitor implements Visitor {
 
   leaveFunctionDeclaration(
       node: estree.FunctionDeclaration, _parent: estree.Node) {
-    if (this._currentMixinNode == node) {
+    if (this._currentMixinNode === node) {
       this._currentMixin = null;
       this._currentMixinNode = null;
       this._currentMixinFunction = null;

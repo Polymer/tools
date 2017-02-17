@@ -101,7 +101,7 @@ function TestMixin(superclass) {
   }
 ~~~
 }
-~`)
+~`);
   });
 
   test('finds mixin arrow function expressions', async() => {

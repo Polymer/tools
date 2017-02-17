@@ -26,6 +26,10 @@ export class ScannedElement extends ScannedElementBase {
   slots:
   Slot[] = [];
 
+  constructor() {
+    super();
+  }
+
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText || '';
   }
@@ -54,6 +58,10 @@ export class Element extends ElementBase implements Feature {
   extends?: string;
   slots:
   Slot[] = [];
+
+  constructor() {
+    super();
+  }
 
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();

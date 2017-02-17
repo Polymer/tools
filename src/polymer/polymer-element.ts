@@ -35,6 +35,7 @@ export interface BasePolymerProperty {
 
 export interface ScannedPolymerProperty extends ScannedProperty,
                                                 BasePolymerProperty {}
+
 export interface PolymerProperty extends Property, BasePolymerProperty {}
 
 export interface ScannedFunction extends ScannedPolymerProperty {
@@ -80,9 +81,7 @@ export interface Options {
   sourceRange: SourceRange|undefined;
 }
 
-export type Constructor<T extends object> = new (...args: any[]) => T;
-
-export interface ScannedPolymerExtension {
+export interface ScannedPolymerExtension extends ScannedElementBase {
   properties: ScannedPolymerProperty[];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -102,11 +101,41 @@ export interface ScannedPolymerExtension {
   addProperty(prop: ScannedPolymerProperty): void;
 }
 
-export const ScannedPolymerExtension =
-    <T extends Constructor<ScannedElementBase>>(superclass: T):
-        Constructor<ScannedPolymerExtension>& T =>
-            class extends superclass implements ScannedPolymerExtension {  //
+export function addProperty(
+    target: ScannedPolymerExtension, prop: ScannedPolymerProperty) {
+  if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
+    prop.private = true;
+  }
+  target.properties.push(prop);
+  const attributeName = propertyToAttributeName(prop.name);
+  if (prop.private || !attributeName || !prop.published) {
+    return;
+  }
+  if (!isScannedFunction(prop)) {
+    target.attributes.push({
+      name: attributeName,
+      sourceRange: prop.sourceRange,
+      description: prop.description,
+      type: prop.type,
+      changeEvent: prop.notify ? `${attributeName}-changed` : undefined
+    });
+  }
+  if (prop.notify) {
+    target.events.push({
+      name: `${attributeName}-changed`,
+      description: `Fired when the \`${prop.name}\` property changes.`,
+      sourceRange: prop.sourceRange,
+      astNode: prop.astNode,
+      warnings: []
+    });
+  }
+}
 
+/**
+ * The metadata for a single polymer element
+ */
+export class ScannedPolymerElement extends ScannedElement implements
+    ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -122,41 +151,6 @@ export const ScannedPolymerExtension =
   pseudo: boolean = false;
   abstract?: boolean;
 
-  addProperty(prop: ScannedPolymerProperty) {
-    if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
-      prop.private = true;
-    }
-    this.properties.push(prop);
-    const attributeName = propertyToAttributeName(prop.name);
-    if (prop.private || !attributeName || !prop.published) {
-      return;
-    }
-    if (!isScannedFunction(prop)) {
-      this.attributes.push({
-        name: attributeName,
-        sourceRange: prop.sourceRange,
-        description: prop.description,
-        type: prop.type,
-        changeEvent: prop.notify ? `${attributeName}-changed` : undefined
-      });
-    }
-    if (prop.notify) {
-      this.events.push({
-        name: `${attributeName}-changed`,
-        description: `Fired when the \`${prop.name}\` property changes.`,
-        sourceRange: prop.sourceRange,
-        astNode: prop.astNode,
-        warnings: []
-      });
-    }
-  }
-}
-
-/**
- * The metadata for a single polymer element
- */
-export class ScannedPolymerElement extends ScannedPolymerExtension
-(ScannedElement) {
   constructor(options?: Options) {
     super();
     // TODO(justinfagnani): fix this constructor to not be crazy, or remove
@@ -169,12 +163,34 @@ export class ScannedPolymerElement extends ScannedPolymerExtension
     }
   }
 
+  addProperty(prop: ScannedPolymerProperty) {
+    addProperty(this, prop);
+  }
+
   resolve(document: Document): PolymerElement {
     return resolveElement(this, document);
   }
 }
 
-export interface PolymerExtension {
+export interface PolymerExtension extends ElementBase {
+  properties: PolymerProperty[];
+
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[];
+  listeners: {event: string, handler: string}[];
+  behaviorAssignments: ScannedBehaviorAssignment[];
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+  localIds: LocalId[];
+
+  abstract?: boolean;
+
+  emitPropertyMetadata(property: PolymerProperty): any;
+}
+
+export class PolymerElement extends Element implements PolymerExtension {
   properties: PolymerProperty[];
 
   observers: {
@@ -189,28 +205,8 @@ export interface PolymerExtension {
 
   abstract?: boolean;
 
-  emitPropertyMetadata(property: PolymerProperty): any;
-}
-
-export const PolymerExtension = <T extends Constructor<ElementBase>>(
-    superclass: T): Constructor<PolymerExtension>& T =>
-    class extends superclass implements PolymerExtension {  //
-
-  properties: PolymerProperty[];
-
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[];
-  listeners: {event: string, handler: string}[];
-  behaviorAssignments: ScannedBehaviorAssignment[];
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
-
-  abstract?: boolean;
-
-  constructor(...args: any[]) {
-    super(...args);
+  constructor() {
+    super();
     this.kinds = new Set(['element', 'polymer-element']);
     this.behaviorAssignments = [];
   }
@@ -225,10 +221,6 @@ export const PolymerExtension = <T extends Constructor<ElementBase>>(
     }
     return {polymer: polymerMetadata};
   }
-}
-
-export class PolymerElement extends PolymerExtension
-(Element) {
 }
 
 /**
@@ -344,9 +336,11 @@ interface PropertyOrSimilar {
   name: string;
   inheritedFrom?: string;
 }
+
 interface HasName {
   name: string;
 }
+
 function mergeByName<Prop extends PropertyOrSimilar>(
     base: Prop[], inheritFrom: {name: string, vals: HasName[]}[]): Prop[] {
   const byName = new Map<string, Prop>();
