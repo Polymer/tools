@@ -1,3 +1,17 @@
+/**
+ * @license
+ * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
 import * as estree from 'estree';
 
 import {getIdentifierName} from '../javascript/ast-value';
@@ -7,6 +21,10 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerProperty} from './polymer-element';
 
+/**
+ * Returns the object literal that defines a Polymer element configuration from
+ * a Plymer element class.
+ */
 export function getConfig(node: estree.ClassDeclaration|estree.ClassExpression):
     estree.ObjectExpression|null {
   const possibleConfigs = node.body.body.filter(
@@ -23,18 +41,22 @@ export function getConfig(node: estree.ClassDeclaration|estree.ClassExpression):
     return null;
   }
   if (configBody.body[0].type !== 'ReturnStatement') {
+    // we only support a return statement
     return null;
   }
 
   const returnStatement = configBody.body[0] as estree.ReturnStatement;
   const returnValue = returnStatement.argument;
   if (!returnValue || returnValue.type !== 'ObjectExpression') {
-    // TODO: warn
+    // we only support object literals
     return null;
   }
-  return returnValue as estree.ObjectExpression;
+  return returnValue;
 }
 
+/**
+ * Returns the properties defined in a Polymer config object literal.
+ */
 export function getProperties(
     node: estree.ObjectExpression,
     document: JavaScriptDocument): ScannedPolymerProperty[] {
