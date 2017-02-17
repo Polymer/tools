@@ -19,7 +19,7 @@ import {Document, ElementMixin, LiteralValue, ScannedAttribute, ScannedElementMi
 import {PolymerExtension, ScannedPolymerExtension} from './polymer-element';
 
 export interface Options {
-  name: string;
+  name?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
   properties?: ScannedProperty[];

@@ -1,6 +1,6 @@
 /**
- * Foo
- * @polymerMixin A description
+ * A mixin
+ * @polymerMixin
  */
 function TestMixin(superclass) {
   return class extends superclass {

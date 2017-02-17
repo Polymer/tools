@@ -70,7 +70,9 @@ suite('Polymer2MixinScanner', () => {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
-                       description: '',  // A description',
+                       // TODO(justinfagnani): enable when descriptions work
+                       //  description: 'A description',
+                       description: '',
                        properties: [{
                          name: 'foo',
                        }],

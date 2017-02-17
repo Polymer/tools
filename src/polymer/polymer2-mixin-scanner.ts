@@ -54,6 +54,8 @@ class MixinVisitor implements Visitor {
       this._currentMixinFunction = node;
       this._currentMixin = new ScannedPolymerElementMixin({
         name: name,
+        // TODO(justinfagnani): fix descriptions correctly in parseJsdoc
+        // description: docs.description,
       });
       this._currentMixinNode = node;
       this._currentMixin.name = name;
@@ -76,7 +78,10 @@ class MixinVisitor implements Visitor {
     const docs = jsdoc.parseJsdoc(comment);
     const isMixin = this._hasPolymerMixinDocTag(docs);
     if (isMixin) {
-      this._currentMixin = new ScannedPolymerElementMixin();
+      this._currentMixin = new ScannedPolymerElementMixin({
+          // TODO(justinfagnani): fix descriptions correctly in parseJsdoc
+          // description: docs.description,
+      });
       this._currentMixinNode = node;
       this._mixins.push(this._currentMixin);
     }
