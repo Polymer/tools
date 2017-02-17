@@ -30,7 +30,7 @@
     "parse5": "^2.2.2",
     "plylog": "^0.4.0",
     "polymer-analyzer": "2.0.0-alpha.24",
-    "polymer-bundler": "2.0.0-pre.5",
+    "polymer-bundler": "2.0.0-pre.6",
     "polymer-project-config": "^2.0.0",
     "sw-precache": "^4.2.0",
     "vinyl": "^1.1.1",
