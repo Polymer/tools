@@ -51,14 +51,14 @@ class MixinVisitor implements Visitor {
     const docs = jsdoc.parseJsdoc(comment);
     if (this._hasPolymerMixinDocTag(docs)) {
       const name = node.id.name;
+      const sourceRange = this._document.sourceRangeForNode(node);
       this._currentMixinFunction = node;
       this._currentMixin = new ScannedPolymerElementMixin({
-        name: name,
-        // TODO(justinfagnani): fix descriptions correctly in parseJsdoc
-        // description: docs.description,
+          name, sourceRange,
+          // TODO(justinfagnani): fix descriptions correctly in parseJsdoc
+          // description: docs.description,
       });
       this._currentMixinNode = node;
-      this._currentMixin.name = name;
       this._mixins.push(this._currentMixin);
     }
   }
@@ -77,8 +77,10 @@ class MixinVisitor implements Visitor {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const isMixin = this._hasPolymerMixinDocTag(docs);
+    const sourceRange = this._document.sourceRangeForNode(node);
     if (isMixin) {
       this._currentMixin = new ScannedPolymerElementMixin({
+          sourceRange,
           // TODO(justinfagnani): fix descriptions correctly in parseJsdoc
           // description: docs.description,
       });
@@ -130,7 +132,7 @@ class MixinVisitor implements Visitor {
 
     mixin.description = docs.description ? docs.description.trim() : '';
     mixin.events = esutil.getEventComments(node);
-    mixin.sourceRange = this._document.sourceRangeForNode(node);
+    // mixin.sourceRange = this._document.sourceRangeForNode(node);
     if (properties) {
       properties.forEach((p) => mixin.addProperty(p));
     }

@@ -14,7 +14,7 @@
 
 
 import {assert} from 'chai';
-import * as fs from 'fs';
+// import * as fs from 'fs';
 import * as path from 'path';
 
 import {Visitor} from '../../javascript/estree-visitor';
@@ -22,27 +22,19 @@ import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedFeature} from '../../model/model';
 import {ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
 import {Polymer2MixinScanner} from '../../polymer/polymer2-mixin-scanner';
-
-// function compareNames(a: {name?: string}, b: {name?: string}): number {
-//   const nameA = a && a.name;
-//   const nameB = b && b.name;
-
-//   if (nameA == null)
-//     return (nameB == null) ? 0 : -1;
-//   if (nameB == null)
-//     return 1;
-//   return nameA.localeCompare(nameB);
-// };
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {CodeUnderliner} from '../test-utils';
 
 suite('Polymer2MixinScanner', () => {
+  const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
+  const urlLoader = new FSUrlLoader(testFilesDir);
+  const underliner = new CodeUnderliner(urlLoader);
 
   async function getMixins(filename: string):
       Promise<ScannedPolymerElementMixin[]> {
-        const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
-        const testpath = path.resolve(testFilesDir, filename);
-        const file = fs.readFileSync(testpath, 'utf8');
+        const file = await urlLoader.load(filename);
         const parser = new JavaScriptParser();
-        const document = parser.parse(file, '/static/polymer2/test-mixin.js');
+        const document = parser.parse(file, filename);
         const scanner = new Polymer2MixinScanner();
         const visit = (visitor: Visitor) =>
             Promise.resolve(document.visit([visitor]));
@@ -80,6 +72,36 @@ suite('Polymer2MixinScanner', () => {
                          name: 'foo',
                        }],
                      }]);
+    const underlinedSource = await underliner.underline(mixins[0].sourceRange);
+    assert.equal(underlinedSource, `
+function TestMixin(superclass) {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  return class extends superclass {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get config() {
+~~~~~~~~~~~~~~~~~~~~~~~~~
+      return {
+~~~~~~~~~~~~~~
+        properties: {
+~~~~~~~~~~~~~~~~~~~~~
+          foo: {
+~~~~~~~~~~~~~~~~
+            notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~~~
+            type: String,
+~~~~~~~~~~~~~~~~~~~~~~~~~
+          }
+~~~~~~~~~~~
+        },
+~~~~~~~~~~
+      };
+~~~~~~~~
+    }
+~~~~~
+  }
+~~~
+}
+~`)
   });
 
   test('finds mixin arrow function expressions', async() => {
@@ -95,6 +117,32 @@ suite('Polymer2MixinScanner', () => {
                          name: 'foo',
                        }],
                      }]);
+    const underlinedSource = await underliner.underline(mixins[0].sourceRange);
+    assert.equal(underlinedSource, `
+const TestMixin = (superclass) => class extends superclass {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  static get config() {
+~~~~~~~~~~~~~~~~~~~~~~~
+    return {
+~~~~~~~~~~~~
+      properties: {
+~~~~~~~~~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
+        }
+~~~~~~~~~
+      },
+~~~~~~~~
+    };
+~~~~~~
+  }
+~~~
+}
+~`);
   });
 
   test('finds mixin function expressions', async() => {
@@ -110,6 +158,36 @@ suite('Polymer2MixinScanner', () => {
                          name: 'foo',
                        }],
                      }]);
+    const underlinedSource = await underliner.underline(mixins[0].sourceRange);
+    assert.equal(underlinedSource, `
+const TestMixin = function(superclass) {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  return class extends superclass {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get config() {
+~~~~~~~~~~~~~~~~~~~~~~~~~
+      return {
+~~~~~~~~~~~~~~
+        properties: {
+~~~~~~~~~~~~~~~~~~~~~
+          foo: {
+~~~~~~~~~~~~~~~~
+            notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~~~
+            type: String,
+~~~~~~~~~~~~~~~~~~~~~~~~~
+          }
+~~~~~~~~~~~
+        },
+~~~~~~~~~~
+      };
+~~~~~~~~
+    }
+~~~~~
+  }
+~~~
+}
+~`);
   });
 
   test(
@@ -123,6 +201,11 @@ suite('Polymer2MixinScanner', () => {
                            properties: [],
                            attributes: [],
                          }]);
+        const underlinedSource =
+            await underliner.underline(mixins[0].sourceRange);
+        assert.equal(underlinedSource, `
+let TestMixin;
+~~~~~~~~~~~~~~`);
       });
 
   test('what to do on a class marked @polymerMixin?', async() => {
@@ -140,6 +223,12 @@ suite('Polymer2MixinScanner', () => {
                        properties: [],
                        attributes: [],
                      }]);
+    const underlinedSource = await underliner.underline(mixins[0].sourceRange);
+    assert.equal(underlinedSource, `
+function TestMixin() {
+~~~~~~~~~~~~~~~~~~~~~~
+}
+~`);
   });
 
 });

@@ -34,7 +34,7 @@ export interface Options {
   events?: ScannedEvent[];
 
   abstract?: boolean;
-  sourceRange?: SourceRange|undefined;
+  sourceRange: SourceRange|undefined;
 }
 
 export class ScannedPolymerElementMixin extends ScannedPolymerExtension

@@ -77,7 +77,7 @@ export interface Options {
   events?: ScannedEvent[];
 
   abstract?: boolean;
-  sourceRange?: SourceRange|undefined;
+  sourceRange: SourceRange|undefined;
 }
 
 export type Constructor<T extends object> = new (...args: any[]) => T;
