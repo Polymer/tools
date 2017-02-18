@@ -8,11 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 <!-- List New Changes Here -->
+
+## [0.8.1] - 2017-02-17
+
 * Update the version of `polymer-bundler` to fix several bugs:
-  - Fix regressions in url attribute updating (src, href, assetpath).
-  - Added support for `<base>` href and target attribute emulation on bundled output.
-  - Whitespace-agnostic license comment deduplication.
-  - Server-side includes no longer stripped as comments.
+ * Fix regressions in url attribute updating (src, href, assetpath).
+ * Added support for `<base>` href and target attribute emulation on bundled output.
+ * Whitespace-agnostic license comment deduplication.
+ * Server-side includes no longer stripped as comments.
 
 ## [0.8.0] - 2017-02-14
 
