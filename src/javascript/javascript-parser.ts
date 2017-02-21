@@ -27,19 +27,21 @@ declare class SyntaxError {
   column: number;
 }
 
+export const baseParseOptions = {
+  ecmaVersion: 8,
+  attachComment: true,
+  comment: true,
+  loc: true,
+};
+
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       JavaScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     let ast: Program;
-    const options = {
-      ecmaVersion: 8,
-      attachComment: true,
-      comment: true,
-      loc: true,
-      sourceType: 'script' as ('script' | 'module'),
-    };
+    const options = Object.assign(
+        {sourceType: 'script' as ('script' | 'module')}, baseParseOptions);
 
     try {
       ast = <Program>espree.parse(contents, options);
