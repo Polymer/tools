@@ -12,40 +12,23 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
-import {Warning} from '../warning/warning';
 
-import {Document, Event, Feature, Property, Resolvable, ScannedEvent, ScannedProperty} from './model';
-
+import {ElementBase, ScannedElementBase} from './element-base';
+import {Attribute, Document, Event, Feature, Property} from './model';
 export {Visitor} from '../javascript/estree-visitor';
 
-export interface ScannedAttribute {
-  name: string;
-  sourceRange: SourceRange|undefined;
-  description?: string;
-  type?: string;
-  changeEvent?: string;
-}
-
-export class ScannedElement implements Resolvable {
+export class ScannedElement extends ScannedElementBase {
   tagName?: string;
   className?: string;
   superClass?: string;
   extends?: string;
-  properties: ScannedProperty[] = [];
-  attributes: ScannedAttribute[] = [];
-  description = '';
-  demos: {desc?: string; path: string}[] = [];
-  events: ScannedEvent[] = [];
-  sourceRange: SourceRange|undefined;
-  astNode: estree.Node|null;
-  warnings: Warning[] = [];
   slots:
   Slot[] = [];
 
-  jsdoc?: jsdoc.Annotation;
+  constructor() {
+    super();
+  }
 
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText || '';
@@ -58,9 +41,6 @@ export class ScannedElement implements Resolvable {
   }
 }
 
-
-export interface Attribute extends ScannedAttribute { inheritedFrom?: string; }
-
 export class Slot {
   name: string;
   range: SourceRange;
@@ -71,23 +51,18 @@ export class Slot {
   }
 }
 
-export class Element implements Feature {
+export class Element extends ElementBase implements Feature {
   tagName?: string;
   className?: string;
   superClass?: string;
   extends?: string;
-  properties: Property[] = [];
-  attributes: Attribute[] = [];
-  description = '';
-  demos: {desc?: string; path: string}[] = [];
-  events: Event[] = [];
-  sourceRange: SourceRange;
-  jsdoc?: jsdoc.Annotation;
-  astNode: estree.Node|null;
-  kinds: Set<string> = new Set(['element']);
-  warnings: Warning[] = [];
   slots:
   Slot[] = [];
+
+  constructor() {
+    super();
+  }
+
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();
     if (this.tagName) {

@@ -16,7 +16,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
-import {Document, Element, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {Document, Element, ElementBase, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
 import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
@@ -35,6 +35,7 @@ export interface BasePolymerProperty {
 
 export interface ScannedPolymerProperty extends ScannedProperty,
                                                 BasePolymerProperty {}
+
 export interface PolymerProperty extends Property, BasePolymerProperty {}
 
 export interface ScannedFunction extends ScannedPolymerProperty {
@@ -80,10 +81,61 @@ export interface Options {
   sourceRange: SourceRange|undefined;
 }
 
+export interface ScannedPolymerExtension extends ScannedElementBase {
+  properties: ScannedPolymerProperty[];
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[];
+  listeners: {event: string, handler: string}[];
+  behaviorAssignments: ScannedBehaviorAssignment[];
+  // FIXME(rictic): domModule and scriptElement aren't known at a file local
+  //     level. Remove them here, they should only exist on PolymerElement.
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+  // TODO(justinfagnani): Not Polymer-specific, and hopefully not necessary
+  // Indicates if an element is a pseudo element
+  pseudo: boolean;
+  abstract?: boolean;
+
+  addProperty(prop: ScannedPolymerProperty): void;
+}
+
+export function addProperty(
+    target: ScannedPolymerExtension, prop: ScannedPolymerProperty) {
+  if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
+    prop.private = true;
+  }
+  target.properties.push(prop);
+  const attributeName = propertyToAttributeName(prop.name);
+  if (prop.private || !attributeName || !prop.published) {
+    return;
+  }
+  if (!isScannedFunction(prop)) {
+    target.attributes.push({
+      name: attributeName,
+      sourceRange: prop.sourceRange,
+      description: prop.description,
+      type: prop.type,
+      changeEvent: prop.notify ? `${attributeName}-changed` : undefined
+    });
+  }
+  if (prop.notify) {
+    target.events.push({
+      name: `${attributeName}-changed`,
+      description: `Fired when the \`${prop.name}\` property changes.`,
+      sourceRange: prop.sourceRange,
+      astNode: prop.astNode,
+      warnings: []
+    });
+  }
+}
+
 /**
  * The metadata for a single polymer element
  */
-export class ScannedPolymerElement extends ScannedElement {
+export class ScannedPolymerElement extends ScannedElement implements
+    ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -97,48 +149,22 @@ export class ScannedPolymerElement extends ScannedElement {
   scriptElement?: dom5.Node;
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
-
   abstract?: boolean;
 
-  constructor(options: Options) {
+  constructor(options?: Options) {
     super();
     // TODO(justinfagnani): fix this constructor to not be crazy, or remove
     // class altogether.
-    const optionsCopy = Object.assign({}, options);
+    const optionsCopy = Object.assign({}, options) as Options;
     delete optionsCopy.properties;
     Object.assign(this, optionsCopy);
-    if (options.properties) {
+    if (options && options.properties) {
       options.properties.forEach((p) => this.addProperty(p));
     }
   }
 
   addProperty(prop: ScannedPolymerProperty) {
-    if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
-      prop.private = true;
-    }
-    this.properties.push(prop);
-    const attributeName = propertyToAttributeName(prop.name);
-    if (prop.private || !attributeName || !prop.published) {
-      return;
-    }
-    if (!isScannedFunction(prop)) {
-      this.attributes.push({
-        name: attributeName,
-        sourceRange: prop.sourceRange,
-        description: prop.description,
-        type: prop.type,
-        changeEvent: prop.notify ? `${attributeName}-changed` : undefined
-      });
-    }
-    if (prop.notify) {
-      this.events.push({
-        name: `${attributeName}-changed`,
-        description: `Fired when the \`${prop.name}\` property changes.`,
-        sourceRange: prop.sourceRange,
-        astNode: prop.astNode,
-        warnings: []
-      });
-    }
+    addProperty(this, prop);
   }
 
   resolve(document: Document): PolymerElement {
@@ -146,7 +172,25 @@ export class ScannedPolymerElement extends ScannedElement {
   }
 }
 
-export class PolymerElement extends Element {
+export interface PolymerExtension extends ElementBase {
+  properties: PolymerProperty[];
+
+  observers: {
+    javascriptNode: estree.Expression | estree.SpreadElement,
+    expression: LiteralValue
+  }[];
+  listeners: {event: string, handler: string}[];
+  behaviorAssignments: ScannedBehaviorAssignment[];
+  domModule?: dom5.Node;
+  scriptElement?: dom5.Node;
+  localIds: LocalId[];
+
+  abstract?: boolean;
+
+  emitPropertyMetadata(property: PolymerProperty): any;
+}
+
+export class PolymerElement extends Element implements PolymerExtension {
   properties: PolymerProperty[];
 
   observers: {
@@ -292,9 +336,11 @@ interface PropertyOrSimilar {
   name: string;
   inheritedFrom?: string;
 }
+
 interface HasName {
   name: string;
 }
+
 function mergeByName<Prop extends PropertyOrSimilar>(
     base: Prop[], inheritFrom: {name: string, vals: HasName[]}[]): Prop[] {
   const byName = new Map<string, Prop>();

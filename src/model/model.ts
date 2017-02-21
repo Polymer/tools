@@ -32,9 +32,12 @@
  * Earlier stages have the longer names, like ParsedDocument and ScannedElement.
  */
 
+export * from './attribute';
 export {Document, FeatureKinds, QueryOptions as DocumentQueryOptions, ScannedDocument} from './document';
 export * from './element';
+export * from './element-base';
 export {ElementReference, ScannedElementReference} from './element-reference';
+export * from './element-mixin';
 export * from './event';
 export * from './feature';
 export * from './import';
