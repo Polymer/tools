@@ -231,4 +231,53 @@ function TestMixin() {
 ~`);
   });
 
+  test.only('finds mixin assigned to a namespace', async() => {
+    const mixins = await getMixins('test-mixin-7.js');
+    const mixinData = mixins.map(getTestProps);
+    assert.deepEqual(mixinData, [{
+                       name: 'Polymer.TestMixin',
+                       description: '',
+                       properties: [{
+                         name: 'foo',
+                       }],
+                       attributes: [{
+                         name: 'foo',
+                       }],
+                     }]);
+    const underlinedSource = await underliner.underline(mixins[0].sourceRange);
+    assert.equal(underlinedSource, `
+Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  /** @polymerMixinClass */
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  class TestMixin extends base {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get config() {
+~~~~~~~~~~~~~~~~~~~~~~~~~
+      return {
+~~~~~~~~~~~~~~
+        properties: {
+~~~~~~~~~~~~~~~~~~~~~
+          foo: {
+~~~~~~~~~~~~~~~~
+            notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~~~
+            type: String,
+~~~~~~~~~~~~~~~~~~~~~~~~~
+          }
+~~~~~~~~~~~
+        },
+~~~~~~~~~~
+      };
+~~~~~~~~
+    };
+~~~~~~
+  };
+~~~~
+  return TestMixin;
+~~~~~~~~~~~~~~~~~~~
+});
+~~`);
+  });
+
 });

@@ -16,17 +16,33 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, Elements, Property, SourceRange} from './elements-format';
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Property, SourceRange} from './elements-format';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 
+export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
 export function generateElementMetadata(
-    elements: ResolvedElement[], packagePath: string): Elements|undefined {
-  return {
+    features: ElementOrMixin[], packagePath: string): Elements {
+  const elements =
+      features.filter((f) => f.kinds.has('element')) as ResolvedElement[];
+  const mixins =
+      features.filter((f) => f.kinds.has('element-mixin')) as ResolvedMixin[];
+
+  const metadata: Elements = {
     schema_version: '1.0.0',
-    elements: elements.map((e) => serializeElement(e, packagePath))
-                  .filter((e) => !!e) as Element[]
   };
+
+  if (elements.length > 0) {
+    metadata.elements =
+        elements.map((e) => serializeElement(e, packagePath)) as Element[];
+  }
+
+  if (mixins.length > 0) {
+    metadata.mixins = mixins.map(
+        (m) => serializeElementMixin(m, packagePath)) as ElementMixin[];
+  }
+
+  return metadata;
 }
 
 const validator = new jsonschema.Validator();
@@ -64,38 +80,48 @@ export function validateElements(analyzedPackage: Elements|null|undefined) {
   }
 }
 
-
 function serializeElement(
-    resolvedElement: ResolvedElement, packagePath: string): Element|null {
-  if (!resolvedElement.tagName) {
-    return null;
-  }
+    element: ResolvedElement, packagePath: string): Element {
+  const metadata: Element =
+      serializeElementLike(element, packagePath) as Element;
+  metadata.tagname = element.tagName;
+  metadata.superclass = 'HTMLElement';
+  return metadata;
+}
 
-  const path = resolvedElement.sourceRange.file;
+function serializeElementMixin(
+    mixin: ResolvedMixin, packagePath: string): ElementMixin {
+  const metadata: ElementMixin =
+      serializeElementLike(mixin, packagePath) as ElementMixin;
+  metadata.name = mixin.name;
+  return metadata;
+}
+
+function serializeElementLike(
+    elementOrMixin: ElementOrMixin, packagePath: string): ElementLike {
+  const path = elementOrMixin.sourceRange.file;
   const packageRelativePath =
-      pathLib.relative(packagePath, resolvedElement.sourceRange.file);
+      pathLib.relative(packagePath, elementOrMixin.sourceRange.file);
 
-  const attributes = resolvedElement.attributes.map(
-      (a) => serializeAttribute(resolvedElement, path, a));
+  const attributes = elementOrMixin.attributes.map(
+      (a) => serializeAttribute(elementOrMixin, path, a));
   const properties =
-      resolvedElement.properties
+      elementOrMixin.properties
           .filter(
               (p) => !p.private &&
                   // Blacklist functions until we figure out what to do.
                   p.type !== 'Function')
-          .map((p) => serializeProperty(resolvedElement, path, p));
-  const events = resolvedElement.events.map(
-      (e) => ({
-        name: e.name,
-        description: e.description || '',
-        type: 'CustomEvent',
-        metadata: resolvedElement.emitEventMetadata(e)
-      }));
+          .map((p) => serializeProperty(elementOrMixin, path, p));
+  const events =
+      elementOrMixin.events.map((e) => ({
+                                  name: e.name,
+                                  description: e.description || '',
+                                  type: 'CustomEvent',
+                                  metadata: elementOrMixin.emitEventMetadata(e)
+                                }));
 
   return {
-    tagname: resolvedElement.tagName,
-    description: resolvedElement.description || '',
-    superclass: 'HTMLElement',
+    description: elementOrMixin.description || '',
     path: packageRelativePath,
     attributes: attributes,
     properties: properties,
@@ -103,13 +129,13 @@ function serializeElement(
       cssVariables: [],
       selectors: [],
     },
-    demos: (resolvedElement.demos || []).map((d) => d.path),
-    slots: resolvedElement.slots.map((s) => {
+    demos: (elementOrMixin.demos || []).map((d) => d.path),
+    slots: elementOrMixin.slots.map((s) => {
       return {description: '', name: s.name, range: s.range};
     }),
     events: events,
-    metadata: resolvedElement.emitMetadata(),
-    sourceRange: resolveSourceRangePath(path, resolvedElement.sourceRange),
+    metadata: elementOrMixin.emitMetadata(),
+    sourceRange: resolveSourceRangePath(path, elementOrMixin.sourceRange),
   };
 }
 
@@ -132,7 +158,7 @@ function serializeProperty(
 }
 
 function serializeAttribute(
-    resolvedElement: ResolvedElement,
+    resolvedElement: ElementOrMixin,
     elementPath: string,
     resolvedAttribute: ResolvedAttribute): Attribute {
   const attribute: Attribute = {

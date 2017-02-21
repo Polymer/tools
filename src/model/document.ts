@@ -17,9 +17,11 @@ import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/polymer-element';
+import {PolymerElementMixin} from '../polymer/polymer-element-mixin';
 import {Warning} from '../warning/warning';
 
 import {Element} from './element';
+import {ElementMixin} from './element-mixin';
 import {ElementReference} from './element-reference';
 import {Feature, ScannedFeature} from './feature';
 import {Import} from './import';
@@ -79,7 +81,9 @@ export class ScannedDocument {
 export interface FeatureKinds {
   'document': Document;
   'element': Element;
+  'element-mixin': ElementMixin;
   'polymer-element': PolymerElement;
+  'polymer-element-mixin': PolymerElementMixin;
   'behavior': Behavior;
   'dom-module': DomModule;
   'element-reference': ElementReference;

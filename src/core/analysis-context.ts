@@ -30,6 +30,7 @@ import {BehaviorScanner} from '../polymer/behavior-scanner';
 import {CssImportScanner} from '../polymer/css-import-scanner';
 import {DomModuleScanner} from '../polymer/dom-module-scanner';
 import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
+import {Polymer2MixinScanner} from '../polymer/polymer2-mixin-scanner';
 import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
@@ -99,6 +100,7 @@ export class AnalysisContext {
         'js',
         [
           new PolymerElementScanner(),
+          new Polymer2MixinScanner(),
           new BehaviorScanner(),
           new VanillaElementScanner()
         ]

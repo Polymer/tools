@@ -12,10 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../model/model';
-
 import {ElementBase, ScannedElementBase} from './element-base';
-import {Attribute, Document, Event, Feature, Property} from './model';
+import {Document, Feature} from './model';
 export {Visitor} from '../javascript/estree-visitor';
 
 export class ScannedElement extends ScannedElementBase {
@@ -23,8 +21,6 @@ export class ScannedElement extends ScannedElementBase {
   className?: string;
   superClass?: string;
   extends?: string;
-  slots:
-  Slot[] = [];
 
   constructor() {
     super();
@@ -41,23 +37,11 @@ export class ScannedElement extends ScannedElementBase {
   }
 }
 
-export class Slot {
-  name: string;
-  range: SourceRange;
-
-  constructor(name: string, range: SourceRange) {
-    this.name = name;
-    this.range = range;
-  }
-}
-
 export class Element extends ElementBase implements Feature {
   tagName?: string;
   className?: string;
   superClass?: string;
   extends?: string;
-  slots:
-  Slot[] = [];
 
   constructor() {
     super();
@@ -72,21 +56,5 @@ export class Element extends ElementBase implements Feature {
       result.add(this.className);
     }
     return result;
-  }
-
-  emitMetadata(): Object {
-    return {};
-  }
-
-  emitAttributeMetadata(_attribute: Attribute): Object {
-    return {};
-  }
-
-  emitPropertyMetadata(_property: Property): Object {
-    return {};
-  }
-
-  emitEventMetadata(_event: Event): Object {
-    return {};
   }
 }
