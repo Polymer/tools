@@ -49,7 +49,7 @@
     "gulp-tslint": "^7.0.1",
     "gulp-typescript": "^2.13.4",
     "jsdoc-to-markdown": "^1.0.3",
-    "memory-streams": "^0.1.0",
+    "memory-streams": "^0.1.1",
     "merge-stream": "^1.0.0",
     "mocha": "^2.2.4",
     "run-sequence": "^1.2.0",
