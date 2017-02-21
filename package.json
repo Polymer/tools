@@ -58,7 +58,8 @@
     "temp": "^0.8.3",
     "tslint": "^4.1.1",
     "typescript-json-schema": "^0.1.1",
-    "watchy": "^0.6.6"
+    "watchy": "^0.6.6",
+    "performance-now": "^2.1.0"
   },
   "dependencies": {
     "@types/chalk": "^0.4.30",
@@ -81,7 +82,6 @@
     "estraverse": "^3.1.0",
     "jsonschema": "^1.1.0",
     "parse5": "^2.2.1",
-    "performance-now": "^0.2.0",
     "shady-css-parser": "0.0.8",
     "split": "^1.0.0",
     "strip-indent": "^2.0.0",

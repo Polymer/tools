@@ -14,10 +14,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as now from 'performance-now';
 
 import {Analyzer} from '../analyzer';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+
+import now = require('performance-now');
 
 const bowerDir = path.resolve(__dirname, `../../bower_components`);
 const analyzer = new Analyzer({urlLoader: new FSUrlLoader(bowerDir)});
