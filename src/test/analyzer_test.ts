@@ -35,8 +35,10 @@ import {Severity} from '../warning/warning';
 import {CodeUnderliner} from './test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
+import chaiSubset = require('chai-subset');
 import stripIndent = require('strip-indent');
 
+use(chaiSubset);
 use(chaiAsPromised);
 
 class TestUrlResolver implements UrlResolver {
