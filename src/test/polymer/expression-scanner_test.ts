@@ -15,20 +15,13 @@
 
 import {assert} from 'chai';
 
-import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
-import {ExpressionScanner} from '../../polymer/expression-scanner';
+import {scanForExpressions} from '../../polymer/expression-scanner';
 import {CodeUnderliner} from '../test-utils';
 
 suite('ExpressionScanner', () => {
 
   suite('scan()', () => {
-    let scanner: ExpressionScanner;
-
-    setup(() => {
-      scanner = new ExpressionScanner();
-    });
-
     test('finds whole-attribute expressions', async() => {
       const contents = `
         <dom-module id="foo-elem">
@@ -54,23 +47,25 @@ suite('ExpressionScanner', () => {
       `;
       const underliner = CodeUnderliner.withMapping('test.html', contents);
       const document = new HtmlParser().parse(contents, 'test.html');
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const expressions = await scanner.scan(document, visit);
+      const results = await scanForExpressions(document);
+      const expressions = results.expressions;
+
+      assert.deepEqual(results.warnings, []);
       assert.deepEqual(
           await underliner.underline(expressions.map((e) => e.sourceRange)), [
             `
             <div id="{{foo}}"></div>
-                    ~~~~~~~~~`,
+                       ~~~`,
             `
             <input value="{{val::changed}}">
-                         ~~~~~~~~~~~~~~~~~~`,
+                            ~~~~~~~~~~~~`,
             `
               <div id="[[bar]]"></div>
-                      ~~~~~~~~~`,
+                         ~~~`,
             `
           <div id="{{baz}}"></div>
-                  ~~~~~~~~~`
+                     ~~~`
           ]);
       assert.deepEqual(
           expressions.map((e) => e.direction), ['{', '{', '[', '{']);
@@ -98,25 +93,25 @@ suite('ExpressionScanner', () => {
       `;
       const underliner = CodeUnderliner.withMapping('test.html', contents);
       const document = new HtmlParser().parse(contents, 'test.html');
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const expressions = await scanner.scan(document, visit);
+      const results = await scanForExpressions(document);
+      const expressions = results.expressions;
 
-      // TODO(rictic): improve these source ranges.
+      assert.deepEqual(results.warnings, []);
       assert.deepEqual(
           await underliner.underline(expressions.map((e) => e.sourceRange)), [
             `
           <div id=" {{foo}}"></div>
-                  ~~~~~~~~~~`,
+                      ~~~`,
             `
           <div id="bar {{val}} baz">
-                  ~~~~~~~~~~~~~~~~~`,
+                         ~~~`,
             `
           <div id=" [[x]]{{y}}"></div>
-                  ~~~~~~~~~~~~~`,
+                      ~`,
             `
           <div id=" [[x]]{{y}}"></div>
-                  ~~~~~~~~~~~~~`
+                           ~`
           ]);
       assert.deepEqual(
           expressions.map((e) => e.direction), ['{', '{', '[', '{']);
@@ -142,61 +137,105 @@ suite('ExpressionScanner', () => {
           <div>{{foo}}</div>
           <div>
             {{bar}} + {{baz}}[[zod]]
+            {{
+              multiline(
+                expressions
+              )
+            }}
           </div>
         </template>
       `;
 
       const underliner = CodeUnderliner.withMapping('test.html', contents);
       const document = new HtmlParser().parse(contents, 'test.html');
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const expressions = await scanner.scan(document, visit);
+      const results = await scanForExpressions(document);
+      const expressions = results.expressions;
 
-      // TODO(rictic): improve these source ranges.
+      assert.deepEqual(results.warnings, []);
       assert.deepEqual(
           await underliner.underline(expressions.map((e) => e.sourceRange)), [
             `
           <div>{{foo}}</div>
-               ~~~~~~~`,
+                 ~~~`,
             `
-          <div>
-               ~
             {{bar}} + {{baz}}[[zod]]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          </div>
-~~~~~~~~~~`,
+              ~~~`,
             `
-          <div>
-               ~
             {{bar}} + {{baz}}[[zod]]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          </div>
-~~~~~~~~~~`,
+                        ~~~`,
             `
-          <div>
-               ~
             {{bar}} + {{baz}}[[zod]]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          </div>
-~~~~~~~~~~`,
+                               ~~~`,
+            `
+            {{
+              ~
+              multiline(
+~~~~~~~~~~~~~~~~~~~~~~~~
+                expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              )
+~~~~~~~~~~~~~~~
+            }}
+~~~~~~~~~~~~`
           ]);
       assert.deepEqual(
-          expressions.map((e) => e.direction), ['{', '{', '{', '[']);
-      assert.deepEqual(
-          expressions.map((e) => e.expressionText),
-          ['foo', 'bar', 'baz', 'zod']);
+          expressions.map((e) => e.direction), ['{', '{', '{', '[', '{']);
+      assert.deepEqual(expressions.map((e) => e.expressionText), [
+        'foo',
+        'bar',
+        'baz',
+        'zod',
+        `
+              multiline(
+                expressions
+              )
+            `
+      ]);
       assert.deepEqual(
           expressions.map((e) => e.eventName),
-          [undefined, undefined, undefined, undefined]);
+          [undefined, undefined, undefined, undefined, undefined]);
       assert.deepEqual(
           expressions.map((e) => e.attribute && e.attribute.name),
-          [undefined, undefined, undefined, undefined]);
+          [undefined, undefined, undefined, undefined, undefined]);
       assert.deepEqual(expressions.map((e) => e.databindingInto), [
+        'string-interpolation',
         'string-interpolation',
         'string-interpolation',
         'string-interpolation',
         'string-interpolation'
       ]);
+    });
+
+    test('gives accurate locations for parse errors', async() => {
+      const contents = `
+        <template is="dom-bind">
+          <div id="{{foo(}}"></div>
+          <div id='[[
+            foo bar
+          ]]'></div>
+          {{]}}
+        </template>
+      `;
+
+      const underliner = CodeUnderliner.withMapping('test.html', contents);
+      const document = new HtmlParser().parse(contents, 'test.html');
+
+      const results = await scanForExpressions(document);
+      assert.deepEqual(
+          await underliner.underline(
+              results.warnings.map((w) => w.sourceRange)),
+          [
+            `
+          <div id="{{foo(}}"></div>
+                         ~`,
+            `
+            foo bar
+                ~`,
+            `
+          {{]}}
+            ~`
+          ]);
     });
   });
 

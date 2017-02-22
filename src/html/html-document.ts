@@ -116,7 +116,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     };
   }
 
-  // dom5 locations are 1 based but ours are 0 based.
+  // parse5 locations are 1 based but ours are 0 based.
   protected _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
     const location = node.__location;
     if (!node.__location) {
@@ -175,7 +175,8 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     return range;
   }
 
-  sourceRangeForAttributeValue(node: ASTNode, attrName: string): SourceRange
+  sourceRangeForAttributeValue(
+      node: ASTNode, attrName: string, excludeQuotes?: boolean): SourceRange
       |undefined {
     const range = this.sourceRangeForAttribute(node, attrName);
     if (!range) {
@@ -199,16 +200,26 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     }
     const whitespaceAfterEquals =
         fullAttribute.substring(equalsIndex + 1).match(/[\s\n]*/)![0]!;
-    const textToSkip = this.contents.substring(
-        location.startOffset,
+    let endOfTextToSkip =
         // the beginning of the attribute key value pair
         location.startOffset +
-            // everything up to the equals sign
-            equalsIndex +
-            // plus one for the equals sign
-            1 +
-            // plus all the whitespace after the equals sign
-            whitespaceAfterEquals.length);
+        // everything up to the equals sign
+        equalsIndex +
+        // plus one for the equals sign
+        1 +
+        // plus all the whitespace after the equals sign
+        whitespaceAfterEquals.length;
+
+    if (excludeQuotes) {
+      const maybeQuote = this.contents.charAt(endOfTextToSkip);
+      if (maybeQuote === '\'' || maybeQuote === '"') {
+        endOfTextToSkip += 1;
+        range.end.column -= 1;
+      }
+    }
+
+    const textToSkip =
+        this.contents.substring(location.startOffset, endOfTextToSkip);
     const lines = textToSkip.split('\n');
     const lastLineToSkip = lines[lines.length - 1]!;
     range.start.line += lines.length - 1;

@@ -13,11 +13,11 @@
  */
 
 import * as espree from 'espree';
-import {Program} from 'estree';
+import * as estree from 'estree';
 
-import {correctSourceRange, InlineDocInfo} from '../model/model';
+import {correctSourceRange, InlineDocInfo, LocationOffset} from '../model/model';
 import {Parser} from '../parser/parser';
-import {Severity, WarningCarryingException} from '../warning/warning';
+import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 
 import {JavaScriptDocument} from './javascript-document';
 
@@ -27,6 +27,7 @@ declare class SyntaxError {
   column: number;
 }
 
+// TODO(rictic): stop exporting this.
 export const baseParseOptions = {
   ecmaVersion: 8,
   attachComment: true,
@@ -39,42 +40,79 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       JavaScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
-    let ast: Program;
-    const options = Object.assign(
-        {sourceType: 'script' as ('script' | 'module')}, baseParseOptions);
-
-    try {
-      ast = <Program>espree.parse(contents, options);
-    } catch (_ignored) {
-      try {
-        options.sourceType = 'module';
-        ast = <Program>espree.parse(contents, options);
-      } catch (err) {
-        if (err instanceof SyntaxError) {
-          throw new WarningCarryingException({
-            message: err.message.split('\n')[0],
-            severity: Severity.ERROR,
-            code: 'parse-error',
-            sourceRange: correctSourceRange(
-                {
-                  file: url,
-                  start: {line: err.lineNumber - 1, column: err.column - 1},
-                  end: {line: err.lineNumber - 1, column: err.column - 1}
-                },
-                inlineInfo.locationOffset)!
-          });
-        }
-        throw err;
-      }
+    const result = parseJs(contents, url, inlineInfo.locationOffset);
+    if (result.type === 'failure') {
+      // TODO(rictic): define and return a ParseResult instead of throwing.
+      throw new WarningCarryingException(result.warning);
     }
 
     return new JavaScriptDocument({
       url,
       contents,
-      ast,
+      ast: result.program,
       locationOffset: inlineInfo.locationOffset,
       astNode: inlineInfo.astNode, isInline,
-      parsedAsSourceType: options.sourceType,
+      parsedAsSourceType: result.sourceType,
     });
+  }
+}
+
+
+export type ParseResult = {
+  type: 'success',
+  sourceType: 'script' | 'module',
+  program: estree.Program
+} | {type: 'failure', warning: Warning};
+
+/**
+ * Parse the given contents and return either an AST or a parse error as a
+ * Warning.
+ *
+ * It needs the filename and the location offset to produce correct warnings.
+ */
+export function parseJs(
+    contents: string,
+    file: string,
+    locationOffset?: LocationOffset,
+    warningCode?: string): ParseResult {
+  if (!warningCode) {
+    warningCode = 'parse-error';
+  }
+  const options = Object.assign(
+      {sourceType: 'script' as ('script' | 'module')}, baseParseOptions);
+  try {
+    return {
+      type: 'success',
+      sourceType: 'script',
+      program: espree.parse(contents, options)
+    };
+  } catch (_ignored) {
+    try {
+      options.sourceType = 'module';
+      return {
+        type: 'success',
+        sourceType: 'module',
+        program: espree.parse(contents, options)
+      };
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        return {
+          type: 'failure',
+          warning: {
+            message: err.message.split('\n')[0],
+            severity: Severity.ERROR,
+            code: warningCode,
+            sourceRange: correctSourceRange(
+                {
+                  file,
+                  start: {line: err.lineNumber - 1, column: err.column - 1},
+                  end: {line: err.lineNumber - 1, column: err.column - 1}
+                },
+                locationOffset)!
+          }
+        };
+      }
+      throw err;
+    }
   }
 }
