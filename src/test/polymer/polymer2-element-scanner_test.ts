@@ -18,7 +18,6 @@ import * as path from 'path';
 
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedFeature} from '../../model/model';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
 import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
@@ -29,19 +28,19 @@ suite('Polymer2ElementScanner', () => {
   const urlLoader = new FSUrlLoader(testFilesDir);
   const underliner = new CodeUnderliner(urlLoader);
 
-  async function getElements(filename: string):
-      Promise<ScannedPolymerElement[]> {
-        const file = await urlLoader.load(filename);
-        const parser = new JavaScriptParser();
-        const document = parser.parse(file, filename);
-        const scanner = new Polymer2ElementScanner();
-        const visit = (visitor: Visitor) =>
-            Promise.resolve(document.visit([visitor]));
+  async function getElements(
+      filename: string): Promise<ScannedPolymerElement[]> {
+    const file = await urlLoader.load(filename);
+    const parser = new JavaScriptParser();
+    const document = parser.parse(file, filename);
+    const scanner = new Polymer2ElementScanner();
+    const visit = (visitor: Visitor) =>
+        Promise.resolve(document.visit([visitor]));
 
-        const features: ScannedFeature[] = await scanner.scan(document, visit);
-        return <ScannedPolymerElement[]>features.filter(
-            (e) => e instanceof ScannedPolymerElement);
-      };
+    const features = await scanner.scan(document, visit);
+    return features.filter(
+        (e) => e instanceof ScannedPolymerElement) as ScannedPolymerElement[];
+  };
 
   function getTestProps(element: ScannedPolymerElement): any {
     return {
@@ -143,7 +142,21 @@ class BaseElement extends Polymer.Element {
 ~~~
 }
 ~`);
+  });
 
+  test('Uses static is getter for tagName', async() => {
+    const elements = await getElements('test-element-2.js');
+    const elementData = elements.map(getTestProps);
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'test-element',
+        className: 'TestElement',
+        superClass: 'HTMLElement',
+        description: '',
+        properties: [],
+        attributes: [],
+      },
+    ]);
   });
 
 });
