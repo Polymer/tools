@@ -19,6 +19,8 @@ import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
 import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange} from '../model/model';
 import {Warning} from '../warning/warning';
+
+import {DatabindingExpression, scanDatabindingTemplateForExpressions, Template} from './expression-scanner';
 import {LocalId} from './polymer-element';
 
 const p = dom5.predicates;
@@ -32,13 +34,15 @@ export class ScannedDomModule implements Resolvable {
   sourceRange: SourceRange;
   astNode: dom5.Node;
   warnings: Warning[] = [];
-  slots:
-  Slot[];
+  'slots': Slot[];
   localIds: LocalId[];
+  template: Template|undefined;
+  databindings: DatabindingExpression[];
 
   constructor(
       id: string|null, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node,
-      slots: Slot[], localIds: LocalId[]) {
+      warnings: Warning[], template: Template|undefined, slots: Slot[],
+      localIds: LocalId[], databindings: DatabindingExpression[]) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
@@ -46,6 +50,9 @@ export class ScannedDomModule implements Resolvable {
     this.astNode = ast;
     this.slots = slots;
     this.localIds = localIds;
+    this.warnings = warnings;
+    this.template = template;
+    this.databindings = databindings;
   }
 
   resolve() {
@@ -57,7 +64,9 @@ export class ScannedDomModule implements Resolvable {
         this.astNode,
         this.warnings,
         this.slots,
-        this.localIds);
+        this.localIds,
+        this.template,
+        this.databindings);
   }
 }
 
@@ -73,11 +82,14 @@ export class DomModule implements Feature {
   slots:
   Slot[];
   localIds: LocalId[];
+  template: Template|undefined;
+  databindings: DatabindingExpression[];
 
   constructor(
       node: ASTNode, id: string|null, comment: string|undefined,
       sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[],
-      slots: Slot[], localIds: LocalId[]) {
+      slots: Slot[], localIds: LocalId[], template: Template|undefined,
+      databindings: DatabindingExpression[]) {
     this.node = node;
     this.id = id;
     this.comment = comment;
@@ -89,6 +101,8 @@ export class DomModule implements Feature {
     this.warnings = warnings;
     this.slots = slots;
     this.localIds = localIds;
+    this.template = template;
+    this.databindings = databindings;
   }
 }
 
@@ -101,10 +115,13 @@ export class DomModuleScanner implements HtmlScanner {
 
     await visit((node) => {
       if (isDomModule(node)) {
-        const template =
-            dom5.query(node, dom5.predicates.hasTagName('template'));
+        const children = dom5.defaultChildNodes(node) || [];
+        const template = children.find(
+            dom5.predicates.hasTagName('template')) as (Template | undefined);
         let slots: Slot[] = [];
         let localIds: LocalId[] = [];
+        let databindings: DatabindingExpression[] = [];
+        let warnings: Warning[] = [];
         if (template) {
           const templateContent =
               treeAdapters.default.getTemplateContent(template);
@@ -120,14 +137,21 @@ export class DomModuleScanner implements HtmlScanner {
                       (e) => new LocalId(
                           dom5.getAttribute(e, 'id')!,
                           document.sourceRangeForNode(e)!));
+          const results =
+              scanDatabindingTemplateForExpressions(document, template);
+          warnings = results.warnings;
+          databindings = results.expressions;
         }
         domModules.push(new ScannedDomModule(
             dom5.getAttribute(node, 'id'),
             node,
             document.sourceRangeForNode(node)!,
             node,
+            warnings,
+            template,
             slots,
-            localIds));
+            localIds,
+            databindings));
       }
     });
     return domModules;

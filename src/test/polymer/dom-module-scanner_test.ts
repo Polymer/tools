@@ -18,6 +18,7 @@ import {assert} from 'chai';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {DomModuleScanner} from '../../polymer/dom-module-scanner';
+import {CodeUnderliner} from '../test-utils';
 
 suite('DomModuleScanner', () => {
 
@@ -52,6 +53,39 @@ suite('DomModuleScanner', () => {
           domModules[0].localIds.map((lid) => lid.name), ['foo', 'bar']);
     });
 
+    test('finds databinding expressions IDs', async() => {
+      const contents = `<html><head></head>
+        <body>
+          <dom-module>
+            <template>
+              <div id="{{foo}}"></div>
+              <span id="{{bar(baz, boop)}}"></div>
+              <other-elem prop="{{foo bar}}"></other-prop>
+            </template>
+          </dom-module>
+        </body>
+        </html>`;
+      const document = new HtmlParser().parse(contents, 'test.html');
+      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const underliner = CodeUnderliner.withMapping('test.html', contents);
+
+      const domModules = await scanner.scan(document, visit);
+      assert.equal(domModules.length, 1);
+      assert.deepEqual(
+          await underliner.underline(
+              domModules[0].databindings.map((db) => db.sourceRange)),
+          [
+            `
+              <div id="{{foo}}"></div>
+                         ~~~`,
+            `
+              <span id="{{bar(baz, boop)}}"></div>
+                          ~~~~~~~~~~~~~~`
+          ]);
+      assert.deepEqual(await underliner.underline(domModules[0].warnings), [`
+              <other-elem prop="{{foo bar}}"></other-prop>
+                                      ~`]);
+    });
   });
 
 });

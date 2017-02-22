@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 * Polymer 2.0 mixin scanner
+* [polymer] Parse polymer databinding expressions.
+  Give accurate warnings on parse errors.
+
+## [2.0.0-alpha.24] - 2017-02-14
+
+### Added
 * HTML Documents now include a `baseUrl` property which is properly resolved
   from a `<base href="...">` tag, when present.
 * Add `localIds` to `PolymerElement`, tracking elements in its template by their id attributes.
