@@ -83,12 +83,12 @@ suite('elements.json generation', function() {
 
   test('throws when validating valid elements.json', function() {
     try {
-      validateElements(<any>{});
+      validateElements({} as any);
     } catch (err) {
       assert.instanceOf(err, ValidationError);
       const valError: ValidationError = err;
       assert(valError.errors.length > 0);
-      assert.include(valError.message, `requires property "elements"`);
+      assert.include(valError.message, `requires property "schema_version"`);
       return;
     }
     throw new Error('expected Analysis validation to fail!');

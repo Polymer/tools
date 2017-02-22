@@ -14,7 +14,6 @@
 
 
 import {assert} from 'chai';
-// import * as fs from 'fs';
 import * as path from 'path';
 
 import {Visitor} from '../../javascript/estree-visitor';
@@ -231,7 +230,7 @@ function TestMixin() {
 ~`);
   });
 
-  test.only('finds mixin assigned to a namespace', async() => {
+  test('finds mixin assigned to a namespace', async() => {
     const mixins = await getMixins('test-mixin-7.js');
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{

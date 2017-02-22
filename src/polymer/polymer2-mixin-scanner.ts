@@ -153,7 +153,6 @@ class MixinVisitor implements Visitor {
     const docs = jsdoc.parseJsdoc(comment);
     const isMixinClass = this._hasPolymerMixinClassDocTag(docs);
     if (isMixinClass) {
-      console.log('annotated mixin class!');
       this._handleClass(node);
     }
   }
