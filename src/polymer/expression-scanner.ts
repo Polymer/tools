@@ -19,7 +19,7 @@ import * as parse5 from 'parse5';
 import {ParsedHtmlDocument} from '../html/html-document';
 import {parseJs} from '../javascript/javascript-parser';
 import {correctSourceRange, LocationOffset, SourceRange} from '../model/model';
-import {Warning} from '../warning/warning';
+import {Severity, Warning} from '../warning/warning';
 
 const p = dom5.predicates;
 const isTemplate = p.hasTagName('template');
@@ -76,7 +76,7 @@ export class DatabindingExpression {
   /** The databinding syntax used. */
   readonly direction: '{'|'[';
   readonly expressionText: string;
-  readonly expressionAst: estree.Program;
+  private readonly _expressionAst: estree.Program;
 
 
   readonly databindingInto: 'string-interpolation'|'attribute';
@@ -88,6 +88,14 @@ export class DatabindingExpression {
   readonly eventName: string|undefined;
 
   private readonly locationOffset: LocationOffset;
+
+  /**
+   * Toplevel properties on the model that are referenced in this expression.
+   *
+   * e.g. in {{foo(bar, baz.zod)}} the properties are foo, bar, and baz
+   * (but not zod).
+   */
+  properties: Array<{name: string, sourceRange: SourceRange}> = [];
 
   constructor(
       astNode: parse5.ASTNode, attribute: parse5.ASTAttribute|undefined,
@@ -101,12 +109,14 @@ export class DatabindingExpression {
     this.direction = direction;
     this.databindingInto = databindingInto;
     this.expressionText = expressionText;
-    this.expressionAst = ast;
+    this._expressionAst = ast;
     this.eventName = eventName;
     this.locationOffset = {
       line: sourceRange.start.line,
       col: sourceRange.start.column
     };
+
+    this._extractPropertiesAndValidate();
   }
 
   /**
@@ -124,6 +134,70 @@ export class DatabindingExpression {
     };
     return correctSourceRange(
         databindingRelativeSourceRange, this.locationOffset);
+  }
+
+  private _extractPropertiesAndValidate() {
+    if (this._expressionAst.body.length !== 1) {
+      this.warnings.push(this._validationWarning(
+          `Expected one expression, got ${this._expressionAst.body.length}`,
+          this._expressionAst));
+      return;
+    }
+    const expressionStatement = this._expressionAst.body[0]!;
+    if (expressionStatement.type !== 'ExpressionStatement') {
+      this.warnings.push(this._validationWarning(
+          `Expect an expression, not a ${expressionStatement.type}`,
+          expressionStatement));
+      return;
+    }
+    let expression = expressionStatement.expression;
+    if (expression.type === 'UnaryExpression') {
+      if (expression.operator !== '!') {
+        this.warnings.push(this._validationWarning(
+            'Only the logical not (!) operator is supported.', expression));
+        return;
+      }
+      expression = expression.argument;
+    }
+    this._extractAndValidateSubExpression(expression, true);
+  }
+
+  private _extractAndValidateSubExpression(
+      expression: estree.Node, callAllowed: boolean) {
+    if (expression.type === 'Literal') {
+      return;
+    }
+    if (expression.type === 'Identifier') {
+      this.properties.push({
+        name: expression.name,
+        sourceRange: this.sourceRangeForNode(expression)!
+      });
+      return;
+    }
+    if (expression.type === 'MemberExpression') {
+      this._extractAndValidateSubExpression(expression.object, false);
+      return;
+    }
+    if (callAllowed && expression.type === 'CallExpression') {
+      this._extractAndValidateSubExpression(expression.callee, false);
+      for (const arg of expression.arguments) {
+        this._extractAndValidateSubExpression(arg, false);
+      }
+      return;
+    }
+    this.warnings.push(this._validationWarning(
+        `Only simple syntax is supported in Polymer databinding expressions. ` +
+            `${expression.type} not expected here.`,
+        expression));
+  }
+
+  private _validationWarning(message: string, node: estree.Node): Warning {
+    return {
+      code: 'invalid-polymer-expression',
+      message,
+      sourceRange: this.sourceRangeForNode(node)!,
+      severity: Severity.WARNING
+    };
   }
 }
 
@@ -201,7 +275,7 @@ function extractDataBindingsFromTextNode(
     if (parseResult.type === 'failure') {
       warnings.push(parseResult.warning);
     } else {
-      results.push(new DatabindingExpression(
+      const expression = new DatabindingExpression(
           node,
           undefined,
           sourceRange,
@@ -209,7 +283,11 @@ function extractDataBindingsFromTextNode(
           dataBinding.expressionText,
           undefined,
           'string-interpolation',
-          parseResult.program));
+          parseResult.program);
+      for (const warning of expression.warnings) {
+        warnings.push(warning);
+      }
+      results.push(expression);
     }
 
     ;
@@ -264,7 +342,7 @@ function extractDataBindingsFromAttr(
     if (parseResult.type === 'failure') {
       warnings.push(parseResult.warning);
     } else {
-      results.push(new DatabindingExpression(
+      const expression = new DatabindingExpression(
           node,
           attr,
           sourceRange,
@@ -272,7 +350,11 @@ function extractDataBindingsFromAttr(
           expressionText,
           eventName,
           databindingInto,
-          parseResult.program));
+          parseResult.program);
+      for (const warning of expression.warnings) {
+        warnings.push(warning);
+      }
+      results.push(expression);
     }
   }
 }
