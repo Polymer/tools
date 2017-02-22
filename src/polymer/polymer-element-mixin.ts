@@ -97,7 +97,7 @@ export class PolymerElementMixin extends ElementMixin implements
 
   constructor() {
     super();
-    this.kinds = new Set(['element', 'polymer-element']);
+    this.kinds = new Set(['element-mixin', 'polymer-element-mixin']);
     this.behaviorAssignments = [];
   }
 

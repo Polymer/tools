@@ -23,7 +23,7 @@ import {ScannedPolymerProperty} from './polymer-element';
 
 /**
  * Returns the object literal that defines a Polymer element configuration from
- * a Plymer element class.
+ * a Polymer element class.
  */
 export function getConfig(node: estree.ClassDeclaration|estree.ClassExpression):
     estree.ObjectExpression|null {

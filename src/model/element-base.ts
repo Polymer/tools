@@ -34,6 +34,7 @@ export abstract class ScannedElementBase implements Resolvable {
   astNode: estree.Node|null;
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
+  'slots': Slot[] = [];
 
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText || '';
@@ -41,6 +42,16 @@ export abstract class ScannedElementBase implements Resolvable {
 
   resolve(_document: Document): any {
     throw new Error('abstract');
+  }
+}
+
+export class Slot {
+  name: string;
+  range: SourceRange;
+
+  constructor(name: string, range: SourceRange) {
+    this.name = name;
+    this.range = range;
   }
 }
 
@@ -58,8 +69,26 @@ export abstract class ElementBase implements Feature {
   astNode: estree.Node|null;
   kinds: Set<string> = new Set(['element']);
   warnings: Warning[] = [];
+  slots:
+  Slot[] = [];
 
   get identifiers(): Set<string> {
     throw new Error('abstract');
+  }
+
+  emitMetadata(): Object {
+    return {};
+  }
+
+  emitAttributeMetadata(_attribute: Attribute): Object {
+    return {};
+  }
+
+  emitPropertyMetadata(_property: Property): Object {
+    return {};
+  }
+
+  emitEventMetadata(_event: Event): Object {
+    return {};
   }
 }

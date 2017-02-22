@@ -79,6 +79,11 @@ function parsePolymerMixin(tag: doctrine.Tag): Tag {
   return {tag: tag.title, type: null, name: tag.description, description: null};
 }
 
+// @polymerMixinClass [name]
+function parsePolymerMixinClass(tag: doctrine.Tag): Tag {
+  return {tag: tag.title, type: null, name: tag.description, description: null};
+}
+
 // @polymerBehavior [name]
 function parsePolymerBehavior(tag: doctrine.Tag): Tag {
   return {tag: tag.title, type: null, name: tag.description, description: null};
@@ -95,6 +100,7 @@ const CUSTOM_TAGS: {[name: string]: (tag: doctrine.Tag) => Tag} = {
   polymerBehavior: parsePolymerBehavior,
   polymerElement: parsePolymerElement,
   polymerMixin: parsePolymerMixin,
+  polymerMixinClass: parsePolymerMixinClass,
   pseudoElement: parsePseudoElement,
 };
 

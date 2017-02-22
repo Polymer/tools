@@ -14,6 +14,7 @@
 
 import * as estree from 'estree';
 
+import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -43,6 +44,26 @@ class MixinVisitor implements Visitor {
 
   constructor(document: JavaScriptDocument) {
     this._document = document;
+  }
+
+  enterAssignmentExpression(
+      node: estree.AssignmentExpression, parent: estree.Node) {
+    if (parent.type !== 'ExpressionStatement') {
+      return;
+    }
+    const comment = esutil.getAttachedComment(parent) || '';
+    const docs = jsdoc.parseJsdoc(comment);
+    if (this._hasPolymerMixinDocTag(docs)) {
+      const name = getIdentifierName(node.left);
+      const sourceRange = this._document.sourceRangeForNode(node);
+      this._currentMixin = new ScannedPolymerElementMixin({
+          name, sourceRange,
+          // TODO(justinfagnani): fix descriptions correctly in parseJsdoc
+          // description: docs.description,
+      });
+      this._currentMixinNode = node;
+      this._mixins.push(this._currentMixin);
+    }
   }
 
   enterFunctionDeclaration(
@@ -105,6 +126,13 @@ class MixinVisitor implements Visitor {
     }
   }
 
+  enterFunctionExpression(
+      node: estree.FunctionExpression, _parent: estree.Node) {
+    if (this._currentMixin != null && this._currentMixinFunction == null) {
+      this._currentMixinFunction = node;
+    }
+  }
+
   enterArrowFunctionExpression(
       node: estree.ArrowFunctionExpression, _parent: estree.Node) {
     if (this._currentMixin != null && this._currentMixinFunction == null) {
@@ -118,6 +146,16 @@ class MixinVisitor implements Visitor {
       return;
     }
     this._handleClass(node);
+  }
+
+  enterClassDeclaration(node: estree.ClassDeclaration, _parent: estree.Node) {
+    const comment = esutil.getAttachedComment(node) || '';
+    const docs = jsdoc.parseJsdoc(comment);
+    const isMixinClass = this._hasPolymerMixinClassDocTag(docs);
+    if (isMixinClass) {
+      console.log('annotated mixin class!');
+      this._handleClass(node);
+    }
   }
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
@@ -142,6 +180,12 @@ class MixinVisitor implements Visitor {
   private _hasPolymerMixinDocTag(docs: jsdoc.Annotation) {
     const elementTags = docs.tags &&
         docs.tags.filter((t: jsdoc.Tag) => t.tag === 'polymerMixin');
+    return elementTags && elementTags.length >= 1;
+  }
+
+  private _hasPolymerMixinClassDocTag(docs: jsdoc.Annotation) {
+    const elementTags = docs.tags &&
+        docs.tags.filter((t: jsdoc.Tag) => t.tag === 'polymerMixinClass');
     return elementTags && elementTags.length >= 1;
   }
 }

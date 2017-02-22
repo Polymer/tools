@@ -1,6 +1,6 @@
 {
   "name": "polymer-analyzer",
-  "version": "2.0.0-alpha.24",
+  "version": "2.0.0-alpha.25-local",
   "description": "Static analysis for Web Components",
   "homepage": "https://github.com/Polymer/polymer-analyzer",
   "bugs": "https://github.com/Polymer/polymer-analyzer/issues",
@@ -10,6 +10,9 @@
     "url": "https://github.com/Polymer/polymer-analyzer.git"
   },
   "main": "lib/analyzer.js",
+  "bin": {
+    "analyze": "bin/analyze.js"
+  },
   "typings": "lib/analyzer.d.ts",
   "files": [
     "LICENSE",

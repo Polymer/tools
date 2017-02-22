@@ -12,6 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+export interface Elements {
+  schema_version: string;
+  // TODO(rictic): once this schema has stabilized, put the json file somewhere
+  // and reference it like:
+  // $schema: 'http://polymer-project.org/schema/v1/elements.json';
+  elements?: Element[];
+  mixins?: ElementMixin[];
+}
+
 /**
  * The base interface, holding properties common to many nodes.
  */
@@ -53,15 +62,7 @@ export interface Position {
   column: number;
 }
 
-export interface Elements {
-  schema_version: string;
-  // TODO(rictic): once this schema has stabilized, put the json file somewhere
-  // and reference it like:
-  // $schema: 'http://polymer-project.org/schema/v1/elements.json';
-  elements: Element[];
-}
-
-export interface Element extends Feature {
+export interface ElementLike extends Feature {
   /**
    * The path, relative to the base directory of the package.
    *
@@ -69,9 +70,6 @@ export interface Element extends Feature {
    * app-toolbar lives in the app-layout package).
    */
   path: string;
-
-  /** The tagname that the element registers itself as. e.g. `paper-input` */
-  tagname: string;
 
   /** A markdown description for the element. */
   description: string;
@@ -83,31 +81,6 @@ export interface Element extends Feature {
    * e.g. `['demos/index.html', 'demos/extended.html']`
    */
   demos: string[];
-
-  /**
-   * The tagname that the element extends, if any. The value of the `extends`
-   * option that's passed into `customElements.define`.
-   *
-   * e.g. `input`, `paper-button`, `my-super-element`
-   */
-  extends?: string;
-
-  /**
-   * The class name for this element.
-   *
-   * e.g. `MyElement`, `Polymer.PaperInput`
-   */
-  classname?: string;
-
-  /**
-   * The class that this element extends.
-   *
-   * This is non-optional, as every custom element must have HTMLElement in
-   * its prototype change.
-   *
-   * e.g. `HTMLElement`, `HTMLInputElement`, `MyNamespace.MyBaseElement`
-   */
-  superclass: string;
 
   /** The attributes that this element is known to understand. */
   attributes?: Attribute[];
@@ -161,6 +134,45 @@ export interface Element extends Feature {
     // Would be nice to document the default styling a bit here, whether it's
     // display: block or inline or whatever.
   };
+}
+
+export interface Element extends ElementLike {
+  /** The tagname that the element registers itself as. e.g. `paper-input` */
+  tagname?: string;
+
+  /**
+   * The class name for this element.
+   *
+   * e.g. `MyElement`, `Polymer.PaperInput`
+   */
+  classname?: string;
+
+  /**
+   * The tagname that the element extends, if any. The value of the `extends`
+   * option that's passed into `customElements.define`.
+   *
+   * e.g. `input`, `paper-button`, `my-super-element`
+   */
+  extends?: string;
+
+  /**
+   * The class that this element extends.
+   *
+   * This is non-optional, as every custom element must have HTMLElement in
+   * its prototype change.
+   *
+   * e.g. `HTMLElement`, `HTMLInputElement`, `MyNamespace.MyBaseElement`
+   */
+  superclass: string;
+}
+
+export interface ElementMixin extends ElementLike {  //
+  /**
+   * The name for this mixin.
+   *
+   * e.g. `MyMixin`, `Polymer.PaperInputMixin`
+   */
+  name: string;
 }
 
 export interface Attribute extends Feature {

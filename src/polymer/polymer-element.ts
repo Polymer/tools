@@ -198,7 +198,7 @@ export class PolymerElement extends Element implements PolymerExtension {
     expression: LiteralValue
   }[];
   listeners: {event: string, handler: string}[];
-  behaviorAssignments: ScannedBehaviorAssignment[];
+  behaviorAssignments: ScannedBehaviorAssignment[] = [];
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
   localIds: LocalId[] = [];
@@ -208,7 +208,6 @@ export class PolymerElement extends Element implements PolymerExtension {
   constructor() {
     super();
     this.kinds = new Set(['element', 'polymer-element']);
-    this.behaviorAssignments = [];
   }
 
   emitPropertyMetadata(property: PolymerProperty) {
