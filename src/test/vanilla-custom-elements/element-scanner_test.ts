@@ -66,14 +66,16 @@ suite('VanillaElementScanner', () => {
       'RegisterBeforeDeclaration',
       'RegisterBeforeExpression'
     ].sort());
-    assert.deepEqual(elementsList.map((e) => e.superClass).sort(), [
-      'HTMLElement',
-      'HTMLElement',
-      'HTMLElement',
-      'HTMLElement',
-      'HTMLElement',
-      'HTMLElement',
-    ].sort());
+    assert.deepEqual(
+        elementsList.map((e) => e.superClass && e.superClass.identifier).sort(),
+        [
+          'HTMLElement',
+          'HTMLElement',
+          'HTMLElement',
+          'HTMLElement',
+          'HTMLElement',
+          'HTMLElement',
+        ].sort());
   });
 
   test('Extracts attributes from observedAttributes', () => {

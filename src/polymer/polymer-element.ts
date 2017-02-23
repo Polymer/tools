@@ -17,6 +17,7 @@ import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
 import {Document, Element, ElementBase, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
@@ -61,7 +62,7 @@ export class LocalId {
 export interface Options {
   tagName?: string;
   className?: string;
-  superClass?: string;
+  superClass?: ScannedReference;
   extends?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
@@ -244,9 +245,10 @@ function resolveElement(
   //
   // Superclass
   //
-  if (scannedElement.superClass && scannedElement.superClass != 'HTMLElement') {
+  if (scannedElement.superClass &&
+      scannedElement.superClass.identifier !== 'HTMLElement') {
     const superElements =
-        document.getById('element', scannedElement.superClass, {
+        document.getById('element', scannedElement.superClass.identifier, {
           externalPackages: true,
           imported: true,
         });
@@ -256,24 +258,30 @@ function resolveElement(
         element.warnings.push({
           message:
               `A Polymer element can\'t extend from a non-Polymer element: ${scannedElement
-                  .superClass}`,
+                  .superClass.identifier}`,
           severity: Severity.ERROR,
           code: 'unknown-superclass',
-          // TODO(justinfagnani): we need to know where the superclass came
-          // (annotation vs extends clause) from and track its range.
-          sourceRange: null as any as SourceRange,
+          sourceRange: scannedElement.superClass.sourceRange!,
         });
+      } else {
+        inheritFrom(element, superElement as PolymerElement);
       }
-      inheritFrom(element, superElement as PolymerElement);
     } else {
-      if (superElements.size > 0) {
+      if (superElements.size === 0) {
         element.warnings.push({
-          message: `Unable to resolve superclass ${scannedElement.superClass}`,
+          message: `Unable to resolve superclass ${scannedElement.superClass
+                       .identifier}`,
           severity: Severity.ERROR,
           code: 'unknown-superclass',
-          // TODO(justinfagnani): we need to know where the superclass came
-          // (annotation vs extends clause) from and track its range.
-          sourceRange: null as any as SourceRange,
+          sourceRange: scannedElement.superClass.sourceRange!,
+        });
+      } else {
+        element.warnings.push({
+          message: `Multiple superclasses found for ${scannedElement.superClass
+                       .identifier}`,
+          severity: Severity.ERROR,
+          code: 'unknown-superclass',
+          sourceRange: scannedElement.superClass.sourceRange!,
         });
       }
     }
@@ -299,7 +307,8 @@ function resolveElement(
   element.scriptElement = scannedElement.scriptElement;
   scannedElement.slots.forEach((o) => element.slots.push(o));
   element.sourceRange = scannedElement.sourceRange!;
-  element.superClass = scannedElement.superClass;
+  element.superClass =
+      scannedElement.superClass && scannedElement.superClass.resolve(document);
   element.tagName = scannedElement.tagName;
   scannedElement.warnings.forEach((o) => element.warnings.push(o));
 
@@ -315,6 +324,7 @@ function resolveElement(
 
   const behaviors = Array.from(behaviorsAndWarnings.behaviors);
 
+  // TODO(justinfagnani): consider this:
   // for (const behavior of behaviors) {
   //   inheritFrom(element, behavior);
   // }
@@ -356,20 +366,16 @@ function inheritFrom(element: PolymerElement, superElement: PolymerElement) {
   // semantics currently
 
   for (const superProperty of superElement.properties) {
-    // TODO(justinfagnani): better clone/merge
-    console.log('superProperty', superProperty);
     const newProperty = Object.assign({}, superProperty);
     element.properties.push(newProperty);
   }
 
   for (const superAttribute of superElement.attributes) {
-    // TODO(justinfagnani): better clone/merge
     const newAttribute = Object.assign({}, superAttribute);
     element.attributes.push(newAttribute);
   }
 
   for (const superEvent of superElement.events) {
-    // TODO(justinfagnani): better clone/merge
     const newEvent = Object.assign({}, superEvent);
     element.events.push(newEvent);
   }

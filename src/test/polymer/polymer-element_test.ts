@@ -43,7 +43,7 @@ suite('PolymerElement', () => {
   function getTestProps(element: PolymerElement): any {
     return {
       className: element.className,
-      superClass: element.superClass,
+      superClass: element.superClass && element.superClass.identifier,
       tagName: element.tagName,
       description: element.description,
       properties: element.properties.map((p) => ({

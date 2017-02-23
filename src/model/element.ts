@@ -12,14 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Document} from './document';
 import {ElementBase, ScannedElementBase} from './element-base';
-import {Document, Feature} from './model';
+import {Feature} from './feature';
+import {Reference, ScannedReference} from './reference';
+
 export {Visitor} from '../javascript/estree-visitor';
 
 export class ScannedElement extends ScannedElementBase {
   tagName?: string;
   className?: string;
-  superClass?: string;
+  superClass?: ScannedReference;
   extends?: string;
 
   constructor() {
@@ -40,7 +43,7 @@ export class ScannedElement extends ScannedElementBase {
 export class Element extends ElementBase implements Feature {
   tagName?: string;
   className?: string;
-  superClass?: string;
+  superClass?: Reference;
   extends?: string;
 
   constructor() {

@@ -17,24 +17,31 @@ import {Warning} from '../warning/warning';
 
 import {SourceRange} from './source-range';
 
-export interface Feature {
-  kinds: Set<string>;
-  identifiers: Set<string>;
+export abstract class Feature {
+  kinds: Set<string> = new Set();
+  identifiers: Set<string> = new Set();
 
   /** Tracks the source that this feature came from. */
-  sourceRange: SourceRange|undefined;
+  sourceRange?: SourceRange;
 
   /**
    * The AST Node, if any, that corresponds to this feature in its containing
    * document.
    */
-  astNode: any;
+  astNode?: any;
 
   /** Warnings that were encountered while processing this feature. */
   warnings: Warning[];
+
+  constructor(sourceRange?: SourceRange, astNode?: any, warnings?: Warning[]) {
+    this.sourceRange = sourceRange;
+    this.astNode = astNode;
+    this.warnings = warnings || [];
+  }
 }
 
-export interface ScannedFeature {
+export abstract class ScannedFeature {
+  // TODO(justinfagnani): why is this here and not on Feature?
   description?: string;
 
   // TODO(rictic): this is the wrong place to put a jsdoc annotation.
@@ -47,8 +54,18 @@ export interface ScannedFeature {
    * The AST Node, if any, that corresponds to this feature in its containing
    * document.
    */
-  astNode: any;
+  astNode?: any;
 
   /** Warnings that were encountered while processing this feature. */
   warnings: Warning[];
+
+  constructor(
+      sourceRange?: SourceRange, astNode?: any, description?: string,
+      jsdoc?: jsdoc.Annotation, warnings?: Warning[]) {
+    this.sourceRange = sourceRange;
+    this.astNode = astNode;
+    this.description = description;
+    this.jsdoc = jsdoc;
+    this.warnings = warnings || [];
+  }
 }
