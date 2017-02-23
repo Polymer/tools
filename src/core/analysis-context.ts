@@ -385,6 +385,11 @@ export class AnalysisContext {
         const scannedDoc =
             await this._scanDocument(parsedDoc, feature.attachedComment);
 
+        // Set these inline-only properties here manually since _scanDocument
+        // doesn't set them directly.
+        scannedDoc.sourceRange = feature.sourceRange;
+        scannedDoc.astNode = feature.astNode;
+
         feature.scannedDocument = scannedDoc;
       } catch (err) {
         if (err instanceof WarningCarryingException) {

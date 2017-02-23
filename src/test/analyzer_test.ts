@@ -87,6 +87,44 @@ suite('Analyzer', () => {
           assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
         });
 
+    test('analyzes inline scripts correctly', async() => {
+      const document = await analyzer.analyze(
+          'static/inline-documents/inline-documents.html');
+      const jsDocuments = document.getByKind('js-document');
+      assert.equal(jsDocuments.size, 1);
+      const jsDocument = jsDocuments.values().next().value;
+      assert.isObject(jsDocument.astNode);
+      assert.equal(jsDocument.astNode!.tagName, 'script');
+      assert.deepEqual(await underliner.underline(jsDocument.sourceRange), `
+  <script>
+  ~~~~~~~~
+    console.log(\'hi\');
+~~~~~~~~~~~~~~~~~~~~~~
+  </script>
+~~~~~~~~~~~`);
+    });
+
+    test('analyzes inline styles correctly', async() => {
+      const document = await analyzer.analyze(
+          'static/inline-documents/inline-documents.html');
+      const cssDocuments = document.getByKind('css-document');
+      assert.equal(cssDocuments.size, 1);
+      const cssDocument = cssDocuments.values().next().value;
+      assert.isObject(cssDocument.astNode);
+      assert.equal(cssDocument.astNode!.tagName, 'style');
+      assert.deepEqual(await underliner.underline(cssDocument.sourceRange), `
+  <style>
+  ~~~~~~~
+    body {
+~~~~~~~~~~
+      color: red;
+~~~~~~~~~~~~~~~~~
+    }
+~~~~~
+  </style>
+~~~~~~~~~~`);
+    });
+
     test('analyzes a document with an import', async() => {
       const document =
           await analyzer.analyze('static/analysis/behaviors/behavior.html');
