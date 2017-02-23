@@ -100,6 +100,7 @@ export interface FeatureKinds {
   'html-script': Import;
   'html-style': Import;
   'js-import': Import;
+  'css-import': Import;
 }
 
 export interface QueryOptionsInterface extends BaseQueryOptions {
