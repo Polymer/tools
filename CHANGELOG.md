@@ -6,12 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## Unreleased
-
 <!--
-   PRs should document their user-visible changes (if any) below
-   this comment.
+   PRs should document their user-visible changes (if any) in the
+   Unreleased section, uncommenting the header as necessary.
 -->
+
+<!--## Unreleased-->
+
+
+## [2.0.0-alpha.25] - 2017-02-22
 
 ### Added
 * Polymer 2.0 mixin scanner
