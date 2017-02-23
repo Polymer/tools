@@ -523,10 +523,9 @@ export class StreamLoader implements UrlLoader {
     this.deferredFiles.delete(filePath);
   }
 
-  canLoad(_url: string): boolean {
-    // We want to return true for all files. Even external files, so that we
-    // can resolve them as empty strings for now.
-    return true;
+  // We can't load external dependencies.
+  canLoad(url: string): boolean {
+    return !isDependencyExternal(url);
   }
 
   load(url: string): Promise<string> {
@@ -536,7 +535,7 @@ export class StreamLoader implements UrlLoader {
     // Resolve external files as empty strings. We filter these out later
     // in the analysis process to make sure they aren't included in the build.
     if (isDependencyExternal(url)) {
-      return Promise.resolve('');
+      return Promise.resolve(undefined);
     }
 
     const urlPath = decodeURIComponent(urlObject.pathname);
