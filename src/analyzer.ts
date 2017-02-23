@@ -98,6 +98,10 @@ export class Analyzer {
     return this._context.load(resolvedUrl, providedContents);
   }
 
+  canResolveUrl(url: string): string {
+    return this._context.canResolveUrl(url);
+  }
+
   resolveUrl(url: string): string {
     return this._context.resolveUrl(url);
   }
