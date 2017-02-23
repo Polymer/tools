@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [0.1.3] - 2017-02-22
+
+- bump version of the analyzer.
+
 ## [0.1.2] - 2017-02-14
 
 ### Added
