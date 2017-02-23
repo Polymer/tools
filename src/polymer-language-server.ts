@@ -14,13 +14,18 @@
  */
 
 import * as path from 'path';
-import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service/editor-service';
-import {LocalEditorService} from 'polymer-analyzer/lib/editor-service/local-editor-service';
 import {SourceRange} from 'polymer-analyzer/lib/model/model';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
+import * as url from 'url';
+import * as util from 'util';
 import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+
+import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+import {LocalEditorService} from './local-editor-service';
+
+const fileUrl: (path: string) => string = require('file-url');
 
 interface SettingsWrapper {
   polymerVscodePlugin: Settings;
@@ -53,14 +58,37 @@ documents.listen(connection);
 // After the server has started the client sends an initilize request. The
 // server receives in the passed params the rootPath of the workspace plus the
 // client capabilites.
-let workspaceRoot: string|null = null;
+let workspaceUri: url.Url|null = null;
+
+function getWorkspaceUri(
+    rootUri: string|null, rootPath: string|null|undefined): url.Url|null {
+  if (rootUri) {
+    return url.parse(rootUri);
+  }
+  if (rootPath) {
+    return url.parse(fileUrl(rootPath));
+  }
+  return null;
+}
+
+function fileUrlToAbsolutePath(fileUrl: url.Url) {
+  const path = decodeURIComponent(fileUrl.pathname!);
+  if (process.platform === 'win32' && path[0] === '/') {
+    return path.slice(1);
+  }
+  return path;
+}
+
 connection.onInitialize((params): InitializeResult => {
-  workspaceRoot = params.rootPath;
-  if (!workspaceRoot) {
+  let maybeWorkspaceUri = getWorkspaceUri(params.rootUri, params.rootPath);
+  // Leave workspaceUri unset if we're initialized in a way we can't handle.
+  if (!maybeWorkspaceUri || maybeWorkspaceUri.protocol !== 'file:') {
     return {capabilities: {}};
   }
+  workspaceUri = maybeWorkspaceUri;
+  const workspacePath = fileUrlToAbsolutePath(workspaceUri);
   editorService = new LocalEditorService({
-    urlLoader: new FSUrlLoader(workspaceRoot),
+    urlLoader: new FSUrlLoader(workspacePath),
     urlResolver: new PackageUrlResolver()
   });
   documents.all().forEach(d => scanDocument(d));
@@ -174,75 +202,58 @@ async function autoComplete(textPosition: TextDocumentPositionParams):
         };
       }
       return {isIncomplete: false, items: []};
-    }
+    };
 
-function
-getWorkspacePathToFile(doc: {uri: string}):
-    string|undefined {
-      // We only support file urls. Extract everything after file:///
-      // Note the third slash. We pull that out too. See the absolute path
-      // generation code below.
-      const match = doc.uri.match(/^file:\/\/\/?(.*)/);
-      if (!match || !match[1] || !workspaceRoot) {
-        return undefined;
-      }
-      // Decode the URI encoding. TODO: something something unicode?
-      const decodedPath = decodeURIComponent(match[1]);
-      // We've stripped off the leading `/`, which on unix means that we have a
-      // relative-looking path, but on Windows we still have an absolute path
-      // that
-      // starts with e.g. `C:\`. We can normalize these two by forcing both into
-      // an absolute path, like so:
-      const absolutePath = path.resolve('/', decodedPath);
-      // But what the editor service really wants is a path relative to the
-      // workspace root. So do that.
-      return path.relative(workspaceRoot, absolutePath);
-    }
+function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
+  const docUrl = url.parse(doc.uri);
+  if (!workspaceUri || !workspaceUri.pathname || !docUrl.pathname) {
+    return undefined;
+  }
+  const workspacePath = fileUrlToAbsolutePath(workspaceUri);
+  const docPath = fileUrlToAbsolutePath(docUrl);
+  return path.relative(workspacePath, docPath);
+}
 
-function
-getUriForLocalPath(localPath: string):
-    string {
-      return `file://${workspaceRoot}/${localPath}`;
-    }
+function getUriForLocalPath(localPath: string): string {
+  if (!workspaceUri) {
+    throw new Error(`Tried to get the URI of ${localPath
+                    } without knowing the workspaceUri!?`);
+  }
+  const workspacePath = fileUrlToAbsolutePath(workspaceUri);
+  const absolutePath = path.join(workspacePath, localPath);
+  return fileUrl(absolutePath);
+}
 
-function
-convertPosition(position: LSPosition):
-    SourcePosition {
-      return {line: position.line, column: position.character};
-    }
+function convertPosition(position: LSPosition): SourcePosition {
+  return {line: position.line, column: position.character};
+}
 
-function
-convertRange(range: SourceRange):
-    Range {
-      return {
-        start: {line: range.start.line, character: range.start.column},
-        end: {line: range.end.line, character: range.end.column}
-      };
-    }
+function convertRange(range: SourceRange): Range {
+  return {
+    start: {line: range.start.line, character: range.start.column},
+    end: {line: range.end.line, character: range.end.column}
+  };
+}
 
-function
-convertSeverity(severity: Severity):
-    DiagnosticSeverity {
-      switch (severity) {
-        case Severity.ERROR:
-          return DiagnosticSeverity.Error;
-        case Severity.WARNING:
-          return DiagnosticSeverity.Warning;
-        case Severity.INFO:
-          return DiagnosticSeverity.Information;
-        default:
-          throw new Error(
-              `This should never happen. Got a severity of ${severity}`);
-      }
-    }
+function convertSeverity(severity: Severity): DiagnosticSeverity {
+  switch (severity) {
+    case Severity.ERROR:
+      return DiagnosticSeverity.Error;
+    case Severity.WARNING:
+      return DiagnosticSeverity.Warning;
+    case Severity.INFO:
+      return DiagnosticSeverity.Information;
+    default:
+      throw new Error(
+          `This should never happen. Got a severity of ${severity}`);
+  }
+}
 
-function
-scanDocument(document: TextDocument, connection?: IConnection) {
+async function scanDocument(document: TextDocument, connection?: IConnection) {
   return handleErrors(_scanDocument(document, connection), undefined);
 }
 
-async function
-_scanDocument(document: TextDocument, connection?: IConnection) {
+async function _scanDocument(document: TextDocument, connection?: IConnection) {
   if (editorService) {
     const localPath = getWorkspacePathToFile(document);
     if (!localPath) {
@@ -265,12 +276,11 @@ _scanDocument(document: TextDocument, connection?: IConnection) {
       connection.sendDiagnostics({diagnostics, uri: document.uri});
     }
   }
-}
+};
 
-async function
-handleErrors<Result, Fallback>(
-    promise: Promise<Result>, fallbackValue: Fallback):
-    Promise<Result|Fallback> {
+async function handleErrors<Result, Fallback>(
+    promise: Promise<Result>,
+    fallbackValue: Fallback): Promise<Result|Fallback> {
   try {
     return await promise;
   } catch (err) {
@@ -282,6 +292,27 @@ handleErrors<Result, Fallback>(
     }
     return fallbackValue;
   }
+}
+
+/**
+ * A useful function for debugging. Logs through the connect to the editor
+ * so that the logs are visible.
+ */
+function log(val: any) {
+  if (!connection) {
+    return;
+  }
+  if (typeof val !== 'string') {
+    val = util.inspect(val);
+  }
+  connection.console.log(val);
+}
+if (Math.random() > 10000) {
+  // Reference log here to ensure that typescript doesn't warn about it being
+  // unused.
+  // At any given time there may not be any uses of it, but it is useful to have
+  // around when debugging.
+  log;
 }
 
 // Listen on the connection

@@ -66,8 +66,9 @@ export class LocalEditorService extends EditorService {
     }
     if (location.kind === 'tagName') {
       return Array
-          .from(
-              document.getById('element-reference', location.element.tagName!))
+          .from(document.getById(
+              'element-reference', location.element.tagName!,
+              {externalPackages: true, imported: true}))
           .map(e => e.sourceRange);
     }
   }
@@ -82,7 +83,10 @@ export class LocalEditorService extends EditorService {
     }
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements =
-          Array.from(document.getByKind('element')).filter(e => e.tagName);
+          Array
+              .from(document.getByKind(
+                  'element', {externalPackages: true, imported: true}))
+              .filter(e => e.tagName);
       return {
         kind: 'element-tags',
         elements: elements.map(e => {
@@ -106,12 +110,14 @@ export class LocalEditorService extends EditorService {
           this.getAncestorDomModuleForElement(document, location.element);
       if (!domModule || !domModule.id)
         return;
-      const outerElement = document.getOnlyAtId('element', domModule.id);
+      const outerElement = document.getOnlyAtId(
+          'element', domModule.id, {imported: true, externalPackages: true});
       if (!outerElement)
         return;
       const sortPrefixes = this._createSortPrefixes(outerElement);
-      const innerElement =
-          document.getOnlyAtId('element', location.element.nodeName);
+      const innerElement = document.getOnlyAtId(
+          'element', location.element.nodeName,
+          {imported: true, externalPackages: true});
       if (!innerElement)
         return;
       const innerAttribute = innerElement.attributes.find(
@@ -148,7 +154,9 @@ export class LocalEditorService extends EditorService {
     }
 
     if (location.kind === 'attribute') {
-      const elements = document.getById('element', location.element.nodeName);
+      const elements = document.getById(
+          'element', location.element.nodeName,
+          {externalPackages: true, imported: true});
       let attributes: AttributeCompletion[] = [];
       for (const element of elements) {
         const sortPrefixes = this._createSortPrefixes(element);
@@ -228,7 +236,7 @@ export class LocalEditorService extends EditorService {
     }
     const elementSourcePosition =
         parsedDocument.sourceRangeForNode(element)!.start;
-    const domModules = document.getByKind('dom-module');
+    const domModules = document.getByKind('dom-module', {imported: false});
     for (const domModule of domModules) {
       if (isPositionInsideRange(
               elementSourcePosition,
@@ -266,9 +274,13 @@ export class LocalEditorService extends EditorService {
       return;
     }
     if (location.kind === 'tagName') {
-      return document.getOnlyAtId('element', location.element.nodeName);
+      return document.getOnlyAtId(
+          'element', location.element.nodeName,
+          {imported: true, externalPackages: true});
     } else if (location.kind === 'attribute') {
-      const elements = document.getById('element', location.element.nodeName);
+      const elements = document.getById(
+          'element', location.element.nodeName,
+          {imported: true, externalPackages: true});
       if (elements.size === 0) {
         return;
       }

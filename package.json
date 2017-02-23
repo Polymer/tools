@@ -31,6 +31,7 @@
     "mocha": "^2.2.4",
     "source-map-support": "^0.4.2",
     "tslint": "^3.10.2",
+    "typescript": "^2.2.0",
     "watchy": "^0.6.6"
   },
   "dependencies": {
@@ -38,10 +39,10 @@
     "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
     "dom5": "^2.0.1",
+    "file-url": "^2.0.2",
     "parse5": "^2.2.3",
-    "polymer-analyzer": "=2.0.0-alpha.22",
+    "polymer-analyzer": "=2.0.0-alpha.24",
     "split": "^1.0.0",
-    "typescript": "^2.1.4",
-    "vscode-languageserver": "^3.0.1-alpha.13"
+    "vscode-languageserver": "^3.0.5"
   }
 }

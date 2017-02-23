@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Please document PR changes here. -->
 
+### Fixed
+
+* Handle paths more consistently and more correctly, especially paths containing characters which must be encoded when in a URL (e.g. spaces, and all paths on Windows).
+  * Handle windows-style file:// urls as well. This should finally bring full support to windows!
+* Updated dependencies.
+
 ## 1.2.0 - 2017-01-13
 
 ### Added

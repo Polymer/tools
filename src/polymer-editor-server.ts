@@ -23,7 +23,6 @@
  * See 'remote-editor-protocol.ts' for details on the communication protocol.
  */
 
-import * as split from 'split';
 import * as util from 'util';
 
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
@@ -31,6 +30,8 @@ import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-re
 
 import {LocalEditorService} from './local-editor-service';
 import {Request, RequestWrapper, ResponseWrapper, SettledValue} from './remote-editor-protocol';
+
+import split = require('split');
 
 /**
  * Handles decoded Requests, dispatching them to a local editor service.

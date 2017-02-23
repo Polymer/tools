@@ -16,8 +16,9 @@ import {assert} from 'chai';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
-import * as split from 'split';
 import * as util from 'util';
+
+import split = require('split');
 
 const pathToServer = path.join(__dirname, '../polymer-editor-server.js');
 
