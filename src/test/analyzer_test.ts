@@ -44,9 +44,7 @@ suite('Analyzer', () => {
 
   setup(() => {
     const urlLoader = new FSUrlLoader(__dirname);
-    analyzer = new Analyzer({
-        urlLoader,
-    });
+    analyzer = new Analyzer({urlLoader});
     underliner = new CodeUnderliner(urlLoader);
   });
 
