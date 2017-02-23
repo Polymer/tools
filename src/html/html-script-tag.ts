@@ -25,6 +25,10 @@ export class ScriptTagImport extends Import { type: 'html-script'; }
 
 export class ScannedScriptTagImport extends ScannedImport {
   resolve(document: Document): ScriptTagImport|undefined {
+    if (!document.analyzer.canResolveUrl(this.url)) {
+      return;
+    }
+
     // TODO(justinfagnani): warn if the same URL is loaded from more than one
     // non-module script tag
 
