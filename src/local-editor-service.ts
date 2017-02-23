@@ -16,16 +16,39 @@ import * as parse5 from 'parse5';
 import {Analyzer, Options as AnalyzerOptions} from 'polymer-analyzer';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
 import {Document, Element, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
-import {Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
+import {Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Linter, registry, Rule} from 'polymer-linter';
+import {ProjectConfig} from 'polymer-project-config';
 
 import {getLocationInfoForPosition, isPositionInsideRange} from './ast-from-source-position';
 import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
 
+export interface Options extends AnalyzerOptions { polymerJsonPath?: string; }
+
 export class LocalEditorService extends EditorService {
-  private _analyzer: Analyzer;
-  constructor(options: AnalyzerOptions) {
+  private readonly _analyzer: Analyzer;
+  private readonly _linter: Linter;
+  constructor(options: Options) {
     super();
     this._analyzer = new Analyzer(options);
+    // TODO(rictic): watch for changes of polymer.json
+    let rules: Set<Rule> = new Set();
+    if (options.polymerJsonPath) {
+      let config = null;
+      try {
+        config = ProjectConfig.loadConfigFromFile(options.polymerJsonPath);
+      } catch (_) {
+        // TODO(rictic): warn about the error
+      }
+      if (config && config.lint && config.lint.rules) {
+        try {
+          rules = registry.getRules(config.lint.rules);
+        } catch (_) {
+          // TODO(rictic): warn about the bad rule
+        }
+      }
+    }
+    this._linter = new Linter(rules, this._analyzer);
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<void> {
@@ -247,19 +270,7 @@ export class LocalEditorService extends EditorService {
   }
 
   async getWarningsForFile(localPath: string): Promise<Warning[]> {
-    try {
-      const doc = await this._analyzer.analyze(localPath);
-      return doc.getWarnings();
-    } catch (e) {
-      // This might happen if, e.g. `localPath` has a parse error. In that case
-      // we can't construct a valid Document, but we might still be able to give
-      // a reasonable warning.
-      if (e instanceof WarningCarryingException) {
-        const warnException: WarningCarryingException = e;
-        return [warnException.warning];
-      }
-      throw e;
-    }
+    return this._linter.lint([localPath]);
   }
 
   async _clearCaches() {

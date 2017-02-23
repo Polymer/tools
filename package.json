@@ -42,6 +42,8 @@
     "file-url": "^2.0.2",
     "parse5": "^2.2.3",
     "polymer-analyzer": "=2.0.0-alpha.24",
+    "polymer-linter": "^0.1.2",
+    "polymer-project-config": "^2.0.0",
     "split": "^1.0.0",
     "vscode-languageserver": "^3.0.5"
   }

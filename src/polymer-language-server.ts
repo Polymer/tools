@@ -87,9 +87,10 @@ connection.onInitialize((params): InitializeResult => {
   }
   workspaceUri = maybeWorkspaceUri;
   const workspacePath = fileUrlToAbsolutePath(workspaceUri);
+  const polymerJsonPath = path.join(workspacePath, 'polymer.json');
   editorService = new LocalEditorService({
     urlLoader: new FSUrlLoader(workspacePath),
-    urlResolver: new PackageUrlResolver()
+    urlResolver: new PackageUrlResolver(), polymerJsonPath
   });
   documents.all().forEach(d => scanDocument(d));
   return <InitializeResult>{
