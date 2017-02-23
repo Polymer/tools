@@ -29,7 +29,6 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document, Import, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlLoader} from '../url-loader/url-loader';
-import {UrlResolver} from '../url-loader/url-resolver';
 import {Deferred} from '../utils';
 import {Severity} from '../warning/warning';
 import {CodeUnderliner} from './test-utils';
@@ -39,17 +38,6 @@ import stripIndent = require('strip-indent');
 
 use(chaiAsPromised);
 
-class TestUrlResolver implements UrlResolver {
-  canResolve(url: string) {
-    return (url === 'test.com/test.html');
-  }
-
-  resolve(url: string) {
-    return (url === 'test.com/test.html') ? '/static/html-parse-target.html' :
-                                            url;
-  }
-}
-
 suite('Analyzer', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
@@ -57,8 +45,7 @@ suite('Analyzer', () => {
   setup(() => {
     const urlLoader = new FSUrlLoader(__dirname);
     analyzer = new Analyzer({
-      urlLoader,
-      urlResolver: new TestUrlResolver(),
+        urlLoader,
     });
     underliner = new CodeUnderliner(urlLoader);
   });
