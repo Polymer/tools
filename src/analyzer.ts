@@ -98,7 +98,7 @@ export class Analyzer {
     return this._context.load(resolvedUrl, providedContents);
   }
 
-  canResolveUrl(url: string): string {
+  canResolveUrl(url: string): boolean {
     return this._context.canResolveUrl(url);
   }
 
