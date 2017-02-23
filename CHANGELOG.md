@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 
+## [2.0.0-alpha.26] - 2017-02-22
+* Fix issue with file missing from package.json "files" array.
 
 ## [2.0.0-alpha.25] - 2017-02-22
 

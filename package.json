@@ -17,7 +17,8 @@
   "files": [
     "LICENSE",
     "lib/",
-    "custom_typings/"
+    "custom_typings/",
+    "bin/"
   ],
   "scripts": {
     "clean": "mkdir -p lib/ && rm -rf lib/",
