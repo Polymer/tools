@@ -69,8 +69,7 @@ export abstract class ElementBase implements Feature {
   astNode: estree.Node|null;
   kinds: Set<string> = new Set(['element']);
   warnings: Warning[] = [];
-  slots:
-  Slot[] = [];
+  'slots': Slot[] = [];
 
   get identifiers(): Set<string> {
     throw new Error('abstract');
