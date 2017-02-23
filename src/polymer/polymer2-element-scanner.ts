@@ -22,6 +22,8 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedElement, ScannedFeature} from '../model/model';
+import {ScannedReference} from '../model/reference';
+import {Severity, Warning} from '../warning/warning';
 
 import {Options as PolymerElementOptions, ScannedPolymerElement} from './polymer-element';
 import {getConfig, getIsValue, getProperties} from './polymer2-config';
@@ -81,16 +83,32 @@ class ElementVisitor implements Visitor {
     const docs = jsdoc.parseJsdoc(comment);
     const config = getConfig(node);
     const isValue = getIsValue(node);
+    const warnings: Warning[] = [];
 
     const extendsAnnotations =
         docs.tags!.filter((tag) => tag.tag === 'extends');
-    let _extends: string|undefined = undefined;
+    let _extends: ScannedReference|undefined = undefined;
 
     // prefer @extends annotations over extends clauses
     if (extendsAnnotations.length > 0) {
-      _extends = extendsAnnotations[0].name || undefined;
+      const extendsId = extendsAnnotations[0].name;
+      // TODO(justinfagnani): we need source ranges for jsdoc annotations
+      const sourceRange = this._document.sourceRangeForNode(node)!;
+      if (extendsId == null) {
+        warnings.push({
+          code: 'class-extends-annotation-no-id',
+          message: '@extends annotation with no identifier',
+          severity: Severity.WARNING, sourceRange,
+        });
+      } else {
+        _extends = new ScannedReference(extendsId, sourceRange);
+      }
     } else if (node.superClass) {
-      _extends = getIdentifierName(node.superClass);
+      const extendsId = getIdentifierName(node.superClass);
+      if (extendsId != null) {
+        const sourceRange = this._document.sourceRangeForNode(node.superClass)!;
+        _extends = new ScannedReference(extendsId, sourceRange);
+      }
     }
 
     const elementOptions: PolymerElementOptions = {
@@ -109,6 +127,7 @@ class ElementVisitor implements Visitor {
     //         .map((p) => p.name);
 
     const element = new ScannedPolymerElement(elementOptions);
+    warnings.forEach((w) => element.warnings.push(w));
 
     if (this._hasPolymerDocTag(docs)) {
       this._elements.push(element);

@@ -95,7 +95,7 @@ export class LocalEditorService extends EditorService {
         // Not inherited, that means local! Sort it early.
         sortPrefixes.set(undefined, 'aaa-');
         if (element.superClass) {
-          sortPrefixes.set(element.superClass, 'bbb-');
+          sortPrefixes.set(element.superClass.identifier, 'bbb-');
         }
         if (element.extends) {
           sortPrefixes.set(element.extends, 'ccc-');

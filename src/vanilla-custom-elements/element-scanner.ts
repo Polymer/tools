@@ -21,6 +21,7 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedElement, ScannedFeature} from '../model/model';
+import {ScannedReference} from '../model/reference';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -82,7 +83,10 @@ class ElementVisitor implements Visitor {
     element.events = esutil.getEventComments(node);
     element.sourceRange = this._document.sourceRangeForNode(node);
     if (node.superClass && node.superClass.type === 'Identifier') {
-      element.superClass = node.superClass.name;
+      element.superClass = new ScannedReference(
+          node.superClass.name,
+          this._document.sourceRangeForNode(node.superClass)!,
+          node.superClass, );
     }
     const observedAttributesDefn: estree.MethodDefinition|undefined =
         node.body.body.find((m) => {
