@@ -48,6 +48,14 @@ suite('Analyzer', () => {
     underliner = new CodeUnderliner(urlLoader);
   });
 
+  test('canResolveUrl defaults to not resolving external urls', () => {
+    assert.isTrue(analyzer.canResolveUrl('/path'), '/path');
+    assert.isTrue(analyzer.canResolveUrl('../path'), '../path');
+    assert.isFalse(analyzer.canResolveUrl('http://host'), 'http://host');
+    assert.isFalse(
+        analyzer.canResolveUrl('http://host/path', 'http://host/path'));
+  });
+
   suite('analyze()', () => {
 
     test(
