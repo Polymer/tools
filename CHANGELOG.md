@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+* Analyzer will not attempt to load or add warnings for imports which can not be resolved by its urlResolver.
 * Protocol-less URLs such as `//host/path` are properly handled instead of treated as absolute paths.
 * Add a new 'namespace' feature to support the `@namespace` jsdoc tag.
 

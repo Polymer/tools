@@ -38,6 +38,7 @@ import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
 import {TypeScriptAnalyzer} from '../typescript/typescript-analyzer';
 import {TypeScriptPreparser} from '../typescript/typescript-preparser';
+import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 import {Severity, Warning, WarningCarryingException} from '../warning/warning';
@@ -77,7 +78,7 @@ export class AnalysisContext {
   private _scanners: ScannerTable;
 
   private _loader: UrlLoader;
-  private _resolver: UrlResolver|undefined;
+  private _resolver: UrlResolver;
 
   private _cache = new AnalysisCache();
 
@@ -112,7 +113,7 @@ export class AnalysisContext {
 
   constructor(options: Options) {
     this._loader = options.urlLoader;
-    this._resolver = options.urlResolver;
+    this._resolver = options.urlResolver || new PackageUrlResolver();
     this._parsers = options.parsers || this._parsers;
     this._lazyEdges = options.lazyEdges;
     this._scanners = options.scanners ||
@@ -453,12 +454,17 @@ export class AnalysisContext {
   }
 
   /**
-   * Resolves a URL with this Analyzer's `UrlResolver` if it has one, otherwise
-   * returns the given URL.
+   * Returns true if the url given is resovable by the Analyzer's `UrlResolver`.
+   */
+  canResolveUrl(url: string): boolean {
+    return this._resolver.canResolve(url);
+  }
+
+  /**
+   * Resolves a URL with this Analyzer's `UrlResolver` or returns the given
+   * URL if it can not be resolved.
    */
   resolveUrl(url: string): string {
-    return this._resolver && this._resolver.canResolve(url) ?
-        this._resolver.resolve(url) :
-        url;
+    return this._resolver.canResolve(url) ? this._resolver.resolve(url) : url;
   }
 }
