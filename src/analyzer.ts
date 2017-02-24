@@ -46,17 +46,6 @@ export interface DepsIndex {
 }
 
 /**
- * Detects if a url is external by checking it's protocol. Also checks if it
- * starts with '//', which can be an alias to the page's current protocol
- * in the browser.
- */
-function isDependencyExternal(url: string) {
-  // TODO(fks) 08-01-2016: Add additional check for files on current hostname
-  // but external to this application root. Ignore them.
-  return parseUrl(url).protocol !== null || url.startsWith('//');
-}
-
-/**
  * Get a longer, single-line error message for logging and exeption-handling
  * analysis Warning objects.
  *
@@ -404,7 +393,7 @@ export class BuildAnalyzer {
         doc.getByKind('import', {externalPackages: true, imported: true});
     for (const importFeature of importFeatures) {
       const importUrl = importFeature.url;
-      if (isDependencyExternal(importUrl)) {
+      if (!this.analyzer.canResolveUrl(importUrl)) {
         logger.debug(`ignoring external dependency: ${importUrl}`);
       } else if (importFeature.type === 'html-script') {
         scripts.add(importUrl);
@@ -525,16 +514,14 @@ export class StreamLoader implements UrlLoader {
 
   // We can't load external dependencies.
   canLoad(url: string): boolean {
-    return !isDependencyExternal(url);
+    return this.analyzer.analyzer.canResolveUrl(url);
   }
 
   load(url: string): Promise<string> {
     logger.debug(`loading: ${url}`);
     const urlObject = parseUrl(url);
 
-    // Resolve external files as empty strings. We filter these out later
-    // in the analysis process to make sure they aren't included in the build.
-    if (isDependencyExternal(url)) {
+    if (!this.analyzer.analyzer.canResolveUrl(url)) {
       return Promise.resolve(undefined);
     }
 
