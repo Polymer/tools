@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 ### New Lint Rules
+- `behaviors-spelling`: Warns when the `behaviors` property may not have the American-English spelling
 - `undefined-elements`: Warns when an HTML tag refers to a custom element with no known definition.
 - `unbalanced-polymer-delimiters`: finds unbalanced delimiters in polymer databinding expressions.
 - `unknown-set-attribute`: included in all polymer rule collections.

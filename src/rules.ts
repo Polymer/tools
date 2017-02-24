@@ -17,3 +17,4 @@ import './html/move-style-into-template';
 import './html/undefined-elements';
 import './polymer/unbalanced-delimiters';
 import './polymer/set-unknown-attribute';
+import './polymer/behaviors-spelling';

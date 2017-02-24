@@ -24,6 +24,7 @@ registry.register(
       'undefined-elements',
       'unbalanced-polymer-delimiters',
       'set-unknown-attribute',
+      'behaviors-spelling',
     ]));
 
 registry.register(new RuleCollection(
@@ -37,6 +38,7 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'undefined-elements',
       'unbalanced-polymer-delimiters',
       'set-unknown-attribute',
+      'behaviors-spelling',
     ]));
 
 registry.register(new RuleCollection(
@@ -49,4 +51,5 @@ For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-
       'undefined-elements',
       'unbalanced-polymer-delimiters',
       'set-unknown-attribute',
+      'behaviors-spelling',
     ]));
