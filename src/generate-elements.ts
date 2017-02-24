@@ -19,13 +19,18 @@ import * as pathLib from 'path';
 import {Attribute, Element, ElementLike, ElementMixin, Elements, Namespace, Property, SourceRange} from './elements-format';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
+import {Feature} from './model/feature';
 import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
+export type Filter = (feature: Feature) => boolean;
+
 export function generateElementMetadata(
-    input: Package|Document[], packagePath: string): Elements {
+    input: Package|Document[], packagePath: string, filter?: Filter): Elements {
+  const _filter = filter || ((_: Feature) => true);
+
   let elements: Set<ResolvedElement>;
   let mixins: Set<ResolvedMixin>;
   let namespaces: Set<ResolvedNamespace>;
@@ -35,14 +40,22 @@ export function generateElementMetadata(
     mixins = new Set();
     namespaces = new Set();
     for (const document of input as Document[]) {
-      document.getByKind('element').forEach((f) => elements.add(f));
-      document.getByKind('element-mixin').forEach((f) => mixins.add(f));
-      document.getByKind('namespace').forEach((f) => namespaces.add(f));
+      Array.from(document.getByKind('element'))
+          .filter(_filter)
+          .forEach((f) => elements.add(f));
+      Array.from(document.getByKind('element-mixin'))
+          .filter(_filter)
+          .forEach((f) => mixins.add(f));
+      Array.from(document.getByKind('namespace'))
+          .filter(_filter)
+          .forEach((f) => namespaces.add(f));
     }
   } else {
-    elements = input.getByKind('element');
-    mixins = input.getByKind('element-mixin');
-    namespaces = input.getByKind('namespace');
+    elements = new Set(Array.from(input.getByKind('element')).filter(_filter));
+    mixins =
+        new Set(Array.from(input.getByKind('element-mixin')).filter(_filter));
+    namespaces =
+        new Set(Array.from(input.getByKind('namespace')).filter(_filter));
   }
 
   const metadata: Elements = {
