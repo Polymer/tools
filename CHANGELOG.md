@@ -11,10 +11,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!--## Unreleased-->
+
+## [2.0.0-alpha.27] - 2017-02-24
+
+### Added
+* Support for `@extends` and `@namespace` jsdoc tags
+* Analyze inherited members for class-based elements annotated with `@extends`
+* New Namespace and Reference features
+* Mixins and namespaces are included in metadata export
+* Ability to generate metadata for a package and filter exported metadata
+* Analyze Polymer 2.0 elements that override observedAttributes
+
+### Fixed
 * Analyzer will not attempt to load or add warnings for imports which can not be resolved by its urlResolver.
 * Protocol-less URLs such as `//host/path` are properly handled instead of treated as absolute paths.
-* Add a new 'namespace' feature to support the `@namespace` jsdoc tag.
+* Infer tagnames from the static `is` getter.
+* Unified Polymer and Vanilla element scanners
 
 ## [2.0.0-alpha.26] - 2017-02-22
 * Fix issue with file missing from package.json "files" array.
