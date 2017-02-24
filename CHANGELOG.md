@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 <!--## Unreleased-->
+### Fixed
+* PackageUrlResolver encodes URIs returned from `resolve` method.
 
 ## [2.0.0-alpha.27] - 2017-02-24
 
