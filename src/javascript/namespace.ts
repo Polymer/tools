@@ -58,6 +58,7 @@ export class ScannedNamespace implements Resolvable {
 
 export class Namespace implements Feature {
   name: string;
+  description?: string;
   kinds: Set<string>;
   identifiers: Set<string>;
   sourceRange: SourceRange;
@@ -66,6 +67,7 @@ export class Namespace implements Feature {
 
   constructor(scannedNamespace: ScannedNamespace) {
     this.name = scannedNamespace.name;
+    this.description = scannedNamespace.description;
     this.kinds = new Set(['namespace']);
     this.identifiers = new Set([this.name]);
     this.sourceRange = scannedNamespace.sourceRange;

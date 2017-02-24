@@ -16,33 +16,58 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Property, SourceRange} from './elements-format';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Namespace, Property, SourceRange} from './elements-format';
+import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
+import {Feature} from './model/feature';
 import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
+export type Filter = (feature: Feature) => boolean;
+
 export function generateElementMetadata(
-    input: Package|Document[], packagePath: string): Elements {
+    input: Package|Document[], packagePath: string, filter?: Filter): Elements {
+  const _filter = filter || ((_: Feature) => true);
+
   let elements: Set<ResolvedElement>;
   let mixins: Set<ResolvedMixin>;
+  let namespaces: Set<ResolvedNamespace>;
 
   if (input instanceof Array) {
     elements = new Set();
     mixins = new Set();
+    namespaces = new Set();
     for (const document of input as Document[]) {
-      document.getByKind('element').forEach((f) => elements.add(f));
-      document.getByKind('element-mixin').forEach((f) => mixins.add(f));
+      Array.from(document.getByKind('element'))
+          .filter(_filter)
+          .forEach((f) => elements.add(f));
+      Array.from(document.getByKind('element-mixin'))
+          .filter(_filter)
+          .forEach((f) => mixins.add(f));
+      Array.from(document.getByKind('namespace'))
+          .filter(_filter)
+          .forEach((f) => namespaces.add(f));
     }
   } else {
-    elements = input.getByKind('element');
-    mixins = input.getByKind('element-mixin');
+    elements = new Set(Array.from(input.getByKind('element')).filter(_filter));
+    mixins =
+        new Set(Array.from(input.getByKind('element-mixin')).filter(_filter));
+    namespaces =
+        new Set(Array.from(input.getByKind('namespace')).filter(_filter));
   }
 
   const metadata: Elements = {
     schema_version: '1.0.0',
   };
+
+  if (namespaces.size > 0) {
+    metadata.namespaces = Array.from(namespaces)
+                              .map(
+                                  (e) => serializeNamespace(
+                                      e, packagePath)) as ResolvedNamespace[];
+  }
 
   if (elements.size > 0) {
     metadata.elements = Array.from(elements).map(
@@ -90,6 +115,22 @@ export function validateElements(analyzedPackage: Elements|null|undefined) {
         `Invalid schema_version in AnalyzedPackage. ` +
         `Expected 1.x.x, got ${analyzedPackage!.schema_version}`);
   }
+}
+
+function serializeNamespace(
+    namespace: ResolvedNamespace, packagePath: string): Namespace {
+  const packageRelativePath =
+      pathLib.relative(packagePath, namespace.sourceRange.file);
+  const metadata = {
+    name: namespace.name,
+    description: namespace.description,
+    sourceRange: {
+      file: packageRelativePath,
+      start: namespace.sourceRange.start,
+      end: namespace.sourceRange.end
+    }
+  };
+  return metadata;
 }
 
 function serializeElement(
