@@ -101,6 +101,10 @@ suite('PackageUrlResolver', function() {
 
     });
 
+    test('resolves a URL with spaces', () => {
+      const r = new PackageUrlResolver();
+      assert.equal(r.resolve('spaced name.html'), 'spaced%20name.html');
+    });
   });
 
 });
