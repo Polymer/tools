@@ -55,7 +55,7 @@ suite('Analyzer', () => {
     assert.isTrue(analyzer.canResolveUrl('../path'), '../path');
     assert.isFalse(analyzer.canResolveUrl('http://host'), 'http://host');
     assert.isFalse(
-        analyzer.canResolveUrl('http://host/path', 'http://host/path'));
+        analyzer.canResolveUrl('http://host/path'), 'http://host/path');
   });
 
   suite('analyze()', () => {
