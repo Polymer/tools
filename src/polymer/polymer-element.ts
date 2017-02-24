@@ -192,13 +192,13 @@ export interface PolymerExtension extends ElementBase {
 }
 
 export class PolymerElement extends Element implements PolymerExtension {
-  properties: PolymerProperty[];
+  properties: PolymerProperty[] = [];
 
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
-  }[];
-  listeners: {event: string, handler: string}[];
+  }[] = [];
+  listeners: {event: string, handler: string}[] = [];
   behaviorAssignments: ScannedBehaviorAssignment[] = [];
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
