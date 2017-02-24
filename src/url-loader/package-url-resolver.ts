@@ -39,8 +39,7 @@ export class PackageUrlResolver implements UrlResolver {
 
   canResolve(url: string): boolean {
     const urlObject = parseUrl(url);
-    const pathname =
-        pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
+    const pathname = pathlib.normalize(decodeURI(urlObject.pathname || ''));
     return this._isValid(urlObject, pathname);
   }
 
@@ -51,8 +50,7 @@ export class PackageUrlResolver implements UrlResolver {
 
   resolve(url: string): string {
     const urlObject = parseUrl(url);
-    let pathname =
-        pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
+    let pathname = pathlib.normalize(decodeURI(urlObject.pathname || ''));
 
     if (!this._isValid(urlObject, pathname)) {
       throw new Error(`Invalid URL ${url}`);
@@ -68,6 +66,8 @@ export class PackageUrlResolver implements UrlResolver {
     if (pathlib.isAbsolute(pathname)) {
       pathname = pathname.substring(1);
     }
-    return pathname;
+
+    // Re-encode URI, since it is expected we are emitting a relative URL.
+    return encodeURI(pathname);
   }
 }
