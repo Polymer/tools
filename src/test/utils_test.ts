@@ -15,10 +15,56 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert, use} from 'chai';
-import {Deferred} from '../utils';
+import {Deferred, parseUrl} from '../utils';
 
 import chaiAsPromised = require('chai-as-promised');
 use(chaiAsPromised);
+
+suite('parseUrl', () => {
+
+  function testUrl(url: string, properties: {[s: string]: any}) {
+    const urlObject = parseUrl(url);
+    for (const key in properties) {
+      if (!properties.hasOwnProperty(key)) {
+        continue;
+      }
+      assert.equal(urlObject[key], properties[key], `${url} property ${key}`);
+    }
+  }
+
+  test('parses urls that are absolute paths', () => {
+    testUrl(
+        '/abs/path', {protocol: null, hostname: null, pathname: '/abs/path'});
+    testUrl('/abs/path?query=string#hash', {
+      protocol: null,
+      hostname: null,
+      pathname: '/abs/path',
+      hash: '#hash',
+      search: '?query=string',
+    });
+  });
+
+  test('parses urls without protocol', () => {
+    testUrl('//host/path', {
+      protocol: undefined,
+      hostname: 'host',
+      pathname: '/path',
+    });
+    testUrl('//host', {
+      protocol: undefined,
+      hostname: 'host',
+      pathname: null,
+    });
+  });
+
+  test('parses urls that have protocols', () => {
+    testUrl('https://host/path', {
+      protocol: 'https:',
+      hostname: 'host',
+      pathname: '/path',
+    });
+  });
+});
 
 suite('Deferred', () => {
 

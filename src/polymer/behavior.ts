@@ -13,7 +13,7 @@
  */
 
 import {Document, SourceRange} from '../model/model';
-import {getFlattenedAndResolvedBehaviors, Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
+import {getBehaviors, Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
 
 /**
  * A scanned behavior assignment of a Polymer element. This is only a
@@ -46,10 +46,10 @@ export class ScannedBehavior extends ScannedPolymerElement {
   }
 
   resolve(document: Document) {
-    const flatteningResult =
-        getFlattenedAndResolvedBehaviors(this.behaviorAssignments, document);
+    const behaviorsAndWarnings =
+        getBehaviors(this.behaviorAssignments, document);
     const behavior = Object.assign(new Behavior(), this);
-    behavior.warnings = behavior.warnings.concat(flatteningResult.warnings);
+    behavior.warnings = behavior.warnings.concat(behaviorsAndWarnings.warnings);
     return behavior;
   }
 }

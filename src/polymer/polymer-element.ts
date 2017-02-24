@@ -17,6 +17,7 @@ import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
 import {Document, Element, ElementBase, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
@@ -61,7 +62,7 @@ export class LocalId {
 export interface Options {
   tagName?: string;
   className?: string;
-  superClass?: string;
+  superClass?: ScannedReference;
   extends?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
@@ -239,53 +240,157 @@ function propertyToAttributeName(propertyName: string): string|null {
 
 function resolveElement(
     scannedElement: ScannedPolymerElement, document: Document): PolymerElement {
-  // TODO: Copy over all properties better. Maybe exclude known properties not
-  //   copied?
-  const clone: PolymerElement =
-      Object.assign(new PolymerElement(), scannedElement);
+  const element = new PolymerElement();
 
-  const flatteningResult = getFlattenedAndResolvedBehaviors(
-      scannedElement.behaviorAssignments, document);
+  //
+  // Superclass
+  //
+  if (scannedElement.superClass &&
+      scannedElement.superClass.identifier !== 'HTMLElement') {
+    const superElements =
+        document.getById('element', scannedElement.superClass.identifier, {
+          externalPackages: true,
+          imported: true,
+        });
+    if (superElements.size === 1) {
+      const superElement = superElements.values().next().value;
+      if (!superElement.kinds.has('polymer-element')) {
+        element.warnings.push({
+          message:
+              `A Polymer element can\'t extend from a non-Polymer element: ${scannedElement
+                  .superClass.identifier}`,
+          severity: Severity.ERROR,
+          code: 'unknown-superclass',
+          sourceRange: scannedElement.superClass.sourceRange!,
+        });
+      } else {
+        inheritFrom(element, superElement as PolymerElement);
+      }
+    } else {
+      if (superElements.size === 0) {
+        element.warnings.push({
+          message: `Unable to resolve superclass ${scannedElement.superClass
+                       .identifier}`,
+          severity: Severity.ERROR,
+          code: 'unknown-superclass',
+          sourceRange: scannedElement.superClass.sourceRange!,
+        });
+      } else {
+        element.warnings.push({
+          message: `Multiple superclasses found for ${scannedElement.superClass
+                       .identifier}`,
+          severity: Severity.ERROR,
+          code: 'unknown-superclass',
+          sourceRange: scannedElement.superClass.sourceRange!,
+        });
+      }
+    }
+  }
+
+  // TODO(justinfagnani): Copy over all properties better, or have
+  // PolymerElement wrap ScannedPolymerElement.
+  element.abstract = scannedElement.abstract;
+  element.astNode = scannedElement.astNode;
+  scannedElement.attributes.forEach((o) => element.attributes.push(o));
+  scannedElement.behaviorAssignments.forEach(
+      (o) => element.behaviorAssignments.push(o));
+  element.className = scannedElement.className;
+  scannedElement.demos.forEach((o) => element.demos.push(o));
+  element.description = scannedElement.description;
+  element.domModule = scannedElement.domModule;
+  scannedElement.events.forEach((o) => element.events.push(o));
+  element.extends = scannedElement.extends;
+  element.jsdoc = scannedElement.jsdoc;
+  scannedElement.listeners.forEach((o) => element.listeners.push(o));
+  scannedElement.observers.forEach((o) => element.observers.push(o));
+  scannedElement.properties.forEach((o) => element.properties.push(o));
+  element.scriptElement = scannedElement.scriptElement;
+  scannedElement.slots.forEach((o) => element.slots.push(o));
+  element.sourceRange = scannedElement.sourceRange!;
+  element.superClass =
+      scannedElement.superClass && scannedElement.superClass.resolve(document);
+  element.tagName = scannedElement.tagName;
+  scannedElement.warnings.forEach((o) => element.warnings.push(o));
+
+  //
+  // Behaviors
+  //
+  const behaviorsAndWarnings =
+      getBehaviors(scannedElement.behaviorAssignments, document);
 
   // This has the combined effects of copying the array of warnings from the
   // ScannedElement, and adding in any new ones found when resolving behaviors.
-  clone.warnings = clone.warnings.concat(flatteningResult.warnings);
+  element.warnings = element.warnings.concat(behaviorsAndWarnings.warnings);
 
-  const behaviors = Array.from(flatteningResult.resolvedBehaviors);
-  clone.properties = mergeByName(
-      scannedElement.properties,
-      behaviors.map((b) => ({name: b.className, vals: b.properties})));
-  clone.attributes = mergeByName(
-      scannedElement.attributes,
-      behaviors.map((b) => ({name: b.className, vals: b.attributes})));
-  clone.events = mergeByName(
-      scannedElement.events,
-      behaviors.map((b) => ({name: b.className, vals: b.events})));
+  const behaviors = Array.from(behaviorsAndWarnings.behaviors);
+
+  // TODO(justinfagnani): consider this:
+  // for (const behavior of behaviors) {
+  //   inheritFrom(element, behavior);
+  // }
+
+  element.properties = inheritValues(
+      element.properties,
+      behaviors.map((b) => ({source: b.className, values: b.properties})));
+  element.attributes = inheritValues(
+      element.attributes,
+      behaviors.map((b) => ({source: b.className, values: b.attributes})));
+  element.events = inheritValues(
+      element.events,
+      behaviors.map((b) => ({source: b.className, values: b.events})));
 
   const domModule = document.getOnlyAtId(
       'dom-module',
       scannedElement.tagName || '',
       {imported: true, externalPackages: true});
+
   if (domModule) {
-    clone.description = scannedElement.description || domModule.comment || '';
-    clone.domModule = domModule.node;
-    clone.slots = domModule.slots.slice();
-    clone.localIds = domModule.localIds.slice();
+    element.description = element.description || domModule.comment || '';
+    element.domModule = domModule.node;
+    element.slots = domModule.slots.slice();
+    element.localIds = domModule.localIds.slice();
   }
 
   if (scannedElement.pseudo) {
-    clone.kinds.add('pseudo-element');
+    element.kinds.add('pseudo-element');
   }
 
-  return clone;
+  return element;
 }
 
-export function getFlattenedAndResolvedBehaviors(
+/**
+ * Note: mutates `element`.
+ */
+function inheritFrom(element: PolymerElement, superElement: PolymerElement) {
+  // TODO(justinfagnani): fixup and use inheritValues, but it has slightly odd
+  // semantics currently
+
+  for (const superProperty of superElement.properties) {
+    const newProperty = Object.assign({}, superProperty);
+    element.properties.push(newProperty);
+  }
+
+  for (const superAttribute of superElement.attributes) {
+    const newAttribute = Object.assign({}, superAttribute);
+    element.attributes.push(newAttribute);
+  }
+
+  for (const superEvent of superElement.events) {
+    const newEvent = Object.assign({}, superEvent);
+    element.events.push(newEvent);
+  }
+
+  // TODO(justinfagnani): slots, listeners, observers, dom-module?
+  // What actually inherits?
+}
+
+// TODO(justinfagnani): move to Behavior
+export function getBehaviors(
     behaviorAssignments: ScannedBehaviorAssignment[], document: Document) {
   const resolvedBehaviors = new Set<Behavior>();
   const warnings = _getFlattenedAndResolvedBehaviors(
       behaviorAssignments, document, resolvedBehaviors);
-  return {resolvedBehaviors, warnings};
+  return {behaviors: resolvedBehaviors, warnings};
 }
 
 function _getFlattenedAndResolvedBehaviors(
@@ -331,29 +436,36 @@ function _getFlattenedAndResolvedBehaviors(
   return warnings;
 }
 
-interface PropertyOrSimilar {
+interface PropertyLike {
   name: string;
   inheritedFrom?: string;
 }
 
-interface HasName {
-  name: string;
-}
+/**
+ * Merges values from `newValuesBySource` into `values`, but only if they
+ * don't already exist in `values`, thus giving an inheritance-like behavior.
+ *
+ * TODO(justinfagnani): we should always build up an element from base-class
+ * on up to get natural overriding behavior. We should also merges
+ * individual definitions if that's what Polymer does. Need tests.
+ */
+function inheritValues<P extends PropertyLike>(
+    values: P[], newValuesBySource: {source: string, values: P[]}[]): P[] {
+  const valuesByName = new Map<string, P>();
 
-function mergeByName<Prop extends PropertyOrSimilar>(
-    base: Prop[], inheritFrom: {name: string, vals: HasName[]}[]): Prop[] {
-  const byName = new Map<string, Prop>();
-  for (const initial of base) {
-    byName.set(initial.name, initial);
+  for (const initial of values) {
+    valuesByName.set(initial.name, initial);
   }
-  for (const source of inheritFrom) {
-    for (const item of source.vals) {
-      if (!byName.has(item.name)) {
-        const copy = <Prop><any>Object.assign({}, item);
-        copy.inheritedFrom = source.name;
-        byName.set(copy.name, copy);
+
+  for (const source of newValuesBySource) {
+    for (const value of source.values) {
+      if (!valuesByName.has(value.name)) {
+        const copy = Object.assign({}, value);
+        // If a value is already inherited, prefer the original source
+        copy.inheritedFrom = value.inheritedFrom || source.source;
+        valuesByName.set(copy.name, copy);
       }
     }
   }
-  return Array.from(byName.values());
+  return Array.from(valuesByName.values());
 }

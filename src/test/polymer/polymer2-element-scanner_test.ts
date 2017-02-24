@@ -14,70 +14,58 @@
 
 
 import {assert} from 'chai';
-import * as fs from 'fs';
 import * as path from 'path';
 
 import {Visitor} from '../../javascript/estree-visitor';
-import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedElement, ScannedFeature} from '../../model/model';
+import {ScannedPolymerElement} from '../../polymer/polymer-element';
 import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
-
-function compareTagNames(a: {tagName?: string}, b: {tagName?: string}): number {
-  const tagNameA = a && a.tagName;
-  const tagNameB = b && b.tagName;
-
-  if (tagNameA == null)
-    return (tagNameB == null) ? 0 : -1;
-  if (tagNameB == null)
-    return 1;
-  return tagNameA.localeCompare(tagNameB);
-};
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {CodeUnderliner} from '../test-utils';
 
 suite('Polymer2ElementScanner', () => {
+  const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
+  const urlLoader = new FSUrlLoader(testFilesDir);
+  const underliner = new CodeUnderliner(urlLoader);
 
-  let document: JavaScriptDocument;
-  let elements: Map<string|undefined, ScannedElement>;
-  let elementsList: ScannedElement[];
-
-  suiteSetup(async() => {
+  async function getElements(
+      filename: string): Promise<ScannedPolymerElement[]> {
+    const file = await urlLoader.load(filename);
     const parser = new JavaScriptParser();
-    const file = fs.readFileSync(
-        path.resolve(__dirname, '../static/polymer2/test-element.js'), 'utf8');
-    document = parser.parse(file, '/static/polymer2/test-element.js');
+    const document = parser.parse(file, filename);
     const scanner = new Polymer2ElementScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    const features: ScannedFeature[] = await scanner.scan(document, visit);
-    elements = new Map();
-    elementsList =
-        <ScannedElement[]>features.filter((e) => e instanceof ScannedElement);
-    for (const element of elementsList) {
-      elements.set(element.tagName, element);
-    }
-  });
+    const features = await scanner.scan(document, visit);
+    return features.filter(
+        (e) => e instanceof ScannedPolymerElement) as ScannedPolymerElement[];
+  };
 
-  test('Finds elements', () => {
-    const sortedElements = elementsList.sort(compareTagNames);
-    const elementData =
-        sortedElements.map((e) => ({
-                             tagName: e.tagName,
-                             className: e.className,
-                             superClass: e.superClass,
-                             properties: e.properties.map((p) => ({
-                                                            name: p.name,
-                                                          })),
-                             attributes: e.attributes.map((a) => ({
-                                                            name: a.name,
-                                                          })),
-                           }));
+  function getTestProps(element: ScannedPolymerElement): any {
+    return {
+      className: element.className,
+      superClass: element.superClass && element.superClass.identifier,
+      tagName: element.tagName,
+      description: element.description,
+      properties: element.properties.map((p) => ({
+                                           name: p.name,
+                                         })),
+      attributes: element.attributes.map((a) => ({
+                                           name: a.name,
+                                         })),
+    };
+  }
 
+  test('Finds two basic elements', async() => {
+    const elements = await getElements('test-element-1.js');
+    const elementData = elements.map(getTestProps);
     assert.deepEqual(elementData, [
       {
-        tagName: undefined,
-        className: 'BaseElement',
+        tagName: 'test-element',
+        className: 'TestElement',
         superClass: 'Polymer.Element',
+        description: '',
         properties: [{
           name: 'foo',
         }],
@@ -86,17 +74,89 @@ suite('Polymer2ElementScanner', () => {
         }],
       },
       {
-        tagName: 'test-element',
-        className: 'TestElement',
+        tagName: undefined,
+        className: 'BaseElement',
         superClass: 'Polymer.Element',
+        description: '',
         properties: [{
           name: 'foo',
         }],
         attributes: [{
           name: 'foo',
         }],
-      }
-    ].sort(compareTagNames));
+      },
+    ]);
+
+    const underlinedSource1 =
+        await underliner.underline(elements[0].sourceRange);
+    assert.equal(underlinedSource1, `
+class TestElement extends Polymer.Element {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  static get config() {
+~~~~~~~~~~~~~~~~~~~~~~~
+    return {
+~~~~~~~~~~~~
+      properties: {
+~~~~~~~~~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
+        }
+~~~~~~~~~
+      },
+~~~~~~~~
+    };
+~~~~~~
+  }
+~~~
+}
+~`);
+
+    const underlinedSource2 =
+        await underliner.underline(elements[1].sourceRange);
+    assert.equal(underlinedSource2, `
+class BaseElement extends Polymer.Element {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  static get config() {
+~~~~~~~~~~~~~~~~~~~~~~~
+    return {
+~~~~~~~~~~~~
+      properties: {
+~~~~~~~~~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
+        }
+~~~~~~~~~
+      },
+~~~~~~~~
+    };
+~~~~~~
+  }
+~~~
+}
+~`);
+  });
+
+  test('Uses static is getter for tagName', async() => {
+    const elements = await getElements('test-element-2.js');
+    const elementData = elements.map(getTestProps);
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'test-element',
+        className: 'TestElement',
+        superClass: 'HTMLElement',
+        description: '',
+        properties: [],
+        attributes: [],
+      },
+    ]);
   });
 
 });

@@ -21,6 +21,39 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerProperty} from './polymer-element';
 
+export function getIsValue(node: estree.ClassDeclaration|
+                           estree.ClassExpression): string|undefined {
+  const possibleIsGetters = node.body.body.filter(
+      (n) => n.type === 'MethodDefinition' && n.static === true &&
+          n.kind === 'get' && getIdentifierName(n.key) === 'is');
+  const isGetter = possibleIsGetters.length === 1 && possibleIsGetters[0];
+  if (!isGetter) {
+    return undefined;
+  }
+
+  // TODO(justinfagnani): consider generating warnings for these checks
+  const isGetterBody = isGetter.value.body;
+  if (isGetterBody.body.length !== 1) {
+    // not a single statement function
+    return undefined;
+  }
+  if (isGetterBody.body[0].type !== 'ReturnStatement') {
+    // we only support a return statement
+    return undefined;
+  }
+
+  const returnStatement = isGetterBody.body[0] as estree.ReturnStatement;
+  const returnValue = returnStatement.argument;
+  if (!returnValue || returnValue.type !== 'Literal') {
+    // we only support literals
+    return undefined;
+  }
+  if (typeof returnValue.value !== 'string') {
+    return undefined;
+  }
+  return returnValue.value;
+}
+
 /**
  * Returns the object literal that defines a Polymer element configuration from
  * a Polymer element class.

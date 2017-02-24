@@ -22,9 +22,11 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedElement, ScannedFeature} from '../model/model';
+import {ScannedReference} from '../model/reference';
+import {Severity, Warning} from '../warning/warning';
 
 import {Options as PolymerElementOptions, ScannedPolymerElement} from './polymer-element';
-import {getConfig, getProperties} from './polymer2-config';
+import {getConfig, getIsValue, getProperties} from './polymer2-config';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -80,12 +82,42 @@ class ElementVisitor implements Visitor {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const config = getConfig(node);
+    const isValue = getIsValue(node);
+    const warnings: Warning[] = [];
+
+    const extendsAnnotations =
+        docs.tags!.filter((tag) => tag.tag === 'extends');
+    let _extends: ScannedReference|undefined = undefined;
+
+    // prefer @extends annotations over extends clauses
+    if (extendsAnnotations.length > 0) {
+      const extendsId = extendsAnnotations[0].name;
+      // TODO(justinfagnani): we need source ranges for jsdoc annotations
+      const sourceRange = this._document.sourceRangeForNode(node)!;
+      if (extendsId == null) {
+        warnings.push({
+          code: 'class-extends-annotation-no-id',
+          message: '@extends annotation with no identifier',
+          severity: Severity.WARNING, sourceRange,
+        });
+      } else {
+        _extends = new ScannedReference(extendsId, sourceRange);
+      }
+    } else if (node.superClass) {
+      const extendsId = getIdentifierName(node.superClass);
+      if (extendsId != null) {
+        const sourceRange = this._document.sourceRangeForNode(node.superClass)!;
+        _extends = new ScannedReference(extendsId, sourceRange);
+      }
+    }
 
     const elementOptions: PolymerElementOptions = {
+      tagName: isValue,
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
       properties: (config && getProperties(config, this._document)) || [],
+      superClass: _extends,
     };
 
     // TODO(justinfagnani): figure out how or if to reconcile attributes
@@ -94,11 +126,8 @@ class ElementVisitor implements Visitor {
     //         .filter((p) => p.notify == true)
     //         .map((p) => p.name);
 
-    if (node.superClass) {
-      elementOptions.superClass = getIdentifierName(node.superClass);
-    }
-
     const element = new ScannedPolymerElement(elementOptions);
+    warnings.forEach((w) => element.warnings.push(w));
 
     if (this._hasPolymerDocTag(docs)) {
       this._elements.push(element);

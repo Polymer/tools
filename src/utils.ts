@@ -11,6 +11,19 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import {parse as parseUrl_, Url} from 'url';
+
+const unspecifiedProtocol = '-:';
+
+export function parseUrl(url: string): Url {
+  if (!url.startsWith('//')) {
+    return parseUrl_(url);
+  }
+  const urlObject = parseUrl_(`${unspecifiedProtocol}${url}`);
+  urlObject.protocol = undefined;
+  urlObject.href = urlObject.href!.replace(/^-:/, '');
+  return urlObject;
+}
 
 export function trimLeft(str: string, char: string): string {
   let leftEdge = 0;

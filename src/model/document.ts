@@ -11,6 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import * as dom5 from 'dom5';
 
 import {AnalysisContext} from '../core/analysis-context';
 import {ParsedDocument} from '../parser/document';
@@ -36,9 +37,15 @@ import {SourceRange} from './source-range';
 export class ScannedDocument {
   document: ParsedDocument<any, any>;
   features: ScannedFeature[];
-  isInline = false;
-  sourceRange: SourceRange|undefined = undefined;  // TODO(rictic): track this
   warnings: Warning[];
+  isInline = false;
+
+  // A scanned document has no `sourceRange` or `astNode` by default. However,
+  // they can be set later if the ScannedDocument represents an inline doc.
+  // TODO(fks): Inherit these two properties from ParsedDocument so that they do
+  // not have to be set awkwardly after the fact.
+  sourceRange: SourceRange|undefined = undefined;
+  astNode: dom5.Node|undefined = undefined;
 
   constructor(
       document: ParsedDocument<any, any>, features: ScannedFeature[],
@@ -100,6 +107,7 @@ export interface FeatureKinds {
   'html-script': Import;
   'html-style': Import;
   'js-import': Import;
+  'css-import': Import;
 }
 
 export interface QueryOptionsInterface extends BaseQueryOptions {
@@ -122,8 +130,6 @@ export class Document implements Feature, Queryable {
   private _localFeatures = new Set<Feature>();
   private _scannedDocument: ScannedDocument;
 
-  /** See parsedDocument. */
-  astNode: null = null;
 
   /**
    * To handle recursive dependency graphs we must track whether we've started
@@ -165,12 +171,16 @@ export class Document implements Feature, Queryable {
     return this._scannedDocument.isInline;
   }
 
-  get parsedDocument(): ParsedDocument<any, any> {
-    return this._scannedDocument.document;
-  }
-
   get sourceRange(): SourceRange|undefined {
     return this._scannedDocument.sourceRange;
+  }
+
+  get astNode(): dom5.Node|undefined {
+    return this._scannedDocument.astNode;
+  }
+
+  get parsedDocument(): ParsedDocument<any, any> {
+    return this._scannedDocument.document;
   }
 
   get resolved(): boolean {

@@ -31,6 +31,7 @@ suite('ExpressionScanner', () => {
             <template is="dom-if">
               <div id="[[bar]]"></div>
             </template>
+            <div id="{{bada(wing, daba.boom, 10)}}"></div>
           </template>
           <script>
             Polymer({
@@ -61,26 +62,34 @@ suite('ExpressionScanner', () => {
             <input value="{{val::changed}}">
                             ~~~~~~~~~~~~`,
             `
+            <div id="{{bada(wing, daba.boom, 10)}}"></div>
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~`,
+            `
               <div id="[[bar]]"></div>
                          ~~~`,
             `
           <div id="{{baz}}"></div>
-                     ~~~`
+                     ~~~`,
           ]);
       assert.deepEqual(
-          expressions.map((e) => e.direction), ['{', '{', '[', '{']);
+          expressions.map((e) => e.direction), ['{', '{', '{', '[', '{']);
       assert.deepEqual(
           expressions.map((e) => e.expressionText),
-          ['foo', 'val', 'bar', 'baz']);
+          ['foo', 'val', 'bada(wing, daba.boom, 10)', 'bar', 'baz']);
       assert.deepEqual(
           expressions.map((e) => e.eventName),
-          [undefined, 'changed', undefined, undefined]);
+          [undefined, 'changed', undefined, undefined, undefined]);
       assert.deepEqual(
           expressions.map((e) => e.attribute && e.attribute.name),
-          ['id', 'value', 'id', 'id']);
+          ['id', 'value', 'id', 'id', 'id']);
+      assert.deepEqual(
+          expressions.map((e) => e.properties.map((p) => p.name)),
+          [['foo'], ['val'], ['bada', 'wing', 'daba'], ['bar'], ['baz']]);
+      assert.deepEqual(
+          expressions.map((e) => e.warnings), [[], [], [], [], []]);
       assert.deepEqual(
           expressions.map((e) => e.databindingInto),
-          ['attribute', 'attribute', 'attribute', 'attribute']);
+          ['attribute', 'attribute', 'attribute', 'attribute', 'attribute']);
     });
 
     test('finds interpolated attribute expressions', async() => {
@@ -117,6 +126,10 @@ suite('ExpressionScanner', () => {
           expressions.map((e) => e.direction), ['{', '{', '[', '{']);
       assert.deepEqual(
           expressions.map((e) => e.expressionText), ['foo', 'val', 'x', 'y']);
+      assert.deepEqual(
+          expressions.map((e) => e.properties.map((p) => p.name)),
+          [['foo'], ['val'], ['x'], ['y']]);
+      assert.deepEqual(expressions.map((e) => e.warnings), [[], [], [], []]);
       assert.deepEqual(
           expressions.map((e) => e.eventName),
           [undefined, undefined, undefined, undefined]);
@@ -193,6 +206,11 @@ suite('ExpressionScanner', () => {
             `
       ]);
       assert.deepEqual(
+          expressions.map((e) => e.properties.map((p) => p.name)),
+          [['foo'], ['bar'], ['baz'], ['zod'], ['multiline', 'expressions']]);
+      assert.deepEqual(
+          expressions.map((e) => e.warnings), [[], [], [], [], []]);
+      assert.deepEqual(
           expressions.map((e) => e.eventName),
           [undefined, undefined, undefined, undefined, undefined]);
       assert.deepEqual(
@@ -219,6 +237,10 @@ suite('ExpressionScanner', () => {
           <!-- ignores expressions that are invalid JS -->
           <div id="{{foo(bar.*)}}"></div>
           <div id="{{foo(bar.0)}}"></div>
+
+          <!-- finds warnings in valid JS but invalid Polymer expressions -->
+          <div id="{{-foo}}"></div>
+          {{foo(!bar, () => baz)}}
         </template>
       `;
 
@@ -238,7 +260,16 @@ suite('ExpressionScanner', () => {
                 ~`,
             `
           {{]}}
-            ~`
+            ~`,
+            `
+          <div id="{{-foo}}"></div>
+                     ~~~~`,
+            `
+          {{foo(!bar, () => baz)}}
+                ~~~~`,
+            `
+          {{foo(!bar, () => baz)}}
+                      ~~~~~~~~~`
           ]);
     });
   });
