@@ -25,7 +25,7 @@ import {ScannedElement, ScannedFeature} from '../model/model';
 import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
-import {Options as PolymerElementOptions, ScannedPolymerElement} from './polymer-element';
+import {ScannedPolymerElement} from './polymer-element';
 import {getConfig, getIsValue, getProperties} from './polymer2-config';
 
 export interface ScannedAttribute extends ScannedFeature {
@@ -46,7 +46,7 @@ export class Polymer2ElementScanner implements JavaScriptScanner {
 class ElementVisitor implements Visitor {
   private _possibleElements = new Map<string, ScannedElement>();
   private _registeredButNotFound = new Map<string, string>();
-  private _elements: ScannedElement[] = [];
+  private _elements: Set<ScannedElement> = new Set();
   private _document: JavaScriptDocument;
 
   constructor(document: JavaScriptDocument) {
@@ -111,26 +111,28 @@ class ElementVisitor implements Visitor {
       }
     }
 
-    const elementOptions: PolymerElementOptions = {
+    const element = new ScannedPolymerElement({
       tagName: isValue,
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
       properties: (config && getProperties(config, this._document)) || [],
       superClass: _extends,
-    };
+    });
 
-    // TODO(justinfagnani): figure out how or if to reconcile attributes
-    // elementOptions.attributes = this._getObservedAttributes(node) ||
-    //     (element.properties as ScannedPolymerProperty[])
-    //         .filter((p) => p.notify == true)
-    //         .map((p) => p.name);
+    // If a class defines observedAttributes, it overrides what the base classes
+    // defined.
+    // TODO(justinfagnani): define and handle composition patterns.
+    const observedAttributes = this._getObservedAttributes(node);
 
-    const element = new ScannedPolymerElement(elementOptions);
+    if (observedAttributes != null) {
+      element.attributes = observedAttributes;
+    }
+
     warnings.forEach((w) => element.warnings.push(w));
 
     if (this._hasPolymerDocTag(docs)) {
-      this._elements.push(element);
+      this._elements.add(element);
     }
     return element;
   }
@@ -155,7 +157,7 @@ class ElementVisitor implements Visitor {
       return;
     }
     element.tagName = tagName;
-    this._elements.push(element);
+    this._elements.add(element);
   }
 
   private _getElement(tagName: string, elementDefn: estree.Node): ScannedElement
@@ -184,7 +186,6 @@ class ElementVisitor implements Visitor {
     return elementTags.length >= 1;
   }
 
-  // TODO(justinfagnani): move to vanilla element scanner
   // private _getObservedAttributes(node:
   // estree.ClassDeclaration|estree.ClassExpression) {
   //   const observedAttributesNode: estree.MethodDefinition =
@@ -202,11 +203,79 @@ class ElementVisitor implements Visitor {
   //   }
   // }
 
+  private _getObservedAttributes(node: estree.ClassDeclaration|
+                                 estree.ClassExpression) {
+    const observedAttributesDefn: estree.MethodDefinition|undefined =
+        node.body.body.find((m) => {
+          if (m.type !== 'MethodDefinition' || !m.static) {
+            return false;
+          }
+          return astValue.getIdentifierName(m.key) === 'observedAttributes';
+        });
+    if (observedAttributesDefn) {
+      const body = observedAttributesDefn.value.body.body[0];
+      if (body && body.type === 'ReturnStatement' && body.argument &&
+          body.argument.type === 'ArrayExpression') {
+        return this._extractAttributesFromObservedAttributes(body.argument);
+      }
+    }
+  }
+
+  /**
+   * Extract attributes from the array expression inside a static
+   * observedAttributes method.
+   *
+   * e.g.
+   *     static get observedAttributes() {
+   *       return [
+   *         /** @type {boolean} When given the element is totally inactive \*\/
+   *         'disabled',
+   *         /** @type {boolean} When given the element is expanded \*\/
+   *         'open'
+   *       ];
+   *     }
+   */
+  private _extractAttributesFromObservedAttributes(arry:
+                                                       estree.ArrayExpression) {
+    const results: ScannedAttribute[] = [];
+    for (const expr of arry.elements) {
+      const value = astValue.expressionToValue(expr);
+      if (value && typeof value === 'string') {
+        let description = '';
+        let type: string|null = null;
+        const comment = esutil.getAttachedComment(expr);
+        if (comment) {
+          const annotation = jsdoc.parseJsdoc(comment);
+          description = annotation.description || description;
+          const tags = annotation.tags || [];
+          for (const tag of tags) {
+            if (tag.tag === 'type') {
+              type = type || tag.type;
+            }
+            description = description || tag.description || '';
+          }
+        }
+        const attribute: ScannedAttribute = {
+          name: value,
+          description: description,
+          sourceRange: this._document.sourceRangeForNode(expr),
+          astNode: expr,
+          warnings: [],
+        };
+        if (type) {
+          attribute.type = type;
+        }
+        results.push(attribute);
+      }
+    }
+    return results;
+  }
+
+
   /**
    * Gets all found elements. Can only be called once.
    */
   getRegisteredElements(): ScannedElement[] {
-    const results = this._elements;
     for (const classAndTag of this._registeredButNotFound.entries()) {
       const className = classAndTag[0];
       const tagName = classAndTag[1];
@@ -214,9 +283,9 @@ class ElementVisitor implements Visitor {
       if (element) {
         element.className = className;
         element.tagName = tagName;
-        results.push(element);
+        this._elements.add(element);
       }
     }
-    return results;
+    return Array.from(this._elements);
   }
 }

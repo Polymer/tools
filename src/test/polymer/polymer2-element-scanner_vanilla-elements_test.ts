@@ -21,29 +21,40 @@ import * as path from 'path';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedElement} from '../../model/model';
-import {ElementScanner} from '../../vanilla-custom-elements/element-scanner';
+import {ScannedPolymerElement} from '../../polymer/polymer-element';
+import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
+
+
+//
+// NOTE: THis test was copied from
+// /src/test/vanilla-custom-elements/element-scanner_test.js
+// to ensure that Polymer2ElementScanner can scan vanilla elements while we
+// disable the vanilla element scanner for a short time.
+//
+// Do not modify this test any more, so that we don't have to sync changes
+//
 
 chai.use(require('chai-subset'));
 
-suite('VanillaElementScanner', () => {
+suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
 
-  const elements = new Map<string|undefined, ScannedElement>();
+  const elements = new Map<string|undefined, ScannedPolymerElement>();
   let document: JavaScriptDocument;
-  let elementsList: ScannedElement[];
+  let elementsList: ScannedPolymerElement[];
 
   suiteSetup(async() => {
     const parser = new JavaScriptParser();
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
     document = parser.parse(file, '/static/vanilla-elements.js');
-    const scanner = new ElementScanner();
+    const scanner = new Polymer2ElementScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
     const features = await scanner.scan(document, visit);
-    elementsList =
-        <ScannedElement[]>features.filter((e) => e instanceof ScannedElement);
+
+    elementsList = features.filter(
+        (e) => e instanceof ScannedPolymerElement) as ScannedPolymerElement[];
     for (const element of elementsList) {
       elements.set(element.tagName, element);
     }
