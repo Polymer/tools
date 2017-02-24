@@ -18,32 +18,22 @@ import * as pathLib from 'path';
 
 import {Attribute, Element, ElementLike, ElementMixin, Elements, Property, SourceRange} from './elements-format';
 import {Document} from './model/document';
-import {Feature} from './model/feature';
 import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
 export function generateElementMetadata(
-    input: Package|Document[]|Feature[], packagePath: string): Elements {
+    input: Package|Document[], packagePath: string): Elements {
   let elements: Set<ResolvedElement>;
   let mixins: Set<ResolvedMixin>;
 
   if (input instanceof Array) {
-    const features = input as Array<Feature>;
-    const onlyDocuments = features.every((i) => i.kinds.has('document'));
-    if (onlyDocuments) {
-      elements = new Set();
-      mixins = new Set();
-      for (const document of input as Document[]) {
-        document.getByKind('element').forEach(elements.add);
-        document.getByKind('element-mixin').forEach(mixins.add);
-      }
-    } else {
-      elements = new Set(
-          features.filter((f) => f.kinds.has('element')) as ResolvedElement[]);
-      mixins = new Set(features.filter(
-          (f) => f.kinds.has('element-mixin')) as ResolvedMixin[]);
+    elements = new Set();
+    mixins = new Set();
+    for (const document of input as Document[]) {
+      document.getByKind('element').forEach((f) => elements.add(f));
+      document.getByKind('element-mixin').forEach((f) => mixins.add(f));
     }
   } else {
     elements = input.getByKind('element');

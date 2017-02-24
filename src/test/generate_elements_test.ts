@@ -18,6 +18,7 @@ import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
 import {generateElementMetadata, validateElements, ValidationError} from '../generate-elements';
+import {Document} from '../model/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
@@ -51,7 +52,7 @@ suite('generate-elements', () => {
 
         testDefiner(testName, async() => {
           // Test body here:
-          const elements = await analyzeDir(analysisFixtureDir);
+          const documents = await analyzeDir(analysisFixtureDir);
 
           const packages = new Set<string>(mapI(
               filterI(
@@ -68,7 +69,7 @@ suite('generate-elements', () => {
                 packagePath.substring(analysisFixtureDir.length + 1) :
                 packagePath;
             const analyzedPackages =
-                generateElementMetadata(elements, renormedPackagePath);
+                generateElementMetadata(documents, renormedPackagePath);
             validateElements(analyzedPackages);
 
             try {
@@ -192,17 +193,14 @@ function* walkRecursively(dir: string): Iterable<string> {
   }
 }
 
-async function analyzeDir(baseDir: string) {
+async function analyzeDir(baseDir: string): Promise<Document[]> {
   const analyzer = new Analyzer({
     urlLoader: new FSUrlLoader(baseDir),
     urlResolver: new PackageUrlResolver(),
   });
-  const importStatements =
-      Array.from(filterI(walkRecursively(baseDir), (f) => f.endsWith('.html')))
-          .map(
-              (fn) =>
-                  `<link rel="import" href="${path.relative(baseDir, fn)}">`);
-  const document = await analyzer.analyze(
-      path.join('ephemeral.html'), importStatements.join('\n'));
-  return Array.from(document.getByKind('element', {imported: true}));
+  const allFilenames = Array.from(walkRecursively(baseDir));
+  const htmlOrJsFilenames =
+      allFilenames.filter((f) => f.endsWith('.html') || f.endsWith('.js'));
+  return Promise.all(htmlOrJsFilenames.map(
+      (filename) => analyzer.analyze(path.relative(baseDir, filename))));
 }
