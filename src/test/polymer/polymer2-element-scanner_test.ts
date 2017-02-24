@@ -159,4 +159,51 @@ class BaseElement extends Polymer.Element {
     ]);
   });
 
+  test('Finds vanilla elements', async() => {
+    const elements = await getElements('test-element-4.js');
+    const elementData = elements.map(getTestProps);
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'test-element',
+        className: 'TestElement',
+        superClass: 'HTMLElement',
+        description: '',
+        properties: [],
+        attributes: [
+          {
+            name: 'a',
+          },
+          {
+            name: 'b',
+          }
+        ],
+      },
+    ]);
+  });
+
+  test('Observed attributes override induced attributes', async() => {
+    const elements = await getElements('test-element-5.js');
+    const elementData = elements.map(getTestProps);
+
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'test-element',
+        className: 'TestElement',
+        superClass: 'Polymer.Element',
+        description: '',
+        properties: [{
+          name: 'foo',
+        }],
+        attributes: [
+          {
+            name: 'a',
+          },
+          {
+            name: 'b',
+          }
+        ],
+      },
+    ]);
+  });
+
 });

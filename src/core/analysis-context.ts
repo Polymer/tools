@@ -22,6 +22,7 @@ import {HtmlParser} from '../html/html-parser';
 import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
+import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
 import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {ParsedDocument} from '../parser/document';
@@ -30,6 +31,7 @@ import {BehaviorScanner} from '../polymer/behavior-scanner';
 import {CssImportScanner} from '../polymer/css-import-scanner';
 import {DomModuleScanner} from '../polymer/dom-module-scanner';
 import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
+import {Polymer2ElementScanner} from '../polymer/polymer2-element-scanner';
 import {Polymer2MixinScanner} from '../polymer/polymer2-mixin-scanner';
 import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
@@ -39,7 +41,6 @@ import {TypeScriptPreparser} from '../typescript/typescript-preparser';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
-import {ElementScanner as VanillaElementScanner} from '../vanilla-custom-elements/element-scanner';
 import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 
 import {AnalysisCache} from './analysis-cache';
@@ -94,7 +95,7 @@ export class AnalysisContext {
           new DomModuleScanner(),
           new CssImportScanner(),
           new HtmlCustomElementReferenceScanner(),
-          new PseudoElementScanner()
+          new PseudoElementScanner(),
         ]
       ],
       [
@@ -103,7 +104,8 @@ export class AnalysisContext {
           new PolymerElementScanner(),
           new Polymer2MixinScanner(),
           new BehaviorScanner(),
-          new VanillaElementScanner()
+          new NamespaceScanner(),
+          new Polymer2ElementScanner()
         ]
       ],
     ]);

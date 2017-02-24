@@ -56,7 +56,7 @@ export class WarningPrinter {
     const range = warning.sourceRange;
 
     if (this._options.verbosity === 'full') {
-      this._outStream.write('\n');
+      this._outStream.write('\n\n');
       this._outStream.write(
           await this.getUnderlinedText(range, warning.severity) + '\n\n');
     }

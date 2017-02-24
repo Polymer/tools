@@ -563,6 +563,46 @@ suite('Analyzer', () => {
     });
   });
 
+  test('analyzes a document with a namespace', async() => {
+    const document =
+        await analyzer.analyze('static/namespaces/import-all.html');
+
+    const namespaces =
+        Array.from(document.getByKind('namespace', {imported: true}));
+    assert.deepEqual(namespaces.map((b) => b.name), [
+      'ExplicitlyNamedNamespace',
+      'ExplicitlyNamedNamespace.NestedNamespace',
+      'ImplicitlyNamedNamespace',
+      'ImplicitlyNamedNamespace.NestedNamespace',
+      'DynamicNamespace.ArrayNotation',
+      'DynamicNamespace.DynamicArrayNotation',
+      'DynamicNamespace.Aliased',
+      'DynamicNamespace.baz',
+    ]);
+  });
+
+  test('creates warnings when duplicate namespaces are analyzed', async() => {
+    const document =
+        await analyzer.analyze('static/namespaces/import-duplicates.html');
+    const namespaces =
+        Array.from(document.getByKind('namespace', {imported: true}));
+    assert.deepEqual(namespaces.map((b) => b.name), [
+      'ExplicitlyNamedNamespace',
+      'ExplicitlyNamedNamespace.NestedNamespace',
+    ]);
+    const warnings = document.getWarnings({imported: true});
+    assert.containSubset(
+        warnings, [{
+          message:
+              'Found more than one namespace named ExplicitlyNamedNamespace.',
+          severity: Severity.WARNING,
+          code: 'multiple-javascript-namespaces',
+        }]);
+    assert.deepEqual(await underliner.underline(warnings), [`
+var DuplicateNamespace = {};
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~`]);
+  });
+
   suite('legacy tests', () => {
 
     // ported from old js-parser_test.js
