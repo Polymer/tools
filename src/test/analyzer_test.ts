@@ -428,22 +428,44 @@ suite('Analyzer', () => {
           ]);
     });
 
-    test('handles documents with spaces in url', async() => {
-      const document = await analyzer.analyze('static/spaces in file.html');
-      const features = document.getFeatures({imported: true});
-      assert.deepEqual(
-          Array.from(features)
-              .filter((f) => f.kinds.has('document'))
-              .map((f) => (f as Document).url),
-          [
-            'static/spaces%20in%20file.html',
-            'static/dependencies/spaces%20in%20import.html'
-          ]);
-      assert.deepEqual(
-          Array.from(features)
-              .filter((f) => f.kinds.has('import'))
-              .map((f) => (f as Import).url),
-          ['static/dependencies/spaces%20in%20import.html']);
+    suite('handles documents with spaces in filename', () => {
+
+      test('given a url with unencoded spaces to analyze', async() => {
+        const document = await analyzer.analyze('static/spaces in file.html');
+        const features = document.getFeatures({imported: true});
+        assert.deepEqual(
+            Array.from(features)
+                .filter((f) => f.kinds.has('document'))
+                .map((f) => (f as Document).url),
+            [
+              'static/spaces%20in%20file.html',
+              'static/dependencies/spaces%20in%20import.html'
+            ]);
+        assert.deepEqual(
+            Array.from(features)
+                .filter((f) => f.kinds.has('import'))
+                .map((f) => (f as Import).url),
+            ['static/dependencies/spaces%20in%20import.html']);
+      });
+
+      test('given a url with encoded spaces to analyze', async() => {
+        const document =
+            await analyzer.analyze('static/spaces%20in%20file.html');
+        const features = document.getFeatures({imported: true});
+        assert.deepEqual(
+            Array.from(features)
+                .filter((f) => f.kinds.has('document'))
+                .map((f) => (f as Document).url),
+            [
+              'static/spaces%20in%20file.html',
+              'static/dependencies/spaces%20in%20import.html'
+            ]);
+        assert.deepEqual(
+            Array.from(features)
+                .filter((f) => f.kinds.has('import'))
+                .map((f) => (f as Import).url),
+            ['static/dependencies/spaces%20in%20import.html']);
+      });
     });
   });
 
