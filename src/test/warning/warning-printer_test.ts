@@ -67,6 +67,7 @@ suite('WarningPrinter', () => {
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
     const expected = `
+
 class ClassDeclaration extends HTMLElement {}
       ~~~~~~~~~~~~~~~~
 
@@ -91,6 +92,7 @@ vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for a
     const actual = output.toString();
     assert.isTrue(chalk.hasColor(actual));
     const expected = `
+
 class ClassDeclaration extends HTMLElement {}
 \u001b[33m      ~~~~~~~~~~~~~~~~\u001b[39m
 
@@ -103,6 +105,7 @@ vanilla-elements.js(0,6) \u001b[33mwarning\u001b[39m [dumb-element-name] - This 
     await printer.printWarnings([goodJobWarning]);
     const actual = output.toString();
     const expected = `
+
   static get observedAttributes() {
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return [
