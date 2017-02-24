@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+* Analyzer will not attempt to load or add warnings for imports which can not be resolved by its urlResolver.
+* Protocol-less URLs such as `//host/path` are properly handled instead of treated as absolute paths.
 
 ## [2.0.0-alpha.26] - 2017-02-22
 * Fix issue with file missing from package.json "files" array.
@@ -22,8 +24,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Polymer 2.0 mixin scanner
 * [polymer] Parse polymer databinding expressions.
   Give accurate warnings on parse errors.
-* Analyzer will not attempt to load or add warnings for imports which can not be resolved by its urlResolver.
-* Protocol-less URLs such as `//host/path` are properly handled instead of treated as absolute paths.
 
 ## [2.0.0-alpha.24] - 2017-02-14
 
