@@ -14,7 +14,9 @@
 
 import * as fs from 'fs';
 import * as pathlib from 'path';
-import {parse as parseUrl, Url} from 'url';
+import {Url} from 'url';
+
+import {parseUrl} from '../utils';
 
 import {UrlLoader} from './url-loader';
 

@@ -36,8 +36,9 @@ suite('PackageUrlResolver', function() {
     });
 
     test('canResolve is false for URL with a hostname', () => {
-      assert.isFalse(
-          new PackageUrlResolver().canResolve('http://abc.xyz/foo.html'));
+      const r = new PackageUrlResolver();
+      assert.isFalse(r.canResolve('http://abc.xyz/foo.html'));
+      assert.isFalse(r.canResolve('//abc.xyz/foo.html'));
     });
 
     test('canResolve is true for a URL with the right hostname', () => {
@@ -48,6 +49,7 @@ suite('PackageUrlResolver', function() {
       assert.isTrue(r.canResolve('http://abc.xyz/./foo.html'));
       assert.isTrue(r.canResolve('http://abc.xyz/../foo.html'));
       assert.isTrue(r.canResolve('http://abc.xyz/foo/../foo.html'));
+      assert.isTrue(r.canResolve('//abc.xyz/foo.html'));
     });
 
   });
