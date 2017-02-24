@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Polymer 2.0 mixin scanner
 * [polymer] Parse polymer databinding expressions.
   Give accurate warnings on parse errors.
-* Analyzer will not attempt to load or add warnings for imports which are can not be resolved by its urlResolver.
+* Analyzer will not attempt to load or add warnings for imports which can not be resolved by its urlResolver.
 
 ## [2.0.0-alpha.24] - 2017-02-14
 
