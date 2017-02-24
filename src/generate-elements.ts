@@ -17,28 +17,40 @@ import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
 import {Attribute, Element, ElementLike, ElementMixin, Elements, Property, SourceRange} from './elements-format';
+import {Document} from './model/document';
 import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
+import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
 export function generateElementMetadata(
-    features: ElementOrMixin[], packagePath: string): Elements {
-  const elements =
-      features.filter((f) => f.kinds.has('element')) as ResolvedElement[];
-  const mixins =
-      features.filter((f) => f.kinds.has('element-mixin')) as ResolvedMixin[];
+    input: Package|Document[], packagePath: string): Elements {
+  let elements: Set<ResolvedElement>;
+  let mixins: Set<ResolvedMixin>;
+
+  if (input instanceof Array) {
+    elements = new Set();
+    mixins = new Set();
+    for (const document of input as Document[]) {
+      document.getByKind('element').forEach((f) => elements.add(f));
+      document.getByKind('element-mixin').forEach((f) => mixins.add(f));
+    }
+  } else {
+    elements = input.getByKind('element');
+    mixins = input.getByKind('element-mixin');
+  }
 
   const metadata: Elements = {
     schema_version: '1.0.0',
   };
 
-  if (elements.length > 0) {
-    metadata.elements =
-        elements.map((e) => serializeElement(e, packagePath)) as Element[];
+  if (elements.size > 0) {
+    metadata.elements = Array.from(elements).map(
+        (e) => serializeElement(e, packagePath)) as Element[];
   }
 
-  if (mixins.length > 0) {
-    metadata.mixins = mixins.map(
+  if (mixins.size > 0) {
+    metadata.mixins = Array.from(mixins).map(
         (m) => serializeElementMixin(m, packagePath)) as ElementMixin[];
   }
 

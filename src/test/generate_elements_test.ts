@@ -18,6 +18,7 @@ import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
 import {generateElementMetadata, validateElements, ValidationError} from '../generate-elements';
+import {Document} from '../model/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
@@ -28,93 +29,139 @@ const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 
 
-suite('elements.json generation', function() {
-  const basedir = path.join(__dirname, 'static', 'analysis');
-  const analysisFixtureDirs = fs.readdirSync(basedir)
-                                  .map((p) => path.join(basedir, p))
-                                  .filter((p) => fs.statSync(p).isDirectory());
+suite('generate-elements', () => {
 
-  for (const analysisFixtureDir of analysisFixtureDirs) {
-    // Generate a test from the goldens found in every dir in
-    // src/test/static/analysis/
-    const testBaseName = path.basename(analysisFixtureDir);
-    const testDefiner = onlyTests.has(testBaseName) ?
-        test.only :
-        skipTests.has(testBaseName) ? test.skip : test;
-    const testName = `produces a correct elements.json ` +
-        `for fixture dir \`${testBaseName}\``;
+  suite('generateElementMetadata', () => {
 
-    testDefiner(testName, async function() {
-      // Test body here:
-      const elements = await analyzeDir(analysisFixtureDir);
+    suite('generatates for feature array from fixtures', () => {
+      const basedir = path.join(__dirname, 'static', 'analysis');
+      const analysisFixtureDirs =
+          fs.readdirSync(basedir)
+              .map((p) => path.join(basedir, p))
+              .filter((p) => fs.statSync(p).isDirectory());
 
-      const packages = new Set<string>(mapI(
-          filterI(
-              walkRecursively(analysisFixtureDir),
-              (p) => p.endsWith('bower.json') || p.endsWith('package.json')),
-          (p) => path.dirname(p)));
-      if (packages.size === 0) {
-        packages.add(analysisFixtureDir);
-      }
-      for (const packagePath of packages) {
-        const pathToGolden = path.join(packagePath || '', 'elements.json');
-        const renormedPackagePath = packagePath ?
-            packagePath.substring(analysisFixtureDir.length + 1) :
-            packagePath;
-        const analyzedPackages =
-            generateElementMetadata(elements, renormedPackagePath);
-        validateElements(analyzedPackages);
+      for (const analysisFixtureDir of analysisFixtureDirs) {
+        // Generate a test from the goldens found in every dir in
+        // src/test/static/analysis/
+        const testBaseName = path.basename(analysisFixtureDir);
+        const testDefiner = onlyTests.has(testBaseName) ?
+            test.only :
+            skipTests.has(testBaseName) ? test.skip : test;
+        const testName = `produces a correct elements.json ` +
+            `for fixture dir \`${testBaseName}\``;
 
-        try {
-          assert.deepEqual(
-              analyzedPackages,
-              JSON.parse(fs.readFileSync(pathToGolden, 'utf-8')),
-              `Generated form of ${path.relative(__dirname, pathToGolden)} ` +
-                  `differs from the golden at that path`);
-        } catch (e) {
-          console.log(
-              `Expected contents of ${pathToGolden}:\n` +
-              `${JSON.stringify(analyzedPackages, null, 2)}`);
-          throw e;
-        }
+        testDefiner(testName, async() => {
+          // Test body here:
+          const documents = await analyzeDir(analysisFixtureDir);
+
+          const packages = new Set<string>(mapI(
+              filterI(
+                  walkRecursively(analysisFixtureDir),
+                  (p) =>
+                      p.endsWith('bower.json') || p.endsWith('package.json')),
+              (p) => path.dirname(p)));
+          if (packages.size === 0) {
+            packages.add(analysisFixtureDir);
+          }
+          for (const packagePath of packages) {
+            const pathToGolden = path.join(packagePath || '', 'elements.json');
+            const renormedPackagePath = packagePath ?
+                packagePath.substring(analysisFixtureDir.length + 1) :
+                packagePath;
+            const analyzedPackages =
+                generateElementMetadata(documents, renormedPackagePath);
+            validateElements(analyzedPackages);
+
+            try {
+              assert.deepEqual(
+                  analyzedPackages,
+                  JSON.parse(fs.readFileSync(pathToGolden, 'utf-8')),
+                  `Generated form of ${path.relative(
+                      __dirname, pathToGolden)} ` +
+                      `differs from the golden at that path`);
+            } catch (e) {
+              console.log(
+                  `Expected contents of ${pathToGolden}:\n` +
+                  `${JSON.stringify(analyzedPackages, null, 2)}`);
+              throw e;
+            }
+          }
+        });
       }
     });
-  }
 
-  test('throws when validating valid elements.json', function() {
-    try {
-      validateElements({} as any);
-    } catch (err) {
-      assert.instanceOf(err, ValidationError);
-      const valError: ValidationError = err;
-      assert(valError.errors.length > 0);
-      assert.include(valError.message, `requires property "schema_version"`);
-      return;
-    }
-    throw new Error('expected Analysis validation to fail!');
+    suite('generates from package', () => {
+
+      test('does not include external features', async() => {
+        const basedir =
+            path.resolve(__dirname, 'static/analysis/bower_packages');
+        const analyzer = new Analyzer({
+          urlLoader: new FSUrlLoader(basedir),
+          urlResolver: new PackageUrlResolver(),
+        });
+        const _package = await analyzer.analyzePackage();
+        const metadata = generateElementMetadata(_package, '');
+        // The fixture only contains external elements
+        assert.isUndefined(metadata.elements);
+      });
+
+      test('includes package features', async() => {
+        const basedir = path.resolve(__dirname, 'static/analysis/simple');
+        const analyzer = new Analyzer({
+          urlLoader: new FSUrlLoader(basedir),
+          urlResolver: new PackageUrlResolver(),
+        });
+        const _package = await analyzer.analyzePackage();
+        const metadata = generateElementMetadata(_package, '');
+        assert.equal(metadata.elements && metadata.elements.length, 1);
+        assert.equal(metadata.elements![0].tagname, 'simple-element');
+        assert.equal(metadata.elements![0].path, 'simple-element.html');
+      });
+
+    });
+
   });
 
-  test(`doesn't throw when validating a valid elements.json`, function() {
-    validateElements({elements: [], schema_version: '1.0.0'});
-  });
+  suite('validateElements', () => {
 
-  test(`doesn't throw when validating a version from the future`, function() {
-    validateElements(
-        <any>{elements: [], schema_version: '1.0.1', new_field: 'stuff here'});
-  });
+    test('throws when validating valid elements.json', () => {
+      try {
+        validateElements({} as any);
+      } catch (err) {
+        assert.instanceOf(err, ValidationError);
+        const valError: ValidationError = err;
+        assert(valError.errors.length > 0);
+        assert.include(valError.message, `requires property "schema_version"`);
+        return;
+      }
+      throw new Error('expected Analysis validation to fail!');
+    });
 
-  test(`throws when validating a bad version`, function() {
-    try {
+    test(`doesn't throw when validating a valid elements.json`, () => {
+      validateElements({elements: [], schema_version: '1.0.0'});
+    });
+
+    test(`doesn't throw when validating a version from the future`, () => {
       validateElements(<any>{
         elements: [],
-        schema_version: '5.1.1',
+        schema_version: '1.0.1',
         new_field: 'stuff here'
       });
-    } catch (e) {
-      assert.include(e.message, 'Invalid schema_version in AnalyzedPackage');
-      return;
-    }
-    throw new Error('expected Analysis validation to fail!');
+    });
+
+    test(`throws when validating a bad version`, () => {
+      try {
+        validateElements(<any>{
+          elements: [],
+          schema_version: '5.1.1',
+          new_field: 'stuff here'
+        });
+      } catch (e) {
+        assert.include(e.message, 'Invalid schema_version in AnalyzedPackage');
+        return;
+      }
+      throw new Error('expected Analysis validation to fail!');
+    });
   });
 
 });
@@ -146,17 +193,14 @@ function* walkRecursively(dir: string): Iterable<string> {
   }
 }
 
-async function analyzeDir(baseDir: string) {
+async function analyzeDir(baseDir: string): Promise<Document[]> {
   const analyzer = new Analyzer({
     urlLoader: new FSUrlLoader(baseDir),
     urlResolver: new PackageUrlResolver(),
   });
-  const importStatements =
-      Array.from(filterI(walkRecursively(baseDir), (f) => f.endsWith('.html')))
-          .map(
-              (fn) =>
-                  `<link rel="import" href="${path.relative(baseDir, fn)}">`);
-  const document = await analyzer.analyze(
-      path.join('ephemeral.html'), importStatements.join('\n'));
-  return Array.from(document.getByKind('element', {imported: true}));
+  const allFilenames = Array.from(walkRecursively(baseDir));
+  const htmlOrJsFilenames =
+      allFilenames.filter((f) => f.endsWith('.html') || f.endsWith('.js'));
+  return Promise.all(htmlOrJsFilenames.map(
+      (filename) => analyzer.analyze(path.relative(baseDir, filename))));
 }
