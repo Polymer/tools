@@ -19,6 +19,7 @@ export interface Elements {
   // $schema: 'http://polymer-project.org/schema/v1/elements.json';
   elements?: Element[];
   mixins?: ElementMixin[];
+  namespaces?: Namespace[];
 }
 
 /**
@@ -62,6 +63,16 @@ export interface Position {
   column: number;
 }
 
+export interface Namespace extends Feature {
+  /**
+   * The globally accessible property-path of the namespace. e.q. `Polymer.dom`
+   */
+  name: string;
+
+  /** A markdown description for the namespace. */
+  description?: string;
+}
+
 export interface ElementLike extends Feature {
   /**
    * The path, relative to the base directory of the package.
@@ -92,8 +103,7 @@ export interface ElementLike extends Feature {
   events?: Event[];
 
   /** The shadow dom content slots that this element accepts. */
-  slots:
-  Slot[];  // this formatting is strange, yes
+  'slots': Slot[];  // this formatting is strange, yes
 
   /** Information useful for styling the element and its children. */
   styling: {

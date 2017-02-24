@@ -16,7 +16,8 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Property, SourceRange} from './elements-format';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Namespace, Property, SourceRange} from './elements-format';
+import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
 import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
@@ -27,22 +28,33 @@ export function generateElementMetadata(
     input: Package|Document[], packagePath: string): Elements {
   let elements: Set<ResolvedElement>;
   let mixins: Set<ResolvedMixin>;
+  let namespaces: Set<ResolvedNamespace>;
 
   if (input instanceof Array) {
     elements = new Set();
     mixins = new Set();
+    namespaces = new Set();
     for (const document of input as Document[]) {
       document.getByKind('element').forEach((f) => elements.add(f));
       document.getByKind('element-mixin').forEach((f) => mixins.add(f));
+      document.getByKind('namespace').forEach((f) => namespaces.add(f));
     }
   } else {
     elements = input.getByKind('element');
     mixins = input.getByKind('element-mixin');
+    namespaces = input.getByKind('namespace');
   }
 
   const metadata: Elements = {
     schema_version: '1.0.0',
   };
+
+  if (namespaces.size > 0) {
+    metadata.namespaces = Array.from(namespaces)
+                              .map(
+                                  (e) => serializeNamespace(
+                                      e, packagePath)) as ResolvedNamespace[];
+  }
 
   if (elements.size > 0) {
     metadata.elements = Array.from(elements).map(
@@ -90,6 +102,22 @@ export function validateElements(analyzedPackage: Elements|null|undefined) {
         `Invalid schema_version in AnalyzedPackage. ` +
         `Expected 1.x.x, got ${analyzedPackage!.schema_version}`);
   }
+}
+
+function serializeNamespace(
+    namespace: ResolvedNamespace, packagePath: string): Namespace {
+  const packageRelativePath =
+      pathLib.relative(packagePath, namespace.sourceRange.file);
+  const metadata = {
+    name: namespace.name,
+    description: namespace.description,
+    sourceRange: {
+      file: packageRelativePath,
+      start: namespace.sourceRange.start,
+      end: namespace.sourceRange.end
+    }
+  };
+  return metadata;
 }
 
 function serializeElement(
