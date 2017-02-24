@@ -72,7 +72,7 @@ class BehaviorVisitor implements Visitor {
   }
 
   /**
-   * Look for object declarations with @behavior in the docs.
+   * Look for object declarations with @polymerBehavior in the docs.
    */
   enterVariableDeclaration(
       node: estree.VariableDeclaration, _parent: estree.Node) {

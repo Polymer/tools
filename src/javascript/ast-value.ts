@@ -184,6 +184,9 @@ export function getIdentifierName(node: estree.Node): string|undefined {
   if (node.type === 'Identifier') {
     return node.name;
   }
+  if (node.type === 'Literal') {
+    return String(node.value);
+  }
   if (node.type === 'MemberExpression') {
     const object = getIdentifierName(node.object);
     const property = getIdentifierName(node.property);

@@ -22,6 +22,7 @@ import {HtmlParser} from '../html/html-parser';
 import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
+import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
 import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {ParsedDocument} from '../parser/document';
@@ -93,7 +94,7 @@ export class AnalysisContext {
           new DomModuleScanner(),
           new CssImportScanner(),
           new HtmlCustomElementReferenceScanner(),
-          new PseudoElementScanner()
+          new PseudoElementScanner(),
         ]
       ],
       [
@@ -102,7 +103,8 @@ export class AnalysisContext {
           new PolymerElementScanner(),
           new Polymer2MixinScanner(),
           new BehaviorScanner(),
-          new VanillaElementScanner()
+          new VanillaElementScanner(),
+          new NamespaceScanner(),
         ]
       ],
     ]);
