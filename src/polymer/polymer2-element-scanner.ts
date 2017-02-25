@@ -111,13 +111,34 @@ class ElementVisitor implements Visitor {
       }
     }
 
+    const mixesAnnotations = docs.tags!.filter((tag) => tag.tag === 'mixes');
+    const mixins =
+        mixesAnnotations
+            .map((annotation) => {
+              const mixinId = annotation.name;
+              // TODO(justinfagnani): we need source ranges for jsdoc
+              // annotations
+              const sourceRange = this._document.sourceRangeForNode(node)!;
+              if (mixinId == null) {
+                warnings.push({
+                  code: 'class-mixes-annotation-no-id',
+                  message:
+                      '@mixes annotation with no identifier. Usage `@mixes MixinName`',
+                  severity: Severity.WARNING, sourceRange,
+                });
+                return;
+              }
+              return new ScannedReference(mixinId, sourceRange);
+            })
+            .filter((m) => m != null) as ScannedReference[];
+
     const element = new ScannedPolymerElement({
       tagName: isValue,
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
       properties: (config && getProperties(config, this._document)) || [],
-      superClass: _extends,
+      superClass: _extends, mixins,
     });
 
     // If a class defines observedAttributes, it overrides what the base classes
@@ -185,23 +206,6 @@ class ElementVisitor implements Visitor {
         tags.filter((t: jsdoc.Tag) => t.tag === 'polymerElement');
     return elementTags.length >= 1;
   }
-
-  // private _getObservedAttributes(node:
-  // estree.ClassDeclaration|estree.ClassExpression) {
-  //   const observedAttributesNode: estree.MethodDefinition =
-  //       node.body.body.find((n) =>
-  //         n.type === 'MethodDefinition' &&
-  //         n.static === true &&
-  //         astValue.getIdentifierName(n.key) === 'observedAttributes');
-  //
-  //   if (observedAttributesNode) {
-  //     const body = observedAttributesNode.value.body.body[0];
-  //     if (body && body.type === 'ReturnStatement' &&
-  //         body.argument.type === 'ArrayExpression') {
-  //       return this._extractAttributesFromObservedAttributes(body.argument);
-  //     }
-  //   }
-  // }
 
   private _getObservedAttributes(node: estree.ClassDeclaration|
                                  estree.ClassExpression) {

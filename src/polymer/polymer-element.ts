@@ -63,6 +63,7 @@ export interface Options {
   tagName?: string;
   className?: string;
   superClass?: ScannedReference;
+  mixins?: ScannedReference[];
   extends?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
