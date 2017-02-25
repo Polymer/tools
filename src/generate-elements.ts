@@ -193,7 +193,7 @@ function serializeElementLike(
 }
 
 function serializeProperty(
-    resolvedElement: ResolvedElement,
+    elementOrMixin: ElementOrMixin,
     elementPath: string,
     resolvedProperty: ResolvedProperty): Property {
   const property: Property = {
@@ -206,7 +206,7 @@ function serializeProperty(
   if (resolvedProperty.default) {
     property.defaultValue = resolvedProperty.default;
   }
-  property.metadata = resolvedElement.emitPropertyMetadata(resolvedProperty);
+  property.metadata = elementOrMixin.emitPropertyMetadata(resolvedProperty);
   return property;
 }
 
