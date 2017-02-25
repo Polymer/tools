@@ -39,7 +39,7 @@ suite('UndefinedElements', () => {
 
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
 <undefined-element></undefined-element>
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`]);
+~~~~~~~~~~~~~~~~~~~`]);
     assert.equal(
         warnings[0].message, 'The element undefined-element is not defined');
   });

@@ -32,13 +32,17 @@ export class UndefinedElements extends HtmlRule {
     super();
   }
 
-  async checkDocument(_parsedDocument: ParsedHtmlDocument, document: Document):
+  async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document):
       Promise<Warning[]> {
     const warnings: Warning[] = [];
 
     const refs = document.getByKind('element-reference');
 
     for (const ref of refs) {
+      if (ref.tagName === 'test-fixture') {
+        // HACK. Filed as https://github.com/Polymer/polymer-analyzer/issues/507
+        continue;
+      }
       const el = document.getById(
           'element', ref.tagName, {imported: true, externalPackages: true});
 
@@ -47,7 +51,7 @@ export class UndefinedElements extends HtmlRule {
           code: 'undefined-elements',
           message: `The element ${ref.tagName} is not defined`,
           severity: Severity.WARNING,
-          sourceRange: ref.sourceRange!
+          sourceRange: parsedDocument.sourceRangeForStartTag(ref.astNode)!
         });
       }
     }

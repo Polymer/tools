@@ -127,7 +127,25 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/iron-location/pull/68
   'iron-location/test/initialization-cases.html':
       new Set(['set-unknown-attribute']),
+
+  // https://github.com/PolymerLabs/note-app-elements/pull/6
+  'note-app-elements/na-editor.html': new Set(['undefined-elements']),
+
+  // Chai includes a lot of modules, with @namespace declarations that
+  // overlap.
+  'chai/chai.js': new Set(['multiple-javascript-namespaces']),
+
+  // This is a template file, and it contains a malformed url.
+  'web-component-tester/data/index.html': new Set(['unable-to-analyze']),
 };
+
+const codesOkInTestsAndDemos = new Set([
+  // We've got a number of places in our tests and demos where code needs an
+  // element but doesn't directly depend on it. Should probably be fixed, but
+  // as it's only ever used in one place it's not important.
+  'undefined-elements'
+
+]);
 
 // Filter out known issues in the codebase.
 function filterWarnings(warnings: Warning[]) {
@@ -137,6 +155,16 @@ function filterWarnings(warnings: Warning[]) {
     }
     const fileCodes = fileSpecificIgnoredCodes[w.sourceRange.file] || new Set();
     if (fileCodes.has(w.code)) {
+      return false;
+    }
+    if (codesOkInTestsAndDemos.has(w.code) &&
+        /\/(test|demo)\//.test(w.sourceRange.file)) {
+      return false;
+    }
+    if (w.sourceRange.file.startsWith('app-layout/templates/')) {
+      // This is a bug in the integration test runner. These templates all
+      // have their own bower.json files, so we should run bower install on
+      // them.
       return false;
     }
     return true;
