@@ -20,14 +20,14 @@ import {RuleCollection} from './rule';
 registry.register(new RuleCollection(
     'polymer-2',
     `Rules for projects that use Polymer 2.x`,
-    ['dom-module-invalid-attrs', 'style-into-template']));
+    ['dom-module-invalid-attrs', 'style-into-template', 'undefined-elements']));
 
 registry.register(new RuleCollection(
     'polymer-2-hybrid',
     `Rules for projects that are compatible with either Polymer 1.x or 2.x
 
 Will warn about use of deprecated Polymer 1.x features or brand new features in Polymer 2.x`,
-    ['dom-module-invalid-attrs', 'style-into-template']));
+    ['dom-module-invalid-attrs', 'style-into-template', 'undefined-elements']));
 
 registry.register(new RuleCollection(
     'polymer-1',
@@ -35,4 +35,4 @@ registry.register(new RuleCollection(
 
 For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-hybrid.
 `,
-    []));
+    ['undefined-elements']));
