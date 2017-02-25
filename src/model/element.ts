@@ -23,6 +23,10 @@ export class ScannedElement extends ScannedElementBase {
   tagName?: string;
   className?: string;
   superClass?: ScannedReference;
+
+  /**
+   * For customized built-in elements, the tagname of the superClass.
+   */
   extends?: string;
 
   constructor() {
@@ -44,6 +48,10 @@ export class Element extends ElementBase implements Feature {
   tagName?: string;
   className?: string;
   superClass?: Reference;
+
+  /**
+   * For customized built-in elements, the tagname of the superClass.
+   */
   extends?: string;
 
   constructor() {
