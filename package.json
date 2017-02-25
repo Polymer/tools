@@ -5,9 +5,11 @@
   "main": "lib/linter.js",
   "typings": "lib/linter.d.ts",
   "dependencies": {
+    "@types/fast-levenshtein": "0.0.1",
     "@types/node": "4.0.30",
     "@types/parse5": "^2.2.34",
     "dom5": "^2.0.0",
+    "fast-levenshtein": "^2.0.6",
     "parse5": "^2.2.1",
     "polymer-analyzer": "2.0.0-alpha.27",
     "strip-indent": "^2.0.0"

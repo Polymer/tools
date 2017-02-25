@@ -78,7 +78,7 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // https://github.com/PolymerElements/iron-a11y-keys-behavior/pull/66
   'iron-a11y-keys-behavior/test/basic-test.html':
-      new Set(['unknown-polymer-behavior']),
+      new Set(['unknown-polymer-behavior', 'set-unknown-attribute']),
 
   // https://github.com/PolymerLabs/note-app-elements/pull/5
   'note-app-elements/na-behavior.html': new Set(['unknown-polymer-behavior']),
@@ -115,6 +115,18 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   'hydrolysis/src/loader/noop-resolver.ts': new Set(['unable-to-analyze']),
   'hydrolysis/src/loader/string-resolver.ts': new Set(['unable-to-analyze']),
   'hydrolysis/src/loader/xhr-resolver.ts': new Set(['unable-to-analyze']),
+
+  // https://github.com/PolymerElements/app-layout/pull/412
+  'app-layout/templates/publishing/src/blog-app.html':
+      new Set(['polymer-expression-parse-error']),
+
+  // https://github.com/PolymerElements/iron-doc-viewer/pull/98
+  'iron-doc-viewer/iron-doc-property.html':
+      new Set(['polymer-expression-parse-error']),
+
+  // https://github.com/PolymerElements/iron-location/pull/68
+  'iron-location/test/initialization-cases.html':
+      new Set(['set-unknown-attribute']),
 };
 
 // Filter out known issues in the codebase.
