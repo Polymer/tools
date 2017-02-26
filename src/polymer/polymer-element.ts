@@ -21,6 +21,7 @@ import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
+import {PolymerElementMixin} from './polymer-element-mixin';
 
 export interface BasePolymerProperty {
   published?: boolean;
@@ -63,6 +64,7 @@ export interface Options {
   tagName?: string;
   className?: string;
   superClass?: ScannedReference;
+  mixins?: ScannedReference[];
   extends?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
@@ -241,10 +243,115 @@ function propertyToAttributeName(propertyName: string): string|null {
 function resolveElement(
     scannedElement: ScannedPolymerElement, document: Document): PolymerElement {
   const element = new PolymerElement();
+  applySuperClass(element, scannedElement, document);
+  applyMixins(element, scannedElement, document);
+  applySelf(element, scannedElement, document);
 
   //
-  // Superclass
+  // Behaviors
   //
+  // TODO(justinfagnani): Refactor behaviors to work like superclasses and
+  // mixins and be applied before own members
+  const behaviorsAndWarnings =
+      getBehaviors(scannedElement.behaviorAssignments, document);
+
+  // This has the combined effects of copying the array of warnings from the
+  // ScannedElement, and adding in any new ones found when resolving behaviors.
+  element.warnings = element.warnings.concat(behaviorsAndWarnings.warnings);
+
+  const behaviors = Array.from(behaviorsAndWarnings.behaviors);
+
+  element.properties = inheritValues(
+      element.properties,
+      behaviors.map((b) => ({source: b.className, values: b.properties})));
+  element.attributes = inheritValues(
+      element.attributes,
+      behaviors.map((b) => ({source: b.className, values: b.attributes})));
+  element.events = inheritValues(
+      element.events,
+      behaviors.map((b) => ({source: b.className, values: b.events})));
+
+  const domModule = document.getOnlyAtId(
+      'dom-module',
+      scannedElement.tagName || '',
+      {imported: true, externalPackages: true});
+
+  if (domModule) {
+    element.description = element.description || domModule.comment || '';
+    element.domModule = domModule.node;
+    element.slots = domModule.slots.slice();
+    element.localIds = domModule.localIds.slice();
+  }
+
+  if (scannedElement.pseudo) {
+    element.kinds.add('pseudo-element');
+  }
+
+  return element;
+}
+
+/**
+ * Note: mutates `element`.
+ */
+function inheritFrom(element: PolymerElement, superElement: PolymerExtension) {
+  // TODO(justinfagnani): fixup and use inheritValues, but it has slightly odd
+  // semantics currently
+
+  for (const superProperty of superElement.properties) {
+    const newProperty = Object.assign({}, superProperty);
+    element.properties.push(newProperty);
+  }
+
+  for (const superAttribute of superElement.attributes) {
+    const newAttribute = Object.assign({}, superAttribute);
+    element.attributes.push(newAttribute);
+  }
+
+  for (const superEvent of superElement.events) {
+    const newEvent = Object.assign({}, superEvent);
+    element.events.push(newEvent);
+  }
+
+  // TODO(justinfagnani): slots, listeners, observers, dom-module?
+  // What actually inherits?
+}
+
+function applySelf(
+    element: PolymerElement,
+    scannedElement: ScannedPolymerElement,
+    document: Document) {
+  // TODO(justinfagnani): Copy over all properties better, or have
+  // PolymerElement wrap ScannedPolymerElement.
+  element.abstract = scannedElement.abstract;
+  element.astNode = scannedElement.astNode;
+  scannedElement.attributes.forEach((o) => element.attributes.push(o));
+  scannedElement.behaviorAssignments.forEach(
+      (o) => element.behaviorAssignments.push(o));
+  element.className = scannedElement.className;
+  scannedElement.demos.forEach((o) => element.demos.push(o));
+  element.description = scannedElement.description;
+  element.domModule = scannedElement.domModule;
+  scannedElement.events.forEach((o) => element.events.push(o));
+  element.extends = scannedElement.extends;
+  element.jsdoc = scannedElement.jsdoc;
+  scannedElement.listeners.forEach((o) => element.listeners.push(o));
+  // scannedElement.mixins.forEach(
+  //     (o) => element.mixins.push(o.resolve(document)));
+  scannedElement.observers.forEach((o) => element.observers.push(o));
+  scannedElement.properties.forEach((o) => element.properties.push(o));
+  element.scriptElement = scannedElement.scriptElement;
+  scannedElement.slots.forEach((o) => element.slots.push(o));
+  element.sourceRange = scannedElement.sourceRange!;
+  element.superClass =
+      scannedElement.superClass && scannedElement.superClass.resolve(document);
+  element.tagName = scannedElement.tagName;
+  scannedElement.warnings.forEach((o) => element.warnings.push(o));
+}
+
+function applySuperClass(
+    element: PolymerElement,
+    scannedElement: ScannedElement,
+    document: Document) {
   if (scannedElement.superClass &&
       scannedElement.superClass.identifier !== 'HTMLElement') {
     const superElements =
@@ -286,102 +393,50 @@ function resolveElement(
       }
     }
   }
-
-  // TODO(justinfagnani): Copy over all properties better, or have
-  // PolymerElement wrap ScannedPolymerElement.
-  element.abstract = scannedElement.abstract;
-  element.astNode = scannedElement.astNode;
-  scannedElement.attributes.forEach((o) => element.attributes.push(o));
-  scannedElement.behaviorAssignments.forEach(
-      (o) => element.behaviorAssignments.push(o));
-  element.className = scannedElement.className;
-  scannedElement.demos.forEach((o) => element.demos.push(o));
-  element.description = scannedElement.description;
-  element.domModule = scannedElement.domModule;
-  scannedElement.events.forEach((o) => element.events.push(o));
-  element.extends = scannedElement.extends;
-  element.jsdoc = scannedElement.jsdoc;
-  scannedElement.listeners.forEach((o) => element.listeners.push(o));
-  scannedElement.observers.forEach((o) => element.observers.push(o));
-  scannedElement.properties.forEach((o) => element.properties.push(o));
-  element.scriptElement = scannedElement.scriptElement;
-  scannedElement.slots.forEach((o) => element.slots.push(o));
-  element.sourceRange = scannedElement.sourceRange!;
-  element.superClass =
-      scannedElement.superClass && scannedElement.superClass.resolve(document);
-  element.tagName = scannedElement.tagName;
-  scannedElement.warnings.forEach((o) => element.warnings.push(o));
-
-  //
-  // Behaviors
-  //
-  const behaviorsAndWarnings =
-      getBehaviors(scannedElement.behaviorAssignments, document);
-
-  // This has the combined effects of copying the array of warnings from the
-  // ScannedElement, and adding in any new ones found when resolving behaviors.
-  element.warnings = element.warnings.concat(behaviorsAndWarnings.warnings);
-
-  const behaviors = Array.from(behaviorsAndWarnings.behaviors);
-
-  // TODO(justinfagnani): consider this:
-  // for (const behavior of behaviors) {
-  //   inheritFrom(element, behavior);
-  // }
-
-  element.properties = inheritValues(
-      element.properties,
-      behaviors.map((b) => ({source: b.className, values: b.properties})));
-  element.attributes = inheritValues(
-      element.attributes,
-      behaviors.map((b) => ({source: b.className, values: b.attributes})));
-  element.events = inheritValues(
-      element.events,
-      behaviors.map((b) => ({source: b.className, values: b.events})));
-
-  const domModule = document.getOnlyAtId(
-      'dom-module',
-      scannedElement.tagName || '',
-      {imported: true, externalPackages: true});
-
-  if (domModule) {
-    element.description = element.description || domModule.comment || '';
-    element.domModule = domModule.node;
-    element.slots = domModule.slots.slice();
-    element.localIds = domModule.localIds.slice();
-  }
-
-  if (scannedElement.pseudo) {
-    element.kinds.add('pseudo-element');
-  }
-
-  return element;
 }
 
-/**
- * Note: mutates `element`.
- */
-function inheritFrom(element: PolymerElement, superElement: PolymerElement) {
-  // TODO(justinfagnani): fixup and use inheritValues, but it has slightly odd
-  // semantics currently
-
-  for (const superProperty of superElement.properties) {
-    const newProperty = Object.assign({}, superProperty);
-    element.properties.push(newProperty);
+function applyMixins(
+    element: PolymerElement,
+    scannedElement: ScannedElement,
+    document: Document) {
+  for (const scannedMixinReference of scannedElement.mixins) {
+    const mixinReference = scannedMixinReference.resolve(document);
+    const mixinId = mixinReference.identifier;
+    element.mixins.push(mixinReference);
+    const mixins = document.getById('element-mixin', mixinId, {
+      externalPackages: true,
+      imported: true,
+    });
+    if (mixins.size === 0) {
+      element.warnings.push({
+        message: `@mixes reference not found: ${mixinId}.` +
+            `Did you import it? Is it annotated with @polymerMixin?`,
+        severity: Severity.ERROR,
+        code: 'mixes-reference-not-found',
+        sourceRange: scannedMixinReference.sourceRange!,
+      });
+      continue;
+    } else if (mixins.size > 1) {
+      element.warnings.push({
+        message: `@mixes reference, multiple mixins found ${mixinId}`,
+        severity: Severity.ERROR,
+        code: 'mixes-reference-multiple-found',
+        sourceRange: scannedMixinReference.sourceRange!,
+      });
+      continue;
+    }
+    const mixin = mixins.values().next().value;
+    if (!(mixin instanceof PolymerElementMixin)) {
+      element.warnings.push({
+        message: `@mixes reference to a non-Mixin ${mixinId}`,
+        severity: Severity.ERROR,
+        code: 'mixes-reference-non-mixin',
+        sourceRange: scannedMixinReference.sourceRange!,
+      });
+      continue;
+    }
+    inheritFrom(element, mixin as PolymerElementMixin);
   }
-
-  for (const superAttribute of superElement.attributes) {
-    const newAttribute = Object.assign({}, superAttribute);
-    element.attributes.push(newAttribute);
-  }
-
-  for (const superEvent of superElement.events) {
-    const newEvent = Object.assign({}, superEvent);
-    element.events.push(newEvent);
-  }
-
-  // TODO(justinfagnani): slots, listeners, observers, dom-module?
-  // What actually inherits?
 }
 
 // TODO(justinfagnani): move to Behavior

@@ -43,7 +43,7 @@ suite('Polymer2ElementScanner', () => {
   };
 
   function getTestProps(element: ScannedPolymerElement): any {
-    return {
+    const props: any = {
       className: element.className,
       superClass: element.superClass && element.superClass.identifier,
       tagName: element.tagName,
@@ -55,6 +55,10 @@ suite('Polymer2ElementScanner', () => {
                                            name: a.name,
                                          })),
     };
+    if (element.mixins.length > 0) {
+      props.mixins = element.mixins.map((m) => m.identifier);
+    }
+    return props;
   }
 
   test('Finds two basic elements', async() => {
@@ -202,6 +206,23 @@ class BaseElement extends Polymer.Element {
             name: 'b',
           }
         ],
+      },
+    ]);
+  });
+
+  test('Read mixes annotations', async() => {
+    const elements = await getElements('test-element-6.js');
+    const elementData = elements.map(getTestProps);
+
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'test-element',
+        className: 'TestElement',
+        superClass: 'Polymer.Element',
+        description: '',
+        properties: [],
+        attributes: [],
+        mixins: ['Mixin2', 'Mixin1'],
       },
     ]);
   });

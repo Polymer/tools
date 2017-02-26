@@ -19,6 +19,7 @@ import * as path from 'path';
 import {Analyzer} from '../../analyzer';
 import {PolymerElement} from '../../polymer/polymer-element';
 import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
+import {Polymer2MixinScanner} from '../../polymer/polymer2-mixin-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('PolymerElement', () => {
@@ -30,6 +31,7 @@ suite('PolymerElement', () => {
       'js',
       [
         new Polymer2ElementScanner(),
+        new Polymer2MixinScanner(),
       ]
     ]])
   });
@@ -90,8 +92,76 @@ suite('PolymerElement', () => {
           },
           {
             name: 'bar',
-
           },
+        ],
+      },
+    ]);
+  });
+
+  test('Elements inherit from mixins and base classes', async() => {
+    const elements = await getElements('test-element-7.js');
+    const elementData = Array.from(elements).map(getTestProps);
+    assert.deepEqual(elementData, [
+      {
+        tagName: undefined,
+        className: 'BaseElement',
+        superClass: 'Polymer.Element',
+        description: '',
+        properties: [
+          {
+            name: 'one',
+          },
+          {
+            name: 'two',
+          }
+        ],
+        attributes: [
+          {
+            name: 'one',
+          },
+          {
+            name: 'two',
+          }
+        ],
+      },
+      {
+        tagName: 'sub-element',
+        className: 'SubElement',
+        superClass: 'BaseElement',
+        description: '',
+        properties: [
+          {
+            name: 'one',
+          },
+          {
+            name: 'two',
+          },
+          {
+            name: 'three',
+          },
+          {
+            name: 'four',
+          },
+          {
+            name: 'five',
+          }
+        ],
+        attributes: [
+          {
+            name: 'one',
+          },
+          {
+            name: 'two',
+          },
+          {
+            name: 'three',
+          },
+          {
+            name: 'four',
+          },
+          {
+            name: 'five',
+          }
         ],
       },
     ]);
