@@ -96,24 +96,20 @@ suite('Polymer2ElementScanner', () => {
     assert.equal(underlinedSource1, `
 class TestElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  static get config() {
-~~~~~~~~~~~~~~~~~~~~~~~
+  static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
-      properties: {
-~~~~~~~~~~~~~~~~~~~
-        foo: {
-~~~~~~~~~~~~~~
-          notify: true,
-~~~~~~~~~~~~~~~~~~~~~~~
-          type: String,
-~~~~~~~~~~~~~~~~~~~~~~~
-        }
-~~~~~~~~~
-      },
-~~~~~~~~
-    };
-~~~~~~
+      foo: {
+~~~~~~~~~~~~
+        notify: true,
+~~~~~~~~~~~~~~~~~~~~~
+        type: String,
+~~~~~~~~~~~~~~~~~~~~~
+      }
+~~~~~~~
+    }
+~~~~~
   }
 ~~~
 }
@@ -124,20 +120,16 @@ class TestElement extends Polymer.Element {
     assert.equal(underlinedSource2, `
 class BaseElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  static get config() {
-~~~~~~~~~~~~~~~~~~~~~~~
+  static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
-      properties: {
-~~~~~~~~~~~~~~~~~~~
-        foo: {
-~~~~~~~~~~~~~~
-          notify: true,
-~~~~~~~~~~~~~~~~~~~~~~~
-          type: String,
-~~~~~~~~~~~~~~~~~~~~~~~
-        }
-~~~~~~~~~
+      foo: {
+~~~~~~~~~~~~
+        notify: true,
+~~~~~~~~~~~~~~~~~~~~~
+        type: String,
+~~~~~~~~~~~~~~~~~~~~~
       },
 ~~~~~~~~
     };

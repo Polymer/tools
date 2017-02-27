@@ -77,20 +77,16 @@ function TestMixin(superclass) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   return class extends superclass {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    static get config() {
-~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       return {
 ~~~~~~~~~~~~~~
-        properties: {
-~~~~~~~~~~~~~~~~~~~~~
-          foo: {
-~~~~~~~~~~~~~~~~
-            notify: true,
-~~~~~~~~~~~~~~~~~~~~~~~~~
-            type: String,
-~~~~~~~~~~~~~~~~~~~~~~~~~
-          }
-~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
         },
 ~~~~~~~~~~
       };
@@ -120,20 +116,16 @@ function TestMixin(superclass) {
     assert.equal(underlinedSource, `
 const TestMixin = (superclass) => class extends superclass {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  static get config() {
-~~~~~~~~~~~~~~~~~~~~~~~
+  static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
-      properties: {
-~~~~~~~~~~~~~~~~~~~
-        foo: {
-~~~~~~~~~~~~~~
-          notify: true,
-~~~~~~~~~~~~~~~~~~~~~~~
-          type: String,
-~~~~~~~~~~~~~~~~~~~~~~~
-        }
-~~~~~~~~~
+      foo: {
+~~~~~~~~~~~~
+        notify: true,
+~~~~~~~~~~~~~~~~~~~~~
+        type: String,
+~~~~~~~~~~~~~~~~~~~~~
       },
 ~~~~~~~~
     };
@@ -163,20 +155,16 @@ const TestMixin = function(superclass) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   return class extends superclass {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    static get config() {
-~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       return {
 ~~~~~~~~~~~~~~
-        properties: {
-~~~~~~~~~~~~~~~~~~~~~
-          foo: {
-~~~~~~~~~~~~~~~~
-            notify: true,
-~~~~~~~~~~~~~~~~~~~~~~~~~
-            type: String,
-~~~~~~~~~~~~~~~~~~~~~~~~~
-          }
-~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
         },
 ~~~~~~~~~~
       };
@@ -251,20 +239,16 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   class TestMixin extends base {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    static get config() {
-~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       return {
 ~~~~~~~~~~~~~~
-        properties: {
-~~~~~~~~~~~~~~~~~~~~~
-          foo: {
-~~~~~~~~~~~~~~~~
-            notify: true,
-~~~~~~~~~~~~~~~~~~~~~~~~~
-            type: String,
-~~~~~~~~~~~~~~~~~~~~~~~~~
-          }
-~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
         },
 ~~~~~~~~~~
       };

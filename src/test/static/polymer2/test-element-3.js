@@ -3,13 +3,11 @@
  * @extends Polymer.Element
  */
 class BaseElement extends Polymer.Element {
-  static get config() {
+  static get properties() {
     return {
-      properties: {
-        foo: {
-          notify: true,
-          type: String,
-        }
+      foo: {
+        notify: true,
+        type: String,
       },
     };
   }
@@ -23,13 +21,11 @@ class SubElement extends BaseElement {
   static get is() {
     return 'sub-element';
   }
-  static get config() {
+  static get properties() {
     return {
-      properties: {
-        bar: {
-          notify: true,
-          type: String,
-        }
+      bar: {
+        notify: true,
+        type: String,
       },
     };
   }

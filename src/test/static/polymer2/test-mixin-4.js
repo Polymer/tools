@@ -5,13 +5,11 @@ let TestMixin;
 
 function Foo(superclass) {
   return class extends superclass {
-    static get config() {
+    static get properties() {
       return {
-        properties: {
-          foo: {
-            notify: true,
-            type: String,
-          }
+        foo: {
+          notify: true,
+          type: String,
         },
       };
     }

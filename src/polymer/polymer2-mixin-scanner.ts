@@ -22,7 +22,7 @@ import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ScannedPolymerElementMixin} from './polymer-element-mixin';
-import {getConfig, getProperties} from './polymer2-config';
+import {getProperties} from './polymer2-config';
 
 export class Polymer2MixinScanner implements JavaScriptScanner {
   async scan(
@@ -164,8 +164,7 @@ class MixinVisitor implements Visitor {
     }
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
-    const config = getConfig(node);
-    const properties = config && getProperties(config, this._document);
+    const properties = getProperties(node, this._document);
 
     mixin.description = docs.description ? docs.description.trim() : '';
     mixin.events = esutil.getEventComments(node);
