@@ -81,7 +81,7 @@ suite('jsdoc', function() {
 
     test('handles empty lines', function() {
       const parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
-      assert.deepEqual(parsed.description, '\n\nFoo\n\nBar');
+      assert.deepEqual(parsed.description, 'Foo\n\nBar');
     });
 
   });

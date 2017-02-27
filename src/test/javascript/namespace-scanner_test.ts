@@ -46,7 +46,7 @@ suite('NamespaceScanner', () => {
     assert.equal(namespaces.length, 2);
 
     assert.equal(namespaces[0].name, 'ExplicitlyNamedNamespace');
-    assert.equal(namespaces[0].description, '\n');
+    assert.equal(namespaces[0].description, '');
     assert.deepEqual(namespaces[0].warnings, []);
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 var ExplicitlyNamedNamespace = {};
@@ -54,7 +54,7 @@ var ExplicitlyNamedNamespace = {};
 
     assert.equal(
         namespaces[1].name, 'ExplicitlyNamedNamespace.NestedNamespace');
-    assert.equal(namespaces[1].description, '\n');
+    assert.equal(namespaces[1].description, '');
     assert.deepEqual(namespaces[1].warnings, []);
     assert.equal(await underliner.underline(namespaces[1].sourceRange), `
 ExplicitlyNamedNamespace.NestedNamespace = {
@@ -70,7 +70,7 @@ ExplicitlyNamedNamespace.NestedNamespace = {
     assert.equal(namespaces.length, 4);
 
     assert.equal(namespaces[0].name, 'ImplicitlyNamedNamespace');
-    assert.equal(namespaces[0].description, '\n');
+    assert.equal(namespaces[0].description, '');
     assert.deepEqual(namespaces[0].warnings, []);
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 var ImplicitlyNamedNamespace = {};
@@ -78,7 +78,7 @@ var ImplicitlyNamedNamespace = {};
 
     assert.equal(
         namespaces[1].name, 'ImplicitlyNamedNamespace.NestedNamespace');
-    assert.equal(namespaces[1].description, '\n');
+    assert.equal(namespaces[1].description, '');
     assert.deepEqual(namespaces[1].warnings, []);
     assert.equal(await underliner.underline(namespaces[1].sourceRange), `
 ImplicitlyNamedNamespace.NestedNamespace = {
@@ -89,7 +89,7 @@ ImplicitlyNamedNamespace.NestedNamespace = {
 ~~`);
 
     assert.equal(namespaces[2].name, 'ParentNamespace.FooNamespace');
-    assert.equal(namespaces[2].description, '\n');
+    assert.equal(namespaces[2].description, '');
     assert.deepEqual(namespaces[2].warnings, []);
     assert.equal(await underliner.underline(namespaces[2].sourceRange), `
 FooNamespace = {
@@ -100,7 +100,7 @@ FooNamespace = {
 ~~`);
 
     assert.equal(namespaces[3].name, 'ParentNamespace.BarNamespace');
-    assert.equal(namespaces[3].description, '\n');
+    assert.equal(namespaces[3].description, '');
     assert.deepEqual(namespaces[3].warnings, []);
     assert.equal(await underliner.underline(namespaces[3].sourceRange), `
 ParentNamespace.BarNamespace = {
@@ -116,7 +116,7 @@ ParentNamespace.BarNamespace = {
     assert.equal(namespaces.length, 3);
 
     assert.equal(namespaces[0].name, 'DynamicNamespace.ArrayNotation');
-    assert.equal(namespaces[0].description, '\n');
+    assert.equal(namespaces[0].description, '');
     assert.deepEqual(namespaces[0].warnings, []);
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 DynamicNamespace[\'ArrayNotation\'] = {
@@ -127,7 +127,7 @@ DynamicNamespace[\'ArrayNotation\'] = {
 ~~`);
 
     assert.equal(namespaces[1].name, 'DynamicNamespace.DynamicArrayNotation');
-    assert.equal(namespaces[1].description, '\n');
+    assert.equal(namespaces[1].description, '');
     assert.deepEqual(namespaces[1].warnings, []);
     assert.equal(await underliner.underline(namespaces[1].sourceRange), `
 DynamicNamespace[baz] = {
@@ -138,7 +138,7 @@ DynamicNamespace[baz] = {
 ~~`);
 
     assert.equal(namespaces[2].name, 'DynamicNamespace.Aliased');
-    assert.equal(namespaces[2].description, '\n');
+    assert.equal(namespaces[2].description, '');
     assert.deepEqual(namespaces[2].warnings, []);
     assert.equal(await underliner.underline(namespaces[2].sourceRange), `
 aliasToNamespace = {
@@ -154,7 +154,7 @@ aliasToNamespace = {
     assert.equal(namespaces.length, 2);
 
     assert.equal(namespaces[0].name, 'DynamicNamespace.ArrayNotation');
-    assert.equal(namespaces[0].description, '\n');
+    assert.equal(namespaces[0].description, '');
     assert.deepEqual(namespaces[0].warnings, []);
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 DynamicNamespace['ArrayNotation'] = {
@@ -165,7 +165,7 @@ DynamicNamespace['ArrayNotation'] = {
 ~~`);
 
     assert.equal(namespaces[1].name, 'DynamicNamespace.baz');
-    assert.equal(namespaces[1].description, '\n');
+    assert.equal(namespaces[1].description, '');
     assert.deepEqual(namespaces[1].warnings, []);
     assert.equal(await underliner.underline(namespaces[1].sourceRange), `
 DynamicNamespace[baz] = {

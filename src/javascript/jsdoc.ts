@@ -31,7 +31,8 @@ export interface Tag {
  * The parsed representation of a JSDoc comment.
  */
 export interface Annotation {
-  description?: string;
+  // If no description is found, the property will be an empty string.
+  description: string;
   tags: Tag[]|null;
 }
 
@@ -143,15 +144,15 @@ export function removeLeadingAsterisks(description: string): string {
 /**
  * Given a JSDoc string (minus opening/closing comment delimiters), extract its
  * description and tags.
- *
- * @param {string} docs
- * @return {?Annotation}
  */
 export function parseJsdoc(docs: string): Annotation {
   docs = removeLeadingAsterisks(docs);
   const d = doctrine.parse(
       docs, {unwrap: false, lineNumbers: true, preserveWhitespace: true});
-  return {description: d.description, tags: _tagsToHydroTags(d.tags)};
+  // Strip any leading and trailing newline characters in the
+  // description of multiline comments for readibility.
+  const description = d.description && d.description.replace(/^\n+|\n+$/g, '');
+  return {description: description, tags: _tagsToHydroTags(d.tags)};
 }
 
 // Utility
