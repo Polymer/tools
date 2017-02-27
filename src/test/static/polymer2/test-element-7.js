@@ -3,15 +3,13 @@
  * @extends Polymer.Element
  */
 class BaseElement extends Polymer.Element {
-  static get config() {
+  static get properties() {
     return {
-      properties: {
-        one: {
-          type: String,
-        },
-        two: {
-          type: String,
-        },
+      one: {
+        type: String,
+      },
+      two: {
+        type: String,
       },
     };
   }
@@ -21,18 +19,16 @@ class BaseElement extends Polymer.Element {
  * @polymerMixin
  */
 const Mixin = (superclass) => class extends superclass {
-  static get config() {
+  static get properties() {
     return {
-      properties: {
-        two: {
-          type: number,
-        },
-        three: {
-          type: number,
-        },
-        four: {
-          type: number,
-        },
+      two: {
+        type: number,
+      },
+      three: {
+        type: number,
+      },
+      four: {
+        type: number,
       },
     };
   }
@@ -47,15 +43,13 @@ class SubElement extends BaseElement {
   static get is() {
     return 'sub-element';
   }
-  static get config() {
+  static get properties() {
     return {
-      properties: {
-        four: {
-          type: Boolean,
-        },
-        five: {
-          type: Boolean,
-        },
+      four: {
+        type: Boolean,
+      },
+      five: {
+        type: Boolean,
       },
     };
   }

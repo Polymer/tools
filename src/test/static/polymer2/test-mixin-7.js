@@ -4,13 +4,11 @@
 Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
   /** @polymerMixinClass */
   class TestMixin extends base {
-    static get config() {
+    static get properties() {
       return {
-        properties: {
-          foo: {
-            notify: true,
-            type: String,
-          }
+        foo: {
+          notify: true,
+          type: String,
         },
       };
     };

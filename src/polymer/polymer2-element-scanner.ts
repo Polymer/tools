@@ -26,7 +26,7 @@ import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
 import {ScannedPolymerElement} from './polymer-element';
-import {getConfig, getIsValue, getProperties} from './polymer2-config';
+import {getIsValue, getProperties} from './polymer2-config';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -81,7 +81,6 @@ class ElementVisitor implements Visitor {
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
-    const config = getConfig(node);
     const isValue = getIsValue(node);
     const warnings: Warning[] = [];
 
@@ -137,7 +136,7 @@ class ElementVisitor implements Visitor {
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
-      properties: (config && getProperties(config, this._document)) || [],
+      properties: getProperties(node, this._document),
       superClass: _extends, mixins,
     });
 

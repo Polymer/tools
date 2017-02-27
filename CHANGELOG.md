@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * PackageUrlResolver encodes URIs returned from `resolve` method.
+* Support new properties/observers getters in Polymer 2.0 elements
 
 ## [2.0.0-alpha.27] - 2017-02-24
 

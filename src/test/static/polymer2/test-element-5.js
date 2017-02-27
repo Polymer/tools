@@ -6,12 +6,10 @@ class TestElement extends Polymer.Element {
     return ['a', 'b'];
   }
 
-  static get config() {
+  static get properties() {
     return {
-      properties: {
-        foo: {
-          type: String,
-        },
+      foo: {
+        type: String,
       },
     };
   }
