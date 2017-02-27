@@ -15,7 +15,7 @@
 import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
-import {getIdentifierName} from '../javascript/ast-value';
+import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -65,16 +65,31 @@ class ElementVisitor implements Visitor {
     }
     const element = this._handleClass(node);
     if (element) {
-      element.className = className;
-      this._possibleElements.set(element.className, element);
+      const nodeComments = esutil.getAttachedComment(node) || '';
+      const nodeJsDocs = jsdoc.parseJsdoc(nodeComments);
+      const namespacedClassName =
+          getNamespacedIdentifier(className, nodeJsDocs);
+      element.className = namespacedClassName;
+      // Set the element on both the namespaced & unnamespaced names so that we
+      // can detect registration by either name.
+      this._possibleElements.set(namespacedClassName, element);
+      this._possibleElements.set(className, element);
     }
   }
 
   enterClassDeclaration(node: estree.ClassDeclaration) {
     const element = this._handleClass(node);
     if (element) {
-      element.className = node.id.name;
-      this._possibleElements.set(element.className, element);
+      const className = node.id.name;
+      const nodeComments = esutil.getAttachedComment(node) || '';
+      const nodeJsDocs = jsdoc.parseJsdoc(nodeComments);
+      const namespacedClassName =
+          getNamespacedIdentifier(className, nodeJsDocs);
+      element.className = namespacedClassName;
+      // Set the element on both the namespaced & unnamespaced names so that we
+      // can detect registration by either name.
+      this._possibleElements.set(className, element);
+      this._possibleElements.set(namespacedClassName, element);
     }
   }
 

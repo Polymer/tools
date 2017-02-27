@@ -67,7 +67,7 @@ ExplicitlyNamedNamespace.NestedNamespace = {
 
   test('scans unnamed namespaces', async() => {
     const namespaces = await getNamespaces('namespace-unnamed.js');
-    assert.equal(namespaces.length, 2);
+    assert.equal(namespaces.length, 4);
 
     assert.equal(namespaces[0].name, 'ImplicitlyNamedNamespace');
     assert.equal(namespaces[0].description, '\n');
@@ -83,6 +83,28 @@ var ImplicitlyNamedNamespace = {};
     assert.equal(await underliner.underline(namespaces[1].sourceRange), `
 ImplicitlyNamedNamespace.NestedNamespace = {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  foo: \'bar\'
+~~~~~~~~~~~~
+};
+~~`);
+
+    assert.equal(namespaces[2].name, 'ParentNamespace.FooNamespace');
+    assert.equal(namespaces[2].description, '\n');
+    assert.deepEqual(namespaces[2].warnings, []);
+    assert.equal(await underliner.underline(namespaces[2].sourceRange), `
+FooNamespace = {
+~~~~~~~~~~~~~~~~
+  foo: \'bar\'
+~~~~~~~~~~~~
+};
+~~`);
+
+    assert.equal(namespaces[3].name, 'ParentNamespace.BarNamespace');
+    assert.equal(namespaces[3].description, '\n');
+    assert.deepEqual(namespaces[3].warnings, []);
+    assert.equal(await underliner.underline(namespaces[3].sourceRange), `
+ParentNamespace.BarNamespace = {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   foo: \'bar\'
 ~~~~~~~~~~~~
 };

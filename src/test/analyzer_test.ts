@@ -613,6 +613,8 @@ suite('Analyzer', () => {
       'ExplicitlyNamedNamespace.NestedNamespace',
       'ImplicitlyNamedNamespace',
       'ImplicitlyNamedNamespace.NestedNamespace',
+      'ParentNamespace.FooNamespace',
+      'ParentNamespace.BarNamespace',
       'DynamicNamespace.ArrayNotation',
       'DynamicNamespace.DynamicArrayNotation',
       'DynamicNamespace.Aliased',

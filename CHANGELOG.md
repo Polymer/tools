@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--## Unreleased-->
 
 ## [2.0.0-alpha.28] - 2017-02-24
+* Support for `@memberof` jsdoc tag
 
 ### Fixed
 * PackageUrlResolver encodes URIs returned from `resolve` method.

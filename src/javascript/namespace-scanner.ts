@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import {getIdentifierName} from '../javascript/ast-value';
+import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -48,10 +48,8 @@ class NamespaceVisitor implements Visitor {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
-    this._initNamespace(node, () => {
-      const id = node.declarations[0].id;
-      return getIdentifierName(id)!;
-    });
+    const variableName = getIdentifierName(node.declarations[0].id);
+    this._initNamespace(node, variableName);
   }
 
   /**
@@ -59,10 +57,11 @@ class NamespaceVisitor implements Visitor {
    */
   enterAssignmentExpression(
       node: estree.AssignmentExpression, parent: estree.Node) {
-    this._initNamespace(parent, () => getIdentifierName(node.left)!);
+    const assignmentName = getIdentifierName(node.left);
+    this._initNamespace(parent, assignmentName);
   }
 
-  private _initNamespace(node: estree.Node, getName: () => string) {
+  private _initNamespace(node: estree.Node, anaylzedName?: string) {
     const comment = esutil.getAttachedComment(node);
     // Quickly filter down to potential candidates.
     if (!comment || comment.indexOf('@namespace') === -1) {
@@ -70,9 +69,14 @@ class NamespaceVisitor implements Visitor {
     }
 
     const docs = jsdoc.parseJsdoc(comment);
-    const name = jsdoc.getTag(docs, 'namespace', 'name') || getName();
-    // TODO(fks): Propagate a warning if name could not be determined
-    if (!name) {
+    const explicitName = jsdoc.getTag(docs, 'namespace', 'name');
+    let namespaceName;
+    if (explicitName) {
+      namespaceName = explicitName;
+    } else if (anaylzedName) {
+      namespaceName = getNamespacedIdentifier(anaylzedName, docs);
+    } else {
+      // TODO(fks): Propagate a warning if name could not be determined
       return;
     }
 
@@ -82,6 +86,7 @@ class NamespaceVisitor implements Visitor {
           `Unable to determine sourceRange for @namespace: ${comment}`);
     }
 
-    this.namespaces.add(new ScannedNamespace(name, node, docs, sourceRange));
+    this.namespaces.add(
+        new ScannedNamespace(namespaceName, node, docs, sourceRange));
   }
 }

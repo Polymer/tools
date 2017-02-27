@@ -1,5 +1,6 @@
 /**
  * @polymerMixin
+ * @memberof Polymer
  */
 let TestMixin;
 

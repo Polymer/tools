@@ -2,13 +2,13 @@
  * @polymerMixin
  * @memberof Polymer
  */
-const TestMixin = (superclass) => class extends superclass {
+Polymer.TestMixin = (superclass) => class extends superclass {
   static get properties() {
     return {
       foo: {
         notify: true,
         type: String,
-      },
+      }
     };
   }
 }

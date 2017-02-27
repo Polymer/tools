@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import * as astValue from '../javascript/ast-value';
+import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -171,9 +171,9 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    const explicitName =
-        jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name');
-    behavior.className = explicitName || symbol;
+    behavior.className =
+        jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name') ||
+        getNamespacedIdentifier(symbol, behavior.jsdoc);
     if (!behavior.className) {
       throw new Error(
           `Unable to determine name for @polymerBehavior: ${comment}`);
@@ -247,7 +247,7 @@ class BehaviorVisitor implements Visitor {
     const chained: Array<ScannedBehaviorAssignment> = [];
     if (expression && expression.type === 'ArrayExpression') {
       for (const arrElement of expression.elements) {
-        const behaviorName = astValue.getIdentifierName(arrElement);
+        const behaviorName = getIdentifierName(arrElement);
         if (behaviorName) {
           chained.push({
             name: behaviorName,

@@ -1,5 +1,6 @@
 /**
  * @polymerMixin
+ * @memberof Polymer
  */
 class TestMixin extends superclass {
   static get properties() {

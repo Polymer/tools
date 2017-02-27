@@ -202,6 +202,41 @@ class BaseElement extends Polymer.Element {
     ]);
   });
 
+  test('properly sets className for elements with the memberof tag', async() => {
+    const elements = await getElements('test-element-8.js');
+    const elementData = elements.map(getTestProps);
+    assert.containSubset(elementData, [
+      {
+        tagName: 'test-element-one',
+        className: 'Polymer.TestElementOne',
+        superClass: 'Polymer.Element',
+        description:
+            `This element is a member of Polymer namespace and is registered with its
+namespaced name.`,
+        properties: [{
+          name: 'foo',
+        }],
+        attributes: [{
+          name: 'foo',
+        }],
+      },
+      {
+        tagName: 'test-element-two',
+        className: 'Polymer.TestElementTwo',
+        superClass: 'Polymer.Element',
+        description:
+            `This element is a member of Polymer namespace and is registered without its
+namespaced name.`,
+        properties: [{
+          name: 'foo',
+        }],
+        attributes: [{
+          name: 'foo',
+        }],
+      }
+    ]);
+  });
+
   test('Read mixes annotations', async() => {
     const elements = await getElements('test-element-6.js');
     const elementData = elements.map(getTestProps);

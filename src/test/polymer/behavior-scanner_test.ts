@@ -51,7 +51,9 @@ suite('BehaviorScanner', () => {
   test('Finds behavior object assignments', () => {
     assert.deepEqual(behaviorsList.map((b) => b.className).sort(), [
       'SimpleBehavior',
+      'Polymer.SimpleNamespacedBehavior',
       'AwesomeBehavior',
+      'Polymer.AwesomeNamespacedBehavior',
       'Really.Really.Deep.Behavior',
       'CustomBehaviorList'
     ].sort());

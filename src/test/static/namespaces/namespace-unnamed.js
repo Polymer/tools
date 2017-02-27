@@ -9,3 +9,19 @@ var ImplicitlyNamedNamespace = {};
 ImplicitlyNamedNamespace.NestedNamespace = {
   foo: 'bar'
 };
+
+/**
+ * @namespace
+ * @memberof ParentNamespace
+ */
+FooNamespace = {
+  foo: 'bar'
+};
+
+/**
+ * @namespace
+ * @memberof ParentNamespace
+ */
+ParentNamespace.BarNamespace = {
+  foo: 'bar'
+};
