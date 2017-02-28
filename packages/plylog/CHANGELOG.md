@@ -5,12 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!--## Unreleased-->
 
-<!-- New PRs should document their changes here. -->
+<!--
+  New PRs should document their changes here, uncommenting the Unreleased
+  heading as necessary.
+-->
+
+## [0.5.0] - 2017-02-28
+
 * Add the ability to provide a new default transport.
 * [Breaking] Log level is now a property on `defaultConfig`, not on the module export directly.
-
 
 ## [0.3.0] - 2016-05-13
 
