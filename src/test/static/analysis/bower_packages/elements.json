@@ -4,6 +4,7 @@
     {
       "tagname": "foo-element",
       "description": "",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "bower_components/foo/foo.html",
       "attributes": [],

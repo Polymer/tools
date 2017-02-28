@@ -124,6 +124,7 @@ function serializeNamespace(
   const metadata = {
     name: namespace.name,
     description: namespace.description,
+    summary: namespace.summary,
     sourceRange: {
       file: packageRelativePath,
       start: namespace.sourceRange.start,
@@ -138,6 +139,9 @@ function serializeElement(
   const metadata: Element =
       serializeElementLike(element, packagePath) as Element;
   metadata.tagname = element.tagName;
+  if (element.className) {
+    metadata.classname = element.className;
+  }
   metadata.superclass = 'HTMLElement';
   return metadata;
 }
@@ -175,6 +179,7 @@ function serializeElementLike(
 
   return {
     description: elementOrMixin.description || '',
+    summary: elementOrMixin.summary || '',
     path: packageRelativePath,
     attributes: attributes,
     properties: properties,

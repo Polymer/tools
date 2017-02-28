@@ -115,6 +115,7 @@ the ripple animation finishes to perform some action.`.trim(),
     needsExplicitSize: false
   },
   metadata: {polymer: {behaviors: ['Polymer.PaperButtonBehavior']}},
+  summary: 'A Material design button',
   description: `
 Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)
 
