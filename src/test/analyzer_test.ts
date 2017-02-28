@@ -710,7 +710,7 @@ var DuplicateNamespace = {};
   });
 
   suite('fork', () => {
-    test('returns a new Analyzer with independent context', async() => {
+    test('returns an independent copy of Analyzer', async() => {
       await analyzer.analyze('a.html', 'a is shared');
       const analyzer2 = analyzer.fork();
       await analyzer.analyze('b.html', 'b for analyzer');
