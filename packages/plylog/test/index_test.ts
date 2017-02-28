@@ -10,10 +10,11 @@
 
 'use strict';
 
-const winston = require('winston');
-const assert = require('chai').assert;
-const sinon = require('sinon');
-const logging = require('../index.js');
+import * as winston from 'winston';
+import {assert} from 'chai';
+import * as sinon from 'sinon';
+import * as logging from '../index';
+import * as util from 'util';
 
 suite('plylog', () => {
 
@@ -30,7 +31,7 @@ suite('plylog', () => {
 
     test('sets the level of all future loggers to "debug"', () => {
       logging.setVerbose();
-      assert.equal(logging.level, 'debug');
+      assert.equal(logging.defaultConfig.level, 'debug');
       let logger = logging.getLogger('TEST_LOGGER');
       assert.equal(logger._logger.transports.console.level, 'debug');
     });
@@ -41,7 +42,7 @@ suite('plylog', () => {
 
     test('sets the level of all future loggers to "error"', () => {
       logging.setQuiet();
-      assert.equal(logging.level, 'error');
+      assert.equal(logging.defaultConfig.level, 'error');
       let logger = logging.getLogger('TEST_LOGGER');
       assert.equal(logger._logger.transports.console.level, 'error');
     });
@@ -80,4 +81,47 @@ suite('plylog', () => {
 
   });
 
+  suite('default transport factory', () => {
+    let initialTransportFactory = undefined as any;
+    setup(() => {
+      initialTransportFactory = logging.defaultConfig.transportFactory;
+    });
+    teardown(() => {
+      logging.defaultConfig.transportFactory = initialTransportFactory;
+    });
+
+    test('is used when instantiating a new logger', async () => {
+      interface InstanceTrackingTransport extends winston.TransportInstance {
+        calls: number;
+      }
+      interface ITTStatic {
+        new (options: any): InstanceTrackingTransport;
+        instances: InstanceTrackingTransport[];
+      }
+      const InstanceTrackingTransport = function(
+            this: InstanceTrackingTransport, _options: any) {
+        InstanceTrackingTransport.instances.push(this);
+        this.calls = 0;
+      } as any as ITTStatic;
+      util.inherits(InstanceTrackingTransport, winston.Transport);
+      InstanceTrackingTransport.instances = [];
+
+      InstanceTrackingTransport.prototype.log = function (this: any, _level: logging.Level, _msg: string, _meta: any, callback: (err: Error|null, success: boolean) => void) {
+        this.calls++;
+        callback(null, true);
+      };
+
+      logging.defaultConfig.transportFactory = (options) => new InstanceTrackingTransport(options);
+
+      assert.lengthOf(InstanceTrackingTransport.instances, 0);
+      const trackedLogger = logging.getLogger('foo');
+      assert.lengthOf(InstanceTrackingTransport.instances, 1);
+
+      const instance = InstanceTrackingTransport.instances[0]!;
+      assert.equal(instance.calls, 0);
+      trackedLogger.warn('not logged anywhere, but does increment calls');
+      assert.equal(instance.calls, 1);
+    });
+
+  });
 });

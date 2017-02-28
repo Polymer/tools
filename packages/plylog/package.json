@@ -3,8 +3,11 @@
   "version": "0.3.0",
   "description": "A logger for the Polymer CLI toolchain",
   "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
-    "test": "mocha test/ --ui tdd"
+    "test": "npm run build && mocha test/ --ui tdd",
+    "build": "tsc",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "polymer",
@@ -14,11 +17,16 @@
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/winston": "^2.2.0",
     "winston": "^2.2.0"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.35",
+    "@types/mocha": "^2.2.39",
+    "@types/sinon": "^1.16.35",
     "chai": "^3.5.0",
-    "mocha": "^2.4.5",
-    "sinon": "^1.17.4"
+    "mocha": "^3.2.0",
+    "sinon": "^1.17.4",
+    "typescript": "^2.2.1"
   }
 }
