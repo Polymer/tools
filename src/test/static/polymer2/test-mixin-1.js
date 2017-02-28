@@ -1,5 +1,6 @@
 /**
- * A mixin
+ * A mixin description
+ * @summary A mixin summary
  * @polymerMixin
  */
 function TestMixin(superclass) {

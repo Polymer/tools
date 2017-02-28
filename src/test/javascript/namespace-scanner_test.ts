@@ -70,7 +70,8 @@ ExplicitlyNamedNamespace.NestedNamespace = {
     assert.equal(namespaces.length, 4);
 
     assert.equal(namespaces[0].name, 'ImplicitlyNamedNamespace');
-    assert.equal(namespaces[0].description, '');
+    assert.equal(namespaces[0].description, 'A namespace description');
+    assert.equal(namespaces[0].summary, 'A namespace summary');
     assert.deepEqual(namespaces[0].warnings, []);
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 var ImplicitlyNamedNamespace = {};

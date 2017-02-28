@@ -24,6 +24,7 @@ export interface Options {
   name?: string;
   jsdoc?: jsdoc.Annotation;
   description?: string;
+  summary?: string;
   properties?: ScannedProperty[];
   attributes?: ScannedAttribute[];
   observers?: {

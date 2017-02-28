@@ -1,4 +1,6 @@
 /**
+ * A namespace description
+ * @summary A namespace summary
  * @namespace
  */
 var ImplicitlyNamedNamespace = {};

@@ -28,6 +28,7 @@ export abstract class ScannedElementBase implements Resolvable {
   properties: ScannedProperty[] = [];
   attributes: ScannedAttribute[] = [];
   description = '';
+  summary = '';
   demos: {desc?: string; path: string}[] = [];
   events: ScannedEvent[] = [];
   sourceRange: SourceRange|undefined;
@@ -62,6 +63,7 @@ export abstract class ElementBase implements Feature {
   properties: Property[] = [];
   attributes: Attribute[] = [];
   description = '';
+  summary = '';
   demos: {desc?: string; path: string}[] = [];
   events: Event[] = [];
   sourceRange: SourceRange;

@@ -12,6 +12,8 @@ class TestElement extends Polymer.Element {
 window.customElements.define('test-element', TestElement);
 
 /**
+ * A very basic element
+ * @summary A basic element
  * @polymerElement
  */
 class BaseElement extends Polymer.Element {

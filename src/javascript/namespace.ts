@@ -14,7 +14,7 @@
 
 import * as estree from 'estree';
 
-import * as jsdoc from '../javascript/jsdoc';
+import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Document, Feature, Resolvable, SourceRange} from '../model/model';
 import {Severity, Warning} from '../warning/warning';
 
@@ -24,16 +24,18 @@ import {Severity, Warning} from '../warning/warning';
 export class ScannedNamespace implements Resolvable {
   name: string;
   description?: string;
-  jsdoc?: jsdoc.Annotation;
+  summary?: string;
+  jsdoc?: JsDocAnnotation;
   sourceRange: SourceRange;
   astNode: estree.Node;
   warnings: Warning[];
 
   constructor(
-      name: string, astNode: estree.Node, jsdoc: jsdoc.Annotation,
-      sourceRange: SourceRange) {
+      name: string, description: string, summary: string, astNode: estree.Node,
+      jsdoc: JsDocAnnotation, sourceRange: SourceRange) {
     this.name = name;
-    this.description = jsdoc.description;
+    this.description = description;
+    this.summary = summary;
     this.jsdoc = jsdoc;
     this.sourceRange = sourceRange;
     this.astNode = astNode;
@@ -59,6 +61,7 @@ export class ScannedNamespace implements Resolvable {
 export class Namespace implements Feature {
   name: string;
   description?: string;
+  summary?: string;
   kinds: Set<string>;
   identifiers: Set<string>;
   sourceRange: SourceRange;
@@ -68,6 +71,7 @@ export class Namespace implements Feature {
   constructor(scannedNamespace: ScannedNamespace) {
     this.name = scannedNamespace.name;
     this.description = scannedNamespace.description;
+    this.summary = scannedNamespace.summary;
     this.kinds = new Set(['namespace']);
     this.identifiers = new Set([this.name]);
     this.sourceRange = scannedNamespace.sourceRange;

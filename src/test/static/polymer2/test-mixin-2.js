@@ -1,4 +1,6 @@
 /**
+ * A mixin description
+ * @summary A mixin summary
  * @polymerMixin
  * @memberof Polymer
  */

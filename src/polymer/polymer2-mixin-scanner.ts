@@ -78,10 +78,14 @@ class MixinVisitor implements Visitor {
           name ? getNamespacedIdentifier(name, nodeJsDocs) : undefined;
       const sourceRange = this._document.sourceRangeForNode(node);
       this._currentMixinFunction = node;
+
+      const summaryTag = jsdoc.getTag(nodeJsDocs, 'summary');
+
       this._currentMixin = new ScannedPolymerElementMixin({
         name: namespacedName,
         sourceRange,
         description: nodeJsDocs.description,
+        summary: (summaryTag && summaryTag.description) || '',
       });
       this._currentMixinNode = node;
       this._mixins.push(this._currentMixin);
@@ -129,6 +133,9 @@ class MixinVisitor implements Visitor {
       const parentComments = esutil.getAttachedComment(parent) || '';
       const parentJsDocs = jsdoc.parseJsdoc(parentComments);
       this._currentMixin.name = getNamespacedIdentifier(name, parentJsDocs);
+
+      const summaryTag = jsdoc.getTag(parentJsDocs, 'summary');
+      this._currentMixin.summary = (summaryTag && summaryTag.description) || '';
     }
   }
 
