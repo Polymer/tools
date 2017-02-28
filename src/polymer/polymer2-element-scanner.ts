@@ -70,6 +70,10 @@ class ElementVisitor implements Visitor {
       const namespacedClassName =
           getNamespacedIdentifier(className, nodeJsDocs);
       element.className = namespacedClassName;
+
+      const summaryTag = jsdoc.getTag(nodeJsDocs, 'summary');
+      element.summary = (summaryTag && summaryTag.description) || '';
+
       // Set the element on both the namespaced & unnamespaced names so that we
       // can detect registration by either name.
       this._possibleElements.set(namespacedClassName, element);
@@ -86,6 +90,10 @@ class ElementVisitor implements Visitor {
       const namespacedClassName =
           getNamespacedIdentifier(className, nodeJsDocs);
       element.className = namespacedClassName;
+
+      const summaryTag = jsdoc.getTag(nodeJsDocs, 'summary');
+      element.summary = (summaryTag && summaryTag.description) || '';
+
       // Set the element on both the namespaced & unnamespaced names so that we
       // can detect registration by either name.
       this._possibleElements.set(className, element);

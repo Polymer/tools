@@ -47,6 +47,7 @@ suite('Polymer2MixinScanner', () => {
     return {
       name: mixin.name,
       description: mixin.description,
+      summary: mixin.summary,
       properties: mixin.properties.map((p) => ({
                                          name: p.name,
                                        })),
@@ -61,7 +62,8 @@ suite('Polymer2MixinScanner', () => {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
-                       description: 'A mixin',
+                       description: 'A mixin description',
+                       summary: 'A mixin summary',
                        properties: [{
                          name: 'foo',
                        }],
@@ -102,7 +104,8 @@ function TestMixin(superclass) {
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
-                       description: '',
+                       description: 'A mixin description',
+                       summary: 'A mixin summary',
                        properties: [{
                          name: 'foo',
                        }],
@@ -140,6 +143,7 @@ const TestMixin = (superclass) => class extends superclass {
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: '',
+                       summary: '',
                        properties: [{
                          name: 'foo',
                        }],
@@ -183,6 +187,7 @@ const TestMixin = function(superclass) {
         assert.deepEqual(mixinData, [{
                            name: 'Polymer.TestMixin',
                            description: '',
+                           summary: '',
                            properties: [],
                            attributes: [],
                          }]);
@@ -205,6 +210,7 @@ let TestMixin;
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: '',
+                       summary: '',
                        properties: [],
                        attributes: [],
                      }]);
@@ -222,6 +228,7 @@ function TestMixin() {
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: '',
+                       summary: '',
                        properties: [{
                          name: 'foo',
                        }],
@@ -269,6 +276,7 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
         assert.deepEqual(mixinData, [{
                            name: 'Polymer.TestMixin',
                            description: '',
+                           summary: '',
                            properties: [{
                              name: 'foo',
                            }],

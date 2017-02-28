@@ -86,7 +86,11 @@ class NamespaceVisitor implements Visitor {
           `Unable to determine sourceRange for @namespace: ${comment}`);
     }
 
-    this.namespaces.add(
-        new ScannedNamespace(namespaceName, node, docs, sourceRange));
+    const summaryTag = jsdoc.getTag(docs, 'summary');
+    const summary = (summaryTag && summaryTag.description) || '';
+    const description = docs.description;
+
+    this.namespaces.add(new ScannedNamespace(
+        namespaceName, description, summary, node, docs, sourceRange));
   }
 }

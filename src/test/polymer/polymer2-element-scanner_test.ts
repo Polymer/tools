@@ -13,7 +13,7 @@
  */
 
 
-import {assert} from 'chai';
+import {assert, use as chaiUse} from 'chai';
 import * as path from 'path';
 
 import {Visitor} from '../../javascript/estree-visitor';
@@ -22,6 +22,8 @@ import {ScannedPolymerElement} from '../../polymer/polymer-element';
 import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
+
+chaiUse(require('chai-subset'));
 
 suite('Polymer2ElementScanner', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
@@ -48,6 +50,7 @@ suite('Polymer2ElementScanner', () => {
       superClass: element.superClass && element.superClass.identifier,
       tagName: element.tagName,
       description: element.description,
+      summary: element.summary,
       properties: element.properties.map((p) => ({
                                            name: p.name,
                                          })),
@@ -70,6 +73,7 @@ suite('Polymer2ElementScanner', () => {
         className: 'TestElement',
         superClass: 'Polymer.Element',
         description: '',
+        summary: '',
         properties: [{
           name: 'foo',
         }],
@@ -81,7 +85,8 @@ suite('Polymer2ElementScanner', () => {
         tagName: undefined,
         className: 'BaseElement',
         superClass: 'Polymer.Element',
-        description: '',
+        description: 'A very basic element',
+        summary: 'A basic element',
         properties: [{
           name: 'foo',
         }],
@@ -149,6 +154,7 @@ class BaseElement extends Polymer.Element {
         className: 'TestElement',
         superClass: 'HTMLElement',
         description: '',
+        summary: '',
         properties: [],
         attributes: [],
       },
@@ -164,6 +170,7 @@ class BaseElement extends Polymer.Element {
         className: 'TestElement',
         superClass: 'HTMLElement',
         description: '',
+        summary: '',
         properties: [],
         attributes: [
           {
@@ -187,6 +194,7 @@ class BaseElement extends Polymer.Element {
         className: 'TestElement',
         superClass: 'Polymer.Element',
         description: '',
+        summary: '',
         properties: [{
           name: 'foo',
         }],
@@ -213,6 +221,7 @@ class BaseElement extends Polymer.Element {
         description:
             `This element is a member of Polymer namespace and is registered with its
 namespaced name.`,
+        summary: '',
         properties: [{
           name: 'foo',
         }],
@@ -227,6 +236,7 @@ namespaced name.`,
         description:
             `This element is a member of Polymer namespace and is registered without its
 namespaced name.`,
+        summary: '',
         properties: [{
           name: 'foo',
         }],
@@ -247,6 +257,7 @@ namespaced name.`,
         className: 'TestElement',
         superClass: 'Polymer.Element',
         description: '',
+        summary: '',
         properties: [],
         attributes: [],
         mixins: ['Mixin2', 'Mixin1'],
