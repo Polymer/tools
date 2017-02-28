@@ -4,6 +4,7 @@
     {
       "tagname": "my-element",
       "description": "my-element!",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "element.js",
       "attributes": [],

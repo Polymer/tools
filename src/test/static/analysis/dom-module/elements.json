@@ -4,6 +4,7 @@
     {
       "tagname": "my-element",
       "description": "This is a big comment on the element!",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "documented.html",
       "attributes": [],

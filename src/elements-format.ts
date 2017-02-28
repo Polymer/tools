@@ -85,6 +85,9 @@ export interface ElementLike extends Feature {
   /** A markdown description for the element. */
   description: string;
 
+  /** A markdown summary for the element. */
+  summary: string;
+
   /**
    * Paths, relative to the base directory of the package, to demo pages for the
    * element.

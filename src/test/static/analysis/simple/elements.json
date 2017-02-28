@@ -4,6 +4,7 @@
     {
       "tagname": "simple-element",
       "description": "This is a description of the element.",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "simple-element.html",
       "attributes": [

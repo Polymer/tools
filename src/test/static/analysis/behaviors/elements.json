@@ -4,6 +4,7 @@
     {
       "tagname": "behavior-test-elem",
       "description": "An element to test out behavior inheritance.",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "elementdir/element.html",
       "attributes": [

@@ -342,6 +342,7 @@ function applySelf(
   element.scriptElement = scannedElement.scriptElement;
   scannedElement.slots.forEach((o) => element.slots.push(o));
   element.sourceRange = scannedElement.sourceRange!;
+  element.summary = scannedElement.summary;
   element.superClass =
       scannedElement.superClass && scannedElement.superClass.resolve(document);
   element.tagName = scannedElement.tagName;

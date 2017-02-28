@@ -4,6 +4,7 @@
     {
       "tagname": "element-subdir",
       "description": "",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "element-subdir/element.html",
       "attributes": [],
@@ -24,6 +25,7 @@
     {
       "tagname": "outermost-element",
       "description": "",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "outermost-element.html",
       "attributes": [],

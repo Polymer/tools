@@ -4,6 +4,7 @@
     {
       "tagname": "el-el",
       "description": "",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "el.html",
       "attributes": [],
@@ -30,6 +31,7 @@
     {
       "tagname": "sub-el",
       "description": "",
+      "summary": "",
       "superclass": "HTMLElement",
       "path": "subdir/sub-el.html",
       "attributes": [],
