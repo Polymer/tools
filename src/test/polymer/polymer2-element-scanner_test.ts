@@ -57,6 +57,9 @@ suite('Polymer2ElementScanner', () => {
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
+      methods:
+          element.methods.map((p) => ({name: p.name, function: p.function})),
+
     };
     if (element.mixins.length > 0) {
       props.mixins = element.mixins.map((m) => m.identifier);
@@ -80,6 +83,7 @@ suite('Polymer2ElementScanner', () => {
         attributes: [{
           name: 'foo',
         }],
+        methods: [],
       },
       {
         tagName: undefined,
@@ -93,6 +97,7 @@ suite('Polymer2ElementScanner', () => {
         attributes: [{
           name: 'foo',
         }],
+        methods: [],
       },
     ]);
 
@@ -157,6 +162,7 @@ class BaseElement extends Polymer.Element {
         summary: '',
         properties: [],
         attributes: [],
+        methods: [],
       },
     ]);
   });
@@ -180,6 +186,7 @@ class BaseElement extends Polymer.Element {
             name: 'b',
           }
         ],
+        methods: [],
       },
     ]);
   });
@@ -206,6 +213,7 @@ class BaseElement extends Polymer.Element {
             name: 'b',
           }
         ],
+        methods: [],
       },
     ]);
   });
@@ -213,7 +221,7 @@ class BaseElement extends Polymer.Element {
   test('properly sets className for elements with the memberof tag', async() => {
     const elements = await getElements('test-element-8.js');
     const elementData = elements.map(getTestProps);
-    assert.containSubset(elementData, [
+    assert.deepEqual(elementData, [
       {
         tagName: 'test-element-one',
         className: 'Polymer.TestElementOne',
@@ -228,6 +236,7 @@ namespaced name.`,
         attributes: [{
           name: 'foo',
         }],
+        methods: [],
       },
       {
         tagName: 'test-element-two',
@@ -243,6 +252,7 @@ namespaced name.`,
         attributes: [{
           name: 'foo',
         }],
+        methods: [],
       }
     ]);
   });
@@ -260,6 +270,7 @@ namespaced name.`,
         summary: '',
         properties: [],
         attributes: [],
+        methods: [],
         mixins: ['Mixin2', 'Mixin1'],
       },
     ]);
@@ -278,6 +289,7 @@ namespaced name.`,
         summary: '',
         properties: [],
         attributes: [],
+        methods: [],
       },
       {
         tagName: undefined,
@@ -287,6 +299,7 @@ namespaced name.`,
         summary: '',
         properties: [],
         attributes: [],
+        methods: [],
         mixins: ['Mixin'],
       },
       {
@@ -297,9 +310,44 @@ namespaced name.`,
         summary: '',
         properties: [],
         attributes: [],
+        methods: [],
         mixins: ['Mixin'],
       },
     ]);
   });
+
+  test(
+      'properly reads properties and methods of elements and element classes',
+      async() => {
+        const elements = await getElements('test-element-10.js');
+        const elementData = elements.map(getTestProps);
+        assert.deepEqual(elementData, [
+          {
+            tagName: 'test-element',
+            className: 'TestElement',
+            superClass: 'Polymer.Element',
+            description: ``,
+            summary: '',
+            properties: [{
+              name: 'foo',
+            }],
+            attributes: [{
+              name: 'foo',
+            }],
+            methods: [
+              {name: 'customInstanceFunction', function: {params: []}},
+              {name: 'customInstanceFunctionWithJSDoc', function: {params: []}},
+              {
+                name: 'customInstanceFunctionWithParams',
+                function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
+              },
+              {
+                name: 'customInstanceFunctionWithParamsAndJSDoc',
+                function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
+              },
+            ],
+          },
+        ]);
+      });
 
 });

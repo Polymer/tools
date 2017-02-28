@@ -13,6 +13,9 @@ class BaseElement extends Polymer.Element {
       },
     };
   }
+  customMethodOnBaseElement() {
+    return 'foo';
+  }
 }
 
 /**
@@ -31,6 +34,9 @@ const Mixin = (superclass) => class extends superclass {
         type: number,
       },
     };
+  }
+  customMethodOnMixin() {
+    return 'bar';
   }
 }
 
@@ -53,5 +59,8 @@ class SubElement extends Mixin
         type: Boolean,
       },
     };
+  }
+  customMethodOnSubElement() {
+    return 'baz';
   }
 }

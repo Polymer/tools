@@ -44,6 +44,7 @@ export * from './import';
 export * from './inline-document';
 export * from './literal';
 export * from './property';
+export * from './method';
 export {Package, QueryOptions as PackageQueryOptions} from './package';
 export * from './reference';
 export * from './resolvable';

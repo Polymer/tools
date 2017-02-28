@@ -19,12 +19,13 @@ import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
+// import {ScannedMethod} from '../model/model';
 import {Severity, WarningCarryingException} from '../warning/warning';
 
 import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {toScannedPolymerProperty} from './js-utils';
+import {toScannedMethod, toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 export class PolymerElementScanner implements JavaScriptScanner {
@@ -96,6 +97,7 @@ class ElementVisitor implements Visitor {
     if (!element) {
       return;
     }
+
     const prop = <estree.Property>{
       key: node.key,
       value: node.value,
@@ -106,12 +108,20 @@ class ElementVisitor implements Visitor {
       computed: false,
       type: 'Property'
     };
-    const propDesc = docs.annotate(toScannedPolymerProperty(
-        prop, this.document.sourceRangeForNode(prop)!));
-    if (prop && prop.kind === 'get' &&
-        (propDesc.name === 'behaviors' || propDesc.name === 'observers')) {
+
+    if (node.kind === 'get') {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       const argument = <estree.ArrayExpression>returnStatement.argument;
+      const propDesc = docs.annotate(toScannedPolymerProperty(
+          prop, this.document.sourceRangeForNode(prop)!));
+
+      // We only support observers and behaviors getters that return array
+      // literals.
+      if ((propDesc.name === 'behaviors' || propDesc.name === 'observers') &&
+          !Array.isArray(argument.elements)) {
+        return;
+      }
+
       if (propDesc.name === 'behaviors') {
         argument.elements.forEach((argNode) => {
           const result = getBehaviorAssignmentOrWarning(argNode, this.document);
@@ -121,19 +131,25 @@ class ElementVisitor implements Visitor {
             element.behaviorAssignments.push(result.assignment);
           }
         });
-      } else {
-        if (!Array.isArray(argument.elements)) {
-          // We only support observers and behaviors getters that return
-          // array literals.
-          return;
-        }
+        return;
+      }
+
+      if (propDesc.name === 'observers') {
         argument.elements.forEach((elementObject: estree.Literal) => {
           element.observers.push(
               {javascriptNode: elementObject, expression: elementObject.raw});
         });
+        return;
       }
-    } else {
+
       element.addProperty(propDesc);
+      return;
+    }
+
+    if (node.kind === 'method') {
+      const methodDesc = docs.annotate(
+          toScannedMethod(prop, this.document.sourceRangeForNode(prop)!));
+      element.addMethod(methodDesc);
     }
   }
 
@@ -176,8 +192,8 @@ class ElementVisitor implements Visitor {
   }
 
   enterObjectExpression(node: estree.ObjectExpression, _: estree.Node) {
-    // When dealing with a class, there is no single object that we can parse to
-    // retrieve all properties
+    // When dealing with a class, there is no single object that we can
+    // parse to retrieve all properties.
     if (this.classDetected) {
       return estraverse.VisitorOption.Skip;
     }
@@ -217,9 +233,15 @@ class ElementVisitor implements Visitor {
             getters[scannedPolymerProperty.name] = scannedPolymerProperty;
           } else if (scannedPolymerProperty.setter) {
             setters[scannedPolymerProperty.name] = scannedPolymerProperty;
+          } else if (
+              prop.method === true ||
+              prop.value.type === 'ArrowFunctionExpression' ||
+              prop.value.type === 'FunctionExpression') {
+            const scannedPolymerMethod =
+                toScannedMethod(prop, this.document.sourceRangeForNode(prop)!);
+            element.addMethod(scannedPolymerMethod);
           } else {
-            element.addProperty(toScannedPolymerProperty(
-                prop, this.document.sourceRangeForNode(prop)!));
+            element.addProperty(scannedPolymerProperty);
           }
         } catch (e) {
           if (e instanceof WarningCarryingException) {

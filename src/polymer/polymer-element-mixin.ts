@@ -15,10 +15,10 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
-import {Document, ElementMixin, LiteralValue, ScannedAttribute, ScannedElementMixin, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {Document, ElementMixin, LiteralValue, Method, ScannedAttribute, ScannedElementMixin, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
-import {addProperty, LocalId, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
+import {addMethod, addProperty, LocalId, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
 
 export interface Options {
   name?: string;
@@ -26,6 +26,7 @@ export interface Options {
   description?: string;
   summary?: string;
   properties?: ScannedProperty[];
+  methods?: ScannedMethod[];
   attributes?: ScannedAttribute[];
   observers?: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -43,6 +44,7 @@ export interface Options {
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
+  methods: ScannedMethod[] = [];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
@@ -67,10 +69,17 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     if (options && options.properties) {
       options.properties.forEach((p) => this.addProperty(p));
     }
+    if (options && options.methods) {
+      options.methods.forEach((m) => this.addMethod(m));
+    }
   }
 
   addProperty(prop: ScannedPolymerProperty) {
     addProperty(this, prop);
+  }
+
+  addMethod(method: ScannedMethod) {
+    addMethod(this, method);
   }
 
   resolve(_document: Document): PolymerElementMixin {
@@ -83,6 +92,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
 export class PolymerElementMixin extends ElementMixin implements
     PolymerExtension {
   properties: PolymerProperty[];
+  methods: Method[];
 
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,

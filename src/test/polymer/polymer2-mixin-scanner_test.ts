@@ -54,6 +54,7 @@ suite('Polymer2MixinScanner', () => {
       attributes: mixin.attributes.map((a) => ({
                                          name: a.name,
                                        })),
+      methods: mixin.methods.map((p) => ({name: p.name, function: p.function})),
     };
   }
 
@@ -70,6 +71,7 @@ suite('Polymer2MixinScanner', () => {
                        attributes: [{
                          name: 'foo',
                        }],
+                       methods: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -112,6 +114,7 @@ function TestMixin(superclass) {
                        attributes: [{
                          name: 'foo',
                        }],
+                       methods: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -150,6 +153,7 @@ const TestMixin = (superclass) => class extends superclass {
                        attributes: [{
                          name: 'foo',
                        }],
+                       methods: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -190,6 +194,7 @@ const TestMixin = function(superclass) {
                            summary: '',
                            properties: [],
                            attributes: [],
+                           methods: [],
                          }]);
         const underlinedSource =
             await underliner.underline(mixins[0].sourceRange);
@@ -213,6 +218,7 @@ let TestMixin;
                        summary: '',
                        properties: [],
                        attributes: [],
+                       methods: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -235,6 +241,7 @@ function TestMixin() {
                        attributes: [{
                          name: 'foo',
                        }],
+                       methods: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -283,8 +290,39 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
                            attributes: [{
                              name: 'foo',
                            }],
+                           methods: [],
                          }]);
 
       });
+
+  test('properly analyzes mixin instance and class methods', async() => {
+    const mixins = await getMixins('test-mixin-9.js');
+    const mixinData = mixins.map(getTestProps);
+    assert.deepEqual(
+        mixinData, [{
+          name: 'TestMixin',
+          description: 'A mixin description',
+          summary: 'A mixin summary',
+          properties: [{
+            name: 'foo',
+          }],
+          attributes: [{
+            name: 'foo',
+          }],
+          methods: [
+            {name: 'customInstanceFunction', function: {params: []}},
+            {name: 'customInstanceFunctionWithJSDoc', function: {params: []}},
+            {
+              name: 'customInstanceFunctionWithParams',
+              function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
+            },
+            {
+              name: 'customInstanceFunctionWithParamsAndJSDoc',
+              function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
+            }
+          ],
+        }]);
+
+  });
 
 });

@@ -17,24 +17,18 @@ import * as estree from 'estree';
 
 import {closureType, getAttachedComment, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
-import {SourceRange} from '../model/model';
+import {ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
 import {Severity, Warning} from '../warning/warning';
 
-import {ScannedFunction, ScannedPolymerProperty} from './polymer-element';
-
+import {ScannedPolymerProperty} from './polymer-element';
 
 /**
- * Converts a estree Property AST node into its Hydrolysis representation.
+ * Create a ScannedProperty object from an estree Property AST node.
  */
-export function toScannedPolymerProperty(
-    node: estree.Property, sourceRange: SourceRange): ScannedPolymerProperty {
-  let type = closureType(node.value, sourceRange);
-  if (type === 'Function') {
-    if (node.kind === 'get' || node.kind === 'set') {
-      type = '';
-      node[`${node.kind}ter`] = true;
-    }
-  }
+export function toScannedProperty(
+    node: estree.Property|estree.MethodDefinition,
+    sourceRange: SourceRange): ScannedProperty {
+  const type = closureType(node.value, sourceRange);
   const description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
 
@@ -60,15 +54,43 @@ export function toScannedPolymerProperty(
     astNode: node, warnings
   };
 
-  if (type === 'Function') {
+  if (node.kind === 'get' || node.kind === 'set') {
+    result.type = '';
+  } else if (type === 'Function') {
     const value = <estree.Function>node.value;
-    (<ScannedFunction><any>result).params =
-        (value.params || []).map((param) => {
-          // With ES6 we can have a lot of param patterns. Best to leave the
-          // formatting to escodegen.
-          return {name: escodegen.generate(param)};
-        });
+    result.function = {
+      params: (value.params || []).map((param) => {
+        // With ES6 we can have a lot of param patterns. Best to leave the
+        // formatting to escodegen.
+        return {name: escodegen.generate(param)};
+      }),
+    };
   }
 
   return result;
+};
+
+
+/**
+ * Create a ScannedMethod object from an estree Property AST node.
+ */
+export function toScannedMethod(
+    node: estree.Property|estree.MethodDefinition,
+    sourceRange: SourceRange): ScannedMethod {
+  return <ScannedMethod>toScannedProperty(node, sourceRange);
+}
+
+/**
+ * Create a ScannedPolymerProperty object from an estree Property AST node.
+ */
+export function toScannedPolymerProperty(
+    node: estree.Property, sourceRange: SourceRange): ScannedPolymerProperty {
+  const scannedPolymerProperty =
+      <ScannedPolymerProperty>toScannedProperty(node, sourceRange);
+
+  if (node.kind === 'get' || node.kind === 'set') {
+    node[`${node.kind}ter`] = true;
+  }
+
+  return scannedPolymerProperty;
 }

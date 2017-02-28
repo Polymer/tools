@@ -17,14 +17,14 @@ import * as estree from 'estree';
 import * as astValue from '../javascript/ast-value';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {ScannedProperty} from '../model/model';
 import {Severity} from '../warning/warning';
 
 import {toScannedPolymerProperty} from './js-utils';
+import {ScannedPolymerProperty} from './polymer-element';
 
 export function analyzeProperties(
-    node: estree.Node, document: JavaScriptDocument) {
-  const analyzedProps: ScannedProperty[] = [];
+    node: estree.Node, document: JavaScriptDocument): ScannedPolymerProperty[] {
+  const analyzedProps: ScannedPolymerProperty[] = [];
 
   if (node.type !== 'ObjectExpression') {
     return analyzedProps;

@@ -81,7 +81,12 @@ suite('PolymerElementScanner', () => {
           eventb: '_handleB',
           'event-c': _handleC,
           [['event', 'd'].join('-')]: '_handleD'
-        }
+        },
+        customPublicMethod: (foo, bar) => { return foo + bar; },
+        _customPrivateMethod: (foo, bar) => { return foo + bar; },
+        /** This is an instance method with JS Doc */
+        customPublicMethodWithJsDoc: (foo, bar) => { return foo + bar; },
+        customPublicMethodWithClassicFunction: function(foo, bar) { return foo + bar; },
       });
       Polymer({
         is: 'x-bar',
@@ -115,6 +120,13 @@ suite('PolymerElementScanner', () => {
               'Unable to determine type for property.'
             ]
           ]]);
+
+      assert.deepEqual(features[0].methods.map((m) => m.name), [
+        'customPublicMethod',
+        '_customPrivateMethod',
+        'customPublicMethodWithJsDoc',
+        'customPublicMethodWithClassicFunction',
+      ]);
 
       assert.deepEqual(features[0].properties.map((p) => [p.name, p.type]), [
         ['a', 'boolean'],

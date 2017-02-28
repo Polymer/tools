@@ -17,7 +17,7 @@ import {ScannedEvent, ScannedFeature, ScannedProperty} from '../model/model';
 
 import {ScannedBehavior} from './behavior';
 import {ScannedPolymerCoreFeature} from './polymer-core-feature';
-import {ScannedFunction, ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
+import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 
 
@@ -171,7 +171,7 @@ function annotateProperty(
   feature.type = jsdoc.getTag(feature.jsdoc, 'type', 'type') || feature.type;
 
   if (feature.type && feature.type.match(/^function/i)) {
-    _annotateFunctionProperty(<ScannedFunction><any>feature);
+    _annotateFunctionProperty(feature);
   }
 
   // @default JSDoc wins
@@ -186,19 +186,19 @@ function annotateProperty(
   return feature;
 }
 
-function _annotateFunctionProperty(scannedFunction: ScannedFunction) {
-  scannedFunction.function = true;
+function _annotateFunctionProperty(scannedFunction: ScannedProperty) {
+  scannedFunction.function = scannedFunction.function || {};
 
   const returnTag = jsdoc.getTag(scannedFunction.jsdoc, 'return');
   if (returnTag) {
-    scannedFunction.return = {
-      type: returnTag.type,
+    scannedFunction.function.return = {
+      type: returnTag.type || undefined,
       desc: returnTag.description || '',
     };
   }
 
   const paramsByName = {};
-  (scannedFunction.params || []).forEach((param) => {
+  (scannedFunction.function.params || []).forEach((param) => {
     paramsByName[param.name] = param;
   });
   (scannedFunction.jsdoc && scannedFunction.jsdoc.tags || []).forEach((tag) => {

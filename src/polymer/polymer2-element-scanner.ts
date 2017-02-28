@@ -26,7 +26,7 @@ import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
 import {ScannedPolymerElement} from './polymer-element';
-import {getIsValue, getProperties} from './polymer2-config';
+import {getIsValue, getMethods, getProperties} from './polymer2-config';
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -248,6 +248,7 @@ class ElementVisitor implements Visitor {
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
       properties: getProperties(node, this._document),
+      methods: getMethods(node, this._document),
       superClass: _extends, mixins,
     });
 

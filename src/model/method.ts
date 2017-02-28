@@ -12,36 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as jsdoc from '../javascript/jsdoc';
-import {SourceRange} from '../model/model';
+import {Property, ScannedProperty} from './model';
 
-import {ScannedFeature} from './model';
-
-export interface ScannedProperty extends ScannedFeature {
-  name: string;
-  type?: string;
-  private?: boolean;
-  'default'?: string;
-  readOnly?: boolean;
-  changeEvent?: string;
-  function?: {
+export interface ScannedMethod extends ScannedProperty {
+  function: {
     params?: {name: string, type?: string}[];
     return?: {type?: string, desc: string};
   };
 }
 
-export interface Property {
-  name: string;
-  type?: string;
-  description?: string;
-  jsdoc?: jsdoc.Annotation;
-  private?: boolean;
-  'default'?: string;
-  readOnly?: boolean;
-  sourceRange: SourceRange|undefined;
-  inheritedFrom?: string;
-  changeEvent?: string;
-  function?: {
+export interface Method extends Property {
+  function: {
     params?: {name: string, type?: string}[];
     return?: {type?: string, desc: string};
   };

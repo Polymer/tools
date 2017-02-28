@@ -16,7 +16,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
-import {Document, Element, ElementBase, LiteralValue, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedProperty, SourceRange} from '../model/model';
+import {Document, Element, ElementBase, LiteralValue, Method, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
 import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
@@ -32,23 +32,11 @@ export interface BasePolymerProperty {
   configuration?: boolean;
   getter?: boolean;
   setter?: boolean;
-  function?: boolean;
 }
 
 export interface ScannedPolymerProperty extends ScannedProperty,
                                                 BasePolymerProperty {}
-
 export interface PolymerProperty extends Property, BasePolymerProperty {}
-
-export interface ScannedFunction extends ScannedPolymerProperty {
-  function: boolean;  // true
-  params: {name: string, type?: string}[];
-  return: {type: string | null; desc: string};
-}
-
-export function isScannedFunction(d: ScannedProperty): d is ScannedFunction {
-  return d['function'] === true;
-}
 
 export class LocalId {
   name: string;
@@ -69,6 +57,7 @@ export interface Options {
   jsdoc?: jsdoc.Annotation;
   description?: string;
   properties?: ScannedProperty[];
+  methods?: ScannedMethod[];
   attributes?: ScannedAttribute[];
   observers?: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -86,6 +75,7 @@ export interface Options {
 
 export interface ScannedPolymerExtension extends ScannedElementBase {
   properties: ScannedPolymerProperty[];
+  methods: ScannedMethod[];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
@@ -114,7 +104,7 @@ export function addProperty(
   if (prop.private || !attributeName || !prop.published) {
     return;
   }
-  if (!isScannedFunction(prop)) {
+  if (!prop.function) {
     target.attributes.push({
       name: attributeName,
       sourceRange: prop.sourceRange,
@@ -134,12 +124,18 @@ export function addProperty(
   }
 }
 
+export function addMethod(
+    target: ScannedPolymerExtension, prop: ScannedMethod) {
+  target.methods.push(prop);
+}
+
 /**
  * The metadata for a single polymer element
  */
 export class ScannedPolymerElement extends ScannedElement implements
     ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
+  methods: ScannedMethod[] = [];
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
     expression: LiteralValue
@@ -160,14 +156,22 @@ export class ScannedPolymerElement extends ScannedElement implements
     // class altogether.
     const optionsCopy = Object.assign({}, options) as Options;
     delete optionsCopy.properties;
+    delete optionsCopy.methods;
     Object.assign(this, optionsCopy);
     if (options && options.properties) {
       options.properties.forEach((p) => this.addProperty(p));
+    }
+    if (options && options.methods) {
+      options.methods.forEach((m) => this.addMethod(m));
     }
   }
 
   addProperty(prop: ScannedPolymerProperty) {
     addProperty(this, prop);
+  }
+
+  addMethod(method: ScannedMethod) {
+    addMethod(this, method);
   }
 
   resolve(document: Document): PolymerElement {
@@ -177,6 +181,7 @@ export class ScannedPolymerElement extends ScannedElement implements
 
 export interface PolymerExtension extends ElementBase {
   properties: PolymerProperty[];
+  methods: Method[];
 
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -195,6 +200,7 @@ export interface PolymerExtension extends ElementBase {
 
 export class PolymerElement extends Element implements PolymerExtension {
   properties: PolymerProperty[] = [];
+  methods: Method[] = [];
 
   observers: {
     javascriptNode: estree.Expression | estree.SpreadElement,
@@ -264,6 +270,9 @@ function resolveElement(
   element.properties = inheritValues(
       element.properties,
       behaviors.map((b) => ({source: b.className, values: b.properties})));
+  element.methods = inheritValues(
+      element.methods,
+      behaviors.map((b) => ({source: b.className, values: b.methods})));
   element.attributes = inheritValues(
       element.attributes,
       behaviors.map((b) => ({source: b.className, values: b.attributes})));
@@ -300,6 +309,11 @@ function inheritFrom(element: PolymerElement, superElement: PolymerExtension) {
   for (const superProperty of superElement.properties) {
     const newProperty = Object.assign({}, superProperty);
     element.properties.push(newProperty);
+  }
+
+  for (const superMethod of superElement.methods) {
+    const newMethod = Object.assign({}, superMethod);
+    element.methods.push(newMethod);
   }
 
   for (const superAttribute of superElement.attributes) {
@@ -339,6 +353,7 @@ function applySelf(
   //     (o) => element.mixins.push(o.resolve(document)));
   scannedElement.observers.forEach((o) => element.observers.push(o));
   scannedElement.properties.forEach((o) => element.properties.push(o));
+  scannedElement.methods.forEach((o) => element.methods.push(o));
   element.scriptElement = scannedElement.scriptElement;
   scannedElement.slots.forEach((o) => element.slots.push(o));
   element.sourceRange = scannedElement.sourceRange!;

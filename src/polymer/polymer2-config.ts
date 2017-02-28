@@ -16,8 +16,11 @@ import * as estree from 'estree';
 
 import {getIdentifierName} from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import {ScannedMethod} from '../model/model';
 
 import {analyzeProperties} from './analyze-properties';
+import * as docs from './docs';
+import {toScannedMethod} from './js-utils';
 import {ScannedPolymerProperty} from './polymer-element';
 
 function getStaticGetterValue(
@@ -67,4 +70,17 @@ export function getProperties(
     document: JavaScriptDocument): ScannedPolymerProperty[] {
   const propertiesNode = getStaticGetterValue(node, 'properties');
   return propertiesNode ? analyzeProperties(propertiesNode, document) : [];
+}
+
+export function getMethods(
+    node: estree.ClassDeclaration|estree.ClassExpression,
+    document: JavaScriptDocument): ScannedMethod[] {
+  return node.body.body
+      .filter(
+          (n) => n.type === 'MethodDefinition' && n.static === false &&
+              n.kind === 'method')
+      .map((m) => {
+        return docs.annotate(
+            toScannedMethod(m, document.sourceRangeForNode(m)!));
+      });
 }
