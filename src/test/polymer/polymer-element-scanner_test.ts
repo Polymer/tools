@@ -175,6 +175,24 @@ suite('PolymerElementScanner', () => {
               .length,
           1);
     });
+
+    test('Polymer 2 class observers crash', async() => {
+      // When Polymer 2 adopted a static getter for observers, it crashed
+      // the Polymer 1 element scanner.
+      const contents = `class TestElement extends Polymer.Element {
+        static get observers() {
+          return foo.bar;
+        }
+      }`;
+
+      const document =
+          new JavaScriptParser().parse(contents, 'test-document.html');
+      const visit = async(visitor: Visitor) => document.visit([visitor]);
+
+      // Scanning should not throw
+      await scanner.scan(document, visit);
+    });
+
   });
 
 });

@@ -91,7 +91,7 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterMethodDefinition(node: estree.MethodDefinition, _: estree.Node) {
+  enterMethodDefinition(node: estree.MethodDefinition, _parent: estree.Node) {
     const element = this.element;
     if (!element) {
       return;
@@ -122,6 +122,11 @@ class ElementVisitor implements Visitor {
           }
         });
       } else {
+        if (!Array.isArray(argument.elements)) {
+          // We only support observers and behaviors getters that return
+          // array literals.
+          return;
+        }
         argument.elements.forEach((elementObject: estree.Literal) => {
           element.observers.push(
               {javascriptNode: elementObject, expression: elementObject.raw});
