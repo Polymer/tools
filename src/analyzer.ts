@@ -88,6 +88,18 @@ export class Analyzer {
   }
 
   /**
+   * Returns a clone of the analyzer, with the same context, suitable for
+   * running in parallel.
+   *
+   * Note: this feature is experimental.
+   */
+  fork(): Analyzer {
+    const analyzer = new Analyzer({});
+    analyzer._context = this._context;
+    return analyzer;
+  }
+
+  /**
    * Loads the content at the provided resolved URL.
    *
    * Currently does no caching. If the provided contents are given then they
