@@ -15,13 +15,18 @@
 import {Transform} from 'stream';
 import File = require('vinyl');
 import {ProjectConfig} from 'polymer-project-config';
+import {Analyzer} from 'polymer-analyzer';
+import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
+import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
 import {Bundler} from 'polymer-bundler';
 import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
-
+import {parseUrl} from 'polymer-analyzer/lib/utils';
 import {pathFromUrl, urlFromPath} from './path-transformers';
+import * as logging from 'plylog';
 import {BuildAnalyzer} from './analyzer';
 import * as parse5 from 'parse5';
 
+const logger = logging.getLogger('cli.build.analyzer');
 
 export class BuildBundler extends Transform {
   config: ProjectConfig;
@@ -32,14 +37,23 @@ export class BuildBundler extends Transform {
   bundler: Bundler;
   sharedFile: File;
 
+  files = new Map<string, File>();
+
   constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
     super({objectMode: true});
 
     this.config = config;
+
     this.analyzer = analyzer;
     this.sharedBundleUrl = 'shared-bundle.html';
     this.bundler = new Bundler({
-      analyzer: analyzer.analyzer,
+      analyzer: new Analyzer({
+        urlResolver: new PackageUrlResolver(this.config.root),
+        urlLoader: new StreamLoader(
+            this.config,
+            (url: string): boolean => this.analyzer.analyzer.canResolveUrl(url),
+            (url: string): File => this.files.get(url))
+      }),
       inlineCss: true,
       inlineScripts: true,
     });
@@ -49,6 +63,7 @@ export class BuildBundler extends Transform {
       file: File,
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
+    this.files.set(file.path, file);
     // If this file is a fragment, hold on to the file so that it's fully
     // analyzed by the time down-stream transforms see it.
     if (this.config.isFragment(file.path)) {
@@ -92,6 +107,53 @@ export class BuildBundler extends Transform {
                 parse5.serialize(docCollection.get(bundleName).ast));
           }
           return contentsMap;
+        });
+  }
+}
+
+export type ResolveFileCallback = (a: string) => void;
+export type RejectFileCallback = (err: Error) => void;
+export type DeferredFileCallbacks = {
+  resolve: ResolveFileCallback; reject: RejectFileCallback;
+};
+
+class StreamLoader implements UrlLoader {
+  config: ProjectConfig;
+  canLoad: (url: string) => boolean;
+  getFile: (url: string) => File;
+
+  // Store files that have not yet entered the Analyzer stream here.
+  // Later, when the file is seen, the DeferredFileCallback can be
+  // called with the file contents to resolve its loading.
+  deferredFiles = new Map<string, DeferredFileCallbacks>();
+
+  constructor(
+      config: ProjectConfig,
+      canLoad: (url: string) => boolean,
+      getFile: (url: string) => File) {
+    this.config = config, this.canLoad = canLoad;
+    this.getFile = getFile;
+  }
+
+  load(url: string): Promise<string> {
+    logger.debug(`loading: ${url}`);
+
+    if (!this.canLoad(url)) {
+      return Promise.resolve(undefined);
+    }
+
+    const urlObject = parseUrl(url);
+    const urlPath = decodeURIComponent(urlObject.pathname);
+    const filePath = pathFromUrl(this.config.root, urlPath);
+    const file = this.getFile(filePath);
+
+    if (file) {
+      return Promise.resolve(file.contents.toString());
+    }
+
+    return new Promise(
+        (resolve: ResolveFileCallback, reject: RejectFileCallback) => {
+          this.deferredFiles.set(filePath, {resolve, reject});
         });
   }
 }
