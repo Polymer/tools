@@ -16,7 +16,6 @@ import {Transform} from 'stream';
 import File = require('vinyl');
 import {ProjectConfig} from 'polymer-project-config';
 import {Analyzer} from 'polymer-analyzer';
-import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
 import {Bundler} from 'polymer-bundler';
 import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
@@ -48,7 +47,6 @@ export class BuildBundler extends Transform {
     this.sharedBundleUrl = 'shared-bundle.html';
     this.bundler = new Bundler({
       analyzer: new Analyzer({
-        urlResolver: new PackageUrlResolver(this.config.root),
         urlLoader: new StreamLoader(
             this.config,
             (url: string): boolean => this.analyzer.analyzer.canResolveUrl(url),
