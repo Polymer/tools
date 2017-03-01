@@ -47,6 +47,7 @@
           }
         }
       ],
+      "methods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -68,7 +69,7 @@
           "column": 10
         },
         "end": {
-          "line": 15,
+          "line": 25,
           "column": 3
         }
       }

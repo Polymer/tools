@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
-import * as jsdoc from '../javascript/jsdoc';
+import {Annotation as JsDocAnnotation, getTag as JsDocGetTag, isAnnotationEmpty} from '../javascript/jsdoc';
 import {Document, Element, ElementBase, LiteralValue, Method, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
 import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
@@ -54,7 +54,7 @@ export interface Options {
   superClass?: ScannedReference;
   mixins?: ScannedReference[];
   extends?: string;
-  jsdoc?: jsdoc.Annotation;
+  jsdoc?: JsDocAnnotation;
   description?: string;
   properties?: ScannedProperty[];
   methods?: ScannedMethod[];
@@ -96,9 +96,6 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
 
 export function addProperty(
     target: ScannedPolymerExtension, prop: ScannedPolymerProperty) {
-  if (prop.name.startsWith('_') || prop.name.endsWith('_')) {
-    prop.private = true;
-  }
   target.properties.push(prop);
   const attributeName = propertyToAttributeName(prop.name);
   if (prop.private || !attributeName || !prop.published) {
@@ -123,8 +120,8 @@ export function addProperty(
 }
 
 export function addMethod(
-    target: ScannedPolymerExtension, prop: ScannedMethod) {
-  target.methods.push(prop);
+    target: ScannedPolymerExtension, method: ScannedMethod) {
+  target.methods.push(method);
 }
 
 /**
@@ -292,6 +289,14 @@ function resolveElement(
 
   if (scannedElement.pseudo) {
     element.kinds.add('pseudo-element');
+  }
+
+  // Elements have their own logic to dictate when a method is private or public
+  // that overrides whatever our scanner detected.
+  for (const method of element.methods) {
+    const hasJsDocPrivateTag = !!JsDocGetTag(method.jsdoc, 'private');
+    method.private =
+        !method.jsdoc || isAnnotationEmpty(method.jsdoc) || hasJsDocPrivateTag;
   }
 
   return element;

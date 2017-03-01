@@ -13,11 +13,12 @@
  */
 
 import * as estree from 'estree';
+
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
 import {Warning} from '../warning/warning';
 
-import {Attribute, Document, Event, Feature, Property, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty} from './model';
+import {Attribute, Document, Event, Feature, Method, Property, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -62,6 +63,7 @@ export class Slot {
 export abstract class ElementBase implements Feature {
   properties: Property[] = [];
   attributes: Attribute[] = [];
+  methods: Method[] = [];
   description = '';
   summary = '';
   demos: {desc?: string; path: string}[] = [];
@@ -81,11 +83,15 @@ export abstract class ElementBase implements Feature {
     return {};
   }
 
+  emitPropertyMetadata(_property: Property): Object {
+    return {};
+  }
+
   emitAttributeMetadata(_attribute: Attribute): Object {
     return {};
   }
 
-  emitPropertyMetadata(_property: Property): Object {
+  emitMethodMetadata(_property: Method): Object {
     return {};
   }
 

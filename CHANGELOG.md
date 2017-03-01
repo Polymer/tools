@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 * Added a `_fork` method to Analyzer.
+* Support for method detection on polymer elements and mixins via the new `methods` property.
 
 ## [2.0.0-alpha.28] - 2017-02-24
 * Support for `@memberof` jsdoc tag

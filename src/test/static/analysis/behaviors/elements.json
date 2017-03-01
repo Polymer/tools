@@ -126,6 +126,7 @@
           }
         }
       ],
+      "methods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []

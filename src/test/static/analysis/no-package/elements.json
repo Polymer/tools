@@ -9,6 +9,7 @@
       "path": "el.html",
       "attributes": [],
       "properties": [],
+      "methods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -36,6 +37,7 @@
       "path": "subdir/sub-el.html",
       "attributes": [],
       "properties": [],
+      "methods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []

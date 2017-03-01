@@ -209,3 +209,11 @@ export function unindent(text: string): string {
       })
       .join('\n');
 }
+
+export function isAnnotationEmpty(docs?: Annotation) {
+  if (!docs) {
+    return false;
+  }
+  const hasNoTags = !docs.tags || docs.tags.length === 0;
+  return docs.description.trim() === '' && hasNoTags;
+}

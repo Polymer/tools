@@ -350,6 +350,10 @@ namespaced name.`,
                 params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
                 return: undefined,
               },
+              {
+                name: 'customInstanceFunctionWithParamsAndPrivateJSDoc',
+                params: [], return: undefined,
+              },
             ],
           },
         ]);

@@ -52,5 +52,14 @@ function TestMixin(superclass) {
     customInstanceFunctionWithParamsAndJSDoc(a, b, c) {
       return 7;
     }
+
+    /**
+     * This is the description for
+     * customInstanceFunctionWithParamsAndPrivateJSDoc.
+     * @private
+     */
+    customInstanceFunctionWithParamsAndPrivateJSDoc() {
+      return 8;
+    }
   }
 }

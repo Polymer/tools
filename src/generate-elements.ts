@@ -16,11 +16,11 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Namespace, Property, SourceRange} from './elements-format';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Method, Namespace, Property, SourceRange} from './elements-format';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
 import {Feature} from './model/feature';
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
@@ -168,12 +168,10 @@ function serializeElementLike(
   const attributes = elementOrMixin.attributes.map(
       (a) => serializeAttribute(elementOrMixin, path, a));
   const properties =
-      elementOrMixin.properties
-          .filter(
-              (p) => !p.private &&
-                  // Blacklist functions until we figure out what to do.
-                  p.type !== 'Function')
+      elementOrMixin.properties.filter((p) => !p.private)
           .map((p) => serializeProperty(elementOrMixin, path, p));
+  const methods = elementOrMixin.methods.filter((m) => !m.private)
+                      .map((m) => serializeMethod(elementOrMixin, path, m));
   const events =
       elementOrMixin.events.map((e) => ({
                                   name: e.name,
@@ -188,6 +186,7 @@ function serializeElementLike(
     path: packageRelativePath,
     attributes: attributes,
     properties: properties,
+    methods: methods,
     styling: {
       cssVariables: [],
       selectors: [],
@@ -235,6 +234,26 @@ function serializeAttribute(
   }
   attribute.metadata = resolvedElement.emitAttributeMetadata(resolvedAttribute);
   return attribute;
+}
+
+function serializeMethod(
+    resolvedElement: ElementOrMixin,
+    elementPath: string,
+    resolvedMethod: ResolvedMethod): Method {
+  const method: Method = {
+    name: resolvedMethod.name,
+    description: resolvedMethod.description || '',
+    sourceRange:
+        resolveSourceRangePath(elementPath, resolvedMethod.sourceRange),
+  };
+  if (resolvedMethod.params) {
+    method.params = resolvedMethod.params;
+  }
+  if (resolvedMethod.return ) {
+    method.return = resolvedMethod.return;
+  }
+  method.metadata = resolvedElement.emitMethodMetadata(resolvedMethod);
+  return method;
 }
 
 function resolveSourceRangePath(

@@ -12,6 +12,17 @@ This is a description of the element.
         notify: true
       }
     },
-    is: 'simple-element'
+    is: 'simple-element',
+    customFunction: function (a, b) { },
+    _customPrivateFunction: function (a, b) { },
+
+    /**
+     * This is the description.
+     * @param {Number} a
+     * @param {Number} b
+     * @return {boolean}
+     */
+    customFunctionWithJsDoc: function (a, b) { return true; },
   });
+
 </script>

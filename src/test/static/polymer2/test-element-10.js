@@ -47,6 +47,15 @@ class TestElement extends Polymer.Element {
   customInstanceFunctionWithParamsAndJSDoc(a, b, c) {
     return 7;
   }
+
+  /**
+   * This is the description for
+   * customInstanceFunctionWithParamsAndPrivateJSDoc.
+   * @private
+   */
+  customInstanceFunctionWithParamsAndPrivateJSDoc() {
+    return 8;
+  }
 }
 
 window.customElements.define('test-element', TestElement);

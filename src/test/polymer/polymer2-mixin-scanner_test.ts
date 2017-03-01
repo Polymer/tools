@@ -323,7 +323,11 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
           {
             name: 'customInstanceFunctionWithParamsAndJSDoc',
             params: [{name: 'a'}, {name: 'b'}, {name: 'c'}], return: undefined,
-          }
+          },
+          {
+            name: 'customInstanceFunctionWithParamsAndPrivateJSDoc',
+            params: [], return: undefined,
+          },
         ],
       }
     ]);

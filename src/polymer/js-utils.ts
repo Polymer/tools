@@ -31,7 +31,6 @@ export function toScannedProperty(
   const type = closureType(node.value, sourceRange);
   const description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
-
   const name = objectKeyToString(node.key);
 
   const warnings: Warning[] = [];
@@ -51,7 +50,8 @@ export function toScannedProperty(
     type: type,
     description: description,
     sourceRange: sourceRange,
-    astNode: node, warnings
+    astNode: node, warnings,
+    private: !!name && (name.startsWith('_') || name.endsWith('_')),
   };
 
   if (node.kind === 'get' || node.kind === 'set') {

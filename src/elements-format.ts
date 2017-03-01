@@ -105,6 +105,9 @@ export interface ElementLike extends Feature {
   /** The properties that this element has. */
   properties?: Property[];
 
+  /** The instance methods that this element has. */
+  methods?: Method[];
+
   /** The events that this element fires. */
   events?: Event[];
 
@@ -240,6 +243,29 @@ export interface Property extends Feature {
 
   /** Nested subproperties hanging off of this property. */
   properties?: Property[];
+}
+
+export interface Method extends Feature {
+  /** The name of the property. e.g. `value`, `icon`, `shouldCollapse`. */
+  name: string;
+
+  /** A markdown description of the property. */
+  description: string;
+
+  /**
+   * An array of data objects describing the method signature. This data may be
+   * incomplete. For example, only argument names can be detected from an
+   * undocumented JavaScript function. Argument types can only be read from
+   * associated JSDoc via @param tags
+   */
+  params?: {name: string, type?: string}[];
+
+  /**
+   * Data describing the method return type. This data may be incomplete.
+   * For example, the return type can be detected from a documented JavaScript
+   * function with associated JSDoc and a @return tag.
+   */
+  return?: {type?: string, desc: string};
 }
 
 export interface Event extends Feature {

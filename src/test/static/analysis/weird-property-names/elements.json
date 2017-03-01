@@ -103,6 +103,7 @@
           }
         }
       ],
+      "methods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
