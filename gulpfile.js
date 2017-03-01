@@ -42,7 +42,8 @@ task('init');
 task('depcheck', function() {
   return new Promise((resolve, reject) => {
            depcheck_lib(
-               __dirname, {ignoreDirs: [], ignoreMatches: ['@types/*']},
+               __dirname,
+               {ignoreDirs: [], ignoreMatches: ['@types/*']},
                resolve);
          })
       .then((result) => {
@@ -74,8 +75,11 @@ const tsProject =
 task('build', ['compile', 'json-schema']);
 
 task('compile', function() {
-  const srcs = gulp.src('src/**/*.ts').pipe(newer({dest: 'lib', ext: '.js'}));
-  const tsResult = srcs.pipe(sourcemaps.init()).pipe(typescript(tsProject, [], typescript.reporter.nullReporter()));
+  const srcs =
+      gulp.src('src/**/*.ts');  //.pipe(newer({dest: 'lib', ext: '.js'}));
+  const tsResult =
+      srcs.pipe(sourcemaps.init())
+          .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
 
   // Use this once typescript-gulp supports `include` in tsconfig:
   // const srcs = tsProject.src();
@@ -107,7 +111,8 @@ task('json-schema', function() {
   const inPath = 'src/elements-format.ts';
   const outPath = 'lib/analysis.schema.json';
   return gulp.src(inPath).pipe(newer(outPath)).pipe(shell([
-    `./node_modules/.bin/typescript-json-schema --required ${inPath} Elements > ${outPath}.temp`,
+    `./node_modules/.bin/typescript-json-schema --required ${inPath
+    } Elements > ${outPath}.temp`,
     `mv ${outPath}.temp ${outPath}`
   ]));
 });
