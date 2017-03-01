@@ -48,8 +48,12 @@ export type LazyEdgeMap = Map<string, string[]>;
  */
 export class Analyzer {
   private _context: AnalysisContext;
-  constructor(options: Options) {
-    this._context = new AnalysisContext(options);
+  constructor(options: Options|AnalysisContext) {
+    if (options instanceof AnalysisContext) {
+      this._context = options;
+    } else {
+      this._context = new AnalysisContext(options);
+    }
   }
 
   /**
@@ -94,9 +98,7 @@ export class Analyzer {
    * Note: this feature is experimental.
    */
   _fork(): Analyzer {
-    const analyzer = new Analyzer({});
-    analyzer._context = this._context;
-    return analyzer;
+    return new Analyzer(this._context);
   }
 
   /**
