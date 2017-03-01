@@ -58,10 +58,14 @@ class MixinVisitor implements Visitor {
       const namespacedName =
           name ? getNamespacedIdentifier(name, parentJsDocs) : undefined;
       const sourceRange = this._document.sourceRangeForNode(node);
+
+      const summaryTag = jsdoc.getTag(parentJsDocs, 'summary');
+
       this._currentMixin = new ScannedPolymerElementMixin({
         name: namespacedName,
         sourceRange,
         description: parentJsDocs.description,
+        summary: (summaryTag && summaryTag.description) || '',
       });
       this._currentMixinNode = node;
       this._mixins.push(this._currentMixin);
