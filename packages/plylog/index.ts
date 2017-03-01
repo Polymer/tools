@@ -14,12 +14,13 @@ import * as winston from 'winston';
 export type Level = 'error'|  'warn' | 'info'| 'verbose'| 'debug'| 'silly';
 export type Options = {
   /** The minimum severity to log, defaults to 'info' */
-  level?: Level;
-  name?: string;
+  readonly level?: Level;
+  readonly name?: string;
 }
 
 export class PolymerLogger {
-  _logger: winston.LoggerInstance;
+  private readonly  _logger: winston.LoggerInstance;
+  private readonly _transport: winston.TransportInstance;
 
   /**
    * Constructs a new instance of PolymerLogger. This creates a new internal
@@ -30,13 +31,13 @@ export class PolymerLogger {
   constructor(options: Options) {
     options = options || {};
 
-    const transport = defaultConfig.transportFactory({
+    this._transport = defaultConfig.transportFactory({
       level: options.level || 'info',
       label: options.name || null,
       prettyPrint: true,
     });
 
-    this._logger = new winston.Logger({transports: [transport]});
+    this._logger = new winston.Logger({transports: [this._transport]});
     this._logger.cli();
 
     this.error = this._log.bind(this, 'error');
@@ -73,33 +74,23 @@ export class PolymerLogger {
 
   /**
    * Read the instance's level from our internal logger.
-   *
-   * @return {string}
    */
-  get level() {
-    return this._logger.transports.console.level;
+  get level(): string|undefined {
+    return this._transport.level;
   }
 
   /**
    * Sets a new logger level on the internal winston logger. The level dictates
    * the minimum level severity that you will log to the console.
-   *
-   * @param  {string} [newLevel] The new maximum severity that will be logged
-   * @return {void}
    */
-  set level(newLevel) {
-    this._logger.transports.console.level = newLevel;
+  set level(newLevel: string|undefined) {
+    this._transport.level = newLevel;
   }
 
   /**
    * Logs a message of any level. Used internally by the public logging methods.
-   *
-   * @param  {string} level The severity level of the log
-   * @param  {string} msg The message to log
-   * @param  {Object} [metadata] Optional metadata to log
-   * @return {void}
    */
-  _log() {
+  private _log(_level: Level, _msg: string, _metadata?: any) {
     this._logger.log.apply(this._logger, arguments);
   }
 
