@@ -20,7 +20,7 @@ import {PassThrough, Transform} from 'stream';
 
 import File = require('vinyl');
 import {src as vinylSrc} from 'vinyl-fs';
-import {parse as parseUrl} from 'url';
+import {parseUrl} from 'polymer-analyzer/lib/utils';
 import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
 
@@ -337,7 +337,7 @@ export class BuildAnalyzer {
   }
 
   /**
-   * A side-channel to add files to the loader that did not come throgh the
+   * A side-channel to add files to the loader that did not come through the
    * stream transformation. This is for generated files, like
    * shared-bundle.html. This should probably be refactored so that the files
    * can be injected into the stream.
