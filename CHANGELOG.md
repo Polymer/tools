@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!--## Unreleased-->
+
+<!--
+  User-visible changes must be documented here. Uncomment the Unreleased heading
+  as appropriate too.
+-->
+
+## [2.0.1] - 2017-02-28
+* Update version of plylog.
 
 ## [2.0.0] - 2017-02-10
 
