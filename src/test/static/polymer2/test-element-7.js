@@ -39,7 +39,8 @@ const Mixin = (superclass) => class extends superclass {
  * @extends BaseElement
  * @mixes Mixin
  */
-class SubElement extends BaseElement {
+class SubElement extends Mixin
+(BaseElement) {
   static get is() {
     return 'sub-element';
   }

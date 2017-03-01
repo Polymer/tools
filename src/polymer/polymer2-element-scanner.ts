@@ -49,6 +49,9 @@ class ElementVisitor implements Visitor {
   private _elements: Set<ScannedElement> = new Set();
   private _document: JavaScriptDocument;
 
+  private _currentElement: ScannedPolymerElement|null = null;
+  private _currentElementNode: estree.Node|null = null;
+
   constructor(document: JavaScriptDocument) {
     this._document = document;
   }
@@ -101,15 +104,82 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
+  enterVariableDeclaration(
+      node: estree.VariableDeclaration, _parent: estree.Node) {
+    // This is for cases when a class is defined by only applying a mixin
+    // to a superclass, like: const Elem = Mixin(HTMLElement);
+    // In this case we don't have a ClassDeclaration or ClassExpresion
+    // to traverse into.
+
+    // TODO(justinfagnani): factor out more common code for creating
+    // an element from jsdocs.
+
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
-    const isValue = getIsValue(node);
-    const warnings: Warning[] = [];
+    const isElement = this._hasPolymerDocTag(docs);
+    const sourceRange = this._document.sourceRangeForNode(node);
+    if (isElement) {
+      const warnings: Warning[] = [];
+      const _extends = this._getExtends(node, docs, warnings);
+      const mixins = this._getMixins(node, docs, warnings);
 
+      // The name of the variable is available in a child VariableDeclarator
+      // so we save the element and node representing the element to access
+      // in enterVariableDeclarator
+      this._currentElementNode = node;
+      const element = this._currentElement = new ScannedPolymerElement({
+        sourceRange,
+        description: docs.description,
+        superClass: _extends,  //
+        mixins,
+      });
+      this._elements.add(this._currentElement);
+
+      const className = astValue.getIdentifierName(node) || '';
+      const namespacedClassName = getNamespacedIdentifier(className, docs);
+      element.className = namespacedClassName;
+
+      const summaryTag = jsdoc.getTag(docs, 'summary');
+      element.summary = (summaryTag && summaryTag.description) || '';
+
+      // Set the element on both the namespaced & unnamespaced names so that we
+      // can detect registration by either name.
+      this._possibleElements.set(namespacedClassName, element);
+      if (className) {
+        this._possibleElements.set(className, element);
+      }
+    }
+  }
+
+  leaveVariableDeclaration(
+      node: estree.VariableDeclaration, _parent: estree.Node) {
+    if (this._currentElementNode === node) {
+      // Clean up state when we leave a declaration that defined an element.
+      this._currentElement = null;
+      this._currentElementNode = null;
+    }
+  }
+
+  enterVariableDeclarator(
+      node: estree.VariableDeclarator, parent: estree.Node) {
+    if (this._currentElement != null && parent === this._currentElementNode) {
+      const name = (node.id as estree.Identifier).name;
+      const parentComments = esutil.getAttachedComment(parent) || '';
+      const parentJsDocs = jsdoc.parseJsdoc(parentComments);
+      this._currentElement.className =
+          getNamespacedIdentifier(name, parentJsDocs);
+    }
+  }
+
+  /**
+   * Returns the name of the superclass, if any.
+   */
+  private _getExtends(
+      node: estree.ClassDeclaration|estree.ClassExpression|
+      estree.VariableDeclaration,
+      docs: jsdoc.Annotation, warnings: Warning[]): ScannedReference|undefined {
     const extendsAnnotations =
         docs.tags!.filter((tag) => tag.tag === 'extends');
-    let _extends: ScannedReference|undefined = undefined;
 
     // prefer @extends annotations over extends clauses
     if (extendsAnnotations.length > 0) {
@@ -123,36 +193,54 @@ class ElementVisitor implements Visitor {
           severity: Severity.WARNING, sourceRange,
         });
       } else {
-        _extends = new ScannedReference(extendsId, sourceRange);
+        return new ScannedReference(extendsId, sourceRange);
       }
-    } else if (node.superClass) {
-      const extendsId = getIdentifierName(node.superClass);
-      if (extendsId != null) {
-        const sourceRange = this._document.sourceRangeForNode(node.superClass)!;
-        _extends = new ScannedReference(extendsId, sourceRange);
+    } else if (
+        node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+      // If no @extends tag, look for a superclass.
+      // TODO(justinfagnani): Infer mixin applications and superclass from AST.
+      const superClass = node.superClass;
+      if (superClass != null) {
+        const extendsId = getIdentifierName(superClass);
+        if (extendsId != null) {
+          const sourceRange = this._document.sourceRangeForNode(superClass)!;
+          return new ScannedReference(extendsId, sourceRange);
+        }
       }
     }
+  }
 
+  private _getMixins(
+      node: estree.Node, docs: jsdoc.Annotation, warnings: Warning[]) {
     const mixesAnnotations = docs.tags!.filter((tag) => tag.tag === 'mixes');
-    const mixins =
-        mixesAnnotations
-            .map((annotation) => {
-              const mixinId = annotation.name;
-              // TODO(justinfagnani): we need source ranges for jsdoc
-              // annotations
-              const sourceRange = this._document.sourceRangeForNode(node)!;
-              if (mixinId == null) {
-                warnings.push({
-                  code: 'class-mixes-annotation-no-id',
-                  message:
-                      '@mixes annotation with no identifier. Usage `@mixes MixinName`',
-                  severity: Severity.WARNING, sourceRange,
-                });
-                return;
-              }
-              return new ScannedReference(mixinId, sourceRange);
-            })
-            .filter((m) => m != null) as ScannedReference[];
+    return mixesAnnotations
+        .map((annotation) => {
+          const mixinId = annotation.name;
+          // TODO(justinfagnani): we need source ranges for jsdoc
+          // annotations
+          const sourceRange = this._document.sourceRangeForNode(node)!;
+          if (mixinId == null) {
+            warnings.push({
+              code: 'class-mixes-annotation-no-id',
+              message:
+                  '@mixes annotation with no identifier. Usage `@mixes MixinName`',
+              severity: Severity.WARNING, sourceRange,
+            });
+            return;
+          }
+          return new ScannedReference(mixinId, sourceRange);
+        })
+        .filter((m) => m != null) as ScannedReference[];
+  }
+
+  private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
+    const comment = esutil.getAttachedComment(node) || '';
+    const docs = jsdoc.parseJsdoc(comment);
+    const isValue = getIsValue(node);
+    const warnings: Warning[] = [];
+
+    const _extends = this._getExtends(node, docs, warnings);
+    const mixins = this._getMixins(node, docs, warnings);
 
     const element = new ScannedPolymerElement({
       tagName: isValue,

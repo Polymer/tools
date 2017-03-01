@@ -265,4 +265,41 @@ namespaced name.`,
     ]);
   });
 
+  test('Reads just mixin application', async() => {
+    const elements = await getElements('test-element-9.js');
+    const elementData = elements.map(getTestProps);
+
+    assert.deepEqual(elementData, [
+      {
+        tagName: undefined,
+        className: 'BaseElement',
+        superClass: 'Polymer.Element',
+        description: '',
+        summary: '',
+        properties: [],
+        attributes: [],
+      },
+      {
+        tagName: undefined,
+        className: 'SubElement',
+        superClass: 'BaseElement',
+        description: '',
+        summary: '',
+        properties: [],
+        attributes: [],
+        mixins: ['Mixin'],
+      },
+      {
+        tagName: undefined,
+        className: 'SubElement2',
+        superClass: 'BaseElement',
+        description: '',
+        summary: '',
+        properties: [],
+        attributes: [],
+        mixins: ['Mixin'],
+      },
+    ]);
+  });
+
 });
