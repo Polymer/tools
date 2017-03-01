@@ -93,7 +93,7 @@ export class Analyzer {
    *
    * Note: this feature is experimental.
    */
-  fork(): Analyzer {
+  _fork(): Analyzer {
     const analyzer = new Analyzer({});
     analyzer._context = this._context;
     return analyzer;

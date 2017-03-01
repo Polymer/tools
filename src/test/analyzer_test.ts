@@ -709,10 +709,10 @@ var DuplicateNamespace = {};
     });
   });
 
-  suite('fork', () => {
+  suite('_fork', () => {
     test('returns an independent copy of Analyzer', async() => {
       await analyzer.analyze('a.html', 'a is shared');
-      const analyzer2 = analyzer.fork();
+      const analyzer2 = analyzer._fork();
       await analyzer.analyze('b.html', 'b for analyzer');
       await analyzer2.analyze('b.html', 'b for analyzer2');
 
