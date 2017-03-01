@@ -17,6 +17,7 @@
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/node": "^4.2.3",
     "@types/winston": "^2.2.0",
     "winston": "^2.2.0"
   },

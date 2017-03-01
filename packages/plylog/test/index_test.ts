@@ -22,7 +22,7 @@ suite('plylog', () => {
 
     test('creates an internal winston logger with the given logger when instantiated', () => {
       let logger = logging.getLogger('TEST_LOGGER');
-      assert.instanceOf(logger._logger, winston.Logger);
+      assert.instanceOf(logger['_logger'], winston.Logger);
     });
 
   });
@@ -33,7 +33,7 @@ suite('plylog', () => {
       logging.setVerbose();
       assert.equal(logging.defaultConfig.level, 'debug');
       let logger = logging.getLogger('TEST_LOGGER');
-      assert.equal(logger._logger.transports.console.level, 'debug');
+      assert.equal(logger['_logger'].transports.console.level, 'debug');
     });
 
   });
@@ -44,7 +44,7 @@ suite('plylog', () => {
       logging.setQuiet();
       assert.equal(logging.defaultConfig.level, 'error');
       let logger = logging.getLogger('TEST_LOGGER');
-      assert.equal(logger._logger.transports.console.level, 'error');
+      assert.equal(logger['_logger'].transports.console.level, 'error');
     });
 
   });
@@ -54,21 +54,21 @@ suite('plylog', () => {
     test('changes its internal logger\'s level when level property is changed', () => {
       let logger = logging.getLogger('TEST_LOGGER');
       logger.level = 'info';
-      assert.equal(logger._logger.transports.console.level, 'info');
+      assert.equal(logger['_logger'].transports.console.level, 'info');
       logger.level = 'debug';
-      assert.equal(logger._logger.transports.console.level, 'debug');
+      assert.equal(logger['_logger'].transports.console.level, 'debug');
      });
 
     test('reads its internal logger\'s level when the level property is read', () => {
       let logger = logging.getLogger('TEST_LOGGER');
       logger.level = 'silly';
-      assert.equal(logger._logger.transports.console.level, 'silly');
+      assert.equal(logger['_logger'].transports.console.level, 'silly');
       assert.equal(logger.level, 'silly');
      });
 
     test('loggers properly pass arguments to their internal logger\'s log methods when called', () => {
       let logger = logging.getLogger('TEST_LOGGER');
-      let winstonSpy = sinon.spy(logger._logger, 'log');
+      let winstonSpy = sinon.spy(logger['_logger'], 'log');
       logger.debug('hello:debug');
       assert.isOk(winstonSpy.calledWith('debug', 'hello:debug'));
       logger.info('hello:info');
