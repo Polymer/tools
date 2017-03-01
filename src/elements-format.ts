@@ -96,6 +96,9 @@ export interface ElementLike extends Feature {
    */
   demos: string[];
 
+  /** Names of mixines applied to this element.  */
+  mixins?: string[];
+
   /** The attributes that this element is known to understand. */
   attributes?: Attribute[];
 

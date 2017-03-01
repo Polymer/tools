@@ -142,6 +142,11 @@ function serializeElement(
   if (element.className) {
     metadata.classname = element.className;
   }
+
+  // TODO(justinfagnani): Mixins should be able to have mixins too
+  if (element.mixins.length > 0) {
+    metadata.mixins = element.mixins.map((m) => m.identifier);
+  }
   metadata.superclass = 'HTMLElement';
   return metadata;
 }
