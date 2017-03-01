@@ -46,6 +46,11 @@ export class BuildBundler extends Transform {
     this.analyzer = analyzer;
     this.sharedBundleUrl = 'shared-bundle.html';
     this.bundler = new Bundler({
+
+      // TODO(usergenic): Creating a new Analyzer with a blank cache is going
+      // to mean, at least, a doubling of analysis efforts for bundling phase.
+      // Ideally we would fork existing analyzer and replace its urlLoader if
+      // there were an affordance to do so.
       analyzer: new Analyzer({
         urlLoader: new StreamLoader(
             this.config,
