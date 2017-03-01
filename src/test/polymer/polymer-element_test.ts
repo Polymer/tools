@@ -54,8 +54,8 @@ suite('PolymerElement', () => {
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
-      methods:
-          element.methods.map((p) => ({name: p.name, function: p.function})),
+      methods: element.methods.map(
+          (m) => ({name: m.name, params: m.params, return: m.return })),
     };
   }
 
@@ -127,7 +127,9 @@ suite('PolymerElement', () => {
             name: 'two',
           }
         ],
-        methods: [{function: {params: []}, name: 'customMethodOnBaseElement'}],
+        methods: [
+          {name: 'customMethodOnBaseElement', params: [], return: undefined}
+        ],
       },
       {
         tagName: 'sub-element',
@@ -169,9 +171,9 @@ suite('PolymerElement', () => {
           }
         ],
         methods: [
-          {function: {params: []}, name: 'customMethodOnBaseElement'},
-          {function: {params: []}, name: 'customMethodOnMixin'},
-          {function: {params: []}, name: 'customMethodOnSubElement'},
+          {name: 'customMethodOnBaseElement', params: [], return: undefined},
+          {name: 'customMethodOnMixin', params: [], return: undefined},
+          {name: 'customMethodOnSubElement', params: [], return: undefined},
         ],
       },
     ]);

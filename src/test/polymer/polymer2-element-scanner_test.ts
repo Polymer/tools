@@ -57,8 +57,8 @@ suite('Polymer2ElementScanner', () => {
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
-      methods:
-          element.methods.map((p) => ({name: p.name, function: p.function})),
+      methods: element.methods.map(
+          (m) => ({name: m.name, params: m.params, return: m.return })),
 
     };
     if (element.mixins.length > 0) {
@@ -335,15 +335,20 @@ namespaced name.`,
               name: 'foo',
             }],
             methods: [
-              {name: 'customInstanceFunction', function: {params: []}},
-              {name: 'customInstanceFunctionWithJSDoc', function: {params: []}},
+              {name: 'customInstanceFunction', params: [], return: undefined},
+              {
+                name: 'customInstanceFunctionWithJSDoc',
+                params: [], return: undefined
+              },
               {
                 name: 'customInstanceFunctionWithParams',
-                function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
+                params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
+                return: undefined,
               },
               {
                 name: 'customInstanceFunctionWithParamsAndJSDoc',
-                function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
+                params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
+                return: undefined,
               },
             ],
           },

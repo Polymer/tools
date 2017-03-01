@@ -170,10 +170,6 @@ function annotateProperty(
   // @type JSDoc wins
   feature.type = jsdoc.getTag(feature.jsdoc, 'type', 'type') || feature.type;
 
-  if (feature.type && feature.type.match(/^function/i)) {
-    _annotateFunctionProperty(feature);
-  }
-
   // @default JSDoc wins
   const defaultTag = jsdoc.getTag(feature.jsdoc, 'default');
   if (defaultTag !== null) {
@@ -184,34 +180,6 @@ function annotateProperty(
   }
 
   return feature;
-}
-
-function _annotateFunctionProperty(scannedFunction: ScannedProperty) {
-  scannedFunction.function = scannedFunction.function || {};
-
-  const returnTag = jsdoc.getTag(scannedFunction.jsdoc, 'return');
-  if (returnTag) {
-    scannedFunction.function.return = {
-      type: returnTag.type || undefined,
-      desc: returnTag.description || '',
-    };
-  }
-
-  const paramsByName = {};
-  (scannedFunction.function.params || []).forEach((param) => {
-    paramsByName[param.name] = param;
-  });
-  (scannedFunction.jsdoc && scannedFunction.jsdoc.tags || []).forEach((tag) => {
-    if (tag.tag !== 'param' || tag.name == null)
-      return;
-    const param = paramsByName[tag.name];
-    if (!param) {
-      return;
-    }
-
-    param.type = tag.type || param.type;
-    param.desc = tag.description;
-  });
 }
 
 /**

@@ -54,7 +54,8 @@ suite('Polymer2MixinScanner', () => {
       attributes: mixin.attributes.map((a) => ({
                                          name: a.name,
                                        })),
-      methods: mixin.methods.map((p) => ({name: p.name, function: p.function})),
+      methods: mixin.methods.map(
+          (m) => ({name: m.name, params: m.params, return: m.return })),
     };
   }
 
@@ -298,30 +299,34 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
   test('properly analyzes mixin instance and class methods', async() => {
     const mixins = await getMixins('test-mixin-9.js');
     const mixinData = mixins.map(getTestProps);
-    assert.deepEqual(
-        mixinData, [{
-          name: 'TestMixin',
-          description: 'A mixin description',
-          summary: 'A mixin summary',
-          properties: [{
-            name: 'foo',
-          }],
-          attributes: [{
-            name: 'foo',
-          }],
-          methods: [
-            {name: 'customInstanceFunction', function: {params: []}},
-            {name: 'customInstanceFunctionWithJSDoc', function: {params: []}},
-            {
-              name: 'customInstanceFunctionWithParams',
-              function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
-            },
-            {
-              name: 'customInstanceFunctionWithParamsAndJSDoc',
-              function: {params: [{name: 'a'}, {name: 'b'}, {name: 'c'}]}
-            }
-          ],
-        }]);
+    assert.deepEqual(mixinData, [
+      {
+        name: 'TestMixin',
+        description: 'A mixin description',
+        summary: 'A mixin summary',
+        properties: [{
+          name: 'foo',
+        }],
+        attributes: [{
+          name: 'foo',
+        }],
+        methods: [
+          {name: 'customInstanceFunction', params: [], return: undefined},
+          {
+            name: 'customInstanceFunctionWithJSDoc',
+            params: [], return: undefined,
+          },
+          {
+            name: 'customInstanceFunctionWithParams',
+            params: [{name: 'a'}, {name: 'b'}, {name: 'c'}], return: undefined,
+          },
+          {
+            name: 'customInstanceFunctionWithParamsAndJSDoc',
+            params: [{name: 'a'}, {name: 'b'}, {name: 'c'}], return: undefined,
+          }
+        ],
+      }
+    ]);
 
   });
 

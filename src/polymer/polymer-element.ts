@@ -104,15 +104,13 @@ export function addProperty(
   if (prop.private || !attributeName || !prop.published) {
     return;
   }
-  if (!prop.function) {
-    target.attributes.push({
-      name: attributeName,
-      sourceRange: prop.sourceRange,
-      description: prop.description,
-      type: prop.type,
-      changeEvent: prop.notify ? `${attributeName}-changed` : undefined
-    });
-  }
+  target.attributes.push({
+    name: attributeName,
+    sourceRange: prop.sourceRange,
+    description: prop.description,
+    type: prop.type,
+    changeEvent: prop.notify ? `${attributeName}-changed` : undefined
+  });
   if (prop.notify) {
     target.events.push({
       name: `${attributeName}-changed`,

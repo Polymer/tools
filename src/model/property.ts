@@ -24,10 +24,6 @@ export interface ScannedProperty extends ScannedFeature {
   'default'?: string;
   readOnly?: boolean;
   changeEvent?: string;
-  function?: {
-    params?: {name: string, type?: string}[];
-    return?: {type?: string, desc: string};
-  };
 }
 
 export interface Property {
@@ -41,8 +37,4 @@ export interface Property {
   sourceRange: SourceRange|undefined;
   inheritedFrom?: string;
   changeEvent?: string;
-  function?: {
-    params?: {name: string, type?: string}[];
-    return?: {type?: string, desc: string};
-  };
 }

@@ -56,15 +56,6 @@ export function toScannedProperty(
 
   if (node.kind === 'get' || node.kind === 'set') {
     result.type = '';
-  } else if (type === 'Function') {
-    const value = <estree.Function>node.value;
-    result.function = {
-      params: (value.params || []).map((param) => {
-        // With ES6 we can have a lot of param patterns. Best to leave the
-        // formatting to escodegen.
-        return {name: escodegen.generate(param)};
-      }),
-    };
   }
 
   return result;
@@ -77,7 +68,19 @@ export function toScannedProperty(
 export function toScannedMethod(
     node: estree.Property|estree.MethodDefinition,
     sourceRange: SourceRange): ScannedMethod {
-  return <ScannedMethod>toScannedProperty(node, sourceRange);
+  const scannedMethod = <ScannedMethod>toScannedProperty(node, sourceRange);
+
+  if (scannedMethod.type === 'Function' ||
+      scannedMethod.type === 'ArrowFunction') {
+    const value = <estree.FunctionExpression>node.value;
+    scannedMethod.params = (value.params || []).map((param) => {
+      // With ES6 we can have a lot of param patterns. Best to leave the
+      // formatting to escodegen.
+      return {name: escodegen.generate(param)};
+    });
+  }
+
+  return scannedMethod;
 }
 
 /**
