@@ -231,6 +231,9 @@ export interface Attribute extends Feature {
    */
   defaultValue?: string;
 
+  /** The identifier of the class or mixin that declared this property. */
+  inheritedFrom?: string;
+
   // We need some way of representing that this attribute is associated with a
   // property. TBD.
 }
@@ -260,6 +263,9 @@ export interface Property extends Feature {
   properties?: Property[];
 
   privacy?: 'public'|'private'|'protected';
+
+  /** The identifier of the class or mixin that declared this property. */
+  inheritedFrom?: string;
 }
 
 export interface Method extends Feature {
@@ -285,6 +291,9 @@ export interface Method extends Feature {
   return?: {type?: string, desc: string};
 
   privacy?: 'public'|'private'|'protected';
+
+  /** The identifier of the class or mixin that declared this property. */
+  inheritedFrom?: string;
 }
 
 export interface Event extends Feature {
@@ -302,6 +311,9 @@ export interface Event extends Feature {
 
   /** Information about the `detail` field of the event. */
   detail?: {properties: Property[]};
+
+  /** The identifier of the class or mixin that declared this property. */
+  inheritedFrom?: string;
 
   // Should we have a way of associating an event with an attribute or a
   // property?

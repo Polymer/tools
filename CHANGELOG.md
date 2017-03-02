@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   * respects `@public` `@private` and `@protected` in jsdoc
   * considers one leading underscore to be protected, and two to be private
   * one trailing underscore is private (closure style)
+* Track inheritance source for mixin and element members.
 
 ## [2.0.0-alpha.28] - 2017-02-24
 * Support for `@memberof` jsdoc tag

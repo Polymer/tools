@@ -50,6 +50,7 @@ suite('PolymerElement', () => {
       description: element.description,
       properties: element.properties.map((p) => ({
                                            name: p.name,
+                                           inheritedFrom: p.inheritedFrom,
                                          })),
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
@@ -70,6 +71,7 @@ suite('PolymerElement', () => {
         description: '',
         properties: [{
           name: 'foo',
+          inheritedFrom: undefined,
         }],
         attributes: [{
           name: 'foo',
@@ -84,9 +86,11 @@ suite('PolymerElement', () => {
         properties: [
           {
             name: 'foo',
+            inheritedFrom: 'BaseElement',
           },
           {
             name: 'bar',
+            inheritedFrom: undefined,
           },
         ],
         attributes: [
@@ -114,9 +118,11 @@ suite('PolymerElement', () => {
         properties: [
           {
             name: 'one',
+            inheritedFrom: undefined,
           },
           {
             name: 'two',
+            inheritedFrom: undefined,
           }
         ],
         attributes: [
@@ -139,17 +145,22 @@ suite('PolymerElement', () => {
         properties: [
           {
             name: 'one',
+            inheritedFrom: 'BaseElement',
           },
           {
             name: 'two',
+            inheritedFrom: 'Mixin',
           },
           {
             name: 'three',
+            inheritedFrom: 'Mixin',
           },
           {
             name: 'four',
+            inheritedFrom: undefined,
           },
           {
+            inheritedFrom: undefined,
             name: 'five',
           }
         ],
