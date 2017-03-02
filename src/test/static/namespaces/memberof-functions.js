@@ -27,6 +27,7 @@ Polymer.someProp = 123;
 
   /**
    * ccc
+   * @protected
    * @memberof Polymer
    */
   function ccc() {
@@ -41,11 +42,12 @@ Polymer = {
    * ddd
    * @memberof Polymer
    */
-  ddd: function() {
+  _ddd: function() {
 
   },
   /**
    * eee
+   * @private
    * @memberof Polymer
    */
   eee: () => {},
@@ -65,14 +67,26 @@ Polymer = {
    */
   ggg: someFunction,
 
+  /**
+   * hhh_ should be private
+   * @function
+   * @memberof Polymer
+   */
+  hhh_: someOtherFunc,
+
+  /**
+   * __iii should be private too
+   * @memberof Polymer
+   */
+  __iii() { },
 };
 
 
 /**
- * hhh
+ * jjj
  * @memberof Polymer
  */
-var hhh = function() {
+var jjj = function() {
 
 };
-Polymer.hhh = hhh;
+Polymer.jjj = jjj;

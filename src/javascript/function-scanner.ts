@@ -20,6 +20,7 @@ import {getAttachedComment, isFunctionType, objectKeyToString} from '../javascri
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {getOrInferPrivacy} from '../polymer/js-utils';
 
 import {ScannedFunction} from './function';
 
@@ -99,7 +100,7 @@ class FunctionVisitor implements Visitor {
   }
 
   private _initFunction(
-      node: estree.Node, anaylzedName?: string, _fn?: estree.Function) {
+      node: estree.Node, analyzedName?: string, _fn?: estree.Function) {
     const comment = getAttachedComment(node);
 
     // Quickly filter down to potential candidates.
@@ -107,13 +108,13 @@ class FunctionVisitor implements Visitor {
       return;
     }
 
-    if (!anaylzedName) {
+    if (!analyzedName) {
       // TODO(fks): Propagate a warning if name could not be determined
       return;
     }
 
     const docs = jsdoc.parseJsdoc(comment);
-    const functionName = getNamespacedIdentifier(anaylzedName, docs);
+    const functionName = getNamespacedIdentifier(analyzedName, docs);
     const sourceRange = this.document.sourceRangeForNode(node)!;
     const returnTag = jsdoc.getTag(docs, 'return');
     const summaryTag = jsdoc.getTag(docs, 'summary');
@@ -143,11 +144,12 @@ class FunctionVisitor implements Visitor {
     }
     // TODO(fks): parse params directly from `fn`, merge with docs.tags data
 
-
+    const specificName = functionName.slice(functionName.lastIndexOf('.') + 1);
     this.functions.add(new ScannedFunction(
         functionName,
         description,
         summary,
+        getOrInferPrivacy(specificName, docs, true),
         node,
         docs,
         sourceRange,

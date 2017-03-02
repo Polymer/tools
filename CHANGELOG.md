@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Added a `_fork` method to Analyzer.
 * Support for method detection on polymer elements and mixins via the new `methods` property.
 * Support for function analysis (namespaced functions only for now, via the `@memberof` jsdoc tag).
-* Track privacy better on properties and methods.
+* Track privacy better on properties, methods, and functions on namespaces.
   * replaced `private: boolean` with `privacy: 'public' | 'private' | 'protected'`
   * respects `@public` `@private` and `@protected` in jsdoc
   * considers one leading underscore to be protected, and two to be private

@@ -52,6 +52,7 @@ suite('FunctionScanner', () => {
           warnings: fn.warnings,
           params: fn.params, return: fn.return,
           codeSnippet: await underliner.underline(fn.sourceRange),
+          privacy: fn.privacy
         };
       }
 
@@ -71,7 +72,7 @@ suite('FunctionScanner', () => {
           name: 'a',
           type: 'Number',
         }],
-        return: undefined,
+        privacy: 'public', return: undefined,
         codeSnippet: `
 function aaa(a) {
 ~~~~~~~~~~~~~~~~~
@@ -86,6 +87,7 @@ function aaa(a) {
         summary: '',
         warnings: [],
         params: [], return: undefined,
+        privacy: 'public',
         codeSnippet: `
 Polymer.bbb = function bbb() {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,6 +102,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [], return: undefined,
+        privacy: 'protected',
         codeSnippet: `
   function ccc() {
   ~~~~~~~~~~~~~~~~
@@ -107,14 +110,15 @@ Polymer.bbb = function bbb() {
 ~~~`,
       },
       {
-        name: 'Polymer.ddd',
+        name: 'Polymer._ddd',
         description: 'ddd',
         summary: '',
         warnings: [],
+        privacy: 'protected',
         params: [], return: undefined,
         codeSnippet: `
-  ddd: function() {
-  ~~~~~~~~~~~~~~~~~
+  _ddd: function() {
+  ~~~~~~~~~~~~~~~~~~
 
 
   },
@@ -126,6 +130,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [], return: undefined,
+        privacy: 'private',
         codeSnippet: `
   eee: () => {},
   ~~~~~~~~~~~~~`,
@@ -136,6 +141,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [], return: undefined,
+        privacy: 'public',
         codeSnippet: `
   fff() {
   ~~~~~~~
@@ -150,24 +156,48 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [], return: undefined,
+        privacy: 'public',
         codeSnippet: `
   ggg: someFunction,
   ~~~~~~~~~~~~~~~~~`,
       },
       {
-        name: 'Polymer.hhh',
-        description: 'hhh',
+        name: 'Polymer.hhh_',
+        description: 'hhh_ should be private',
         summary: '',
         warnings: [],
         params: [], return: undefined,
+        privacy: 'private',
         codeSnippet: `
-var hhh = function() {
+  hhh_: someOtherFunc,
+  ~~~~~~~~~~~~~~~~~~~`,
+      },
+      {
+        name: 'Polymer.__iii',
+        description: '__iii should be private too',
+        summary: '',
+        warnings: [],
+        params: [], return: undefined,
+        privacy: 'private',
+        codeSnippet: `
+  __iii() { },
+  ~~~~~~~~~~~`,
+      },
+      {
+        name: 'Polymer.jjj',
+        description: 'jjj',
+        summary: '',
+        warnings: [],
+        params: [], return: undefined,
+        privacy: 'public',
+        codeSnippet: `
+var jjj = function() {
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
 };
 ~~`,
-      }
+      },
     ]);
   });
 });

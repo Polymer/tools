@@ -111,7 +111,7 @@ export function toScannedMethod(
 export function getOrInferPrivacy(
     name: string,
     annotation: jsdoc.Annotation|undefined,
-    privateUnlessDocumented: boolean): Privacy|undefined {
+    privateUnlessDocumented: boolean): Privacy {
   const explicitPrivacy = jsdoc.getPrivacy(annotation);
   if (explicitPrivacy) {
     return explicitPrivacy;

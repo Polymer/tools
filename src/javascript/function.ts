@@ -15,7 +15,7 @@
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, Feature, Resolvable, SourceRange} from '../model/model';
+import {Document, Feature, Privacy, Resolvable, SourceRange} from '../model/model';
 import {Warning} from '../warning/warning';
 
 export class ScannedFunction implements Resolvable {
@@ -28,12 +28,13 @@ export class ScannedFunction implements Resolvable {
   warnings: Warning[];
   params?: {name: string, type?: string}[];
   return?: {type?: string, desc: string};
+  privacy: Privacy;
 
   constructor(
-      name: string, description: string, summary: string, astNode: estree.Node,
-      jsdoc: JsDocAnnotation, sourceRange: SourceRange,
+      name: string, description: string, summary: string, privacy: Privacy,
+      astNode: estree.Node, jsdoc: JsDocAnnotation, sourceRange: SourceRange,
       params?: {name: string, type?: string}[],
-      returnData?: {type?: string, desc: string}) {
+      returnData?: {type?: string, desc: string}, ) {
     this.name = name;
     this.description = description;
     this.summary = summary;
@@ -43,6 +44,7 @@ export class ScannedFunction implements Resolvable {
     this.warnings = [];
     this.params = params;
     this.return = returnData;
+    this.privacy = privacy;
   }
 
   resolve(_document: Document) {
@@ -54,6 +56,7 @@ export class Function implements Feature {
   name: string;
   description?: string;
   summary?: string;
+  privacy: Privacy;
   kinds: Set<string>;
   identifiers: Set<string>;
   sourceRange: SourceRange;
@@ -73,6 +76,7 @@ export class Function implements Feature {
     this.warnings = Array.from(scannedFunction.warnings);
     this.params = scannedFunction.params;
     this.return = scannedFunction.return;
+    this.privacy = scannedFunction.privacy;
   }
 
   toString() {
