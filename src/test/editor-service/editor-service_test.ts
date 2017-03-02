@@ -206,7 +206,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               {
                 file: 'analysis/behaviors/elementdir/element.html',
                 start: {line: 4, column: 10},
-                end: {line: 24, column: 3}
+                end: {line: 29, column: 3}
               });
         });
 

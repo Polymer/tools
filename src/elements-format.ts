@@ -258,6 +258,8 @@ export interface Property extends Feature {
 
   /** Nested subproperties hanging off of this property. */
   properties?: Property[];
+
+  privacy?: 'public'|'private'|'protected';
 }
 
 export interface Method extends Feature {
@@ -281,6 +283,8 @@ export interface Method extends Feature {
    * function with associated JSDoc and a @return tag.
    */
   return?: {type?: string, desc: string};
+
+  privacy?: 'public'|'private'|'protected';
 }
 
 export interface Event extends Feature {

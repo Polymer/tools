@@ -229,9 +229,9 @@ class ElementVisitor implements Visitor {
         try {
           const scannedPolymerProperty = toScannedPolymerProperty(
               prop, this.document.sourceRangeForNode(prop)!);
-          if (scannedPolymerProperty.getter) {
+          if (prop.kind === 'get') {
             getters[scannedPolymerProperty.name] = scannedPolymerProperty;
-          } else if (scannedPolymerProperty.setter) {
+          } else if (prop.kind === 'set') {
             setters[scannedPolymerProperty.name] = scannedPolymerProperty;
           } else if (prop.method === true || isFunctionType(prop.value)) {
             const scannedPolymerMethod =
@@ -248,20 +248,19 @@ class ElementVisitor implements Visitor {
           throw e;
         }
       }
-      Object.keys(getters).forEach((getter) => {
-        const get = getters[getter];
-        definedProperties[get.name] = get;
+      Object.keys(getters).forEach((name) => {
+        const prop = getters[name];
+        definedProperties[prop.name] = prop;
+        prop.readOnly = !!setters[prop.name];
       });
-      Object.keys(setters).forEach((setter) => {
-        const set = setters[setter];
-        if (!(set.name in definedProperties)) {
-          definedProperties[set.name] = set;
-        } else {
-          definedProperties[set.name].setter = true;
+      Object.keys(setters).forEach((name) => {
+        const prop = setters[name];
+        if (!(prop.name in definedProperties)) {
+          definedProperties[prop.name] = prop;
         }
       });
-      Object.keys(definedProperties).forEach((p) => {
-        const prop = definedProperties[p];
+      Object.keys(definedProperties).forEach((name) => {
+        const prop = definedProperties[name];
         element.addProperty(prop);
       });
       return estraverse.VisitorOption.Skip;

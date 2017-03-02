@@ -30,6 +30,7 @@
           "name": "theValue",
           "type": "string",
           "description": "This is a simple test property named theValue.",
+          "privacy": "public",
           "sourceRange": {
             "start": {
               "line": 9,
@@ -45,9 +46,268 @@
               "notify": true
             }
           }
+        },
+        {
+          "name": "_protectedValue",
+          "type": "string",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 13,
+              "column": 6
+            },
+            "end": {
+              "line": 13,
+              "column": 29
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
+        },
+        {
+          "name": "__privateValue",
+          "type": "string",
+          "description": "",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 14,
+              "column": 6
+            },
+            "end": {
+              "line": 14,
+              "column": 28
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
+        },
+        {
+          "name": "closureStyleTrailingUnderscoresArePrivate_",
+          "type": "string",
+          "description": "",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 15,
+              "column": 6
+            },
+            "end": {
+              "line": 15,
+              "column": 56
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
+        },
+        {
+          "name": "_looksProtectedButActuallyPublic",
+          "type": "string",
+          "description": "@public",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 17,
+              "column": 6
+            },
+            "end": {
+              "line": 17,
+              "column": 46
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
+        },
+        {
+          "name": "looksPublicButActuallyProtected",
+          "type": "string",
+          "description": "@protected",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 19,
+              "column": 6
+            },
+            "end": {
+              "line": 19,
+              "column": 45
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
+        },
+        {
+          "name": "looksPublicButActuallyPrivate",
+          "type": "string",
+          "description": "@private",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 21,
+              "column": 6
+            },
+            "end": {
+              "line": 21,
+              "column": 43
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
         }
       ],
-      "methods": [],
+      "methods": [
+        {
+          "name": "customFunction",
+          "description": "",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 24,
+              "column": 4
+            },
+            "end": {
+              "line": 24,
+              "column": 39
+            }
+          },
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "_customProtectedFunction",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 25,
+              "column": 4
+            },
+            "end": {
+              "line": 25,
+              "column": 49
+            }
+          },
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "__customPrivateFunction",
+          "description": "",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 26,
+              "column": 4
+            },
+            "end": {
+              "line": 26,
+              "column": 48
+            }
+          },
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "customFunctionWithJsDoc",
+          "description": "This is the description.\n@param {Number} a\n@param {Number} b\n@return {boolean}",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 34,
+              "column": 4
+            },
+            "end": {
+              "line": 34,
+              "column": 61
+            }
+          },
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "_customProtectedFunctionWithJsDoc",
+          "description": "This is a protected method.\n@param {Number} a\n@param {Number} b\n@return {boolean}",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 42,
+              "column": 4
+            },
+            "end": {
+              "line": 42,
+              "column": 71
+            }
+          },
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "__customPrivateFunctionWithJsDoc",
+          "description": "This is a private method.\n@param {Number} a\n@param {Number} b\n@return {boolean}",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 50,
+              "column": 4
+            },
+            "end": {
+              "line": 50,
+              "column": 70
+            }
+          },
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "metadata": {}
+        }
+      ],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -69,7 +329,7 @@
           "column": 10
         },
         "end": {
-          "line": 25,
+          "line": 51,
           "column": 3
         }
       }

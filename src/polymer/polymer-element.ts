@@ -15,12 +15,13 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
-import {Annotation as JsDocAnnotation, getTag as JsDocGetTag, isAnnotationEmpty} from '../javascript/jsdoc';
+import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Document, Element, ElementBase, LiteralValue, Method, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
 import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
+import {getOrInferPrivacy} from './js-utils';
 import {PolymerElementMixin} from './polymer-element-mixin';
 
 export interface BasePolymerProperty {
@@ -29,9 +30,12 @@ export interface BasePolymerProperty {
   observer?: string;
   observerNode?: estree.Expression|estree.Pattern;
   reflectToAttribute?: boolean;
-  configuration?: boolean;
-  getter?: boolean;
-  setter?: boolean;
+  /**
+   * True if the property is part of Polymer's element configuration syntax.
+   *
+   * e.g. 'properties', 'is', 'extends', etc
+   */
+  isConfiguration?: boolean;
 }
 
 export interface ScannedPolymerProperty extends ScannedProperty,
@@ -98,7 +102,11 @@ export function addProperty(
     target: ScannedPolymerExtension, prop: ScannedPolymerProperty) {
   target.properties.push(prop);
   const attributeName = propertyToAttributeName(prop.name);
-  if (prop.private || !attributeName || !prop.published) {
+  // Don't produce attributes or events for nonpublic properties, properties
+  // that aren't in Polymer's `properties` block (i.e. not published),
+  // or properties whose names can't be converted into attribute names.
+  if ((prop.privacy && prop.privacy !== 'public') || !attributeName ||
+      !prop.published) {
     return;
   }
   target.attributes.push({
@@ -291,12 +299,9 @@ function resolveElement(
     element.kinds.add('pseudo-element');
   }
 
-  // Elements have their own logic to dictate when a method is private or public
-  // that overrides whatever our scanner detected.
   for (const method of element.methods) {
-    const hasJsDocPrivateTag = !!JsDocGetTag(method.jsdoc, 'private');
-    method.private =
-        !method.jsdoc || isAnnotationEmpty(method.jsdoc) || hasJsDocPrivateTag;
+    // methods are only public by default if they're documented.
+    method.privacy = getOrInferPrivacy(method.name, method.jsdoc, true);
   }
 
   return element;

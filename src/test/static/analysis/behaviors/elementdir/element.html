@@ -12,15 +12,21 @@
         value: true,
         notify: true
       },
+      /** This can only be used directly by code that mixes in this behavior.*/
+      _protectedProperty: {
+        type: String,
+        value: 'do cool stuff with me!'
+      },
       /** This is used entirely for internal purposes ok. */
-      _privateProperty: {
+      __privateProperty: {
         type: String,
         value: 'don\'t look!'
       }
     },
 
-    created: function() {
+    created: function () {
       console.log('created!');
     }
   });
+
 </script>

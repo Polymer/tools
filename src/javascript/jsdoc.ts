@@ -13,6 +13,7 @@
  */
 
 import * as doctrine from 'doctrine';
+import {Privacy} from '../model/model';
 
 /**
  * An annotated JSDoc block tag, all fields are optionally processed except for
@@ -216,4 +217,26 @@ export function isAnnotationEmpty(docs?: Annotation) {
   }
   const hasNoTags = !docs.tags || docs.tags.length === 0;
   return docs.description.trim() === '' && hasNoTags;
+}
+
+function isPrivacy(maybePrivacy: string): maybePrivacy is Privacy {
+  switch (maybePrivacy) {
+    case 'public':
+    case 'private':
+    case 'protected':
+      return true;
+  }
+  return false;
+}
+
+export function getPrivacy(jsdoc: Annotation|null|undefined): Privacy|null {
+  if (!jsdoc || !jsdoc.tags) {
+    return null;
+  }
+  for (const tag of jsdoc.tags) {
+    if (isPrivacy(tag.tag)) {
+      return tag.tag;
+    }
+  }
+  return null;
 }

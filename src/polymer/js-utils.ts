@@ -17,7 +17,7 @@ import * as estree from 'estree';
 
 import {closureType, getAttachedComment, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
-import {ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
+import {Privacy, ScannedMethod, SourceRange} from '../model/model';
 import {Severity, Warning} from '../warning/warning';
 
 import {ScannedPolymerProperty} from './polymer-element';
@@ -25,16 +25,17 @@ import {ScannedPolymerProperty} from './polymer-element';
 /**
  * Create a ScannedProperty object from an estree Property AST node.
  */
-export function toScannedProperty(
+export function toScannedPolymerProperty(
     node: estree.Property|estree.MethodDefinition,
-    sourceRange: SourceRange): ScannedProperty {
+    sourceRange: SourceRange): ScannedPolymerProperty {
   const type = closureType(node.value, sourceRange);
+  const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description =
       jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
-  const name = objectKeyToString(node.key);
+  const maybeName = objectKeyToString(node.key);
 
   const warnings: Warning[] = [];
-  if (!name) {
+  if (!maybeName) {
     warnings.push({
       code: 'unknown-prop-name',
       message:
@@ -44,23 +45,45 @@ export function toScannedProperty(
       severity: Severity.WARNING
     });
   }
-
+  const name = maybeName || '';
   const result: ScannedPolymerProperty = {
-    name: name || '',
-    type: type,
-    description: description,
-    sourceRange: sourceRange,
-    astNode: node, warnings,
-    private: !!name && (name.startsWith('_') || name.endsWith('_')),
+    name,
+    type,
+    description,
+    sourceRange,
+    warnings,
+    astNode: node,
+    isConfiguration: configurationProperties.has(name),
+    jsdoc: parsedJsdoc,
+    privacy: getOrInferPrivacy(name, parsedJsdoc, false)
   };
-
-  if (node.kind === 'get' || node.kind === 'set') {
-    result.type = '';
-  }
 
   return result;
 };
 
+/**
+ * Properties on Polymer element prototypes that are part of Polymer's
+ * configuration syntax.
+ */
+const configurationProperties = new Set([
+  'attached',
+  'attributeChanged',
+  'beforeRegister',
+  'configure',
+  'constructor',
+  'created',
+  'detached',
+  'enableCustomStyleProperties',
+  'extends',
+  'hostAttributes',
+  'is',
+  'listeners',
+  'mixins',
+  'observers',
+  'properties',
+  'ready',
+  'registered',
+]);
 
 /**
  * Create a ScannedMethod object from an estree Property AST node.
@@ -68,7 +91,8 @@ export function toScannedProperty(
 export function toScannedMethod(
     node: estree.Property|estree.MethodDefinition,
     sourceRange: SourceRange): ScannedMethod {
-  const scannedMethod = <ScannedMethod>toScannedProperty(node, sourceRange);
+  const scannedMethod: ScannedMethod =
+      toScannedPolymerProperty(node, sourceRange);
 
   if (scannedMethod.type === 'Function' ||
       scannedMethod.type === 'ArrowFunction') {
@@ -83,17 +107,32 @@ export function toScannedMethod(
   return scannedMethod;
 }
 
-/**
- * Create a ScannedPolymerProperty object from an estree Property AST node.
- */
-export function toScannedPolymerProperty(
-    node: estree.Property, sourceRange: SourceRange): ScannedPolymerProperty {
-  const scannedPolymerProperty =
-      <ScannedPolymerProperty>toScannedProperty(node, sourceRange);
 
-  if (node.kind === 'get' || node.kind === 'set') {
-    node[`${node.kind}ter`] = true;
+export function getOrInferPrivacy(
+    name: string,
+    annotation: jsdoc.Annotation|undefined,
+    privateUnlessDocumented: boolean): Privacy|undefined {
+  const explicitPrivacy = jsdoc.getPrivacy(annotation);
+  if (explicitPrivacy) {
+    return explicitPrivacy;
+  } else if (name.startsWith('__')) {
+    return 'private';
+  } else if (name.startsWith('_')) {
+    return 'protected';
+  } else if (name.endsWith('_')) {
+    return 'private';
+  } else if (configurationProperties.has(name)) {
+    return 'protected';
+  } else {
+    if (privateUnlessDocumented) {
+      // Some members, like methods or properties on classes are private by
+      // default unless they have documentation.
+      const hasDocs = !!annotation && !jsdoc.isAnnotationEmpty(annotation);
+      return hasDocs ? 'public' : 'private';
+    } else {
+      // Other members, like entries in the Polymer `properties` block are
+      // public unless there are clear signals otherwise.
+      return 'public';
+    }
   }
-
-  return scannedPolymerProperty;
 }

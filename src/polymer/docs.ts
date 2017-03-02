@@ -32,26 +32,6 @@ if (Math.random() > 1000) {
 }
 
 
-/** Properties on element prototypes that are purely configuration. */
-const ELEMENT_CONFIGURATION = [
-  'attached',
-  'attributeChanged',
-  'beforeRegister',
-  'configure',
-  'constructor',
-  'created',
-  'detached',
-  'enableCustomStyleProperties',
-  'extends',
-  'hostAttributes',
-  'is',
-  'listeners',
-  'mixins',
-  'properties',
-  'ready',
-  'registered'
-];
-
 /** Tags understood by the annotation process, to be removed during `clean`. */
 const HANDLED_TAGS = [
   'param',
@@ -153,19 +133,9 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
  * @param ignoreConfiguration If true, `configuration` is not set.
  * @return The descriptior that was given.
  */
-function annotateProperty(
-    feature: ScannedPolymerProperty,
-    ignoreConfiguration: boolean): ScannedPolymerProperty {
+function annotateProperty(feature: ScannedPolymerProperty):
+    ScannedPolymerProperty {
   annotate(feature);
-  if (feature.name[0] === '_' || jsdoc.hasTag(feature.jsdoc, 'private')) {
-    feature.private = true;
-  }
-
-  if (!ignoreConfiguration &&
-      ELEMENT_CONFIGURATION.indexOf(feature.name) !== -1) {
-    feature.private = true;
-    feature.configuration = true;
-  }
 
   // @type JSDoc wins
   feature.type = jsdoc.getTag(feature.jsdoc, 'type', 'type') || feature.type;

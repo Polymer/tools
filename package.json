@@ -59,7 +59,7 @@
     "source-map-support": "^0.4.2",
     "temp": "^0.8.3",
     "tslint": "^4.1.1",
-    "typescript-json-schema": "^0.1.1",
+    "typescript-json-schema": "^0.10.0",
     "watchy": "^0.6.6"
   },
   "dependencies": {

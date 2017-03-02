@@ -358,5 +358,4 @@ namespaced name.`,
           },
         ]);
       });
-
 });

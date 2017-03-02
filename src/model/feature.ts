@@ -69,3 +69,5 @@ export abstract class ScannedFeature {
     this.warnings = warnings || [];
   }
 }
+
+export type Privacy = 'public' | 'private' | 'protected';

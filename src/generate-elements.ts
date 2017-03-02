@@ -203,11 +203,10 @@ function serializeElementLike(
 
   const attributes = elementOrMixin.attributes.map(
       (a) => serializeAttribute(elementOrMixin, path, a));
-  const properties =
-      elementOrMixin.properties.filter((p) => !p.private)
-          .map((p) => serializeProperty(elementOrMixin, path, p));
-  const methods = elementOrMixin.methods.filter((m) => !m.private)
-                      .map((m) => serializeMethod(elementOrMixin, path, m));
+  const properties = elementOrMixin.properties.map(
+      (p) => serializeProperty(elementOrMixin, path, p));
+  const methods = elementOrMixin.methods.map(
+      (m) => serializeMethod(elementOrMixin, path, m));
   const events =
       elementOrMixin.events.map((e) => ({
                                   name: e.name,
@@ -245,8 +244,9 @@ function serializeProperty(
     name: resolvedProperty.name,
     type: resolvedProperty.type || '?',
     description: resolvedProperty.description || '',
+    privacy: resolvedProperty.privacy,
     sourceRange:
-        resolveSourceRangePath(elementPath, resolvedProperty.sourceRange)
+        resolveSourceRangePath(elementPath, resolvedProperty.sourceRange),
   };
   if (resolvedProperty.default) {
     property.defaultValue = resolvedProperty.default;
@@ -279,6 +279,7 @@ function serializeMethod(
   const method: Method = {
     name: resolvedMethod.name,
     description: resolvedMethod.description || '',
+    privacy: resolvedMethod.privacy,
     sourceRange:
         resolveSourceRangePath(elementPath, resolvedMethod.sourceRange),
   };

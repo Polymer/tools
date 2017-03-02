@@ -15,12 +15,12 @@
 import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
 
-import {ScannedFeature} from './model';
+import {Privacy, ScannedFeature} from './model';
 
 export interface ScannedProperty extends ScannedFeature {
   name: string;
   type?: string;
-  private?: boolean;
+  privacy?: Privacy;
   'default'?: string;
   readOnly?: boolean;
   changeEvent?: string;
@@ -31,7 +31,7 @@ export interface Property {
   type?: string;
   description?: string;
   jsdoc?: jsdoc.Annotation;
-  private?: boolean;
+  privacy?: Privacy;
   'default'?: string;
   readOnly?: boolean;
   sourceRange?: SourceRange;
