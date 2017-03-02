@@ -5,7 +5,7 @@
  */
 
 /**
- * Implements the [language server protocol][1] v2.0 for Web Components and
+ * Implements the [language server protocol][1] v3.0 for Web Components and
  * Polymer.
  *
  * Communicates over stdin/stdout.
@@ -13,16 +13,22 @@
  * [1]: https://github.com/Microsoft/language-server-protocol
  */
 
+// This import *must* come first.
+import logInterceptor = require('./intercept-logs');
+//
+
+
+
 import * as path from 'path';
 import {SourceRange} from 'polymer-analyzer/lib/model/model';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
-import * as util from 'util';
 import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+
 import {LocalEditorService} from './local-editor-service';
 
 
@@ -85,7 +91,13 @@ connection.onInitialize((params): InitializeResult => {
     urlResolver: new PackageUrlResolver(), polymerJsonPath
   });
   documents.all().forEach(d => scanDocument(d));
-  return <InitializeResult>{
+
+  // The console will be valid immediately after the connection has initialized.
+  // So hook it up then.
+  Promise.resolve(() => {
+    logInterceptor.hookUpRemoteConsole(connection.console);
+  });
+  return {
     capabilities: {
       // Tell the client that the server works in FULL text document sync mode
       textDocumentSync: documents.syncKind,
@@ -284,26 +296,6 @@ async function handleErrors<Result, Fallback>(
   }
 }
 
-/**
- * A useful function for debugging. Logs through the connect to the editor
- * so that the logs are visible.
- */
-function log(val: any) {
-  if (!connection) {
-    return;
-  }
-  if (typeof val !== 'string') {
-    val = util.inspect(val);
-  }
-  connection.console.log(val);
-}
-if (Math.random() > 10000) {
-  // Reference log here to ensure that typescript doesn't warn about it being
-  // unused.
-  // At any given time there may not be any uses of it, but it is useful to have
-  // around when debugging.
-  log;
-}
 
 // Listen on the connection
 connection.listen();

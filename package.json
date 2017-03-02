@@ -38,13 +38,16 @@
     "@types/node": "^4.0.30",
     "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
+    "@types/winston": "^2.2.0",
     "dom5": "^2.0.1",
     "parse5": "^2.2.3",
-    "polymer-analyzer": "=2.0.0-alpha.26",
-    "polymer-linter": "^0.1.3",
-    "polymer-project-config": "^2.0.0",
+    "plylog": "^0.5.0",
+    "polymer-analyzer": "=2.0.0-alpha.27",
+    "polymer-linter": "^0.1.4",
+    "polymer-project-config": "^2.0.1",
     "split": "^1.0.0",
     "vscode-languageserver": "^3.0.5",
-    "vscode-uri": "^1.0.0"
+    "vscode-uri": "^1.0.0",
+    "winston": "^2.3.1"
   }
 }
