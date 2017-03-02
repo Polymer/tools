@@ -18,14 +18,13 @@ import {SourceRange} from 'polymer-analyzer/lib/model/model';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
-import * as url from 'url';
 import * as util from 'util';
 import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import Uri from 'vscode-uri';
 
 import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
 import {LocalEditorService} from './local-editor-service';
 
-const fileUrl: (path: string) => string = require('file-url');
 
 interface SettingsWrapper {
   polymerVscodePlugin: Settings;
@@ -55,38 +54,31 @@ let documents: TextDocuments = new TextDocuments();
 // for open, change and close text document events
 documents.listen(connection);
 
+
 // After the server has started the client sends an initilize request. The
 // server receives in the passed params the rootPath of the workspace plus the
 // client capabilites.
-let workspaceUri: url.Url|null = null;
+let workspaceUri: Uri|null = null;
 
 function getWorkspaceUri(
-    rootUri: string|null, rootPath: string|null|undefined): url.Url|null {
+    rootUri: string|null, rootPath: string|null|undefined): Uri|null {
   if (rootUri) {
-    return url.parse(rootUri);
+    return Uri.parse(rootUri);
   }
   if (rootPath) {
-    return url.parse(fileUrl(rootPath));
+    return Uri.file(rootPath);
   }
   return null;
-}
-
-function fileUrlToAbsolutePath(fileUrl: url.Url) {
-  const path = decodeURIComponent(fileUrl.pathname!);
-  if (process.platform === 'win32' && path[0] === '/') {
-    return path.slice(1);
-  }
-  return path;
 }
 
 connection.onInitialize((params): InitializeResult => {
   let maybeWorkspaceUri = getWorkspaceUri(params.rootUri, params.rootPath);
   // Leave workspaceUri unset if we're initialized in a way we can't handle.
-  if (!maybeWorkspaceUri || maybeWorkspaceUri.protocol !== 'file:') {
+  if (!maybeWorkspaceUri || maybeWorkspaceUri.scheme !== 'file') {
     return {capabilities: {}};
   }
   workspaceUri = maybeWorkspaceUri;
-  const workspacePath = fileUrlToAbsolutePath(workspaceUri);
+  const workspacePath = workspaceUri.fsPath;
   const polymerJsonPath = path.join(workspacePath, 'polymer.json');
   editorService = new LocalEditorService({
     urlLoader: new FSUrlLoader(workspacePath),
@@ -206,13 +198,10 @@ async function autoComplete(textPosition: TextDocumentPositionParams):
     };
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
-  const docUrl = url.parse(doc.uri);
-  if (!workspaceUri || !workspaceUri.pathname || !docUrl.pathname) {
+  if (!workspaceUri) {
     return undefined;
   }
-  const workspacePath = fileUrlToAbsolutePath(workspaceUri);
-  const docPath = fileUrlToAbsolutePath(docUrl);
-  return path.relative(workspacePath, docPath);
+  return path.relative(workspaceUri.fsPath, Uri.parse(doc.uri).fsPath);
 }
 
 function getUriForLocalPath(localPath: string): string {
@@ -220,9 +209,9 @@ function getUriForLocalPath(localPath: string): string {
     throw new Error(`Tried to get the URI of ${localPath
                     } without knowing the workspaceUri!?`);
   }
-  const workspacePath = fileUrlToAbsolutePath(workspaceUri);
+  const workspacePath = workspaceUri.fsPath;
   const absolutePath = path.join(workspacePath, localPath);
-  return fileUrl(absolutePath);
+  return Uri.parse(absolutePath).toString();
 }
 
 function convertPosition(position: LSPosition): SourcePosition {
