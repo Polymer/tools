@@ -16,12 +16,12 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Function, Method, Namespace, Property, SourceRange} from './elements-format';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Function, Event, Method, Namespace, Property, SourceRange} from './elements-format';
 import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
 import {Feature} from './model/feature';
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
@@ -208,12 +208,7 @@ function serializeElementLike(
   const methods = elementOrMixin.methods.map(
       (m) => serializeMethod(elementOrMixin, path, m));
   const events =
-      elementOrMixin.events.map((e) => ({
-                                  name: e.name,
-                                  description: e.description || '',
-                                  type: 'CustomEvent',
-                                  metadata: elementOrMixin.emitEventMetadata(e)
-                                }));
+      elementOrMixin.events.map((e) => serializeEvent(elementOrMixin, path, e));
 
   return {
     description: elementOrMixin.description || '',
@@ -247,11 +242,14 @@ function serializeProperty(
     privacy: resolvedProperty.privacy,
     sourceRange:
         resolveSourceRangePath(elementPath, resolvedProperty.sourceRange),
+    metadata: elementOrMixin.emitPropertyMetadata(resolvedProperty),
   };
   if (resolvedProperty.default) {
     property.defaultValue = resolvedProperty.default;
   }
-  property.metadata = elementOrMixin.emitPropertyMetadata(resolvedProperty);
+  if (resolvedProperty.inheritedFrom) {
+    property.inheritedFrom = resolvedProperty.inheritedFrom;
+  }
   return property;
 }
 
@@ -263,12 +261,15 @@ function serializeAttribute(
     name: resolvedAttribute.name,
     description: resolvedAttribute.description || '',
     sourceRange:
-        resolveSourceRangePath(elementPath, resolvedAttribute.sourceRange)
+        resolveSourceRangePath(elementPath, resolvedAttribute.sourceRange),
+    metadata: resolvedElement.emitAttributeMetadata(resolvedAttribute),
   };
   if (resolvedAttribute.type) {
     attribute.type = resolvedAttribute.type;
   }
-  attribute.metadata = resolvedElement.emitAttributeMetadata(resolvedAttribute);
+  if (resolvedAttribute.inheritedFrom != null) {
+    attribute.inheritedFrom = resolvedAttribute.inheritedFrom;
+  }
   return attribute;
 }
 
@@ -282,6 +283,7 @@ function serializeMethod(
     privacy: resolvedMethod.privacy,
     sourceRange:
         resolveSourceRangePath(elementPath, resolvedMethod.sourceRange),
+    metadata: resolvedElement.emitMethodMetadata(resolvedMethod),
   };
   if (resolvedMethod.params) {
     method.params = resolvedMethod.params;
@@ -289,8 +291,26 @@ function serializeMethod(
   if (resolvedMethod.return ) {
     method.return = resolvedMethod.return;
   }
-  method.metadata = resolvedElement.emitMethodMetadata(resolvedMethod);
+  if (resolvedMethod.inheritedFrom != null) {
+    method.inheritedFrom = resolvedMethod.inheritedFrom;
+  }
   return method;
+}
+
+function serializeEvent(
+    resolvedElement: ElementOrMixin,
+    _elementPath: string,
+    resolvedEvent: ResolvedEvent): Event {
+  const event: Event = {
+    type: 'CustomEvent',
+    name: resolvedEvent.name,
+    description: resolvedEvent.description || '',
+    metadata: resolvedElement.emitEventMetadata(resolvedEvent),
+  };
+  if (resolvedEvent.inheritedFrom != null) {
+    event.inheritedFrom = resolvedEvent.inheritedFrom;
+  }
+  return event;
 }
 
 function resolveSourceRangePath(

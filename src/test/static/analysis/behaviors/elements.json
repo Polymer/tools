@@ -27,6 +27,7 @@
         {
           "name": "inherit-please",
           "description": "A property provided by SimpleBehavior.",
+          "inheritedFrom": "MyNamespace.SimpleBehavior",
           "sourceRange": {
             "file": "../behavior.html",
             "start": {
@@ -44,6 +45,7 @@
         {
           "name": "deeply-inherited-property",
           "description": "This is a deeply inherited property.",
+          "inheritedFrom": "MyNamespace.SubBehavior",
           "sourceRange": {
             "file": "../subdir/subbehavior.html",
             "start": {
@@ -127,6 +129,7 @@
           "type": "number",
           "description": "A property provided by SimpleBehavior.",
           "privacy": "public",
+          "inheritedFrom": "MyNamespace.SimpleBehavior",
           "sourceRange": {
             "file": "../behavior.html",
             "start": {
@@ -150,6 +153,7 @@
           "type": "Array",
           "description": "This is a deeply inherited property.",
           "privacy": "public",
+          "inheritedFrom": "MyNamespace.SubBehavior",
           "sourceRange": {
             "file": "../subdir/subbehavior.html",
             "start": {
@@ -204,12 +208,14 @@
         {
           "name": "inherit-please-changed",
           "description": "Fired when the `inheritPlease` property changes.",
+          "inheritedFrom": "MyNamespace.SimpleBehavior",
           "type": "CustomEvent",
           "metadata": {}
         },
         {
           "name": "deeply-inherited-property-changed",
           "description": "Fired when the `deeplyInheritedProperty` property changes.",
+          "inheritedFrom": "MyNamespace.SubBehavior",
           "type": "CustomEvent",
           "metadata": {}
         }

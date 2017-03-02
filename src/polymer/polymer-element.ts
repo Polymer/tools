@@ -316,21 +316,45 @@ function inheritFrom(element: PolymerElement, superElement: PolymerExtension) {
 
   for (const superProperty of superElement.properties) {
     const newProperty = Object.assign({}, superProperty);
+    if (!newProperty.inheritedFrom) {
+      const superName = getSuperName(superElement);
+      if (superName) {
+        newProperty.inheritedFrom = superName;
+      }
+    }
     element.properties.push(newProperty);
   }
 
   for (const superMethod of superElement.methods) {
     const newMethod = Object.assign({}, superMethod);
+    if (!newMethod.inheritedFrom) {
+      const superName = getSuperName(superElement);
+      if (superName) {
+        newMethod.inheritedFrom = superName;
+      }
+    }
     element.methods.push(newMethod);
   }
 
   for (const superAttribute of superElement.attributes) {
     const newAttribute = Object.assign({}, superAttribute);
+    if (!newAttribute.inheritedFrom) {
+      const superName = getSuperName(superElement);
+      if (superName) {
+        newAttribute.inheritedFrom = superName;
+      }
+    }
     element.attributes.push(newAttribute);
   }
 
   for (const superEvent of superElement.events) {
     const newEvent = Object.assign({}, superEvent);
+    if (!newEvent.inheritedFrom) {
+      const superName = getSuperName(superElement);
+      if (superName) {
+        newEvent.inheritedFrom = superName;
+      }
+    }
     element.events.push(newEvent);
   }
 
@@ -547,4 +571,14 @@ function inheritValues<P extends PropertyLike>(
     }
   }
   return Array.from(valuesByName.values());
+}
+
+function getSuperName(superElement: PolymerExtension): string|undefined {
+  // TODO(justinfagnani): Mixins, elements and functions should all have a
+  // name property.
+  if (superElement instanceof PolymerElement) {
+    return superElement.className;
+  } else if (superElement instanceof PolymerElementMixin) {
+    return superElement.name;
+  }
 }
