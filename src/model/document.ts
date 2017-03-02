@@ -14,6 +14,7 @@
 import * as dom5 from 'dom5';
 
 import {AnalysisContext} from '../core/analysis-context';
+import {Function} from '../javascript/function';
 import {Namespace} from '../javascript/namespace';
 import {ParsedDocument} from '../parser/document';
 import {Behavior} from '../polymer/behavior';
@@ -94,6 +95,7 @@ export interface FeatureKinds {
   'polymer-element-mixin': PolymerElementMixin;
   'behavior': Behavior;
   'namespace': Namespace;
+  'function': Function;
   'dom-module': DomModule;
   'element-reference': ElementReference;
   'import': Import;

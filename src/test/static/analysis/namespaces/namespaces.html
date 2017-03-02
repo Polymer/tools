@@ -1,0 +1,49 @@
+<script>
+  /**
+   * This is the "aaa" namespace.
+   * @summary This is the "aaa" namespace. (summary)
+   *
+   * @namespace aaa
+   */
+  aaa = {
+
+    /**
+     * This is a simple namespace method.
+     * @summary This is a simple namespace method. (summary)
+     *
+     * @memberof aaa
+     * @param {Number} a The first number
+     * @param {Number} b The second number
+     * @param {Number} c The thirsd number
+     * @return {Number} The sum of the three params
+     */
+    sum: function (a, b, c) {
+      return a + b + c;
+    },
+
+    /**
+     * This is a simple namespace property.
+     * @summary This is a simple namespace property. (summary)
+     *
+     * @memberof aaa
+     */
+    ccc: 100,
+
+  };
+
+  /**
+   * @memberof aaa
+   */
+  aaa.ddd = function () {
+
+  }
+
+  /**
+   * @memberof aaa
+   */
+  function eee() {
+
+  }
+  aaa.eee = eee;
+
+</script>

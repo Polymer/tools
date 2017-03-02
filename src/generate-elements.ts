@@ -16,7 +16,8 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Method, Namespace, Property, SourceRange} from './elements-format';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Function, Method, Namespace, Property, SourceRange} from './elements-format';
+import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
 import {Feature} from './model/feature';
@@ -34,11 +35,13 @@ export function generateElementMetadata(
   let elements: Set<ResolvedElement>;
   let mixins: Set<ResolvedMixin>;
   let namespaces: Set<ResolvedNamespace>;
+  let functions: Set<ResolvedFunction>;
 
   if (input instanceof Array) {
     elements = new Set();
     mixins = new Set();
     namespaces = new Set();
+    functions = new Set();
     for (const document of input as Document[]) {
       Array.from(document.getByKind('element'))
           .filter(_filter)
@@ -49,6 +52,9 @@ export function generateElementMetadata(
       Array.from(document.getByKind('namespace'))
           .filter(_filter)
           .forEach((f) => namespaces.add(f));
+      Array.from(document.getByKind('function'))
+          .filter(_filter)
+          .forEach((f) => functions.add(f));
     }
   } else {
     elements = new Set(Array.from(input.getByKind('element')).filter(_filter));
@@ -56,6 +62,8 @@ export function generateElementMetadata(
         new Set(Array.from(input.getByKind('element-mixin')).filter(_filter));
     namespaces =
         new Set(Array.from(input.getByKind('namespace')).filter(_filter));
+    functions =
+        new Set(Array.from(input.getByKind('function')).filter(_filter));
   }
 
   const metadata: Elements = {
@@ -67,6 +75,11 @@ export function generateElementMetadata(
                               .map(
                                   (e) => serializeNamespace(
                                       e, packagePath)) as ResolvedNamespace[];
+  }
+
+  if (functions.size > 0) {
+    metadata.functions = Array.from(functions).map(
+        (fn) => serializeFunction(fn, packagePath)) as ResolvedFunction[];
   }
 
   if (elements.size > 0) {
@@ -131,6 +144,29 @@ function serializeNamespace(
       end: namespace.sourceRange.end
     }
   };
+  return metadata;
+}
+
+function serializeFunction(
+    fn: ResolvedFunction, packagePath: string): Function {
+  const packageRelativePath =
+      pathLib.relative(packagePath, fn.sourceRange.file);
+  const metadata: Function = {
+    name: fn.name,
+    description: fn.description,
+    summary: fn.summary,
+    sourceRange: {
+      file: packageRelativePath,
+      start: fn.sourceRange.start,
+      end: fn.sourceRange.end
+    }
+  };
+  if (fn.params) {
+    metadata.params = fn.params;
+  }
+  if (fn.return ) {
+    metadata.return = fn.return;
+  }
   return metadata;
 }
 

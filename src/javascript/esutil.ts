@@ -157,3 +157,8 @@ export function getPropertyValue(
     }
   }
 }
+
+export function isFunctionType(node: estree.Node): node is estree.Function {
+  return node.type === 'ArrowFunctionExpression' ||
+      node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration';
+}

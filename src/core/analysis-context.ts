@@ -21,6 +21,7 @@ import {HtmlImportScanner} from '../html/html-import-scanner';
 import {HtmlParser} from '../html/html-parser';
 import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
+import {FunctionScanner} from '../javascript/function-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
@@ -105,6 +106,7 @@ export class AnalysisContext {
           new Polymer2MixinScanner(),
           new BehaviorScanner(),
           new NamespaceScanner(),
+          new FunctionScanner(),
           new Polymer2ElementScanner()
         ]
       ],

@@ -34,7 +34,7 @@ export interface Property {
   private?: boolean;
   'default'?: string;
   readOnly?: boolean;
-  sourceRange: SourceRange|undefined;
+  sourceRange?: SourceRange;
   inheritedFrom?: string;
   changeEvent?: string;
 }

@@ -16,7 +16,7 @@ import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
 import {Visitor} from '../javascript/estree-visitor';
-import * as esutil from '../javascript/esutil';
+import {getAttachedComment, getEventComments, isFunctionType, objectKeyToString} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 // import {ScannedMethod} from '../model/model';
@@ -56,8 +56,8 @@ class ElementVisitor implements Visitor {
   enterClassDeclaration(node: estree.ClassDeclaration, _: estree.Node) {
     this.classDetected = true;
     this.element = new ScannedPolymerElement({
-      description: esutil.getAttachedComment(node),
-      events: esutil.getEventComments(node),
+      description: getAttachedComment(node),
+      events: getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node)
     });
     this.propertyHandlers =
@@ -164,8 +164,8 @@ class ElementVisitor implements Visitor {
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
         this.element = new ScannedPolymerElement({
-          description: esutil.getAttachedComment(parent),
-          events: esutil.getEventComments(parent),
+          description: getAttachedComment(parent),
+          events: getEventComments(parent),
           sourceRange: this.document.sourceRangeForNode(node.arguments[0])
         });
         docs.annotate(this.element);
@@ -204,7 +204,7 @@ class ElementVisitor implements Visitor {
       const setters: {[name: string]: ScannedPolymerProperty} = {};
       const definedProperties: {[name: string]: ScannedPolymerProperty} = {};
       for (const prop of node.properties) {
-        const name = esutil.objectKeyToString(prop.key);
+        const name = objectKeyToString(prop.key);
         if (!name) {
           element.warnings.push({
             message:
@@ -233,10 +233,7 @@ class ElementVisitor implements Visitor {
             getters[scannedPolymerProperty.name] = scannedPolymerProperty;
           } else if (scannedPolymerProperty.setter) {
             setters[scannedPolymerProperty.name] = scannedPolymerProperty;
-          } else if (
-              prop.method === true ||
-              prop.value.type === 'ArrowFunctionExpression' ||
-              prop.value.type === 'FunctionExpression') {
+          } else if (prop.method === true || isFunctionType(prop.value)) {
             const scannedPolymerMethod =
                 toScannedMethod(prop, this.document.sourceRangeForNode(prop)!);
             element.addMethod(scannedPolymerMethod);

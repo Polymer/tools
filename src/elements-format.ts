@@ -20,6 +20,7 @@ export interface Elements {
   elements?: Element[];
   mixins?: ElementMixin[];
   namespaces?: Namespace[];
+  functions?: Function[];
 }
 
 /**
@@ -61,6 +62,20 @@ export interface Position {
   line: number;
   /** Column offset within the line, starting from zero. */
   column: number;
+}
+
+export interface Function extends Feature {
+  /**
+   * The globally accessible property-path of the namespace. e.q. `Polymer.dom`
+   */
+  name: string;
+
+  /** A markdown description for the namespace. */
+  description?: string;
+
+  summary?: string;
+  params?: {name: string, type?: string}[];
+  return?: {type?: string, desc: string};
 }
 
 export interface Namespace extends Feature {
