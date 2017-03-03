@@ -12,11 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, ElementBase, Feature, ScannedElementBase} from './model';
+import {Document, ElementBase, Feature, Privacy, ScannedElementBase} from './model';
+
 export {Visitor} from '../javascript/estree-visitor';
 
 export class ScannedElementMixin extends ScannedElementBase {
   name: string;
+  privacy: Privacy;
 
   resolve(_document: Document): ElementMixin {
     const element = new ElementMixin();
@@ -27,6 +29,7 @@ export class ScannedElementMixin extends ScannedElementBase {
 
 export class ElementMixin extends ElementBase implements Feature {
   name: string;
+  privacy: Privacy;
 
   get identifiers(): Set<string> {
     return new Set([this.name]);

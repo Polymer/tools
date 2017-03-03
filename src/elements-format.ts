@@ -207,6 +207,7 @@ export interface ElementMixin extends ElementLike {  //
    * e.g. `MyMixin`, `Polymer.PaperInputMixin`
    */
   name: string;
+  privacy: 'public'|'private'|'protected';
 }
 
 export interface Attribute extends Feature {

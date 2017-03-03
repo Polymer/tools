@@ -15,31 +15,19 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, ElementMixin, LiteralValue, Method, ScannedAttribute, ScannedElementMixin, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
+import {Document, ElementMixin, LiteralValue, Method, Privacy, ScannedElementMixin, ScannedMethod, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
 import {getOrInferPrivacy} from './js-utils';
 import {addMethod, addProperty, LocalId, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
 
 export interface Options {
-  name?: string;
-  jsdoc?: JsDocAnnotation;
-  description?: string;
-  summary?: string;
-  properties?: ScannedProperty[];
-  methods?: ScannedMethod[];
-  attributes?: ScannedAttribute[];
-  observers?: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[];
-  listeners?: {event: string, handler: string}[];
-
-  demos?: {desc: string; path: string}[];
-  events?: ScannedEvent[];
-
-  abstract?: boolean;
-  sourceRange: SourceRange|undefined;
+  name: string;
+  jsdoc: JsDocAnnotation;
+  description: string;
+  summary: string;
+  privacy: Privacy;
+  sourceRange: SourceRange;
 }
 
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
@@ -54,25 +42,18 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   behaviorAssignments: ScannedBehaviorAssignment[] = [];
   // FIXME(rictic): domModule and scriptElement aren't known at a file local
   //     level. Remove them here, they should only exist on PolymerElement.
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
+  domModule: dom5.Node|undefined = undefined;
+  scriptElement: dom5.Node|undefined = undefined;
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
-  abstract?: boolean;
+  abstract: boolean = false;
 
   constructor(options?: Options) {
     super();
     // TODO(justinfagnani): fix this constructor to not be crazy, or remove
     // class altogether.
     const optionsCopy = Object.assign({}, options) as Options;
-    delete optionsCopy.properties;
     Object.assign(this, optionsCopy);
-    if (options && options.properties) {
-      options.properties.forEach((p) => this.addProperty(p));
-    }
-    if (options && options.methods) {
-      options.methods.forEach((m) => this.addMethod(m));
-    }
   }
 
   addProperty(prop: ScannedPolymerProperty) {

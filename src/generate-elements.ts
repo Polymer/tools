@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Function, Event, Method, Namespace, Property, SourceRange} from './elements-format';
+import {Attribute, Element, ElementLike, ElementMixin, Elements, Event, Function, Method, Namespace, Property, SourceRange} from './elements-format';
 import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
@@ -189,9 +189,9 @@ function serializeElement(
 
 function serializeElementMixin(
     mixin: ResolvedMixin, packagePath: string): ElementMixin {
-  const metadata: ElementMixin =
-      serializeElementLike(mixin, packagePath) as ElementMixin;
+  const metadata = serializeElementLike(mixin, packagePath) as ElementMixin;
   metadata.name = mixin.name;
+  metadata.privacy = mixin.privacy;
   return metadata;
 }
 

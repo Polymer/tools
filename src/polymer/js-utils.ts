@@ -113,15 +113,17 @@ export function getOrInferPrivacy(
     annotation: jsdoc.Annotation|undefined,
     privateUnlessDocumented: boolean): Privacy {
   const explicitPrivacy = jsdoc.getPrivacy(annotation);
+  const specificName = name.slice(name.lastIndexOf('.') + 1);
+
   if (explicitPrivacy) {
     return explicitPrivacy;
-  } else if (name.startsWith('__')) {
+  } else if (specificName.startsWith('__')) {
     return 'private';
-  } else if (name.startsWith('_')) {
+  } else if (specificName.startsWith('_')) {
     return 'protected';
-  } else if (name.endsWith('_')) {
+  } else if (specificName.endsWith('_')) {
     return 'private';
-  } else if (configurationProperties.has(name)) {
+  } else if (configurationProperties.has(specificName)) {
     return 'protected';
   } else {
     if (privateUnlessDocumented) {

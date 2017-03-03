@@ -21,6 +21,7 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 
+import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElementMixin} from './polymer-element-mixin';
 import {getMethods, getProperties} from './polymer2-config';
 
@@ -57,18 +58,24 @@ class MixinVisitor implements Visitor {
       const name = getIdentifierName(node.left);
       const namespacedName =
           name ? getNamespacedIdentifier(name, parentJsDocs) : undefined;
-      const sourceRange = this._document.sourceRangeForNode(node);
+      const sourceRange = this._document.sourceRangeForNode(node)!;
 
       const summaryTag = jsdoc.getTag(parentJsDocs, 'summary');
 
-      this._currentMixin = new ScannedPolymerElementMixin({
-        name: namespacedName,
-        sourceRange,
-        description: parentJsDocs.description,
-        summary: (summaryTag && summaryTag.description) || '',
-      });
-      this._currentMixinNode = node;
-      this._mixins.push(this._currentMixin);
+      if (namespacedName) {
+        this._currentMixin = new ScannedPolymerElementMixin({
+          name: namespacedName,
+          sourceRange,
+          description: parentJsDocs.description,
+          summary: (summaryTag && summaryTag.description) || '',
+          privacy: getOrInferPrivacy(namespacedName, parentJsDocs, false),
+          jsdoc: parentJsDocs
+        });
+        this._currentMixinNode = node;
+        this._mixins.push(this._currentMixin);
+      } else {
+        // TODO(rictic): warn for a mixin whose name we can't determine.
+      }
     }
   }
 
@@ -80,19 +87,25 @@ class MixinVisitor implements Visitor {
       const name = node.id.name;
       const namespacedName =
           name ? getNamespacedIdentifier(name, nodeJsDocs) : undefined;
-      const sourceRange = this._document.sourceRangeForNode(node);
+      const sourceRange = this._document.sourceRangeForNode(node)!;
       this._currentMixinFunction = node;
 
       const summaryTag = jsdoc.getTag(nodeJsDocs, 'summary');
 
-      this._currentMixin = new ScannedPolymerElementMixin({
-        name: namespacedName,
-        sourceRange,
-        description: nodeJsDocs.description,
-        summary: (summaryTag && summaryTag.description) || '',
-      });
-      this._currentMixinNode = node;
-      this._mixins.push(this._currentMixin);
+      if (namespacedName) {
+        this._currentMixin = new ScannedPolymerElementMixin({
+          name: namespacedName,
+          sourceRange,
+          description: nodeJsDocs.description,
+          summary: (summaryTag && summaryTag.description) || '',
+          privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
+          jsdoc: nodeJsDocs
+        });
+        this._currentMixinNode = node;
+        this._mixins.push(this._currentMixin);
+      } else {
+        // Warn about a mixin whose name we can't infer.
+      }
     }
   }
 
@@ -110,14 +123,32 @@ class MixinVisitor implements Visitor {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const isMixin = this._hasPolymerMixinDocTag(docs);
-    const sourceRange = this._document.sourceRangeForNode(node);
+    const sourceRange = this._document.sourceRangeForNode(node)!;
+    const summaryTag = jsdoc.getTag(docs, 'summary');
     if (isMixin) {
-      this._currentMixin = new ScannedPolymerElementMixin({
-        sourceRange,
-        description: docs.description,
-      });
-      this._currentMixinNode = node;
-      this._mixins.push(this._currentMixin);
+      let mixin: ScannedPolymerElementMixin|undefined = undefined;
+      if (node.declarations.length === 1) {
+        const declaration = node.declarations[0];
+        const name = getIdentifierName(declaration.id);
+        if (name) {
+          const namespacedName = getNamespacedIdentifier(name, docs);
+          mixin = new ScannedPolymerElementMixin({
+            name: namespacedName,
+            sourceRange,
+            description: docs.description,
+            summary: (summaryTag && summaryTag.description) || '',
+            privacy: getOrInferPrivacy(namespacedName, docs, false),
+            jsdoc: docs
+          });
+        }
+      }
+      if (mixin) {
+        this._currentMixin = mixin;
+        this._currentMixinNode = node;
+        this._mixins.push(this._currentMixin);
+      } else {
+        // TODO(rictic); warn about being unable to determine mixin name.
+      }
     }
   }
 
@@ -127,19 +158,6 @@ class MixinVisitor implements Visitor {
       this._currentMixin = null;
       this._currentMixinNode = null;
       this._currentMixinFunction = null;
-    }
-  }
-
-  enterVariableDeclarator(
-      node: estree.VariableDeclarator, parent: estree.Node) {
-    if (this._currentMixin != null && this._currentMixinFunction == null) {
-      const name = (node.id as estree.Identifier).name;
-      const parentComments = esutil.getAttachedComment(parent) || '';
-      const parentJsDocs = jsdoc.parseJsdoc(parentComments);
-      this._currentMixin.name = getNamespacedIdentifier(name, parentJsDocs);
-
-      const summaryTag = jsdoc.getTag(parentJsDocs, 'summary');
-      this._currentMixin.summary = (summaryTag && summaryTag.description) || '';
     }
   }
 

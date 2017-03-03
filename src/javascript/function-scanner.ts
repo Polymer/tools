@@ -114,6 +114,10 @@ class FunctionVisitor implements Visitor {
     }
 
     const docs = jsdoc.parseJsdoc(comment);
+    if (jsdoc.hasTag(docs, 'polymerMixin')) {
+      // This is a mixin, not a normal function.
+      return;
+    }
     const functionName = getNamespacedIdentifier(analyzedName, docs);
     const sourceRange = this.document.sourceRangeForNode(node)!;
     const returnTag = jsdoc.getTag(docs, 'return');
