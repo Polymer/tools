@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Attribute, Element, ElementLike, ElementMixin, Elements, Event, Function, Method, Namespace, Property, SourceRange} from './elements-format';
+import {Analysis, Attribute, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Property, SourceRange} from './analysis-format';
 import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
@@ -28,71 +28,107 @@ export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
 export type Filter = (feature: Feature) => boolean;
 
+interface Members {
+  elements: Set<ResolvedElement>;
+  mixins: Set<ResolvedMixin>;
+  namespaces: Set<ResolvedNamespace>;
+  functions: Set<ResolvedFunction>;
+}
+
 export function generateElementMetadata(
-    input: Package|Document[], packagePath: string, filter?: Filter): Elements {
+    input: Package|Document[], packagePath: string, filter?: Filter): Analysis {
   const _filter = filter || ((_: Feature) => true);
 
-  let elements: Set<ResolvedElement>;
-  let mixins: Set<ResolvedMixin>;
-  let namespaces: Set<ResolvedNamespace>;
-  let functions: Set<ResolvedFunction>;
+  let members: Members;
 
   if (input instanceof Array) {
-    elements = new Set();
-    mixins = new Set();
-    namespaces = new Set();
-    functions = new Set();
+    members = {
+      elements: new Set(),
+      mixins: new Set(),
+      namespaces: new Set(),
+      functions: new Set(),
+    };
+
     for (const document of input as Document[]) {
       Array.from(document.getByKind('element'))
           .filter(_filter)
-          .forEach((f) => elements.add(f));
+          .forEach((f) => members.elements.add(f));
       Array.from(document.getByKind('element-mixin'))
           .filter(_filter)
-          .forEach((f) => mixins.add(f));
+          .forEach((f) => members.mixins.add(f));
       Array.from(document.getByKind('namespace'))
           .filter(_filter)
-          .forEach((f) => namespaces.add(f));
+          .forEach((f) => members.namespaces.add(f));
       Array.from(document.getByKind('function'))
           .filter(_filter)
-          .forEach((f) => functions.add(f));
+          .forEach((f) => members.functions.add(f));
     }
   } else {
-    elements = new Set(Array.from(input.getByKind('element')).filter(_filter));
-    mixins =
-        new Set(Array.from(input.getByKind('element-mixin')).filter(_filter));
-    namespaces =
-        new Set(Array.from(input.getByKind('namespace')).filter(_filter));
-    functions =
-        new Set(Array.from(input.getByKind('function')).filter(_filter));
+    members = {
+      elements: new Set(Array.from(input.getByKind('element')).filter(_filter)),
+      mixins:
+          new Set(Array.from(input.getByKind('element-mixin')).filter(_filter)),
+      namespaces:
+          new Set(Array.from(input.getByKind('namespace')).filter(_filter)),
+      functions:
+          new Set(Array.from(input.getByKind('function')).filter(_filter)),
+    };
   }
 
-  const metadata: Elements = {
+  return buildAnalysis(members, packagePath);
+}
+
+function buildAnalysis(members: Members, packagePath: string): Analysis {
+  // Build mapping of namespaces
+  const namespaces = new Map<string|undefined, Namespace>();
+  for (const namespace of members.namespaces) {
+    namespaces.set(namespace.name, serializeNamespace(namespace, packagePath));
+  }
+
+  const analysis: Analysis = {
     schema_version: '1.0.0',
   };
 
-  if (namespaces.size > 0) {
-    metadata.namespaces = Array.from(namespaces)
-                              .map(
-                                  (e) => serializeNamespace(
-                                      e, packagePath)) as ResolvedNamespace[];
+  for (const namespace of namespaces.values()) {
+    const namespaceName = getNamespaceName(namespace.name);
+    const parent = namespaces.get(namespaceName) || analysis;
+    parent.namespaces = parent.namespaces || [];
+    parent.namespaces.push(namespace);
   }
 
-  if (functions.size > 0) {
-    metadata.functions = Array.from(functions).map(
-        (fn) => serializeFunction(fn, packagePath)) as ResolvedFunction[];
+  for (const element of members.elements) {
+    const namespaceName = getNamespaceName(element.className);
+    const namespace = namespaces.get(namespaceName) || analysis;
+    namespace.elements = namespace.elements || [];
+    namespace.elements.push(serializeElement(element, packagePath));
   }
 
-  if (elements.size > 0) {
-    metadata.elements = Array.from(elements).map(
-        (e) => serializeElement(e, packagePath)) as Element[];
+  for (const mixin of members.mixins) {
+    const namespaceName = getNamespaceName(mixin.name);
+    const namespace = namespaces.get(namespaceName) || analysis;
+    namespace.mixins = namespace.mixins || [];
+    namespace.mixins.push(serializeElementMixin(mixin, packagePath));
   }
 
-  if (mixins.size > 0) {
-    metadata.mixins = Array.from(mixins).map(
-        (m) => serializeElementMixin(m, packagePath)) as ElementMixin[];
+  for (const _function of members.functions) {
+    const namespaceName = getNamespaceName(_function.name);
+    const namespace = namespaces.get(namespaceName) || analysis;
+    namespace.functions = namespace.functions || [];
+    namespace.functions.push(serializeFunction(_function, packagePath));
   }
 
-  return metadata;
+  return analysis;
+}
+
+function getNamespaceName(name?: string) {
+  if (name == null) {
+    return undefined;
+  }
+  const lastDotIndex = name.lastIndexOf('.');
+  if (lastDotIndex === -1) {
+    return undefined;
+  }
+  return name.substring(0, lastDotIndex);
 }
 
 const validator = new jsonschema.Validator();
@@ -115,7 +151,7 @@ export class ValidationError extends Error {
  * Throws if the given object isn't a valid AnalyzedPackage according to
  * the JSON schema.
  */
-export function validateElements(analyzedPackage: Elements|null|undefined) {
+export function validateAnalysis(analyzedPackage: Analysis|null|undefined) {
   const result = validator.validate(analyzedPackage, schema);
   if (result.throwError) {
     throw result.throwError;

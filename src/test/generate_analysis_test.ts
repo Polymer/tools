@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {generateElementMetadata, validateElements, ValidationError} from '../generate-elements';
+import {generateElementMetadata, validateAnalysis, ValidationError} from '../generate-analysis';
 import {Document} from '../model/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
@@ -47,7 +47,7 @@ suite('generate-elements', () => {
         const testDefiner = onlyTests.has(testBaseName) ?
             test.only :
             skipTests.has(testBaseName) ? test.skip : test;
-        const testName = `produces a correct elements.json ` +
+        const testName = `produces a correct analysis.json ` +
             `for fixture dir \`${testBaseName}\``;
 
         testDefiner(testName, async() => {
@@ -64,13 +64,13 @@ suite('generate-elements', () => {
             packages.add(analysisFixtureDir);
           }
           for (const packagePath of packages) {
-            const pathToGolden = path.join(packagePath || '', 'elements.json');
+            const pathToGolden = path.join(packagePath || '', 'analysis.json');
             const renormedPackagePath = packagePath ?
                 packagePath.substring(analysisFixtureDir.length + 1) :
                 packagePath;
             const analyzedPackages =
                 generateElementMetadata(documents, renormedPackagePath);
-            validateElements(analyzedPackages);
+            validateAnalysis(analyzedPackages);
 
             try {
               assert.deepEqual(
@@ -122,11 +122,11 @@ suite('generate-elements', () => {
 
   });
 
-  suite('validateElements', () => {
+  suite('validateAnalysis', () => {
 
-    test('throws when validating valid elements.json', () => {
+    test('throws when validating valid analysis.json', () => {
       try {
-        validateElements({} as any);
+        validateAnalysis({} as any);
       } catch (err) {
         assert.instanceOf(err, ValidationError);
         const valError: ValidationError = err;
@@ -137,12 +137,12 @@ suite('generate-elements', () => {
       throw new Error('expected Analysis validation to fail!');
     });
 
-    test(`doesn't throw when validating a valid elements.json`, () => {
-      validateElements({elements: [], schema_version: '1.0.0'});
+    test(`doesn't throw when validating a valid analysis.json`, () => {
+      validateAnalysis({elements: [], schema_version: '1.0.0'});
     });
 
     test(`doesn't throw when validating a version from the future`, () => {
-      validateElements(<any>{
+      validateAnalysis(<any>{
         elements: [],
         schema_version: '1.0.1',
         new_field: 'stuff here'
@@ -151,7 +151,7 @@ suite('generate-elements', () => {
 
     test(`throws when validating a bad version`, () => {
       try {
-        validateElements(<any>{
+        validateAnalysis(<any>{
           elements: [],
           schema_version: '5.1.1',
           new_field: 'stuff here'

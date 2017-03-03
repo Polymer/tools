@@ -48,8 +48,7 @@ class NamespaceVisitor implements Visitor {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
-    const variableName = getIdentifierName(node.declarations[0].id);
-    this._initNamespace(node, variableName);
+    this._initNamespace(node, node.declarations[0].id);
   }
 
   /**
@@ -57,16 +56,20 @@ class NamespaceVisitor implements Visitor {
    */
   enterAssignmentExpression(
       node: estree.AssignmentExpression, parent: estree.Node) {
-    const assignmentName = getIdentifierName(node.left);
-    this._initNamespace(parent, assignmentName);
+    this._initNamespace(parent, node.left);
   }
 
-  private _initNamespace(node: estree.Node, anaylzedName?: string) {
+  enterProperty(node: estree.Property, _parent: estree.Node) {
+    this._initNamespace(node, node.key);
+  }
+
+  private _initNamespace(node: estree.Node, nameNode: estree.Node) {
     const comment = esutil.getAttachedComment(node);
     // Quickly filter down to potential candidates.
     if (!comment || comment.indexOf('@namespace') === -1) {
       return;
     }
+    const anaylzedName = getIdentifierName(nameNode);
 
     const docs = jsdoc.parseJsdoc(comment);
     const explicitName = jsdoc.getTag(docs, 'namespace', 'name');

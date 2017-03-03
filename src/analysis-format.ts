@@ -12,15 +12,24 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export interface Elements {
+/**
+ * The global namespace of features contained in an analysis.
+ *
+ * Top-level members are unnamespaced, everything else is contained
+ * in a namespace. Often an analysis will contain only one namespace at
+ * the root.
+ */
+export interface Analysis {
   schema_version: string;
+
   // TODO(rictic): once this schema has stabilized, put the json file somewhere
   // and reference it like:
-  // $schema: 'http://polymer-project.org/schema/v1/elements.json';
+  // $schema: 'http://polymer-project.org/schema/v1/analysis.json';
+
   elements?: Element[];
+  functions?: Function[];
   mixins?: ElementMixin[];
   namespaces?: Namespace[];
-  functions?: Function[];
 }
 
 /**
@@ -86,6 +95,14 @@ export interface Namespace extends Feature {
 
   /** A markdown description for the namespace. */
   description?: string;
+
+  /** A markdown summary for the namespace. */
+  summary?: string;
+
+  elements?: Element[];
+  functions?: Function[];
+  mixins?: ElementMixin[];
+  namespaces?: Namespace[];
 }
 
 export interface ElementLike extends Feature {
