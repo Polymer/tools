@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {generateElementMetadata, validateAnalysis, ValidationError} from '../generate-analysis';
+import {generateAnalysisMetadata, validateAnalysis, ValidationError} from '../generate-analysis';
 import {Document} from '../model/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
@@ -31,7 +31,7 @@ const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 
 suite('generate-elements', () => {
 
-  suite('generateElementMetadata', () => {
+  suite('generateAnalysisMetadata', () => {
 
     suite('generatates for Document array from fixtures', () => {
       const basedir = path.join(__dirname, 'static', 'analysis');
@@ -69,7 +69,7 @@ suite('generate-elements', () => {
                 packagePath.substring(analysisFixtureDir.length + 1) :
                 packagePath;
             const analyzedPackages =
-                generateElementMetadata(documents, renormedPackagePath);
+                generateAnalysisMetadata(documents, renormedPackagePath);
             validateAnalysis(analyzedPackages);
 
             try {
@@ -100,7 +100,7 @@ suite('generate-elements', () => {
           urlResolver: new PackageUrlResolver(),
         });
         const _package = await analyzer.analyzePackage();
-        const metadata = generateElementMetadata(_package, '');
+        const metadata = generateAnalysisMetadata(_package, '');
         // The fixture only contains external elements
         assert.isUndefined(metadata.elements);
       });
@@ -112,7 +112,7 @@ suite('generate-elements', () => {
           urlResolver: new PackageUrlResolver(),
         });
         const _package = await analyzer.analyzePackage();
-        const metadata = generateElementMetadata(_package, '');
+        const metadata = generateAnalysisMetadata(_package, '');
         assert.equal(metadata.elements && metadata.elements.length, 1);
         assert.equal(metadata.elements![0].tagname, 'simple-element');
         assert.equal(metadata.elements![0].path, 'simple-element.html');
