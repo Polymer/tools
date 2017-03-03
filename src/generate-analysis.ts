@@ -35,7 +35,7 @@ interface Members {
   functions: Set<ResolvedFunction>;
 }
 
-export function generateElementMetadata(
+export function generateAnalysisMetadata(
     input: Package|Document[], packagePath: string, filter?: Filter): Analysis {
   const _filter = filter || ((_: Feature) => true);
 
