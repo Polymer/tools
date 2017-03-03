@@ -51,12 +51,7 @@ export class BuildBundler extends Transform {
       // to mean, at least, a doubling of analysis efforts for bundling phase.
       // Ideally we would fork existing analyzer and replace its urlLoader if
       // there were an affordance to do so.
-      analyzer: new Analyzer({
-        urlLoader: new StreamLoader(
-            this.config,
-            (url: string): boolean => this.analyzer.analyzer.canResolveUrl(url),
-            (url: string): File => this.files.get(url))
-      }),
+      analyzer: new Analyzer({urlLoader: new StreamLoader(this)}),
       inlineCss: true,
       inlineScripts: true,
     });
@@ -121,21 +116,23 @@ export type DeferredFileCallbacks = {
 };
 
 class StreamLoader implements UrlLoader {
-  config: ProjectConfig;
-  canLoad: (url: string) => boolean;
-  getFile: (url: string) => File;
+  bundler: BuildBundler;
 
   // Store files that have not yet entered the Analyzer stream here.
   // Later, when the file is seen, the DeferredFileCallback can be
   // called with the file contents to resolve its loading.
   deferredFiles = new Map<string, DeferredFileCallbacks>();
 
-  constructor(
-      config: ProjectConfig,
-      canLoad: (url: string) => boolean,
-      getFile: (url: string) => File) {
-    this.config = config, this.canLoad = canLoad;
-    this.getFile = getFile;
+  constructor(bundler: BuildBundler) {
+    this.bundler = bundler;
+  }
+
+  canLoad(url: string): boolean {
+    return this.bundler.analyzer.analyzer.canResolveUrl(url);
+  }
+
+  getFile(url: string): File {
+    return this.bundler.files.get(url);
   }
 
   load(url: string): Promise<string> {
@@ -147,7 +144,7 @@ class StreamLoader implements UrlLoader {
 
     const urlObject = parseUrl(url);
     const urlPath = decodeURIComponent(urlObject.pathname);
-    const filePath = pathFromUrl(this.config.root, urlPath);
+    const filePath = pathFromUrl(this.bundler.config.root, urlPath);
     const file = this.getFile(filePath);
 
     if (file) {
