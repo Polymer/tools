@@ -251,12 +251,15 @@ suite('Analyzer', () => {
           sources: [sourceFiles],
         });
 
+        let prematurePrintWarnings = false;
+        const prematurePrintWarningsCheck = () => prematurePrintWarnings =
+            prematurePrintWarnings ||
+            analyzer.allFragmentsToAnalyze.size > 0 && printWarningsSpy.called;
         const analyzer = new BuildAnalyzer(config);
         const printWarningsSpy = sinon.spy(analyzer, 'printWarnings');
-        analyzer.sources().on(
-            'data', () => assert.isFalse(printWarningsSpy.called));
-        analyzer.dependencies().on(
-            'data', () => assert.isFalse(printWarningsSpy.called));
+
+        analyzer.sources().on('data', prematurePrintWarningsCheck);
+        analyzer.dependencies().on('data', prematurePrintWarningsCheck);
 
         return waitForAll([analyzer.sources(), analyzer.dependencies()])
             .then(
@@ -264,11 +267,12 @@ suite('Analyzer', () => {
                   throw new Error('Parse error expected!');
                 },
                 (_err: Error) => {
+                  assert.isFalse(prematurePrintWarnings);
                   assert.isTrue(printWarningsSpy.calledOnce);
                 });
       });
 
-  test('calling sources() starts analysis', () => {
+  test('calling sources() starts analysis', async() => {
     const config = new ProjectConfig({
       root: `test-fixtures/analyzer-data`,
       entrypoint: 'entrypoint.html',
