@@ -87,6 +87,7 @@ export interface Function extends Feature {
   summary?: string;
   params?: {name: string, type?: string}[];
   return?: {type?: string, desc: string};
+  privacy: Privacy;
 }
 
 export interface Namespace extends Feature {

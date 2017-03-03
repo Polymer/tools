@@ -195,7 +195,8 @@ function serializeFunction(
       file: packageRelativePath,
       start: fn.sourceRange.start,
       end: fn.sourceRange.end
-    }
+    },
+    privacy: fn.privacy,
   };
   if (fn.params) {
     metadata.params = fn.params;

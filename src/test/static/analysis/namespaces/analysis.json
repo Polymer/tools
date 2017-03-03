@@ -19,6 +19,7 @@
         {
           "description": "This is a simple namespace method.",
           "name": "aaa.sum",
+          "privacy": "public",
           "sourceRange": {
             "end": {
               "column": 5,
@@ -56,6 +57,7 @@
         {
           "description": "",
           "name": "aaa.ddd",
+          "privacy": "public",
           "sourceRange": {
             "end": {
               "column": 3,
@@ -73,6 +75,7 @@
         {
           "description": "",
           "name": "aaa.eee",
+          "privacy": "public",
           "sourceRange": {
             "end": {
               "column": 3,
