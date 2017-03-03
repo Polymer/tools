@@ -24,7 +24,7 @@ export interface Analysis {
 
   // TODO(rictic): once this schema has stabilized, put the json file somewhere
   // and reference it like:
-  // $schema: 'http://polymer-project.org/schema/v1/elements.json';
+  // $schema: 'http://polymer-project.org/schema/v1/analysis.json';
 
   elements?: Element[];
   functions?: Function[];

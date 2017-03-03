@@ -10,7 +10,7 @@
   "json.schemas": [
     {
       "fileMatch": [
-        "elements.json"
+        "analysis.json"
       ],
       "url": "./lib/analysis.schema.json"
     }

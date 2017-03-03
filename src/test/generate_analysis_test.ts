@@ -47,7 +47,7 @@ suite('generate-elements', () => {
         const testDefiner = onlyTests.has(testBaseName) ?
             test.only :
             skipTests.has(testBaseName) ? test.skip : test;
-        const testName = `produces a correct elements.json ` +
+        const testName = `produces a correct analysis.json ` +
             `for fixture dir \`${testBaseName}\``;
 
         testDefiner(testName, async() => {
@@ -64,7 +64,7 @@ suite('generate-elements', () => {
             packages.add(analysisFixtureDir);
           }
           for (const packagePath of packages) {
-            const pathToGolden = path.join(packagePath || '', 'elements.json');
+            const pathToGolden = path.join(packagePath || '', 'analysis.json');
             const renormedPackagePath = packagePath ?
                 packagePath.substring(analysisFixtureDir.length + 1) :
                 packagePath;
@@ -124,7 +124,7 @@ suite('generate-elements', () => {
 
   suite('validateAnalysis', () => {
 
-    test('throws when validating valid elements.json', () => {
+    test('throws when validating valid analysis.json', () => {
       try {
         validateAnalysis({} as any);
       } catch (err) {
