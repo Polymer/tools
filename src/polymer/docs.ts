@@ -176,7 +176,8 @@ export function featureElement(features: ScannedPolymerCoreFeature[]):
         'The properties reflected here are the combined view of all ' +
         'features found in this library. There may be more properties ' +
         'added via other libraries, as well.',
-    sourceRange: undefined
+    sourceRange: undefined,
+    privacy: 'public'
   });
 }
 

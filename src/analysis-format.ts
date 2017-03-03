@@ -73,6 +73,8 @@ export interface Position {
   column: number;
 }
 
+export type Privacy = 'public' | 'private' | 'protected';
+
 export interface Function extends Feature {
   /**
    * The globally accessible property-path of the namespace. e.q. `Polymer.dom`
@@ -185,6 +187,8 @@ export interface ElementLike extends Feature {
     // Would be nice to document the default styling a bit here, whether it's
     // display: block or inline or whatever.
   };
+
+  privacy: Privacy;
 }
 
 export interface Element extends ElementLike {
@@ -224,7 +228,6 @@ export interface ElementMixin extends ElementLike {  //
    * e.g. `MyMixin`, `Polymer.PaperInputMixin`
    */
   name: string;
-  privacy: 'public'|'private'|'protected';
 }
 
 export interface Attribute extends Feature {
@@ -280,7 +283,7 @@ export interface Property extends Feature {
   /** Nested subproperties hanging off of this property. */
   properties?: Property[];
 
-  privacy?: 'public'|'private'|'protected';
+  privacy: Privacy;
 
   /** The identifier of the class or mixin that declared this property. */
   inheritedFrom?: string;
@@ -308,7 +311,7 @@ export interface Method extends Feature {
    */
   return?: {type?: string, desc: string};
 
-  privacy?: 'public'|'private'|'protected';
+  privacy: Privacy;
 
   /** The identifier of the class or mixin that declared this property. */
   inheritedFrom?: string;

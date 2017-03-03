@@ -14,7 +14,7 @@
 
 import {Document} from './document';
 import {ElementBase, ScannedElementBase} from './element-base';
-import {Feature} from './feature';
+import {Feature, Privacy} from './feature';
 import {Reference, ScannedReference} from './reference';
 
 export {Visitor} from '../javascript/estree-visitor';
@@ -24,6 +24,7 @@ export class ScannedElement extends ScannedElementBase {
   className?: string;
   superClass?: ScannedReference;
   mixins: ScannedReference[] = [];
+  privacy: Privacy;
 
   /**
    * For customized built-in elements, the tagname of the superClass.
@@ -49,6 +50,7 @@ export class Element extends ElementBase implements Feature {
   tagName?: string;
   className?: string;
   superClass?: Reference;
+  privacy: Privacy;
 
   /**
    * Mixins that this class declares with `@mixes`.

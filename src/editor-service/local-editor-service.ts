@@ -14,7 +14,7 @@
 
 import {Analyzer, Options as AnalyzerOptions} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
-import {Document, Element, Property, ScannedProperty, SourceRange} from '../model/model';
+import {Attribute, Document, Element, Property, ScannedProperty, SourceRange} from '../model/model';
 import {Warning, WarningCarryingException} from '../warning/warning';
 
 import {getLocationInfoForPosition} from './ast-from-source-position';
@@ -151,7 +151,7 @@ export class LocalEditorService extends EditorService {
   }
 
   private async _getFeatureAt(localPath: string, position: SourcePosition):
-      Promise<Element|Property|undefined> {
+      Promise<Element|Property|Attribute|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {

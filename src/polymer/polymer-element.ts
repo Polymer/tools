@@ -16,7 +16,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, Element, ElementBase, LiteralValue, Method, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
+import {Document, Element, ElementBase, LiteralValue, Method, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
 import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
@@ -74,6 +74,7 @@ export interface Options {
   events?: ScannedEvent[];
 
   abstract?: boolean;
+  privacy: Privacy;
   sourceRange: SourceRange|undefined;
 }
 
@@ -153,7 +154,7 @@ export class ScannedPolymerElement extends ScannedElement implements
   pseudo: boolean = false;
   abstract?: boolean;
 
-  constructor(options?: Options) {
+  constructor(options: Options) {
     super();
     // TODO(justinfagnani): fix this constructor to not be crazy, or remove
     // class altogether.
@@ -252,6 +253,7 @@ function propertyToAttributeName(propertyName: string): string|null {
 function resolveElement(
     scannedElement: ScannedPolymerElement, document: Document): PolymerElement {
   const element = new PolymerElement();
+  element.privacy = scannedElement.privacy;
   applySuperClass(element, scannedElement, document);
   applyMixins(element, scannedElement, document);
   applySelf(element, scannedElement, document);

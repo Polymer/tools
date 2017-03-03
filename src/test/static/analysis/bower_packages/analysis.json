@@ -7,6 +7,7 @@
       "summary": "",
       "superclass": "HTMLElement",
       "path": "bower_components/foo/foo.html",
+      "privacy": "public",
       "attributes": [],
       "properties": [],
       "styling": {

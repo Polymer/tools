@@ -70,7 +70,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
       'register-before-expression'
     ].sort());
     assert.deepEqual(elementsList.map((e) => e.className).sort(), [
-      undefined,
+      null,
       'ClassDeclaration',
       'ClassExpression',
       'WithObservedAttributes',

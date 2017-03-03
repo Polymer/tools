@@ -264,6 +264,7 @@ function serializeElementLike(
     events: events,
     metadata: elementOrMixin.emitMetadata(),
     sourceRange: resolveSourceRangePath(path, elementOrMixin.sourceRange),
+    privacy: elementOrMixin.privacy,
   };
 }
 

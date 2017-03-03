@@ -19,13 +19,14 @@ import {Visitor} from '../javascript/estree-visitor';
 import {getAttachedComment, getEventComments, isFunctionType, objectKeyToString} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
+import * as jsdoc from '../javascript/jsdoc';
 // import {ScannedMethod} from '../model/model';
 import {Severity, WarningCarryingException} from '../warning/warning';
 
 import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {toScannedMethod, toScannedPolymerProperty} from './js-utils';
+import {getOrInferPrivacy, toScannedMethod, toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 export class PolymerElementScanner implements JavaScriptScanner {
@@ -55,10 +56,13 @@ class ElementVisitor implements Visitor {
 
   enterClassDeclaration(node: estree.ClassDeclaration, _: estree.Node) {
     this.classDetected = true;
+    const className = node.id.name;
+    const docs = jsdoc.parseJsdoc(getAttachedComment(node) || '');
     this.element = new ScannedPolymerElement({
-      description: getAttachedComment(node),
+      description: docs.description,
       events: getEventComments(node),
-      sourceRange: this.document.sourceRangeForNode(node)
+      sourceRange: this.document.sourceRangeForNode(node), className,
+      privacy: getOrInferPrivacy(className, docs, false)
     });
     this.propertyHandlers =
         declarationPropertyHandlers(this.element, this.document);
@@ -163,10 +167,13 @@ class ElementVisitor implements Visitor {
     const callee = node.callee;
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
+        const rawDescription = getAttachedComment(parent);
+        const jsDoc = jsdoc.parseJsdoc(rawDescription || '');
         this.element = new ScannedPolymerElement({
-          description: getAttachedComment(parent),
+          description: rawDescription,
           events: getEventComments(parent),
-          sourceRange: this.document.sourceRangeForNode(node.arguments[0])
+          sourceRange: this.document.sourceRangeForNode(node.arguments[0]),
+          privacy: getOrInferPrivacy('', jsDoc, false)
         });
         docs.annotate(this.element);
         this.element.description = (this.element.description || '').trim();

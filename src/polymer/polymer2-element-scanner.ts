@@ -25,6 +25,7 @@ import {ScannedElement, ScannedFeature} from '../model/model';
 import {ScannedReference} from '../model/reference';
 import {Severity, Warning} from '../warning/warning';
 
+import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElement} from './polymer-element';
 import {getIsValue, getMethods, getProperties} from './polymer2-config';
 
@@ -127,17 +128,20 @@ class ElementVisitor implements Visitor {
       // so we save the element and node representing the element to access
       // in enterVariableDeclarator
       this._currentElementNode = node;
+
+      const className = astValue.getIdentifierName(node) || '';
+      const namespacedClassName = getNamespacedIdentifier(className, docs);
+
       const element = this._currentElement = new ScannedPolymerElement({
         sourceRange,
         description: docs.description,
         superClass: _extends,  //
         mixins,
+        className: namespacedClassName,
+        privacy: getOrInferPrivacy(namespacedClassName, docs, false)
       });
       this._elements.add(this._currentElement);
 
-      const className = astValue.getIdentifierName(node) || '';
-      const namespacedClassName = getNamespacedIdentifier(className, docs);
-      element.className = namespacedClassName;
 
       const summaryTag = jsdoc.getTag(docs, 'summary');
       element.summary = (summaryTag && summaryTag.description) || '';
@@ -242,6 +246,7 @@ class ElementVisitor implements Visitor {
     const _extends = this._getExtends(node, docs, warnings);
     const mixins = this._getMixins(node, docs, warnings);
 
+    const className = node.id && node.id.name;
     const element = new ScannedPolymerElement({
       tagName: isValue,
       description: (docs.description || '').trim(),
@@ -249,7 +254,8 @@ class ElementVisitor implements Visitor {
       sourceRange: this._document.sourceRangeForNode(node),
       properties: getProperties(node, this._document),
       methods: getMethods(node, this._document),
-      superClass: _extends, mixins,
+      superClass: _extends, mixins, className,
+      privacy: getOrInferPrivacy(className || '', docs, false),
     });
 
     // If a class defines observedAttributes, it overrides what the base classes

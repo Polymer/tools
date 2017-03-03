@@ -20,6 +20,7 @@ import {HtmlScanner} from '../html/html-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {annotateElementHeader} from './docs';
+import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElement} from './polymer-element';
 
 /**
@@ -43,11 +44,11 @@ export class PseudoElementScanner implements HtmlScanner {
         if (pseudoTag) {
           const element = new ScannedPolymerElement({
             tagName: pseudoTag,
-            jsdoc:
-                {description: parsedJsdoc.description, tags: parsedJsdoc.tags},
+            jsdoc: parsedJsdoc,
             properties: [],
             description: parsedJsdoc.description,
-            sourceRange: document.sourceRangeForNode(node)
+            sourceRange: document.sourceRangeForNode(node),
+            privacy: getOrInferPrivacy(pseudoTag, parsedJsdoc, false)
           });
           element.pseudo = true;
           annotateElementHeader(element);

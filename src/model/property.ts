@@ -20,7 +20,7 @@ import {Privacy, ScannedFeature} from './model';
 export interface ScannedProperty extends ScannedFeature {
   name: string;
   type?: string;
-  privacy?: Privacy;
+  privacy: Privacy;
   'default'?: string;
   readOnly?: boolean;
   changeEvent?: string;
@@ -31,7 +31,7 @@ export interface Property {
   type?: string;
   description?: string;
   jsdoc?: jsdoc.Annotation;
-  privacy?: Privacy;
+  privacy: Privacy;
   'default'?: string;
   readOnly?: boolean;
   sourceRange?: SourceRange;

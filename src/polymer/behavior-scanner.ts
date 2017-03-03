@@ -25,7 +25,7 @@ import {Severity} from '../warning/warning';
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {toScannedPolymerProperty} from './js-utils';
+import {getOrInferPrivacy, toScannedPolymerProperty} from './js-utils';
 
 interface KeyFunc<T> {
   (value: T): any;
@@ -137,12 +137,6 @@ class BehaviorVisitor implements Visitor {
     this.currentBehavior = null;
   }
 
-  private _abandonBehavior() {
-    // TODO(justinfagnani): this seems a bit dangerous...
-    this.currentBehavior = null;
-    this.propertyHandlers = null;
-  }
-
   private _initBehavior(node: estree.Node, getName: () => string) {
     const comment = esutil.getAttachedComment(node);
     const symbol = getName();
@@ -152,11 +146,18 @@ class BehaviorVisitor implements Visitor {
         return;
       }
     }
+    const parsedJsdocs = jsdoc.parseJsdoc(comment || '');
+    if (!jsdoc.hasTag(parsedJsdocs, 'polymerBehavior')) {
+      if (symbol !== templatizer) {
+        return;
+      }
+    }
 
     this._startBehavior(new ScannedBehavior({
       description: comment,
       events: esutil.getEventComments(node),
-      sourceRange: this.document.sourceRangeForNode(node)
+      sourceRange: this.document.sourceRangeForNode(node),
+      privacy: getOrInferPrivacy(symbol, parsedJsdocs, false),
     }));
     const behavior = this.currentBehavior!;
 
@@ -164,13 +165,6 @@ class BehaviorVisitor implements Visitor {
         declarationPropertyHandlers(behavior, this.document);
 
     docs.annotateBehavior(behavior);
-    // Make sure that we actually parsed a behavior tag!
-    if (!jsdoc.hasTag(behavior.jsdoc, 'polymerBehavior') &&
-        symbol !== templatizer) {
-      this._abandonBehavior();
-      return;
-    }
-
     behavior.className =
         jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name') ||
         getNamespacedIdentifier(symbol, behavior.jsdoc);
@@ -179,6 +173,8 @@ class BehaviorVisitor implements Visitor {
           `Unable to determine name for @polymerBehavior: ${comment}`);
     }
 
+    behavior.privacy =
+        getOrInferPrivacy(behavior.className, behavior.jsdoc, false);
     this._parseChainedBehaviors(node);
 
     this.currentBehavior = this.mergeBehavior(behavior);

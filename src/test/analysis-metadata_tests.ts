@@ -20,6 +20,7 @@ const paperButtonElement: Element = {
   tagname: 'paper-button',
   superclass: 'HTMLElement',
   demos: ['demo/index.html'],
+  privacy: 'public',
 
   attributes: [
     {
@@ -48,6 +49,7 @@ than the last.`.trim()
       metadata: {
         polymer: {reflectToAttribute: true, observer: '_calculateElevation'}
       },
+      privacy: 'public',
     },
     {
       name: 'elevation',
@@ -57,7 +59,8 @@ than the last.`.trim()
   shadow, and each increasing number greater than 0 will be "deeper"
   than the last.`.trim(),
       defaultValue: '1',
-      metadata: {polymer: {reflectToAttribute: true, readOnly: true}}
+      metadata: {polymer: {reflectToAttribute: true, readOnly: true}},
+      privacy: 'public',
     }
   ],
   events: [{
@@ -71,7 +74,8 @@ the ripple animation finishes to perform some action.`.trim(),
       properties: [{
         name: 'node',
         description: 'Contains the animated node.',
-        type: 'Object'
+        type: 'Object',
+        privacy: 'public',
       }]
     }
   }],

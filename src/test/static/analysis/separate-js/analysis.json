@@ -7,6 +7,7 @@
       "summary": "",
       "superclass": "HTMLElement",
       "path": "element.js",
+      "privacy": "public",
       "attributes": [],
       "properties": [],
       "methods": [],
