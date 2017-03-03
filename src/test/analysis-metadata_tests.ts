@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Element, Elements} from '../elements-format';
+import {Analysis, Element} from '../analysis-format';
 
 // An example, the correct compilation thereof acts as a test.
 const paperButtonElement: Element = {
@@ -186,7 +186,7 @@ Custom property | Description | Default
 
 };
 
-const paperButton: Elements = {
+const paperButton: Analysis = {
   schema_version: '1.0.0',
   elements: [paperButtonElement]
 };
