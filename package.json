@@ -28,7 +28,7 @@
     "benchmark": "npm run build && npm run initBench && node --expose-gc lib/perf/parse-all-benchmark.js",
     "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
-    "prepublish": "tsc && npm test"
+    "prepublishOnly": "tsc && npm test"
   },
   "devDependencies": {
     "@types/chai": "^3.4.29",
