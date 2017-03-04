@@ -12,7 +12,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-## 1.3.1 - 2017-02-2017
+## 1.3.2 - 2017-03-03
+
+### Fixed
+
+* Fixed issue with url construction. This really should be the last one.
+
+## 1.3.1 - 2017-03-03
 
 ### Fixed
 

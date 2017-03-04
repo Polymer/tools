@@ -223,7 +223,7 @@ function getUriForLocalPath(localPath: string): string {
   }
   const workspacePath = workspaceUri.fsPath;
   const absolutePath = path.join(workspacePath, localPath);
-  return Uri.parse(absolutePath).toString();
+  return Uri.file(absolutePath).toString();
 }
 
 function convertPosition(position: LSPosition): SourcePosition {
