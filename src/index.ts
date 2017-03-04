@@ -1,0 +1,54 @@
+/**
+ * @license
+ * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * This file describes the public API of the analyzer.
+ *
+ * Only this file and the objects reachable from its exports are considered
+ * part of the stable API of the analyzer, in a semver sense.
+ */
+
+// Core objects
+export {Analyzer} from './analyzer';
+export * from './model/model';
+export {Warning} from './warning/warning';
+export {WarningPrinter, Verbosity as WarningPrinterVerbosity, Options as WarningPrinterOptions} from './warning/warning-printer';
+export {WarningFilter} from './warning/warning-filter';
+export {Namespace} from './javascript/namespace';
+
+// Analysis
+export {generateAnalysis, validateAnalysis} from './generate-analysis';
+export {Analysis} from './analysis-format';
+
+// URL Loaders and Resolvers
+export {FetchUrlLoader} from './url-loader/fetch-url-loader';
+export {FSUrlLoader} from './url-loader/fs-url-loader';
+export {MultiUrlResolver} from './url-loader/multi-url-resolver';
+export {PackageUrlResolver} from './url-loader/package-url-resolver';
+export {RedirectResolver} from './url-loader/redirect-resolver';
+export {UrlLoader} from './url-loader/url-loader';
+export {UrlResolver} from './url-loader/url-resolver';
+
+// Polymer
+export {PolymerElement} from './polymer/polymer-element';
+export {Behavior as PolymerBehavior} from './polymer/behavior';
+export {PolymerElementMixin} from './polymer/polymer-element-mixin';
+export {DatabindingExpression as PolymerDatabindingExpression} from './polymer/expression-scanner';
+export {DomModule} from './polymer/dom-module-scanner';
+
+// ParsedDocuments
+export {ParsedJsonDocument, Json, Visitor as JsonVisitor} from './json/json-document';
+export {JavaScriptDocument as ParsedJavaScriptDocument, Visitor as JavascriptVisitor} from './javascript/javascript-document';
+export {ParsedHtmlDocument, HtmlVisitor} from './html/html-document';
+export {ParsedCssDocument, Visitor as CssVisitor} from './css/css-document';

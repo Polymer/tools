@@ -9,8 +9,8 @@
     "type": "git",
     "url": "https://github.com/Polymer/polymer-analyzer.git"
   },
-  "main": "lib/analyzer.js",
-  "typings": "lib/analyzer.d.ts",
+  "main": "lib/main.js",
+  "typings": "lib/main.d.ts",
   "files": [
     "LICENSE",
     "lib/",

@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
-import {generateAnalysisMetadata, validateAnalysis, ValidationError} from '../generate-analysis';
+import {generateAnalysis, validateAnalysis, ValidationError} from '../generate-analysis';
 import {Document} from '../model/document';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
@@ -69,7 +69,7 @@ suite('generate-elements', () => {
                 packagePath.substring(analysisFixtureDir.length + 1) :
                 packagePath;
             const analyzedPackages =
-                generateAnalysisMetadata(documents, renormedPackagePath);
+                generateAnalysis(documents, renormedPackagePath);
             validateAnalysis(analyzedPackages);
 
             try {
@@ -100,7 +100,7 @@ suite('generate-elements', () => {
           urlResolver: new PackageUrlResolver(),
         });
         const _package = await analyzer.analyzePackage();
-        const metadata = generateAnalysisMetadata(_package, '');
+        const metadata = generateAnalysis(_package, '');
         // The fixture only contains external elements
         assert.isUndefined(metadata.elements);
       });
@@ -112,7 +112,7 @@ suite('generate-elements', () => {
           urlResolver: new PackageUrlResolver(),
         });
         const _package = await analyzer.analyzePackage();
-        const metadata = generateAnalysisMetadata(_package, '');
+        const metadata = generateAnalysis(_package, '');
         assert.equal(metadata.elements && metadata.elements.length, 1);
         assert.equal(metadata.elements![0].tagname, 'simple-element');
         assert.equal(metadata.elements![0].path, 'simple-element.html');

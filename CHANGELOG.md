@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   * considers one leading underscore to be protected, and two to be private
   * one trailing underscore is private (closure style)
 * Track inheritance source for mixin and element members.
+* Exported all public api through the package's `main` file, so that all public api can be accessed directly off of the object returned by `require('polymer-analyzer')` without the need to add imports into `polymer-analyzer/lib/whatever`.
 
 ## [2.0.0-alpha.28] - 2017-02-24
 * Support for `@memberof` jsdoc tag
