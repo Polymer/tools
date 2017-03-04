@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 
+## [2.0.0-alpha.30] - 2017-03-03
+
+* Fix typo in package.json.
+
 ## [2.0.0-alpha.29] - 2017-03-03
 
 * Added a `_fork` method to Analyzer.
