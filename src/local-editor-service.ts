@@ -13,10 +13,8 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, Options as AnalyzerOptions} from 'polymer-analyzer';
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document, Element, Property, ScannedProperty, SourceRange} from 'polymer-analyzer/lib/model/model';
-import {Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Analyzer, Attribute, Document, Element, ParsedHtmlDocument, Property, ScannedProperty, SourceRange, Warning} from 'polymer-analyzer';
+import {Options as AnalyzerOptions} from 'polymer-analyzer/lib/analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
 import {ProjectConfig} from 'polymer-project-config';
 
@@ -278,7 +276,7 @@ export class LocalEditorService extends EditorService {
   }
 
   private async _getFeatureAt(localPath: string, position: SourcePosition):
-      Promise<Element|Property|undefined> {
+      Promise<Element|Property|Attribute|undefined> {
     const document = await this._analyzer.analyze(localPath);
     const location = await this._getLocationResult(document, position);
     if (!location) {

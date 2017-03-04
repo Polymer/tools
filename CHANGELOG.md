@@ -5,13 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!--## Unreleased-->
 
-<!-- Please document PR changes here. -->
+<!--
+  Please document PR changes here. Uncomment the Unreleased header as
+  appropriate.
+-->
+
+## 1.3.1 - 2017-02-2017
 
 ### Fixed
 
-* Forward logging over the LSP connection. This solves a number of issues where the ide would silently stop working. See e.g. https://github.com/Polymer/vscode-plugin/issues/48
+* Forward logging over the LSP connection. This solves an issues where the ide would silently stop working, or work for some projects but not others. See: https://github.com/Polymer/vscode-plugin/issues/48
+* Includes a number of powerful new lint passes. See [polymer-linter](https://github.com/Polymer/polymer-linter/blob/master/CHANGELOG.md#015---2017-03-03) for more info. Remember that you must configure your lint passes in polymer.json.
 
 ## 1.3.0 - 2017-01-22
 
