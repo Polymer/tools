@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!--## Unreleased-->
+
+## [0.1.5] - 2017-03-03
 
 ### New Lint Rules
 - `behaviors-spelling`: Warns when the `behaviors` property may not have the American-English spelling

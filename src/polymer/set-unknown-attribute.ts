@@ -13,9 +13,8 @@
  */
 
 import * as dom5 from 'dom5';
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document, Element, Position, SourceRange} from 'polymer-analyzer/lib/model/model';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Attribute, Document, Element, ParsedHtmlDocument, Position, Property, SourceRange, Warning} from 'polymer-analyzer';
+import {Severity} from 'polymer-analyzer/lib/warning/warning';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
@@ -202,7 +201,7 @@ export class SetUnknownAttribute extends HtmlRule {
           continue;
         }
 
-        const allowedBindings =
+        const allowedBindings: Array<Attribute|Property> =
             isAttribute ? element.attributes : element.properties;
         const shared = isAttribute ? sharedAttributes : sharedProperties;
         const found =
