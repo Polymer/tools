@@ -154,6 +154,7 @@ class BehaviorVisitor implements Visitor {
     }
 
     this._startBehavior(new ScannedBehavior({
+      astNode: node,
       description: comment,
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node),

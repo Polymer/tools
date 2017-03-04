@@ -133,6 +133,7 @@ class ElementVisitor implements Visitor {
       const namespacedClassName = getNamespacedIdentifier(className, docs);
 
       const element = this._currentElement = new ScannedPolymerElement({
+        astNode: node,
         sourceRange,
         description: docs.description,
         superClass: _extends,  //
@@ -223,6 +224,7 @@ class ElementVisitor implements Visitor {
 
     const className = node.id && node.id.name;
     const element = new ScannedPolymerElement({
+      astNode: node,
       tagName: isValue,
       className,
       description: (docs.description || '').trim(),
