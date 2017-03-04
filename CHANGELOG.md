@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- List New Changes Here -->
 
+## [0.8.3] - 2017-03-03
+
+* Dependency updates.
+
 ## [0.8.2] - 2017-02-24
 
 * Dependency updates
