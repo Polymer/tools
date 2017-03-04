@@ -65,8 +65,8 @@
           "column": 1
         }
       },
-      "name": "Polymer.TestMixin",
-      "privacy": "public"
+      "privacy": "public",
+      "name": "Polymer.TestMixin"
     },
     {
       "description": "",
@@ -132,8 +132,8 @@
           "column": 1
         }
       },
-      "name": "Polymer._ProtectedMixin",
-      "privacy": "protected"
+      "privacy": "protected",
+      "name": "Polymer._ProtectedMixin"
     },
     {
       "description": "",
@@ -185,8 +185,76 @@
           "column": 1
         }
       },
-      "name": "Polymer.InternalMixin",
-      "privacy": "private"
+      "privacy": "private",
+      "name": "Polymer.InternalMixin"
+    },
+    {
+      "privacy": "public",
+      "name": "Polymer.MetaMixin",
+      "description": "",
+      "summary": "",
+      "path": "mixins.js",
+      "mixins": [
+        "Polymer.InternalMixin"
+      ],
+      "attributes": [
+        {
+          "name": "meta",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 59,
+              "column": 8
+            },
+            "end": {
+              "line": 61,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "meta",
+          "type": "boolean",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 59,
+              "column": 8
+            },
+            "end": {
+              "line": 61,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {}
+          }
+        }
+      ],
+      "methods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 55,
+          "column": 0
+        },
+        "end": {
+          "line": 65,
+          "column": 1
+        }
+      }
     }
   ]
 }

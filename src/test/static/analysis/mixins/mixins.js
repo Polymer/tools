@@ -47,3 +47,21 @@ const InternalMixin = function(superclass) {
     }
   }
 }
+
+/**
+ * @polymerMixin
+ * @mixes Polymer.InternalMixin
+ * @memberof Polymer
+ */
+const MetaMixin = function(superclass) {
+  return class extends InternalMixin(superclass) {
+    static get properties() {
+      return {
+        meta: {
+          type: Boolean,
+        },
+      };
+    }
+  }
+}
+

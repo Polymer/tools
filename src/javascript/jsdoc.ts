@@ -13,7 +13,12 @@
  */
 
 import * as doctrine from 'doctrine';
+import * as estree from 'estree';
+
+import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Privacy} from '../model/model';
+import {ScannedReference} from '../model/model';
+import {Severity, Warning} from '../warning/warning';
 
 /**
  * An annotated JSDoc block tag, all fields are optionally processed except for
@@ -239,4 +244,30 @@ export function getPrivacy(jsdoc: Annotation|null|undefined): Privacy|null {
     }
   }
   return null;
+}
+
+export function getMixins(
+    document: JavaScriptDocument,
+    node: estree.Node,
+    docs: Annotation,
+    warnings: Warning[]) {
+  const mixesAnnotations = docs.tags!.filter((tag) => tag.tag === 'mixes');
+  return mixesAnnotations
+      .map((annotation) => {
+        const mixinId = annotation.name;
+        // TODO(justinfagnani): we need source ranges for jsdoc
+        // annotations
+        const sourceRange = document.sourceRangeForNode(node)!;
+        if (mixinId == null) {
+          warnings.push({
+            code: 'class-mixes-annotation-no-id',
+            message:
+                '@mixes annotation with no identifier. Usage `@mixes MixinName`',
+            severity: Severity.WARNING, sourceRange,
+          });
+          return;
+        }
+        return new ScannedReference(mixinId, sourceRange);
+      })
+      .filter((m) => m != null) as ScannedReference[];
 }

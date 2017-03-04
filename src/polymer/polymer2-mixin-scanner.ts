@@ -20,6 +20,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {Warning} from '../warning/warning';
 
 import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElementMixin} from './polymer-element-mixin';
@@ -42,6 +43,8 @@ class MixinVisitor implements Visitor {
   private _currentMixin: ScannedPolymerElementMixin|null = null;
   private _currentMixinNode: estree.Node|null = null;
   private _currentMixinFunction: estree.BaseFunction|null = null;
+  // TODO(rictic): do something with these warnings.
+  private _warnings: Warning[] = [];
 
   constructor(document: JavaScriptDocument) {
     this._document = document;
@@ -69,7 +72,9 @@ class MixinVisitor implements Visitor {
           description: parentJsDocs.description,
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, parentJsDocs, false),
-          jsdoc: parentJsDocs
+          jsdoc: parentJsDocs,
+          mixins: jsdoc.getMixins(
+              this._document, node, parentJsDocs, this._warnings),
         });
         this._currentMixinNode = node;
         this._mixins.push(this._currentMixin);
@@ -99,7 +104,9 @@ class MixinVisitor implements Visitor {
           description: nodeJsDocs.description,
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
-          jsdoc: nodeJsDocs
+          jsdoc: nodeJsDocs,
+          mixins:
+              jsdoc.getMixins(this._document, node, nodeJsDocs, this._warnings)
         });
         this._currentMixinNode = node;
         this._mixins.push(this._currentMixin);
@@ -138,7 +145,9 @@ class MixinVisitor implements Visitor {
             description: docs.description,
             summary: (summaryTag && summaryTag.description) || '',
             privacy: getOrInferPrivacy(namespacedName, docs, false),
-            jsdoc: docs
+            jsdoc: docs,
+            mixins: jsdoc.getMixins(
+                this._document, declaration, docs, this._warnings)
           });
         }
       }

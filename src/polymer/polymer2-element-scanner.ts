@@ -122,7 +122,7 @@ class ElementVisitor implements Visitor {
     if (isElement) {
       const warnings: Warning[] = [];
       const _extends = this._getExtends(node, docs, warnings);
-      const mixins = this._getMixins(node, docs, warnings);
+      const mixins = jsdoc.getMixins(this._document, node, docs, warnings);
 
       // The name of the variable is available in a child VariableDeclarator
       // so we save the element and node representing the element to access
@@ -214,28 +214,6 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  private _getMixins(
-      node: estree.Node, docs: jsdoc.Annotation, warnings: Warning[]) {
-    const mixesAnnotations = docs.tags!.filter((tag) => tag.tag === 'mixes');
-    return mixesAnnotations
-        .map((annotation) => {
-          const mixinId = annotation.name;
-          // TODO(justinfagnani): we need source ranges for jsdoc
-          // annotations
-          const sourceRange = this._document.sourceRangeForNode(node)!;
-          if (mixinId == null) {
-            warnings.push({
-              code: 'class-mixes-annotation-no-id',
-              message:
-                  '@mixes annotation with no identifier. Usage `@mixes MixinName`',
-              severity: Severity.WARNING, sourceRange,
-            });
-            return;
-          }
-          return new ScannedReference(mixinId, sourceRange);
-        })
-        .filter((m) => m != null) as ScannedReference[];
-  }
 
   private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
     const comment = esutil.getAttachedComment(node) || '';
@@ -243,18 +221,17 @@ class ElementVisitor implements Visitor {
     const isValue = getIsValue(node);
     const warnings: Warning[] = [];
 
-    const _extends = this._getExtends(node, docs, warnings);
-    const mixins = this._getMixins(node, docs, warnings);
-
     const className = node.id && node.id.name;
     const element = new ScannedPolymerElement({
       tagName: isValue,
+      className,
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
       properties: getProperties(node, this._document),
       methods: getMethods(node, this._document),
-      superClass: _extends, mixins, className,
+      superClass: this._getExtends(node, docs, warnings),
+      mixins: jsdoc.getMixins(this._document, node, docs, warnings),
       privacy: getOrInferPrivacy(className || '', docs, false),
     });
 

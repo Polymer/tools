@@ -229,6 +229,9 @@ function serializeElementMixin(
   const metadata = serializeElementLike(mixin, packagePath) as ElementMixin;
   metadata.name = mixin.name;
   metadata.privacy = mixin.privacy;
+  if (mixin.mixins.length > 0) {
+    metadata.mixins = mixin.mixins.map((m) => m.identifier);
+  }
   return metadata;
 }
 

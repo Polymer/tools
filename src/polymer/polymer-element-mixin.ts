@@ -15,7 +15,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, ElementMixin, LiteralValue, Method, Privacy, ScannedElementMixin, ScannedMethod, SourceRange} from '../model/model';
+import {Document, ElementMixin, LiteralValue, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
 import {getOrInferPrivacy} from './js-utils';
@@ -28,6 +28,7 @@ export interface Options {
   summary: string;
   privacy: Privacy;
   sourceRange: SourceRange;
+  mixins: ScannedReference[];
 }
 
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
@@ -64,13 +65,19 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     addMethod(this, method);
   }
 
-  resolve(_document: Document): PolymerElementMixin {
+  resolve(document: Document): PolymerElementMixin {
     const element = new PolymerElementMixin();
     Object.assign(element, this);
 
     for (const method of element.methods) {
       // methods are only public by default if they're documented.
       method.privacy = getOrInferPrivacy(method.name, method.jsdoc, true);
+    }
+    element.mixins = [];
+    for (const mixin of this.mixins) {
+      // TODO(rictic): we should mix these mixins into `this`. See
+      // PolymerElement's logic for this.
+      element.mixins.push(mixin.resolve(document));
     }
 
     return element;

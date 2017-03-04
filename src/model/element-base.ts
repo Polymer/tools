@@ -18,7 +18,7 @@ import * as jsdoc from '../javascript/jsdoc';
 import {SourceRange} from '../model/model';
 import {Warning} from '../warning/warning';
 
-import {Attribute, Document, Event, Feature, Method, Property, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty} from './model';
+import {Attribute, Document, Event, Feature, Method, Property, Reference, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 
@@ -37,6 +37,7 @@ export abstract class ScannedElementBase implements Resolvable {
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
   'slots': Slot[] = [];
+  mixins: ScannedReference[] = [];
 
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText || '';
@@ -74,6 +75,16 @@ export abstract class ElementBase implements Feature {
   kinds: Set<string> = new Set(['element']);
   warnings: Warning[] = [];
   'slots': Slot[] = [];
+
+  /**
+   * Mixins that this class declares with `@mixes`.
+   *
+   * Mixins are applied linearly after the superclass, in order from first
+   * to last. Mixins that compose other mixins will be flattened into a
+   * single list. A mixin can be applied more than once, each time its
+   * members override those before it in the prototype chain.
+   */
+  mixins: Reference[] = [];
 
   get identifiers(): Set<string> {
     throw new Error('abstract');

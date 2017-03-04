@@ -23,7 +23,6 @@ export class ScannedElement extends ScannedElementBase {
   tagName?: string;
   className?: string;
   superClass?: ScannedReference;
-  mixins: ScannedReference[] = [];
   privacy: Privacy;
 
   /**
@@ -51,16 +50,6 @@ export class Element extends ElementBase implements Feature {
   className?: string;
   superClass?: Reference;
   privacy: Privacy;
-
-  /**
-   * Mixins that this class declares with `@mixes`.
-   *
-   * Mixins are applied linearly after the superclass, in order from first
-   * to last. Mixins that compose other mixins will be flattened into a
-   * single list. A mixin can be applied more than once, each time its
-   * members override those before it in the prototype chain.
-   */
-  mixins: Reference[] = [];
 
   /**
    * For customized built-in elements, the tagname of the superClass.
