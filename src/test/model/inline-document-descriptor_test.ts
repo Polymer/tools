@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 
-import {correctPosition, correctSourceRange, LocationOffset, Position, SourceRange} from '../../model/model';
+import {correctPosition, correctSourceRange, LocationOffset, SourcePosition, SourceRange} from '../../model/model';
 
 
 suite('correctSourceRange', function() {
@@ -44,9 +44,9 @@ suite('correctSourceRange', function() {
       });
 
   test('does not modify its input', function() {
-    const input: Position = {line: 5, column: 5};
+    const input: SourcePosition = {line: 5, column: 5};
     const offset: LocationOffset = {line: 5, col: 5};
-    const expected: Position = {line: 10, column: 5};
+    const expected: SourcePosition = {line: 10, column: 5};
     assert.deepEqual(correctPosition(input, offset), expected);
     assert.deepEqual(input, {line: 5, column: 5});
   });

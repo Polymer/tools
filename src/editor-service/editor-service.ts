@@ -11,7 +11,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange, Warning} from '../model/model';
+import {SourcePosition, SourceRange, Warning} from '../model/model';
 
 export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
 export interface ElementCompletion {
@@ -29,13 +29,6 @@ export interface AttributeCompletion {
   type: string|undefined;
   sortKey: string;
   inheritedFrom?: string;
-}
-
-export interface SourcePosition {
-  /** Line number in file, starting from 0. */
-  line: number;
-  /** Column number in file, starting from 0. */
-  column: number;
 }
 
 // Important note: all arguments to, and results returned from editor service

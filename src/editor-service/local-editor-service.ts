@@ -14,10 +14,10 @@
 
 import {Analyzer, Options as AnalyzerOptions} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
-import {Attribute, Document, Element, Property, ScannedProperty, SourceRange, Warning, WarningCarryingException} from '../model/model';
+import {Attribute, Document, Element, Property, ScannedProperty, SourcePosition, SourceRange, Warning, WarningCarryingException} from '../model/model';
 
 import {getLocationInfoForPosition} from './ast-from-source-position';
-import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+import {AttributeCompletion, EditorService, TypeaheadCompletion} from './editor-service';
 
 export class LocalEditorService extends EditorService {
   private _analyzer: Analyzer;

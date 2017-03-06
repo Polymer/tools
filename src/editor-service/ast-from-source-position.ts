@@ -14,9 +14,7 @@
 import * as parse5 from 'parse5';
 
 import {ParsedHtmlDocument} from '../html/html-document';
-import {SourceRange} from '../model/model';
-
-import {SourcePosition} from './editor-service';
+import {comparePositionAndRange, isPositionInsideRange, SourcePosition} from '../model/model';
 
 
 export type LocationResult = AttributesSection | AttributeValue | TagName |
@@ -203,51 +201,7 @@ function _getLocationInfoForPosition(
   }
 }
 
-/**
- * If the position is inside the range, returns 0. If it comes before the range,
- * it returns -1. If it comes after the range, it returns 1.
- */
-function comparePositionAndRange(
-    position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
-  // Usually we want to include the edges of a range as part
-  // of the thing, but sometimes, e.g. for start and end tags,
-  // we'd rather not.
-  if (includeEdges == null) {
-    includeEdges = true;
-  }
-  if (includeEdges == null) {
-    includeEdges = true;
-  }
-  if (position.line < range.start.line) {
-    return -1;
-  }
-  if (position.line > range.end.line) {
-    return 1;
-  }
-  if (position.line === range.start.line) {
-    if (includeEdges) {
-      if (position.column < range.start.column) {
-        return -1;
-      }
-    } else {
-      if (position.column <= range.start.column) {
-        return -1;
-      }
-    }
-  }
-  if (position.line === range.end.line) {
-    if (includeEdges) {
-      if (position.column > range.end.column) {
-        return 1;
-      }
-    } else {
-      if (position.column >= range.end.column) {
-        return 1;
-      }
-    }
-  }
-  return 0;
-}
+
 
 function _findLocationInChildren(
     node: parse5.ASTNode,
@@ -266,16 +220,6 @@ function _findLocationInChildren(
       return result;
     }
   }
-}
-
-function isPositionInsideRange(
-    position: SourcePosition,
-    range: SourceRange|undefined,
-    includeEdges?: boolean) {
-  if (!range) {
-    return false;
-  }
-  return comparePositionAndRange(position, range, includeEdges) === 0;
 }
 
 function isElementLocationInfo(location: parse5.LocationInfo|

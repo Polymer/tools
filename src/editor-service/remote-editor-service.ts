@@ -16,9 +16,9 @@ import * as child_process from 'child_process';
 import * as path from 'path';
 import * as util from 'util';
 
-import {SourceRange, Warning} from '../model/model';
+import {SourcePosition, SourceRange, Warning} from '../model/model';
 
-import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+import {EditorService, TypeaheadCompletion} from './editor-service';
 import {Request, RequestWrapper, ResponseWrapper} from './remote-editor-protocol';
 
 

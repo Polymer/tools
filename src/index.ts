@@ -20,7 +20,7 @@
  */
 
 // Core objects
-export {Analyzer} from './analyzer';
+export {Analyzer, Options as AnalyzerOptions} from './analyzer';
 export * from './model/model';
 export {WarningPrinter, Verbosity as WarningPrinterVerbosity, Options as WarningPrinterOptions} from './warning/warning-printer';
 export {WarningFilter} from './warning/warning-filter';

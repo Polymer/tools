@@ -14,8 +14,8 @@
 import {assert} from 'chai';
 
 import {getLocationInfoForPosition} from '../../editor-service/ast-from-source-position';
-import {SourcePosition} from '../../editor-service/editor-service';
 import {HtmlParser} from '../../html/html-parser';
+import {SourcePosition} from '../../model/model';
 
 suite('getLocationInfoForPosition', () => {
   const parser = new HtmlParser();

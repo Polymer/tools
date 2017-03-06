@@ -22,11 +22,11 @@
 export interface SourceRange {
   /* The resolved path to the file. */
   file: string;
-  start: Position;
-  end: Position;
+  start: SourcePosition;
+  end: SourcePosition;
 }
 
-export interface Position {
+export interface SourcePosition {
   /** The line number, starting from zero. */
   line: number;
   /** The column offset within the line, starting from zero. */
@@ -69,9 +69,68 @@ export function correctSourceRange(
 }
 
 export function correctPosition(
-    position: Position, locationOffset: LocationOffset): Position {
+    position: SourcePosition, locationOffset: LocationOffset): SourcePosition {
   return {
     line: position.line + locationOffset.line,
     column: position.column + (position.line === 0 ? locationOffset.col : 0)
   };
+}
+
+/**
+ * If the position is inside the range, returns 0. If it comes before the range,
+ * it returns -1. If it comes after the range, it returns 1.
+ *
+ * TODO(rictic): test this method directly (currently most of its tests are
+ *   indirectly, through ast-from-source-position).
+ */
+export function comparePositionAndRange(
+    position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
+  // Usually we want to include the edges of a range as part
+  // of the thing, but sometimes, e.g. for start and end tags,
+  // we'd rather not.
+  if (includeEdges == null) {
+    includeEdges = true;
+  }
+  if (includeEdges == null) {
+    includeEdges = true;
+  }
+  if (position.line < range.start.line) {
+    return -1;
+  }
+  if (position.line > range.end.line) {
+    return 1;
+  }
+  if (position.line === range.start.line) {
+    if (includeEdges) {
+      if (position.column < range.start.column) {
+        return -1;
+      }
+    } else {
+      if (position.column <= range.start.column) {
+        return -1;
+      }
+    }
+  }
+  if (position.line === range.end.line) {
+    if (includeEdges) {
+      if (position.column > range.end.column) {
+        return 1;
+      }
+    } else {
+      if (position.column >= range.end.column) {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
+export function isPositionInsideRange(
+    position: SourcePosition,
+    range: SourceRange|undefined,
+    includeEdges?: boolean) {
+  if (!range) {
+    return false;
+  }
+  return comparePositionAndRange(position, range, includeEdges) === 0;
 }

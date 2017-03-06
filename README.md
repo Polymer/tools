@@ -11,18 +11,17 @@ npm install polymer-analyzer
 
 ## Usage
 ```js
-const Analyzer = require('polymer-analyzer').Analyzer;
-const FSUrlLoader = require('polymer-analyzer/lib/url-loader/fs-url-loader').FSUrlLoader;
-const PackageUrlResolver = require('polymer-analyzer/lib/url-loader/package-url-resolver').PackageUrlResolver;
+const {Analyzer, FSUrlLoader} = require('polymer-analyzer');
 
 let analyzer = new Analyzer({
   urlLoader: new FSUrlLoader(pathToPackageRoot),
-  urlResolver: new PackageUrlResolver(),
 });
 
 analyzer.analyze('/path-to-polymer-element.html')
   .then((document) => {
-    console.log(document.getFeatures());
+    for (const element of document.getFeatures({kind: 'element'})) {
+      console.log(element);
+    }
   });
 ```
 

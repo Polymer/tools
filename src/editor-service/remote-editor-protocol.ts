@@ -1,4 +1,4 @@
-import {SourcePosition} from './editor-service';
+import {SourcePosition} from '../model/model';
 
 /**
  * The remote editor service protocol is request/response based.
