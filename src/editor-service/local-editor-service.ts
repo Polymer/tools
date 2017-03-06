@@ -14,8 +14,7 @@
 
 import {Analyzer, Options as AnalyzerOptions} from '../analyzer';
 import {ParsedHtmlDocument} from '../html/html-document';
-import {Attribute, Document, Element, Property, ScannedProperty, SourceRange} from '../model/model';
-import {Warning, WarningCarryingException} from '../warning/warning';
+import {Attribute, Document, Element, Property, ScannedProperty, SourceRange, Warning, WarningCarryingException} from '../model/model';
 
 import {getLocationInfoForPosition} from './ast-from-source-position';
 import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';

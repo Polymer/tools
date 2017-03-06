@@ -20,7 +20,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Severity} from '../warning/warning';
+import {Severity} from '../model/model';
 
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';

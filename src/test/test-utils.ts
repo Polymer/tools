@@ -13,9 +13,8 @@
  */
 
 import {Analyzer} from '../analyzer';
-import {SourceRange} from '../model/model';
+import {SourceRange, Warning} from '../model/model';
 import {UrlLoader} from '../url-loader/url-loader';
-import {Warning} from '../warning/warning';
 import {WarningPrinter} from '../warning/warning-printer';
 
 export class UnexpectedResolutionError extends Error {

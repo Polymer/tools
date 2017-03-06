@@ -17,8 +17,7 @@ import * as estree from 'estree';
 
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Privacy} from '../model/model';
-import {ScannedReference} from '../model/model';
-import {Severity, Warning} from '../warning/warning';
+import {ScannedReference, Severity, Warning} from '../model/model';
 
 /**
  * An annotated JSDoc block tag, all fields are optionally processed except for

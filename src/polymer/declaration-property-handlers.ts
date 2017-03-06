@@ -16,8 +16,8 @@ import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import {Severity, Warning} from '../model/model';
 import {ScannedBehaviorAssignment} from '../polymer/behavior';
-import {Severity, Warning} from '../warning/warning';
 
 import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerElement} from './polymer-element';

@@ -13,9 +13,9 @@
  */
 
 import * as jsdoc from '../javascript/jsdoc';
-import {Warning} from '../warning/warning';
 
 import {SourceRange} from './source-range';
+import {Warning} from './warning';
 
 export abstract class Feature {
   kinds: Set<string> = new Set();

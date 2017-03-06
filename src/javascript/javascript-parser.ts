@@ -15,9 +15,8 @@
 import * as espree from 'espree';
 import * as estree from 'estree';
 
-import {correctSourceRange, InlineDocInfo, LocationOffset} from '../model/model';
+import {correctSourceRange, InlineDocInfo, LocationOffset, Severity, Warning, WarningCarryingException} from '../model/model';
 import {Parser} from '../parser/parser';
-import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 
 import {JavaScriptDocument} from './javascript-document';
 

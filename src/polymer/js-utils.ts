@@ -17,8 +17,7 @@ import * as estree from 'estree';
 
 import {closureType, getAttachedComment, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
-import {Privacy, ScannedMethod, SourceRange} from '../model/model';
-import {Severity, Warning} from '../warning/warning';
+import {Privacy, ScannedMethod, Severity, SourceRange, Warning} from '../model/model';
 
 import {ScannedPolymerProperty} from './polymer-element';
 

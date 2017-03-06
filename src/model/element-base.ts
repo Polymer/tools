@@ -15,10 +15,8 @@
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
-import {SourceRange} from '../model/model';
-import {Warning} from '../warning/warning';
 
-import {Attribute, Document, Event, Feature, Method, Property, Reference, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference} from './model';
+import {Attribute, Document, Event, Feature, Method, Property, Reference, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 

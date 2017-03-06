@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../model/model';
-
+import {SourceRange} from './source-range';
 export interface Warning {
   message: string;
   sourceRange: SourceRange;
@@ -27,6 +26,7 @@ export enum Severity {
   INFO
 }
 
+// TODO(rictic): can we get rid of this class entirely?
 export class WarningCarryingException extends Error {
   warning: Warning;
   constructor(warning: Warning) {

@@ -11,8 +11,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from '../model/model';
-import {Warning} from '../warning/warning';
+import {SourceRange, Warning} from '../model/model';
 
 export type TypeaheadCompletion = ElementCompletion | AttributesCompletion;
 export interface ElementCompletion {

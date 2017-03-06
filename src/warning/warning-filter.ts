@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Severity, Warning} from './warning';
+import {Severity, Warning} from '../model/model';
 
 
 export interface Options {

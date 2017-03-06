@@ -12,12 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Severity, Warning} from '../warning/warning';
-
 import {Document} from './document';
 import {Feature} from './feature';
 import {SourceRange} from './model';
 import {Resolvable} from './resolvable';
+import {Severity, Warning} from './warning';
 
 
 /**

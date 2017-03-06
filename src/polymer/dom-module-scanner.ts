@@ -17,8 +17,7 @@ import {ASTNode, treeAdapters} from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
-import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange} from '../model/model';
-import {Warning} from '../warning/warning';
+import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange, Warning} from '../model/model';
 
 import {DatabindingExpression, scanDatabindingTemplateForExpressions, Template} from './expression-scanner';
 import {LocalId} from './polymer-element';

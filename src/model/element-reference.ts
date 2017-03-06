@@ -14,8 +14,7 @@
 
 import * as dom5 from 'dom5';
 
-import {Feature, Resolvable, SourceRange} from '../model/model';
-import {Warning} from '../warning/warning';
+import {Feature, Resolvable, SourceRange, Warning} from '../model/model';
 
 export interface Attribute {
   name: string;

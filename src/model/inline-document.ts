@@ -18,12 +18,12 @@ import {ASTNode} from 'parse5';
 import * as util from 'util';
 
 import * as jsdoc from '../javascript/jsdoc';
-import {Warning} from '../warning/warning';
 
 import {Document, ScannedDocument} from './document';
 import {ScannedFeature} from './feature';
 import {Resolvable} from './resolvable';
 import {LocationOffset, SourceRange} from './source-range';
+import {Warning} from './warning';
 
 export interface InlineDocInfo<AstNode> {
   astNode?: AstNode;

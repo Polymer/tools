@@ -21,7 +21,6 @@ import {Behavior} from '../polymer/behavior';
 import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/polymer-element';
 import {PolymerElementMixin} from '../polymer/polymer-element-mixin';
-import {Warning} from '../warning/warning';
 
 import {Element} from './element';
 import {ElementMixin} from './element-mixin';
@@ -32,6 +31,7 @@ import {Package} from './package';
 import {BaseQueryOptions, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
+import {Warning} from './warning';
 
 /**
  * The metadata for all features and elements defined in one document

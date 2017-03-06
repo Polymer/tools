@@ -14,9 +14,8 @@
 
 import * as ts from 'typescript';
 
-import {correctSourceRange, InlineDocInfo} from '../model/model';
+import {correctSourceRange, InlineDocInfo, Severity, WarningCarryingException} from '../model/model';
 import {Parser} from '../parser/parser';
-import {Severity, WarningCarryingException} from '../warning/warning';
 
 import {ParsedTypeScriptDocument} from './typescript-document';
 

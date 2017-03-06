@@ -19,7 +19,7 @@ import stripIndent = require('strip-indent');
 
 import {ParsedTypeScriptDocument} from '../../typescript/typescript-document';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
-import {WarningCarryingException} from '../../warning/warning';
+import {WarningCarryingException} from '../../model/model';
 import {CodeUnderliner} from '../test-utils';
 
 suite('TypeScriptParser', () => {

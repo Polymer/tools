@@ -18,8 +18,7 @@ import * as parse5 from 'parse5';
 
 import {ParsedHtmlDocument} from '../html/html-document';
 import {parseJs} from '../javascript/javascript-parser';
-import {correctSourceRange, LocationOffset, SourceRange} from '../model/model';
-import {Severity, Warning} from '../warning/warning';
+import {correctSourceRange, LocationOffset, Severity, SourceRange, Warning} from '../model/model';
 
 const p = dom5.predicates;
 const isTemplate = p.hasTagName('template');

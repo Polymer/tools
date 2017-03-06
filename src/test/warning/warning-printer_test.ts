@@ -18,8 +18,8 @@ import * as memoryStreams from 'memory-streams';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
+import {Severity, Warning} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
-import {Severity, Warning} from '../../warning/warning';
 import {WarningPrinter} from '../../warning/warning-printer';
 
 const dumbNameWarning: Warning = {

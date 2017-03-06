@@ -15,9 +15,7 @@
 import * as chalk from 'chalk';
 
 import {Analyzer} from '../analyzer';
-import {SourceRange} from '../model/source-range';
-
-import {Severity, Warning} from './warning';
+import {Severity, SourceRange, Warning} from '../model/model';
 
 export type Verbosity = 'one-line' | 'full';
 

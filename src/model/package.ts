@@ -11,11 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {Warning} from '../warning/warning';
 
 import {Document, FeatureKinds, QueryOptions as DocumentQueryOptions} from './document';
 import {Feature} from './feature';
 import {BaseQueryOptions, Queryable} from './queryable';
+import {Warning} from './warning';
 
 export type QueryOptions = object & BaseQueryOptions;
 

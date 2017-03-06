@@ -26,11 +26,11 @@ import {ParsedHtmlDocument} from '../html/html-document';
 import {HtmlParser} from '../html/html-parser';
 import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {Document, Import, ScannedImport, ScannedInlineDocument} from '../model/model';
+import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {UrlLoader} from '../url-loader/url-loader';
 import {Deferred} from '../utils';
-import {Severity} from '../warning/warning';
+
 import {CodeUnderliner} from './test-utils';
 
 import chaiAsPromised = require('chai-as-promised');

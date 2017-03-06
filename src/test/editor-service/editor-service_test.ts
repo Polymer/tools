@@ -19,9 +19,9 @@ import * as path from 'path';
 import {AttributesCompletion, EditorService, ElementCompletion} from '../../editor-service/editor-service';
 import {LocalEditorService} from '../../editor-service/local-editor-service';
 import {RemoteEditorService} from '../../editor-service/remote-editor-service';
+import {Severity, Warning} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {Severity, Warning} from '../../warning/warning';
 import {CodeUnderliner, invertPromise} from '../test-utils';
 
 function editorTests(editorFactory: (basedir: string) => EditorService) {

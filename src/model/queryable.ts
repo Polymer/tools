@@ -11,10 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {Warning} from '../warning/warning';
 
 import {FeatureKinds} from './document';
 import {Feature} from './feature';
+import {Warning} from './warning';
 
 export interface BaseQueryOptions {
   /**

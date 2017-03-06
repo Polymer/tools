@@ -25,7 +25,7 @@ import {FunctionScanner} from '../javascript/function-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
-import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument} from '../model/model';
+import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument, Severity, Warning, WarningCarryingException} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {BehaviorScanner} from '../polymer/behavior-scanner';
@@ -42,7 +42,6 @@ import {TypeScriptPreparser} from '../typescript/typescript-preparser';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
-import {Severity, Warning, WarningCarryingException} from '../warning/warning';
 
 import {AnalysisCache} from './analysis-cache';
 import {LanguageAnalyzer} from './language-analyzer';

@@ -20,7 +20,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Warning} from '../warning/warning';
+import {Warning} from '../model/model';
 
 import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElementMixin} from './polymer-element-mixin';

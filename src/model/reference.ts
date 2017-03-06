@@ -13,12 +13,12 @@
  */
 
 import {Annotation} from '../javascript/jsdoc';
-import {Warning} from '../warning/warning';
 
 import {Document} from './document';
 import {Feature, ScannedFeature} from './feature';
 import {Resolvable} from './resolvable';
 import {SourceRange} from './source-range';
+import {Warning} from './warning';
 
 export interface ScannedReferenceInit extends Partial<Reference> {
   identifier: string;

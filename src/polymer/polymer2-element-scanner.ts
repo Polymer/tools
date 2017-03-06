@@ -21,9 +21,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {ScannedElement, ScannedFeature} from '../model/model';
-import {ScannedReference} from '../model/reference';
-import {Severity, Warning} from '../warning/warning';
+import {ScannedElement, ScannedFeature, ScannedReference, Severity, Warning} from '../model/model';
 
 import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElement} from './polymer-element';

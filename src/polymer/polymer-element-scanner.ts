@@ -20,8 +20,7 @@ import {getAttachedComment, getEventComments, isFunctionType, objectKeyToString}
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-// import {ScannedMethod} from '../model/model';
-import {Severity, WarningCarryingException} from '../warning/warning';
+import {Severity, WarningCarryingException} from '../model/model';
 
 import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';

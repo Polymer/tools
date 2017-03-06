@@ -22,7 +22,6 @@
 // Core objects
 export {Analyzer} from './analyzer';
 export * from './model/model';
-export {Warning} from './warning/warning';
 export {WarningPrinter, Verbosity as WarningPrinterVerbosity, Options as WarningPrinterOptions} from './warning/warning-printer';
 export {WarningFilter} from './warning/warning-filter';
 export {Namespace} from './javascript/namespace';

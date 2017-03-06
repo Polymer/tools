@@ -16,9 +16,8 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, Element, ElementBase, LiteralValue, Method, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange} from '../model/model';
+import {Document, Element, ElementBase, LiteralValue, Method, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
-import {Severity, Warning} from '../warning/warning';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
 import {getOrInferPrivacy} from './js-utils';

@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Import, ScannedImport} from '../model/model';
-import {Severity} from '../warning/warning';
+import {Document, Import, ScannedImport, Severity} from '../model/model';
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
