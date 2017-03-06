@@ -1,0 +1,12 @@
+{
+  "name": "gen-typescript-declarations",
+  "version": "0.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Polymer/gen-typescript-declarations.git",
+  "author": "Justin Fagnani <justinfagnani@google.com>",
+  "license": "MIT",
+  "dependencies": {
+    "escodegen": "^1.8.1",
+    "polymer-analyzer": "next"
+  }
+}
