@@ -12,20 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Transform} from 'stream';
 import File = require('vinyl');
-import {ProjectConfig} from 'polymer-project-config';
+import * as parse5 from 'parse5';
 import {Analyzer} from 'polymer-analyzer';
-import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
 import {Bundler} from 'polymer-bundler';
 import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
-import {parseUrl} from 'polymer-analyzer/lib/utils';
-import {pathFromUrl, urlFromPath} from './path-transformers';
-import * as logging from 'plylog';
-import {BuildAnalyzer} from './analyzer';
-import * as parse5 from 'parse5';
+import {ProjectConfig} from 'polymer-project-config';
+import {Transform} from 'stream';
 
-const logger = logging.getLogger('cli.build.analyzer');
+import {BuildAnalyzer} from './analyzer';
+import {FileMapUrlLoader} from './file-map-url-loader';
+import {pathFromUrl, urlFromPath} from './path-transformers';
 
 export class BuildBundler extends Transform {
   config: ProjectConfig;
@@ -39,7 +36,7 @@ export class BuildBundler extends Transform {
   files = new Map<string, File>();
 
   constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
-    super({objectMode: true});
+    super({objectMode: true, highWaterMark: 10000});
 
     this.config = config;
 
@@ -51,7 +48,8 @@ export class BuildBundler extends Transform {
       // to mean, at least, a doubling of analysis efforts for bundling phase.
       // Ideally we would fork existing analyzer and replace its urlLoader if
       // there were an affordance to do so.
-      analyzer: new Analyzer({urlLoader: new StreamLoader(this)}),
+      analyzer: new Analyzer(
+          {urlLoader: new FileMapUrlLoader(this.config.root, this.files)}),
       inlineCss: true,
       inlineScripts: true,
     });
@@ -62,28 +60,20 @@ export class BuildBundler extends Transform {
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
     this.files.set(file.path, file);
-    // If this file is a fragment, hold on to the file so that it's fully
-    // analyzed by the time down-stream transforms see it.
-    if (this.config.isFragment(file.path)) {
-      callback(null, null);
-    } else {
-      callback(null, file);
-    }
+    callback(null, file);
   }
 
-  _flush(done: (error?: any) => void) {
-    this._buildBundles().then((bundles: Map<string, string>) => {
-      for (const filename of bundles.keys()) {
-        const filepath = pathFromUrl(this.config.root, filename);
-        let file =
-            this.analyzer.getFile(filepath) || new File({path: filepath});
-        const contents = bundles.get(filename);
-        file.contents = new Buffer(contents);
-        this.push(file);
-      }
-      // end the stream
-      done();
-    });
+  async _flush(done: (error?: any) => void) {
+    const bundles = await this._buildBundles();
+    for (const filename of bundles.keys()) {
+      const filepath = pathFromUrl(this.config.root, filename);
+      let file = this.analyzer.getFile(filepath) || new File({path: filepath});
+      const contents = bundles.get(filename);
+      file.contents = new Buffer(contents);
+      this.push(file);
+    }
+    // end the stream
+    done();
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
@@ -93,67 +83,13 @@ export class BuildBundler extends Transform {
           urlFromPath(this.config.root, this.config.shell));
     }
     const bundleEntrypoints = Array.from(this.config.allFragments);
-    return this.bundler
-        .bundle(
-            bundleEntrypoints.map(f => urlFromPath(this.config.root, f)),
-            strategy)
-        .then((docCollection) => {
-          const contentsMap = new Map();
-          for (const bundleName of docCollection.keys()) {
-            contentsMap.set(
-                bundleName,
-                parse5.serialize(docCollection.get(bundleName).ast));
-          }
-          return contentsMap;
-        });
-  }
-}
-
-export type ResolveFileCallback = (a: string) => void;
-export type RejectFileCallback = (err: Error) => void;
-export type DeferredFileCallbacks = {
-  resolve: ResolveFileCallback; reject: RejectFileCallback;
-};
-
-class StreamLoader implements UrlLoader {
-  bundler: BuildBundler;
-
-  // Store files that have not yet entered the Analyzer stream here.
-  // Later, when the file is seen, the DeferredFileCallback can be
-  // called with the file contents to resolve its loading.
-  deferredFiles = new Map<string, DeferredFileCallbacks>();
-
-  constructor(bundler: BuildBundler) {
-    this.bundler = bundler;
-  }
-
-  canLoad(url: string): boolean {
-    return this.bundler.analyzer.analyzer.canResolveUrl(url);
-  }
-
-  getFile(url: string): File {
-    return this.bundler.files.get(url);
-  }
-
-  load(url: string): Promise<string> {
-    logger.debug(`loading: ${url}`);
-
-    if (!this.canLoad(url)) {
-      return Promise.resolve(undefined);
+    const docCollection = await this.bundler.bundle(
+        bundleEntrypoints.map(f => urlFromPath(this.config.root, f)), strategy);
+    const contentsMap = new Map();
+    for (const bundleName of docCollection.keys()) {
+      contentsMap.set(
+          bundleName, parse5.serialize(docCollection.get(bundleName).ast));
     }
-
-    const urlObject = parseUrl(url);
-    const urlPath = decodeURIComponent(urlObject.pathname);
-    const filePath = pathFromUrl(this.bundler.config.root, urlPath);
-    const file = this.getFile(filePath);
-
-    if (file) {
-      return Promise.resolve(file.contents.toString());
-    }
-
-    return new Promise(
-        (resolve: ResolveFileCallback, reject: RejectFileCallback) => {
-          this.deferredFiles.set(filePath, {resolve, reject});
-        });
+    return contentsMap;
   }
 }
