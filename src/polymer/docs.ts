@@ -16,10 +16,7 @@ import * as jsdoc from '../javascript/jsdoc';
 import {ScannedEvent} from '../model/model';
 
 import {ScannedBehavior} from './behavior';
-// import {ScannedPolymerCoreFeature} from './polymer-core-feature';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
-
-
 
 // TODO(rictic): destroy this file with great abadon. It's the oldest and
 //     hardest to understand in the repo at this point I think.
@@ -30,14 +27,6 @@ import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 if (Math.random() > 1000) {
   annotateProperty.name;
 }
-
-
-/** Tags understood by the annotation process, to be removed during `clean`. */
-// const HANDLED_TAGS = [
-//   'param',
-//   'return',
-//   'type',
-// ];
 
 /**
  * Annotates Hydrolysis scanned features, processing any descriptions as
@@ -151,76 +140,3 @@ function annotateProperty(feature: ScannedPolymerProperty):
 
   return feature;
 }
-
-// /**
-//  * Converts raw features into an abstract `Polymer.Base` element.
-//  *
-//  * Note that docs on this element _are not processed_. You must call
-//  * `annotateElement` on it yourself if you wish that.
-//  */
-// export function featureElement(features: ScannedPolymerCoreFeature[]):
-//     ScannedPolymerElement {
-//   const properties =
-//       features.reduce<ScannedPolymerProperty[]>((result, feature) => {
-//         return result.concat(feature.properties);
-//       }, []);
-
-//   return new ScannedPolymerElement({
-//     className: 'Polymer.Base',
-//     abstract: true,
-//     properties: properties,
-//     description: '`Polymer.Base` acts as a base prototype for all Polymer ' +
-//         'elements. It is composed via various calls to ' +
-//         '`Polymer.Base._addFeature()`.\n' +
-//         '\n' +
-//         'The properties reflected here are the combined view of all ' +
-//         'features found in this library. There may be more properties ' +
-//         'added via other libraries, as well.',
-//     sourceRange: undefined,
-//     privacy: 'public'
-//   });
-// }
-
-/**
- * Cleans redundant properties from a feature, assuming that you have already
- * called `annotate`.
- */
-// export function clean(scannedFeature: ScannedFeature) {
-//   if (!scannedFeature.jsdoc) {
-//     return;
-//   }
-//   // The doctext was written to `scannedFeature.description`
-//   delete scannedFeature.jsdoc.description;
-
-//   const cleanTags: jsdoc.Tag[] = [];
-//   (scannedFeature.jsdoc.tags || []).forEach(function(tag) {
-//     // Drop any tags we've consumed.
-//     if (HANDLED_TAGS.indexOf(tag.tag) !== -1)
-//       return;
-//     cleanTags.push(tag);
-//   });
-
-//   if (cleanTags.length === 0) {
-//     // No tags? no docs left!
-//     delete scannedFeature.jsdoc;
-//   } else {
-//     scannedFeature.jsdoc.tags = cleanTags;
-//   }
-// }
-
-/**
- * Cleans redundant properties from an element, assuming that you have already
- * called `annotateElement`.
- */
-// export function cleanElement(element: ScannedPolymerElement) {
-//   clean(element);
-//   element.properties.forEach(cleanProperty);
-// }
-
-/**
- * Cleans redundant properties from a property, assuming that you have already
- * called `annotateProperty`.
- */
-// function cleanProperty(property: ScannedProperty) {
-//   clean(property);
-// }
