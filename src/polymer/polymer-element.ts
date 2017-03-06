@@ -75,6 +75,7 @@ export interface Options {
 
   abstract?: boolean;
   privacy: Privacy;
+  astNode: any;
   sourceRange: SourceRange|undefined;
 }
 
@@ -137,7 +138,7 @@ export function addMethod(
  * The metadata for a single polymer element
  */
 export class ScannedPolymerElement extends ScannedElement implements
-    ScannedPolymerExtension {
+  ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
   methods: ScannedMethod[] = [];
   observers: {

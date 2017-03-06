@@ -59,6 +59,7 @@ class ElementVisitor implements Visitor {
     const className = node.id.name;
     const docs = jsdoc.parseJsdoc(getAttachedComment(node) || '');
     this.element = new ScannedPolymerElement({
+      astNode: node,
       description: docs.description,
       events: getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node), className,
@@ -170,6 +171,7 @@ class ElementVisitor implements Visitor {
         const rawDescription = getAttachedComment(parent);
         const jsDoc = jsdoc.parseJsdoc(rawDescription || '');
         this.element = new ScannedPolymerElement({
+          astNode: node,
           description: rawDescription,
           events: getEventComments(parent),
           sourceRange: this.document.sourceRangeForNode(node.arguments[0]),
