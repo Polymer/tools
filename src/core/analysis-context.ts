@@ -14,7 +14,7 @@
 
 import * as path from 'path';
 
-import {LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../analyzer';
+import {ForkOptions, LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../analyzer';
 import {CssParser} from '../css/css-parser';
 import {HtmlCustomElementReferenceScanner} from '../html/html-element-reference-scanner';
 import {HtmlImportScanner} from '../html/html-import-scanner';
@@ -247,16 +247,26 @@ export class AnalysisContext {
   }
 
   /**
-   * Return a copy, but with the given cache.
+   * Returns a copy of the context but with optional replacements of cache or
+   * constructor options.
+   *
+   * Note: this feature is experimental.
    */
-  private _fork(cache: AnalysisCache): AnalysisContext {
-    const copy = new AnalysisContext({
+  _fork(cache?: AnalysisCache, options?: ForkOptions): AnalysisContext {
+    const contextOptions: Options = {
       lazyEdges: this._lazyEdges,
       parsers: this._parsers,
       scanners: this._scanners,
       urlLoader: this._loader,
-      urlResolver: this._resolver
-    });
+      urlResolver: this._resolver,
+    };
+    if (options) {
+      Object.assign(contextOptions, options);
+    }
+    const copy = new AnalysisContext(contextOptions);
+    if (!cache) {
+      cache = this._cache.invalidate([]);
+    }
     copy._cache = cache;
     copy._generation = this._generation + 1;
     return copy;

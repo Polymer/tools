@@ -726,6 +726,20 @@ var DuplicateNamespace = {};
       assert.equal(b1.parsedDocument.contents, 'b for analyzer');
       assert.equal(b2.parsedDocument.contents, 'b for analyzer2');
     });
+
+    test('supports overriding of Analyzer options', async() => {
+      const loader1 = {canLoad: () => true, load: async(u: string) => `${u} 1`};
+      const loader2 = {canLoad: () => true, load: async(u: string) => `${u} 2`};
+      const analyzer1 = new Analyzer({urlLoader: loader1});
+      const a1 = await analyzer1.analyze('a.html');
+      const analyzer2 = analyzer1._fork({urlLoader: loader2});
+      const a2 = await analyzer2.analyze('a.html');
+      const b2 = await analyzer2.analyze('b.html');
+
+      assert.equal(a1.parsedDocument.contents, 'a.html 1');
+      assert.equal(a2.parsedDocument.contents, 'a.html 1');
+      assert.equal(b2.parsedDocument.contents, 'b.html 2');
+    });
   });
 
   suite('race conditions and caching', () => {

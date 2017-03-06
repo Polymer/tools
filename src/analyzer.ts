@@ -33,6 +33,17 @@ export interface Options {
   lazyEdges?: LazyEdgeMap;
 }
 
+/**
+ * Mirror of the Options interface, except that all properties are optional.
+ */
+export interface ForkOptions {
+  urlLoader?: UrlLoader;
+  urlResolver?: UrlResolver;
+  parsers?: Map<string, Parser<any>>;
+  scanners?: ScannerTable;
+  lazyEdges?: LazyEdgeMap;
+}
+
 export class NoKnownParserError extends Error {};
 
 export type ScannerTable = Map<string, Scanner<any, any, any>[]>;
@@ -92,13 +103,16 @@ export class Analyzer {
   }
 
   /**
-   * Returns a clone of the analyzer, with the same context, suitable for
-   * running in parallel.
+   * Returns a copy of the analyzer.  If options are given, the AnalysisContext
+   * is also forked and individual properties are overridden by the options.
+   * is forked with the given options.
    *
    * Note: this feature is experimental.
    */
-  _fork(): Analyzer {
-    return new Analyzer(this._context);
+  _fork(options?: ForkOptions): Analyzer {
+    const context =
+        options ? this._context._fork(undefined, options) : this._context;
+    return new Analyzer(context);
   }
 
   /**
