@@ -25,7 +25,7 @@ import {CodeUnderliner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
-suite('Polymer2ElementScanner', () => {
+suite.only('Polymer2ElementScanner', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
   const urlLoader = new FSUrlLoader(testFilesDir);
   const underliner = new CodeUnderliner(urlLoader);
@@ -51,9 +51,8 @@ suite('Polymer2ElementScanner', () => {
       tagName: element.tagName,
       description: element.description,
       summary: element.summary,
-      properties: element.properties.map((p) => ({
-                                           name: p.name,
-                                         })),
+      properties: element.properties.map(
+          (p) => ({name: p.name, description: p.description})),
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
@@ -82,6 +81,7 @@ suite('Polymer2ElementScanner', () => {
         summary: '',
         properties: [{
           name: 'foo',
+          description: 'The foo prop.',
         }],
         attributes: [{
           name: 'foo',
@@ -94,9 +94,7 @@ suite('Polymer2ElementScanner', () => {
         superClass: 'Polymer.Element',
         description: 'A very basic element',
         summary: 'A basic element',
-        properties: [{
-          name: 'foo',
-        }],
+        properties: [{name: 'foo', description: 'A base foo element.'}],
         attributes: [{
           name: 'foo',
         }],
@@ -113,6 +111,16 @@ class TestElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
+      /**
+~~~~~~~~~
+       * The foo prop.
+~~~~~~~~~~~~~~~~~~~~~~
+       * @public
+~~~~~~~~~~~~~~~~
+       * @type {string}
+~~~~~~~~~~~~~~~~~~~~~~~
+       */
+~~~~~~~~~
       foo: {
 ~~~~~~~~~~~~
         notify: true,
@@ -137,6 +145,8 @@ class BaseElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
+      /** A base foo element. */
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       foo: {
 ~~~~~~~~~~~~
         notify: true,
@@ -207,6 +217,7 @@ class BaseElement extends Polymer.Element {
         summary: '',
         properties: [{
           name: 'foo',
+          description: '',
         }],
         attributes: [
           {
@@ -235,6 +246,7 @@ namespaced name.`,
         summary: '',
         properties: [{
           name: 'foo',
+          description: '',
         }],
         attributes: [{
           name: 'foo',
@@ -251,6 +263,7 @@ namespaced name.`,
         summary: '',
         properties: [{
           name: 'foo',
+          description: '',
         }],
         attributes: [{
           name: 'foo',
@@ -333,6 +346,7 @@ namespaced name.`,
             summary: '',
             properties: [{
               name: 'foo',
+              description: '',
             }],
             attributes: [{
               name: 'foo',
