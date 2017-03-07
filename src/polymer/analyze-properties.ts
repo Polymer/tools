@@ -17,6 +17,7 @@ import * as estree from 'estree';
 import * as astValue from '../javascript/ast-value';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
+import * as jsdoc from '../javascript/jsdoc';
 import {Severity} from '../model/model';
 
 import {toScannedPolymerProperty} from './js-utils';
@@ -33,12 +34,25 @@ export function analyzeProperties(
   for (const property of node.properties) {
     const prop = toScannedPolymerProperty(
         property, document.sourceRangeForNode(property)!);
+
+    // toScannedPolymerProperty does the wrong thing for us with type. We want
+    // type to be undefined unless there's a positive signal for the type.
+    // toScannedPolymerProperty will give Object because it infers based on the
+    // property declaration.
+    prop.type = undefined;
+    const typeTag = jsdoc.getTag(prop.jsdoc, 'type');
+    if (typeTag) {
+      prop.type = typeTag.type || undefined;
+    }
     prop.published = true;
 
     let isComputed = false;
 
     if (property.value.type === 'Identifier') {
-      prop.type = property.value.name;
+      // If we've already got a type it's from jsdoc and thus canonical.
+      if (!prop.type) {
+        prop.type = property.value.name;
+      }
     } else if (property.value.type !== 'ObjectExpression') {
       continue;
     } else {
@@ -59,14 +73,18 @@ export function analyzeProperties(
 
         switch (propertyKey) {
           case 'type':
-            prop.type = esutil.objectKeyToString(propertyArg.value);
-            if (prop.type === undefined) {
-              prop.warnings.push({
-                code: 'invalid-property-type',
-                message: 'Invalid type in property object.',
-                severity: Severity.ERROR,
-                sourceRange: document.sourceRangeForNode(propertyArg)!
-              });
+            // If we've already got a type, then it was found in the jsdocs,
+            // and is canonical.
+            if (!prop.type) {
+              prop.type = esutil.objectKeyToString(propertyArg.value);
+              if (prop.type === undefined) {
+                prop.warnings.push({
+                  code: 'invalid-property-type',
+                  message: 'Invalid type in property object.',
+                  severity: Severity.ERROR,
+                  sourceRange: document.sourceRangeForNode(propertyArg)!
+                });
+              }
             }
             break;
           case 'notify':

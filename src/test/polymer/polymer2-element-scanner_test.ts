@@ -51,8 +51,14 @@ suite('Polymer2ElementScanner', () => {
       tagName: element.tagName,
       description: element.description,
       summary: element.summary,
-      properties: element.properties.map(
-          (p) => ({name: p.name, description: p.description})),
+      properties: element.properties.map((p) => {
+        const result = {name: p.name, description: p.description} as any;
+        if (p.type) {
+          result.type = p.type;
+        }
+
+        return result;
+      }),
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
@@ -82,6 +88,7 @@ suite('Polymer2ElementScanner', () => {
         properties: [{
           name: 'foo',
           description: 'The foo prop.',
+          type: '(m-test|function)',
         }],
         attributes: [{
           name: 'foo',
@@ -94,7 +101,8 @@ suite('Polymer2ElementScanner', () => {
         superClass: 'Polymer.Element',
         description: 'A very basic element',
         summary: 'A basic element',
-        properties: [{name: 'foo', description: 'A base foo element.'}],
+        properties:
+            [{name: 'foo', description: 'A base foo element.', type: 'string'}],
         attributes: [{
           name: 'foo',
         }],
@@ -117,8 +125,8 @@ class TestElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~
        * @public
 ~~~~~~~~~~~~~~~~
-       * @type {string}
-~~~~~~~~~~~~~~~~~~~~~~~
+       * @type {m-test|function}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
        */
 ~~~~~~~~~
       foo: {
@@ -218,6 +226,7 @@ class BaseElement extends Polymer.Element {
         properties: [{
           name: 'foo',
           description: '',
+          type: 'string',
         }],
         attributes: [
           {
@@ -247,6 +256,7 @@ namespaced name.`,
         properties: [{
           name: 'foo',
           description: '',
+          type: 'string',
         }],
         attributes: [{
           name: 'foo',
@@ -264,6 +274,7 @@ namespaced name.`,
         properties: [{
           name: 'foo',
           description: '',
+          type: 'string',
         }],
         attributes: [{
           name: 'foo',
@@ -347,6 +358,7 @@ namespaced name.`,
             properties: [{
               name: 'foo',
               description: '',
+              type: 'string',
             }],
             attributes: [{
               name: 'foo',

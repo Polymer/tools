@@ -4,7 +4,7 @@ class TestElement extends Polymer.Element {
       /**
        * The foo prop.
        * @public
-       * @type {string}
+       * @type {m-test|function}
        */
       foo: {
         notify: true,

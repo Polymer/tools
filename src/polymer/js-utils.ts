@@ -27,7 +27,6 @@ import {ScannedPolymerProperty} from './polymer-element';
 export function toScannedPolymerProperty(
     node: estree.Property|estree.MethodDefinition,
     sourceRange: SourceRange): ScannedPolymerProperty {
-  const type = closureType(node.value, sourceRange);
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
   const maybeName = objectKeyToString(node.key);
@@ -42,6 +41,11 @@ export function toScannedPolymerProperty(
       sourceRange: sourceRange,
       severity: Severity.WARNING
     });
+  }
+  let type = closureType(node.value, sourceRange);
+  const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
+  if (typeTag) {
+    type = typeTag.type || type;
   }
   const name = maybeName || '';
   const result: ScannedPolymerProperty = {
