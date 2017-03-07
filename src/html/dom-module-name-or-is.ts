@@ -13,9 +13,8 @@
  */
 
 import * as dom5 from 'dom5';
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
+import {ParsedHtmlDocument, Warning, Severity} from 'polymer-analyzer';
 import stripIndent = require('strip-indent');
-import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
 import {stripWhitespace} from '../util';
 import {HtmlRule} from './rule';
 import {registry} from '../registry';

@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer} from 'polymer-analyzer';
-import {Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Analyzer, Warning} from 'polymer-analyzer';
 import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
 
 export class WarningPrettyPrinter {

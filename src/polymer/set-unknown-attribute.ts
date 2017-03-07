@@ -13,8 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {Attribute, Document, Element, ParsedHtmlDocument, Position, Property, SourceRange, Warning} from 'polymer-analyzer';
-import {Severity} from 'polymer-analyzer/lib/warning/warning';
+import {Attribute, Document, Element, ParsedHtmlDocument, SourcePosition, Property, SourceRange, Warning, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
@@ -227,7 +226,7 @@ export class SetUnknownAttribute extends HtmlRule {
   }
 }
 
-function contains(position: Position, range: SourceRange) {
+function contains(position: SourcePosition, range: SourceRange) {
   return comparePositionAndRange(position, range) === 0;
 }
 
@@ -237,7 +236,7 @@ function contains(position: Position, range: SourceRange) {
  * it returns -1. If it comes after the range, it returns 1.
  */
 function comparePositionAndRange(
-    position: Position, range: SourceRange, includeEdges?: boolean) {
+    position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
   // Usually we want to include the edges of a range as part
   // of the thing, but sometimes, e.g. for start and end tags,
   // we'd rather not.

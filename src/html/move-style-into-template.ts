@@ -13,8 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
+import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 
