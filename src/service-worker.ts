@@ -75,7 +75,6 @@ function getPrecachedAssets(
 function getBundledPrecachedAssets(project: PolymerProject) {
   const precachedAssets = new Set<string>(project.config.allFragments);
   precachedAssets.add(project.config.entrypoint);
-  precachedAssets.add(project.bundler.sharedBundleUrl);
 
   return Array.from(precachedAssets);
 }

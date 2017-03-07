@@ -20,24 +20,55 @@ import File = require('vinyl');
 import * as dom5 from 'dom5';
 import {ASTNode, parse as parse5} from 'parse5';
 import * as path from 'path';
+import {Transform} from 'stream';
 const mergeStream = require('merge-stream');
 
 import {BuildAnalyzer} from '../analyzer';
 import {BuildBundler} from '../bundle';
 
-const root = path.resolve('test-fixtures/bundler-data');
+const defaultRoot = path.resolve('test-fixtures/bundler-data');
+
+class Prepender extends Transform {
+  headerFunction: (f: File) => string;
+  constructor(headerFunction: (f: File) => string) {
+    super({objectMode: true});
+    this.headerFunction = headerFunction;
+  }
+  _transform(
+      file: File,
+      _encoding: string,
+      cb: (err?: any, data?: File) => void) {
+    file.contents = Buffer.from(this.headerFunction(file) + file.contents);
+    this.push(file);
+    cb();
+  }
+}
 
 suite('BuildBundler', () => {
 
+  let root: string;
   let bundler;
   let bundledStream;
   let files: Map<string, File>;
 
   let setupTest =
       async(options: ProjectOptions) => new Promise((resolve, reject) => {
-    options.root = options.root || root;
-    let config = new ProjectConfig(options);
-    let analyzer = new BuildAnalyzer(config);
+    root = options.root = options.root || defaultRoot;
+    const config = new ProjectConfig(options);
+    const analyzer = new BuildAnalyzer(config);
+    const addHeaders = new Prepender((file) => {
+      if (path.extname(file.path) === '.html') {
+        return `<!-- ${path.basename(file.path)} -->`;
+      }
+      if (path.extname(file.path).match(/^\.(js|css)$/)) {
+        return `/* ${path.basename(file.path)} */`;
+      }
+      return '';
+    });
+    bundler = new BuildBundler(config, analyzer);
+    bundledStream = mergeStream(analyzer.sources(), analyzer.dependencies())
+                        .pipe(addHeaders)
+                        .pipe(bundler);
     bundler = new BuildBundler(config, analyzer);
     bundledStream =
         mergeStream(analyzer.sources(), analyzer.dependencies()).pipe(bundler);
@@ -250,5 +281,29 @@ suite('BuildBundler', () => {
     assert.isTrue(hasImport(entrypointBDoc, 'shared_bundle_1.html'));
     assert.isTrue(hasImport(entrypointCDoc, 'shared_bundle_1.html'));
     assert.isTrue(hasImport(shellDoc, 'shared_bundle_1.html'));
+  });
+
+  test('bundler loads changed files from stream', async() => {
+
+    await setupTest({
+      root: path.resolve('test-fixtures/bundle-project'),
+      entrypoint: 'index.html',
+      sources: [
+        'index.html',
+        'simple-import.html',
+        'simple-import-2.html',
+        'simple-style.css',
+      ],
+    });
+    const bundledHtml = getFile('index.html');
+
+    // In setupTest, we use a transform stream called Prepender, to prepend
+    // each file with a comment including its basename before it makes it
+    // into the bundler.  This verifies that bundler is processing files from
+    // the stream instead of from the filesystem.
+    assert.include(bundledHtml, '<!-- index.html -->');
+    assert.include(bundledHtml, '<!-- simple-import.html -->');
+    assert.include(bundledHtml, '<!-- simple-import-2.html -->');
+    assert.include(bundledHtml, '/* simple-style.css */');
   });
 });

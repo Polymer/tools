@@ -12,34 +12,40 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Transform} from 'stream';
 import File = require('vinyl');
-import {ProjectConfig} from 'polymer-project-config';
+import * as parse5 from 'parse5';
+import {Analyzer} from 'polymer-analyzer';
 import {Bundler} from 'polymer-bundler';
 import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
+import {ProjectConfig} from 'polymer-project-config';
+import {Transform} from 'stream';
 
-import {pathFromUrl, urlFromPath} from './path-transformers';
 import {BuildAnalyzer} from './analyzer';
-import * as parse5 from 'parse5';
-
+import {FileMapUrlLoader} from './file-map-url-loader';
+import {pathFromUrl, urlFromPath} from './path-transformers';
 
 export class BuildBundler extends Transform {
   config: ProjectConfig;
 
-  sharedBundleUrl: string;
+  private _buildAnalyzer: BuildAnalyzer;
+  private _bundler: Bundler;
 
-  analyzer: BuildAnalyzer;
-  bundler: Bundler;
-  sharedFile: File;
+  files = new Map<string, File>();
 
-  constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
+  constructor(config: ProjectConfig, buildAnalyzer: BuildAnalyzer) {
     super({objectMode: true});
 
     this.config = config;
-    this.analyzer = analyzer;
-    this.sharedBundleUrl = 'shared-bundle.html';
-    this.bundler = new Bundler({
-      analyzer: analyzer.analyzer,
+
+    this._buildAnalyzer = buildAnalyzer;
+    this._bundler = new Bundler({
+
+      // TODO(usergenic): Creating a new Analyzer with a blank cache is going
+      // to mean, at least, a doubling of analysis efforts for bundling phase.
+      // Ideally we would fork existing analyzer and replace its urlLoader if
+      // there were an affordance to do so.
+      analyzer: new Analyzer(
+          {urlLoader: new FileMapUrlLoader(this.config.root, this.files)}),
       inlineCss: true,
       inlineScripts: true,
     });
@@ -49,28 +55,22 @@ export class BuildBundler extends Transform {
       file: File,
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
-    // If this file is a fragment, hold on to the file so that it's fully
-    // analyzed by the time down-stream transforms see it.
-    if (this.config.isFragment(file.path)) {
-      callback(null, null);
-    } else {
-      callback(null, file);
-    }
+    this.files.set(file.path, file);
+    callback(null, file);
   }
 
-  _flush(done: (error?: any) => void) {
-    this._buildBundles().then((bundles: Map<string, string>) => {
-      for (const filename of bundles.keys()) {
-        const filepath = pathFromUrl(this.config.root, filename);
-        let file =
-            this.analyzer.getFile(filepath) || new File({path: filepath});
-        const contents = bundles.get(filename);
-        file.contents = new Buffer(contents);
-        this.push(file);
-      }
-      // end the stream
-      done();
-    });
+  async _flush(done: (error?: any) => void) {
+    const bundles = await this._buildBundles();
+    for (const filename of bundles.keys()) {
+      const filepath = pathFromUrl(this.config.root, filename);
+      let file =
+          this._buildAnalyzer.getFile(filepath) || new File({path: filepath});
+      const contents = bundles.get(filename);
+      file.contents = new Buffer(contents);
+      this.push(file);
+    }
+    // end the stream
+    done();
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
@@ -80,18 +80,13 @@ export class BuildBundler extends Transform {
           urlFromPath(this.config.root, this.config.shell));
     }
     const bundleEntrypoints = Array.from(this.config.allFragments);
-    return this.bundler
-        .bundle(
-            bundleEntrypoints.map(f => urlFromPath(this.config.root, f)),
-            strategy)
-        .then((docCollection) => {
-          const contentsMap = new Map();
-          for (const bundleName of docCollection.keys()) {
-            contentsMap.set(
-                bundleName,
-                parse5.serialize(docCollection.get(bundleName).ast));
-          }
-          return contentsMap;
-        });
+    const docCollection = await this._bundler.bundle(
+        bundleEntrypoints.map(f => urlFromPath(this.config.root, f)), strategy);
+    const contentsMap = new Map();
+    for (const bundleName of docCollection.keys()) {
+      contentsMap.set(
+          bundleName, parse5.serialize(docCollection.get(bundleName).ast));
+    }
+    return contentsMap;
   }
 }

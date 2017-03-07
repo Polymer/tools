@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 <!-- List New Changes Here -->
+* Build now delegates authority to the Analyzer for what urls are package external instead of local heuristics.
+* Bundling now processes files coming in from streams, to support things like js-minification before bundling.
 
 ## [0.8.3] - 2017-03-03
 
