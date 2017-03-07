@@ -57,8 +57,11 @@ suite('Polymer2ElementScanner', () => {
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
-      methods: element.methods.map(
-          (m) => ({name: m.name, params: m.params, return: m.return })),
+      methods: element.methods.map((m) => ({
+                                     name: m.name,
+                                     params: m.params, return: m.return,
+                                     description: m.description
+                                   })),
 
     };
     if (element.mixins.length > 0) {
@@ -335,23 +338,34 @@ namespaced name.`,
               name: 'foo',
             }],
             methods: [
-              {name: 'customInstanceFunction', params: [], return: undefined},
+              {
+                name: 'customInstanceFunction',
+                description: '',
+                params: [], return: undefined
+              },
               {
                 name: 'customInstanceFunctionWithJSDoc',
+                description: 'This is the description for ' +
+                    'customInstanceFunctionWithJSDoc.',
                 params: [], return: undefined
               },
               {
                 name: 'customInstanceFunctionWithParams',
+                description: '',
                 params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
                 return: undefined,
               },
               {
                 name: 'customInstanceFunctionWithParamsAndJSDoc',
+                description: 'This is the description for ' +
+                    'customInstanceFunctionWithParamsAndJSDoc.',
                 params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
                 return: undefined,
               },
               {
                 name: 'customInstanceFunctionWithParamsAndPrivateJSDoc',
+                description: 'This is the description for\n' +
+                    'customInstanceFunctionWithParamsAndPrivateJSDoc.',
                 params: [], return: undefined,
               },
             ],

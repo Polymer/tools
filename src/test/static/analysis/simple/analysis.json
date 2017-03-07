@@ -108,7 +108,7 @@
         {
           "name": "_looksProtectedButActuallyPublic",
           "type": "string",
-          "description": "@public",
+          "description": "",
           "privacy": "public",
           "sourceRange": {
             "start": {
@@ -127,7 +127,7 @@
         {
           "name": "looksPublicButActuallyProtected",
           "type": "string",
-          "description": "@protected",
+          "description": "",
           "privacy": "protected",
           "sourceRange": {
             "start": {
@@ -146,7 +146,7 @@
         {
           "name": "looksPublicButActuallyPrivate",
           "type": "string",
-          "description": "@private",
+          "description": "",
           "privacy": "private",
           "sourceRange": {
             "start": {
@@ -238,7 +238,7 @@
         },
         {
           "name": "customFunctionWithJsDoc",
-          "description": "This is the description.\n@param {Number} a\n@param {Number} b\n@return {boolean}",
+          "description": "This is the description.",
           "privacy": "public",
           "sourceRange": {
             "start": {
@@ -262,7 +262,7 @@
         },
         {
           "name": "_customProtectedFunctionWithJsDoc",
-          "description": "This is a protected method.\n@param {Number} a\n@param {Number} b\n@return {boolean}",
+          "description": "This is a protected method.",
           "privacy": "protected",
           "sourceRange": {
             "start": {
@@ -286,7 +286,7 @@
         },
         {
           "name": "__customPrivateFunctionWithJsDoc",
-          "description": "This is a private method.\n@param {Number} a\n@param {Number} b\n@return {boolean}",
+          "description": "This is a private method.",
           "privacy": "private",
           "sourceRange": {
             "start": {

@@ -156,7 +156,8 @@ export function parseJsdoc(docs: string): Annotation {
       docs, {unwrap: false, lineNumbers: true, preserveWhitespace: true});
   // Strip any leading and trailing newline characters in the
   // description of multiline comments for readibility.
-  const description = d.description && d.description.replace(/^\n+|\n+$/g, '');
+  const description =
+      d.description && d.description.replace(/^\n+|\n+$/g, '').trim();
   return {description: description, tags: _tagsToHydroTags(d.tags)};
 }
 
