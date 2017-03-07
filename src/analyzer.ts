@@ -13,9 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analyzer} from 'polymer-analyzer';
-import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Analyzer, Severity, UrlLoader, Warning} from 'polymer-analyzer';
 import {PassThrough, Transform} from 'stream';
 
 import File = require('vinyl');
