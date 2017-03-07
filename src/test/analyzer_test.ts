@@ -727,18 +727,20 @@ var DuplicateNamespace = {};
       assert.equal(b2.parsedDocument.contents, 'b for analyzer2');
     });
 
-    test('supports overriding of Analyzer options', async() => {
+    test('supports overriding of urlLoader', async() => {
       const loader1 = {canLoad: () => true, load: async(u: string) => `${u} 1`};
       const loader2 = {canLoad: () => true, load: async(u: string) => `${u} 2`};
       const analyzer1 = new Analyzer({urlLoader: loader1});
       const a1 = await analyzer1.analyze('a.html');
       const analyzer2 = analyzer1._fork({urlLoader: loader2});
       const a2 = await analyzer2.analyze('a.html');
+      const b1 = await analyzer1.analyze('b.html');
       const b2 = await analyzer2.analyze('b.html');
 
-      assert.equal(a1.parsedDocument.contents, 'a.html 1');
-      assert.equal(a2.parsedDocument.contents, 'a.html 1');
-      assert.equal(b2.parsedDocument.contents, 'b.html 2');
+      assert.equal(a1.parsedDocument.contents, 'a.html 1', 'a.html, loader 1');
+      assert.equal(a2.parsedDocument.contents, 'a.html 1', 'a.html, in cache');
+      assert.equal(b1.parsedDocument.contents, 'b.html 1', 'b.html, loader 1');
+      assert.equal(b2.parsedDocument.contents, 'b.html 2', 'b.html, loader 2');
     });
   });
 

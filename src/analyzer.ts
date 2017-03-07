@@ -34,15 +34,10 @@ export interface Options {
 }
 
 /**
- * Mirror of the Options interface, except that all properties are optional.
+ * These are the options available to the `_fork` method.  Currently, only the
+ * `urlLoader` override is implemented.
  */
-export interface ForkOptions {
-  urlLoader?: UrlLoader;
-  urlResolver?: UrlResolver;
-  parsers?: Map<string, Parser<any>>;
-  scanners?: ScannerTable;
-  lazyEdges?: LazyEdgeMap;
-}
+export interface ForkOptions { urlLoader?: UrlLoader; }
 
 export class NoKnownParserError extends Error {};
 
