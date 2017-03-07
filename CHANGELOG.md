@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 
+## [2.0.0-alpha.31] - 2017-03-07
+
+* Clean up method descriptions
+
 ## [2.0.0-alpha.30] - 2017-03-03
 
 * Fix typo in package.json.
