@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 
 <!-- List New Changes Here -->
+
+## [0.8.4] - 2017-03-04
+
 * Build now delegates authority to the Analyzer for what urls are package external instead of local heuristics.
 * Bundling now processes files coming in from streams, to support things like js-minification before bundling.
 
