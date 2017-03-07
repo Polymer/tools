@@ -36,7 +36,7 @@ export class BuildBundler extends Transform {
   files = new Map<string, File>();
 
   constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
-    super({objectMode: true, highWaterMark: 10000});
+    super({objectMode: true});
 
     this.config = config;
 
