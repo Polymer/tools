@@ -44,10 +44,10 @@ export class FileMapUrlLoader implements UrlLoader {
   async load(url: string): Promise<string> {
     const file = this.files.get(this._filePath(url))!;
 
-    if (file) {
-      return Promise.resolve(file.contents.toString());
-    } else {
-      return Promise.reject(undefined);
+    if (file == null) {
+      throw new Error(`File ${url} not present in file map.`);
     }
+
+    return file.contents.toString();
   }
 }
