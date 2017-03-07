@@ -18,19 +18,14 @@ import {parseUrl} from 'polymer-analyzer/lib/utils';
 import {pathFromUrl} from './path-transformers';
 
 /**
- * A map of paths to Files.
- */
-export type FileMap = Map<string, File>;
-
-/**
  * This is a `UrlLoader` for use with a `polymer-analyzer` that reads files
  * that have been gathered by a `BuildBundler` transform stream.
  */
 export class FileMapUrlLoader implements UrlLoader {
   root: string;
-  files: FileMap;
+  files: Map<string, File>;
 
-  constructor(root: string, files: FileMap) {
+  constructor(root: string, files: Map<string, File>) {
     this.root = root;
     this.files = files;
   }
