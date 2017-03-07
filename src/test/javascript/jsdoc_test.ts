@@ -76,7 +76,7 @@ suite('jsdoc', function() {
 
     test('preserves indentation for the body', function() {
       const parsed = jsdoc.parseJsdoc('*     The desc.\n*     thing');
-      assert.deepEqual(parsed.description, 'The desc.\n    thing');
+      assert.deepEqual(parsed.description, '    The desc.\n    thing');
     });
 
     test('handles empty lines', function() {

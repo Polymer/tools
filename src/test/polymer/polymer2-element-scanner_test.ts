@@ -25,7 +25,7 @@ import {CodeUnderliner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
-suite.only('Polymer2ElementScanner', () => {
+suite('Polymer2ElementScanner', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
   const urlLoader = new FSUrlLoader(testFilesDir);
   const underliner = new CodeUnderliner(urlLoader);
