@@ -65,11 +65,11 @@ function getFullWarningMessage(warning: Warning): string {
  * and file loading/resolution can't block each other while waiting.
  */
 class ResolveTransform extends Transform {
-  analyzer: BuildAnalyzer;
+  private _buildAnalyzer: BuildAnalyzer;
 
-  constructor(analyzer: BuildAnalyzer) {
+  constructor(buildAnalyzer: BuildAnalyzer) {
     super({objectMode: true});
-    this.analyzer = analyzer;
+    this._buildAnalyzer = buildAnalyzer;
   }
 
   _transform(
@@ -77,7 +77,7 @@ class ResolveTransform extends Transform {
       _encoding: string,
       callback: (error?: Error, data?: File) => void): void {
     try {
-      this.analyzer.resolveFile(file);
+      this._buildAnalyzer.resolveFile(file);
     } catch (err) {
       callback(err);
       return;
@@ -99,15 +99,15 @@ class ResolveTransform extends Transform {
  * themselves.
  */
 class AnalyzeTransform extends Transform {
-  analyzer: BuildAnalyzer;
+  private _buildAnalyzer: BuildAnalyzer;
 
-  constructor(analyzer: BuildAnalyzer) {
+  constructor(buildAnalyzer: BuildAnalyzer) {
     // A high `highWaterMark` value is needed to keep this from pausing the
     // entire source stream.
     // TODO(fks) 02-02-2017: Move analysis out of the source stream itself so
     // that it no longer blocks during analysis.
     super({objectMode: true, highWaterMark: 10000});
-    this.analyzer = analyzer;
+    this._buildAnalyzer = buildAnalyzer;
   }
 
   _transform(
@@ -116,7 +116,7 @@ class AnalyzeTransform extends Transform {
       callback: (error?: Error, data?: File) => void): void {
     (async() => {
       try {
-        await this.analyzer.analyzeFile(file);
+        await this._buildAnalyzer.analyzeFile(file);
       } catch (err) {
         callback(err);
         return;
@@ -480,16 +480,16 @@ export type DeferredFileCallbacks = {
 
 export class StreamLoader implements UrlLoader {
   config: ProjectConfig;
-  analyzer: BuildAnalyzer;
+  private _buildAnalyzer: BuildAnalyzer;
 
   // Store files that have not yet entered the Analyzer stream here.
   // Later, when the file is seen, the DeferredFileCallback can be
   // called with the file contents to resolve its loading.
   deferredFiles = new Map<string, DeferredFileCallbacks>();
 
-  constructor(analyzer: BuildAnalyzer) {
-    this.analyzer = analyzer;
-    this.config = this.analyzer.config;
+  constructor(buildAnalyzer: BuildAnalyzer) {
+    this._buildAnalyzer = buildAnalyzer;
+    this.config = this._buildAnalyzer.config;
   }
 
   hasDeferredFile(filePath: string): boolean {
@@ -514,7 +514,7 @@ export class StreamLoader implements UrlLoader {
 
   // We can't load external dependencies.
   canLoad(url: string): boolean {
-    return this.analyzer.analyzer.canResolveUrl(url);
+    return this._buildAnalyzer.analyzer.canResolveUrl(url);
   }
 
   async load(url: string): Promise<string> {
@@ -522,15 +522,15 @@ export class StreamLoader implements UrlLoader {
     const urlObject = parseUrl(url);
 
     if (!this.canLoad(url)) {
-      return Promise.resolve(undefined);
+      throw new Error('Unable to load ${url}.');
     }
 
     const urlPath = decodeURIComponent(urlObject.pathname);
     const filePath = pathFromUrl(this.config.root, urlPath);
-    const file = this.analyzer.getFile(filePath);
+    const file = this._buildAnalyzer.getFile(filePath);
 
     if (file) {
-      return Promise.resolve(file.contents.toString());
+      return file.contents.toString();
     }
 
     return new Promise(
@@ -538,9 +538,9 @@ export class StreamLoader implements UrlLoader {
           this.deferredFiles.set(filePath, {resolve, reject});
           try {
             if (this.config.isSource(filePath)) {
-              this.analyzer.sourcePathAnalyzed(filePath);
+              this._buildAnalyzer.sourcePathAnalyzed(filePath);
             } else {
-              this.analyzer.dependencyPathAnalyzed(filePath);
+              this._buildAnalyzer.dependencyPathAnalyzed(filePath);
             }
           } catch (err) {
             this.rejectDeferredFile(filePath, err);

@@ -27,22 +27,18 @@ import {pathFromUrl, urlFromPath} from './path-transformers';
 export class BuildBundler extends Transform {
   config: ProjectConfig;
 
-  sharedBundleUrl: string;
-
-  analyzer: BuildAnalyzer;
-  bundler: Bundler;
-  sharedFile: File;
+  private _buildAnalyzer: BuildAnalyzer;
+  private _bundler: Bundler;
 
   files = new Map<string, File>();
 
-  constructor(config: ProjectConfig, analyzer: BuildAnalyzer) {
+  constructor(config: ProjectConfig, buildAnalyzer: BuildAnalyzer) {
     super({objectMode: true});
 
     this.config = config;
 
-    this.analyzer = analyzer;
-    this.sharedBundleUrl = 'shared-bundle.html';
-    this.bundler = new Bundler({
+    this._buildAnalyzer = buildAnalyzer;
+    this._bundler = new Bundler({
 
       // TODO(usergenic): Creating a new Analyzer with a blank cache is going
       // to mean, at least, a doubling of analysis efforts for bundling phase.
@@ -67,7 +63,8 @@ export class BuildBundler extends Transform {
     const bundles = await this._buildBundles();
     for (const filename of bundles.keys()) {
       const filepath = pathFromUrl(this.config.root, filename);
-      let file = this.analyzer.getFile(filepath) || new File({path: filepath});
+      let file =
+          this._buildAnalyzer.getFile(filepath) || new File({path: filepath});
       const contents = bundles.get(filename);
       file.contents = new Buffer(contents);
       this.push(file);
@@ -83,7 +80,7 @@ export class BuildBundler extends Transform {
           urlFromPath(this.config.root, this.config.shell));
     }
     const bundleEntrypoints = Array.from(this.config.allFragments);
-    const docCollection = await this.bundler.bundle(
+    const docCollection = await this._bundler.bundle(
         bundleEntrypoints.map(f => urlFromPath(this.config.root, f)), strategy);
     const contentsMap = new Map();
     for (const bundleName of docCollection.keys()) {
