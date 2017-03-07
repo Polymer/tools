@@ -517,11 +517,11 @@ export class StreamLoader implements UrlLoader {
     return this.analyzer.analyzer.canResolveUrl(url);
   }
 
-  load(url: string): Promise<string> {
+  async load(url: string): Promise<string> {
     logger.debug(`loading: ${url}`);
     const urlObject = parseUrl(url);
 
-    if (!this.analyzer.analyzer.canResolveUrl(url)) {
+    if (!this.canLoad(url)) {
       return Promise.resolve(undefined);
     }
 
