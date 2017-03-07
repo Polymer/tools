@@ -260,8 +260,8 @@ export class AnalysisContext {
       urlLoader: this._loader,
       urlResolver: this._resolver,
     };
-    if (options) {
-      Object.assign(contextOptions, options);
+    if (options && options.urlLoader) {
+      contextOptions.urlLoader = options.urlLoader;
     }
     const copy = new AnalysisContext(contextOptions);
     if (!cache) {
