@@ -102,6 +102,10 @@ export class Analyzer {
    * is also forked and individual properties are overridden by the options.
    * is forked with the given options.
    *
+   * When the analysis context is forked, its cache is preserved, so any files
+   * loaded prior to the fork will remain in the cache until otherwise
+   * invalidated.
+   *
    * Note: this feature is experimental.
    */
   _fork(options?: ForkOptions): Analyzer {
