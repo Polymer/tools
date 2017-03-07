@@ -51,14 +51,16 @@ suite('Polymer2ElementScanner', () => {
       tagName: element.tagName,
       description: element.description,
       summary: element.summary,
-      properties: element.properties.map((p) => ({
-                                           name: p.name,
-                                         })),
+      properties: element.properties.map(
+          (p) => ({name: p.name, description: p.description})),
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
-      methods: element.methods.map(
-          (m) => ({name: m.name, params: m.params, return: m.return })),
+      methods: element.methods.map((m) => ({
+                                     name: m.name,
+                                     params: m.params, return: m.return,
+                                     description: m.description
+                                   })),
 
     };
     if (element.mixins.length > 0) {
@@ -79,6 +81,7 @@ suite('Polymer2ElementScanner', () => {
         summary: '',
         properties: [{
           name: 'foo',
+          description: 'The foo prop.',
         }],
         attributes: [{
           name: 'foo',
@@ -91,9 +94,7 @@ suite('Polymer2ElementScanner', () => {
         superClass: 'Polymer.Element',
         description: 'A very basic element',
         summary: 'A basic element',
-        properties: [{
-          name: 'foo',
-        }],
+        properties: [{name: 'foo', description: 'A base foo element.'}],
         attributes: [{
           name: 'foo',
         }],
@@ -110,6 +111,16 @@ class TestElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
+      /**
+~~~~~~~~~
+       * The foo prop.
+~~~~~~~~~~~~~~~~~~~~~~
+       * @public
+~~~~~~~~~~~~~~~~
+       * @type {string}
+~~~~~~~~~~~~~~~~~~~~~~~
+       */
+~~~~~~~~~
       foo: {
 ~~~~~~~~~~~~
         notify: true,
@@ -134,6 +145,8 @@ class BaseElement extends Polymer.Element {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return {
 ~~~~~~~~~~~~
+      /** A base foo element. */
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       foo: {
 ~~~~~~~~~~~~
         notify: true,
@@ -204,6 +217,7 @@ class BaseElement extends Polymer.Element {
         summary: '',
         properties: [{
           name: 'foo',
+          description: '',
         }],
         attributes: [
           {
@@ -232,6 +246,7 @@ namespaced name.`,
         summary: '',
         properties: [{
           name: 'foo',
+          description: '',
         }],
         attributes: [{
           name: 'foo',
@@ -248,6 +263,7 @@ namespaced name.`,
         summary: '',
         properties: [{
           name: 'foo',
+          description: '',
         }],
         attributes: [{
           name: 'foo',
@@ -330,28 +346,40 @@ namespaced name.`,
             summary: '',
             properties: [{
               name: 'foo',
+              description: '',
             }],
             attributes: [{
               name: 'foo',
             }],
             methods: [
-              {name: 'customInstanceFunction', params: [], return: undefined},
+              {
+                name: 'customInstanceFunction',
+                description: '',
+                params: [], return: undefined
+              },
               {
                 name: 'customInstanceFunctionWithJSDoc',
+                description: 'This is the description for ' +
+                    'customInstanceFunctionWithJSDoc.',
                 params: [], return: undefined
               },
               {
                 name: 'customInstanceFunctionWithParams',
+                description: '',
                 params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
                 return: undefined,
               },
               {
                 name: 'customInstanceFunctionWithParamsAndJSDoc',
+                description: 'This is the description for ' +
+                    'customInstanceFunctionWithParamsAndJSDoc.',
                 params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
                 return: undefined,
               },
               {
                 name: 'customInstanceFunctionWithParamsAndPrivateJSDoc',
+                description: 'This is the description for\n' +
+                    'customInstanceFunctionWithParamsAndPrivateJSDoc.',
                 params: [], return: undefined,
               },
             ],

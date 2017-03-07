@@ -156,6 +156,8 @@ export function parseJsdoc(docs: string): Annotation {
       docs, {unwrap: false, lineNumbers: true, preserveWhitespace: true});
   // Strip any leading and trailing newline characters in the
   // description of multiline comments for readibility.
+  // TODO(rictic): figure out if we can trim() here or not. Something something
+  //     markdown?
   const description = d.description && d.description.replace(/^\n+|\n+$/g, '');
   return {description: description, tags: _tagsToHydroTags(d.tags)};
 }

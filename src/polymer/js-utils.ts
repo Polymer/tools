@@ -29,8 +29,7 @@ export function toScannedPolymerProperty(
     sourceRange: SourceRange): ScannedPolymerProperty {
   const type = closureType(node.value, sourceRange);
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
-  const description =
-      jsdoc.removeLeadingAsterisks(getAttachedComment(node) || '').trim();
+  const description = parsedJsdoc.description.trim();
   const maybeName = objectKeyToString(node.key);
 
   const warnings: Warning[] = [];

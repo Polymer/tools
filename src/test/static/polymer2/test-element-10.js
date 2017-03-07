@@ -38,7 +38,7 @@ class TestElement extends Polymer.Element {
   }
 
   /**
-   * This is the description for customInstanceFunctionWithJSDoc.
+   * This is the description for customInstanceFunctionWithParamsAndJSDoc.
    * @param {Number} a The first argument
    * @param {Number} b
    * @param {Number} c The third argument

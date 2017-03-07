@@ -1,6 +1,11 @@
 class TestElement extends Polymer.Element {
   static get properties() {
     return {
+      /**
+       * The foo prop.
+       * @public
+       * @type {string}
+       */
       foo: {
         notify: true,
         type: String,
@@ -19,6 +24,7 @@ window.customElements.define('test-element', TestElement);
 class BaseElement extends Polymer.Element {
   static get properties() {
     return {
+      /** A base foo element. */
       foo: {
         notify: true,
         type: String,
