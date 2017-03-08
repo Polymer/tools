@@ -14,9 +14,7 @@
 
 import './collections';
 
-import {Analyzer} from 'polymer-analyzer';
-import {Document} from 'polymer-analyzer/lib/model/model';
-import {Severity, Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
+import {Analyzer, Document, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
 

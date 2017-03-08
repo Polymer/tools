@@ -14,9 +14,8 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Severity, Warning} from 'polymer-analyzer';
 
-// import * as matchers from '../matchers';
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
 

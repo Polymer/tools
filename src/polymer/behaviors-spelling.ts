@@ -14,8 +14,8 @@
 
 import {Document} from 'polymer-analyzer/lib/model/model';
 
+import {Warning, Severity} from 'polymer-analyzer';
 import stripIndent = require('strip-indent');
-import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
 import {stripWhitespace} from '../util';
 import {Rule} from '../rule';
 import {registry} from '../registry';

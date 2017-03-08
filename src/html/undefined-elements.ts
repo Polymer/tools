@@ -12,9 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document} from 'polymer-analyzer/lib/model/model';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
+import {Document, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 

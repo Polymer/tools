@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
+## [0.1.6] - 2017-03-07
+
+- Update polymer-analyzer to 1.0.0-alpha.31
 
 ## [0.1.5] - 2017-03-03
 
