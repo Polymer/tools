@@ -19,13 +19,14 @@ import {RuleCollection} from './rule';
 
 registry.register(
     new RuleCollection('polymer-2', `Rules for projects that use Polymer 2.x`, [
-      'dom-module-invalid-attrs',
-      'style-into-template',
-      'undefined-elements',
-      'unbalanced-polymer-delimiters',
-      'set-unknown-attribute',
       'behaviors-spelling',
       'databind-with-unknown-property',
+      'dom-module-invalid-attrs',
+      'element-before-dom-module',
+      'set-unknown-attribute',
+      'style-into-template',
+      'unbalanced-polymer-delimiters',
+      'undefined-elements',
     ]));
 
 registry.register(new RuleCollection(
@@ -34,13 +35,14 @@ registry.register(new RuleCollection(
 
 Will warn about use of deprecated Polymer 1.x features or brand new features in Polymer 2.x`,
     [
-      'dom-module-invalid-attrs',
-      'style-into-template',
-      'undefined-elements',
-      'unbalanced-polymer-delimiters',
-      'set-unknown-attribute',
       'behaviors-spelling',
       'databind-with-unknown-property',
+      'dom-module-invalid-attrs',
+      'element-before-dom-module',
+      'set-unknown-attribute',
+      'style-into-template',
+      'unbalanced-polymer-delimiters',
+      'undefined-elements',
     ]));
 
 registry.register(new RuleCollection(
@@ -50,9 +52,10 @@ registry.register(new RuleCollection(
 For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-hybrid.
 `,
     [
-      'undefined-elements',
-      'unbalanced-polymer-delimiters',
-      'set-unknown-attribute',
       'behaviors-spelling',
       'databind-with-unknown-property',
+      'element-before-dom-module',
+      'set-unknown-attribute',
+      'unbalanced-polymer-delimiters',
+      'undefined-elements',
     ]));

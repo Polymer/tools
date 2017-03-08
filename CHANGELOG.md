@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased-->
+## Unreleased
+
+### New Lint Rules
+- `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
+- `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
+
 ## [0.1.6] - 2017-03-07
 
 - Update polymer-analyzer to 1.0.0-alpha.31
@@ -28,7 +33,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
     Currently only checks custom elements, as we don't yet have the necessary
     metadata on native elements in a convenient format.
-* `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
 
 ## [0.1.4] - 2017-02-24
 
