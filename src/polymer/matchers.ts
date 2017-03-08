@@ -11,6 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import * as dom5 from 'dom5';
 
 const p = dom5.predicates;

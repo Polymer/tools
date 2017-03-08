@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import '../../rules';
-
 import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
@@ -24,7 +22,7 @@ import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
-suite('unbalanced-polymer-delimiters', () => {
+suite('databind-with-unknown-property', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -33,7 +31,7 @@ suite('unbalanced-polymer-delimiters', () => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
     linter = new Linter(
-        registry.getRules(['unbalanced-polymer-delimiters']), analyzer);
+        registry.getRules(['databind-with-unknown-property']), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -46,49 +44,40 @@ suite('unbalanced-polymer-delimiters', () => {
     assert.deepEqual(warnings, []);
   });
 
-  test('warns for the proper cases', async() => {
-    const warnings =
-        await linter.lint(['unbalanced-delimiters/unbalanced-delimiters.html']);
+  test('warns for the proper cases and with the right messages', async() => {
+    const warnings = await linter.lint(
+        ['databind-with-unknown-property/databind-with-unknown-property.html']);
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
       `
-  <div id="{db-foo}}"></div>
-          ~~~~~~~~~~~`,
+    <div id="{{horse}}"></div>
+               ~~~~~`,
       `
-  <div id="{{db-bar}"></div>
-          ~~~~~~~~~~~`,
+    <div id="[[onlyReadFrom]]"></div>
+               ~~~~~~~~~~~~`,
       `
-  <div id="[db-baz]]"></div>
-          ~~~~~~~~~~~`,
+    <p id="[[onlyReadFrom]]"></p>
+             ~~~~~~~~~~~~`,
       `
-  <div id="[[db-zod]"></div>
-          ~~~~~~~~~~~`,
+    <nav id="[[onlyReadFrom]]"></nav>
+               ~~~~~~~~~~~~`,
       `
-    <div id="{db-dr-foo}}"></div>
-            ~~~~~~~~~~~~~~`,
-      `
-    <div id="{db-di-foo}}"></div>
-            ~~~~~~~~~~~~~~`,
-      `
-      <div id="{db-di-di-foo}}"></div>
-              ~~~~~~~~~~~~~~~~~`,
-      `
-      <div id="{db-di-t-foo}}"></div>
-              ~~~~~~~~~~~~~~~~`,
-      `
-      <div id="{db-dr-t-foo}}"></div>
-              ~~~~~~~~~~~~~~~~`,
-      `
-    <div id="{dm-foo}}"></div>
-            ~~~~~~~~~~~`,
-      `
-      <div id="{dm-dr-foo}}"></div>
-              ~~~~~~~~~~~~~~`,
-      `
-  <div id="{dr}}"></div>
-          ~~~~~~~`,
-      `
-  <div id="{{di}"></div>
-          ~~~~~~~`
+    <div id="{{referencedOnlyOnce}}"></div>
+               ~~~~~~~~~~~~~~~~~~`
+    ]);
+
+    assert.deepEqual(warnings.map((w) => w.message), [
+      'horse is not declared or used more than once. Did you mean: house',
+      'onlyReadFrom is not declared and is only read from, never written to. ' +
+          'If it\'s part of the element\'s API it should ' +
+          'be a declared property.',
+      'onlyReadFrom is not declared and is only read from, never written to. ' +
+          'If it\'s part of the element\'s API it should ' +
+          'be a declared property.',
+      'onlyReadFrom is not declared and is only read from, never written to. ' +
+          'If it\'s part of the element\'s API it should ' +
+          'be a declared property.',
+      'referencedOnlyOnce is not declared or used more than once. ' +
+          'Did you mean: translate'
     ]);
   });
 });

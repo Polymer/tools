@@ -12,13 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from 'polymer-analyzer/lib/model/model';
+import {Document, Severity, Warning} from 'polymer-analyzer';
 
-import {Warning, Severity} from 'polymer-analyzer';
-import stripIndent = require('strip-indent');
-import {stripWhitespace} from '../util';
-import {Rule} from '../rule';
 import {registry} from '../registry';
+import {Rule} from '../rule';
+import {stripWhitespace} from '../util';
+
+import stripIndent = require('strip-indent');
+
 
 export class BehaviorsSpelling extends Rule {
   code = 'behaviors-spelling';
@@ -46,8 +47,8 @@ export class BehaviorsSpelling extends Rule {
     const elements = document.getByKind('polymer-element');
 
     for (const element of elements) {
-      const behavioursProperty =
-          element.properties.find((prop) => prop.name === 'behaviours' && !prop.published);
+      const behavioursProperty = element.properties.find(
+          (prop) => prop.name === 'behaviours' && !prop.published);
 
       if (behavioursProperty && behavioursProperty.sourceRange) {
         warnings.push({

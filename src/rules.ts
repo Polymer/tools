@@ -18,3 +18,4 @@ import './html/undefined-elements';
 import './polymer/unbalanced-delimiters';
 import './polymer/set-unknown-attribute';
 import './polymer/behaviors-spelling';
+import './polymer/databind-with-unknown-property';

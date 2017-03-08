@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as levenshtein from 'fast-levenshtein';
+
 /**
  * A utility for more easily writing long strings inline in code.
  *
@@ -28,3 +30,23 @@
 export function stripWhitespace(str: string) {
   return str.trim().replace(/\s*\n\s*/g, ' ');
 };
+
+export function minBy<T>(it: Iterable<T>, score: (t: T) => number) {
+  let min = undefined;
+  let minScore = undefined;
+  for (const val of it) {
+    const valScore = score(val);
+    if (minScore === undefined || valScore < minScore) {
+      minScore = valScore;
+      min = val;
+    }
+  }
+  if (minScore === undefined) {
+    return undefined;
+  }
+  return {min: min as T, minScore};
+}
+
+export function closestSpelling(word: string, options: Iterable<string>) {
+  return minBy(options, (option) => levenshtein.get(word, option));
+}

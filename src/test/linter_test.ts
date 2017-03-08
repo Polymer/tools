@@ -14,8 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer} from 'polymer-analyzer';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
+import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {Linter} from '../linter';
 

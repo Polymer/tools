@@ -11,10 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Severity, Warning} from 'polymer-analyzer';
+import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';

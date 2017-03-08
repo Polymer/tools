@@ -14,8 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, PackageUrlResolver, Warning} from 'polymer-analyzer';
-import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
+import {Analyzer, FSUrlLoader, PackageUrlResolver, Warning, WarningPrinter} from 'polymer-analyzer';
 
 import {Linter} from '../linter';
 import {registry} from '../registry';
@@ -39,11 +38,6 @@ if (process.env['INTEGRATION_TEST']) {
       const linter =
           new Linter(registry.getRules(['polymer-2-hybrid']), analyzer);
       const warnings = filterWarnings(await linter.lintPackage());
-
-      const counts = new Map<string, number>();
-      for (const warning of warnings) {
-        counts.set(warning.code, (counts.get(warning.code) || 0) + 1);
-      }
 
       const warningPrinter = new WarningPrinter(
           process.stdout, {analyzer, color: true, verbosity: 'full'});
@@ -140,8 +134,11 @@ const codesOkInTestsAndDemos = new Set([
   // We've got a number of places in our tests and demos where code needs an
   // element but doesn't directly depend on it. Should probably be fixed, but
   // as it's only ever used in one place it's not important.
-  'undefined-elements'
+  'undefined-elements',
 
+  // We define lots of elements in demos and tests for whom we don't declare all
+  // of their properties. Mea culpa!
+  'databind-with-unknown-property',
 ]);
 
 // Filter out known issues in the codebase.

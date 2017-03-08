@@ -25,6 +25,7 @@ registry.register(
       'unbalanced-polymer-delimiters',
       'set-unknown-attribute',
       'behaviors-spelling',
+      'databind-with-unknown-property',
     ]));
 
 registry.register(new RuleCollection(
@@ -39,6 +40,7 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'unbalanced-polymer-delimiters',
       'set-unknown-attribute',
       'behaviors-spelling',
+      'databind-with-unknown-property',
     ]));
 
 registry.register(new RuleCollection(
@@ -52,4 +54,5 @@ For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-
       'unbalanced-polymer-delimiters',
       'set-unknown-attribute',
       'behaviors-spelling',
+      'databind-with-unknown-property',
     ]));

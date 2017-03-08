@@ -14,8 +14,7 @@
 
 import * as assert from 'assert';
 import * as path from 'path';
-import {Analyzer} from 'polymer-analyzer';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
+import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {BehaviorsSpelling} from '../../polymer/behaviors-spelling';

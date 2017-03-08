@@ -11,10 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import * as assert from 'assert';
 import * as path from 'path';
-import {Analyzer} from 'polymer-analyzer';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
+import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {UndefinedElements} from '../../html/undefined-elements';
 import {Linter} from '../../linter';

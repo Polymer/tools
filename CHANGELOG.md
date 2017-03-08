@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
     Currently only checks custom elements, as we don't yet have the necessary
     metadata on native elements in a convenient format.
-
+* `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
 
 ## [0.1.4] - 2017-02-24
 
