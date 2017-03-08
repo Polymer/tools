@@ -78,6 +78,12 @@ suite('PolymerProject', () => {
     assert.isTrue(getFlowingState(dependencyStream));
   });
 
+  test('the bundler method returns a different bundler each time', () => {
+    const bundlerA = defaultProject.bundler();
+    const bundlerB = defaultProject.bundler();
+    assert.notEqual(bundlerA, bundlerB);
+  });
+
   suite('.dependencies()', () => {
 
     test('reads dependencies', (done) => {
