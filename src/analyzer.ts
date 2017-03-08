@@ -33,6 +33,12 @@ export interface Options {
   lazyEdges?: LazyEdgeMap;
 }
 
+/**
+ * These are the options available to the `_fork` method.  Currently, only the
+ * `urlLoader` override is implemented.
+ */
+export interface ForkOptions { urlLoader?: UrlLoader; }
+
 export class NoKnownParserError extends Error {};
 
 export type ScannerTable = Map<string, Scanner<any, any, any>[]>;
@@ -92,13 +98,20 @@ export class Analyzer {
   }
 
   /**
-   * Returns a clone of the analyzer, with the same context, suitable for
-   * running in parallel.
+   * Returns a copy of the analyzer.  If options are given, the AnalysisContext
+   * is also forked and individual properties are overridden by the options.
+   * is forked with the given options.
+   *
+   * When the analysis context is forked, its cache is preserved, so you will
+   * see a mixture of pre-fork and post-fork contents when you analyze with a
+   * forked analyzer.
    *
    * Note: this feature is experimental.
    */
-  _fork(): Analyzer {
-    return new Analyzer(this._context);
+  _fork(options?: ForkOptions): Analyzer {
+    const context =
+        options ? this._context._fork(undefined, options) : this._context;
+    return new Analyzer(context);
   }
 
   /**

@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* Added options argument for Analyzer `_fork` method, supporting individual property overrides.
 
 ## [2.0.0-alpha.31] - 2017-03-07
 
