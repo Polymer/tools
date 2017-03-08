@@ -32,16 +32,6 @@ export class PolymerProject {
    */
   analyzer: BuildAnalyzer;
 
-  /**
-   * A `Transform` stream that modifies the files that pass through it based
-   * on the dependency analysis done by the `analyzer` transform. It "bundles"
-   * a project by injecting its dependencies into the application fragments
-   * themselves, so that a minimum number of requests need to be made to load.
-   *
-   * (NOTE: The analyzer stream must be in the pipeline somewhere before this.)
-   */
-  bundler: BuildBundler;
-
   constructor(config: ProjectConfig|ProjectOptions|string) {
     if (config.constructor.name === 'ProjectConfig') {
       this.config = <ProjectConfig>config;
@@ -54,7 +44,19 @@ export class PolymerProject {
     logger.debug(`build config loaded:`, this.config);
 
     this.analyzer = new BuildAnalyzer(this.config);
-    this.bundler = new BuildBundler(this.config, this.analyzer);
+  }
+
+  /**
+   * Returns a `Transform` stream that modifies the files that pass through it
+   * based on the dependency analysis done by the `analyzer` transform. It
+   * "bundles" a project by injecting its dependencies into the application
+   * fragments themselves, so that a minimum number of requests need to be made
+   * to load.
+   *
+   * (NOTE: The analyzer stream must be in the pipeline somewhere before this.)
+   */
+  bundler(): BuildBundler {
+    return new BuildBundler(this.config, this.analyzer);
   }
 
   /**
