@@ -92,7 +92,7 @@ const sourcesStream = project.sources()
   .pipe(sourcesHtmlSplitter.split()) // split inline JS & CSS out into individual .js & .css files
   .pipe(gulpif(/\.js$/, uglify()))
   .pipe(gulpif(/\.css$/, cssSlam()))
-  .pipe(gulpif(/\.html$/, htmlMinifier())) 
+  .pipe(gulpif(/\.html$/, htmlMinifier()))
   .pipe(sourcesHtmlSplitter.rejoin()); // rejoins those files back into their original location
 
 // NOTE: If you want to split/rejoin your dependencies stream as well, you'll need to create a new HtmlSplitter for that stream.
@@ -115,7 +115,7 @@ const mergeStream = require('merge-stream');
 
 // Create a build pipeline to bundle our application before writing to the 'build/' dir
 mergeStream(project.sources(), project.dependencies())
-  .pipe(project.bundler)
+  .pipe(project.bundler())
   .pipe(gulp.dest('build/'));
 ```
 
@@ -199,4 +199,3 @@ You can compile polymer-build from source by cloning the repo and then running `
 ## Supported Node.js Versions
 
 polymer-build officially supports the latest LTS (4.x) and stable (6.x) versions of Node.js.
-
