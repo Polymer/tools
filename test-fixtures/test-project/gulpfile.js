@@ -3,9 +3,10 @@ const gulp = require('gulp');
 const logging = require('plylog');
 const mergeStream = require('merge-stream');
 
+logging.setVerbose();
+
 const polymer = require('../../lib/polymer-build');
 
-logging.setVerbose();
 
 const PolymerProject = polymer.PolymerProject;
 const fork = polymer.forkStream;

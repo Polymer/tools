@@ -29,7 +29,7 @@
     "dom5": "^2.0.1",
     "multipipe": "^1.0.2",
     "parse5": "^2.2.2",
-    "plylog": "^0.4.0",
+    "plylog": "^0.5.0",
     "polymer-analyzer": "2.0.0-alpha.31",
     "polymer-bundler": "2.0.0-pre.9",
     "polymer-project-config": "^2.0.0",
