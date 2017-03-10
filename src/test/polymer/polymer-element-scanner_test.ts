@@ -15,9 +15,11 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
+
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {PolymerElementScanner} from '../../polymer/polymer-element-scanner';
+import {CodeUnderliner} from '../test-utils';
 
 suite('PolymerElementScanner', () => {
 
@@ -48,7 +50,7 @@ suite('PolymerElementScanner', () => {
           },
           d: {
             type: Number,
-            computed: '_computeD()'
+            computed: '_computeD(c)'
           },
           e: {
             type: String,
@@ -60,7 +62,7 @@ suite('PolymerElementScanner', () => {
           },
           g: {
             type: {},
-            computed: '_computeG()',
+            computed: '_computeG(a, b)',
             readOnly: false
           },
           h: String,
@@ -73,8 +75,8 @@ suite('PolymerElementScanner', () => {
           }
         },
         observers: [
-          '_anObserver()',
-          '_anotherObserver()'
+          '_anObserver(foo, bar)',
+          '_anotherObserver(foo)'
         ],
         listeners: {
           'event-a': '_handleA',
@@ -103,7 +105,29 @@ suite('PolymerElementScanner', () => {
 
       assert.deepEqual(
           features[0].observers.map((o) => o.expression),
-          ['_anObserver()', '_anotherObserver()']);
+          ['_anObserver(foo, bar)', '_anotherObserver(foo)']);
+      assert.deepEqual(
+          features[0].observers.map(
+              (o) => o.parsedExpression!.properties.map((p) => p.name)),
+          [['_anObserver', 'foo', 'bar'], ['_anotherObserver', 'foo']]);
+      assert.deepEqual(
+          features[0]
+              .properties.filter((p) => p.observerExpression)
+              .map(
+                  (p) =>
+                      [p.name,
+                       p.observerExpression!.properties.map((sp) => sp.name)]),
+          [['f', ['_observeF']], ['all', ['_observeAll']]]);
+
+      assert.deepEqual(
+          features[0]
+              .properties.filter((p) => p.computedExpression)
+              .map(
+                  (p) =>
+                      [p.name,
+                       p.computedExpression!.properties.map((sp) => sp.name)]),
+          [['d', ['_computeD', 'c']], ['g', ['_computeG', 'a', 'b']]]);
+
       assert.deepEqual(
           features[0].events.map((e) => e.name), ['e-changed', 'all-changed']);
 
@@ -186,6 +210,80 @@ suite('PolymerElementScanner', () => {
               .filter((w) => w.code === 'invalid-listeners-declaration')
               .length,
           1);
+    });
+
+    const testName =
+        'Produces correct warnings for bad observers and computed properties';
+    test(testName, async() => {
+      const contents = `
+      Polymer({
+        is: 'x-foo',
+        properties: {
+          parseError: {
+            type: String,
+            computed: 'let let let',
+            observer: 'let let let',
+          },
+          badKindOfExpression: {
+            type: String,
+            computed: 'foo',
+            observer: 'foo(bar, baz)'
+          }
+        },
+        observers: [
+          'let let let parseError',
+          'foo'
+        ],
+        method() {
+          const shouldIgnore = {
+            ignore: 'please',
+            meToo: true
+          }
+        }
+      });`;
+
+      const underliner =
+          CodeUnderliner.withMapping('test-document.html', contents);
+      const document =
+          new JavaScriptParser().parse(contents, 'test-document.html');
+      const visit = async(visitor: Visitor) => document.visit([visitor]);
+
+      const features = await scanner.scan(document, visit);
+      assert.deepEqual(features.length, 1);
+      const element = features[0]!;
+      assert.deepEqual(
+          element.properties.map((p) => p.name),
+          ['parseError', 'badKindOfExpression']);
+
+      assert.deepEqual(
+          await Promise.all(
+              element.properties.map((p) => underliner.underline(p.warnings))),
+          [
+            [
+              `
+            computed: 'let let let',
+                           ~`,
+              `
+            observer: 'let let let',
+                           ~`
+            ],
+            [
+              `
+            computed: 'foo',
+                       ~~~`,
+              `
+            observer: 'foo(bar, baz)'
+                       ~~~~~~~~~~~~~`
+            ]
+          ]);
+      assert.deepEqual(await underliner.underline(element.warnings), [
+        `
+          'let let let parseError',
+               ~`,
+        `
+          'foo'
+           ~~~`
+      ]);
     });
 
     test('Polymer 2 class observers crash', async() => {

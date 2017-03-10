@@ -307,7 +307,8 @@ suite('ExpressionScanner', () => {
           javascriptDocument.ast.body[0]['declarations'][0]['init']['elements'];
 
       const parsedLiterals = literals.map(
-          (l) => parseExpressionInJsStringLiteral(javascriptDocument, l));
+          (l) =>
+              parseExpressionInJsStringLiteral(javascriptDocument, l, 'full'));
       const warnings = parsedLiterals.map((pl) => pl.warnings)
                            .reduce((p, n) => p.concat(n), []);
       const expressionRanges = parsedLiterals.map(

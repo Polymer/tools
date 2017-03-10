@@ -12,14 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import * as dom5 from 'dom5';
-import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, ElementMixin, LiteralValue, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
+import {Document, ElementMixin, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
 import {getOrInferPrivacy} from './js-utils';
-import {addMethod, addProperty, LocalId, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
+import {addMethod, addProperty, LocalId, Observer, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
 
 export interface Options {
   name: string;
@@ -35,17 +34,13 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
   methods: ScannedMethod[] = [];
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[] = [];
+  observers: Observer[] = [];
   listeners: {event: string, handler: string}[] = [];
   behaviorAssignments: ScannedBehaviorAssignment[] = [];
   // FIXME(rictic): domModule and scriptElement aren't known at a file local
   //     level. Remove them here, they should only exist on PolymerElement.
   domModule: dom5.Node|undefined = undefined;
   scriptElement: dom5.Node|undefined = undefined;
-  // Indicates if an element is a pseudo element
   pseudo: boolean = false;
   abstract: boolean = false;
 
@@ -89,10 +84,7 @@ export class PolymerElementMixin extends ElementMixin implements
   properties: PolymerProperty[];
   methods: Method[];
 
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue
-  }[];
+  observers: Observer[];
   listeners: {event: string, handler: string}[];
   behaviorAssignments: ScannedBehaviorAssignment[];
   domModule?: dom5.Node;

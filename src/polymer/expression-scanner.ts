@@ -58,6 +58,13 @@ export function getAllDataBindingTemplates(node: parse5.ASTNode) {
 
 export type HtmlDatabindingExpression =
     TextNodeDatabindingExpression | AttributeDatabindingExpression;
+
+/**
+ * Some expressions are limited. For example, in a property declaration,
+ * `observer` must be the identifier of a method, and `computed` must be a
+ * function call expression.
+ */
+export type ExpressionLimitation = 'full' | 'identifierOnly' | 'callExpression';
 export abstract class DatabindingExpression {
   readonly sourceRange: SourceRange;
   readonly warnings: Warning[] = [];
@@ -75,7 +82,8 @@ export abstract class DatabindingExpression {
   properties: Array<{name: string, sourceRange: SourceRange}> = [];
 
   constructor(
-      sourceRange: SourceRange, expressionText: string, ast: estree.Program) {
+      sourceRange: SourceRange, expressionText: string, ast: estree.Program,
+      limitation: ExpressionLimitation) {
     this.sourceRange = sourceRange;
     this.expressionText = expressionText;
     this._expressionAst = ast;
@@ -84,7 +92,7 @@ export abstract class DatabindingExpression {
       col: sourceRange.start.column
     };
 
-    this._extractPropertiesAndValidate();
+    this._extractPropertiesAndValidate(limitation);
   }
 
   /**
@@ -104,7 +112,7 @@ export abstract class DatabindingExpression {
         databindingRelativeSourceRange, this.locationOffset);
   }
 
-  private _extractPropertiesAndValidate() {
+  private _extractPropertiesAndValidate(limitation: ExpressionLimitation) {
     if (this._expressionAst.body.length !== 1) {
       this.warnings.push(this._validationWarning(
           `Expected one expression, got ${this._expressionAst.body.length}`,
@@ -119,6 +127,8 @@ export abstract class DatabindingExpression {
       return;
     }
     let expression = expressionStatement.expression;
+
+    this._validateLimitation(expression, limitation);
     if (expression.type === 'UnaryExpression') {
       if (expression.operator !== '!') {
         this.warnings.push(this._validationWarning(
@@ -128,6 +138,29 @@ export abstract class DatabindingExpression {
       expression = expression.argument;
     }
     this._extractAndValidateSubExpression(expression, true);
+  }
+
+  private _validateLimitation(
+      expression: estree.Expression, limitation: ExpressionLimitation) {
+    switch (limitation) {
+      case 'identifierOnly':
+        if (expression.type !== 'Identifier') {
+          this.warnings.push(this._validationWarning(
+              `Expected just a name here, not an expression`, expression));
+        }
+        break;
+      case 'callExpression':
+        if (expression.type !== 'CallExpression') {
+          this.warnings.push(this._validationWarning(
+              `Expected a function call here.`, expression));
+        }
+        break;
+      case 'full':
+        break;  // no checks needed
+      default:
+        const never: never = limitation;
+        throw new Error(`Got unknown limitation: ${never}`);
+    }
   }
 
   private _extractAndValidateSubExpression(
@@ -206,7 +239,7 @@ export class AttributeDatabindingExpression extends DatabindingExpression {
       astNode: parse5.ASTNode, isCompleteBinding: boolean, direction: '{'|'[',
       eventName: string|undefined, attribute: parse5.ASTAttribute,
       sourceRange: SourceRange, expressionText: string, ast: estree.Program) {
-    super(sourceRange, expressionText, ast);
+    super(sourceRange, expressionText, ast, 'full');
     this.astNode = astNode;
     this.isCompleteBinding = isCompleteBinding;
     this.direction = direction;
@@ -229,7 +262,7 @@ export class TextNodeDatabindingExpression extends DatabindingExpression {
   constructor(
       direction: '{'|'[', astNode: parse5.ASTNode, sourceRange: SourceRange,
       expressionText: string, ast: estree.Program) {
-    super(sourceRange, expressionText, ast);
+    super(sourceRange, expressionText, ast, 'full');
     this.direction = direction;
     this.astNode = astNode;
   }
@@ -242,8 +275,8 @@ export class JavascriptDatabindingExpression extends DatabindingExpression {
 
   constructor(
       astNode: estree.Node, sourceRange: SourceRange, expressionText: string,
-      ast: estree.Program) {
-    super(sourceRange, expressionText, ast);
+      ast: estree.Program, kind: ExpressionLimitation) {
+    super(sourceRange, expressionText, ast, kind);
     this.astNode = astNode;
   }
 }
@@ -497,7 +530,9 @@ function parseExpression(content: string, expressionSourceRange: SourceRange) {
 }
 
 export function parseExpressionInJsStringLiteral(
-    document: JavaScriptDocument, stringLiteral: estree.Node) {
+    document: JavaScriptDocument,
+    stringLiteral: estree.Node,
+    kind: 'identifierOnly'|'callExpression'|'full') {
   const warnings: Warning[] = [];
   const result = {
     databinding: undefined as undefined | JavascriptDatabindingExpression,
@@ -542,7 +577,10 @@ export function parseExpressionInJsStringLiteral(
     warnings.push(parsed.warning);
   } else if (parsed && parsed.type === 'success') {
     result.databinding = new JavascriptDatabindingExpression(
-        stringLiteral, sourceRange, expressionText, parsed.program);
+        stringLiteral, sourceRange, expressionText, parsed.program, kind);
+    for (const warning of result.databinding.warnings) {
+      warnings.push(warning);
+    }
   }
   return result;
 }

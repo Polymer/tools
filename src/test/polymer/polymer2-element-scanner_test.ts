@@ -44,40 +44,60 @@ suite('Polymer2ElementScanner', () => {
         (e) => e instanceof ScannedPolymerElement) as ScannedPolymerElement[];
   };
 
-  function getTestProps(element: ScannedPolymerElement): any {
-    const props: any = {
-      className: element.className,
-      superClass: element.superClass && element.superClass.identifier,
-      tagName: element.tagName,
-      description: element.description,
-      summary: element.summary,
-      properties: element.properties.map((p) => {
-        const result = {name: p.name, description: p.description} as any;
-        if (p.type) {
-          result.type = p.type;
+  async function getTestProps(element: ScannedPolymerElement):
+      Promise<any> {
+        const props: any = {
+          className: element.className,
+          superClass: element.superClass && element.superClass.identifier,
+          tagName: element.tagName,
+          description: element.description,
+          summary: element.summary,
+          properties: await Promise.all(element.properties.map(async(p) => {
+            const result = {name: p.name, description: p.description} as any;
+            if (p.type) {
+              result.type = p.type;
+            }
+            if (p.observerExpression) {
+              result.propertiesInObserver =
+                  p.observerExpression.properties.map((p) => p.name);
+            }
+            if (p.computedExpression) {
+              result.propertiesInComputed =
+                  p.computedExpression.properties.map((p) => p.name);
+            }
+            if (p.warnings.length > 0) {
+              result.warningUnderlines = await underliner.underline(p.warnings);
+            }
+            return result;
+          })),
+          attributes: element.attributes.map((a) => ({
+                                               name: a.name,
+                                             })),
+          methods: element.methods.map((m) => ({
+                                         name: m.name,
+                                         params: m.params, return: m.return,
+                                         description: m.description
+                                       })),
+
+          warningUnderlines: await underliner.underline(element.warnings),
+
+        };
+        if (element.observers.length > 0) {
+          props.observers = element.observers.map((o) => o.expression);
+          props.observerProperties =
+              element.observers.filter((o) => o.parsedExpression)
+                  .map(
+                      (o) => o.parsedExpression!.properties.map((p) => p.name));
         }
-
-        return result;
-      }),
-      attributes: element.attributes.map((a) => ({
-                                           name: a.name,
-                                         })),
-      methods: element.methods.map((m) => ({
-                                     name: m.name,
-                                     params: m.params, return: m.return,
-                                     description: m.description
-                                   })),
-
-    };
-    if (element.mixins.length > 0) {
-      props.mixins = element.mixins.map((m) => m.identifier);
-    }
-    return props;
-  }
+        if (element.mixins.length > 0) {
+          props.mixins = element.mixins.map((m) => m.identifier);
+        }
+        return props;
+      }
 
   test('Finds two basic elements', async() => {
     const elements = await getElements('test-element-1.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
     assert.deepEqual(elementData, [
       {
         tagName: 'test-element',
@@ -94,6 +114,7 @@ suite('Polymer2ElementScanner', () => {
           name: 'foo',
         }],
         methods: [],
+        warningUnderlines: [],
       },
       {
         tagName: undefined,
@@ -107,6 +128,7 @@ suite('Polymer2ElementScanner', () => {
           name: 'foo',
         }],
         methods: [],
+        warningUnderlines: [],
       },
     ]);
 
@@ -173,7 +195,7 @@ class BaseElement extends Polymer.Element {
 
   test('Uses static is getter for tagName', async() => {
     const elements = await getElements('test-element-2.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
     assert.deepEqual(elementData, [
       {
         tagName: 'test-element',
@@ -184,13 +206,14 @@ class BaseElement extends Polymer.Element {
         properties: [],
         attributes: [],
         methods: [],
+        warningUnderlines: [],
       },
     ]);
   });
 
   test('Finds vanilla elements', async() => {
     const elements = await getElements('test-element-4.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
     assert.deepEqual(elementData, [
       {
         tagName: 'test-element',
@@ -208,13 +231,14 @@ class BaseElement extends Polymer.Element {
           }
         ],
         methods: [],
+        warningUnderlines: [],
       },
     ]);
   });
 
   test('Observed attributes override induced attributes', async() => {
     const elements = await getElements('test-element-5.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
 
     assert.deepEqual(elementData, [
       {
@@ -237,13 +261,14 @@ class BaseElement extends Polymer.Element {
           }
         ],
         methods: [],
+        warningUnderlines: [],
       },
     ]);
   });
 
   test('properly sets className for elements with the memberof tag', async() => {
     const elements = await getElements('test-element-8.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
     assert.deepEqual(elementData, [
       {
         tagName: 'test-element-one',
@@ -262,6 +287,7 @@ namespaced name.`,
           name: 'foo',
         }],
         methods: [],
+        warningUnderlines: [],
       },
       {
         tagName: 'test-element-two',
@@ -280,13 +306,14 @@ namespaced name.`,
           name: 'foo',
         }],
         methods: [],
+        warningUnderlines: [],
       }
     ]);
   });
 
   test('Read mixes annotations', async() => {
     const elements = await getElements('test-element-6.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
 
     assert.deepEqual(elementData, [
       {
@@ -299,13 +326,14 @@ namespaced name.`,
         attributes: [],
         methods: [],
         mixins: ['Mixin2', 'Mixin1'],
+        warningUnderlines: [],
       },
     ]);
   });
 
   test('Reads just mixin application', async() => {
     const elements = await getElements('test-element-9.js');
-    const elementData = elements.map(getTestProps);
+    const elementData = await Promise.all(elements.map(getTestProps));
 
     assert.deepEqual(elementData, [
       {
@@ -317,6 +345,7 @@ namespaced name.`,
         properties: [],
         attributes: [],
         methods: [],
+        warningUnderlines: [],
       },
       {
         tagName: undefined,
@@ -328,6 +357,7 @@ namespaced name.`,
         attributes: [],
         methods: [],
         mixins: ['Mixin'],
+        warningUnderlines: [],
       },
       {
         tagName: undefined,
@@ -339,6 +369,7 @@ namespaced name.`,
         attributes: [],
         methods: [],
         mixins: ['Mixin'],
+        warningUnderlines: [],
       },
     ]);
   });
@@ -347,7 +378,7 @@ namespaced name.`,
       'properly reads properties and methods of elements and element classes',
       async() => {
         const elements = await getElements('test-element-10.js');
-        const elementData = elements.map(getTestProps);
+        const elementData = await Promise.all(elements.map(getTestProps));
         assert.deepEqual(elementData, [
           {
             tagName: 'test-element',
@@ -395,7 +426,68 @@ namespaced name.`,
                 params: [], return: undefined,
               },
             ],
+            warningUnderlines: [],
           },
         ]);
       });
+
+  test('warns for bad observers and computed properties', async() => {
+    const elements = await getElements('test-element-12.js');
+    const elementData = await Promise.all(elements.map(getTestProps));
+    assert.deepEqual(
+        elementData, [{
+          attributes: [{name: 'parse-error'}, {name: 'bad-kind-of-expression'}],
+          className: 'TestElement',
+          description: '',
+          methods: [],
+          properties: [
+            {
+              name: 'parseError',
+              type: 'string',
+              description: '',
+              warningUnderlines: [
+                `
+        computed: 'let let let',
+                       ~`,
+                `
+        observer: 'let let let',
+                       ~`,
+              ]
+            },
+            {
+              name: 'badKindOfExpression',
+              type: 'string',
+              description: '',
+              propertiesInComputed: ['foo'],
+              propertiesInObserver: ['foo', 'bar', 'baz'],
+              warningUnderlines: [
+                `
+        computed: 'foo',
+                   ~~~`,
+                `
+        observer: 'foo(bar, baz)'
+                   ~~~~~~~~~~~~~`,
+              ]
+            }
+          ],
+          summary: '',
+          superClass: 'Polymer.Element',
+          tagName: 'test-element',
+          warningUnderlines: [
+            `
+      'let let let parseError',
+           ~`,
+            `
+      'foo',
+       ~~~`
+          ],
+          observers: [
+            'let let let parseError',
+            'foo',
+            'foo(bar)',
+          ],
+          observerProperties: [['foo'], ['foo', 'bar']],
+        }]);
+
+  });
 });

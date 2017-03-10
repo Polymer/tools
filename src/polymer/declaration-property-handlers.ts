@@ -20,7 +20,8 @@ import {Severity, Warning} from '../model/model';
 import {ScannedBehaviorAssignment} from '../polymer/behavior';
 
 import {analyzeProperties} from './analyze-properties';
-import {ScannedPolymerElement} from './polymer-element';
+import {parseExpressionInJsStringLiteral} from './expression-scanner';
+import {Observer, ScannedPolymerElement} from './polymer-element';
 
 export type BehaviorAssignmentOrWarning = {
   kind: 'warning',
@@ -90,16 +91,12 @@ export function declarationPropertyHandlers(
       }
     },
     observers(node: estree.Node) {
-      if (node.type !== 'ArrayExpression') {
+      const observers = extractObservers(node, document);
+      if (!observers) {
         return;
       }
-      for (const element of node.elements) {
-        let v = astValue.expressionToValue(element);
-        if (v === undefined) {
-          v = astValue.CANT_CONVERT;
-        }
-        declaration.observers.push({javascriptNode: element, expression: v});
-      }
+      declaration.warnings = declaration.warnings.concat(observers.warnings);
+      declaration.observers = declaration.observers.concat(observers.observers);
     },
     listeners(node: estree.Node) {
 
@@ -131,4 +128,30 @@ export function declarationPropertyHandlers(
       }
     }
   };
+}
+
+
+export function extractObservers(
+    observersArray: estree.Node, document: JavaScriptDocument): undefined|
+    {observers: Observer[], warnings: Warning[]} {
+  if (observersArray.type !== 'ArrayExpression') {
+    return;
+  }
+  let warnings: Warning[] = [];
+  const observers = [];
+  for (const element of observersArray.elements) {
+    let v = astValue.expressionToValue(element);
+    if (v === undefined) {
+      v = astValue.CANT_CONVERT;
+    }
+    const parseResult =
+        parseExpressionInJsStringLiteral(document, element, 'callExpression');
+    warnings = warnings.concat(parseResult.warnings);
+    observers.push({
+      javascriptNode: element,
+      expression: v,
+      parsedExpression: parseResult.databinding
+    });
+  }
+  return {observers, warnings};
 }

@@ -25,6 +25,7 @@ import {Severity, WarningCarryingException} from '../model/model';
 import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
+import {parseExpressionInJsStringLiteral} from './expression-scanner';
 import {getOrInferPrivacy, toScannedMethod, toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
@@ -102,22 +103,17 @@ class ElementVisitor implements Visitor {
       return;
     }
 
-    const prop = <estree.Property>{
-      key: node.key,
-      value: node.value,
-      kind: node.kind,
+    const prop = Object.assign({}, node, {
       method: true,
-      leadingComments: node.leadingComments,
       shorthand: false,
       computed: false,
-      type: 'Property'
-    };
+    });
 
     if (node.kind === 'get') {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       const argument = <estree.ArrayExpression>returnStatement.argument;
       const propDesc = docs.annotate(toScannedPolymerProperty(
-          prop, this.document.sourceRangeForNode(prop)!));
+          prop, this.document.sourceRangeForNode(node)!));
 
       // We only support observers and behaviors getters that return array
       // literals.
@@ -139,9 +135,19 @@ class ElementVisitor implements Visitor {
       }
 
       if (propDesc.name === 'observers') {
-        argument.elements.forEach((elementObject: estree.Literal) => {
-          element.observers.push(
-              {javascriptNode: elementObject, expression: elementObject.raw});
+        argument.elements.forEach((elementObject) => {
+          const parseResult = parseExpressionInJsStringLiteral(
+              this.document, elementObject, 'callExpression');
+          element.warnings = element.warnings.concat(parseResult.warnings);
+          let expressionText = undefined;
+          if (elementObject.type === 'Literal') {
+            expressionText = elementObject.raw;
+          }
+          element.observers.push({
+            javascriptNode: elementObject,
+            expression: expressionText,
+            parsedExpression: parseResult.databinding
+          });
         });
         return;
       }
@@ -152,7 +158,7 @@ class ElementVisitor implements Visitor {
 
     if (node.kind === 'method') {
       const methodDesc = docs.annotate(
-          toScannedMethod(prop, this.document.sourceRangeForNode(prop)!));
+          toScannedMethod(prop, this.document.sourceRangeForNode(node)!));
       element.addMethod(methodDesc);
     }
   }

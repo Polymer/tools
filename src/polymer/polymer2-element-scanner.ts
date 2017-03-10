@@ -23,8 +23,9 @@ import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedElement, ScannedFeature, ScannedReference, Severity, Warning} from '../model/model';
 
+import {extractObservers} from './declaration-property-handlers';
 import {getOrInferPrivacy} from './js-utils';
-import {ScannedPolymerElement} from './polymer-element';
+import {Observer, ScannedPolymerElement} from './polymer-element';
 import {getIsValue, getMethods, getProperties} from './polymer2-config';
 
 export interface ScannedAttribute extends ScannedFeature {
@@ -218,7 +219,14 @@ class ElementVisitor implements Visitor {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const isValue = getIsValue(node);
-    const warnings: Warning[] = [];
+    let warnings: Warning[] = [];
+
+    const observersResult = this._getObservers(node);
+    let observers: Observer[] = [];
+    if (observersResult) {
+      observers = observersResult.observers;
+      warnings = warnings.concat(observersResult.warnings);
+    }
 
     const className = node.id && node.id.name;
     const element = new ScannedPolymerElement({
@@ -232,7 +240,7 @@ class ElementVisitor implements Visitor {
       methods: getMethods(node, this._document),
       superClass: this._getExtends(node, docs, warnings),
       mixins: jsdoc.getMixins(this._document, node, docs, warnings),
-      privacy: getOrInferPrivacy(className || '', docs, false),
+      privacy: getOrInferPrivacy(className || '', docs, false), observers
     });
 
     // If a class defines observedAttributes, it overrides what the base classes
@@ -303,20 +311,37 @@ class ElementVisitor implements Visitor {
 
   private _getObservedAttributes(node: estree.ClassDeclaration|
                                  estree.ClassExpression) {
+    const returnedValue =
+        this._getReturnValueOfStaticGetter(node, 'observedAttributes');
+    if (returnedValue && returnedValue.type === 'ArrayExpression') {
+      return this._extractAttributesFromObservedAttributes(returnedValue);
+    }
+  }
+
+  private _getObservers(node: estree.ClassDeclaration|estree.ClassExpression) {
+    const returnedValue = this._getReturnValueOfStaticGetter(node, 'observers');
+    if (returnedValue) {
+      return extractObservers(returnedValue, this._document);
+    }
+  }
+
+  private _getReturnValueOfStaticGetter(
+      node: estree.ClassDeclaration|estree.ClassExpression,
+      methodName: string): estree.Node|undefined {
     const observedAttributesDefn: estree.MethodDefinition|undefined =
         node.body.body.find((m) => {
           if (m.type !== 'MethodDefinition' || !m.static) {
             return false;
           }
-          return astValue.getIdentifierName(m.key) === 'observedAttributes';
+          return astValue.getIdentifierName(m.key) === methodName;
         });
     if (observedAttributesDefn) {
       const body = observedAttributesDefn.value.body.body[0];
-      if (body && body.type === 'ReturnStatement' && body.argument &&
-          body.argument.type === 'ArrayExpression') {
-        return this._extractAttributesFromObservedAttributes(body.argument);
+      if (body && body.type === 'ReturnStatement' && body.argument) {
+        return body.argument;
       }
     }
+    return;
   }
 
   /**

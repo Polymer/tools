@@ -20,9 +20,18 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import * as jsdoc from '../javascript/jsdoc';
 import {Severity} from '../model/model';
 
+import {parseExpressionInJsStringLiteral} from './expression-scanner';
 import {toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerProperty} from './polymer-element';
 
+/**
+ * Given a properties block (i.e. object literal), parses and extracts the
+ * properties declared therein.
+ *
+ * @param node The value of the `properties` key in a Polymer 1 declaration, or
+ *     the return value of the `properties` static getter in a Polymer 2 class.
+ * @param document The containing JS document.
+ */
 export function analyzeProperties(
     node: estree.Node, document: JavaScriptDocument): ScannedPolymerProperty[] {
   const analyzedProps: ScannedPolymerProperty[] = [];
@@ -93,6 +102,10 @@ export function analyzeProperties(
           case 'observer':
             const val = astValue.expressionToValue(propertyArg.value);
             prop.observerNode = propertyArg.value;
+            const parseResult = parseExpressionInJsStringLiteral(
+                document, propertyArg.value, 'identifierOnly');
+            prop.warnings = prop.warnings.concat(parseResult.warnings);
+            prop.observerExpression = parseResult.databinding;
             if (val === undefined) {
               prop.observer = astValue.CANT_CONVERT;
             } else {
@@ -107,6 +120,10 @@ export function analyzeProperties(
             break;
           case 'computed':
             isComputed = true;
+            const computedParseResult = parseExpressionInJsStringLiteral(
+                document, propertyArg.value, 'callExpression');
+            prop.warnings = prop.warnings.concat(computedParseResult.warnings);
+            prop.computedExpression = computedParseResult.databinding;
             break;
           case 'value':
             prop.default =
