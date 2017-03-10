@@ -185,12 +185,14 @@ export function getIdentifierName(node: estree.Node): string|undefined {
   if (node.type === 'Identifier') {
     return node.name;
   }
-  if (node.type === 'Literal') {
-    return String(node.value);
-  }
   if (node.type === 'MemberExpression') {
     const object = getIdentifierName(node.object);
-    const property = getIdentifierName(node.property);
+    let property;
+    if (node.computed) {
+      property = expressionToValue(node.property);
+    } else {
+      property = getIdentifierName(node.property);
+    }
     if (object != null && property != null) {
       return `${object}.${property}`;
     }

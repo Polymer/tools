@@ -152,7 +152,7 @@ aliasToNamespace = {
 
   test('scans unnamed, dynamic namespaces', async() => {
     const namespaces = await getNamespaces('namespace-dynamic-unnamed.js');
-    assert.equal(namespaces.length, 2);
+    assert.equal(namespaces.length, 1);
 
     assert.equal(namespaces[0].name, 'DynamicNamespace.ArrayNotation');
     assert.equal(namespaces[0].description, '');
@@ -160,17 +160,6 @@ aliasToNamespace = {
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 DynamicNamespace['ArrayNotation'] = {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  foo: 'bar'
-~~~~~~~~~~~~
-};
-~~`);
-
-    assert.equal(namespaces[1].name, 'DynamicNamespace.baz');
-    assert.equal(namespaces[1].description, '');
-    assert.deepEqual(namespaces[1].warnings, []);
-    assert.equal(await underliner.underline(namespaces[1].sourceRange), `
-DynamicNamespace[baz] = {
-~~~~~~~~~~~~~~~~~~~~~~~~~
   foo: 'bar'
 ~~~~~~~~~~~~
 };
