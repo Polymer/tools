@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, ParsedHtmlDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
+import * as dom5 from 'dom5';
+import {Document, isPositionInsideRange, ParsedHtmlDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 
 import {HtmlRule} from '../html/rule';
@@ -21,6 +22,11 @@ import {registry} from '../registry';
 import {closestSpelling} from '../util';
 
 import stripIndent = require('strip-indent');
+
+const p = dom5.predicates;
+const isDomRepeat = p.OR(
+    p.hasTagName('dom-repeat'),
+    p.AND(p.hasTagName('template'), p.hasAttrValue('is', 'dom-repeat')));
 
 export class DatabindWithUnknownProperty extends HtmlRule {
   code = 'databind-with-unknown-property';
@@ -47,15 +53,39 @@ export class DatabindWithUnknownProperty extends HtmlRule {
           new Set(element.properties.map((p) => p.name)
                       .concat(element.methods.map((m) => m.name))
                       .concat(Array.from(sharedProperties)));
+      const scopedProperties: {scope: SourceRange, property: string}[] = [];
+      const domRepeats = dom5.nodeWalkAll(
+          domModule.astNode, isDomRepeat, [], dom5.childNodesIncludeTemplate);
+      for (const domRepeat of domRepeats) {
+        const scope = _parsed.sourceRangeForNode(domRepeat)!;
+        const itemProperty = dom5.getAttribute(domRepeat, 'as') || 'item';
+        const indexProperty =
+            dom5.getAttribute(domRepeat, 'indexAs') || 'index';
+        scopedProperties.push({scope, property: itemProperty});
+        scopedProperties.push({scope, property: indexProperty});
+      }
+
       type PropertyUse = {
         name: string,
         sourceRange: SourceRange,
         expression: DatabindingExpression
       };
+
       const suspiciousPropertiesByName = new Map<string, Array<PropertyUse>>();
       for (const expression of domModule.databindings) {
         for (const prop of expression.properties) {
           if (explicitlyKnownProperties.has(prop.name)) {
+            continue;
+          }
+          let isScopedProperty = false;
+          for (const scopedProperty of scopedProperties) {
+            if (scopedProperty.property === prop.name &&
+                isPositionInsideRange(
+                    prop.sourceRange.start, scopedProperty.scope)) {
+              isScopedProperty = true;
+            }
+          }
+          if (isScopedProperty) {
             continue;
           }
           const props = suspiciousPropertiesByName.get(prop.name) || [];
@@ -64,8 +94,11 @@ export class DatabindWithUnknownProperty extends HtmlRule {
           suspiciousPropertiesByName.set(prop.name, props);
         }
       }
+
+
       // TODO(rictic): also validate computed properties and observers once
-      //     https://github.com/Polymer/polymer-analyzer/pull/552 has landed.
+      //     https://github.com/Polymer/polymer-analyzer/pull/552 has
+      //     landed.
       for (const usesOfProperty of suspiciousPropertiesByName.values()) {
         const firstUse = usesOfProperty[0];
         if (!firstUse) {

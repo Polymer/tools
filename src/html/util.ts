@@ -93,18 +93,18 @@ export const sharedProperties = new Set([
   'translate',
   'dir',
   'hidden',
-  'tab-index',
-  'access-key',
+  'tabIndex',
+  'accessKey',
   'draggable',
   'spellcheck',
-  'inner-text',
-  'context-menu',
+  'innerText',
   // https://html.spec.whatwg.org/multipage/interaction.html#elementcontenteditable
-  'content-editable',
+  'contentEditable',
+  'isContentEditable',
 
   // https://dom.spec.whatwg.org/#interface-element
   'id',
-  'class-name',
+  'className',
   'slot',
 
 

@@ -128,6 +128,17 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // This is a template file, and it contains a malformed url.
   'web-component-tester/data/index.html': new Set(['unable-to-analyze']),
+
+  // https://github.com/PolymerElements/paper-dropdown-menu/pull/232
+  'paper-dropdown-menu/paper-dropdown-menu-light.html':
+      new Set(['databind-with-unknown-property']),
+
+  // https://github.com/PolymerElements/paper-input/pull/489
+  'paper-input/paper-input.html': new Set(['databind-with-unknown-property']),
+
+  // https://github.com/PolymerElements/app-layout/pull/426
+  'app-layout/site/device-viewer/device-layout-viewer.html':
+      new Set(['databind-with-unknown-property']),
 };
 
 const codesOkInTestsAndDemos = new Set([
