@@ -17,8 +17,10 @@ import * as estree from 'estree';
 import * as parse5 from 'parse5';
 
 import {ParsedHtmlDocument} from '../html/html-document';
+import {JavaScriptDocument} from '../javascript/javascript-document';
 import {parseJs} from '../javascript/javascript-parser';
 import {correctSourceRange, LocationOffset, Severity, SourceRange, Warning} from '../model/model';
+
 
 const p = dom5.predicates;
 const isTemplate = p.hasTagName('template');
@@ -54,38 +56,14 @@ export function getAllDataBindingTemplates(node: parse5.ASTNode) {
       dom5.childNodesIncludeTemplate) as Template[];
 }
 
-/**
- * A databinding expression.
- */
-export class DatabindingExpression {
-  /**
-   * If databinding into an attribute this is the element whose attribute is
-   * assigned to. If databinding into a text node, this is that text node.
-   */
-  readonly astNode: parse5.ASTNode;
-  /**
- * If databindingInto is 'attribute' this will hold the HTML element
- * attribute that's being assigned to. Otherwise it's undefined.
- */
-  readonly attribute: parse5.ASTAttribute|undefined;
-
+export type HtmlDatabindingExpression =
+    TextNodeDatabindingExpression | AttributeDatabindingExpression;
+export abstract class DatabindingExpression {
   readonly sourceRange: SourceRange;
   readonly warnings: Warning[] = [];
-
-  /** The databinding syntax used. */
-  readonly direction: '{'|'[';
   readonly expressionText: string;
+
   private readonly _expressionAst: estree.Program;
-
-
-  readonly databindingInto: 'string-interpolation'|'attribute';
-
-  /**
-   * If this is a two-way data binding, and an event name was specified
-   * (using ::eventName syntax), this is that event name.
-   */
-  readonly eventName: string|undefined;
-
   private readonly locationOffset: LocationOffset;
 
   /**
@@ -97,19 +75,10 @@ export class DatabindingExpression {
   properties: Array<{name: string, sourceRange: SourceRange}> = [];
 
   constructor(
-      astNode: parse5.ASTNode, attribute: parse5.ASTAttribute|undefined,
-      sourceRange: SourceRange, direction: '{'|'[', expressionText: string,
-      eventName: string|undefined,
-      databindingInto: 'string-interpolation'|'attribute',
-      ast: estree.Program) {
-    this.astNode = astNode;
-    this.attribute = attribute;
+      sourceRange: SourceRange, expressionText: string, ast: estree.Program) {
     this.sourceRange = sourceRange;
-    this.direction = direction;
-    this.databindingInto = databindingInto;
     this.expressionText = expressionText;
     this._expressionAst = ast;
-    this.eventName = eventName;
     this.locationOffset = {
       line: sourceRange.start.line,
       col: sourceRange.start.column
@@ -200,6 +169,85 @@ export class DatabindingExpression {
   }
 }
 
+export class AttributeDatabindingExpression extends DatabindingExpression {
+  /**
+   * The element whose attribute/property is assigned to.
+   */
+  readonly astNode: parse5.ASTNode;
+
+  readonly databindingInto = 'attribute';
+
+  /**
+   * If true, this is databinding into the complete attribute. Polymer treats
+   * such databindings specially, e.g. they're setting the property by default,
+   * not the attribute.
+   *
+   * e.g.
+   * foo="{{bar}}" is complete, foo="hello {{bar}} world" is not complete.
+   *
+   * An attribute may have multiple incomplete bindings. They will be separate
+   * AttributeDatabindingExpressions.
+   */
+  readonly isCompleteBinding: boolean;
+
+  /** The databinding syntax used. */
+  readonly direction: '{'|'[';
+
+  /**
+   * If this is a two-way data binding, and an event name was specified
+   * (using ::eventName syntax), this is that event name.
+   */
+  readonly eventName: string|undefined;
+
+  /** The attribute we're databinding into. */
+  readonly attribute: parse5.ASTAttribute;
+
+  constructor(
+      astNode: parse5.ASTNode, isCompleteBinding: boolean, direction: '{'|'[',
+      eventName: string|undefined, attribute: parse5.ASTAttribute,
+      sourceRange: SourceRange, expressionText: string, ast: estree.Program) {
+    super(sourceRange, expressionText, ast);
+    this.astNode = astNode;
+    this.isCompleteBinding = isCompleteBinding;
+    this.direction = direction;
+    this.eventName = eventName;
+    this.attribute = attribute;
+  }
+}
+
+export class TextNodeDatabindingExpression extends DatabindingExpression {
+  /** The databinding syntax used. */
+  readonly direction: '{'|'[';
+
+  /**
+   * The HTML text node that contains this databinding.
+   */
+  readonly astNode: parse5.ASTNode;
+
+  readonly databindingInto = 'text-node';
+
+  constructor(
+      direction: '{'|'[', astNode: parse5.ASTNode, sourceRange: SourceRange,
+      expressionText: string, ast: estree.Program) {
+    super(sourceRange, expressionText, ast);
+    this.direction = direction;
+    this.astNode = astNode;
+  }
+}
+
+export class JavascriptDatabindingExpression extends DatabindingExpression {
+  readonly astNode: estree.Node;
+
+  readonly databindingInto = 'javascript';
+
+  constructor(
+      astNode: estree.Node, sourceRange: SourceRange, expressionText: string,
+      ast: estree.Program) {
+    super(sourceRange, expressionText, ast);
+    this.astNode = astNode;
+  }
+}
+
 /**
  * Find and parse Polymer databinding expressions in HTML.
  */
@@ -217,7 +265,7 @@ export function scanDatabindingTemplateForExpressions(
 
 function extractDataBindingsFromTemplates(
     document: ParsedHtmlDocument, templates: Iterable<Template>) {
-  const results: DatabindingExpression[] = [];
+  const results: HtmlDatabindingExpression[] = [];
   const warnings: Warning[] = [];
   for (const template of templates) {
     dom5.nodeWalkAll(template.content, (node) => {
@@ -238,7 +286,7 @@ function extractDataBindingsFromTemplates(
 function extractDataBindingsFromTextNode(
     document: ParsedHtmlDocument,
     node: parse5.ASTNode,
-    results: DatabindingExpression[],
+    results: HtmlDatabindingExpression[],
     warnings: Warning[]) {
   const text = node.value || '';
   const dataBindings = findDatabindingInString(text);
@@ -274,14 +322,11 @@ function extractDataBindingsFromTextNode(
     if (parseResult.type === 'failure') {
       warnings.push(parseResult.warning);
     } else {
-      const expression = new DatabindingExpression(
-          node,
-          undefined,
-          sourceRange,
+      const expression = new TextNodeDatabindingExpression(
           dataBinding.direction,
+          node,
+          sourceRange,
           dataBinding.expressionText,
-          undefined,
-          'string-interpolation',
           parseResult.program);
       for (const warning of expression.warnings) {
         warnings.push(warning);
@@ -297,7 +342,7 @@ function extractDataBindingsFromAttr(
     document: ParsedHtmlDocument,
     node: parse5.ASTNode,
     attr: parse5.ASTAttribute,
-    results: DatabindingExpression[],
+    results: HtmlDatabindingExpression[],
     warnings: Warning[]) {
   if (!attr.value) {
     return;
@@ -316,8 +361,6 @@ function extractDataBindingsFromAttr(
   for (const dataBinding of dataBindings) {
     const isFullAttributeBinding = dataBinding.startIndex === 2 &&
         dataBinding.endIndex + 2 === attr.value.length;
-    const databindingInto =
-        isFullAttributeBinding ? 'attribute' : 'string-interpolation';
     let expressionText = dataBinding.expressionText;
     let eventName = undefined;
     if (dataBinding.direction === '{') {
@@ -341,14 +384,14 @@ function extractDataBindingsFromAttr(
     if (parseResult.type === 'failure') {
       warnings.push(parseResult.warning);
     } else {
-      const expression = new DatabindingExpression(
+      const expression = new AttributeDatabindingExpression(
           node,
+          isFullAttributeBinding,
+          dataBinding.direction,
+          eventName,
           attr,
           sourceRange,
-          dataBinding.direction,
           expressionText,
-          eventName,
-          databindingInto,
           parseResult.program);
       for (const warning of expression.warnings) {
         warnings.push(warning);
@@ -451,4 +494,55 @@ function parseExpression(content: string, expressionSourceRange: SourceRange) {
     return undefined;
   }
   return parseResult;
+}
+
+export function parseExpressionInJsStringLiteral(
+    document: JavaScriptDocument, stringLiteral: estree.Node) {
+  const warnings: Warning[] = [];
+  const result = {
+    databinding: undefined as undefined | JavascriptDatabindingExpression,
+    warnings
+  };
+  const sourceRangeForLiteral = document.sourceRangeForNode(stringLiteral)!;
+
+  if (stringLiteral.type !== 'Literal') {
+    // Should we warn here? It's potentially valid, just unanalyzable. Maybe
+    // just an info that someone could escalate to a warning/error?
+    warnings.push({
+      code: 'unanalyzable-polymer-expression',
+      message: `Can only analyze databinding expressions in string literals.`,
+      severity: Severity.INFO,
+      sourceRange: sourceRangeForLiteral,
+    });
+    return result;
+  }
+  const expressionText = stringLiteral.value;
+  if (typeof expressionText !== 'string') {
+    warnings.push({
+      code: 'invalid-polymer-expression',
+      message: `Expected a string, got a ${typeof expressionText}.`,
+      sourceRange: sourceRangeForLiteral,
+      severity: Severity.WARNING
+    });
+    return result;
+  }
+  const sourceRange: SourceRange = {
+    file: sourceRangeForLiteral.file,
+    start: {
+      column: sourceRangeForLiteral.start.column + 1,
+      line: sourceRangeForLiteral.start.line
+    },
+    end: {
+      column: sourceRangeForLiteral.end.column - 1,
+      line: sourceRangeForLiteral.end.line
+    }
+  };
+  const parsed = parseExpression(expressionText, sourceRange);
+  if (parsed && parsed.type === 'failure') {
+    warnings.push(parsed.warning);
+  } else if (parsed && parsed.type === 'success') {
+    result.databinding = new JavascriptDatabindingExpression(
+        stringLiteral, sourceRange, expressionText, parsed.program);
+  }
+  return result;
 }

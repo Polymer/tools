@@ -19,7 +19,7 @@ import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
 import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange, Warning} from '../model/model';
 
-import {DatabindingExpression, scanDatabindingTemplateForExpressions, Template} from './expression-scanner';
+import {HtmlDatabindingExpression, scanDatabindingTemplateForExpressions, Template} from './expression-scanner';
 import {LocalId} from './polymer-element';
 
 const p = dom5.predicates;
@@ -36,12 +36,12 @@ export class ScannedDomModule implements Resolvable {
   'slots': Slot[];
   localIds: LocalId[];
   template: Template|undefined;
-  databindings: DatabindingExpression[];
+  databindings: HtmlDatabindingExpression[];
 
   constructor(
       id: string|null, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node,
       warnings: Warning[], template: Template|undefined, slots: Slot[],
-      localIds: LocalId[], databindings: DatabindingExpression[]) {
+      localIds: LocalId[], databindings: HtmlDatabindingExpression[]) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
@@ -82,13 +82,13 @@ export class DomModule implements Feature {
   Slot[];
   localIds: LocalId[];
   template: Template|undefined;
-  databindings: DatabindingExpression[];
+  databindings: HtmlDatabindingExpression[];
 
   constructor(
       node: ASTNode, id: string|null, comment: string|undefined,
       sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[],
       slots: Slot[], localIds: LocalId[], template: Template|undefined,
-      databindings: DatabindingExpression[]) {
+      databindings: HtmlDatabindingExpression[]) {
     this.node = node;
     this.id = id;
     this.comment = comment;
@@ -119,7 +119,7 @@ export class DomModuleScanner implements HtmlScanner {
             dom5.predicates.hasTagName('template')) as (Template | undefined);
         let slots: Slot[] = [];
         let localIds: LocalId[] = [];
-        let databindings: DatabindingExpression[] = [];
+        let databindings: HtmlDatabindingExpression[] = [];
         let warnings: Warning[] = [];
         if (template) {
           const templateContent =

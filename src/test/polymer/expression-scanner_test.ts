@@ -12,16 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-
 import {assert} from 'chai';
+import * as estree from 'estree';
 
 import {HtmlParser} from '../../html/html-parser';
-import {scanDocumentForExpressions} from '../../polymer/expression-scanner';
+import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {AttributeDatabindingExpression, parseExpressionInJsStringLiteral, scanDocumentForExpressions, TextNodeDatabindingExpression} from '../../polymer/expression-scanner';
 import {CodeUnderliner} from '../test-utils';
 
 suite('ExpressionScanner', () => {
 
-  suite('scan()', () => {
+  suite('scanning html for expressions', () => {
     test('finds whole-attribute expressions', async() => {
       const contents = `
         <dom-module id="foo-elem">
@@ -41,6 +42,9 @@ suite('ExpressionScanner', () => {
         </dom-module>
 
         <div id="{{nope}}"></div>
+        <template>
+          <div id="{{notHereEither}}"></div>
+        </template>
 
         <template is="dom-bind">
           <div id="{{baz}}"></div>
@@ -50,9 +54,14 @@ suite('ExpressionScanner', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
 
       const results = await scanDocumentForExpressions(document);
-      const expressions = results.expressions;
+      const generalExpressions = results.expressions;
 
       assert.deepEqual(results.warnings, []);
+      assert.deepEqual(
+          generalExpressions.map((e) => e.databindingInto),
+          ['attribute', 'attribute', 'attribute', 'attribute', 'attribute']);
+      const expressions =
+          generalExpressions as AttributeDatabindingExpression[];
       assert.deepEqual(
           await underliner.underline(expressions.map((e) => e.sourceRange)), [
             `
@@ -88,8 +97,8 @@ suite('ExpressionScanner', () => {
       assert.deepEqual(
           expressions.map((e) => e.warnings), [[], [], [], [], []]);
       assert.deepEqual(
-          expressions.map((e) => e.databindingInto),
-          ['attribute', 'attribute', 'attribute', 'attribute', 'attribute']);
+          expressions.map((e) => e.isCompleteBinding),
+          [true, true, true, true, true]);
     });
 
     test('finds interpolated attribute expressions', async() => {
@@ -99,16 +108,24 @@ suite('ExpressionScanner', () => {
           <div id="bar {{val}} baz">
           <div id=" [[x]]{{y}}"></div>
         </template>
+
+        <div id=" {{nope}}"></div>
+        <template>
+          <div id="{{notHereEither}}"></div>
+        </template>
+
       `;
       const underliner = CodeUnderliner.withMapping('test.html', contents);
       const document = new HtmlParser().parse(contents, 'test.html');
 
       const results = await scanDocumentForExpressions(document);
-      const expressions = results.expressions;
+      const generalExpressions = results.expressions;
 
       assert.deepEqual(results.warnings, []);
       assert.deepEqual(
-          await underliner.underline(expressions.map((e) => e.sourceRange)), [
+          await underliner.underline(
+              generalExpressions.map((e) => e.sourceRange)),
+          [
             `
           <div id=" {{foo}}"></div>
                       ~~~`,
@@ -122,6 +139,11 @@ suite('ExpressionScanner', () => {
           <div id=" [[x]]{{y}}"></div>
                            ~`
           ]);
+      const expressions =
+          generalExpressions as AttributeDatabindingExpression[];
+      assert.deepEqual(
+          expressions.map((e) => e.isCompleteBinding),
+          [false, false, false, false]);
       assert.deepEqual(
           expressions.map((e) => e.direction), ['{', '{', '[', '{']);
       assert.deepEqual(
@@ -136,12 +158,9 @@ suite('ExpressionScanner', () => {
       assert.deepEqual(
           expressions.map((e) => e.attribute && e.attribute.name),
           ['id', 'id', 'id', 'id']);
-      assert.deepEqual(expressions.map((e) => e.databindingInto), [
-        'string-interpolation',
-        'string-interpolation',
-        'string-interpolation',
-        'string-interpolation'
-      ]);
+      assert.deepEqual(
+          expressions.map((e) => e.databindingInto),
+          ['attribute', 'attribute', 'attribute', 'attribute']);
     });
 
     test('finds expressions in text nodes', async() => {
@@ -157,15 +176,24 @@ suite('ExpressionScanner', () => {
             }}
           </div>
         </template>
+
+        {{nope}}
+        <template>
+          <div id="{{notHereEither}}"></div>
+        </template>
       `;
 
       const underliner = CodeUnderliner.withMapping('test.html', contents);
       const document = new HtmlParser().parse(contents, 'test.html');
 
       const results = await scanDocumentForExpressions(document);
-      const expressions = results.expressions;
+      const generalExpressions = results.expressions;
 
       assert.deepEqual(results.warnings, []);
+      assert.deepEqual(
+          generalExpressions.map((e) => e.databindingInto),
+          ['text-node', 'text-node', 'text-node', 'text-node', 'text-node']);
+      const expressions = generalExpressions as TextNodeDatabindingExpression[];
       assert.deepEqual(
           await underliner.underline(expressions.map((e) => e.sourceRange)), [
             `
@@ -210,19 +238,6 @@ suite('ExpressionScanner', () => {
           [['foo'], ['bar'], ['baz'], ['zod'], ['multiline', 'expressions']]);
       assert.deepEqual(
           expressions.map((e) => e.warnings), [[], [], [], [], []]);
-      assert.deepEqual(
-          expressions.map((e) => e.eventName),
-          [undefined, undefined, undefined, undefined, undefined]);
-      assert.deepEqual(
-          expressions.map((e) => e.attribute && e.attribute.name),
-          [undefined, undefined, undefined, undefined, undefined]);
-      assert.deepEqual(expressions.map((e) => e.databindingInto), [
-        'string-interpolation',
-        'string-interpolation',
-        'string-interpolation',
-        'string-interpolation',
-        'string-interpolation'
-      ]);
     });
 
     test('gives accurate locations for parse errors', async() => {
@@ -274,4 +289,49 @@ suite('ExpressionScanner', () => {
     });
   });
 
+  suite('parsing expressions from javascript string literals', () => {
+    test('it succeeds and fails properly', async() => {
+      const contents = `
+        const observers = [
+          'foo(bar, baz)',
+          'foo(bar baz)',
+          'foo(bar.*)',
+          10,
+          observerAssignedElsewhere,
+        ];
+      `;
+      const underliner = CodeUnderliner.withMapping('test.js', contents);
+      const javascriptDocument =
+          new JavaScriptParser().parse(contents, 'test.js');
+      const literals: estree.Literal[] =
+          javascriptDocument.ast.body[0]['declarations'][0]['init']['elements'];
+
+      const parsedLiterals = literals.map(
+          (l) => parseExpressionInJsStringLiteral(javascriptDocument, l));
+      const warnings = parsedLiterals.map((pl) => pl.warnings)
+                           .reduce((p, n) => p.concat(n), []);
+      const expressionRanges = parsedLiterals.map(
+          (pl) => pl.databinding && pl.databinding.sourceRange);
+      assert.deepEqual(await underliner.underline(expressionRanges), [
+        `
+          'foo(bar, baz)',
+           ~~~~~~~~~~~~~`,
+        `No source range given.`,
+        `No source range given.`,
+        `No source range given.`,
+        `No source range given.`,
+      ]);
+      assert.deepEqual(await underliner.underline(warnings), [
+        `
+          'foo(bar baz)',
+                   ~`,
+        `
+          10,
+          ~~`,
+        `
+          observerAssignedElsewhere,
+          ~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      ]);
+    });
+  });
 });
