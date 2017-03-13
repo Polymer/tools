@@ -21,12 +21,40 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {ScannedElement, ScannedFeature, ScannedReference, Severity, Warning} from '../model/model';
+import {ScannedElement, ScannedFeature, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 
 import {extractObservers} from './declaration-property-handlers';
 import {getOrInferPrivacy} from './js-utils';
 import {Observer, ScannedPolymerElement} from './polymer-element';
 import {getIsValue, getMethods, getProperties} from './polymer2-config';
+
+
+/** Represents the value of an operation that may fail. */
+type Result<V, E> = {
+  successful: true; value: V;
+}|{
+  successful: false;
+  value: E;
+};
+
+/**
+ * Represents the first argument of a call to customElements.define.
+ */
+type TagNameExpression = ClassDotIsExpression|StringLiteralExpression;
+
+/** The tagname was the `is` property on an class, like `MyElem.is` */
+interface ClassDotIsExpression {
+  type: 'is';
+  className: string;
+  classNameSourceRange: SourceRange;
+}
+/** The tag name was just a string literal. */
+interface StringLiteralExpression {
+  type: 'string-literal';
+  value: string;
+  sourceRange: SourceRange;
+}
+
 
 export interface ScannedAttribute extends ScannedFeature {
   name: string;
@@ -45,9 +73,11 @@ export class Polymer2ElementScanner implements JavaScriptScanner {
 
 class ElementVisitor implements Visitor {
   private _possibleElements = new Map<string, ScannedElement>();
-  private _registeredButNotFound = new Map<string, string>();
+  private _registeredButNotFound = new Map<string, TagNameExpression>();
   private _elements: Set<ScannedElement> = new Set();
   private _document: JavaScriptDocument;
+  // TODO(rictic): write a WarningFeature. Emit them from this scanner.
+  private _warnings: Warning[] = [];
 
   private _currentElement: ScannedPolymerElement|null = null;
   private _currentElementNode: estree.Node|null = null;
@@ -230,9 +260,9 @@ class ElementVisitor implements Visitor {
 
     const className = node.id && node.id.name;
     const element = new ScannedPolymerElement({
+      className,
       astNode: node,
       tagName: isValue,
-      className,
       description: (docs.description || '').trim(),
       events: esutil.getEventComments(node),
       sourceRange: this._document.sourceRangeForNode(node),
@@ -240,11 +270,12 @@ class ElementVisitor implements Visitor {
       methods: getMethods(node, this._document),
       superClass: this._getExtends(node, docs, warnings),
       mixins: jsdoc.getMixins(this._document, node, docs, warnings),
-      privacy: getOrInferPrivacy(className || '', docs, false), observers
+      privacy: getOrInferPrivacy(className || '', docs, false),  //
+      observers,
     });
 
-    // If a class defines observedAttributes, it overrides what the base classes
-    // defined.
+    // If a class defines observedAttributes, it overrides what the base
+    // classes defined.
     // TODO(justinfagnani): define and handle composition patterns.
     const observedAttributes = this._getObservedAttributes(node);
 
@@ -266,25 +297,37 @@ class ElementVisitor implements Visitor {
           callee === 'customElements.define')) {
       return;
     }
-    const tagName =
-        node.arguments[0] && astValue.expressionToValue(node.arguments[0]);
-    if (tagName == null || (typeof tagName !== 'string')) {
+
+    const tagNameExpressionResult =
+        node.arguments[0] && this.getTagNameExpression(node.arguments[0]);
+    if (!tagNameExpressionResult.successful) {
+      this._warnings.push(tagNameExpressionResult.value);
+      return;
+    }
+    const tagNameExpression = tagNameExpressionResult.value;
+    if (tagNameExpression == null) {
       return;
     }
     const elementDefn = node.arguments[1];
     if (elementDefn == null) {
       return;
     }
-    const element: ScannedElement|null = this._getElement(tagName, elementDefn);
+    const element: ScannedElement|null =
+        this._getElement(tagNameExpression, elementDefn);
     if (!element) {
       return;
     }
-    element.tagName = tagName;
     this._elements.add(element);
+    const tagNameResult = this.getTagNameFromExpression(tagNameExpression);
+    if (tagNameResult.successful) {
+      element.tagName = tagNameResult.value;
+    } else {
+      this._warnings.push(tagNameResult.value);
+    }
   }
 
-  private _getElement(tagName: string, elementDefn: estree.Node): ScannedElement
-      |null {
+  private _getElement(tagName: TagNameExpression, elementDefn: estree.Node):
+      ScannedElement|null {
     const className = astValue.getIdentifierName(elementDefn);
     if (className) {
       const element = this._possibleElements.get(className);
@@ -351,9 +394,9 @@ class ElementVisitor implements Visitor {
    * e.g.
    *     static get observedAttributes() {
    *       return [
-   *         /** @type {boolean} When given the element is totally inactive \*\/
+   *         /** @type {boolean} When given the element is totally inactive *\/
    *         'disabled',
-   *         /** @type {boolean} When given the element is expanded \*\/
+   *         /** @type {boolean} When given the element is expanded *\/
    *         'open'
    *       ];
    *     }
@@ -401,14 +444,86 @@ class ElementVisitor implements Visitor {
   getRegisteredElements(): ScannedElement[] {
     for (const classAndTag of this._registeredButNotFound.entries()) {
       const className = classAndTag[0];
-      const tagName = classAndTag[1];
+      const tagNameExpression = classAndTag[1];
       const element = this._possibleElements.get(className);
       if (element) {
         element.className = className;
-        element.tagName = tagName;
+        const tagNameResult = this.getTagNameFromExpression(tagNameExpression);
+        if (tagNameResult.successful) {
+          element.tagName = tagNameResult.value;
+        } else {
+          this._warnings.push(tagNameResult.value);
+        }
         this._elements.add(element);
       }
     }
     return Array.from(this._elements);
+  }
+
+  getTagNameFromExpression(expression: TagNameExpression):
+      Result<string|undefined, Warning> {
+    if (expression.type === 'string-literal') {
+      return {successful: true, value: expression.value};
+    }
+    const element = this._possibleElements.get(expression.className) ||
+        Array.from(this._elements)
+            .find((e) => e.className === expression.className);
+    if (!element) {
+      return {successful: false, value: {
+                code: 'cant-determine-element-tagname',
+                message:
+                    `Couldn't dereference the class name ${expression.className
+          } here.`,
+          severity: Severity.WARNING,
+          sourceRange: expression.classNameSourceRange
+        }
+      };
+    }
+    return {successful: true, value: element.tagName};
+  }
+
+  getTagNameExpression(expression: estree.Node):
+      Result<TagNameExpression, Warning> {
+    const tryForLiteralString = astValue.expressionToValue(expression);
+    if (tryForLiteralString != null &&
+        typeof tryForLiteralString === 'string') {
+      return {
+        successful: true,
+        value: {
+          type: 'string-literal',
+          value: tryForLiteralString,
+          sourceRange: this._document.sourceRangeForNode(expression)!
+        }
+      };
+    }
+    if (expression.type === 'MemberExpression') {
+      // Might be something like MyElement.is
+      const isPropertyNameIs = (expression.property.type === 'Identifier' &&
+                                expression.property.name === 'is') ||
+          (astValue.expressionToValue(expression.property) === 'is');
+      const className = astValue.getIdentifierName(expression.object);
+      if (isPropertyNameIs && className) {
+        return {
+          successful: true,
+          value: {
+            type: 'is',
+            className,
+            classNameSourceRange:
+                this._document.sourceRangeForNode(expression.object)!
+          }
+        };
+      }
+    }
+    return {
+      successful: false,
+      value: {
+        code: 'cant-determine-element-tagname',
+        message:
+            `Unable to evaluate this expression down to a definitive string ` +
+            `tagname.`,
+        severity: Severity.WARNING,
+        sourceRange: this._document.sourceRangeForNode(expression)!
+      }
+    };
   }
 }

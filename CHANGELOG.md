@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Added options argument for Analyzer `_fork` method, supporting individual property overrides.
 * Parse observers and computed functions in Polymer declarations. Warn on parse errors, or using the wrong syntax (e.g. function calls in `observer`, not a function call in `computed`).
+* Correctly scan the `customElements.define(MyClass.is, MyClass)` pattern.
 
 ## [2.0.0-alpha.31] - 2017-03-07
 
