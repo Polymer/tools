@@ -17,6 +17,7 @@ import './html/move-style-into-template';
 import './html/undefined-elements';
 
 import './polymer/behaviors-spelling';
+import './polymer/databinding-calls-must-be-functions';
 import './polymer/databind-with-unknown-property';
 import './polymer/element-before-dom-module';
 import './polymer/set-unknown-attribute';

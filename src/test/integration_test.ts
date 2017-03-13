@@ -139,6 +139,14 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/app-layout/pull/426
   'app-layout/site/device-viewer/device-layout-viewer.html':
       new Set(['databind-with-unknown-property']),
+
+  // This file has a really long observer that's broken into two string
+  // literals spread across two lines.
+  'iron-ajax/iron-ajax.html': new Set(['unanalyzable-polymer-expression']),
+
+  // https://github.com/PolymerElements/app-route/pull/183
+  'app-route/demo/youtube-demo/youtube-search.html':
+      new Set(['databinding-calls-must-be-functions']),
 };
 
 const codesOkInTestsAndDemos = new Set([

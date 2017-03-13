@@ -21,6 +21,7 @@ registry.register(
     new RuleCollection('polymer-2', `Rules for projects that use Polymer 2.x`, [
       'behaviors-spelling',
       'databind-with-unknown-property',
+      'databinding-calls-must-be-functions',
       'dom-module-invalid-attrs',
       'element-before-dom-module',
       'set-unknown-attribute',
@@ -36,6 +37,7 @@ registry.register(new RuleCollection(
 Will warn about use of deprecated Polymer 1.x features or brand new features in Polymer 2.x`,
     [
       'behaviors-spelling',
+      'databinding-calls-must-be-functions',
       'databind-with-unknown-property',
       'dom-module-invalid-attrs',
       'element-before-dom-module',
@@ -53,6 +55,7 @@ For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-
 `,
     [
       'behaviors-spelling',
+      'databinding-calls-must-be-functions',
       'databind-with-unknown-property',
       'element-before-dom-module',
       'set-unknown-attribute',
