@@ -25,6 +25,7 @@ export * from './model/model';
 export {WarningPrinter, Verbosity as WarningPrinterVerbosity, Options as WarningPrinterOptions} from './warning/warning-printer';
 export {WarningFilter} from './warning/warning-filter';
 export {Namespace} from './javascript/namespace';
+export {ParsedDocument} from './parser/document';
 
 // Analysis
 export {generateAnalysis, validateAnalysis} from './generate-analysis';
@@ -43,7 +44,7 @@ export {UrlResolver} from './url-loader/url-resolver';
 export {PolymerElement} from './polymer/polymer-element';
 export {Behavior as PolymerBehavior} from './polymer/behavior';
 export {PolymerElementMixin} from './polymer/polymer-element-mixin';
-export {DatabindingExpression as PolymerDatabindingExpression} from './polymer/expression-scanner';
+export {DatabindingExpression as PolymerDatabindingExpression, AttributeDatabindingExpression, HtmlDatabindingExpression, JavascriptDatabindingExpression} from './polymer/expression-scanner';
 export {DomModule} from './polymer/dom-module-scanner';
 
 // ParsedDocuments
