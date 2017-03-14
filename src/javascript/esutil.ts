@@ -126,8 +126,7 @@ export function getEventComments(node: estree.Node): ScannedEvent[] {
           .map((commentAST) => commentAST.value)
           .filter((comment) => comment.indexOf('@event') !== -1)
           .forEach((comment) => eventComments.add(comment));
-    },
-    keys: {Super: []}
+    }
   });
   return Array.from(eventComments)
       .map(function(comment) {
