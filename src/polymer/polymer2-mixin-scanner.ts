@@ -69,6 +69,7 @@ class MixinVisitor implements Visitor {
         this._currentMixin = new ScannedPolymerElementMixin({
           name: namespacedName,
           sourceRange,
+          astNode: node,
           description: parentJsDocs.description,
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, parentJsDocs, false),
@@ -101,6 +102,7 @@ class MixinVisitor implements Visitor {
         this._currentMixin = new ScannedPolymerElementMixin({
           name: namespacedName,
           sourceRange,
+          astNode: node,
           description: nodeJsDocs.description,
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
@@ -142,6 +144,7 @@ class MixinVisitor implements Visitor {
           mixin = new ScannedPolymerElementMixin({
             name: namespacedName,
             sourceRange,
+            astNode: node,
             description: docs.description,
             summary: (summaryTag && summaryTag.description) || '',
             privacy: getOrInferPrivacy(namespacedName, docs, false),

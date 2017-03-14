@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import * as dom5 from 'dom5';
+import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Document, ElementMixin, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
@@ -28,6 +29,7 @@ export interface Options {
   privacy: Privacy;
   sourceRange: SourceRange;
   mixins: ScannedReference[];
+  astNode: estree.Node;
 }
 
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
