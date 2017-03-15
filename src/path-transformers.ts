@@ -44,6 +44,10 @@
 
 import * as path from 'path';
 
+export function posixifyPath(filepath: string): string {
+  return filepath.replace(new RegExp('\\' + path.sep, 'g'), '/');
+}
+
 export function urlFromPath(root: string, filepath: string) {
   if (!filepath.startsWith(root)) {
     throw new Error(`file path is not in root: ${filepath} (${root})`);
