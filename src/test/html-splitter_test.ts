@@ -43,7 +43,7 @@ suite('HtmlSplitter', () => {
             'shell.html',
             'shell.html_script_0.js',
             'shell.html_script_1.js',
-            'source-dir/my-app.html',
+            path.join('source-dir', 'my-app.html'),
           ];
           assert.deepEqual(
               Array.from(splitFiles.keys()).sort(), expectedSplitFiles);
@@ -73,7 +73,7 @@ suite('HtmlSplitter', () => {
           const expectedJoinedFiles = [
             'index.html',
             'shell.html',
-            'source-dir/my-app.html',
+            path.join('source-dir', 'my-app.html'),
           ];
           assert.deepEqual(
               Array.from(joinedFiles.keys()).sort(), expectedJoinedFiles);
