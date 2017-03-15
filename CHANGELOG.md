@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
+* Fixed issue with Service Worker generation in Windows environment where full paths were put into its precacheConfig instead of relative paths.
 
 <!-- List New Changes Here -->
 
