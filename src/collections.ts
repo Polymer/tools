@@ -20,6 +20,7 @@ import {RuleCollection} from './rule';
 registry.register(
     new RuleCollection('polymer-2', `Rules for projects that use Polymer 2.x`, [
       'behaviors-spelling',
+      'call-super-in-callbacks',
       'databind-with-unknown-property',
       'databinding-calls-must-be-functions',
       'dom-module-invalid-attrs',

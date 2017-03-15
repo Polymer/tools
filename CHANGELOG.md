@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
 - `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
 - `databinding-calls-must-be-functions`: Computed functions, observers, and calls in databinding expressions must be either methods on the element or properties with types that could be function types.
+- `call-super-in-callbacks`: Warns when a Polymer 2.0 element does not call super() in callbacks that require it, like `connectedCallback`.
 
 ## [0.1.6] - 2017-03-07
 
