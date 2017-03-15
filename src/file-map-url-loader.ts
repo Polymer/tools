@@ -13,7 +13,7 @@
  */
 
 import File = require('vinyl');
-import {UrlLoader} from 'polymer-analyzer/lib/url-loader/url-loader';
+import {UrlLoader} from 'polymer-analyzer';
 import {parseUrl} from 'polymer-analyzer/lib/utils';
 import {pathFromUrl} from './path-transformers';
 
