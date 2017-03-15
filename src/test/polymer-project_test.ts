@@ -59,7 +59,7 @@ suite('PolymerProject', () => {
             'shell.html',
             'source-dir/my-app.html',
           ];
-          assert.sameMembers(names, expected);
+          assert.deepEqual(names.sort(), expected);
           done();
         });
   });
@@ -96,7 +96,7 @@ suite('PolymerProject', () => {
           'bower_components/dep.html',
           'bower_components/loads-external-dependencies.html',
         ];
-        assert.sameMembers(names, expected);
+        assert.deepEqual(names.sort(), expected);
         done();
       });
     });
@@ -142,10 +142,10 @@ suite('PolymerProject', () => {
             const names = files.map((f) => unroot(f.path));
             const expected = [
               'bower_components/dep.html',
-              'bower_components/unreachable-dep.html',
               'bower_components/loads-external-dependencies.html',
+              'bower_components/unreachable-dep.html',
             ];
-            assert.sameMembers(names, expected);
+            assert.deepEqual(names.sort(), expected);
             done();
           });
         });
