@@ -50,9 +50,6 @@ suite('set-unknown-attribute', () => {
         await linter.lint(['set-unknown-attribute/when-to-warn.html']);
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
       `
-    <elem-one unknown="not ok"></elem-one>
-              ~~~~~~~`,
-      `
     <elem-one attr-one="{{bad}}"></elem-one>
               ~~~~~~~~`,
       `
@@ -65,14 +62,8 @@ suite('set-unknown-attribute', () => {
     <elem-one class="{{nonono}}" style="{{dontDoThis}}"></elem-one>
                                  ~~~~~`,
       `
-    <elem-two propTwo="not ok"></elem-two>
-              ~~~~~~~`,
-      `
     <elem-two propTwo="{{also.not.ok}}"></elem-two>
               ~~~~~~~`,
-      `
-<elem-one unknown="warns even outside databindings"></elem-one>
-          ~~~~~~~`
     ]);
   });
 
@@ -80,10 +71,6 @@ suite('set-unknown-attribute', () => {
     const warnings =
         await linter.lint(['set-unknown-attribute/warning-messages.html']);
     assert.deepEqual(warnings.map((w) => w.message), [
-      'test-elem elements do not have an attribute named bazic. Consider instead:  basic',
-      'test-elem elements do not have an attribute named multiword. Consider instead:  multi-word',
-      'test-elem elements do not have an attribute named ib. Consider instead:  id',
-      'test-elem elements do not have an attribute named tattle. Consider instead:  title',
       'test-elem elements do not have a property named class. Consider instead:  class$',
       'data-* attributes must be accessed as attributes. i.e. you must write:  data-foo$="{{dont.do.this}}"'
     ]);

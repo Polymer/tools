@@ -147,6 +147,14 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/app-route/pull/183
   'app-route/demo/youtube-demo/youtube-search.html':
       new Set(['databinding-calls-must-be-functions']),
+
+  // https://github.com/PolymerElements/app-layout/pull/423
+  'app-layout/patterns/transform-navigation/x-app.html':
+      new Set(['set-unknown-attribute']),
+
+  // https://github.com/PolymerElements/app-route/pull/182
+  'app-route/demo/data-loading-demo/flickr-search-demo.html':
+      new Set(['set-unknown-attribute']),
 };
 
 const codesOkInTestsAndDemos = new Set([

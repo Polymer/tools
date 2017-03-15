@@ -61,7 +61,8 @@ export class SetUnknownAttribute extends HtmlRule {
       if (!node || !node.tagName) {
         continue;
       }
-      const elements = document.getById('element', node.tagName);
+      const elements = document.getById(
+          'element', node.tagName, {imported: true, externalPackages: true});
       if (elements.size !== 1) {
         continue;
       }
@@ -110,7 +111,13 @@ export class SetUnknownAttribute extends HtmlRule {
         const shared = isAttribute ? sharedAttributes : sharedProperties;
         const found =
             shared.has(name) || !!allowedBindings.find((b) => b.name === name);
-        if (!found) {
+        // This works for both attributes and properties, but warning for
+        // unknown attributes is too noisy for most, and it has lots of totally
+        // legitimate uses.
+        // TODO(rictic): once we've got per-rule settings piped in, checking
+        //     attributes  should be an option. Maybe also as part of a
+        //     strict databinding collection?
+        if (!found && !isAttribute) {
           const suggestion = closestOption(name, isAttribute, element);
           if (isFullDataBinding && suggestion.attribute) {
             suggestion.name += '$';

@@ -2,6 +2,12 @@
   This file covers databindings to test against false positives and false
   negatives, as well as source ranges.
 -->
+
+<!--
+  Note that there are places where we set attributes but don't yet assert on
+  them. That's intentional, as attribute linting is currently disabled, though
+  the code is written and worked. It will be an option once options are added.
+-->
 <script>
   customElements.define('elem-one', class extends HTMLElement {
     static get observedAttributes() {

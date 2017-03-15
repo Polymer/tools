@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `databinding-calls-must-be-functions`: Computed functions, observers, and calls in databinding expressions must be either methods on the element or properties with types that could be function types.
 - `call-super-in-callbacks`: Warns when a Polymer 2.0 element does not call super() in callbacks that require it, like `connectedCallback`.
 
+### Fixes
+- `set-unknown-attribute`
+  - We weren't checking bindings on imported elements.
+  - Warning for unknown attributes has too many false positives to be on by default. There are too many legit use cases for adding arbitrary attributes to elements. We'll add it as an option once we've got lint rule options hooked up.
+
 ## [0.1.6] - 2017-03-07
 
 - Update polymer-analyzer to 1.0.0-alpha.31
