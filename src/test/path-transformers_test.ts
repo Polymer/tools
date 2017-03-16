@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
-import {sep as pathSeparator} from 'path';
+import {join as pathJoin, sep as pathSeparator} from 'path';
 
 import {isPlatformWindows, pathFromUrl, urlFromPath} from '../path-transformers';
 
@@ -34,17 +34,17 @@ suite('pathFromUrl()', () => {
 
   test('returns a path if url is absolute', () => {
     const path = pathFromUrl(RootPath, '/absolute/path');
-    assert.equal(path, [RootPath, 'absolute', 'path'].join(pathSeparator));
+    assert.equal(path, pathJoin(RootPath, 'absolute', 'path'));
   });
 
   test('returns a path if url relative', () => {
     const path = pathFromUrl(RootPath, 'relative/path');
-    assert.equal(path, [RootPath, 'relative', 'path'].join(pathSeparator));
+    assert.equal(path, pathJoin(RootPath, 'relative', 'path'));
   });
 
   test('will not go outside the root path', () => {
     const path = pathFromUrl(RootPath, '../../../still/../root/path');
-    assert.equal(path, [RootPath, 'root', 'path'].join(pathSeparator));
+    assert.equal(path, pathJoin(RootPath, 'root', 'path'));
   });
 });
 
@@ -56,37 +56,16 @@ suite('urlFromPath()', () => {
     });
   });
 
-  if (isPlatformWindows()) {
-    test(
-        'creates a URL path relative to root when called in a Windows environment',
-        () => {
-          const shortPath =
-              urlFromPath(WindowsRootPath, WindowsRootPath + '\\shop-app.html');
-          assert.equal(shortPath, 'shop-app.html');
-          const medPath = urlFromPath(
-              WindowsRootPath, WindowsRootPath + '\\src\\shop-app.html');
-          assert.equal(medPath, 'src/shop-app.html');
-          const longPath = urlFromPath(
-              WindowsRootPath,
-              WindowsRootPath + '\\bower_components\\app-layout\\docs.html');
-          assert.equal(longPath, 'bower_components/app-layout/docs.html');
-        });
-
-  } else {
-    test(
-        'creates a URL path relative to root when called in a Posix environment',
-        () => {
-          const shortPath =
-              urlFromPath(MacRootPath, MacRootPath + '/shop-app.html');
-          assert.equal(shortPath, 'shop-app.html');
-          const medPath =
-              urlFromPath(MacRootPath, MacRootPath + '/src/shop-app.html');
-          assert.equal(medPath, 'src/shop-app.html');
-          const longPath = urlFromPath(
-              MacRootPath,
-              MacRootPath + '/bower_components/app-layout/docs.html');
-          assert.equal(longPath, 'bower_components/app-layout/docs.html');
-        });
-  }
-
+  test('creates a URL path relative to root', () => {
+    const shortPath =
+        urlFromPath(RootPath, pathJoin(RootPath, 'shop-app.html'));
+    assert.equal(shortPath, 'shop-app.html');
+    const medPath =
+        urlFromPath(RootPath, pathJoin(RootPath, 'src', 'shop-app.html'));
+    assert.equal(medPath, 'src/shop-app.html');
+    const longPath = urlFromPath(
+        RootPath,
+        pathJoin(RootPath, 'bower_components', 'app-layout', 'docs.html'));
+    assert.equal(longPath, 'bower_components/app-layout/docs.html');
+  });
 });
