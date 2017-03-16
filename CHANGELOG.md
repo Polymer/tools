@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!--## Unreleased-->
+
+## [1.0.0] - 2017-03-15
+
+### First major release!
+
+- polymer-lint is now at feature parity with [polylint](https://github.com/PolymerLabs/polylint), and is ready to replace it!
 
 ### New Lint Rules
 - `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
