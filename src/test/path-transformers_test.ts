@@ -15,10 +15,38 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
-import {isPlatformWindows, urlFromPath} from '../path-transformers';
+import {sep as pathSeparator} from 'path';
+
+import {isPlatformWindows, pathFromUrl, urlFromPath} from '../path-transformers';
 
 const WindowsRootPath = 'C:\\Users\\TEST_USER\\TEST_ROOT';
 const MacRootPath = '/Users/TEST_USER/TEST_ROOT';
+const RootPath = isPlatformWindows() ? WindowsRootPath : MacRootPath;
+
+suite('pathFromUrl()', () => {
+
+  test('creates a filesystem path using the platform separators', () => {
+    const otherSeparator = pathSeparator === '/' ? '\\' : '/';
+    const path = pathFromUrl(RootPath, '/some/url/pathname');
+    assert.include(path, pathSeparator);
+    assert.notInclude(path, otherSeparator);
+  });
+
+  test('returns a path if url is absolute', () => {
+    const path = pathFromUrl(RootPath, '/absolute/path');
+    assert.equal(path, [RootPath, 'absolute', 'path'].join(pathSeparator));
+  });
+
+  test('returns a path if url relative', () => {
+    const path = pathFromUrl(RootPath, 'relative/path');
+    assert.equal(path, [RootPath, 'relative', 'path'].join(pathSeparator));
+  });
+
+  test('will not go outside the root path', () => {
+    const path = pathFromUrl(RootPath, '../../../still/../root/path');
+    assert.equal(path, [RootPath, 'root', 'path'].join(pathSeparator));
+  });
+});
 
 suite('urlFromPath()', () => {
 

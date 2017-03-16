@@ -48,8 +48,13 @@ export function isPlatformWindows(): boolean {
   return /^win/.test(process.platform);
 }
 
+export function pathFromUrl(root: string, url: string) {
+  return platformifyPath(decodeURI(
+      path.posix.join(posixifyPath(root), path.posix.join('/', url))));
+}
+
 export function platformifyPath(filepath: string): string {
-  // Replace all / with \ if win32 otherwise nothing.
+  // Replaces all / with \ on win32.  Otherwise this is a noop.
   // TODO(usergenic): Should we produce an "extended-length path" in win32 if
   // the path length is over 259 on win32?
   return filepath.replace(/\//g, path.sep);
@@ -76,8 +81,4 @@ export function urlFromPath(root: string, filepath: string) {
   // The goal is a relative URL from the root, so strip out the root and the
   // leading slash, so '/my-app/subfolder/file.html' => 'subfolder/file.html'
   return encodeURI(filepath.replace(root, '').replace(/^\//, ''));
-}
-
-export function pathFromUrl(root: string, url: string) {
-  return platformifyPath(decodeURI(path.join(root, url)));
 }
