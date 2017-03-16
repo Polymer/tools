@@ -47,8 +47,9 @@ suite('BuildBundler', () => {
   let bundledStream: Stream;
   let files: Map<string, File>;
 
-  let setupTest =
-    async(options: ProjectOptions, transform?: FileTransform) => new Promise((resolve, reject) => {
+  let setupTest = async(
+      options: ProjectOptions,
+      transform?: FileTransform) => new Promise((resolve, reject) => {
     root = options.root = options.root || defaultRoot;
     const config = new ProjectConfig(options);
     const analyzer = new BuildAnalyzer(config);
@@ -107,12 +108,12 @@ suite('BuildBundler', () => {
 
   const addHeaders = new FileTransform((stream, file) => {
     if (path.extname(file.path) === '.html') {
-      file.contents = new Buffer(
-          `<!-- ${path.basename(file.path)} -->${file.contents}`);
+      file.contents =
+          new Buffer(`<!-- ${path.basename(file.path)} -->${file.contents}`);
     }
     if (path.extname(file.path).match(/^\.(js|css)$/)) {
-      file.contents = new Buffer(
-          `/* ${path.basename(file.path)} */${file.contents}`);
+      file.contents =
+          new Buffer(`/* ${path.basename(file.path)} */${file.contents}`);
     }
     stream.push(file);
   });
@@ -286,16 +287,18 @@ suite('BuildBundler', () => {
   });
 
   test('bundler loads changed files from stream', async() => {
-    await setupTest({
-      root: path.resolve('test-fixtures/bundle-project'),
-      entrypoint: 'index.html',
-      sources: [
-        'index.html',
-        'simple-import.html',
-        'simple-import-2.html',
-        'simple-style.css',
-      ],
-    }, addHeaders);
+    await setupTest(
+        {
+          root: path.resolve('test-fixtures/bundle-project'),
+          entrypoint: 'index.html',
+          sources: [
+            'index.html',
+            'simple-import.html',
+            'simple-import-2.html',
+            'simple-style.css',
+          ],
+        },
+        addHeaders);
 
     const bundledHtml = getFile('index.html');
 
@@ -316,16 +319,18 @@ suite('BuildBundler', () => {
       }
       stream.push(file);
     });
-    await setupTest({
-      root: path.resolve('test-fixtures/bundle-project'),
-      entrypoint: 'index.html',
-      sources: [
-        'index.html',
-        'simple-import.html',
-        'simple-import-2.html',
-        'simple-style.css',
-      ],
-    }, platformSepPaths);
+    await setupTest(
+        {
+          root: path.resolve('test-fixtures/bundle-project'),
+          entrypoint: 'index.html',
+          sources: [
+            'index.html',
+            'simple-import.html',
+            'simple-import-2.html',
+            'simple-style.css',
+          ],
+        },
+        platformSepPaths);
 
     const bundledHtml = getFile('index.html');
 
@@ -334,8 +339,10 @@ suite('BuildBundler', () => {
     // and it verifies that bundler can processing files that may be merged in
     // or have otherwise reverted form paths from other s
     assert.include(bundledHtml, '<title>Sample Build</title>', 'index.html');
-    assert.include(bundledHtml, '<dom-module id="my-element">', 'simple-import.html');
-    assert.include(bundledHtml, '<dom-module id="my-element-2">', 'simple-import-2.html');
+    assert.include(
+        bundledHtml, '<dom-module id="my-element">', 'simple-import.html');
+    assert.include(
+        bundledHtml, '<dom-module id="my-element-2">', 'simple-import-2.html');
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
   });
 });

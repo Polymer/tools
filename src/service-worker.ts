@@ -20,8 +20,8 @@ import * as logging from 'plylog';
 import {generate as swPrecacheGenerate, SWConfig} from 'sw-precache';
 
 import {DepsIndex} from './analyzer';
-import {PolymerProject} from './polymer-project';
 import {posixifyPath} from './path-transformers';
+import {PolymerProject} from './polymer-project';
 
 const logger = logging.getLogger('polymer-build.service-worker');
 
