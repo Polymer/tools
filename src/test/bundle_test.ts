@@ -336,8 +336,8 @@ suite('BuildBundler', () => {
 
     // In setupTest, we use a transform stream that forces the file paths to
     // be in the original platform form (this only changes/matters for win32)
-    // and it verifies that bundler can processing files that may be merged in
-    // or have otherwise reverted form paths from other s
+    // and it verifies that bundler can process files that may be merged in
+    // or have otherwise reverted form paths in win32 separator form.
     assert.include(bundledHtml, '<title>Sample Build</title>', 'index.html');
     assert.include(
         bundledHtml, '<dom-module id="my-element">', 'simple-import.html');
@@ -370,9 +370,9 @@ suite('BuildBundler', () => {
     const bundledHtml = getFile('index.html');
 
     // In setupTest, we use a transform stream that forces the file paths to
-    // be in the original platform form (this only changes/matters for win32)
-    // and it verifies that bundler can processing files that may be merged in
-    // or have otherwise reverted form paths from other s
+    // be in the posix form (this only changes/matters for win32)
+    // and it verifies that bundler can process files that may be merged in
+    // or have otherwise have paths in posix separator form.
     assert.include(bundledHtml, '<title>Sample Build</title>', 'index.html');
     assert.include(
         bundledHtml, '<dom-module id="my-element">', 'simple-import.html');
