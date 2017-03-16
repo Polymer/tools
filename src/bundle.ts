@@ -63,11 +63,10 @@ export class BuildBundler extends Transform {
     const bundles = await this._buildBundles();
     for (const filename of bundles.keys()) {
       const filepath = pathFromUrl(this.config.root, filename);
-      let file =
-          this._buildAnalyzer.getFile(filepath) || new File({path: filepath});
-      const contents = bundles.get(filename);
-      file.contents = new Buffer(contents);
-      this.push(file);
+      this.push(new File({
+        path: filepath,
+        contents: new Buffer(bundles.get(filename)),
+      }));
     }
     // end the stream
     done();
