@@ -75,9 +75,9 @@ export function urlFromPath(root: string, filepath: string) {
 
   // The goal is a relative URL from the root, so strip out the root and the
   // leading slash, so '/my-app/subfolder/file.html' => 'subfolder/file.html'
-  return filepath.replace(root, '').replace(/^\//, '');
+  return encodeURI(filepath.replace(root, '').replace(/^\//, ''));
 }
 
 export function pathFromUrl(root: string, url: string) {
-  return platformifyPath(path.join(root, url));
+  return platformifyPath(decodeURI(path.join(root, url)));
 }

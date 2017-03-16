@@ -55,7 +55,7 @@ export class BuildBundler extends Transform {
       file: File,
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
-    this.files.set(file.path, file);
+    this.files.set(urlFromPath(this.config.root, file.path), file);
     callback(null, file);
   }
 
