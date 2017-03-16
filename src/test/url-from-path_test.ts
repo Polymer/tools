@@ -15,11 +15,10 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
-import {urlFromPath} from '../path-transformers';
+import {isPlatformWindows, urlFromPath} from '../path-transformers';
 
 const WindowsRootPath = 'C:\\Users\\TEST_USER\\TEST_ROOT';
 const MacRootPath = '/Users/TEST_USER/TEST_ROOT';
-const isPlatformWin = /^win/.test(process.platform);
 
 suite('urlFromPath()', () => {
 
@@ -29,7 +28,7 @@ suite('urlFromPath()', () => {
     });
   });
 
-  if (isPlatformWin) {
+  if (isPlatformWindows()) {
     test(
         'creates a URL path relative to root when called in a Windows environment',
         () => {

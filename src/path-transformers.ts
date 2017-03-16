@@ -44,38 +44,40 @@
 
 import * as path from 'path';
 
+export function isPlatformWindows(): boolean {
+  return /^win/.test(process.platform);
+}
+
+export function platformifyPath(filepath: string): string {
+  // Replace all / with \ if win32 otherwise nothing.
+  // TODO(usergenic): Should we produce an "extended-length path" in win32 if
+  // the path length is over 259 on win32?
+  return filepath.replace(/\//g, path.sep);
+}
+
 export function posixifyPath(filepath: string): string {
-  return filepath.replace(new RegExp('\\' + path.sep, 'g'), '/');
+  if (isPlatformWindows()) {
+    // Strip "extended-length path" prefix.
+    filepath = filepath.replace(/^\\\\\?\\/, '');
+    // Replace all \ with /
+    filepath = filepath.replace(/\\/g, '/');
+  }
+  return filepath;
 }
 
 export function urlFromPath(root: string, filepath: string) {
+  filepath = posixifyPath(filepath);
+  root = posixifyPath(root);
+
   if (!filepath.startsWith(root)) {
     throw new Error(`file path is not in root: ${filepath} (${root})`);
   }
 
-  // On windows systems, convert filesystem path to URL by replacing slashes
-  const isPlatformWin = /^win/.test(process.platform);
-  const isExtendedLengthPath = /^\\\\\?\\/.test(filepath);
-  const hasNonAscii = /[^\x00-\x80]+/.test(filepath);
-  if (isPlatformWin && !isExtendedLengthPath && !hasNonAscii) {
-    return path.win32.relative(root, filepath).replace(/\\/g, '/');
-  }
-
-  // Otherwise, just return the relative path between the two
-  return path.relative(root, filepath);
+  // The goal is a relative URL from the root, so strip out the root and the
+  // leading slash, so '/my-app/subfolder/file.html' => 'subfolder/file.html'
+  return filepath.replace(root, '').replace(/^\//, '');
 }
 
 export function pathFromUrl(root: string, url: string) {
-  const isPlatformWin = /^win/.test(process.platform);
-  let filepath: string;
-
-  // On windows systems, convert URL to filesystem path by replacing slashes
-  if (isPlatformWin) {
-    filepath = url.replace(/\//g, '\\');
-  } else {
-    filepath = url;
-  }
-
-  // Otherwise, just return the relative path between the two
-  return path.join(root, url);
+  return platformifyPath(path.join(root, url));
 }
