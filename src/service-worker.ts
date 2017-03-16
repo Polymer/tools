@@ -112,7 +112,7 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
   });
 
   // swPrecache will determine the right urls by stripping buildRoot.
-  // NOTE:(usergenic) sw-precache generate() apparently to replaces the
+  // NOTE:(usergenic) sw-precache generate() apparently replaces the
   // prefix on an already posixified version of the path on win32.
   swPrecacheConfig.stripPrefix = posixifyPath(buildRoot);
   // static files will be pre-cached
