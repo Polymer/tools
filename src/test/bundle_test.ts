@@ -345,4 +345,39 @@ suite('BuildBundler', () => {
         bundledHtml, '<dom-module id="my-element-2">', 'simple-import-2.html');
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
   });
+
+
+  test('bundler deals with posix platform separators on win32', async() => {
+    const platformSepPaths = new FileTransform((stream, file) => {
+      if (path.sep === '\\') {
+        file.path = file.path.replace(/\\/g, '/');
+      }
+      stream.push(file);
+    });
+    await setupTest(
+        {
+          root: path.resolve('test-fixtures/bundle-project'),
+          entrypoint: 'index.html',
+          sources: [
+            'index.html',
+            'simple-import.html',
+            'simple-import-2.html',
+            'simple-style.css',
+          ],
+        },
+        platformSepPaths);
+
+    const bundledHtml = getFile('index.html');
+
+    // In setupTest, we use a transform stream that forces the file paths to
+    // be in the original platform form (this only changes/matters for win32)
+    // and it verifies that bundler can processing files that may be merged in
+    // or have otherwise reverted form paths from other s
+    assert.include(bundledHtml, '<title>Sample Build</title>', 'index.html');
+    assert.include(
+        bundledHtml, '<dom-module id="my-element">', 'simple-import.html');
+    assert.include(
+        bundledHtml, '<dom-module id="my-element-2">', 'simple-import-2.html');
+    assert.include(bundledHtml, '.simply-red', 'simple-style.css');
+  });
 });
