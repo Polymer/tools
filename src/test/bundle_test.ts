@@ -348,7 +348,7 @@ suite('BuildBundler', () => {
 
 
   test('bundler deals with posix platform separators on win32', async() => {
-    const platformSepPaths = new FileTransform((stream, file) => {
+    const posixSepPaths = new FileTransform((stream, file) => {
       if (path.sep === '\\') {
         file.path = file.path.replace(/\\/g, '/');
       }
@@ -365,7 +365,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
-        platformSepPaths);
+        posixSepPaths);
 
     const bundledHtml = getFile('index.html');
 
