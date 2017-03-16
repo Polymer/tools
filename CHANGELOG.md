@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 * Fixed issue with Service Worker generation in Windows environment where full paths were put into its precacheConfig instead of relative paths.
+* Build/Bundled files always use canonical platform separators in their paths now.  Fixes issue with mixed path encodings being treated as missing files.
 
 <!-- List New Changes Here -->
 
