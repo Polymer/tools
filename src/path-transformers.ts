@@ -60,7 +60,7 @@ const winSepRE = /\\/g;
  */
 export function pathFromUrl(root: string, url: string) {
   return platformifyPath(decodeURI(
-    path.posix.join(posixifyPath(root), path.posix.join('/', url))));
+      path.posix.join(posixifyPath(root), path.posix.join('/', url))));
 }
 
 /**
@@ -82,7 +82,7 @@ export function platformifyPath(filepath: string): string {
 export function posixifyPath(filepath: string): string {
   // We don't want to change backslashes to forward-slashes in the case where
   // we're already on posix environment, because they would be intentional in
-  // that case (albeit weird.) 
+  // that case (albeit weird.)
   if (path.sep === '\\') {
     filepath = filepath.replace(winSepRE, '/');
   }
