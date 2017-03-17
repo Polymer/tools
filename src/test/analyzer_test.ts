@@ -752,6 +752,23 @@ var DuplicateNamespace = {};
               .sort(),
           packageElements.concat(['imported-dependency']).sort());
     });
+
+    test('can get warnings from within and without the package', async() => {
+      const analyzer = new Analyzer({
+        urlLoader: new FSUrlLoader(
+            path.join(__dirname, 'static', 'project-with-errors'))
+      });
+      const pckage = await analyzer.analyzePackage();
+      assert.deepEqual(
+          Array.from(pckage['_documents']).map((d) => d.url), ['index.html']);
+      assert.deepEqual(
+          pckage.getWarnings().map((w) => w.sourceRange.file), ['index.html']);
+      assert.deepEqual(
+          pckage.getWarnings({externalPackages: true})
+              .map((w) => w.sourceRange.file)
+              .sort(),
+          ['bower_components/external-with-warnings.html', 'index.html']);
+    });
   });
 
   suite('_fork', () => {

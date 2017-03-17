@@ -335,7 +335,9 @@ export class Document implements Feature, Queryable {
       }
       if (feature.kinds.has('import') && options.imported) {
         const imprt = feature as Import;
-        if (options.externalPackages || !Package.isExternal(imprt.url)) {
+        const isPackageInternal =
+            imprt.document && !Package.isExternal(imprt.document.url);
+        if (options.externalPackages || isPackageInternal) {
           imprt.document._getFeatures(result, visited, options);
         }
       }
