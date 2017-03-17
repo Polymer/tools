@@ -46,6 +46,11 @@ suite('pathFromUrl()', () => {
     const path = pathFromUrl(RootPath, '../../../still/../root/path');
     assert.equal(path, pathJoin(RootPath, 'root', 'path'));
   });
+
+  test('will unencode the URI-encoded sequences, like spaces', () => {
+    const path = pathFromUrl(RootPath, '/spaced%20out');
+    assert.equal(path, pathJoin(RootPath, 'spaced out'));
+  });
 });
 
 suite('urlFromPath()', () => {
@@ -70,5 +75,10 @@ suite('urlFromPath()', () => {
         RootPath,
         pathJoin(RootPath, 'bower_components', 'app-layout', 'docs.html'));
     assert.equal(longPath, 'bower_components/app-layout/docs.html');
+  });
+
+  test('will properly encode URL-unfriendly characters like spaces', () => {
+    const url = urlFromPath(RootPath, pathJoin(RootPath, 'spaced out'));
+    assert.equal(url, 'spaced%20out');
   });
 });
