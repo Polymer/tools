@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {correctSourceRange, LocationOffset, SourceRange} from '../model/source-range';
+import {correctSourceRange, LocationOffset, SourcePosition, SourceRange} from '../model/source-range';
 
 /**
  * A parsed Document.
@@ -62,17 +62,7 @@ export abstract class ParsedDocument<AstNode, Visitor> {
       }
       this.newlineIndexes.push(lastSeenLine);
     }
-    const indexOfFinalNewline =
-        (this.newlineIndexes[this.newlineIndexes.length - 1] || -1);
-    const sourceRange: SourceRange = {
-      file: this.url,
-      start: {line: 0, column: 0},
-      end: {
-        line: this.newlineIndexes.length,
-        column: from.contents.length - (indexOfFinalNewline + 1)
-      }
-    };
-    this.sourceRange = correctSourceRange(sourceRange, this._locationOffset)!;
+    this.sourceRange = this.offsetsToSourceRange(0, this.contents.length);
   }
 
   /**
@@ -99,6 +89,56 @@ export abstract class ParsedDocument<AstNode, Visitor> {
    * Convert `this.ast` back into a string document.
    */
   abstract stringify(options: StringifyOptions): string;
+
+  offsetToSourcePosition(offset: number): SourcePosition {
+    const linesLess = binarySearch(offset, this.newlineIndexes);
+    let colOffset = this.newlineIndexes[linesLess - 1];
+    if (colOffset == null) {
+      colOffset = 0;
+    } else {
+      colOffset = colOffset + 1;
+    }
+    return {line: linesLess, column: offset - colOffset};
+  }
+
+  offsetsToSourceRange(start: number, end: number): SourceRange {
+    const sourceRange = {
+      file: this.url,
+      start: this.offsetToSourcePosition(start),
+      end: this.offsetToSourcePosition(end)
+    };
+    return correctSourceRange(sourceRange, this._locationOffset)!;
+  }
+
+  sourcePositionToOffset(position: SourcePosition): number {
+    const line = Math.max(0, position.line);
+    let lineOffset;
+    if (line === 0) {
+      lineOffset = -1;
+    } else if (line > this.newlineIndexes.length) {
+      lineOffset = this.contents.length - 1;
+    } else {
+      lineOffset = this.newlineIndexes[line - 1];
+    }
+    const result = position.column + lineOffset + 1;
+    // Clamp within bounds.
+    return Math.min(Math.max(0, result), this.contents.length);
+  }
+
+  sourceRangeToOffsets(range: SourceRange): [number, number] {
+    return [
+      this.sourcePositionToOffset(range.start),
+      this.sourcePositionToOffset(range.end)
+    ];
+  }
+
+  toString() {
+    if (this.isInline) {
+      return `Inline ${this.constructor.name} on line ` +
+          `${this.sourceRange.start.line} of ${this.url}`;
+    }
+    return `${this.constructor.name} at ${this.url}`;
+  }
 }
 
 export interface Options<A> {
@@ -120,4 +160,27 @@ export interface StringifyOptions {
    * whose stringified contents should be used instead of what is in `ast`.
    */
   inlineDocuments?: ParsedDocument<any, any>[];
+}
+
+/**
+ * The variant of binary search that returns the number of elements in the
+ * array that is strictly less than the target.
+ */
+function binarySearch(target: number, arr: number[]) {
+  let lower = 0;
+  let upper = arr.length - 1;
+  while (true) {
+    if (lower > upper) {
+      return lower;
+    }
+    const m = Math.floor((upper + lower) / 2);
+    if (target === arr[m]) {
+      return m;
+    }
+    if (target > arr[m]) {
+      lower = m + 1;
+    } else {
+      upper = m - 1;
+    }
+  }
 }

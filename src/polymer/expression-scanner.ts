@@ -326,25 +326,17 @@ function extractDataBindingsFromTextNode(
   if (dataBindings.length === 0) {
     return;
   }
-  const newlineIndexes = findNewlineIndexes(text);
   const nodeSourceRange = document.sourceRangeForNode(node);
   if (!nodeSourceRange) {
     return;
   }
-  // We have indexes into the text node, we'll want to correct that so that
-  // it's a range relative to the start of the document.
-  const startOfTextNodeOffset: LocationOffset = {
-    line: nodeSourceRange.start.line,
-    col: nodeSourceRange.start.column
-  };
+
+  const startOfTextNodeOffset =
+      document.sourcePositionToOffset(nodeSourceRange.start);
   for (const dataBinding of dataBindings) {
-    const sourceRangeWithinTextNode = indexesToSourceRange(
-        dataBinding.startIndex,
-        dataBinding.endIndex,
-        nodeSourceRange.file,
-        newlineIndexes);
-    const sourceRange =
-        correctSourceRange(sourceRangeWithinTextNode, startOfTextNodeOffset)!;
+    const sourceRange = document.offsetsToSourceRange(
+        dataBinding.startIndex + startOfTextNodeOffset,
+        dataBinding.endIndex + startOfTextNodeOffset);
 
     const parseResult =
         parseExpression(dataBinding.expressionText, sourceRange);
@@ -386,11 +378,8 @@ function extractDataBindingsFromAttr(
   if (!attributeValueRange) {
     return;
   }
-  const attributeOffset: LocationOffset = {
-    line: attributeValueRange.start.line,
-    col: attributeValueRange.start.column
-  };
-  const newlineIndexes = findNewlineIndexes(attr.value);
+  const attributeOffset =
+      document.sourcePositionToOffset(attributeValueRange.start);
   for (const dataBinding of dataBindings) {
     const isFullAttributeBinding = dataBinding.startIndex === 2 &&
         dataBinding.endIndex + 2 === attr.value.length;
@@ -403,13 +392,10 @@ function extractDataBindingsFromAttr(
         eventName = match[2];
       }
     }
-    const sourceRangeWithinAttribute = indexesToSourceRange(
-        dataBinding.startIndex,
-        dataBinding.endIndex,
-        attributeValueRange.file,
-        newlineIndexes);
-    const sourceRange =
-        correctSourceRange(sourceRangeWithinAttribute, attributeOffset)!;
+    const sourceRange = document.offsetsToSourceRange(
+        dataBinding.startIndex + attributeOffset,
+        dataBinding.endIndex + attributeOffset);
+
     const parseResult = parseExpression(expressionText, sourceRange);
     if (!parseResult) {
       continue;
@@ -461,50 +447,6 @@ function findDatabindingInString(str: string) {
     openers.lastIndex = endIndex + 2;
   }
   return expressions;
-}
-
-function findNewlineIndexes(str: string) {
-  const indexes = [];
-  let prev;
-  let index = str.indexOf('\n');
-  while (index !== -1) {
-    indexes.push(index);
-    prev = index;
-    index = str.indexOf('\n', prev + 1);
-  }
-  return indexes;
-}
-
-function indexesToSourceRange(
-    startIndex: number,
-    endIndex: number,
-    filename: string,
-    newlineIndexes: number[]): SourceRange {
-  let startLineNumLinesIntoText = 0;
-  let startOfLineIndex = 0;
-  let endLineNumLinesIntoText = 0;
-  let endOfLineIndex = 0;
-  for (const index of newlineIndexes) {
-    if (index < startIndex) {
-      startLineNumLinesIntoText++;
-      startOfLineIndex = index + 1;
-    }
-    if (index < endIndex) {
-      endLineNumLinesIntoText++;
-      endOfLineIndex = index + 1;
-    } else {
-      // Nothing more interesting to do.
-      break;
-    }
-  }
-  return {
-    file: filename,
-    start: {
-      line: startLineNumLinesIntoText,
-      column: startIndex - startOfLineIndex
-    },
-    end: {line: endLineNumLinesIntoText, column: endIndex - endOfLineIndex}
-  };
 }
 
 function parseExpression(content: string, expressionSourceRange: SourceRange) {

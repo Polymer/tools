@@ -47,35 +47,10 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     });
   }
 
-  // For multi-line comment nodes, we must calculate the ending line and
-  // column ourselves.
-  protected _sourceRangeForCommentNode(node: ASTNode): SourceRange|undefined {
-    const location = node.__location;
-
-    if (!location || isElementLocationInfo(location) ||
-        !parse5.treeAdapters.default.isCommentNode(node)) {
-      return;
-    }
-
-    const lines = (parse5.treeAdapters.default.getCommentNodeContent(node) ||
-                   '').split(/\n/);
-    const endLength = lines[lines.length - 1].length;
-
-    // Adjust length for single-line comment by 6 for `<!---->` and adjust by 3
-    // for multi-line comment for `-->` only.
-    const endColumn =
-        lines.length === 1 ? location.col + endLength + 6 : endLength + 3;
-    return {
-      file: this.url,
-      start: {line: location.line - 1, column: location.col - 1},
-      end: {line: location.line + lines.length - 2, column: endColumn}
-    };
-  }
-
   // An element node with end tag information will produce a source range that
   // includes the closing tag.  It is assumed for offset calculation that the
   // closing tag is always of the expected `</${tagName}>` form.
-  protected _sourceRangeForElementWithEndTag(node: ASTNode): SourceRange
+  private _sourceRangeForElementWithEndTag(node: ASTNode): SourceRange
       |undefined {
     const location = node.__location;
 
@@ -94,64 +69,17 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     }
   }
 
-  // For multi-line text nodes, we must calculate the ending line and column
-  // ourselves.
-  protected _sourceRangeForTextNode(node: ASTNode): SourceRange|undefined {
-    const location = node.__location;
-
-    if (!location || isElementLocationInfo(location) ||
-        !parse5.treeAdapters.default.isTextNode(node)) {
-      return;
-    }
-
-    const lines = (node.value || '').split(/\n/);
-    const endLength = lines[lines.length - 1].length;
-    const endColumn =
-        lines.length === 1 ? location.col + endLength - 1 : endLength;
-
-    return {
-      file: this.url,
-      start: {line: location.line - 1, column: location.col - 1},
-      end: {line: location.line + lines.length - 2, column: endColumn}
-    };
-  }
-
   // parse5 locations are 1 based but ours are 0 based.
   protected _sourceRangeForNode(node: ASTNode): SourceRange|undefined {
     const location = node.__location;
     if (!node.__location) {
       return;
     }
-    if (parse5.treeAdapters.default.isCommentNode(node)) {
-      return this._sourceRangeForCommentNode(node);
-    }
-    if (parse5.treeAdapters.default.isTextNode(node)) {
-      return this._sourceRangeForTextNode(node);
-    }
-    if (voidTagNames.has(node.tagName || '')) {
-      return this.sourceRangeForStartTag(node);
-    }
     if (isElementLocationInfo(location)) {
-      return this._sourceRangeForElementWithEndTag(node);
-    }
-
-    // If the node has child nodes, lets work out the end of its source range
-    // based on what we can find out about its last child.  This can be done
-    // recursively.
-    if (node.childNodes && node.childNodes.length > 0) {
-      const lastChild = node.childNodes[node.childNodes.length - 1];
-      const lastRange = this.sourceRangeForNode(lastChild);
-      if (lastRange) {
-        return {
-          file: this.url,
-          start: {line: location.line - 1, column: location.col - 1},
-          end: lastRange.end
-        };
+      if (voidTagNames.has(node.tagName || '')) {
+        return this.sourceRangeForStartTag(node);
       }
-    }
-
-    if ('attrs' in location) {
-      return this.sourceRangeForStartTag(node);
+      return this._sourceRangeForElementWithEndTag(node);
     }
 
     return this._getSourceRangeForLocation(location);
@@ -178,13 +106,14 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
   sourceRangeForAttributeValue(
       node: ASTNode, attrName: string, excludeQuotes?: boolean): SourceRange
       |undefined {
-    const range = this.sourceRangeForAttribute(node, attrName);
-    if (!range) {
+    const attributeRange = this.sourceRangeForAttribute(node, attrName);
+    if (!attributeRange) {
       return;
     }
     // This is an attribute without a value.
-    if ((range.start.line === range.end.line) &&
-        (range.end.column - range.start.column === attrName.length)) {
+    if ((attributeRange.start.line === attributeRange.end.line) &&
+        (attributeRange.end.column - attributeRange.start.column ===
+         attrName.length)) {
       return undefined;
     }
     const location = getAttributeLocation(node, attrName)!;
@@ -214,19 +143,10 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       const maybeQuote = this.contents.charAt(endOfTextToSkip);
       if (maybeQuote === '\'' || maybeQuote === '"') {
         endOfTextToSkip += 1;
-        range.end.column -= 1;
       }
     }
 
-    const textToSkip =
-        this.contents.substring(location.startOffset, endOfTextToSkip);
-    const lines = textToSkip.split('\n');
-    const lastLineToSkip = lines[lines.length - 1]!;
-    range.start.line += lines.length - 1;
-    range.start.column = lines.length > 1 ?
-        lastLineToSkip.length :
-        range.start.column + lastLineToSkip.length;
-    return range;
+    return this.offsetsToSourceRange(endOfTextToSkip, location.endOffset);
   }
 
   sourceRangeForStartTag(node: ASTNode): SourceRange|undefined {
@@ -237,27 +157,12 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     return this._getSourceRangeForLocation(getEndTagLocation(node));
   }
 
-
-
   private _getSourceRangeForLocation(location: parse5.LocationInfo|
                                      undefined): SourceRange|undefined {
     if (!location) {
       return;
     }
-    const content =
-        this.contents.substring(location.startOffset, location.endOffset);
-    const lines = content.split('\n');
-    const lastLine = lines[lines.length - 1]!;
-    const startLine = location.line - 1;
-    const endLine = location.line + (lines.length - 2);
-    const endColOffset = (startLine === endLine) ? location.col - 1 : 0;
-
-    return {
-      file: this.url,
-      // one indexed to zero indexed
-      start: {line: startLine, column: location.col - 1},
-      end: {line: endLine, column: lastLine.length + endColOffset}
-    };
+    return this.offsetsToSourceRange(location.startOffset, location.endOffset);
   }
 
   stringify(options?: StringifyOptions) {
