@@ -22,9 +22,6 @@
 
 import * as path from 'path';
 
-const posixSepRE = /\//g;
-const winSepRE = /\\/g;
-
 /**
  * Returns a properly encoded URL representing the relative URL from the root
  * to the target.  This function will throw an error if the target is outside
@@ -51,15 +48,8 @@ export function urlFromPath(root: string, target: string): string {
  * Returns a filesystem path for the url, relative to the root.
  */
 export function pathFromUrl(root: string, url: string) {
-  return platformifyPath(decodeURI(
+  return path.normalize(decodeURI(
     path.posix.join(posixifyPath(root), path.posix.join('/', url))));
-}
-
-/**
- * Converts forward slashes to backslashes, when on Windows.  Noop otherwise.
- */
-export function platformifyPath(filepath: string): string {
-  return filepath.replace(posixSepRE, path.sep);
 }
 
 /**
@@ -76,7 +66,7 @@ export function posixifyPath(filepath: string): string {
   // we're already on posix environment, because they would be intentional in
   // that case (albeit weird.)
   if (path.sep === '\\') {
-    filepath = filepath.replace(winSepRE, '/');
+    filepath = filepath.replace(/\\/g, '/');
   }
   return filepath;
 }
