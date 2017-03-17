@@ -49,7 +49,7 @@ export function urlFromPath(root: string, target: string): string {
  */
 export function pathFromUrl(root: string, url: string) {
   return path.normalize(decodeURI(
-    path.posix.join(posixifyPath(root), path.posix.join('/', url))));
+      path.posix.join(posixifyPath(root), path.posix.join('/', url))));
 }
 
 /**
