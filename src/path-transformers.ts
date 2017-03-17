@@ -42,6 +42,14 @@
  * THE SOFTWARE.
  */
 
+/**
+ * This module consists of functions for transformations to filesystem and url
+ * paths.
+ * TODO(usergenic): We should consider migrating the responsibility of
+ * path-related string transformation to a package like `upath`.
+ * Please see: https://www.npmjs.com/package/upath
+ */
+
 import * as path from 'path';
 
 export function isPlatformWindows(): boolean {
@@ -68,6 +76,9 @@ export function platformifyPath(filepath: string): string {
  * slashes.
  */
 export function posixifyPath(filepath: string): string {
+  // We don't want to change backslashes to forward-slashes in the case where
+  // we're already on posix environment, because they would be intentional in
+  // that case (albeit weird.) 
   if (isPlatformWindows()) {
     filepath = filepath.replace(/\\/g, '/');
   }
@@ -85,6 +96,9 @@ export function urlFromPath(root: string, target: string): string {
 
   const relativePath = path.posix.relative(root, target);
 
+  // The startsWith(root) check is important on Windows because of the case
+  // where paths have different drive letters.  The startsWith('../') will
+  // catch the general not-in-root case.
   if (!target.startsWith(root) || relativePath.startsWith('../')) {
     throw new Error(`target path is not in root: ${target} (${root})`);
   }
