@@ -14,10 +14,10 @@
 
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-import {assert} from 'chai';
-import {join as pathJoin, sep as pathSeparator} from 'path';
+import { assert } from 'chai';
+import { join as pathJoin, sep as pathSeparator } from 'path';
 
-import {isPlatformWindows, pathFromUrl, urlFromPath} from '../path-transformers';
+import { isPlatformWindows, pathFromUrl, urlFromPath } from '../path-transformers';
 
 const WindowsRootPath = 'C:\\Users\\TEST_USER\\TEST_ROOT';
 const MacRootPath = '/Users/TEST_USER/TEST_ROOT';
@@ -51,21 +51,24 @@ suite('pathFromUrl()', () => {
 suite('urlFromPath()', () => {
 
   test('throws error when path is not in root', () => {
-    assert.throws(function() {
-      urlFromPath(MacRootPath, '/some/other/path/shop-app.html');
+    assert.throws(() => {
+      urlFromPath('/this/is/a/path', '/some/other/path/shop-app.html');
+    });
+    assert.throws(() => {
+      urlFromPath('/the/path', '/the/pathologist/index.html');
     });
   });
 
   test('creates a URL path relative to root', () => {
     const shortPath =
-        urlFromPath(RootPath, pathJoin(RootPath, 'shop-app.html'));
+      urlFromPath(RootPath, pathJoin(RootPath, 'shop-app.html'));
     assert.equal(shortPath, 'shop-app.html');
     const medPath =
-        urlFromPath(RootPath, pathJoin(RootPath, 'src', 'shop-app.html'));
+      urlFromPath(RootPath, pathJoin(RootPath, 'src', 'shop-app.html'));
     assert.equal(medPath, 'src/shop-app.html');
     const longPath = urlFromPath(
-        RootPath,
-        pathJoin(RootPath, 'bower_components', 'app-layout', 'docs.html'));
+      RootPath,
+      pathJoin(RootPath, 'bower_components', 'app-layout', 'docs.html'));
     assert.equal(longPath, 'bower_components/app-layout/docs.html');
   });
 });

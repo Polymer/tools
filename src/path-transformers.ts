@@ -48,37 +48,46 @@ export function isPlatformWindows(): boolean {
   return /^win/.test(process.platform);
 }
 
+/**
+ * Returns a filesystem path for the url, relative to the root.
+ */
 export function pathFromUrl(root: string, url: string) {
   return platformifyPath(decodeURI(
-      path.posix.join(posixifyPath(root), path.posix.join('/', url))));
+    path.posix.join(posixifyPath(root), path.posix.join('/', url))));
 }
 
+/**
+ * Converts forward slashes to backslashes, when on Windows.  Noop otherwise.
+ */
 export function platformifyPath(filepath: string): string {
-  // Replaces all / with \ on win32.  Otherwise this is a noop.
-  // TODO(usergenic): Should we produce an "extended-length path" in win32 if
-  // the path length is over 259 on win32?
   return filepath.replace(/\//g, path.sep);
 }
 
+/**
+ * Returns a string where all Windows path separators are converted to forward
+ * slashes.
+ */
 export function posixifyPath(filepath: string): string {
   if (isPlatformWindows()) {
-    // Strip "extended-length path" prefix.
-    filepath = filepath.replace(/^\\\\\?\\/, '');
-    // Replace all \ with /
     filepath = filepath.replace(/\\/g, '/');
   }
   return filepath;
 }
 
-export function urlFromPath(root: string, filepath: string) {
-  filepath = posixifyPath(filepath);
+/**
+ * Returns a properly encoded URL representing the relative URL from the root
+ * to the target.  This function will throw an error if the target is outside
+ * the root.
+ */
+export function urlFromPath(root: string, target: string): string {
+  target = posixifyPath(target);
   root = posixifyPath(root);
 
-  if (!filepath.startsWith(root)) {
-    throw new Error(`file path is not in root: ${filepath} (${root})`);
+  const relativePath = path.posix.relative(root, target);
+
+  if (!target.startsWith(root) || relativePath.startsWith('../')) {
+    throw new Error(`target path is not in root: ${target} (${root})`);
   }
 
-  // The goal is a relative URL from the root, so strip out the root and the
-  // leading slash, so '/my-app/subfolder/file.html' => 'subfolder/file.html'
-  return encodeURI(filepath.replace(root, '').replace(/^\//, ''));
+  return encodeURI(relativePath);
 }
