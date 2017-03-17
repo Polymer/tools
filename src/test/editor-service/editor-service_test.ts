@@ -436,7 +436,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           }]);
       assert.deepEqual(await underliner.underline(warnings), [`
 <script>var var var var var let const;</script>
-             ~`]);
+            ~`]);
     });
 
     test(

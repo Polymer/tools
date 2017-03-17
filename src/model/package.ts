@@ -122,7 +122,6 @@ export class Package implements Queryable {
     for (const doc of this._documents) {
       addAll(result, new Set(doc.getWarnings(docQueryOptions)));
     }
-
     return Array.from(result);
   }
 

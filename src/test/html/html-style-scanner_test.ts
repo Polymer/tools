@@ -46,7 +46,7 @@ suite('HtmlStyleScanner', () => {
       const feature1 = <ScannedInlineDocument>features[1];
       assert.equal(feature1.type, 'css');
       assert.equal(feature1.contents, `h1 { color: green; }`);
-      assert.deepEqual(feature1.locationOffset, {line: 2, col: 18});
+      assert.deepEqual(feature1.locationOffset, {line: 2, col: 17});
     });
 
     test('finds external styles relative to baseUrl', async() => {

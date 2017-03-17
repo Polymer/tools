@@ -42,12 +42,12 @@ export class ScannedDocument {
   warnings: Warning[];
   isInline = false;
 
-  // A scanned document has no `sourceRange` or `astNode` by default. However,
-  // they can be set later if the ScannedDocument represents an inline doc.
-  // TODO(fks): Inherit these two properties from ParsedDocument so that they do
-  // not have to be set awkwardly after the fact.
-  sourceRange: SourceRange|undefined = undefined;
-  astNode: dom5.Node|undefined = undefined;
+  get sourceRange() {
+    return this.document.sourceRange;
+  }
+  get astNode() {
+    return this.document.astNode;
+  }
 
   constructor(
       document: ParsedDocument<any, any>, features: ScannedFeature[],

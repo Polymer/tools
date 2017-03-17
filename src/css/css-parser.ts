@@ -35,7 +35,7 @@ export class CssParser implements Parser<ParsedCssDocument> {
       url,
       contents,
       ast,
-      locationOffset: inlineInfo.astNode,
+      locationOffset: inlineInfo.locationOffset,
       astNode: inlineInfo.astNode, isInline,
     });
   }

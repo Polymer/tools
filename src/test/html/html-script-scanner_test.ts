@@ -46,7 +46,7 @@ suite('HtmlScriptScanner', () => {
       const feature1 = <ScannedInlineDocument>features[1];
       assert.equal(feature1.type, 'js');
       assert.equal(feature1.contents, `console.log('hi')`);
-      assert.deepEqual(feature1.locationOffset, {line: 2, col: 19});
+      assert.deepEqual(feature1.locationOffset, {line: 2, col: 18});
     });
 
     test('finds external scripts relative to baseUrl', async() => {

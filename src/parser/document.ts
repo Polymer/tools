@@ -34,7 +34,16 @@ export abstract class ParsedDocument<AstNode, Visitor> {
    */
   astNode: any;
 
-  private _locationOffset: LocationOffset|undefined;
+  sourceRange: SourceRange;
+
+  private readonly _locationOffset: LocationOffset|undefined;
+
+  /**
+   * The 0-based offsets into `contents` of all newline characters.
+   *
+   * Useful for converting between string offsets and SourcePositions.
+   */
+  readonly newlineIndexes: number[] = [];
 
   constructor(from: Options<AstNode>) {
     this.url = from.url;
@@ -44,6 +53,26 @@ export abstract class ParsedDocument<AstNode, Visitor> {
     this._locationOffset = from.locationOffset;
     this.astNode = from.astNode;
     this.isInline = from.isInline;
+
+    let lastSeenLine = -1;
+    while (true) {
+      lastSeenLine = from.contents.indexOf('\n', lastSeenLine + 1);
+      if (lastSeenLine === -1) {
+        break;
+      }
+      this.newlineIndexes.push(lastSeenLine);
+    }
+    const indexOfFinalNewline =
+        (this.newlineIndexes[this.newlineIndexes.length - 1] || -1);
+    const sourceRange: SourceRange = {
+      file: this.url,
+      start: {line: 0, column: 0},
+      end: {
+        line: this.newlineIndexes.length,
+        column: from.contents.length - (indexOfFinalNewline + 1)
+      }
+    };
+    this.sourceRange = correctSourceRange(sourceRange, this._locationOffset)!;
   }
 
   /**

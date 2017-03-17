@@ -97,7 +97,6 @@ export class DependencyGraph {
     try {
       record.dependenciesDeferred.resolve(record.dependencies);
     } catch (e) {
-      console.log(`error adding ${url}`);
       throw e;
     }
   }

@@ -114,11 +114,11 @@ export function getLocationOffsetOfStartOfTextContent(node: ASTNode):
         `${util.inspect(node)}`);
   }
   if (isLocationInfo(bestLocation)) {
-    return {line: bestLocation.line - 1, col: bestLocation.col};
+    return {line: bestLocation.line - 1, col: bestLocation.col - 1};
   } else {
     return {
       line: bestLocation.startTag.line - 1,
-      col: bestLocation.startTag.endOffset,
+      col: bestLocation.startTag.endOffset - 1,
     };
   }
 }

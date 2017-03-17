@@ -80,6 +80,21 @@ suite('Analyzer', () => {
           assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
         });
 
+    test('gets source ranges of documents correct', async() => {
+      const document = await analyzer.analyze('static/dependencies/root.html');
+      assert.deepEqual(await underliner.underline(document.sourceRange), `
+<link rel="import" href="inline-only.html">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<link rel="import" href="leaf.html">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<link rel="import" href="inline-and-imports.html">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<link rel="import" href="subfolder/in-folder.html">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`);
+    });
+
     test('analyzes inline scripts correctly', async() => {
       const document = await analyzer.analyze(
           'static/inline-documents/inline-documents.html');
@@ -90,11 +105,11 @@ suite('Analyzer', () => {
       assert.equal(jsDocument.astNode!.tagName, 'script');
       assert.deepEqual(await underliner.underline(jsDocument.sourceRange), `
   <script>
-  ~~~~~~~~
-    console.log(\'hi\');
+          ~
+    console.log('hi');
 ~~~~~~~~~~~~~~~~~~~~~~
   </script>
-~~~~~~~~~~~`);
+~~`);
     });
 
     test('analyzes inline styles correctly', async() => {
@@ -107,7 +122,7 @@ suite('Analyzer', () => {
       assert.equal(cssDocument.astNode!.tagName, 'style');
       assert.deepEqual(await underliner.underline(cssDocument.sourceRange), `
   <style>
-  ~~~~~~~
+         ~
     body {
 ~~~~~~~~~~
       color: red;
@@ -115,7 +130,7 @@ suite('Analyzer', () => {
     }
 ~~~~~
   </style>
-~~~~~~~~~~`);
+~~`);
     });
 
     test('analyzes a document with an import', async() => {
@@ -682,6 +697,37 @@ var DuplicateNamespace = {};
           Array.from(pckage['_documents']).map((d) => d.url).sort(),
           ['cyclic-a.html', 'root.html', 'subdir/root-in-subdir.html']
               .sort(), );
+
+      // Note that this does not contain the bower_components/ files
+      assert.deepEqual(
+          Array.from(pckage.getByKind('document'))
+              .filter((d) => !d.isInline)
+              .map((d) => d.url)
+              .sort(),
+          [
+            'cyclic-a.html',
+            'cyclic-b.html',
+            'root.html',
+            'leaf.html',
+            'subdir/subdir-leaf.html',
+            'subdir/root-in-subdir.html'
+          ].sort());
+
+      // And this does contain the one imported file in bower_components/
+      assert.deepEqual(
+          Array.from(pckage.getByKind('document', {externalPackages: true}))
+              .filter((d) => !d.isInline)
+              .map((d) => d.url)
+              .sort(),
+          [
+            'cyclic-a.html',
+            'cyclic-b.html',
+            'root.html',
+            'leaf.html',
+            'subdir/subdir-leaf.html',
+            'subdir/root-in-subdir.html',
+            'bower_components/imported.html',
+          ].sort());
 
       const packageElements = [
         'root-root',
