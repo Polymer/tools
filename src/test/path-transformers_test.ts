@@ -17,11 +17,11 @@
 import {assert} from 'chai';
 import {join as pathJoin, sep as pathSeparator} from 'path';
 
-import {isPlatformWindows, pathFromUrl, urlFromPath} from '../path-transformers';
+import {pathFromUrl, urlFromPath} from '../path-transformers';
 
 const WindowsRootPath = 'C:\\Users\\TEST_USER\\TEST_ROOT';
 const MacRootPath = '/Users/TEST_USER/TEST_ROOT';
-const RootPath = isPlatformWindows() ? WindowsRootPath : MacRootPath;
+const RootPath = pathSeparator === '\\' ? WindowsRootPath : MacRootPath;
 
 suite('pathFromUrl()', () => {
 
@@ -46,13 +46,21 @@ suite('pathFromUrl()', () => {
     const path = pathFromUrl(RootPath, '../../../still/../root/path');
     assert.equal(path, pathJoin(RootPath, 'root', 'path'));
   });
+
+  test('will unencode the URI-encoded sequences, like spaces', () => {
+    const path = pathFromUrl(RootPath, '/spaced%20out');
+    assert.equal(path, pathJoin(RootPath, 'spaced out'));
+  });
 });
 
 suite('urlFromPath()', () => {
 
   test('throws error when path is not in root', () => {
-    assert.throws(function() {
-      urlFromPath(MacRootPath, '/some/other/path/shop-app.html');
+    assert.throws(() => {
+      urlFromPath('/this/is/a/path', '/some/other/path/shop-app.html');
+    });
+    assert.throws(() => {
+      urlFromPath('/the/path', '/the/pathologist/index.html');
     });
   });
 
@@ -67,5 +75,10 @@ suite('urlFromPath()', () => {
         RootPath,
         pathJoin(RootPath, 'bower_components', 'app-layout', 'docs.html'));
     assert.equal(longPath, 'bower_components/app-layout/docs.html');
+  });
+
+  test('will properly encode URL-unfriendly characters like spaces', () => {
+    const url = urlFromPath(RootPath, pathJoin(RootPath, 'spaced out'));
+    assert.equal(url, 'spaced%20out');
   });
 });
