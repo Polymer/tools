@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 * Fixed issue with Service Worker generation in Windows environment where full paths were put into its precacheConfig instead of relative paths.
-* Bundled files always use canonical platform separators in their paths now.  Sometimes files would have back-slashes and sometimes forward-slashes on Windows, depending on how they arrived at the Bundler and this caused the Analyzer to treat some files as missing.
+* Bundled files always use canonical platform separators in their paths now.  Previously, files might have either back-slashes or forward-slashes on Windows, depending on how they arrived at the Bundler and this caused the Analyzer to treat files as missing when mapping them by path.
 
 <!-- List New Changes Here -->
 
