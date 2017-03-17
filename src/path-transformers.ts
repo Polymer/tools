@@ -26,11 +26,33 @@ const posixSepRE = /\//g;
 const winSepRE = /\\/g;
 
 /**
+ * Returns a properly encoded URL representing the relative URL from the root
+ * to the target.  This function will throw an error if the target is outside
+ * the root.  We use this to map a file from the filesystem to the relative
+ * URL that represents it in the build.
+ */
+export function urlFromPath(root: string, target: string): string {
+  target = posixifyPath(target);
+  root = posixifyPath(root);
+
+  const relativePath = path.posix.relative(root, target);
+
+  // The startsWith(root) check is important on Windows because of the case
+  // where paths have different drive letters.  The startsWith('../') will
+  // catch the general not-in-root case.
+  if (!target.startsWith(root) || relativePath.startsWith('../')) {
+    throw new Error(`target path is not in root: ${target} (${root})`);
+  }
+
+  return encodeURI(relativePath);
+}
+
+/**
  * Returns a filesystem path for the url, relative to the root.
  */
 export function pathFromUrl(root: string, url: string) {
   return platformifyPath(decodeURI(
-      path.posix.join(posixifyPath(root), path.posix.join('/', url))));
+    path.posix.join(posixifyPath(root), path.posix.join('/', url))));
 }
 
 /**
@@ -57,26 +79,4 @@ export function posixifyPath(filepath: string): string {
     filepath = filepath.replace(winSepRE, '/');
   }
   return filepath;
-}
-
-/**
- * Returns a properly encoded URL representing the relative URL from the root
- * to the target.  This function will throw an error if the target is outside
- * the root.  We use this to map a file from the filesystem to the relative
- * URL that represents it in the build.
- */
-export function urlFromPath(root: string, target: string): string {
-  target = posixifyPath(target);
-  root = posixifyPath(root);
-
-  const relativePath = path.posix.relative(root, target);
-
-  // The startsWith(root) check is important on Windows because of the case
-  // where paths have different drive letters.  The startsWith('../') will
-  // catch the general not-in-root case.
-  if (!target.startsWith(root) || relativePath.startsWith('../')) {
-    throw new Error(`target path is not in root: ${target} (${root})`);
-  }
-
-  return encodeURI(relativePath);
 }
