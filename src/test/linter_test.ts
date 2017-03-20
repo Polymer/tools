@@ -14,13 +14,35 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer, Document, FSUrlLoader, Severity, Warning} from 'polymer-analyzer';
 
 import {Linter} from '../linter';
+import {Rule} from '../rule';
 
 import {WarningPrettyPrinter} from './util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../test'));
+
+class AlwaysWarnsRule extends Rule {
+  code = 'always-warn-rule';
+  description: 'Always warns, for every file';
+  async check(document: Document): Promise<Warning[]> {
+    return [{
+      code: this.code,
+      message: this.description,
+      severity: Severity.WARNING,
+      sourceRange: {
+        file: document.url,
+        start: {line: 0, column: 0},
+        end: {line: 0, column: 0}
+      }
+    }];
+  }
+
+  constructor() {
+    super();
+  }
+}
 
 suite('Linter', () => {
 
@@ -59,6 +81,33 @@ suite('Linter', () => {
 <link rel="import" href="./also-does-not-exist.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
       ]);
+    });
+
+    const testName =
+        'when linting a package, do not surface warnings from external files';
+    test(testName, async() => {
+      const analyzer = new Analyzer({
+        urlLoader: new FSUrlLoader(path.join(fixtures_dir, 'package-external'))
+      });
+      const linter = new Linter([new AlwaysWarnsRule()], analyzer);
+      const warnings = await linter.lintPackage();
+      // One warning from the analyzer, one from the AlwaysWarns, both in index,
+      // none from bower_components/external.html
+      assert.deepEqual(
+          warnings.map((w) => w.sourceRange.file),
+          ['index.html', 'index.html']);
+
+      const alsoWarnings = await linter.lint(['index.html']);
+      assert.deepEqual(alsoWarnings, warnings);
+
+      const allWarnings =
+          await linter.lint(['index.html', 'bower_components/external.html']);
+      assert.deepEqual(allWarnings.map((w) => w.sourceRange.file).sort(), [
+        'index.html',
+        'index.html',
+        'bower_components/external.html',
+        'bower_components/external.html'
+      ].sort());
     });
   });
 });
