@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Please document PR changes here. Uncomment the Unreleased header as
   appropriate.
 -->
+## 1.3.3 - 2017-03-20
+
+- Update the linter to get a ton of new rules.
+- Configure the legacy interface (used by Atom) to read polymer.json, which will cause Atom to start seeing warnings from the linter.
+- A ton of bug fixes, especially around Polymer 2.0 elements.
 
 ## Unreleased
 
