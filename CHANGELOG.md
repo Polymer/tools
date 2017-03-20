@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * All Documents, ParsedDocuments, and ScannedDocuments now have correct SourceRanges. This also fixes a bug whereby `getByKind('document')` would fail to filter out package-external Documents.
 * Fix an issue where package-external features could be included in queries that dot not ask for them. Specifically we were filtering based on the text in files  like `../paper-button/paper-button.html` rather than the path to the file on disk like `bower_components/paper-button/paper-button.html` when determining externality.
+* Treat a directory named `build` as external, same as we do ones named `bower_components.*` or `node_modules.*`
 
 ## [2.0.0-alpha.33] - 2017-03-14
 
