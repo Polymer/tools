@@ -40,12 +40,13 @@ suite('HtmlSplitter', () => {
         .on('end', () => {
           const expectedSplitFiles = [
             'index.html',
+            'shell.html',
             'shell.html_script_0.js',
             'shell.html_script_1.js',
-            'shell.html',
-            'source-dir/my-app.html',
+            path.join('source-dir', 'my-app.html'),
           ];
-          assert.sameMembers(Array.from(splitFiles.keys()), expectedSplitFiles);
+          assert.deepEqual(
+              Array.from(splitFiles.keys()).sort(), expectedSplitFiles);
           assert.include(
               splitFiles.get('shell.html_script_0.js').contents.toString(),
               `console.log('shell');`);
@@ -72,10 +73,10 @@ suite('HtmlSplitter', () => {
           const expectedJoinedFiles = [
             'index.html',
             'shell.html',
-            'source-dir/my-app.html',
+            path.join('source-dir', 'my-app.html'),
           ];
-          assert.sameMembers(
-              Array.from(joinedFiles.keys()), expectedJoinedFiles);
+          assert.deepEqual(
+              Array.from(joinedFiles.keys()).sort(), expectedJoinedFiles);
           assert.include(
               joinedFiles.get('shell.html').contents.toString(), `console.log`);
           done();

@@ -55,7 +55,7 @@ export class BuildBundler extends Transform {
       file: File,
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
-    this.files.set(file.path, file);
+    this.files.set(urlFromPath(this.config.root, file.path), file);
     callback(null, file);
   }
 
@@ -63,11 +63,10 @@ export class BuildBundler extends Transform {
     const bundles = await this._buildBundles();
     for (const filename of bundles.keys()) {
       const filepath = pathFromUrl(this.config.root, filename);
-      let file =
-          this._buildAnalyzer.getFile(filepath) || new File({path: filepath});
-      const contents = bundles.get(filename);
-      file.contents = new Buffer(contents);
-      this.push(file);
+      this.push(new File({
+        path: filepath,
+        contents: new Buffer(bundles.get(filename)),
+      }));
     }
     // end the stream
     done();

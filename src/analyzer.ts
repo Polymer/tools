@@ -523,7 +523,7 @@ export class StreamLoader implements UrlLoader {
       throw new Error('Unable to load ${url}.');
     }
 
-    const urlPath = decodeURIComponent(urlObject.pathname);
+    const urlPath = urlObject.pathname;
     const filePath = pathFromUrl(this.config.root, urlPath);
     const file = this._buildAnalyzer.getFile(filePath);
 

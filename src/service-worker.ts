@@ -20,6 +20,7 @@ import * as logging from 'plylog';
 import {generate as swPrecacheGenerate, SWConfig} from 'sw-precache';
 
 import {DepsIndex} from './analyzer';
+import {posixifyPath} from './path-transformers';
 import {PolymerProject} from './polymer-project';
 
 const logger = logging.getLogger('polymer-build.service-worker');
@@ -110,8 +111,10 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
     return path.join(buildRoot, filePath);
   });
 
-  // swPrecache will determine the right urls by stripping buildRoot
-  swPrecacheConfig.stripPrefix = buildRoot;
+  // swPrecache will determine the right urls by stripping buildRoot.
+  // NOTE:(usergenic) sw-precache generate() apparently replaces the
+  // prefix on an already posixified version of the path on win32.
+  swPrecacheConfig.stripPrefix = posixifyPath(buildRoot);
   // static files will be pre-cached
   swPrecacheConfig.staticFileGlobs = staticFileGlobs;
   // Log service-worker helpful output at the debug log level

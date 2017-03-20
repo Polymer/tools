@@ -15,7 +15,6 @@
 import File = require('vinyl');
 import {UrlLoader} from 'polymer-analyzer';
 import {parseUrl} from 'polymer-analyzer/lib/utils';
-import {pathFromUrl} from './path-transformers';
 
 /**
  * This is a `UrlLoader` for use with a `polymer-analyzer` that reads files
@@ -30,19 +29,13 @@ export class FileMapUrlLoader implements UrlLoader {
     this.files = files;
   }
 
-  _filePath(url: string): string {
-    const urlObject = parseUrl(url);
-    const urlPath = decodeURIComponent(urlObject.pathname);
-    return pathFromUrl(this.root, urlPath);
-  }
-
   // We can always return true because we're just reading paths off a map.
   canLoad(_url: string): boolean {
     return true;
   }
 
   async load(url: string): Promise<string> {
-    const file = this.files.get(this._filePath(url))!;
+    const file = this.files.get(parseUrl(url).pathname)!;
 
     if (file == null) {
       throw new Error(`File ${url} not present in file map.`);

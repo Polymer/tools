@@ -42,36 +42,61 @@
  * THE SOFTWARE.
  */
 
+/**
+ * This module consists of functions for transformations to filesystem and url
+ * paths.
+ * TODO(usergenic): We should consider migrating the responsibility of
+ * path-related string transformation to a package like `upath`.
+ * Please see: https://www.npmjs.com/package/upath
+ */
+
 import * as path from 'path';
 
-export function urlFromPath(root: string, filepath: string) {
-  if (!filepath.startsWith(root)) {
-    throw new Error(`file path is not in root: ${filepath} (${root})`);
+/**
+ * Returns a properly encoded URL representing the relative URL from the root
+ * to the target.  This function will throw an error if the target is outside
+ * the root.  We use this to map a file from the filesystem to the relative
+ * URL that represents it in the build.
+ */
+export function urlFromPath(root: string, target: string): string {
+  target = posixifyPath(target);
+  root = posixifyPath(root);
+
+  const relativePath = path.posix.relative(root, target);
+
+  // The startsWith(root) check is important on Windows because of the case
+  // where paths have different drive letters.  The startsWith('../') will
+  // catch the general not-in-root case.
+  if (!target.startsWith(root) || relativePath.startsWith('../')) {
+    throw new Error(`target path is not in root: ${target} (${root})`);
   }
 
-  // On windows systems, convert filesystem path to URL by replacing slashes
-  const isPlatformWin = /^win/.test(process.platform);
-  const isExtendedLengthPath = /^\\\\\?\\/.test(filepath);
-  const hasNonAscii = /[^\x00-\x80]+/.test(filepath);
-  if (isPlatformWin && !isExtendedLengthPath && !hasNonAscii) {
-    return path.win32.relative(root, filepath).replace(/\\/g, '/');
-  }
-
-  // Otherwise, just return the relative path between the two
-  return path.relative(root, filepath);
+  return encodeURI(relativePath);
 }
 
+/**
+ * Returns a filesystem path for the url, relative to the root.
+ */
 export function pathFromUrl(root: string, url: string) {
-  const isPlatformWin = /^win/.test(process.platform);
-  let filepath: string;
+  return path.normalize(decodeURI(
+      path.posix.join(posixifyPath(root), path.posix.join('/', url))));
+}
 
-  // On windows systems, convert URL to filesystem path by replacing slashes
-  if (isPlatformWin) {
-    filepath = url.replace(/\//g, '\\');
-  } else {
-    filepath = url;
+/**
+ * Returns a string where all Windows path separators are converted to forward
+ * slashes.
+ * NOTE(usergenic): We will generate only canonical Windows paths, but this
+ * function is exported so that we can create a forward-slashed Windows root
+ * path when dealing with the `sw-precache` library, which uses `glob` npm
+ * module generates only forward-slash paths in building its `precacheConfig`
+ * map.
+ */
+export function posixifyPath(filepath: string): string {
+  // We don't want to change backslashes to forward-slashes in the case where
+  // we're already on posix environment, because they would be intentional in
+  // that case (albeit weird.)
+  if (path.sep === '\\') {
+    filepath = filepath.replace(/\\/g, '/');
   }
-
-  // Otherwise, just return the relative path between the two
-  return path.join(root, url);
+  return filepath;
 }
