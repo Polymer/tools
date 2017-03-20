@@ -13,13 +13,12 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, Attribute, Document, Element, ParsedHtmlDocument, Property, ScannedProperty, SourceRange, Warning} from 'polymer-analyzer';
-import {Options as AnalyzerOptions} from 'polymer-analyzer/lib/analyzer';
+import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
 import {ProjectConfig} from 'polymer-project-config';
 
-import {getLocationInfoForPosition, isPositionInsideRange} from './ast-from-source-position';
-import {AttributeCompletion, EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+import {getLocationInfoForPosition} from './ast-from-source-position';
+import {AttributeCompletion, EditorService, TypeaheadCompletion} from './editor-service';
 
 export interface Options extends AnalyzerOptions { polymerJsonPath?: string; }
 

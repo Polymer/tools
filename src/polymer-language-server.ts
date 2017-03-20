@@ -20,14 +20,11 @@ import logInterceptor = require('./intercept-logs');
 
 
 import * as path from 'path';
-import {SourceRange} from 'polymer-analyzer/lib/model/model';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
-import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
+import {Severity, WarningCarryingException, SourceRange, FSUrlLoader, PackageUrlResolver, SourcePosition} from 'polymer-analyzer';
 import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+import {EditorService, TypeaheadCompletion} from './editor-service';
 
 import {LocalEditorService} from './local-editor-service';
 

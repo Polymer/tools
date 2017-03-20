@@ -14,11 +14,10 @@
 
 import * as child_process from 'child_process';
 import * as path from 'path';
-import {SourceRange} from 'polymer-analyzer/lib/model/model';
-import {Warning} from 'polymer-analyzer/lib/warning/warning';
+import {SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 import * as util from 'util';
 
-import {EditorService, SourcePosition, TypeaheadCompletion} from './editor-service';
+import {EditorService, TypeaheadCompletion} from './editor-service';
 import {Request, RequestWrapper, ResponseWrapper} from './remote-editor-protocol';
 
 

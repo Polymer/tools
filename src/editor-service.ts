@@ -11,8 +11,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourceRange} from 'polymer-analyzer/lib/model/model';
-import {Warning} from 'polymer-analyzer/lib/warning/warning';
+import {SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 
 export type TypeaheadCompletion =
     ElementCompletion | AttributesCompletion | AttributeValuesCompletion;
@@ -42,13 +41,6 @@ export interface AttributeCompletion {
 
 export interface AttributeValueCompletion extends AttributeCompletion {
   autocompletion: string;
-}
-
-export interface SourcePosition {
-  /** Line number in file, starting from 0. */
-  line: number;
-  /** Column number in file, starting from 0. */
-  column: number;
 }
 
 // Important note: all arguments to, and results returned from editor service

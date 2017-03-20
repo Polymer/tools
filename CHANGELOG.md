@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased-->
 
 <!--
   Please document PR changes here. Uncomment the Unreleased header as
   appropriate.
 -->
+
+## Unreleased
+
+* Update dependencies.
+* Initialize the legacy protocol server with the expected path to the `polymer.json` file. This should allow the atom plugin (and possibly the sublime plugin) to get warnings from polymer-lint as well.
 
 ## 1.3.2 - 2017-03-03
 

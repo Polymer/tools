@@ -16,9 +16,8 @@ import * as chai from 'chai';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, PackageUrlResolver, SourceRange, Warning, WarningPrinter} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, PackageUrlResolver, Severity, SourceRange, Warning, WarningPrinter} from 'polymer-analyzer';
 import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
-import {Severity} from 'polymer-analyzer/lib/warning/warning';
 
 import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {LocalEditorService} from '../local-editor-service';
@@ -674,7 +673,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           }]);
       assert.deepEqual(await getUnderlinedText(warnings[0]), `
 <script>var var var var var let const;</script>
-             ~`);
+            ~`);
     });
 
     test(

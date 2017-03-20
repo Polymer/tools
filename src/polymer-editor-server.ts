@@ -24,9 +24,8 @@
  */
 
 import * as util from 'util';
-
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
+import * as path from 'path';
+import {PackageUrlResolver, FSUrlLoader} from 'polymer-analyzer';
 
 import {LocalEditorService} from './local-editor-service';
 import {Request, RequestWrapper, ResponseWrapper, SettledValue} from './remote-editor-protocol';
@@ -46,7 +45,8 @@ class EditorServer {
       }
       this._localEditorService = new LocalEditorService({
         urlLoader: new FSUrlLoader(message.basedir),
-        urlResolver: new PackageUrlResolver()
+        urlResolver: new PackageUrlResolver(),
+        polymerJsonPath: path.join(message.basedir, 'polymer.json'),
       });
       return;
     }

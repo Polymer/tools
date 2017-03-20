@@ -12,11 +12,7 @@
  */
 
 import * as parse5 from 'parse5';
-
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {SourceRange} from 'polymer-analyzer/lib/model/model';
-
-import {SourcePosition} from './editor-service';
+import {ParsedHtmlDocument, SourcePosition, SourceRange} from 'polymer-analyzer';
 
 
 export type LocationResult = AttributesSection | AttributeValue | TagName |
