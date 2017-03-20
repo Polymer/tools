@@ -108,5 +108,60 @@ suite('compile-middleware', () => {
       // The valid script tag should still be compiled.
       assert.notInclude(response.text, `<script>\nclass A {}\n</script>`);
     });
+
+    suite('with compile option set to \'auto\'', () => {
+
+      beforeEach(() => {
+        app = getApp({
+          root: root,
+          compile: 'auto',
+          componentDir: path.join(root, 'bower_components'),
+        });
+        // Ensure a fresh cache for each test.
+        babelCompileCache.reset();
+      });
+
+      const userAgentsThatSupportES2015 = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36',
+      ];
+
+      const userAgentsThatDontSupportES2015 = [
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
+      ];
+
+      test('detect user-agents that do not need compilation', async() => {
+        assert.isFalse(babelCompileCache.has(`Unexpected .js file in cache`));
+        for (const userAgent of userAgentsThatSupportES2015) {
+          const response = await supertest(app)
+                               .get('/components/test-component/test.js')
+                               .set('User-Agent', userAgent);
+          assert.isFalse(
+              babelCompileCache.has(uncompiledJs),
+              `Unexpected .js file in cache User-Agent ${userAgent}`);
+          assert.include(
+              response.text,
+              'class A {}',
+              `Unexpected compilation for User-Agent ${userAgent}`);
+          babelCompileCache.reset();
+        }
+      });
+
+      test('detect user-agents that need compilation', async() => {
+        assert.isFalse(babelCompileCache.has(`Unexpected .js file in cache`));
+        for (const userAgent of userAgentsThatDontSupportES2015) {
+          const response = await supertest(app)
+                               .get('/components/test-component/test.js')
+                               .set('User-Agent', userAgent);
+          assert.isTrue(
+              babelCompileCache.has(uncompiledJs),
+              `Expected .js file in cache User-Agent ${userAgent}`);
+          assert.notInclude(
+              response.text,
+              'class A {}',
+              `Expected compilation for User-Agent ${userAgent}`);
+          babelCompileCache.reset();
+        }
+      });
+    });
   });
 });
