@@ -103,7 +103,7 @@ You can add splitters to any part of your build stream. We recommend using them 
 
 ### Bundling Files
 
-#### project.bundler
+#### project.bundler()
 
 A stream that combines the files in your application to reduce the number of frontend requests needed. This can be a great way to [improve performance](https://developer.yahoo.com/performance/rules.html#num_http) when HTTP2/Push is not available.
 
@@ -134,7 +134,7 @@ const generateServiceWorker = require('polymer-build').generateServiceWorker;
 generateServiceWorker({
   buildRoot: 'build/',
   project: project,
-  bundled: true, // set if `project.bundler` was used
+  bundled: true, // set if `project.bundler()` was used
   swPrecacheConfig: {
     // See https://github.com/GoogleChrome/sw-precache#options-parameter for all supported options
     navigateFallback: '/index.html',
@@ -180,7 +180,7 @@ const unbundledBuildStream = forkStream(buildStream)
 
 // Fork your build stream to bundle your application and write to the 'build/bundled' dir
 const bundledBuildStream = forkStream(buildStream)
-  .pipe(project.bundler)
+  .pipe(project.bundler())
   .pipe(gulp.dest('build/bundled'));
 ```
 
