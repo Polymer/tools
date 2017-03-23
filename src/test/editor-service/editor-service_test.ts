@@ -232,8 +232,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
                   indexFile, deepAttributePosition),
               {
                 file: 'analysis/behaviors/subdir/subbehavior.html',
-                start: {line: 5, column: 6},
-                end: {line: 11, column: 7}
+                start: {line: 8, column: 6},
+                end: {line: 14, column: 7}
               });
         });
 

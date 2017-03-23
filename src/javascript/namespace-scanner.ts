@@ -69,15 +69,15 @@ class NamespaceVisitor implements Visitor {
     if (!comment || comment.indexOf('@namespace') === -1) {
       return;
     }
-    const anaylzedName = getIdentifierName(nameNode);
+    const analyzedName = getIdentifierName(nameNode);
 
     const docs = jsdoc.parseJsdoc(comment);
     const explicitName = jsdoc.getTag(docs, 'namespace', 'name');
     let namespaceName;
     if (explicitName) {
       namespaceName = explicitName;
-    } else if (anaylzedName) {
-      namespaceName = getNamespacedIdentifier(anaylzedName, docs);
+    } else if (analyzedName) {
+      namespaceName = getNamespacedIdentifier(analyzedName, docs);
     } else {
       // TODO(fks): Propagate a warning if name could not be determined
       return;
