@@ -265,7 +265,9 @@
         }
       ],
       "metadata": {
-        "isPolymerBehavior": true
+        "polymer": {
+          "isBehavior": true
+        }
       },
       "methods": [],
       "name": "MyNamespace.SimpleBehavior",
@@ -342,7 +344,9 @@
         }
       ],
       "metadata": {
-        "isPolymerBehavior": true
+        "polymer": {
+          "isBehavior": true
+        }
       },
       "methods": [],
       "name": "MyNamespace.SubBehavior",

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-* `generateAnalysis()` now includes PolymerBehavior information in its `mixins` collection.  Identified by `metadata.isPolymerBehavior`.
+* `generateAnalysis()` now includes PolymerBehavior information in its `mixins` collection.  Identified by `metadata.polymer.isBehavior`.
 
 ## [2.0.0-alpha.34] - 2017-03-20
 

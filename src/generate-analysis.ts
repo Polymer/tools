@@ -255,7 +255,7 @@ function serializePolymerBehaviorAsElementMixin(
   const metadata = serializeElementLike(behavior, packagePath) as ElementMixin;
   metadata.name = behavior.className;
   metadata.privacy = behavior.privacy;
-  metadata.metadata.isPolymerBehavior = true;
+  metadata.metadata.polymer = {isBehavior: true};
   if (behavior.mixins.length > 0) {
     metadata.mixins = behavior.mixins.map((m) => m.identifier);
   }
