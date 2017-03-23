@@ -33,7 +33,7 @@ suite('generate-elements', () => {
 
   suite('generateAnalysisMetadata', () => {
 
-    suite('generatates for Document array from fixtures', () => {
+    suite('generates for Document array from fixtures', () => {
       const basedir = path.join(__dirname, 'static', 'analysis');
       const analysisFixtureDirs =
           fs.readdirSync(basedir)
