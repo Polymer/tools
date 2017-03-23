@@ -21,7 +21,7 @@ import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Document} from './model/document';
 import {Feature} from './model/feature';
-import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
+import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Method as ResolvedMethod, PolymerBehavior as ResolvedPolymerBehavior, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
 import {Package} from './model/package';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
@@ -33,6 +33,7 @@ interface Members {
   mixins: Set<ResolvedMixin>;
   namespaces: Set<ResolvedNamespace>;
   functions: Set<ResolvedFunction>;
+  polymerBehaviors: Set<ResolvedPolymerBehavior>;
 }
 
 export function generateAnalysis(
@@ -43,6 +44,7 @@ export function generateAnalysis(
 
   if (input instanceof Array) {
     members = {
+      polymerBehaviors: new Set(),
       elements: new Set(),
       mixins: new Set(),
       namespaces: new Set(),
@@ -62,6 +64,9 @@ export function generateAnalysis(
       Array.from(document.getByKind('function'))
           .filter(_filter)
           .forEach((f) => members.functions.add(f));
+      Array.from(document.getByKind('behavior'))
+          .filter(_filter)
+          .forEach((f) => members.polymerBehaviors.add(f));
     }
   } else {
     members = {
@@ -72,6 +77,8 @@ export function generateAnalysis(
           new Set(Array.from(input.getByKind('namespace')).filter(_filter)),
       functions:
           new Set(Array.from(input.getByKind('function')).filter(_filter)),
+      polymerBehaviors:
+          new Set(Array.from(input.getByKind('behavior')).filter(_filter)),
     };
   }
 
@@ -115,6 +122,14 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
     const namespace = namespaces.get(namespaceName) || analysis;
     namespace.functions = namespace.functions || [];
     namespace.functions.push(serializeFunction(_function, packagePath));
+  }
+
+  for (const behavior of members.polymerBehaviors) {
+    const namespaceName = getNamespaceName(behavior.name);
+    const namespace = namespaces.get(namespaceName) || analysis;
+    namespace.mixins = namespace.mixins || [];
+    namespace.mixins.push(
+        serializePolymerBehaviorAsElementMixin(behavior, packagePath));
   }
 
   return analysis;
@@ -231,6 +246,18 @@ function serializeElementMixin(
   metadata.privacy = mixin.privacy;
   if (mixin.mixins.length > 0) {
     metadata.mixins = mixin.mixins.map((m) => m.identifier);
+  }
+  return metadata;
+}
+
+function serializePolymerBehaviorAsElementMixin(
+    behavior: ResolvedPolymerBehavior, packagePath: string): ElementMixin {
+  const metadata = serializeElementLike(behavior, packagePath) as ElementMixin;
+  metadata.name = behavior.className;
+  metadata.privacy = behavior.privacy;
+  metadata.metadata.isPolymerBehavior = true;
+  if (behavior.mixins.length > 0) {
+    metadata.mixins = behavior.mixins.map((m) => m.identifier);
   }
   return metadata;
 }
