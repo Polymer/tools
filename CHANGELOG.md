@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Add auto-compile support for the Chromium browser.
+
 ### Fixed
 * When directory paths don't end in `/`, redirect to the right path, not a
   filesystem path. https://github.com/Polymer/polyserve/issues/96
