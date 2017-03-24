@@ -28,6 +28,8 @@ export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
 export type Filter = (feature: Feature) => boolean;
 
+const setDefaults = require('defaults-deep');
+
 interface Members {
   elements: Set<ResolvedElement>;
   mixins: Set<ResolvedMixin>;
@@ -124,11 +126,12 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
     namespace.functions.push(serializeFunction(_function, packagePath));
   }
 
+  // TODO(usergenic): Consider moving framework-specific code to separate file.
   for (const behavior of members.polymerBehaviors) {
     const namespaceName = getNamespaceName(behavior.name);
     const namespace = namespaces.get(namespaceName) || analysis;
-    namespace.mixins = namespace.mixins || [];
-    namespace.mixins.push(
+    setDefaults(namespace, {metadata: {polymer: {behaviors: []}}});
+    namespace.metadata.polymer.behaviors.push(
         serializePolymerBehaviorAsElementMixin(behavior, packagePath));
   }
 
@@ -255,7 +258,6 @@ function serializePolymerBehaviorAsElementMixin(
   const metadata = serializeElementLike(behavior, packagePath) as ElementMixin;
   metadata.name = behavior.className;
   metadata.privacy = behavior.privacy;
-  metadata.metadata.polymer = {isBehavior: true};
   if (behavior.mixins.length > 0) {
     metadata.mixins = behavior.mixins.map((m) => m.identifier);
   }
