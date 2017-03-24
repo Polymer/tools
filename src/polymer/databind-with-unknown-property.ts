@@ -27,7 +27,7 @@ const isDomRepeat = p.OR(
     p.hasTagName('dom-repeat'),
     p.AND(p.hasTagName('template'), p.hasAttrValue('is', 'dom-repeat')));
 
-export class DatabindWithUnknownProperty extends HtmlRule {
+class DatabindWithUnknownProperty extends HtmlRule {
   code = 'databind-with-unknown-property';
   description = stripIndent(`
       Warns when a polymer databinding expression uses an undeclared property.

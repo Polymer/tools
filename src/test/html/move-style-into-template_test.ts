@@ -16,13 +16,13 @@ import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
-import {MoveStyleIntoTemplate} from '../../html/move-style-into-template';
 import {Linter} from '../../linter';
+import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-suite('MoveStyleIntoTemplate', () => {
+suite('style-into-template', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,7 +30,7 @@ suite('MoveStyleIntoTemplate', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
-    linter = new Linter([new MoveStyleIntoTemplate()], analyzer);
+    linter = new Linter(registry.getRules(['style-into-template']), analyzer);
   });
 
   test('works in the trivial case', async() => {

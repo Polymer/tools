@@ -24,7 +24,7 @@ import stripIndent = require('strip-indent');
 import {isDatabindingTemplate} from './matchers';
 
 
-export class SetUnknownAttribute extends HtmlRule {
+class SetUnknownAttribute extends HtmlRule {
   code = 'set-unknown-attribute';
   description = stripIndent(`
       Warns when setting undeclared properties or attributes in HTML.

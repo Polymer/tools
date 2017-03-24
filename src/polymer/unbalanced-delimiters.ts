@@ -28,7 +28,7 @@ import stripIndent = require('strip-indent');
  * `[[myValue]]` or `{{myValue}}` have too many or too few brackets on either
  * side.
  */
-export class UnbalancedDelimiters extends HtmlRule {
+class UnbalancedDelimiters extends HtmlRule {
   code = 'unbalanced-polymer-delimiters';
   description = stripIndent(`
       Matches unbalanced delimiters around Polymer databinding expressions.

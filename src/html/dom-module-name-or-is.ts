@@ -13,7 +13,8 @@
  */
 
 import * as dom5 from 'dom5';
-import {ParsedHtmlDocument, Warning, Severity} from 'polymer-analyzer';
+import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
+
 import stripIndent = require('strip-indent');
 import {stripWhitespace} from '../util';
 import {HtmlRule} from './rule';
@@ -21,7 +22,7 @@ import {registry} from '../registry';
 
 const p = dom5.predicates;
 
-export class DomModuleNameOrIs extends HtmlRule {
+class DomModuleNameOrIs extends HtmlRule {
   code = 'dom-module-invalid-attrs';
   description = stripIndent(`
       Warns for:

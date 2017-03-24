@@ -23,7 +23,7 @@ import stripIndent = require('strip-indent');
  * `[[myValue]]` or `{{myValue}}` have too many or too few brackets on either
  * side.
  */
-export class ElementBeforeDomModule extends HtmlRule {
+class ElementBeforeDomModule extends HtmlRule {
   readonly code = 'element-before-dom-module';
   readonly description = stripIndent(`
       Warns for an element being declared before its dom-module.

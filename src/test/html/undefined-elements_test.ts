@@ -16,13 +16,13 @@ import * as assert from 'assert';
 import * as path from 'path';
 import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
-import {UndefinedElements} from '../../html/undefined-elements';
 import {Linter} from '../../linter';
+import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-suite('UndefinedElements', () => {
+suite('undefined-elements', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,7 +30,17 @@ suite('UndefinedElements', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
-    linter = new Linter([new UndefinedElements()], analyzer);
+    linter = new Linter(registry.getRules(['undefined-elements']), analyzer);
+  });
+
+  test('works in the trivial case', async() => {
+    const warnings = await linter.lint([]);
+    assert.deepEqual(warnings, []);
+  });
+
+  test('gives no warnings for a perfectly fine file', async() => {
+    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    assert.deepEqual(warnings, []);
   });
 
   test('finds undefined element references', async() => {

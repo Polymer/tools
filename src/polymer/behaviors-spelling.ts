@@ -21,7 +21,7 @@ import {stripWhitespace} from '../util';
 import stripIndent = require('strip-indent');
 
 
-export class BehaviorsSpelling extends Rule {
+class BehaviorsSpelling extends Rule {
   code = 'behaviors-spelling';
   description = stripIndent(`
       Warns when the Polymer \`behaviors\` property is spelled \`behaviours\`,

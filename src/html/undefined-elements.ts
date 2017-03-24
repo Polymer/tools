@@ -20,7 +20,7 @@ import {HtmlRule} from './rule';
 
 import stripIndent = require('strip-indent');
 
-export class UndefinedElements extends HtmlRule {
+class UndefinedElements extends HtmlRule {
   code = 'undefined-elements';
   description = stripIndent(`
     Warns when an HTML tag refers to a custom element with no known definition.

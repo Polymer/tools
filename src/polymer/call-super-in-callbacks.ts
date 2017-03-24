@@ -29,7 +29,7 @@ const methodsThatMustCallSuper = new Set([
   'attributeChangedCallback',
 ]);
 
-export class CallSuperInCallbacks extends Rule {
+class CallSuperInCallbacks extends Rule {
   code = 'call-super-in-callbacks';
   description = stripIndent(`
       Warns when a Polymer element overrides one of the custom element callbacks

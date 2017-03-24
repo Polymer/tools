@@ -17,12 +17,12 @@ import * as path from 'path';
 import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
-import {BehaviorsSpelling} from '../../polymer/behaviors-spelling';
+import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-suite('BehaviorsSpelling', () => {
+suite('behaviors-spelling', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,7 +30,17 @@ suite('BehaviorsSpelling', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
-    linter = new Linter([new BehaviorsSpelling()], analyzer);
+    linter = new Linter(registry.getRules(['behaviors-spelling']), analyzer);
+  });
+
+  test('works in the trivial case', async() => {
+    const warnings = await linter.lint([]);
+    assert.deepEqual(warnings, []);
+  });
+
+  test('gives no warnings for a perfectly fine file', async() => {
+    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    assert.deepEqual(warnings, []);
   });
 
   test('finds polymer elements with wrong behaviors spelling', async() => {

@@ -22,7 +22,7 @@ import {registry} from '../registry';
 const definitelyNotMethodTypes =
     new Set(['string', 'number', 'boolean', 'Array']);
 
-export class DatabindingCallsMustBeFunctions extends Rule {
+class DatabindingCallsMustBeFunctions extends Rule {
   code = 'databinding-calls-must-be-functions';
   description = stripIndent(`
       Warns when a property in a Polymer databinding is called but it isn't

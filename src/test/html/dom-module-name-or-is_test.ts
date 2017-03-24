@@ -16,14 +16,13 @@ import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
-import {DomModuleNameOrIs} from '../../html/dom-module-name-or-is';
 import {Linter} from '../../linter';
-
+import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
-suite('DomModuleNameOrIs', () => {
+suite('dom-module-invalid-attrs', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -31,7 +30,8 @@ suite('DomModuleNameOrIs', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
-    linter = new Linter([new DomModuleNameOrIs()], analyzer);
+    linter =
+        new Linter(registry.getRules(['dom-module-invalid-attrs']), analyzer);
   });
 
   test('works in the trivial case', async() => {

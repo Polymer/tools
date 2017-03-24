@@ -23,7 +23,7 @@ import stripIndent = require('strip-indent');
 
 const p = dom5.predicates;
 
-export class MoveStyleIntoTemplate extends HtmlRule {
+class MoveStyleIntoTemplate extends HtmlRule {
   code = 'style-into-template';
   description = stripIndent(`
       Warns about \`style\` tags in dom-modules but not in templates.
