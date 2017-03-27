@@ -28,8 +28,6 @@ export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
 export type Filter = (feature: Feature) => boolean;
 
-const setDefaults = require('defaults-deep');
-
 interface Members {
   elements: Set<ResolvedElement>;
   mixins: Set<ResolvedMixin>;
@@ -130,7 +128,10 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
   for (const behavior of members.polymerBehaviors) {
     const namespaceName = getNamespaceName(behavior.name);
     const namespace = namespaces.get(namespaceName) || analysis;
-    setDefaults(namespace, {metadata: {polymer: {behaviors: []}}});
+    namespace.metadata = namespace.metadata || {};
+    namespace.metadata.polymer = namespace.metadata.polymer || {};
+    namespace.metadata.polymer.behaviors =
+        namespace.metadata.polymer.behaviors || [];
     namespace.metadata.polymer.behaviors.push(
         serializePolymerBehaviorAsElementMixin(behavior, packagePath));
   }
