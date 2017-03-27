@@ -358,8 +358,6 @@ function extractDataBindingsFromTextNode(
       }
       results.push(expression);
     }
-
-    ;
   }
 }
 

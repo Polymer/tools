@@ -78,8 +78,7 @@ export class DomModule implements Feature {
   sourceRange: SourceRange;
   astNode: dom5.Node;
   warnings: Warning[];
-  slots:
-  Slot[];
+  'slots': Slot[];
   localIds: LocalId[];
   template: Template|undefined;
   databindings: HtmlDatabindingExpression[];

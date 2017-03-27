@@ -60,7 +60,7 @@ suite('DomModuleScanner', () => {
             <template>
               <div id="{{foo}}"></div>
               <span id="{{bar(baz, boop)}}"></div>
-              <other-elem prop="{{foo bar}}"></other-prop>
+              <other-elem prop="{{foo bar}}"></other-elem>
             </template>
           </dom-module>
         </body>
@@ -83,7 +83,7 @@ suite('DomModuleScanner', () => {
                           ~~~~~~~~~~~~~~`
           ]);
       assert.deepEqual(await underliner.underline(domModules[0].warnings), [`
-              <other-elem prop="{{foo bar}}"></other-prop>
+              <other-elem prop="{{foo bar}}"></other-elem>
                                       ~`]);
     });
   });
