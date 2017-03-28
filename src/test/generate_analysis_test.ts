@@ -76,8 +76,9 @@ suite('generate-elements', () => {
               assert.deepEqual(
                   analyzedPackages,
                   JSON.parse(fs.readFileSync(pathToGolden, 'utf-8')),
-                  `Generated form of ${path.relative(
-                      __dirname, pathToGolden)} ` +
+                  `Generated form of ${
+                                       path.relative(__dirname, pathToGolden)
+                                     } ` +
                       `differs from the golden at that path`);
             } catch (e) {
               console.log(

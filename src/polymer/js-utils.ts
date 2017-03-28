@@ -36,8 +36,10 @@ export function toScannedPolymerProperty(
     warnings.push({
       code: 'unknown-prop-name',
       message:
-          `Could not determine name of property from expression of type: ${node
-              .key.type}`,
+          `Could not determine name of property from expression of type: ${
+                                                                           node.key
+                                                                               .type
+                                                                         }`,
       sourceRange: sourceRange,
       severity: Severity.WARNING
     });

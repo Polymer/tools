@@ -50,7 +50,7 @@ export class AsyncWorkCache<K, V> {
     return promise;
   }
 
-  delete (key: K) {
+  delete(key: K) {
     this._keyToResultMap.delete(key);
   }
 

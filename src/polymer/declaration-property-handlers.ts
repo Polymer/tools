@@ -38,8 +38,10 @@ export function getBehaviorAssignmentOrWarning(
       warning: {
         code: 'could-not-determine-behavior-name',
         message:
-            `Could not determine behavior name from expression of type ${argNode
-                .type}`,
+            `Could not determine behavior name from expression of type ${
+                                                                         argNode
+                                                                             .type
+                                                                       }`,
         severity: Severity.WARNING,
         sourceRange: document.sourceRangeForNode(argNode)!
       }

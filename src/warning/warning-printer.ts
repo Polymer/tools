@@ -76,8 +76,10 @@ export class WarningPrinter {
         return colorFunction('info');
       default:
         const never: never = severity;
-        throw new Error(`Unknown severity value - ${never
-                        } - encountered while printing warning.`);
+        throw new Error(
+            `Unknown severity value - ${
+                                        never
+                                      } - encountered while printing warning.`);
     }
   }
 

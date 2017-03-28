@@ -23,11 +23,11 @@ import {ParsedHtmlDocument} from './html-document';
 
 export class HtmlParser implements Parser<ParsedHtmlDocument> {
   /**
-  * Parse html into ASTs.
-  *
-  * @param {string} htmlString an HTML document.
-  * @param {string} href is the path of the document.
-  */
+   * Parse html into ASTs.
+   *
+   * @param {string} htmlString an HTML document.
+   * @param {string} href is the path of the document.
+   */
   parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
       ParsedHtmlDocument {
     const ast = parseHtml(contents, {locationInfo: true});

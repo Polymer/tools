@@ -222,8 +222,10 @@ class ElementVisitor implements Visitor {
         if (!name) {
           element.warnings.push({
             message:
-                `Can't determine name for property key from expression with type ${prop
-                    .key.type}.`,
+                `Can't determine name for property key from expression with type ${
+                                                                                   prop.key
+                                                                                       .type
+                                                                                 }.`,
             code: 'cant-determine-property-name',
             severity: Severity.WARNING,
             sourceRange: this.document.sourceRangeForNode(prop.key)!

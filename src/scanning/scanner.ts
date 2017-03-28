@@ -30,5 +30,5 @@ export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
 }
 
 export interface ScannerConstructor {
-  new (analyzer: Analyzer): Scanner<any, any, any>;
+  new(analyzer: Analyzer): Scanner<any, any, any>;
 }

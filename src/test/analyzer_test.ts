@@ -879,11 +879,15 @@ var DuplicateNamespace = {};
         assert.deepEqual(document.url, 'base.html');
         const localFeatures = document.getFeatures({imported: false});
         const kinds = Array.from(localFeatures).map((f) => Array.from(f.kinds));
-        const message = `localFeatures: ${JSON.stringify(
-            Array.from(localFeatures).map((f) => ({
-                                            kinds: Array.from(f.kinds),
-                                            ids: Array.from(f.identifiers)
-                                          })))}`;
+        const message =
+            `localFeatures: ${
+                              JSON.stringify(
+                                  Array.from(localFeatures)
+                                      .map((f) => ({
+                                             kinds: Array.from(f.kinds),
+                                             ids: Array.from(f.identifiers)
+                                           })))
+                            }`;
         assert.deepEqual(
             kinds,
             [

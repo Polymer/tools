@@ -101,8 +101,10 @@ export function closureType(
   } else {
     throw new WarningCarryingException({
       code: 'no-closure-type',
-      message: `Unable to determine closure type for expression of type ${node
-                   .type}`,
+      message:
+          `Unable to determine closure type for expression of type ${
+                                                                     node.type
+                                                                   }`,
       severity: Severity.WARNING, sourceRange
     });
   }

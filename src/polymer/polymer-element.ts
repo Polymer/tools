@@ -140,7 +140,7 @@ export function addMethod(
  * The metadata for a single polymer element
  */
 export class ScannedPolymerElement extends ScannedElement implements
-  ScannedPolymerExtension {
+    ScannedPolymerExtension {
   properties: ScannedPolymerProperty[] = [];
   methods: ScannedMethod[] = [];
   observers: Observer[] = [];
@@ -412,8 +412,11 @@ function applySuperClass(
       if (!superElement.kinds.has('polymer-element')) {
         element.warnings.push({
           message:
-              `A Polymer element can\'t extend from a non-Polymer element: ${scannedElement
-                  .superClass.identifier}`,
+              `A Polymer element can\'t extend from a non-Polymer element: ${
+                                                                             scannedElement
+                                                                                 .superClass
+                                                                                 .identifier
+                                                                           }`,
           severity: Severity.ERROR,
           code: 'unknown-superclass',
           sourceRange: scannedElement.superClass.sourceRange!,
@@ -424,16 +427,20 @@ function applySuperClass(
     } else {
       if (superElements.size === 0) {
         element.warnings.push({
-          message: `Unable to resolve superclass ${scannedElement.superClass
-                       .identifier}`,
+          message: `Unable to resolve superclass ${
+                                                   scannedElement.superClass
+                                                       .identifier
+                                                 }`,
           severity: Severity.ERROR,
           code: 'unknown-superclass',
           sourceRange: scannedElement.superClass.sourceRange!,
         });
       } else {
         element.warnings.push({
-          message: `Multiple superclasses found for ${scannedElement.superClass
-                       .identifier}`,
+          message: `Multiple superclasses found for ${
+                                                      scannedElement.superClass
+                                                          .identifier
+                                                    }`,
           severity: Severity.ERROR,
           code: 'unknown-superclass',
           sourceRange: scannedElement.superClass.sourceRange!,
