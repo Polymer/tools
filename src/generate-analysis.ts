@@ -127,7 +127,7 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
 
   // TODO(usergenic): Consider moving framework-specific code to separate file.
   for (const behavior of members.polymerBehaviors) {
-    const namespaceName = getNamespaceName(behavior.name);
+    const namespaceName = getNamespaceName(behavior.className);
     const namespace = namespaces.get(namespaceName) || analysis;
     namespace.metadata = namespace.metadata || {};
     namespace.metadata.polymer = namespace.metadata.polymer || {};
