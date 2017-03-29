@@ -30,6 +30,17 @@ export interface Analysis {
   functions?: Function[];
   mixins?: ElementMixin[];
   namespaces?: Namespace[];
+
+  /**
+   * An extension point for framework-specific metadata, as well as any
+   * metadata not yet standardized here such as what polyfills are needed,
+   * behaviors and mixins used, the framework that the package was written in,
+   * tags/categories, framework config files, etc.
+   *
+   * Framework-specific metadata should be put into a sub-object with the name
+   * of that framework.
+   */
+  metadata?: any;
 }
 
 /**
