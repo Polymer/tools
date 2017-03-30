@@ -16,7 +16,7 @@ import File = require('vinyl');
 import * as parse5 from 'parse5';
 import {Analyzer} from 'polymer-analyzer';
 import {Bundler} from 'polymer-bundler';
-import {BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
+import {BundleManifest, BundleStrategy, generateShellMergeStrategy} from 'polymer-bundler/lib/bundle-manifest';
 import {ProjectConfig} from 'polymer-project-config';
 import {Transform} from 'stream';
 
@@ -55,18 +55,26 @@ export class BuildBundler extends Transform {
       file: File,
       _encoding: string,
       callback: (error?: any, data?: File) => void): void {
+    this._mapFile(file);
+    callback(null, null);
+  }
+
+  _mapFile(file: File) {
     this.files.set(urlFromPath(this.config.root, file.path), file);
-    callback(null, file);
   }
 
   async _flush(done: (error?: any) => void) {
     const bundles = await this._buildBundles();
     for (const filename of bundles.keys()) {
       const filepath = pathFromUrl(this.config.root, filename);
-      this.push(new File({
+      const file = new File({
         path: filepath,
         contents: new Buffer(bundles.get(filename)),
-      }));
+      });
+      this._mapFile(file);
+    }
+    for (const filepath of this.files.keys()) {
+      this.push(this.files.get(filepath));
     }
     // end the stream
     done();
@@ -82,11 +90,23 @@ export class BuildBundler extends Transform {
     const manifest = await this._bundler.generateManifest(
         bundleEntrypoints.map(f => urlFromPath(this.config.root, f)), strategy);
     const docCollection = await this._bundler.bundle(manifest);
+
+    // Remove the bundled files from the file map so they are not emitted later.
+    this._unmapBundledFiles(manifest);
+
     const contentsMap = new Map();
     for (const bundleName of docCollection.keys()) {
       contentsMap.set(
           bundleName, parse5.serialize(docCollection.get(bundleName).ast));
     }
     return contentsMap;
+  }
+
+  _unmapBundledFiles(manifest: BundleManifest) {
+    for (const bundle of manifest.bundles.values()) {
+      for (const filename of bundle.files) {
+        this.files.delete(filename);
+      }
+    }
   }
 }

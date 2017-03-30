@@ -346,7 +346,6 @@ suite('BuildBundler', () => {
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
   });
 
-
   test('bundler deals with posix platform separators on win32', async() => {
     const posixSepPaths = new FileTransform((stream, file) => {
       if (path.sep === '\\') {
@@ -379,5 +378,17 @@ suite('BuildBundler', () => {
     assert.include(
         bundledHtml, '<dom-module id="my-element-2">', 'simple-import-2.html');
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
+  });
+
+  test('bundler does not output imports which have been bundled', async() => {
+    await setupTest({
+      entrypoint: 'entrypoint-only.html',
+      sources: ['framework.html', 'entrypoint-only.html'],
+    });
+    // We should have an entrypoint-only.html file (bundled).
+    assert.isOk(getFile('entrypoint-only.html'));
+
+    // We should not have the inlined file in the output.
+    assert.isNotOk(getFile('framework.html'));
   });
 });
