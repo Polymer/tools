@@ -26,5 +26,11 @@
 1. Add the saucelabs enviroment variables using the travis gem
   - `travis encrypt SAUCE_USERNAME=your username --add`
   - `travis encrypt SAUCE_ACCESS_KEY=your access key --add`
+ 
 1. Commit and push `.travis.yml`
 1. You're done!
+
+### Additional notes
+ - Travis attempts to autodetect the organization/name from the local .git, but treats git repository oganization/name as case sensitive. If you receive the error `repository not known to https://api.travis-ci.org/: myorg/my-component`, you may need to specify the repository organization/name:
+   - `travis encrypt -r myOrg/my-component SAUCE_USERNAME=your username --add`
+   - `travis encrypt -r myOrg/my-component SAUCE_ACCESS_KEY=your access key --add`
