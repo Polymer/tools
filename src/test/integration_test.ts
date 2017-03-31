@@ -18,6 +18,7 @@ import {Analyzer, FSUrlLoader, PackageUrlResolver, Warning, WarningPrinter} from
 
 import {Linter} from '../linter';
 import {registry} from '../registry';
+import {stripWhitespace} from '../util';
 
 const fixtures_dir = path.resolve(
     path.join(__dirname, '../../test/integration/bower_components'));
@@ -48,28 +49,21 @@ if (process.env['INTEGRATION_TEST']) {
   });
 }
 
-const ignoredCodes = new Set([
-  // We have a few node binary scripts, which start with a shebang.
-  // https://github.com/Polymer/polymer-analyzer/issues/435
-  'parse-error',
+const codesToIgnore = new Set([
   // We have a lot of references to files which aren't published on bower.
   // (e.g. demos, tests, dev dependencies, etc).
   // No current plan to track these down and fix them, as there's just so many.
   'could-not-load',
 ]);
 
-const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
+const fileSpecificIgnoreCodesToIgnore: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/paper-scroll-header-panel/pull/106
   'paper-scroll-header-panel/demo/lorem-ipsum.html':
       new Set(['dom-module-invalid-attrs']),
 
-  // https://github.com/PolymerElements/iron-overlay-behavior/pull/228
-  'iron-overlay-behavior/test/test-buttons-wrapper.html':
-      new Set(['style-into-template']),
-
   // https://github.com/PolymerElements/iron-a11y-keys-behavior/pull/66
   'iron-a11y-keys-behavior/test/basic-test.html':
-      new Set(['unknown-polymer-behavior', 'set-unknown-attribute']),
+      new Set(['unknown-polymer-behavior']),
 
   // https://github.com/PolymerLabs/note-app-elements/pull/5
   'note-app-elements/na-behavior.html': new Set(['unknown-polymer-behavior']),
@@ -155,6 +149,14 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/app-route/pull/182
   'app-route/demo/data-loading-demo/flickr-search-demo.html':
       new Set(['set-unknown-attribute']),
+
+  // We have a few node binary scripts which start with a shebang.
+  // https://github.com/Polymer/polymer-analyzer/issues/435
+  'pouchdb-find/bin/dev-server.js': new Set(['parse-error']),
+  'pouchdb-find/bin/es3ify.js': new Set(['parse-error']),
+  'pouchdb-find/bin/test-browser.js': new Set(['parse-error']),
+  'async/perf/benchmark.js': new Set(['parse-error']),
+  'async/support/sync-package-managers.js': new Set(['parse-error']),
 };
 
 const codesOkInTestsAndDemos = new Set([
@@ -170,12 +172,21 @@ const codesOkInTestsAndDemos = new Set([
 
 // Filter out known issues in the codebase.
 function filterWarnings(warnings: Warning[]) {
-  return warnings.filter((w) => {
-    if (ignoredCodes.has(w.code)) {
+  const unfoundCodes = new Set(codesToIgnore);
+  const unfoundCodesByFile: typeof fileSpecificIgnoreCodesToIgnore = {};
+  for (const key in fileSpecificIgnoreCodesToIgnore) {
+    unfoundCodesByFile[key] = new Set(fileSpecificIgnoreCodesToIgnore[key]);
+  }
+
+  const filteredWarnings = warnings.filter((w) => {
+    if (codesToIgnore.has(w.code)) {
+      unfoundCodes.delete(w.code);
       return false;
     }
-    const fileCodes = fileSpecificIgnoredCodes[w.sourceRange.file] || new Set();
+    const fileCodes =
+        fileSpecificIgnoreCodesToIgnore[w.sourceRange.file] || new Set();
     if (fileCodes.has(w.code)) {
+      unfoundCodesByFile[w.sourceRange.file].delete(w.code);
       return false;
     }
     if (codesOkInTestsAndDemos.has(w.code) &&
@@ -190,4 +201,19 @@ function filterWarnings(warnings: Warning[]) {
     }
     return true;
   });
+
+  for (const code of unfoundCodes) {
+    console.warn(stripWhitespace(`
+        Didn't find any warnings with code ${code} --
+        it shouldn't be ignored.`));
+  }
+  for (const filename in unfoundCodesByFile) {
+    for (const code of unfoundCodesByFile[filename]) {
+      console.warn(stripWhitespace(`
+          Didn't find any warnings with code ${code} in file ${filename} --
+          it shouldn't be ignored.`));
+    }
+  }
+
+  return filteredWarnings;
 }
