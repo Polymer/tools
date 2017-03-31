@@ -404,7 +404,10 @@ namespaced name.`,
                 name: 'customInstanceFunctionWithJSDoc',
                 description: 'This is the description for ' +
                     'customInstanceFunctionWithJSDoc.',
-                params: [], return: undefined
+                params: [], return: {
+                  desc: 'The number 5, always.',
+                  type: 'Number',
+                },
               },
               {
                 name: 'customInstanceFunctionWithParams',
@@ -416,8 +419,26 @@ namespaced name.`,
                 name: 'customInstanceFunctionWithParamsAndJSDoc',
                 description: 'This is the description for ' +
                     'customInstanceFunctionWithParamsAndJSDoc.',
-                params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
-                return: undefined,
+                params: [
+                  {
+                    name: 'a',
+                    type: 'Number',
+                    description: 'The first argument',
+                  },
+                  {
+                    name: 'b',
+                    type: 'Number',
+                  },
+                  {
+                    name: 'c',
+                    type: 'Number',
+                    description: 'The third argument',
+                  }
+                ],
+                return: {
+                  desc: 'The number 7, always.',
+                  type: 'Number',
+                },
               },
               {
                 name: 'customInstanceFunctionWithParamsAndPrivateJSDoc',

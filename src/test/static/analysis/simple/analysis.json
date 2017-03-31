@@ -252,12 +252,17 @@
           },
           "params": [
             {
-              "name": "a"
+              "name": "a",
+              "type": "Number"
             },
             {
-              "name": "b"
+              "name": "b",
+              "type": "Number"
             }
           ],
+          "return": {
+            "type": "boolean"
+          },
           "metadata": {}
         },
         {
@@ -276,12 +281,17 @@
           },
           "params": [
             {
-              "name": "a"
+              "name": "a",
+              "type": "Number"
             },
             {
-              "name": "b"
+              "name": "b",
+              "type": "Number"
             }
           ],
+          "return": {
+            "type": "boolean"
+          },
           "metadata": {}
         },
         {
@@ -300,12 +310,17 @@
           },
           "params": [
             {
-              "name": "a"
+              "name": "a",
+              "type": "Number"
             },
             {
-              "name": "b"
+              "name": "b",
+              "type": "Number"
             }
           ],
+          "return": {
+            "type": "boolean"
+          },
           "metadata": {}
         }
       ],

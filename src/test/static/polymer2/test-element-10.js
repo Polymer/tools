@@ -1,4 +1,3 @@
-
 class TestElement extends Polymer.Element {
   static get properties() {
     return {
@@ -27,7 +26,7 @@ class TestElement extends Polymer.Element {
 
   /**
    * This is the description for customInstanceFunctionWithJSDoc.
-   * @returns {Number} - The number 5, always.
+   * @return {Number} - The number 5, always.
    */
   customInstanceFunctionWithJSDoc() {
     return 5;

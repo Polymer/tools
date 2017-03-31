@@ -86,7 +86,12 @@ suite('PolymerElementScanner', () => {
         },
         customPublicMethod: (foo, bar) => { return foo + bar; },
         _customPrivateMethod: (foo, bar) => { return foo + bar; },
-        /** This is an instance method with JS Doc */
+        /**
+         * This is an instance method with JS Doc
+         * @param {string} foo The first argument.
+         * @param {number} bar The second argument.
+         * @returns {boolean} The return.
+         */
         customPublicMethodWithJsDoc: (foo, bar) => { return foo + bar; },
         customPublicMethodWithClassicFunction: function(foo, bar) { return foo + bar; },
       });
@@ -151,6 +156,19 @@ suite('PolymerElementScanner', () => {
         'customPublicMethodWithJsDoc',
         'customPublicMethodWithClassicFunction',
       ]);
+
+      const jsDocMethod = features[0].methods[2];
+
+      assert.deepEqual(jsDocMethod.return !, {
+        type: 'boolean',
+        desc: 'The return.',
+      });
+
+      assert.deepEqual(
+          jsDocMethod.params!.map((p) => [p.name, p.type, p.description]), [
+            ['foo', 'string', 'The first argument.'],
+            ['bar', 'number', 'The second argument.'],
+          ]);
 
       assert.deepEqual(features[0].properties.map((p) => [p.name, p.type]), [
         ['a', 'boolean'],

@@ -15,11 +15,17 @@
 import {Property, ScannedProperty} from './model';
 
 export interface ScannedMethod extends ScannedProperty {
-  params?: {name: string, type?: string}[];
-  return?: {type?: string, desc: string};
+  params?: MethodParam[];
+  return?: {type?: string, desc?: string};
 }
 
 export interface Method extends Property {
-  params?: {name: string, type?: string}[];
-  return?: {type?: string, desc: string};
+  params?: MethodParam[];
+  return?: {type?: string, desc?: string};
+}
+
+export interface MethodParam {
+  name: string;
+  type?: string;
+  description?: string;
 }

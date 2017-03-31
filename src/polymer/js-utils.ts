@@ -17,7 +17,7 @@ import * as estree from 'estree';
 
 import {closureType, getAttachedComment, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
-import {Privacy, ScannedMethod, Severity, SourceRange, Warning} from '../model/model';
+import {MethodParam, Privacy, ScannedMethod, Severity, SourceRange, Warning} from '../model/model';
 
 import {ScannedPolymerProperty} from './polymer-element';
 
@@ -101,10 +101,41 @@ export function toScannedMethod(
   if (scannedMethod.type === 'Function' ||
       scannedMethod.type === 'ArrowFunction') {
     const value = <estree.FunctionExpression>node.value;
-    scannedMethod.params = (value.params || []).map((param) => {
-      // With ES6 we can have a lot of param patterns. Best to leave the
-      // formatting to escodegen.
-      return {name: escodegen.generate(param)};
+
+    const paramTags = {};
+    if (scannedMethod.jsdoc) {
+      for (const tag of (scannedMethod.jsdoc.tags || [])) {
+        if (tag.tag === 'param' && tag.name) {
+          paramTags[tag.name] = tag;
+
+        } else if (tag.tag === 'return' || tag.tag === 'returns') {
+          scannedMethod.return = {};
+          if (tag.type) {
+            scannedMethod.return.type = tag.type;
+          }
+          if (tag.description) {
+            scannedMethod.return.desc = tag.description;
+          }
+        }
+      }
+    }
+
+    scannedMethod.params = (value.params || []).map((nodeParam) => {
+      const param: MethodParam = {
+        // With ES6 we can have a lot of param patterns. Best to leave the
+        // formatting to escodegen.
+        name: escodegen.generate(nodeParam),
+      };
+      const tag = paramTags[param.name];
+      if (tag) {
+        if (tag.type) {
+          param.type = tag.type;
+        }
+        if (tag.description) {
+          param.description = tag.description;
+        }
+      }
+      return param;
     });
   }
 

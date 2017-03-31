@@ -314,14 +314,14 @@ export interface Method extends Feature {
    * undocumented JavaScript function. Argument types can only be read from
    * associated JSDoc via @param tags
    */
-  params?: {name: string, type?: string}[];
+  params?: {name: string, type?: string, description?: string}[];
 
   /**
    * Data describing the method return type. This data may be incomplete.
    * For example, the return type can be detected from a documented JavaScript
    * function with associated JSDoc and a @return tag.
    */
-  return?: {type?: string, desc: string};
+  return?: {type?: string, desc?: string};
 
   privacy: Privacy;
 
