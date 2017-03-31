@@ -15,10 +15,13 @@
 import * as dom5 from 'dom5';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
-import stripIndent = require('strip-indent');
-import {stripWhitespace} from '../util';
-import {HtmlRule} from './rule';
 import {registry} from '../registry';
+import {stripWhitespace} from '../util';
+
+import {HtmlRule} from './rule';
+
+import stripIndent = require('strip-indent');
+
 
 const p = dom5.predicates;
 
