@@ -3,6 +3,7 @@
   "clang-format.style": "file",
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
+  "files.insertFinalNewline": true,
   "search.exclude": {
     "node_modules/": true,
     "lib/": true
