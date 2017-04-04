@@ -50,7 +50,7 @@ export class ScannedScriptTagImport extends ScannedImport {
           this.sourceRange,
           this.urlSourceRange,
           this.astNode,
-          this.warnings);
+          this.warnings, false);
     } else {
       // not found or syntax error
       const error = this.error ? (this.error.message || this.error) : '';

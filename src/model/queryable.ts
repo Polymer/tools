@@ -25,6 +25,12 @@ export interface BaseQueryOptions {
    * that are referenced from within the package.
    */
   externalPackages?: boolean;
+
+  /**
+   * Do not include any features that are only reachable via paths that include
+   * lazy import edges.
+   */
+  noLazyImports?: boolean;
 }
 
 export type QueryOptions = BaseQueryOptions & object;

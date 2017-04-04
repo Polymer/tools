@@ -289,14 +289,8 @@ export class AnalysisContext {
             const parsedDoc = await this._parse(resolvedUrl, contents);
             const scannedDocument = await this._scanDocument(parsedDoc);
 
-            // Find all non-lazy imports
-            // TODO(justinfagnani): I think we should scan lazily imported
-            // documents since we know about them, we should load them. Their
-            // features should possibly be separated out at export time via
-            // better definition of scopes
             const imports = scannedDocument.getNestedFeatures().filter(
-                (e) => e instanceof ScannedImport &&
-                    e.type !== 'lazy-html-import') as ScannedImport[];
+                (e) => e instanceof ScannedImport) as ScannedImport[];
 
             // Update dependency graph
             const importUrls = imports.map((i) => this.resolveUrl(i.url));
@@ -317,14 +311,8 @@ export class AnalysisContext {
     return this._cache.dependenciesScannedPromises.getOrCompute(
         resolvedUrl, async() => {
           const scannedDocument = await this._scanLocal(resolvedUrl, contents);
-          // Find all non-lazy imports
-          // TODO(justinfagnani): I think we should scan lazily imported
-          // documents since we know about them, we should load them. Their
-          // features should possibly be separated out at export time via better
-          // definition of scopes
           const imports = scannedDocument.getNestedFeatures().filter(
-              (e) => e instanceof ScannedImport &&
-                  e.type !== 'lazy-html-import') as ScannedImport[];
+              (e) => e instanceof ScannedImport) as ScannedImport[];
 
           // Scan imports
           for (const scannedImport of imports) {

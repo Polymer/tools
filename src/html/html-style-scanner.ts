@@ -51,7 +51,8 @@ export class HtmlStyleScanner implements HtmlScanner {
               importUrl,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'href')!,
-              node));
+              node,
+              true));
         } else {
           const contents = dom5.getTextContent(node);
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);

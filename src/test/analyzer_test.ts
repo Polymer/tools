@@ -91,6 +91,8 @@ suite('Analyzer', () => {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <link rel="import" href="subfolder/in-folder.html">
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<link rel="lazy-import" href="lazy.html">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `);
     });
@@ -302,25 +304,30 @@ suite('Analyzer', () => {
       const root = await analyzer.analyze('static/dependencies/root.html');
 
       // If we ask for documents we get every document in evaluation order.
+      const strictlyReachableDocuments = [
+        ['static/dependencies/root.html', 'html', false],
+        ['static/dependencies/inline-only.html', 'html', false],
+        ['static/dependencies/inline-only.html', 'js', true],
+        ['static/dependencies/inline-only.html', 'css', true],
+        ['static/dependencies/leaf.html', 'html', false],
+        ['static/dependencies/inline-and-imports.html', 'html', false],
+        ['static/dependencies/inline-and-imports.html', 'js', true],
+        ['static/dependencies/subfolder/in-folder.html', 'html', false],
+        ['static/dependencies/subfolder/subfolder-sibling.html', 'html', false],
+        ['static/dependencies/inline-and-imports.html', 'css', true],
+      ];
+      assert.deepEqual(
+          Array
+              .from(root.getByKind(
+                  'document', {imported: true, noLazyImports: true}))
+              .map((d) => [d.url, d.parsedDocument.type, d.isInline]),
+          strictlyReachableDocuments);
       assert.deepEqual(
           Array.from(root.getByKind('document', {imported: true}))
               .map((d) => [d.url, d.parsedDocument.type, d.isInline]),
-          [
-            ['static/dependencies/root.html', 'html', false],
-            ['static/dependencies/inline-only.html', 'html', false],
-            ['static/dependencies/inline-only.html', 'js', true],
-            ['static/dependencies/inline-only.html', 'css', true],
-            ['static/dependencies/leaf.html', 'html', false],
-            ['static/dependencies/inline-and-imports.html', 'html', false],
-            ['static/dependencies/inline-and-imports.html', 'js', true],
-            ['static/dependencies/subfolder/in-folder.html', 'html', false],
-            [
-              'static/dependencies/subfolder/subfolder-sibling.html',
-              'html',
-              false
-            ],
-            ['static/dependencies/inline-and-imports.html', 'css', true],
-          ]);
+          strictlyReachableDocuments.concat(
+              [['static/dependencies/lazy.html', 'html', false]]));
+
 
       // If we ask for imports we get the import statements in evaluation order.
       // Unlike documents, we can have duplicates here because imports exist
@@ -335,6 +342,7 @@ suite('Analyzer', () => {
             'static/dependencies/subfolder/in-folder.html',
             'static/dependencies/subfolder/subfolder-sibling.html',
             'static/dependencies/subfolder/in-folder.html',
+            'static/dependencies/lazy.html',
           ]);
 
       const inlineOnly = root.getOnlyAtId(

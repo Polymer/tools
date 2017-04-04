@@ -39,8 +39,7 @@ const isLazyImportNode = p.AND(
     p.hasAttr('href'),
     p.NOT(p.hasSpaceSeparatedAttrValue('rel', 'import')),
     notCssLink,
-    p.parentMatches(
-        p.AND(p.hasTagName('dom-module'), p.NOT(p.hasTagName('template')))));
+    p.NOT(p.parentMatches(p.hasTagName('template'))));
 
 /**
  * Scans for <link rel="import"> and <link rel="lazy-import">
@@ -55,12 +54,13 @@ export class HtmlImportScanner implements HtmlScanner {
       Promise<ScannedImport[]> {
     const imports: ScannedImport[] = [];
 
+    const type = 'html-import';
     await visit((node) => {
-      let type: string;
+      let lazy: boolean;
       if (isHtmlImportNode(node)) {
-        type = 'html-import';
+        lazy = false;
       } else if (isLazyImportNode(node)) {
-        type = 'lazy-html-import';
+        lazy = true;
       } else {
         return;
       }
@@ -71,14 +71,15 @@ export class HtmlImportScanner implements HtmlScanner {
           importUrl,
           document.sourceRangeForNode(node)!,
           document.sourceRangeForAttributeValue(node, 'href')!,
-          node));
+          node,
+          lazy));
     });
     if (this._lazyEdges) {
       const edges = this._lazyEdges.get(document.url);
       if (edges) {
         for (const edge of edges) {
-          imports.push(new ScannedImport(
-              'lazy-html-import', edge, undefined, undefined, null));
+          imports.push(
+              new ScannedImport(type, edge, undefined, undefined, null, true));
         }
       }
     }

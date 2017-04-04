@@ -47,14 +47,21 @@ export class ScannedImport implements Resolvable {
 
   warnings: Warning[] = [];
 
+  /**
+   * If true, the imported document may not be loaded until well after the
+   * containing document has been evaluated, and indeed may never load.
+   */
+  lazy: boolean;
+
   constructor(
       type: string, url: string, sourceRange: SourceRange|undefined,
-      urlSourceRange: SourceRange|undefined, ast: any|null) {
+      urlSourceRange: SourceRange|undefined, ast: any|null, lazy: boolean) {
     this.type = type;
     this.url = url;
     this.sourceRange = sourceRange;
     this.urlSourceRange = urlSourceRange;
     this.astNode = ast;
+    this.lazy = lazy;
   }
 
   resolve(document: Document): Import|undefined {
@@ -79,7 +86,8 @@ export class ScannedImport implements Resolvable {
         this.sourceRange,
         this.urlSourceRange,
         this.astNode,
-        this.warnings);
+        this.warnings,
+        this.lazy);
   }
 }
 
@@ -93,11 +101,12 @@ export class Import implements Feature {
   urlSourceRange: SourceRange|undefined;
   astNode: any|null;
   warnings: Warning[];
+  lazy: boolean;
 
   constructor(
       url: string, type: string, document: Document,
       sourceRange: SourceRange|undefined, urlSourceRange: SourceRange|undefined,
-      ast: any, warnings: Warning[]) {
+      ast: any, warnings: Warning[], lazy: boolean) {
     this.url = url;
     this.type = type;
     this.document = document;
@@ -106,6 +115,10 @@ export class Import implements Feature {
     this.urlSourceRange = urlSourceRange;
     this.astNode = ast;
     this.warnings = warnings;
+    this.lazy = lazy;
+    if (lazy) {
+      this.kinds.add('lazy-import');
+    }
   }
 
   toString() {

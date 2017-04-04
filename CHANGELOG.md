@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * `generateAnalysis()` now includes PolymerBehavior information in `metadata.polymer.behaviors` collection.
 * Types and descriptions are now extracted from method @param and @returns jsdoc annotations.
+* By default queries for features and warnings now traverse lazy imports. Added a query option to limit results only to those reachable by strict imports.
 
 ## [2.0.0-alpha.34] - 2017-03-20
 
