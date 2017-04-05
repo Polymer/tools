@@ -54,6 +54,17 @@ class DocumentRecord {
   get dependenciesKnown(): Promise<Set<string>> {
     return this.dependenciesDeferred.promise;
   }
+
+  toString(): string {
+    let s = `${this.url}\n`;
+    for (const dependency of this.dependencies) {
+      s += `  -> ${dependency}\n`;
+    }
+    for (const dependant of this.dependants) {
+      s += `  <- ${dependant}\n`;
+    }
+    return s;
+  }
 }
 
 /**
@@ -84,21 +95,17 @@ export class DependencyGraph {
   /**
    * Add dependencies of the given path.
    *
-   * @param path The path (i.e. url) of a document.
+   * @param url The url of a document.
    * @param newDependencies The paths of that document's direct dependencies.
    */
   addDocument(url: string, dependencies: Iterable<string>) {
     const record = this._getRecordFor(url);
     for (const dependency of dependencies) {
       record.dependencies.add(dependency);
-      const dependantRecord = this._getRecordFor(dependency);
-      dependantRecord.dependants.add(url);
+      const dependencyRecord = this._getRecordFor(dependency);
+      dependencyRecord.dependants.add(url);
     }
-    try {
-      record.dependenciesDeferred.resolve(record.dependencies);
-    } catch (e) {
-      throw e;
-    }
+    record.dependenciesDeferred.resolve(record.dependencies);
   }
 
   rejectDocument(url: string, error: Error) {
@@ -146,6 +153,15 @@ export class DependencyGraph {
         }
       }
       fork._documents.delete(path);
+      // If there are dependents on this record, we must preserve them,
+      // as they're only added with an addDocument() call, and there are
+      // never repeated addDocument() calls for the same path.
+      if (record.dependants.size > 0) {
+        const newRecord = fork._getRecordFor(record.url);
+        for (const dependant of record.dependants) {
+          newRecord.dependants.add(dependant);
+        }
+      }
     }
     return fork;
   }
@@ -177,5 +193,11 @@ export class DependencyGraph {
       result.add(dependant);
       this._getAllDependantsOf(dependant, visited, result);
     }
+  }
+
+  toString() {
+    return Array.from(this._documents.values())
+        .map((dr) => dr.toString())
+        .join('\n');
   }
 }

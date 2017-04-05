@@ -44,7 +44,8 @@ export class CssImportScanner implements HtmlScanner {
             importUrl,
             document.sourceRangeForNode(node)!,
             document.sourceRangeForAttributeValue(node, 'href')!,
-            node, false));
+            node,
+            false));
       }
     });
     return imports;

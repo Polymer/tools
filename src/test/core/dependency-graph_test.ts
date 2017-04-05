@@ -52,6 +52,7 @@ suite('DependencyGraph', () => {
         graph.getAllDependantsOf('common.html'), ['b.html', 'base.html']);
     graph = graph.invalidatePaths(['b.html']);
     assertStringSetsEqual(graph.getAllDependantsOf('common.html'), []);
+    assertIsValidGraph(graph);
   });
 
   /**
@@ -76,6 +77,9 @@ suite('DependencyGraph', () => {
     test('works with a basic document with no dependencies', async() => {
       await analyzer.analyze('dependencies/leaf.html');
       assertImportersOf('dependencies/leaf.html', []);
+      const graph = analyzer['_context']['_cache'].dependencyGraph;
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
     });
 
     test('works with a simple tree of dependencies', async() => {
@@ -88,6 +92,9 @@ suite('DependencyGraph', () => {
         'dependencies/inline-and-imports.html',
         'dependencies/root.html'
       ]);
+      const graph = analyzer['_context']['_cache'].dependencyGraph;
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
     });
 
   });
@@ -98,12 +105,16 @@ suite('DependencyGraph', () => {
       const graph = new DependencyGraph();
       assert.isFulfilled(graph.whenReady('a'));
       graph.addDocument('a', []);
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
     });
 
     test('resolves for a single rejected document', () => {
       const graph = new DependencyGraph();
       const done = assert.isFulfilled(graph.whenReady('a'));
       graph.rejectDocument('a', new Error('because'));
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
       return done;
     });
 
@@ -112,6 +123,8 @@ suite('DependencyGraph', () => {
       const done = assert.isFulfilled(graph.whenReady('a'));
       graph.addDocument('a', ['b']);
       graph.addDocument('b', []);
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
       return done;
     });
 
@@ -120,10 +133,12 @@ suite('DependencyGraph', () => {
       const done = assert.isFulfilled(graph.whenReady('a'));
       graph.addDocument('a', ['b']);
       graph.rejectDocument('b', new Error('because'));
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
       return done;
     });
 
-    test('resolves for a simple cycle', () => {
+    test('resolves for a simple cycle', async() => {
       const graph = new DependencyGraph();
       const promises = [
         assert.isFulfilled(graph.whenReady('a')),
@@ -131,7 +146,9 @@ suite('DependencyGraph', () => {
       ];
       graph.addDocument('a', ['b']);
       graph.addDocument('b', ['a']);
-      return Promise.all(promises);
+      await Promise.all(promises);
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
     });
 
     test('does not resolve early for a cycle with a leg', async() => {
@@ -149,8 +166,61 @@ suite('DependencyGraph', () => {
       cResolved = true;
       graph.addDocument('c', []);
       await Promise.all([aReady, bReady]);
+      assertGraphIsSettled(graph);
+      assertIsValidGraph(graph);
     });
 
   });
 
 });
+
+/**
+ * Asserts that all records in the graph have had all of their dependencies
+ * resolved or rejected.
+ */
+function assertGraphIsSettled(graph: DependencyGraph) {
+  for (const record of graph['_documents'].values()) {
+    if (!(record.dependenciesDeferred.resolved ||
+          record.dependenciesDeferred.rejected)) {
+      assert.fail(
+          false,
+          true,
+          `found unsettled record for url '${
+                                             record.url
+                                           }' in graph that should be settled`);
+    }
+  }
+}
+
+/**
+ * Asserts that for every record in the graph, each outgoing link is matched
+ * by an incoming link on the other side, and vice versa.
+ *
+ * Since DependencyGraph tracks both incoming and outgoing links (dependencies
+ * and dependants), when there is a dependency A -> B, both A and B should be
+ * aware of that dependency link.
+ */
+function assertIsValidGraph(graph: DependencyGraph) {
+  for (const record of graph['_documents'].values()) {
+    for (const dependency of record.dependencies) {
+      const dependencyRecord = graph['_documents'].get(dependency);
+      assert.isTrue(
+          dependencyRecord !== undefined,
+          `dependency record for ${dependency} should exist,` +
+              ` as it is referenced by ${record.url}.`);
+      assert.isTrue(
+          dependencyRecord!.dependants.has(record.url),
+          `${dependency} should know about its dependant ${record.url}`);
+    }
+    for (const dependant of record.dependants) {
+      const dependantRecord = graph['_documents'].get(dependant);
+      assert.isTrue(
+          dependantRecord !== undefined,
+          `dependant record for ${dependant} should exist,` +
+              ` as it is referenced by ${record.url}.`);
+      assert.isTrue(
+          dependantRecord!.dependencies.has(record.url),
+          `${dependant} should know about its dependency ${record.url}`);
+    }
+  }
+}

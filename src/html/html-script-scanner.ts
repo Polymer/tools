@@ -48,7 +48,8 @@ export class HtmlScriptScanner implements HtmlScanner {
               importUrl,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'src')!,
-              node, false));
+              node,
+              false));
         } else {
           const locationOffset = getLocationOffsetOfStartOfTextContent(node);
           const attachedCommentText = getAttachedCommentText(node) || '';

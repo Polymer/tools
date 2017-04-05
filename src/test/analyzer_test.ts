@@ -779,6 +779,7 @@ var DuplicateNamespace = {};
     });
   });
 
+
   suite('_fork', () => {
     test('returns an independent copy of Analyzer', async() => {
       await analyzer.analyze('a.html', 'a is shared');
@@ -815,6 +816,46 @@ var DuplicateNamespace = {};
   });
 
   suite('race conditions and caching', () => {
+    test('maintain caches across multiple edits', async() => {
+      // This is a regression test of a scenario where changing a dependency
+      // did not properly update warnings of a file. The bug turned out to
+      // be in the dependency graph, but this test seems useful enough to
+      // keep around.
+      // The specific warning is renaming a superclass without updating the
+      // class which extends it.
+      const b1Doc = await analyzer.analyze('base.js', `
+        class BaseElement extends HTMLElement {}
+        customElements.define('base-elem', BaseElement);
+      `);
+      assert.deepEqual(b1Doc.getWarnings(), []);
+      const u1Doc = await analyzer.analyze('user.html', `
+        <script src="./base.js"></script>
+        <script>
+          class UserElem extends BaseElement {}
+          customElements.define('user-elem', UserElem);
+        </script>
+      `);
+      assert.deepEqual(u1Doc.getWarnings(), []);
+
+      const b2Doc = await analyzer.analyze('base.js', `
+        class NewSpelling extends HTMLElement {}
+        customElements.define('base-elem', NewSpelling);
+      `);
+      assert.deepEqual(b2Doc.getWarnings(), []);
+      const u2Doc = await analyzer.analyze('user.html');
+      assert.notEqual(u1Doc, u2Doc);
+      assert.equal(
+          u2Doc.getWarnings()[0].message,
+          'Unable to resolve superclass BaseElement');
+
+      const b3Doc = await analyzer.analyze('base.js', `
+        class BaseElement extends HTMLElement {}
+        customElements.define('base-elem', BaseElement);
+      `);
+      assert.deepEqual(b3Doc.getWarnings(), []);
+      const u3Doc = await analyzer.analyze('user.html');
+      assert.equal(u3Doc.getWarnings().length, 0);
+    });
 
     class RacyUrlLoader implements UrlLoader {
       constructor(
