@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* The warning printer displays the squiggle underline in the correct place on lines indented by tabs.
 
 ## [2.0.0-alpha.35] - 2017-04-05
 

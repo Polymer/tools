@@ -137,7 +137,7 @@ function getSquiggleUnderline(
     const endColumn = sourceRange.end.line === sourceRange.start.line ?
         sourceRange.end.column :
         lineText.length;
-    const prefix = ' '.repeat(startColumn);
+    const prefix = lineText.slice(0, startColumn).replace(/[^\t]/g, ' ');
     if (startColumn === endColumn) {
       return prefix + '~';  // always draw at least one squiggle
     }
