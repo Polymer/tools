@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+- Also generate autocompletion of elements for unclosed tagNames
 
 <!--
   Please document PR changes here. Uncomment the Unreleased header as
@@ -15,11 +18,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update the linter to get a ton of new rules.
 - Configure the legacy interface (used by Atom) to read polymer.json, which will cause Atom to start seeing warnings from the linter.
 - A ton of bug fixes, especially around Polymer 2.0 elements.
-
-## Unreleased
-
-* Update dependencies.
-* Initialize the legacy protocol server with the expected path to the `polymer.json` file. This should allow the atom plugin (and possibly the sublime plugin) to get warnings from polymer-lint as well.
 
 ## 1.3.2 - 2017-03-03
 

@@ -40,44 +40,48 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       {
         tagname: 'behavior-test-elem',
         description: 'An element to test out behavior inheritance.',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo: '<behavior-test-elem ></behavior-test-elem>',
+        expandToSnippet: '<behavior-test-elem $1></behavior-test-elem>$0'
       },
       {
         description: '',
         tagname: 'class-declaration',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo: '<class-declaration></class-declaration>',
+        expandToSnippet: '<class-declaration></class-declaration>$0'
       },
       {
         description: '',
         tagname: 'anonymous-class',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo: '<anonymous-class></anonymous-class>',
+        expandToSnippet: '<anonymous-class></anonymous-class>$0'
       },
       {
         description: '',
         tagname: 'class-expression',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo: '<class-expression></class-expression>',
+        expandToSnippet: '<class-expression></class-expression>$0'
       },
       {
         description: '',
         tagname: 'register-before-declaration',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo: '<register-before-declaration></register-before-declaration>',
+        expandToSnippet:
+            '<register-before-declaration></register-before-declaration>$0'
       },
       {
         description: '',
         tagname: 'register-before-expression',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo: '<register-before-expression></register-before-expression>',
+        expandToSnippet:
+            '<register-before-expression></register-before-expression>$0'
       },
       {
         description: 'This is a description of WithObservedAttributes.',
         tagname: 'vanilla-with-observed-attributes',
-        expandTo: undefined,
-        expandToSnippet: undefined
+        expandTo:
+            '<vanilla-with-observed-attributes ></vanilla-with-observed-attributes>',
+        expandToSnippet:
+            '<vanilla-with-observed-attributes $1></vanilla-with-observed-attributes>$0'
       },
     ]
   };

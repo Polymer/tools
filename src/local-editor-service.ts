@@ -114,10 +114,11 @@ export class LocalEditorService extends EditorService {
           return {
             tagname: e.tagName!,
             description: e.description,
-            expandTo: location.kind === 'text' ?
+            expandTo: location.kind === 'text' || location.kind === 'tagName' ?
                 `<${e.tagName}${attributesSpace}></${e.tagName}>` :
                 undefined,
-            expandToSnippet: location.kind === 'text' ?
+            expandToSnippet:
+                location.kind === 'text' || location.kind === 'tagName' ?
                 this._generateAutoCompletionForElement(e) :
                 undefined
           };
