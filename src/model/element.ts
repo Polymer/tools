@@ -38,9 +38,10 @@ export class ScannedElement extends ScannedElementBase {
     this.description = this.description || commentText || '';
   }
 
-  resolve(_document: Document): Element {
+  resolve(document: Document): Element {
     const element = new Element();
     Object.assign(element, this);
+    this.applyJsdocDemoTags(document.url);
     return element;
   }
 }

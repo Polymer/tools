@@ -1,0 +1,36 @@
+{
+    "schema_version": "1.0.0",
+    "elements": [
+        {
+            "description": "This is an element.",
+            "summary": "",
+            "path": "element.html",
+            "attributes": [],
+            "properties": [],
+            "methods": [],
+            "styling": {
+                "cssVariables": [],
+                "selectors": []
+            },
+            "demos": [
+                "demo.html"
+            ],
+            "slots": [],
+            "events": [],
+            "metadata": {},
+            "sourceRange": {
+                "start": {
+                    "line": 5,
+                    "column": 12
+                },
+                "end": {
+                    "line": 5,
+                    "column": 30
+                }
+            },
+            "privacy": "public",
+            "tagname": "el-ement",
+            "superclass": "HTMLElement"
+        }
+    ]
+}

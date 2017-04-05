@@ -13,7 +13,7 @@
  */
 
 import * as estree from 'estree';
-
+import * as url from 'url';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {Attribute, Document, Event, Feature, Method, Property, Reference, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
@@ -39,6 +39,19 @@ export abstract class ScannedElementBase implements Resolvable {
 
   applyHtmlComment(commentText: string|undefined) {
     this.description = this.description || commentText || '';
+  }
+
+  applyJsdocDemoTags(baseUrl: string): void {
+    if (!this.jsdoc || !this.jsdoc.tags) {
+      return;
+    }
+    this.jsdoc.tags.filter((tag) => tag.tag === 'demo' && tag.name)
+        .forEach((tag) => {
+          this.demos.push({
+            desc: tag.description || undefined,
+            path: url.resolve(baseUrl, tag.name!)
+          });
+        });
   }
 
   resolve(_document: Document): any {

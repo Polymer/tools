@@ -20,9 +20,10 @@ export class ScannedElementMixin extends ScannedElementBase {
   name: string;
   privacy: Privacy;
 
-  resolve(_document: Document): ElementMixin {
+  resolve(document: Document): ElementMixin {
     const element = new ElementMixin();
     Object.assign(element, this);
+    this.applyJsdocDemoTags(document.url);
     return element;
   }
 }

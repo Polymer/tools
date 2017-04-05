@@ -179,6 +179,7 @@ export class ScannedPolymerElement extends ScannedElement implements
   }
 
   resolve(document: Document): PolymerElement {
+    this.applyJsdocDemoTags(document.url);
     return resolveElement(this, document);
   }
 }

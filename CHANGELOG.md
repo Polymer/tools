@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * `generateAnalysis()` now includes PolymerBehavior information in `metadata.polymer.behaviors` collection.
+* Jsdoc `@demo` annotations are now added to `demos` collection for `Element`, `ElementMixin`, `PolymerElement` and `Behavior`.
 * Types and descriptions are now extracted from method @param and @returns jsdoc annotations.
 * By default queries for features and warnings now traverse lazy imports. Added a query option to limit results only to those reachable by strict imports.
 * Fixed caching issue such that Documents would not always have information from the latest versions of their dependencies.
