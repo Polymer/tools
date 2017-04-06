@@ -9,12 +9,20 @@
   "tasks": [
     {
       "taskName": "test",
-      "args": ["run", "test:watch"],
+      "args": [
+        "run",
+        "test:watch"
+      ],
       "isTestCommand": true,
       "problemMatcher": {
-        "fileLocation": ["relative", "${workspaceRoot}/src"],
-        "watchedTaskBeginsRegExp": "\\[npm\\] INFO Spawning\\.\\.\\.",
-        "watchedTaskEndsRegExp": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)",
+        "fileLocation": [
+          "relative",
+          "${workspaceRoot}/src"
+        ],
+        "watching": {
+          "beginsPattern": "\\[npm\\] INFO Spawning\\.\\.\\.",
+          "endsPattern": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)"
+        },
         "pattern": [
           {
             "regexp": "^  (\\d+)\\) ((\\w+).*)",
@@ -25,7 +33,7 @@
           }
         ]
       },
-      "isWatching": true
+      "isBackground": true
     }
   ]
 }
