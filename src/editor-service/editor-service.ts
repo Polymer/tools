@@ -44,8 +44,7 @@ export abstract class EditorService {
    * the editor service will assume that files do not change and their contents
    * will be cached.
    */
-  abstract async fileChanged(localPath: string, contents: string):
-      Promise<void>;
+  abstract fileChanged(localPath: string, contents: string): Promise<void>;
 
   /**
    * Gives the documentation, as markdown encoded text, for the feature at

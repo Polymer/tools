@@ -22,7 +22,7 @@ import {RemoteEditorService} from '../../editor-service/remote-editor-service';
 import {Severity, Warning} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {CodeUnderliner, invertPromise} from '../test-utils';
+import {CodeUnderliner} from '../test-utils';
 
 function editorTests(editorFactory: (basedir: string) => EditorService) {
   const basedir = path.join(__dirname, '../static');
@@ -340,9 +340,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const goodContents =
           fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       // Load a file with a syntax error
-      await invertPromise(editorService.fileChanged(
+      await editorService.fileChanged(
           path.join(basedir, 'syntax-error.js'),
-          'var var var var var var var var “hello”'));
+          'var var var var var var var var “hello”');
 
       await editorService.fileChanged(indexFile, `${goodContents}
           <script src="./syntax-error.js"></script>`);

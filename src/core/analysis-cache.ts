@@ -66,6 +66,12 @@ export class AnalysisCache {
    * Must be called whenever a document changes.
    */
   invalidate(documentPaths: string[]): AnalysisCache {
+    // TODO(rictic): how much of this work can we short circuit in the case
+    //     none of these paths are in any of the caches? e.g. when someone calls
+    //     filesChanged() for the same files twice without ever calling analyze?
+    //     Could end up saving some work in the editor case.
+    //     On the other hand, copying a half dozen maps with maybe 200 entries
+    //     each should be pretty cheap, maybe not worth the effort.
     const newCache = new AnalysisCache(
         this, this.dependencyGraph.invalidatePaths(documentPaths));
     for (const path of documentPaths) {

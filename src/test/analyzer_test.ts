@@ -28,6 +28,7 @@ import {ScriptTagImport} from '../html/html-script-tag';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '../model/model';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 import {UrlLoader} from '../url-loader/url-loader';
 import {Deferred} from '../utils';
 
@@ -42,12 +43,14 @@ use(chaiAsPromised);
 
 suite('Analyzer', () => {
   let analyzer: Analyzer;
+  let inMemoryOverlay: InMemoryOverlayUrlLoader;
   let underliner: CodeUnderliner;
 
   setup(() => {
-    const urlLoader = new FSUrlLoader(__dirname);
-    analyzer = new Analyzer({urlLoader});
-    underliner = new CodeUnderliner(urlLoader);
+    const underlyingUrlLoader = new FSUrlLoader(__dirname);
+    inMemoryOverlay = new InMemoryOverlayUrlLoader(underlyingUrlLoader);
+    analyzer = new Analyzer({urlLoader: inMemoryOverlay});
+    underliner = new CodeUnderliner(inMemoryOverlay);
   });
 
   test('canResolveUrl defaults to not resolving external urls', () => {
@@ -592,7 +595,8 @@ suite('Analyzer', () => {
           </style>
         </div>
       `).trim();
-      const origDocument = await analyzer.analyze('test-doc.html', contents);
+      inMemoryOverlay.urlContentsMap.set('test-doc.html', contents);
+      const origDocument = await analyzer.analyze('test-doc.html');
       const document = clone(origDocument);
 
       // In document, we'll change `foo` to `bar` in the js and `blue` to
@@ -782,10 +786,18 @@ var DuplicateNamespace = {};
 
   suite('_fork', () => {
     test('returns an independent copy of Analyzer', async() => {
-      await analyzer.analyze('a.html', 'a is shared');
+      inMemoryOverlay.urlContentsMap.set('a.html', 'a is shared');
+      await analyzer.analyze('a.html');
+      // Unmap a.html so that future reads of it will fail, thus testing the
+      // cache.
+      inMemoryOverlay.urlContentsMap.delete('a.html');
+
       const analyzer2 = analyzer._fork();
-      await analyzer.analyze('b.html', 'b for analyzer');
-      await analyzer2.analyze('b.html', 'b for analyzer2');
+      inMemoryOverlay.urlContentsMap.set('b.html', 'b for analyzer');
+      await analyzer.analyze('b.html');
+      inMemoryOverlay.urlContentsMap.set('b.html', 'b for analyzer2');
+      await analyzer2.analyze('b.html');
+      inMemoryOverlay.urlContentsMap.delete('b.html');
 
       const a1 = await analyzer.analyze('a.html');
       const a2 = await analyzer2.analyze('a.html');
@@ -823,24 +835,28 @@ var DuplicateNamespace = {};
       // keep around.
       // The specific warning is renaming a superclass without updating the
       // class which extends it.
-      const b1Doc = await analyzer.analyze('base.js', `
+      inMemoryOverlay.urlContentsMap.set('base.js', `
         class BaseElement extends HTMLElement {}
         customElements.define('base-elem', BaseElement);
       `);
-      assert.deepEqual(b1Doc.getWarnings(), []);
-      const u1Doc = await analyzer.analyze('user.html', `
+      inMemoryOverlay.urlContentsMap.set('user.html', `
         <script src="./base.js"></script>
         <script>
           class UserElem extends BaseElement {}
           customElements.define('user-elem', UserElem);
         </script>
       `);
+      const b1Doc = await analyzer.analyze('base.js');
+      assert.deepEqual(b1Doc.getWarnings(), []);
+      const u1Doc = await analyzer.analyze('user.html');
       assert.deepEqual(u1Doc.getWarnings(), []);
 
-      const b2Doc = await analyzer.analyze('base.js', `
+      inMemoryOverlay.urlContentsMap.set('base.js', `
         class NewSpelling extends HTMLElement {}
         customElements.define('base-elem', NewSpelling);
       `);
+      analyzer.filesChanged(['base.js']);
+      const b2Doc = await analyzer.analyze('base.js');
       assert.deepEqual(b2Doc.getWarnings(), []);
       const u2Doc = await analyzer.analyze('user.html');
       assert.notEqual(u1Doc, u2Doc);
@@ -848,10 +864,12 @@ var DuplicateNamespace = {};
           u2Doc.getWarnings()[0].message,
           'Unable to resolve superclass BaseElement');
 
-      const b3Doc = await analyzer.analyze('base.js', `
+      inMemoryOverlay.urlContentsMap.set('base.js', `
         class BaseElement extends HTMLElement {}
         customElements.define('base-elem', BaseElement);
       `);
+      analyzer.filesChanged(['base.js']);
+      const b3Doc = await analyzer.analyze('base.js');
       assert.deepEqual(b3Doc.getWarnings(), []);
       const u3Doc = await analyzer.analyze('user.html');
       assert.equal(u3Doc.getWarnings().length, 0);
@@ -898,11 +916,12 @@ var DuplicateNamespace = {};
         for (const entry of contentsMap) {
           // Randomly edit some files.
           const path = entry[0];
-          const contents = entry[1];
           if (Math.random() > 0.5) {
-            analyzer.analyze(path, contents);
+            analyzer.filesChanged([path]);
+            analyzer.analyze(path);
             if (Math.random() > 0.5) {
-              const p = analyzer.analyze(path, contents);
+              analyzer.filesChanged([path]);
+              const p = analyzer.analyze(path);
               const cacheContext = analyzer['_context'];
               intermediatePromises.push((async() => {
                 await p;
@@ -1091,11 +1110,15 @@ var DuplicateNamespace = {};
        *     https://github.com/Polymer/polymer-analyzer/issues/406
        */
       test('two edits of the same file back to back', async() => {
-        const analyzer = new Analyzer({urlLoader: new NoopUrlLoader()});
-        await Promise.all([
-          analyzer.analyze('leaf.html', 'Hello'),
-          analyzer.analyze('leaf.html', 'World')
-        ]);
+        const overlay = new InMemoryOverlayUrlLoader(new NoopUrlLoader);
+        const analyzer = new Analyzer({urlLoader: overlay});
+
+        overlay.urlContentsMap.set('leaf.html', 'Hello');
+        const p1 = analyzer.analyze('leaf.html');
+        overlay.urlContentsMap.set('leaf.html', 'World');
+        analyzer.filesChanged(['leaf.html']);
+        const p2 = analyzer.analyze('leaf.html');
+        await Promise.all([p1, p2]);
       });
 
       test('handles a shared dependency', async() => {
@@ -1105,8 +1128,11 @@ var DuplicateNamespace = {};
         ]);
 
         const contents = documents.map((d) => d.parsedDocument.contents);
+        inMemoryOverlay.urlContentsMap.set(
+            'static/diamond/a.html', contents[0]);
+        analyzer.filesChanged(['static/diamond/a.html']);
         documents = await Promise.all([
-          analyzer.analyze('static/diamond/a.html', contents[0]),
+          analyzer.analyze('static/diamond/a.html'),
           analyzer.analyze('static/diamond/root.html'),
         ]);
 
@@ -1145,26 +1171,6 @@ var DuplicateNamespace = {};
         loader.queue.resolve('c.html', '');
         // wait for the callback above to complete
         await Promise.all([aAnalyzedDone, bAnalyzedDone]);
-      });
-
-      test.skip('something about the order of scanning?', async() => {
-        // TODO(rictic): test out more analysis race conditions in a
-        //     deterministic fashion.
-        const urlLoader = new DeterministicUrlLoader();
-        const analyzer = new Analyzer({urlLoader});
-        const promises = [];
-        promises.push(analyzer.analyze(
-            'a.html', '<link rel="import" href="common.html">'));
-        promises.push(analyzer.analyze(
-            'b.html', '<link rel="import" href="common.html">'));
-        promises.push(analyzer.analyze('base.html', `
-<link rel="import" href="a.html">
-<link rel="import" href="b.html">
-`));
-
-        urlLoader.queue.resolve('common.html', '');
-        urlLoader.queue.resolve('common.html', '');
-        await Promise.all(promises);
       });
 
       test('analyzes multiple imports of the same behavior', async() => {

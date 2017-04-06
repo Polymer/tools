@@ -13,7 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* [BREAKING] Analyzer.analyze no longer takes the file's current contents as a second argument. This functionality was broken into two pieces, `filesChanged`, and `InMemoryOverlayLoader`.
+* Added a `filesChanged` method to Analyzer letting it know when a file needs to be reloaded.
+* Added an `InMemoryOverlayLoader` UrlLoader, for cases like a text editor where you'd like to use an in memory source of truth for a subset of files.
 * The warning printer displays the squiggle underline in the correct place on lines indented by tabs.
+
 
 ## [2.0.0-alpha.35] - 2017-04-05
 

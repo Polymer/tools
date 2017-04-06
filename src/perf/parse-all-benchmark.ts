@@ -17,11 +17,13 @@ import * as path from 'path';
 
 import {Analyzer} from '../analyzer';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 
 import now = require('performance-now');
 
 const bowerDir = path.resolve(__dirname, `../../bower_components`);
-const analyzer = new Analyzer({urlLoader: new FSUrlLoader(bowerDir)});
+const inMemoryOverlay = new InMemoryOverlayUrlLoader(new FSUrlLoader(bowerDir));
+const analyzer = new Analyzer({urlLoader: inMemoryOverlay});
 
 const filesToAnalyze: string[] = [];
 
@@ -55,6 +57,8 @@ function existsSync(fn: string): boolean {
 const fakeFileContents =
     filesToAnalyze.map((fn) => `<link rel="import" href="${fn}">`).join('\n');
 
+inMemoryOverlay.urlContentsMap.set('ephemral.html', fakeFileContents);
+
 function padLeft(str: string, num: number): string {
   if (str.length < num) {
     return padLeft(' ' + str, num);
@@ -80,7 +84,8 @@ async function measure() {
   const measurements = [];
   for (let i = 0; i < 10; i++) {
     const before = now();
-    document = await analyzer.analyze('ephemeral.html', fakeFileContents);
+    analyzer.filesChanged(['ephemeral.html']);
+    document = await analyzer.analyze('ephemeral.html');
     measurements.push(now() - before);
   }
 
@@ -94,7 +99,8 @@ async function measure() {
       `${((now() - start) / 1000).toFixed(2)} seconds total elapsed time`);
 
   for (let i = 0; i < 100; i++) {
-    await analyzer.analyze('ephemeral.html', fakeFileContents);
+    analyzer.filesChanged(['ephemeral.html']);
+    await analyzer.analyze('ephemeral.html');
   }
 
   global.gc();

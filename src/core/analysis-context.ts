@@ -133,11 +133,11 @@ export class AnalysisContext {
   /**
    * Implements Analyzer#analyze, see its docs.
    */
-  async analyze(url: string, contents?: string): Promise<Document> {
+  async analyze(url: string): Promise<Document> {
     const resolvedUrl = this.resolveUrl(url);
     return this._cache.analyzedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
-          const scannedDocument = await this.scan(resolvedUrl, contents);
+          const scannedDocument = await this.scan(resolvedUrl);
           const document = this._getDocument(scannedDocument.url);
           return document;
         });
@@ -281,12 +281,11 @@ export class AnalysisContext {
    * _preScan, since about the only useful things it can find are
    * imports, exports and other syntactic structures.
    */
-  private async _scanLocal(resolvedUrl: string, contents?: string):
-      Promise<ScannedDocument> {
+  private async _scanLocal(resolvedUrl: string): Promise<ScannedDocument> {
     return this._cache.scannedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
           try {
-            const parsedDoc = await this._parse(resolvedUrl, contents);
+            const parsedDoc = await this._parse(resolvedUrl);
             const scannedDocument = await this._scanDocument(parsedDoc);
 
             const imports = scannedDocument.getNestedFeatures().filter(
@@ -307,10 +306,10 @@ export class AnalysisContext {
   /**
    * Scan a toplevel document and all of its transitive dependencies.
    */
-  async scan(resolvedUrl: string, contents?: string): Promise<ScannedDocument> {
+  async scan(resolvedUrl: string): Promise<ScannedDocument> {
     return this._cache.dependenciesScannedPromises.getOrCompute(
         resolvedUrl, async() => {
-          const scannedDocument = await this._scanLocal(resolvedUrl, contents);
+          const scannedDocument = await this._scanLocal(resolvedUrl);
           const imports = scannedDocument.getNestedFeatures().filter(
               (e) => e instanceof ScannedImport) as ScannedImport[];
 
@@ -405,22 +404,20 @@ export class AnalysisContext {
    * are used instead of hitting the UrlLoader (e.g. when you have in-memory
    * contents that should override disk).
    */
-  async load(resolvedUrl: string, providedContents?: string) {
+  async load(resolvedUrl: string) {
     if (!this._loader.canLoad(resolvedUrl)) {
       throw new Error(`Can't load URL: ${resolvedUrl}`);
     }
-    return providedContents == null ? await this._loader.load(resolvedUrl) :
-                                      providedContents;
+    return await this._loader.load(resolvedUrl);
   }
 
   /**
    * Caching + loading wrapper around _parseContents.
    */
-  private async _parse(resolvedUrl: string, providedContents?: string):
-      Promise<ParsedDocument<any, any>> {
+  private async _parse(resolvedUrl: string): Promise<ParsedDocument<any, any>> {
     return this._cache.parsedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
-          const content = await this.load(resolvedUrl, providedContents);
+          const content = await this.load(resolvedUrl);
           const extension = path.extname(resolvedUrl).substring(1);
           return this._parseContents(extension, content, resolvedUrl);
         });

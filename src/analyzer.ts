@@ -65,25 +65,26 @@ export class Analyzer {
   /**
    * Loads, parses and analyzes the root document of a dependency graph and its
    * transitive dependencies.
-   *
-   * Note: The analyzer only supports analyzing a single root for now. This
-   * is because each analyzed document in the dependency graph has a single
-   * root. This mean that we can't properly analyze app-shell-style, lazy
-   * loading apps.
-   *
-   * @param contents Optional contents of the file when it is known without
-   * reading it from disk. Clears the caches so that the news contents is used
-   * and reanalyzed. Useful for editors that want to re-analyze changed files.
    */
-  async analyze(url: string, contents?: string): Promise<Document> {
-    if (contents != null) {
-      this._context = this._context.filesChanged([url]);
-    }
-    return this._context.analyze(url, contents);
+  async analyze(url: string): Promise<Document> {
+    return this._context.analyze(url);
   }
 
   async analyzePackage(): Promise<Package> {
     return this._context.analyzePackage();
+  }
+
+  /**
+   * Clears all information about the given files from our caches, such that
+   * future calls to analyze() will reload these files if they're needed.
+   *
+   * The analyzer assumes that if this method isn't called with a file's url,
+   * then that file has not changed and does not need to be reloaded.
+   *
+   * @param urls The urls of files which may have changed.
+   */
+  filesChanged(urls: string[]) {
+    this._context = this._context.filesChanged(urls);
   }
 
   /**
@@ -106,23 +107,20 @@ export class Analyzer {
    * see a mixture of pre-fork and post-fork contents when you analyze with a
    * forked analyzer.
    *
-   * Note: this feature is experimental.
+   * Note: this feature is experimental. It may be removed without being
+   *     considered a breaking change, so check for its existence before calling
+   *     it.
    */
   _fork(options?: ForkOptions): Analyzer {
-    const context =
-        options ? this._context._fork(undefined, options) : this._context;
+    const context = this._context._fork(undefined, options);
     return new Analyzer(context);
   }
 
   /**
    * Loads the content at the provided resolved URL.
-   *
-   * Currently does no caching. If the provided contents are given then they
-   * are used instead of hitting the UrlLoader (e.g. when you have in-memory
-   * contents that should override disk).
    */
-  async load(resolvedUrl: string, providedContents?: string) {
-    return this._context.load(resolvedUrl, providedContents);
+  async load(resolvedUrl: string) {
+    return this._context.load(resolvedUrl);
   }
 
   canResolveUrl(url: string): boolean {

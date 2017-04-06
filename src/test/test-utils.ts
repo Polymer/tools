@@ -14,8 +14,10 @@
 
 import {Analyzer} from '../analyzer';
 import {SourceRange, Warning} from '../model/model';
+import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 import {UrlLoader} from '../url-loader/url-loader';
 import {WarningPrinter} from '../warning/warning-printer';
+
 
 export class UnexpectedResolutionError extends Error {
   resolvedValue: any;
@@ -35,25 +37,6 @@ export async function invertPromise(promise: Promise<any>): Promise<any> {
   throw new UnexpectedResolutionError('Inverted Promise resolved', value);
 }
 
-export class TestUrlLoader implements UrlLoader {
-  files: {[path: string]: string};
-
-  constructor(files: {[path: string]: string}) {
-    this.files = files;
-  }
-
-  canLoad(url: string) {
-    return url in this.files;
-  }
-
-  async load(url: string): Promise<string> {
-    if (this.canLoad(url)) {
-      return this.files[url];
-    }
-    throw new Error(`cannot load file ${url}`);
-  }
-}
-
 export type Reference = Warning | SourceRange | undefined;
 
 /**
@@ -70,7 +53,9 @@ export class CodeUnderliner {
   }
 
   static withMapping(url: string, contents: string) {
-    return new CodeUnderliner(new TestUrlLoader({[url]: contents}));
+    const urlLoader = new InMemoryOverlayUrlLoader();
+    urlLoader.urlContentsMap.set(url, contents);
+    return new CodeUnderliner(urlLoader);
   }
 
   /**
