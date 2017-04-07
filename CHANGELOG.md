@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [2.0.0-alpha.36] - 2017-04-07
 
 * [BREAKING] Analyzer.analyze no longer takes the file's current contents as a second argument. This functionality was broken into two pieces, `filesChanged`, and `InMemoryOverlayLoader`.
 * Added a `filesChanged` method to Analyzer letting it know when a file needs to be reloaded.
