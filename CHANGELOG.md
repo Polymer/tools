@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Added a `filesChanged` method to Analyzer letting it know when a file needs to be reloaded.
 * Added an `InMemoryOverlayLoader` UrlLoader, for cases like a text editor where you'd like to use an in memory source of truth for a subset of files.
 * The warning printer displays the squiggle underline in the correct place on lines indented by tabs.
-
+* Extract className from the form `var className = Polymer({...})`
 
 ## [2.0.0-alpha.35] - 2017-04-05
 

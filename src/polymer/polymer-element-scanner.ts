@@ -15,6 +15,7 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
+import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import {getAttachedComment, getEventComments, isFunctionType, objectKeyToString} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -174,8 +175,15 @@ class ElementVisitor implements Visitor {
     if (callee.type === 'Identifier') {
       if (callee.name === 'Polymer') {
         const rawDescription = getAttachedComment(parent);
+        let className: undefined|string = undefined;
+        if (parent.type === 'AssignmentExpression') {
+          className = getIdentifierName(parent.left);
+        } else if (parent.type === 'VariableDeclarator') {
+          className = getIdentifierName(parent.id);
+        }
         const jsDoc = jsdoc.parseJsdoc(rawDescription || '');
         this.element = new ScannedPolymerElement({
+          className,
           astNode: node,
           description: rawDescription,
           events: getEventComments(parent),

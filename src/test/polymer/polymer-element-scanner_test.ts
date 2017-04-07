@@ -230,6 +230,26 @@ suite('PolymerElementScanner', () => {
           1);
     });
 
+    test('finds declared and assigned call expressions', async() => {
+      const contents = `
+          const MyOtherElement = Polymer({
+            is: 'my-other-element'
+          });
+
+          window.MyElement = Polymer({is: 'my-element'});
+      `;
+      const document =
+          new JavaScriptParser().parse(contents, 'test-document.html');
+      const visit = async(visitor: Visitor) => document.visit([visitor]);
+
+      const features = await scanner.scan(document, visit);
+      assert.deepEqual(
+          features.map((f) => f.tagName), ['my-other-element', 'my-element']);
+      assert.deepEqual(
+          features.map((f) => f.className),
+          ['MyOtherElement', 'window.MyElement']);
+    });
+
     const testName =
         'Produces correct warnings for bad observers and computed properties';
     test(testName, async() => {
