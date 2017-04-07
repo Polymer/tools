@@ -3,6 +3,9 @@
   "clang-format.style": "file",
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "files.insertFinalNewline": true,
   "search.exclude": {
     "node_modules/": true,
     "lib/": true
