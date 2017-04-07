@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Please document PR changes here. Uncomment the Unreleased header as
   appropriate.
 -->
+
+## Unreleased
+
+- Report and update warnings for all open files. Ignore warnings for a file when it is closed.
+
 ## 1.3.3 - 2017-03-20
 
 - Update the linter to get a ton of new rules.

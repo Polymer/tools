@@ -708,6 +708,47 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
                       }
                     }]);
         });
+
+    suite('regression tests', () => {
+
+      test('changes in dependencies update cross-file warnings', async() => {
+        // This is a regression test of a tricky bug that turned out to be in
+        // the analyzer, but this is useful to assert that it still works.
+        await editorService.fileChanged('base.js', `
+          class BaseElement extends HTMLElement {}
+          customElements.define('vanilla-elem', BaseElement);
+        `);
+        deepEqual(await editorService.getWarningsForFile('base.js'), []);
+        await editorService.fileChanged('child.html', `
+          <script src="./base.js"></script>
+
+          <script>
+            class Child extends BaseElement {}
+            customElements.define('child-elem', Child);
+          </script>
+        `);
+        deepEqual(await editorService.getWarningsForFile('child.html'), []);
+
+        await editorService.fileChanged('base.js', `
+          class VanEl extends HTMLElement {}
+          customElements.define('vanilla-elem', VanEl);
+        `);
+        deepEqual(await editorService.getWarningsForFile('base.js'), []);
+        const warnings = await editorService.getWarningsForFile('child.html');
+        deepEqual(warnings.length, 1);
+        deepEqual(
+            warnings[0].message, 'Unable to resolve superclass BaseElement');
+
+        await editorService.fileChanged('base.js', `
+          class BaseElement extends HTMLElement {}
+          customElements.define('vanilla-elem', BaseElement);
+        `);
+        deepEqual(await editorService.getWarningsForFile('base.js'), []);
+        deepEqual(
+            await editorService.getWarningsForFile('child.html'), [],
+            'after fixing error in base, the error is fixed in child which uses it');
+      });
+    });
   });
 }
 
@@ -784,8 +825,8 @@ suite('RemoteEditorService', function() {
 });
 
 
-function expectJsonDeepEqual(actual: any, expected: any) {
+function expectJsonDeepEqual(actual: any, expected: any, message?: string) {
   // Primarily useful because it strips out `undefined`, which
   // RemoteEditorService does because it uses JSON for IPC.
-  assert.deepEqual(actual, JSON.parse(JSON.stringify(expected)));
+  assert.deepEqual(actual, JSON.parse(JSON.stringify(expected)), message);
 }

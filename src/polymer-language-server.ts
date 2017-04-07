@@ -20,7 +20,7 @@ import logInterceptor = require('./intercept-logs');
 
 
 import * as path from 'path';
-import {Severity, WarningCarryingException, SourceRange, FSUrlLoader, PackageUrlResolver, SourcePosition} from 'polymer-analyzer';
+import {Severity, WarningCarryingException, SourceRange, FSUrlLoader, PackageUrlResolver, SourcePosition, Warning} from 'polymer-analyzer';
 import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
@@ -87,7 +87,7 @@ connection.onInitialize((params): InitializeResult => {
     urlLoader: new FSUrlLoader(workspacePath),
     urlResolver: new PackageUrlResolver(), polymerJsonPath
   });
-  documents.all().forEach(d => scanDocument(d));
+  mapAllInitialDocuments(editorService);
 
   // The console will be valid immediately after the connection has initialized.
   // So hook it up then.
@@ -106,12 +106,46 @@ connection.onInitialize((params): InitializeResult => {
   };
 });
 
+async function mapAllInitialDocuments(editorService: EditorService) {
+  for (const document of documents.all()) {
+    const localPath = getWorkspacePathToFile(document);
+    if (localPath) {
+      await editorService.fileChanged(localPath, document.getText());
+    }
+  }
+  await reportErrors(editorService, connection);
+}
+
 // The content of a text document has changed. This event is emitted
 // when the text document is first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
-  scanDocument(change.document, connection);
+  return handleErrors(handleChangedDocument(change.document), undefined);
 });
 
+async function handleChangedDocument(document: TextDocument) {
+  if (editorService) {
+    const localPath = getWorkspacePathToFile(document);
+    if (localPath) {
+      await editorService.fileChanged(localPath, document.getText());
+    }
+    await reportErrors(editorService, connection);
+  }
+}
+
+async function reportErrors(
+    editorService: EditorService, connection: IConnection) {
+  for (const document of documents.all()) {
+    const localPath = getWorkspacePathToFile(document);
+    if (!localPath) {
+      continue;
+    }
+    const warnings = await editorService.getWarningsForFile(localPath);
+    connection.sendDiagnostics({
+      diagnostics: warnings.map(convertWarningToDiagnostic),
+      uri: document.uri
+    });
+  }
+}
 
 connection.onHover(async(textPosition) => {
   return handleErrors(getDocsForHover(textPosition), undefined);
@@ -248,34 +282,20 @@ function convertSeverity(severity: Severity): DiagnosticSeverity {
   }
 }
 
-async function scanDocument(document: TextDocument, connection?: IConnection) {
-  return handleErrors(_scanDocument(document, connection), undefined);
+
+function convertWarningToDiagnostic(warning: Warning): Diagnostic {
+  return {
+    code: warning.code,
+    message: warning.message,
+    range: convertRange(warning.sourceRange),
+    source: 'polymer-ide',
+    severity: convertSeverity(warning.severity),
+  };
 }
 
-async function _scanDocument(document: TextDocument, connection?: IConnection) {
-  if (editorService) {
-    const localPath = getWorkspacePathToFile(document);
-    if (!localPath) {
-      return;
-    }
-    editorService.fileChanged(localPath, document.getText());
-
-    if (connection) {
-      const diagnostics: Diagnostic[] = [];
-      const warnings = await editorService.getWarningsForFile(localPath);
-      for (const warning of warnings) {
-        diagnostics.push({
-          code: warning.code,
-          message: warning.message,
-          range: convertRange(warning.sourceRange),
-          source: 'polymer-ide',
-          severity: convertSeverity(warning.severity),
-        });
-      }
-      connection.sendDiagnostics({diagnostics, uri: document.uri});
-    }
-  }
-};
+connection.onDidCloseTextDocument(({textDocument}) => {
+  connection.sendDiagnostics({diagnostics: [], uri: textDocument.uri});
+});
 
 async function handleErrors<Result, Fallback>(
     promise: Promise<Result>,

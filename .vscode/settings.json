@@ -6,11 +6,7 @@
     "node_modules/": true,
     "lib/": true
   },
-  "json.schemas": [{
-    "fileMatch": [
-      "elements.json"
-    ],
-    "url": "./lib/analysis.schema.json"
-  }],
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
   "typescript.tsdk": "node_modules/typescript/lib"
 }
