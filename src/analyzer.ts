@@ -127,7 +127,7 @@ export class Analyzer {
 
   /**
    * Loads the content at the provided resolved URL.  Obeys the semantics
-   * defined by UrlLoader and should only be used to attempt to load resolved
+   * defined by `UrlLoader` and should only be used to attempt to load resolved
    * URLs.
    */
   async load(resolvedUrl: string): Promise<string> {
