@@ -11,26 +11,46 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * Note: this file describes the deprecated nonstandard interface to the
+ *     editor service. It's only used as an implementation detail of
+ *     polymer-language-server, and as a protocol for communicating with the
+ *     atom plugin until it is migrated to
+ *     https://github.com/atom/atom-languageclient
+ */
+
 import {SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 
-export type TypeaheadCompletion =
-    ElementCompletion | AttributesCompletion | AttributeValuesCompletion;
+export type TypeaheadCompletion = ElementCompletion | AttributesCompletion |
+    AttributeValuesCompletion | DatabindingPropertiesCompletion;
+
+/**
+ * When autocompleting somewhere that a new element tag could be added.
+ */
 export interface ElementCompletion {
   kind: 'element-tags';
-  elements: {
-    tagname: string,
-    description: string, expandTo?: string, expandToSnippet?: string
-  }[];
+  elements: IndividualElementCompletion[];
 }
+
+export interface IndividualElementCompletion {
+  tagname: string;
+  description: string;
+  expandTo?: string;
+  expandToSnippet?: string;
+}
+
+/**
+ * When autocompleting in the attributes section of an element, these are
+ * the attributes available.
+ */
 export interface AttributesCompletion {
   kind: 'attributes';
   attributes: AttributeCompletion[];
 }
-export interface AttributeValuesCompletion {
-  kind: 'attribute-values';
-  attributes: AttributeValueCompletion[];
-}
 
+/**
+ * Describes an attribute.
+ */
 export interface AttributeCompletion {
   name: string;
   description: string;
@@ -39,16 +59,38 @@ export interface AttributeCompletion {
   inheritedFrom?: string;
 }
 
+/**
+ * When autocompleting inside of the value section of an attribute. i.e.
+ *   <div id="|"></div>
+ */
+export interface AttributeValuesCompletion {
+  kind: 'attribute-values';
+  attributes: AttributeValueCompletion[];
+}
+
 export interface AttributeValueCompletion extends AttributeCompletion {
+  /**
+   * The text to insert in the value section.
+   */
   autocompletion: string;
 }
 
-// Important note: all arguments to, and results returned from editor service
-//     methods MUST be serializable as JSON, as the editor service may be
-//     running out of process and communicating with JSON strings.
-//
-//     Fortunately, editor-service_test will test that the results are JSON
-//     serializable.
+/**
+ * When autocompleting inside of a polymer databinding expression.
+ */
+export interface DatabindingPropertiesCompletion {
+  kind: 'properties-in-polymer-databinding';
+  properties: AttributeCompletion[];
+}
+
+/**
+ * Important note: all arguments to, and results returned from editor service
+ * methods MUST be serializable as JSON, as the editor service may be running
+ * out of process and communicating with JSON strings.
+ *
+ * Fortunately, editor-service_test will test that the results are JSON
+ * serializable.
+ */
 export abstract class EditorService {
   /**
    * Notify the editor service that the given file has changed, and give the

@@ -15,7 +15,7 @@ import {assert} from 'chai';
 import {SourcePosition} from 'polymer-analyzer';
 import {HtmlParser} from 'polymer-analyzer/lib/html/html-parser';
 
-import {getLocationInfoForPosition} from '../ast-from-source-position';
+import {getAstLocationForPosition} from '../ast-from-source-position';
 
 suite('getLocationInfoForPosition', () => {
   const parser = new HtmlParser();
@@ -167,7 +167,7 @@ suite('getLocationInfoForPosition', () => {
   function getAllKindsSpaceSeparated(text: string) {
     const doc = parser.parse(text, 'uninteresting file name.html');
     return getEveryPosition(text)
-        .map(pos => getLocationInfoForPosition(doc, pos).kind)
+        .map(pos => getAstLocationForPosition(doc, pos).kind)
         .join(' ');
   }
 });

@@ -25,6 +25,7 @@
 
 import * as util from 'util';
 import * as path from 'path';
+
 import {PackageUrlResolver, FSUrlLoader} from 'polymer-analyzer';
 
 import {LocalEditorService} from './local-editor-service';

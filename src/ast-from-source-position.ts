@@ -12,10 +12,13 @@
  */
 
 import * as parse5 from 'parse5';
-import {ParsedHtmlDocument, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {comparePositionAndRange, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
 
 
-export type LocationResult = AttributesSection | AttributeValue | TagName |
+/**
+ * Represents the most specific AST node at a point in a file.
+ */
+export type AstLocation = AttributesSection | AttributeValue | TagName |
     EndTag | TextNode | ScriptContents | StyleContents | Comment;
 
 /** In the tagname of a start tag. */
@@ -77,10 +80,9 @@ export interface Comment {
  * string should be interpreted as a text node, but there is no text node in
  * an empty document, but there would be after the first character was typed).
  */
-export function getLocationInfoForPosition(
-    document: ParsedHtmlDocument, position: SourcePosition): LocationResult {
-  const location =
-      _getLocationInfoForPosition(document.ast, position, document);
+export function getAstLocationForPosition(
+    document: ParsedHtmlDocument, position: SourcePosition): AstLocation {
+  const location = _getAstLocationForPosition(document.ast, position, document);
   if (!location) {
     /** Eh, we're probably in a text node. */
     return {kind: 'text'};
@@ -88,9 +90,9 @@ export function getLocationInfoForPosition(
   return location;
 }
 
-function _getLocationInfoForPosition(
+function _getAstLocationForPosition(
     node: parse5.ASTNode, position: SourcePosition,
-    document: ParsedHtmlDocument): undefined|LocationResult {
+    document: ParsedHtmlDocument): undefined|AstLocation {
   const sourceRange = document.sourceRangeForNode(node);
   const location = node.__location;
 
@@ -114,10 +116,10 @@ function _getLocationInfoForPosition(
     return locationInChildren;
   }
 
-  const attributeLocation =
-      getAttributeLocation(node, position, document, location);
-  if (attributeLocation) {
-    return attributeLocation;
+  const attributeAstLocation =
+      getAttributeAstLocation(node, position, document, location);
+  if (attributeAstLocation) {
+    return attributeAstLocation;
   }
 
   const startTagRange = document.sourceRangeForStartTag(node);
@@ -198,77 +200,22 @@ function _getLocationInfoForPosition(
   }
 }
 
-/**
- * If the position is inside the range, returns 0. If it comes before the range,
- * it returns -1. If it comes after the range, it returns 1.
- */
-function comparePositionAndRange(
-    position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
-  // Usually we want to include the edges of a range as part
-  // of the thing, but sometimes, e.g. for start and end tags,
-  // we'd rather not.
-  if (includeEdges == null) {
-    includeEdges = true;
-  }
-  if (includeEdges == null) {
-    includeEdges = true;
-  }
-  if (position.line < range.start.line) {
-    return -1;
-  }
-  if (position.line > range.end.line) {
-    return 1;
-  }
-  if (position.line === range.start.line) {
-    if (includeEdges) {
-      if (position.column < range.start.column) {
-        return -1;
-      }
-    } else {
-      if (position.column <= range.start.column) {
-        return -1;
-      }
-    }
-  }
-  if (position.line === range.end.line) {
-    if (includeEdges) {
-      if (position.column > range.end.column) {
-        return 1;
-      }
-    } else {
-      if (position.column >= range.end.column) {
-        return 1;
-      }
-    }
-  }
-  return 0;
-}
-
 function _findLocationInChildren(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument) {
   for (const child of node.childNodes || []) {
-    const result = _getLocationInfoForPosition(child, position, document);
+    const result = _getAstLocationForPosition(child, position, document);
     if (result) {
       return result;
     }
   }
   if (node.tagName === 'template') {
     const content = parse5.treeAdapters.default.getTemplateContent(node);
-    const result = _getLocationInfoForPosition(content, position, document);
+    const result = _getAstLocationForPosition(content, position, document);
     if (result) {
       return result;
     }
   }
-}
-
-export function isPositionInsideRange(
-    position: SourcePosition, range: SourceRange|undefined,
-    includeEdges?: boolean) {
-  if (!range) {
-    return false;
-  }
-  return comparePositionAndRange(position, range, includeEdges) === 0;
 }
 
 function isElementLocationInfo(location: parse5.LocationInfo|
@@ -283,7 +230,7 @@ type Parse5Location = parse5.LocationInfo|parse5.ElementLocationInfo;
  * If the position is inside of the node's attributes section, return the
  * correct LocationResult.
  */
-function getAttributeLocation(
+function getAttributeAstLocation(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument, location: Parse5Location): AttributesSection|
     AttributeValue|undefined {

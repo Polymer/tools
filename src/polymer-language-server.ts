@@ -24,7 +24,7 @@ import {Severity, WarningCarryingException, SourceRange, FSUrlLoader, PackageUrl
 import {CompletionItem, CompletionItemKind, CompletionList, createConnection, Definition, Diagnostic, DiagnosticSeverity, Hover, IConnection, InitializeResult, Location, Position as LSPosition, Range, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {EditorService, TypeaheadCompletion} from './editor-service';
+import {EditorService, TypeaheadCompletion, AttributeCompletion} from './editor-service';
 
 import {LocalEditorService} from './local-editor-service';
 
@@ -189,56 +189,64 @@ connection.onCompletion(async(textPosition) => {
       autoComplete(textPosition), {isIncomplete: true, items: []});
 });
 
-async function autoComplete(textPosition: TextDocumentPositionParams):
-    Promise<CompletionList> {
-      const localPath = getWorkspacePathToFile(textPosition.textDocument);
-      if (!localPath || !editorService) {
-        return {isIncomplete: true, items: []};
-      }
-      const completions: (TypeaheadCompletion|undefined) =
-          await editorService.getTypeaheadCompletionsAtPosition(
-              localPath, convertPosition(textPosition.position));
-      if (!completions) {
-        return {isIncomplete: false, items: []};
-      }
-      if (completions.kind === 'element-tags') {
-        return {
-          isIncomplete: false,
-          items: completions.elements.map(c => {
-            return <CompletionItem>{
-              label: `<${c.tagname}>`,
-              kind: CompletionItemKind.Class,
-              documentation: c.description,
-              insertText: c.expandTo
-            };
-          }),
+async function autoComplete(
+    textPosition: TextDocumentPositionParams): Promise<CompletionList> {
+  const localPath = getWorkspacePathToFile(textPosition.textDocument);
+  if (!localPath || !editorService) {
+    return {isIncomplete: true, items: []};
+  }
+  const completions: (TypeaheadCompletion|undefined) =
+      await editorService.getTypeaheadCompletionsAtPosition(
+          localPath, convertPosition(textPosition.position));
+  if (!completions) {
+    return {isIncomplete: false, items: []};
+  }
+  if (completions.kind === 'element-tags') {
+    return {
+      isIncomplete: false,
+      items: completions.elements.map(c => {
+        return <CompletionItem>{
+          label: `<${c.tagname}>`,
+          kind: CompletionItemKind.Class,
+          documentation: c.description,
+          insertText: c.expandTo
         };
-      } else if (completions.kind === 'attributes') {
-        return {
-          isIncomplete: false,
-          items: completions.attributes.map(a => {
-            const item: CompletionItem = {
-              label: a.name,
-              kind: CompletionItemKind.Field,
-              documentation: a.description,
-              sortText: a.sortKey
-            };
-            if (a.type) {
-              item.detail = `{${a.type}}`;
-            }
-            if (a.inheritedFrom) {
-              if (item.detail) {
-                item.detail = `${item.detail} ⊃ ${a.inheritedFrom}`;
-              } else {
-                item.detail = `⊃ ${a.inheritedFrom}`;
-              }
-            }
-            return item;
-          }),
-        };
-      }
-      return {isIncomplete: false, items: []};
+      }),
     };
+  } else if (completions.kind === 'attributes') {
+    return {
+      isIncomplete: false,
+      items: completions.attributes.map(attributeCompletionToCompletionItem),
+    };
+  } else if (completions.kind === 'properties-in-polymer-databinding') {
+    return {
+      isIncomplete: false,
+      items: completions.properties.map(attributeCompletionToCompletionItem)
+    };
+  }
+  return {isIncomplete: false, items: []};
+};
+
+function attributeCompletionToCompletionItem(
+    attrCompletion: AttributeCompletion) {
+  const item: CompletionItem = {
+    label: attrCompletion.name,
+    kind: CompletionItemKind.Field,
+    documentation: attrCompletion.description,
+    sortText: attrCompletion.sortKey
+  };
+  if (attrCompletion.type) {
+    item.detail = `{${attrCompletion.type}}`;
+  }
+  if (attrCompletion.inheritedFrom) {
+    if (item.detail) {
+      item.detail = `${item.detail} ⊃ ${attrCompletion.inheritedFrom}`;
+    } else {
+      item.detail = `⊃ ${attrCompletion.inheritedFrom}`;
+    }
+  }
+  return item;
+}
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
   if (!workspaceUri) {

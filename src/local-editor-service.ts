@@ -13,15 +13,24 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 import {Linter, registry, Rule} from 'polymer-linter';
 import {ProjectConfig} from 'polymer-project-config';
 
-import {getLocationInfoForPosition} from './ast-from-source-position';
+import {AstLocation, getAstLocationForPosition} from './ast-from-source-position';
 import {AttributeCompletion, EditorService, TypeaheadCompletion} from './editor-service';
 
 export interface Options extends AnalyzerOptions { polymerJsonPath?: string; }
 
+/**
+ * An in-process implementation of EditorService.
+ *
+ * This should be run out-of-process of any user interface work. See
+ * RemoteEditorService if you're running in-process with an editor, as it
+ * has the same interface but is actually running a LocalEditorService in
+ * another process.
+ */
 export class LocalEditorService extends EditorService {
   private readonly _analyzer: Analyzer;
   private readonly _linter: Linter;
@@ -58,6 +67,9 @@ export class LocalEditorService extends EditorService {
     if (!feature) {
       return;
     }
+    if (feature instanceof DatabindingFeature) {
+      return feature.property && feature.property.description;
+    }
     if (isProperty(feature)) {
       if (feature.type) {
         return `{${feature.type}} ${feature.description}`;
@@ -73,6 +85,9 @@ export class LocalEditorService extends EditorService {
     if (!feature) {
       return;
     }
+    if (feature instanceof DatabindingFeature) {
+      return feature.property && feature.property.sourceRange;
+    }
     return feature.sourceRange;
   }
 
@@ -80,7 +95,7 @@ export class LocalEditorService extends EditorService {
       localPath: string,
       position: SourcePosition): Promise<SourceRange[]|undefined> {
     const document = await this._analyzer.analyze(localPath);
-    const location = await this._getLocationResult(document, position);
+    const location = await this._getAstAtPosition(document, position);
     if (!location) {
       return;
     }
@@ -97,9 +112,27 @@ export class LocalEditorService extends EditorService {
       localPath: string,
       position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
     const document = await this._analyzer.analyze(localPath);
-    const location = await this._getLocationResult(document, position);
+    const location = await this._getAstAtPosition(document, position);
     if (!location) {
       return;
+    }
+    const feature =
+        await this._getFeatureForAstLocation(document, location, position);
+    if (feature && (feature instanceof DatabindingFeature)) {
+      const element = feature.element;
+      return {
+        kind: 'properties-in-polymer-databinding',
+        properties: element.properties.concat(element.methods).map((p) => {
+          const sortPrefix = p.inheritedFrom ? 'ddd-' : 'aaa-';
+          return {
+            name: p.name,
+            description: p.description || '',
+            type: p.type,
+            sortKey: sortPrefix + p.name,
+            inheritedFrom: p.inheritedFrom
+          };
+        })
+      };
     }
     if (location.kind === 'tagName' || location.kind === 'text') {
       const elements =
@@ -275,40 +308,106 @@ export class LocalEditorService extends EditorService {
     this._analyzer.clearCaches();
   }
 
+  /**
+   * Given a point in a file, return a high level feature that describes what
+   * is going on there, like an Element for an HTML tag.
+   */
   private async _getFeatureAt(localPath: string, position: SourcePosition):
-      Promise<Element|Property|Attribute|undefined> {
+      Promise<Element|Property|Attribute|DatabindingFeature|undefined> {
     const document = await this._analyzer.analyze(localPath);
-    const location = await this._getLocationResult(document, position);
+    const location = await this._getAstAtPosition(document, position);
     if (!location) {
       return;
     }
-    if (location.kind === 'tagName') {
+    return this._getFeatureForAstLocation(document, location, position);
+  }
+
+  /**
+   * Given an AstLocation, return a high level feature.
+   */
+  private async _getFeatureForAstLocation(
+      document: Document, astLocation: AstLocation, position: SourcePosition):
+      Promise<Element|Attribute|DatabindingFeature|undefined> {
+    if (astLocation.kind === 'tagName') {
       return document.getOnlyAtId(
-          'element', location.element.nodeName,
+          'element', astLocation.element.nodeName,
           {imported: true, externalPackages: true});
-    } else if (location.kind === 'attribute') {
+    } else if (astLocation.kind === 'attribute') {
       const elements = document.getById(
-          'element', location.element.nodeName,
+          'element', astLocation.element.nodeName,
           {imported: true, externalPackages: true});
       if (elements.size === 0) {
         return;
       }
 
       return concatMap(elements, (el) => el.attributes)
-          .find(at => at.name === location.attribute);
+          .find(at => at.name === astLocation.attribute);
+    } else if (
+        astLocation.kind === 'attributeValue' || astLocation.kind === 'text') {
+      const domModules = document.getByKind('dom-module');
+      for (const domModule of domModules) {
+        if (!domModule.id) {
+          continue;
+        }
+        const elements = document.getById(
+            'polymer-element', domModule.id,
+            {imported: true, externalPackages: true});
+        if (elements.size !== 1) {
+          continue;
+        }
+        const element = elements.values().next().value!;
+        if (isPositionInsideRange(position, domModule.sourceRange)) {
+          for (const databinding of domModule.databindings) {
+            if (isPositionInsideRange(
+                    position, databinding.sourceRange, true)) {
+              for (const prop of databinding.properties) {
+                if (isPositionInsideRange(position, prop.sourceRange, true)) {
+                  return new DatabindingFeature(
+                      element, databinding, prop.name);
+                }
+              }
+              return new DatabindingFeature(element, databinding, undefined);
+            }
+          }
+        }
+      }
     }
   }
 
-  private async _getLocationResult(
+  private async _getAstAtPosition(
       document: Document, position: SourcePosition) {
     const parsedDocument = document.parsedDocument;
     if (!(parsedDocument instanceof ParsedHtmlDocument)) {
       return;
     }
-    return getLocationInfoForPosition(parsedDocument, position);
+    return getAstLocationForPosition(parsedDocument, position);
   }
 }
 
+class DatabindingFeature {
+  /** The element contains the databinding expression. */
+  element: Element;
+  expression: DatabindingExpression;
+  /**
+   * If present, this represents a particular property on `element` that's
+   * referenced in the databinding expression.
+   */
+  propertyName: string|undefined;
+  /**
+   * The property or method on Element corresponding to `propertyName` if
+   * one could be found.
+   */
+  property: Property|Method|undefined;
+  constructor(
+      element: Element, expression: DatabindingExpression,
+      propertyName: string|undefined) {
+    this.element = element;
+    this.expression = expression;
+    this.propertyName = propertyName;
+    this.property = element.properties.find((p) => p.name === propertyName) ||
+        element.methods.find(m => m.name === propertyName);
+  }
+}
 
 
 function isProperty(d: any): d is(ScannedProperty | Property) {

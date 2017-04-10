@@ -17,7 +17,7 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 import {Analyzer, FSUrlLoader, PackageUrlResolver, Severity, SourceRange, Warning, WarningPrinter} from 'polymer-analyzer';
-import {invertPromise} from 'polymer-analyzer/lib/test/test-utils';
+import {CodeUnderliner, invertPromise} from 'polymer-analyzer/lib/test/test-utils';
 
 import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {LocalEditorService} from '../local-editor-service';
@@ -174,9 +174,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
   };
   const indexContents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
 
-  // The weird cast is because the service will always be non-null when we
-  // actually use it.
-  let editorService: EditorService = <EditorService><any>null;
+  let editorService: EditorService;
+  const underliner = new CodeUnderliner(new FSUrlLoader(basedir));
   setup(async() => {
     editorService = editorFactory(basedir);
   });
@@ -709,17 +708,74 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
                     }]);
         });
 
-    suite('regression tests', () => {
+    {
+      const fooPropUsePosition = {line: 2, column: 16};
+      const internalPropUsePosition = {line: 3, column: 12};
+      test(`Give documentation for properties in databindings.`, async() => {
+        let docs = await editorService.getDocumentationAtPosition(
+            'polymer/element-with-databinding.html', fooPropUsePosition);
+        deepEqual(docs, 'This is the foo property.');
 
-      test('changes in dependencies update cross-file warnings', async() => {
-        // This is a regression test of a tricky bug that turned out to be in
-        // the analyzer, but this is useful to assert that it still works.
-        await editorService.fileChanged('base.js', `
+        docs = await editorService.getDocumentationAtPosition(
+            'polymer/element-with-databinding.html', internalPropUsePosition);
+        deepEqual(docs, 'A private internal prop.');
+      });
+
+      test('Jump to definition for properties in databindings.', async() => {
+        let location = await editorService.getDefinitionForFeatureAtPosition(
+            'polymer/element-with-databinding.html', fooPropUsePosition);
+        deepEqual(await underliner.underline(location), `
+        foo: String,
+        ~~~~~~~~~~~`);
+        location = await editorService.getDefinitionForFeatureAtPosition(
+            'polymer/element-with-databinding.html', internalPropUsePosition);
+        deepEqual(await underliner.underline(location), `
+        _internal: String,
+        ~~~~~~~~~~~~~~~~~`);
+      });
+
+      const databindingCompletions = {
+        kind: 'properties-in-polymer-databinding',
+        properties: [
+          {
+            description: 'This is the foo property.',
+            name: 'foo',
+            sortKey: 'aaa-foo',
+            type: 'string',
+            inheritedFrom: undefined,
+          },
+          {
+            description: 'A private internal prop.',
+            name: '_internal',
+            sortKey: 'aaa-_internal',
+            type: 'string',
+            inheritedFrom: undefined,
+          }
+        ]
+      };
+      test('Give autocompletions for positions in databindings.', async() => {
+        let completions = await editorService.getTypeaheadCompletionsAtPosition(
+            'polymer/element-with-databinding.html', fooPropUsePosition);
+        deepEqual(completions, databindingCompletions);
+
+        completions = await editorService.getTypeaheadCompletionsAtPosition(
+            'polymer/element-with-databinding.html', internalPropUsePosition);
+        deepEqual(completions, databindingCompletions);
+      });
+    };
+  });
+
+  suite('regression tests', () => {
+
+    test('changes in dependencies update cross-file warnings', async() => {
+      // This is a regression test of a tricky bug that turned out to be in
+      // the analyzer, but this is useful to assert that it still works.
+      await editorService.fileChanged('base.js', `
           class BaseElement extends HTMLElement {}
           customElements.define('vanilla-elem', BaseElement);
         `);
-        deepEqual(await editorService.getWarningsForFile('base.js'), []);
-        await editorService.fileChanged('child.html', `
+      deepEqual(await editorService.getWarningsForFile('base.js'), []);
+      await editorService.fileChanged('child.html', `
           <script src="./base.js"></script>
 
           <script>
@@ -727,27 +783,26 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             customElements.define('child-elem', Child);
           </script>
         `);
-        deepEqual(await editorService.getWarningsForFile('child.html'), []);
+      deepEqual(await editorService.getWarningsForFile('child.html'), []);
 
-        await editorService.fileChanged('base.js', `
+      await editorService.fileChanged('base.js', `
           class VanEl extends HTMLElement {}
           customElements.define('vanilla-elem', VanEl);
         `);
-        deepEqual(await editorService.getWarningsForFile('base.js'), []);
-        const warnings = await editorService.getWarningsForFile('child.html');
-        deepEqual(warnings.length, 1);
-        deepEqual(
-            warnings[0].message, 'Unable to resolve superclass BaseElement');
+      deepEqual(await editorService.getWarningsForFile('base.js'), []);
+      const warnings = await editorService.getWarningsForFile('child.html');
+      deepEqual(warnings.length, 1);
+      deepEqual(
+          warnings[0].message, 'Unable to resolve superclass BaseElement');
 
-        await editorService.fileChanged('base.js', `
+      await editorService.fileChanged('base.js', `
           class BaseElement extends HTMLElement {}
           customElements.define('vanilla-elem', BaseElement);
         `);
-        deepEqual(await editorService.getWarningsForFile('base.js'), []);
-        deepEqual(
-            await editorService.getWarningsForFile('child.html'), [],
-            'after fixing error in base, the error is fixed in child which uses it');
-      });
+      deepEqual(await editorService.getWarningsForFile('base.js'), []);
+      deepEqual(
+          await editorService.getWarningsForFile('child.html'), [],
+          'after fixing error in base, the error is fixed in child which uses it');
     });
   });
 }
