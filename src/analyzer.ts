@@ -117,14 +117,18 @@ export class Analyzer {
   }
 
   /**
-   * Returns `true` if the provided resolved URL can be loaded.
+   * Returns `true` if the provided resolved URL can be loaded.  Obeys the
+   * semantics defined by `UrlLoader` and should only be used to check
+   * resolved URLs.
    */
   canLoad(resolvedUrl: string): boolean {
     return this._context.canLoad(resolvedUrl);
   }
 
   /**
-   * Loads the content at the provided resolved URL.
+   * Loads the content at the provided resolved URL.  Obeys the semantics
+   * defined by UrlLoader and should only be used to attempt to load resolved
+   * URLs.
    */
   async load(resolvedUrl: string): Promise<string> {
     return this._context.load(resolvedUrl);
