@@ -135,6 +135,11 @@ export abstract class EditorService {
   abstract async getWarningsForFile(localPath: string): Promise<Warning[]>;
 
   /**
+   * Gives all warnings, errors, info notices, etc for the package as a whole.
+   */
+  abstract async getWarningsForPackage(): Promise<Warning[]>;
+
+  /**
    * Internal method, do not call. May be removed in a future release.
    *
    * Instructs the editor service to clear out all caches. Use very sparingly,

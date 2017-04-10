@@ -121,6 +121,10 @@ export class RemoteEditorService extends EditorService {
         {kind: 'getTypeaheadCompletionsFor', localPath, position});
   }
 
+  getWarningsForPackage(): Promise<Warning[]> {
+    return this._channel.request({kind: 'getWarningsForPackage'});
+  }
+
   async _clearCaches(): Promise<void> {
     return this._channel.request({kind: '_clearCaches'});
   }

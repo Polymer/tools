@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-- Report and update warnings for all open files. Ignore warnings for a file when it is closed.
+- By default, report and update warnings for all open files. Ignore warnings for a file when it is closed.
+- Support the `polymer-ide.analyzeWholePackage` setting. When true, warnings will be reported for all files in the package, not just those that are open. Warnings will be more accurate but the initial analysis will be slower.
 
 ## 1.3.3 - 2017-03-20
 

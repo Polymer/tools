@@ -304,6 +304,10 @@ export class LocalEditorService extends EditorService {
     return this._linter.lint([localPath]);
   }
 
+  async getWarningsForPackage() {
+    return this._linter.lintPackage();
+  }
+
   async _clearCaches() {
     this._analyzer.clearCaches();
   }

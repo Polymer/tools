@@ -60,6 +60,8 @@ class EditorServer {
     switch (message.kind) {
       case 'getWarningsFor':
         return localEditorService.getWarningsForFile(message.localPath);
+      case 'getWarningsForPackage':
+        return localEditorService.getWarningsForPackage();
       case 'fileChanged':
         await localEditorService.fileChanged(
             message.localPath, message.contents);

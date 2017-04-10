@@ -13,9 +13,9 @@
  */
 
 import * as path from 'path';
-import {FSUrlLoader, PackageUrlResolver, WarningCarryingException} from 'polymer-analyzer';
+import {FSUrlLoader, PackageUrlResolver, Warning, WarningCarryingException} from 'polymer-analyzer';
 import * as util from 'util';
-import {CompletionItem, CompletionItemKind, CompletionList, Definition, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, EditorService} from '../editor-service';
@@ -36,6 +36,16 @@ export class AutoDisposable implements Disposable {
 };
 
 
+interface SettingsWrapper {
+  'polymer-ide'?: Partial<Settings>;
+}
+
+interface Settings {
+  analyzeWholePackage: boolean;
+}
+const defaultSettings: Readonly<Settings> =
+    Object.freeze({analyzeWholePackage: false});
+
 export default class LanguageServer extends AutoDisposable {
   readonly converter: AnalyzerLSPConverter;
   private readonly _connection: IConnection;
@@ -44,6 +54,8 @@ export default class LanguageServer extends AutoDisposable {
   private readonly _documents: TextDocuments;
 
   private readonly _workspaceUri: Uri;
+
+  private _settings: Settings = defaultSettings;
 
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(connection: IConnection):
@@ -107,6 +119,8 @@ export default class LanguageServer extends AutoDisposable {
     this._editorService = editorService;
     this._workspaceUri = workspaceUri;
 
+    // TODO(rictic): try out implementing an incrementally synced version of
+    //     TextDocuments. Should be a performance win for editing large docs.
     this._documents = new TextDocuments();
     this._documents.listen(connection);
     this.converter = new AnalyzerLSPConverter(workspaceUri);
@@ -130,10 +144,10 @@ export default class LanguageServer extends AutoDisposable {
     }));
 
     this._disposables.push(this._documents.onDidClose((event) => {
-      // TODO(rictic): if the user wants to get package-level warnings, don't
-      //     clear diagnostics like this when the file is closed.
-      this._connection.sendDiagnostics(
-          {diagnostics: [], uri: event.document.uri});
+      if (!this._settings.analyzeWholePackage) {
+        this._connection.sendDiagnostics(
+            {diagnostics: [], uri: event.document.uri});
+      }
 
       // TODO(rictic): unmap event.document.uri from the in-memory map.
     }));
@@ -149,6 +163,14 @@ export default class LanguageServer extends AutoDisposable {
     this._connection.onCompletion(async(textPosition) => {
       return this.handleErrors(
           this.autoComplete(textPosition), {isIncomplete: true, items: []});
+    });
+
+    this._connection.onDidChangeConfiguration((change) => {
+      const settingsWrapper = <SettingsWrapper|undefined>change.settings;
+      const settings = settingsWrapper && settingsWrapper['polymer-ide'] || {};
+      const previousSettings = this._settings;
+      this._settings = Object.assign({}, defaultSettings, settings);
+      this._settingsChanged(this._settings, previousSettings);
     });
   }
 
@@ -218,7 +240,7 @@ export default class LanguageServer extends AutoDisposable {
   async handleChangedDocument(document: TextDocument) {
     const localPath = this.converter.getWorkspacePathToFile(document);
     await this._editorService.fileChanged(localPath, document.getText());
-    await this.reportErrors();
+    await this._reportWarnings();
   }
 
   async handleErrors<Result, Fallback>(
@@ -237,18 +259,74 @@ export default class LanguageServer extends AutoDisposable {
     }
   }
 
-  async reportErrors() {
-    // TODO(rictic): allow the user to set in a setting that they like warnings
-    //     at the package level, in which case we should call something like
-    //     getWarningsForPackage instead of going through each open document.
-    for (const document of this._documents.all()) {
-      const localPath = this.converter.getWorkspacePathToFile(document);
-      const warnings = await this._editorService.getWarningsForFile(localPath);
-      this._connection.sendDiagnostics({
-        diagnostics: warnings.map(
-            this.converter.convertWarningToDiagnostic, this.converter),
-        uri: document.uri
-      });
+  /**
+   * Used so that if we don't have any warnings to report for a file on the
+   * next go around we can remember to send an empty array.
+   */
+  private _urisReportedWarningsFor = new Set<string>();
+  private async _reportWarnings(): Promise<void> {
+    if (this._settings.analyzeWholePackage) {
+      this._reportPackageWarnings(
+          await this._editorService.getWarningsForPackage());
+    } else {
+      for (const document of this._documents.all()) {
+        const localPath = this.converter.getWorkspacePathToFile(document);
+        const warnings =
+            await this._editorService.getWarningsForFile(localPath);
+        this._connection.sendDiagnostics({
+          diagnostics: warnings.map(
+              this.converter.convertWarningToDiagnostic, this.converter),
+          uri: document.uri
+        });
+      }
+    }
+  }
+
+  /**
+   * Report the given warnings for the package implicitly defined by the
+   * workspace.
+   *
+   * This is pulled out into its own non-async function to document and maintain
+   * the invariant that there must not be an await between the initial read of
+   * _urisReportedWarningsFor and the write of it at the end.
+   */
+  private _reportPackageWarnings(warnings: Warning[]) {
+    const reportedLastTime = new Set(this._urisReportedWarningsFor);
+    this._urisReportedWarningsFor = new Set<string>();
+    const diagnosticsByUri = new Map<string, Diagnostic[]>();
+    for (const warning of warnings) {
+      const uri = this.converter.getUriForLocalPath(warning.sourceRange.file);
+      reportedLastTime.delete(uri);
+      this._urisReportedWarningsFor.add(uri);
+      let diagnostics = diagnosticsByUri.get(uri);
+      if (!diagnostics) {
+        diagnostics = [];
+        diagnosticsByUri.set(uri, diagnostics);
+      }
+      diagnostics.push(this.converter.convertWarningToDiagnostic(warning));
+    }
+    for (const [uri, diagnostics] of diagnosticsByUri) {
+      this._connection.sendDiagnostics({uri, diagnostics});
+    }
+    for (const uriWithNoWarnings of reportedLastTime) {
+      this._connection.sendDiagnostics(
+          {uri: uriWithNoWarnings, diagnostics: []});
+    }
+    this._urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
+  }
+
+  private _settingsChanged(newer: Settings, older: Settings) {
+    if (newer.analyzeWholePackage !== older.analyzeWholePackage) {
+      // When we switch this setting we want to be sure that we'll clear out
+      // warnings that were reported with the old setting but not the new one.
+      if (newer.analyzeWholePackage) {
+        this._urisReportedWarningsFor = new Set(this._documents.keys());
+      } else {
+        for (const uri of this._urisReportedWarningsFor) {
+          this._connection.sendDiagnostics({uri, diagnostics: []});
+        }
+      }
+      this._reportWarnings();
     }
   }
 }
