@@ -5,19 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-
-- Also generate autocompletion of elements for unclosed tagNames
 
 <!--
   Please document PR changes here. Uncomment the Unreleased header as
   appropriate.
 -->
 
-## Unreleased
+<!--## Unreleased-->
 
+## 1.4.0 - 2017-04-10
+
+- [Polymer]: support autocompletion, tooltips, and jump to definition inside Polymer databinding expressions.
 - By default, report and update warnings for all open files. Ignore warnings for a file when it is closed.
 - Support the `polymer-ide.analyzeWholePackage` setting. When true, warnings will be reported for all files in the package, not just those that are open. Warnings will be more accurate but the initial analysis will be slower.
+- Also generate autocompletion of elements for unclosed tagNames
 
 ## 1.3.3 - 2017-03-20
 
