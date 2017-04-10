@@ -398,14 +398,25 @@ export class AnalysisContext {
   }
 
   /**
-   * Loads the content at the provided resolved URL.
+   * Returns `true` if the provided resolved URL can be loaded.  Obeys the
+   * semantics defined by `UrlLoader` and should only be used to check
+   * resolved URLs.
+   */
+  canLoad(resolvedUrl: string): boolean {
+    return this._loader.canLoad(resolvedUrl);
+  }
+
+  /**
+   * Loads the content at the provided resolved URL.  Obeys the semantics
+   * defined by `UrlLoader` and should only be used to attempt to load resolved
+   * URLs.
    *
    * Currently does no caching. If the provided contents are given then they
    * are used instead of hitting the UrlLoader (e.g. when you have in-memory
    * contents that should override disk).
    */
-  async load(resolvedUrl: string) {
-    if (!this._loader.canLoad(resolvedUrl)) {
+  async load(resolvedUrl: string): Promise<string> {
+    if (!this.canLoad(resolvedUrl)) {
       throw new Error(`Can't load URL: ${resolvedUrl}`);
     }
     return await this._loader.load(resolvedUrl);
