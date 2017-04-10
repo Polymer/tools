@@ -117,16 +117,29 @@ export class Analyzer {
   }
 
   /**
+   * Returns `true` if the provided resolved URL can be loaded.
+   */
+  canLoad(resolvedUrl: string): boolean {
+    return this._context.canLoad(resolvedUrl);
+  }
+
+  /**
    * Loads the content at the provided resolved URL.
    */
-  async load(resolvedUrl: string) {
+  async load(resolvedUrl: string): Promise<string> {
     return this._context.load(resolvedUrl);
   }
 
+  /**
+   * Returns `true` if the given `url` can be resolved.
+   */
   canResolveUrl(url: string): boolean {
     return this._context.canResolveUrl(url);
   }
 
+  /**
+   * Resoves `url` to a new location.
+   */
   resolveUrl(url: string): string {
     return this._context.resolveUrl(url);
   }

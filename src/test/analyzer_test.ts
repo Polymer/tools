@@ -53,6 +53,14 @@ suite('Analyzer', () => {
     underliner = new CodeUnderliner(inMemoryOverlay);
   });
 
+  test('canLoad delegates to the urlLoader canLoad method', () => {
+    assert.isTrue(analyzer.canLoad('/'), '/');
+    assert.isTrue(analyzer.canLoad('/path'), '/path');
+    assert.isFalse(analyzer.canLoad('../path'), '../path');
+    assert.isFalse(analyzer.canLoad('http://host/'), 'http://host/');
+    assert.isFalse(analyzer.canLoad('http://host/path'), 'http://host/path');
+  });
+
   test('canResolveUrl defaults to not resolving external urls', () => {
     assert.isTrue(analyzer.canResolveUrl('/path'), '/path');
     assert.isTrue(analyzer.canResolveUrl('../path'), '../path');
