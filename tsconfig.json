@@ -15,12 +15,15 @@
         "outDir": "./lib",
         "declaration": true,
         "sourceMap": true,
-        "pretty": true
+        "pretty": true,
+        "lib": [
+            "es2017"
+        ]
     },
     "include": [
         "src/**/*.ts"
     ],
     "exclude": [
-      "node_modules"
+        "node_modules"
     ]
 }

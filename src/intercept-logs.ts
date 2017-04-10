@@ -113,7 +113,6 @@ export function log() {
 console.log = log;
 console.warn = log;
 console.error = log;
-console.debug = log;
 console.info = log;
 console.dir = log;
 
