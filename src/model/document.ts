@@ -22,12 +22,12 @@ import {DomModule} from '../polymer/dom-module-scanner';
 import {PolymerElement} from '../polymer/polymer-element';
 import {PolymerElementMixin} from '../polymer/polymer-element-mixin';
 
+import {Analysis} from './analysis';
 import {Element} from './element';
 import {ElementMixin} from './element-mixin';
 import {ElementReference} from './element-reference';
 import {Feature, ScannedFeature} from './feature';
 import {Import} from './import';
-import {Package} from './package';
 import {BaseQueryOptions, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
@@ -127,7 +127,12 @@ export type QueryOptions = object & QueryOptionsInterface;
 export class Document implements Feature, Queryable {
   kinds: Set<string> = new Set(['document']);
   identifiers: Set<string> = new Set();
-  analyzer: AnalysisContext;
+
+  /**
+   * AnalysisContext is a private type. Only internal analyzer code should touch
+   * this field.
+   */
+  _analysisContext: AnalysisContext;
   warnings: Warning[];
   languageAnalysis?: any;
 
@@ -157,7 +162,7 @@ export class Document implements Feature, Queryable {
       throw new Error('analyzer is null');
     }
     this._scannedDocument = base;
-    this.analyzer = analyzer;
+    this._analysisContext = analyzer;
     this.languageAnalysis = languageAnalysis;
 
     if (!base.isInline) {
@@ -341,7 +346,7 @@ export class Document implements Feature, Queryable {
       if (feature.kinds.has('import') && options.imported) {
         const imprt = feature as Import;
         const isPackageInternal =
-            imprt.document && !Package.isExternal(imprt.document.url);
+            imprt.document && !Analysis.isExternal(imprt.document.url);
         const externalityOk = options.externalPackages || isPackageInternal;
         const lazinessOk = !options.noLazyImports || !imprt.lazy;
         if (externalityOk && lazinessOk) {
@@ -354,7 +359,8 @@ export class Document implements Feature, Queryable {
   private _filterOutExternal(features: Set<Feature>): Set<Feature> {
     const result = new Set();
     for (const feature of features) {
-      if (feature.sourceRange && Package.isExternal(feature.sourceRange.file)) {
+      if (feature.sourceRange &&
+          Analysis.isExternal(feature.sourceRange.file)) {
         continue;
       }
       result.add(feature);

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, ScannedDocument} from '../model/model';
+import {Document, ScannedDocument, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 import {AsyncWorkCache} from './async-work-cache';
@@ -23,19 +23,21 @@ export class AnalysisCache {
    * These are maps from resolved URLs to Promises of various stages of the
    * analysis pipeline.
    */
-  parsedDocumentPromises: AsyncWorkCache<string, ParsedDocument<any, any>>;
-  scannedDocumentPromises: AsyncWorkCache<string, ScannedDocument>;
-  dependenciesScannedPromises: AsyncWorkCache<string, ScannedDocument>;
-  analyzedDocumentPromises: AsyncWorkCache<string, Document>;
+  readonly parsedDocumentPromises:
+      AsyncWorkCache<string, ParsedDocument<any, any>>;
+  readonly scannedDocumentPromises: AsyncWorkCache<string, ScannedDocument>;
+  readonly dependenciesScannedPromises: AsyncWorkCache<string, ScannedDocument>;
+  readonly analyzedDocumentPromises: AsyncWorkCache<string, Document>;
 
   /**
    * TODO(rictic): These synchronous caches need to be kept in sync with their
    *     async work cache analogues above.
    */
-  scannedDocuments: Map<string, ScannedDocument>;
-  analyzedDocuments: Map<string, Document>;
+  readonly scannedDocuments: Map<string, ScannedDocument>;
+  readonly analyzedDocuments: Map<string, Document>;
+  readonly failedDocuments: Map<string, Warning>;
 
-  dependencyGraph: DependencyGraph;
+  readonly dependencyGraph: DependencyGraph;
 
   /**
    * @param from Another AnalysisCache to copy the caches from. The new
@@ -54,6 +56,7 @@ export class AnalysisCache {
     this.dependenciesScannedPromises =
         new AsyncWorkCache(f.dependenciesScannedPromises);
 
+    this.failedDocuments = new Map(f.failedDocuments!);
     this.scannedDocuments = new Map(f.scannedDocuments!);
     this.analyzedDocuments = new Map(f.analyzedDocuments!);
     this.dependencyGraph = newDependencyGraph || new DependencyGraph();
@@ -83,6 +86,7 @@ export class AnalysisCache {
       newCache.dependenciesScannedPromises.delete(path);
       newCache.scannedDocuments.delete(path);
       newCache.analyzedDocuments.delete(path);
+      newCache.failedDocuments.delete(path);
 
       // Analyzed documents need to be treated more carefully, because they have
       // relationships with other documents. So first we remove all documents

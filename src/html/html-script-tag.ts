@@ -24,7 +24,7 @@ export class ScriptTagImport extends Import { type: 'html-script'; }
 
 export class ScannedScriptTagImport extends ScannedImport {
   resolve(document: Document): ScriptTagImport|undefined {
-    if (!document.analyzer.canResolveUrl(this.url)) {
+    if (!document._analysisContext.canResolveUrl(this.url)) {
       return;
     }
 
@@ -37,10 +37,14 @@ export class ScannedScriptTagImport extends ScannedImport {
     // A better design might be to have the import itself be in charge of
     // producing document objects. This will fit better with JS modules, where
     // the type attribute drives how the document is parsed.
+    //
+    // See https://github.com/Polymer/polymer-analyzer/issues/615
 
-    const scannedDocument = document.analyzer._getScannedDocument(this.url);
+    const scannedDocument =
+        document._analysisContext._getScannedDocument(this.url);
     if (scannedDocument) {
-      const importedDocument = new Document(scannedDocument, document.analyzer);
+      const importedDocument =
+          new Document(scannedDocument, document._analysisContext);
       importedDocument._addFeature(document);
       importedDocument.resolve();
       return new ScriptTagImport(
@@ -54,7 +58,7 @@ export class ScannedScriptTagImport extends ScannedImport {
           false);
     } else {
       // not found or syntax error
-      const error = this.error ? (this.error.message || this.error) : '';
+      const error = (this.error ? (this.error.message || this.error) : '');
       document.warnings.push({
         code: 'could-not-load',
         message: `Unable to load import: ${error}`,

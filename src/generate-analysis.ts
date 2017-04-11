@@ -19,10 +19,10 @@ import * as pathLib from 'path';
 import {Analysis, Attribute, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Property, SourceRange} from './analysis-format';
 import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
+import {Analysis as AnalysisResult} from './model/analysis';
 import {Document} from './model/document';
 import {Feature} from './model/feature';
 import {Attribute as ResolvedAttribute, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
-import {Package} from './model/package';
 import {Behavior as ResolvedPolymerBehavior} from './polymer/behavior';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
@@ -38,7 +38,8 @@ interface Members {
 }
 
 export function generateAnalysis(
-    input: Package|Document[], packagePath: string, filter?: Filter): Analysis {
+    input: AnalysisResult|Document[], packagePath: string, filter?: Filter):
+    Analysis {
   const _filter = filter || ((_: Feature) => true);
 
   let members: Members;

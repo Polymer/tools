@@ -16,9 +16,10 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {Analysis} from '../analysis-format';
 import {Analyzer} from '../analyzer';
 import {generateAnalysis, validateAnalysis, ValidationError} from '../generate-analysis';
-import {Document} from '../model/document';
+import {Analysis as AnalysisResult} from '../model/analysis';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 
@@ -29,7 +30,7 @@ const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 
 
-suite('generate-elements', () => {
+suite('generate-analysis', () => {
 
   suite('generateAnalysisMetadata', () => {
 
@@ -72,13 +73,15 @@ suite('generate-elements', () => {
                 generateAnalysis(documents, renormedPackagePath);
             validateAnalysis(analyzedPackages);
 
+            const golden: Analysis =
+                JSON.parse(fs.readFileSync(pathToGolden, 'utf-8'));
+
             try {
+              const shortPath = path.relative(__dirname, pathToGolden);
               assert.deepEqual(
                   analyzedPackages,
-                  JSON.parse(fs.readFileSync(pathToGolden, 'utf-8')),
-                  `Generated form of ${
-                                       path.relative(__dirname, pathToGolden)
-                                     } ` +
+                  golden,
+                  `Generated form of ${shortPath} ` +
                       `differs from the golden at that path`);
             } catch (e) {
               console.log(
@@ -194,7 +197,7 @@ function* walkRecursively(dir: string): Iterable<string> {
   }
 }
 
-async function analyzeDir(baseDir: string): Promise<Document[]> {
+async function analyzeDir(baseDir: string): Promise<AnalysisResult> {
   const analyzer = new Analyzer({
     urlLoader: new FSUrlLoader(baseDir),
     urlResolver: new PackageUrlResolver(),
@@ -202,6 +205,7 @@ async function analyzeDir(baseDir: string): Promise<Document[]> {
   const allFilenames = Array.from(walkRecursively(baseDir));
   const htmlOrJsFilenames =
       allFilenames.filter((f) => f.endsWith('.html') || f.endsWith('.js'));
-  return Promise.all(htmlOrJsFilenames.map(
-      (filename) => analyzer.analyze(path.relative(baseDir, filename))));
+  const filePaths =
+      htmlOrJsFilenames.map((filename) => path.relative(baseDir, filename));
+  return analyzer.analyze(filePaths);
 }

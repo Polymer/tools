@@ -1,7 +1,7 @@
 /**
  * @namespace
  */
-DynamicNamespace['ArrayNotation'] = {
+DynamicNamespace['InferredComputedProperty'] = {
   foo: 'bar'
 };
 

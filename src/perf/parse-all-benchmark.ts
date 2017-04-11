@@ -84,8 +84,8 @@ async function measure() {
   const measurements = [];
   for (let i = 0; i < 10; i++) {
     const before = now();
-    analyzer.filesChanged(['ephemeral.html']);
-    document = await analyzer.analyze('ephemeral.html');
+    await analyzer.filesChanged(['ephemeral.html']);
+    document = await analyzer.analyze(['ephemeral.html']);
     measurements.push(now() - before);
   }
 
@@ -99,8 +99,8 @@ async function measure() {
       `${((now() - start) / 1000).toFixed(2)} seconds total elapsed time`);
 
   for (let i = 0; i < 100; i++) {
-    analyzer.filesChanged(['ephemeral.html']);
-    await analyzer.analyze('ephemeral.html');
+    await analyzer.filesChanged(['ephemeral.html']);
+    await analyzer.analyze(['ephemeral.html']);
   }
 
   global.gc();

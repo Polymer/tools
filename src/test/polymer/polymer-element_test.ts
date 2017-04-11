@@ -17,6 +17,7 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
+import {Document} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
 import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
 import {Polymer2MixinScanner} from '../../polymer/polymer2-mixin-scanner';
@@ -37,7 +38,8 @@ suite('PolymerElement', () => {
   });
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
-    const document = await analyzer.analyze(filename);
+    const document =
+        (await analyzer.analyze([filename])).getDocument(filename) as Document;
     const elements = document.getByKind('polymer-element');
     return elements;
   };

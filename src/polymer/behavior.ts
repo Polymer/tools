@@ -26,6 +26,7 @@ import {getBehaviors, Options as ElementOptions, PolymerElement, ScannedPolymerE
  *     behaviors: [Polymer.SomeBehavior]
  *                 ^^^^^^^^^^^^^^^^^^^^
  *   });
+ * TODO(justinfagnani): replace with Reference
  */
 export interface ScannedBehaviorAssignment {
   name: string;

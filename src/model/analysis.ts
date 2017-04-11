@@ -17,7 +17,15 @@ import {Feature} from './feature';
 import {BaseQueryOptions, Queryable} from './queryable';
 import {Warning} from './warning';
 
-export type QueryOptions = object & BaseQueryOptions;
+export type QueryOptions = object & BaseQueryOptions & {
+  /**
+   * When querying an AnalysisResult, results from multiple
+   * documents may show up, so disallowing following imports
+   * probably doesn't make sense. So we allow specifying imported,
+   * but it must be true.
+   */
+  imported?: true;
+};
 
 // A regexp that matches paths to external code.
 // TODO(rictic): Make this extensible (polymer.json?).
@@ -33,17 +41,21 @@ const MATCHES_EXTERNAL = /(^|\/)(bower_components|node_modules|build($|\/))/;
  * well as from external dependencies that are transitively imported by
  * documents in the package.
  */
-export class Package implements Queryable {
-  private _documents: Set<Document>;
-  private _toplevelWarnings: Warning[];
+export class Analysis implements Queryable {
+  private _results: Map<string, Document|Warning>;
+  private _searchRoots: Set<Document>;
 
   static isExternal(path: string) {
     return MATCHES_EXTERNAL.test(path);
   }
 
-  constructor(documents: Iterable<Document>, warnings: Warning[]) {
+  constructor(results: Map<string, Document|Warning>) {
+    workAroundDuplicateJsScriptsBecauseOfHtmlScriptTags(results);
+
+    this._results = results;
+    const documents = Array.from(results.values())
+                          .filter((r) => r instanceof Document) as Document[];
     const potentialRoots = new Set(documents);
-    this._toplevelWarnings = warnings;
 
     // We trim down the set of documents as a performance optimization. We only
     // need a set of documents such that all other documents we're interested in
@@ -58,7 +70,21 @@ export class Package implements Queryable {
         }
       }
     }
-    this._documents = potentialRoots;
+    this._searchRoots = potentialRoots;
+  }
+
+  getDocument(url: string): Document|Warning|undefined {
+    const result = this._results.get(url);
+    if (result != null) {
+      return result;
+    }
+    const documents =
+        Array.from(this.getById('document', url, {externalPackages: true}))
+            .filter((d) => !d.isInline);
+    if (documents.length !== 1) {
+      return undefined;
+    }
+    return documents[0]!;
   }
 
   getByKind<K extends keyof FeatureKinds>(kind: K, options?: QueryOptions):
@@ -67,7 +93,7 @@ export class Package implements Queryable {
   getByKind(kind: string, options?: QueryOptions): Set<Feature> {
     const result = new Set();
     const docQueryOptions = this._getDocumentQueryOptions(options);
-    for (const doc of this._documents) {
+    for (const doc of this._searchRoots) {
       addAll(result, doc.getByKind(kind, docQueryOptions));
     }
     return result;
@@ -82,7 +108,7 @@ export class Package implements Queryable {
       Set<Feature> {
     const result = new Set();
     const docQueryOptions = this._getDocumentQueryOptions(options);
-    for (const doc of this._documents) {
+    for (const doc of this._searchRoots) {
       addAll(result, doc.getById(kind, identifier, docQueryOptions));
     }
     return result;
@@ -110,7 +136,7 @@ export class Package implements Queryable {
   getFeatures(options?: QueryOptions): Set<Feature> {
     const result = new Set();
     const docQueryOptions = this._getDocumentQueryOptions(options);
-    for (const doc of this._documents) {
+    for (const doc of this._searchRoots) {
       addAll(result, doc.getFeatures(docQueryOptions));
     }
     return result;
@@ -120,9 +146,11 @@ export class Package implements Queryable {
    * Get all warnings in the project.
    */
   getWarnings(options?: QueryOptions): Warning[] {
-    const result = new Set(this._toplevelWarnings);
+    const warnings = Array.from(this._results.values())
+                         .filter((r) => !(r instanceof Document)) as Warning[];
+    const result = new Set(warnings);
     const docQueryOptions = this._getDocumentQueryOptions(options);
-    for (const doc of this._documents) {
+    for (const doc of this._searchRoots) {
       addAll(result, new Set(doc.getWarnings(docQueryOptions)));
     }
     return Array.from(result);
@@ -139,9 +167,51 @@ export class Package implements Queryable {
   }
 }
 
+// TODO(justinfagnani): move to utils
 function addAll<T>(set1: Set<T>, set2: Set<T>): Set<T> {
   for (const val of set2) {
     set1.add(val);
   }
   return set1;
+}
+
+/**
+ * So, we have this really terrible hack, whereby we generate a new Document for
+ * a js file when it is referenced in an external script tag in an HTML
+ * document. We do this so that we can inject an artificial import of the HTML
+ * document into the js document, so that the HTML document's dependencies are
+ * also dependencies of the js document.
+ *
+ * This works, but we want to eliminate these duplicate JS Documents from the
+ * Analysis before the user sees them.
+ *
+ * https://github.com/Polymer/polymer-analyzer/issues/615 tracks a better
+ * solution for this issue
+ */
+function workAroundDuplicateJsScriptsBecauseOfHtmlScriptTags(
+    results: Map<string, Document|Warning>) {
+  const documents = Array.from(results.values())
+                        .filter((r) => r instanceof Document) as Document[];
+  // TODO(rictic): handle JS imported via script src from HTML better than
+  //     this.
+  const potentialDuplicates =
+      new Set(documents.filter((r) => r.kinds.has('js-document')));
+  const canonicalOverrides = new Set<Document>();
+  for (const doc of documents) {
+    if (potentialDuplicates.has(doc)) {
+      continue;
+    }
+    for (const potentialDupe of potentialDuplicates) {
+      for (const potentialCanonicalDoc of doc.getById(
+               'js-document', potentialDupe.url, {imported: true})) {
+        if (!potentialCanonicalDoc.isInline) {
+          canonicalOverrides.add(potentialCanonicalDoc);
+        }
+      }
+    }
+  }
+
+  for (const canonicalDoc of canonicalOverrides) {
+    results.set(canonicalDoc.url, canonicalDoc);
+  }
 }

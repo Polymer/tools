@@ -67,32 +67,32 @@ suite('DependencyGraph', () => {
           {urlLoader: new FSUrlLoader(path.join(__dirname, '..', 'static'))});
     });
 
-    function assertImportersOf(path: string, expectedDependants: string[]) {
-      assertStringSetsEqual(
-          analyzer['_context']['_cache']['dependencyGraph'].getAllDependantsOf(
-              path),
-          expectedDependants);
-    }
+    async function assertImportersOf(
+        path: string, expectedDependants: string[]) {
+      const graph = await getLatestDependencyGraph(analyzer);
+      assertStringSetsEqual(graph.getAllDependantsOf(path), expectedDependants);
+    };
 
     test('works with a basic document with no dependencies', async() => {
-      await analyzer.analyze('dependencies/leaf.html');
-      assertImportersOf('dependencies/leaf.html', []);
-      const graph = analyzer['_context']['_cache'].dependencyGraph;
+      await analyzer.analyze(['dependencies/leaf.html']);
+      await assertImportersOf('dependencies/leaf.html', []);
+      const graph = await getLatestDependencyGraph(analyzer);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
     });
 
     test('works with a simple tree of dependencies', async() => {
-      await analyzer.analyze('dependencies/root.html');
-      assertImportersOf('dependencies/root.html', []);
+      await analyzer.analyze(['dependencies/root.html']);
+      await assertImportersOf('dependencies/root.html', []);
 
-      assertImportersOf('dependencies/leaf.html', ['dependencies/root.html']);
-      assertImportersOf('dependencies/subfolder/subfolder-sibling.html', [
+      await assertImportersOf(
+          'dependencies/leaf.html', ['dependencies/root.html']);
+      await assertImportersOf('dependencies/subfolder/subfolder-sibling.html', [
         'dependencies/subfolder/in-folder.html',
         'dependencies/inline-and-imports.html',
         'dependencies/root.html'
       ]);
-      const graph = analyzer['_context']['_cache'].dependencyGraph;
+      const graph = await getLatestDependencyGraph(analyzer);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
     });
@@ -223,4 +223,9 @@ function assertIsValidGraph(graph: DependencyGraph) {
           `${dependant} should know about its dependency ${record.url}`);
     }
   }
+}
+
+async function getLatestDependencyGraph(analyzer: Analyzer) {
+  const context = await analyzer['_analysisComplete'];
+  return context['_cache'].dependencyGraph;
 }

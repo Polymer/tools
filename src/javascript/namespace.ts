@@ -15,7 +15,7 @@
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, Feature, Resolvable, Severity, SourceRange, Warning} from '../model/model';
+import {Document, Feature, Resolvable, SourceRange, Warning} from '../model/model';
 
 /**
  * The metadata for a JavaScript namespace.
@@ -41,18 +41,7 @@ export class ScannedNamespace implements Resolvable {
     this.warnings = [];
   }
 
-  resolve(document: Document) {
-    const foundNamespaces = document.getById(
-        'namespace', this.name, {imported: true, externalPackages: true});
-    if (foundNamespaces.size > 0) {
-      document.warnings.push({
-        message: `Found more than one namespace named ${this.name}.`,
-        severity: Severity.WARNING,
-        code: 'multiple-javascript-namespaces',
-        sourceRange: this.sourceRange
-      });
-      return;
-    }
+  resolve(_document: Document) {
     return new Namespace(this);
   }
 }

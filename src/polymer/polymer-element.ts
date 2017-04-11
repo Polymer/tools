@@ -413,11 +413,8 @@ function applySuperClass(
       if (!superElement.kinds.has('polymer-element')) {
         element.warnings.push({
           message:
-              `A Polymer element can\'t extend from a non-Polymer element: ${
-                                                                             scannedElement
-                                                                                 .superClass
-                                                                                 .identifier
-                                                                           }`,
+              `A Polymer element can\'t extend from a non-Polymer element: ` +
+              `${scannedElement.superClass.identifier}`,
           severity: Severity.ERROR,
           code: 'unknown-superclass',
           sourceRange: scannedElement.superClass.sourceRange!,

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, FSUrlLoader, PackageUrlResolver, Severity, Warning, WarningCarryingException, WarningPrinter} from '../index';
+import {Analyzer, Document, FSUrlLoader, PackageUrlResolver, Severity, Warning, WarningPrinter} from '../index';
 
 /**
  * A basic demo of a linter CLI using the Analyzer API.
@@ -34,14 +34,11 @@ async function main() {
 
 async function getWarnings(analyzer: Analyzer, localPath: string):
     Promise<Warning[]> {
-      try {
-        const document = await analyzer.analyze(localPath);
-        return document.getWarnings({imported: false});
-      } catch (e) {
-        if (e instanceof WarningCarryingException) {
-          return [e.warning];
-        }
-        throw e;
+      const result = (await analyzer.analyze([localPath]))[0];
+      if (result instanceof Document) {
+        return result.getWarnings({imported: false});
+      } else {
+        return [result];
       }
     }
 

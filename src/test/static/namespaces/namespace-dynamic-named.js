@@ -1,13 +1,13 @@
 /**
- * @namespace DynamicNamespace.ArrayNotation
+ * @namespace DynamicNamespace.ComputedProperty
  */
-DynamicNamespace['ArrayNotation'] = {
+DynamicNamespace['ComputedProperty'] = {
   foo: 'bar'
 };
 
 var baz = 'abc';
 /**
- * @namespace DynamicNamespace.DynamicArrayNotation
+ * @namespace DynamicNamespace.UnanalyzableComputedProperty
  */
 DynamicNamespace[baz] = {
   foo: 'bar'

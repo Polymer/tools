@@ -21,11 +21,12 @@ import {HtmlImportScanner} from '../html/html-import-scanner';
 import {HtmlParser} from '../html/html-parser';
 import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
+import {Severity} from '../index';
 import {FunctionScanner} from '../javascript/function-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
-import {Document, InlineDocInfo, LocationOffset, Package, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument, Severity, Warning, WarningCarryingException} from '../model/model';
+import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument, Warning, WarningCarryingException} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {BehaviorScanner} from '../polymer/behavior-scanner';
@@ -60,7 +61,7 @@ import {LanguageAnalyzer} from './language-analyzer';
  * appear to be statefull with respect to file updates.
  */
 export class AnalysisContext {
-  private _parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
+  readonly parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
     ['ts', new TypeScriptPreparser()],
@@ -68,21 +69,30 @@ export class AnalysisContext {
     ['json', new JsonParser()],
   ]);
 
-  private _languageAnalyzers = new Map<string, LanguageAnalyzer<any>>([
+  private readonly _languageAnalyzers = new Map<string, LanguageAnalyzer<any>>([
     ['ts', new TypeScriptAnalyzer(this)],
   ]);
 
   /** A map from import url to urls that document lazily depends on. */
-  private _lazyEdges: LazyEdgeMap|undefined;
+  private readonly _lazyEdges: LazyEdgeMap|undefined;
 
-  private _scanners: ScannerTable;
+  private readonly _scanners: ScannerTable;
 
-  private _loader: UrlLoader;
-  private _resolver: UrlResolver;
+  readonly loader: UrlLoader;
+  readonly resolver: UrlResolver;
 
-  private _cache = new AnalysisCache();
+  private readonly _cache: AnalysisCache;
 
-  private _generation = 0;
+  /** Incremented each time we fork. Useful for debugging. */
+  private readonly _generation: number;
+
+  /**
+   * Resolves when the previous analysis has completed.
+   *
+   * Used to serialize analysis requests, not for correctness surprisingly
+   * enough, but for performance, so that we can reuse AnalysisResults.
+   */
+  private _analysisComplete: Promise<void>;
 
   private static _getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
     return new Map<string, Scanner<any, any, any>[]>([
@@ -112,13 +122,15 @@ export class AnalysisContext {
     ]);
   }
 
-  constructor(options: Options) {
-    this._loader = options.urlLoader;
-    this._resolver = options.urlResolver || new PackageUrlResolver();
-    this._parsers = options.parsers || this._parsers;
+  constructor(options: Options, cache?: AnalysisCache, generation?: number) {
+    this.loader = options.urlLoader;
+    this.resolver = options.urlResolver || new PackageUrlResolver();
+    this.parsers = options.parsers || this.parsers;
     this._lazyEdges = options.lazyEdges;
     this._scanners = options.scanners ||
         AnalysisContext._getDefaultScanners(this._lazyEdges);
+    this._cache = cache || new AnalysisCache();
+    this._generation = generation || 0;
   }
 
   /**
@@ -133,60 +145,62 @@ export class AnalysisContext {
   /**
    * Implements Analyzer#analyze, see its docs.
    */
-  async analyze(url: string): Promise<Document> {
-    const resolvedUrl = this.resolveUrl(url);
-    return this._cache.analyzedDocumentPromises.getOrCompute(
-        resolvedUrl, async() => {
-          const scannedDocument = await this.scan(resolvedUrl);
-          const document = this._getDocument(scannedDocument.url);
-          return document;
-        });
+  async analyze(urls: string[]): Promise<AnalysisContext> {
+    const resolvedUrls = urls.map((url) => this.resolveUrl(url));
+
+    // 1. Await current analysis if there is one, so we can check to see if has
+    // all of the requested URLs.
+    await this._analysisComplete;
+
+    // 2. Check to see if we have all of the requested documents
+    const hasAllDocuments = resolvedUrls.every(
+        (url) => this._cache.analyzedDocuments.get(url) != null);
+    if (hasAllDocuments) {
+      // all requested URLs are present, return the existing context
+      return this;
+    }
+
+    // 3. Some URLs are new, so fork, but don't invalidate anything
+    const newCache = this._cache.invalidate([]);
+    const newContext = this._fork(newCache);
+    return newContext._analyze(resolvedUrls);
   }
 
-  private async _analyzeOrWarning(url: string): Promise<Document|Warning> {
-    try {
-      return await this.analyze(url);
-    } catch (e) {
-      if (e instanceof WarningCarryingException) {
-        return e.warning;
-      }
-      return {
-        sourceRange: {
-          file: this.resolveUrl(url),
-          start: {line: 0, column: 0},
-          end: {line: 0, column: 0}
-        },
-        code: 'unable-to-analyze',
-        message: `Unable to analyze file: ${e && e.message || e}`,
-        severity: Severity.ERROR
-      };
-    }
-  }
-
-  async analyzePackage(): Promise<Package> {
-    if (!this._loader.readDirectory) {
-      throw new Error(
-          `This analyzer doesn't support analyzerPackage, ` +
-          `its urlLoader can't list the files in a directory.`);
-    }
-    const allFiles = await this._loader.readDirectory('', true);
-    const filesInPackage = allFiles.filter((file) => !Package.isExternal(file));
-
-    const extensions = new Set(this._parsers.keys());
-    const filesWithParsers = filesInPackage.filter(
-        (fn) => extensions.has(path.extname(fn).substring(1)));
-    const documentsOrWarnings = await Promise.all(
-        filesWithParsers.map((f) => this._analyzeOrWarning(f)));
-    const documents = [];
-    const warnings = [];
-    for (const docOrWarning of documentsOrWarnings) {
-      if (docOrWarning instanceof Document) {
-        documents.push(docOrWarning);
-      } else {
-        warnings.push(docOrWarning);
-      }
-    }
-    return new Package(documents, warnings);
+  /**
+   * Internal analysis method called when we know we need to fork.
+   */
+  private async _analyze(resolvedUrls: string[]): Promise<AnalysisContext> {
+    const analysisComplete = (async() => {
+      // 1. Load and scan all root documents
+      const scannedDocumentsOrWarnings =
+          await Promise.all(resolvedUrls.map(async(url) => {
+            try {
+              const scannedResult = await this.scan(url);
+              this._cache.failedDocuments.delete(url);
+              return scannedResult;
+            } catch (e) {
+              if (e instanceof WarningCarryingException) {
+                this._cache.failedDocuments.set(url, e.warning);
+              }
+              // No need for fallback warning, one will be produced in
+              // getDocument
+            }
+          }));
+      const scannedDocuments = scannedDocumentsOrWarnings.filter(
+          (d) => d != null) as ScannedDocument[];
+      // 2. Run per-document resolution
+      const documents = scannedDocuments.map((d) => this.getDocument(d.url));
+      // TODO(justinfagnani): instead of the above steps, do:
+      // 1. Load and run prescanners
+      // 2. Run global analyzers (_languageAnalyzers now, but it doesn't need to
+      // be
+      //    separated by file type)
+      // 3. Run per-document scanners and resolvers
+      return documents;
+    })();
+    this._analysisComplete = analysisComplete.then((_) => {});
+    await this._analysisComplete;
+    return this;
   }
 
   /**
@@ -197,15 +211,28 @@ export class AnalysisContext {
    * the scanned document cache is used and a new analyzed Document is returned.
    * If a file is in neither cache, it returns `undefined`.
    */
-  _getDocument(url: string): Document|undefined {
+  getDocument(url: string): Document|Warning {
     const resolvedUrl = this.resolveUrl(url);
+    const cachedWarning = this._cache.failedDocuments.get(resolvedUrl);
+    if (cachedWarning) {
+      return cachedWarning;
+    }
     const cachedResult = this._cache.analyzedDocuments.get(resolvedUrl);
     if (cachedResult) {
       return cachedResult;
     }
     const scannedDocument = this._cache.scannedDocuments.get(resolvedUrl);
     if (!scannedDocument) {
-      return;
+      return <Warning>{
+        sourceRange: {
+          file: this.resolveUrl(url),
+          start: {line: 0, column: 0},
+          end: {line: 0, column: 0}
+        },
+        code: 'unable-to-analyze',
+        message: `Document not found: ${url}`,
+        severity: Severity.ERROR
+      };
     }
 
     const extension = path.extname(resolvedUrl).substring(1);
@@ -254,20 +281,19 @@ export class AnalysisContext {
   _fork(cache?: AnalysisCache, options?: ForkOptions): AnalysisContext {
     const contextOptions: Options = {
       lazyEdges: this._lazyEdges,
-      parsers: this._parsers,
+      parsers: this.parsers,
       scanners: this._scanners,
-      urlLoader: this._loader,
-      urlResolver: this._resolver,
+      urlLoader: this.loader,
+      urlResolver: this.resolver,
     };
     if (options && options.urlLoader) {
       contextOptions.urlLoader = options.urlLoader;
     }
-    const copy = new AnalysisContext(contextOptions);
     if (!cache) {
       cache = this._cache.invalidate([]);
     }
-    copy._cache = cache;
-    copy._generation = this._generation + 1;
+    const copy =
+        new AnalysisContext(contextOptions, cache, this._generation + 1);
     return copy;
   }
 
@@ -403,7 +429,7 @@ export class AnalysisContext {
    * resolved URLs.
    */
   canLoad(resolvedUrl: string): boolean {
-    return this._loader.canLoad(resolvedUrl);
+    return this.loader.canLoad(resolvedUrl);
   }
 
   /**
@@ -419,7 +445,7 @@ export class AnalysisContext {
     if (!this.canLoad(resolvedUrl)) {
       throw new Error(`Can't load URL: ${resolvedUrl}`);
     }
-    return await this._loader.load(resolvedUrl);
+    return await this.loader.load(resolvedUrl);
   }
 
   /**
@@ -441,7 +467,7 @@ export class AnalysisContext {
   private _parseContents(
       type: string, contents: string, url: string,
       inlineInfo?: InlineDocInfo<any>): ParsedDocument<any, any> {
-    const parser = this._parsers.get(type);
+    const parser = this.parsers.get(type);
     if (parser == null) {
       throw new NoKnownParserError(`No parser for for file type ${type}`);
     }
@@ -459,7 +485,7 @@ export class AnalysisContext {
    * Returns true if the url given is resovable by the Analyzer's `UrlResolver`.
    */
   canResolveUrl(url: string): boolean {
-    return this._resolver.canResolve(url);
+    return this.resolver.canResolve(url);
   }
 
   /**
@@ -467,6 +493,6 @@ export class AnalysisContext {
    * URL if it can not be resolved.
    */
   resolveUrl(url: string): string {
-    return this._resolver.canResolve(url) ? this._resolver.resolve(url) : url;
+    return this.resolver.canResolve(url) ? this.resolver.resolve(url) : url;
   }
 }

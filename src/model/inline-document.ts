@@ -76,7 +76,7 @@ export class ScannedInlineDocument implements ScannedFeature, Resolvable {
 
 export class InlineDocument extends Document {
   constructor(base: ScannedDocument, containerDocument: Document) {
-    super(base, containerDocument.analyzer);
+    super(base, containerDocument._analysisContext);
     this.kinds.add('inline-document');
     this._addFeature(containerDocument);
   }

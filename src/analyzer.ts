@@ -14,8 +14,11 @@
 
 /// <reference path="../custom_typings/main.d.ts" />
 
+import * as path from 'path';
+
 import {AnalysisContext} from './core/analysis-context';
-import {Document, Package} from './model/model';
+import {Warning} from './index';
+import {Analysis, Document} from './model/model';
 import {Parser} from './parser/parser';
 import {Scanner} from './scanning/scanner';
 import {UrlLoader} from './url-loader/url-loader';
@@ -53,25 +56,64 @@ export type LazyEdgeMap = Map<string, string[]>;
  * which do the actual work of understanding different file types.
  */
 export class Analyzer {
-  private _context: AnalysisContext;
+  private _analysisComplete: Promise<AnalysisContext>;
+  private readonly _urlResolver: UrlResolver;
+  private readonly _urlLoader: UrlLoader;
+
   constructor(options: Options|AnalysisContext) {
-    if (options instanceof AnalysisContext) {
-      this._context = options;
-    } else {
-      this._context = new AnalysisContext(options);
-    }
+    const context = (options instanceof AnalysisContext) ?
+        options :
+        new AnalysisContext(options);
+    this._urlResolver = context.resolver;
+    this._urlLoader = context.loader;
+    this._analysisComplete = Promise.resolve(context);
   }
 
   /**
    * Loads, parses and analyzes the root document of a dependency graph and its
    * transitive dependencies.
    */
-  async analyze(url: string): Promise<Document> {
-    return this._context.analyze(url);
+  async analyze(urls: string[]): Promise<Analysis> {
+    const previousAnalysisComplete = this._analysisComplete;
+    this._analysisComplete = (async() => {
+      const previousContext = await previousAnalysisComplete;
+      return await previousContext.analyze(urls);
+    })();
+    const context = await this._analysisComplete;
+    const results = new Map(urls.map(
+        (url) => [url, context.getDocument(url)] as
+            [string, Document | Warning]));
+    return new Analysis(results);
   }
 
-  async analyzePackage(): Promise<Package> {
-    return this._context.analyzePackage();
+  async analyzePackage(): Promise<Analysis> {
+    const previousAnalysisComplete = this._analysisComplete;
+    let _package: Analysis|null = null;
+    this._analysisComplete = (async() => {
+      const previousContext = await previousAnalysisComplete;
+      if (!previousContext.loader.readDirectory) {
+        throw new Error(
+            `This analyzer doesn't support analyzerPackage, ` +
+            `the urlLoader can't list the files in a directory.`);
+      }
+      const allFiles = await previousContext.loader.readDirectory('', true);
+      // TODO(rictic): parameterize this, perhaps with polymer.json.
+      const filesInPackage =
+          allFiles.filter((file) => !Analysis.isExternal(file));
+      const extensions = new Set(previousContext.parsers.keys());
+      const filesWithParsers = filesInPackage.filter(
+          (fn) => extensions.has(path.extname(fn).substring(1)));
+
+      const newContext = await previousContext.analyze(filesWithParsers);
+
+      const documentsOrWarnings = new Map(filesWithParsers.map(
+          (url) => [url, newContext.getDocument(url)] as
+              [string, Document | Warning]));
+      _package = new Analysis(documentsOrWarnings);
+      return newContext;
+    })();
+    await this._analysisComplete;
+    return _package!;
   }
 
   /**
@@ -83,8 +125,13 @@ export class Analyzer {
    *
    * @param urls The urls of files which may have changed.
    */
-  filesChanged(urls: string[]) {
-    this._context = this._context.filesChanged(urls);
+  async filesChanged(urls: string[]): Promise<void> {
+    const previousAnalysisComplete = this._analysisComplete;
+    this._analysisComplete = (async() => {
+      const previousContext = await previousAnalysisComplete;
+      return await previousContext.filesChanged(urls);
+    })();
+    await this._analysisComplete;
   }
 
   /**
@@ -94,8 +141,13 @@ export class Analyzer {
    * files that changed rather than clearing caches like this. Caching provides
    * large performance gains.
    */
-  clearCaches(): void {
-    this._context = this._context.clearCaches();
+  async clearCaches(): Promise<void> {
+    const previousAnalysisComplete = this._analysisComplete;
+    this._analysisComplete = (async() => {
+      const previousContext = await previousAnalysisComplete;
+      return await previousContext.clearCaches();
+    })();
+    await this._analysisComplete;
   }
 
   /**
@@ -111,8 +163,10 @@ export class Analyzer {
    *     considered a breaking change, so check for its existence before calling
    *     it.
    */
-  _fork(options?: ForkOptions): Analyzer {
-    const context = this._context._fork(undefined, options);
+  async _fork(options?: ForkOptions): Promise<Analyzer> {
+    const context = options ?
+        (await this._analysisComplete)._fork(undefined, options) :
+        (await this._analysisComplete);
     return new Analyzer(context);
   }
 
@@ -122,7 +176,7 @@ export class Analyzer {
    * resolved URLs.
    */
   canLoad(resolvedUrl: string): boolean {
-    return this._context.canLoad(resolvedUrl);
+    return this._urlLoader.canLoad(resolvedUrl);
   }
 
   /**
@@ -130,21 +184,21 @@ export class Analyzer {
    * defined by `UrlLoader` and should only be used to attempt to load resolved
    * URLs.
    */
-  async load(resolvedUrl: string): Promise<string> {
-    return this._context.load(resolvedUrl);
+  async load(resolvedUrl: string) {
+    return (await this._analysisComplete).load(resolvedUrl);
   }
 
   /**
    * Returns `true` if the given `url` can be resolved.
    */
   canResolveUrl(url: string): boolean {
-    return this._context.canResolveUrl(url);
+    return this._urlResolver.canResolve(url);
   }
 
   /**
    * Resoves `url` to a new location.
    */
   resolveUrl(url: string): string {
-    return this._context.resolveUrl(url);
+    return this._urlResolver.resolve(url);
   }
 }
