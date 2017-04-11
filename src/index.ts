@@ -65,6 +65,7 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
 export interface ProjectBuildOptions {
   name?: string;
   addServiceWorker?: boolean;
+  addPushManifest?: boolean;
   swPrecacheConfig?: string;
   insertPrefetchLinks?: boolean;
   bundle?: boolean;
