@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [BREAKING] Analyzer.analyze() now must be passed an array of urls instead of a single url and it returns an Analysis. Use Analysis.getDocument(url) to get a Document from an Analysis.
 * Added `canLoad` method to `Analyzer`.
 * Handle undefined source ranges more gracefully in WarningPrinter.
+* [polymer] Negative number literals are allowed in databindings.
 
 ## [2.0.0-alpha.36] - 2017-04-07
 

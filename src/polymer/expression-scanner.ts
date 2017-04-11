@@ -129,12 +129,7 @@ export abstract class DatabindingExpression {
     let expression = expressionStatement.expression;
 
     this._validateLimitation(expression, limitation);
-    if (expression.type === 'UnaryExpression') {
-      if (expression.operator !== '!') {
-        this.warnings.push(this._validationWarning(
-            'Only the logical not (!) operator is supported.', expression));
-        return;
-      }
+    if (expression.type === 'UnaryExpression' && expression.operator === '!') {
       expression = expression.argument;
     }
     this._extractAndValidateSubExpression(expression, true);
@@ -164,7 +159,18 @@ export abstract class DatabindingExpression {
   }
 
   private _extractAndValidateSubExpression(
-      expression: estree.Node, callAllowed: boolean) {
+      expression: estree.Node, callAllowed: boolean): void {
+    if (expression.type === 'UnaryExpression' && expression.operator === '-') {
+      if (expression.argument.type !== 'Literal' ||
+          typeof expression.argument.value !== 'number') {
+        this.warnings.push(this._validationWarning(
+            'The - operator is only supported for writing negative numbers.',
+            expression));
+        return;
+      }
+      this._extractAndValidateSubExpression(expression.argument, false);
+      return;
+    }
     if (expression.type === 'Literal') {
       return;
     }

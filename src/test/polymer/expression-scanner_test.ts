@@ -32,7 +32,7 @@ suite('ExpressionScanner', () => {
             <template is="dom-if">
               <div id="[[bar]]"></div>
             </template>
-            <div id="{{bada(wing, daba.boom, 10)}}"></div>
+            <div id="{{bada(wing, daba.boom, 10, -20)}}"></div>
           </template>
           <script>
             Polymer({
@@ -71,8 +71,8 @@ suite('ExpressionScanner', () => {
             <input value="{{val::changed}}">
                             ~~~~~~~~~~~~`,
             `
-            <div id="{{bada(wing, daba.boom, 10)}}"></div>
-                       ~~~~~~~~~~~~~~~~~~~~~~~~~`,
+            <div id="{{bada(wing, daba.boom, 10, -20)}}"></div>
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
             `
               <div id="[[bar]]"></div>
                          ~~~`,
@@ -84,7 +84,7 @@ suite('ExpressionScanner', () => {
           expressions.map((e) => e.direction), ['{', '{', '{', '[', '{']);
       assert.deepEqual(
           expressions.map((e) => e.expressionText),
-          ['foo', 'val', 'bada(wing, daba.boom, 10)', 'bar', 'baz']);
+          ['foo', 'val', 'bada(wing, daba.boom, 10, -20)', 'bar', 'baz']);
       assert.deepEqual(
           expressions.map((e) => e.eventName),
           [undefined, 'changed', undefined, undefined, undefined]);
