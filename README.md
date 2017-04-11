@@ -105,7 +105,7 @@ You can add splitters to any part of your build stream. We recommend using them 
 
 #### project.bundler()
 
-A stream that combines the files in your application to reduce the number of frontend requests needed. This can be a great way to [improve performance](https://developer.yahoo.com/performance/rules.html#num_http) when HTTP2/Push is not available.
+A stream that combines seperate files into code bundles based on your application's dependency graph. This can be a great way to [improve performance](https://developer.yahoo.com/performance/rules.html#num_http) by reducing the number of frontend requests needed.
 
 By default, the bundler will create one "shared-bundle.html" containing all shared dependencies. You can optimize even further by defining "fragments" in your project options. Fragments are lazy loaded parts of the application, typically views and other elements loaded on-demand. When fragments are defined, the bundler is able to create smaller bundles containing code that is only required for specific fragments.
 
@@ -120,7 +120,7 @@ mergeStream(project.sources(), project.dependencies())
 ```
 
 
-### Generating Service Workers
+### Generating a Service Worker
 
 #### generateServiceWorker()
 
@@ -157,6 +157,29 @@ addServiceWorker({
   buildRoot: 'build/',
   project: project,
 }).then(() => { // ...
+```
+
+
+### Generating an HTTP/2 Push Manifest
+
+`polymer-build` can automatically generate a [push manifest](https://github.com/GoogleChrome/http2-push-manifest) for your application. This JSON file can be read by any HTTP/2 push-enabled web server to more easily construct the appropriate `Link: <URL>; rel=preload; as=<TYPE>` headers(s) for HTTP/2 push/preload. Check out [http2push-gae](https://github.com/GoogleChrome/http2push-gae) for an example Google Apps Engine server that supports this.
+
+The generated push manifest describes the following behavior: Requesting the shell should push any shell dependencies as well. Requesting a fragment should push any dependencies of that fragment *that were not already pushed by the shell.* If no shell was defined for your build, `polymer-build` will use the application entrypoint URL instead (default: `index.html`).
+
+
+#### project.addPushManifest()
+
+This method will return a transform stream that injects a new push manifest into your build (default: `push-manifest.json`). The push manifest is based off the application import graph, so make sure that this stream is added after all changes to the application source code.
+
+It optionally takes a `filePath` argument (relative to your application root) to configure the name of the generated file.
+
+```js
+const gulp = require('gulp');
+const mergeStream = require('merge-stream');
+
+mergeStream(project.sources(), project.dependencies())
+  .pipe(project.addPushManifest())
+  .pipe(gulp.dest('build/'));
 ```
 
 

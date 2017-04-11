@@ -141,9 +141,9 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
  * the buildRoot & path (if provided) options.
  */
 export function addServiceWorker(options: AddServiceWorkerOptions):
-    Promise<{}> {
+    Promise<void> {
   return generateServiceWorker(options).then((fileContents: Buffer) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const serviceWorkerPath =
           path.join(options.buildRoot, options.path || 'service-worker.js');
       writeFile(serviceWorkerPath, fileContents, (err) => {

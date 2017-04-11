@@ -18,6 +18,7 @@ import {src as vinylSrc} from 'vinyl-fs';
 
 import {BuildAnalyzer} from './analyzer';
 import {BuildBundler} from './bundle';
+import {AddPushManifest} from './push-manifest';
 
 const logger = logging.getLogger('polymer-project');
 
@@ -87,5 +88,9 @@ export class PolymerProject {
     }
 
     return dependenciesStream;
+  }
+
+  addPushManifest(filePath?: string): NodeJS.ReadWriteStream {
+    return new AddPushManifest(this.config, filePath);
   }
 }
