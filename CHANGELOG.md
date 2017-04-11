@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * When directory paths don't end in `/`, redirect to the right path, not a
   filesystem path. https://github.com/Polymer/polyserve/issues/96
+* Require ES5 compilation for Edge < 40 (fixes #161).
 
 ## [0.16.0](https://github.com/PolymerLabs/polyserve/tree/v0.16.0) (2017-02-14)
 
