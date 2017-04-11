@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Added `canLoad` method to `Analyzer`.
+* Handle undefined source ranges more gracefully in WarningPrinter.
 
 ## [2.0.0-alpha.36] - 2017-04-07
 
