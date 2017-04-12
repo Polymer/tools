@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
-
 <!-- List New Changes Here -->
+
+## [1.0.0] - 2017-04-11
+
 * [Breaking] Remove Node v4 support: Node v4 is no longer in Active LTS, so as per the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) polymer-build will not support Node v4. Please update to Node v6 or later to continue using the latest verisons of Polymer tooling.
 * New Feature: add automatic [HTTP/2 push manifest](https://github.com/GoogleChrome/http2-push-manifest) generation for HTTP/2 Push-enabled servers.
 
