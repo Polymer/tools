@@ -24,3 +24,7 @@ const SubElement = Mixin(BaseElement);
 const SubElement2 = class extends Mixin
 (BaseElement) {
 }
+
+/**
+ * @polymerElement
+ * @mixes MyMixin */ window.MyElement = class extends MixedElement { }

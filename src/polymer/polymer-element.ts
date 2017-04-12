@@ -15,6 +15,7 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
+import * as jsdoc from '../javascript/jsdoc';
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Document, Element, ElementBase, LiteralValue, Method, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
@@ -167,6 +168,10 @@ export class ScannedPolymerElement extends ScannedElement implements
     }
     if (options && options.methods) {
       options.methods.forEach((m) => this.addMethod(m));
+    }
+    if (this.jsdoc) {
+      this.summary = this.summary ||
+          jsdoc.getTag(this.jsdoc, 'summary', 'description') || '';
     }
   }
 

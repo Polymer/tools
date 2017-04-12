@@ -44,6 +44,11 @@ for (const baseDir of fs.readdirSync(bowerDir)) {
   }
 }
 
+const fakeFileContents =
+    filesToAnalyze.map((fn) => `<link rel="import" href="${fn}">`).join('\n');
+
+inMemoryOverlay.urlContentsMap.set('ephemeral.html', fakeFileContents);
+
 
 function existsSync(fn: string): boolean {
   try {
@@ -54,10 +59,6 @@ function existsSync(fn: string): boolean {
   }
 }
 
-const fakeFileContents =
-    filesToAnalyze.map((fn) => `<link rel="import" href="${fn}">`).join('\n');
-
-inMemoryOverlay.urlContentsMap.set('ephemral.html', fakeFileContents);
 
 function padLeft(str: string, num: number): string {
   if (str.length < num) {

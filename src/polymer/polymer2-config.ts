@@ -23,13 +23,12 @@ import * as docs from './docs';
 import {toScannedMethod} from './js-utils';
 import {ScannedPolymerProperty} from './polymer-element';
 
-function getStaticGetterValue(
+export function getStaticGetterValue(
     node: estree.ClassDeclaration|estree.ClassExpression,
     name: string): estree.Expression|undefined {
-  const candidates = node.body.body.filter(
+  const getter = node.body.body.find(
       (n) => n.type === 'MethodDefinition' && n.static === true &&
           n.kind === 'get' && getIdentifierName(n.key) === name);
-  const getter = candidates.length === 1 && candidates[0];
   if (!getter) {
     return undefined;
   }
@@ -40,13 +39,13 @@ function getStaticGetterValue(
     // not a single statement function
     return undefined;
   }
-  if (getterBody.body[0].type !== 'ReturnStatement') {
+  const statement = getterBody.body[0]!;
+  if (statement.type !== 'ReturnStatement') {
     // we only support a return statement
     return undefined;
   }
 
-  const returnStatement = getterBody.body[0] as estree.ReturnStatement;
-  return returnStatement.argument;
+  return statement.argument;
 }
 
 export function getIsValue(node: estree.ClassDeclaration|

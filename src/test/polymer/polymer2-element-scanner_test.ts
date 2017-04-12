@@ -371,6 +371,18 @@ namespaced name.`,
         mixins: ['Mixin'],
         warningUnderlines: [],
       },
+      {
+        tagName: undefined,
+        className: 'window.MyElement',
+        superClass: 'MixedElement',
+        description: '',
+        summary: '',
+        properties: [],
+        attributes: [],
+        methods: [],
+        mixins: ['MyMixin'],
+        warningUnderlines: [],
+      }
     ]);
   });
 

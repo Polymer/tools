@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Added an `InMemoryOverlayLoader` UrlLoader, for cases like a text editor where you'd like to use an in memory source of truth for a subset of files.
 * The warning printer displays the squiggle underline in the correct place on lines indented by tabs.
 * Extract className from the form `var className = Polymer({...})`
+* Do a better job of matching comments up with Polymer 2 style element declarations.
 
 ## [2.0.0-alpha.35] - 2017-04-05
 
