@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!--## Unreleased-->
+
+## [2.0.0-alpha.37] - 2017-04-12
 
 * [BREAKING] Analyzer.analyze() now must be passed an array of urls instead of a single url and it returns an Analysis. Use Analysis.getDocument(url) to get a Document from an Analysis.
 * [BREAKING] The `getByKind`, `getById`, `getOnlyAtId`, and `listFeatures` methods on Document and Package have been replaced with a single method: `getFeatures`. It has all of the functionality of the individual methods, just packaged as a single simple query interface.
