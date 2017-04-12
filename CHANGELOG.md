@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Add auto-compile support for the Chromium browser.
 * Add auto-compile support for the Opera browser.
+* [Breaking] Remove Node v4 support: Node v4 is no longer in Active LTS, so as per the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) polyserve will not support Node v4. Please update to Node v6 or later to continue using the latest verisons of Polymer tooling.
 
 ### Fixed
 * When directory paths don't end in `/`, redirect to the right path, not a
