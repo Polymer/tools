@@ -148,6 +148,7 @@ function needCompilation(uaParser: UAParser): boolean {
 
   const supportsES2015 = (browser.name === 'Chrome' && majorVersion >= 49) ||
       (browser.name === 'Chromium' && majorVersion >= 49) ||
+      (browser.name === 'OPR' && majorVersion >= 36) ||
       (browser.name === 'Safari' && majorVersion >= 10) ||
       (browser.name === 'Edge' && majorVersion >= 40) ||
       (browser.name === 'Firefox' && majorVersion >= 51);
