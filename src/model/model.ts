@@ -32,8 +32,10 @@
  * Earlier stages have the longer names, like ParsedDocument and ScannedElement.
  */
 
+// TODO(rictic): export document and package query options...
+
 export * from './attribute';
-export {Document, FeatureKinds, QueryOptions as DocumentQueryOptions, ScannedDocument} from './document';
+export {Document, ScannedDocument} from './document';
 export * from './element';
 export * from './element-base';
 export {ElementReference, ScannedElementReference} from './element-reference';
@@ -45,8 +47,9 @@ export * from './inline-document';
 export * from './literal';
 export * from './property';
 export * from './method';
-export {Analysis, QueryOptions as AnalysisQueryOptions} from './analysis';
+export {Analysis} from './analysis';
 export * from './reference';
 export * from './resolvable';
 export * from './source-range';
 export * from './warning';
+export {Queryable, FeatureKindMap, DocumentQuery, AnalysisQuery} from './queryable';

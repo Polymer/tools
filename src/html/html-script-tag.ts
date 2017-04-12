@@ -47,6 +47,7 @@ export class ScannedScriptTagImport extends ScannedImport {
           new Document(scannedDocument, document._analysisContext);
       importedDocument._addFeature(document);
       importedDocument.resolve();
+
       return new ScriptTagImport(
           this.url,
           this.type,

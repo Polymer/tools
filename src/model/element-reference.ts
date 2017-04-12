@@ -24,6 +24,12 @@ export interface Attribute {
   value?: string;
 }
 
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'element-reference': ElementReference;
+  }
+}
+
 export class ElementReference implements Feature {
   tagName: string;
   attributes: Attribute[] = [];

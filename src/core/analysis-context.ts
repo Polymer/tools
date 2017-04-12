@@ -344,8 +344,7 @@ export class AnalysisContext {
             const importUrl = this.resolveUrl(scannedImport.url);
             // Request a scan of `importUrl` but do not wait for the results to
             // avoid deadlock in the case of cycles. Later we use the
-            // DependencyGraph
-            // to wait for all transitive dependencies to load.
+            // DependencyGraph to wait for all transitive dependencies to load.
             this.scan(importUrl).catch((error) => {
               scannedImport.error = error || '';
             });

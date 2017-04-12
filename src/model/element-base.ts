@@ -83,7 +83,7 @@ export abstract class ElementBase implements Feature {
   sourceRange: SourceRange;
   jsdoc?: jsdoc.Annotation;
   astNode: estree.Node|null;
-  kinds: Set<string> = new Set(['element']);
+  abstract kinds: Set<string>;
   warnings: Warning[] = [];
   'slots': Slot[] = [];
 

@@ -51,6 +51,11 @@ export class ScannedFunction implements Resolvable {
   }
 }
 
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'function': Function;
+  }
+}
 export class Function implements Feature {
   name: string;
   description?: string;

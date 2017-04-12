@@ -18,8 +18,8 @@ import {SourceRange} from './source-range';
 import {Warning} from './warning';
 
 export abstract class Feature {
-  kinds: Set<string> = new Set();
-  identifiers: Set<string> = new Set();
+  kinds = new Set<string>();
+  identifiers = new Set<string>();
 
   /** Tracks the source that this feature came from. */
   sourceRange?: SourceRange;

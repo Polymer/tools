@@ -74,6 +74,11 @@ export class ScannedInlineDocument implements ScannedFeature, Resolvable {
   }
 }
 
+declare module './queryable' {
+  interface FeatureKindMap {
+    'inline-document': InlineDocument;
+  }
+}
 export class InlineDocument extends Document {
   constructor(base: ScannedDocument, containerDocument: Document) {
     super(base, containerDocument._analysisContext);

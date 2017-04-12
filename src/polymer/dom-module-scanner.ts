@@ -69,6 +69,11 @@ export class ScannedDomModule implements Resolvable {
   }
 }
 
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'dom-module': DomModule;
+  }
+}
 export class DomModule implements Feature {
   kinds = new Set(['dom-module']);
   identifiers = new Set<string>();

@@ -81,6 +81,11 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   }
 }
 
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'polymer-element-mixin': PolymerElementMixin;
+  }
+}
 export class PolymerElementMixin extends ElementMixin implements
     PolymerExtension {
   properties: PolymerProperty[];
@@ -88,18 +93,14 @@ export class PolymerElementMixin extends ElementMixin implements
 
   observers: Observer[];
   listeners: {event: string, handler: string}[];
-  behaviorAssignments: ScannedBehaviorAssignment[];
+  behaviorAssignments: ScannedBehaviorAssignment[] = [];
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
   localIds: LocalId[] = [];
 
-  abstract?: boolean;
+  kinds = new Set(['element-mixin', 'polymer-element-mixin']);
 
-  constructor() {
-    super();
-    this.kinds = new Set(['element-mixin', 'polymer-element-mixin']);
-    this.behaviorAssignments = [];
-  }
+  abstract?: boolean;
 
   emitPropertyMetadata(property: PolymerProperty) {
     const polymerMetadata: any = {};

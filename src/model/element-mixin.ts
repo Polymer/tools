@@ -28,9 +28,15 @@ export class ScannedElementMixin extends ScannedElementBase {
   }
 }
 
+declare module './queryable' {
+  interface FeatureKindMap {
+    'element-mixin': ElementMixin;
+  }
+}
 export class ElementMixin extends ElementBase implements Feature {
   name: string;
   privacy: Privacy;
+  kinds = new Set(['element-mixin']);
 
   get identifiers(): Set<string> {
     return new Set([this.name]);

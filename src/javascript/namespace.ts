@@ -46,6 +46,12 @@ export class ScannedNamespace implements Resolvable {
   }
 }
 
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'namespace': Namespace;
+  }
+}
+
 export class Namespace implements Feature {
   name: string;
   description?: string;

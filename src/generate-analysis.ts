@@ -27,7 +27,7 @@ import {Behavior as ResolvedPolymerBehavior} from './polymer/behavior';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
-export type Filter = (feature: Feature) => boolean;
+export type Filter = (feature: Feature | ResolvedFunction) => boolean;
 
 interface Members {
   elements: Set<ResolvedElement>;
@@ -41,7 +41,6 @@ export function generateAnalysis(
     input: AnalysisResult|Document[], packagePath: string, filter?: Filter):
     Analysis {
   const _filter = filter || ((_: Feature) => true);
-
   let members: Members;
 
   if (input instanceof Array) {
@@ -54,33 +53,35 @@ export function generateAnalysis(
     };
 
     for (const document of input as Document[]) {
-      Array.from(document.getByKind('element'))
+      Array.from(document.getFeatures({kind: 'element'}))
           .filter(_filter)
           .forEach((f) => members.elements.add(f));
-      Array.from(document.getByKind('element-mixin'))
+      Array.from(document.getFeatures({kind: 'element-mixin'}))
           .filter(_filter)
           .forEach((f) => members.mixins.add(f));
-      Array.from(document.getByKind('namespace'))
+      Array.from(document.getFeatures({kind: 'namespace'}))
           .filter(_filter)
           .forEach((f) => members.namespaces.add(f));
-      Array.from(document.getByKind('function'))
+      Array.from(document.getFeatures({kind: 'function'}))
           .filter(_filter)
           .forEach((f) => members.functions.add(f));
-      Array.from(document.getByKind('behavior'))
+      Array.from(document.getFeatures({kind: 'behavior'}))
           .filter(_filter)
           .forEach((f) => members.polymerBehaviors.add(f));
     }
   } else {
     members = {
-      elements: new Set(Array.from(input.getByKind('element')).filter(_filter)),
-      mixins:
-          new Set(Array.from(input.getByKind('element-mixin')).filter(_filter)),
-      namespaces:
-          new Set(Array.from(input.getByKind('namespace')).filter(_filter)),
-      functions:
-          new Set(Array.from(input.getByKind('function')).filter(_filter)),
-      polymerBehaviors:
-          new Set(Array.from(input.getByKind('behavior')).filter(_filter)),
+      elements: new Set(
+          Array.from(input.getFeatures({kind: 'element'})).filter(_filter)),
+      mixins: new Set(Array.from(input.getFeatures({kind: 'element-mixin'}))
+                          .filter(_filter)),
+      namespaces: new Set(
+          Array.from(input.getFeatures({kind: 'namespace'})).filter(_filter)),
+      functions: new Set(
+          Array.from(input.getFeatures({kind: 'function'})).filter(_filter)),
+      polymerBehaviors: new Set(
+          Array.from(input.getFeatures({kind: 'behavior'})).filter(_filter)),
+
     };
   }
 

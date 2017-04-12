@@ -46,6 +46,11 @@ export class ScannedElement extends ScannedElementBase {
   }
 }
 
+declare module './queryable' {
+  interface FeatureKindMap {
+    'element': Element;
+  }
+}
 export class Element extends ElementBase implements Feature {
   tagName?: string;
   className?: string;
@@ -56,10 +61,7 @@ export class Element extends ElementBase implements Feature {
    * For customized built-in elements, the tagname of the superClass.
    */
   extends?: string;
-
-  constructor() {
-    super();
-  }
+  kinds = new Set(['element']);
 
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();

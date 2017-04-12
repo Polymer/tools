@@ -41,6 +41,12 @@ import stripIndent = require('strip-indent');
 use(chaiSubset);
 use(chaiAsPromised);
 
+function getOnly<V>(iter: Iterable<V>): V {
+  const arr = Array.from(iter);
+  assert.equal(arr.length, 1);
+  return arr[0]!;
+}
+
 suite('Analyzer', () => {
   let analyzer: Analyzer;
   let inMemoryOverlay: InMemoryOverlayUrlLoader;
@@ -87,8 +93,8 @@ suite('Analyzer', () => {
         async() => {
           const document = await analyzeDocument(
               'static/analysis/simple/simple-element.html');
-          const elements =
-              Array.from(document.getByKind('element', {imported: false}));
+          const elements = Array.from(
+              document.getFeatures({kind: 'element', imported: false}));
           assert.deepEqual(elements.map((e) => e.tagName), ['simple-element']);
         });
 
@@ -97,8 +103,8 @@ suite('Analyzer', () => {
         async() => {
           const document =
               await analyzeDocument('static/analysis/separate-js/element.html');
-          const elements =
-              Array.from(document.getByKind('element', {imported: true}));
+          const elements = Array.from(
+              document.getFeatures({kind: 'element', imported: true}));
           assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
         });
 
@@ -122,9 +128,9 @@ suite('Analyzer', () => {
     test('analyzes inline scripts correctly', async() => {
       const document = await analyzeDocument(
           'static/inline-documents/inline-documents.html');
-      const jsDocuments = document.getByKind('js-document');
+      const jsDocuments = document.getFeatures({kind: 'js-document'});
       assert.equal(jsDocuments.size, 1);
-      const jsDocument = jsDocuments.values().next().value;
+      const jsDocument = getOnly(jsDocuments);
       assert.isObject(jsDocument.astNode);
       assert.equal(jsDocument.astNode!.tagName, 'script');
       assert.deepEqual(await underliner.underline(jsDocument.sourceRange), `
@@ -139,9 +145,8 @@ suite('Analyzer', () => {
     test('analyzes inline styles correctly', async() => {
       const document = await analyzeDocument(
           'static/inline-documents/inline-documents.html');
-      const cssDocuments = document.getByKind('css-document');
-      assert.equal(cssDocuments.size, 1);
-      const cssDocument = cssDocuments.values().next().value;
+      const cssDocuments = document.getFeatures({kind: 'css-document'});
+      const cssDocument = getOnly(cssDocuments);
       assert.isObject(cssDocument.astNode);
       assert.equal(cssDocument.astNode!.tagName, 'style');
       assert.deepEqual(await underliner.underline(cssDocument.sourceRange), `
@@ -161,7 +166,7 @@ suite('Analyzer', () => {
       const document =
           await analyzeDocument('static/analysis/behaviors/behavior.html');
       const behaviors =
-          Array.from(document.getByKind('behavior', {imported: true}));
+          Array.from(document.getFeatures({kind: 'behavior', imported: true}));
       assert.deepEqual(
           behaviors.map((b) => b.className),
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
@@ -203,10 +208,11 @@ suite('Analyzer', () => {
         async() => {
           const document = await analyzeDocument(
               'static/chained-missing-behavior/index.html');
-          const chainedDocument = document.getOnlyAtId(
-              'document',
-              'static/chained-missing-behavior/chained.html',
-              {imported: true})!;
+          const chainedDocument = getOnly(document.getFeatures({
+            kind: 'document',
+            id: 'static/chained-missing-behavior/chained.html',
+            imported: true
+          }));
           const expectedWarning = {
             code: 'unknown-polymer-behavior',
             message:
@@ -232,10 +238,11 @@ suite('Analyzer', () => {
           const document =
               await analyzeDocument('static/analysis/behaviors/behavior.html');
           const localDocuments =
-              document.getByKind('document', {imported: false});
+              document.getFeatures({kind: 'document', imported: false});
           assert.equal(localDocuments.size, 2);  // behavior.html and its inline
 
-          const allDocuments = document.getByKind('document', {imported: true});
+          const allDocuments =
+              document.getFeatures({kind: 'document', imported: true});
           assert.equal(allDocuments.size, 4);
 
           const inlineDocuments =
@@ -244,11 +251,15 @@ suite('Analyzer', () => {
                       (d) => d instanceof Document && d.isInline) as Document[];
           assert.equal(inlineDocuments.length, 1);
 
-          // This is the main purpose of the test: get a feature from the inline
+          // This is the main purpose of the test: get a feature from
+          // the inline
           // document that's imported by the container document
           const behaviorJsDocument = inlineDocuments[0];
-          const subBehavior = behaviorJsDocument.getOnlyAtId(
-              'behavior', 'MyNamespace.SubBehavior', {imported: true});
+          const subBehavior = getOnly(behaviorJsDocument.getFeatures({
+            kind: 'behavior',
+            id: 'MyNamespace.SubBehavior',
+            imported: true
+          }));
           assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
         });
 
@@ -257,16 +268,17 @@ suite('Analyzer', () => {
         async() => {
           const document = await analyzeDocument(
               'static/script-tags/inline/test-element.html');
-
-          const inlineDocuments =
-              Array.from(document.getByKind('document', {imported: false}))
-                  .filter((d) => d.isInline);
+          const inlineDocuments = Array
+                                      .from(document.getFeatures(
+                                          {kind: 'document', imported: false}))
+                                      .filter((d) => d.isInline);
           assert.equal(inlineDocuments.length, 1);
           const inlineJsDocument = inlineDocuments[0];
 
-          // The inline document can find the container's imported features
-          const subBehavior = inlineJsDocument.getOnlyAtId(
-              'behavior', 'TestBehavior', {imported: true});
+          // The inline document can find the container's imported
+          // features
+          const subBehavior = getOnly(inlineJsDocument.getFeatures(
+              {kind: 'behavior', id: 'TestBehavior', imported: true}));
           assert.equal(subBehavior!.className, 'TestBehavior');
         });
 
@@ -276,16 +288,17 @@ suite('Analyzer', () => {
           const document = await analyzeDocument(
               'static/script-tags/external/test-element.html');
 
-          const htmlScriptTags =
-              Array.from(document.getByKind('html-script', {imported: false}));
+          const htmlScriptTags = Array.from(
+              document.getFeatures({kind: 'html-script', imported: false}));
           assert.equal(htmlScriptTags.length, 1);
 
           const htmlScriptTag = htmlScriptTags[0] as ScriptTagImport;
           const scriptDocument = htmlScriptTag.document;
 
-          // The inline document can find the container's imported features
-          const subBehavior = scriptDocument.getOnlyAtId(
-              'behavior', 'TestBehavior', {imported: true})!;
+          // The inline document can find the container's imported
+          // features
+          const subBehavior = getOnly(scriptDocument.getFeatures(
+              {kind: 'behavior', id: 'TestBehavior', imported: true}))!;
           assert.equal(subBehavior.className, 'TestBehavior');
         });
 
@@ -301,18 +314,23 @@ suite('Analyzer', () => {
           const document = await analyzeDocument(
               'static/analysis/behaviors/elementdir/element.html');
 
-          const documents = document.getByKind('document', {imported: false});
+          const documents =
+              document.getFeatures({kind: 'document', imported: false});
           assert.equal(documents.size, 2);
 
           const inlineDocuments = Array.from(documents).filter(
               (d) => d instanceof Document && d.isInline) as Document[];
           assert.equal(inlineDocuments.length, 1);
 
-          // This is the main purpose of the test: get a feature from the inline
+          // This is the main purpose of the test: get a feature
+          // from the inline
           // document that's imported by the container document
           const behaviorJsDocument = inlineDocuments[0];
-          const subBehavior = behaviorJsDocument.getOnlyAtId(
-              'behavior', 'MyNamespace.SubBehavior', {imported: true})!;
+          const subBehavior = getOnly(behaviorJsDocument.getFeatures({
+            kind: 'behavior',
+            id: 'MyNamespace.SubBehavior',
+            imported: true
+          }));
           assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
         });
 
@@ -337,24 +355,28 @@ suite('Analyzer', () => {
         ['static/dependencies/subfolder/subfolder-sibling.html', 'html', false],
         ['static/dependencies/inline-and-imports.html', 'css', true],
       ];
+
+      // If we ask for documents we get every document in
+      // evaluation order.
       assert.deepEqual(
           Array
-              .from(root.getByKind(
-                  'document', {imported: true, noLazyImports: true}))
+              .from(root.getFeatures(
+                  {kind: 'document', imported: true, noLazyImports: true}))
               .map((d) => [d.url, d.parsedDocument.type, d.isInline]),
           strictlyReachableDocuments);
+
       assert.deepEqual(
-          Array.from(root.getByKind('document', {imported: true}))
+          Array.from(root.getFeatures({kind: 'document', imported: true}))
               .map((d) => [d.url, d.parsedDocument.type, d.isInline]),
           strictlyReachableDocuments.concat(
               [['static/dependencies/lazy.html', 'html', false]]));
 
 
       // If we ask for imports we get the import statements in evaluation order.
-      // Unlike documents, we can have duplicates here because imports exist
-      // in distinct places in their containing docs.
+      // Unlike documents, we can have duplicates here because imports exist in
+      // distinct places in their containing docs.
       assert.deepEqual(
-          Array.from(root.getByKind('import', {imported: true}))
+          Array.from(root.getFeatures({kind: 'import', imported: true}))
               .map((d) => d.url),
           [
             'static/dependencies/inline-only.html',
@@ -366,32 +388,44 @@ suite('Analyzer', () => {
             'static/dependencies/lazy.html',
           ]);
 
-      const inlineOnly = root.getOnlyAtId(
-          'document', 'static/dependencies/inline-only.html', {imported: true});
+      const inlineOnly = getOnly(root.getFeatures({
+        kind: 'document',
+        id: 'static/dependencies/inline-only.html',
+        imported: true
+      }));
       assert.deepEqual(
-          Array.from(inlineOnly!.getByKind('document', {imported: true}))
+          Array
+              .from(inlineOnly!.getFeatures({kind: 'document', imported: true}))
               .map((d) => d.parsedDocument.type),
           ['html', 'js', 'css']);
 
-      const leaf = root.getOnlyAtId(
-          'document', 'static/dependencies/leaf.html', {imported: true})!;
+      const leaf = getOnly(root.getFeatures({
+        kind: 'document',
+        id: 'static/dependencies/leaf.html',
+        imported: true
+      }));
       assert.deepEqual(
-          Array.from(leaf.getByKind('document', {imported: true})), [leaf]);
+          Array.from(leaf.getFeatures({kind: 'document', imported: true})),
+          [leaf]);
 
-      const inlineAndImports = root.getOnlyAtId(
-          'document',
-          'static/dependencies/inline-and-imports.html',
-          {imported: true})!;
+      const inlineAndImports = getOnly(root.getFeatures({
+        kind: 'document',
+        id: 'static/dependencies/inline-and-imports.html',
+        imported: true
+      }));
       assert.deepEqual(
-          Array.from(inlineAndImports.getByKind('document', {imported: true}))
+          Array
+              .from(inlineAndImports.getFeatures(
+                  {kind: 'document', imported: true}))
               .map((d) => d.parsedDocument.type),
           ['html', 'js', 'html', 'html', 'css']);
-      const inFolder = root.getOnlyAtId(
-          'document',
-          'static/dependencies/subfolder/in-folder.html',
-          {imported: true})!;
+      const inFolder = getOnly(root.getFeatures({
+        kind: 'document',
+        id: 'static/dependencies/subfolder/in-folder.html',
+        imported: true
+      }));
       assert.deepEqual(
-          Array.from(inFolder.getByKind('document', {imported: true}))
+          Array.from(inFolder.getFeatures({kind: 'document', imported: true}))
               .map((d) => d.url),
           [
             'static/dependencies/subfolder/in-folder.html',
@@ -400,10 +434,11 @@ suite('Analyzer', () => {
 
       // check de-duplication
       assert.equal(
-          inlineAndImports!.getOnlyAtId(
-              'document',
-              'static/dependencies/subfolder/in-folder.html',
-              {imported: true}),
+          getOnly(inlineAndImports!.getFeatures({
+            kind: 'document',
+            id: 'static/dependencies/subfolder/in-folder.html',
+            imported: true
+          })),
           inFolder);
     });
 
@@ -449,7 +484,8 @@ suite('Analyzer', () => {
     test(
         'handles parallel analyses of mutually recursive documents',
         async() => {
-          // At one point this deadlocked, or threw a _makeDocument error.
+          // At one point this deadlocked, or threw
+          // a _makeDocument error.
           await Promise.all([
             analyzer.analyze(['static/circular/mutual-a.html']),
             analyzer.analyze(['static/circular/mutual-b.html'])
@@ -623,11 +659,13 @@ suite('Analyzer', () => {
       const origDocument = await analyzeDocument('test-doc.html');
       const document = clone(origDocument);
 
-      // In document, we'll change `foo` to `bar` in the js and `blue` to
+      // In document, we'll change `foo` to
+      // `bar` in the js and `blue` to
       // `red` in the css.
-      const jsDocs = document.getByKind('js-document', {imported: true});
+      const jsDocs =
+          document.getFeatures({kind: 'js-document', imported: true});
       assert.equal(1, jsDocs.size);
-      const jsDoc = jsDocs.values().next().value;
+      const jsDoc = getOnly(jsDocs);
       (jsDoc.parsedDocument as JavaScriptDocument).visit([{
         enterCallExpression(node: estree.CallExpression) {
           node.arguments =
@@ -635,9 +673,10 @@ suite('Analyzer', () => {
         }
       }]);
 
-      const cssDocs = document.getByKind('css-document', {imported: true});
+      const cssDocs =
+          document.getFeatures({kind: 'css-document', imported: true});
       assert.equal(1, cssDocs.size);
-      const cssDoc = cssDocs.values().next().value;
+      const cssDoc = getOnly(cssDocs);
       (cssDoc.parsedDocument as ParsedCssDocument).visit([{
         visit(node: shady.Node) {
           if (node.type === 'expression' && node.text === 'blue') {
@@ -660,7 +699,7 @@ suite('Analyzer', () => {
     }
 
     const namespaces =
-        Array.from(document.getByKind('namespace', {imported: true}));
+        Array.from(document.getFeatures({kind: 'namespace', imported: true}));
     assert.deepEqual(namespaces.map((b) => b.name), [
       'ExplicitlyNamedNamespace',
       'ExplicitlyNamedNamespace.NestedNamespace',
@@ -681,7 +720,8 @@ suite('Analyzer', () => {
       'creates warnings when duplicate namespaces are analyzed', async() => {
         const document = await analyzer.analyze(
             ['static/namespaces/import-duplicates.html']);
-        const namespaces = Array.from(document.getByKind('namespace'));
+        const namespaces =
+            Array.from(document.getFeatures({kind: 'namespace'}));
         assert.deepEqual(namespaces.map((b) => b.name), [
           'ExplicitlyNamedNamespace',
           'ExplicitlyNamedNamespace.NestedNamespace',
@@ -716,7 +756,7 @@ var DuplicateNamespace = {};
 
       // Note that this does not contain the bower_components/ files
       assert.deepEqual(
-          Array.from(pckage.getByKind('document'))
+          Array.from(pckage.getFeatures({kind: 'document'}))
               .filter((d) => !d.isInline)
               .map((d) => d.url)
               .sort(),
@@ -731,7 +771,9 @@ var DuplicateNamespace = {};
 
       // And this does contain the one imported file in bower_components/
       assert.deepEqual(
-          Array.from(pckage.getByKind('document', {externalPackages: true}))
+          Array
+              .from(pckage.getFeatures(
+                  {kind: 'document', externalPackages: true}))
               .filter((d) => !d.isInline)
               .map((d) => d.url)
               .sort(),
@@ -756,14 +798,18 @@ var DuplicateNamespace = {};
 
       // All elements in the package
       assert.deepEqual(
-          Array.from(pckage.getByKind('element')).map((e) => e.tagName).sort(),
+          Array.from(pckage.getFeatures({kind: 'element'}))
+              .map((e) => e.tagName)
+              .sort(),
           packageElements.sort());
 
-      // All elements in the package, as well as all elements in its
-      // bower_components directory that are reachable from imports in the
+      // All elements in the package, as well as all elements in
+      // its bower_components directory that are reachable from imports in the
       // package.
       assert.deepEqual(
-          Array.from(pckage.getByKind('element', {externalPackages: true}))
+          Array
+              .from(
+                  pckage.getFeatures({kind: 'element', externalPackages: true}))
               .map((e) => e.tagName)
               .sort(),
           packageElements.concat(['imported-dependency']).sort());
@@ -897,8 +943,10 @@ var DuplicateNamespace = {};
     }
 
     const editorSimulator = async(waitFn: () => Promise<void>) => {
-      // Here we're simulating a lot of noop-changes to base.html, which has
-      // two imports, which mutually import a common dep. This stresses the
+      // Here we're simulating a lot of noop-changes to base.html,
+      // which has
+      // two imports, which mutually import a common dep. This
+      // stresses the
       // analyzer's caching.
 
       const contentsMap = new Map<string, string>([
@@ -943,8 +991,10 @@ var DuplicateNamespace = {};
       }
       // Assert that all edits went through fine.
       await Promise.all(intermediatePromises);
-      // Assert that the every analysis of 'base.html' after each batch of edits
-      // was correct, and doesn't have missing or inconsistent results.
+      // Assert that the every analysis of 'base.html' after each
+      // batch of edits
+      // was correct, and doesn't have missing or inconsistent
+      // results.
       const documents = await Promise.all(promises);
       for (const document of documents) {
         assert.deepEqual(document.url, 'base.html');
@@ -968,17 +1018,17 @@ var DuplicateNamespace = {};
             ],
             message);
         const imports =
-            Array.from(document.getByKind('import', {imported: true}));
+            Array.from(document.getFeatures({kind: 'import', imported: true}));
         assert.sameMembers(
             imports.map((m) => m.url),
             ['a.html', 'b.html', 'common.html', 'common.html']);
-        const docs =
-            Array.from(document.getByKind('document', {imported: true}));
+        const docs = Array.from(
+            document.getFeatures({kind: 'document', imported: true}));
         assert.sameMembers(
             docs.map((d) => d.url),
             ['a.html', 'b.html', 'base.html', 'common.html']);
         const refs = Array.from(
-            document.getByKind('element-reference', {imported: true}));
+            document.getFeatures({kind: 'element-reference', imported: true}));
         assert.sameMembers(refs.map((ref) => ref.tagName), ['custom-el']);
       }
     };
@@ -1000,18 +1050,25 @@ var DuplicateNamespace = {};
     });
 
     /**
-     * This is a tool for reproducing and debugging a failure of the editor
-     * simulator test above, but only at the exact same commit, as it's
-     * sensitive to the order of internal operations of the analyzer. So this
-     * code with a defined list of wait times should not be checked in.
+     * This is a tool for reproducing and debugging a failure of the
+     * editor
+     * simulator test above, but only at the exact same commit, as
+     * it's
+     * sensitive to the order of internal operations of the analyzer.
+     * So this
+     * code with a defined list of wait times should not be checked
+     * in.
      *
-     * It's also worth noting that this code will be dependent on many other
-     * system factors, so it's only somewhat more reproducible, and may not
+     * It's also worth noting that this code will be dependent on many
+     * other
+     * system factors, so it's only somewhat more reproducible, and
+     * may not
      * end
      * up being very useful. If it isn't, we should delete it.
      */
     test.skip('somewhat more reproducable editor simulator', async() => {
-      // Replace waitTimes' value with the array of wait times that's logged
+      // Replace waitTimes' value with the array of wait times
+      // that's logged
       // to the console when the random editor test fails.
       const waitTimes: number[] = [];
 
@@ -1028,17 +1085,22 @@ var DuplicateNamespace = {};
     });
 
     suite('deterministic tests', () => {
-      // Deterministic tests extracted from various failures of the above
+      // Deterministic tests extracted from various failures of the
+      // above
       // random
       // test.
 
       /**
-       * This is an asynchronous keyed queue, useful for controlling the order
+       * This is an asynchronous keyed queue, useful for controlling
+       * the
+       * order
        * of results in order to make tests more deterministic.
        *
-       * It's intended to be used in fake loaders, scanners, etc, where the
+       * It's intended to be used in fake loaders, scanners, etc,
+       * where the
        * test
-       * provides the intended result on a file by file basis, with control
+       * provides the intended result on a file by file basis, with
+       * control
        * over
        * the order in which the results come in.
        */
@@ -1059,7 +1121,8 @@ var DuplicateNamespace = {};
         }
 
         /**
-         * Resolves the next unfulfilled request for the given key with the
+         * Resolves the next unfulfilled request for the given key
+         * with the
          * given value.
          */
         resolve(key: Key, value: Result) {
@@ -1104,7 +1167,8 @@ var DuplicateNamespace = {};
       }
 
       /**
-       * This crashed the analyzer as there was a race to _makeDocument,
+       * This crashed the analyzer as there was a race to
+       * _makeDocument,
        * violating its constraint that there not already be a resolved
        * Document
        * for a given path.

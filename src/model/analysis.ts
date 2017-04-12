@@ -12,20 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, FeatureKinds, QueryOptions as DocumentQueryOptions} from './document';
+import {Document} from './document';
 import {Feature} from './feature';
-import {BaseQueryOptions, Queryable} from './queryable';
+import {AnalysisQuery as Query, AnalysisQueryWithKind as QueryWithKind, DocumentQuery, FeatureKind, FeatureKindMap, Queryable} from './queryable';
 import {Warning} from './warning';
 
-export type QueryOptions = object & BaseQueryOptions & {
-  /**
-   * When querying an AnalysisResult, results from multiple
-   * documents may show up, so disallowing following imports
-   * probably doesn't make sense. So we allow specifying imported,
-   * but it must be true.
-   */
-  imported?: true;
-};
 
 // A regexp that matches paths to external code.
 // TODO(rictic): Make this extensible (polymer.json?).
@@ -62,7 +53,7 @@ export class Analysis implements Queryable {
     // can be reached from them. That way we'll do less duplicate work when we
     // query over all documents.
     for (const doc of potentialRoots) {
-      for (const imprt of doc.getByKind('import', {imported: true})) {
+      for (const imprt of doc.getFeatures({kind: 'import', imported: true})) {
         // When there's cycles we can keep any element of the cycle, so why not
         // this one.
         if (imprt.document !== doc) {
@@ -79,7 +70,9 @@ export class Analysis implements Queryable {
       return result;
     }
     const documents =
-        Array.from(this.getById('document', url, {externalPackages: true}))
+        Array
+            .from(this.getFeatures(
+                {kind: 'document', id: url, externalPackages: true}))
             .filter((d) => !d.isInline);
     if (documents.length !== 1) {
       return undefined;
@@ -87,57 +80,24 @@ export class Analysis implements Queryable {
     return documents[0]!;
   }
 
-  getByKind<K extends keyof FeatureKinds>(kind: K, options?: QueryOptions):
-      Set<FeatureKinds[K]>;
-  getByKind(kind: string, options?: QueryOptions): Set<Feature>;
-  getByKind(kind: string, options?: QueryOptions): Set<Feature> {
-    const result = new Set();
-    const docQueryOptions = this._getDocumentQueryOptions(options);
-    for (const doc of this._searchRoots) {
-      addAll(result, doc.getByKind(kind, docQueryOptions));
-    }
-    return result;
-  }
-
-  getById<K extends keyof FeatureKinds>(
-      kind: K, identifier: string,
-      options?: QueryOptions): Set<FeatureKinds[K]>;
-  getById(kind: string, identifier: string, options?: QueryOptions):
-      Set<Feature>;
-  getById(kind: string, identifier: string, options?: QueryOptions):
-      Set<Feature> {
-    const result = new Set();
-    const docQueryOptions = this._getDocumentQueryOptions(options);
-    for (const doc of this._searchRoots) {
-      addAll(result, doc.getById(kind, identifier, docQueryOptions));
-    }
-    return result;
-  }
-
-  getOnlyAtId<K extends keyof FeatureKinds>(
-      kind: K, identifier: string,
-      options?: QueryOptions): FeatureKinds[K]|undefined;
-  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
-      |undefined;
-  getOnlyAtId(kind: string, identifier: string, options?: QueryOptions): Feature
-      |undefined {
-    const results = this.getById(kind, identifier, options);
-    if (results.size > 1) {
-      throw new Error(
-          `Expected to find at most one ${kind} with id ${identifier} ` +
-          `but found ${results.size}.`);
-    };
-    return results.values().next().value || undefined;
-  }
-
   /**
-   * Get all features for all documents in the project or their imports.
+   * Get features in the package.
+   *
+   * Be default this includes features in all documents inside the package,
+   * but you can specify whether to also include features that are outside the
+   * package reachable by documents inside. See the documentation for Query for
+   * more details.
+   *
+   * You can also narrow by feature kind and identifier.
    */
-  getFeatures(options?: QueryOptions): Set<Feature> {
+  getFeatures<K extends FeatureKind>(query: QueryWithKind<K>):
+      Set<FeatureKindMap[K]>;
+  getFeatures(query?: Query): Set<Feature>;
+  getFeatures(query: Query = {}): Set<Feature> {
     const result = new Set();
-    const docQueryOptions = this._getDocumentQueryOptions(options);
+    const docQuery = this._getDocumentQuery(query);
     for (const doc of this._searchRoots) {
-      addAll(result, doc.getFeatures(docQueryOptions));
+      addAll(result, doc.getFeatures(docQuery));
     }
     return result;
   }
@@ -145,24 +105,24 @@ export class Analysis implements Queryable {
   /**
    * Get all warnings in the project.
    */
-  getWarnings(options?: QueryOptions): Warning[] {
+  getWarnings(options?: Query): Warning[] {
     const warnings = Array.from(this._results.values())
                          .filter((r) => !(r instanceof Document)) as Warning[];
     const result = new Set(warnings);
-    const docQueryOptions = this._getDocumentQueryOptions(options);
+    const docQuery = this._getDocumentQuery(options);
     for (const doc of this._searchRoots) {
-      addAll(result, new Set(doc.getWarnings(docQueryOptions)));
+      addAll(result, new Set(doc.getWarnings(docQuery)));
     }
     return Array.from(result);
   }
 
-  private _getDocumentQueryOptions(options?: QueryOptions):
-      DocumentQueryOptions {
-    options = options || {};
+  private _getDocumentQuery(query: Query = {}): DocumentQuery {
     return {
+      kind: query.kind,
+      id: query.id,
+      externalPackages: query.externalPackages,
       imported: true,
-      externalPackages: options.externalPackages,
-      noLazyImports: options.noLazyImports
+      noLazyImports: query.noLazyImports
     };
   }
 }
@@ -202,8 +162,9 @@ function workAroundDuplicateJsScriptsBecauseOfHtmlScriptTags(
       continue;
     }
     for (const potentialDupe of potentialDuplicates) {
-      for (const potentialCanonicalDoc of doc.getById(
-               'js-document', potentialDupe.url, {imported: true})) {
+      const potentialCanonicalDocs = doc.getFeatures(
+          {kind: 'js-document', id: potentialDupe.url, imported: true});
+      for (const potentialCanonicalDoc of potentialCanonicalDocs) {
         if (!potentialCanonicalDoc.isInline) {
           canonicalOverrides.add(potentialCanonicalDoc);
         }

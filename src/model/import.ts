@@ -92,6 +92,20 @@ export class ScannedImport implements Resolvable {
   }
 }
 
+declare module './queryable' {
+  interface FeatureKindMap {
+    'import': Import;
+    'lazy-import': Import;
+
+    // Import specializations.
+    'html-import': Import;
+    'html-script': Import;
+    'html-style': Import;
+    'js-import': Import;
+    'css-import': Import;
+  }
+}
+
 export class Import implements Feature {
   type: 'html-import'|'html-script'|'html-style'|string;
   url: string;

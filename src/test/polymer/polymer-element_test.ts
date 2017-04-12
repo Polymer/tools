@@ -40,7 +40,7 @@ suite('PolymerElement', () => {
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
     const document =
         (await analyzer.analyze([filename])).getDocument(filename) as Document;
-    const elements = document.getByKind('polymer-element');
+    const elements = document.getFeatures({kind: 'polymer-element'});
     return elements;
   };
 

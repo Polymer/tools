@@ -87,5 +87,8 @@
     "split": "^1.0.0",
     "strip-indent": "^2.0.0",
     "typescript": "^2.2.0"
+  },
+  "engines": {
+    "node": ">6"
   }
 }

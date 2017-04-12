@@ -56,6 +56,12 @@ export class ScannedBehavior extends ScannedPolymerElement {
   }
 }
 
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'behavior': Behavior;
+  }
+}
+
 export class Behavior extends PolymerElement {
   tagName: undefined;
   className: string;

@@ -50,6 +50,11 @@ export interface ReferenceInit extends Partial<Reference> {
   identifier: string;
 }
 
+declare module './queryable' {
+  interface FeatureKindMap {
+    'reference': Reference;
+  }
+}
 /**
  * A reference to another feature by identifier.
  */
