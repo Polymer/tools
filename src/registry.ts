@@ -25,9 +25,6 @@ import {stripWhitespace} from './util';
 export class LintRegistry {
   private _all = new Map<string, Rule|RuleCollection>();
 
-  constructor() {
-  }
-
   /**
    * Register the given rule or collection so that it can be later retrieved.
    */

@@ -36,10 +36,6 @@ class UnbalancedDelimiters extends HtmlRule {
       For example, {{foo} is missing a } at the end, it should instead be
       {{foo}}.`);
 
-  constructor() {
-    super();
-  }
-
   public async checkDocument(parsedHtml: ParsedHtmlDocument):
       Promise<Warning[]> {
     let warnings: Warning[] = [];

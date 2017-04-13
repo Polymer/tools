@@ -26,15 +26,11 @@ class UndefinedElements extends HtmlRule {
     Warns when an HTML tag refers to a custom element with no known definition.
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document):
       Promise<Warning[]> {
     const warnings: Warning[] = [];
 
-    const refs = document.getByKind('element-reference');
+    const refs = document.getFeatures({kind: 'element-reference'});
 
     for (const ref of refs) {
       if (ref.tagName === 'test-fixture') {
@@ -47,8 +43,12 @@ class UndefinedElements extends HtmlRule {
       if (!ref.astNode) {
         continue;
       }
-      const el = document.getById(
-          'element', ref.tagName, {imported: true, externalPackages: true});
+      const el = document.getFeatures({
+        kind: 'element',
+        id: ref.tagName,
+        imported: true,
+        externalPackages: true
+      });
 
       if (el.size === 0) {
         const sourceRange = parsedDocument.sourceRangeForStartTag(ref.astNode);

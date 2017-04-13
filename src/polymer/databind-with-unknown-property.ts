@@ -33,16 +33,16 @@ class DatabindWithUnknownProperty extends HtmlRule {
       Warns when a polymer databinding expression uses an undeclared property.
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async checkDocument(_parsed: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
-    const domModules = document.getByKind('dom-module');
+    const domModules = document.getFeatures({kind: 'dom-module'});
     for (const domModule of domModules) {
-      const elements = document.getById(
-          'element', domModule.id!, {imported: true, externalPackages: true});
+      const elements = document.getFeatures({
+        kind: 'element',
+        id: domModule.id!,
+        imported: true,
+        externalPackages: true
+      });
       if (elements.size !== 1) {
         continue;
       }

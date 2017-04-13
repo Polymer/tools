@@ -38,10 +38,6 @@ class AlwaysWarnsRule extends Rule {
       }
     }];
   }
-
-  constructor() {
-    super();
-  }
 }
 
 suite('Linter', () => {

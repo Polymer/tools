@@ -40,28 +40,27 @@ export class Linter {
    * warnings produced evaluating the linter rules.
    */
   public async lint(files: string[]): Promise<Warning[]> {
-    const analysisResult = await this._analyzeAll(files);
-    const documents = analysisResult.documents;
-    let analysisWarnings = analysisResult.warnings;
+    const {documents, warnings} = await this._analyzeAll(files);
     for (const document of documents) {
-      analysisWarnings = analysisWarnings.concat(document.getWarnings());
+      warnings.push(...document.getWarnings());
     }
-    return analysisWarnings.concat(await this._lintDocuments(documents));
+    return warnings.concat(...await this._lintDocuments(documents));
   }
 
   public async lintPackage(): Promise<Warning[]> {
     const pckage = await this._analyzer.analyzePackage();
-    const analysisWarnings = pckage.getWarnings();
-    const warnings = await this._lintDocuments(pckage.getByKind('document'));
-    return analysisWarnings.concat(warnings);
+    const warnings = pckage.getWarnings();
+    warnings.push(
+        ...await this._lintDocuments(pckage.getFeatures({kind: 'document'})));
+    return warnings;
   }
 
   private async _lintDocuments(documents: Iterable<Document>) {
-    let warnings: Warning[] = [];
+    const warnings: Warning[] = [];
     for (const document of documents) {
       for (const rule of this._rules) {
         try {
-          warnings = warnings.concat(await rule.check(document));
+          warnings.push(...await rule.check(document));
         } catch (e) {
           warnings.push(this._getWarningFromError(
               e,
@@ -75,17 +74,18 @@ export class Linter {
   }
 
   private async _analyzeAll(files: string[]) {
+    const analysis = await this._analyzer.analyze(files);
     const documents = [];
-    const warnings: Warning[] = [];
+    const warnings = [];
+
     for (const file of files) {
-      try {
-        documents.push(await this._analyzer.analyze(file));
-      } catch (e) {
-        warnings.push(this._getWarningFromError(
-            e,
-            file,
-            'unable-to-analyze-file',
-            `Internal Error while analyzing: ${e ? e.message : e}`));
+      const result = analysis.getDocument(this._analyzer.resolveUrl(file));
+      if (!result) {
+        continue;
+      } else if (result instanceof Document) {
+        documents.push(result);
+      } else {
+        warnings.push(result);
       }
     }
 

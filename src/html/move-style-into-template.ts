@@ -45,10 +45,6 @@ class MoveStyleIntoTemplate extends HtmlRule {
           <dom-module>
   `);
 
-  constructor() {
-    super();
-  }
-
   async checkDocument(parsedDocument: ParsedHtmlDocument) {
     const warnings: Warning[] = [];
     const outOfPlaceStyle = p.AND(

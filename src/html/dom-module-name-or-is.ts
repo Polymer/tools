@@ -43,9 +43,6 @@ class DomModuleNameOrIs extends HtmlRule {
           <dom-module id="foo-elem">
           </dom-module>
   `);
-  constructor() {
-    super();
-  }
 
   async checkDocument(document: ParsedHtmlDocument) {
     const warnings: Warning[] = [];

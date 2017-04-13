@@ -53,22 +53,20 @@ class DatabindingCallsMustBeFunctions extends Rule {
           });
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async check(document: Document) {
     const warnings: Warning[] = [];
-    const elements = document.getByKind('polymer-element');
+    const elements = document.getFeatures({kind: 'polymer-element'});
 
     for (const element of elements) {
       if (!element.tagName) {
         continue;
       }
-      const domModules = document.getById(
-          'dom-module',
-          element.tagName,
-          {imported: true, externalPackages: true});
+      const domModules = document.getFeatures({
+        kind: 'dom-module',
+        id: element.tagName,
+        imported: true,
+        externalPackages: true
+      });
       let domModule = undefined;
       if (domModules.size === 1) {
         domModule = domModules.values().next().value!;

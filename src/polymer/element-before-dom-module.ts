@@ -37,15 +37,11 @@ class ElementBeforeDomModule extends HtmlRule {
         <script>Polymer({is: 'my-elem'})</script>
       `).trim();
 
-  constructor() {
-    super();
-  }
-
   public async checkDocument(
       parsedHtml: ParsedHtmlDocument, document: Document): Promise<Warning[]> {
     const warnings: Warning[] = [];
 
-    const domModules = document.getByKind('dom-module');
+    const domModules = document.getFeatures({kind: 'dom-module'});
     if (domModules.size === 0) {
       return warnings;  // Early exit quick in the trivial case.
     }
@@ -62,11 +58,11 @@ class ElementBeforeDomModule extends HtmlRule {
     // become active. (We don't look into transitive imports because circularity
     // makes ordering complicated.)
     const localElements =
-        Array.from(document.getByKind('polymer-element'))
+        Array.from(document.getFeatures({kind: 'polymer-element'}))
             .filter((el) => !!el.sourceRange)
             .map((el) => ({sourceRange: el.sourceRange!, elements: [el]}));
     const elementsByImport =
-        Array.from(document.getByKind('import'))
+        Array.from(document.getFeatures({kind: 'import'}))
             .filter((i) => i.sourceRange)
             .map((i) => {
               if (!i.document) {
@@ -78,7 +74,7 @@ class ElementBeforeDomModule extends HtmlRule {
               // elements defined "in them" aren't actually defined in us, their
               // importer.
               const elements =
-                  Array.from(i.document.getByKind('polymer-element'));
+                  Array.from(i.document.getFeatures({kind: 'polymer-element'}));
               const nonlocalElements = elements.filter(
                   (e) => e.sourceRange && e.sourceRange.file !== document.url);
               return {sourceRange: i.sourceRange!, elements: nonlocalElements};
