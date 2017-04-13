@@ -34,6 +34,9 @@ export interface Options {
    * on.
    */
   lazyEdges?: LazyEdgeMap;
+
+  // For internal use
+  __contextPromise?: Promise<AnalysisContext>;
 }
 
 /**
@@ -60,13 +63,17 @@ export class Analyzer {
   private readonly _urlResolver: UrlResolver;
   private readonly _urlLoader: UrlLoader;
 
-  constructor(options: Options|AnalysisContext) {
-    const context = (options instanceof AnalysisContext) ?
-        options :
-        new AnalysisContext(options);
-    this._urlResolver = context.resolver;
-    this._urlLoader = context.loader;
-    this._analysisComplete = Promise.resolve(context);
+  constructor(options: Options) {
+    if (options.__contextPromise) {
+      this._urlLoader = options.urlLoader;
+      this._urlResolver = options.urlResolver!;
+      this._analysisComplete = options.__contextPromise;
+    } else {
+      const context = new AnalysisContext(options);
+      this._urlResolver = context.resolver;
+      this._urlLoader = context.loader;
+      this._analysisComplete = Promise.resolve(context);
+    }
   }
 
   /**
@@ -163,11 +170,17 @@ export class Analyzer {
    *     considered a breaking change, so check for its existence before calling
    *     it.
    */
-  async _fork(options?: ForkOptions): Promise<Analyzer> {
-    const context = options ?
-        (await this._analysisComplete)._fork(undefined, options) :
-        (await this._analysisComplete);
-    return new Analyzer(context);
+  _fork(options?: ForkOptions): Analyzer {
+    const contextPromise = (async() => {
+      return options ?
+          (await this._analysisComplete)._fork(undefined, options) :
+          (await this._analysisComplete);
+    })();
+    return new Analyzer({
+      urlLoader: this._urlLoader,
+      urlResolver: this._urlResolver,
+      __contextPromise: contextPromise
+    });
   }
 
   /**
