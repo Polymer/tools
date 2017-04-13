@@ -33,14 +33,16 @@ suite('AnalysisCache', () => {
 
   async function assertHasDocument(cache: AnalysisCache, path: string) {
     assert.equal(
-        await cache.parsedDocumentPromises.getOrCompute(path, null as any),
+        await cache.parsedDocumentPromises.getOrCompute(
+            path, null as any) as any,
         `parsed ${path} promise`);
     assert.equal(
-        await cache.scannedDocumentPromises.getOrCompute(path, null as any),
+        await cache.scannedDocumentPromises.getOrCompute(
+            path, null as any) as any,
         `scanned ${path} promise`);
     // caller must assert on cache.analyzedDocumentPromises themselves
-    assert.equal(cache.scannedDocuments.get(path), `scanned ${path}`);
-    assert.equal(cache.analyzedDocuments.get(path), `analyzed ${path}`);
+    assert.equal(cache.scannedDocuments.get(path) as any, `scanned ${path}`);
+    assert.equal(cache.analyzedDocuments.get(path) as any, `analyzed ${path}`);
   }
 
   function assertNotHasDocument(cache: AnalysisCache, path: string) {
@@ -54,13 +56,15 @@ suite('AnalysisCache', () => {
   async function assertDocumentScannedButNotResolved(
       cache: AnalysisCache, path: string) {
     assert.equal(
-        await cache.parsedDocumentPromises.getOrCompute(path, null as any),
+        await cache.parsedDocumentPromises.getOrCompute(
+            path, null as any) as any,
         `parsed ${path} promise`);
 
     assert.equal(
-        await cache.scannedDocumentPromises.getOrCompute(path, null as any),
+        await cache.scannedDocumentPromises.getOrCompute(
+            path, null as any) as any,
         `scanned ${path} promise`);
-    assert.equal(cache.scannedDocuments.get(path), `scanned ${path}`);
+    assert.equal(cache.scannedDocuments.get(path) as any, `scanned ${path}`);
     assert.isFalse(cache.analyzedDocuments.has(path));
     assert.isFalse(cache.analyzedDocumentPromises.has(path));
   }
@@ -82,7 +86,7 @@ suite('AnalysisCache', () => {
     // a Promise.resolve() of its non-promise cache.
     assert.equal(
         await forkedCache.analyzedDocumentPromises.getOrCompute(
-            'unrelated.html', null as any),
+            'unrelated.html', null as any) as any,
         `analyzed unrelated.html`);
   });
 

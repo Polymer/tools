@@ -40,7 +40,8 @@ export class PseudoElementScanner implements HtmlScanner {
       if (dom5.isCommentNode(node) && node.data &&
           node.data.includes('@pseudoElement')) {
         const parsedJsdoc = jsdoc.parseJsdoc(node.data);
-        const pseudoTag = jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name');
+        const pseudoTag =
+            jsdoc.getTag(parsedJsdoc, 'pseudoElement', 'name') || undefined;
         if (pseudoTag) {
           const element = new ScannedPolymerElement({
             astNode: node,

@@ -23,7 +23,7 @@ import {invertPromise} from '../test-utils';
 suite('scan()', () => {
 
   test('calls Scanner.scan', async() => {
-    const feature = Symbol('feature');
+    const feature = Symbol('feature') as any;
     const scanner = new ScannerStub(<any>[feature]);
     const document = makeTestDocument({});
 
@@ -62,7 +62,7 @@ suite('scan()', () => {
     });
 
     const features = await scan(document, [scanner]);
-    assert.deepEqual([`a feature`], features);
+    assert.deepEqual([`a feature` as any], features);
     assert.deepEqual(visitedVisitors, [visitor1, visitor2, visitor3]);
   });
 

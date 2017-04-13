@@ -380,7 +380,7 @@ class ClassFinder implements Visitor {
       return;
     }
 
-    const name = node.id && astValue.getIdentifierName(node.id);
+    const name = node.id ? astValue.getIdentifierName(node.id) : undefined;
     const comment = esutil.getAttachedComment(node) ||
         esutil.getAttachedComment(parent) || '';
     this._classFound(name, jsdoc.parseJsdoc(comment), node);
