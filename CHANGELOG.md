@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
 
+## [2.0.0] - 2017-04-14
+
+- [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
+- Fixed a number of issues with standalone javascript files referenced via `<script src="./foo.js">`. We now more reliably know about the context of the HTML in which they are imported, so that their dependencies are properly resolved.
 
 ## [1.0.2] - 2017-04-05
 
