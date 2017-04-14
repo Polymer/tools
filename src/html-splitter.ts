@@ -135,7 +135,8 @@ class HtmlSplitTransform extends Transform {
     if (file.contents && filePath.endsWith('.html')) {
       try {
         const contents = file.contents.toString();
-        const doc = parse5.parse(contents);
+        const doc = parse5.parse(contents, {locationInfo: true});
+        dom5.removeFakeRootElements(doc);
         const scriptTags =
             dom5.queryAll(doc, HtmlSplitTransform.isInlineScript);
         for (let i = 0; i < scriptTags.length; i++) {
@@ -231,7 +232,8 @@ class HtmlRejoinTransform extends Transform {
     const file = splitFile.vinylFile;
     const filePath = osPath.normalize(file.path);
     const contents = file.contents.toString();
-    const doc = parse5.parse(contents);
+    const doc = parse5.parse(contents, {locationInfo: true});
+    dom5.removeFakeRootElements(doc);
     const scriptTags = dom5.queryAll(doc, HtmlRejoinTransform.isExternalScript);
 
     for (let i = 0; i < scriptTags.length; i++) {
