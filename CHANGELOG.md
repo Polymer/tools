@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--## Unreleased-->
 <!-- List New Changes Here -->
 
+## [1.1.0] - 2017-04-14
+
 * Add `addCustomElementsEs5Adapter()` method to PolymerProject. Provides an adapter needed when serving ES5 to browsers that support the native Custom Elements API.
 
 ## [1.0.0] - 2017-04-11
