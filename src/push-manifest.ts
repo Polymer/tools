@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analyzer, Import} from 'polymer-analyzer';
+import {Analyzer, Document, Import} from 'polymer-analyzer';
 import {ProjectConfig} from 'polymer-project-config';
 import {Transform} from 'stream';
 import File = require('vinyl');
@@ -122,27 +122,35 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
  * to be added to the overall push manifest.
  */
 async function generatePushManifestEntryForUrl(
-    analyzer: Analyzer, url: string, ignoreUrls?: string[]):
-    Promise<PushManifestEntryCollection> {
-      const analyzedDocument = await analyzer.analyze(url);
-      const analyzedImports = analyzedDocument.getByKind(
-          'import', {externalPackages: true, imported: true});
-      const pushManifestEntries: PushManifestEntryCollection = {};
-      function shouldIgnoreFile(url: string) {
-        return ignoreUrls && ignoreUrls.indexOf(url) > -1;
-      }
+    analyzer: Analyzer,
+    url: string,
+    ignoreUrls?: string[]): Promise<PushManifestEntryCollection> {
+  const analysis = await analyzer.analyze([url]);
+  const analyzedDocument = analysis.getDocument(url);
 
-      for (const analyzedImport of analyzedImports) {
-        const analyzedImportUrl = analyzedImport.url;
-        const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
-        if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
-          pushManifestEntries[analyzedImportUrl] =
-              createPushEntryFromImport(analyzedImport);
-        }
-      }
+  if (!(analyzedDocument instanceof Document)) {
+    const message = analyzedDocument && analyzedDocument.message || 'unknown';
+    throw new Error(`Unable to get document ${url}: ${message}`);
+  }
 
-      return pushManifestEntries;
-    };
+  const analyzedImports = analyzedDocument.getFeatures(
+      {kind: 'import', externalPackages: true, imported: true});
+  const pushManifestEntries: PushManifestEntryCollection = {};
+  function shouldIgnoreFile(url: string) {
+    return ignoreUrls && ignoreUrls.indexOf(url) > -1;
+  }
+
+  for (const analyzedImport of analyzedImports) {
+    const analyzedImportUrl = analyzedImport.url;
+    const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
+    if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
+      pushManifestEntries[analyzedImportUrl] =
+          createPushEntryFromImport(analyzedImport);
+    }
+  }
+
+  return pushManifestEntries;
+};
 
 
 /**

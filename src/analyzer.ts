@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analyzer, Severity, UrlLoader, Warning} from 'polymer-analyzer';
+import {Analyzer, Document, Severity, UrlLoader, Warning} from 'polymer-analyzer';
 import {PassThrough, Transform} from 'stream';
 
 import File = require('vinyl');
@@ -379,7 +379,13 @@ export class BuildAnalyzer {
    * Attempts to retreive document-order transitive dependencies for `url`.
    */
   async _getDependencies(url: string): Promise<DocumentDeps> {
-    const doc = await this.analyzer.analyze(url);
+    const analysis = await this.analyzer.analyze([url]);
+    const doc = analysis.getDocument(url);
+
+    if (!(doc instanceof Document)) {
+      const message = doc && doc.message || 'unknown';
+      throw new Error(`Unable to get document ${url}: ${message}`);
+    }
 
     doc.getWarnings({imported: true}).forEach(w => this.warnings.add(w));
 
@@ -387,8 +393,8 @@ export class BuildAnalyzer {
     const styles = new Set<string>();
     const imports = new Set<string>();
 
-    const importFeatures =
-        doc.getByKind('import', {externalPackages: true, imported: true});
+    const importFeatures = doc.getFeatures(
+        {kind: 'import', externalPackages: true, imported: true});
     for (const importFeature of importFeatures) {
       const importUrl = importFeature.url;
       if (!this.analyzer.canResolveUrl(importUrl)) {
