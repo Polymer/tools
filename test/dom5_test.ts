@@ -300,23 +300,23 @@ suite('dom5', function() {
       });
     });
 
-    suite('Remove fake nodes from tree', function() {
-      test('Fake nodes will be removed', function() {
+    suite('Remove fake root elements from tree', function() {
+      test('Fake root elements will be removed', function() {
         const html = `<div>Just a div</div>`;
         const ast = parse5.parse(html, {locationInfo: true});
         assert.deepEqual(
             parse5.serialize(ast),
             '<html><head></head><body><div>Just a div</div></body></html>');
-        dom5.removeFakeNodes(ast);
+        dom5.removeFakeRootElements(ast);
         assert.deepEqual(parse5.serialize(ast), html);
       });
 
-      test('Real nodes will be preserved', function() {
+      test('Real root elements will be preserved', function() {
         const html =
             '<html><head></head><body><div>Just a div</div></body></html>';
         const ast = parse5.parse(html, {locationInfo: true});
         assert.deepEqual(parse5.serialize(ast), html);
-        dom5.removeFakeNodes(ast);
+        dom5.removeFakeRootElements(ast);
         assert.deepEqual(parse5.serialize(ast), html);
       });
     });

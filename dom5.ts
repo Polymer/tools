@@ -624,13 +624,15 @@ export function removeNodeSaveChildren(node: Node) {
 }
 
 /**
- * When parse5 parses an HTML document, it injects a few html tags
- * (html, head and body) if they are missing.  This function removes
- * nodes from the AST which have no location info, so it requires that the
- * `parse5.parse` be used with the `locationInfo` option of `true`.
+ * When parse5 parses an HTML document with `parse`, it injects missing root
+ * elements (html, head and body) if they are missing.  This function removes
+ * these from the AST if they have no location info, so it requires that
+ * the `parse5.parse` be used with the `locationInfo` option of `true`.
  */
-export function removeFakeNodes(ast: Node) {
-  const injectedNodes = queryAll(ast, (node) => !node.__location);
+export function removeFakeRootElements(ast: Node) {
+  const injectedNodes = queryAll(
+      ast,
+      (n) => !n.__location && hasMatchingTagName(/^(html|head|body)$/i)(n));
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
 }
 
