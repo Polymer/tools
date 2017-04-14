@@ -632,7 +632,13 @@ export function removeNodeSaveChildren(node: Node) {
 export function removeFakeRootElements(ast: Node) {
   const injectedNodes = queryAll(
       ast,
-      (n) => !n.__location && hasMatchingTagName(/^(html|head|body)$/i)(n));
+      AND((node) => !node.__location,
+          hasMatchingTagName(/^(html|head|body)$/i)),
+      undefined,
+      // Don't descend past 3 levels 'document > html > head|body'
+      (node) => node.parentNode && node.parentNode.parentNode ?
+          undefined :
+          node.childNodes);
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
 }
 
