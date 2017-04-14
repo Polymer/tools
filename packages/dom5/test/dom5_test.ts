@@ -1,11 +1,12 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
 /// <reference path="../node_modules/@types/mocha/index.d.ts" />
@@ -21,8 +22,10 @@ const assert = chai.assert;
 suite('dom5', function() {
 
   suite('Parse5 Wrapper Functions', function() {
-    const docText = "<!DOCTYPE html><div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div><!-- comment -->";
-    const fragText = '<template><span>Foo</span></template><!-- comment --><my-bar></my-bar>';
+    const docText =
+        '<!DOCTYPE html><div id=\'A\' qux>a1<div bar=\'b1\' bar=\'b2\'>b1</div>a2</div><!-- comment -->';
+    const fragText =
+        '<template><span>Foo</span></template><!-- comment --><my-bar></my-bar>';
 
     test('parse', function() {
       const doc_expected = parse5.parse(docText);
@@ -58,15 +61,14 @@ suite('dom5', function() {
 
   suite('Parse5 Node Manipulation', function() {
 
-    const docText =
-        `<!DOCTYPE html>` +
+    const docText = `<!DOCTYPE html>` +
         `<div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div>` +
         `<div bar='b3 b4'>b3 b4</div>` +
         `<!-- comment -->`;
 
     let doc = parse5.parse(docText);
 
-    setup(function () {
+    setup(function() {
       doc = parse5.parse(docText);
     });
 
@@ -77,12 +79,14 @@ suite('dom5', function() {
       });
 
       test('isTextNode', function() {
-        const textA1 = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![0];
+        const textA1 =
+            doc.childNodes![1].childNodes![1].childNodes![0].childNodes![0];
         assert(dom5.isTextNode(textA1));
       });
 
       test('isCommentNode', function() {
-        const commentEnd = doc.childNodes![1].childNodes![1].childNodes!.slice(-1)[0];
+        const commentEnd =
+            doc.childNodes![1].childNodes![1].childNodes!.slice(-1)[0];
         assert(dom5.isCommentNode(commentEnd));
       });
     });
@@ -100,7 +104,8 @@ suite('dom5', function() {
       });
 
       test('returns the first value for a doubly set attribute', function() {
-        const divB = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+        const divB =
+            doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
         assert.equal(dom5.getAttribute(divB, 'bar'), 'b1');
       });
     });
@@ -118,7 +123,8 @@ suite('dom5', function() {
       });
 
       test('returns true for a doubly set attribute', function() {
-        const divB = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+        const divB =
+            doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
         assert.equal(dom5.hasAttribute(divB, 'bar'), true);
       });
 
@@ -143,14 +149,16 @@ suite('dom5', function() {
       });
 
       test('sets the first value for a doubly set attribute', function() {
-        const divB = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+        const divB =
+            doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
         dom5.setAttribute(divB, 'bar', 'baz');
         assert.equal(dom5.getAttribute(divB, 'bar'), 'baz');
       });
 
       test('throws when called on a text node', function() {
-        const text = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![0];
-        assert.throws(function () {
+        const text =
+            doc.childNodes![1].childNodes![1].childNodes![0].childNodes![0];
+        assert.throws(function() {
           dom5.setAttribute(text, 'bar', 'baz');
         });
       });
@@ -164,12 +172,14 @@ suite('dom5', function() {
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
       });
 
-      test('does not throw when called on a node without that attribute', function() {
-        const divA = doc.childNodes![1].childNodes![1].childNodes![0];
-        assert.doesNotThrow(function() {
-          dom5.removeAttribute(divA, 'ZZZ');
-        });
-      });
+      test(
+          'does not throw when called on a node without that attribute',
+          function() {
+            const divA = doc.childNodes![1].childNodes![1].childNodes![0];
+            assert.doesNotThrow(function() {
+              dom5.removeAttribute(divA, 'ZZZ');
+            });
+          });
     });
 
     suite('getTextContent', function() {
@@ -251,8 +261,10 @@ suite('dom5', function() {
         const newNode = dom5.constructors.element('ul');
         dom5.replace(divA, newNode);
         assert.equal(divA.parentNode, null);
-        assert.equal(doc.childNodes![1].childNodes![1].childNodes!.indexOf(divA), -1);
-        assert.equal(doc.childNodes![1].childNodes![1].childNodes!.indexOf(newNode), 0);
+        assert.equal(
+            doc.childNodes![1].childNodes![1].childNodes!.indexOf(divA), -1);
+        assert.equal(
+            doc.childNodes![1].childNodes![1].childNodes!.indexOf(newNode), 0);
       });
 
       test('accepts document fragments', function() {
@@ -266,9 +278,12 @@ suite('dom5', function() {
         dom5.replace(divA, fragment);
 
         assert.equal(divA.parentNode, null);
-        assert.equal(doc.childNodes![1].childNodes![1].childNodes!.indexOf(divA), -1);
-        assert.equal(doc.childNodes![1].childNodes![1].childNodes!.indexOf(span), 0);
-        assert.equal(doc.childNodes![1].childNodes![1].childNodes!.indexOf(text), 1);
+        assert.equal(
+            doc.childNodes![1].childNodes![1].childNodes!.indexOf(divA), -1);
+        assert.equal(
+            doc.childNodes![1].childNodes![1].childNodes!.indexOf(span), 0);
+        assert.equal(
+            doc.childNodes![1].childNodes![1].childNodes!.indexOf(text), 1);
       });
     });
 
@@ -295,7 +310,8 @@ suite('dom5', function() {
         const ast = parse5.parseFragment(html);
         const span = ast.childNodes![0]!.childNodes![1]!;
         dom5.removeNodeSaveChildren(span);
-        assert.deepEqual(parse5.serialize(ast),
+        assert.deepEqual(
+            parse5.serialize(ast),
             '<div><em>x</em><em>a</em><em>c</em>y</div>');
       });
     });
@@ -345,15 +361,17 @@ suite('dom5', function() {
         assert.equal(div.childNodes![bidx], b);
       });
 
-      test('a node that is appended to its current parent is reordered', function() {
-        const bidx = dom.childNodes!.length - 1;
-        const b = dom.childNodes![bidx];
-        const a = div.childNodes![0];
-        dom5.append(div, b);
-        dom5.append(div, a);
-        assert.equal(div.childNodes![0], b);
-        assert.equal(div.childNodes![1], a);
-      });
+      test(
+          'a node that is appended to its current parent is reordered',
+          function() {
+            const bidx = dom.childNodes!.length - 1;
+            const b = dom.childNodes![bidx];
+            const a = div.childNodes![0];
+            dom5.append(div, b);
+            dom5.append(div, a);
+            assert.equal(div.childNodes![0], b);
+            assert.equal(div.childNodes![1], a);
+          });
 
       test('accepts document fragments', function() {
         const fragment = dom5.constructors.fragment();
@@ -383,7 +401,8 @@ suite('dom5', function() {
     });
 
     suite('InsertBefore', function() {
-      let dom: parse5.ASTNode, div: parse5.ASTNode, span: parse5.ASTNode, text: parse5.ASTNode;
+      let dom: parse5.ASTNode, div: parse5.ASTNode, span: parse5.ASTNode,
+          text: parse5.ASTNode;
 
       setup(function() {
         dom = parse5.parseFragment('<div></div><span></span>text');
@@ -445,7 +464,8 @@ suite('dom5', function() {
   });
 
   suite('Query Predicates', function() {
-    const fragText = '<div id="a" class="b c"><!-- nametag -->Hello World</div>';
+    const fragText =
+        '<div id="a" class="b c"><!-- nametag -->Hello World</div>';
     let frag: parse5.ASTNode;
     suiteSetup(function() {
       frag = parse5.parseFragment(fragText).childNodes![0];
@@ -549,15 +569,10 @@ suite('dom5', function() {
 
     test('Chaining Predicates', function() {
       const fn = dom5.predicates.AND(
-        dom5.predicates.hasTagName('div'),
-        dom5.predicates.OR(
-          dom5.predicates.hasClass('b'),
-          dom5.predicates.hasClass('d')
-        ),
-        dom5.predicates.NOT(
-          dom5.predicates.hasAttr('hidden')
-        )
-      );
+          dom5.predicates.hasTagName('div'),
+          dom5.predicates.OR(
+              dom5.predicates.hasClass('b'), dom5.predicates.hasClass('d')),
+          dom5.predicates.NOT(dom5.predicates.hasAttr('hidden')));
 
       assert.isFunction(fn);
       assert.isTrue(fn(frag));
@@ -568,9 +583,9 @@ suite('dom5', function() {
           '<div class="a"><div class="b"><div class="c"></div></div></div>';
       const frag = parse5.parseFragment(fragText);
       const fn = dom5.predicates.parentMatches(dom5.predicates.hasClass('a'));
-      assert.isFalse(fn(frag.childNodes![0])); // a
-      assert.isTrue(fn(frag.childNodes![0].childNodes![0])); // b
-      assert.isTrue(fn(frag.childNodes![0].childNodes![0].childNodes![0])); //c
+      assert.isFalse(fn(frag.childNodes![0]));                // a
+      assert.isTrue(fn(frag.childNodes![0].childNodes![0]));  // b
+      assert.isTrue(fn(frag.childNodes![0].childNodes![0].childNodes![0]));  // c
     });
   });
 
@@ -599,28 +614,30 @@ suite('dom5', function() {
 
     test('nodeWalkAncestors', function() {
       // doc -> dom-module -> div -> a
-      const anchor = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![3].childNodes![1];
+      const anchor = doc.childNodes![1]
+                         .childNodes![1]
+                         .childNodes![0]
+                         .childNodes![3]
+                         .childNodes![1];
 
       assert(dom5.predicates.hasTagName('a')(anchor));
-      const domModule =
-          dom5.nodeWalkAncestors(
-              anchor, dom5.predicates.hasTagName('dom-module'));
+      const domModule = dom5.nodeWalkAncestors(
+          anchor, dom5.predicates.hasTagName('dom-module'));
       assert(domModule);
       const theLinkIsNotAnAncestor =
-          dom5.nodeWalkAncestors(
-              anchor, dom5.predicates.hasTagName('link'));
+          dom5.nodeWalkAncestors(anchor, dom5.predicates.hasTagName('link'));
       assert.equal(theLinkIsNotAnAncestor, undefined);
     });
 
     test('nodeWalk', function() {
       // doc -> body -> dom-module -> template
-      const template = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
-      const templateContent = parse5.treeAdapters.default.getTemplateContent(template);
+      const template =
+          doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+      const templateContent =
+          parse5.treeAdapters.default.getTemplateContent(template);
 
       const textNode = dom5.predicates.AND(
-        dom5.isTextNode,
-        dom5.predicates.hasTextValue('\nsample element\n')
-      );
+          dom5.isTextNode, dom5.predicates.hasTextValue('\nsample element\n'));
 
       // 'sample element' text node
       let expected = templateContent.childNodes![4];
@@ -629,53 +646,50 @@ suite('dom5', function() {
 
       // <!-- comment node -->
       expected = templateContent.childNodes![5];
-      actual = dom5.nodeWalk(template, dom5.isCommentNode, dom5.childNodesIncludeTemplate);
+      actual = dom5.nodeWalk(
+          template, dom5.isCommentNode, dom5.childNodesIncludeTemplate);
       assert.equal(expected, actual);
     });
 
     test('query', function() {
       const fn = dom5.predicates.AND(
-        dom5.predicates.hasTagName('link'),
-        dom5.predicates.hasAttrValue('rel', 'import'),
-        dom5.predicates.hasAttr('href')
-      );
+          dom5.predicates.hasTagName('link'),
+          dom5.predicates.hasAttrValue('rel', 'import'),
+          dom5.predicates.hasAttr('href'));
       const expected = doc.childNodes![1].childNodes![0].childNodes![0];
       const actual = dom5.query(doc, fn);
       assert.equal(expected, actual);
     });
 
     test('nodeWalkAll', function() {
-      const empty = dom5.predicates.AND(
-        dom5.isTextNode,
-        function(node) {
-          return !/\S/.test(node.value!);
-        }
-      );
+      const empty = dom5.predicates.AND(dom5.isTextNode, function(node) {
+        return !/\S/.test(node.value!);
+      });
 
       // serialize to count for inserted <head> and <body>
       const serializedDoc = parse5.serialize(doc);
       // subtract one to get "gap" number
       const expected = serializedDoc.split('\n').length - 1;
       // add two for normalized text node "\nsample text\n"
-      const actual = dom5.nodeWalkAll(doc, empty, [], dom5.childNodesIncludeTemplate).length + 2;
+      const actual =
+          dom5.nodeWalkAll(doc, empty, [], dom5.childNodesIncludeTemplate)
+              .length +
+          2;
 
       assert.equal(expected, actual);
     });
 
     test('queryAll', function() {
       const fn = dom5.predicates.AND(
-        dom5.predicates.OR(
-          dom5.predicates.hasAttr('href'),
-          dom5.predicates.hasAttr('src')
-        ),
-        dom5.predicates.NOT(
-          dom5.predicates.hasTagName('link')
-        )
-      );
+          dom5.predicates.OR(
+              dom5.predicates.hasAttr('href'), dom5.predicates.hasAttr('src')),
+          dom5.predicates.NOT(dom5.predicates.hasTagName('link')));
 
       // doc -> body -> dom-module -> template
-      const template = doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
-      const templateContent = parse5.treeAdapters.default.getTemplateContent(template);
+      const template =
+          doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+      const templateContent =
+          parse5.treeAdapters.default.getTemplateContent(template);
 
       // img
       const expected_1 = templateContent.childNodes![1];
@@ -690,7 +704,8 @@ suite('dom5', function() {
   });
 
   suite('NodeWalkAllPrior', function() {
-    const docText = fs.readFileSync(__dirname + '/static/multiple-comments.html', 'utf8');
+    const docText =
+        fs.readFileSync(__dirname + '/static/multiple-comments.html', 'utf8');
     let doc: parse5.ASTNode;
 
     setup(function() {
@@ -698,14 +713,17 @@ suite('dom5', function() {
     });
 
     test('nodeWalkAllPrior', function() {
-      const domModule = dom5.nodeWalkAll(doc,
-        dom5.predicates.hasAttrValue('id', 'test-element'))[0];
+      const domModule = dom5.nodeWalkAll(
+          doc, dom5.predicates.hasAttrValue('id', 'test-element'))[0];
       const comments = dom5.nodeWalkAllPrior(domModule, dom5.isCommentNode);
       assert.include(dom5.getTextContent(comments[0]), 'test element');
-      assert.include(dom5.getTextContent(comments[1]), 'hash or path based routing');
-      assert.include(dom5.getTextContent(comments[2]), 'core-route-selectable.html');
-      assert.include(dom5.getTextContent(comments[comments.length - 1]),
-                                         'The Polymer Project Authors');
+      assert.include(
+          dom5.getTextContent(comments[1]), 'hash or path based routing');
+      assert.include(
+          dom5.getTextContent(comments[2]), 'core-route-selectable.html');
+      assert.include(
+          dom5.getTextContent(comments[comments.length - 1]),
+          'The Polymer Project Authors');
     });
   });
 
@@ -746,7 +764,7 @@ suite('dom5', function() {
       assert.equal(cn, cn);
     });
 
-    test("an element's child text nodes are merged", function() {
+    test('an element\'s child text nodes are merged', function() {
       const div = con.element('div');
       const tn1 = con.text('foo');
       const tn2 = con.text('bar');
