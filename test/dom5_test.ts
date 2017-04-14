@@ -289,6 +289,38 @@ suite('dom5', function() {
       });
     });
 
+    suite('Remove node, save children', function() {
+      test('node is removed and children at same position', function() {
+        const html = '<div><em>x</em><span><em>a</em><em>c</em></span>y</div>';
+        const ast = parse5.parseFragment(html);
+        const span = ast.childNodes![0]!.childNodes![1]!;
+        dom5.removeNodeSaveChildren(span);
+        assert.deepEqual(parse5.serialize(ast),
+            '<div><em>x</em><em>a</em><em>c</em>y</div>');
+      });
+    });
+
+    suite('Remove fake nodes from tree', function() {
+      test('Fake nodes will be removed', function() {
+        const html = `<div>Just a div</div>`;
+        const ast = parse5.parse(html, {locationInfo: true});
+        assert.deepEqual(
+            parse5.serialize(ast),
+            '<html><head></head><body><div>Just a div</div></body></html>');
+        dom5.removeFakeNodes(ast);
+        assert.deepEqual(parse5.serialize(ast), html);
+      });
+
+      test('Real nodes will be preserved', function() {
+        const html =
+            '<html><head></head><body><div>Just a div</div></body></html>';
+        const ast = parse5.parse(html, {locationInfo: true});
+        assert.deepEqual(parse5.serialize(ast), html);
+        dom5.removeFakeNodes(ast);
+        assert.deepEqual(parse5.serialize(ast), html);
+      });
+    });
+
     suite('Append Node', function() {
       let dom: parse5.ASTNode, div: parse5.ASTNode, span: parse5.ASTNode;
 
