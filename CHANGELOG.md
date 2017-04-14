@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--## Unreleased-->
 <!-- List New Changes Here -->
 
+* [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
+* Upgraded to new `polymer-bundler` and `polymer-analyzer` versions.
+
 ## [1.1.0] - 2017-04-14
 
 * Add `addCustomElementsEs5Adapter()` method to PolymerProject. Provides an adapter needed when serving ES5 to browsers that support the native Custom Elements API.
