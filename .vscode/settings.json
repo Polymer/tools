@@ -1,10 +1,16 @@
-// Place your settings in this file to overwrite default and user settings.
 {
   "clang-format.style": "file",
-  "clang-format.formatOnSave": true,
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
   "editor.formatOnType": true,
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
   "files.exclude": {
     "dom5.js": true,
     "dom5.d.ts": true
+  },
+  "files.insertFinalNewline": true,
+  "search.exclude": {
+    "node_modules/": true
   }
 }
