@@ -26,7 +26,7 @@
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.32",
     "chai": "^3.3.0",
-    "clang-format": "^1.0.42",
+    "clang-format": "=1.0.49",
     "mocha": "^2.0.1",
     "tslint": "^4.0.0",
     "typescript": "^2.0.0"
