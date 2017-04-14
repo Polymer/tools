@@ -120,4 +120,26 @@ suite('HtmlSplitter', () => {
     sourceStream.push(null);
   });
 
+  test('does not add root elements to documents', (done) => {
+    const htmlSplitter = new HtmlSplitter();
+    const joinedFiles = new Map();
+    defaultProject.sources()
+        .pipe(htmlSplitter.split())
+        .pipe(htmlSplitter.rejoin())
+        .on('data', (f: File) => joinedFiles.set(unroot(f.path), f))
+        .on('end', () => {
+          const expectedJoinedFiles = [
+            'index.html',
+            'shell.html',
+            path.join('source-dir', 'my-app.html'),
+          ];
+          assert.deepEqual(
+              Array.from(joinedFiles.keys()).sort(), expectedJoinedFiles);
+          const shell = joinedFiles.get('shell.html').contents.toString();
+          assert.notInclude(shell, '<html', 'html element was added');
+          assert.notInclude(shell, '<head', 'head element was added');
+          assert.notInclude(shell, '<body', 'body element was added');
+          done();
+        });
+  });
 });
