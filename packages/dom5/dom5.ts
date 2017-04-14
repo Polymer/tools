@@ -605,6 +605,35 @@ export function remove(node: Node) {
   node.parentNode = undefined;
 }
 
+/**
+ * Removes a node and places its children in its place.  If the node
+ * has no parent, the operation is impossible and no action takes place.
+ */
+export function removeNodeSaveChildren(node: Node) {
+  // We can't save the children if there's no parent node to provide
+  // for them.
+  const fosterParent = node.parentNode;
+  if (!fosterParent) {
+    return;
+  }
+  const children = (node.childNodes || []).slice();
+  for (const child of children) {
+    insertBefore(node.parentNode!, node, child);
+  }
+  remove(node);
+}
+
+/**
+ * When parse5 parses an HTML document, it injects a few html tags
+ * (html, head and body) if they are missing.  This function removes
+ * nodes from the AST which have no location info, so it requires that the
+ * `parse5.parse` be used with the `locationInfo` option of `true`.
+ */
+export function removeFakeNodes(ast: Node) {
+  const injectedNodes = queryAll(ast, (node) => !node.__location);
+  injectedNodes.reverse().forEach(removeNodeSaveChildren);
+}
+
 export function insertBefore(parent: Node, oldNode: Node, newNode: Node) {
   const index = parent.childNodes!.indexOf(oldNode);
   insertNode(parent, index, newNode);
