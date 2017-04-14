@@ -20,28 +20,28 @@ suite('PackageUrlResolver', function() {
 
   suite('canResolve', () => {
 
-    test('canResolve is true an in-package URL', () => {
+    test('is true an in-package URL', () => {
       const r = new PackageUrlResolver();
       assert.isTrue(r.canResolve('foo.html'));
       assert.isTrue(r.canResolve('/foo.html'));
       assert.isTrue(r.canResolve('./foo.html'));
     });
 
-    test('canResolve is true for a sibling URL', () => {
+    test('is true for a sibling URL', () => {
       assert.isTrue(new PackageUrlResolver().canResolve('../foo/foo.html'));
     });
 
-    test('canResolve is false for a cousin URL', () => {
+    test('is false for a cousin URL', () => {
       assert.isFalse(new PackageUrlResolver().canResolve('../../foo/foo.html'));
     });
 
-    test('canResolve is false for URL with a hostname', () => {
+    test('is false for URL with a hostname', () => {
       const r = new PackageUrlResolver();
       assert.isFalse(r.canResolve('http://abc.xyz/foo.html'));
       assert.isFalse(r.canResolve('//abc.xyz/foo.html'));
     });
 
-    test('canResolve is true for a URL with the right hostname', () => {
+    test('is true for a URL with the right hostname', () => {
       const r = new PackageUrlResolver({
         hostname: 'abc.xyz',
       });
@@ -52,6 +52,10 @@ suite('PackageUrlResolver', function() {
       assert.isTrue(r.canResolve('//abc.xyz/foo.html'));
     });
 
+    test('is false for an undecodable URL', () => {
+      const r = new PackageUrlResolver();
+      assert.isFalse(r.canResolve('%><><%='));
+    });
   });
 
   suite('resolve', () => {
