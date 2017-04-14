@@ -1,7 +1,7 @@
 export {SWConfig} from 'sw-precache';
-// Export types for upstream TypeScript projects
 export {BuildAnalyzer, DepsIndex} from './analyzer';
 export {BuildBundler} from './bundle';
+export {addCustomElementsEs5Adapter} from './custom-elements-es5-adapter';
 export {forkStream} from './fork-stream';
 export {HtmlSplitter} from './html-splitter';
 export {PolymerProject} from './polymer-project';

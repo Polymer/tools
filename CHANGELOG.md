@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--## Unreleased-->
 <!-- List New Changes Here -->
 
+* Add `addCustomElementsEs5Adapter()` method to PolymerProject. Provides an adapter needed when serving ES5 to browsers that support the native Custom Elements API.
+
 ## [1.0.0] - 2017-04-11
 
 * [Breaking] Remove Node v4 support: Node v4 is no longer in Active LTS, so as per the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) polymer-build will not support Node v4. Please update to Node v6 or later to continue using the latest verisons of Polymer tooling.

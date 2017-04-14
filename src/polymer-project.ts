@@ -18,6 +18,7 @@ import {src as vinylSrc} from 'vinyl-fs';
 
 import {BuildAnalyzer} from './analyzer';
 import {BuildBundler} from './bundle';
+import {CustomElementsEs5AdapterInjector} from './custom-elements-es5-adapter';
 import {AddPushManifest} from './push-manifest';
 
 const logger = logging.getLogger('polymer-project');
@@ -92,5 +93,14 @@ export class PolymerProject {
 
   addPushManifest(filePath?: string): NodeJS.ReadWriteStream {
     return new AddPushManifest(this.config, filePath);
+  }
+
+  /**
+   * Returns a stream transformer that injects `custom-elements-es5-adapter.js`
+   * into the entry point HTML file. This adapter is needed when serving ES5 to
+   * browsers that support the native Custom Elements API.
+   */
+  addCustomElementsEs5Adapter(): NodeJS.ReadWriteStream {
+    return new CustomElementsEs5AdapterInjector();
   }
 }
