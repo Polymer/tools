@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- List New Changes Here -->
 
 * [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
-* Upgraded to new `polymer-bundler` and `polymer-analyzer` versions.
+* Dependency updates.  Upgraded to new `polymer-bundler`, `polymer-analyzer` and `dom5` versions.
 
 ## [1.1.0] - 2017-04-14
 
