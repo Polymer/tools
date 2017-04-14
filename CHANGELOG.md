@@ -1,7 +1,9 @@
 # Change Log
 
-## [v2.1.0](https://github.com/Polymer/dom5/tree/v2.1.0) (2017-01-13)
+## [v2.2.0](https://github.com/Polymer/dom5/tree/v2.2.0) (2017-04-14)
+- **Added** `removeFakeRootElements` and `removeNodeSaveChildren` functions.
 
+## [v2.1.0](https://github.com/Polymer/dom5/tree/v2.1.0) (2017-01-13)
 - **Added** Option to node traversal methods to traverse templates
 
 ## [v2.0.1](https://github.com/Polymer/dom5/tree/v2.0.1) (2016-11-01)
