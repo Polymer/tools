@@ -1,17 +1,21 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
  * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
  */
 
 import * as fs from 'fs';
+import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as logging from 'plylog';
-import * as jsonschema from 'jsonschema';
 
 import minimatchAll = require('minimatch-all');
 
@@ -52,26 +56,100 @@ function getPositiveGlob(glob: string): string {
  */
 function fixDeprecatedOptions(options: any): ProjectOptions {
   if (typeof options.sourceGlobs !== 'undefined') {
-    logger.warn('"sourceGlobs" config option has been renamed to "sources" and will no longer be supported in future versions');
+    logger.warn(
+        '"sourceGlobs" config option has been renamed to "sources" and will no longer be supported in future versions');
     options.sources = options.sources || options.sourceGlobs;
   }
   if (typeof options.includeDependencies !== 'undefined') {
-    logger.warn('"includeDependencies" config option has been renamed to "extraDependencies" and will no longer be supported in future versions');
-    options.extraDependencies = options.extraDependencies || options.includeDependencies;
+    logger.warn(
+        '"includeDependencies" config option has been renamed to "extraDependencies" and will no longer be supported in future versions');
+    options.extraDependencies =
+        options.extraDependencies || options.includeDependencies;
   }
   return options;
 }
 
 export interface ProjectBuildOptions {
+  /**
+   * The name of this build, used to determine the output directory name.
+   */
   name?: string;
+
+  /**
+   * Generate a service worker for your application to cache all files and
+   * assets on the client.
+   *
+   * Polymer CLI will generate a service worker for your build using the
+   * [sw-precache library](https://github.com/GoogleChrome/sw-precache). To
+   * customize your service worker, create a sw-precache-config.js file in your
+   * project directory that exports your configuration. See the [sw-precache
+   * README](https://github.com/GoogleChrome/sw-precache) for a list of all
+   * supported options.
+   *
+   * Note that the sw-precache library uses a cache-first strategy for maximum
+   * speed and makes some other assumptions about how your service worker should
+   * behave. Read the "Considerations" section of the sw-precache README to make
+   * sure that this is suitable for your application.
+   */
   addServiceWorker?: boolean;
+
+  /**
+   * If `true`, generate an [HTTP/2 Push
+   * Manifest](https://github.com/GoogleChrome/http2-push-manifest) for your
+   * application.
+   */
   addPushManifest?: boolean;
+
+  /**
+   * A config file that's passed to the [sw-precache
+   * library](https://github.com/GoogleChrome/sw-precache). See [its
+   * README](https://github.com/GoogleChrome/sw-precache) for details of the
+   * format of this file.
+   *
+   * Ignored if `addServiceWorker` is not `true`.
+   *
+   * Defaults to `"sw-precache-config.js`.
+   */
   swPrecacheConfig?: string;
+
+  /**
+   * Insert prefetch link elements into your fragments so that all dependencies
+   * are prefetched immediately. Add dependency prefetching by inserting `<link
+   * rel="prefetch">` tags into entrypoint and `<link rel="import">` tags into
+   * fragments and shell for all dependencies.
+   */
   insertPrefetchLinks?: boolean;
+
+  /**
+   * By default, fragments are unbundled. This is optimal for HTTP/2-compatible
+   * servers and clients.
+   *
+   * If the --bundle flag is supplied, all fragments are bundled together to
+   * reduce the number of file requests. This is optimal for sending to clients
+   * or serving from servers that are not HTTP/2 compatible.
+   */
   bundle?: boolean;
-  html?: {minify?: boolean};
-  css?: {minify?: boolean};
-  js?: {minify?: boolean, compile?: boolean};
+
+  /** Options for processing HTML. */
+  html?: {
+    /** Minify HTMl by removing comments and whitespace. */
+    minify?: boolean
+  };
+
+  /** Options for processing CSS. */
+  css?: {
+    /** Minify inlined and external CSS. */
+    minify?: boolean
+  };
+
+  /** Options for processing JavaScript. */
+  js?: {
+    /** Minify inlined and external JavaScript. */
+    minify?: boolean,
+
+    /** Use babel to compile all ES6 JS down to ES5 for older browsers. */
+    compile?: boolean
+  };
 }
 
 export interface LintOptions {
@@ -120,8 +198,8 @@ export interface ProjectOptions {
   sources?: string[];
 
   /**
-   * List of file paths, relative to the project directory, that should be included
-   * as extraDependencies in the build target.
+   * List of file paths, relative to the project directory, that should be
+   * included as extraDependencies in the build target.
    */
   extraDependencies?: string[];
 
@@ -137,7 +215,6 @@ export interface ProjectOptions {
 }
 
 export class ProjectConfig {
-
   readonly root: string;
   readonly entrypoint: string;
   readonly shell?: string;
@@ -147,7 +224,7 @@ export class ProjectConfig {
 
   readonly builds: ProjectBuildOptions[];
   readonly allFragments: string[];
-  readonly lint: LintOptions | undefined = undefined;
+  readonly lint: LintOptions|undefined = undefined;
 
   /**
    * Given an absolute file path to a polymer.json-like ProjectOptions object,
@@ -237,14 +314,14 @@ export class ProjectConfig {
     /**
      * extraDependencies
      */
-    this.extraDependencies = (options.extraDependencies || [])
-        .map((glob) => resolveGlob(this.root, glob));
+    this.extraDependencies = (options.extraDependencies ||
+                              []).map((glob) => resolveGlob(this.root, glob));
 
     /**
      * sources
      */
     this.sources = (options.sources || defaultSourceGlobs)
-        .map((glob) => resolveGlob(this.root, glob));
+                       .map((glob) => resolveGlob(this.root, glob));
     this.sources.push(this.entrypoint);
     if (this.shell) {
       this.sources.push(this.shell);
@@ -300,29 +377,33 @@ export class ProjectConfig {
     const validateErrorPrefix = `Polymer Config Error`;
     if (this.entrypoint) {
       console.assert(
-        this.entrypoint.startsWith(this.root),
-        `${validateErrorPrefix}: entrypoint (${this.entrypoint}) ` +
-        `does not resolve within root (${this.root})`);
+          this.entrypoint.startsWith(this.root),
+          `${validateErrorPrefix}: entrypoint (${this.entrypoint}) ` +
+              `does not resolve within root (${this.root})`);
     }
     if (this.shell) {
-      console.assert(this.shell.startsWith(this.root),
-        `${validateErrorPrefix}: shell (${this.shell}) ` +
-        `does not resolve within root (${this.root})`);
+      console.assert(
+          this.shell.startsWith(this.root),
+          `${validateErrorPrefix}: shell (${this.shell}) ` +
+              `does not resolve within root (${this.root})`);
     }
     this.fragments.forEach((f) => {
-      console.assert(f.startsWith(this.root),
-      `${validateErrorPrefix}: a "fragments" path (${f}) ` +
-      `does not resolve within root (${this.root})`);
+      console.assert(
+          f.startsWith(this.root),
+          `${validateErrorPrefix}: a "fragments" path (${f}) ` +
+              `does not resolve within root (${this.root})`);
     });
     this.sources.forEach((s) => {
-      console.assert(getPositiveGlob(s).startsWith(this.root),
-      `${validateErrorPrefix}: a "sources" path (${s}) ` +
-      `does not resolve within root (${this.root})`);
+      console.assert(
+          getPositiveGlob(s).startsWith(this.root),
+          `${validateErrorPrefix}: a "sources" path (${s}) ` +
+              `does not resolve within root (${this.root})`);
     });
     this.extraDependencies.forEach((d) => {
-      console.assert(getPositiveGlob(d).startsWith(this.root),
-      `${validateErrorPrefix}: an "extraDependencies" path (${d}) ` +
-      `does not resolve within root (${this.root})`);
+      console.assert(
+          getPositiveGlob(d).startsWith(this.root),
+          `${validateErrorPrefix}: an "extraDependencies" path (${d}) ` +
+              `does not resolve within root (${this.root})`);
     });
 
     // TODO(fks) 11-14-2016: Validate that files actually exist in the file
@@ -330,20 +411,22 @@ export class ProjectConfig {
 
     if (this.builds) {
       console.assert(
-        Array.isArray(this.builds),
-        `${validateErrorPrefix}: "builds" (${this.builds}) ` +
-        `expected an array of build configurations.`);
+          Array.isArray(this.builds),
+          `${validateErrorPrefix}: "builds" (${this.builds}) ` +
+              `expected an array of build configurations.`);
 
       if (this.builds.length > 1) {
         const buildNames = new Set<string>();
         for (const build of this.builds) {
           const buildName = build.name;
-          console.assert(buildName,
-            `${validateErrorPrefix}: all "builds" require a "name" property ` +
-            `when there are multiple builds defined.`);
-          console.assert(!buildNames.has(buildName),
-            `${validateErrorPrefix}: "builds" duplicate build name ` +
-            `"${buildName}" found. Build names must be unique.`);
+          console.assert(
+              buildName,
+              `${validateErrorPrefix}: all "builds" require ` +
+                  `a "name" property when there are multiple builds defined.`);
+          console.assert(
+              !buildNames.has(buildName),
+              `${validateErrorPrefix}: "builds" duplicate build name ` +
+                  `"${buildName}" found. Build names must be unique.`);
           buildNames.add(buildName);
         }
       }
@@ -351,14 +434,13 @@ export class ProjectConfig {
 
     return true;
   }
-
 }
 
 // Gets the json schema for polymer.json, generated from the typescript
 // interface for runtime validation. See the build script in package.json for
 // more info.
 const getSchema: () => jsonschema.Schema = (() => {
-  let schema: jsonschema.Schema | undefined = undefined;
+  let schema: jsonschema.Schema|undefined = undefined;
 
   return () => {
     if (schema === undefined) {
