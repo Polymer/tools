@@ -24,6 +24,7 @@ import * as url from 'url';
 
 import {bowerConfig} from './bower_config';
 import {babelCompile} from './compile-middleware';
+import {injectCustomElementsEs5Adapter} from './custom-elements-es5-adapter-middleware';
 import {makeApp} from './make_app';
 import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
@@ -347,8 +348,10 @@ export function getApp(options: ServerOptions): express.Express {
     app.use(`/${escapedPath}/`, apiProxy);
   }
 
-  if (options.compile === 'auto' || options.compile === 'always') {
-    app.use('*', babelCompile(options.compile === 'always'));
+  const forceCompile = options.compile === 'always';
+  if (options.compile === 'auto' || forceCompile) {
+    app.use('*', injectCustomElementsEs5Adapter(forceCompile));
+    app.use('*', babelCompile(forceCompile));
   }
 
   app.use(`/${componentUrl}/`, polyserve);

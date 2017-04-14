@@ -23,9 +23,12 @@ export function transformResponse(transformer: ResponseTransformer):
 
     let _shouldTransform: boolean = null;
 
+    // Note: this function memoizes its result.
     function shouldTransform() {
       if (_shouldTransform == null) {
-        _shouldTransform = !!transformer.shouldTransform(req, res);
+        const successful = res.statusCode >= 200 && res.statusCode < 300;
+        _shouldTransform =
+            successful && !!transformer.shouldTransform(req, res);
       }
       return _shouldTransform;
     }
@@ -61,6 +64,12 @@ export function transformResponse(transformer: ResponseTransformer):
       ended = true;
 
       if (shouldTransform()) {
+        if (chunk) {
+          const buffer = (typeof chunk === 'string') ?
+              new Buffer(chunk, cbOrEncoding as string) :
+              chunk;
+          chunks.push(buffer);
+        }
         const body = Buffer.concat(chunks).toString('utf8');
         let newBody = body;
         try {

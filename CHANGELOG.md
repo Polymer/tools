@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* When compiling to ES5, inject the Custom Elements ES5 Adapter into any HTML
+  file where the web components polyfill is included (typically the entry
+  point). This adapter is needed when serving ES5 to browsers that support the
+  native Custom Elements API
+  ([#164](https://github.com/Polymer/polyserve/issues/164)).
+
 ## [0.17.0](https://github.com/PolymerLabs/polyserve/tree/v0.17.0) (2017-04-13)
 
 * Add auto-compile support for the Chromium browser.

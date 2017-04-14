@@ -17,7 +17,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as supertest from 'supertest-as-promised';
-import {babelCompileCache, needCompilation} from '../compile-middleware';
+import {babelCompileCache, browserNeedsCompilation} from '../compile-middleware';
 import {getApp} from '../start_server';
 
 chai.use(chaiAsPromised);
@@ -110,7 +110,7 @@ suite('compile-middleware', () => {
     });
   });
 
-  test('needCompilation', () => {
+  test('browserNeedsCompilation', () => {
     const cases: [string, boolean][] = [
       [
         'unknown browser',
@@ -134,7 +134,7 @@ suite('compile-middleware', () => {
       ],
     ];
     for (const [userAgent, expected] of cases) {
-      assert.equal(needCompilation(userAgent), expected, userAgent);
+      assert.equal(browserNeedsCompilation(userAgent), expected, userAgent);
     }
   });
 });
