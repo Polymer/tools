@@ -221,4 +221,4 @@ You can compile polymer-build from source by cloning the repo and then running `
 
 ## Supported Node.js Versions
 
-polymer-build officially supports the latest LTS (4.x) and stable (6.x) versions of Node.js.
+polymer-build officially supports the latest current & active [LTS](https://github.com/nodejs/LTS) versions of Node.js. See our [.travis.yml](/.travis.yml) for the current versions of Node.js under test and visit the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for more information.
