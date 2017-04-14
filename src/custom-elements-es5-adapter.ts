@@ -96,7 +96,7 @@ export function addCustomElementsEs5Adapter(html: string): string {
   if (!webcomponentsLoaderRegex.test(html)) {
     return html;
   }
-  const parsed = parse5.parse(html);
+  const parsed = parse5.parse(html, {locationInfo: true});
   const script = dom5.nodeWalk(parsed, webcomponentsLoaderMatcher);
   if (!script) {
     return html;
@@ -159,5 +159,6 @@ export function addCustomElementsEs5Adapter(html: string): string {
         bodyElement, bodyElement.childNodes[0] || null, es5AdapterScript);
   }
 
+  dom5.removeFakeRootElements(parsed);
   return parse5.serialize(parsed);
 }
