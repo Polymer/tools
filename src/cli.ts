@@ -86,8 +86,7 @@ export async function run(): Promise<StartServerResult> {
     const mainlineServer = serverInfos;
     const urls = getServerUrls(options, mainlineServer.server);
     console.log(`Files in this directory are available under the following URLs
-    applications: ${
-                  url.format(urls.serverUrl)}
+    applications: ${url.format(urls.serverUrl)}
     reusable components: ${url.format(urls.componentUrl)}
   `);
   } else {

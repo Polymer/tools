@@ -85,7 +85,7 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
           compileMimeTypes.indexOf(getContentType(response)) >= 0;
     },
 
-    transform(request: Request, response: Response, body: string): string /**/ {
+    transform(request: Request, response: Response, body: string): string {
       const contentType = getContentType(response);
       const compile =
           forceCompile || needCompilation(request.headers['user-agent']);

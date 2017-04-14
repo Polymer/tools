@@ -326,7 +326,8 @@ export function getApp(options: ServerOptions): express.Express {
     for (let char of ['*', '?', '+']) {
       if (escapedPath.indexOf(char) > -1) {
         console.warn(
-            `Proxy path includes character "${char}" which can cause problems during route matching.`);
+            `Proxy path includes character "${char}"` +
+            `which can cause problems during route matching.`);
       }
     }
 
