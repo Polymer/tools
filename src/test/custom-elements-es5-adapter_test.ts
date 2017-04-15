@@ -41,10 +41,20 @@ suite('Custom Elements ES5 Adapter', () => {
             'shell.html',
           ];
           assert.deepEqual(Array.from(files.keys()).sort(), expectedFiles);
-          assert.include(
-              files.get('index.html').contents.toString(), injectedAdapter);
-          assert.notInclude(
-              files.get('shell.html').contents.toString(), injectedAdapter);
+          const index = files.get('index.html').contents.toString();
+          const shell = files.get('shell.html').contents.toString();
+          assert.include(index, injectedAdapter);
+          assert.notInclude(shell, injectedAdapter);
+          assert.notInclude(index, '<html', 'html element was added');
+          assert.notInclude(index, '<head', 'head element was added');
+
+          // The following assertions demonstrate that `<body` does not
+          // appears in the file, except in the case where it is part of
+          // the string `<body> so that` which appears in a comment in
+          // the adapter shim.
+          assert.notMatch(
+              index, /<body(?!> so that)/, 'body element was added');
+          assert.include(index, '<body> so that');
           done();
         });
   });
