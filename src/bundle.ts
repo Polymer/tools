@@ -79,8 +79,9 @@ export class BuildBundler extends Transform {
           urlFromPath(this.config.root, this.config.shell));
     }
     const bundleEntrypoints = Array.from(this.config.allFragments);
-    const docCollection = await this._bundler.bundle(
+    const manifest = await this._bundler.generateManifest(
         bundleEntrypoints.map(f => urlFromPath(this.config.root, f)), strategy);
+    const docCollection = await this._bundler.bundle(manifest);
     const contentsMap = new Map();
     for (const bundleName of docCollection.keys()) {
       contentsMap.set(
