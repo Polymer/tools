@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
 * Dependency updates.  Upgraded to new `polymer-bundler`, `polymer-analyzer` and `dom5` versions.
+* Fixed bug where `<html>`, `<head>` and `<body>` were added to documents mutated by `HtmlSplitter` and the `CustomElementsES5AdapterInjector`.
 
 ## [1.1.0] - 2017-04-14
 
