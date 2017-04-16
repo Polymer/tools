@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analyzer, Document, Severity, UrlLoader, Warning} from 'polymer-analyzer';
+import {Analyzer, Document, Severity, UrlLoader, Warning, WarningPrinter} from 'polymer-analyzer';
 import {PassThrough, Transform} from 'stream';
 
 import File = require('vinyl');
@@ -41,20 +41,6 @@ export interface DepsIndex {
   fragmentToDeps: Map<string, string[]>;
   // A map from frament urls to html, js, and css dependencies.
   fragmentToFullDeps: Map<string, DocumentDeps>;
-}
-
-/**
- * Get a longer, single-line error message for logging and exeption-handling
- * analysis Warning objects.
- *
- * Note: We cannot use WarningPrinter.printWarning() from the polymer-analyzer
- * codebase because after minification & optimization its reported source
- * ranges don't match the original source code. Instead we use this custom
- * message generator that only includes the file name in the error message.
- */
-function getFullWarningMessage(warning: Warning): string {
-  return `In ${warning.sourceRange.file}: [${warning.code}] - ${warning.message
-  }`;
 }
 
 /**
@@ -350,16 +336,8 @@ export class BuildAnalyzer {
   }
 
   printWarnings(): void {
-    for (const warning of this.warnings) {
-      const message = getFullWarningMessage(warning);
-      if (warning.severity === Severity.ERROR) {
-        logger.error(message);
-      } else if (warning.severity === Severity.WARNING) {
-        logger.warn(message);
-      } else {
-        logger.debug(message);
-      }
-    }
+    const warningPrinter = new WarningPrinter(process.stdout, { analyzer: this.analyzer });
+    warningPrinter.printWarnings(this.warnings);
   }
 
   private countWarningsByType(): Map<Severity, number> {
