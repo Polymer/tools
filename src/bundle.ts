@@ -77,8 +77,8 @@ export class BuildBundler extends Transform {
       });
       this._mapFile(file);
     }
-    for (const filepath of this.files.keys()) {
-      this.push(this.files.get(filepath));
+    for (const file of this.files.values()) {
+      this.push(file);
     }
     // end the stream
     done();
