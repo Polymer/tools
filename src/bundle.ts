@@ -30,6 +30,10 @@ export class BuildBundler extends Transform {
   private _buildAnalyzer: BuildAnalyzer;
   private _bundler: Bundler;
 
+  // A map of urls to file objects.  As the transform stream handleds files
+  // coming into the stream, it collects all files here.  After bundlling,
+  // we remove files from this set that have been inlined and replace
+  // entrypoint/fragment files with bundled versions.
   files = new Map<string, File>();
 
   constructor(config: ProjectConfig, buildAnalyzer: BuildAnalyzer) {
