@@ -16,6 +16,7 @@ import * as assert from 'assert';
 import * as express from 'express';
 import * as fs from 'mz/fs';
 import * as path from 'path';
+import {urlFromPath} from 'polymer-build/lib/path-transformers';
 import * as send from 'send';
 // TODO: Switch to node-http2 when compatible with express
 // https://github.com/molnarg/node-http2/issues/100
@@ -35,6 +36,13 @@ const httpProxy = require('http-proxy-middleware');
 export interface ServerOptions {
   /** The root directory to serve **/
   root?: string;
+
+  /**
+   * The path on disk of the entry point HTML file that will be served for
+   * app-shell style projects. Must be contained by `root`. Defaults to
+   * `index.html`.
+   */
+  entrypoint?: string;
 
   /** Whether or not to compile JavaScript **/
   compile?: 'always'|'never'|'auto';
@@ -356,14 +364,21 @@ export function getApp(options: ServerOptions): express.Express {
 
   app.use(`/${componentUrl}/`, polyserve);
 
+  // `send` expects files to be specified relative to the given root and as a
+  // URL rather than a file system path.
+  const entrypoint =
+      options.entrypoint ? urlFromPath(root, options.entrypoint) : 'index.html';
+
   app.get('/*', (req, res) => {
     pushResources(options, req, res);
     const filePath = req.path;
-    send(req, filePath, {root: root})
+    send(req, filePath, {root: root, index: entrypoint})
         .on('error',
             (error: send.SendError) => {
               if ((error).status === 404 && !filePathRegex.test(filePath)) {
-                send(req, '/', {root: root}).pipe(res);
+                // The static file handling middleware failed to find a file on
+                // disk. Serve the entry point HTML file instead of a 404.
+                send(req, entrypoint, {root: root}).pipe(res);
               } else {
                 res.statusCode = error.status || 500;
                 res.end(error.message);
