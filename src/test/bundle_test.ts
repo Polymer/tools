@@ -35,7 +35,7 @@ class FileTransform extends Transform {
     this.transform = transform;
   }
   _transform(f: File, _encoding: string, cb: () => void) {
-    this.transform(this, f);
+    this.transform(this, f.clone());
     cb();
   }
 }
@@ -47,33 +47,31 @@ suite('BuildBundler', () => {
   let bundledStream: Stream;
   let files: Map<string, File>;
 
-  let setupTest = async(
-      options: ProjectOptions,
-      transform?: FileTransform) => new Promise((resolve, reject) => {
-    root = options.root = options.root || defaultRoot;
-    const config = new ProjectConfig(options);
-    const analyzer = new BuildAnalyzer(config);
+  let setupTest = async(options: ProjectOptions, transform?: FileTransform) =>
+      new Promise((resolve, reject) => {
+        root = options.root = options.root || defaultRoot;
+        const config = new ProjectConfig(options);
+        const analyzer = new BuildAnalyzer(config);
 
-    bundler = new BuildBundler(config, analyzer);
-    bundledStream = mergeStream(analyzer.sources(), analyzer.dependencies());
-    if (transform) {
-      bundledStream = bundledStream.pipe(transform);
-    }
-    bundledStream = bundledStream.pipe(bundler);
-    bundler = new BuildBundler(config, analyzer);
-    bundledStream =
-        mergeStream(analyzer.sources(), analyzer.dependencies()).pipe(bundler);
-    files = new Map();
-    bundledStream.on('data', (file: File) => {
-      files.set(file.path, file);
-    });
-    bundledStream.on('end', () => {
-      resolve(files);
-    });
-    bundledStream.on('error', (err: Error) => {
-      reject(err);
-    });
-  });
+        bundler = new BuildBundler(config, analyzer);
+        bundledStream =
+            mergeStream(analyzer.sources(), analyzer.dependencies());
+        if (transform) {
+          bundledStream = bundledStream.pipe(transform);
+        }
+        bundledStream = bundledStream.pipe(bundler);
+        bundler = new BuildBundler(config, analyzer);
+        files = new Map();
+        bundledStream.on('data', (file: File) => {
+          files.set(file.path, file);
+        });
+        bundledStream.on('end', () => {
+          resolve(files);
+        });
+        bundledStream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
 
   teardown(() => {
     bundler = null;
@@ -110,8 +108,7 @@ suite('BuildBundler', () => {
     if (path.extname(file.path) === '.html') {
       file.contents =
           new Buffer(`<!-- ${path.basename(file.path)} -->${file.contents}`);
-    }
-    if (path.extname(file.path).match(/^\.(js|css)$/)) {
+    } else if (path.extname(file.path).match(/^\.(js|css)$/)) {
       file.contents =
           new Buffer(`/* ${path.basename(file.path)} */${file.contents}`);
     }

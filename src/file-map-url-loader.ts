@@ -23,10 +23,15 @@ import {parseUrl} from 'polymer-analyzer/lib/utils';
 export class FileMapUrlLoader implements UrlLoader {
   root: string;
   files: Map<string, File>;
+  fallbackLoader?: UrlLoader;
 
-  constructor(root: string, files: Map<string, File>) {
+  constructor(
+      root: string,
+      files: Map<string, File>,
+      fallbackLoader?: UrlLoader) {
     this.root = root;
     this.files = files;
+    this.fallbackLoader = fallbackLoader;
   }
 
   // We can always return true because we're just reading paths off a map.
@@ -34,10 +39,15 @@ export class FileMapUrlLoader implements UrlLoader {
     return true;
   }
 
+  // Try to load the file from the map.  If not in the map, try to load
+  // from the fallback loader.
   async load(url: string): Promise<string> {
     const file = this.files.get(parseUrl(url).pathname)!;
 
     if (file == null) {
+      if (this.fallbackLoader && this.fallbackLoader.canLoad(url)) {
+        return this.fallbackLoader.load(url);
+      }
       throw new Error(`File ${url} not present in file map.`);
     }
 
