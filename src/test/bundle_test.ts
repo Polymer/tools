@@ -15,7 +15,9 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
+import {Bundle} from 'polymer-bundler/lib/bundle-manifest';
 import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
+
 import File = require('vinyl');
 import * as dom5 from 'dom5';
 import {ASTNode, parse as parse5} from 'parse5';
@@ -24,7 +26,7 @@ import {Stream, Transform} from 'stream';
 const mergeStream = require('merge-stream');
 
 import {BuildAnalyzer} from '../analyzer';
-import {BuildBundler} from '../bundle';
+import {BuildBundler, Options as BuildBundlerOptions} from '../bundle';
 
 const defaultRoot = path.resolve('test-fixtures/bundler-data');
 
@@ -47,31 +49,32 @@ suite('BuildBundler', () => {
   let bundledStream: Stream;
   let files: Map<string, File>;
 
-  let setupTest = async(options: ProjectOptions, transform?: FileTransform) =>
-      new Promise((resolve, reject) => {
-        root = options.root = options.root || defaultRoot;
-        const config = new ProjectConfig(options);
-        const analyzer = new BuildAnalyzer(config);
+  let setupTest = async(
+      projectOptions: ProjectOptions,
+      bundlerOptions?: BuildBundlerOptions,
+      transform?: FileTransform) => new Promise((resolve, reject) => {
+    root = projectOptions.root = projectOptions.root || defaultRoot;
+    const config = new ProjectConfig(projectOptions);
+    const analyzer = new BuildAnalyzer(config);
 
-        bundler = new BuildBundler(config, analyzer);
-        bundledStream =
-            mergeStream(analyzer.sources(), analyzer.dependencies());
-        if (transform) {
-          bundledStream = bundledStream.pipe(transform);
-        }
-        bundledStream = bundledStream.pipe(bundler);
-        bundler = new BuildBundler(config, analyzer);
-        files = new Map();
-        bundledStream.on('data', (file: File) => {
-          files.set(file.path, file);
-        });
-        bundledStream.on('end', () => {
-          resolve(files);
-        });
-        bundledStream.on('error', (err: Error) => {
-          reject(err);
-        });
-      });
+    bundler = new BuildBundler(config, analyzer, bundlerOptions);
+    bundledStream = mergeStream(analyzer.sources(), analyzer.dependencies());
+    if (transform) {
+      bundledStream = bundledStream.pipe(transform);
+    }
+    bundledStream = bundledStream.pipe(bundler);
+    bundler = new BuildBundler(config, analyzer);
+    files = new Map();
+    bundledStream.on('data', (file: File) => {
+      files.set(file.path, file);
+    });
+    bundledStream.on('end', () => {
+      resolve(files);
+    });
+    bundledStream.on('error', (err: Error) => {
+      reject(err);
+    });
+  });
 
   teardown(() => {
     bundler = null;
@@ -295,6 +298,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
+        {},
         addHeaders);
 
     const bundledHtml = getFile('index.html');
@@ -327,6 +331,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
+        {},
         platformSepPaths);
 
     const bundledHtml = getFile('index.html');
@@ -361,6 +366,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
+        {},
         posixSepPaths);
 
     const bundledHtml = getFile('index.html');
@@ -387,5 +393,109 @@ suite('BuildBundler', () => {
 
     // We should not have the inlined file in the output.
     assert.isNotOk(getFile('framework.html'));
+  });
+
+  suite('options', () => {
+
+    const projectOptions = {
+      root: 'test-fixtures/test-project',
+      entrypoint: 'index.html',
+      fragments: ['shell.html'],
+      sources: ['index.html', 'shell.html', 'source-dir/my-app.html']
+    };
+
+    test('excludes: a file', async() => {
+      await setupTest(
+          projectOptions,
+          {excludes: ['bower_components/loads-external-dependencies.html']});
+      assert.isOk(
+          getFile('bower_components/loads-external-dependencies.html'),
+          'Excluded import is passed through the bundler');
+      assert.include(
+          getFile('shell.html'),
+          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+    });
+
+    test('excludes: nothing', async() => {
+      await setupTest(projectOptions, {excludes: []});
+      assert.isNotOk(
+          getFile('bower_components/loads-external-dependencies.html'),
+          'Inlined imports are not passed through the bundler');
+      assert.notInclude(
+          getFile('shell.html'),
+          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+      assert.include(
+          getFile('shell.html'),
+          '<script src="https://www.example.com/script.js">',
+          'Inlined import content');
+    });
+
+    test('inlineCss: false', async() => {
+      await setupTest(projectOptions, {inlineCss: false});
+      assert.notInclude(getFile('shell.html'), '.test-project-style');
+    });
+
+    test('inlineCss: true', async() => {
+      await setupTest(projectOptions, {inlineCss: true});
+      assert.include(getFile('shell.html'), '.test-project-style');
+    });
+
+    test('inlineScripts: false', async() => {
+      await setupTest(projectOptions, {inlineScripts: false});
+      assert.notInclude(getFile('shell.html'), 'console.log(\'shell\')');
+    });
+
+    test('inlineScripts: true', async() => {
+      await setupTest(projectOptions, {inlineScripts: true});
+      assert.include(getFile('shell.html'), 'console.log(\'shell\')');
+    });
+
+    test('stripComments: false', async() => {
+      await setupTest(projectOptions, {stripComments: false});
+      assert.include(
+          getFile('shell.html'),
+          '<!-- remote dependencies should be ignored during build -->');
+    });
+
+    test('stripComments: true', async() => {
+      await setupTest(projectOptions, {stripComments: true});
+      assert.notInclude(
+          getFile('shell.html'),
+          '<!-- remote dependencies should be ignored during build -->');
+    });
+
+    test('strategy: fn()', async() => {
+      await setupTest(projectOptions, {
+        // Custom strategy creates a separate bundle for everything in the
+        // `bower_components` folder.
+        strategy: (bundles) => {
+          const bowerBundle = new Bundle();
+          bundles.forEach((bundle) => {
+            bundle.files.forEach((file) => {
+              if (file.includes('bower_components')) {
+                bowerBundle.files.add(file);
+                bundle.files.delete(file);
+              }
+            });
+          });
+          return bundles.concat(bowerBundle);
+        }
+      });
+      assert.isOk(getFile('shared_bundle_1.html'));
+      assert.include(getFile('shared_bundle_1.html'), '<div id="dep"></div>');
+    });
+
+    test('urlMapper: fn()', async() => {
+      await setupTest(projectOptions, {
+        urlMapper: (bundles) => {
+          const map = new Map<string, Bundle>();
+          for (const bundle of bundles) {
+            map.set(`bundled/${Array.from(bundle.entrypoints)}`, bundle);
+          }
+          return map;
+        }
+      });
+      assert.isOk(getFile('bundled/shell.html'));
+    });
   });
 });

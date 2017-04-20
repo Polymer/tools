@@ -2,15 +2,16 @@
 <!-- remote dependencies should be ignored during build -->
 <link rel="stylesheet" href="https://example.com/style.min.css">
 
+<link rel="stylesheet" href="source-dir/style.css" type="text/css">
 <div id="A"></div>
 
-<script>
-  console.log('shell');
+<script src="source-dir/shell.js">
+
 </script>
 <script type="application/javascript">
   console.log('shell 2');
+
 </script>
 <script type="text/markdown">
   # I am markdown, **don't split me**
 </script>
-

@@ -58,6 +58,8 @@ suite('PolymerProject', () => {
             'index.html',
             'shell.html',
             path.join('source-dir', 'my-app.html'),
+            path.join('source-dir', 'shell.js'),
+            path.join('source-dir', 'style.css'),
           ];
           assert.deepEqual(names.sort(), expected);
           done();
@@ -78,10 +80,18 @@ suite('PolymerProject', () => {
     assert.isTrue(getFlowingState(dependencyStream));
   });
 
-  test('the bundler method returns a different bundler each time', () => {
-    const bundlerA = defaultProject.bundler();
-    const bundlerB = defaultProject.bundler();
-    assert.notEqual(bundlerA, bundlerB);
+  suite('.bundler()', () => {
+
+    test('returns a different bundler each time', () => {
+      const bundlerA = defaultProject.bundler();
+      const bundlerB = defaultProject.bundler();
+      assert.notEqual(bundlerA, bundlerB);
+    });
+
+    test('takes options to configure bundler', () => {
+      const bundler = defaultProject.bundler({});
+      assert.isOk(bundler);
+    });
   });
 
   suite('.dependencies()', () => {
