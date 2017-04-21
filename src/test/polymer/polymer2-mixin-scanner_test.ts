@@ -16,6 +16,8 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
+import {Analyzer} from '../../analyzer';
+import {PolymerElementMixin} from '../../index';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedFeature} from '../../model/model';
@@ -28,40 +30,55 @@ suite('Polymer2MixinScanner', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
   const urlLoader = new FSUrlLoader(testFilesDir);
   const underliner = new CodeUnderliner(urlLoader);
+  const analyzer = new Analyzer({urlLoader});
 
-  async function getMixins(filename: string):
-      Promise<ScannedPolymerElementMixin[]> {
-        const file = await urlLoader.load(filename);
-        const parser = new JavaScriptParser();
-        const document = parser.parse(file, filename);
-        const scanner = new Polymer2MixinScanner();
-        const visit = (visitor: Visitor) =>
-            Promise.resolve(document.visit([visitor]));
+  async function getScannedMixins(filename: string) {
+    const file = await urlLoader.load(filename);
+    const parser = new JavaScriptParser();
+    const document = parser.parse(file, filename);
+    const scanner = new Polymer2MixinScanner();
+    const visit = (visitor: Visitor) =>
+        Promise.resolve(document.visit([visitor]));
 
-        const features: ScannedFeature[] = await scanner.scan(document, visit);
-        return <ScannedPolymerElementMixin[]>features.filter(
-            (e) => e instanceof ScannedPolymerElementMixin);
-      };
+    const features: ScannedFeature[] = await scanner.scan(document, visit);
+    return <ScannedPolymerElementMixin[]>features.filter(
+        (e) => e instanceof ScannedPolymerElementMixin);
+  };
 
-  function getTestProps(mixin: ScannedPolymerElementMixin): any {
+  async function getMixins(filename: string) {
+    const analysis = await analyzer.analyze([filename]);
+    return Array.from(analysis.getFeatures({kind: 'polymer-element-mixin'}));
+  };
+
+  async function getTestProps(mixin: ScannedPolymerElementMixin|
+                              PolymerElementMixin) {
+    const properties = [];
+    for (const {name} of mixin.properties) {
+      properties.push({name});
+    }
+    const attributes = [];
+    for (const {name} of mixin.attributes) {
+      attributes.push({name});
+    }
+    const methods = [];
+    for (const {name, params, return: r} of mixin.methods) {
+      methods.push({name, params, return: r});
+    }
+    const {name, description, summary} = mixin;
     return {
-      name: mixin.name,
-      description: mixin.description,
-      summary: mixin.summary,
-      properties: mixin.properties.map((p) => ({
-                                         name: p.name,
-                                       })),
-      attributes: mixin.attributes.map((a) => ({
-                                         name: a.name,
-                                       })),
-      methods: mixin.methods.map(
-          (m) => ({name: m.name, params: m.params, return: m.return })),
+      name,
+      description,
+      summary,
+      properties,
+      attributes,
+      methods,
+      underlinedWarnings: await underliner.underline(mixin.warnings)
     };
   }
 
   test('finds mixin function declarations', async() => {
-    const mixins = await getMixins('test-mixin-1.js');
-    const mixinData = mixins.map(getTestProps);
+    const mixins = await getScannedMixins('test-mixin-1.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [{
                        name: 'TestMixin',
                        description: 'A mixin description',
@@ -73,6 +90,7 @@ suite('Polymer2MixinScanner', () => {
                          name: 'foo',
                        }],
                        methods: [],
+                       underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -103,8 +121,8 @@ function TestMixin(superclass) {
   });
 
   test('finds mixin arrow function expressions', async() => {
-    const mixins = await getMixins('test-mixin-2.js');
-    const mixinData = mixins.map(getTestProps);
+    const mixins = await getScannedMixins('test-mixin-2.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: 'A mixin description',
@@ -116,6 +134,7 @@ function TestMixin(superclass) {
                          name: 'foo',
                        }],
                        methods: [],
+                       underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -142,8 +161,8 @@ const TestMixin = (superclass) => class extends superclass {
   });
 
   test('finds mixin function expressions', async() => {
-    const mixins = await getMixins('test-mixin-3.js');
-    const mixinData = mixins.map(getTestProps);
+    const mixins = await getScannedMixins('test-mixin-3.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: '',
@@ -155,6 +174,7 @@ const TestMixin = (superclass) => class extends superclass {
                          name: 'foo',
                        }],
                        methods: [],
+                       underlinedWarnings: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -187,8 +207,8 @@ const TestMixin = function(superclass) {
   test(
       'finds mixin variable declaration with only name, does not use trailing function',
       async() => {
-        const mixins = await getMixins('test-mixin-4.js');
-        const mixinData = mixins.map(getTestProps);
+        const mixins = await getScannedMixins('test-mixin-4.js');
+        const mixinData = await Promise.all(mixins.map(getTestProps));
         assert.deepEqual(mixinData, [{
                            name: 'Polymer.TestMixin',
                            description: '',
@@ -196,6 +216,7 @@ const TestMixin = function(superclass) {
                            properties: [],
                            attributes: [],
                            methods: [],
+                           underlinedWarnings: [],
                          }]);
         const underlinedSource =
             await underliner.underline(mixins[0].sourceRange);
@@ -205,14 +226,14 @@ let TestMixin;
       });
 
   test('what to do on a class marked @polymerMixin?', async() => {
-    const mixins = await getMixins('test-mixin-5.js');
+    const mixins = await getScannedMixins('test-mixin-5.js');
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, []);
   });
 
   test('finds mixin function declaration with only name', async() => {
-    const mixins = await getMixins('test-mixin-6.js');
-    const mixinData = mixins.map(getTestProps);
+    const mixins = await getScannedMixins('test-mixin-6.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: '',
@@ -220,6 +241,7 @@ let TestMixin;
                        properties: [],
                        attributes: [],
                        methods: [],
+                       underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -230,8 +252,8 @@ function TestMixin() {
   });
 
   test('finds mixin assigned to a namespace', async() => {
-    const mixins = await getMixins('test-mixin-7.js');
-    const mixinData = mixins.map(getTestProps);
+    const mixins = await getScannedMixins('test-mixin-7.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [{
                        name: 'Polymer.TestMixin',
                        description: '',
@@ -243,6 +265,7 @@ function TestMixin() {
                          name: 'foo',
                        }],
                        methods: [],
+                       underlinedWarnings: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
     assert.equal(underlinedSource, `
@@ -279,8 +302,8 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
   test(
       'properly analyzes nested mixin assignments with memberof tags',
       async() => {
-        const mixins = await getMixins('test-mixin-8.js');
-        const mixinData = mixins.map(getTestProps);
+        const mixins = await getScannedMixins('test-mixin-8.js');
+        const mixinData = await Promise.all(mixins.map(getTestProps));
         assert.deepEqual(mixinData, [{
                            name: 'Polymer.TestMixin',
                            description: '',
@@ -292,13 +315,14 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
                              name: 'foo',
                            }],
                            methods: [],
+                           underlinedWarnings: [],
                          }]);
 
       });
 
   test('properly analyzes mixin instance and class methods', async() => {
-    const mixins = await getMixins('test-mixin-9.js');
-    const mixinData = mixins.map(getTestProps);
+    const mixins = await getScannedMixins('test-mixin-9.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [
       {
         name: 'TestMixin',
@@ -351,9 +375,47 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
             params: [], return: undefined,
           },
         ],
+        underlinedWarnings: [],
       }
     ]);
 
   });
 
+  test('mixes mixins into mixins', async() => {
+    const mixins = await getMixins('test-mixin-10.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
+    assert.deepEqual(mixinData, [
+      {
+        name: 'Base',
+        description: '',
+        summary: '',
+        attributes: [{name: 'foo'}],
+        methods: [
+          {name: 'baseMethod', params: [], return: undefined},
+          {name: 'privateMethod', params: [], return: undefined},
+          {name: 'privateOverriddenMethod', params: [], return: undefined},
+          {name: 'overrideMethod', params: [], return: undefined},
+        ],
+        properties: [{name: 'foo'}],
+        underlinedWarnings: [],
+      },
+      {
+        name: 'Middle',
+        attributes: [{name: 'foo'}],
+        description: '',
+        methods: [
+          {name: 'baseMethod', params: [], return: undefined},
+          {name: 'privateMethod', params: [], return: undefined},
+          {name: 'privateOverriddenMethod', params: [], return: undefined},
+          {name: 'overrideMethod', params: [], return: undefined},
+          {name: 'middleMethod', params: [], return: undefined},
+        ],
+        properties: [{name: 'foo'}],
+        summary: '',
+        underlinedWarnings: [`
+    privateOverriddenMethod() { }
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`],
+      }
+    ]);
+  });
 });

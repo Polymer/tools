@@ -13,6 +13,8 @@ class BaseElement extends Polymer.Element {
       },
     };
   }
+
+  /** documented so public */
   customMethodOnBaseElement() {
     return 'foo';
   }
@@ -35,6 +37,7 @@ const Mixin = (superclass) => class extends superclass {
       },
     };
   }
+  /** documented so public */
   customMethodOnMixin() {
     return 'bar';
   }

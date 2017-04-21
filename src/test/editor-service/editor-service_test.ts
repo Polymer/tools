@@ -81,13 +81,6 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
     kind: 'attributes',
     attributes: [
       {
-        name: 'local-property',
-        description: 'A property defined directly on behavior-test-elem.',
-        type: 'boolean',
-        sortKey: 'aaa-local-property',
-        inheritedFrom: undefined,
-      },
-      {
         name: 'inherit-please',
         description: 'A property provided by SimpleBehavior.',
         type: 'number',
@@ -102,10 +95,10 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         inheritedFrom: 'MyNamespace.SubBehavior',
       },
       {
-        name: 'on-local-property-changed',
-        description: 'Fired when the `localProperty` property changes.',
-        type: 'CustomEvent',
-        sortKey: 'eee-aaa-on-local-property-changed',
+        name: 'local-property',
+        description: 'A property defined directly on behavior-test-elem.',
+        type: 'boolean',
+        sortKey: 'aaa-local-property',
         inheritedFrom: undefined,
       },
       {
@@ -122,6 +115,13 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         type: 'CustomEvent',
         sortKey: 'eee-ddd-on-deeply-inherited-property-changed',
         inheritedFrom: 'MyNamespace.SubBehavior',
+      },
+      {
+        name: 'on-local-property-changed',
+        description: 'Fired when the `localProperty` property changes.',
+        type: 'CustomEvent',
+        sortKey: 'eee-aaa-on-local-property-changed',
+        inheritedFrom: undefined,
       },
     ]
   };

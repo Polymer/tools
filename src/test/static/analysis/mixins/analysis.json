@@ -236,7 +236,33 @@
           }
         }
       ],
-      "methods": [],
+      "methods": [
+        {
+          "description": "",
+          "inheritedFrom": "Polymer.InternalMixin",
+          "metadata": {},
+          "name": "frob",
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "privacy": "private",
+          "sourceRange": {
+            "end": {
+              "column": 5,
+              "line": 43
+            },
+            "start": {
+              "column": 4,
+              "line": 42
+            }
+          }
+        }
+      ],
       "styling": {
         "cssVariables": [],
         "selectors": []

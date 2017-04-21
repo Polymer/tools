@@ -10,22 +10,6 @@
       "privacy": "public",
       "attributes": [
         {
-          "name": "local-property",
-          "description": "A property defined directly on behavior-test-elem.",
-          "sourceRange": {
-            "start": {
-              "line": 9,
-              "column": 6
-            },
-            "end": {
-              "line": 13,
-              "column": 7
-            }
-          },
-          "type": "boolean",
-          "metadata": {}
-        },
-        {
           "name": "inherit-please",
           "description": "A property provided by SimpleBehavior.",
           "inheritedFrom": "MyNamespace.SimpleBehavior",
@@ -60,9 +44,73 @@
           },
           "type": "Array",
           "metadata": {}
+        },
+        {
+          "name": "local-property",
+          "description": "A property defined directly on behavior-test-elem.",
+          "sourceRange": {
+            "start": {
+              "line": 9,
+              "column": 6
+            },
+            "end": {
+              "line": 13,
+              "column": 7
+            }
+          },
+          "type": "boolean",
+          "metadata": {}
         }
       ],
       "properties": [
+        {
+          "name": "inheritPlease",
+          "type": "number",
+          "description": "A property provided by SimpleBehavior.",
+          "privacy": "public",
+          "inheritedFrom": "MyNamespace.SimpleBehavior",
+          "sourceRange": {
+            "file": "../behavior.html",
+            "start": {
+              "line": 11,
+              "column": 6
+            },
+            "end": {
+              "line": 15,
+              "column": 7
+            }
+          },
+          "defaultValue": "10",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
+        {
+          "name": "deeplyInheritedProperty",
+          "type": "Array",
+          "description": "This is a deeply inherited property.",
+          "privacy": "public",
+          "inheritedFrom": "MyNamespace.SubBehavior",
+          "sourceRange": {
+            "file": "../subdir/subbehavior.html",
+            "start": {
+              "line": 8,
+              "column": 6
+            },
+            "end": {
+              "line": 14,
+              "column": 7
+            }
+          },
+          "defaultValue": "[]",
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        },
         {
           "name": "localProperty",
           "type": "boolean",
@@ -124,54 +172,6 @@
           "metadata": {
             "polymer": {}
           }
-        },
-        {
-          "name": "inheritPlease",
-          "type": "number",
-          "description": "A property provided by SimpleBehavior.",
-          "privacy": "public",
-          "inheritedFrom": "MyNamespace.SimpleBehavior",
-          "sourceRange": {
-            "file": "../behavior.html",
-            "start": {
-              "line": 11,
-              "column": 6
-            },
-            "end": {
-              "line": 15,
-              "column": 7
-            }
-          },
-          "defaultValue": "10",
-          "metadata": {
-            "polymer": {
-              "notify": true
-            }
-          }
-        },
-        {
-          "name": "deeplyInheritedProperty",
-          "type": "Array",
-          "description": "This is a deeply inherited property.",
-          "privacy": "public",
-          "inheritedFrom": "MyNamespace.SubBehavior",
-          "sourceRange": {
-            "file": "../subdir/subbehavior.html",
-            "start": {
-              "line": 8,
-              "column": 6
-            },
-            "end": {
-              "line": 14,
-              "column": 7
-            }
-          },
-          "defaultValue": "[]",
-          "metadata": {
-            "polymer": {
-              "notify": true
-            }
-          }
         }
       ],
       "methods": [
@@ -201,12 +201,6 @@
       "slots": [],
       "events": [
         {
-          "name": "local-property-changed",
-          "description": "Fired when the `localProperty` property changes.",
-          "type": "CustomEvent",
-          "metadata": {}
-        },
-        {
           "name": "inherit-please-changed",
           "description": "Fired when the `inheritPlease` property changes.",
           "inheritedFrom": "MyNamespace.SimpleBehavior",
@@ -217,6 +211,12 @@
           "name": "deeply-inherited-property-changed",
           "description": "Fired when the `deeplyInheritedProperty` property changes.",
           "inheritedFrom": "MyNamespace.SubBehavior",
+          "type": "CustomEvent",
+          "metadata": {}
+        },
+        {
+          "name": "local-property-changed",
+          "description": "Fired when the `localProperty` property changes.",
           "type": "CustomEvent",
           "metadata": {}
         }

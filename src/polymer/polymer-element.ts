@@ -15,12 +15,14 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
+import {Attribute, Event} from '../index';
 import * as jsdoc from '../javascript/jsdoc';
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Document, Element, ElementBase, LiteralValue, Method, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
+import {DomModule} from './dom-module-scanner';
 import {JavascriptDatabindingExpression} from './expression-scanner';
 import {getOrInferPrivacy} from './js-utils';
 import {PolymerElementMixin} from './polymer-element-mixin';
@@ -264,38 +266,28 @@ function resolveElement(
   element.privacy = scannedElement.privacy;
   applySuperClass(element, scannedElement, document);
   applyMixins(element, scannedElement, document);
-  applySelf(element, scannedElement, document);
 
   //
   // Behaviors
   //
   // TODO(justinfagnani): Refactor behaviors to work like superclasses and
   // mixins and be applied before own members
-  const behaviorsAndWarnings =
+  const {warnings, behaviors} =
       getBehaviors(scannedElement.behaviorAssignments, document);
 
   // This has the combined effects of copying the array of warnings from the
   // ScannedElement, and adding in any new ones found when resolving behaviors.
-  element.warnings = element.warnings.concat(behaviorsAndWarnings.warnings);
+  element.warnings = element.warnings.concat(warnings);
 
-  const behaviors = Array.from(behaviorsAndWarnings.behaviors);
+  for (const behavior of behaviors) {
+    inheritFrom(element, behavior);
+  }
 
-  element.properties = inheritValues(
-      element.properties,
-      behaviors.map((b) => ({source: b.className, values: b.properties})));
-  element.methods = inheritValues(
-      element.methods,
-      behaviors.map((b) => ({source: b.className, values: b.methods})));
-  element.attributes = inheritValues(
-      element.attributes,
-      behaviors.map((b) => ({source: b.className, values: b.attributes})));
-  element.events = inheritValues(
-      element.events,
-      behaviors.map((b) => ({source: b.className, values: b.events})));
+  applySelf(element, scannedElement, document);
 
-
-  const domModules =
-      scannedElement.tagName == null ? new Set() : document.getFeatures({
+  const domModules = scannedElement.tagName == null ?
+      new Set<DomModule>() :
+      document.getFeatures({
         kind: 'dom-module',
         id: scannedElement.tagName,
         imported: true,
@@ -331,55 +323,104 @@ function resolveElement(
  * Note: mutates `element`.
  */
 function inheritFrom(element: PolymerElement, superElement: PolymerExtension) {
-  // TODO(justinfagnani): fixup and use inheritValues, but it has slightly odd
-  // semantics currently
+  // TODO(rictic): we don't inherit private members, but we should check for
+  //     clashes between them, as that can cause issues at runtime.
 
-  for (const superProperty of superElement.properties) {
-    const newProperty = Object.assign({}, superProperty);
-    if (!newProperty.inheritedFrom) {
-      const superName = getSuperName(superElement);
-      if (superName) {
-        newProperty.inheritedFrom = superName;
-      }
-    }
-    element.properties.push(newProperty);
-  }
-
-  for (const superMethod of superElement.methods) {
-    const newMethod = Object.assign({}, superMethod);
-    if (!newMethod.inheritedFrom) {
-      const superName = getSuperName(superElement);
-      if (superName) {
-        newMethod.inheritedFrom = superName;
-      }
-    }
-    element.methods.push(newMethod);
-  }
-
-  for (const superAttribute of superElement.attributes) {
-    const newAttribute = Object.assign({}, superAttribute);
-    if (!newAttribute.inheritedFrom) {
-      const superName = getSuperName(superElement);
-      if (superName) {
-        newAttribute.inheritedFrom = superName;
-      }
-    }
-    element.attributes.push(newAttribute);
-  }
-
-  for (const superEvent of superElement.events) {
-    const newEvent = Object.assign({}, superEvent);
-    if (!newEvent.inheritedFrom) {
-      const superName = getSuperName(superElement);
-      if (superName) {
-        newEvent.inheritedFrom = superName;
-      }
-    }
-    element.events.push(newEvent);
-  }
+  const superName = getSuperName(superElement);
+  _overwriteInherited(
+      element.properties,
+      superElement.properties,
+      superName,
+      element.warnings,
+      element.sourceRange);
+  _overwriteInherited(
+      element.methods,
+      superElement.methods,
+      superName,
+      element.warnings,
+      element.sourceRange);
+  _overwriteInherited(
+      element.attributes,
+      superElement.attributes,
+      superName,
+      element.warnings,
+      element.sourceRange);
+  _overwriteInherited(
+      element.events,
+      superElement.events,
+      superName,
+      element.warnings,
+      element.sourceRange);
 
   // TODO(justinfagnani): slots, listeners, observers, dom-module?
   // What actually inherits?
+}
+
+export interface PropertyLike {
+  name: string;
+  sourceRange?: SourceRange;
+  inheritedFrom?: string;
+  privacy?: Privacy;
+}
+
+/**
+ * This method is applied to an array of members to overwrite members lower in
+ * the prototype graph (closer to Object) with members higher up (closer to the
+ * final class we're constructing).
+ *
+ * @param . existing The array of members so far. N.B. *This param is mutated.*
+ * @param . overriding The array of members from this new, higher prototype in
+ *   the graph
+ * @param . overridingClassName The name of the prototype whose members are
+ *   being applied over the existing ones. Should be `undefined` when
+ *   applyingSelf is true
+ * @param . warnings Place to put generated warnings.
+ * @param . sourceRange A source range to use for warnings when the inheritance
+ *   goes wrong but there's no more specific source range.
+ * @param . applyingSelf True on the last call to this method, when we're
+ *   applying the class's own local members.
+ */
+export function _overwriteInherited<P extends PropertyLike>(
+    existing: P[],
+    overriding: P[],
+    overridingClassName: string | undefined,
+    warnings: Warning[],
+    sourceRange: SourceRange,
+    applyingSelf = false) {
+  // This exists to treat the arrays as maps.
+  // TODO(rictic): convert these arrays to maps.
+  const existingIndexByName =
+      new Map(existing.map((e, idx) => [e.name, idx] as [string, number]));
+  for (const overridingVal of overriding) {
+    const newVal = Object.assign({}, overridingVal, {
+      inheritedFrom: overridingVal['inheritedFrom'] || overridingClassName
+    });
+    if (existingIndexByName.has(overridingVal.name)) {
+      /**
+       * TODO(rictic): if existingVal.privacy is protected, newVal should be
+       *    protected unless an explicit privacy was specified.
+       *    https://github.com/Polymer/polymer-analyzer/issues/631
+       */
+      const existingIndex = existingIndexByName.get(overridingVal.name)!;
+      const existingValue = existing[existingIndex]!;
+      if (existingValue.privacy === 'private') {
+        let warningSourceRange = sourceRange;
+        if (applyingSelf) {
+          warningSourceRange = newVal.sourceRange || sourceRange;
+        }
+        warnings.push({
+          code: 'overriding-private',
+          message: `Overriding private member '${overridingVal.name}' ` +
+              `inherited from ${existingValue.inheritedFrom || 'parent'}`,
+          sourceRange: warningSourceRange,
+          severity: Severity.WARNING
+        });
+      }
+      existing[existingIndex] = newVal;
+      continue;
+    }
+    existing.push(newVal);
+  }
 }
 
 function applySelf(
@@ -390,7 +431,6 @@ function applySelf(
   // PolymerElement wrap ScannedPolymerElement.
   element.abstract = scannedElement.abstract;
   element.astNode = scannedElement.astNode;
-  scannedElement.attributes.forEach((o) => element.attributes.push(o));
   scannedElement.behaviorAssignments.forEach(
       (o) => element.behaviorAssignments.push(o));
   element.className = scannedElement.className;
@@ -401,11 +441,7 @@ function applySelf(
   element.extends = scannedElement.extends;
   element.jsdoc = scannedElement.jsdoc;
   scannedElement.listeners.forEach((o) => element.listeners.push(o));
-  // scannedElement.mixins.forEach(
-  //     (o) => element.mixins.push(o.resolve(document)));
   scannedElement.observers.forEach((o) => element.observers.push(o));
-  scannedElement.properties.forEach((o) => element.properties.push(o));
-  scannedElement.methods.forEach((o) => element.methods.push(o));
   element.scriptElement = scannedElement.scriptElement;
   scannedElement.slots.forEach((o) => element.slots.push(o));
   element.sourceRange = scannedElement.sourceRange!;
@@ -414,6 +450,35 @@ function applySelf(
       scannedElement.superClass && scannedElement.superClass.resolve(document);
   element.tagName = scannedElement.tagName;
   scannedElement.warnings.forEach((o) => element.warnings.push(o));
+
+  _overwriteInherited(
+      element.properties,
+      scannedElement.properties as PolymerProperty[],
+      undefined,
+      element.warnings,
+      element.sourceRange,
+      true);
+  _overwriteInherited(
+      element.attributes,
+      scannedElement.attributes as Attribute[],
+      undefined,
+      element.warnings,
+      element.sourceRange,
+      true);
+  _overwriteInherited(
+      element.methods,
+      scannedElement.methods as Method[],
+      undefined,
+      element.warnings,
+      element.sourceRange,
+      true);
+  _overwriteInherited(
+      element.events,
+      scannedElement.events as Event[],
+      undefined,
+      element.warnings,
+      element.sourceRange,
+      true);
 }
 
 function applySuperClass(
@@ -468,7 +533,7 @@ function applySuperClass(
   }
 }
 
-function applyMixins(
+export function applyMixins(
     element: PolymerElement,
     scannedElement: ScannedElement,
     document: Document) {
@@ -570,44 +635,12 @@ function _getFlattenedAndResolvedBehaviors(
   return warnings;
 }
 
-interface PropertyLike {
-  name: string;
-  inheritedFrom?: string;
-}
-
-/**
- * Merges values from `newValuesBySource` into `values`, but only if they
- * don't already exist in `values`, thus giving an inheritance-like behavior.
- *
- * TODO(justinfagnani): we should always build up an element from base-class
- * on up to get natural overriding behavior. We should also merges
- * individual definitions if that's what Polymer does. Need tests.
- */
-function inheritValues<P extends PropertyLike>(
-    values: P[], newValuesBySource: {source: string, values: P[]}[]): P[] {
-  const valuesByName = new Map<string, P>();
-
-  for (const initial of values) {
-    valuesByName.set(initial.name, initial);
-  }
-
-  for (const source of newValuesBySource) {
-    for (const value of source.values) {
-      if (!valuesByName.has(value.name)) {
-        const copy = Object.assign({}, value);
-        // If a value is already inherited, prefer the original source
-        copy.inheritedFrom = value.inheritedFrom || source.source;
-        valuesByName.set(copy.name, copy);
-      }
-    }
-  }
-  return Array.from(valuesByName.values());
-}
-
-function getSuperName(superElement: PolymerExtension): string|undefined {
+function getSuperName(superElement: PolymerExtension|
+                      ScannedPolymerElement): string|undefined {
   // TODO(justinfagnani): Mixins, elements and functions should all have a
   // name property.
-  if (superElement instanceof PolymerElement) {
+  if (superElement instanceof PolymerElement ||
+      superElement instanceof ScannedPolymerElement) {
     return superElement.className;
   } else if (superElement instanceof PolymerElementMixin) {
     return superElement.name;

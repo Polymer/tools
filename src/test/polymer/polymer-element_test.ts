@@ -57,12 +57,15 @@ suite('PolymerElement', () => {
       attributes: element.attributes.map((a) => ({
                                            name: a.name,
                                          })),
-      methods: element.methods.map(
-          (m) => ({name: m.name, params: m.params, return: m.return })),
+      methods: element.methods.map((m) => ({
+                                     name: m.name,
+                                     params: m.params, return: m.return,
+                                     inheritedFrom: m.inheritedFrom
+                                   })),
     };
   }
 
-  test('Scans base and sub-class', async() => {
+  test('Scans and resolves base and sub-class', async() => {
     const elements = await getElements('test-element-3.js');
     const elementData = Array.from(elements).map(getTestProps);
     assert.deepEqual(elementData, [
@@ -135,9 +138,11 @@ suite('PolymerElement', () => {
             name: 'two',
           }
         ],
-        methods: [
-          {name: 'customMethodOnBaseElement', params: [], return: undefined}
-        ],
+        methods: [{
+          name: 'customMethodOnBaseElement',
+          params: [], return: undefined,
+          inheritedFrom: undefined
+        }],
       },
       {
         tagName: 'sub-element',
@@ -164,7 +169,7 @@ suite('PolymerElement', () => {
           {
             inheritedFrom: undefined,
             name: 'five',
-          }
+          },
         ],
         attributes: [
           {
@@ -181,15 +186,26 @@ suite('PolymerElement', () => {
           },
           {
             name: 'five',
-          }
+          },
         ],
         methods: [
-          {name: 'customMethodOnBaseElement', params: [], return: undefined},
-          {name: 'customMethodOnMixin', params: [], return: undefined},
-          {name: 'customMethodOnSubElement', params: [], return: undefined},
+          {
+            name: 'customMethodOnBaseElement',
+            params: [], return: undefined,
+            inheritedFrom: 'BaseElement'
+          },
+          {
+            name: 'customMethodOnMixin',
+            params: [], return: undefined,
+            inheritedFrom: 'Mixin'
+          },
+          {
+            name: 'customMethodOnSubElement',
+            params: [], return: undefined,
+            inheritedFrom: undefined
+          },
         ],
       },
     ]);
   });
-
 });
