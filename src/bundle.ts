@@ -44,12 +44,8 @@ export class BuildBundler extends Transform {
   constructor(
       config: ProjectConfig,
       buildAnalyzer: BuildAnalyzer,
-      options?: Options) {
+      options: Options = {}) {
     super({objectMode: true});
-
-    if (!options) {
-      options = {};
-    }
 
     this.config = config;
 
@@ -68,19 +64,21 @@ export class BuildBundler extends Transform {
     const urlLoader = new FileMapUrlLoader(
         this.config.root, this.files, analyzer || buildAnalyzer.analyzer);
 
-    analyzer = analyzer ? analyzer._fork({urlLoader}) :
-                          buildAnalyzer.analyzer._fork({urlLoader});
+    const forkedAnalyzer = analyzer ? analyzer._fork({urlLoader}) :
+                                      buildAnalyzer.analyzer._fork({urlLoader});
 
     inlineCss = typeof inlineCss === 'undefined' || inlineCss;
     inlineScripts = typeof inlineScripts === 'undefined' || inlineScripts;
 
-    this._bundler = new Bundler({analyzer,
-                                 excludes,
-                                 inlineCss,
-                                 inlineScripts,
-                                 rewriteUrlsInTemplates,
-                                 sourcemaps,
-                                 stripComments});
+    this._bundler = new Bundler({
+      analyzer: forkedAnalyzer,
+      excludes,
+      inlineCss,
+      inlineScripts,
+      rewriteUrlsInTemplates,
+      sourcemaps,
+      stripComments
+    });
     this._strategy = strategy;
     this._urlMapper = urlMapper;
   }
