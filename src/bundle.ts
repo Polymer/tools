@@ -117,11 +117,9 @@ export class BuildBundler extends Transform {
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
-    let strategy = this._strategy;
-    if (!strategy && this.config.shell) {
-      strategy = generateShellMergeStrategy(
-          urlFromPath(this.config.root, this.config.shell));
-    }
+    const strategy = this._strategy ||
+        this.config.shell && generateShellMergeStrategy(urlFromPath(
+                                 this.config.root, this.config.shell));
     const bundleEntrypoints = Array.from(this.config.allFragments);
     const manifest = await this._bundler.generateManifest(
         bundleEntrypoints.map((f) => urlFromPath(this.config.root, f)),
