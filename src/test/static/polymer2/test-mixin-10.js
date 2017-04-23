@@ -1,5 +1,6 @@
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  */
 function Base(superclass) {
   return class extends superclass {
@@ -29,8 +30,9 @@ function Base(superclass) {
 }
 
 /**
- * @polymerMixin
- * @mixes Base
+ * @polymer
+ * @mixinFunction
+ * @appliesMixin Base
  */
 function Middle(superclass) {
   return class extends Base(superclass) {

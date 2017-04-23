@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as doctrine from 'doctrine';
 import * as estree from 'estree';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
@@ -116,7 +117,7 @@ class FunctionVisitor implements Visitor {
     }
 
     const docs = jsdoc.parseJsdoc(comment);
-    if (jsdoc.hasTag(docs, 'polymerMixin')) {
+    if (jsdoc.hasTag(docs, 'mixinFunction')) {
       // This is a mixin, not a normal function.
       return;
     }
@@ -130,19 +131,22 @@ class FunctionVisitor implements Visitor {
     let functionReturn;
     if (returnTag) {
       functionReturn = {
-        type: returnTag.type || undefined,
+        type: returnTag.type ? doctrine.type.stringify(returnTag.type) :
+                               undefined,
         desc: returnTag.description || '',
       };
     }
 
+    // TODO(justinfagnani): consolidate with similar param processing code in
+    // docs.ts
     const functionParams: {type: string, desc: string, name: string}[] = [];
     if (docs.tags) {
       docs.tags.forEach((tag) => {
-        if (tag.tag !== 'param') {
+        if (tag.title !== 'param') {
           return;
         }
         functionParams.push({
-          type: tag.type || 'N/A',
+          type: tag.type ? doctrine.type.stringify(tag.type) : 'N/A',
           desc: tag.description || '',
           name: tag.name || 'N/A'
         });

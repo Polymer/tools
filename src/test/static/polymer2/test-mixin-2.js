@@ -1,7 +1,8 @@
 /**
  * A mixin description
  * @summary A mixin summary
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  */
 const TestMixin = (superclass) => class extends superclass {

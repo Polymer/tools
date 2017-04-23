@@ -19,7 +19,8 @@ window.customElements.define('test-element', TestElement);
 /**
  * A very basic element
  * @summary A basic element
- * @polymerElement
+ * @customElement
+ * @polymer
  */
 class BaseElement extends Polymer.Element {
   static get properties() {

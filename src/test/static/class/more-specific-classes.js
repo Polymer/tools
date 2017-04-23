@@ -1,13 +1,22 @@
 class Element extends HTMLElement { }
 customElements.define('my-element', Element);
 
-/** @polymerElement */
+/**
+ * @customElement
+ * @polymer
+ */
 class AnnotatedElement { }
 
-/** @polymerMixin */
+/**
+ * @mixinFunction
+ * @polymer
+ */
 function Mixin(superClass) {
   return class Mixin extends SuperClass { }
 }
 
-/** @polymerMixin */
+/**
+ * @mixinFunction
+ * @polymer
+ */
 AnnotatedMixin = CreateMixinSomehow();

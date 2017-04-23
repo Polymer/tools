@@ -1,5 +1,6 @@
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends Polymer.Element
  */
 class BaseElement extends Polymer.Element {
@@ -14,7 +15,8 @@ class BaseElement extends Polymer.Element {
 }
 
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends BaseElement
  */
 class SubElement extends BaseElement {

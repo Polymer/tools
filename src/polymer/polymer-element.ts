@@ -180,8 +180,10 @@ export class ScannedPolymerElement extends ScannedElement implements
     if (options.methods) {
       options.methods.forEach((m) => this.addMethod(m));
     }
-    this.summary = this.summary ||
-        jsdoc.getTag(this.jsdoc, 'summary', 'description') || '';
+    const summaryTag = jsdoc.getTag(this.jsdoc, 'summary');
+    this.summary = (summaryTag !== undefined && summaryTag.description != null)
+      ? summaryTag.description
+      : '';
   }
 
   addProperty(prop: ScannedPolymerProperty) {

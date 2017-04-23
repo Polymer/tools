@@ -77,7 +77,8 @@ class NamespaceVisitor implements Visitor {
     const analyzedName = getIdentifierName(nameNode);
 
     const docs = jsdoc.parseJsdoc(comment);
-    const explicitName = jsdoc.getTag(docs, 'namespace', 'name');
+    const namespaceTag = jsdoc.getTag(docs, 'namespace');
+    const explicitName = namespaceTag && namespaceTag.name;
     let namespaceName;
     if (explicitName) {
       namespaceName = explicitName;

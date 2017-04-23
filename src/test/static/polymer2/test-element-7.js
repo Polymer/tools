@@ -1,5 +1,6 @@
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends Polymer.Element
  */
 class BaseElement extends Polymer.Element {
@@ -21,7 +22,8 @@ class BaseElement extends Polymer.Element {
 }
 
 /**
- * @polymerMixin
+ * @mixinFunction
+ * @polymer
  */
 const Mixin = (superclass) => class extends superclass {
   static get properties() {
@@ -44,9 +46,10 @@ const Mixin = (superclass) => class extends superclass {
 }
 
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends BaseElement
- * @mixes Mixin
+ * @appliesMixin Mixin
  */
 class SubElement extends Mixin
 (BaseElement) {

@@ -208,7 +208,8 @@ export function getNamespacedIdentifier(
   if (!docs) {
     return name;
   }
-  const namespace = jsdoc.getTag(docs, 'memberof', 'description');
+  const memberofTag = jsdoc.getTag(docs, 'memberof');
+  const namespace = memberofTag && memberofTag.description;
   if (namespace) {
     const rightMostIdentifierName = name.substring(name.lastIndexOf('.') + 1);
     return namespace + '.' + rightMostIdentifierName;

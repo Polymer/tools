@@ -1,7 +1,8 @@
 /**
  * A mixin description
  * @summary A mixin summary
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  */
 function TestMixin(superclass) {
   return class extends superclass {

@@ -236,7 +236,7 @@ let TestMixin;
 ~~~~~~~~~~~~~~`);
       });
 
-  test('what to do on a class marked @polymerMixin?', async() => {
+  test('what to do on a class marked @mixinFunction?', async() => {
     const mixins = await getScannedMixins('test-mixin-5.js');
     const mixinData = mixins.map(getTestProps);
     assert.deepEqual(mixinData, []);
@@ -282,8 +282,14 @@ function TestMixin() {
     assert.equal(underlinedSource, `
 Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /** @polymerMixinClass */
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  /** 
+~~~~~~
+   * @mixinClass
+~~~~~~~~~~~~~~~~
+   * @polymer
+~~~~~~~~~~~~~
+   */
+~~~~~
   class TestMixin extends base {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     static get properties() {
@@ -392,7 +398,7 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
 
   });
 
-  test('mixes mixins into mixins', async() => {
+  test('applies mixins to mixins', async() => {
     const mixins = await getMixins('test-mixin-10.js');
     const mixinData = await Promise.all(mixins.map(getTestProps));
     assert.deepEqual(mixinData, [

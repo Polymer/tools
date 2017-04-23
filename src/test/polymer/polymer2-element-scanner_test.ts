@@ -311,7 +311,7 @@ namespaced name.`,
     ]);
   });
 
-  test('Read mixes annotations', async() => {
+  test('Read @appliesMixin annotations', async() => {
     const elements = await getElements('test-element-6.js');
     const elementData = await Promise.all(elements.map(getTestProps));
 
@@ -331,7 +331,7 @@ namespaced name.`,
     ]);
   });
 
-  test('Reads just mixin application', async() => {
+  test('Reads just @appliesMixin annotation', async() => {
     const elements = await getElements('test-element-9.js');
     const elementData = await Promise.all(elements.map(getTestProps));
 

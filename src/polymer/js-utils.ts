@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as doctrine from 'doctrine';
 import * as escodegen from 'escodegen';
 import * as estree from 'estree';
 
@@ -37,8 +38,7 @@ export function toScannedPolymerProperty(
       code: 'unknown-prop-name',
       message:
           `Could not determine name of property from expression of type: ${
-                                                                           node.key
-                                                                               .type
+    node.key.type
                                                                          }`,
       sourceRange: sourceRange,
       severity: Severity.WARNING
@@ -47,7 +47,7 @@ export function toScannedPolymerProperty(
   let type = closureType(node.value, sourceRange);
   const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
   if (typeTag) {
-    type = typeTag.type || type;
+    type = doctrine.type.stringify(typeTag.type!) || type;
   }
   const name = maybeName || '';
   const result: ScannedPolymerProperty = {
@@ -102,16 +102,16 @@ export function toScannedMethod(
       scannedMethod.type === 'ArrowFunction') {
     const value = <estree.FunctionExpression>node.value;
 
-    const paramTags: {[paramName: string]: jsdoc.Tag} = {};
+    const paramTags = new Map<string, doctrine.Tag>();
     if (scannedMethod.jsdoc) {
       for (const tag of (scannedMethod.jsdoc.tags || [])) {
-        if (tag.tag === 'param' && tag.name) {
-          paramTags[tag.name] = tag;
+        if (tag.title === 'param' && tag.name) {
+          paramTags.set(tag.name, tag);
 
-        } else if (tag.tag === 'return' || tag.tag === 'returns') {
+        } else if (tag.title === 'return' || tag.title === 'returns') {
           scannedMethod.return = {};
           if (tag.type) {
-            scannedMethod.return.type = tag.type;
+            scannedMethod.return.type = doctrine.type.stringify(tag.type!);
           }
           if (tag.description) {
             scannedMethod.return.desc = tag.description;
@@ -126,10 +126,10 @@ export function toScannedMethod(
       // With ES6 we can have a lot of param patterns. Best to leave the
       // formatting to escodegen.
       const name = escodegen.generate(nodeParam);
-      const tag = paramTags[name];
+      const tag = paramTags.get(name);
       if (tag) {
         if (tag.type) {
-          type = tag.type;
+          type = doctrine.type.stringify(tag.type);
         }
         if (tag.description) {
           description = tag.description;

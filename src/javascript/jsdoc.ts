@@ -13,6 +13,7 @@
  */
 
 import * as doctrine from 'doctrine';
+import {Annotation, Tag} from 'doctrine';
 import * as estree from 'estree';
 import * as url from 'url';
 
@@ -20,114 +21,52 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Privacy} from '../model/model';
 import {ScannedReference, Severity, Warning} from '../model/model';
 
-/**
- * An annotated JSDoc block tag, all fields are optionally processed except for
- * the tag:
- *
- *     @TAG {TYPE} NAME DESC
- */
-export interface Tag {
-  tag: string;
-  type: string|null;
-  name: string|null;
-  description: string|null;
-}
+export {Annotation, Tag} from 'doctrine';
+
 
 /**
- * The parsed representation of a JSDoc comment.
+ * Given a JSDoc string (minus opening/closing comment delimiters), extract its
+ * description and tags.
  */
-export interface Annotation {
-  // If no description is found, the property will be an empty string.
-  description: string;
-  tags: Tag[]|null;
+export function parseJsdoc(docs: string): doctrine.Annotation {
+  docs = removeLeadingAsterisks(docs);
+  const d = doctrine.parse(docs, {
+    unwrap: false,
+    // lineNumbers: true,
+    preserveWhitespace: true,
+  });
+  // Strip any leading and trailing newline characters in the
+  // description of multiline comments for readibility.
+  // TODO(rictic): figure out if we can trim() here or not. Something something
+  //     markdown?
+  const description = d.description && d.description.replace(/^\n+|\n+$/g, '');
+  return {description, tags: parseCustomTags(d.tags)};
 }
 
-/**
- * doctrine configuration,
- * CURRENTLY UNUSED BECAUSE PRIVATE
- */
-// function configureDoctrine() {
+// Tags with a name: @title name description
+const tagsWithNames = new Set([
+  'appliesMixin',
+  'demo',
+  'hero',
+  'mixinFunction',
+  'polymerBehavior',
+  'pseudoElement'
+]);
+const firstWordAndRest = /^\s*(\S*)\s*(.*)$/;
 
-//   // @hero [path/to/image]
-//   doctrine.Rules['hero'] = ['parseNamePathOptional', 'ensureEnd'];
-
-//   // // @demo [path/to/demo] [Demo title]
-//   doctrine.Rules['demo'] = ['parseNamePathOptional', 'parseDescription',
-//   'ensureEnd'];
-
-//   // // @polymerBehavior [Polymer.BehaviorName]
-//   doctrine.Rules['polymerBehavior'] = ['parseNamePathOptional', 'ensureEnd'];
-// }
-// configureDoctrine();
-
-// @demo [path] [title]
-function parseDemo(tag: doctrine.Tag): Tag {
-  const match = (tag.description || '').match(/^\s*(\S*)\s*(.*)$/);
-  return {
-    tag: 'demo',
-    type: null,
-    name: match ? match[1] : null,
-    description: match ? match[2] : null
-  };
-}
-
-// @hero [path]
-function parseHero(tag: doctrine.Tag): Tag {
-  return {tag: tag.title, type: null, name: tag.description, description: null};
-}
-
-// @polymerElement
-function parsePolymerElement(tag: doctrine.Tag): Tag {
-  return {tag: tag.title, type: null, name: tag.description, description: null};
-}
-
-// @polymerMixin [name]
-function parsePolymerMixin(tag: doctrine.Tag): Tag {
-  return {tag: tag.title, type: null, name: tag.description, description: null};
-}
-
-// @polymerMixinClass [name]
-function parsePolymerMixinClass(tag: doctrine.Tag): Tag {
-  return {tag: tag.title, type: null, name: tag.description, description: null};
-}
-
-// @polymerBehavior [name]
-function parsePolymerBehavior(tag: doctrine.Tag): Tag {
-  return {tag: tag.title, type: null, name: tag.description, description: null};
-}
-
-// @pseudoElement name
-function parsePseudoElement(tag: doctrine.Tag): Tag {
-  return {tag: tag.title, type: null, name: tag.description, description: null};
-}
-
-const CUSTOM_TAGS: {[name: string]: (tag: doctrine.Tag) => Tag} = {
-  demo: parseDemo,
-  hero: parseHero,
-  polymerBehavior: parsePolymerBehavior,
-  polymerElement: parsePolymerElement,
-  polymerMixin: parsePolymerMixin,
-  polymerMixinClass: parsePolymerMixinClass,
-  pseudoElement: parsePseudoElement,
-};
-
-/**
- * Convert doctrine tags to our tag format
- */
-function _tagsToHydroTags(tags: doctrine.Tag[]|null): Tag[]|null {
-  if (!tags)
-    return null;
-  return tags.map(function(tag): Tag {
-    if (tag.title in CUSTOM_TAGS) {
-      return CUSTOM_TAGS[tag.title](tag);
-    } else {
-      return {
-        tag: tag.title,
-        type: tag.type ? doctrine.type.stringify(tag.type) : null,
-        name: tag.name == null ? null : tag.name,
-        description: tag.description
-      };
+function parseCustomTags(tags: Tag[]): Tag[] {
+  return tags.map((tag): Tag => {
+    if (tag.description != null && tagsWithNames.has(tag.title)) {
+      const match = firstWordAndRest.exec(tag.description);
+      if (match != null) {
+        const name = match[1];
+        const description = match[2];
+        return {
+            ...tag, name, description,
+        };
+      }
     }
+    return tag;
   });
 }
 
@@ -135,9 +74,6 @@ function _tagsToHydroTags(tags: doctrine.Tag[]|null): Tag[]|null {
  * removes leading *, and any space before it
  */
 export function removeLeadingAsterisks(description: string): string {
-  if ((typeof description) !== 'string')
-    return description;
-
   return description.split('\n')
       .map(function(line) {
         // remove leading '\s*' from each line
@@ -147,53 +83,16 @@ export function removeLeadingAsterisks(description: string): string {
       .join('\n');
 }
 
-/**
- * Given a JSDoc string (minus opening/closing comment delimiters), extract its
- * description and tags.
- */
-export function parseJsdoc(docs: string): Annotation {
-  docs = removeLeadingAsterisks(docs);
-  const d = doctrine.parse(
-      docs, {unwrap: false, lineNumbers: true, preserveWhitespace: true});
-  // Strip any leading and trailing newline characters in the
-  // description of multiline comments for readibility.
-  // TODO(rictic): figure out if we can trim() here or not. Something something
-  //     markdown?
-  const description = d.description && d.description.replace(/^\n+|\n+$/g, '');
-  return {description: description, tags: _tagsToHydroTags(d.tags)};
-}
-
-// Utility
-
-export function hasTag(
-    jsdoc: Annotation|null|undefined, tagName: string): boolean {
-  if (!jsdoc || !jsdoc.tags)
-    return false;
-  return jsdoc.tags.some(function(tag) {
-    return tag.tag === tagName;
-  });
+export function hasTag(jsdoc: Annotation|undefined, title: string): boolean {
+  return getTag(jsdoc, title) !== undefined;
 }
 
 /**
- * Finds the first JSDoc tag matching `name` and returns its value at `key`.
- *
- * If `key` is omitted, the entire tag object is returned.
+ * Finds the first JSDoc tag matching `title`.
  */
-export function getTag(
-    jsdoc: Annotation|null|undefined, tagName: string): (Tag|null);
-export function getTag<K extends keyof Tag>(
-    jsdoc: Annotation | null | undefined, tagName: string, key: K): Tag[K]|null;
-export function getTag<K extends keyof Tag>(
-    jsdoc: Annotation | null | undefined, tagName: string, key?: K): any {
-  if (!jsdoc || !jsdoc.tags)
-    return null;
-  for (let i = 0; i < jsdoc.tags.length; i++) {
-    const tag = jsdoc.tags[i];
-    if (tag.tag === tagName) {
-      return key ? tag[key] : tag;
-    }
-  }
-  return null;
+export function getTag(jsdoc: Annotation|undefined, title: string): Tag|
+    undefined {
+  return jsdoc && jsdoc.tags && jsdoc.tags.find((t) => t.title === title);
 }
 
 export function unindent(text: string): string {
@@ -217,60 +116,50 @@ export function unindent(text: string): string {
       .join('\n');
 }
 
-export function isAnnotationEmpty(docs?: Annotation) {
-  if (!docs) {
-    return false;
-  }
-  const hasNoTags = !docs.tags || docs.tags.length === 0;
-  return docs.description.trim() === '' && hasNoTags;
+export function isAnnotationEmpty(docs: Annotation|undefined) {
+  return docs === undefined ||
+      docs.tags.length === 0 && docs.description.trim() === '';
 }
 
-function isPrivacy(maybePrivacy: string): maybePrivacy is Privacy {
-  switch (maybePrivacy) {
-    case 'public':
-    case 'private':
-    case 'protected':
-      return true;
-  }
-  return false;
+const privacyTags: Set<string> = new Set(['public', 'private', 'protected']);
+
+export function getPrivacy(jsdoc: Annotation|undefined): Privacy|undefined {
+  return jsdoc && jsdoc.tags &&
+      jsdoc.tags.filter((t) => privacyTags.has(t.title))
+          .map((t) => t.title as Privacy)[0];
 }
 
-export function getPrivacy(jsdoc: Annotation|null|undefined): Privacy|null {
-  if (!jsdoc || !jsdoc.tags) {
-    return null;
-  }
-  for (const tag of jsdoc.tags) {
-    if (isPrivacy(tag.tag)) {
-      return tag.tag;
-    }
-  }
-  return null;
-}
-
-export function getMixins(
+/**
+ * Returns the mixin applications, in the form of ScannedReferences, for the
+ * jsdocs of class.
+ *
+ * The references are returned in presumed order of application - from furthest
+ * up the prototype chain to closest to the subclass.
+ */
+export function getMixinApplications(
     document: JavaScriptDocument,
     node: estree.Node,
     docs: Annotation,
-    warnings: Warning[]) {
-  const mixesAnnotations = docs.tags!.filter((tag) => tag.tag === 'mixes');
-  return mixesAnnotations
+    warnings: Warning[]): ScannedReference[] {
+  const appliesMixinAnnotations = docs.tags!.filter((tag) => tag.title === 'appliesMixin');
+  return appliesMixinAnnotations
       .map((annotation) => {
         const mixinId = annotation.name;
         // TODO(justinfagnani): we need source ranges for jsdoc
         // annotations
         const sourceRange = document.sourceRangeForNode(node)!;
-        if (mixinId == null) {
+        if (mixinId === undefined) {
           warnings.push({
-            code: 'class-mixes-annotation-no-id',
+            code: 'class-applies-mixin-annotation-no-id',
             message:
-                '@mixes annotation with no identifier. Usage `@mixes MixinName`',
+                '@appliesMixin annotation with no identifier. Usage `@appliesMixin MixinName`',
             severity: Severity.WARNING, sourceRange,
           });
           return;
         }
         return new ScannedReference(mixinId, sourceRange);
       })
-      .filter((m) => m != null) as ScannedReference[];
+      .filter((m) => m !== undefined) as ScannedReference[];
 }
 
 export function extractDemos(jsdoc: Annotation|undefined, baseUrl: string):
@@ -279,7 +168,7 @@ export function extractDemos(jsdoc: Annotation|undefined, baseUrl: string):
     return [];
   }
   const demos: Array<{desc: string | undefined, path: string}> = [];
-  jsdoc.tags.filter((tag) => tag.tag === 'demo' && tag.name).forEach((tag) => {
+  jsdoc.tags.filter((tag) => tag.title === 'demo' && tag.name).forEach((tag) => {
     demos.push({
       desc: tag.description || undefined,
       path: url.resolve(baseUrl, tag.name!)

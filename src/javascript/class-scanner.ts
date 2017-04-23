@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as doctrine from 'doctrine';
 import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
@@ -131,9 +132,7 @@ export class ClassScanner implements JavaScriptScanner {
         continue;
       }
       // Classes explicitly defined as elements in their jsdoc tags.
-      // TODO(rictic): swap to new jsdoc tag here.
-      //     See: https://github.com/Polymer/polymer-analyzer/issues/605
-      if (jsdoc.hasTag(class_.jsdoc, 'polymerElement')) {
+      if (jsdoc.hasTag(class_.jsdoc, 'customElement')) {
         customElements.push({class_});
         continue;
       }
@@ -200,6 +199,9 @@ export class ClassScanner implements JavaScriptScanner {
       methods = getMethods(astNode, document);
     }
 
+    const extendsTag = jsdoc.getTag(docs, 'extends');
+    const extends_ = extendsTag !== undefined ? extendsTag.name : undefined;
+
     // TODO(justinfagnani): Infer mixin applications and superclass from AST.
     scannedElement = new ScannedPolymerElement({
       className: class_.name,
@@ -212,7 +214,7 @@ export class ClassScanner implements JavaScriptScanner {
       attributes: [],
       behaviors: [],
       demos: [],
-      extends: jsdoc.getTag(docs, 'extends', 'name') || undefined,
+      extends: extends_,
       listeners: [],
 
       description: class_.description,
@@ -288,9 +290,12 @@ export class ClassScanner implements JavaScriptScanner {
           description = annotation.description || description;
           const tags = annotation.tags || [];
           for (const tag of tags) {
-            if (tag.tag === 'type') {
-              type = type || tag.type;
+            if (tag.title === 'type') {
+              type = type || doctrine.type.stringify(tag.type!);
             }
+            // TODO(justinfagnani): this appears wrong, any tag could have a
+            // description do we really let any tag's description override
+            // the previous?
             description = description || tag.description || '';
           }
         }
@@ -358,9 +363,7 @@ class ClassFinder implements Visitor {
 
       this._classFound(name, doc, value);
     } else {
-      // TODO(rictic): remove the @polymerElement tag here
-      //     See: https://github.com/Polymer/polymer-analyzer/issues/605
-      if (jsdoc.hasTag(doc, 'polymerElement')) {
+      if (jsdoc.hasTag(doc, 'customElement')) {
         this._classFound(assignedName, doc, value);
       }
     }
@@ -405,7 +408,7 @@ class ClassFinder implements Visitor {
         [],
         getMethods(astNode, this._document),
         this._getExtends(astNode, doc, warnings, this._document),
-        jsdoc.getMixins(this._document, astNode, doc, warnings),
+        jsdoc.getMixinApplications(this._document, astNode, doc, warnings),
         getOrInferPrivacy(namespacedName || '', doc, false),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
@@ -422,7 +425,7 @@ class ClassFinder implements Visitor {
       node: estree.Node, docs: jsdoc.Annotation, warnings: Warning[],
       document: JavaScriptDocument): ScannedReference|undefined {
     const extendsAnnotations =
-        docs.tags!.filter((tag) => tag.tag === 'extends');
+        docs.tags!.filter((tag) => tag.title === 'extends');
 
     // prefer @extends annotations over extends clauses
     if (extendsAnnotations.length > 0) {
