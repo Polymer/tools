@@ -53,8 +53,8 @@ export class BuildBundler extends Transform {
 
     let {analyzer,
          excludes,
-         inlineCss,
-         inlineScripts,
+         inlineCss = true,
+         inlineScripts = true,
          rewriteUrlsInTemplates,
          sourcemaps,
          stripComments,
@@ -66,9 +66,6 @@ export class BuildBundler extends Transform {
 
     const forkedAnalyzer = analyzer ? analyzer._fork({urlLoader}) :
                                       buildAnalyzer.analyzer._fork({urlLoader});
-
-    inlineCss = typeof inlineCss === 'undefined' || inlineCss;
-    inlineScripts = typeof inlineScripts === 'undefined' || inlineScripts;
 
     this._bundler = new Bundler({
       analyzer: forkedAnalyzer,
