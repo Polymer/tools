@@ -13,6 +13,7 @@
  */
 
 import * as chai from 'chai';
+import {expect} from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'mz/fs';
 import * as path from 'path';
@@ -62,12 +63,30 @@ suite('startServer', () => {
   });
 
 
-  test('serves index.html, not 404', async() => {
+  test('serves default entry point index.html instead of 404', async() => {
     const app = getApp({root});
     await supertest(app).get('/foo').expect(200).expect((res: any) => {
-      if (!res.text.includes('INDEX')) {
-        throw new Error('Expected body to contain INDEX');
-      }
+      expect(res.text).to.have.string('INDEX');
+    });
+  });
+
+  test('serves custom entry point from "/"', async() => {
+    const app = getApp({
+      root,
+      entrypoint: path.join(root, 'custom-entry.html'),
+    });
+    await supertest(app).get('/').expect(200).expect((res: any) => {
+      expect(res.text).to.have.string('CUSTOM-ENTRY');
+    });
+  });
+
+  test('serves custom entry point instead of 404', async() => {
+    const app = getApp({
+      root,
+      entrypoint: path.join(root, 'custom-entry.html'),
+    });
+    await supertest(app).get('/not/a/file').expect(200).expect((res: any) => {
+      expect(res.text).to.have.string('CUSTOM-ENTRY');
     });
   });
 
@@ -236,9 +255,7 @@ suite('startServer', () => {
           .get('/api/v1/')
           .expect(200)
           .expect((res: any) => {
-            if (!res.text.includes('INDEX')) {
-              throw new Error('Expected body to contain INDEX');
-            }
+            expect(res.text).to.have.string('INDEX');
           });
     });
   });

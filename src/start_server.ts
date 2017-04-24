@@ -16,6 +16,7 @@ import * as assert from 'assert';
 import * as express from 'express';
 import * as fs from 'mz/fs';
 import * as path from 'path';
+import {urlFromPath} from 'polymer-build/lib/path-transformers';
 import * as send from 'send';
 // TODO: Switch to node-http2 when compatible with express
 // https://github.com/molnarg/node-http2/issues/100
@@ -24,6 +25,7 @@ import * as url from 'url';
 
 import {bowerConfig} from './bower_config';
 import {babelCompile} from './compile-middleware';
+import {injectCustomElementsEs5Adapter} from './custom-elements-es5-adapter-middleware';
 import {makeApp} from './make_app';
 import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
@@ -34,6 +36,13 @@ const httpProxy = require('http-proxy-middleware');
 export interface ServerOptions {
   /** The root directory to serve **/
   root?: string;
+
+  /**
+   * The path on disk of the entry point HTML file that will be served for
+   * app-shell style projects. Must be contained by `root`. Defaults to
+   * `index.html`.
+   */
+  entrypoint?: string;
 
   /** Whether or not to compile JavaScript **/
   compile?: 'always'|'never'|'auto';
@@ -326,7 +335,8 @@ export function getApp(options: ServerOptions): express.Express {
     for (let char of ['*', '?', '+']) {
       if (escapedPath.indexOf(char) > -1) {
         console.warn(
-            `Proxy path includes character "${char}" which can cause problems during route matching.`);
+            `Proxy path includes character "${char}"` +
+            `which can cause problems during route matching.`);
       }
     }
 
@@ -346,20 +356,29 @@ export function getApp(options: ServerOptions): express.Express {
     app.use(`/${escapedPath}/`, apiProxy);
   }
 
-  if (options.compile === 'auto' || options.compile === 'always') {
-    app.use('*', babelCompile(options.compile === 'always'));
+  const forceCompile = options.compile === 'always';
+  if (options.compile === 'auto' || forceCompile) {
+    app.use('*', injectCustomElementsEs5Adapter(forceCompile));
+    app.use('*', babelCompile(forceCompile));
   }
 
   app.use(`/${componentUrl}/`, polyserve);
 
+  // `send` expects files to be specified relative to the given root and as a
+  // URL rather than a file system path.
+  const entrypoint =
+      options.entrypoint ? urlFromPath(root, options.entrypoint) : 'index.html';
+
   app.get('/*', (req, res) => {
     pushResources(options, req, res);
     const filePath = req.path;
-    send(req, filePath, {root: root})
+    send(req, filePath, {root: root, index: entrypoint})
         .on('error',
             (error: send.SendError) => {
               if ((error).status === 404 && !filePathRegex.test(filePath)) {
-                send(req, '/', {root: root}).pipe(res);
+                // The static file handling middleware failed to find a file on
+                // disk. Serve the entry point HTML file instead of a 404.
+                send(req, entrypoint, {root: root}).pipe(res);
               } else {
                 res.statusCode = error.status || 500;
                 res.end(error.message);

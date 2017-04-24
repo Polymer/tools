@@ -17,7 +17,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as supertest from 'supertest-as-promised';
-import {babelCompileCache} from '../compile-middleware';
+import {babelCompileCache, browserNeedsCompilation} from '../compile-middleware';
 import {getApp} from '../start_server';
 
 chai.use(chaiAsPromised);
@@ -163,5 +163,33 @@ suite('compile-middleware', () => {
         }
       });
     });
+  });
+
+  test('browserNeedsCompilation', () => {
+    const cases: [string, boolean][] = [
+      [
+        'unknown browser',
+        true,
+      ],
+      [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/14.99999',
+        true,
+      ],
+      [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.14986',
+        true,
+      ],
+      [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063',
+        false,
+      ],
+      [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/16.00000',
+        false,
+      ],
+    ];
+    for (const [userAgent, expected] of cases) {
+      assert.equal(browserNeedsCompilation(userAgent), expected, userAgent);
+    }
   });
 });

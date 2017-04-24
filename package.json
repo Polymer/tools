@@ -1,6 +1,6 @@
 {
   "name": "polyserve",
-  "version": "0.16.0",
+  "version": "0.18.0",
   "description": "A simple dev server for bower components",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/polyserve",
@@ -15,7 +15,7 @@
     "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
     "test:watch": "watchy -w src/ -- npm test",
     "prepublish": "npm run build",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
+    "format": "find src test -iname '*.ts' | xargs clang-format --style=file -i"
   },
   "keywords": [
     "polymer",
@@ -67,6 +67,7 @@
     "opn": "^3.0.2",
     "parse5": "^2.2.3",
     "pem": "^1.8.3",
+    "polymer-build": "^1.1.0",
     "resolve": "^1.0.0",
     "send": "^0.14.1",
     "spdy": "^3.3.3",
@@ -84,7 +85,7 @@
     "@types/tmp": "0.0.31",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
-    "clang-format": "=1.0.45",
+    "clang-format": "=1.0.48",
     "intercept-stdout": "^0.1.2",
     "mocha": "^3.1.0",
     "sinon": "^1.17.5",

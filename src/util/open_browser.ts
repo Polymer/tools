@@ -28,8 +28,8 @@ function openWebPage(url: string, withBrowser?: string) {
     if (err) {
       // log error and continue
       console.error(
-          `ERROR: Problem launching "${openOptions.app || 'default web browser'
-                                                          }".`);
+          `ERROR: Problem launching ` +
+          `"${openOptions.app || 'default web browser'}".`);
     }
   });
 }
