@@ -26,10 +26,20 @@ export interface Analysis {
   // and reference it like:
   // $schema: 'http://polymer-project.org/schema/v1/analysis.json';
 
+  /** All elements found. */
   elements?: Element[];
+  /** All toplevel functions found. */
   functions?: Function[];
+  /** All element mixins found. */
   mixins?: ElementMixin[];
+  /** All toplevel namespaces found. */
   namespaces?: Namespace[];
+  /**
+   * All toplevel classes found that were not covered by one of the other types.
+   *
+   * e.g. classes that are elements are only found in `elements`
+   */
+  classes?: Class[];
 
   /**
    * An extension point for framework-specific metadata, as well as any
@@ -117,9 +127,10 @@ export interface Namespace extends Feature {
   functions?: Function[];
   mixins?: ElementMixin[];
   namespaces?: Namespace[];
+  classes?: Class[];
 }
 
-export interface ElementLike extends Feature {
+export interface Class extends Feature {
   /**
    * The path, relative to the base directory of the package.
    *
@@ -128,31 +139,35 @@ export interface ElementLike extends Feature {
    */
   path: string;
 
-  /** A markdown description for the element. */
+  /** A markdown description. */
   description: string;
 
-  /** A markdown summary for the element. */
+  /** A markdown summary. */
   summary: string;
 
   /**
-   * Paths, relative to the base directory of the package, to demo pages for the
-   * element.
+   * Paths, relative to the base directory of the package, to demo pages for
+   * this feauture.
    *
    * e.g. `['demos/index.html', 'demos/extended.html']`
    */
   demos: string[];
 
-  /** Names of mixines applied to this element.  */
+  /** Names of mixins applied.  */
   mixins?: string[];
 
-  /** The attributes that this element is known to understand. */
-  attributes?: Attribute[];
-
-  /** The properties that this element has. */
+  /** The properties that this feature has. */
   properties?: Property[];
 
-  /** The instance methods that this element has. */
+  /** The instance methods that this feature has. */
   methods?: Method[];
+
+  privacy: Privacy;
+}
+
+export interface ElementLike extends Class {
+  /** The attributes that this element is known to understand. */
+  attributes?: Attribute[];
 
   /** The events that this element fires. */
   events?: Event[];
@@ -199,8 +214,6 @@ export interface ElementLike extends Feature {
     // Would be nice to document the default styling a bit here, whether it's
     // display: block or inline or whatever.
   };
-
-  privacy: Privacy;
 }
 
 export interface Element extends ElementLike {

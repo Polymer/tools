@@ -64,7 +64,20 @@ class ElementVisitor implements Visitor {
       description: docs.description,
       events: getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node), className,
-      privacy: getOrInferPrivacy(className, docs, false)
+      privacy: getOrInferPrivacy(className, docs, false),
+      abstract: jsdoc.hasTag(docs, 'abstract'),
+      attributes: [],
+      properties: [],
+      behaviors: [],
+      demos: [],
+      extends: undefined,
+      jsdoc: docs,
+      listeners: [],
+      methods: [],
+      mixins: [],
+      observers: [],
+      superClass: undefined,
+      tagName: undefined
     });
     this.propertyHandlers =
         declarationPropertyHandlers(this.element, this.document);
@@ -113,8 +126,9 @@ class ElementVisitor implements Visitor {
     if (node.kind === 'get') {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       const argument = <estree.ArrayExpression>returnStatement.argument;
-      const propDesc = docs.annotate(toScannedPolymerProperty(
-          prop, this.document.sourceRangeForNode(node)!));
+      const propDesc = toScannedPolymerProperty(
+          prop, this.document.sourceRangeForNode(node)!);
+      docs.annotate(propDesc);
 
       // We only support observers and behaviors getters that return array
       // literals.
@@ -158,8 +172,9 @@ class ElementVisitor implements Visitor {
     }
 
     if (node.kind === 'method') {
-      const methodDesc = docs.annotate(
-          toScannedMethod(prop, this.document.sourceRangeForNode(node)!));
+      const methodDesc =
+          toScannedMethod(prop, this.document.sourceRangeForNode(node)!);
+      docs.annotate(methodDesc);
       element.addMethod(methodDesc);
     }
   }
@@ -185,12 +200,24 @@ class ElementVisitor implements Visitor {
         this.element = new ScannedPolymerElement({
           className,
           astNode: node,
-          description: rawDescription,
+          description: jsDoc.description,
           events: getEventComments(parent),
           sourceRange: this.document.sourceRangeForNode(node.arguments[0]),
-          privacy: getOrInferPrivacy('', jsDoc, false)
+          privacy: getOrInferPrivacy('', jsDoc, false),
+          abstract: jsdoc.hasTag(jsDoc, 'abstract'),
+          attributes: [],
+          properties: [],
+          behaviors: [],
+          demos: [],
+          extends: undefined,
+          jsdoc: jsDoc,
+          listeners: [],
+          methods: [],
+          mixins: [],
+          observers: [],
+          superClass: undefined,
+          tagName: undefined
         });
-        docs.annotate(this.element);
         this.element.description = (this.element.description || '').trim();
         this.propertyHandlers =
             declarationPropertyHandlers(this.element, this.document);

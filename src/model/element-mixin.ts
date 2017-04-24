@@ -13,13 +13,13 @@
  */
 
 import {ElementBaseInit} from './element-base';
-import {ImmutableSet} from './immutable';
 import {Document, ElementBase, Feature, ScannedElementBase} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 
 export class ScannedElementMixin extends ScannedElementBase {
   readonly name: string;
+  readonly abstract: boolean = false;
   constructor({name}: {name: string}) {
     super();
     this.name = name;
@@ -40,19 +40,9 @@ declare module './queryable' {
 }
 export class ElementMixin extends ElementBase implements Feature {
   readonly name: string;
-  readonly kinds: ImmutableSet<string> = new Set(['element-mixin']);
 
   constructor(init: ElementMixinInit, document: Document) {
     super(init, document);
-    console.log(`element mixin ${this.name} created. ${
-                                                       this.attributes.length
-                                                     } attributes`);
-
-    this.name = init.name;
-    this.identifiers.add(this.name);
-  }
-
-  get identifiers(): Set<string> {
-    return new Set([this.name]);
+    this.kinds.add('element-mixin');
   }
 }

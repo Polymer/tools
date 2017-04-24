@@ -14,6 +14,7 @@
 
 import * as doctrine from 'doctrine';
 import * as estree from 'estree';
+import * as url from 'url';
 
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Privacy} from '../model/model';
@@ -271,4 +272,19 @@ export function getMixins(
         return new ScannedReference(mixinId, sourceRange);
       })
       .filter((m) => m != null) as ScannedReference[];
+}
+
+export function extractDemos(jsdoc: Annotation|undefined, baseUrl: string):
+    Array<{desc: string | undefined, path: string}> {
+  if (!jsdoc || !jsdoc.tags) {
+    return [];
+  }
+  const demos: Array<{desc: string | undefined, path: string}> = [];
+  jsdoc.tags.filter((tag) => tag.tag === 'demo' && tag.name).forEach((tag) => {
+    demos.push({
+      desc: tag.description || undefined,
+      path: url.resolve(baseUrl, tag.name!)
+    });
+  });
+  return demos;
 }

@@ -15,7 +15,6 @@
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedEvent} from '../model/model';
 
-import {ScannedBehavior} from './behavior';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 // TODO(rictic): destroy this file with great abadon. It's the oldest and
@@ -38,11 +37,10 @@ if (Math.random() > 1000) {
  * Processed JSDoc values will be made available via the `jsdoc` property on a
  * scanned feature.
  */
-export function
-annotate<Scanned extends{jsdoc?: jsdoc.Annotation, description?: string}>(
-    feature: Scanned): Scanned {
+export function annotate(
+    feature: {jsdoc?: jsdoc.Annotation, description?: string}): void {
   if (!feature || feature.jsdoc) {
-    return feature;
+    return;
   }
 
   if (typeof feature.description === 'string') {
@@ -51,7 +49,7 @@ annotate<Scanned extends{jsdoc?: jsdoc.Annotation, description?: string}>(
     feature.description = feature.jsdoc.description;
   }
 
-  return feature;
+  return;
 }
 
 /**
@@ -71,14 +69,6 @@ export function annotateElementHeader(scannedElement: ScannedPolymerElement) {
       }
     });
   }
-}
-
-export function annotateBehavior(scannedBehavior: ScannedBehavior):
-    ScannedBehavior {
-  annotate(scannedBehavior);
-  annotateElementHeader(scannedBehavior);
-
-  return scannedBehavior;
 }
 
 /**
@@ -105,7 +95,7 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
   const tags = (annotation && annotation.tags || []);
   // process @params
   scannedEvent.params.push(
-      ...tags.filter((tag) => tag.tag === 'param').map(function(param) {
+      ...tags.filter((tag) => tag.tag === 'param').map((param) => {
         return {
           type: param.type || 'N/A',
           desc: param.description || '',

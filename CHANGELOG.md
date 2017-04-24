@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* Add a Class feature kind for describing all kinds of classes. This is a superclass of the existing elements and mixins.
 
 ## [2.0.0-alpha.38] - 2017-04-13
 

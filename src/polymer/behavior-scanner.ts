@@ -156,17 +156,31 @@ class BehaviorVisitor implements Visitor {
 
     this._startBehavior(new ScannedBehavior({
       astNode: node,
-      description: comment,
+      description: parsedJsdocs.description,
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node),
       privacy: getOrInferPrivacy(symbol, parsedJsdocs, false),
+      abstract: jsdoc.hasTag(parsedJsdocs, 'abstract'),
+      attributes: [],
+      properties: [],
+      behaviors: [],
+      className: undefined,
+      demos: [],
+      extends: undefined,
+      jsdoc: parsedJsdocs,
+      listeners: [],
+      methods: [],
+      mixins: [],
+      observers: [],
+      superClass: undefined,
+      tagName: undefined
     }));
     const behavior = this.currentBehavior!;
 
     this.propertyHandlers =
         declarationPropertyHandlers(behavior, this.document);
 
-    docs.annotateBehavior(behavior);
+    docs.annotateElementHeader(behavior);
     behavior.className =
         jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name') ||
         getNamespacedIdentifier(symbol, behavior.jsdoc);

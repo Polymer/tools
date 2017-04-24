@@ -18,26 +18,15 @@ import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-valu
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {Warning} from '../model/model';
 
 import {getOrInferPrivacy} from './js-utils';
 import {ScannedPolymerElementMixin} from './polymer-element-mixin';
-import {getMethods, getProperties} from './polymer2-config';
+import {getMethods, getPolymerProperties} from './polymer2-config';
 
-export class Polymer2MixinScanner implements JavaScriptScanner {
-  async scan(
-      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ScannedPolymerElementMixin[]> {
-    const visitor = new MixinVisitor(document);
-    await visit(visitor);
-    return visitor._mixins;
-  }
-}
-
-class MixinVisitor implements Visitor {
-  _mixins: ScannedPolymerElementMixin[] = [];
+export class MixinVisitor implements Visitor {
+  mixins: ScannedPolymerElementMixin[] = [];
   private _document: JavaScriptDocument;
 
   private _currentMixin: ScannedPolymerElementMixin|null = null;
@@ -78,7 +67,7 @@ class MixinVisitor implements Visitor {
               this._document, node, parentJsDocs, this._warnings),
         });
         this._currentMixinNode = node;
-        this._mixins.push(this._currentMixin);
+        this.mixins.push(this._currentMixin);
       } else {
         // TODO(rictic): warn for a mixin whose name we can't determine.
       }
@@ -108,10 +97,10 @@ class MixinVisitor implements Visitor {
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
           jsdoc: nodeJsDocs,
           mixins:
-              jsdoc.getMixins(this._document, node, nodeJsDocs, this._warnings)
+              jsdoc.getMixins(this._document, node, nodeJsDocs, this._warnings),
         });
         this._currentMixinNode = node;
-        this._mixins.push(this._currentMixin);
+        this.mixins.push(this._currentMixin);
       } else {
         // Warn about a mixin whose name we can't infer.
       }
@@ -157,7 +146,7 @@ class MixinVisitor implements Visitor {
       if (mixin) {
         this._currentMixin = mixin;
         this._currentMixinNode = node;
-        this._mixins.push(this._currentMixin);
+        this.mixins.push(this._currentMixin);
       } else {
         // TODO(rictic); warn about being unable to determine mixin name.
       }
@@ -210,7 +199,9 @@ class MixinVisitor implements Visitor {
       return;
     }
 
-    getProperties(node, this._document).forEach((p) => mixin.addProperty(p));
+    mixin.classAstNode = node;
+    getPolymerProperties(node, this._document)
+        .forEach((p) => mixin.addProperty(p));
     getMethods(node, this._document).forEach((m) => mixin.addMethod(m));
 
     mixin.events = esutil.getEventComments(node);

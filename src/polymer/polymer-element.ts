@@ -18,7 +18,7 @@ import * as estree from 'estree';
 import * as jsdoc from '../javascript/jsdoc';
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {ImmutableArray} from '../model/immutable';
-import {Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
+import {Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
@@ -62,24 +62,24 @@ export interface Observer {
 }
 
 export interface Options {
-  tagName?: string;
-  className?: string;
-  superClass?: ScannedReference;
-  mixins?: ScannedReference[];
-  extends?: string;
-  jsdoc?: JsDocAnnotation;
-  description?: string;
-  properties?: ScannedProperty[];
-  methods?: ScannedMethod[];
-  attributes?: ScannedAttribute[];
-  observers?: Observer[];
-  listeners?: {event: string, handler: string}[];
-  behaviors?: ScannedBehaviorAssignment[];
+  tagName: string|undefined;
+  className: string|undefined;
+  superClass: ScannedReference|undefined;
+  mixins: ScannedReference[];
+  extends: string|undefined;
+  jsdoc: JsDocAnnotation;
+  description: string|undefined;
+  properties: ScannedProperty[];
+  methods: ScannedMethod[];
+  attributes: ScannedAttribute[];
+  observers: Observer[];
+  listeners: {event: string, handler: string}[];
+  behaviors: ScannedBehaviorAssignment[];
 
-  demos?: {desc: string; path: string}[];
-  events?: ScannedEvent[];
+  demos: {desc: string; path: string}[];
+  events: ScannedEvent[];
 
-  abstract?: boolean;
+  abstract: boolean;
   privacy: Privacy;
   astNode: any;
   sourceRange: SourceRange|undefined;
@@ -96,9 +96,7 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
   domModule?: dom5.Node;
   scriptElement?: dom5.Node;
   // TODO(justinfagnani): Not Polymer-specific, and hopefully not necessary
-  // Indicates if an element is a pseudo element
   pseudo: boolean;
-  abstract?: boolean;
 
   addProperty(prop: ScannedPolymerProperty): void;
 }
@@ -154,26 +152,36 @@ export class ScannedPolymerElement extends ScannedElement implements
   scriptElement?: dom5.Node;
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
-  abstract?: boolean;
+  abstract: boolean = false;
 
   constructor(options: Options) {
     super();
-    // TODO(justinfagnani): fix this constructor to not be crazy, or remove
-    // class altogether.
-    const optionsCopy = Object.assign({}, options) as Options;
-    delete optionsCopy.properties;
-    delete optionsCopy.methods;
-    Object.assign(this, optionsCopy);
-    if (options && options.properties) {
+    this.tagName = options.tagName;
+    this.className = options.className;
+    this.superClass = options.superClass;
+    this.mixins = options.mixins;
+    this.extends = options.extends;
+    this.jsdoc = options.jsdoc;
+    this.description = options.description || '';
+    this.attributes = options.attributes;
+    this.observers = options.observers;
+    this.listeners = options.listeners;
+    this.behaviorAssignments = options.behaviors;
+    this.demos = options.demos;
+    this.events = options.events;
+    this.abstract = options.abstract;
+    this.privacy = options.privacy;
+    this.astNode = options.astNode;
+    this.sourceRange = options.sourceRange;
+
+    if (options.properties) {
       options.properties.forEach((p) => this.addProperty(p));
     }
-    if (options && options.methods) {
+    if (options.methods) {
       options.methods.forEach((m) => this.addMethod(m));
     }
-    if (this.jsdoc) {
-      this.summary = this.summary ||
-          jsdoc.getTag(this.jsdoc, 'summary', 'description') || '';
-    }
+    this.summary = this.summary ||
+        jsdoc.getTag(this.jsdoc, 'summary', 'description') || '';
   }
 
   addProperty(prop: ScannedPolymerProperty) {
@@ -204,8 +212,6 @@ export interface PolymerExtension extends ElementBase {
   scriptElement?: dom5.Node;
   localIds: ImmutableArray<LocalId>;
 
-  abstract?: boolean;
-
   emitPropertyMetadata(property: PolymerProperty): any;
 }
 
@@ -225,14 +231,10 @@ export class PolymerElement extends Element implements PolymerExtension {
   readonly scriptElement?: dom5.Node;
   readonly localIds: ImmutableArray<LocalId> = [];
 
-  readonly abstract?: boolean;
-
-  kinds = new Set(['element', 'polymer-element']);
-
   constructor(scannedElement: ScannedPolymerElement, document: Document) {
     super(scannedElement, document);
+    this.kinds.add('polymer-element');
 
-    this.abstract = scannedElement.abstract;
     this.observers = Array.from(scannedElement.observers);
     this.listeners = Array.from(scannedElement.listeners);
     this.behaviorAssignments = Array.from(scannedElement.behaviorAssignments);
@@ -277,7 +279,7 @@ export class PolymerElement extends Element implements PolymerExtension {
   }
 
   protected _getSuperclassAndMixins(
-      document: Document, init: ScannedPolymerElement) {
+      document: Document, init: ScannedPolymerElement): Class[] {
     const prototypeChain = super._getSuperclassAndMixins(document, init);
 
     const {warnings, behaviors} =

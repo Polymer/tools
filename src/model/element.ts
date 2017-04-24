@@ -15,13 +15,16 @@
 import {Document} from './document';
 import {ElementBase, ElementBaseInit, ScannedElementBase} from './element-base';
 import {Feature, Privacy} from './feature';
-import {Reference, ScannedReference} from './reference';
+import {ScannedReference} from './reference';
 
 export {Visitor} from '../javascript/estree-visitor';
 
 export class ScannedElement extends ScannedElementBase {
   tagName?: string;
   className?: string;
+  get name() {
+    return this.className;
+  }
   superClass?: ScannedReference;
   privacy: Privacy;
 
@@ -58,34 +61,21 @@ declare module './queryable' {
   }
 }
 export class Element extends ElementBase implements Feature {
-  readonly tagName?: string;
-  readonly className?: string;
-  readonly superClass?: Reference;
-  get name() {
-    return this.className;
-  }
+  readonly tagName: string|undefined;
 
   /**
-   * For customized built-in elements, the tagname of the superClass.
+   * For customized built-in elements, the tagname of the builtin element that
+   * this element extends.
    */
   extends?: string;
-  kinds = new Set(['element']);
 
   constructor(init: ElementInit, document: Document) {
     super(init, document);
     this.tagName = init.tagName;
-    this.className = init.className;
-    this.extends = init.extends;
-  }
-
-  get identifiers(): Set<string> {
-    const result: Set<string> = new Set();
     if (this.tagName) {
-      result.add(this.tagName);
+      this.identifiers.add(this.tagName);
     }
-    if (this.className) {
-      result.add(this.className);
-    }
-    return result;
+    this.kinds.add('element');
+    this.extends = init.extends;
   }
 }

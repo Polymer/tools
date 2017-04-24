@@ -18,11 +18,11 @@ import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
 import {PolymerElementMixin} from '../../index';
+import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedFeature} from '../../model/model';
 import {ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
-import {Polymer2MixinScanner} from '../../polymer/polymer2-mixin-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
@@ -36,10 +36,9 @@ suite('Polymer2MixinScanner', () => {
     const file = await urlLoader.load(filename);
     const parser = new JavaScriptParser();
     const document = parser.parse(file, filename);
-    const scanner = new Polymer2MixinScanner();
+    const scanner = new ClassScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
-
     const features: ScannedFeature[] = await scanner.scan(document, visit);
     return <ScannedPolymerElementMixin[]>features.filter(
         (e) => e instanceof ScannedPolymerElementMixin);

@@ -101,7 +101,7 @@ task('build-all', (done) => {
 });
 
 task('test', ['build'], () => {
-  return gulp.src('test/**/*_test.js', {read: false}).pipe(mocha({
+  return gulp.src('test/**/*_test.js').pipe(mocha({
     ui: 'tdd',
     reporter: 'spec',
   }));

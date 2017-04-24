@@ -18,11 +18,11 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
 
 
 //
@@ -47,7 +47,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
     document = parser.parse(file, '/static/vanilla-elements.js');
-    const scanner = new Polymer2ElementScanner();
+    const scanner = new ClassScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 

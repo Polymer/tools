@@ -14,10 +14,8 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
-import {ElementBase} from '../index';
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {ImmutableSet} from '../model/immutable';
-import {Document, ElementMixin, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
+import {Class, Document, ElementMixin, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
 import {getOrInferPrivacy} from './js-utils';
@@ -32,6 +30,7 @@ export interface Options {
   sourceRange: SourceRange;
   mixins: ScannedReference[];
   astNode: estree.Node;
+  classAstNode?: estree.Node;
 }
 
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
@@ -48,6 +47,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   pseudo: boolean = false;
   readonly abstract: boolean = false;
   readonly sourceRange: SourceRange;
+  classAstNode?: estree.Node;
 
   constructor({
     name,
@@ -57,7 +57,8 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     privacy,
     sourceRange,
     mixins,
-    astNode
+    astNode,
+    classAstNode
   }: Options) {
     super({name});
     this.jsdoc = jsdoc;
@@ -67,6 +68,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     this.sourceRange = sourceRange;
     this.mixins = mixins;
     this.astNode = astNode;
+    this.classAstNode = classAstNode;
   }
 
   addProperty(prop: ScannedPolymerProperty) {
@@ -100,25 +102,15 @@ export class PolymerElementMixin extends ElementMixin implements
   readonly domModule?: dom5.Node;
   readonly scriptElement?: dom5.Node;
   readonly localIds: LocalId[] = [];
-
-  readonly kinds: ImmutableSet<string> =
-      new Set(['element-mixin', 'polymer-element-mixin']);
   readonly pseudo: boolean;
-  readonly abstract: boolean;
 
   constructor(scannedMixin: ScannedPolymerElementMixin, document: Document) {
     super(scannedMixin, document);
-    console.log(
-        `polymer element mixin ${this.name} created. ${
-                                                       this.attributes.length
-                                                     } attributes`);
-    this.abstract = scannedMixin.abstract;
-    this.description = scannedMixin.description;
+    this.kinds.add('polymer-element-mixin');
     this.domModule = scannedMixin.domModule;
     this.pseudo = scannedMixin.pseudo;
     this.scriptElement = scannedMixin.scriptElement;
     this.slots = scannedMixin.slots;
-
     this.behaviorAssignments = Array.from(scannedMixin.behaviorAssignments);
     this.observers = Array.from(scannedMixin.observers);
   }
@@ -135,7 +127,7 @@ export class PolymerElementMixin extends ElementMixin implements
   }
 
   protected _getSuperclassAndMixins(
-      document: Document, init: ScannedPolymerElementMixin): ElementBase[] {
+      document: Document, init: ScannedPolymerElementMixin): Class[] {
     const prototypeChain = super._getSuperclassAndMixins(document, init);
 
     const {warnings, behaviors} =

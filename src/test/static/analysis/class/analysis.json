@@ -1,0 +1,253 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 0,
+          "column": 0
+        },
+        "end": {
+          "line": 0,
+          "column": 37
+        }
+      },
+      "privacy": "public",
+      "tagname": "my-element",
+      "classname": "Element",
+      "superclass": "HTMLElement"
+    },
+    {
+      "description": "",
+      "summary": "",
+      "tagname": "annotated-elem",
+      "path": "classes.js",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 4,
+          "column": 0
+        },
+        "end": {
+          "line": 4,
+          "column": 68
+        }
+      },
+      "privacy": "public",
+      "classname": "AnnotatedElement",
+      "superclass": "HTMLElement"
+    }
+  ],
+  "mixins": [
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 7,
+          "column": 0
+        },
+        "end": {
+          "line": 9,
+          "column": 1
+        }
+      },
+      "privacy": "public",
+      "name": "Mixin"
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 12,
+          "column": 0
+        },
+        "end": {
+          "line": 12,
+          "column": 37
+        }
+      },
+      "privacy": "public",
+      "name": "AnnotatedMixin"
+    }
+  ],
+  "classes": [
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [
+        {
+          "name": "baseMethod",
+          "description": "This is a base method.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 17,
+              "column": 2
+            },
+            "end": {
+              "line": 18,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        },
+        {
+          "name": "overriddenMethod",
+          "description": "Will be overriden by Subclass.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 20,
+              "column": 2
+            },
+            "end": {
+              "line": 21,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 15,
+          "column": 0
+        },
+        "end": {
+          "line": 22,
+          "column": 1
+        }
+      },
+      "privacy": "public"
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [
+        {
+          "name": "baseMethod",
+          "description": "This is a base method.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 17,
+              "column": 2
+            },
+            "end": {
+              "line": 18,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "inheritedFrom": "Base"
+        },
+        {
+          "name": "overriddenMethod",
+          "description": "Overrides the method on Base.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 26,
+              "column": 2
+            },
+            "end": {
+              "line": 28,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        },
+        {
+          "name": "subMethod",
+          "description": "This method only exists on Subclass.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 31,
+              "column": 2
+            },
+            "end": {
+              "line": 33,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 24,
+          "column": 0
+        },
+        "end": {
+          "line": 34,
+          "column": 1
+        }
+      },
+      "privacy": "public"
+    }
+  ]
+}

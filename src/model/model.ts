@@ -35,6 +35,7 @@
 // TODO(rictic): export document and package query options...
 
 export * from './attribute';
+export * from './class';
 export {Document, ScannedDocument} from './document';
 export * from './element';
 export * from './element-base';

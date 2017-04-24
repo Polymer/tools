@@ -17,10 +17,9 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
+import {ClassScanner} from '../../javascript/class-scanner';
 import {Document} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
-import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
-import {Polymer2MixinScanner} from '../../polymer/polymer2-mixin-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('PolymerElement', () => {
@@ -31,8 +30,7 @@ suite('PolymerElement', () => {
     scanners: new Map([[
       'js',
       [
-        new Polymer2ElementScanner(),
-        new Polymer2MixinScanner(),
+        new ClassScanner(),
       ]
     ]])
   });

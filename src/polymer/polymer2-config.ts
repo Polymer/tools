@@ -64,22 +64,27 @@ export function getIsValue(node: estree.ClassDeclaration|
 /**
  * Returns the properties defined in a Polymer config object literal.
  */
-export function getProperties(
-    node: estree.ClassDeclaration|estree.ClassExpression,
-    document: JavaScriptDocument): ScannedPolymerProperty[] {
+export function getPolymerProperties(
+    node: estree.Node, document: JavaScriptDocument): ScannedPolymerProperty[] {
+  if (node.type !== 'ClassDeclaration' && node.type !== 'ClassExpression') {
+    return [];
+  }
   const propertiesNode = getStaticGetterValue(node, 'properties');
   return propertiesNode ? analyzeProperties(propertiesNode, document) : [];
 }
 
 export function getMethods(
-    node: estree.ClassDeclaration|estree.ClassExpression,
-    document: JavaScriptDocument): ScannedMethod[] {
+    node: estree.Node, document: JavaScriptDocument): ScannedMethod[] {
+  if (node.type !== 'ClassDeclaration' && node.type !== 'ClassExpression') {
+    return [];
+  }
   return node.body.body
       .filter(
           (n) => n.type === 'MethodDefinition' && n.static === false &&
               n.kind === 'method')
       .map((m) => {
-        return docs.annotate(
-            toScannedMethod(m, document.sourceRangeForNode(m)!));
+        const method = toScannedMethod(m, document.sourceRangeForNode(m)!);
+        docs.annotate(method);
+        return method;
       });
 }

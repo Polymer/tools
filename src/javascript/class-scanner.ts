@@ -21,12 +21,14 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {ScannedElement, ScannedFeature, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
+import {ScannedClass, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 
-import {extractObservers} from './declaration-property-handlers';
-import {getOrInferPrivacy} from './js-utils';
-import {Observer, ScannedPolymerElement} from './polymer-element';
-import {getIsValue, getMethods, getProperties, getStaticGetterValue} from './polymer2-config';
+import {extractObservers} from '../polymer/declaration-property-handlers';
+import {getOrInferPrivacy} from '../polymer/js-utils';
+import {Observer, ScannedPolymerElement} from '../polymer/polymer-element';
+import {ScannedPolymerElementMixin} from '../polymer/polymer-element-mixin';
+import {getIsValue, getMethods, getPolymerProperties, getStaticGetterValue} from '../polymer/polymer2-config';
+import {MixinVisitor} from '../polymer/polymer2-mixin-scanner';
 
 
 /**
@@ -53,15 +55,32 @@ export interface ScannedAttribute extends ScannedFeature {
   type?: string;
 }
 
-export class Polymer2ElementScanner implements JavaScriptScanner {
+/**
+ * Find and classify classes from source code.
+ *
+ * Currently this has a bunch of Polymer stuff baked in that shouldn't be here
+ * in order to support generating only one feature for stuff that's essentially
+ * more specific kinds of classes, like Elements, PolymerElements, Mixins, etc.
+ *
+ * In a future change we'll add a mechanism whereby plugins can claim and
+ * specialize classes.
+ */
+export class ClassScanner implements JavaScriptScanner {
   async scan(
-      document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedElement[]> {
-    const classFinder = new ClassFinder();
+      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
+      Promise<Array<ScannedPolymerElement|ScannedClass|
+                    ScannedPolymerElementMixin>> {
+    const classFinder = new ClassFinder(document);
+    const mixinFinder = new MixinVisitor(document);
     const elementDefinitionFinder =
         new CustomElementsDefineCallFinder(document);
     // Find all classes and all calls to customElements.define()
-    await Promise.all([visit(classFinder), visit(elementDefinitionFinder)]);
+    await Promise.all([
+      visit(classFinder),
+      visit(elementDefinitionFinder),
+      visit(mixinFinder)
+    ]);
+    const mixins = mixinFinder.mixins;
 
     const elementDefinitionsByClassName = new Map<string, ElementDefineCall>();
     // For classes that show up as expressions in the second argument position
@@ -72,130 +91,150 @@ export class Polymer2ElementScanner implements JavaScriptScanner {
     for (const defineCall of elementDefinitionFinder.calls) {
       // MaybeChainedIdentifier is invented below. It's like Identifier, but it
       // includes 'Polymer.Element' as a name.
-      if (defineCall.clazz.type === 'MaybeChainedIdentifier') {
-        elementDefinitionsByClassName.set(defineCall.clazz.name, defineCall);
+      if (defineCall.class_.type === 'MaybeChainedIdentifier') {
+        elementDefinitionsByClassName.set(defineCall.class_.name, defineCall);
       } else {
-        elementDefinitionsByClassExpression.set(defineCall.clazz, defineCall);
+        elementDefinitionsByClassExpression.set(defineCall.class_, defineCall);
       }
     }
     // TODO(rictic): emit ElementDefineCallFeatures for define calls that don't
     //     map to any local classes?
 
+    const mixinClassExpressions = new Set<estree.Node>();
+    for (const mixin of mixins) {
+      if (mixin.classAstNode) {
+        mixinClassExpressions.add(mixin.classAstNode);
+      }
+    }
+
     // Next we want to distinguish custom elements from other classes.
     const customElements: CustomElementDefinition[] = [];
     const normalClasses = [];
-    for (const clazz of classFinder.classes) {
+    for (const class_ of classFinder.classes) {
+      if (mixinClassExpressions.has(class_.astNode)) {
+        // This class is a mixin and has already been handled as such.
+        continue;
+      }
       // Class expressions inside the customElements.define call
-      if (clazz.astNode.type === 'ClassExpression') {
+      if (class_.astNode.type === 'ClassExpression') {
         const definition =
-            elementDefinitionsByClassExpression.get(clazz.astNode);
+            elementDefinitionsByClassExpression.get(class_.astNode);
         if (definition) {
-          customElements.push({clazz, definition});
+          customElements.push({class_, definition});
           continue;
         }
       }
       // Classes whose names are referenced in a same-file customElements.define
-      const definition =
-          elementDefinitionsByClassName.get(clazz.namespacedName!) ||
-          elementDefinitionsByClassName.get(clazz.name!);
+      const definition = elementDefinitionsByClassName.get(class_.name!) ||
+          elementDefinitionsByClassName.get(class_.localName!);
       if (definition) {
-        customElements.push({clazz, definition});
+        customElements.push({class_, definition});
         continue;
       }
       // Classes explicitly defined as elements in their jsdoc tags.
       // TODO(rictic): swap to new jsdoc tag here.
       //     See: https://github.com/Polymer/polymer-analyzer/issues/605
-      if (jsdoc.hasTag(clazz.doc, 'polymerElement')) {
-        customElements.push({clazz});
+      if (jsdoc.hasTag(class_.jsdoc, 'polymerElement')) {
+        customElements.push({class_});
         continue;
       }
       // Classes that aren't custom elements, or at least, aren't obviously.
-      normalClasses.push(clazz);
+      normalClasses.push(class_);
     }
 
-    const elementFeatures =
-        customElements.map((e) => this._makeElementFeature(e, document));
-
-    // TODO(rictic): handle normalClasses
+    const scannedFeatures: (ScannedPolymerElement|ScannedClass|
+                            ScannedPolymerElementMixin)[] = [];
+    for (const element of customElements) {
+      scannedFeatures.push(this._makeElementFeature(element, document));
+    }
+    for (const scannedClass of normalClasses) {
+      scannedFeatures.push(scannedClass);
+    }
+    for (const mixin of mixins) {
+      scannedFeatures.push(mixin);
+    }
 
     // TODO(rictic): gather up the warnings from these visitors and return them
     // too.
-    // const warnings = elementDefinitionFinder.warnings;
+    // const warnings =
+    // elementDefinitionFinder.warnings.concat(
+    // mixinFinder.warnings).concat(classFinder.warnings);
 
-    return elementFeatures;
+    return scannedFeatures;
   }
 
   private _makeElementFeature(
       element: CustomElementDefinition,
       document: JavaScriptDocument): ScannedPolymerElement {
-    const node = element.clazz.astNode;
-    const docs = element.clazz.doc;
-    const className = element.clazz.namespacedName;
+    const class_ = element.class_;
+    const astNode = element.class_.astNode;
+    const docs = element.class_.jsdoc;
     let tagName: string|undefined = undefined;
     // TODO(rictic): support `@customElements explicit-tag-name` from jsdoc
     if (element.definition &&
         element.definition.tagName.type === 'string-literal') {
       tagName = element.definition.tagName.value;
     } else if (
-        node.type === 'ClassExpression' || node.type === 'ClassDeclaration') {
-      tagName = getIsValue(node);
+        astNode.type === 'ClassExpression' ||
+        astNode.type === 'ClassDeclaration') {
+      tagName = getIsValue(astNode);
     }
     let warnings: Warning[] = [];
 
     let scannedElement: ScannedPolymerElement;
-    if (node.type === 'ClassExpression' || node.type === 'ClassDeclaration') {
-      const observersResult = this._getObservers(node, document);
-      let observers: Observer[] = [];
+    let properties: ScannedProperty[] = [];
+    let methods: ScannedMethod[] = [];
+    let observers: Observer[] = [];
+
+    // This will cover almost all classes, except those defined only by
+    // applying a mixin. e.g.   const MyElem = Mixin(HTMLElement)
+    if (astNode.type === 'ClassExpression' ||
+        astNode.type === 'ClassDeclaration') {
+      const observersResult = this._getObservers(astNode, document);
+      observers = [];
       if (observersResult) {
         observers = observersResult.observers;
         warnings = warnings.concat(observersResult.warnings);
       }
+      properties = getPolymerProperties(astNode, document);
+      methods = getMethods(astNode, document);
+    }
 
-      scannedElement = new ScannedPolymerElement({
-        className,
-        tagName,
-        astNode: node,
-        description: (docs.description || '').trim(),
-        events: esutil.getEventComments(node),
-        sourceRange: document.sourceRangeForNode(node),
-        properties: getProperties(node, document),
-        methods: getMethods(node, document),
-        superClass: this._getExtends(node, docs, warnings, document),
-        mixins: jsdoc.getMixins(document, node, docs, warnings),
-        privacy: getOrInferPrivacy(className || '', docs, false),
-        observers: observers,
-        jsdoc: docs,
-      });
+    // TODO(justinfagnani): Infer mixin applications and superclass from AST.
+    scannedElement = new ScannedPolymerElement({
+      className: class_.name,
+      tagName,
+      astNode,
+      properties,
+      methods,
+      observers,
+      events: esutil.getEventComments(astNode),
+      attributes: [],
+      behaviors: [],
+      demos: [],
+      extends: jsdoc.getTag(docs, 'extends', 'name') || undefined,
+      listeners: [],
 
+      description: class_.description,
+      sourceRange: class_.sourceRange,
+      superClass: class_.superClass,
+      jsdoc: class_.jsdoc,
+      abstract: class_.abstract,
+      mixins: class_.mixins,
+      privacy: class_.privacy
+    });
+
+    if (astNode.type === 'ClassExpression' ||
+        astNode.type === 'ClassDeclaration') {
       // If a class defines observedAttributes, it overrides what the base
       // classes defined.
       // TODO(justinfagnani): define and handle composition patterns.
-      const observedAttributes = this._getObservedAttributes(node, document);
+      const observedAttributes = this._getObservedAttributes(astNode, document);
 
       if (observedAttributes != null) {
         scannedElement.attributes = observedAttributes;
       }
-    } else {
-      // Most likely we've got a class here which is defined as an application
-      // of a mixin. e.g.
-      // const myElem = ElementMaker(HTMLElement);
-      scannedElement = new ScannedPolymerElement({
-        className,
-        tagName,
-        astNode: node,
-        jsdoc: docs,
-        sourceRange: document.sourceRangeForNode(node)!,
-        description: (docs.description || '').trim(),
-        superClass: this._getExtends(node, docs, warnings, document),
-        mixins: jsdoc.getMixins(document, node, docs, warnings),
-        privacy: getOrInferPrivacy(className || '', docs, false),
-        events: [],
-        properties: [],
-        methods: [],
-        observers: []
-      });
     }
-
 
     warnings.forEach((w) => scannedElement.warnings.push(w));
 
@@ -208,44 +247,6 @@ export class Polymer2ElementScanner implements JavaScriptScanner {
     const returnedValue = getStaticGetterValue(node, 'observers');
     if (returnedValue) {
       return extractObservers(returnedValue, document);
-    }
-  }
-
-  /**
-   * Returns the name of the superclass, if any.
-   */
-  private _getExtends(
-      node: estree.Node, docs: jsdoc.Annotation, warnings: Warning[],
-      document: JavaScriptDocument): ScannedReference|undefined {
-    const extendsAnnotations =
-        docs.tags!.filter((tag) => tag.tag === 'extends');
-
-    // prefer @extends annotations over extends clauses
-    if (extendsAnnotations.length > 0) {
-      const extendsId = extendsAnnotations[0].name;
-      // TODO(justinfagnani): we need source ranges for jsdoc annotations
-      const sourceRange = document.sourceRangeForNode(node)!;
-      if (extendsId == null) {
-        warnings.push({
-          code: 'class-extends-annotation-no-id',
-          message: '@extends annotation with no identifier',
-          severity: Severity.WARNING, sourceRange,
-        });
-      } else {
-        return new ScannedReference(extendsId, sourceRange);
-      }
-    } else if (
-        node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
-      // If no @extends tag, look for a superclass.
-      // TODO(justinfagnani): Infer mixin applications and superclass from AST.
-      const superClass = node.superClass;
-      if (superClass != null) {
-        const extendsId = getIdentifierName(superClass);
-        if (extendsId != null) {
-          const sourceRange = document.sourceRangeForNode(superClass)!;
-          return new ScannedReference(extendsId, sourceRange);
-        }
-      }
     }
   }
 
@@ -311,28 +312,21 @@ export class Polymer2ElementScanner implements JavaScriptScanner {
 }
 
 interface CustomElementDefinition {
-  clazz: FoundClass;
+  class_: ScannedClass;
   definition?: ElementDefineCall;
-}
-
-interface FoundClass {
-  name: string|undefined;
-  namespacedName: string|undefined;
-  doc: jsdoc.Annotation;
-  /**
-   * This will usually be an class declaration or expression, but if the
-   * class is defined just as an application of a mixin on another class it
-   * could be a call expression, or other forms!
-   */
-  astNode: estree.Node;
 }
 
 /**
  * Finds all classes and matches them up with their best jsdoc comment.
  */
 class ClassFinder implements Visitor {
-  readonly classes: FoundClass[] = [];
+  readonly classes: ScannedClass[] = [];
   private readonly alreadyMatched = new Set<estree.ClassExpression>();
+  private readonly _document: JavaScriptDocument;
+
+  constructor(document: JavaScriptDocument) {
+    this._document = document;
+  }
 
   enterAssignmentExpression(
       node: estree.AssignmentExpression, parent: estree.Node) {
@@ -397,16 +391,70 @@ class ClassFinder implements Visitor {
       name: string|undefined, doc: jsdoc.Annotation, astNode: estree.Node) {
     const namespacedName = name && getNamespacedIdentifier(name, doc);
 
-    this.classes.push({name, namespacedName, doc, astNode});
+    const warnings: Warning[] = [];
+    // TODO(rictic): scan the constructor and look for assignments to this.foo
+    //     to determine properties.
+    this.classes.push(new ScannedClass(
+        namespacedName,
+        name,
+        astNode,
+        doc,
+        (doc.description || '').trim(),
+        this._document.sourceRangeForNode(astNode)!,
+        [],
+        getMethods(astNode, this._document),
+        this._getExtends(astNode, doc, warnings, this._document),
+        jsdoc.getMixins(this._document, astNode, doc, warnings),
+        getOrInferPrivacy(namespacedName || '', doc, false),
+        warnings,
+        jsdoc.hasTag(doc, 'abstract'),
+        jsdoc.extractDemos(doc, this._document.url)));
     if (astNode.type === 'ClassExpression') {
       this.alreadyMatched.add(astNode);
+    }
+  }
+
+  /**
+   * Returns the name of the superclass, if any.
+   */
+  private _getExtends(
+      node: estree.Node, docs: jsdoc.Annotation, warnings: Warning[],
+      document: JavaScriptDocument): ScannedReference|undefined {
+    const extendsAnnotations =
+        docs.tags!.filter((tag) => tag.tag === 'extends');
+
+    // prefer @extends annotations over extends clauses
+    if (extendsAnnotations.length > 0) {
+      const extendsId = extendsAnnotations[0].name;
+      // TODO(justinfagnani): we need source ranges for jsdoc annotations
+      const sourceRange = document.sourceRangeForNode(node)!;
+      if (extendsId == null) {
+        warnings.push({
+          code: 'class-extends-annotation-no-id',
+          message: '@extends annotation with no identifier',
+          severity: Severity.WARNING, sourceRange,
+        });
+      } else {
+        return new ScannedReference(extendsId, sourceRange);
+      }
+    } else if (
+        node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+      // If no @extends tag, look for a superclass.
+      const superClass = node.superClass;
+      if (superClass != null) {
+        const extendsId = getIdentifierName(superClass);
+        if (extendsId != null) {
+          const sourceRange = document.sourceRangeForNode(superClass)!;
+          return new ScannedReference(extendsId, sourceRange);
+        }
+      }
     }
   }
 }
 
 interface ElementDefineCall {
   tagName: TagNameExpression;
-  clazz: ElementClassExpression;
+  class_: ElementClassExpression;
 }
 
 type ElementClassExpression = estree.ClassExpression|{
@@ -441,7 +489,7 @@ class CustomElementsDefineCallFinder implements Visitor {
       return;
     }
     this.calls.push(
-        {tagName: tagNameExpression, clazz: elementClassExpression});
+        {tagName: tagNameExpression, class_: elementClassExpression});
   }
 
   private _getTagNameExpression(expression: estree.Node|

@@ -64,14 +64,14 @@ suite('TypeScriptParser', () => {
       const sourceFile = program.getSourceFile(fileName);
       ts.forEachChild(sourceFile, (node) => {
         if (node.kind === ts.SyntaxKind.ClassDeclaration) {
-          const clazz = node as ts.ClassDeclaration;
-          if (clazz.name && clazz.name.getText() === 'A') {
-            const type = checker.getTypeAtLocation(clazz) as ts.InterfaceType;
+          const class_ = node as ts.ClassDeclaration;
+          if (class_.name && class_.name.getText() === 'A') {
+            const type = checker.getTypeAtLocation(class_) as ts.InterfaceType;
             const baseTypes = checker.getBaseTypes(type);
             assert.include(baseTypes, htmlElement);
             const properties = checker.getPropertiesOfType(type);
             const ownProperties = properties.filter(
-                (p) => p.getDeclarations().some((d) => d.parent === clazz));
+                (p) => p.getDeclarations().some((d) => d.parent === class_));
             assert.equal(ownProperties.length, 1);
             assert.equal(ownProperties[0].name, 'foo');
           }

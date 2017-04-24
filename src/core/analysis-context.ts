@@ -22,6 +22,7 @@ import {HtmlParser} from '../html/html-parser';
 import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {Severity} from '../index';
+import {ClassScanner} from '../javascript/class-scanner';
 import {FunctionScanner} from '../javascript/function-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
@@ -33,8 +34,6 @@ import {BehaviorScanner} from '../polymer/behavior-scanner';
 import {CssImportScanner} from '../polymer/css-import-scanner';
 import {DomModuleScanner} from '../polymer/dom-module-scanner';
 import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
-import {Polymer2ElementScanner} from '../polymer/polymer2-element-scanner';
-import {Polymer2MixinScanner} from '../polymer/polymer2-mixin-scanner';
 import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
@@ -112,11 +111,10 @@ export class AnalysisContext {
         'js',
         [
           new PolymerElementScanner(),
-          new Polymer2MixinScanner(),
           new BehaviorScanner(),
           new NamespaceScanner(),
           new FunctionScanner(),
-          new Polymer2ElementScanner()
+          new ClassScanner()
         ]
       ],
     ]);

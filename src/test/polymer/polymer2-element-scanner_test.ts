@@ -16,10 +16,10 @@
 import {assert, use as chaiUse} from 'chai';
 import * as path from 'path';
 
+import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {Polymer2ElementScanner} from '../../polymer/polymer2-element-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
@@ -35,7 +35,7 @@ suite('Polymer2ElementScanner', () => {
     const file = await urlLoader.load(filename);
     const parser = new JavaScriptParser();
     const document = parser.parse(file, filename);
-    const scanner = new Polymer2ElementScanner();
+    const scanner = new ClassScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 

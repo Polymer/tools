@@ -59,11 +59,15 @@ declare module '../model/queryable' {
 }
 
 export class Behavior extends PolymerElement {
-  tagName: undefined;
-  className: string;
+  readonly tagName: undefined = undefined;
+  readonly name: string;
+  readonly className: string;
+
   constructor(scannedBehavior: ScannedBehavior, document: Document) {
     super(scannedBehavior, document);
-    this.kinds = new Set(['behavior']);
+    this.kinds.delete('element');
+    this.kinds.delete('polymer-element');
+    this.kinds.add('behavior');
   }
 
   toString() {

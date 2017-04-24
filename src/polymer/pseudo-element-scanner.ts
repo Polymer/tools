@@ -47,10 +47,23 @@ export class PseudoElementScanner implements HtmlScanner {
             astNode: node,
             tagName: pseudoTag,
             jsdoc: parsedJsdoc,
-            properties: [],
             description: parsedJsdoc.description,
             sourceRange: document.sourceRangeForNode(node),
-            privacy: getOrInferPrivacy(pseudoTag, parsedJsdoc, false)
+            privacy: getOrInferPrivacy(pseudoTag, parsedJsdoc, false),
+            abstract: jsdoc.hasTag(parsedJsdoc, 'abstract'),
+
+            properties: [],
+            attributes: [],
+            events: [],
+            listeners: [],
+            behaviors: [],
+            className: undefined,
+            demos: [],
+            extends: undefined,
+            methods: [],
+            mixins: [],
+            observers: [],
+            superClass: undefined
           });
           element.pseudo = true;
           annotateElementHeader(element);

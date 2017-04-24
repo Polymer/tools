@@ -69,9 +69,10 @@ suite('generate-analysis', () => {
             const renormedPackagePath = packagePath ?
                 packagePath.substring(analysisFixtureDir.length + 1) :
                 packagePath;
-            const analyzedPackages =
+            const analysisWithUndefineds =
                 generateAnalysis(documents, renormedPackagePath);
-            validateAnalysis(analyzedPackages);
+            validateAnalysis(analysisWithUndefineds);
+            const analysis = JSON.parse(JSON.stringify(analysisWithUndefineds));
 
             const golden: Analysis =
                 JSON.parse(fs.readFileSync(pathToGolden, 'utf-8'));
@@ -79,14 +80,14 @@ suite('generate-analysis', () => {
             try {
               const shortPath = path.relative(__dirname, pathToGolden);
               assert.deepEqual(
-                  analyzedPackages,
+                  analysis,
                   golden,
                   `Generated form of ${shortPath} ` +
                       `differs from the golden at that path`);
             } catch (e) {
               console.log(
                   `Expected contents of ${pathToGolden}:\n` +
-                  `${JSON.stringify(analyzedPackages, null, 2)}`);
+                  `${JSON.stringify(analysis, null, 2)}`);
               throw e;
             }
           }

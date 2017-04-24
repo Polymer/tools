@@ -29,7 +29,7 @@ export {ParsedDocument} from './parser/document';
 
 // Analysis
 export {generateAnalysis, validateAnalysis} from './generate-analysis';
-export {Analysis} from './analysis-format';
+export {Analysis as AnalysisFormat} from './analysis-format';
 
 // URL Loaders and Resolvers
 export {FetchUrlLoader} from './url-loader/fetch-url-loader';
