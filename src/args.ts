@@ -18,13 +18,13 @@ import {ArgDescriptor} from 'command-line-args';
 export let args: ArgDescriptor[] = [
   {
     name: 'version',
-    description: 'Print version info',
+    description: 'Print version info.',
     type: Boolean,
   },
   {
     name: 'root',
     description: 'The root directory of your project. Defaults to the ' +
-        'current working directory',
+        'current working directory.',
     type: String,
     defaultOption: true,
   },
@@ -55,21 +55,21 @@ export let args: ArgDescriptor[] = [
   {
     name: 'hostname',
     alias: 'H',
-    description: 'The hostname to serve from. Defaults to localhost',
+    description: 'The hostname to serve from. Defaults to localhost.',
     type: String,
   },
   {
     name: 'component-dir',
     alias: 'c',
     description: 'The component directory to use. Defaults to reading from ' +
-        'the Bower config (usually bower_components/)',
+        'the Bower config (usually bower_components/).',
     type: String,
   },
   {
     name: 'component-url',
     alias: 'u',
     description: 'The component url to use. Defaults to reading from ' +
-        'the Bower config (usually bower_components/)',
+        'the Bower config (usually bower_components/).',
     type: String,
   },
   {
@@ -77,7 +77,7 @@ export let args: ArgDescriptor[] = [
     alias: 'n',
     description:
         'The package name to use for the root directory. Defaults to ' +
-        'reading from bower.json',
+        'reading from bower.json.',
     type: String,
   },
   {
@@ -124,7 +124,7 @@ export let args: ArgDescriptor[] = [
   },
   {
     name: 'manifest',
-    description: 'Path to h2-push manifest',
+    description: 'Path to HTTP/2 Push Manifest.',
     type: String,
   },
   {
@@ -132,13 +132,13 @@ export let args: ArgDescriptor[] = [
     description:
         'Top-level path that should be redirected to the proxy-target. ' +
         'E.g. `api/v1` when you want to redirect all requests of ' +
-        '`https://localhost/api/v1/`',
+        '`https://localhost/api/v1/`.',
     type: String,
   },
   {
     name: 'proxy-target',
     description:
-        'Host URL to proxy to, for example `https://myredirect:8080/foo`',
+        'Host URL to proxy to, for example `https://myredirect:8080/foo`.',
     type: String,
   },
 ];
