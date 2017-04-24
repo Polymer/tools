@@ -95,8 +95,8 @@ export class MixinVisitor implements Visitor {
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
           jsdoc: nodeJsDocs,
-          mixins:
-              jsdoc.getMixinApplications(this._document, node, nodeJsDocs, this.warnings)
+          mixins: jsdoc.getMixinApplications(
+              this._document, node, nodeJsDocs, this.warnings)
         });
         this._currentMixinNode = node;
         this.mixins.push(this._currentMixin);
@@ -211,10 +211,13 @@ export class MixinVisitor implements Visitor {
 
 export function hasMixinFunctionDocTag(docs: jsdoc.Annotation) {
   // TODO(justinfagnani): remove polymerMixin support
-  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinFunction')) || jsdoc.hasTag(docs, 'polymerMixin');
+  return (jsdoc.hasTag(docs, 'polymer') &&
+          jsdoc.hasTag(docs, 'mixinFunction')) ||
+      jsdoc.hasTag(docs, 'polymerMixin');
 }
 
 export function hasMixinClassDocTag(docs: jsdoc.Annotation) {
   // TODO(justinfagnani): remove polymerMixinClass support
-  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinClass')) || jsdoc.hasTag(docs, 'polymerMixinClass');
+  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinClass')) ||
+      jsdoc.hasTag(docs, 'polymerMixinClass');
 }

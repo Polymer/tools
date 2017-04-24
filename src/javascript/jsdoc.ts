@@ -62,7 +62,9 @@ function parseCustomTags(tags: Tag[]): Tag[] {
         const name = match[1];
         const description = match[2];
         return {
-            ...tag, name, description,
+          ...tag,
+          name,
+          description,
         };
       }
     }
@@ -142,7 +144,8 @@ export function getMixinApplications(
     docs: Annotation,
     warnings: Warning[]): ScannedReference[] {
   // TODO(justinfagnani): remove @mixes support
-  const appliesMixinAnnotations = docs.tags!.filter((tag) => tag.title === 'appliesMixin' || tag.title === 'mixes');
+  const appliesMixinAnnotations = docs.tags!.filter(
+      (tag) => tag.title === 'appliesMixin' || tag.title === 'mixes');
   return appliesMixinAnnotations
       .map((annotation) => {
         const mixinId = annotation.name;
@@ -168,11 +171,12 @@ export function extractDemos(jsdoc: Annotation|undefined, baseUrl: string):
     return [];
   }
   const demos: Array<{desc: string | undefined, path: string}> = [];
-  jsdoc.tags.filter((tag) => tag.title === 'demo' && tag.name).forEach((tag) => {
-    demos.push({
-      desc: tag.description || undefined,
-      path: url.resolve(baseUrl, tag.name!)
-    });
-  });
+  jsdoc.tags.filter((tag) => tag.title === 'demo' && tag.name)
+      .forEach((tag) => {
+        demos.push({
+          desc: tag.description || undefined,
+          path: url.resolve(baseUrl, tag.name!)
+        });
+      });
   return demos;
 }

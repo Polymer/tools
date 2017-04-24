@@ -16,7 +16,7 @@ import {assert} from 'chai';
 import * as doctrine from 'doctrine';
 
 import * as jsdoc from '../../javascript/jsdoc.js';
-import { Privacy } from '../../model/model';
+import {Privacy} from '../../model/model';
 
 suite('jsdoc', () => {
 
@@ -75,7 +75,8 @@ suite('jsdoc', () => {
         tags: [
           {
             title: 'param',
-            type: {type: 'NameExpression', name: 'Type'} as doctrine.type.NameExpression,
+            type: {type: 'NameExpression',
+                   name: 'Type'} as doctrine.type.NameExpression,
             name: 'name',
             description: 'desc desc',
           },

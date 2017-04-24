@@ -103,8 +103,9 @@ class BehaviorVisitor implements Visitor {
       if (!name) {
         this.currentBehavior.warnings.push({
           code: 'cant-determine-name',
-          message: `Unable to determine property name from expression of type `
-            + `${node.type}`,
+          message:
+              `Unable to determine property name from expression of type ` +
+              `${node.type}`,
           severity: Severity.WARNING,
           sourceRange: this.document.sourceRangeForNode(node)!
         });

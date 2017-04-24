@@ -150,8 +150,8 @@ export class ValidationError extends Error {
     const message = `Unable to validate serialized Polymer analysis. ` +
         `Got ${result.errors.length} errors: ` +
         `${
-           result.errors.map((err) => '    ' + (err.message || err)).join('\n')
-         }`;
+    result.errors.map((err) => '    ' + (err.message || err)).join('\n')
+    }`;
     super(message);
     this.errors = result.errors;
   }

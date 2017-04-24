@@ -259,14 +259,13 @@ class ElementVisitor implements Visitor {
           element.warnings.push({
             message:
                 `Can't determine name for property key from expression with type ${
-                                                                                   prop.key
-                                                                                       .type
+          prop.key.type
                                                                                  }.`,
             code: 'cant-determine-property-name',
             severity: Severity.WARNING,
             sourceRange: this.document.sourceRangeForNode(prop.key)!
           });
-          continue;
+                                                                                 continue;
         }
 
         if (!this.propertyHandlers) {
