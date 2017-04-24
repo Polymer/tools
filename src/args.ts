@@ -18,13 +18,13 @@ import {ArgDescriptor} from 'command-line-args';
 export let args: ArgDescriptor[] = [
   {
     name: 'version',
-    description: 'Print version info',
+    description: 'Print version info.',
     type: Boolean,
   },
   {
     name: 'root',
-    description: 'The root directory of your project. Defaults to the current' +
-        ' working directory',
+    description: 'The root directory of your project. Defaults to the ' +
+        'current working directory.',
     type: String,
     defaultOption: true,
   },
@@ -41,41 +41,43 @@ export let args: ArgDescriptor[] = [
     description: 'Maximum size in bytes (actually, UTF-8 characters) of ' +
         'the cache used to store results for JavaScript compilation. Cache ' +
         'size includes the uncompiled and compiled file content lengths. ' +
-        'Defaults to 52428800 (50MB)',
+        'Defaults to 52428800 (50MB).',
     type: Number,
     defaultValue: 52428800,
   },
   {
     name: 'port',
     alias: 'p',
-    description: 'The port to serve from. Defaults to 8080',
+    description: 'The port to serve from. Serve will choose an open port for ' +
+        'you by default.',
     type: Number,
   },
   {
     name: 'hostname',
     alias: 'H',
-    description: 'The hostname to serve from. Defaults to localhost',
+    description: 'The hostname to serve from. Defaults to localhost.',
     type: String,
   },
   {
     name: 'component-dir',
     alias: 'c',
-    description: 'The component directory to use. Defaults to reading from' +
-        ' the Bower config (usually bower_components/)',
+    description: 'The component directory to use. Defaults to reading from ' +
+        'the Bower config (usually bower_components/).',
     type: String,
   },
   {
     name: 'component-url',
     alias: 'u',
-    description: 'The component url to use. Defaults to reading from' +
-        ' the Bower config (usually bower_components/)',
+    description: 'The component url to use. Defaults to reading from ' +
+        'the Bower config (usually bower_components/).',
     type: String,
   },
   {
     name: 'package-name',
     alias: 'n',
-    description: 'The package name to use for the root directory. Defaults to' +
-        ' reading from bower.json',
+    description:
+        'The package name to use for the root directory. Defaults to ' +
+        'reading from bower.json.',
     type: String,
   },
   {
@@ -87,42 +89,42 @@ export let args: ArgDescriptor[] = [
   {
     name: 'browser',
     alias: 'b',
-    description: 'The browser(s) to open with when using the --open option.' +
-        ' Defaults to your default web browser.',
+    description: 'The browser(s) to open with when using the --open option. ' +
+        'Defaults to your default web browser.',
     type: String,
     multiple: true,
   },
   {
     name: 'open-path',
-    description: 'The URL path to open when using the --open option.' +
-        ' Defaults to "index.html".',
+    description: 'The URL path to open when using the --open option. ' +
+        'Defaults to "index.html".',
     type: String,
   },
   {
     name: 'protocol',
     alias: 'P',
-    description: 'The server protocol to use {h2, https/1.1, http/1.1}.' +
-        ' Defaults to "http/1.1".',
+    description: 'The server protocol to use {h2, https/1.1, http/1.1}. ' +
+        'Defaults to "http/1.1".',
     defaultValue: 'http/1.1',
     type: String,
   },
   {
     name: 'key',
-    description: 'Path to TLS certificate private key file for https.' +
-        ' Defaults to "key.pem".',
+    description: 'Path to TLS certificate private key file for https. ' +
+        'Defaults to "key.pem".',
     defaultValue: 'key.pem',
     type: String,
   },
   {
     name: 'cert',
-    description: 'Path to TLS certificate file for https.' +
-        ' Defaults to "cert.pem".',
+    description: 'Path to TLS certificate file for https. ' +
+        'Defaults to "cert.pem".',
     defaultValue: 'cert.pem',
     type: String,
   },
   {
     name: 'manifest',
-    description: 'Path to h2-push manifest',
+    description: 'Path to HTTP/2 Push Manifest.',
     type: String,
   },
   {
@@ -130,13 +132,13 @@ export let args: ArgDescriptor[] = [
     description:
         'Top-level path that should be redirected to the proxy-target. ' +
         'E.g. `api/v1` when you want to redirect all requests of ' +
-        '`https://localhost/api/v1/`',
+        '`https://localhost/api/v1/`.',
     type: String,
   },
   {
     name: 'proxy-target',
     description:
-        'Host URL to proxy to, for example `https://myredirect:8080/foo`',
+        'Host URL to proxy to, for example `https://myredirect:8080/foo`.',
     type: String,
   },
 ];
