@@ -12,21 +12,26 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, ElementBase, Feature, Privacy, ScannedElementBase} from './model';
+import {ElementBaseInit} from './element-base';
+import {ImmutableSet} from './immutable';
+import {Document, ElementBase, Feature, ScannedElementBase} from './model';
 
 export {Visitor} from '../javascript/estree-visitor';
 
 export class ScannedElementMixin extends ScannedElementBase {
-  name: string;
-  privacy: Privacy;
+  readonly name: string;
+  constructor({name}: {name: string}) {
+    super();
+    this.name = name;
+  }
 
   resolve(document: Document): ElementMixin {
-    const element = new ElementMixin();
-    Object.assign(element, this);
     this.applyJsdocDemoTags(document.url);
-    return element;
+    return new ElementMixin(this, document);
   }
 }
+
+export interface ElementMixinInit extends ElementBaseInit { name: string; }
 
 declare module './queryable' {
   interface FeatureKindMap {
@@ -34,9 +39,18 @@ declare module './queryable' {
   }
 }
 export class ElementMixin extends ElementBase implements Feature {
-  name: string;
-  privacy: Privacy;
-  kinds = new Set(['element-mixin']);
+  readonly name: string;
+  readonly kinds: ImmutableSet<string> = new Set(['element-mixin']);
+
+  constructor(init: ElementMixinInit, document: Document) {
+    super(init, document);
+    console.log(`element mixin ${this.name} created. ${
+                                                       this.attributes.length
+                                                     } attributes`);
+
+    this.name = init.name;
+    this.identifiers.add(this.name);
+  }
 
   get identifiers(): Set<string> {
     return new Set([this.name]);

@@ -14,6 +14,7 @@
 
 import {Document} from './document';
 import {Feature} from './feature';
+import {ImmutableMap, ImmutableSet} from './immutable';
 import {AnalysisQuery as Query, AnalysisQueryWithKind as QueryWithKind, DocumentQuery, FeatureKind, FeatureKindMap, Queryable} from './queryable';
 import {Warning} from './warning';
 
@@ -33,8 +34,8 @@ const MATCHES_EXTERNAL = /(^|\/)(bower_components|node_modules|build($|\/))/;
  * documents in the package.
  */
 export class Analysis implements Queryable {
-  private _results: Map<string, Document|Warning>;
-  private _searchRoots: Set<Document>;
+  private readonly _results: ImmutableMap<string, Document|Warning>;
+  private readonly _searchRoots: ImmutableSet<Document>;
 
   static isExternal(path: string) {
     return MATCHES_EXTERNAL.test(path);

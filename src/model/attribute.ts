@@ -17,13 +17,13 @@ import {SourceRange} from '../model/model';
 export {Visitor} from '../javascript/estree-visitor';
 
 export interface ScannedAttribute {
-  name: string;
-  sourceRange: SourceRange|undefined;
-  description?: string;
-  type?: string;
-  changeEvent?: string;
+  readonly name: string;
+  readonly sourceRange: SourceRange|undefined;
+  readonly description?: string;
+  readonly type?: string;
+  readonly changeEvent?: string;
 }
 
 export interface Attribute extends ScannedAttribute {  //
-  inheritedFrom?: string;
+  readonly inheritedFrom?: string;
 }

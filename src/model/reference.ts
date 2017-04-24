@@ -16,22 +16,20 @@ import {Annotation} from '../javascript/jsdoc';
 
 import {Document} from './document';
 import {Feature, ScannedFeature} from './feature';
+import {ImmutableArray, unsafeAsMutable} from './immutable';
 import {Resolvable} from './resolvable';
 import {SourceRange} from './source-range';
 import {Warning} from './warning';
-
-export interface ScannedReferenceInit extends Partial<Reference> {
-  identifier: string;
-}
 
 /**
  * A reference to another feature by identifier.
  */
 export class ScannedReference extends ScannedFeature implements Resolvable {
-  identifier: string;
+  readonly identifier: string;
+  readonly sourceRange: SourceRange;
 
   constructor(
-      identifier: string, sourceRange?: SourceRange, astNode?: any,
+      identifier: string, sourceRange: SourceRange, astNode?: any,
       description?: string, jsdoc?: Annotation, warnings?: Warning[]) {
     super(sourceRange, astNode, description, jsdoc, warnings);
     this.identifier = identifier;
@@ -46,10 +44,6 @@ export class ScannedReference extends ScannedFeature implements Resolvable {
   }
 }
 
-export interface ReferenceInit extends Partial<Reference> {
-  identifier: string;
-}
-
 declare module './queryable' {
   interface FeatureKindMap {
     'reference': Reference;
@@ -62,10 +56,10 @@ export class Reference extends Feature {
   identifier: string;
 
   constructor(
-      identifier: string, sourceRange?: SourceRange, astNode?: any,
-      warnings?: Warning[]) {
+      identifier: string, sourceRange: SourceRange, astNode: any,
+      warnings: ImmutableArray<Warning>) {
     super(sourceRange, astNode, warnings);
-    this.kinds.add('reference');
+    unsafeAsMutable(this.kinds).add('reference');
     this.identifier = identifier;
   }
 }

@@ -314,7 +314,7 @@ export interface Method extends Feature {
    * undocumented JavaScript function. Argument types can only be read from
    * associated JSDoc via @param tags
    */
-  params?: {name: string, type?: string, description?: string}[];
+  params?: Parameter[];
 
   /**
    * Data describing the method return type. This data may be incomplete.
@@ -327,6 +327,12 @@ export interface Method extends Feature {
 
   /** The identifier of the class or mixin that declared this property. */
   inheritedFrom?: string;
+}
+
+export interface Parameter {
+  name: string;
+  type?: string;
+  description?: string;
 }
 
 export interface Event extends Feature {

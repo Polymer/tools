@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Improved our modeling of inheritance:
   * overriding inherited members now works correctly
   * overriding a private member produces a Warning
+* Documented many fields as being readonly/immutable. This isn't complete, in fact all features and scanned features should be treated as immutable once they're created and initialized.
+* Treat behaviors more like mixins, and treat using behaviors more like inheriting from mixins. This means that a Behavior object knows about all of the properties, methods, etc that it has inherited from other Behaviors that it builds upon.
 
 ## [2.0.0-alpha.37] - 2017-04-12
 

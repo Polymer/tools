@@ -104,7 +104,7 @@ export function analyzeProperties(
             prop.observerNode = propertyArg.value;
             const parseResult = parseExpressionInJsStringLiteral(
                 document, propertyArg.value, 'identifierOnly');
-            prop.warnings = prop.warnings.concat(parseResult.warnings);
+            prop.warnings.push(...parseResult.warnings);
             prop.observerExpression = parseResult.databinding;
             if (val === undefined) {
               prop.observer = astValue.CANT_CONVERT;
@@ -122,7 +122,7 @@ export function analyzeProperties(
             isComputed = true;
             const computedParseResult = parseExpressionInJsStringLiteral(
                 document, propertyArg.value, 'callExpression');
-            prop.warnings = prop.warnings.concat(computedParseResult.warnings);
+            prop.warnings.push(...computedParseResult.warnings);
             prop.computedExpression = computedParseResult.databinding;
             break;
           case 'value':

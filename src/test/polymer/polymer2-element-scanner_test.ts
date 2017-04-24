@@ -424,7 +424,11 @@ namespaced name.`,
               {
                 name: 'customInstanceFunctionWithParams',
                 description: '',
-                params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
+                params: [
+                  {name: 'a', type: undefined, description: undefined},
+                  {name: 'b', type: undefined, description: undefined},
+                  {name: 'c', type: undefined, description: undefined}
+                ],
                 return: undefined,
               },
               {
@@ -437,10 +441,7 @@ namespaced name.`,
                     type: 'Number',
                     description: 'The first argument',
                   },
-                  {
-                    name: 'b',
-                    type: 'Number',
-                  },
+                  {name: 'b', type: 'Number', description: undefined},
                   {
                     name: 'c',
                     type: 'Number',

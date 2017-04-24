@@ -16,12 +16,15 @@ import * as dom5 from 'dom5';
 
 import {Feature, Resolvable, SourceRange, Warning} from '../model/model';
 
+import {Document} from './document';
+import {ImmutableArray, ImmutableSet} from './immutable';
+
 export interface Attribute {
-  name: string;
-  sourceRange: SourceRange;
-  nameSourceRange: SourceRange;
-  valueSourceRange: SourceRange|undefined;
-  value?: string;
+  readonly name: string;
+  readonly sourceRange: SourceRange;
+  readonly nameSourceRange: SourceRange;
+  readonly valueSourceRange: SourceRange|undefined;
+  readonly value?: string;
 }
 
 declare module '../model/queryable' {
@@ -31,24 +34,32 @@ declare module '../model/queryable' {
 }
 
 export class ElementReference implements Feature {
-  tagName: string;
-  attributes: Attribute[] = [];
-  sourceRange: SourceRange;
-  astNode: dom5.Node;
-  warnings: Warning[] = [];
-  kinds: Set<string> = new Set(['element-reference']);
+  readonly tagName: string;
+  readonly attributes: ImmutableArray<Attribute>;
+  readonly sourceRange: SourceRange;
+  readonly astNode: dom5.Node;
+  readonly warnings: ImmutableArray<Warning>;
+  readonly kinds: ImmutableSet<string> = new Set(['element-reference']);
 
-  get identifiers(): Set<string> {
+  constructor(scannedRef: ScannedElementReference, _document: Document) {
+    this.tagName = scannedRef.tagName;
+    this.attributes = scannedRef.attributes;
+    this.sourceRange = scannedRef.sourceRange;
+    this.astNode = scannedRef.astNode;
+    this.warnings = scannedRef.warnings;
+  }
+
+  get identifiers(): ImmutableSet<string> {
     return new Set([this.tagName]);
   }
 }
 
 export class ScannedElementReference implements Resolvable {
-  tagName: string;
-  attributes: Attribute[] = [];
-  sourceRange: SourceRange;
-  astNode: dom5.Node;
-  warnings: Warning[] = [];
+  readonly tagName: string;
+  readonly attributes: Attribute[] = [];
+  readonly sourceRange: SourceRange;
+  readonly astNode: dom5.Node;
+  readonly warnings: ImmutableArray<Warning> = [];
 
   constructor(tagName: string, sourceRange: SourceRange, ast: dom5.Node) {
     this.tagName = tagName;
@@ -56,9 +67,7 @@ export class ScannedElementReference implements Resolvable {
     this.astNode = ast;
   }
 
-  resolve(): ElementReference {
-    const ref = new ElementReference();
-    Object.assign(ref, this);
-    return ref;
+  resolve(document: Document): ElementReference {
+    return new ElementReference(this, document);
   }
 }

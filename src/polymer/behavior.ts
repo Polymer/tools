@@ -13,7 +13,7 @@
  */
 
 import {Document, SourceRange} from '../model/model';
-import {getBehaviors, Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
+import {Options as ElementOptions, PolymerElement, ScannedPolymerElement} from '../polymer/polymer-element';
 
 /**
  * A scanned behavior assignment of a Polymer element. This is only a
@@ -47,12 +47,8 @@ export class ScannedBehavior extends ScannedPolymerElement {
   }
 
   resolve(document: Document) {
-    const behaviorsAndWarnings =
-        getBehaviors(this.behaviorAssignments, document);
-    const behavior = Object.assign(new Behavior(), this);
-    behavior.warnings = behavior.warnings.concat(behaviorsAndWarnings.warnings);
     this.applyJsdocDemoTags(document.url);
-    return behavior;
+    return new Behavior(this, document);
   }
 }
 
@@ -65,8 +61,8 @@ declare module '../model/queryable' {
 export class Behavior extends PolymerElement {
   tagName: undefined;
   className: string;
-  constructor() {
-    super();
+  constructor(scannedBehavior: ScannedBehavior, document: Document) {
+    super(scannedBehavior, document);
     this.kinds = new Set(['behavior']);
   }
 

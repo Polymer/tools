@@ -16,18 +16,18 @@ import * as estree from 'estree';
 import {ScannedFeature} from './feature';
 
 export interface ScannedEvent extends ScannedFeature {
-  name: string;
-  type?: string;
-  description?: string;
-  params?: {type: string, desc: string, name: string}[];
-  astNode: estree.Node|null;
+  readonly name: string;
+  readonly type?: string;
+  readonly description?: string;
+  readonly params: {type: string, desc: string, name: string}[];
+  readonly astNode: estree.Node|null;
 }
 
 export interface Event {
-  name: string;
-  type?: string;
+  readonly name: string;
+  readonly type?: string;
   // TODO: represent detail object properly
-  description?: string;
-  inheritedFrom?: string;
-  astNode: estree.Node|null;
+  readonly description?: string;
+  readonly astNode: estree.Node|null;
+  readonly inheritedFrom?: string;
 }

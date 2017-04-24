@@ -15,17 +15,15 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
-import {Attribute, Event} from '../index';
 import * as jsdoc from '../javascript/jsdoc';
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Document, Element, ElementBase, LiteralValue, Method, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
+import {ImmutableArray} from '../model/immutable';
+import {Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
 
 import {Behavior, ScannedBehaviorAssignment} from './behavior';
 import {DomModule} from './dom-module-scanner';
 import {JavascriptDatabindingExpression} from './expression-scanner';
-import {getOrInferPrivacy} from './js-utils';
-import {PolymerElementMixin} from './polymer-element-mixin';
 
 export interface BasePolymerProperty {
   published?: boolean;
@@ -129,7 +127,8 @@ export function addProperty(
       description: `Fired when the \`${prop.name}\` property changes.`,
       sourceRange: prop.sourceRange,
       astNode: prop.astNode,
-      warnings: []
+      warnings: [],
+      params: []
     });
   }
 }
@@ -187,24 +186,23 @@ export class ScannedPolymerElement extends ScannedElement implements
 
   resolve(document: Document): PolymerElement {
     this.applyJsdocDemoTags(document.url);
-    return resolveElement(this, document);
+    return new PolymerElement(this, document);
   }
 }
 
 export interface PolymerExtension extends ElementBase {
   properties: PolymerProperty[];
-  methods: Method[];
 
-  observers: {
-    javascriptNode: estree.Expression | estree.SpreadElement,
-    expression: LiteralValue,
-    parsedExpression: JavascriptDatabindingExpression|undefined;
-  }[];
-  listeners: {event: string, handler: string}[];
-  behaviorAssignments: ScannedBehaviorAssignment[];
-  domModule?: dom5.Node;
+  observers: ImmutableArray < {
+    javascriptNode: estree.Expression|estree.SpreadElement,
+        expression: LiteralValue,
+        parsedExpression: JavascriptDatabindingExpression|undefined;
+  }
+  > ;
+  listeners: ImmutableArray<{event: string, handler: string}>;
+  behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment>;
   scriptElement?: dom5.Node;
-  localIds: LocalId[];
+  localIds: ImmutableArray<LocalId>;
 
   abstract?: boolean;
 
@@ -219,22 +217,56 @@ declare module '../model/queryable' {
 }
 
 export class PolymerElement extends Element implements PolymerExtension {
-  properties: PolymerProperty[] = [];
-  methods: Method[] = [];
+  readonly properties: PolymerProperty[];
+  readonly observers: ImmutableArray<Observer> = [];
+  readonly listeners: ImmutableArray<{event: string, handler: string}> = [];
+  readonly behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment> = [];
+  readonly domModule?: dom5.Node;
+  readonly scriptElement?: dom5.Node;
+  readonly localIds: ImmutableArray<LocalId> = [];
 
-  observers: Observer[] = [];
-  listeners: {event: string, handler: string}[] = [];
-  behaviorAssignments: ScannedBehaviorAssignment[] = [];
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
-  localIds: LocalId[] = [];
-
-  abstract?: boolean;
+  readonly abstract?: boolean;
 
   kinds = new Set(['element', 'polymer-element']);
 
+  constructor(scannedElement: ScannedPolymerElement, document: Document) {
+    super(scannedElement, document);
+
+    this.abstract = scannedElement.abstract;
+    this.observers = Array.from(scannedElement.observers);
+    this.listeners = Array.from(scannedElement.listeners);
+    this.behaviorAssignments = Array.from(scannedElement.behaviorAssignments);
+    this.scriptElement = scannedElement.scriptElement;
+
+    const domModules = scannedElement.tagName == null ?
+        new Set<DomModule>() :
+        document.getFeatures({
+          kind: 'dom-module',
+          id: scannedElement.tagName,
+          imported: true,
+          externalPackages: true
+        });
+    let domModule = undefined;
+    if (domModules.size === 1) {
+      // TODO(rictic): warn if this isn't true.
+      domModule = domModules.values().next().value;
+    }
+
+
+    if (domModule) {
+      this.description = this.description || domModule.comment || '';
+      this.domModule = domModule.node;
+      this.slots = domModule.slots.slice();
+      this.localIds = domModule.localIds.slice();
+    }
+
+    if (scannedElement.pseudo) {
+      this.kinds.add('pseudo-element');
+    }
+  }
+
   emitPropertyMetadata(property: PolymerProperty) {
-    const polymerMetadata: any = {};
+    const polymerMetadata = {};
     const polymerMetadataFields = ['notify', 'observer', 'readOnly'];
     for (const field of polymerMetadataFields) {
       if (field in property) {
@@ -242,6 +274,18 @@ export class PolymerElement extends Element implements PolymerExtension {
       }
     }
     return {polymer: polymerMetadata};
+  }
+
+  protected _getSuperclassAndMixins(
+      document: Document, init: ScannedPolymerElement) {
+    const prototypeChain = super._getSuperclassAndMixins(document, init);
+
+    const {warnings, behaviors} =
+        getBehaviors(init.behaviorAssignments, document);
+
+    this.warnings.push(...warnings);
+    prototypeChain.push(...behaviors);
+    return prototypeChain;
   }
 }
 
@@ -260,101 +304,6 @@ function propertyToAttributeName(propertyName: string): string|null {
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
 }
 
-function resolveElement(
-    scannedElement: ScannedPolymerElement, document: Document): PolymerElement {
-  const element = new PolymerElement();
-  element.privacy = scannedElement.privacy;
-  applySuperClass(element, scannedElement, document);
-  applyMixins(element, scannedElement, document);
-
-  //
-  // Behaviors
-  //
-  // TODO(justinfagnani): Refactor behaviors to work like superclasses and
-  // mixins and be applied before own members
-  const {warnings, behaviors} =
-      getBehaviors(scannedElement.behaviorAssignments, document);
-
-  // This has the combined effects of copying the array of warnings from the
-  // ScannedElement, and adding in any new ones found when resolving behaviors.
-  element.warnings = element.warnings.concat(warnings);
-
-  for (const behavior of behaviors) {
-    inheritFrom(element, behavior);
-  }
-
-  applySelf(element, scannedElement, document);
-
-  const domModules = scannedElement.tagName == null ?
-      new Set<DomModule>() :
-      document.getFeatures({
-        kind: 'dom-module',
-        id: scannedElement.tagName,
-        imported: true,
-        externalPackages: true
-      });
-  let domModule = undefined;
-  if (domModules.size === 1) {
-    // TODO(rictic): warn if this isn't true.
-    domModule = domModules.values().next().value;
-  }
-
-
-  if (domModule) {
-    element.description = element.description || domModule.comment || '';
-    element.domModule = domModule.node;
-    element.slots = domModule.slots.slice();
-    element.localIds = domModule.localIds.slice();
-  }
-
-  if (scannedElement.pseudo) {
-    element.kinds.add('pseudo-element');
-  }
-
-  for (const method of element.methods) {
-    // methods are only public by default if they're documented.
-    method.privacy = getOrInferPrivacy(method.name, method.jsdoc, true);
-  }
-
-  return element;
-}
-
-/**
- * Note: mutates `element`.
- */
-function inheritFrom(element: PolymerElement, superElement: PolymerExtension) {
-  // TODO(rictic): we don't inherit private members, but we should check for
-  //     clashes between them, as that can cause issues at runtime.
-
-  const superName = getSuperName(superElement);
-  _overwriteInherited(
-      element.properties,
-      superElement.properties,
-      superName,
-      element.warnings,
-      element.sourceRange);
-  _overwriteInherited(
-      element.methods,
-      superElement.methods,
-      superName,
-      element.warnings,
-      element.sourceRange);
-  _overwriteInherited(
-      element.attributes,
-      superElement.attributes,
-      superName,
-      element.warnings,
-      element.sourceRange);
-  _overwriteInherited(
-      element.events,
-      superElement.events,
-      superName,
-      element.warnings,
-      element.sourceRange);
-
-  // TODO(justinfagnani): slots, listeners, observers, dom-module?
-  // What actually inherits?
-}
 
 export interface PropertyLike {
   name: string;
@@ -363,236 +312,11 @@ export interface PropertyLike {
   privacy?: Privacy;
 }
 
-/**
- * This method is applied to an array of members to overwrite members lower in
- * the prototype graph (closer to Object) with members higher up (closer to the
- * final class we're constructing).
- *
- * @param . existing The array of members so far. N.B. *This param is mutated.*
- * @param . overriding The array of members from this new, higher prototype in
- *   the graph
- * @param . overridingClassName The name of the prototype whose members are
- *   being applied over the existing ones. Should be `undefined` when
- *   applyingSelf is true
- * @param . warnings Place to put generated warnings.
- * @param . sourceRange A source range to use for warnings when the inheritance
- *   goes wrong but there's no more specific source range.
- * @param . applyingSelf True on the last call to this method, when we're
- *   applying the class's own local members.
- */
-export function _overwriteInherited<P extends PropertyLike>(
-    existing: P[],
-    overriding: P[],
-    overridingClassName: string | undefined,
-    warnings: Warning[],
-    sourceRange: SourceRange,
-    applyingSelf = false) {
-  // This exists to treat the arrays as maps.
-  // TODO(rictic): convert these arrays to maps.
-  const existingIndexByName =
-      new Map(existing.map((e, idx) => [e.name, idx] as [string, number]));
-  for (const overridingVal of overriding) {
-    const newVal = Object.assign({}, overridingVal, {
-      inheritedFrom: overridingVal['inheritedFrom'] || overridingClassName
-    });
-    if (existingIndexByName.has(overridingVal.name)) {
-      /**
-       * TODO(rictic): if existingVal.privacy is protected, newVal should be
-       *    protected unless an explicit privacy was specified.
-       *    https://github.com/Polymer/polymer-analyzer/issues/631
-       */
-      const existingIndex = existingIndexByName.get(overridingVal.name)!;
-      const existingValue = existing[existingIndex]!;
-      if (existingValue.privacy === 'private') {
-        let warningSourceRange = sourceRange;
-        if (applyingSelf) {
-          warningSourceRange = newVal.sourceRange || sourceRange;
-        }
-        warnings.push({
-          code: 'overriding-private',
-          message: `Overriding private member '${overridingVal.name}' ` +
-              `inherited from ${existingValue.inheritedFrom || 'parent'}`,
-          sourceRange: warningSourceRange,
-          severity: Severity.WARNING
-        });
-      }
-      existing[existingIndex] = newVal;
-      continue;
-    }
-    existing.push(newVal);
-  }
-}
-
-function applySelf(
-    element: PolymerElement,
-    scannedElement: ScannedPolymerElement,
-    document: Document) {
-  // TODO(justinfagnani): Copy over all properties better, or have
-  // PolymerElement wrap ScannedPolymerElement.
-  element.abstract = scannedElement.abstract;
-  element.astNode = scannedElement.astNode;
-  scannedElement.behaviorAssignments.forEach(
-      (o) => element.behaviorAssignments.push(o));
-  element.className = scannedElement.className;
-  scannedElement.demos.forEach((o) => element.demos.push(o));
-  element.description = scannedElement.description;
-  element.domModule = scannedElement.domModule;
-  scannedElement.events.forEach((o) => element.events.push(o));
-  element.extends = scannedElement.extends;
-  element.jsdoc = scannedElement.jsdoc;
-  scannedElement.listeners.forEach((o) => element.listeners.push(o));
-  scannedElement.observers.forEach((o) => element.observers.push(o));
-  element.scriptElement = scannedElement.scriptElement;
-  scannedElement.slots.forEach((o) => element.slots.push(o));
-  element.sourceRange = scannedElement.sourceRange!;
-  element.summary = scannedElement.summary;
-  element.superClass =
-      scannedElement.superClass && scannedElement.superClass.resolve(document);
-  element.tagName = scannedElement.tagName;
-  scannedElement.warnings.forEach((o) => element.warnings.push(o));
-
-  _overwriteInherited(
-      element.properties,
-      scannedElement.properties as PolymerProperty[],
-      undefined,
-      element.warnings,
-      element.sourceRange,
-      true);
-  _overwriteInherited(
-      element.attributes,
-      scannedElement.attributes as Attribute[],
-      undefined,
-      element.warnings,
-      element.sourceRange,
-      true);
-  _overwriteInherited(
-      element.methods,
-      scannedElement.methods as Method[],
-      undefined,
-      element.warnings,
-      element.sourceRange,
-      true);
-  _overwriteInherited(
-      element.events,
-      scannedElement.events as Event[],
-      undefined,
-      element.warnings,
-      element.sourceRange,
-      true);
-}
-
-function applySuperClass(
-    element: PolymerElement,
-    scannedElement: ScannedElement,
-    document: Document) {
-  if (scannedElement.superClass &&
-      scannedElement.superClass.identifier !== 'HTMLElement') {
-    const superElements = document.getFeatures({
-      kind: 'element',
-      id: scannedElement.superClass.identifier,
-      externalPackages: true,
-      imported: true,
-    });
-    if (superElements.size === 1) {
-      const superElement = superElements.values().next().value;
-      if (!superElement.kinds.has('polymer-element')) {
-        element.warnings.push({
-          message:
-              `A Polymer element can\'t extend from a non-Polymer element: ` +
-              `${scannedElement.superClass.identifier}`,
-          severity: Severity.ERROR,
-          code: 'unknown-superclass',
-          sourceRange: scannedElement.superClass.sourceRange!,
-        });
-      } else {
-        inheritFrom(element, superElement as PolymerElement);
-      }
-    } else {
-      if (superElements.size === 0) {
-        element.warnings.push({
-          message: `Unable to resolve superclass ${
-                                                   scannedElement.superClass
-                                                       .identifier
-                                                 }`,
-          severity: Severity.ERROR,
-          code: 'unknown-superclass',
-          sourceRange: scannedElement.superClass.sourceRange!,
-        });
-      } else {
-        element.warnings.push({
-          message: `Multiple superclasses found for ${
-                                                      scannedElement.superClass
-                                                          .identifier
-                                                    }`,
-          severity: Severity.ERROR,
-          code: 'unknown-superclass',
-          sourceRange: scannedElement.superClass.sourceRange!,
-        });
-      }
-    }
-  }
-}
-
-export function applyMixins(
-    element: PolymerElement,
-    scannedElement: ScannedElement,
-    document: Document) {
-  for (const scannedMixinReference of scannedElement.mixins) {
-    const mixinReference = scannedMixinReference.resolve(document);
-    const mixinId = mixinReference.identifier;
-    element.mixins.push(mixinReference);
-    const mixins = document.getFeatures({
-      kind: 'element-mixin',
-      id: mixinId,
-      externalPackages: true,
-      imported: true,
-    });
-    if (mixins.size === 0) {
-      element.warnings.push({
-        message: `@mixes reference not found: ${mixinId}.` +
-            `Did you import it? Is it annotated with @polymerMixin?`,
-        severity: Severity.ERROR,
-        code: 'mixes-reference-not-found',
-        sourceRange: scannedMixinReference.sourceRange!,
-      });
-      continue;
-    } else if (mixins.size > 1) {
-      element.warnings.push({
-        message: `@mixes reference, multiple mixins found ${mixinId}`,
-        severity: Severity.ERROR,
-        code: 'mixes-reference-multiple-found',
-        sourceRange: scannedMixinReference.sourceRange!,
-      });
-      continue;
-    }
-    const mixin = mixins.values().next().value;
-    if (!(mixin instanceof PolymerElementMixin)) {
-      element.warnings.push({
-        message: `@mixes reference to a non-Mixin ${mixinId}`,
-        severity: Severity.ERROR,
-        code: 'mixes-reference-non-mixin',
-        sourceRange: scannedMixinReference.sourceRange!,
-      });
-      continue;
-    }
-    inheritFrom(element, mixin as PolymerElementMixin);
-  }
-}
-
-// TODO(justinfagnani): move to Behavior
 export function getBehaviors(
-    behaviorAssignments: ScannedBehaviorAssignment[], document: Document) {
-  const resolvedBehaviors = new Set<Behavior>();
-  const warnings = _getFlattenedAndResolvedBehaviors(
-      behaviorAssignments, document, resolvedBehaviors);
-  return {behaviors: resolvedBehaviors, warnings};
-}
-
-function _getFlattenedAndResolvedBehaviors(
-    behaviorAssignments: ScannedBehaviorAssignment[],
-    document: Document,
-    resolvedBehaviors: Set<Behavior>) {
+    behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment>,
+    document: Document) {
   const warnings: Warning[] = [];
+  const behaviors: Behavior[] = [];
   for (const behavior of behaviorAssignments) {
     const foundBehaviors = document.getFeatures({
       kind: 'behavior',
@@ -623,26 +347,7 @@ function _getFlattenedAndResolvedBehaviors(
       // declared instance.
     }
     const foundBehavior = Array.from(foundBehaviors)[foundBehaviors.size - 1];
-    if (resolvedBehaviors.has(foundBehavior)) {
-      continue;
-    }
-    resolvedBehaviors.add(foundBehavior);
-    // Note that we don't care about warnings from transitively resolved
-    // behaviors. Those should become warnings on those behaviors themselves.
-    _getFlattenedAndResolvedBehaviors(
-        foundBehavior.behaviorAssignments, document, resolvedBehaviors);
+    behaviors.push(foundBehavior);
   }
-  return warnings;
-}
-
-function getSuperName(superElement: PolymerExtension|
-                      ScannedPolymerElement): string|undefined {
-  // TODO(justinfagnani): Mixins, elements and functions should all have a
-  // name property.
-  if (superElement instanceof PolymerElement ||
-      superElement instanceof ScannedPolymerElement) {
-    return superElement.className;
-  } else if (superElement instanceof PolymerElementMixin) {
-    return superElement.name;
-  }
+  return {warnings, behaviors};
 }

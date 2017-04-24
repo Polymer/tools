@@ -62,7 +62,20 @@ suite('Polymer2MixinScanner', () => {
     }
     const methods = [];
     for (const {name, params, return: r} of mixin.methods) {
-      methods.push({name, params, return: r});
+      let processedParams = undefined;
+      if (params) {
+        processedParams = params.map(({name, type, description}) => {
+          const result: any = {name};
+          if (type != null) {
+            result.type = type;
+          }
+          if (description != null) {
+            result.description = description;
+          }
+          return result;
+        });
+      }
+      methods.push({name, return: r, params: processedParams});
     }
     const {name, description, summary} = mixin;
     return {

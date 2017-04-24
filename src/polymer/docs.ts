@@ -99,18 +99,19 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
     sourceRange: undefined,
     astNode: null,
     warnings: [],
+    params: []
   };
 
   const tags = (annotation && annotation.tags || []);
   // process @params
-  scannedEvent.params =
-      tags.filter((tag) => tag.tag === 'param').map(function(param) {
+  scannedEvent.params.push(
+      ...tags.filter((tag) => tag.tag === 'param').map(function(param) {
         return {
           type: param.type || 'N/A',
           desc: param.description || '',
           name: param.name || 'N/A'
         };
-      });
+      }));
   // process @params
   return scannedEvent;
 }

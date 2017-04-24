@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
-import {Analysis, Attribute, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Property, SourceRange} from './analysis-format';
+import {Analysis, Attribute, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Parameter, Property, SourceRange} from './analysis-format';
 import {Function as ResolvedFunction} from './javascript/function';
 import {Namespace as ResolvedNamespace} from './javascript/namespace';
 import {Analysis as AnalysisResult} from './model/analysis';
@@ -271,9 +271,9 @@ function serializePolymerBehaviorAsElementMixin(
 
 function serializeElementLike(
     elementOrMixin: ElementOrMixin, packagePath: string): ElementLike {
-  const path = elementOrMixin.sourceRange.file;
+  const path = elementOrMixin.sourceRange!.file;
   const packageRelativePath =
-      pathLib.relative(packagePath, elementOrMixin.sourceRange.file);
+      pathLib.relative(packagePath, elementOrMixin.sourceRange!.file);
 
   const attributes = elementOrMixin.attributes.map(
       (a) => serializeAttribute(elementOrMixin, path, a));
@@ -361,7 +361,16 @@ function serializeMethod(
     metadata: resolvedElement.emitMethodMetadata(resolvedMethod),
   };
   if (resolvedMethod.params) {
-    method.params = resolvedMethod.params;
+    method.params = resolvedMethod.params.map(({name, description, type}) => {
+      const param: Parameter = {name: name};
+      if (description) {
+        param.description = description;
+      }
+      if (type) {
+        param.type = type;
+      }
+      return param;
+    });
   }
   if (resolvedMethod.return ) {
     method.return = resolvedMethod.return;

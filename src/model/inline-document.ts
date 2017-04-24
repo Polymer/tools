@@ -21,6 +21,7 @@ import * as jsdoc from '../javascript/jsdoc';
 
 import {Document, ScannedDocument} from './document';
 import {ScannedFeature} from './feature';
+import {unsafeAsMutable} from './immutable';
 import {Resolvable} from './resolvable';
 import {LocationOffset, SourceRange} from './source-range';
 import {Warning} from './warning';
@@ -82,7 +83,7 @@ declare module './queryable' {
 export class InlineDocument extends Document {
   constructor(base: ScannedDocument, containerDocument: Document) {
     super(base, containerDocument._analysisContext);
-    this.kinds.add('inline-document');
+    unsafeAsMutable(this.kinds).add('inline-document');
     this._addFeature(containerDocument);
   }
 }

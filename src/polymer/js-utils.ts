@@ -17,7 +17,7 @@ import * as estree from 'estree';
 
 import {closureType, getAttachedComment, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
-import {MethodParam, Privacy, ScannedMethod, Severity, SourceRange, Warning} from '../model/model';
+import {Privacy, ScannedMethod, Severity, SourceRange, Warning} from '../model/model';
 
 import {ScannedPolymerProperty} from './polymer-element';
 
@@ -121,21 +121,21 @@ export function toScannedMethod(
     }
 
     scannedMethod.params = (value.params || []).map((nodeParam) => {
-      const param: MethodParam = {
-        // With ES6 we can have a lot of param patterns. Best to leave the
-        // formatting to escodegen.
-        name: escodegen.generate(nodeParam),
-      };
-      const tag = paramTags[param.name];
+      let type = undefined;
+      let description = undefined;
+      // With ES6 we can have a lot of param patterns. Best to leave the
+      // formatting to escodegen.
+      const name = escodegen.generate(nodeParam);
+      const tag = paramTags[name];
       if (tag) {
         if (tag.type) {
-          param.type = tag.type;
+          type = tag.type;
         }
         if (tag.description) {
-          param.description = tag.description;
+          description = tag.description;
         }
       }
-      return param;
+      return {name, type, description};
     });
   }
 

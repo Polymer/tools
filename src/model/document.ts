@@ -18,6 +18,7 @@ import {ParsedDocument} from '../parser/document';
 
 import {Analysis} from './analysis';
 import {Feature, ScannedFeature} from './feature';
+import {ImmutableSet, unsafeAsMutable} from './immutable';
 import {Import} from './import';
 import {DocumentQuery as Query, DocumentQueryWithKind as QueryWithKind, FeatureKind, FeatureKindMap, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
@@ -89,8 +90,8 @@ declare module './queryable' {
   }
 }
 export class Document implements Feature, Queryable {
-  kinds: Set<string> = new Set(['document']);
-  identifiers: Set<string> = new Set();
+  readonly kinds: ImmutableSet<string> = new Set(['document']);
+  readonly identifiers: ImmutableSet<string> = new Set();
 
   /**
    * AnalysisContext is a private type. Only internal analyzer code should touch
@@ -100,8 +101,8 @@ export class Document implements Feature, Queryable {
   warnings: Warning[];
   languageAnalysis?: any;
 
-  private _localFeatures = new Set<Feature>();
-  private _scannedDocument: ScannedDocument;
+  private readonly _localFeatures = new Set<Feature>();
+  private readonly _scannedDocument: ScannedDocument;
 
 
   /**
@@ -130,9 +131,9 @@ export class Document implements Feature, Queryable {
     this.languageAnalysis = languageAnalysis;
 
     if (!base.isInline) {
-      this.identifiers.add(this.url);
+      unsafeAsMutable(this.identifiers).add(this.url);
     }
-    this.kinds.add(`${this.parsedDocument.type}-document`);
+    unsafeAsMutable(this.kinds).add(`${this.parsedDocument.type}-document`);
     this.warnings = Array.from(base.warnings);
   }
 
@@ -400,14 +401,6 @@ export class Document implements Feature, Queryable {
     return this.parsedDocument.stringify({inlineDocuments: inlineDocuments});
   }
 
-  private _featuresByKind: Map<string, Set<Feature>>|null = null;
-  private _featuresByKindAndId: Map<string, Map<string, Set<Feature>>>|null =
-      null;
-  private _initIndexes() {
-    this._featuresByKind = new Map<string, Set<Feature>>();
-    this._featuresByKindAndId = new Map<string, Map<string, Set<Feature>>>();
-  }
-
   private _indexFeature(feature: Feature) {
     if (!this._featuresByKind || !this._featuresByKindAndId) {
       return;
@@ -427,6 +420,9 @@ export class Document implements Feature, Queryable {
     }
   }
 
+  private _featuresByKind: Map<string, Set<Feature>>|null = null;
+  private _featuresByKindAndId: Map<string, Map<string, Set<Feature>>>|null =
+      null;
   private _buildIndexes() {
     if (this._featuresByKind) {
       throw new Error(
@@ -437,7 +433,8 @@ export class Document implements Feature, Queryable {
           `Tried to build indexes before finished resolving. ` +
           `Need to wait until afterwards or the indexes would be incomplete.`);
     }
-    this._initIndexes();
+    this._featuresByKind = new Map<string, Set<Feature>>();
+    this._featuresByKindAndId = new Map<string, Map<string, Set<Feature>>>();
     for (const feature of this.getFeatures(
              {imported: true, externalPackages: true})) {
       this._indexFeature(feature);

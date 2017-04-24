@@ -98,9 +98,14 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     }
     // The attribute name can't have any spaces, newlines, or other funny
     // business in it, so this is pretty simple.
-    range.end.line = range.start.line;
-    range.end.column = range.start.column + attrName.length;
-    return range;
+    return {
+      file: range.file,
+      start: range.start,
+      end: {
+        line: range.start.line,
+        column: range.start.column + attrName.length
+      }
+    };
   }
 
   sourceRangeForAttributeValue(

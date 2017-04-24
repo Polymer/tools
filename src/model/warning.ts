@@ -14,10 +14,10 @@
 
 import {SourceRange} from './source-range';
 export interface Warning {
-  message: string;
-  sourceRange: SourceRange;
-  severity: Severity;
-  code: string;
+  readonly message: string;
+  readonly sourceRange: SourceRange;
+  readonly severity: Severity;
+  readonly code: string;
 }
 
 export enum Severity {
@@ -28,7 +28,7 @@ export enum Severity {
 
 // TODO(rictic): can we get rid of this class entirely?
 export class WarningCarryingException extends Error {
-  warning: Warning;
+  readonly warning: Warning;
   constructor(warning: Warning) {
     super(warning.message);
     this.warning = warning;

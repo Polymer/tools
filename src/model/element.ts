@@ -13,7 +13,7 @@
  */
 
 import {Document} from './document';
-import {ElementBase, ScannedElementBase} from './element-base';
+import {ElementBase, ElementBaseInit, ScannedElementBase} from './element-base';
 import {Feature, Privacy} from './feature';
 import {Reference, ScannedReference} from './reference';
 
@@ -39,11 +39,17 @@ export class ScannedElement extends ScannedElementBase {
   }
 
   resolve(document: Document): Element {
-    const element = new Element();
-    Object.assign(element, this);
     this.applyJsdocDemoTags(document.url);
-    return element;
+
+    return new Element(this, document);
   }
+}
+
+export interface ElementInit extends ElementBaseInit {
+  tagName?: string;
+  className?: string;
+  superClass?: ScannedReference;
+  extends?: string;
 }
 
 declare module './queryable' {
@@ -52,16 +58,25 @@ declare module './queryable' {
   }
 }
 export class Element extends ElementBase implements Feature {
-  tagName?: string;
-  className?: string;
-  superClass?: Reference;
-  privacy: Privacy;
+  readonly tagName?: string;
+  readonly className?: string;
+  readonly superClass?: Reference;
+  get name() {
+    return this.className;
+  }
 
   /**
    * For customized built-in elements, the tagname of the superClass.
    */
   extends?: string;
   kinds = new Set(['element']);
+
+  constructor(init: ElementInit, document: Document) {
+    super(init, document);
+    this.tagName = init.tagName;
+    this.className = init.className;
+    this.extends = init.extends;
+  }
 
   get identifiers(): Set<string> {
     const result: Set<string> = new Set();

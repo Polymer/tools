@@ -34,9 +34,8 @@ export class WarningPrinter {
   _chalk: chalk.Chalk;
   private _options: Options;
 
-  constructor(private _outStream: NodeJS.WritableStream, _options?: Options) {
-    this._options =
-        Object.assign({}, defaultPrinterOptions, _options) as Options;
+  constructor(private _outStream: NodeJS.WritableStream, options: Options) {
+    this._options = Object.assign({}, defaultPrinterOptions, options);
     this._chalk = new chalk.constructor({enabled: !!this._options.color});
   }
 

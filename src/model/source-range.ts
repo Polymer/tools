@@ -21,27 +21,27 @@
  */
 export interface SourceRange {
   /* The resolved path to the file. */
-  file: string;
-  start: SourcePosition;
-  end: SourcePosition;
+  readonly file: string;
+  readonly start: SourcePosition;
+  readonly end: SourcePosition;
 }
 
 export interface SourcePosition {
   /** The line number, starting from zero. */
-  line: number;
+  readonly line: number;
   /** The column offset within the line, starting from zero. */
-  column: number;
+  readonly column: number;
 }
 
 export interface LocationOffset {
   /** Zero based line index. */
-  line: number;
+  readonly line: number;
   /** Zero based column index. */
-  col: number;
+  readonly col: number;
   /**
    * The url of the source file.
    */
-  filename?: string;
+  readonly filename?: string;
 }
 
 /**

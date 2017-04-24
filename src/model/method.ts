@@ -20,12 +20,12 @@ export interface ScannedMethod extends ScannedProperty {
 }
 
 export interface Method extends Property {
-  params?: MethodParam[];
-  return?: {type?: string, desc?: string};
+  readonly params?: MethodParam[];
+  readonly return?: {type?: string, desc?: string};
 }
 
 export interface MethodParam {
-  name: string;
-  type?: string;
-  description?: string;
+  readonly name: string;
+  readonly type?: string;
+  readonly description?: string;
 }

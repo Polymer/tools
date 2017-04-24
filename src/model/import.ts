@@ -107,16 +107,16 @@ declare module './queryable' {
 }
 
 export class Import implements Feature {
-  type: 'html-import'|'html-script'|'html-style'|string;
-  url: string;
-  document: Document;
-  identifiers = new Set();
-  kinds = new Set(['import']);
-  sourceRange: SourceRange|undefined;
-  urlSourceRange: SourceRange|undefined;
-  astNode: any|null;
-  warnings: Warning[];
-  lazy: boolean;
+  readonly type: 'html-import'|'html-script'|'html-style'|string;
+  readonly url: string;
+  readonly document: Document;
+  readonly identifiers = new Set();
+  readonly kinds = new Set(['import']);
+  readonly sourceRange: SourceRange|undefined;
+  readonly urlSourceRange: SourceRange|undefined;
+  readonly astNode: any|null;
+  readonly warnings: Warning[];
+  readonly lazy: boolean;
 
   constructor(
       url: string, type: string, document: Document,
