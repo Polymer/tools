@@ -141,12 +141,12 @@ export function getMixinApplications(
     node: estree.Node,
     docs: Annotation,
     warnings: Warning[]): ScannedReference[] {
-  const appliesMixinAnnotations = docs.tags!.filter((tag) => tag.title === 'appliesMixin');
+  // TODO(justinfagnani): remove @mixes support
+  const appliesMixinAnnotations = docs.tags!.filter((tag) => tag.title === 'appliesMixin' || tag.title === 'mixes');
   return appliesMixinAnnotations
       .map((annotation) => {
         const mixinId = annotation.name;
-        // TODO(justinfagnani): we need source ranges for jsdoc
-        // annotations
+        // TODO(justinfagnani): we need source ranges for jsdoc annotations
         const sourceRange = document.sourceRangeForNode(node)!;
         if (mixinId === undefined) {
           warnings.push({

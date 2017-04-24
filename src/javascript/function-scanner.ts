@@ -117,7 +117,8 @@ class FunctionVisitor implements Visitor {
     }
 
     const docs = jsdoc.parseJsdoc(comment);
-    if (jsdoc.hasTag(docs, 'mixinFunction')) {
+    // TODO(justinfagnani): remove polymerMixin support
+    if (jsdoc.hasTag(docs, 'mixinFunction') || jsdoc.hasTag(docs, 'polymerMixin')) {
       // This is a mixin, not a normal function.
       return;
     }

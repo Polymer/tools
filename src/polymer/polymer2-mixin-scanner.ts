@@ -210,9 +210,11 @@ export class MixinVisitor implements Visitor {
 }
 
 export function hasMixinFunctionDocTag(docs: jsdoc.Annotation) {
-  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinFunction'));
+  // TODO(justinfagnani): remove polymerMixin support
+  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinFunction')) || jsdoc.hasTag(docs, 'polymerMixin');
 }
 
 export function hasMixinClassDocTag(docs: jsdoc.Annotation) {
-  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinClass'));
+  // TODO(justinfagnani): remove polymerMixinClass support
+  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinClass')) || jsdoc.hasTag(docs, 'polymerMixinClass');
 }

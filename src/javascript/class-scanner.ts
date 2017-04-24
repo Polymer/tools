@@ -132,7 +132,8 @@ export class ClassScanner implements JavaScriptScanner {
         continue;
       }
       // Classes explicitly defined as elements in their jsdoc tags.
-      if (jsdoc.hasTag(class_.jsdoc, 'customElement')) {
+      // TODO(justinfagnani): remove @polymerElement support
+      if (jsdoc.hasTag(class_.jsdoc, 'customElement') || jsdoc.hasTag(class_.jsdoc, 'polymerElement')) {
         customElements.push({class_});
         continue;
       }
@@ -363,7 +364,8 @@ class ClassFinder implements Visitor {
 
       this._classFound(name, doc, value);
     } else {
-      if (jsdoc.hasTag(doc, 'customElement')) {
+      // TODO(justinfagnani): remove @polymerElement support
+      if (jsdoc.hasTag(doc, 'customElement') || jsdoc.hasTag(doc, 'polymerElement')) {
         this._classFound(assignedName, doc, value);
       }
     }
