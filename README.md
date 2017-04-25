@@ -1,4 +1,3 @@
-tools
-====
+**DEPRECATED**
 
-The `tools` repository contains some shared utilities for polymer.
+Please see https://github.com/Polymer/polymer-cli for the latest supported Polymer tools.
