@@ -27,24 +27,16 @@ import {declarationPropertyHandlers, PropertyHandlers} from './declaration-prope
 import * as docs from './docs';
 import {getOrInferPrivacy, toScannedPolymerProperty} from './js-utils';
 
-interface KeyFunc<T> {
-  (value: T): any;
-}
-
-function dedupe<T>(array: T[], keyFunc: KeyFunc<T>): T[] {
-  const bucket = {};
+function dedupe<T, K>(array: T[], keyFunc: (value: T) => K): T[] {
+  const map = new Map<K, T>();
   array.forEach((el) => {
     const key = keyFunc(el);
-    if (key in bucket) {
+    if (map.has(key)) {
       return;
     }
-    bucket[key] = el;
+    map.set(key, el);
   });
-  const returned = <Array<T>>[];
-  Object.keys(bucket).forEach((k) => {
-    returned.push(bucket[k]);
-  });
-  return returned;
+  return Array.from(map.values());
 }
 
 const templatizer = 'Polymer.Templatizer';

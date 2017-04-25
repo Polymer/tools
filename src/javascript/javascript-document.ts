@@ -31,8 +31,9 @@ export {Visitor} from './estree-visitor';
  * analysis time, and nothing happens at runtime.
  */
 const __exampleNode: Node = <any>null;
+type EstreeType = typeof __exampleNode.type;
 interface SkipRecord {
-  type: typeof __exampleNode.type;
+  type: EstreeType;
   depth: number;
 }
 
@@ -68,7 +69,11 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
           continue;
         }
         if (callbackName in visitor) {
-          const result: VisitResult = visitor[callbackName](node, parent);
+          // TODO(rictic): is there a maintainable way to enforce the
+          //     mapping between callback names and the types of the first
+          //     arg?
+          const result: VisitResult =
+              (visitor as any)[callbackName](node, parent);
           if (result) {
             handleVisitorResult(result, callbackName, visitor, node.type);
           }

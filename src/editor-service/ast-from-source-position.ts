@@ -225,7 +225,8 @@ function _findLocationInChildren(
 function isElementLocationInfo(location: parse5.LocationInfo|
                                parse5.ElementLocationInfo):
     location is parse5.ElementLocationInfo {
-  return location['startTag'] && location['endTag'];
+  const loc = location as parse5.ElementLocationInfo;
+  return (loc.startTag && loc.endTag) !== undefined;
 }
 
 type Parse5Location = parse5.LocationInfo|parse5.ElementLocationInfo;
@@ -245,7 +246,7 @@ function getAttributeLocation(
    */
   const attrs: parse5.AttributesLocationInfo =
       (isElementLocationInfo(location) && location.startTag.attrs) ||
-      location['attrs'] || {};
+      (location as parse5.StartTagLocationInfo).attrs || {};
 
   for (const attrName in attrs) {
     const range = document.sourceRangeForAttribute(node, attrName);

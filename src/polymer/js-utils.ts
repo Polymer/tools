@@ -102,7 +102,7 @@ export function toScannedMethod(
       scannedMethod.type === 'ArrowFunction') {
     const value = <estree.FunctionExpression>node.value;
 
-    const paramTags = {};
+    const paramTags: {[paramName: string]: jsdoc.Tag} = {};
     if (scannedMethod.jsdoc) {
       for (const tag of (scannedMethod.jsdoc.tags || [])) {
         if (tag.tag === 'param' && tag.name) {

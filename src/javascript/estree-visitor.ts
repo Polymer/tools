@@ -4,8 +4,6 @@ import * as estree from 'estree';
 export type VisitResult = VisitorOption | void | null | undefined;
 
 export interface Visitor {
-  classDetected?: boolean;
-
   enterIdentifier?:
       (node: estree.Identifier, parent: estree.Node) => VisitResult;
   leaveIdentifier?:

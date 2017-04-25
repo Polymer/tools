@@ -20,6 +20,7 @@ import {Analysis} from './analysis';
 import {Feature, ScannedFeature} from './feature';
 import {ImmutableSet, unsafeAsMutable} from './immutable';
 import {Import} from './import';
+import {ScannedInlineDocument} from './inline-document';
 import {DocumentQuery as Query, DocumentQueryWithKind as QueryWithKind, FeatureKind, FeatureKindMap, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
@@ -67,10 +68,10 @@ export class ScannedDocument {
   private _getNestedFeatures(features: ScannedFeature[]): void {
     for (const feature of this.features) {
       // Ad hoc test needed here to avoid a problematic import loop.
-      if (feature.constructor.name === 'ScannedDocument' &&
-          feature['scannedDocument']) {
-        const innerDoc = feature['scannedDocument'] as ScannedDocument;
-        innerDoc._getNestedFeatures(features);
+      const maybeInlineDoc = feature as Partial<ScannedInlineDocument>;
+      if (maybeInlineDoc.constructor.name === 'ScannedInlineDocument' &&
+          maybeInlineDoc.scannedDocument) {
+        maybeInlineDoc.scannedDocument._getNestedFeatures(features);
       } else {
         features.push(feature);
       }

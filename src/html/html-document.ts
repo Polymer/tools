@@ -224,7 +224,8 @@ function removeFakeNodes(ast: dom5.Node) {
 function isElementLocationInfo(location: parse5.LocationInfo|
                                parse5.ElementLocationInfo):
     location is parse5.ElementLocationInfo {
-  return location['startTag'] && location['endTag'];
+  const loc = location as Partial<parse5.ElementLocationInfo>;
+  return (loc.startTag && loc.endTag) != null;
 }
 
 function getStartTagLocation(node: parse5.ASTNode): parse5.LocationInfo|
@@ -257,10 +258,13 @@ function getAttributeLocation(
     return;
   }
   let attrs: parse5.AttributesLocationInfo|undefined = undefined;
-  if (node.__location['startTag'] && node.__location['startTag'].attrs) {
-    attrs = node.__location['startTag'].attrs;
-  } else if (node.__location['attrs']) {
-    attrs = node.__location['attrs'];
+  const location = node.__location;
+  const elemLocation = location as Partial<parse5.ElementLocationInfo>;
+  const elemStartLocation = location as Partial<parse5.StartTagLocationInfo>;
+  if (elemLocation.startTag !== undefined && elemLocation.startTag.attrs) {
+    attrs = elemLocation.startTag.attrs;
+  } else if (elemStartLocation.attrs !== undefined) {
+    attrs = elemStartLocation.attrs;
   }
   if (!attrs) {
     return;

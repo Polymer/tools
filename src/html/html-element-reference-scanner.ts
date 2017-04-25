@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {ASTNode} from 'parse5';
+import {ASTNode, treeAdapters} from 'parse5';
 import {ScannedElementReference} from '../model/element-reference';
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlScanner} from './html-scanner';
@@ -60,12 +60,14 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
       }
 
       // Descend into templates.
-      if (node.tagName === 'template' && node['content']) {
-        const content = node['content'] as ASTNode;
-        dom5.nodeWalk(content, (n) => {
-          visitor(n);
-          return false;
-        });
+      if (node.tagName === 'template') {
+        const content = treeAdapters.default.getTemplateContent(node);
+        if (content) {
+          dom5.nodeWalk(content, (n) => {
+            visitor(n);
+            return false;
+          });
+        }
       }
     };
 

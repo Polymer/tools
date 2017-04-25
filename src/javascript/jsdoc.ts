@@ -181,11 +181,10 @@ export function hasTag(
  */
 export function getTag(
     jsdoc: Annotation|null|undefined, tagName: string): (Tag|null);
-export function getTag(
-    jsdoc: Annotation|null|undefined, tagName: string, key: string): (string|
-                                                                      null);
-export function getTag(
-    jsdoc: Annotation|null|undefined, tagName: string, key?: string): any {
+export function getTag<K extends keyof Tag>(
+    jsdoc: Annotation | null | undefined, tagName: string, key: K): Tag[K]|null;
+export function getTag<K extends keyof Tag>(
+    jsdoc: Annotation | null | undefined, tagName: string, key?: K): any {
   if (!jsdoc || !jsdoc.tags)
     return null;
   for (let i = 0; i < jsdoc.tags.length; i++) {

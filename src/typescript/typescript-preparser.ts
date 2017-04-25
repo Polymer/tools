@@ -39,8 +39,11 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
     inlineInfo = inlineInfo || {};
     const sourceFile =
         ts.createSourceFile(url, contents, ts.ScriptTarget.ES2016, true);
-    const diagnostics =
-        (sourceFile['parseDiagnostics'] || []) as ts.Diagnostic[];
+    // TODO(justinfagnani): where does `parseDiagnostics` come from? Private
+    //     property?
+    const sourceFileMaybeWithDiagnostics =
+        sourceFile as {parseDiagnostics?: ts.Diagnostic[]};
+    const diagnostics = sourceFileMaybeWithDiagnostics.parseDiagnostics || [];
     const parseError =
         diagnostics.find((d) => d.category === ts.DiagnosticCategory.Error);
     if (parseError) {

@@ -76,11 +76,8 @@ export function objectKeyToString(key: estree.Node): string|undefined {
   return undefined;
 }
 
-export const CLOSURE_CONSTRUCTOR_MAP = {
-  'Boolean': 'boolean',
-  'Number': 'number',
-  'String': 'string',
-};
+export const CLOSURE_CONSTRUCTOR_MAP = new Map(
+    [['Boolean', 'boolean'], ['Number', 'number'], ['String', 'string']]);
 
 /**
  * AST expression -> Closure type.
@@ -97,7 +94,7 @@ export function closureType(
   } else if (node.type === 'Literal') {
     return typeof node.value;
   } else if (node.type === 'Identifier') {
-    return CLOSURE_CONSTRUCTOR_MAP[node.name] || node.name;
+    return CLOSURE_CONSTRUCTOR_MAP.get(node.name) || node.name;
   } else {
     throw new WarningCarryingException({
       code: 'no-closure-type',
@@ -111,8 +108,7 @@ export function closureType(
 }
 
 export function getAttachedComment(node: estree.Node): string|undefined {
-  const comments =
-      getLeadingComments(node) || getLeadingComments(node['key']) || [];
+  const comments = getLeadingComments(node) || [];
   return comments && comments[comments.length - 1];
 }
 

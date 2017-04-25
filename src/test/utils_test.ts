@@ -15,6 +15,8 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert, use} from 'chai';
+import {Url} from 'url';
+
 import {Deferred, parseUrl} from '../utils';
 
 import chaiAsPromised = require('chai-as-promised');
@@ -22,22 +24,21 @@ use(chaiAsPromised);
 
 suite('parseUrl', () => {
 
-  function testUrl(url: string, properties: {[s: string]: any}) {
+  function testUrl(url: string, properties: Partial<Url>) {
     const urlObject = parseUrl(url);
-    for (const key in properties) {
-      if (!properties.hasOwnProperty(key)) {
-        continue;
-      }
+    for (const strKey of Object.keys(properties)) {
+      const key = strKey as keyof Url;
       assert.equal(urlObject[key], properties[key], `${url} property ${key}`);
     }
   }
 
   test('parses urls that are absolute paths', () => {
     testUrl(
-        '/abs/path', {protocol: null, hostname: null, pathname: '/abs/path'});
+        '/abs/path',
+        {protocol: undefined, hostname: undefined, pathname: '/abs/path'});
     testUrl('/abs/path?query=string#hash', {
-      protocol: null,
-      hostname: null,
+      protocol: undefined,
+      hostname: undefined,
       pathname: '/abs/path',
       hash: '#hash',
       search: '?query=string',
@@ -53,7 +54,7 @@ suite('parseUrl', () => {
     testUrl('//host', {
       protocol: undefined,
       hostname: 'host',
-      pathname: null,
+      pathname: undefined,
     });
   });
 

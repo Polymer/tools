@@ -304,7 +304,8 @@ suite('ExpressionScanner', () => {
       const javascriptDocument =
           new JavaScriptParser().parse(contents, 'test.js');
       const literals: estree.Literal[] =
-          javascriptDocument.ast.body[0]['declarations'][0]['init']['elements'];
+          (javascriptDocument.ast as any)
+              .body[0]['declarations'][0]['init']['elements'];
 
       const parsedLiterals = literals.map(
           (l) =>

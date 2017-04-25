@@ -20,7 +20,7 @@ import {Analyzer} from '../../analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {Class, Element, ElementMixin, ScannedClass, ScannedFeature} from '../../model/model';
+import {Class, Element, ElementMixin, Method, ScannedClass, ScannedFeature} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
@@ -92,8 +92,9 @@ suite('Class', () => {
         if (m.return ) {
           method.return = m.return;
         }
-        if (m['inheritedFrom']) {
-          method.inheritedFrom = m['inheritedFrom'];
+        const maybeMethod = m as Partial<Method>;
+        if (maybeMethod.inheritedFrom) {
+          method.inheritedFrom = maybeMethod.inheritedFrom;
         }
         result.methods.push(method);
       }

@@ -139,7 +139,7 @@ export function analyzeProperties(
       prop.readOnly = true;
     }
 
-    prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP[prop.type!] || prop.type;
+    prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP.get(prop.type!) || prop.type;
 
     if (!prop.type) {
       prop.warnings.push({
