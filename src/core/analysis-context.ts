@@ -27,7 +27,7 @@ import {FunctionScanner} from '../javascript/function-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
-import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedFeature, ScannedImport, ScannedInlineDocument, Warning, WarningCarryingException} from '../model/model';
+import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedImport, ScannedInlineDocument, Warning, WarningCarryingException} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {BehaviorScanner} from '../polymer/behavior-scanner';
@@ -358,8 +358,8 @@ export class AnalysisContext {
   private async _scanDocument(
       document: ParsedDocument<any, any>,
       maybeAttachedComment?: string): Promise<ScannedDocument> {
-    const warnings: Warning[] = [];
-    const scannedFeatures = await this._getScannedFeatures(document);
+    const {features: scannedFeatures, warnings} =
+        await this._getScannedFeatures(document);
     // If there's an HTML comment that applies to this document then we assume
     // that it applies to the first feature.
     const firstScannedFeature = scannedFeatures[0];
@@ -381,13 +381,12 @@ export class AnalysisContext {
     return scannedDocument;
   }
 
-  private async _getScannedFeatures(document: ParsedDocument<any, any>):
-      Promise<ScannedFeature[]> {
+  private async _getScannedFeatures(document: ParsedDocument<any, any>) {
     const scanners = this._scanners.get(document.type);
     if (scanners) {
       return scan(document, scanners);
     }
-    return [];
+    return {features: [], warnings: []};
   }
 
   private async _scanInlineDocuments(containingDocument: ScannedDocument) {

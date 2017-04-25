@@ -32,8 +32,7 @@ export class MixinVisitor implements Visitor {
   private _currentMixin: ScannedPolymerElementMixin|null = null;
   private _currentMixinNode: estree.Node|null = null;
   private _currentMixinFunction: estree.BaseFunction|null = null;
-  // TODO(rictic): do something with these warnings.
-  private _warnings: Warning[] = [];
+  readonly warnings: Warning[] = [];
 
   constructor(document: JavaScriptDocument) {
     this._document = document;
@@ -64,7 +63,7 @@ export class MixinVisitor implements Visitor {
           privacy: getOrInferPrivacy(namespacedName, parentJsDocs, false),
           jsdoc: parentJsDocs,
           mixins: jsdoc.getMixins(
-              this._document, node, parentJsDocs, this._warnings),
+              this._document, node, parentJsDocs, this.warnings),
         });
         this._currentMixinNode = node;
         this.mixins.push(this._currentMixin);
@@ -97,7 +96,7 @@ export class MixinVisitor implements Visitor {
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
           jsdoc: nodeJsDocs,
           mixins:
-              jsdoc.getMixins(this._document, node, nodeJsDocs, this._warnings),
+              jsdoc.getMixins(this._document, node, nodeJsDocs, this.warnings),
         });
         this._currentMixinNode = node;
         this.mixins.push(this._currentMixin);
@@ -139,7 +138,7 @@ export class MixinVisitor implements Visitor {
             privacy: getOrInferPrivacy(namespacedName, docs, false),
             jsdoc: docs,
             mixins: jsdoc.getMixins(
-                this._document, declaration, docs, this._warnings)
+                this._document, declaration, docs, this.warnings)
           });
         }
       }

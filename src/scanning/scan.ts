@@ -12,15 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ScannedFeature} from '../model/model';
+import {ImmutableArray} from '../model/immutable';
+import {ScannedFeature, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 import {Scanner} from './scanner';
 
 export async function
 scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
-    document: PDoc, scanners: Scanner<PDoc, AstNode, Visitor>[]):
-    Promise<ScannedFeature[]> {
+    document: PDoc, scanners: Scanner<PDoc, AstNode, Visitor>[]) {
   // Scanners register a visitor to run via the `visit` callback passed to
   // `scan()`. We run these visitors in a batch, then pass control back
   // to the `scan()` methods by resolving a single Promise return for
@@ -82,13 +82,22 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
   const scannerPromises = scanners.map((f) => f.scan(document, visit));
 
   // This waits for all `scan()` calls to finish
-  const nestedFeatures = await Promise.all(scannerPromises);
+  const nestedResults = await Promise.all(scannerPromises);
 
   if (visitError) {
     throw visitError;
   }
 
-  return sortFeatures(nestedFeatures);
+  const nestedFeatures = [];
+  const warnings: Warning[] = [];
+  for (const {features, warnings: w} of nestedResults) {
+    nestedFeatures.push(features);
+    if (w !== undefined) {
+      warnings.push(...w);
+    }
+  }
+
+  return {features: sortFeatures(nestedFeatures), warnings};
 }
 
 function compareFeaturesBySourceLocation(
@@ -119,8 +128,12 @@ function compareFeaturesBySourceLocation(
   return position1.column - position2.column;
 }
 
-function sortFeatures(unorderedFeatures: ScannedFeature[][]): ScannedFeature[] {
-  const allFeatures: ScannedFeature[] =
-      Array.prototype.concat.apply([], unorderedFeatures);
+function sortFeatures(
+    unorderedFeatures: ImmutableArray<ImmutableArray<ScannedFeature>>):
+    ScannedFeature[] {
+  const allFeatures = [];
+  for (const subArray of unorderedFeatures) {
+    allFeatures.push(...subArray);
+  }
   return allFeatures.sort(compareFeaturesBySourceLocation);
 }

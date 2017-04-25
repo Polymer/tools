@@ -21,7 +21,6 @@ import {PolymerElementMixin} from '../../index';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedFeature} from '../../model/model';
 import {ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
@@ -39,7 +38,7 @@ suite('Polymer2MixinScanner', () => {
     const scanner = new ClassScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
-    const features: ScannedFeature[] = await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
     return <ScannedPolymerElementMixin[]>features.filter(
         (e) => e instanceof ScannedPolymerElementMixin);
   };

@@ -33,8 +33,7 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
 
   async scan(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<ScannedElementReference[]> {
+      visit: (visitor: HtmlVisitor) => Promise<void>) {
     const elements: ScannedElementReference[] = [];
 
     const visitor = (node: ASTNode) => {
@@ -73,7 +72,7 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
 
     await visit(visitor);
 
-    return elements;
+    return {features: elements};
   }
 }
 

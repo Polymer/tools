@@ -40,7 +40,7 @@ suite('PseudoElementScanner', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
       assert.equal(features[0].tagName, 'x-foo');
       assert(features[0].pseudo);

@@ -47,7 +47,7 @@ suite('DomModuleScanner', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const domModules = await scanner.scan(document, visit);
+      const {features: domModules} = await scanner.scan(document, visit);
       assert.equal(domModules.length, 1);
       assert.deepEqual(
           domModules[0].localIds.map((lid) => lid.name), ['foo', 'bar']);
@@ -69,7 +69,7 @@ suite('DomModuleScanner', () => {
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
       const underliner = CodeUnderliner.withMapping('test.html', contents);
 
-      const domModules = await scanner.scan(document, visit);
+      const {features: domModules} = await scanner.scan(document, visit);
       assert.equal(domModules.length, 1);
       assert.deepEqual(
           await underliner.underline(

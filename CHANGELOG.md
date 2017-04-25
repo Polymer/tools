@@ -14,16 +14,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Add a Class feature kind for describing all kinds of classes. This is a superclass of the existing elements and mixins.
-
-## [2.0.0-alpha.38] - 2017-04-13
-
-* [minor breaking change] Revert of a change from alpha.37. The experimental `_fork` method on Analyzer returns an Analyzer again, not a Promise of an Analyzer.
 * Mix mixins into mixins. A PolymerElementMixin now has all of the members it inherits other mixins it mixes.
 * Improved our modeling of inheritance:
   * overriding inherited members now works correctly
   * overriding a private member produces a Warning
 * Documented many fields as being readonly/immutable. This isn't complete, in fact all features and scanned features should be treated as immutable once they're created and initialized.
 * Treat behaviors more like mixins, and treat using behaviors more like inheriting from mixins. This means that a Behavior object knows about all of the properties, methods, etc that it has inherited from other Behaviors that it builds upon.
+* Emit more warnings when recognizing mixins, elements, and classes.
+
+## [2.0.0-alpha.38] - 2017-04-13
+
+* [minor breaking change] Revert of a change from alpha.37. The experimental `_fork` method on Analyzer returns an Analyzer again, not a Promise of an Analyzer.
 
 ## [2.0.0-alpha.37] - 2017-04-12
 

@@ -24,7 +24,7 @@ export class TypeScriptImportScanner implements
     Scanner<ParsedTypeScriptDocument, Node, Visitor> {
   async scan(
       document: ParsedTypeScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedImport[]> {
+      visit: (visitor: Visitor) => Promise<void>) {
     const imports: ScannedImport[] = [];
     class ImportVisitor extends Visitor {
       visitImportDeclaration(node: ImportDeclaration): void { /* */
@@ -46,6 +46,6 @@ export class TypeScriptImportScanner implements
     }
     const visitor = new ImportVisitor();
     await visit(visitor);
-    return imports;
+    return {features: imports};
   }
 }

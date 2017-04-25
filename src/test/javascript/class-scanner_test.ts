@@ -20,7 +20,7 @@ import {Analyzer} from '../../analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {Class, Element, ElementMixin, Method, ScannedClass, ScannedFeature} from '../../model/model';
+import {Class, Element, ElementMixin, Method, ScannedClass} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
@@ -38,11 +38,12 @@ suite('Class', () => {
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    return await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
+    return features;
   };
 
   async function getScannedClasses(filename: string): Promise<ScannedClass[]> {
-    const features: ScannedFeature[] = await getScannedFeatures(filename);
+    const features = await getScannedFeatures(filename);
     return features.filter((e) => e instanceof ScannedClass) as ScannedClass[];
   };
 

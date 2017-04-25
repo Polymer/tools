@@ -39,7 +39,7 @@ suite('BehaviorScanner', () => {
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    const features = await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
     behaviors = new Map();
     behaviorsList =
         <ScannedBehavior[]>features.filter((e) => e instanceof ScannedBehavior);

@@ -20,7 +20,6 @@ import {Visitor} from '../../javascript/estree-visitor';
 import {ScannedFunction} from '../../javascript/function';
 import {FunctionScanner} from '../../javascript/function-scanner';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedFeature} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 import {CodeUnderliner} from '../test-utils';
@@ -37,7 +36,7 @@ suite('FunctionScanner', () => {
     const scanner = new FunctionScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
-    const features: ScannedFeature[] = await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
     return <ScannedFunction[]>features.filter(
         (e) => e instanceof ScannedFunction);
   };

@@ -20,6 +20,7 @@ import {getAttachedComment, isFunctionType, objectKeyToString} from '../javascri
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {Warning} from '../model/model';
 import {getOrInferPrivacy} from '../polymer/js-utils';
 
 import {ScannedFunction} from './function';
@@ -27,16 +28,17 @@ import {ScannedFunction} from './function';
 export class FunctionScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedFunction[]> {
+      visit: (visitor: Visitor) => Promise<void>) {
     const visitor = new FunctionVisitor(document);
     await visit(visitor);
-    return Array.from(visitor.functions);
+    return {features: Array.from(visitor.functions)};
   }
 }
 
 class FunctionVisitor implements Visitor {
   functions = new Set<ScannedFunction>();
   document: JavaScriptDocument;
+  warnings: Warning[] = [];
 
   constructor(document: JavaScriptDocument) {
     this.document = document;

@@ -50,8 +50,7 @@ export class HtmlImportScanner implements HtmlScanner {
 
   async scan(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<ScannedImport[]> {
+      visit: (visitor: HtmlVisitor) => Promise<void>) {
     const imports: ScannedImport[] = [];
 
     const type = 'html-import';
@@ -83,6 +82,6 @@ export class HtmlImportScanner implements HtmlScanner {
         }
       }
     }
-    return imports;
+    return {features: imports};
   }
 }

@@ -39,7 +39,7 @@ suite('Polymer2ElementScanner', () => {
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    const features = await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
     return features.filter(
         (e) => e instanceof ScannedPolymerElement) as ScannedPolymerElement[];
   };

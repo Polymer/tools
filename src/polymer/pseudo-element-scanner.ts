@@ -32,8 +32,7 @@ import {ScannedPolymerElement} from './polymer-element';
 export class PseudoElementScanner implements HtmlScanner {
   async scan(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<ScannedPolymerElement[]> {
+      visit: (visitor: HtmlVisitor) => Promise<void>) {
     const elements: ScannedPolymerElement[] = [];
 
     await visit((node: ASTNode) => {
@@ -71,6 +70,6 @@ export class PseudoElementScanner implements HtmlScanner {
         }
       }
     });
-    return elements;
+    return {features: elements};
   }
 }

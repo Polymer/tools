@@ -67,9 +67,8 @@ export interface ScannedAttribute extends ScannedFeature {
  */
 export class ClassScanner implements JavaScriptScanner {
   async scan(
-      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<Array<ScannedPolymerElement|ScannedClass|
-                    ScannedPolymerElementMixin>> {
+      document: JavaScriptDocument,
+      visit: (visitor: Visitor) => Promise<void>) {
     const classFinder = new ClassFinder(document);
     const mixinFinder = new MixinVisitor(document);
     const elementDefinitionFinder =
@@ -154,13 +153,14 @@ export class ClassScanner implements JavaScriptScanner {
       scannedFeatures.push(mixin);
     }
 
-    // TODO(rictic): gather up the warnings from these visitors and return them
-    // too.
-    // const warnings =
-    // elementDefinitionFinder.warnings.concat(
-    // mixinFinder.warnings).concat(classFinder.warnings);
-
-    return scannedFeatures;
+    return {
+      features: scannedFeatures,
+      warnings: [
+        ...elementDefinitionFinder.warnings,
+        ...classFinder.warnings,
+        ...mixinFinder.warnings,
+      ]
+    };
   }
 
   private _makeElementFeature(
@@ -321,6 +321,7 @@ interface CustomElementDefinition {
  */
 class ClassFinder implements Visitor {
   readonly classes: ScannedClass[] = [];
+  readonly warnings: Warning[] = [];
   private readonly alreadyMatched = new Set<estree.ClassExpression>();
   private readonly _document: JavaScriptDocument;
 

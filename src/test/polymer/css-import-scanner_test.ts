@@ -47,7 +47,7 @@ suite('CssImportScanner', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, 'polymer.css');
@@ -65,7 +65,7 @@ suite('CssImportScanner', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, '/aybabtu/polymer.css');

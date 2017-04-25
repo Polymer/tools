@@ -584,8 +584,8 @@ suite('Analyzer', () => {
         </head></html>`;
       const document = new HtmlParser().parse(contents, 'test.html');
       const context = await getContext(analyzer);
-      const features =
-          (await context['_getScannedFeatures'](document)) as ScannedImport[];
+      const features = ((await context['_getScannedFeatures'](document))
+                            .features as ScannedImport[]);
       assert.deepEqual(
           features.map((e) => e.type),
           ['html-import', 'html-script', 'html-style']);
@@ -606,8 +606,9 @@ suite('Analyzer', () => {
       const document = new HtmlParser().parse(contents, 'test.html');
       const context = await getContext(analyzer);
       const features =
-          <ScannedImport[]>(await context['_getScannedFeatures'](document))
-              .filter((e) => e instanceof ScannedImport);
+          (await context['_getScannedFeatures'](document))
+              .features.filter(
+                  (e) => e instanceof ScannedImport) as ScannedImport[];
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, 'bar.css');
@@ -620,8 +621,8 @@ suite('Analyzer', () => {
         </head></html>`;
       const context = await getContext(analyzer);
       const document = new HtmlParser().parse(contents, 'test.html');
-      const features = <ScannedInlineDocument[]>(
-          await context['_getScannedFeatures'](document));
+      const features = ((await context['_getScannedFeatures'](document))
+                            .features) as ScannedInlineDocument[];
 
       assert.equal(features.length, 2);
       assert.instanceOf(features[0], ScannedInlineDocument);

@@ -23,7 +23,7 @@ import {ScannedImport} from '../model/model';
 export class JavaScriptImportScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedImport[]> {
+      visit: (visitor: Visitor) => Promise<void>) {
     const imports: ScannedImport[] = [];
 
     await visit({
@@ -43,7 +43,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             false));
       }
     });
-    return imports;
+    return {features: imports, warnings: []};
   }
 }
 

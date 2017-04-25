@@ -33,7 +33,7 @@ suite('TypeScriptImportScanner', () => {
       const parser = new TypeScriptPreparser();
       const document = parser.parse(source, 'test.ts');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 0);
     });
 
@@ -46,7 +46,7 @@ suite('TypeScriptImportScanner', () => {
       const parser = new TypeScriptPreparser();
       const document = parser.parse(source, 'test.ts');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.deepEqual(features.map((f) => [f.type, f.url]), [
         ['js-import', 'x.ts'],
         ['js-import', '/y.ts'],

@@ -41,7 +41,7 @@ suite('HtmlElementReferenceScanner', () => {
       const document = new HtmlParser().parse(contents, 'test-document.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
 
       assert.deepEqual(
           features.map((f) => f.tagName),
@@ -78,7 +78,7 @@ suite('HtmlCustomElementReferenceScanner', () => {
       const document = new HtmlParser().parse(contents, 'test-document.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
 
       assert.deepEqual(
           features.map((f) => f.tagName), ['x-foo', 'x-bar', 'x-baz']);

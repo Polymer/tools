@@ -20,21 +20,26 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
+import {Warning} from '../model/model';
 import {ScannedNamespace} from './namespace';
 
 export class NamespaceScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedNamespace[]> {
+      visit: (visitor: Visitor) => Promise<void>) {
     const visitor = new NamespaceVisitor(document);
     await visit(visitor);
-    return Array.from(visitor.namespaces);
+    return {
+      features: Array.from(visitor.namespaces),
+      warnings: visitor.warnings
+    };
   }
 }
 
 class NamespaceVisitor implements Visitor {
   namespaces = new Set<ScannedNamespace>();
   document: JavaScriptDocument;
+  warnings: Warning[] = [];
 
   constructor(document: JavaScriptDocument) {
     this.document = document;

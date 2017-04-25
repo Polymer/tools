@@ -13,7 +13,8 @@
  */
 
 import {Analyzer} from '../analyzer';
-import {ScannedFeature} from '../model/model';
+import {ImmutableArray} from '../model/immutable';
+import {ScannedFeature, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 /**
@@ -25,8 +26,10 @@ import {ParsedDocument} from '../parser/document';
  * @template V the visitor type
  */
 export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
-  scan(document: D, visit: (visitor: V) => Promise<void>):
-      Promise<ScannedFeature[]>;
+  scan(document: D, visit: (visitor: V) => Promise<void>): Promise<{
+    features: ImmutableArray<ScannedFeature>,
+    warnings?: ImmutableArray<Warning>
+  }>;
 }
 
 export interface ScannerConstructor {

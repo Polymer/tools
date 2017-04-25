@@ -20,7 +20,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Severity} from '../model/model';
+import {Severity, Warning} from '../model/model';
 
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
@@ -44,17 +44,20 @@ const templatizer = 'Polymer.Templatizer';
 export class BehaviorScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
-      visit: (visitor: Visitor) => Promise<void>): Promise<ScannedBehavior[]> {
+      visit: (visitor: Visitor) => Promise<void>) {
     const visitor = new BehaviorVisitor(document);
     await visit(visitor);
-    return Array.from(visitor.behaviors);
+    return {
+      features: Array.from(visitor.behaviors),
+      warnings: visitor.warnings
+    };
   }
 }
 
 class BehaviorVisitor implements Visitor {
   /** The behaviors we've found. */
   behaviors = new Set<ScannedBehavior>();
-
+  warnings: Warning[] = [];
   currentBehavior: ScannedBehavior|null = null;
   propertyHandlers: PropertyHandlers|null = null;
 

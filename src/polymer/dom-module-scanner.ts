@@ -112,8 +112,7 @@ export class DomModule implements Feature {
 export class DomModuleScanner implements HtmlScanner {
   async scan(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<ScannedDomModule[]> {
+      visit: (visitor: HtmlVisitor) => Promise<void>) {
     const domModules: ScannedDomModule[] = [];
 
     await visit((node) => {
@@ -157,6 +156,6 @@ export class DomModuleScanner implements HtmlScanner {
             databindings));
       }
     });
-    return domModules;
+    return {features: domModules};
   }
 }

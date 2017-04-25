@@ -14,6 +14,7 @@
 
 import {assert} from 'chai';
 
+import {Warning} from '../../index';
 import {ScannedFeature} from '../../model/feature';
 import {ParsedDocument} from '../../parser/document';
 import {scan} from '../../scanning/scan';
@@ -27,7 +28,7 @@ suite('scan()', () => {
     const scanner = new ScannerStub(<any>[feature]);
     const document = makeTestDocument({});
 
-    const features = await scan(document, [scanner]);
+    const {features} = await scan(document, [scanner]);
     assert.deepEqual(features, [feature]);
     assert.deepEqual(scanner.calls, [{document}]);
     assert.deepEqual(features, [feature]);
@@ -51,7 +52,7 @@ suite('scan()', () => {
           }, 0);
         });
 
-        return [`a feature` as any];
+        return {features: [`a feature` as any], warnings: []};
       },
     };
     const visitedVisitors: any[] = [];
@@ -61,7 +62,7 @@ suite('scan()', () => {
       }
     });
 
-    const features = await scan(document, [scanner]);
+    const {features} = await scan(document, [scanner]);
     assert.deepEqual([`a feature` as any], features);
     assert.deepEqual(visitedVisitors, [visitor1, visitor2, visitor3]);
   });
@@ -115,13 +116,14 @@ function makeTestDocument(options: TestDocumentMakerOptions):
 interface TestScannerMakerOptions {
   scan?:
       (document: ParsedDocument<string, any>,
-       visit: (visitor: any) => Promise<void>) => Promise<any[]>;
+       visit: (visitor: any) => Promise<void>) =>
+          Promise<{features: any[], warnings: Warning[]}>;
 }
 function makeTestScanner(options: TestScannerMakerOptions):
     Scanner<ParsedDocument<string, any>, any, any> {
   const simpleScan = (async(_doc: any, visit: () => Promise<any>) => {
     await visit();
-    return ['test-feature'];
+    return {features: ['test-feature'], warnings: []};
   });
   return {scan: options.scan || simpleScan};
 }
@@ -140,6 +142,6 @@ class ScannerStub implements Scanner<any, any, any> {
 
   async scan(document: ParsedDocument<any, any>, _visit: any) {
     this.calls.push({document});
-    return this.features;
+    return {features: this.features, warnings: []};
   }
 }

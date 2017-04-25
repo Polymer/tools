@@ -21,7 +21,7 @@ import {getAttachedComment, getEventComments, isFunctionType, objectKeyToString}
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Severity, WarningCarryingException} from '../model/model';
+import {Severity, Warning, WarningCarryingException} from '../model/model';
 
 import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
@@ -32,11 +32,11 @@ import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 export class PolymerElementScanner implements JavaScriptScanner {
   async scan(
-      document: JavaScriptDocument, visit: (visitor: Visitor) => Promise<void>):
-      Promise<ScannedPolymerElement[]> {
+      document: JavaScriptDocument,
+      visit: (visitor: Visitor) => Promise<void>) {
     const visitor = new ElementVisitor(document);
     await visit(visitor);
-    return visitor.features;
+    return {features: visitor.features, warnings: visitor.warnings};
   }
 }
 
@@ -49,6 +49,7 @@ class ElementVisitor implements Visitor {
   element: ScannedPolymerElement|null = null;
   propertyHandlers: PropertyHandlers|null = null;
   classDetected: boolean = false;
+  warnings: Warning[] = [];
 
   document: JavaScriptDocument;
   constructor(document: JavaScriptDocument) {

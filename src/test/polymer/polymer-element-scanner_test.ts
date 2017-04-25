@@ -104,7 +104,7 @@ suite('PolymerElementScanner', () => {
           new JavaScriptParser().parse(contents, 'test-document.html');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
 
       assert.deepEqual(features.map((f) => f.tagName), ['x-foo', 'x-bar']);
 
@@ -242,7 +242,7 @@ suite('PolymerElementScanner', () => {
           new JavaScriptParser().parse(contents, 'test-document.html');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.deepEqual(
           features.map((f) => f.tagName), ['my-other-element', 'my-element']);
       assert.deepEqual(
@@ -286,7 +286,7 @@ suite('PolymerElementScanner', () => {
           new JavaScriptParser().parse(contents, 'test-document.html');
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.deepEqual(features.length, 1);
       const element = features[0]!;
       assert.deepEqual(

@@ -31,8 +31,7 @@ const isCssImportNode = p.AND(
 export class CssImportScanner implements HtmlScanner {
   async scan(
       document: ParsedHtmlDocument,
-      visit: (visitor: HtmlVisitor) => Promise<void>):
-      Promise<ScannedImport[]> {
+      visit: (visitor: HtmlVisitor) => Promise<void>) {
     const imports: ScannedImport[] = [];
 
     await visit((node) => {
@@ -48,6 +47,6 @@ export class CssImportScanner implements HtmlScanner {
             false));
       }
     });
-    return imports;
+    return {features: imports, warnings: []};
   }
 }

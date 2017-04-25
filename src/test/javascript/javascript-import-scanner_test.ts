@@ -34,7 +34,7 @@ suite('JavaScriptImportScanner', () => {
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    const features = await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
     assert.equal(features.length, 1);
     assert.equal(features[0].type, 'js-import');
     assert.equal(features[0].url, '/static/javascript/submodule.js');
@@ -51,7 +51,7 @@ suite('JavaScriptImportScanner', () => {
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));
 
-    const features = await scanner.scan(document, visit);
+    const {features} = await scanner.scan(document, visit);
     assert.equal(features.length, 0);
   });
 

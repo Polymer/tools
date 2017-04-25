@@ -36,7 +36,7 @@ suite('HtmlStyleScanner', () => {
       const document = new HtmlParser().parse(contents, 'test-document.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 2);
       assert.instanceOf(features[0], ScannedImport);
       const feature0 = <ScannedImport>features[0];
@@ -56,7 +56,7 @@ suite('HtmlStyleScanner', () => {
       const document = new HtmlParser().parse(contents, 'test-document.html');
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const features = await scanner.scan(document, visit);
+      const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
       assert.instanceOf(features[0], ScannedImport);
       const feature0 = <ScannedImport>features[0];
