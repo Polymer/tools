@@ -404,7 +404,7 @@ suite('BuildBundler', () => {
       sources: ['index.html', 'shell.html', 'source-dir/my-app.html']
     };
 
-    test('excludes: a file', async() => {
+    test('excludes: html file urls listed are not inlined', async() => {
       await setupTest(
           projectOptions,
           {excludes: ['bower_components/loads-external-dependencies.html']});
@@ -416,7 +416,19 @@ suite('BuildBundler', () => {
           '<link rel="import" href="bower_components/loads-external-dependencies.html">');
     });
 
-    test('excludes: nothing', async() => {
+    // TODO(usergenic): Uncomment this test after bundler's next release, which
+    // includes the fix for folder references in excludes.
+    test.skip('excludes: html files in folders listed are not inlined', async() => {
+      await setupTest(projectOptions, {excludes: ['bower_components/']});
+      assert.isOk(
+          getFile('bower_components/loads-external-dependencies.html'),
+          'Excluded import is passed through the bundler');
+      assert.include(
+          getFile('shell.html'),
+          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+    });
+
+    test('excludes: nothing is excluded when no excludes are given', async() => {
       await setupTest(projectOptions, {excludes: []});
       assert.isNotOk(
           getFile('bower_components/loads-external-dependencies.html'),
@@ -430,41 +442,41 @@ suite('BuildBundler', () => {
           'Inlined import content');
     });
 
-    test('inlineCss: false', async() => {
+    test('inlineCss: false, does not inline external stylesheets', async() => {
       await setupTest(projectOptions, {inlineCss: false});
       assert.notInclude(getFile('shell.html'), '.test-project-style');
     });
 
-    test('inlineCss: true', async() => {
+    test('inlineCss: true, inlines external stylesheets', async() => {
       await setupTest(projectOptions, {inlineCss: true});
       assert.include(getFile('shell.html'), '.test-project-style');
     });
 
-    test('inlineScripts: false', async() => {
+    test('inlineScripts: false, does not inline external scripts', async() => {
       await setupTest(projectOptions, {inlineScripts: false});
       assert.notInclude(getFile('shell.html'), 'console.log(\'shell\')');
     });
 
-    test('inlineScripts: true', async() => {
+    test('inlineScripts: true, inlines external scripts', async() => {
       await setupTest(projectOptions, {inlineScripts: true});
       assert.include(getFile('shell.html'), 'console.log(\'shell\')');
     });
 
-    test('stripComments: false', async() => {
+    test('stripComments: false, does not strip html comments', async() => {
       await setupTest(projectOptions, {stripComments: false});
       assert.include(
           getFile('shell.html'),
           '<!-- remote dependencies should be ignored during build -->');
     });
 
-    test('stripComments: true', async() => {
+    test('stripComments: true, strips html comments', async() => {
       await setupTest(projectOptions, {stripComments: true});
       assert.notInclude(
           getFile('shell.html'),
           '<!-- remote dependencies should be ignored during build -->');
     });
 
-    test('strategy: fn()', async() => {
+    test('strategy: fn(), applies bundle strategy function', async() => {
       await setupTest(projectOptions, {
         // Custom strategy creates a separate bundle for everything in the
         // `bower_components` folder.
@@ -485,7 +497,7 @@ suite('BuildBundler', () => {
       assert.include(getFile('shared_bundle_1.html'), '<div id="dep"></div>');
     });
 
-    test('urlMapper: fn()', async() => {
+    test('urlMapper: fn(), applies bundle url mapper function', async() => {
       await setupTest(projectOptions, {
         urlMapper: (bundles) => {
           const map = new Map<string, Bundle>();
