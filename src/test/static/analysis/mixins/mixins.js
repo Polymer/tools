@@ -1,5 +1,6 @@
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  */
 const TestMixin = function(superclass) {
@@ -16,7 +17,8 @@ const TestMixin = function(superclass) {
 }
 
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  */
 const _ProtectedMixin = function(superclass) {
@@ -34,7 +36,8 @@ const _ProtectedMixin = function(superclass) {
 
 
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  * @private
  */
@@ -49,8 +52,9 @@ const InternalMixin = function(superclass) {
 }
 
 /**
- * @polymerMixin
- * @mixes Polymer.InternalMixin
+ * @polymer
+ * @mixinFunction
+ * @appliesMixin Polymer.InternalMixin
  * @memberof Polymer
  */
 const MetaMixin = function(superclass) {
@@ -64,4 +68,3 @@ const MetaMixin = function(superclass) {
     }
   }
 }
-

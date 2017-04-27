@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as doctrine from 'doctrine';
 import * as estree from 'estree';
 
 import * as astValue from '../javascript/ast-value';
@@ -51,7 +52,8 @@ export function analyzeProperties(
     prop.type = undefined;
     const typeTag = jsdoc.getTag(prop.jsdoc, 'type');
     if (typeTag) {
-      prop.type = typeTag.type || undefined;
+      prop.type =
+          typeTag.type ? doctrine.type.stringify(typeTag.type) : undefined;
     }
     prop.published = true;
 

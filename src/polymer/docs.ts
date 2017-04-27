@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as doctrine from 'doctrine';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedEvent} from '../model/model';
 
@@ -58,13 +59,11 @@ export function annotate(
 export function annotateElementHeader(scannedElement: ScannedPolymerElement) {
   scannedElement.demos = [];
   if (scannedElement.jsdoc && scannedElement.jsdoc.tags) {
-    scannedElement.jsdoc.tags.forEach(function(tag) {
-      switch (tag.tag) {
+    scannedElement.jsdoc.tags.forEach((tag) => {
+      switch (tag.title) {
         case 'demo':
-          scannedElement.demos.push({
-            desc: tag.description || 'demo',
-            path: tag.name || 'demo/index.html'
-          });
+          scannedElement.demos.push(
+              {desc: 'demo', path: tag.description || 'demo/index.html'});
           break;
       }
     });
@@ -95,9 +94,9 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
   const tags = (annotation && annotation.tags || []);
   // process @params
   scannedEvent.params.push(
-      ...tags.filter((tag) => tag.tag === 'param').map((param) => {
+      ...tags.filter((tag) => tag.title === 'param').map((param) => {
         return {
-          type: param.type || 'N/A',
+          type: param.type ? doctrine.type.stringify(param.type) : 'N/A',
           desc: param.description || '',
           name: param.name || 'N/A'
         };
@@ -118,11 +117,14 @@ function annotateProperty(feature: ScannedPolymerProperty):
   annotate(feature);
 
   // @type JSDoc wins
-  feature.type = jsdoc.getTag(feature.jsdoc, 'type', 'type') || feature.type;
+  const typeTag = jsdoc.getTag(feature.jsdoc, 'type');
+  if (typeTag !== undefined && typeTag.type != null) {
+    feature.type = doctrine.type.stringify(typeTag.type);
+  }
 
   // @default JSDoc wins
   const defaultTag = jsdoc.getTag(feature.jsdoc, 'default');
-  if (defaultTag !== null) {
+  if (defaultTag !== undefined) {
     const newDefault = (defaultTag.name || '') + (defaultTag.description || '');
     if (newDefault !== '') {
       feature.default = newDefault;

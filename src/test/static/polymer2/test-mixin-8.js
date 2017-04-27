@@ -1,5 +1,6 @@
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  */
 Polymer.TestMixin = (superclass) => class extends superclass {

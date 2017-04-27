@@ -379,13 +379,12 @@ export class Document implements Feature, Queryable {
         let subResult = localFeature.toString();
         if (subResult === '[object Object]') {
           subResult = `<${
-                          localFeature.constructor.name
-                        } kinds="${
-                                   Array.from(localFeature.kinds).join(', ')
-                                 }" ids="${
-                                           Array.from(localFeature.identifiers)
-                                               .join(',')
-                                         }">}`;
+          localFeature.constructor.name
+          } kinds="${
+          Array.from(localFeature.kinds).join(', ')
+          }" ids="${
+          Array.from(localFeature.identifiers).join(',')
+          }">}`;
         }
         result.push(`  ${subResult}`);
       }

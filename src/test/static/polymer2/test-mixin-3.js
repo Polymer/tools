@@ -1,5 +1,6 @@
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  */
 const TestMixin = function(superclass) {

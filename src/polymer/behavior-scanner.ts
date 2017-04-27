@@ -104,9 +104,8 @@ class BehaviorVisitor implements Visitor {
         this.currentBehavior.warnings.push({
           code: 'cant-determine-name',
           message:
-              `Unable to determine property name from expression of type ${
-                                                                           node.type
-                                                                         }`,
+              `Unable to determine property name from expression of type ` +
+              `${node.type}`,
           severity: Severity.WARNING,
           sourceRange: this.document.sourceRangeForNode(node)!
         });
@@ -176,8 +175,8 @@ class BehaviorVisitor implements Visitor {
         declarationPropertyHandlers(behavior, this.document);
 
     docs.annotateElementHeader(behavior);
-    behavior.className =
-        jsdoc.getTag(behavior.jsdoc, 'polymerBehavior', 'name') ||
+    const behaviorTag = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior');
+    behavior.className = behaviorTag && behaviorTag.name ||
         getNamespacedIdentifier(symbol, behavior.jsdoc);
     if (!behavior.className) {
       throw new Error(
@@ -213,6 +212,7 @@ class BehaviorVisitor implements Visitor {
       if (newBehavior.className !== behavior.className) {
         continue;
       }
+      // TODO(justinfagnani): what?
       // merge desc, longest desc wins
       if (newBehavior.description) {
         if (behavior.description) {

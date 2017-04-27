@@ -45,7 +45,7 @@ export class MixinVisitor implements Visitor {
     }
     const parentComments = esutil.getAttachedComment(parent) || '';
     const parentJsDocs = jsdoc.parseJsdoc(parentComments);
-    if (this._hasPolymerMixinDocTag(parentJsDocs)) {
+    if (hasMixinFunctionDocTag(parentJsDocs)) {
       const name = getIdentifierName(node.left);
       const namespacedName =
           name ? getNamespacedIdentifier(name, parentJsDocs) : undefined;
@@ -62,7 +62,7 @@ export class MixinVisitor implements Visitor {
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, parentJsDocs, false),
           jsdoc: parentJsDocs,
-          mixins: jsdoc.getMixins(
+          mixins: jsdoc.getMixinApplications(
               this._document, node, parentJsDocs, this.warnings),
         });
         this._currentMixinNode = node;
@@ -77,7 +77,7 @@ export class MixinVisitor implements Visitor {
       node: estree.FunctionDeclaration, _parent: estree.Node) {
     const nodeComments = esutil.getAttachedComment(node) || '';
     const nodeJsDocs = jsdoc.parseJsdoc(nodeComments);
-    if (this._hasPolymerMixinDocTag(nodeJsDocs)) {
+    if (hasMixinFunctionDocTag(nodeJsDocs)) {
       const name = node.id.name;
       const namespacedName =
           name ? getNamespacedIdentifier(name, nodeJsDocs) : undefined;
@@ -95,8 +95,8 @@ export class MixinVisitor implements Visitor {
           summary: (summaryTag && summaryTag.description) || '',
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs, false),
           jsdoc: nodeJsDocs,
-          mixins:
-              jsdoc.getMixins(this._document, node, nodeJsDocs, this.warnings),
+          mixins: jsdoc.getMixinApplications(
+              this._document, node, nodeJsDocs, this.warnings)
         });
         this._currentMixinNode = node;
         this.mixins.push(this._currentMixin);
@@ -119,7 +119,7 @@ export class MixinVisitor implements Visitor {
       node: estree.VariableDeclaration, _parent: estree.Node) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
-    const isMixin = this._hasPolymerMixinDocTag(docs);
+    const isMixin = hasMixinFunctionDocTag(docs);
     const sourceRange = this._document.sourceRangeForNode(node)!;
     const summaryTag = jsdoc.getTag(docs, 'summary');
     if (isMixin) {
@@ -137,7 +137,7 @@ export class MixinVisitor implements Visitor {
             summary: (summaryTag && summaryTag.description) || '',
             privacy: getOrInferPrivacy(namespacedName, docs, false),
             jsdoc: docs,
-            mixins: jsdoc.getMixins(
+            mixins: jsdoc.getMixinApplications(
                 this._document, declaration, docs, this.warnings)
           });
         }
@@ -186,7 +186,7 @@ export class MixinVisitor implements Visitor {
   enterClassDeclaration(node: estree.ClassDeclaration, _parent: estree.Node) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
-    const isMixinClass = this._hasPolymerMixinClassDocTag(docs);
+    const isMixinClass = hasMixinClassDocTag(docs);
     if (isMixinClass) {
       this._handleClass(node);
     }
@@ -207,16 +207,17 @@ export class MixinVisitor implements Visitor {
     // mixin.sourceRange = this._document.sourceRangeForNode(node);
     return mixin;
   }
+}
 
-  private _hasPolymerMixinDocTag(docs: jsdoc.Annotation) {
-    const elementTags = docs.tags &&
-        docs.tags.filter((t: jsdoc.Tag) => t.tag === 'polymerMixin');
-    return elementTags && elementTags.length >= 1;
-  }
+export function hasMixinFunctionDocTag(docs: jsdoc.Annotation) {
+  // TODO(justinfagnani): remove polymerMixin support
+  return (jsdoc.hasTag(docs, 'polymer') &&
+          jsdoc.hasTag(docs, 'mixinFunction')) ||
+      jsdoc.hasTag(docs, 'polymerMixin');
+}
 
-  private _hasPolymerMixinClassDocTag(docs: jsdoc.Annotation) {
-    const elementTags = docs.tags &&
-        docs.tags.filter((t: jsdoc.Tag) => t.tag === 'polymerMixinClass');
-    return elementTags && elementTags.length >= 1;
-  }
+export function hasMixinClassDocTag(docs: jsdoc.Annotation) {
+  // TODO(justinfagnani): remove polymerMixinClass support
+  return (jsdoc.hasTag(docs, 'polymer') && jsdoc.hasTag(docs, 'mixinClass')) ||
+      jsdoc.hasTag(docs, 'polymerMixinClass');
 }

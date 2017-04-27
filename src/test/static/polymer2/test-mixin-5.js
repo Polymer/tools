@@ -1,5 +1,6 @@
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  * @memberof Polymer
  */
 class TestMixin extends superclass {

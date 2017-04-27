@@ -186,7 +186,7 @@ function assertGraphIsSettled(graph: DependencyGraph) {
           false,
           true,
           `found unsettled record for url '${
-                                             record.url
+      record.url
                                            }' in graph that should be settled`);
     }
   }

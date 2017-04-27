@@ -1,30 +1,36 @@
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends Polymer.Element
  */
 class BaseElement extends Polymer.Element {}
 
 /**
- * @polymerMixin
+ * @polymer
+ * @mixinFunction
  */
 const Mixin = (superclass) => class extends superclass {}
 
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends BaseElement
- * @mixes Mixin
+ * @appliesMixin Mixin
  */
 const SubElement = Mixin(BaseElement);
 
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends BaseElement
- * @mixes Mixin
+ * @appliesMixin Mixin
  */
 const SubElement2 = class extends Mixin
 (BaseElement) {
 }
 
 /**
- * @polymerElement
- * @mixes MyMixin */ window.MyElement = class extends MixedElement { }
+ * @customElement
+ * @polymer
+ * @appliesMixin MyMixin */
+window.MyElement = class extends MixedElement { }

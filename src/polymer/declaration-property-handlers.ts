@@ -33,14 +33,11 @@ export function getBehaviorAssignmentOrWarning(
     document: JavaScriptDocument): BehaviorAssignmentOrWarning {
   const behaviorName = astValue.getIdentifierName(argNode);
   if (!behaviorName) {
-    return {
-      kind: 'warning',
-      warning: {
-        code: 'could-not-determine-behavior-name',
-        message:
-            `Could not determine behavior name from expression of type ${
-                                                                         argNode
-                                                                             .type
+    return {kind: 'warning', warning: {
+              code: 'could-not-determine-behavior-name',
+              message:
+                  `Could not determine behavior name from expression of type ${
+    argNode.type
                                                                        }`,
         severity: Severity.WARNING,
         sourceRange: document.sourceRangeForNode(argNode)!

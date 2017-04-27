@@ -11,11 +11,11 @@
           "description": "",
           "sourceRange": {
             "start": {
-              "line": 8,
+              "line": 9,
               "column": 8
             },
             "end": {
-              "line": 11,
+              "line": 12,
               "column": 9
             }
           },
@@ -31,11 +31,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 8,
+              "line": 9,
               "column": 8
             },
             "end": {
-              "line": 11,
+              "line": 12,
               "column": 9
             }
           },
@@ -57,11 +57,11 @@
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 4,
+          "line": 5,
           "column": 0
         },
         "end": {
-          "line": 15,
+          "line": 16,
           "column": 1
         }
       },
@@ -78,11 +78,11 @@
           "description": "",
           "sourceRange": {
             "start": {
-              "line": 25,
+              "line": 27,
               "column": 8
             },
             "end": {
-              "line": 28,
+              "line": 30,
               "column": 9
             }
           },
@@ -98,11 +98,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 25,
+              "line": 27,
               "column": 8
             },
             "end": {
-              "line": 28,
+              "line": 30,
               "column": 9
             }
           },
@@ -124,11 +124,11 @@
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 21,
+          "line": 23,
           "column": 0
         },
         "end": {
-          "line": 32,
+          "line": 34,
           "column": 1
         }
       },
@@ -148,11 +148,11 @@
           "privacy": "private",
           "sourceRange": {
             "start": {
-              "line": 42,
+              "line": 45,
               "column": 4
             },
             "end": {
-              "line": 43,
+              "line": 46,
               "column": 5
             }
           },
@@ -177,11 +177,11 @@
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 40,
+          "line": 43,
           "column": 0
         },
         "end": {
-          "line": 48,
+          "line": 51,
           "column": 1
         }
       },
@@ -189,25 +189,20 @@
       "name": "Polymer.InternalMixin"
     },
     {
-      "privacy": "public",
-      "name": "Polymer.MetaMixin",
       "description": "",
       "summary": "",
       "path": "mixins.js",
-      "mixins": [
-        "Polymer.InternalMixin"
-      ],
       "attributes": [
         {
           "name": "meta",
           "description": "",
           "sourceRange": {
             "start": {
-              "line": 59,
+              "line": 63,
               "column": 8
             },
             "end": {
-              "line": 61,
+              "line": 65,
               "column": 9
             }
           },
@@ -223,11 +218,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 59,
+              "line": 63,
               "column": 8
             },
             "end": {
-              "line": 61,
+              "line": 65,
               "column": 9
             }
           },
@@ -238,10 +233,20 @@
       ],
       "methods": [
         {
-          "description": "",
-          "inheritedFrom": "Polymer.InternalMixin",
-          "metadata": {},
           "name": "frob",
+          "description": "",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 45,
+              "column": 4
+            },
+            "end": {
+              "line": 46,
+              "column": 5
+            }
+          },
+          "metadata": {},
           "params": [
             {
               "name": "a"
@@ -250,17 +255,7 @@
               "name": "b"
             }
           ],
-          "privacy": "private",
-          "sourceRange": {
-            "end": {
-              "column": 5,
-              "line": 43
-            },
-            "start": {
-              "column": 4,
-              "line": 42
-            }
-          }
+          "inheritedFrom": "Polymer.InternalMixin"
         }
       ],
       "styling": {
@@ -273,14 +268,19 @@
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 55,
+          "line": 59,
           "column": 0
         },
         "end": {
-          "line": 65,
+          "line": 69,
           "column": 1
         }
-      }
+      },
+      "privacy": "public",
+      "name": "Polymer.MetaMixin",
+      "mixins": [
+        "Polymer.InternalMixin"
+      ]
     }
   ]
 }

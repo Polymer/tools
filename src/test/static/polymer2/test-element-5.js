@@ -1,5 +1,6 @@
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  */
 class TestElement extends Polymer.Element {
   static get observedAttributes() {

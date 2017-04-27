@@ -1,8 +1,9 @@
 /**
- * @polymerElement
+ * @customElement
+ * @polymer
  * @extends Polymer.Element
- * @mixes Mixin2
- * @mixes Mixin1
+ * @appliesMixin Mixin2
+ * @appliesMixin Mixin1
  */
 class TestElement extends Mixin1
 (Mixin2(Polymer.Element)) {
