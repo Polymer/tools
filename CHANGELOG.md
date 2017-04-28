@@ -13,13 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 
+## [2.0.0-alpha.40] - 2017-04-28
+
 * Added support for new JSDoc tags: @customElement, @polymer, @mixinFunction, @appliesMixin
 
 ## [2.0.0-alpha.39] - 2017-04-26
-
-* Add a Class feature kind for describing all kinds of classes. This is a superclass of the existing elements and mixins.
-
-## [2.0.0-alpha.38] - 2017-04-13
 
 * Add a Class feature kind for describing all kinds of classes. This is a superclass of the existing elements and mixins.
 * Mix mixins into mixins. A PolymerElementMixin now has all of the members it inherits other mixins it mixes.
