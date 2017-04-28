@@ -17,10 +17,11 @@
 org=$1
 repo=$2
 branch=${3:-"master"} # default to master when branch isn't specified
+remoteUrl=${4:-"git@github.com"} # default to github when remote url isn't specified
 
 # make folder (same as input, no checking!)
 mkdir $repo
-git clone git@github.com:$org/$repo.git --single-branch
+git clone $remoteUrl:$org/$repo.git --single-branch
 
 # switch to gh-pages branch
 pushd $repo >/dev/null
@@ -37,7 +38,7 @@ echo "{
 }
 " > .bowerrc
 bower install
-bower install $org/$repo#$branch
+bower install $remoteUrl:$org/$repo#$branch
 git checkout ${branch} -- demo
 rm -rf components/$repo/demo
 mv demo components/$repo/
