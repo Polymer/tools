@@ -12,9 +12,88 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ScannedPolymerElement} from '../polymer/polymer-element';
+import {Class} from '../model/class';
+import {Document, Feature, Method, Property, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, Warning} from '../model/model';
 
 /**
- * The metadata for a Polymer core feature.
+ * A scanned Polymer 1.x core "feature".
  */
-export interface ScannedPolymerCoreFeature extends ScannedPolymerElement {}
+export class ScannedPolymerCoreFeature extends ScannedFeature implements
+    Resolvable {
+  warnings: Warning[] = [];
+  properties: ScannedProperty[] = [];
+  methods: ScannedMethod[] = [];
+
+  resolve(document: Document): Feature|undefined {
+    if (this.warnings.length > 0) {
+      return;
+    }
+
+    // Sniff for the root `_addFeatures` call by presence of this method. This
+    // method must only appear once (in the root `polymer.html` document).
+    const isRootAddFeatureCall =
+        this.methods.some((p) => p.name === '_finishRegisterFeatures');
+
+    if (!isRootAddFeatureCall) {
+      // We're at the `Polymer.Base` assignment or a regular `_addFeature`
+      // call. We'll merge all of these below.
+      return new PolymerCoreFeature(this.properties, this.methods);
+    }
+
+    // Otherwise we're at the root of the `_addFeatures` tree. Thanks to HTML
+    // imports, we can be sure that this is the final core feature we'll
+    // resolve. Now we'll emit a "fake" class representing the union of all the
+    // feature objects.
+    const allProperties: Property[] = this.properties.slice();
+    const allMethods: Method[] = this.methods.slice();
+    const otherCoreFeatures = document.getFeatures({
+      kind: 'polymer-core-feature',
+      imported: true,
+      externalPackages: true,
+    });
+    for (const feature of otherCoreFeatures) {
+      for (const property of feature.properties) {
+        allProperties.push(property);
+      }
+      for (const method of feature.methods) {
+        allMethods.push(method);
+      }
+    }
+
+    return new Class(
+        {
+          name: 'Polymer.Base',
+          className: 'Polymer.Base',
+          properties: allProperties,
+          methods: allMethods,
+          abstract: true,
+          privacy: 'public',
+          // TODO(aomarks) The following should probably come from the
+          // Polymer.Base assignment instead of this final addFeature call.
+          jsdoc: this.jsdoc,
+          description: this.description || '',
+          summary: '',
+          sourceRange: this.sourceRange,
+          astNode: this.astNode,
+        },
+        document);
+  }
+}
+
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'polymer-core-feature': PolymerCoreFeature;
+  }
+}
+
+/**
+ * A resolved Polymer 1.x core "feature".
+ */
+export class PolymerCoreFeature implements Feature {
+  kinds = new Set(['polymer-core-feature']);
+  identifiers = new Set<string>();
+  warnings: Warning[] = [];
+
+  constructor(public properties: Property[], public methods: Method[]) {
+  }
+}
