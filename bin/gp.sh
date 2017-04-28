@@ -37,7 +37,7 @@ echo "{
 }
 " > .bowerrc
 bower install
-bower install $org/$repo#$branch
+bower install git@github.com:$org/$repo#$branch
 git checkout ${branch} -- demo
 rm -rf components/$repo/demo
 mv demo components/$repo/
