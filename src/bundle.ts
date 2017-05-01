@@ -80,16 +80,45 @@ export class BuildBundler extends Transform {
     this._urlMapper = urlMapper;
   }
 
-  _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: any, data?: File) => void): void {
-    this._mapFile(file);
-    callback(null, null);
+  async _buildBundles() {
+    // Tell the analyzer about changed files so it can purge them from its cache
+    // before using the analyzer for bundling.
+    await this._bundler.analyzer.filesChanged(
+        this._getFilesChangedSinceInitialAnalysis());
+
+    const manifest = await this._generateBundleManifest();
+    const bundles = await this._bundler.bundle(manifest);
+
+    // Remove the bundled files from the file map so they are not emitted later.
+    this._unmapBundledFiles(manifest);
+
+    // Map the bundles into the file map.
+    for (const [filename, document] of bundles) {
+      this._mapFile(new File({
+        path: pathFromUrl(this.config.root, filename),
+        contents: new Buffer(parse5.serialize(document.ast)),
+      }));
+    }
   }
 
-  _mapFile(file: File) {
-    this.files.set(urlFromPath(this.config.root, file.path), file);
+  async _flush(done: (error?: any) => void) {
+    await this._buildBundles();
+    for (const file of this.files.values()) {
+      this.push(file);
+    }
+    // end the stream
+    done();
+  }
+
+  async _generateBundleManifest(): Promise<BundleManifest> {
+    const strategy = this._strategy ||
+        this.config.shell && generateShellMergeStrategy(urlFromPath(
+                                 this.config.root, this.config.shell));
+    const entrypoints = Array.from(this.config.allFragments);
+    return this._bundler.generateManifest(
+        entrypoints.map((e) => urlFromPath(this.config.root, e)),
+        strategy,
+        this._urlMapper);
   }
 
   _getFilesChangedSinceInitialAnalysis(): string[] {
@@ -104,44 +133,16 @@ export class BuildBundler extends Transform {
     return filesChanged;
   }
 
-  async _flush(done: (error?: any) => void) {
-    await this._buildBundles();
-    for (const file of this.files.values()) {
-      this.push(file);
-    }
-    // end the stream
-    done();
+  _mapFile(file: File) {
+    this.files.set(urlFromPath(this.config.root, file.path), file);
   }
 
-  async _buildBundles() {
-    // Tell the analyzer about changed files so it can purge them from its cache
-    // before using the analyzer for bundling.
-    await this._bundler.analyzer.filesChanged(
-        this._getFilesChangedSinceInitialAnalysis());
-
-    const manifest = await this._generateBundleManifest();
-    const bundles = await this._bundler.bundle(manifest);
-
-    // Remove the bundled files from the file map so they are not emitted later.
-    this._unmapBundledFiles(manifest);
-
-    for (const [filename, document] of bundles) {
-      this._mapFile(new File({
-        path: pathFromUrl(this.config.root, filename),
-        contents: new Buffer(parse5.serialize(document.ast)),
-      }));
-    }
-  }
-
-  async _generateBundleManifest(): Promise<BundleManifest> {
-    const strategy = this._strategy ||
-        this.config.shell && generateShellMergeStrategy(urlFromPath(
-                                 this.config.root, this.config.shell));
-    const entrypoints = Array.from(this.config.allFragments);
-    return this._bundler.generateManifest(
-        entrypoints.map((e) => urlFromPath(this.config.root, e)),
-        strategy,
-        this._urlMapper);
+  _transform(
+      file: File,
+      _encoding: string,
+      callback: (error?: any, data?: File) => void): void {
+    this._mapFile(file);
+    callback(null, null);
   }
 
   _unmapBundledFiles(manifest: BundleManifest) {
