@@ -29,9 +29,10 @@ export class FileMapUrlLoader implements UrlLoader {
     this.fallbackLoader = fallbackLoader;
   }
 
-  // We can always return true because we're just reading paths off a map.
-  canLoad(_url: string): boolean {
-    return true;
+  // Return true if we can return load the given url.
+  canLoad(url: string): boolean {
+    return this.files.has(url) ||
+        this.fallbackLoader && this.fallbackLoader.canLoad(url);
   }
 
   // Try to load the file from the map.  If not in the map, try to load
