@@ -21,44 +21,6 @@ const assert = chai.assert;
 
 suite('dom5', () => {
 
-  suite('Parse5 Wrapper Functions', () => {
-    const docText =
-        '<!DOCTYPE html><div id=\'A\' qux>a1<div bar=\'b1\' bar=\'b2\'>b1</div>a2</div><!-- comment -->';
-    const fragText =
-        '<template><span>Foo</span></template><!-- comment --><my-bar></my-bar>';
-
-    test('parse', () => {
-      const doc_expected = parse5.parse(docText);
-      const doc_actual = parse5.parse(docText);
-
-      assert.deepEqual(doc_expected, doc_actual);
-    });
-
-    test('parseFragment', () => {
-      const frag_expected = parse5.parseFragment(fragText);
-      const frag_actual = parse5.parseFragment(fragText);
-
-      assert.deepEqual(frag_expected, frag_actual);
-    });
-
-    test('serialize', () => {
-      // const serializer = new parse5.Serializer();
-
-      let ast = parse5.parse(docText);
-      let expected = parse5.serialize(ast);
-      let actual = parse5.serialize(ast);
-
-      assert.equal(expected, actual);
-
-      ast = parse5.parseFragment(fragText);
-      expected = parse5.serialize(ast);
-      actual = parse5.serialize(ast);
-
-      assert.equal(expected, actual);
-    });
-
-  });
-
   suite('Parse5 Node Manipulation', () => {
 
     const docText = `<!DOCTYPE html>` +
