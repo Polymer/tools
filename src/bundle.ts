@@ -92,31 +92,41 @@ export class BuildBundler extends Transform {
     this.files.set(urlFromPath(this.config.root, file.path), file);
   }
 
-  async _flush(done: (error?: any) => void) {
-    const filesChanged: string[] = [];
-    this._buildAnalyzer.files.forEach((originalFile, url) => {
+  _getFilesChangedSinceInitialAnalysis(): string[] {
+    const filesChanged = [];
+    for (const [url, originalFile] of this._buildAnalyzer.files) {
       const downstreamFile = this.files.get(url);
       if (downstreamFile.contents.toString() !==
           originalFile.contents.toString()) {
         filesChanged.push(url);
       }
-    });
-    await this._bundler.analyzer.filesChanged(filesChanged);
+    }
+    return filesChanged;
+  }
+
+  async _flush(done: (error?: any) => void) {
     const bundles = await this._buildBundles();
-    for (const filename of bundles.keys()) {
+    for (const [filename, html] of bundles) {
       const filepath = pathFromUrl(this.config.root, filename);
       const file = new File({
         path: filepath,
-        contents: new Buffer(bundles.get(filename)),
+        contents: new Buffer(html),
       });
       this._mapFile(file);
     }
-    this.files.forEach((file) => this.push(file));
+    for (const file of this.files) {
+      this.push(file);
+    }
     // end the stream
     done();
   }
 
   async _buildBundles(): Promise<Map<string, string>> {
+    // Tell the analyzer about changed files so it can purge them from its cache
+    // before using the analyzer for bundling.
+    await this._bundler.analyzer.filesChanged(
+        this._getFilesChangedSinceInitialAnalysis());
+
     const strategy = this._strategy ||
         this.config.shell && generateShellMergeStrategy(urlFromPath(
                                  this.config.root, this.config.shell));

@@ -21,15 +21,10 @@ import {parseUrl} from 'polymer-analyzer/lib/utils';
  * that have been gathered by a `BuildBundler` transform stream.
  */
 export class FileMapUrlLoader implements UrlLoader {
-  root: string;
   files: Map<string, File>;
   fallbackLoader?: UrlLoader;
 
-  constructor(
-      root: string,
-      files: Map<string, File>,
-      fallbackLoader?: UrlLoader) {
-    this.root = root;
+  constructor(files: Map<string, File>, fallbackLoader?: UrlLoader) {
     this.files = files;
     this.fallbackLoader = fallbackLoader;
   }
