@@ -120,11 +120,12 @@ export class BuildBundler extends Transform {
         this._getFilesChangedSinceInitialAnalysis());
 
     const manifest = await this._generateBundleManifest();
+    const bundles = await this._bundler.bundle(manifest);
 
     // Remove the bundled files from the file map so they are not emitted later.
     this._unmapBundledFiles(manifest);
 
-    for (const [filename, document] of await this._bundler.bundle(manifest)) {
+    for (const [filename, document] of bundles) {
       this._mapFile(new File({
         path: pathFromUrl(this.config.root, filename),
         contents: new Buffer(parse5.serialize(document.ast)),
