@@ -61,8 +61,8 @@ export class BuildBundler extends Transform {
          strategy,
          urlMapper} = options;
 
-    const urlLoader = new FileMapUrlLoader(
-        this.config.root, this.files, analyzer || buildAnalyzer.analyzer);
+    const urlLoader =
+        new FileMapUrlLoader(this.files, analyzer || buildAnalyzer.analyzer);
 
     const forkedAnalyzer = analyzer ? analyzer._fork({urlLoader}) :
                                       buildAnalyzer.analyzer._fork({urlLoader});
@@ -105,47 +105,42 @@ export class BuildBundler extends Transform {
   }
 
   async _flush(done: (error?: any) => void) {
-    const bundles = await this._buildBundles();
-    for (const [filename, html] of bundles) {
-      const filepath = pathFromUrl(this.config.root, filename);
-      const file = new File({
-        path: filepath,
-        contents: new Buffer(html),
-      });
-      this._mapFile(file);
-    }
-    for (const file of this.files) {
+    await this._buildBundles();
+    for (const file of this.files.values()) {
       this.push(file);
     }
     // end the stream
     done();
   }
 
-  async _buildBundles(): Promise<Map<string, string>> {
+  async _buildBundles() {
     // Tell the analyzer about changed files so it can purge them from its cache
     // before using the analyzer for bundling.
     await this._bundler.analyzer.filesChanged(
         this._getFilesChangedSinceInitialAnalysis());
 
-    const strategy = this._strategy ||
-        this.config.shell && generateShellMergeStrategy(urlFromPath(
-                                 this.config.root, this.config.shell));
-    const bundleEntrypoints = Array.from(this.config.allFragments);
-    const manifest = await this._bundler.generateManifest(
-        bundleEntrypoints.map((f) => urlFromPath(this.config.root, f)),
-        strategy,
-        this._urlMapper);
-    const docCollection = await this._bundler.bundle(manifest);
+    const manifest = await this._generateBundleManifest();
 
     // Remove the bundled files from the file map so they are not emitted later.
     this._unmapBundledFiles(manifest);
 
-    const contentsMap = new Map();
-    for (const bundleName of docCollection.keys()) {
-      contentsMap.set(
-          bundleName, parse5.serialize(docCollection.get(bundleName).ast));
+    for (const [filename, document] of await this._bundler.bundle(manifest)) {
+      this._mapFile(new File({
+        path: pathFromUrl(this.config.root, filename),
+        contents: new Buffer(parse5.serialize(document.ast)),
+      }));
     }
-    return contentsMap;
+  }
+
+  async _generateBundleManifest(): Promise<BundleManifest> {
+    const strategy = this._strategy ||
+        this.config.shell && generateShellMergeStrategy(urlFromPath(
+                                 this.config.root, this.config.shell));
+    const entrypoints = Array.from(this.config.allFragments);
+    return this._bundler.generateManifest(
+        entrypoints.map((e) => urlFromPath(this.config.root, e)),
+        strategy,
+        this._urlMapper);
   }
 
   _unmapBundledFiles(manifest: BundleManifest) {
