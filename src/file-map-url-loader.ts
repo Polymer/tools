@@ -45,10 +45,14 @@ export class FileMapUrlLoader implements UrlLoader {
     const file = this.files.get(parseUrl(url).pathname)!;
 
     if (file == null) {
-      if (this.fallbackLoader && this.fallbackLoader.canLoad(url)) {
-        return this.fallbackLoader.load(url);
+      if (this.fallbackLoader) {
+        if (this.fallbackLoader.canLoad(url)) {
+          return this.fallbackLoader.load(url);
+        }
+        throw new Error(
+            `${url} not present in file map and fallback loader can not load.`);
       }
-      throw new Error(`File ${url} not present in file map.`);
+      throw new Error(`${url} not present in file map and no fallback loader.`);
     }
 
     return file.contents.toString();
