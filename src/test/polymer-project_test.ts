@@ -16,13 +16,14 @@
 
 
 import {assert} from 'chai';
+import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Bundle} from 'polymer-bundler/lib/bundle-manifest';
 import File = require('vinyl');
 import * as path from 'path';
 
 import {getFlowingState} from './util';
 import {PolymerProject} from '../polymer-project';
 import {waitFor} from '../streams';
-
 const testProjectRoot = path.resolve('test-fixtures/test-project');
 
 suite('PolymerProject', () => {
@@ -89,7 +90,19 @@ suite('PolymerProject', () => {
     });
 
     test('takes options to configure bundler', () => {
-      const bundler = defaultProject.bundler({});
+      const bundler = defaultProject.bundler({
+        analyzer: new Analyzer(
+            {urlLoader: new FSUrlLoader('test-fixtures/test-project')}),
+        excludes: ['bower_components/loads-external-dependencies.html'],
+        inlineCss: true,
+        inlineScripts: false,
+        rewriteUrlsInTemplates: true,
+        stripComments: true,
+        strategy: (b) => b,
+        // TODO(usergenic): Replace this with a BundleUrlMapper when
+        // https://github.com/Polymer/polymer-bundler/pull/483 is released.
+        urlMapper: (b) => new Map(<[string, Bundle][]>b.map((b) => ['x', b])),
+      });
       assert.isOk(bundler);
     });
   });
