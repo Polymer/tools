@@ -167,8 +167,7 @@ export class AddPushManifest extends Transform {
     super({objectMode: true});
     this.files = new Map();
     this.config = config;
-    this.analyzer = new Analyzer(
-        {urlLoader: new FileMapUrlLoader(this.config.root, this.files)});
+    this.analyzer = new Analyzer({urlLoader: new FileMapUrlLoader(this.files)});
     this.filePath =
         path.join(this.config.root, filePath || 'push-manifest.json');
   }
