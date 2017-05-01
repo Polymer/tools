@@ -68,7 +68,7 @@ suite('dom5', () => {
 
     let doc = parse5.parse(docText);
 
-    setup(function() {
+    setup(() => {
       doc = parse5.parse(docText);
     });
 
@@ -175,7 +175,7 @@ suite('dom5', () => {
       test(
           'does not throw when called on a node without that attribute', () => {
             const divA = doc.childNodes![1].childNodes![1].childNodes![0];
-            assert.doesNotThrow(function() {
+            assert.doesNotThrow(() => {
               dom5.removeAttribute(divA, 'ZZZ');
             });
           });
@@ -304,7 +304,7 @@ suite('dom5', () => {
     });
 
     suite('Remove node, save children', () => {
-      test('node is removed and children at same position', function() {
+      test('node is removed and children at same position', () => {
         const html = '<div><em>x</em><span><em>a</em><em>c</em></span>y</div>';
         const ast = parse5.parseFragment(html);
         const span = ast.childNodes![0]!.childNodes![1]!;
@@ -429,6 +429,35 @@ suite('dom5', () => {
         assert.equal(dom.childNodes!.indexOf(text2), 2);
         assert.equal(dom.childNodes!.indexOf(span), 3);
         assert.equal(dom.childNodes!.indexOf(text), 4);
+        assert.equal(fragment.childNodes!.length, 0);
+      });
+
+    });
+
+    suite('insertAfter', () => {
+      let dom: parse5.ASTNode;
+      let div: parse5.ASTNode;
+      let span: parse5.ASTNode;
+      let text: parse5.ASTNode;
+
+      setup(() => {
+        dom = parse5.parseFragment('<div></div><span></span>text');
+        [div, span, text] = dom.childNodes!;
+      });
+
+      test('ordering is correct', () => {
+        dom5.insertAfter(dom, div, text);
+        assert.equal(parse5.serialize(dom), '<div></div>text<span></span>');
+        dom5.insertAfter(dom, span, text);
+        assert.equal(parse5.serialize(dom), '<div></div><span></span>text');
+      });
+
+      test('accepts document fragments', () => {
+        const fragment = parse5.parseFragment('<span></span>foo');
+        dom5.insertAfter(dom, span, fragment);
+        assert.equal(
+            parse5.serialize(dom),
+            '<div></div><span></span><span></span>footext');
         assert.equal(fragment.childNodes!.length, 0);
       });
 
