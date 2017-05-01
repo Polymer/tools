@@ -78,8 +78,8 @@ export class PolymerProject {
         this.analyzer.dependencies();
 
     // If we need to include additional dependencies, create a new vinyl
-    // source
-    // stream and pipe our default dependencyStream through it to combine.
+    // source stream and pipe our default dependencyStream through it to
+    // combine.
     if (this.config.extraDependencies.length > 0) {
       const includeStream = vinylSrc(this.config.extraDependencies, {
         cwdbase: true,
@@ -97,11 +97,9 @@ export class PolymerProject {
   }
 
   /**
-   * Returns a stream transformer that injects
-   * `custom-elements-es5-adapter.js`
+   * Returns a stream transformer that injects `custom-elements-es5-adapter.js`
    * into the entry point HTML file. This adapter is needed when serving ES5
-   * to
-   * browsers that support the native Custom Elements API.
+   * to browsers that support the native Custom Elements API.
    */
   addCustomElementsEs5Adapter(): NodeJS.ReadWriteStream {
     return new CustomElementsEs5AdapterInjector();
