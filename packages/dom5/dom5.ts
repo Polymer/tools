@@ -605,6 +605,16 @@ export function remove(node: Node) {
   node.parentNode = undefined;
 }
 
+export function insertBefore(parent: Node, target: Node, newNode: Node) {
+  const index = parent.childNodes!.indexOf(target);
+  insertNode(parent, index, newNode);
+}
+
+export function insertAfter(parent: Node, target: Node, newNode: Node) {
+  const index = parent.childNodes!.indexOf(target);
+  insertNode(parent, index + 1, newNode);
+}
+
 /**
  * Removes a node and places its children in its place.  If the node
  * has no parent, the operation is impossible and no action takes place.
@@ -640,11 +650,6 @@ export function removeFakeRootElements(ast: Node) {
           undefined :
           node.childNodes);
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
-}
-
-export function insertBefore(parent: Node, oldNode: Node, newNode: Node) {
-  const index = parent.childNodes!.indexOf(oldNode);
-  insertNode(parent, index, newNode);
 }
 
 export function append(parent: Node, newNode: Node) {
