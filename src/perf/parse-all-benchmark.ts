@@ -108,47 +108,28 @@ async function measure() {
   const afterMoreAnalyses = process.memoryUsage().rss;
   console.log(
       `Additional memory used in analyzing all Polymer-owned code: ${
-  MiB(afterInitialAnalyses - initialMemUse)
+                                                                     MiB(afterInitialAnalyses -
+                                                                         initialMemUse)
                                                                    }`);
-                                                                   const leakedMemory =
-                                                                       afterMoreAnalyses -
-                                                                       afterInitialAnalyses;
+  const leakedMemory = afterMoreAnalyses - afterInitialAnalyses;
   console.log(
       `Additional memory used after 100 more incremental analyses: ${
-  MiB(afterMoreAnalyses - afterInitialAnalyses)
+                                                                     MiB(afterMoreAnalyses -
+                                                                         afterInitialAnalyses)
                                                                    }`);
 
-                                                                   // TODO(rictic):
-                                                                   // looks like
-                                                                   // we've got
-                                                                   // a memory
-                                                                   // leak. Need
-                                                                   // to track
-                                                                   // this down.
-                                                                   //   This
-                                                                   //   should
-                                                                   //   be <
-                                                                   //   10MiB,
-                                                                   //   not <
-                                                                   //   100 MiB.
-                                                                   const threshold =
-                                                                       250 *
-                                                                       (1024 *
-                                                                        1024);
-                                                                   if (leakedMemory >
-                                                                       threshold) {
-                                                                     console.error(
-                                                                         `\n\n==========================================\n` +
-                                                                         `ERROR: Leaked ${MiB(
-                                                                             leakedMemory)}, ` +
-                                                                         `which is more than the threshold of ${MiB(
-                                                                             threshold)}. ` +
-                                                                         `Exiting with error code 1.` +
-                                                                         `\n==========================================\n\n`);
-                                                                     process
-                                                                         .exit(
-                                                                             1);
-                                                                   }
+  // TODO(rictic): looks like we've got a memory leak. Need to track this down.
+  // This should be < 10MiB, not < 100 MiB.
+  const threshold = 300 * (1024 * 1024);
+  if (leakedMemory > threshold) {
+    console.error(
+        `\n\n==========================================\n` +
+        `ERROR: Leaked ${MiB(leakedMemory)}, ` +
+        `which is more than the threshold of ${MiB(threshold)}. ` +
+        `Exiting with error code 1.` +
+        `\n==========================================\n\n`);
+    process.exit(1);
+  }
 };
 
 function printMeasurements(measurements: number[]) {
@@ -162,11 +143,12 @@ function printMeasurements(measurements: number[]) {
   `);
   console.log(
       `${
-  padLeft('ms to analyze file that imports all polymer team\'s elements', 10)
+         padLeft(
+             'ms to analyze file that imports all polymer team\'s elements', 10)
        }}`);
-       for (const elapsed of measurements) {
-         console.log(`${padLeft(elapsed.toFixed(0), 10)}`);
-       }
+  for (const elapsed of measurements) {
+    console.log(`${padLeft(elapsed.toFixed(0), 10)}`);
+  }
 }
 
 measure().catch(((err) => console.log(err.stack) && process.exit(1)));
