@@ -119,6 +119,17 @@ mergeStream(project.sources(), project.dependencies())
   .pipe(gulp.dest('build/'));
 ```
 
+The bundler() method accepts an options object to configure bundling.  See [Using polymer-bundler programmatically](https://github.com/polymer/polymer-bundler#using-polymer-bundler-programmatically) for a detailed list of accepted options.
+
+```js
+  .pipe(project.bundler({
+    excludes: ['bower_components/polymer-code-mirror'],
+    sourcemaps: true,
+    stripComments: true,
+    strategy: require('polymer-bundler/lib/bundle-manifest')
+      .generateSharedDepsMergeStrategy(3)
+  }))
+```
 
 ### Generating a Service Worker
 

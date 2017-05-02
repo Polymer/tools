@@ -5,15 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [1.2.0] - 2017-05-02
 
-* [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
 * Dependency updates.  Upgraded to new `polymer-bundler`, `polymer-analyzer` and `dom5` versions.
 * Fixed bug where `<html>`, `<head>` and `<body>` were added to documents mutated by `HtmlSplitter` and the `CustomElementsES5AdapterInjector`.
 * Print build-time warnings and errors with full location information, and precise underlines of the place where the problem was identified.
 * Fixed issue where two copies of entrypoint files with same name are emitted by bundler stream: an un-bundled one, followed by bundled one.
 * Fixed issue where html imports were emitted by bundler as individual files even though they were bundled.
-* Added an options argument to `PolymerProject#bundler()` to support users configuring the bundler.  See `Options` in `src/build-bundler`.
+* Added an options argument to `PolymerProject#bundler()` to support users configuring the bundler.  Options include all `Bundler#constructor` options, `analyzer`, `excludes`, `inlineCss`, `inlineScripts`, `rewriteUrlsInTemplates`, `sourcemaps`, `stripComments`, as well as `strategy` and `urlMapper` which are used on call to `Bundler#generateManifest`.
 
 ## [1.1.0] - 2017-04-14
 
