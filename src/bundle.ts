@@ -53,8 +53,8 @@ export class BuildBundler extends Transform {
 
     let {analyzer,
          excludes,
-         inlineCss = true,
-         inlineScripts = true,
+         inlineCss,
+         inlineScripts,
          rewriteUrlsInTemplates,
          sourcemaps,
          stripComments,
