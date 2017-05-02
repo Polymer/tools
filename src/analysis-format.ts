@@ -131,6 +131,9 @@ export interface Namespace extends Feature {
 }
 
 export interface Class extends Feature {
+  /** The name of the class. */
+  name?: string;
+
   /**
    * The path, relative to the base directory of the package.
    *
@@ -225,7 +228,7 @@ export interface Element extends ElementLike {
    *
    * e.g. `MyElement`, `Polymer.PaperInput`
    */
-  classname?: string;
+  name?: string;
 
   /**
    * The tagname that the element extends, if any. The value of the `extends`

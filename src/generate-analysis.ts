@@ -226,7 +226,7 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
       class_.properties.map((p) => serializeProperty(class_, path, p));
   const methods = class_.methods.map((m) => serializeMethod(class_, path, m));
 
-  return {
+  const serialized: Class = {
     description: class_.description || '',
     summary: class_.summary || '',
     path: packageRelativePath,
@@ -237,6 +237,10 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
     sourceRange: resolveSourceRangePath(path, class_.sourceRange),
     privacy: class_.privacy,
   };
+  if (class_.name) {
+    serialized.name = class_.name;
+  }
+  return serialized;
 }
 
 function serializeElementLike(
@@ -267,9 +271,6 @@ function serializeElement(
   const metadata: Element =
       serializeElementLike(element, packagePath) as Element;
   metadata.tagname = element.tagName;
-  if (element.className) {
-    metadata.classname = element.className;
-  }
 
   // TODO(justinfagnani): Mixins should be able to have mixins too
   if (element.mixins.length > 0) {

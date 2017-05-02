@@ -28,7 +28,7 @@
       },
       "slots": [],
       "tagname": "my-element",
-      "classname": "Element",
+      "name": "Element",
       "superclass": "HTMLElement"
     },
     {
@@ -58,7 +58,7 @@
       },
       "slots": [],
       "tagname": "annotated-elem",
-      "classname": "AnnotatedElement",
+      "name": "AnnotatedElement",
       "superclass": "HTMLElement"
     }
   ],
@@ -122,6 +122,7 @@
   ],
   "classes": [
     {
+      "name": "Base",
       "description": "",
       "summary": "",
       "path": "classes.js",
@@ -177,6 +178,7 @@
       "privacy": "public"
     },
     {
+      "name": "Subclass",
       "description": "",
       "summary": "",
       "path": "classes.js",
