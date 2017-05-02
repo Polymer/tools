@@ -17,7 +17,7 @@ import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
 import {src as vinylSrc} from 'vinyl-fs';
 
 import {BuildAnalyzer} from './analyzer';
-import {BuildBundler} from './bundle';
+import {BuildBundler, Options as BuildBundlerOptions} from './bundle';
 import {CustomElementsEs5AdapterInjector} from './custom-elements-es5-adapter';
 import {AddPushManifest} from './push-manifest';
 
@@ -57,8 +57,8 @@ export class PolymerProject {
    *
    * (NOTE: The analyzer stream must be in the pipeline somewhere before this.)
    */
-  bundler(): BuildBundler {
-    return new BuildBundler(this.config, this.analyzer);
+  bundler(options?: BuildBundlerOptions): BuildBundler {
+    return new BuildBundler(this.config, this.analyzer, options);
   }
 
   /**
@@ -77,8 +77,9 @@ export class PolymerProject {
     let dependenciesStream: NodeJS.ReadableStream =
         this.analyzer.dependencies();
 
-    // If we need to include additional dependencies, create a new vinyl source
-    // stream and pipe our default dependencyStream through it to combine.
+    // If we need to include additional dependencies, create a new vinyl
+    // source stream and pipe our default dependencyStream through it to
+    // combine.
     if (this.config.extraDependencies.length > 0) {
       const includeStream = vinylSrc(this.config.extraDependencies, {
         cwdbase: true,
@@ -97,8 +98,8 @@ export class PolymerProject {
 
   /**
    * Returns a stream transformer that injects `custom-elements-es5-adapter.js`
-   * into the entry point HTML file. This adapter is needed when serving ES5 to
-   * browsers that support the native Custom Elements API.
+   * into the entry point HTML file. This adapter is needed when serving ES5
+   * to browsers that support the native Custom Elements API.
    */
   addCustomElementsEs5Adapter(): NodeJS.ReadWriteStream {
     return new CustomElementsEs5AdapterInjector();

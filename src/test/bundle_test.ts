@@ -15,7 +15,9 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert} from 'chai';
+import {Bundle} from 'polymer-bundler/lib/bundle-manifest';
 import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
+
 import File = require('vinyl');
 import * as dom5 from 'dom5';
 import {ASTNode, parse as parse5} from 'parse5';
@@ -24,7 +26,7 @@ import {Stream, Transform} from 'stream';
 const mergeStream = require('merge-stream');
 
 import {BuildAnalyzer} from '../analyzer';
-import {BuildBundler} from '../bundle';
+import {BuildBundler, Options as BuildBundlerOptions} from '../bundle';
 
 const defaultRoot = path.resolve('test-fixtures/bundler-data');
 
@@ -35,7 +37,7 @@ class FileTransform extends Transform {
     this.transform = transform;
   }
   _transform(f: File, _encoding: string, cb: () => void) {
-    this.transform(this, f);
+    this.transform(this, f.clone());
     cb();
   }
 }
@@ -48,21 +50,20 @@ suite('BuildBundler', () => {
   let files: Map<string, File>;
 
   let setupTest = async(
-      options: ProjectOptions,
+      projectOptions: ProjectOptions,
+      bundlerOptions?: BuildBundlerOptions,
       transform?: FileTransform) => new Promise((resolve, reject) => {
-    root = options.root = options.root || defaultRoot;
-    const config = new ProjectConfig(options);
+    root = projectOptions.root = projectOptions.root || defaultRoot;
+    const config = new ProjectConfig(projectOptions);
     const analyzer = new BuildAnalyzer(config);
 
-    bundler = new BuildBundler(config, analyzer);
+    bundler = new BuildBundler(config, analyzer, bundlerOptions);
     bundledStream = mergeStream(analyzer.sources(), analyzer.dependencies());
     if (transform) {
       bundledStream = bundledStream.pipe(transform);
     }
     bundledStream = bundledStream.pipe(bundler);
     bundler = new BuildBundler(config, analyzer);
-    bundledStream =
-        mergeStream(analyzer.sources(), analyzer.dependencies()).pipe(bundler);
     files = new Map();
     bundledStream.on('data', (file: File) => {
       files.set(file.path, file);
@@ -110,8 +111,7 @@ suite('BuildBundler', () => {
     if (path.extname(file.path) === '.html') {
       file.contents =
           new Buffer(`<!-- ${path.basename(file.path)} -->${file.contents}`);
-    }
-    if (path.extname(file.path).match(/^\.(js|css)$/)) {
+    } else if (path.extname(file.path).match(/^\.(js|css)$/)) {
       file.contents =
           new Buffer(`/* ${path.basename(file.path)} */${file.contents}`);
     }
@@ -298,6 +298,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
+        {},
         addHeaders);
 
     const bundledHtml = getFile('index.html');
@@ -330,6 +331,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
+        {},
         platformSepPaths);
 
     const bundledHtml = getFile('index.html');
@@ -364,6 +366,7 @@ suite('BuildBundler', () => {
             'simple-style.css',
           ],
         },
+        {},
         posixSepPaths);
 
     const bundledHtml = getFile('index.html');
@@ -390,5 +393,121 @@ suite('BuildBundler', () => {
 
     // We should not have the inlined file in the output.
     assert.isNotOk(getFile('framework.html'));
+  });
+
+  suite('options', () => {
+
+    const projectOptions = {
+      root: 'test-fixtures/test-project',
+      entrypoint: 'index.html',
+      fragments: ['shell.html'],
+      sources: ['index.html', 'shell.html', 'source-dir/my-app.html']
+    };
+
+    test('excludes: html file urls listed are not inlined', async() => {
+      await setupTest(
+          projectOptions,
+          {excludes: ['bower_components/loads-external-dependencies.html']});
+      assert.isOk(
+          getFile('bower_components/loads-external-dependencies.html'),
+          'Excluded import is passed through the bundler');
+      assert.include(
+          getFile('shell.html'),
+          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+    });
+
+    // TODO(usergenic): Uncomment this test after bundler's next release, which
+    // includes the fix for folder references in excludes.
+    test.skip('excludes: html files in folders listed are not inlined', async() => {
+      await setupTest(projectOptions, {excludes: ['bower_components/']});
+      assert.isOk(
+          getFile('bower_components/loads-external-dependencies.html'),
+          'Excluded import is passed through the bundler');
+      assert.include(
+          getFile('shell.html'),
+          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+    });
+
+    test('excludes: nothing is excluded when no excludes are given', async() => {
+      await setupTest(projectOptions, {excludes: []});
+      assert.isNotOk(
+          getFile('bower_components/loads-external-dependencies.html'),
+          'Inlined imports are not passed through the bundler');
+      assert.notInclude(
+          getFile('shell.html'),
+          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+      assert.include(
+          getFile('shell.html'),
+          '<script src="https://www.example.com/script.js">',
+          'Inlined import content');
+    });
+
+    test('inlineCss: false, does not inline external stylesheets', async() => {
+      await setupTest(projectOptions, {inlineCss: false});
+      assert.notInclude(getFile('shell.html'), '.test-project-style');
+    });
+
+    test('inlineCss: true, inlines external stylesheets', async() => {
+      await setupTest(projectOptions, {inlineCss: true});
+      assert.include(getFile('shell.html'), '.test-project-style');
+    });
+
+    test('inlineScripts: false, does not inline external scripts', async() => {
+      await setupTest(projectOptions, {inlineScripts: false});
+      assert.notInclude(getFile('shell.html'), 'console.log(\'shell\')');
+    });
+
+    test('inlineScripts: true, inlines external scripts', async() => {
+      await setupTest(projectOptions, {inlineScripts: true});
+      assert.include(getFile('shell.html'), 'console.log(\'shell\')');
+    });
+
+    test('stripComments: false, does not strip html comments', async() => {
+      await setupTest(projectOptions, {stripComments: false});
+      assert.include(
+          getFile('shell.html'),
+          '<!-- remote dependencies should be ignored during build -->');
+    });
+
+    test('stripComments: true, strips html comments', async() => {
+      await setupTest(projectOptions, {stripComments: true});
+      assert.notInclude(
+          getFile('shell.html'),
+          '<!-- remote dependencies should be ignored during build -->');
+    });
+
+    test('strategy: fn(), applies bundle strategy function', async() => {
+      await setupTest(projectOptions, {
+        // Custom strategy creates a separate bundle for everything in the
+        // `bower_components` folder.
+        strategy: (bundles) => {
+          const bowerBundle = new Bundle();
+          bundles.forEach((bundle) => {
+            bundle.files.forEach((file) => {
+              if (file.includes('bower_components')) {
+                bowerBundle.files.add(file);
+                bundle.files.delete(file);
+              }
+            });
+          });
+          return bundles.concat(bowerBundle);
+        }
+      });
+      assert.isOk(getFile('shared_bundle_1.html'));
+      assert.include(getFile('shared_bundle_1.html'), '<div id="dep"></div>');
+    });
+
+    test('urlMapper: fn(), applies bundle url mapper function', async() => {
+      await setupTest(projectOptions, {
+        urlMapper: (bundles) => {
+          const map = new Map<string, Bundle>();
+          for (const bundle of bundles) {
+            map.set(`bundled/${Array.from(bundle.entrypoints)}`, bundle);
+          }
+          return map;
+        }
+      });
+      assert.isOk(getFile('bundled/shell.html'));
+    });
   });
 });

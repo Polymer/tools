@@ -16,13 +16,14 @@
 
 
 import {assert} from 'chai';
+import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Bundle} from 'polymer-bundler/lib/bundle-manifest';
 import File = require('vinyl');
 import * as path from 'path';
 
 import {getFlowingState} from './util';
 import {PolymerProject} from '../polymer-project';
 import {waitFor} from '../streams';
-
 const testProjectRoot = path.resolve('test-fixtures/test-project');
 
 suite('PolymerProject', () => {
@@ -58,6 +59,8 @@ suite('PolymerProject', () => {
             'index.html',
             'shell.html',
             path.join('source-dir', 'my-app.html'),
+            path.join('source-dir', 'shell.js'),
+            path.join('source-dir', 'style.css'),
           ];
           assert.deepEqual(names.sort(), expected);
           done();
@@ -78,10 +81,30 @@ suite('PolymerProject', () => {
     assert.isTrue(getFlowingState(dependencyStream));
   });
 
-  test('the bundler method returns a different bundler each time', () => {
-    const bundlerA = defaultProject.bundler();
-    const bundlerB = defaultProject.bundler();
-    assert.notEqual(bundlerA, bundlerB);
+  suite('.bundler()', () => {
+
+    test('returns a different bundler each time', () => {
+      const bundlerA = defaultProject.bundler();
+      const bundlerB = defaultProject.bundler();
+      assert.notEqual(bundlerA, bundlerB);
+    });
+
+    test('takes options to configure bundler', () => {
+      const bundler = defaultProject.bundler({
+        analyzer: new Analyzer(
+            {urlLoader: new FSUrlLoader('test-fixtures/test-project')}),
+        excludes: ['bower_components/loads-external-dependencies.html'],
+        inlineCss: true,
+        inlineScripts: false,
+        rewriteUrlsInTemplates: true,
+        stripComments: true,
+        strategy: (b) => b,
+        // TODO(usergenic): Replace this with a BundleUrlMapper when
+        // https://github.com/Polymer/polymer-bundler/pull/483 is released.
+        urlMapper: (b) => new Map(<[string, Bundle][]>b.map((b) => ['x', b])),
+      });
+      assert.isOk(bundler);
+    });
   });
 
   suite('.dependencies()', () => {

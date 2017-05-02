@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Print build-time warnings and errors with full location information, and precise underlines of the place where the problem was identified.
 * Fixed issue where two copies of entrypoint files with same name are emitted by bundler stream: an un-bundled one, followed by bundled one.
 * Fixed issue where html imports were emitted by bundler as individual files even though they were bundled.
+* Added an options argument to `PolymerProject#bundler()` to support users configuring the bundler.  See `Options` in `src/build-bundler`.
 
 ## [1.1.0] - 2017-04-14
 

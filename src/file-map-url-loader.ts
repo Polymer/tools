@@ -21,24 +21,34 @@ import {parseUrl} from 'polymer-analyzer/lib/utils';
  * that have been gathered by a `BuildBundler` transform stream.
  */
 export class FileMapUrlLoader implements UrlLoader {
-  root: string;
   files: Map<string, File>;
+  fallbackLoader?: UrlLoader;
 
-  constructor(root: string, files: Map<string, File>) {
-    this.root = root;
+  constructor(files: Map<string, File>, fallbackLoader?: UrlLoader) {
     this.files = files;
+    this.fallbackLoader = fallbackLoader;
   }
 
-  // We can always return true because we're just reading paths off a map.
-  canLoad(_url: string): boolean {
-    return true;
+  // Return true if we can return load the given url.
+  canLoad(url: string): boolean {
+    return this.files.has(url) ||
+        this.fallbackLoader && this.fallbackLoader.canLoad(url);
   }
 
+  // Try to load the file from the map.  If not in the map, try to load
+  // from the fallback loader.
   async load(url: string): Promise<string> {
     const file = this.files.get(parseUrl(url).pathname)!;
 
     if (file == null) {
-      throw new Error(`File ${url} not present in file map.`);
+      if (this.fallbackLoader) {
+        if (this.fallbackLoader.canLoad(url)) {
+          return this.fallbackLoader.load(url);
+        }
+        throw new Error(
+            `${url} not present in file map and fallback loader can not load.`);
+      }
+      throw new Error(`${url} not present in file map and no fallback loader.`);
     }
 
     return file.contents.toString();
