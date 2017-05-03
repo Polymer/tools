@@ -1,5 +1,8 @@
 # Change Log
 
+## Unreleased
+- **Added** `insertAfter()` function
+
 ## [v2.2.0](https://github.com/Polymer/dom5/tree/v2.2.0) (2017-04-14)
 - **Added** `removeFakeRootElements` and `removeNodeSaveChildren` functions.
 
