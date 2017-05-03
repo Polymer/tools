@@ -161,7 +161,7 @@ class FunctionVisitor implements Visitor {
         functionName,
         description,
         summary,
-        getOrInferPrivacy(specificName, docs, true),
+        getOrInferPrivacy(specificName, docs),
         node,
         docs,
         sourceRange,

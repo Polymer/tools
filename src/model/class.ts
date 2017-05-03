@@ -175,7 +175,7 @@ export class Class implements Feature {
 
     for (const method of this.methods) {
       // methods are only public by default if they're documented.
-      method.privacy = getOrInferPrivacy(method.name, method.jsdoc, true);
+      method.privacy = getOrInferPrivacy(method.name, method.jsdoc);
     }
   }
 

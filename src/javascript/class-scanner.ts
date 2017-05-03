@@ -413,7 +413,7 @@ class ClassFinder implements Visitor {
         getMethods(astNode, this._document),
         this._getExtends(astNode, doc, warnings, this._document),
         jsdoc.getMixinApplications(this._document, astNode, doc, warnings),
-        getOrInferPrivacy(namespacedName || '', doc, false),
+        getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
         jsdoc.extractDemos(doc, this._document.url)));

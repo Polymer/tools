@@ -38,7 +38,8 @@ export function toScannedPolymerProperty(
       code: 'unknown-prop-name',
       message:
           `Could not determine name of property from expression of type: ${
-    node.key.type
+                                                                           node.key
+                                                                               .type
                                                                          }`,
       sourceRange: sourceRange,
       severity: Severity.WARNING
@@ -59,7 +60,7 @@ export function toScannedPolymerProperty(
     astNode: node,
     isConfiguration: configurationProperties.has(name),
     jsdoc: parsedJsdoc,
-    privacy: getOrInferPrivacy(name, parsedJsdoc, false)
+    privacy: getOrInferPrivacy(name, parsedJsdoc)
   };
 
   return result;
@@ -146,13 +147,14 @@ export function toScannedMethod(
 export function getOrInferPrivacy(
     name: string,
     annotation: jsdoc.Annotation|undefined,
-    privateUnlessDocumented: boolean): Privacy {
+    defaultPrivacy: Privacy = 'public'): Privacy {
   const explicitPrivacy = jsdoc.getPrivacy(annotation);
   const specificName = name.slice(name.lastIndexOf('.') + 1);
 
   if (explicitPrivacy) {
     return explicitPrivacy;
-  } else if (specificName.startsWith('__')) {
+  }
+  if (specificName.startsWith('__')) {
     return 'private';
   } else if (specificName.startsWith('_')) {
     return 'protected';
@@ -160,16 +162,6 @@ export function getOrInferPrivacy(
     return 'private';
   } else if (configurationProperties.has(specificName)) {
     return 'protected';
-  } else {
-    if (privateUnlessDocumented) {
-      // Some members, like methods or properties on classes are private by
-      // default unless they have documentation.
-      const hasDocs = !!annotation && !jsdoc.isAnnotationEmpty(annotation);
-      return hasDocs ? 'public' : 'private';
-    } else {
-      // Other members, like entries in the Polymer `properties` block are
-      // public unless there are clear signals otherwise.
-      return 'public';
-    }
   }
+  return defaultPrivacy;
 }

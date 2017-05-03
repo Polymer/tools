@@ -311,14 +311,6 @@ function propertyToAttributeName(propertyName: string): string|null {
       /([A-Z])/g, (_: string, c1: string) => `-${c1.toLowerCase()}`);
 }
 
-
-export interface PropertyLike {
-  name: string;
-  sourceRange?: SourceRange;
-  inheritedFrom?: string;
-  privacy?: Privacy;
-}
-
 export function getBehaviors(
     behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment>,
     document: Document) {

@@ -153,7 +153,7 @@ class BehaviorVisitor implements Visitor {
       description: parsedJsdocs.description,
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node),
-      privacy: getOrInferPrivacy(symbol, parsedJsdocs, false),
+      privacy: getOrInferPrivacy(symbol, parsedJsdocs),
       abstract: jsdoc.hasTag(parsedJsdocs, 'abstract'),
       attributes: [],
       properties: [],
@@ -183,8 +183,7 @@ class BehaviorVisitor implements Visitor {
           `Unable to determine name for @polymerBehavior: ${comment}`);
     }
 
-    behavior.privacy =
-        getOrInferPrivacy(behavior.className, behavior.jsdoc, false);
+    behavior.privacy = getOrInferPrivacy(behavior.className, behavior.jsdoc);
     this._parseChainedBehaviors(node);
 
     this.currentBehavior = this.mergeBehavior(behavior);

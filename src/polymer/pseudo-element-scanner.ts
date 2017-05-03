@@ -48,7 +48,7 @@ export class PseudoElementScanner implements HtmlScanner {
             jsdoc: parsedJsdoc,
             description: parsedJsdoc.description,
             sourceRange: document.sourceRangeForNode(node),
-            privacy: getOrInferPrivacy(tagName, parsedJsdoc, false),
+            privacy: getOrInferPrivacy(tagName, parsedJsdoc),
             abstract: jsdoc.hasTag(parsedJsdoc, 'abstract'),
 
             properties: [],

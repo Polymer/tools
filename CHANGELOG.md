@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* [minor breaking] Simplify rules for infering privacy. Now all features: classes, elements, properties, methods, etc have one set of rules for inferring privacy. Explicit js doc annotations are respected, otherwise `__foo` and `foo_` are private, `_foo` is protected, and `foo` is public.
 
 ## [2.0.0-alpha.40] - 2017-04-28
 

@@ -167,7 +167,7 @@
         {
           "name": "customFunction",
           "description": "",
-          "privacy": "private",
+          "privacy": "public",
           "sourceRange": {
             "start": {
               "line": 24,

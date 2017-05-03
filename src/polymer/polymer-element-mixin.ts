@@ -18,7 +18,6 @@ import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Class, Document, ElementMixin, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
-import {getOrInferPrivacy} from './js-utils';
 import {addMethod, addProperty, getBehaviors, LocalId, Observer, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
 
 export interface Options {
@@ -76,8 +75,6 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   }
 
   addMethod(method: ScannedMethod) {
-    // methods are only public by default if they're documented.
-    method.privacy = getOrInferPrivacy(method.name, method.jsdoc, true);
     addMethod(this, method);
   }
 

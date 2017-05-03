@@ -65,7 +65,7 @@ class ElementVisitor implements Visitor {
       description: docs.description,
       events: getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node), className,
-      privacy: getOrInferPrivacy(className, docs, false),
+      privacy: getOrInferPrivacy(className, docs),
       abstract: jsdoc.hasTag(docs, 'abstract'),
       attributes: [],
       properties: [],
@@ -204,7 +204,7 @@ class ElementVisitor implements Visitor {
           description: jsDoc.description,
           events: getEventComments(parent),
           sourceRange: this.document.sourceRangeForNode(node.arguments[0]),
-          privacy: getOrInferPrivacy('', jsDoc, false),
+          privacy: getOrInferPrivacy('', jsDoc),
           abstract: jsdoc.hasTag(jsDoc, 'abstract'),
           attributes: [],
           properties: [],
@@ -259,13 +259,14 @@ class ElementVisitor implements Visitor {
           element.warnings.push({
             message:
                 `Can't determine name for property key from expression with type ${
-          prop.key.type
+                                                                                   prop.key
+                                                                                       .type
                                                                                  }.`,
             code: 'cant-determine-property-name',
             severity: Severity.WARNING,
             sourceRange: this.document.sourceRangeForNode(prop.key)!
           });
-                                                                                 continue;
+          continue;
         }
 
         if (!this.propertyHandlers) {

@@ -145,7 +145,7 @@
         {
           "name": "frob",
           "description": "",
-          "privacy": "private",
+          "privacy": "public",
           "sourceRange": {
             "start": {
               "line": 42,
@@ -235,7 +235,7 @@
         {
           "name": "frob",
           "description": "",
-          "privacy": "private",
+          "privacy": "public",
           "sourceRange": {
             "start": {
               "line": 42,
