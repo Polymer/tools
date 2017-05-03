@@ -14,8 +14,7 @@
 
 import File = require('vinyl');
 import * as parse5 from 'parse5';
-import {Bundler, Options as BundlerOptions} from 'polymer-bundler';
-import {BundleManifest, BundleStrategy, generateShellMergeStrategy, BundleUrlMapper} from 'polymer-bundler/lib/bundle-manifest';
+import {Bundler, Options, BundleManifest, generateShellMergeStrategy} from 'polymer-bundler';
 import {ProjectConfig} from 'polymer-project-config';
 import {Transform} from 'stream';
 
@@ -23,17 +22,13 @@ import {BuildAnalyzer} from './analyzer';
 import {FileMapUrlLoader} from './file-map-url-loader';
 import {pathFromUrl, urlFromPath} from './path-transformers';
 
-export type Options =
-    BundlerOptions & {strategy?: BundleStrategy, urlMapper?: BundleUrlMapper};
+export {Options} from 'polymer-bundler';
 
 export class BuildBundler extends Transform {
   config: ProjectConfig;
 
   private _buildAnalyzer: BuildAnalyzer;
   private _bundler: Bundler;
-
-  private _strategy?: BundleStrategy;
-  private _urlMapper?: BundleUrlMapper;
 
   // A map of urls to file objects.  As the transform stream handleds files
   // coming into the stream, it collects all files here.  After bundlling,
@@ -67,6 +62,10 @@ export class BuildBundler extends Transform {
     const forkedAnalyzer = analyzer ? analyzer._fork({urlLoader}) :
                                       buildAnalyzer.analyzer._fork({urlLoader});
 
+    strategy = strategy ||
+        this.config.shell && generateShellMergeStrategy(urlFromPath(
+                                 this.config.root, this.config.shell));
+
     this._bundler = new Bundler({
       analyzer: forkedAnalyzer,
       excludes,
@@ -74,13 +73,13 @@ export class BuildBundler extends Transform {
       inlineScripts,
       rewriteUrlsInTemplates,
       sourcemaps,
-      stripComments
+      stripComments,
+      strategy,
+      urlMapper,
     });
-    this._strategy = strategy;
-    this._urlMapper = urlMapper;
   }
 
-  async _buildBundles() {
+  private async _buildBundles() {
     // Tell the analyzer about changed files so it can purge them from its cache
     // before using the analyzer for bundling.
     await this._bundler.analyzer.filesChanged(
@@ -110,18 +109,13 @@ export class BuildBundler extends Transform {
     done();
   }
 
-  async _generateBundleManifest(): Promise<BundleManifest> {
-    const strategy = this._strategy ||
-        this.config.shell && generateShellMergeStrategy(urlFromPath(
-                                 this.config.root, this.config.shell));
-    const entrypoints = Array.from(this.config.allFragments);
-    return this._bundler.generateManifest(
-        entrypoints.map((e) => urlFromPath(this.config.root, e)),
-        strategy,
-        this._urlMapper);
+  private async _generateBundleManifest(): Promise<BundleManifest> {
+    const entrypoints = Array.from(this.config.allFragments)
+                            .map((e) => urlFromPath(this.config.root, e));
+    return this._bundler.generateManifest(entrypoints);
   }
 
-  _getFilesChangedSinceInitialAnalysis(): string[] {
+  private _getFilesChangedSinceInitialAnalysis(): string[] {
     const filesChanged = [];
     for (const [url, originalFile] of this._buildAnalyzer.files) {
       const downstreamFile = this.files.get(url);
@@ -133,7 +127,7 @@ export class BuildBundler extends Transform {
     return filesChanged;
   }
 
-  _mapFile(file: File) {
+  private _mapFile(file: File) {
     this.files.set(urlFromPath(this.config.root, file.path), file);
   }
 
@@ -145,7 +139,7 @@ export class BuildBundler extends Transform {
     callback(null, null);
   }
 
-  _unmapBundledFiles(manifest: BundleManifest) {
+  private _unmapBundledFiles(manifest: BundleManifest) {
     for (const bundle of manifest.bundles.values()) {
       for (const filename of bundle.files) {
         this.files.delete(filename);
