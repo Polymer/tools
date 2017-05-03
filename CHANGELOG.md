@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+* Dependency updates.  Upgraded to new `polymer-bundler`.  Most important update is a fix to bug whereby `lazy-import` links were being moved out of their `<dom-module>` containers.
+
 ## [1.2.0] - 2017-05-02
 
 * Dependency updates.  Upgraded to new `polymer-bundler`, `polymer-analyzer` and `dom5` versions.
