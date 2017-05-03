@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [v2.3.0](https://github.com/Polymer/dom5/tree/v2.3.0) (2017-05-03)
 - **Added** `insertAfter()` function
 
 ## [v2.2.0](https://github.com/Polymer/dom5/tree/v2.2.0) (2017-04-14)
