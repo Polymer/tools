@@ -198,6 +198,23 @@ mergeStream(project.sources(), project.dependencies())
   .pipe(gulp.dest('build/'));
 ```
 
+### Custom Elements ES5 Adapter
+
+If your build pipeline outputs ES5 custom elements (either from source or by compilation with a tool like Babel), it is critical to include the [Custom Elements ES5 Adapter](https://github.com/webcomponents/custom-elements/blob/master/src/native-shim.js). This adapter provides compatibility between custom elements defined as ES5-style classes and browsers with native implementations of the Custom Elements API, such as Chrome. See the [adapter documentation](https://github.com/webcomponents/custom-elements/blob/master/src/native-shim.js) for details of why this is necessary.
+
+#### project.addCustomElementsEs5Adapter()
+
+This method will return a transform stream that identifies your entrypoint HTML file (by looking for a webcomponents polyfill import) and injects a block of HTML that loads the Custom Elements ES5 Adapter. You can use this in a build pipeline to conditionally inject the adapter only when you output ES5 (as it is not needed when you output ES6).
+
+```js
+const gulp = require('gulp');
+const mergeStream = require('merge-stream');
+
+mergeStream(project.sources(), project.dependencies())
+  .pipe(project.addCustomElementsEs5Adapter())
+  .pipe(gulp.dest('build/'));
+```
+
 
 ### Multiple Builds
 
