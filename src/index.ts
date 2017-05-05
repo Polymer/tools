@@ -19,7 +19,7 @@ import * as logging from 'plylog';
 import {applyBuildPreset, isValidPreset, ProjectBuildOptions} from './builds';
 import minimatchAll = require('minimatch-all');
 
-export {ProjectBuildOptions} from './builds';
+export {ProjectBuildOptions, applyBuildPreset} from './builds';
 
 const logger = logging.getLogger('polymer-project-config');
 
