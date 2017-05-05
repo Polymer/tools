@@ -1,0 +1,162 @@
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+export interface ProjectBuildOptions {
+  /**
+   * The name of this build, used to determine the output directory name.
+   */
+  name?: string;
+
+  /**
+   * A build preset for this build. A build can inherit some base configuration from a named preset.
+   */
+  preset?: string;
+
+  /**
+   * Generate a service worker for your application to cache all files and
+   * assets on the client.
+   *
+   * Polymer CLI will generate a service worker for your build using the
+   * [sw-precache library](https://github.com/GoogleChrome/sw-precache). To
+   * customize your service worker, create a sw-precache-config.js file in your
+   * project directory that exports your configuration. See the [sw-precache
+   * README](https://github.com/GoogleChrome/sw-precache) for a list of all
+   * supported options.
+   *
+   * Note that the sw-precache library uses a cache-first strategy for maximum
+   * speed and makes some other assumptions about how your service worker should
+   * behave. Read the "Considerations" section of the sw-precache README to make
+   * sure that this is suitable for your application.
+   */
+  addServiceWorker?: boolean;
+
+  /**
+   * If `true`, generate an [HTTP/2 Push
+   * Manifest](https://github.com/GoogleChrome/http2-push-manifest) for your
+   * application.
+   */
+  addPushManifest?: boolean;
+
+  /**
+   * A config file that's passed to the [sw-precache
+   * library](https://github.com/GoogleChrome/sw-precache). See [its
+   * README](https://github.com/GoogleChrome/sw-precache) for details of the
+   * format of this file.
+   *
+   * Ignored if `addServiceWorker` is not `true`.
+   *
+   * Defaults to `"sw-precache-config.js`.
+   */
+  swPrecacheConfig?: string;
+
+  /**
+   * Insert prefetch link elements into your fragments so that all dependencies
+   * are prefetched immediately. Add dependency prefetching by inserting `<link
+   * rel="prefetch">` tags into entrypoint and `<link rel="import">` tags into
+   * fragments and shell for all dependencies.
+   */
+  insertPrefetchLinks?: boolean;
+
+  /**
+   * By default, fragments are unbundled. This is optimal for HTTP/2-compatible
+   * servers and clients.
+   *
+   * If the --bundle flag is supplied, all fragments are bundled together to
+   * reduce the number of file requests. This is optimal for sending to clients
+   * or serving from servers that are not HTTP/2 compatible.
+   */
+  bundle?: boolean;
+
+  /** Options for processing HTML. */
+  html?: {
+    /** Minify HTMl by removing comments and whitespace. */
+    minify?: boolean
+  };
+
+  /** Options for processing CSS. */
+  css?: {
+    /** Minify inlined and external CSS. */
+    minify?: boolean
+  };
+
+  /** Options for processing JavaScript. */
+  js?: {
+    /** Minify inlined and external JavaScript. */
+    minify?: boolean,
+
+    /** Use babel to compile all ES6 JS down to ES5 for older browsers. */
+    compile?: boolean
+  };
+}
+
+export const buildPresets = new Map<string, ProjectBuildOptions>([
+  ['es5-bundled', {
+    name: 'es5-bundled',
+    js: {minify: true, compile: true},
+    css: {minify: true},
+    html: {minify: true},
+    bundle: true,
+    addServiceWorker: true,
+    addPushManifest: true,
+    insertPrefetchLinks: true,
+  }],
+  ['es6-bundled', {
+    name: 'es6-bundled',
+    js: {minify: true, compile: false},
+    css: {minify: true},
+    html: {minify: true},
+    bundle: true,
+    addServiceWorker: true,
+    addPushManifest: true,
+    insertPrefetchLinks: true,
+  }],
+  ['es6-unbundled', {
+    name: 'es6-unbundled',
+    js: {minify: true, compile: false},
+    css: {minify: true},
+    html: {minify: true},
+    bundle: false,
+    addServiceWorker: true,
+    addPushManifest: true,
+    insertPrefetchLinks: true,
+  }],
+]);
+
+export function isValidPreset(presetName: string) {
+  return buildPresets.has(presetName);
+}
+
+/**
+ * Apply a build preset (if a valid one exists on the config object) by
+ * deep merging the given config with the preset values.
+ */
+export function applyBuildPreset(config: ProjectBuildOptions) {
+  const presetName = config.preset;
+  if (!presetName || !isValidPreset(presetName)) {
+    return config;
+  }
+
+  const presetConfig = buildPresets.get(presetName);
+  const mergedConfig = Object.assign({}, presetConfig, config);
+  // Object.assign is shallow, so we need to make sure we properly merge these
+  // deep options as well.
+  // NOTE(fks) 05-05-2017: While a little annoying, we use multiple
+  // Object.assign() calls here so that we do not filter-out additional
+  // user-defined build options at the config level.
+  mergedConfig.js = Object.assign({}, presetConfig.js, config.js);
+  mergedConfig.css = Object.assign({}, presetConfig.css, config.css);
+  mergedConfig.html = Object.assign({}, presetConfig.html, config.html);
+  return mergedConfig;
+}
+
