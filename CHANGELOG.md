@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   User-visible changes must be documented here. Uncomment the Unreleased heading
   as appropriate too.
 -->
+* Add build preset support.
+
 
 ## [2.1.1] - 2017-04-14
 * Add more documentation, and expose it through the JSON Schema.
