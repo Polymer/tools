@@ -17,8 +17,7 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../analyzer';
-import {ClassScanner} from '../../javascript/class-scanner';
-import {Document} from '../../model/model';
+import {Document, Severity, Warning} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
@@ -27,12 +26,6 @@ suite('PolymerElement', () => {
   const urlLoader = new FSUrlLoader(testFilesDir);
   const analyzer = new Analyzer({
     urlLoader: urlLoader,
-    scanners: new Map([[
-      'js',
-      [
-        new ClassScanner(),
-      ]
-    ]])
   });
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
@@ -205,5 +198,34 @@ suite('PolymerElement', () => {
         ],
       },
     ]);
+  });
+
+  suite('multiple-doc-comments', () => {
+
+    async function getElement(filename: string) {
+      const elements = await getElements(filename);
+      assert.equal(
+          elements.size, 1, `${filename} contained ${elements.size} elements`);
+      return [...elements][0]!;
+    }
+
+    test('Elements with only one doc comment have no warning', async() => {
+      const element = await getElement('test-element-14.html');
+      const warning = element.warnings.find(
+          (w: Warning) => w.code === 'multiple-doc-comments');
+      assert.isUndefined(warning);
+    });
+
+    test('Elements with more than one doc comment have warning', async() => {
+      const element = await getElement('test-element-15.html');
+      const warning = element.warnings.find(
+          (w: Warning) => w.code === 'multiple-doc-comments')!;
+      assert.isDefined(warning);
+      assert.deepEqual(warning.severity, Severity.WARNING);
+      assert.deepEqual(
+          warning.message,
+          'ScannedPolymerElement has both HTML doc and JSDoc comments.');
+      assert.deepEqual(warning.sourceRange, element.sourceRange);
+    });
   });
 });

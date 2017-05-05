@@ -19,7 +19,7 @@ const paperButtonElement: Element = {
   path: 'paper-button.html',
   tagname: 'paper-button',
   superclass: 'HTMLElement',
-  demos: ['demo/index.html'],
+  demos: [{url: 'demo/index.html'}],
   privacy: 'public',
 
   attributes: [

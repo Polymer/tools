@@ -257,7 +257,6 @@ export class PolymerElement extends Element implements PolymerExtension {
       domModule = domModules.values().next().value;
     }
 
-
     if (domModule) {
       this.description = this.description || domModule.comment || '';
       this.domModule = domModule.node;

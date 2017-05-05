@@ -152,9 +152,9 @@ export interface Class extends Feature {
    * Paths, relative to the base directory of the package, to demo pages for
    * this feauture.
    *
-   * e.g. `['demos/index.html', 'demos/extended.html']`
+   * e.g. `[{url: 'demos/index.html', description: 'How it works'}, ...]`
    */
-  demos: string[];
+  demos: Demo[];
 
   /** Names of mixins applied.  */
   mixins?: string[];
@@ -382,4 +382,12 @@ export interface Slot extends Feature {
   description: string;
 
   // Something about fallback perhaps?
+}
+
+export interface Demo {
+  /** A markdown description of the demo. */
+  description?: string;
+
+  /** Relative URL of the demo. */
+  url: string;
 }

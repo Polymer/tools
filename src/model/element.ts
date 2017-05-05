@@ -37,13 +37,7 @@ export class ScannedElement extends ScannedElementBase {
     super();
   }
 
-  applyHtmlComment(commentText: string|undefined) {
-    this.description = this.description || commentText || '';
-  }
-
   resolve(document: Document): Element {
-    this.applyJsdocDemoTags(document.url);
-
     return new Element(this, document);
   }
 }

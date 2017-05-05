@@ -150,8 +150,8 @@ export class ValidationError extends Error {
     const message = `Unable to validate serialized Polymer analysis. ` +
         `Got ${result.errors.length} errors: ` +
         `${
-    result.errors.map((err) => '    ' + (err.message || err)).join('\n')
-    }`;
+           result.errors.map((err) => '    ' + (err.message || err)).join('\n')
+         }`;
     super(message);
     this.errors = result.errors;
   }
@@ -232,7 +232,8 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
     path: packageRelativePath,
     properties: properties,
     methods: methods,
-    demos: (class_.demos || []).map((d) => d.path),
+    demos: (class_.demos ||
+            []).map(({path, desc}) => ({url: path, description: desc || ''})),
     metadata: class_.emitMetadata(),
     sourceRange: resolveSourceRangePath(path, class_.sourceRange),
     privacy: class_.privacy,
