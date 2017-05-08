@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Add auto-compile support for the Mobile Safari browser.
+* Add auto-compile support for the Vivaldi browser.
 * Fixed issue when serve with --push-manifest ([#168](https://github.com/Polymer/polyserve/issues/168))
 * Add gzip and deflate HTTP response compression.
 
