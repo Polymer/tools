@@ -31,6 +31,8 @@ import {openBrowser} from './util/open_browser';
 import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
 
+import compression = require('compression');
+
 const httpProxy = require('http-proxy-middleware');
 
 export interface ServerOptions {
@@ -305,6 +307,8 @@ export function getApp(options: ServerOptions): express.Express {
 
   const root = options.root || '.';
   const app = express();
+
+  app.use(compression());
 
   if (options.additionalRoutes) {
     options.additionalRoutes.forEach((handler, route) => {
