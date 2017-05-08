@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+## [2.0.0-alpha.41] - 2017-05-08
 
 * [BREAKING] The `ElementLike` interface in `AnalysisFormat` changed its `demos` property from `string[]` to `Demo[]`, to include more information from `@demo` annotations in Jsdocs.
-* [minor breaking] Simplify rules for infering privacy. Now all features: classes, elements, properties, methods, etc have one set of rules for inferring privacy. Explicit js doc annotations are respected, otherwise `__foo` and `foo_` are private, `_foo` is protected, and `foo` is public.
+* [minor breaking change] Simplify rules for infering privacy. Now all features: classes, elements, properties, methods, etc have one set of rules for inferring privacy. Explicit js doc annotations are respected, otherwise `__foo` and `foo_` are private, `_foo` is protected, and `foo` is public.
 * Fixed issue where jsdocs syntax in HTML comments was not parsed for polymer elements.
 
 ## [2.0.0-alpha.40] - 2017-04-28
