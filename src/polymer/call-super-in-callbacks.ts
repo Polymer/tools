@@ -39,9 +39,10 @@ class CallSuperInCallbacks extends Rule {
   async check(document: Document) {
     const warnings: Warning[] = [];
 
-    const elementLikes =
-        Array.from(document.getFeatures({kind: 'element'}))
-            .concat(Array.from(document.getFeatures({kind: 'element-mixin'})));
+    const elementLikes = new Array<Element|ElementMixin>(
+        ...document.getFeatures({kind: 'element'}),
+        ...document.getFeatures({kind: 'element-mixin'}));
+
     for (const elementLike of elementLikes) {
       // TODO(rictic): methods should have astNodes, that would make this
       //     simpler. Filed as:
@@ -159,8 +160,8 @@ function getClassBody(astNode?: estree.Node|null): undefined|estree.ClassBody {
  * super[methodName]() be called. Returns undefined if no such class exists.
  */
 function mustCallSuper(
-    elementLike: Element, methodName: string, document: Document): (string|
-                                                                    undefined) {
+    elementLike: Element|ElementMixin, methodName: string, document: Document):
+    (string|undefined) {
   // TODO(rictic): look up the inheritance graph for a jsdoc tag that describes
   //     the method as needing to be called?
   if (!methodsThatMustCallSuper.has(methodName)) {
