@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased 
 
-* Dependency updates. Upgraded to `sw-precache@5.1.1` minimum to prevent error about corrupted data on Firefox 52 and Chrome 59  (which matches the spec)
+* Dependency updates. Update to `sw-precache@5` to prevent "corrupted data" errors on Firefox 52 and Chrome 59 when using `addServiceWorker()`.
 
 ## [1.2.1] - 2017-05-03
 
-* Dependency updates.  Upgraded to new `polymer-bundler`.  Most important update is a fix to bug whereby `lazy-import` links were being moved out of their `<dom-module>` containers.
+* Dependency updates. Upgraded to new `polymer-bundler`.  Most important update is a fix to bug whereby `lazy-import` links were being moved out of their `<dom-module>` containers.
 
 ## [1.2.0] - 2017-05-02
 
