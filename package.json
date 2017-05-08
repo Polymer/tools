@@ -33,7 +33,7 @@
     "polymer-analyzer": "2.0.0-alpha.40",
     "polymer-bundler": "2.0.0-pre.14",
     "polymer-project-config": "^2.0.0",
-    "sw-precache": "^4.2.0",
+    "sw-precache": "^5.1.1",
     "vinyl": "^1.1.1",
     "vinyl-fs": "^2.4.3"
   },
