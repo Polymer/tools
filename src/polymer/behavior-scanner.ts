@@ -159,7 +159,6 @@ class BehaviorVisitor implements Visitor {
       properties: [],
       behaviors: [],
       className: undefined,
-      demos: [],
       extends: undefined,
       jsdoc: parsedJsdocs,
       listeners: [],

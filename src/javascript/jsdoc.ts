@@ -15,7 +15,6 @@
 import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
 import * as estree from 'estree';
-import * as url from 'url';
 
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Privacy} from '../model/model';
@@ -165,7 +164,7 @@ export function getMixinApplications(
       .filter((m) => m !== undefined) as ScannedReference[];
 }
 
-export function extractDemos(jsdoc: Annotation|undefined, baseUrl: string):
+export function extractDemos(jsdoc: Annotation|undefined):
     Array<{desc: string | undefined, path: string}> {
   if (!jsdoc || !jsdoc.tags) {
     return [];
@@ -174,7 +173,7 @@ export function extractDemos(jsdoc: Annotation|undefined, baseUrl: string):
   const demoUrls = new Set<string>();
   for (const tag of jsdoc.tags.filter(
            (tag) => tag.title === 'demo' && tag.name)) {
-    const demoUrl = url.resolve(baseUrl, tag.name!);
+    const demoUrl = tag.name!;
     if (demoUrls.has(demoUrl)) {
       continue;
     }

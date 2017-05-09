@@ -42,12 +42,7 @@ export class ScannedBehavior extends ScannedPolymerElement {
   tagName: undefined;
   className: string;
 
-  constructor(options: Options) {
-    super(options);
-  }
-
   resolve(document: Document) {
-    this.applyJsdocDemoTags(document.url);
     return new Behavior(this, document);
   }
 }

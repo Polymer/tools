@@ -68,10 +68,6 @@ export abstract class ScannedElementBase implements Resolvable {
     }
   }
 
-  applyJsdocDemoTags(baseUrl: string): void {
-    this.demos = jsdoc.extractDemos(this.jsdoc, baseUrl);
-  }
-
   resolve(_document: Document): any {
     throw new Error('abstract');
   }

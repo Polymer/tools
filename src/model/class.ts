@@ -151,7 +151,7 @@ export class Class implements Feature {
 
     this.warnings =
         init.warnings === undefined ? [] : Array.from(init.warnings);
-    this.demos = init.demos || jsdocLib.extractDemos(init.jsdoc, document.url);
+    this.demos = [...init.demos || [], ...jsdocLib.extractDemos(init.jsdoc)];
 
     this.name = init.name || init.className;
     if (this.name) {

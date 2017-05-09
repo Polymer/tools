@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
+## Unreleased
+
+* [minor breaking change] The paths in `@demo` annotations are no longer resolved.
+
 ## [2.0.0-alpha.41] - 2017-05-08
 
 * [BREAKING] The `ElementLike` interface in `AnalysisFormat` changed its `demos` property from `string[]` to `Demo[]`, to include more information from `@demo` annotations in Jsdocs.

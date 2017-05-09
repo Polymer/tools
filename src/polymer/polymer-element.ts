@@ -76,7 +76,6 @@ export interface Options {
   listeners: {event: string, handler: string}[];
   behaviors: ScannedBehaviorAssignment[];
 
-  demos: {desc: string; path: string}[];
   events: ScannedEvent[];
 
   abstract: boolean;
@@ -167,7 +166,6 @@ export class ScannedPolymerElement extends ScannedElement implements
     this.observers = options.observers;
     this.listeners = options.listeners;
     this.behaviorAssignments = options.behaviors;
-    this.demos = options.demos;
     this.events = options.events;
     this.abstract = options.abstract;
     this.privacy = options.privacy;
@@ -196,7 +194,6 @@ export class ScannedPolymerElement extends ScannedElement implements
   }
 
   resolve(document: Document): PolymerElement {
-    this.applyJsdocDemoTags(document.url);
     return new PolymerElement(this, document);
   }
 }

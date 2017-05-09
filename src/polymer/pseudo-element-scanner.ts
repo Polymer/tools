@@ -57,7 +57,6 @@ export class PseudoElementScanner implements HtmlScanner {
             listeners: [],
             behaviors: [],
             className: undefined,
-            demos: [],
             extends: undefined,
             methods: [],
             mixins: [],

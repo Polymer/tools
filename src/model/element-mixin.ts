@@ -26,7 +26,6 @@ export class ScannedElementMixin extends ScannedElementBase {
   }
 
   resolve(document: Document): ElementMixin {
-    this.applyJsdocDemoTags(document.url);
     return new ElementMixin(this, document);
   }
 }

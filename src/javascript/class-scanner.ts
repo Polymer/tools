@@ -215,7 +215,6 @@ export class ClassScanner implements JavaScriptScanner {
       events: esutil.getEventComments(astNode),
       attributes: [],
       behaviors: [],
-      demos: [],
       extends: extends_,
       listeners: [],
 
@@ -416,7 +415,7 @@ class ClassFinder implements Visitor {
         getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
-        jsdoc.extractDemos(doc, this._document.url)));
+        jsdoc.extractDemos(doc)));
     if (astNode.type === 'ClassExpression') {
       this.alreadyMatched.add(astNode);
     }
