@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   User-visible changes must be documented here. Uncomment the Unreleased heading
   as appropriate too.
 -->
+* Add build preset support.
+* Remove Node v4 support: Node v4 is no longer in Active LTS, so as per the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) we will not support Node v4 going forward. Please update to Node v6 or later to continue using the latest verisons of Polymer tooling.
+
 
 ## [2.1.1] - 2017-04-14
 * Add more documentation, and expose it through the JSON Schema.

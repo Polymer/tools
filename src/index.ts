@@ -16,8 +16,10 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as path from 'path';
 import * as logging from 'plylog';
-
+import {applyBuildPreset, isValidPreset, ProjectBuildOptions} from './builds';
 import minimatchAll = require('minimatch-all');
+
+export {ProjectBuildOptions, applyBuildPreset} from './builds';
 
 const logger = logging.getLogger('polymer-project-config');
 
@@ -67,89 +69,6 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
         options.extraDependencies || options.includeDependencies;
   }
   return options;
-}
-
-export interface ProjectBuildOptions {
-  /**
-   * The name of this build, used to determine the output directory name.
-   */
-  name?: string;
-
-  /**
-   * Generate a service worker for your application to cache all files and
-   * assets on the client.
-   *
-   * Polymer CLI will generate a service worker for your build using the
-   * [sw-precache library](https://github.com/GoogleChrome/sw-precache). To
-   * customize your service worker, create a sw-precache-config.js file in your
-   * project directory that exports your configuration. See the [sw-precache
-   * README](https://github.com/GoogleChrome/sw-precache) for a list of all
-   * supported options.
-   *
-   * Note that the sw-precache library uses a cache-first strategy for maximum
-   * speed and makes some other assumptions about how your service worker should
-   * behave. Read the "Considerations" section of the sw-precache README to make
-   * sure that this is suitable for your application.
-   */
-  addServiceWorker?: boolean;
-
-  /**
-   * If `true`, generate an [HTTP/2 Push
-   * Manifest](https://github.com/GoogleChrome/http2-push-manifest) for your
-   * application.
-   */
-  addPushManifest?: boolean;
-
-  /**
-   * A config file that's passed to the [sw-precache
-   * library](https://github.com/GoogleChrome/sw-precache). See [its
-   * README](https://github.com/GoogleChrome/sw-precache) for details of the
-   * format of this file.
-   *
-   * Ignored if `addServiceWorker` is not `true`.
-   *
-   * Defaults to `"sw-precache-config.js`.
-   */
-  swPrecacheConfig?: string;
-
-  /**
-   * Insert prefetch link elements into your fragments so that all dependencies
-   * are prefetched immediately. Add dependency prefetching by inserting `<link
-   * rel="prefetch">` tags into entrypoint and `<link rel="import">` tags into
-   * fragments and shell for all dependencies.
-   */
-  insertPrefetchLinks?: boolean;
-
-  /**
-   * By default, fragments are unbundled. This is optimal for HTTP/2-compatible
-   * servers and clients.
-   *
-   * If the --bundle flag is supplied, all fragments are bundled together to
-   * reduce the number of file requests. This is optimal for sending to clients
-   * or serving from servers that are not HTTP/2 compatible.
-   */
-  bundle?: boolean;
-
-  /** Options for processing HTML. */
-  html?: {
-    /** Minify HTMl by removing comments and whitespace. */
-    minify?: boolean
-  };
-
-  /** Options for processing CSS. */
-  css?: {
-    /** Minify inlined and external CSS. */
-    minify?: boolean
-  };
-
-  /** Options for processing JavaScript. */
-  js?: {
-    /** Minify inlined and external JavaScript. */
-    minify?: boolean,
-
-    /** Use babel to compile all ES6 JS down to ES5 for older browsers. */
-    compile?: boolean
-  };
 }
 
 export interface LintOptions {
@@ -354,6 +273,9 @@ export class ProjectConfig {
      */
     if (options.builds) {
       this.builds = options.builds;
+      if (Array.isArray(this.builds)) {
+        this.builds = this.builds.map(applyBuildPreset);
+      }
     }
   }
 
@@ -419,6 +341,11 @@ export class ProjectConfig {
         const buildNames = new Set<string>();
         for (const build of this.builds) {
           const buildName = build.name;
+          const buildPreset = build.preset;
+          console.assert(
+              !buildPreset || isValidPreset(buildPreset),
+              `${validateErrorPrefix}: "${buildPreset}" is not a valid `
+              + ` "builds" preset.`);
           console.assert(
               buildName,
               `${validateErrorPrefix}: all "builds" require ` +

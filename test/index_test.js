@@ -424,7 +424,7 @@ suite('Project Config', () => {
             insertPrefetchLinks: true,
           }
         });
-        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: "builds" \(\[object Object\]\) expected an array of build configurations\./);
+        assert.throws(() => config.validate(), 'AssertionError: Polymer Config Error: "builds" ([object Object]) expected an array of build configurations.');
       });
 
       test('throws an exception when builds array contains duplicate names', () => {
@@ -441,7 +441,7 @@ suite('Project Config', () => {
             }
           ]
         });
-        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: "builds" duplicate build name "bundled" found. Build names must be unique\./);
+        assert.throws(() => config.validate(), 'AssertionError: Polymer Config Error: "builds" duplicate build name "bundled" found. Build names must be unique.');
       });
 
       test('throws an exception when builds array contains an unnamed build', () => {
@@ -457,7 +457,22 @@ suite('Project Config', () => {
             }
           ]
         });
-        assert.throws(() => config.validate(), /AssertionError: Polymer Config Error: all "builds" require a "name" property when there are multiple builds defined\./);
+        assert.throws(() => config.validate(), 'AssertionError: Polymer Config Error: all "builds" require a "name" property when there are multiple builds defined.');
+      });
+
+      test('throws an exception when builds array contains an invalid preset', () => {
+        const absoluteRoot = process.cwd();
+        const config = new ProjectConfig({
+          builds: [
+            {
+              preset: 'not-a-real-preset',
+            },
+            {
+              bundle: true,
+            }
+          ]
+        });
+        assert.throws(() => config.validate(), 'AssertionError: Polymer Config Error: "not-a-real-preset" is not a valid  "builds" preset.');
       });
 
     });
