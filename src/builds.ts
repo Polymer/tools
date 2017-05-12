@@ -19,7 +19,8 @@ export interface ProjectBuildOptions {
   name?: string;
 
   /**
-   * A build preset for this build. A build can inherit some base configuration from a named preset.
+   * A build preset for this build. A build can inherit some base configuration
+   * from a named preset.
    */
   preset?: string;
 
@@ -101,36 +102,46 @@ export interface ProjectBuildOptions {
 }
 
 export const buildPresets = new Map<string, ProjectBuildOptions>([
-  ['es5-bundled', {
-    name: 'es5-bundled',
-    js: {minify: true, compile: true},
-    css: {minify: true},
-    html: {minify: true},
-    bundle: true,
-    addServiceWorker: true,
-    addPushManifest: true,
-    insertPrefetchLinks: true,
-  }],
-  ['es6-bundled', {
-    name: 'es6-bundled',
-    js: {minify: true, compile: false},
-    css: {minify: true},
-    html: {minify: true},
-    bundle: true,
-    addServiceWorker: true,
-    addPushManifest: true,
-    insertPrefetchLinks: true,
-  }],
-  ['es6-unbundled', {
-    name: 'es6-unbundled',
-    js: {minify: true, compile: false},
-    css: {minify: true},
-    html: {minify: true},
-    bundle: false,
-    addServiceWorker: true,
-    addPushManifest: true,
-    insertPrefetchLinks: true,
-  }],
+  [
+    'es5-bundled', {
+      name: 'es5-bundled',
+      js: {minify: true, compile: true},
+      css: {minify: true},
+      html: {minify: true},
+      bundle: true,
+      addServiceWorker: true,
+      addPushManifest: true,
+      // TODO(rictic): change this back to true once we fix
+      // https://github.com/Polymer/polymer-build/issues/203
+      insertPrefetchLinks: false,
+    }
+  ],
+  [
+    'es6-bundled', {
+      name: 'es6-bundled',
+      js: {minify: true, compile: false},
+      css: {minify: true},
+      html: {minify: true},
+      bundle: true,
+      addServiceWorker: true,
+      addPushManifest: true,
+      // TODO(rictic): change this back to true once we fix
+      // https://github.com/Polymer/polymer-build/issues/203
+      insertPrefetchLinks: false,
+    }
+  ],
+  [
+    'es6-unbundled', {
+      name: 'es6-unbundled',
+      js: {minify: true, compile: false},
+      css: {minify: true},
+      html: {minify: true},
+      bundle: false,
+      addServiceWorker: true,
+      addPushManifest: true,
+      insertPrefetchLinks: true,
+    }
+  ],
 ]);
 
 export function isValidPreset(presetName: string) {
@@ -159,4 +170,3 @@ export function applyBuildPreset(config: ProjectBuildOptions) {
   mergedConfig.html = Object.assign({}, presetConfig.html, config.html);
   return mergedConfig;
 }
-
