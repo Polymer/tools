@@ -21,8 +21,8 @@ import {Document, Feature, Method, Property, Resolvable, ScannedFeature, Scanned
 export class ScannedPolymerCoreFeature extends ScannedFeature implements
     Resolvable {
   warnings: Warning[] = [];
-  properties: ScannedProperty[] = [];
-  methods: ScannedMethod[] = [];
+  properties = new Map<string, ScannedProperty>();
+  methods = new Map<string, ScannedMethod>();
 
   resolve(document: Document): Feature|undefined {
     if (this.warnings.length > 0) {
@@ -31,8 +31,7 @@ export class ScannedPolymerCoreFeature extends ScannedFeature implements
 
     // Sniff for the root `_addFeatures` call by presence of this method. This
     // method must only appear once (in the root `polymer.html` document).
-    const isRootAddFeatureCall =
-        this.methods.some((p) => p.name === '_finishRegisterFeatures');
+    const isRootAddFeatureCall = this.methods.has('_finishRegisterFeatures');
 
     if (!isRootAddFeatureCall) {
       // We're at the `Polymer.Base` assignment or a regular `_addFeature`
@@ -44,19 +43,19 @@ export class ScannedPolymerCoreFeature extends ScannedFeature implements
     // imports, we can be sure that this is the final core feature we'll
     // resolve. Now we'll emit a "fake" class representing the union of all the
     // feature objects.
-    const allProperties: Property[] = this.properties.slice();
-    const allMethods: Method[] = this.methods.slice();
+    const allProperties: Map<string, Property> = new Map(this.properties);
+    const allMethods: Map<string, Method> = new Map(this.methods);
     const otherCoreFeatures = document.getFeatures({
       kind: 'polymer-core-feature',
       imported: true,
       externalPackages: true,
     });
     for (const feature of otherCoreFeatures) {
-      for (const property of feature.properties) {
-        allProperties.push(property);
+      for (const [key, prop] of feature.properties) {
+        allProperties.set(key, prop);
       }
-      for (const method of feature.methods) {
-        allMethods.push(method);
+      for (const [key, method] of feature.methods) {
+        allMethods.set(key, method);
       }
     }
 
@@ -94,6 +93,8 @@ export class PolymerCoreFeature implements Feature {
   identifiers = new Set<string>();
   warnings: Warning[] = [];
 
-  constructor(public properties: Property[], public methods: Method[]) {
+  constructor(
+      public properties: Map<string, Property>,
+      public methods: Map<string, Method>) {
   }
 }

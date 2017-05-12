@@ -15,7 +15,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Class, Document, ElementMixin, Method, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
+import {Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
 import {ScannedBehaviorAssignment} from './behavior';
 import {addMethod, addProperty, getBehaviors, LocalId, Observer, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
@@ -34,8 +34,8 @@ export interface Options {
 
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     ScannedPolymerExtension {
-  readonly properties: ScannedPolymerProperty[] = [];
-  readonly methods: ScannedMethod[] = [];
+  readonly properties: Map<string, ScannedPolymerProperty> = new Map();
+  readonly methods: Map<string, ScannedMethod> = new Map();
   readonly observers: Observer[] = [];
   readonly listeners: {event: string, handler: string}[] = [];
   readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];
@@ -90,8 +90,7 @@ declare module '../model/queryable' {
 }
 export class PolymerElementMixin extends ElementMixin implements
     PolymerExtension {
-  readonly properties: PolymerProperty[];
-  readonly methods: Method[];
+  readonly properties: Map<string, PolymerProperty>;
 
   readonly observers: Observer[];
   readonly listeners: {event: string, handler: string}[];
@@ -107,7 +106,6 @@ export class PolymerElementMixin extends ElementMixin implements
     this.domModule = scannedMixin.domModule;
     this.pseudo = scannedMixin.pseudo;
     this.scriptElement = scannedMixin.scriptElement;
-    this.slots = scannedMixin.slots;
     this.behaviorAssignments = Array.from(scannedMixin.behaviorAssignments);
     this.observers = Array.from(scannedMixin.observers);
   }

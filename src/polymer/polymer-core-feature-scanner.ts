@@ -142,9 +142,11 @@ class PolymerCoreFeatureVisitor implements Visitor {
         continue;
       }
       if (esutil.isFunctionType(prop.value)) {
-        feature.methods.push(toScannedMethod(prop, sourceRange));
+        const method = toScannedMethod(prop, sourceRange);
+        feature.methods.set(method.name, method);
       } else {
-        feature.properties.push(toScannedPolymerProperty(prop, sourceRange));
+        const property = toScannedPolymerProperty(prop, sourceRange);
+        feature.properties.set(property.name, property);
       }
       // TODO(aomarks) Are there any getters/setters on Polymer.Base?
       // TODO(aomarks) Merge with similar code in polymer-element-scanner.

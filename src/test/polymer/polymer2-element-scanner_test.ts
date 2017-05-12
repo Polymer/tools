@@ -52,32 +52,37 @@ suite('Polymer2ElementScanner', () => {
           tagName: element.tagName,
           description: element.description,
           summary: element.summary,
-          properties: await Promise.all(element.properties.map(async(p) => {
-            const result = {name: p.name, description: p.description} as any;
-            if (p.type) {
-              result.type = p.type;
-            }
-            if (p.observerExpression) {
-              result.propertiesInObserver =
-                  p.observerExpression.properties.map((p) => p.name);
-            }
-            if (p.computedExpression) {
-              result.propertiesInComputed =
-                  p.computedExpression.properties.map((p) => p.name);
-            }
-            if (p.warnings.length > 0) {
-              result.warningUnderlines = await underliner.underline(p.warnings);
-            }
-            return result;
-          })),
-          attributes: element.attributes.map((a) => ({
-                                               name: a.name,
-                                             })),
-          methods: element.methods.map((m) => ({
-                                         name: m.name,
-                                         params: m.params, return: m.return,
-                                         description: m.description
-                                       })),
+          properties: await Promise.all(
+              Array.from(element.properties.values()).map(async(p) => {
+                const result = {name: p.name,
+                                description: p.description} as any;
+                if (p.type) {
+                  result.type = p.type;
+                }
+                if (p.observerExpression) {
+                  result.propertiesInObserver =
+                      p.observerExpression.properties.map((p) => p.name);
+                }
+                if (p.computedExpression) {
+                  result.propertiesInComputed =
+                      p.computedExpression.properties.map((p) => p.name);
+                }
+                if (p.warnings.length > 0) {
+                  result.warningUnderlines =
+                      await underliner.underline(p.warnings);
+                }
+                return result;
+              })),
+          attributes:
+              Array.from(element.attributes.values()).map((a) => ({
+                                                            name: a.name,
+                                                          })),
+          methods: Array.from(element.methods.values())
+                       .map((m) => ({
+                              name: m.name,
+                              params: m.params, return: m.return,
+                              description: m.description
+                            })),
 
           warningUnderlines: await underliner.underline(element.warnings),
 

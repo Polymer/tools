@@ -61,19 +61,21 @@ suite('BehaviorScanner', () => {
 
   test('Supports behaviors at local assignments', () => {
     assert(behaviors.has('SimpleBehavior'));
-    assert.equal(behaviors.get('SimpleBehavior')!.properties[0].name, 'simple');
+    assert.equal(
+        behaviors.get('SimpleBehavior')!.properties.values().next().value.name,
+        'simple');
   });
 
   test('Supports behaviors with renamed paths', () => {
     assert(behaviors.has('AwesomeBehavior'));
-    assert(behaviors.get('AwesomeBehavior')!.properties.some(
-        (prop) => prop.name === 'custom'));
+    assert(behaviors.get('AwesomeBehavior')!.properties.has('custom'));
   });
 
   test('Supports behaviors On.Property.Paths', () => {
     assert(behaviors.has('Really.Really.Deep.Behavior'));
     assert.equal(
-        behaviors.get('Really.Really.Deep.Behavior')!.properties[0].name,
+        behaviors.get('Really.Really.Deep.Behavior')!.properties
+            .get('deep')!.name,
         'deep');
   });
 

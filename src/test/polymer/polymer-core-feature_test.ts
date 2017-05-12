@@ -64,7 +64,7 @@ suite('PolymerCoreFeatureScanner', () => {
     assert.equal(a.description, 'Feature A');
     assert.deepEqual(a.warnings, []);
     assert.deepEqual(
-        a.properties.map(
+        [...a.properties.values()].map(
             ({name, type, description}) => ({name, type, description})),
         [{
           name: 'propA',
@@ -72,7 +72,7 @@ suite('PolymerCoreFeatureScanner', () => {
           description: 'Prop A',
         }]);
     assert.deepEqual(
-        a.methods.map(
+        [...a.methods.values()].map(
             ({name, type, description}) => ({name, type, description})),
         [{
           name: 'methodA',
@@ -82,9 +82,9 @@ suite('PolymerCoreFeatureScanner', () => {
 
     assert.equal(b.description, 'Feature B');
     assert.deepEqual(b.warnings, []);
-    assert.deepEqual(b.properties, []);
+    assert.deepEqual([...b.properties.values()], []);
     assert.deepEqual(
-        b.methods.map(
+        [...b.methods.values()].map(
             ({name, type, description}) => ({name, type, description})),
         [{
           name: 'methodB',
@@ -94,9 +94,9 @@ suite('PolymerCoreFeatureScanner', () => {
 
     assert.equal(base.description, 'Polymer.Base declaration');
     assert.deepEqual(base.warnings, []);
-    assert.deepEqual(base.properties, []);
+    assert.deepEqual([...base.properties.values()], []);
     assert.deepEqual(
-        base.methods.map(
+        [...base.methods.values()].map(
             ({name, type, description}) => ({name, type, description})),
         [{
           name: 'methodBase',
@@ -118,24 +118,22 @@ suite('PolymerCoreFeatureScanner', () => {
     const features = analysis.getFeatures({id: 'Polymer.Base', kind: 'class'});
     assert.equal(features.size, 1);
     const polymerBase = features.values().next().value;
-    assert.lengthOf(polymerBase.methods, 35);
-    assert.lengthOf(polymerBase.properties, 2);
+    assert.equal(polymerBase.methods.size, 35);
+    assert.equal(polymerBase.properties.size, 2);
 
     // A method from debounce.html
-    const debounce = polymerBase.methods.find((m) => m.name === 'debounce');
+    const debounce = polymerBase.methods.get('debounce');
     assert.isDefined(debounce);
     assert.equal(debounce!.privacy, 'public');
     assert.equal(debounce!.params![0].name, 'jobName');
 
     // A method from base.html
-    const addFeature =
-        polymerBase.methods.find((m) => m.name === '_addFeature');
+    const addFeature = polymerBase.methods.get('_addFeature');
     assert.isDefined(addFeature);
     assert.equal(addFeature!.privacy, 'protected');
 
     // A property from behaviors.html
-    const behaviors =
-        polymerBase.properties.find((m) => m.name === 'behaviors');
+    const behaviors = polymerBase.properties.get('behaviors');
     assert.isDefined(behaviors);
   });
 });

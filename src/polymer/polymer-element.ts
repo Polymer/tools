@@ -70,13 +70,13 @@ export interface Options {
   jsdoc: JsDocAnnotation;
   description: string|undefined;
   properties: ScannedProperty[];
-  methods: ScannedMethod[];
-  attributes: ScannedAttribute[];
+  methods: Map<string, ScannedMethod>;
+  attributes: Map<string, ScannedAttribute>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];
   behaviors: ScannedBehaviorAssignment[];
 
-  events: ScannedEvent[];
+  events: Map<string, ScannedEvent>;
 
   abstract: boolean;
   privacy: Privacy;
@@ -85,8 +85,8 @@ export interface Options {
 }
 
 export interface ScannedPolymerExtension extends ScannedElementBase {
-  properties: ScannedPolymerProperty[];
-  methods: ScannedMethod[];
+  properties: Map<string, ScannedPolymerProperty>;
+  methods: Map<string, ScannedMethod>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];
   behaviorAssignments: ScannedBehaviorAssignment[];
@@ -102,7 +102,7 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
 
 export function addProperty(
     target: ScannedPolymerExtension, prop: ScannedPolymerProperty) {
-  target.properties.push(prop);
+  target.properties.set(prop.name, prop);
   const attributeName = propertyToAttributeName(prop.name);
   // Don't produce attributes or events for nonpublic properties, properties
   // that aren't in Polymer's `properties` block (i.e. not published),
@@ -111,7 +111,7 @@ export function addProperty(
       !prop.published) {
     return;
   }
-  target.attributes.push({
+  target.attributes.set(attributeName, {
     name: attributeName,
     sourceRange: prop.sourceRange,
     description: prop.description,
@@ -119,8 +119,9 @@ export function addProperty(
     changeEvent: prop.notify ? `${attributeName}-changed` : undefined
   });
   if (prop.notify) {
-    target.events.push({
-      name: `${attributeName}-changed`,
+    const name = `${attributeName}-changed`;
+    target.events.set(name, {
+      name,
       description: `Fired when the \`${prop.name}\` property changes.`,
       sourceRange: prop.sourceRange,
       astNode: prop.astNode,
@@ -132,7 +133,7 @@ export function addProperty(
 
 export function addMethod(
     target: ScannedPolymerExtension, method: ScannedMethod) {
-  target.methods.push(method);
+  target.methods.set(method.name, method);
 }
 
 /**
@@ -140,8 +141,8 @@ export function addMethod(
  */
 export class ScannedPolymerElement extends ScannedElement implements
     ScannedPolymerExtension {
-  properties: ScannedPolymerProperty[] = [];
-  methods: ScannedMethod[] = [];
+  properties = new Map<string, ScannedPolymerProperty>();
+  methods = new Map<string, ScannedMethod>();
   observers: Observer[] = [];
   listeners: {event: string, handler: string}[] = [];
   behaviorAssignments: ScannedBehaviorAssignment[] = [];
@@ -199,7 +200,7 @@ export class ScannedPolymerElement extends ScannedElement implements
 }
 
 export interface PolymerExtension extends ElementBase {
-  properties: PolymerProperty[];
+  properties: Map<string, PolymerProperty>;
 
   observers: ImmutableArray < {
     javascriptNode: estree.Expression|estree.SpreadElement,
@@ -223,7 +224,7 @@ declare module '../model/queryable' {
 }
 
 export class PolymerElement extends Element implements PolymerExtension {
-  readonly properties: PolymerProperty[];
+  readonly properties: Map<string, PolymerProperty>;
   readonly observers: ImmutableArray<Observer> = [];
   readonly listeners: ImmutableArray<{event: string, handler: string}> = [];
   readonly behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment> = [];
@@ -257,7 +258,7 @@ export class PolymerElement extends Element implements PolymerExtension {
     if (domModule) {
       this.description = this.description || domModule.comment || '';
       this.domModule = domModule.node;
-      this.slots = domModule.slots.slice();
+      this.slots = this.slots.concat(domModule.slots);
       this.localIds = domModule.localIds.slice();
     }
 

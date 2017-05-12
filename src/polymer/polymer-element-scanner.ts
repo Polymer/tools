@@ -67,13 +67,13 @@ class ElementVisitor implements Visitor {
       sourceRange: this.document.sourceRangeForNode(node), className,
       privacy: getOrInferPrivacy(className, docs),
       abstract: jsdoc.hasTag(docs, 'abstract'),
-      attributes: [],
+      attributes: new Map(),
       properties: [],
       behaviors: [],
       extends: undefined,
       jsdoc: docs,
       listeners: [],
-      methods: [],
+      methods: new Map(),
       mixins: [],
       observers: [],
       superClass: undefined,
@@ -84,7 +84,9 @@ class ElementVisitor implements Visitor {
   }
 
   leaveClassDeclaration(_: estree.ClassDeclaration, _parent: estree.Node) {
-    this.element!.properties.map((property) => docs.annotate(property));
+    for (const property of this.element!.properties.values()) {
+      docs.annotate(property);
+    }
     // TODO(justinfagnani): this looks wrong, class definitions can be nested
     // so a definition in a method in a Polymer() declaration would end the
     // declaration early. We should track which class induced the current
@@ -205,13 +207,13 @@ class ElementVisitor implements Visitor {
           sourceRange: this.document.sourceRangeForNode(node.arguments[0]),
           privacy: getOrInferPrivacy('', jsDoc),
           abstract: jsdoc.hasTag(jsDoc, 'abstract'),
-          attributes: [],
+          attributes: new Map(),
           properties: [],
           behaviors: [],
           extends: undefined,
           jsdoc: jsDoc,
           listeners: [],
-          methods: [],
+          methods: new Map(),
           mixins: [],
           observers: [],
           superClass: undefined,

@@ -30,6 +30,7 @@ export declare interface ImmutableArray<V> {
   slice(left?: number, right?: number): Array<V>;
   map<U>(f: (v: V, idx: number) => U): Array<U>;
   forEach(f: (v: V, idx: number) => void): void;
+  concat(...arrs: V[][]): Array<V>;
   [Symbol.iterator](): Iterator<V>;
 }
 

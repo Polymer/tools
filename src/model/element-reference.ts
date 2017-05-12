@@ -17,7 +17,7 @@ import * as dom5 from 'dom5';
 import {Feature, Resolvable, SourceRange, Warning} from '../model/model';
 
 import {Document} from './document';
-import {ImmutableArray, ImmutableSet} from './immutable';
+import {ImmutableArray, ImmutableMap, ImmutableSet} from './immutable';
 
 export interface Attribute {
   readonly name: string;
@@ -35,7 +35,7 @@ declare module '../model/queryable' {
 
 export class ElementReference implements Feature {
   readonly tagName: string;
-  readonly attributes: ImmutableArray<Attribute>;
+  readonly attributes: ImmutableMap<string, Attribute>;
   readonly sourceRange: SourceRange;
   readonly astNode: dom5.Node;
   readonly warnings: ImmutableArray<Warning>;
@@ -56,7 +56,7 @@ export class ElementReference implements Feature {
 
 export class ScannedElementReference implements Resolvable {
   readonly tagName: string;
-  readonly attributes: Attribute[] = [];
+  readonly attributes = new Map<string, Attribute>();
   readonly sourceRange: SourceRange;
   readonly astNode: dom5.Node;
   readonly warnings: ImmutableArray<Warning> = [];

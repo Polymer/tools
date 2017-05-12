@@ -73,18 +73,20 @@ export function getPolymerProperties(
   return propertiesNode ? analyzeProperties(propertiesNode, document) : [];
 }
 
-export function getMethods(
-    node: estree.Node, document: JavaScriptDocument): ScannedMethod[] {
+export function getMethods(node: estree.Node, document: JavaScriptDocument):
+    Map<string, ScannedMethod> {
   if (node.type !== 'ClassDeclaration' && node.type !== 'ClassExpression') {
-    return [];
+    return new Map();
   }
-  return node.body.body
-      .filter(
-          (n) => n.type === 'MethodDefinition' && n.static === false &&
-              n.kind === 'method')
-      .map((m) => {
-        const method = toScannedMethod(m, document.sourceRangeForNode(m)!);
-        docs.annotate(method);
-        return method;
-      });
+  const methods = new Map<string, ScannedMethod>();
+  for (const statement of node.body.body) {
+    if (statement.type === 'MethodDefinition' && statement.static === false &&
+        statement.kind === 'method') {
+      const method =
+          toScannedMethod(statement, document.sourceRangeForNode(statement)!);
+      docs.annotate(method);
+      methods.set(method.name, method);
+    }
+  }
+  return methods;
 }

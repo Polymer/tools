@@ -222,9 +222,10 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
   const packageRelativePath =
       pathLib.relative(packagePath, class_.sourceRange!.file);
 
-  const properties =
-      class_.properties.map((p) => serializeProperty(class_, path, p));
-  const methods = class_.methods.map((m) => serializeMethod(class_, path, m));
+  const properties = Array.from(class_.properties.values())
+                         .map((p) => serializeProperty(class_, path, p));
+  const methods = Array.from(class_.methods.values())
+                      .map((m) => serializeMethod(class_, path, m));
 
   const serialized: Class = {
     description: class_.description || '',
@@ -249,10 +250,11 @@ function serializeElementLike(
   const class_ = serializeClass(elementOrMixin, packagePath) as ElementLike;
   const path = elementOrMixin.sourceRange!.file;
 
-  class_.attributes = elementOrMixin.attributes.map(
-      (a) => serializeAttribute(elementOrMixin, path, a));
-  class_.events =
-      elementOrMixin.events.map((e) => serializeEvent(elementOrMixin, path, e));
+  class_.attributes =
+      Array.from(elementOrMixin.attributes.values())
+          .map((a) => serializeAttribute(elementOrMixin, path, a));
+  class_.events = Array.from(elementOrMixin.events.values())
+                      .map((e) => serializeEvent(elementOrMixin, path, e));
 
   Object.assign(class_, {
     styling: {

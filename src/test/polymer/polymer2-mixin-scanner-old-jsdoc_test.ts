@@ -25,7 +25,7 @@ import {ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
-suite('Polymer2MixinScanner', () => {
+suite('Polymer2MixinScanner with old jsdoc annotations', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2-old-jsdoc/');
   const urlLoader = new FSUrlLoader(testFilesDir);
   const underliner = new CodeUnderliner(urlLoader);
@@ -51,15 +51,15 @@ suite('Polymer2MixinScanner', () => {
   async function getTestProps(mixin: ScannedPolymerElementMixin|
                               PolymerElementMixin) {
     const properties = [];
-    for (const {name} of mixin.properties) {
+    for (const name of mixin.properties.keys()) {
       properties.push({name});
     }
     const attributes = [];
-    for (const {name} of mixin.attributes) {
+    for (const name of mixin.attributes.keys()) {
       attributes.push({name});
     }
     const methods = [];
-    for (const {name, params, return: r} of mixin.methods) {
+    for (const {name, params, return: r} of mixin.methods.values()) {
       let processedParams = undefined;
       if (params) {
         processedParams = params.map(({name, type, description}) => {
@@ -282,8 +282,8 @@ function TestMixin() {
     assert.equal(underlinedSource, `
 Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /** 
-~~~~~~
+  /**
+~~~~~
    * @polymerMixinClass
 ~~~~~~~~~~~~~~~~~~~~~~~
    */

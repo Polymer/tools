@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+* [BREAKING] `attributes`, `properties`, `methods`, and `events` are now Maps from the name to the value rather than arrays. This better models what's actually going on (you can't have two different properties with the same name in javascript) and it makes our inheritance modeling more efficient.
+  * Note that the serialized output format `analysis.json` is not changed, it still uses arrays.
 
 ## [2.0.0-alpha.42] -2017-05-09
 

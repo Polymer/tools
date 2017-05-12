@@ -91,7 +91,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
 
   test('Extracts attributes from observedAttributes', () => {
     const element = elements.get('vanilla-with-observed-attributes')!;
-    assert.containSubset(element.attributes, [
+    assert.containSubset(Array.from(element.attributes.values()), [
       {
         description: 'When given the element is totally inactive',
         name: 'disabled',

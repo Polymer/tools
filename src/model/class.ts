@@ -14,13 +14,12 @@
 
 import * as estree from 'estree';
 
-import {ElementMixin} from '../index';
 import * as jsdocLib from '../javascript/jsdoc';
 import {Document, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 
 import {getOrInferPrivacy} from '../polymer/js-utils';
 import {Demo} from './element-base';
-import {ImmutableArray} from './immutable';
+import {ImmutableMap} from './immutable';
 
 /**
  * Represents a JS class as encountered in source code.
@@ -43,8 +42,8 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly description: string;
   readonly summary: string;
   readonly sourceRange: SourceRange;
-  readonly properties: ScannedProperty[];
-  readonly methods: ScannedMethod[];
+  readonly properties: Map<string, ScannedProperty>;
+  readonly methods: ImmutableMap<string, ScannedMethod>;
   readonly superClass: ScannedReference|undefined;
   readonly mixins: ScannedReference[];
   readonly abstract: boolean;
@@ -54,10 +53,10 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   constructor(
       className: string|undefined, localClassName: string|undefined,
       astNode: estree.Node, jsdoc: jsdocLib.Annotation, description: string,
-      sourceRange: SourceRange, properties: ScannedProperty[],
-      methods: ScannedMethod[], superClass: ScannedReference|undefined,
-      mixins: ScannedReference[], privacy: Privacy, warnings: Warning[],
-      abstract: boolean, demos: Demo[]) {
+      sourceRange: SourceRange, properties: Map<string, ScannedProperty>,
+      methods: Map<string, ScannedMethod>,
+      superClass: ScannedReference|undefined, mixins: ScannedReference[],
+      privacy: Privacy, warnings: Warning[], abstract: boolean, demos: Demo[]) {
     this.name = className;
     this.localName = localClassName;
     this.astNode = astNode;
@@ -97,8 +96,8 @@ export interface ClassInit {
   readonly className?: string;
   readonly jsdoc?: jsdocLib.Annotation;
   readonly description: string;
-  readonly properties?: Property[];
-  readonly methods?: Method[];
+  readonly properties?: ImmutableMap<string, Property>;
+  readonly methods?: ImmutableMap<string, Method>;
   readonly superClass?: ScannedReference|undefined;
   readonly mixins?: ScannedReference[];
   readonly abstract: boolean;
@@ -122,8 +121,8 @@ export class Class implements Feature {
   }
   readonly jsdoc: jsdocLib.Annotation|undefined;
   description: string;
-  readonly properties: Property[] = [];
-  readonly methods: Method[] = [];
+  readonly properties = new Map<string, Property>();
+  readonly methods = new Map<string, Method>();
   readonly superClass: Reference|undefined;
   /**
    * Mixins that this class declares with `@mixes`.
@@ -168,12 +167,16 @@ export class Class implements Feature {
       this.inheritFrom(superClassLike);
     }
 
-    this._overwriteInherited(
-        this.properties, init.properties || [], undefined, true);
-    this._overwriteInherited(this.methods, init.methods || [], undefined, true);
+    if (init.properties !== undefined) {
+      this._overwriteInherited(
+          this.properties, init.properties, undefined, true);
+    }
+    if (init.methods !== undefined) {
+      this._overwriteInherited(this.methods, init.methods, undefined, true);
+    }
 
 
-    for (const method of this.methods) {
+    for (const method of this.methods.values()) {
       // methods are only public by default if they're documented.
       method.privacy = getOrInferPrivacy(method.name, method.jsdoc);
     }
@@ -201,24 +204,19 @@ export class Class implements Feature {
    *   applying the class's own local members.
    */
   protected _overwriteInherited<P extends PropertyLike>(
-      existing: P[], overriding: ImmutableArray<P>,
+      existing: Map<string, P>, overriding: ImmutableMap<string, P>,
       overridingClassName: string|undefined, applyingSelf = false) {
-    // This exists to treat the arrays as maps.
-    // TODO(rictic): convert these arrays to maps.
-    const existingIndexByName =
-        new Map(existing.map((e, idx) => [e.name, idx] as [string, number]));
-    for (const overridingVal of overriding) {
+    for (const [key, overridingVal] of overriding) {
       const newVal = Object.assign({}, overridingVal, {
         inheritedFrom: overridingVal['inheritedFrom'] || overridingClassName
       });
-      if (existingIndexByName.has(overridingVal.name)) {
+      if (existing.has(key)) {
         /**
          * TODO(rictic): if existingVal.privacy is protected, newVal should be
          *    protected unless an explicit privacy was specified.
          *    https://github.com/Polymer/polymer-analyzer/issues/631
          */
-        const existingIndex = existingIndexByName.get(overridingVal.name)!;
-        const existingValue = existing[existingIndex]!;
+        const existingValue = existing.get(key)!;
         if (existingValue.privacy === 'private') {
           let warningSourceRange = this.sourceRange!;
           if (applyingSelf) {
@@ -232,10 +230,8 @@ export class Class implements Feature {
             severity: Severity.WARNING
           });
         }
-        existing[existingIndex] = newVal;
-        continue;
       }
-      existing.push(newVal);
+      existing.set(key, newVal);
     }
   }
 
@@ -295,30 +291,6 @@ export class Class implements Feature {
       return undefined;
     }
     return superElements.values().next().value;
-  }
-
-  protected _inheritFrom(superClass: Class|ElementMixin) {
-    const existingProperties = new Set(this.properties.map((p) => p.name));
-    for (const superProperty of superClass.properties) {
-      if (existingProperties.has(superProperty.name)) {
-        continue;
-      }
-      const newProperty = Object.assign({}, superProperty, {
-        inheritedFrom: superProperty.inheritedFrom || superClass.name
-      });
-      this.properties.push(newProperty);
-    }
-
-    const existingMethods = new Set(this.methods.map((m) => m.name));
-    for (const superMethod of superClass.methods) {
-      if (existingMethods.has(superMethod.name)) {
-        continue;
-      }
-      const newMethod = Object.assign({}, superMethod, {
-        inheritedFrom: superMethod.inheritedFrom || superClass.name
-      });
-      this.methods.push(newMethod);
-    }
   }
 
   emitMetadata(): object {

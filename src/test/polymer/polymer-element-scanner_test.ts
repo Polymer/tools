@@ -115,9 +115,9 @@ suite('PolymerElementScanner', () => {
           features[0].observers.map(
               (o) => o.parsedExpression!.properties.map((p) => p.name)),
           [['_anObserver', 'foo', 'bar'], ['_anotherObserver', 'foo']]);
+      const properties = Array.from(features[0].properties.values());
       assert.deepEqual(
-          features[0]
-              .properties.filter((p) => p.observerExpression)
+          properties.filter((p) => p.observerExpression)
               .map(
                   (p) =>
                       [p.name,
@@ -125,8 +125,7 @@ suite('PolymerElementScanner', () => {
           [['f', ['_observeF']], ['all', ['_observeAll']]]);
 
       assert.deepEqual(
-          features[0]
-              .properties.filter((p) => p.computedExpression)
+          properties.filter((p) => p.computedExpression)
               .map(
                   (p) =>
                       [p.name,
@@ -134,13 +133,13 @@ suite('PolymerElementScanner', () => {
           [['d', ['_computeD', 'c']], ['g', ['_computeG', 'a', 'b']]]);
 
       assert.deepEqual(
-          features[0].events.map((e) => e.name), ['e-changed', 'all-changed']);
+          Array.from(features[0].events.values()).map((e) => e.name),
+          ['e-changed', 'all-changed']);
 
-      assert.equal(features[0].properties.length, 9);
+      assert.equal(properties.length, 9);
 
       assert.deepEqual(
-          features[0]
-              .properties.filter((p) => p.warnings.length > 0)
+          properties.filter((p) => p.warnings.length > 0)
               .map((p) => [p.name, p.warnings.map((w) => w.message)]),
           [[
             'g',
@@ -149,15 +148,16 @@ suite('PolymerElementScanner', () => {
               'Unable to determine type for property.'
             ]
           ]]);
-
-      assert.deepEqual(features[0].methods.map((m) => m.name), [
+      const methods = Array.from(features[0].methods.values());
+      assert.deepEqual(methods.map((m) => m.name), [
         'customPublicMethod',
         '_customPrivateMethod',
         'customPublicMethodWithJsDoc',
         'customPublicMethodWithClassicFunction',
       ]);
 
-      const jsDocMethod = features[0].methods[2];
+      const jsDocMethod =
+          features[0].methods.get('customPublicMethodWithJsDoc')!;
 
       assert.deepEqual(jsDocMethod.return !, {
         type: 'boolean',
@@ -170,7 +170,7 @@ suite('PolymerElementScanner', () => {
             ['bar', 'number', 'The second argument.'],
           ]);
 
-      assert.deepEqual(features[0].properties.map((p) => [p.name, p.type]), [
+      assert.deepEqual(properties.map((p) => [p.name, p.type]), [
         ['a', 'boolean'],
         ['b', 'string'],
         ['c', 'number'],
@@ -183,7 +183,9 @@ suite('PolymerElementScanner', () => {
       ]);
 
       assert.deepEqual(
-          features[0].attributes.map((p) => [p.name, p.changeEvent]), [
+          Array.from(features[0].attributes.values())
+              .map((p) => [p.name, p.changeEvent]),
+          [
             ['a', undefined],
             ['b', undefined],
             ['c', undefined],
@@ -196,18 +198,15 @@ suite('PolymerElementScanner', () => {
           ]);
 
       assert.deepEqual(
-          features[0].properties.filter((p) => p.readOnly).map((p) => p.name),
+          properties.filter((p) => p.readOnly).map((p) => p.name),
           ['c', 'd', 'g']);
 
       assert.deepEqual(
-          features[0]
-              .properties.filter((p) => p.default)
-              .map((p) => [p.name, p.default]),
+          properties.filter((p) => p.default).map((p) => [p.name, p.default]),
           [['a', '5'], ['b', '"test"']]);
 
       assert.deepEqual(
-          features[0].properties.filter((p) => p.notify).map((p) => p.name),
-          ['e', 'all']);
+          properties.filter((p) => p.notify).map((p) => p.name), ['e', 'all']);
 
       assert.deepEqual(features[0].listeners, [
         {event: 'event-a', handler: '_handleA'},
@@ -290,12 +289,12 @@ suite('PolymerElementScanner', () => {
       assert.deepEqual(features.length, 1);
       const element = features[0]!;
       assert.deepEqual(
-          element.properties.map((p) => p.name),
+          Array.from(element.properties.keys()),
           ['parseError', 'badKindOfExpression']);
 
       assert.deepEqual(
-          await Promise.all(
-              element.properties.map((p) => underliner.underline(p.warnings))),
+          await Promise.all(Array.from(element.properties.values())
+                                .map((p) => underliner.underline(p.warnings))),
           [
             [
               `

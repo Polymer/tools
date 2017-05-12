@@ -51,15 +51,15 @@ suite('Polymer2MixinScanner', () => {
   async function getTestProps(mixin: ScannedPolymerElementMixin|
                               PolymerElementMixin) {
     const properties = [];
-    for (const {name} of mixin.properties) {
+    for (const name of mixin.properties.keys()) {
       properties.push({name});
     }
     const attributes = [];
-    for (const {name} of mixin.attributes) {
+    for (const name of mixin.attributes.keys()) {
       attributes.push({name});
     }
     const methods = [];
-    for (const {name, params, return: r} of mixin.methods) {
+    for (const {name, params, return: r} of mixin.methods.values()) {
       let processedParams = undefined;
       if (params) {
         processedParams = params.map(({name, type, description}) => {
@@ -279,11 +279,11 @@ function TestMixin() {
                        underlinedWarnings: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /** 
-~~~~~~
+  /**
+~~~~~
    * @mixinClass
 ~~~~~~~~~~~~~~~~
    * @polymer

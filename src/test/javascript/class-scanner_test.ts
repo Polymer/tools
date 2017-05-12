@@ -68,15 +68,15 @@ suite('Class', () => {
       description: class_.description,
       privacy: class_.privacy
     };
-    if (class_.properties.length > 0) {
+    if (class_.properties.size > 0) {
       result.properties = [];
-      for (const {name} of class_.properties) {
+      for (const {name} of class_.properties.values()) {
         result.properties.push({name});
       }
     }
-    if (class_.methods.length > 0) {
+    if (class_.methods.size > 0) {
       result.methods = [];
-      for (const m of class_.methods) {
+      for (const m of class_.methods.values()) {
         const method: any = {name: m.name, description: m.description};
         if (m.params && m.params.length > 0) {
           method.params = m.params.map((p) => {

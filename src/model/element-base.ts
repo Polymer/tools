@@ -18,7 +18,9 @@ import * as jsdoc from '../javascript/jsdoc';
 
 import {Class, ClassInit} from './class';
 import {Privacy} from './feature';
-import {Attribute, Document, Event, Feature, Method, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
+import {ImmutableArray} from './immutable';
+import {ScannedMethod} from './method';
+import {Attribute, Document, Event, Feature, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
 import {Severity} from './warning';
 
 export {Visitor} from '../javascript/estree-visitor';
@@ -27,14 +29,14 @@ export {Visitor} from '../javascript/estree-visitor';
  * Base class for ScannedElement and ScannedElementMixin.
  */
 export abstract class ScannedElementBase implements Resolvable {
-  properties: ScannedProperty[] = [];
-  attributes: ScannedAttribute[] = [];
+  properties = new Map<string, ScannedProperty>();
+  attributes = new Map<string, ScannedAttribute>();
   description = '';
   summary = '';
   demos: {desc?: string; path: string}[] = [];
-  events: ScannedEvent[] = [];
+  events: Map<string, ScannedEvent> = new Map();
   sourceRange: SourceRange|undefined;
-  methods: Method[];
+  methods: Map<string, ScannedMethod>;
   astNode: estree.Node|null;
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
@@ -89,24 +91,24 @@ export interface Demo {
 }
 
 export interface ElementBaseInit extends ClassInit {
-  events?: Event[];
-  attributes?: Attribute[];
-  slots?: Slot[];
+  readonly events?: Map<string, Event>;
+  readonly attributes?: Map<string, Attribute>;
+  readonly slots?: Slot[];
 }
 
 /**
  * Base class for Element and ElementMixin.
  */
 export abstract class ElementBase extends Class implements Feature {
-  attributes: Attribute[];
-  events: Event[];
-  'slots': Slot[] = [];
+  attributes: Map<string, Attribute>;
+  events: Map<string, Event>;
+  'slots': ImmutableArray<Slot> = [];
 
   constructor(init: ElementBaseInit, document: Document) {
     super(init, document);
     const {
-      events = [],
-      attributes = [],
+      events,
+      attributes,
       slots = [],
     } = init;
     this.slots = Array.from(slots);
@@ -114,18 +116,22 @@ export abstract class ElementBase extends Class implements Feature {
     // Initialization of these attributes is kinda awkward, as they're part
     // of the inheritance system. See `inheritFrom` below which *may* be
     // called by our superclass, but may not be.
-    this.attributes = this.attributes || [];
-    this.events = this.events || [];
+    this.attributes = this.attributes || new Map();
+    this.events = this.events || new Map();
 
-    this._overwriteInherited(this.attributes, attributes, undefined, true);
-    this._overwriteInherited(this.events, events, undefined, true);
+    if (attributes !== undefined) {
+      this._overwriteInherited(this.attributes, attributes, undefined, true);
+    }
+    if (events !== undefined) {
+      this._overwriteInherited(this.events, events, undefined, true);
+    }
   }
 
   protected inheritFrom(superClass: Class) {
     // This may run as part of the call to the super constructor, so we need
     // to validate initialization.
-    this.attributes = this.attributes || [];
-    this.events = this.events || [];
+    this.attributes = this.attributes || new Map();
+    this.events = this.events || new Map();
 
     super.inheritFrom(superClass);
     if (superClass instanceof ElementBase) {

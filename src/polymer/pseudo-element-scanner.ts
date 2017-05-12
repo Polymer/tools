@@ -52,13 +52,13 @@ export class PseudoElementScanner implements HtmlScanner {
             abstract: jsdoc.hasTag(parsedJsdoc, 'abstract'),
 
             properties: [],
-            attributes: [],
-            events: [],
+            attributes: new Map(),
+            events: new Map(),
             listeners: [],
             behaviors: [],
             className: undefined,
             extends: undefined,
-            methods: [],
+            methods: new Map(),
             mixins: [],
             observers: [],
             superClass: undefined

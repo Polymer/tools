@@ -3,7 +3,7 @@
  * @polymer
  */
 Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
-  /** 
+  /**
    * @mixinClass
    * @polymer
    */
