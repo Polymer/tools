@@ -29,26 +29,22 @@ import {transformResponse} from './transform-middleware';
 export function injectCustomElementsEs5Adapter(forceCompile: boolean):
     RequestHandler {
   return transformResponse({
-    shouldTransform(request: Request, _response: Response): boolean {
-      // We only need to inject the adapter if we are compiling to ES5.
-      return forceCompile ||
-          browserNeedsCompilation(request.headers['user-agent']);
-    },
-
-    transform(_request: Request, response: Response, body: string): string {
+    shouldTransform(request: Request, response: Response): boolean {
       const contentTypeHeader = response.getHeader('Content-Type');
       const contentType =
           contentTypeHeader && parseContentType(contentTypeHeader).type;
-      if (contentType === 'text/html') {
-        // TODO(aomarks) This function will make no changes if the body does
-        // not find a web components polyfill script tag. This is the heuristic
-        // we use to determine if a file is the entry point. We would instead
-        // be able to check explicitly for the entry point in `shouldTransform`
-        // if we had the project config available.
-        return addCustomElementsEs5Adapter(body);
-      } else {
-        return body;
-      }
+      // We only need to inject the adapter if we are compiling to ES5.
+      return contentType === 'text/html' && (forceCompile ||
+          browserNeedsCompilation(request.headers['user-agent']));
+    },
+
+    transform(_request: Request, _response: Response, body: string): string {
+      // TODO(aomarks) This function will make no changes if the body does
+      // not find a web components polyfill script tag. This is the heuristic
+      // we use to determine if a file is the entry point. We would instead
+      // be able to check explicitly for the entry point in `shouldTransform`
+      // if we had the project config available.
+      return addCustomElementsEs5Adapter(body);
     },
   });
 }
