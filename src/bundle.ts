@@ -85,14 +85,14 @@ export class BuildBundler extends Transform {
     await this._bundler.analyzer.filesChanged(
         this._getFilesChangedSinceInitialAnalysis());
 
-    const manifest = await this._generateBundleManifest();
-    const bundles = await this._bundler.bundle(manifest);
+    const {documents, manifest} =
+        await this._bundler.bundle(await this._generateBundleManifest());
 
     // Remove the bundled files from the file map so they are not emitted later.
     this._unmapBundledFiles(manifest);
 
     // Map the bundles into the file map.
-    for (const [filename, document] of bundles) {
+    for (const [filename, document] of documents) {
       this._mapFile(new File({
         path: pathFromUrl(this.config.root, filename),
         contents: new Buffer(parse5.serialize(document.ast)),
@@ -139,9 +139,15 @@ export class BuildBundler extends Transform {
     callback(null, null);
   }
 
+  /**
+   * Removes all of the inlined files in a bundle manifest from the filemap.
+   */
   private _unmapBundledFiles(manifest: BundleManifest) {
-    for (const bundle of manifest.bundles.values()) {
-      for (const filename of bundle.files) {
+    for (const {inlinedHtmlImports,
+                inlinedScripts,
+                inlinedStyles} of manifest.bundles.values()) {
+      for (const filename of
+               [...inlinedHtmlImports, ...inlinedScripts, ...inlinedStyles]) {
         this.files.delete(filename);
       }
     }

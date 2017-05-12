@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Simplify addCustomElementsEs5Adapter() adapter injection method.
+* Bundler stream no longer emits any CSS or Javascript files which have been inlined into bundles.
 <!-- Add new, unreleased changes here. -->
 
 ## [1.2.3] - 2017-05-10

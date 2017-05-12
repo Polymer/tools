@@ -53,7 +53,9 @@ suite('BuildBundler', () => {
       projectOptions: ProjectOptions,
       bundlerOptions?: BuildBundlerOptions,
       transform?: FileTransform) => new Promise((resolve, reject) => {
-    root = projectOptions.root = projectOptions.root || defaultRoot;
+
+    assert.isDefined(projectOptions.root);
+    root = projectOptions.root;
     const config = new ProjectConfig(projectOptions);
     const analyzer = new BuildAnalyzer(config);
 
@@ -120,8 +122,8 @@ suite('BuildBundler', () => {
 
   test('entrypoint only', async() => {
     await setupTest({
+      root: defaultRoot,
       entrypoint: 'entrypoint-only.html',
-      sources: ['framework.html', 'entrypoint-only.html'],
     });
     const doc = parse5(getFile('entrypoint-only.html'));
     assert.isTrue(hasMarker(doc, 'framework'));
@@ -131,9 +133,9 @@ suite('BuildBundler', () => {
 
   test('two fragments', async() => {
     await setupTest({
+      root: defaultRoot,
       entrypoint: 'entrypoint-a.html',
       fragments: ['shell.html', 'entrypoint-a.html'],
-      sources: ['shell.html', 'entrypoint-a.html', 'framework.html'],
     });
 
     // shell doesn't import framework
@@ -166,7 +168,6 @@ suite('BuildBundler', () => {
     await setupTest({
       entrypoint: 'entrypoint-a.html',
       shell: 'shell.html',
-      sources: ['framework.html', 'shell.html', 'entrypoint-a.html'],
     });
 
     // shell bundles framework
@@ -187,17 +188,10 @@ suite('BuildBundler', () => {
 
   test('shell and fragments with shared dependency', async() => {
     await setupTest({
+      root: defaultRoot,
       entrypoint: 'entrypoint-a.html',
       shell: 'shell.html',
       fragments: ['entrypoint-b.html', 'entrypoint-c.html'],
-      sources: [
-        'framework.html',
-        'shell.html',
-        'entrypoint-a.html',
-        'entrypoint-b.html',
-        'entrypoint-c.html',
-        'common-dependency.html',
-      ],
     });
 
     // shell bundles framework
@@ -236,13 +230,6 @@ suite('BuildBundler', () => {
         'shell.html',
         'entrypoint-b.html',
         'entrypoint-c.html',
-      ],
-      sources: [
-        'framework.html',
-        'shell.html',
-        'entrypoint-b.html',
-        'entrypoint-c.html',
-        'common-dependency.html',
       ],
     });
 
@@ -291,12 +278,6 @@ suite('BuildBundler', () => {
         {
           root: path.resolve('test-fixtures/bundle-project'),
           entrypoint: 'index.html',
-          sources: [
-            'index.html',
-            'simple-import.html',
-            'simple-import-2.html',
-            'simple-style.css',
-          ],
         },
         {},
         addHeaders);
@@ -324,12 +305,6 @@ suite('BuildBundler', () => {
         {
           root: path.resolve('test-fixtures/bundle-project'),
           entrypoint: 'index.html',
-          sources: [
-            'index.html',
-            'simple-import.html',
-            'simple-import-2.html',
-            'simple-style.css',
-          ],
         },
         {},
         platformSepPaths);
@@ -358,13 +333,7 @@ suite('BuildBundler', () => {
     await setupTest(
         {
           root: path.resolve('test-fixtures/bundle-project'),
-          entrypoint: 'index.html',
-          sources: [
-            'index.html',
-            'simple-import.html',
-            'simple-import-2.html',
-            'simple-style.css',
-          ],
+          entrypoint: 'index.html'
         },
         {},
         posixSepPaths);
@@ -383,16 +352,49 @@ suite('BuildBundler', () => {
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
   });
 
-  test('bundler does not output imports which have been bundled', async() => {
-    await setupTest({
-      entrypoint: 'entrypoint-only.html',
-      sources: ['framework.html', 'entrypoint-only.html'],
-    });
+  test('bundler does not output inlined html imports', async() => {
+    await setupTest({root: defaultRoot, entrypoint: 'entrypoint-only.html'});
     // We should have an entrypoint-only.html file (bundled).
     assert.isOk(getFile('entrypoint-only.html'));
-
     // We should not have the inlined file in the output.
     assert.isNotOk(getFile('framework.html'));
+  });
+
+  test('bundler outputs html imports that are not inlined', async() => {
+    await setupTest(
+        {root: defaultRoot, entrypoint: 'entrypoint-only.html'},
+        {excludes: ['framework.html']});
+    // We should have an entrypoint-only.html file (bundled).
+    assert.isOk(getFile('entrypoint-only.html'));
+    // We should have the html import that was excluded from inlining.
+    assert.isOk(getFile('framework.html'));
+  });
+
+  test('bundler does not output inlined scripts or styles', async() => {
+    await setupTest({
+      root: path.resolve('test-fixtures/bundle-project'),
+      entrypoint: 'index.html',
+    });
+    assert.deepEqual(
+        [...files.keys()].sort(),
+        [path.resolve('test-fixtures/bundle-project/index.html')]);
+  });
+
+  test('bundler does output scripts and styles not inlined', async() => {
+    await setupTest(
+        {
+          root: path.resolve('test-fixtures/bundle-project'),
+          entrypoint: 'index.html',
+        },
+        {
+          inlineCss: false,
+          inlineScripts: false,
+        });
+    assert.deepEqual([...files.keys()].sort(), [
+      'test-fixtures/bundle-project/index.html',
+      'test-fixtures/bundle-project/simple-script.js',
+      'test-fixtures/bundle-project/simple-style.css'
+    ].map((p) => path.resolve(p)));
   });
 
   suite('options', () => {
@@ -401,7 +403,6 @@ suite('BuildBundler', () => {
       root: 'test-fixtures/test-project',
       entrypoint: 'index.html',
       fragments: ['shell.html'],
-      sources: ['index.html', 'shell.html', 'source-dir/my-app.html']
     };
 
     test('excludes: html file urls listed are not inlined', async() => {
