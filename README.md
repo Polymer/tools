@@ -255,13 +255,13 @@ const buildStream = mergeStream(project.sources(), project.dependencies());
 
 const unbundledBuildStream = forkStream(buildStream)
   // This build will be served from http://example.com/unbundled/
-  .updateBaseTag('/unbundled/')
+  .pipe(project.updateBaseTag('/unbundled/'))
   .pipe(gulp.dest('build/unbundled'));
 
 const bundledBuildStream = forkStream(buildStream)
   .pipe(project.bundler())
   // While this build will be served from http://example.com/bundled/
-  .updateBaseTag('/bundled/')
+  .pipe(project.updateBaseTag('/bundled/'))
   .pipe(gulp.dest('build/bundled'));
 ```
 
