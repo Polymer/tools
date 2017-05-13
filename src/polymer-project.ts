@@ -17,6 +17,7 @@ import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
 import {src as vinylSrc} from 'vinyl-fs';
 
 import {BuildAnalyzer} from './analyzer';
+import {BaseTagUpdater} from './base-tag-updater';
 import {BuildBundler, Options as BuildBundlerOptions} from './bundle';
 import {CustomElementsEs5AdapterInjector} from './custom-elements-es5-adapter';
 import {AddPushManifest} from './push-manifest';
@@ -103,5 +104,14 @@ export class PolymerProject {
    */
   addCustomElementsEs5Adapter(): NodeJS.ReadWriteStream {
     return new CustomElementsEs5AdapterInjector();
+  }
+
+  /**
+   * Return a stream transformer that updates the `<base>` tag of the project's
+   * entrypoint HTML file with the given new value. No change is made if a
+   * `<base>` tag does not already exist.
+   */
+  updateBaseTag(baseHref: string): NodeJS.ReadWriteStream {
+    return new BaseTagUpdater(this.config.entrypoint, baseHref);
   }
 }

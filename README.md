@@ -240,6 +240,31 @@ const bundledBuildStream = forkStream(buildStream)
   .pipe(gulp.dest('build/bundled'));
 ```
 
+#### project.updateBaseTag()
+
+This method will return a transform stream that finds a `<base>` tag in your configured entrypoint HTML file, and updates it with the specified value. This can be useful when multiple builds are served each from their own sub-directory on the same host, in conjunction with a convention of using relative URLs for static resources. Your entrypoint must already contain a `<base href="/">` or similar tag in its `<head>`, before any imports.
+
+Note that *only the entrypoint will be updated*. Fragments with `<base>` tags will not be modified. Fragments should typically use relative URLs to refer to other artifacts in the build, so that they are agnostic to their serving path. The entrypoint gets special treatment here because it is typically served from paths that do not correspond to its location relative to other build artifacts.
+
+```js
+const gulp = require('gulp');
+const mergeStream = require('merge-stream');
+const forkStream = require('polymer-build').forkStream;
+
+const buildStream = mergeStream(project.sources(), project.dependencies());
+
+const unbundledBuildStream = forkStream(buildStream)
+  // This build will be served from http://example.com/unbundled/
+  .updateBaseTag('/unbundled/')
+  .pipe(gulp.dest('build/unbundled'));
+
+const bundledBuildStream = forkStream(buildStream)
+  .pipe(project.bundler())
+  // While this build will be served from http://example.com/bundled/
+  .updateBaseTag('/bundled/')
+  .pipe(gulp.dest('build/bundled'));
+```
+
 
 ## Contributing
 
