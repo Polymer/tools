@@ -1,10 +1,12 @@
 [![NPM version](http://img.shields.io/npm/v/polymer-analyzer.svg)](https://npmjs.org/package/polymer-analyzer)
 [![Build Status](https://travis-ci.org/Polymer/polymer-analyzer.svg?branch=master)](https://travis-ci.org/Polymer/polymer-analyzer)
+
 # Polymer Analyzer
 
 A static analysis framework for Web Components.
 
 ## Install
+
 ```
 npm install polymer-analyzer
 ```
@@ -27,8 +29,8 @@ analyzer.analyze('/path-to-polymer-element.html')
 
 ## Developing
 
-Polymer Analyzer is supported on Node LTS (4.4) and stable (6.3). It is written
-in TypeScript 2.0. All development dependencies are installed via npm.
+Polymer Analyzer is supported on Node LTS and stable. It is written
+in TypeScript. All development dependencies are installed via npm.
 
 ```sh
 npm install
@@ -40,6 +42,7 @@ Or watch the source for changes, and run tests each time a file is modified:
 ```sh
 npm run test:watch
 ```
+
 ## Looking for Hydrolysis?
 
 Hydrolysis has been renamed to Polymer Analyzer for version 2. You can find the

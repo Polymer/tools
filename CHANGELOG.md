@@ -11,7 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!--## Unreleased-->
+
+## [2.0.0] - 2017-05-15
+
+* Stable release of the Polymer Analyzer.
+
+
+#### Changes since the previous prerelease version:
 
 * [BREAKING] `attributes`, `properties`, `methods`, and `events` are now Maps from the name to the value rather than arrays. This better models what's actually going on (you can't have two different properties with the same name in javascript) and it makes our inheritance modeling more efficient.
   * Note that the serialized output format `analysis.json` is not changed, it still uses arrays.
@@ -22,7 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   * Also, thanks to using the ParsedDocument interface, printing a warning is
     now O(size of underlined text) rather than O(size of document).
 
-## [2.0.0-alpha.42] -2017-05-09
+## [2.0.0-alpha.42] - 2017-05-09
 
 * [minor breaking change] The paths in `@demo` annotations are no longer resolved.
 * Added `MultiUrlLoader` and `PrefixedUrlLoader` to support analysis of more complicated project layouts.
