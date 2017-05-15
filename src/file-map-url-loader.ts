@@ -14,7 +14,7 @@
 
 import File = require('vinyl');
 import {UrlLoader} from 'polymer-analyzer';
-import {parseUrl} from 'polymer-analyzer/lib/utils';
+import {parseUrl} from 'polymer-analyzer/lib/core/utils';
 
 /**
  * This is a `UrlLoader` for use with a `polymer-analyzer` that reads files

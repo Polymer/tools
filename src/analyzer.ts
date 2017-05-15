@@ -18,7 +18,7 @@ import {PassThrough, Transform} from 'stream';
 
 import File = require('vinyl');
 import {src as vinylSrc} from 'vinyl-fs';
-import {parseUrl} from 'polymer-analyzer/lib/utils';
+import {parseUrl} from 'polymer-analyzer/lib/core/utils';
 import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
 
@@ -336,7 +336,7 @@ export class BuildAnalyzer {
   }
 
   printWarnings(): void {
-    const warningPrinter = new WarningPrinter(process.stdout, { analyzer: this.analyzer });
+    const warningPrinter = new WarningPrinter(process.stdout);
     warningPrinter.printWarnings(this.warnings);
   }
 

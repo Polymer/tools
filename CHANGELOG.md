@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [1.2.5] - 2017-05-15
+
+* Updated `polymer-analyzer` dependency to `^2.0.0` now that it is out of alpha.
+
 ## [1.2.4] - 2017-05-11
 
 * Simplify addCustomElementsEs5Adapter() adapter injection method.
