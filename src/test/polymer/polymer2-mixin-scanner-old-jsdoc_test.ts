@@ -16,12 +16,11 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
-import {PolymerElementMixin} from '../../index';
+import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
+import {PolymerElementMixin, ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
@@ -104,7 +103,7 @@ suite('Polymer2MixinScanner with old jsdoc annotations', () => {
                        underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 function TestMixin(superclass) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   return class extends superclass {
@@ -148,7 +147,7 @@ function TestMixin(superclass) {
                        underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 const TestMixin = (superclass) => class extends superclass {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   static get properties() {
@@ -188,7 +187,7 @@ const TestMixin = (superclass) => class extends superclass {
                        underlinedWarnings: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 const TestMixin = function(superclass) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   return class extends superclass {
@@ -231,7 +230,7 @@ const TestMixin = function(superclass) {
                          }]);
         const underlinedSource =
             await underliner.underline(mixins[0].sourceRange);
-        assert.equal(underlinedSource, `
+        assert.deepEqual(underlinedSource, `
 let TestMixin;
 ~~~~~~~~~~~~~~`);
       });
@@ -255,7 +254,7 @@ let TestMixin;
                        underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 function TestMixin() {
 ~~~~~~~~~~~~~~~~~~~~~~
 }
@@ -279,7 +278,7 @@ function TestMixin() {
                        underlinedWarnings: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   /**

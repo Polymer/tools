@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
+import {Analyzer} from '../../core/analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';

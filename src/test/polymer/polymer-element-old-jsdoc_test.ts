@@ -16,7 +16,7 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
+import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Document} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';

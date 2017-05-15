@@ -15,7 +15,7 @@
 import {posix as pathlib} from 'path';
 import {Url} from 'url';
 
-import {parseUrl} from '../utils';
+import {parseUrl} from '../core/utils';
 
 import {UrlResolver} from './url-resolver';
 

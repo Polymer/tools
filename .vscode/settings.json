@@ -15,7 +15,7 @@
       "fileMatch": [
         "analysis.json"
       ],
-      "url": "./lib/analysis.schema.json"
+      "url": "./lib/analysis-format/analysis.schema.json"
     }
   ],
   "typescript.tsdk": "node_modules/typescript/lib"

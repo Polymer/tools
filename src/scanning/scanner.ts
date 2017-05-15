@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer} from '../analyzer';
+import {Analyzer} from '../core/analyzer';
 import {ImmutableArray} from '../model/immutable';
 import {ScannedFeature, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
@@ -33,5 +33,5 @@ export interface Scanner<D extends ParsedDocument<A, V>, A, V> {
 }
 
 export interface ScannerConstructor {
-  new (analyzer: Analyzer): Scanner<any, any, any>;
+  new(analyzer: Analyzer): Scanner<any, any, any>;
 }

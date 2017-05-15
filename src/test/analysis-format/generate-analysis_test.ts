@@ -16,12 +16,12 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Analysis} from '../analysis-format';
-import {Analyzer} from '../analyzer';
-import {generateAnalysis, validateAnalysis, ValidationError} from '../generate-analysis';
-import {Analysis as AnalysisResult} from '../model/analysis';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
-import {PackageUrlResolver} from '../url-loader/package-url-resolver';
+import {Analysis} from '../../analysis-format/analysis-format';
+import {generateAnalysis, validateAnalysis, ValidationError} from '../../analysis-format/generate-analysis';
+import {Analyzer} from '../../core/analyzer';
+import {Analysis as AnalysisResult} from '../../model/analysis';
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 
@@ -30,12 +30,14 @@ const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 
 
+const fixturesDir = path.join(__dirname, '..', 'static');
+
 suite('generate-analysis', () => {
 
   suite('generateAnalysisMetadata', () => {
 
     suite('generates for Document array from fixtures', () => {
-      const basedir = path.join(__dirname, 'static', 'analysis');
+      const basedir = path.join(fixturesDir, 'analysis');
       const analysisFixtureDirs =
           fs.readdirSync(basedir)
               .map((p) => path.join(basedir, p))
@@ -78,7 +80,7 @@ suite('generate-analysis', () => {
                 JSON.parse(fs.readFileSync(pathToGolden, 'utf-8'));
 
             try {
-              const shortPath = path.relative(__dirname, pathToGolden);
+              const shortPath = path.relative(fixturesDir, pathToGolden);
               assert.deepEqual(
                   analysis,
                   golden,
@@ -98,8 +100,7 @@ suite('generate-analysis', () => {
     suite('generates from package', () => {
 
       test('does not include external features', async() => {
-        const basedir =
-            path.resolve(__dirname, 'static/analysis/bower_packages');
+        const basedir = path.resolve(fixturesDir, 'analysis/bower_packages');
         const analyzer = new Analyzer({
           urlLoader: new FSUrlLoader(basedir),
           urlResolver: new PackageUrlResolver(),
@@ -111,7 +112,7 @@ suite('generate-analysis', () => {
       });
 
       test('includes package features', async() => {
-        const basedir = path.resolve(__dirname, 'static/analysis/simple');
+        const basedir = path.resolve(fixturesDir, 'analysis/simple');
         const analyzer = new Analyzer({
           urlLoader: new FSUrlLoader(basedir),
           urlResolver: new PackageUrlResolver(),

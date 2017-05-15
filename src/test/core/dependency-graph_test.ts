@@ -17,7 +17,7 @@
 import {assert, use} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
+import {Analyzer} from '../../core/analyzer';
 import {DependencyGraph} from '../../core/dependency-graph';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
@@ -186,7 +186,7 @@ function assertGraphIsSettled(graph: DependencyGraph) {
           false,
           true,
           `found unsettled record for url '${
-      record.url
+                                             record.url
                                            }' in graph that should be settled`);
     }
   }

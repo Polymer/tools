@@ -15,9 +15,9 @@
 import * as estree from 'estree';
 
 import * as jsdocLib from '../javascript/jsdoc';
-import {Document, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
-
+import {Document, ElementMixin, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 import {getOrInferPrivacy} from '../polymer/js-utils';
+
 import {Demo} from './element-base';
 import {ImmutableMap} from './immutable';
 

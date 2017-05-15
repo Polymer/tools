@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analysis, Element} from '../analysis-format';
+import {Analysis, Element} from '../../analysis-format/analysis-format';
 
 // An example, the correct compilation thereof acts as a test.
 const paperButtonElement: Element = {

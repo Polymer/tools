@@ -20,7 +20,7 @@
  */
 
 // Core objects
-export {Analyzer, Options as AnalyzerOptions} from './analyzer';
+export {Analyzer, Options as AnalyzerOptions} from './core/analyzer';
 export * from './model/model';
 export {WarningPrinter, Verbosity as WarningPrinterVerbosity, Options as WarningPrinterOptions} from './warning/warning-printer';
 export {WarningFilter} from './warning/warning-filter';
@@ -28,8 +28,8 @@ export {Namespace} from './javascript/namespace';
 export {ParsedDocument} from './parser/document';
 
 // Analysis
-export {generateAnalysis, validateAnalysis} from './generate-analysis';
-export {Analysis as AnalysisFormat} from './analysis-format';
+export {generateAnalysis, validateAnalysis} from './analysis-format/generate-analysis';
+export {Analysis as AnalysisFormat} from './analysis-format/analysis-format';
 
 // URL Loaders and Resolvers
 export {FetchUrlLoader} from './url-loader/fetch-url-loader';

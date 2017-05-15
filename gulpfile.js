@@ -108,7 +108,7 @@ task('test', ['build'], () => {
 });
 
 task('json-schema', function() {
-  const inPath = 'src/analysis-format.ts';
+  const inPath = 'src/analysis-format/analysis-format.ts';
   const outPath = 'lib/analysis.schema.json';
   return gulp.src(inPath).pipe(newer(outPath)).pipe(shell([
     `./node_modules/.bin/typescript-json-schema --required ${inPath

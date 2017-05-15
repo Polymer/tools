@@ -12,17 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../custom_typings/main.d.ts" />
+/// <reference path="../../custom_typings/main.d.ts" />
 
 import * as path from 'path';
 
-import {AnalysisContext} from './core/analysis-context';
-import {Warning} from './index';
-import {Analysis, Document} from './model/model';
-import {Parser} from './parser/parser';
-import {Scanner} from './scanning/scanner';
-import {UrlLoader} from './url-loader/url-loader';
-import {UrlResolver} from './url-loader/url-resolver';
+import {Analysis, Document, Warning} from '../model/model';
+import {Parser} from '../parser/parser';
+import {Scanner} from '../scanning/scanner';
+import {UrlLoader} from '../url-loader/url-loader';
+import {UrlResolver} from '../url-loader/url-resolver';
+
+import {AnalysisContext} from './analysis-context';
 
 export interface Options {
   urlLoader: UrlLoader;

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer} from '../analyzer';
+import {Analyzer} from '../core/analyzer';
 import {SourceRange, Warning} from '../model/model';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 import {UrlLoader} from '../url-loader/url-loader';

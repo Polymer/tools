@@ -16,11 +16,12 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
+import {Function as ResolvedFunction} from '../javascript/function';
+import {Namespace as ResolvedNamespace} from '../javascript/namespace';
+import {Analysis as AnalysisResult, Attribute as ResolvedAttribute, Class as ResolvedClass, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Feature, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from '../model/model';
+import {Behavior as ResolvedPolymerBehavior} from '../polymer/behavior';
+
 import {Analysis, Attribute, Class, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Property, SourceRange} from './analysis-format';
-import {Function as ResolvedFunction} from './javascript/function';
-import {Namespace as ResolvedNamespace} from './javascript/namespace';
-import {Analysis as AnalysisResult, Attribute as ResolvedAttribute, Class as ResolvedClass, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Feature, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from './model/model';
-import {Behavior as ResolvedPolymerBehavior} from './polymer/behavior';
 
 export type ElementOrMixin = ResolvedElement | ResolvedMixin;
 
@@ -141,8 +142,8 @@ function getNamespaceName(name?: string) {
 }
 
 const validator = new jsonschema.Validator();
-const schema = JSON.parse(
-    fs.readFileSync(pathLib.join(__dirname, 'analysis.schema.json'), 'utf-8'));
+const schema = JSON.parse(fs.readFileSync(
+    pathLib.join(__dirname, '../', 'analysis.schema.json'), 'utf-8'));
 
 export class ValidationError extends Error {
   errors: jsonschema.ValidationError[];

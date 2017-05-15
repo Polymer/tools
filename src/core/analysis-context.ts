@@ -14,20 +14,19 @@
 
 import * as path from 'path';
 
-import {ForkOptions, LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../analyzer';
+import {ForkOptions, LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../core/analyzer';
 import {CssParser} from '../css/css-parser';
 import {HtmlCustomElementReferenceScanner} from '../html/html-element-reference-scanner';
 import {HtmlImportScanner} from '../html/html-import-scanner';
 import {HtmlParser} from '../html/html-parser';
 import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
-import {Severity} from '../index';
 import {ClassScanner} from '../javascript/class-scanner';
 import {FunctionScanner} from '../javascript/function-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
-import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedImport, ScannedInlineDocument, Warning, WarningCarryingException} from '../model/model';
+import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedImport, ScannedInlineDocument, Severity, Warning, WarningCarryingException} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {BehaviorScanner} from '../polymer/behavior-scanner';

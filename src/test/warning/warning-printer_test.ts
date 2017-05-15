@@ -17,7 +17,7 @@ import * as chalk from 'chalk';
 import * as memoryStreams from 'memory-streams';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
+import {Analyzer} from '../../core/analyzer';
 import {Severity, Warning} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {WarningPrinter} from '../../warning/warning-printer';

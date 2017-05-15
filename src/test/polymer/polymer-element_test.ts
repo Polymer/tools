@@ -16,7 +16,7 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../analyzer';
+import {Analyzer} from '../../core/analyzer';
 import {Document, Severity, Warning} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';

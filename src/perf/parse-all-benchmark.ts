@@ -15,7 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Analyzer} from '../analyzer';
+import {Analyzer} from '../core/analyzer';
 import {FSUrlLoader} from '../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 
@@ -121,6 +121,7 @@ async function measure() {
   // TODO(rictic): looks like we've got a memory leak. Need to track this down.
   // This should be < 10MiB, not < 100 MiB.
   const threshold = 300 * (1024 * 1024);
+
   if (leakedMemory > threshold) {
     console.error(
         `\n\n==========================================\n` +

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Deferred} from '../utils';
+import {Deferred} from './utils';
 
 class DocumentRecord {
   url: string;

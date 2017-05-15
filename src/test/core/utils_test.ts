@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert, use} from 'chai';
 import {Url} from 'url';
 
-import {Deferred, parseUrl} from '../utils';
+import {Deferred, parseUrl} from '../../core/utils';
 
 import chaiAsPromised = require('chai-as-promised');
 use(chaiAsPromised);

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 
 import {assert, use} from 'chai';
 import * as clone from 'clone';
@@ -20,19 +20,19 @@ import * as estree from 'estree';
 import * as path from 'path';
 import * as shady from 'shady-css-parser';
 
-import {Analyzer} from '../analyzer';
-import {ParsedCssDocument} from '../css/css-document';
-import {ParsedHtmlDocument} from '../html/html-document';
-import {HtmlParser} from '../html/html-parser';
-import {ScriptTagImport} from '../html/html-script-tag';
-import {JavaScriptDocument} from '../javascript/javascript-document';
-import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '../model/model';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
-import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
-import {UrlLoader} from '../url-loader/url-loader';
-import {Deferred} from '../utils';
+import {Analyzer} from '../../core/analyzer';
+import {Deferred} from '../../core/utils';
+import {ParsedCssDocument} from '../../css/css-document';
+import {ParsedHtmlDocument} from '../../html/html-document';
+import {HtmlParser} from '../../html/html-parser';
+import {ScriptTagImport} from '../../html/html-script-tag';
+import {JavaScriptDocument} from '../../javascript/javascript-document';
+import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '../../model/model';
+import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
+import {UrlLoader} from '../../url-loader/url-loader';
 
-import {CodeUnderliner} from './test-utils';
+import {CodeUnderliner} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
@@ -46,6 +46,8 @@ function getOnly<V>(iter: Iterable<V>): V {
   assert.equal(arr.length, 1);
   return arr[0]!;
 }
+
+const testDir = path.join(__dirname, '..');
 
 suite('Analyzer', () => {
   let analyzer: Analyzer;
@@ -62,7 +64,7 @@ suite('Analyzer', () => {
   };
 
   setup(() => {
-    const underlyingUrlLoader = new FSUrlLoader(__dirname);
+    const underlyingUrlLoader = new FSUrlLoader(testDir);
     inMemoryOverlay = new InMemoryOverlayUrlLoader(underlyingUrlLoader);
     analyzer = new Analyzer({urlLoader: inMemoryOverlay});
     underliner = new CodeUnderliner(inMemoryOverlay);
@@ -745,7 +747,7 @@ var DuplicateNamespace = {};
 
     test('produces a package with the right documents', async() => {
       const analyzer = new Analyzer({
-        urlLoader: new FSUrlLoader(path.join(__dirname, 'static', 'project'))
+        urlLoader: new FSUrlLoader(path.join(testDir, 'static', 'project'))
       });
       const pckage = await analyzer.analyzePackage();
 
@@ -818,8 +820,8 @@ var DuplicateNamespace = {};
 
     test('can get warnings from within and without the package', async() => {
       const analyzer = new Analyzer({
-        urlLoader: new FSUrlLoader(
-            path.join(__dirname, 'static', 'project-with-errors'))
+        urlLoader:
+            new FSUrlLoader(path.join(testDir, 'static', 'project-with-errors'))
       });
       const pckage = await analyzer.analyzePackage();
       assert.deepEqual(
