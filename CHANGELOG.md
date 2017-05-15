@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Add new, unreleased changes here. -->
 
+## [3.1.0] - 2017-05-15
+* Add browserCapabilities and basePath options.
+
 ## [3.0.0] - 2017-05-09
 * Add build preset support.
 * Remove Node v4 support: Node v4 is no longer in Active LTS, so as per the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) we will not support Node v4 going forward. Please update to Node v6 or later to continue using the latest verisons of Polymer tooling.
