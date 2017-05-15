@@ -29,7 +29,7 @@ suite('databinding-calls-must-be-functions', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(
         registry.getRules(['databinding-calls-must-be-functions']), analyzer);
   });
@@ -49,7 +49,7 @@ suite('databinding-calls-must-be-functions', () => {
       'databinding-calls-must-be-functions/databinding-calls-must-be-functions.html'
     ]);
 
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
     {{foo(bar)}}
       ~~~`,

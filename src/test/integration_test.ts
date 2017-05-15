@@ -40,9 +40,9 @@ if (process.env['INTEGRATION_TEST']) {
           new Linter(registry.getRules(['polymer-2-hybrid']), analyzer);
       const warnings = filterWarnings(await linter.lintPackage());
 
-      const warningPrinter = new WarningPrinter(
-          process.stdout, {analyzer, color: true, verbosity: 'full'});
-      await warningPrinter.printWarnings(warnings);
+      const warningPrinter =
+          new WarningPrinter(process.stdout, {color: true, verbosity: 'full'});
+      warningPrinter.printWarnings(warnings);
 
       assert.equal(warnings.length, 0, 'Got unexpected warnings');
     });

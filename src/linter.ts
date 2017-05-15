@@ -14,7 +14,7 @@
 
 import './collections';
 
-import {Analyzer, Document, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {Analyzer, Document, ParsedDocument, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
 
@@ -63,6 +63,7 @@ export class Linter {
           warnings.push(...await rule.check(document));
         } catch (e) {
           warnings.push(this._getWarningFromError(
+              document.parsedDocument,
               e,
               document.url,
               'internal-lint-error',
@@ -93,16 +94,18 @@ export class Linter {
   }
 
   private _getWarningFromError(
-      e: any, file: string, code: string, message: string) {
+      parsedDocument: ParsedDocument<any, any>, e: any, file: string,
+      code: string, message: string) {
     if (e instanceof WarningCarryingException) {
       return e.warning;
     }
-    return {
+    return new Warning({
+      parsedDocument,
       code,
       message,
       severity: Severity.WARNING,
       sourceRange:
           {file, start: {line: 0, column: 0}, end: {line: 0, column: 0}}
-    };
+    });
   }
 }

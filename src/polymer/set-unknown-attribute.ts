@@ -89,7 +89,8 @@ class SetUnknownAttribute extends HtmlRule {
         // This is an open namespace.
         if (attr.name.startsWith('data-')) {
           if (!isAttribute) {
-            warnings.push({
+            warnings.push(new Warning({
+              parsedDocument: parsedDoc,
               code: this.code,
               message: stripWhitespace(`
                   data-* attributes must be accessed as attributes.
@@ -97,7 +98,7 @@ class SetUnknownAttribute extends HtmlRule {
               severity: Severity.ERROR,
               sourceRange:
                   parsedDoc.sourceRangeForAttributeName(node, attr.name)!
-            });
+            }));
           }
           continue;
         }
@@ -106,8 +107,9 @@ class SetUnknownAttribute extends HtmlRule {
           continue;
         }
 
-        const allowedBindings: Array<Attribute|Property> =
-            isAttribute ? element.attributes : element.properties;
+        const allowedBindings: Array<Attribute|Property> = isAttribute ?
+            [...element.attributes.values()] :
+            [...element.properties.values()];
         const shared = isAttribute ? sharedAttributes : sharedProperties;
         const found =
             shared.has(name) || !!allowedBindings.find((b) => b.name === name);
@@ -123,14 +125,15 @@ class SetUnknownAttribute extends HtmlRule {
             suggestion.name += '$';
           }
           const bindingType = isAttribute ? 'an attribute' : 'a property';
-          warnings.push({
+          warnings.push(new Warning({
+            parsedDocument: parsedDoc,
             code: this.code,
             message: stripWhitespace(
                 `${node.tagName} elements do not have ${bindingType} ` +
                 `named ${name}. Consider instead:  ${suggestion.name}`),
             severity: Severity.WARNING,
             sourceRange: parsedDoc.sourceRangeForAttributeName(node, attr.name)!
-          });
+          }));
         }
       }
     }
@@ -139,10 +142,10 @@ class SetUnknownAttribute extends HtmlRule {
 }
 
 function closestOption(name: string, isAttribute: boolean, element: Element) {
-  const attributeOptions = element.attributes.map((a) => a.name)
-                               .concat(Array.from(sharedAttributes.keys()));
-  const propertyOptions = element.properties.map((a) => a.name)
-                              .concat(Array.from(sharedProperties.keys()));
+  const attributeOptions =
+      [...element.attributes.keys(), ...sharedAttributes.keys()];
+  const propertyOptions =
+      [...element.properties.keys(), ...sharedProperties.keys()];
   const closestAttribute = closestSpelling(name, attributeOptions)!;
   const closestProperty = closestSpelling(name, propertyOptions)!;
   if (closestAttribute.minScore! === closestProperty.minScore) {

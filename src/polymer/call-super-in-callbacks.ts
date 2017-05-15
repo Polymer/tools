@@ -82,13 +82,14 @@ class CallSuperInCallbacks extends Rule {
             const sourceRange =
                 parsedDocumentContaining.sourceRangeForNode(method.key)!;
             if (method.kind === 'constructor') {
-              warnings.push({
+              warnings.push(new Warning({
+                parsedDocument: document.parsedDocument,
                 code: 'call-super-in-constructor',
                 severity: Severity.ERROR, sourceRange,
                 message: stripWhitespace(`
                   ES6 requires super() in constructors with superclasses.
                 `)
-              });
+              }));
             } else {
               let message;
               let code;
@@ -106,8 +107,10 @@ class CallSuperInCallbacks extends Rule {
                     ${classThatRequiresSuper}, which defines ${methodName} too.
                 `);
               }
-              warnings.push(
-                  {severity: Severity.WARNING, code, sourceRange, message});
+              warnings.push(new Warning({
+                parsedDocument: document.parsedDocument,
+                severity: Severity.WARNING, code, sourceRange, message
+              }));
             }
           }
         }
@@ -246,7 +249,7 @@ function getMethodDefiner(
   // defined on super classes and in mixins. If it's a mixin it doesn't,
   // thus the need for anyMixinDefinesMethod until
   // https://github.com/Polymer/polymer-analyzer/issues/564 is fixed.
-  const method = elementLike.methods.find((m) => m.name === methodName);
+  const method = elementLike.methods.get(methodName);
   if (method) {
     return method.inheritedFrom || getName(elementLike);
   }

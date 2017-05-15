@@ -108,7 +108,8 @@ class ElementBeforeDomModule extends HtmlRule {
                 pair.sourceRange.start, domModule.sourceRange) === -1) {
           // TODO(rictic): if we ever support multiple source ranges on
           //     warnings, this would be a good candidate.
-          warnings.push({
+          warnings.push(new Warning({
+            parsedDocument: parsedHtml,
             code: this.code,
             message: `A Polymer element must be defined after its ` +
                 `\`<dom-module>\`. If it can't find its \`<dom-module>\` ` +
@@ -116,7 +117,7 @@ class ElementBeforeDomModule extends HtmlRule {
             severity: Severity.ERROR,
             sourceRange: parsedHtml.sourceRangeForStartTag(domModule.astNode) ||
                 domModule.sourceRange,
-          });
+          }));
         }
       }
     }

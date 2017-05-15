@@ -53,7 +53,8 @@ class DomModuleNameOrIs extends HtmlRule {
       for (const badAttr of ['is', 'name']) {
         const attr = dom5.getAttribute(domModule, badAttr);
         if (attr != null) {
-          warnings.push({
+          warnings.push(new Warning({
+            parsedDocument: document,
             code: this.code,
             message: stripWhitespace(`
                 Use the "id" attribute rather than "${badAttr}"
@@ -61,7 +62,7 @@ class DomModuleNameOrIs extends HtmlRule {
             severity: Severity.WARNING,
             sourceRange:
                 document.sourceRangeForAttributeName(domModule, badAttr)!
-          });
+          }));
         }
       }
     }

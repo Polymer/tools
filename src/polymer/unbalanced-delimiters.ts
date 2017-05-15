@@ -58,13 +58,14 @@ class UnbalancedDelimiters extends HtmlRule {
     const warnings: Warning[] = [];
     for (const attr of element.attrs) {
       if (this._extractBadBindingExpression(attr.value || '')) {
-        warnings.push({
+        warnings.push(new Warning({
+          parsedDocument: parsedHtml,
           code: 'unbalanced-delimiters',
           message: this._getMessageForBadBindingExpression(attr.value),
           severity: Severity.ERROR,
           sourceRange:
               parsedHtml.sourceRangeForAttributeValue(element, attr.name)!
-        });
+        }));
       }
     }
     return warnings;
@@ -82,12 +83,13 @@ class UnbalancedDelimiters extends HtmlRule {
       } else if (
           dom5.isTextNode(node) && typeof node.value === 'string' &&
           this._extractBadBindingExpression(node.value)) {
-        warnings.push({
+        warnings.push(new Warning({
+          parsedDocument: parsedHtml,
           code: 'unbalanced-delimiters',
           message: this._getMessageForBadBindingExpression(node.value),
           severity: Severity.ERROR,
           sourceRange: parsedHtml.sourceRangeForNode(node)!
-        });
+        }));
       }
       return false;  // predicates must return boolean & we don't need results.
     });

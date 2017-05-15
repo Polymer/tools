@@ -88,7 +88,7 @@ class DatabindingCallsMustBeFunctions extends Rule {
           mustBeMethods.push(observer.parsedExpression.properties[0]);
         }
       }
-      for (const property of element.properties) {
+      for (const property of element.properties.values()) {
         if (property.computedExpression &&
             property.computedExpression.properties.length > 0) {
           mustBeMethods.push(property.computedExpression.properties[0]);
@@ -104,21 +104,22 @@ class DatabindingCallsMustBeFunctions extends Rule {
         continue;
       }
       const potentialMethodNames = new Set(
-          element.properties
+          Array.from(element.properties.values())
               .filter((p) => !p.type || !definitelyNotMethodTypes.has(p.type))
               .map((p) => p.name)
-              .concat(element.methods.map((m) => m.name)));
+              .concat([...element.methods.keys()]));
       const elementName =
           element.tagName || element.className || 'this element';
       for (const mustBeMethod of mustBeMethods) {
         if (!potentialMethodNames.has(mustBeMethod.name)) {
-          warnings.push({
+          warnings.push(new Warning({
+            parsedDocument: document.parsedDocument,
             code: this.code,
             message: stripWhitespace(`
               ${mustBeMethod.name} is not a known method on ${elementName}`),
             severity: Severity.WARNING,
             sourceRange: mustBeMethod.sourceRange
-          });
+          }));
         }
       }
     }

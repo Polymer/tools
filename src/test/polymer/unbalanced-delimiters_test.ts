@@ -31,7 +31,7 @@ suite('unbalanced-polymer-delimiters', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(
         registry.getRules(['unbalanced-polymer-delimiters']), analyzer);
   });
@@ -49,7 +49,7 @@ suite('unbalanced-polymer-delimiters', () => {
   test('warns for the proper cases', async() => {
     const warnings =
         await linter.lint(['unbalanced-delimiters/unbalanced-delimiters.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
   <div id="{db-foo}}"></div>
           ~~~~~~~~~~~`,

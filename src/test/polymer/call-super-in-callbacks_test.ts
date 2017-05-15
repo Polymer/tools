@@ -29,7 +29,7 @@ suite('call-super-in-callbacks', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['call-super-in-callbacks']), analyzer);
   });
@@ -47,7 +47,7 @@ suite('call-super-in-callbacks', () => {
   test('warns for the proper cases and with the right messages', async() => {
     const warnings = await linter.lint(
         ['call-super-in-callbacks/call-super-in-callbacks.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
     constructor() {/* BadSuper */ }
     ~~~~~~~~~~~`,

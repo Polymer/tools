@@ -31,7 +31,7 @@ suite('element-before-dom-module', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['element-before-dom-module']), analyzer);
   });
@@ -49,7 +49,7 @@ suite('element-before-dom-module', () => {
   test('warns for the proper cases', async() => {
     const warnings = await linter.lint(
         ['element-before-dom-module/element-before-dom-module.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
 <dom-module id='el-5'></dom-module>
 ~~~~~~~~~~~~~~~~~~~~~~`,

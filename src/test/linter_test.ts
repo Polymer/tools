@@ -27,7 +27,8 @@ class AlwaysWarnsRule extends Rule {
   code = 'always-warn-rule';
   description: 'Always warns, for every file';
   async check(document: Document): Promise<Warning[]> {
-    return [{
+    return [new Warning({
+      parsedDocument: document.parsedDocument,
       code: this.code,
       message: this.description,
       severity: Severity.WARNING,
@@ -36,7 +37,7 @@ class AlwaysWarnsRule extends Rule {
         start: {line: 0, column: 0},
         end: {line: 0, column: 0}
       }
-    }];
+    })];
   }
 }
 
@@ -48,7 +49,7 @@ suite('Linter', () => {
 
     setup(() => {
       analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-      warningPrinter = new WarningPrettyPrinter(analyzer);
+      warningPrinter = new WarningPrettyPrinter();
     });
 
     test('works in the trivial case', async() => {
@@ -69,7 +70,7 @@ suite('Linter', () => {
       const linter = new Linter([], analyzer);
       const warnings =
           await linter.lint(['missing-imports/missing-imports.html']);
-      assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+      assert.deepEqual(warningPrinter.prettyPrint(warnings), [
         `
 <link rel="import" href="./does-not-exist.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~`,
@@ -87,8 +88,8 @@ suite('Linter', () => {
       });
       const linter = new Linter([new AlwaysWarnsRule()], analyzer);
       const warnings = await linter.lintPackage();
-      // One warning from the analyzer, one from the AlwaysWarns, both in index,
-      // none from bower_components/external.html
+      // One warning from the analyzer, one from the AlwaysWarns, both in
+      // index, none from bower_components/external.html
       assert.deepEqual(
           warnings.map((w) => w.sourceRange.file),
           ['index.html', 'index.html']);

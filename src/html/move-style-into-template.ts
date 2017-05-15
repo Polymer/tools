@@ -52,13 +52,14 @@ class MoveStyleIntoTemplate extends HtmlRule {
     const outOfPlaceStyles =
         dom5.nodeWalkAll(parsedDocument.ast, outOfPlaceStyle);
     for (const outOfPlaceNode of outOfPlaceStyles) {
-      warnings.push({
+      warnings.push(new Warning({
+        parsedDocument,
         code: this.code,
         message:
             `<style> tags should not be direct children of <dom-module>, they should be moved into the <template>`,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForNode(outOfPlaceNode)!
-      });
+      }));
     }
     return warnings;
   }

@@ -12,17 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Warning, WarningPrinter} from 'polymer-analyzer';
+import {Warning, WarningPrinter} from 'polymer-analyzer';
 
 export class WarningPrettyPrinter {
   private _printer: WarningPrinter;
-  constructor(analyzer: Analyzer) {
-    this._printer = new WarningPrinter(null as any, {analyzer});
+  constructor() {
+    this._printer = new WarningPrinter(null as any);
   }
 
-  async prettyPrint(warnings: Warning[]): Promise<string[]> {
-    return Promise.all(warnings.map(
-        async(w) =>
-            '\n' + await this._printer.getUnderlinedText(w.sourceRange)));
+  prettyPrint(warnings: Warning[]): string[] {
+    return warnings.map(
+        (w) => '\n' + w.toString({verbosity: 'code-only', color: false}));
   }
 }

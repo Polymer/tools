@@ -29,7 +29,7 @@ suite('undefined-elements', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules(['undefined-elements']), analyzer);
   });
 
@@ -47,7 +47,7 @@ suite('undefined-elements', () => {
     const warnings =
         await linter.lint(['undefined-elements/undefined-elements.html']);
 
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [`
 <undefined-element></undefined-element>
 ~~~~~~~~~~~~~~~~~~~`]);
     assert.equal(

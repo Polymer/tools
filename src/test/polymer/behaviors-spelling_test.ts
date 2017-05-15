@@ -29,7 +29,7 @@ suite('behaviors-spelling', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules(['behaviors-spelling']), analyzer);
   });
 
@@ -47,7 +47,7 @@ suite('behaviors-spelling', () => {
     const warnings =
         await linter.lint(['behaviors-spelling/behaviors-spelling.html']);
 
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [`
     behaviours: []
     ~~~~~~~~~~~~~~`]);
     assert.equal(

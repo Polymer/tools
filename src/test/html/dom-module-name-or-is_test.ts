@@ -29,7 +29,7 @@ suite('dom-module-invalid-attrs', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['dom-module-invalid-attrs']), analyzer);
   });
@@ -47,7 +47,7 @@ suite('dom-module-invalid-attrs', () => {
   test('warns for a file "is" and "name" dom-modules', async() => {
     const warnings =
         await linter.lint(['dom-module-name-or-is/dom-module-name-or-is.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
 <dom-module name="foo-elem">
             ~~~~`,

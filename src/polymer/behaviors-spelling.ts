@@ -43,17 +43,18 @@ class BehaviorsSpelling extends Rule {
     const elements = document.getFeatures({kind: 'polymer-element'});
 
     for (const element of elements) {
-      const behavioursProperty = element.properties.find(
-          (prop) => prop.name === 'behaviours' && !prop.published);
+      const behavioursProperty = element.properties.get('behaviours');
 
-      if (behavioursProperty && behavioursProperty.sourceRange) {
-        warnings.push({
+      if (behavioursProperty && !behavioursProperty.published &&
+          behavioursProperty.sourceRange) {
+        warnings.push(new Warning({
+          parsedDocument: document.parsedDocument,
           code: this.code,
           message: stripWhitespace(`
               "behaviours" property should be spelled "behaviors"`),
           severity: Severity.WARNING,
           sourceRange: behavioursProperty.sourceRange
-        });
+        }));
       }
     }
     return warnings;

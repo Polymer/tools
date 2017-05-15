@@ -29,7 +29,7 @@ suite('style-into-template', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules(['style-into-template']), analyzer);
   });
 
@@ -46,7 +46,7 @@ suite('style-into-template', () => {
   test('warns for a file with a style outside template', async() => {
     const warnings = await linter.lint(
         ['move-style-into-template/style-child-of-dom-module.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [`
   <style>
   ~~~~~~~
     * {color: red;}

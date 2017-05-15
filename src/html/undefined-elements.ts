@@ -55,11 +55,12 @@ class UndefinedElements extends HtmlRule {
         if (!sourceRange) {
           continue;
         }
-        warnings.push({
+        warnings.push(new Warning({
+          parsedDocument,
           code: 'undefined-elements',
           message: `The element ${ref.tagName} is not defined`,
           severity: Severity.WARNING, sourceRange
-        });
+        }));
       }
     }
 

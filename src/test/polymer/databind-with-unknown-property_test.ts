@@ -29,7 +29,7 @@ suite('databind-with-unknown-property', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(
         registry.getRules(['databind-with-unknown-property']), analyzer);
   });
@@ -47,7 +47,7 @@ suite('databind-with-unknown-property', () => {
   test('warns for the proper cases and with the right messages', async() => {
     const warnings = await linter.lint(
         ['databind-with-unknown-property/databind-with-unknown-property.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
     <div id="{{horse}}"></div>
                ~~~~~`,

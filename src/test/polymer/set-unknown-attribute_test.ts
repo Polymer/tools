@@ -31,7 +31,7 @@ suite('set-unknown-attribute', () => {
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter(analyzer);
+    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules(['set-unknown-attribute']), analyzer);
   });
 
@@ -48,7 +48,7 @@ suite('set-unknown-attribute', () => {
   test('warns at the right times', async() => {
     const warnings =
         await linter.lint(['set-unknown-attribute/when-to-warn.html']);
-    assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
     <elem-one attr-one="{{bad}}"></elem-one>
               ~~~~~~~~`,
