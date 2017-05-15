@@ -82,8 +82,8 @@ export function getMethods(node: estree.Node, document: JavaScriptDocument):
   for (const statement of node.body.body) {
     if (statement.type === 'MethodDefinition' && statement.static === false &&
         statement.kind === 'method') {
-      const method =
-          toScannedMethod(statement, document.sourceRangeForNode(statement)!);
+      const method = toScannedMethod(
+          statement, document.sourceRangeForNode(statement)!, document);
       docs.annotate(method);
       methods.set(method.name, method);
     }

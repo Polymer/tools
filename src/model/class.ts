@@ -15,7 +15,8 @@
 import * as estree from 'estree';
 
 import * as jsdocLib from '../javascript/jsdoc';
-import {Document, ElementMixin, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
+import {Document, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
+import {ParsedDocument} from '../parser/document';
 import {getOrInferPrivacy} from '../polymer/js-utils';
 
 import {Demo} from './element-base';
@@ -136,6 +137,7 @@ export class Class implements Feature {
   readonly abstract: boolean;
   readonly privacy: Privacy;
   readonly demos: Demo[];
+  private readonly _parsedDocument: ParsedDocument<any, any>;
 
   constructor(init: ClassInit, document: Document) {
     ({
@@ -147,6 +149,8 @@ export class Class implements Feature {
       astNode: this.astNode,
       sourceRange: this.sourceRange
     } = init);
+
+    this._parsedDocument = document.parsedDocument;
 
     this.warnings =
         init.warnings === undefined ? [] : Array.from(init.warnings);
@@ -222,13 +226,14 @@ export class Class implements Feature {
           if (applyingSelf) {
             warningSourceRange = newVal.sourceRange || this.sourceRange!;
           }
-          this.warnings.push({
+          this.warnings.push(new Warning({
             code: 'overriding-private',
             message: `Overriding private member '${overridingVal.name}' ` +
                 `inherited from ${existingValue.inheritedFrom || 'parent'}`,
             sourceRange: warningSourceRange,
-            severity: Severity.WARNING
-          });
+            severity: Severity.WARNING,
+            parsedDocument: this._parsedDocument,
+          }));
         }
       }
       existing.set(key, newVal);
@@ -274,20 +279,22 @@ export class Class implements Feature {
     });
 
     if (superElements.size < 1) {
-      this.warnings.push({
+      this.warnings.push(new Warning({
         message: `Unable to resolve superclass ${reference.identifier}`,
         severity: Severity.ERROR,
         code: 'unknown-superclass',
         sourceRange: reference.sourceRange!,
-      });
+        parsedDocument: this._parsedDocument,
+      }));
       return undefined;
     } else if (superElements.size > 1) {
-      this.warnings.push({
+      this.warnings.push(new Warning({
         message: `Multiple superclasses found for ${reference.identifier}`,
         severity: Severity.ERROR,
         code: 'unknown-superclass',
         sourceRange: reference.sourceRange!,
-      });
+        parsedDocument: this._parsedDocument,
+      }));
       return undefined;
     }
     return superElements.values().next().value;

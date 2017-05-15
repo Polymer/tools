@@ -357,15 +357,17 @@ export class AnalysisContext {
    * Scans a ParsedDocument.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>,
-      maybeAttachedComment?: string): Promise<ScannedDocument> {
+      document: ParsedDocument<any, any>, maybeAttachedComment?: string,
+      maybeContainingDocument?: ParsedDocument<any, any>):
+      Promise<ScannedDocument> {
     const {features: scannedFeatures, warnings} =
         await this._getScannedFeatures(document);
     // If there's an HTML comment that applies to this document then we assume
     // that it applies to the first feature.
     const firstScannedFeature = scannedFeatures[0];
     if (firstScannedFeature && firstScannedFeature instanceof ScannedElement) {
-      firstScannedFeature.applyHtmlComment(maybeAttachedComment);
+      firstScannedFeature.applyHtmlComment(
+          maybeAttachedComment, maybeContainingDocument);
     }
 
     const scannedDocument =
@@ -406,8 +408,8 @@ export class AnalysisContext {
             feature.contents,
             containingDocument.url,
             {locationOffset, astNode: feature.astNode});
-        const scannedDoc =
-            await this._scanDocument(parsedDoc, feature.attachedComment);
+        const scannedDoc = await this._scanDocument(
+            parsedDoc, feature.attachedComment, containingDocument.document);
 
         feature.scannedDocument = scannedDoc;
       } catch (err) {

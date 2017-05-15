@@ -13,10 +13,11 @@
  */
 
 import {Analyzer} from '../core/analyzer';
+import {Document, ParsedDocument} from '../index';
 import {SourceRange, Warning} from '../model/model';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 import {UrlLoader} from '../url-loader/url-loader';
-import {WarningPrinter} from '../warning/warning-printer';
+import {underlineCode} from '../warning/code-printer';
 
 
 export class UnexpectedResolutionError extends Error {
@@ -46,10 +47,18 @@ export type Reference = Warning | SourceRange | undefined;
  * Non-test code probably wants WarningPrinter instead.
  */
 export class CodeUnderliner {
-  warningPrinter: WarningPrinter;
+  private _parsedDocumentGetter:
+      (url: string) => Promise<ParsedDocument<any, any>>;
   constructor(urlLoader: UrlLoader) {
-    this.warningPrinter =
-        new WarningPrinter(null as any, {analyzer: new Analyzer({urlLoader})});
+    const analyzer = new Analyzer({urlLoader});
+    this._parsedDocumentGetter = async(url: string) => {
+      const analysis = await analyzer.analyze([url]);
+      const result = analysis.getDocument(url);
+      if (!(result instanceof Document)) {
+        throw new Error(`Unable to parse ${url}`);
+      }
+      return result.parsedDocument;
+    };
   }
 
   static withMapping(url: string, contents: string) {
@@ -67,16 +76,20 @@ export class CodeUnderliner {
    */
   async underline(reference: Reference): Promise<string>;
   async underline(references: Reference[]): Promise<string[]>;
-  async underline(references: Reference|Reference[]): Promise<string|string[]> {
-    if (!Array.isArray(references)) {
-      if (references === undefined) {
-        return 'No source range given.';
-      }
-      const sourceRange =
-          isWarning(references) ? references.sourceRange : references;
-      return '\n' + await this.warningPrinter.getUnderlinedText(sourceRange);
+  async underline(reference: Reference|Reference[]): Promise<string|string[]> {
+    if (Array.isArray(reference)) {
+      return Promise.all(reference.map((ref) => this.underline(ref)));
     }
-    return Promise.all(references.map((ref) => this.underline(ref)));
+
+    if (reference === undefined) {
+      return 'No source range given.';
+    }
+    if (isWarning(reference)) {
+      return '\n' + reference.toString({verbosity: 'code-only', color: false});
+    }
+    // We have a reference without its parsed document. Go get it.
+    const parsedDocument = await this._parsedDocumentGetter(reference.file);
+    return '\n' + underlineCode(reference, parsedDocument);
   }
 }
 

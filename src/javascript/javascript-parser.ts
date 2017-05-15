@@ -15,7 +15,7 @@
 import * as espree from 'espree';
 import * as estree from 'estree';
 
-import {correctSourceRange, InlineDocInfo, LocationOffset, Severity, Warning, WarningCarryingException} from '../model/model';
+import {correctSourceRange, InlineDocInfo, LocationOffset, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
 import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';
@@ -42,7 +42,16 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
     const result = parseJs(contents, url, inlineInfo.locationOffset);
     if (result.type === 'failure') {
       // TODO(rictic): define and return a ParseResult instead of throwing.
-      throw new WarningCarryingException(result.warning);
+      const minimalDocument = new JavaScriptDocument({
+        url,
+        contents,
+        ast: null as any,
+        locationOffset: inlineInfo.locationOffset,
+        astNode: inlineInfo.astNode, isInline,
+        parsedAsSourceType: 'script',
+      });
+      throw new WarningCarryingException(
+          new Warning({parsedDocument: minimalDocument, ...result.warning}));
     }
 
     return new JavaScriptDocument({
@@ -61,7 +70,15 @@ export type ParseResult = {
   type: 'success',
   sourceType: 'script' | 'module',
   program: estree.Program
-} | {type: 'failure', warning: Warning};
+} | {
+  type: 'failure',
+  warning: {
+    sourceRange: SourceRange,
+    severity: Severity,
+    code: string,
+    message: string
+  }
+};
 
 /**
  * Parse the given contents and return either an AST or a parse error as a

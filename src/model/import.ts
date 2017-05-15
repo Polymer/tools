@@ -72,12 +72,13 @@ export class ScannedImport implements Resolvable {
         document._analysisContext.getDocument(this.url);
     if (!(importedDocumentOrWarning instanceof Document)) {
       const error = this.error ? (this.error.message || this.error) : '';
-      document.warnings.push({
+      document.warnings.push(new Warning({
         code: 'could-not-load',
         message: `Unable to load import: ${error}`,
         sourceRange: (this.urlSourceRange || this.sourceRange)!,
-        severity: Severity.ERROR
-      });
+        severity: Severity.ERROR,
+        parsedDocument: document.parsedDocument,
+      }));
       return undefined;
     }
     return new Import(

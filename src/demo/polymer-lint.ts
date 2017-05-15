@@ -24,7 +24,7 @@ async function main() {
     urlResolver: new PackageUrlResolver()
   });
   const warnings = await getWarnings(analyzer, process.argv[2]);
-  const warningPrinter = new WarningPrinter(process.stderr, {analyzer});
+  const warningPrinter = new WarningPrinter(process.stderr);
   await warningPrinter.printWarnings(warnings);
   const worstSeverity = Math.min.apply(Math, warnings.map((w) => w.severity));
   if (worstSeverity === Severity.ERROR) {

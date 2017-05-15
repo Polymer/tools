@@ -151,12 +151,13 @@ export function getMixinApplications(
         // TODO(justinfagnani): we need source ranges for jsdoc annotations
         const sourceRange = document.sourceRangeForNode(node)!;
         if (mixinId === undefined) {
-          warnings.push({
-            code: 'class-applies-mixin-annotation-no-id',
+          warnings.push(new Warning({
+            code: 'class-mixes-annotation-no-id',
             message:
                 '@appliesMixin annotation with no identifier. Usage `@appliesMixin MixinName`',
             severity: Severity.WARNING, sourceRange,
-          });
+            parsedDocument: document
+          }));
           return;
         }
         return new ScannedReference(mixinId, sourceRange);

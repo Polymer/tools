@@ -14,7 +14,7 @@
 
 import * as ts from 'typescript';
 
-import {correctSourceRange, InlineDocInfo, Severity, WarningCarryingException} from '../model/model';
+import {correctSourceRange, InlineDocInfo, Severity, Warning, WarningCarryingException} from '../model/model';
 import {Parser} from '../parser/parser';
 
 import {ParsedTypeScriptDocument} from './typescript-document';
@@ -46,11 +46,18 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
     const diagnostics = sourceFileMaybeWithDiagnostics.parseDiagnostics || [];
     const parseError =
         diagnostics.find((d) => d.category === ts.DiagnosticCategory.Error);
+    const result = new ParsedTypeScriptDocument({
+      url,
+      contents,
+      ast: sourceFile,
+      locationOffset: inlineInfo.locationOffset,
+      astNode: inlineInfo.astNode, isInline,
+    });
     if (parseError) {
       const start = sourceFile.getLineAndCharacterOfPosition(parseError.start);
       const end = sourceFile.getLineAndCharacterOfPosition(
           parseError.start + parseError.length);
-      throw new WarningCarryingException({
+      throw new WarningCarryingException(new Warning({
         code: 'parse-error',
         severity: Severity.ERROR,
         message: ts.flattenDiagnosticMessageText(parseError.messageText, '\n'),
@@ -60,15 +67,10 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
               start: {column: start.character, line: start.line},
               end: {column: end.character, line: end.line}
             },
-            inlineInfo.locationOffset)!
-      });
+            inlineInfo.locationOffset)!,
+        parsedDocument: result,
+      }));
     }
-    return new ParsedTypeScriptDocument({
-      url,
-      contents,
-      ast: sourceFile,
-      locationOffset: inlineInfo.locationOffset,
-      astNode: inlineInfo.astNode, isInline,
-    });
+    return result;
   }
 }

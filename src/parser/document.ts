@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {correctSourceRange, LocationOffset, SourcePosition, SourceRange} from '../model/source-range';
+import {correctSourceRange, LocationOffset, SourcePosition, SourceRange, uncorrectSourceRange} from '../model/source-range';
 
 /**
  * A parsed Document.
@@ -80,7 +80,7 @@ export abstract class ParsedDocument<AstNode, Visitor> {
 
   sourceRangeForNode(node: AstNode): SourceRange|undefined {
     const baseSource = this._sourceRangeForNode(node);
-    return correctSourceRange(baseSource, this._locationOffset);
+    return this.relativeToAbsoluteSourceRange(baseSource);
   };
 
   protected abstract _sourceRangeForNode(node: AstNode): SourceRange|undefined;
@@ -123,6 +123,25 @@ export abstract class ParsedDocument<AstNode, Visitor> {
     const result = position.column + lineOffset + 1;
     // Clamp within bounds.
     return Math.min(Math.max(0, result), this.contents.length);
+  }
+
+  relativeToAbsoluteSourceRange(sourceRange: SourceRange): SourceRange;
+  relativeToAbsoluteSourceRange(sourceRange: undefined): undefined;
+  relativeToAbsoluteSourceRange(sourceRange: SourceRange|undefined): SourceRange
+      |undefined;
+  relativeToAbsoluteSourceRange(sourceRange: SourceRange|undefined): SourceRange
+      |undefined {
+    return correctSourceRange(sourceRange, this._locationOffset);
+  }
+
+
+  absoluteToRelativeSourceRange(sourceRange: SourceRange): SourceRange;
+  absoluteToRelativeSourceRange(sourceRange: undefined): undefined;
+  absoluteToRelativeSourceRange(sourceRange: SourceRange|undefined): SourceRange
+      |undefined;
+  absoluteToRelativeSourceRange(sourceRange: SourceRange|undefined): SourceRange
+      |undefined {
+    return uncorrectSourceRange(sourceRange, this._locationOffset);
   }
 
   sourceRangeToOffsets(range: SourceRange): [number, number] {

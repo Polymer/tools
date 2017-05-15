@@ -20,6 +20,7 @@ import {ParsedHtmlDocument} from '../html/html-document';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {parseJs} from '../javascript/javascript-parser';
 import {correctSourceRange, LocationOffset, Severity, SourceRange, Warning} from '../model/model';
+import {ParsedDocument} from '../parser/document';
 
 
 const p = dom5.predicates;
@@ -72,6 +73,7 @@ export abstract class DatabindingExpression {
 
   private readonly _expressionAst: estree.Program;
   private readonly locationOffset: LocationOffset;
+  private readonly _document: ParsedDocument<any, any>;
 
   /**
    * Toplevel properties on the model that are referenced in this expression.
@@ -83,7 +85,7 @@ export abstract class DatabindingExpression {
 
   constructor(
       sourceRange: SourceRange, expressionText: string, ast: estree.Program,
-      limitation: ExpressionLimitation) {
+      limitation: ExpressionLimitation, document: ParsedDocument<any, any>) {
     this.sourceRange = sourceRange;
     this.expressionText = expressionText;
     this._expressionAst = ast;
@@ -91,7 +93,7 @@ export abstract class DatabindingExpression {
       line: sourceRange.start.line,
       col: sourceRange.start.column
     };
-
+    this._document = document;
     this._extractPropertiesAndValidate(limitation);
   }
 
@@ -199,12 +201,13 @@ export abstract class DatabindingExpression {
   }
 
   private _validationWarning(message: string, node: estree.Node): Warning {
-    return {
+    return new Warning({
       code: 'invalid-polymer-expression',
       message,
       sourceRange: this.sourceRangeForNode(node)!,
-      severity: Severity.WARNING
-    };
+      severity: Severity.WARNING,
+      parsedDocument: this._document,
+    });
   }
 }
 
@@ -244,8 +247,9 @@ export class AttributeDatabindingExpression extends DatabindingExpression {
   constructor(
       astNode: parse5.ASTNode, isCompleteBinding: boolean, direction: '{'|'[',
       eventName: string|undefined, attribute: parse5.ASTAttribute,
-      sourceRange: SourceRange, expressionText: string, ast: estree.Program) {
-    super(sourceRange, expressionText, ast, 'full');
+      sourceRange: SourceRange, expressionText: string, ast: estree.Program,
+      document: ParsedHtmlDocument) {
+    super(sourceRange, expressionText, ast, 'full', document);
     this.astNode = astNode;
     this.isCompleteBinding = isCompleteBinding;
     this.direction = direction;
@@ -267,8 +271,9 @@ export class TextNodeDatabindingExpression extends DatabindingExpression {
 
   constructor(
       direction: '{'|'[', astNode: parse5.ASTNode, sourceRange: SourceRange,
-      expressionText: string, ast: estree.Program) {
-    super(sourceRange, expressionText, ast, 'full');
+      expressionText: string, ast: estree.Program,
+      document: ParsedHtmlDocument) {
+    super(sourceRange, expressionText, ast, 'full', document);
     this.direction = direction;
     this.astNode = astNode;
   }
@@ -281,8 +286,9 @@ export class JavascriptDatabindingExpression extends DatabindingExpression {
 
   constructor(
       astNode: estree.Node, sourceRange: SourceRange, expressionText: string,
-      ast: estree.Program, kind: ExpressionLimitation) {
-    super(sourceRange, expressionText, ast, kind);
+      ast: estree.Program, kind: ExpressionLimitation,
+      document: JavaScriptDocument) {
+    super(sourceRange, expressionText, ast, kind, document);
     this.astNode = astNode;
   }
 }
@@ -351,14 +357,16 @@ function extractDataBindingsFromTextNode(
       continue;
     }
     if (parseResult.type === 'failure') {
-      warnings.push(parseResult.warning);
+      warnings.push(
+          new Warning({parsedDocument: document, ...parseResult.warning}));
     } else {
       const expression = new TextNodeDatabindingExpression(
           dataBinding.direction,
           node,
           sourceRange,
           dataBinding.expressionText,
-          parseResult.program);
+          parseResult.program,
+          document);
       for (const warning of expression.warnings) {
         warnings.push(warning);
       }
@@ -405,7 +413,8 @@ function extractDataBindingsFromAttr(
       continue;
     }
     if (parseResult.type === 'failure') {
-      warnings.push(parseResult.warning);
+      warnings.push(
+          new Warning({parsedDocument: document, ...parseResult.warning}));
     } else {
       const expression = new AttributeDatabindingExpression(
           node,
@@ -415,7 +424,8 @@ function extractDataBindingsFromAttr(
           attr,
           sourceRange,
           expressionText,
-          parseResult.program);
+          parseResult.program,
+          document);
       for (const warning of expression.warnings) {
         warnings.push(warning);
       }
@@ -489,22 +499,24 @@ export function parseExpressionInJsStringLiteral(
   if (stringLiteral.type !== 'Literal') {
     // Should we warn here? It's potentially valid, just unanalyzable. Maybe
     // just an info that someone could escalate to a warning/error?
-    warnings.push({
+    warnings.push(new Warning({
       code: 'unanalyzable-polymer-expression',
       message: `Can only analyze databinding expressions in string literals.`,
       severity: Severity.INFO,
       sourceRange: sourceRangeForLiteral,
-    });
+      parsedDocument: document
+    }));
     return result;
   }
   const expressionText = stringLiteral.value;
   if (typeof expressionText !== 'string') {
-    warnings.push({
+    warnings.push(new Warning({
       code: 'invalid-polymer-expression',
       message: `Expected a string, got a ${typeof expressionText}.`,
       sourceRange: sourceRangeForLiteral,
-      severity: Severity.WARNING
-    });
+      severity: Severity.WARNING,
+      parsedDocument: document
+    }));
     return result;
   }
   const sourceRange: SourceRange = {
@@ -520,10 +532,15 @@ export function parseExpressionInJsStringLiteral(
   };
   const parsed = parseExpression(expressionText, sourceRange);
   if (parsed && parsed.type === 'failure') {
-    warnings.push(parsed.warning);
+    warnings.push(new Warning({parsedDocument: document, ...parsed.warning}));
   } else if (parsed && parsed.type === 'success') {
     result.databinding = new JavascriptDatabindingExpression(
-        stringLiteral, sourceRange, expressionText, parsed.program, kind);
+        stringLiteral,
+        sourceRange,
+        expressionText,
+        parsed.program,
+        kind,
+        document);
     for (const warning of result.databinding.warnings) {
       warnings.push(warning);
     }

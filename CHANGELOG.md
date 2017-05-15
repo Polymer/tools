@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * [BREAKING] `attributes`, `properties`, `methods`, and `events` are now Maps from the name to the value rather than arrays. This better models what's actually going on (you can't have two different properties with the same name in javascript) and it makes our inheritance modeling more efficient.
   * Note that the serialized output format `analysis.json` is not changed, it still uses arrays.
+* Warning is now a class, not just an interface. It also now keeps track of the
+  parsed document that it came from. This fixes a race condition and API wart
+  where to print a warning you needed to load the source of the document
+  that was seen when the warning was generated.
+  * Also, thanks to using the ParsedDocument interface, printing a warning is
+    now O(size of underlined text) rather than O(size of document).
 
 ## [2.0.0-alpha.42] -2017-05-09
 

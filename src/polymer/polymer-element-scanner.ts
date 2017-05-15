@@ -129,7 +129,7 @@ class ElementVisitor implements Visitor {
       const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
       const argument = <estree.ArrayExpression>returnStatement.argument;
       const propDesc = toScannedPolymerProperty(
-          prop, this.document.sourceRangeForNode(node)!);
+          prop, this.document.sourceRangeForNode(node)!, this.document);
       docs.annotate(propDesc);
 
       // We only support observers and behaviors getters that return array
@@ -174,8 +174,8 @@ class ElementVisitor implements Visitor {
     }
 
     if (node.kind === 'method') {
-      const methodDesc =
-          toScannedMethod(prop, this.document.sourceRangeForNode(node)!);
+      const methodDesc = toScannedMethod(
+          prop, this.document.sourceRangeForNode(node)!, this.document);
       docs.annotate(methodDesc);
       element.addMethod(methodDesc);
     }
@@ -256,7 +256,7 @@ class ElementVisitor implements Visitor {
       for (const prop of node.properties) {
         const name = objectKeyToString(prop.key);
         if (!name) {
-          element.warnings.push({
+          element.warnings.push(new Warning({
             message:
                 `Can't determine name for property key from expression with type ${
                                                                                    prop.key
@@ -264,8 +264,9 @@ class ElementVisitor implements Visitor {
                                                                                  }.`,
             code: 'cant-determine-property-name',
             severity: Severity.WARNING,
-            sourceRange: this.document.sourceRangeForNode(prop.key)!
-          });
+            sourceRange: this.document.sourceRangeForNode(prop.key)!,
+            parsedDocument: this.document
+          }));
           continue;
         }
 
@@ -280,14 +281,14 @@ class ElementVisitor implements Visitor {
 
         try {
           const scannedPolymerProperty = toScannedPolymerProperty(
-              prop, this.document.sourceRangeForNode(prop)!);
+              prop, this.document.sourceRangeForNode(prop)!, this.document);
           if (prop.kind === 'get') {
             getters[scannedPolymerProperty.name] = scannedPolymerProperty;
           } else if (prop.kind === 'set') {
             setters[scannedPolymerProperty.name] = scannedPolymerProperty;
           } else if (prop.method === true || isFunctionType(prop.value)) {
-            const scannedPolymerMethod =
-                toScannedMethod(prop, this.document.sourceRangeForNode(prop)!);
+            const scannedPolymerMethod = toScannedMethod(
+                prop, this.document.sourceRangeForNode(prop)!, this.document);
             element.addMethod(scannedPolymerMethod);
           } else {
             element.addProperty(scannedPolymerProperty);

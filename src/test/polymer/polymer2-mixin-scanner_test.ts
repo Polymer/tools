@@ -103,7 +103,7 @@ suite('Polymer2MixinScanner', () => {
                        underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 function TestMixin(superclass) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   return class extends superclass {
@@ -147,7 +147,7 @@ function TestMixin(superclass) {
                        underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 const TestMixin = (superclass) => class extends superclass {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   static get properties() {
@@ -187,7 +187,7 @@ const TestMixin = (superclass) => class extends superclass {
                        underlinedWarnings: [],
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 const TestMixin = function(superclass) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   return class extends superclass {
@@ -230,7 +230,7 @@ const TestMixin = function(superclass) {
                          }]);
         const underlinedSource =
             await underliner.underline(mixins[0].sourceRange);
-        assert.equal(underlinedSource, `
+        assert.deepEqual(underlinedSource, `
 let TestMixin;
 ~~~~~~~~~~~~~~`);
       });
@@ -254,7 +254,7 @@ let TestMixin;
                        underlinedWarnings: []
                      }]);
     const underlinedSource = await underliner.underline(mixins[0].sourceRange);
-    assert.equal(underlinedSource, `
+    assert.deepEqual(underlinedSource, `
 function TestMixin() {
 ~~~~~~~~~~~~~~~~~~~~~~
 }

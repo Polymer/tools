@@ -15,6 +15,7 @@
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
+import {ParsedDocument} from '../parser/document';
 
 import {Class, ClassInit} from './class';
 import {Privacy} from './feature';
@@ -46,20 +47,23 @@ export abstract class ScannedElementBase implements Resolvable {
   abstract: boolean = false;
   superClass?: ScannedReference = undefined;
 
-  applyHtmlComment(commentText: string|undefined) {
-    if (commentText) {
+  applyHtmlComment(
+      commentText: string|undefined,
+      containingDocument: ParsedDocument<any, any>|undefined) {
+    if (commentText && containingDocument) {
       const commentJsdoc = jsdoc.parseJsdoc(commentText);
       // Add a Warning if there are already jsdoc tags or a description for this
       // element.
       if (this.sourceRange &&
           (this.description || this.jsdoc && this.jsdoc.tags.length > 0)) {
-        this.warnings.push({
+        this.warnings.push(new Warning({
           severity: Severity.WARNING,
           code: 'multiple-doc-comments',
           message:
               `${this.constructor.name} has both HTML doc and JSDoc comments.`,
           sourceRange: this.sourceRange,
-        });
+          parsedDocument: containingDocument
+        }));
       }
       this.jsdoc =
           this.jsdoc ? jsdoc.join(commentJsdoc, this.jsdoc) : commentJsdoc;

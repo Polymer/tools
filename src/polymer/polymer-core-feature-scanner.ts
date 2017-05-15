@@ -19,7 +19,7 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Severity} from '../model/model';
+import {Severity, Warning} from '../model/model';
 
 import {toScannedMethod, toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerCoreFeature} from './polymer-core-feature';
@@ -71,13 +71,14 @@ class PolymerCoreFeatureVisitor implements Visitor {
 
     const rhs = assignment.right;
     if (rhs.type !== 'ObjectExpression') {
-      feature.warnings.push({
+      feature.warnings.push(new Warning({
         message: `Expected assignment to \`Polymer.Base\` to be an object.` +
             `Got \`${rhs.type}\` instead.`,
         severity: Severity.ERROR,
         code: 'invalid-polymer-base-assignment',
         sourceRange: this.document.sourceRangeForNode(assignment)!,
-      });
+        parsedDocument: this.document
+      }));
       return;
     }
 
@@ -104,26 +105,28 @@ class PolymerCoreFeatureVisitor implements Visitor {
     this.features.push(feature);
 
     if (call.arguments.length !== 1) {
-      feature.warnings.push({
+      feature.warnings.push(new Warning({
         message:
             `Expected only one argument to \`Polymer.Base._addFeature\`. ` +
             `Got ${call.arguments.length}.`,
         severity: Severity.ERROR,
         code: 'invalid-polymer-core-feature-call',
         sourceRange: this.document.sourceRangeForNode(call)!,
-      });
+        parsedDocument: this.document
+      }));
       return;
     }
 
     const arg = call.arguments[0];
     if (arg.type !== 'ObjectExpression') {
-      feature.warnings.push({
+      feature.warnings.push(new Warning({
         message: `Expected argument to \`Polymer.Base._addFeature\` to be an ` +
             `object. Got \`${arg.type}\` instead.`,
         severity: Severity.ERROR,
         code: 'invalid-polymer-core-feature-call',
         sourceRange: this.document.sourceRangeForNode(call)!,
-      });
+        parsedDocument: this.document
+      }));
       return;
     }
 
@@ -142,10 +145,11 @@ class PolymerCoreFeatureVisitor implements Visitor {
         continue;
       }
       if (esutil.isFunctionType(prop.value)) {
-        const method = toScannedMethod(prop, sourceRange);
+        const method = toScannedMethod(prop, sourceRange, this.document);
         feature.methods.set(method.name, method);
       } else {
-        const property = toScannedPolymerProperty(prop, sourceRange);
+        const property =
+            toScannedPolymerProperty(prop, sourceRange, this.document);
         feature.properties.set(property.name, property);
       }
       // TODO(aomarks) Are there any getters/setters on Polymer.Base?

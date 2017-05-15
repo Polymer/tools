@@ -14,15 +14,23 @@
 
 import {assert} from 'chai';
 import * as chalk from 'chalk';
+import * as fs from 'fs';
 import * as memoryStreams from 'memory-streams';
 import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
+import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {Severity, Warning} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {WarningPrinter} from '../../warning/warning-printer';
 
-const dumbNameWarning: Warning = {
+const parser = new JavaScriptParser();
+const staticTestDir = path.join(__dirname, '../static');
+const vanillaSources =
+    fs.readFileSync(path.join(staticTestDir, 'vanilla-elements.js'), 'utf-8');
+const parsedDocument = parser.parse(vanillaSources, 'vanilla-elements.js');
+
+const dumbNameWarning = new Warning({
   message: 'This is a dumb name for an element.',
   code: 'dumb-element-name',
   severity: Severity.WARNING,
@@ -30,10 +38,11 @@ const dumbNameWarning: Warning = {
     file: 'vanilla-elements.js',
     start: {column: 6, line: 0},
     end: {column: 22, line: 0}
-  }
-};
+  },
+  parsedDocument
+});
 
-const goodJobWarning: Warning = {
+const goodJobWarning = new Warning({
   message: 'Good job with this observedAttributes getter.',
   code: 'cool-observed-attributes',
   severity: Severity.INFO,
@@ -41,21 +50,27 @@ const goodJobWarning: Warning = {
     file: 'vanilla-elements.js',
     start: {line: 22, column: 2},
     end: {line: 29, column: 3}
-  }
-};
-
-const staticTestDir = path.join(__dirname, '../static');
+  },
+  parsedDocument
+});
 
 suite('WarningPrinter', () => {
   let output: NodeJS.WritableStream;
   let printer: WarningPrinter;
   let analyzer: Analyzer;
+  let originalChalkEnabled: boolean;
 
   setup(() => {
     output = new memoryStreams.WritableStream();
     const urlLoader = new FSUrlLoader(staticTestDir);
     analyzer = new Analyzer({urlLoader});
-    printer = new WarningPrinter(output, {analyzer, color: false});
+    printer = new WarningPrinter(output, {color: false});
+    originalChalkEnabled = chalk.enabled;
+    (chalk as any).enabled = true;
+  });
+
+  teardown(() => {
+    (chalk as any).enabled = originalChalkEnabled;
   });
 
   test('can handle printing no warnings', async() => {
@@ -77,8 +92,7 @@ vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for a
   });
 
   test('can format and print one-line warnings', async() => {
-    printer = new WarningPrinter(
-        output, {analyzer, verbosity: 'one-line', color: false});
+    printer = new WarningPrinter(output, {verbosity: 'one-line', color: false});
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
     const expected =
@@ -87,10 +101,9 @@ vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for a
   });
 
   test('it adds color if configured to do so', async() => {
-    printer = new WarningPrinter(output, {analyzer, color: true});
+    printer = new WarningPrinter(output, {color: true});
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
-    assert.isTrue(chalk.hasColor(actual));
     const expected = `
 
 class ClassDeclaration extends HTMLElement {}

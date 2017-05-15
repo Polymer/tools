@@ -15,7 +15,8 @@
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedEvent, Severity, SourceRange, WarningCarryingException} from '../model/model';
+import {ScannedEvent, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
+import {ParsedDocument} from '../parser/document';
 import {annotateEvent} from '../polymer/docs';
 
 import * as jsdoc from './jsdoc';
@@ -88,7 +89,9 @@ export const CLOSURE_CONSTRUCTOR_MAP = new Map(
  * @return {string} The type of that expression, in Closure terms.
  */
 export function closureType(
-    node: estree.Node, sourceRange: SourceRange): string {
+    node: estree.Node,
+    sourceRange: SourceRange,
+    document: ParsedDocument<any, any>): string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
@@ -96,14 +99,13 @@ export function closureType(
   } else if (node.type === 'Identifier') {
     return CLOSURE_CONSTRUCTOR_MAP.get(node.name) || node.name;
   } else {
-    throw new WarningCarryingException({
+    throw new WarningCarryingException(new Warning({
       code: 'no-closure-type',
-      message:
-          `Unable to determine closure type for expression of type ${
-                                                                     node.type
-                                                                   }`,
-      severity: Severity.WARNING, sourceRange
-    });
+      message: `Unable to determine closure type for expression of type ` +
+          `${node.type}`,
+      severity: Severity.WARNING, sourceRange,
+      parsedDocument: document,
+    }));
   }
 }
 

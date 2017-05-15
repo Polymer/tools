@@ -321,24 +321,26 @@ export function getBehaviors(
       externalPackages: true
     });
     if (foundBehaviors.size === 0) {
-      warnings.push({
+      warnings.push(new Warning({
         message: `Unable to resolve behavior ` +
             `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
             `@polymerBehavior?`,
         severity: Severity.ERROR,
         code: 'unknown-polymer-behavior',
-        sourceRange: behavior.sourceRange
-      });
+        sourceRange: behavior.sourceRange,
+        parsedDocument: document.parsedDocument
+      }));
       // Skip processing this behavior.
       continue;
     }
     if (foundBehaviors.size > 1) {
-      warnings.push({
+      warnings.push(new Warning({
         message: `Found more than one behavior named ${behavior.name}.`,
         severity: Severity.WARNING,
         code: 'multiple-polymer-behaviors',
-        sourceRange: behavior.sourceRange
-      });
+        sourceRange: behavior.sourceRange,
+        parsedDocument: document.parsedDocument
+      }));
       // Don't skip processing this behavior, just take the most recently
       // declared instance.
     }

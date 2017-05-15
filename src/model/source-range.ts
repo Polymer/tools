@@ -56,6 +56,14 @@ export interface LocationOffset {
  * first line of the <script> contents.
  */
 export function correctSourceRange(
+    sourceRange: SourceRange,
+    locationOffset?: LocationOffset|null): SourceRange;
+export function correctSourceRange(
+    sourceRange: undefined, locationOffset?: LocationOffset|null): undefined;
+export function correctSourceRange(
+    sourceRange?: SourceRange,
+    locationOffset?: LocationOffset|null): SourceRange|undefined;
+export function correctSourceRange(
     sourceRange?: SourceRange,
     locationOffset?: LocationOffset|null): SourceRange|undefined {
   if (!locationOffset || !sourceRange) {
@@ -73,6 +81,28 @@ export function correctPosition(
   return {
     line: position.line + locationOffset.line,
     column: position.column + (position.line === 0 ? locationOffset.col : 0)
+  };
+}
+
+export function uncorrectSourceRange(
+    sourceRange?: SourceRange,
+    locationOffset?: LocationOffset|null): SourceRange|undefined {
+  if (locationOffset == null || sourceRange == null) {
+    return sourceRange;
+  }
+  return {
+    file: locationOffset.filename || sourceRange.file,
+    start: uncorrectPosition(sourceRange.start, locationOffset),
+    end: uncorrectPosition(sourceRange.end, locationOffset),
+  };
+}
+
+export function uncorrectPosition(
+    position: SourcePosition, locationOffset: LocationOffset): SourcePosition {
+  const line = position.line - locationOffset.line;
+  return {
+    line: line,
+    column: position.column - (line === 0 ? locationOffset.col : 0)
   };
 }
 

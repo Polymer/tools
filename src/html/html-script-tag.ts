@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Import, ScannedImport, Severity} from '../model/model';
+import {Document, Import, ScannedImport, Severity, Warning} from '../model/model';
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
@@ -60,12 +60,13 @@ export class ScannedScriptTagImport extends ScannedImport {
     } else {
       // not found or syntax error
       const error = (this.error ? (this.error.message || this.error) : '');
-      document.warnings.push({
+      document.warnings.push(new Warning({
         code: 'could-not-load',
         message: `Unable to load import: ${error}`,
         sourceRange: (this.urlSourceRange || this.sourceRange)!,
-        severity: Severity.ERROR
-      });
+        severity: Severity.ERROR,
+        parsedDocument: document.parsedDocument
+      }));
       return undefined;
     }
   }

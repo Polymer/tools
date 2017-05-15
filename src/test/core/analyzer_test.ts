@@ -228,9 +228,11 @@ suite('Analyzer', () => {
           };
           assert.deepEqual(document.getWarnings({imported: false}), []);
           assert.deepEqual(
-              document.getWarnings({imported: true}), [expectedWarning]);
+              document.getWarnings({imported: true}).map((w) => w.toJson()),
+              [expectedWarning]);
           assert.deepEqual(
-              chainedDocument.getWarnings({imported: false}),
+              chainedDocument.getWarnings({imported: false})
+                  .map((w) => w.toJson()),
               [expectedWarning]);
         });
 
