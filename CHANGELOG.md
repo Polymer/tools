@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * A prefix can now be passed to `addPushManifest()`, which will be prepended to all push manifest resource paths.
 * A basePath can now be passed to the service worker generator, where it will be used as the sw-precache replacePrefix.
+* Upgrade to Polymer Analyzer that changes many errors to warnings for more robust builds.
 
 ## [1.2.5] - 2017-05-15
 
