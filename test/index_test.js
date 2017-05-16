@@ -595,7 +595,6 @@ suite('Project Config', () => {
       const config = ProjectConfig.loadConfigFromFile(
           path.join(__dirname, 'polymer-minimal.json'));
       assert.deepEqual(JSON.parse(config.toJSON()), {
-        root: process.cwd(),
         entrypoint: 'index.html',
         fragments: [],
         sources: [
@@ -610,7 +609,6 @@ suite('Project Config', () => {
       const config = ProjectConfig.loadConfigFromFile(
           path.join(__dirname, 'polymer-full.json'));
       assert.deepEqual(JSON.parse(config.toJSON()), {
-        root: path.resolve('public'),
         entrypoint: 'entrypoint.html',
         shell: 'shell.html',
         fragments: ['fragment.html'],
