@@ -369,8 +369,7 @@ export class ProjectConfig {
   toJSON(): string {
     const relative = (p: string | null | undefined) =>
         p ? path.relative(this.root, p) : undefined;
-    return JSON.stringify({
-      root: this.root,
+    const obj = {
       entrypoint: relative(this.entrypoint),
       shell: relative(this.shell),
       fragments: (this.fragments || []).map(relative),
@@ -378,7 +377,8 @@ export class ProjectConfig {
       extraDependencies: (this.extraDependencies || []).map(relative),
       builds: this.builds,
       lint: this.lint,
-    });
+    };
+    return JSON.stringify(obj, null, 2);
   }
 }
 
