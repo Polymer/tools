@@ -16,16 +16,37 @@ npm install polymer-analyzer
 const {Analyzer, FSUrlLoader} = require('polymer-analyzer');
 
 let analyzer = new Analyzer({
-  urlLoader: new FSUrlLoader(pathToPackageRoot),
+  urlLoader: new FSUrlLoader('/path/to/package/root'),
 });
 
-analyzer.analyze('/path-to-polymer-element.html')
-  .then((document) => {
-    for (const element of document.getFeatures({kind: 'element'})) {
-      console.log(element);
+// This path is relative to the package root
+analyzer.analyze(['./my-element.html']).then((analysis) => {
+  // Print the name of every property on paper-button, and where it was
+  // inherited from.
+  const [paperButton, ] = analysis.getFeatures(
+      {kind: 'element', id: 'paper-button', externalPackages: true});
+  if (paperButton) {
+    for (const [name, property] of paperButton.properties) {
+      let message = `${name}`;
+      if (property.inheritedFrom) {
+        message += ` inherited from ${property.inheritedFrom}`;
+      } else {
+        message += ` was defined directly on paper-button`;
+      }
+      console.log(message);
     }
-  });
+  } else {
+    console.log(`my-element.html didn't define or import paper-button.`);
+  }
+});
 ```
+
+## What's it used for?
+
+* [webcomponents.org](https://webcomponents.org) - discovery, demos, and docs for web components
+* [polymer-linter](https://github.com/Polymer/polymer-linter) - lints the web
+* [polymer-build](https://github.com/Polymer/polymer-build) - performs HTML-aware buildtime optimization
+* [polymer-editor-service](https://github.com/Polymer/polymer-editor-service) - IDE plugin, provides live as-you-type help
 
 ## Developing
 
