@@ -16,15 +16,15 @@ import File = require('vinyl');
 import * as parse5 from 'parse5';
 import {Bundler, Options, BundleManifest, generateShellMergeStrategy} from 'polymer-bundler';
 import {ProjectConfig} from 'polymer-project-config';
-import {Transform} from 'stream';
 
 import {BuildAnalyzer} from './analyzer';
 import {FileMapUrlLoader} from './file-map-url-loader';
 import {pathFromUrl, urlFromPath} from './path-transformers';
+import {AsyncTransformStream} from './streams';
 
 export {Options} from 'polymer-bundler';
 
-export class BuildBundler extends Transform {
+export class BuildBundler extends AsyncTransformStream<File, File> {
   config: ProjectConfig;
 
   private _buildAnalyzer: BuildAnalyzer;
@@ -46,15 +46,15 @@ export class BuildBundler extends Transform {
 
     this._buildAnalyzer = buildAnalyzer;
 
-    let {analyzer,
-         excludes,
-         inlineCss,
-         inlineScripts,
-         rewriteUrlsInTemplates,
-         sourcemaps,
-         stripComments,
-         strategy,
-         urlMapper} = options;
+    const {analyzer,
+           excludes,
+           inlineCss,
+           inlineScripts,
+           rewriteUrlsInTemplates,
+           sourcemaps,
+           stripComments,
+           urlMapper} = options;
+    let {strategy} = options;
 
     const urlLoader =
         new FileMapUrlLoader(this.files, analyzer || buildAnalyzer.analyzer);
@@ -79,6 +79,18 @@ export class BuildBundler extends Transform {
     });
   }
 
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
+        this._mapFile(file);
+      }
+    await this._buildBundles();
+    for (const file of this.files.values()) {
+      yield file;
+    }
+  }
+
   private async _buildBundles() {
     // Tell the analyzer about changed files so it can purge them from its cache
     // before using the analyzer for bundling.
@@ -98,15 +110,6 @@ export class BuildBundler extends Transform {
         contents: new Buffer(parse5.serialize(document.ast)),
       }));
     }
-  }
-
-  async _flush(done: (error?: any) => void) {
-    await this._buildBundles();
-    for (const file of this.files.values()) {
-      this.push(file);
-    }
-    // end the stream
-    done();
   }
 
   private async _generateBundleManifest(): Promise<BundleManifest> {
@@ -129,14 +132,6 @@ export class BuildBundler extends Transform {
 
   private _mapFile(file: File) {
     this.files.set(urlFromPath(this.config.root, file.path), file);
-  }
-
-  _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: any, data?: File) => void): void {
-    this._mapFile(file);
-    callback(null, null);
   }
 
   /**

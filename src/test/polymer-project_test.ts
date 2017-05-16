@@ -124,23 +124,26 @@ suite('PolymerProject', () => {
       });
     });
 
-    test(
-        'reads dependencies in a monolithic (non-shell) application without timing out',
-        () => {
-          const project = new PolymerProject({
-            root: testProjectRoot,
-            entrypoint: 'index.html',
-            sources: [
-              'source-dir/**',
-              'index.html',
-              'shell.html',
-            ],
-          });
+    const testName =
+        'reads dependencies in a monolithic (non-shell) application without timing out';
+    test(testName, () => {
+      const project = new PolymerProject({
+        root: testProjectRoot,
+        entrypoint: 'index.html',
+        sources: [
+          'source-dir/**',
+          'index.html',
+          'shell.html',
+        ],
+      });
 
-          let dependencyStream = project.dependencies();
-          dependencyStream.on('data', () => {});
-          return waitFor(dependencyStream);
-        });
+      const sourcesStream = project.sources();
+      const dependencyStream = project.dependencies();
+      sourcesStream.on('data', () => {});
+      dependencyStream.on('data', () => {});
+      return Promise.all(
+          [waitFor(project.sources()), waitFor(dependencyStream)]);
+    });
 
     test(
         'reads dependencies and includes additionally provided files',

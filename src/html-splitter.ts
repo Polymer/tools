@@ -15,12 +15,10 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import * as osPath from 'path';
-import * as logging from 'plylog';
 import {Transform} from 'stream';
 import File = require('vinyl');
-import {FileCB} from './streams';
+import {AsyncTransformStream} from './streams';
 
-const logger = logging.getLogger('polymer-project');
 const pred = dom5.predicates;
 
 const extensionsForType: {[mimetype: string]: string} = {
@@ -119,7 +117,7 @@ export class SplitFile {
 /**
  * Splits HTML files, extracting scripts and styles into separate File objects.
  */
-class HtmlSplitTransform extends Transform {
+class HtmlSplitTransform extends AsyncTransformStream<File, File> {
   static isInlineScript =
       pred.AND(pred.hasTagName('script'), pred.NOT(pred.hasAttr('src')));
 
@@ -130,10 +128,15 @@ class HtmlSplitTransform extends Transform {
     this._state = splitter;
   }
 
-  _transform(file: File, _encoding: string, callback: FileCB): void {
-    const filePath = osPath.normalize(file.path);
-    if (file.contents && filePath.endsWith('.html')) {
-      try {
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
+        const filePath = osPath.normalize(file.path);
+        if (!(file.contents && filePath.endsWith('.html'))) {
+          yield file;
+          continue;
+        }
         const contents = file.contents.toString();
         const doc = parse5.parse(contents, {locationInfo: true});
         dom5.removeFakeRootElements(doc);
@@ -145,7 +148,8 @@ class HtmlSplitTransform extends Transform {
           const typeAtribute =
               dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
           const extension = extensionsForType[typeAtribute];
-          // If we don't recognize the script type attribute, don't split out.
+          // If we don't recognize the script type attribute, don't split
+          // out.
           if (!extension) {
             continue;
           }
@@ -173,14 +177,8 @@ class HtmlSplitTransform extends Transform {
           path: filePath,
           contents: new Buffer(splitContents),
         });
-        callback(null, newFile);
-      } catch (e) {
-        logger.error(e);
-        callback(e, null);
+        yield newFile;
       }
-    } else {
-      callback(null, file);
-    }
   }
 }
 
@@ -189,7 +187,7 @@ class HtmlSplitTransform extends Transform {
  * Joins HTML files originally split by `Splitter`, based on the relationships
  * stored in its HTMLSplitter state.
  */
-class HtmlRejoinTransform extends Transform {
+class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
   static isExternalScript =
       pred.AND(pred.hasTagName('script'), pred.hasAttr('src'));
 
@@ -200,32 +198,33 @@ class HtmlRejoinTransform extends Transform {
     this._state = splitter;
   }
 
-  _transform(file: File, _encoding: string, callback: FileCB): void {
-    const filePath = osPath.normalize(file.path);
-    if (this._state.isSplitFile(filePath)) {
-      // this is a parent file
-      const splitFile = this._state.getSplitFile(filePath);
-      splitFile.vinylFile = file;
-      if (splitFile.isComplete) {
-        callback(null, this._rejoin(splitFile));
-      } else {
-        splitFile.vinylFile = file;
-        callback();
-      }
-    } else {
-      const parentFile = this._state.getParentFile(filePath);
-      if (parentFile) {
-        // this is a child file
-        parentFile.setPartContent(filePath, file.contents.toString());
-        if (parentFile.isComplete) {
-          callback(null, this._rejoin(parentFile));
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
+        const filePath = osPath.normalize(file.path);
+        if (this._state.isSplitFile(filePath)) {
+          // this is a parent file
+          const splitFile = this._state.getSplitFile(filePath);
+          splitFile.vinylFile = file;
+          if (splitFile.isComplete) {
+            yield this._rejoin(splitFile);
+          } else {
+            splitFile.vinylFile = file;
+          }
         } else {
-          callback();
+          const parentFile = this._state.getParentFile(filePath);
+          if (parentFile) {
+            // this is a child file
+            parentFile.setPartContent(filePath, file.contents.toString());
+            if (parentFile.isComplete) {
+              yield this._rejoin(parentFile);
+            }
+          } else {
+            yield file;
+          }
         }
-      } else {
-        callback(null, file);
       }
-    }
   }
 
   _rejoin(splitFile: SplitFile) {

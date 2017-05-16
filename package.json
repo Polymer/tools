@@ -7,9 +7,10 @@
   "scripts": {
     "lint": "gulp lint",
     "build": "gulp build",
-    "test": "gulp test",
-    "prepublish": "gulp lint && gulp test",
-    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
+    "test": "gulp lint test",
+    "prepublishOnly": "npm test",
+    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i",
+    "test:watch": "watchy -w src/ -- npm test --loglevel=silent"
   },
   "repository": {
     "type": "git",
@@ -22,12 +23,14 @@
   },
   "homepage": "https://github.com/Polymer/polymer-build#readme",
   "dependencies": {
-    "@types/node": "^4.2.3",
+    "@types/mz": "0.0.31",
+    "@types/node": "^6.0.73",
     "@types/parse5": "^2.2.32",
     "@types/vinyl": "^2.0.0",
     "@types/vinyl-fs": "0.0.28",
     "dom5": "^2.2.0",
     "multipipe": "^1.0.2",
+    "mz": "^2.6.0",
     "parse5": "^2.2.2",
     "plylog": "^0.5.0",
     "polymer-analyzer": "^2.0.1",
@@ -58,8 +61,9 @@
     "run-sequence": "^1.2.0",
     "sinon": "^1.17.6",
     "temp": "^0.8.3",
-    "tslint": "^4.4.2",
-    "typescript": "^2.2.0",
-    "vinyl-fs-fake": "^1.1.0"
+    "tslint": "^5.2.0",
+    "typescript": "^2.3.2",
+    "vinyl-fs-fake": "^1.1.0",
+    "watchy": "^0.6.7"
   }
 }

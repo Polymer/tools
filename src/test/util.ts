@@ -19,4 +19,4 @@ export function getFlowingState(stream: NodeJS.ReadableStream): boolean {
   // See: https://nodejs.org/api/stream.html#stream_three_states
   const privateReadableState = (<any>stream)._readableState;
   return privateReadableState.flowing;
-};
+}

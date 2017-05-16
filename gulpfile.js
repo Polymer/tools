@@ -57,19 +57,23 @@ gulp.task('tslint', function() {
 
 gulp.task('depcheck', function() {
   return depcheck(__dirname, {
-           // "@types/*" dependencies are type declarations that are
-           // automatically loaded by TypeScript during build. depcheck can't
-           // detect this so we ignore them here.
-           ignoreMatches: ['@types/*']
-         })
-      .then((result) => {
-        let invalidFiles = Object.keys(result.invalidFiles) || [];
-        let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
-        if (invalidJsFiles.length > 0) {
-          throw new Error(`Invalid files: ${invalidJsFiles}`);
-        }
-        if (result.dependencies.length) {
-          throw new Error(`Unused dependencies: ${result.dependencies}`);
-        }
-      });
+    ignoreMatches: [
+      // "@types/*" dependencies are type declarations that are
+      // automatically loaded by TypeScript during build. depcheck can't
+      // detect this so we ignore them here.
+
+      '@types/*',
+      // Also it can't yet parse files that use async iteration.
+      // TODO(rictic): remove these
+      'mz', 'multipipe', 'polymer-bundler', 'parse5', 'dom5'
+  ]}).then((result) => {
+    let invalidFiles = Object.keys(result.invalidFiles) || [];
+    let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
+    if (invalidJsFiles.length > 0) {
+      throw new Error(`Invalid files: ${invalidJsFiles}`);
+    }
+    if (result.dependencies.length) {
+      throw new Error(`Unused dependencies: ${result.dependencies}`);
+    }
+  });
 });

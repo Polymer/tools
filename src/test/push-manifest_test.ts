@@ -16,12 +16,12 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Transform} from 'stream';
 import * as vfs from 'vinyl-fs';
 import File = require('vinyl');
 
 import {PolymerProject} from '../polymer-project';
 import {PushManifest} from '../push-manifest';
+import {AsyncTransformStream} from '../streams';
 
 /**
  * A utility stream to check all files that pass through it for a file that
@@ -29,10 +29,9 @@ import {PushManifest} from '../push-manifest';
  * that it matches the expected push manifest contents. It will emit
  * "match-success" & "match-failure" events for each test to listen to.
  */
-class CheckPushManifest extends Transform {
+class CheckPushManifest extends AsyncTransformStream<File, File> {
   filePath: string;
   expectedManifest: PushManifest;
-  didAssert = false;
 
   constructor(filePath: string, expectedManifest: PushManifest) {
     super({objectMode: true});
@@ -40,32 +39,29 @@ class CheckPushManifest extends Transform {
     this.expectedManifest = expectedManifest;
   }
 
-  _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: any, data?: File) => void): void {
-    if (this.filePath !== file.path) {
-      callback(null, file);
-      return;
-    }
-    try {
-      const pushManifestContents = file.contents.toString();
-      const pushManifestJson = JSON.parse(pushManifestContents);
-      assert.deepEqual(pushManifestJson, this.expectedManifest);
-      this.emit('match-success');
-    } catch (err) {
-      this.emit('match-failure', err);
-    }
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    let didAssert = false;
+    for
+      await(const file of files) {
+        if (this.filePath !== file.path) {
+          yield file;
+          continue;
+        }
+        try {
+          const pushManifestContents = file.contents.toString();
+          const pushManifestJson = JSON.parse(pushManifestContents);
+          assert.deepEqual(pushManifestJson, this.expectedManifest);
+          this.emit('match-success');
+        } catch (err) {
+          this.emit('match-failure', err);
+        }
 
-    this.didAssert = true;
-    callback(null, file);
-  }
-
-  async _flush(done: (error?: any) => void) {
-    if (this.didAssert) {
-      done();
-    } else {
-      done(new Error(`never saw file ${this.filePath}`));
+        didAssert = true;
+        yield file;
+      }
+    if (!didAssert) {
+      throw new Error(`never saw file ${this.filePath}`);
     }
   }
 }

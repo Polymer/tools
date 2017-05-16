@@ -94,7 +94,9 @@ export class PolymerProject {
   }
 
   addPushManifest(filePath?: string, prefix?: string): NodeJS.ReadWriteStream {
-    return new AddPushManifest(this.config, filePath, prefix);
+    // TODO(rictic): remove casts after this lands:
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
+    return new AddPushManifest(this.config, filePath, prefix) as any;
   }
 
   /**
@@ -103,7 +105,9 @@ export class PolymerProject {
    * to browsers that support the native Custom Elements API.
    */
   addCustomElementsEs5Adapter(): NodeJS.ReadWriteStream {
-    return new CustomElementsEs5AdapterInjector();
+    // TODO(rictic): remove casts after this lands:
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
+    return new CustomElementsEs5AdapterInjector() as any;
   }
 
   /**
@@ -112,6 +116,6 @@ export class PolymerProject {
    * `<base>` tag does not already exist.
    */
   updateBaseTag(baseHref: string): NodeJS.ReadWriteStream {
-    return new BaseTagUpdater(this.config.entrypoint, baseHref);
+    return new BaseTagUpdater(this.config.entrypoint, baseHref) as any;
   }
 }

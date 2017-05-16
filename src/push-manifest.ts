@@ -15,11 +15,11 @@
 import * as path from 'path';
 import {Analyzer, Document, Import} from 'polymer-analyzer';
 import {ProjectConfig} from 'polymer-project-config';
-import {Transform} from 'stream';
 import File = require('vinyl');
 
 import {urlFromPath} from './path-transformers';
 import {FileMapUrlLoader} from './file-map-url-loader';
+import {AsyncTransformStream} from './streams';
 
 /**
  * Push Manifest Types Definitions
@@ -105,7 +105,7 @@ function getResourceTypeFromImport(importFeature: Import): ResourceType|
   // resources, so we can't guarentee that it's a script and should instead rely
   // on the default file-extension mapping.
   return getResourceTypeFromUrl(importFeature.url);
-};
+}
 
 /**
  * Create a PushManifestEntry from an analyzer Import.
@@ -124,39 +124,40 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
 async function generatePushManifestEntryForUrl(
     analyzer: Analyzer, url: string, ignoreUrls?: string[]):
     Promise<PushManifestEntryCollection> {
-  const analysis = await analyzer.analyze([url]);
-  const analyzedDocument = analysis.getDocument(url);
+      const analysis = await analyzer.analyze([url]);
+      const analyzedDocument = analysis.getDocument(url);
 
-  if (!(analyzedDocument instanceof Document)) {
-    const message = analyzedDocument && analyzedDocument.message || 'unknown';
-    throw new Error(`Unable to get document ${url}: ${message}`);
-  }
+      if (!(analyzedDocument instanceof Document)) {
+        const message =
+            analyzedDocument && analyzedDocument.message || 'unknown';
+        throw new Error(`Unable to get document ${url}: ${message}`);
+      }
 
-  const analyzedImports = analyzedDocument.getFeatures(
-      {kind: 'import', externalPackages: true, imported: true});
-  const pushManifestEntries: PushManifestEntryCollection = {};
-  function shouldIgnoreFile(url: string) {
-    return ignoreUrls && ignoreUrls.indexOf(url) > -1;
-  }
+      const analyzedImports = analyzedDocument.getFeatures(
+          {kind: 'import', externalPackages: true, imported: true});
+      const pushManifestEntries: PushManifestEntryCollection = {};
+      function shouldIgnoreFile(url: string) {
+        return ignoreUrls && ignoreUrls.indexOf(url) > -1;
+      }
 
-  for (const analyzedImport of analyzedImports) {
-    const analyzedImportUrl = analyzedImport.url;
-    const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
-    if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
-      pushManifestEntries[analyzedImportUrl] =
-          createPushEntryFromImport(analyzedImport);
+      for (const analyzedImport of analyzedImports) {
+        const analyzedImportUrl = analyzedImport.url;
+        const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
+        if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
+          pushManifestEntries[analyzedImportUrl] =
+              createPushEntryFromImport(analyzedImport);
+        }
+      }
+
+      return pushManifestEntries;
     }
-  }
-
-  return pushManifestEntries;
-};
 
 
 /**
  * A stream that reads in files from an application to generate an HTTP2/Push
  * manifest that gets injected into the stream.
  */
-export class AddPushManifest extends Transform {
+export class AddPushManifest extends AsyncTransformStream<File, File> {
   files: Map<string, File>;
   filePath: string;
   private config: ProjectConfig;
@@ -173,30 +174,22 @@ export class AddPushManifest extends Transform {
     this.prefix = prefix || '';
   }
 
-  _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: any, data?: File) => void): void {
-    this.files.set(urlFromPath(this.config.root, file.path), file);
-    callback(null, file);
-  }
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
+        this.files.set(urlFromPath(this.config.root, file.path), file);
+        yield file;
+      }
 
-  async _flush(done: (error?: any) => void) {
     // Generate a push manifest, and propagate any errors up.
-    let pushManifestContents;
-    try {
-      const pushManifest = await this.generatePushManifest();
-      pushManifestContents = JSON.stringify(pushManifest, undefined, '  ');
-    } catch (err) {
-      done(err);
-      return;
-    }
+    const pushManifest = await this.generatePushManifest();
+    const pushManifestContents = JSON.stringify(pushManifest, undefined, '  ');
     // Push the new push manifest into the stream.
-    this.push(new File({
+    yield new File({
       path: this.filePath,
       contents: new Buffer(pushManifestContents),
-    }));
-    done();
+    });
   }
 
   async generatePushManifest() {

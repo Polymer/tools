@@ -49,10 +49,10 @@ suite('service-worker', () => {
       testBuildRoot = dir;
       vfs.src(path.join('test-fixtures/test-project/**'))
           .pipe(vfs.dest(dir))
-          .on('finish', () => {
+          .on('end', () => {
             mergeStream(defaultProject.sources(), defaultProject.dependencies())
                 .pipe(vfs.dest(testBuildRoot))
-                .on('finish', () => done())
+                .on('end', () => done())
                 .on('error', done);
           });
 

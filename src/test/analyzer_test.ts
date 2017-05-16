@@ -82,7 +82,7 @@ suite('Analyzer', () => {
         sources: sourceFiles,
       });
 
-      let analyzer = new BuildAnalyzer(config);
+      const analyzer = new BuildAnalyzer(config);
       analyzer.sources().pipe(new NoopStream());
       analyzer.dependencies().pipe(new NoopStream());
 
@@ -113,7 +113,7 @@ suite('Analyzer', () => {
         sources: sourceFiles,
       });
 
-      let analyzer = new BuildAnalyzer(config);
+      const analyzer = new BuildAnalyzer(config);
       analyzer.sources().pipe(new NoopStream());
       analyzer.dependencies().on('data', (file: File) => {
         foundDependencies.add(file.path);

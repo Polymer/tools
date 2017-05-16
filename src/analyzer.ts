@@ -13,17 +13,17 @@
  */
 
 import * as path from 'path';
+import * as logging from 'plylog';
 import {Analyzer, Document, Severity, UrlLoader, Warning, WarningPrinter} from 'polymer-analyzer';
+import {parseUrl} from 'polymer-analyzer/lib/core/utils';
+import {ProjectConfig} from 'polymer-project-config';
 import {PassThrough, Transform} from 'stream';
+import {src as vinylSrc} from 'vinyl-fs';
+
+import {pathFromUrl, urlFromPath} from './path-transformers';
+import {AsyncTransformStream, VinylReaderTransform} from './streams';
 
 import File = require('vinyl');
-import {src as vinylSrc} from 'vinyl-fs';
-import {parseUrl} from 'polymer-analyzer/lib/core/utils';
-import * as logging from 'plylog';
-import {ProjectConfig} from 'polymer-project-config';
-
-import {VinylReaderTransform} from './streams';
-import {urlFromPath, pathFromUrl} from './path-transformers';
 
 const logger = logging.getLogger('cli.build.analyzer');
 
@@ -48,7 +48,7 @@ export interface DepsIndex {
  * important that files are resolved here in a seperate stream, so that analysis
  * and file loading/resolution can't block each other while waiting.
  */
-class ResolveTransform extends Transform {
+class ResolveTransform extends AsyncTransformStream<File, File> {
   private _buildAnalyzer: BuildAnalyzer;
 
   constructor(buildAnalyzer: BuildAnalyzer) {
@@ -56,17 +56,13 @@ class ResolveTransform extends Transform {
     this._buildAnalyzer = buildAnalyzer;
   }
 
-  _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: Error, data?: File) => void): void {
-    try {
-      this._buildAnalyzer.resolveFile(file);
-    } catch (err) {
-      callback(err);
-      return;
-    }
-    callback(null, file);
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
+        this._buildAnalyzer.resolveFile(file);
+        yield file;
+      }
   }
 }
 
@@ -82,7 +78,7 @@ class ResolveTransform extends Transform {
  * source stream will remain paused until the user is ready to start the stream
  * themselves.
  */
-class AnalyzeTransform extends Transform {
+class AnalyzeTransform extends AsyncTransformStream<File, File> {
   private _buildAnalyzer: BuildAnalyzer;
 
   constructor(buildAnalyzer: BuildAnalyzer) {
@@ -94,19 +90,13 @@ class AnalyzeTransform extends Transform {
     this._buildAnalyzer = buildAnalyzer;
   }
 
-  _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: Error, data?: File) => void): void {
-    (async() => {
-      try {
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
         await this._buildAnalyzer.analyzeFile(file);
-      } catch (err) {
-        callback(err);
-        return;
+        yield file;
       }
-      callback(null, file);
-    })();
   }
 }
 
@@ -169,6 +159,10 @@ export class BuildAnalyzer {
       nodir: true,
     });
 
+    // TODO(rictic): there are two extremely hacky `as any` casts here.
+    //     remove them once this PR has landed:
+    //     https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
+
     // _sourcesProcessingStream: Pipe the sources stream through...
     //   1. The resolver stream, to resolve each file loaded via the analyzer
     //   2. The analyzer stream, to analyze app fragments for dependencies
@@ -181,8 +175,8 @@ export class BuildAnalyzer {
             .on('error',
                 (err: Error) =>
                     this._sourcesProcessingStream.emit('error', err))
-            .on('finish', this.onSourcesStreamComplete.bind(this))
-            .pipe(new AnalyzeTransform(this));
+            .on('end', this.onSourcesStreamComplete.bind(this))
+            .pipe(new AnalyzeTransform(this)) as any;
 
     // _dependenciesProcessingStream: Pipe the dependencies stream through...
     //   1. The vinyl loading stream, to load file objects from file paths
@@ -196,7 +190,7 @@ export class BuildAnalyzer {
             .on('error',
                 (err: Error) =>
                     this._dependenciesProcessingStream.emit('error', err))
-            .pipe(new ResolveTransform(this));
+            .pipe(new ResolveTransform(this)) as any;
   }
 
   /**
@@ -286,7 +280,7 @@ export class BuildAnalyzer {
   private _done() {
     this.printWarnings();
     const allWarningCount = this.countWarningsByType();
-    const errorWarningCount = allWarningCount.get(Severity.ERROR);
+    const errorWarningCount = allWarningCount.get(Severity.ERROR)!;
 
     // If any ERROR warnings occurred, propagate an error in each build stream.
     if (errorWarningCount > 0) {
@@ -308,12 +302,12 @@ export class BuildAnalyzer {
     this._resolveDependencyAnalysis(this._dependencyAnalysis);
   }
 
-  getFile(filepath: string): File {
+  getFile(filepath: string): File|undefined {
     const url = urlFromPath(this.config.root, filepath);
     return this.getFileByUrl(url);
   }
 
-  getFileByUrl(url: string): File {
+  getFileByUrl(url: string): File|undefined {
     if (url.startsWith('/')) {
       url = url.substring(1);
     }
@@ -347,7 +341,7 @@ export class BuildAnalyzer {
     errorCountMap.set(Severity.ERROR, 0);
     for (const warning of this.warnings) {
       errorCountMap.set(
-          warning.severity, errorCountMap.get(warning.severity) + 1);
+          warning.severity, errorCountMap.get(warning.severity)! + 1);
     }
     return errorCountMap;
   }
@@ -365,7 +359,7 @@ export class BuildAnalyzer {
       throw new Error(`Unable to get document ${url}: ${message}`);
     }
 
-    doc.getWarnings({imported: true}).forEach(w => this.warnings.add(w));
+    doc.getWarnings({imported: true}).forEach((w) => this.warnings.add(w));
 
     const scripts = new Set<string>();
     const styles = new Set<string>();

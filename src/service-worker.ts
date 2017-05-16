@@ -61,7 +61,7 @@ function getPrecachedAssets(
   const precachedAssets = new Set<string>(project.config.allFragments);
   precachedAssets.add(project.config.entrypoint);
 
-  for (let depImports of depsIndex.fragmentToFullDeps.values()) {
+  for (const depImports of depsIndex.fragmentToFullDeps.values()) {
     depImports.imports.forEach((s) => precachedAssets.add(s));
     depImports.scripts.forEach((s) => precachedAssets.add(s));
     depImports.styles.forEach((s) => precachedAssets.add(s));

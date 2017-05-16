@@ -22,23 +22,27 @@ import File = require('vinyl');
 import * as dom5 from 'dom5';
 import {ASTNode, parse as parse5} from 'parse5';
 import * as path from 'path';
-import {Stream, Transform} from 'stream';
+import {Stream} from 'stream';
 const mergeStream = require('merge-stream');
 
 import {BuildAnalyzer} from '../analyzer';
 import {BuildBundler, Options as BuildBundlerOptions} from '../bundle';
+import {AsyncTransformStream} from '../streams';
 
 const defaultRoot = path.resolve('test-fixtures/bundler-data');
 
-class FileTransform extends Transform {
+class FileTransform extends AsyncTransformStream<File, {}> {
   transform: (s: FileTransform, f: File) => void;
   constructor(transform: (s: FileTransform, f: File) => void) {
     super({objectMode: true});
     this.transform = transform;
   }
-  _transform(f: File, _encoding: string, cb: () => void) {
-    this.transform(this, f.clone());
-    cb();
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<{}> {
+    for
+      await(const file of files) {
+        this.transform(this, file.clone());
+      }
   }
 }
 
@@ -49,7 +53,7 @@ suite('BuildBundler', () => {
   let bundledStream: Stream;
   let files: Map<string, File>;
 
-  let setupTest = async(
+  const setupTest = async(
       projectOptions: ProjectOptions,
       bundlerOptions?: BuildBundlerOptions,
       transform?: FileTransform) => new Promise((resolve, reject) => {

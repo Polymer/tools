@@ -113,7 +113,7 @@ suite('HtmlSplitter', () => {
               const contents = file.contents.toString();
               assert.equal(contents, source);
             })
-        .on('finish', done)
+        .on('end', done)
         .on('error', done);
 
     sourceStream.push(file);

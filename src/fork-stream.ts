@@ -12,10 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Transform} from 'stream';
 import File = require('vinyl');
 
-import {FileCB} from './streams';
+import {AsyncTransformStream} from './streams';
 
 export function forkStream(stream: NodeJS.ReadableStream):
     NodeJS.ReadableStream {
@@ -27,12 +26,16 @@ export function forkStream(stream: NodeJS.ReadableStream):
 /**
  * Forks a stream of Vinyl files, cloning each file before emitting on the fork.
  */
-export class ForkedVinylStream extends Transform {
+export class ForkedVinylStream extends AsyncTransformStream<File, File> {
   constructor() {
     super({objectMode: true});
   }
 
-  _transform(file: File, _encoding: string, callback: FileCB) {
-    callback(null, file.clone({deep: true, contents: true}));
+  protected async *
+      _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
+    for
+      await(const file of files) {
+        yield file.clone({deep: true, contents: true});
+      }
   }
 }
