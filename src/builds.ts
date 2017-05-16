@@ -147,6 +147,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
   [
     'es6-bundled', {
       name: 'es6-bundled',
+      browserCapabilities: ['es2015'],
       js: {minify: true, compile: false},
       css: {minify: true},
       html: {minify: true},
@@ -161,6 +162,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
   [
     'es6-unbundled', {
       name: 'es6-unbundled',
+      browserCapabilities: ['es2015', 'push'],
       js: {minify: true, compile: false},
       css: {minify: true},
       html: {minify: true},

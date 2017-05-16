@@ -65,6 +65,7 @@ suite('builds', () => {
       const expectedBuildConfig = {
         name: 'es6-bundled',
         preset: 'es6-bundled',
+        browserCapabilities: ['es2015'],
         js: {minify: true, compile: false},
         css: {minify: true},
         html: {minify: true},
@@ -83,6 +84,7 @@ suite('builds', () => {
       const expectedBuildConfig = {
         name: 'es6-unbundled',
         preset: 'es6-unbundled',
+        browserCapabilities: ['es2015', 'push'],
         js: {minify: true, compile: false},
         css: {minify: true},
         html: {minify: true},
