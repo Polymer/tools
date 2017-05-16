@@ -31,6 +31,7 @@ export interface AddServiceWorkerOptions {
   bundled?: boolean;
   path?: string;
   swPrecacheConfig?: SWConfig|null;
+  basePath?: string;
 }
 
 /**
@@ -115,8 +116,26 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
   // NOTE:(usergenic) sw-precache generate() apparently replaces the
   // prefix on an already posixified version of the path on win32.
   swPrecacheConfig.stripPrefix = posixifyPath(buildRoot);
+
+  if (options.basePath) {
+    let replacePrefix = options.basePath;
+    // Avoid a "/foo//bar" situation.
+    if (replacePrefix.endsWith('/') &&
+        !swPrecacheConfig.stripPrefix.endsWith('/')) {
+      replacePrefix = replacePrefix.slice(0, -1);
+    }
+    if (swPrecacheConfig.replacePrefix) {
+      console.info(
+          `Replacing service worker configuration's ` +
+          `replacePrefix option (${swPrecacheConfig.replacePrefix}) ` +
+          `with the build configuration's basePath (${replacePrefix}).`);
+    }
+    swPrecacheConfig.replacePrefix = replacePrefix;
+  }
+
   // static files will be pre-cached
   swPrecacheConfig.staticFileGlobs = staticFileGlobs;
+
   // Log service-worker helpful output at the debug log level
   swPrecacheConfig.logger = swPrecacheConfig.logger || logger.debug;
 
@@ -132,7 +151,6 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
         });
   }));
 }
-
 
 /**
  * Returns a promise that resolves when a service worker has been generated

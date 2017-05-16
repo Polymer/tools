@@ -14,6 +14,7 @@
 
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
+// TODO Migrate to async tests.
 
 import {assert} from 'chai';
 import * as fs from 'fs';
@@ -184,6 +185,34 @@ suite('service-worker', () => {
             assert.notInclude(fileContents, '"/source-dir/my-app.html"');
           });
     });
+
+    test('basePath should prefix resources', () => {
+      return serviceWorker
+          .generateServiceWorker({
+            project: defaultProject,
+            buildRoot: testBuildRoot,
+            basePath: '/my/base/path'
+          })
+          .then((swFile: Buffer) => {
+            const fileContents = swFile.toString();
+            assert.include(fileContents, '"/my/base/path/index.html"');
+          });
+    });
+
+    test('basePath prefixes should not have double delimiters', () => {
+      return serviceWorker
+          .generateServiceWorker({
+            project: defaultProject,
+            buildRoot: testBuildRoot,
+            basePath: '/my/base/path/'
+          })
+          .then((swFile: Buffer) => {
+            const fileContents = swFile.toString();
+            assert.include(fileContents, '"/my/base/path/index.html"');
+            assert.notInclude(fileContents, '"/my/base/path//index.html"');
+          });
+    });
+
 
   });
 
