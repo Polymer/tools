@@ -1,18 +1,18 @@
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
 'use strict';
 const assert = require('chai').assert;
 const path = require('path');
 const {applyBuildPreset, isValidPreset} = require('../lib/builds');
-
 
 suite('builds', () => {
 
@@ -41,9 +41,7 @@ suite('builds', () => {
   suite('applyBuildPreset()', () => {
 
     test('applies es5-bundled preset', () => {
-      const givenBuildConfig = {
-        preset: 'es5-bundled'
-      };
+      const givenBuildConfig = {preset: 'es5-bundled'};
       const expectedBuildConfig = {
         name: 'es5-bundled',
         preset: 'es5-bundled',
@@ -59,9 +57,7 @@ suite('builds', () => {
     });
 
     test('applies es6-bundled preset', () => {
-      const givenBuildConfig = {
-        preset: 'es6-bundled'
-      };
+      const givenBuildConfig = {preset: 'es6-bundled'};
       const expectedBuildConfig = {
         name: 'es6-bundled',
         preset: 'es6-bundled',
@@ -78,9 +74,7 @@ suite('builds', () => {
     });
 
     test('applies es6-unbundled preset', () => {
-      const givenBuildConfig = {
-        preset: 'es6-unbundled'
-      };
+      const givenBuildConfig = {preset: 'es6-unbundled'};
       const expectedBuildConfig = {
         name: 'es6-unbundled',
         preset: 'es6-unbundled',

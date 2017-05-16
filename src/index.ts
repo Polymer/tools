@@ -152,7 +152,7 @@ export class ProjectConfig {
    *
    * TODO: make this method and the one below async.
    */
-  static loadOptionsFromFile(filepath: string): ProjectOptions {
+  static loadOptionsFromFile(filepath: string): ProjectOptions|null {
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
       const contents = JSON.parse(configContent);
@@ -180,7 +180,7 @@ export class ProjectConfig {
    * Given an absolute file path to a polymer.json-like ProjectOptions object,
    * return a new ProjectConfig instance created with those options.
    */
-  static loadConfigFromFile(filepath: string): ProjectConfig {
+  static loadConfigFromFile(filepath: string): ProjectConfig|null {
     let configParsed = ProjectConfig.loadOptionsFromFile(filepath);
     if (!configParsed) {
       return null;
@@ -344,22 +344,41 @@ export class ProjectConfig {
           const buildPreset = build.preset;
           console.assert(
               !buildPreset || isValidPreset(buildPreset),
-              `${validateErrorPrefix}: "${buildPreset}" is not a valid `
-              + ` "builds" preset.`);
+              `${validateErrorPrefix}: "${buildPreset}" is not a valid ` +
+                  ` "builds" preset.`);
           console.assert(
               buildName,
               `${validateErrorPrefix}: all "builds" require ` +
                   `a "name" property when there are multiple builds defined.`);
           console.assert(
-              !buildNames.has(buildName),
+              !buildNames.has(buildName!),
               `${validateErrorPrefix}: "builds" duplicate build name ` +
                   `"${buildName}" found. Build names must be unique.`);
-          buildNames.add(buildName);
+          buildNames.add(buildName!);
         }
       }
     }
 
     return true;
+  }
+
+  /**
+   * Generate a JSON string serialization of this configuration. File paths
+   * will be relative to root.
+   */
+  toJSON(): string {
+    const relative = (p: string | null | undefined) =>
+        p ? path.relative(this.root, p) : undefined;
+    return JSON.stringify({
+      root: this.root,
+      entrypoint: relative(this.entrypoint),
+      shell: relative(this.shell),
+      fragments: (this.fragments || []).map(relative),
+      sources: (this.sources || []).map(relative),
+      extraDependencies: (this.extraDependencies || []).map(relative),
+      builds: this.builds,
+      lint: this.lint,
+    });
   }
 }
 
@@ -367,7 +386,7 @@ export class ProjectConfig {
 // interface for runtime validation. See the build script in package.json for
 // more info.
 const getSchema: () => jsonschema.Schema = (() => {
-  let schema: jsonschema.Schema|undefined = undefined;
+  let schema: jsonschema.Schema;
 
   return () => {
     if (schema === undefined) {

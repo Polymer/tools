@@ -12,6 +12,7 @@
     "removeComments": false,
     "preserveConstEnums": true,
     "suppressImplicitAnyIndexErrors": false,
+    "strictNullChecks": true,
     "outDir": "lib",
     "rootDir": "src"
   },
