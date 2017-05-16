@@ -281,7 +281,7 @@ export class Class implements Feature {
     if (superElements.size < 1) {
       this.warnings.push(new Warning({
         message: `Unable to resolve superclass ${reference.identifier}`,
-        severity: Severity.ERROR,
+        severity: Severity.WARNING,
         code: 'unknown-superclass',
         sourceRange: reference.sourceRange!,
         parsedDocument: this._parsedDocument,
@@ -290,7 +290,7 @@ export class Class implements Feature {
     } else if (superElements.size > 1) {
       this.warnings.push(new Warning({
         message: `Multiple superclasses found for ${reference.identifier}`,
-        severity: Severity.ERROR,
+        severity: Severity.WARNING,
         code: 'unknown-superclass',
         sourceRange: reference.sourceRange!,
         parsedDocument: this._parsedDocument,

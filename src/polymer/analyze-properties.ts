@@ -92,7 +92,7 @@ export function analyzeProperties(
                 prop.warnings.push(new Warning({
                   code: 'invalid-property-type',
                   message: 'Invalid type in property object.',
-                  severity: Severity.ERROR,
+                  severity: Severity.WARNING,
                   sourceRange: document.sourceRangeForNode(propertyArg)!,
                   parsedDocument: document
                 }));

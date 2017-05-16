@@ -175,37 +175,6 @@ suite('Analyzer', () => {
     });
 
     test(
-        'creates a document warning when a behavior cannot be found in that document',
-        async() => {
-          const document =
-              await analyzeDocument('static/html-missing-behaviors.html');
-          const warnings = document.getWarnings({imported: false});
-          assert.containSubset(warnings, [
-            {
-              message:
-                  'Unable to resolve behavior `Polymer.ExpectedMissingBehavior`. ' +
-                  'Did you import it? Is it annotated with @polymerBehavior?',
-              severity: Severity.ERROR,
-              code: 'unknown-polymer-behavior',
-            },
-            {
-              code: 'could-not-determine-behavior-name',
-              message:
-                  'Could not determine behavior name from expression of type CallExpression',
-              severity: Severity.WARNING,
-            }
-          ]);
-          assert.deepEqual(await underliner.underline(warnings), [
-            `
-        Polymer.ExpectedMissingBehavior
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-            `
-        BehaviorFactory('give me a behavior plz.')
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-          ]);
-        });
-
-    test(
         'creates "missing behavior" warnings on imported documents without elements',
         async() => {
           const document = await analyzeDocument(
@@ -219,7 +188,7 @@ suite('Analyzer', () => {
             code: 'unknown-polymer-behavior',
             message:
                 'Unable to resolve behavior `NotFoundBehavior`. Did you import it? Is it annotated with @polymerBehavior?',
-            severity: 0,
+            severity: 1,
             sourceRange: {
               end: {column: 55, line: 2},
               start: {column: 39, line: 2},

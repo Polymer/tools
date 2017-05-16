@@ -74,7 +74,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
       feature.warnings.push(new Warning({
         message: `Expected assignment to \`Polymer.Base\` to be an object.` +
             `Got \`${rhs.type}\` instead.`,
-        severity: Severity.ERROR,
+        severity: Severity.WARNING,
         code: 'invalid-polymer-base-assignment',
         sourceRange: this.document.sourceRangeForNode(assignment)!,
         parsedDocument: this.document
@@ -109,7 +109,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
         message:
             `Expected only one argument to \`Polymer.Base._addFeature\`. ` +
             `Got ${call.arguments.length}.`,
-        severity: Severity.ERROR,
+        severity: Severity.WARNING,
         code: 'invalid-polymer-core-feature-call',
         sourceRange: this.document.sourceRangeForNode(call)!,
         parsedDocument: this.document
@@ -122,7 +122,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
       feature.warnings.push(new Warning({
         message: `Expected argument to \`Polymer.Base._addFeature\` to be an ` +
             `object. Got \`${arg.type}\` instead.`,
-        severity: Severity.ERROR,
+        severity: Severity.WARNING,
         code: 'invalid-polymer-core-feature-call',
         sourceRange: this.document.sourceRangeForNode(call)!,
         parsedDocument: this.document

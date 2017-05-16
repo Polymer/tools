@@ -104,7 +104,7 @@ export function declarationPropertyHandlers(
         declaration.warnings.push(new Warning({
           code: 'invalid-listeners-declaration',
           message: '`listeners` property should be an object expression',
-          severity: Severity.ERROR,
+          severity: Severity.WARNING,
           sourceRange: document.sourceRangeForNode(node)!,
           parsedDocument: document
         }));

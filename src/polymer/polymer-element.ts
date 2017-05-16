@@ -325,7 +325,7 @@ export function getBehaviors(
         message: `Unable to resolve behavior ` +
             `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
             `@polymerBehavior?`,
-        severity: Severity.ERROR,
+        severity: Severity.WARNING,
         code: 'unknown-polymer-behavior',
         sourceRange: behavior.sourceRange,
         parsedDocument: document.parsedDocument
