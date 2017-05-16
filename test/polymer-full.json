@@ -1,0 +1,30 @@
+{
+  "root": "public",
+  "entrypoint": "entrypoint.html",
+  "shell": "shell.html",
+  "fragments": [
+    "fragment.html"
+  ],
+  "extraDependencies": [
+    "extra.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*"
+  ],
+  "builds": [
+    {
+      "preset": "es6-bundled"
+    },
+    {
+      "name": "my-build",
+      "swPrecacheConfig": "sw.conf",
+      "browserCapabilities": ["es2015"],
+      "basePath": true
+    }
+  ],
+  "lint": {
+    "rules": ["some-rule"],
+    "ignoreWarnings": ["some-warning"]
+  }
+}

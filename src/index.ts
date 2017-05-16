@@ -361,6 +361,25 @@ export class ProjectConfig {
 
     return true;
   }
+
+  /**
+   * Generate a JSON string serialization of this configuration. File paths
+   * will be relative to root.
+   */
+  toJSON(): string {
+    const relative = (p: string | null | undefined) =>
+        p ? path.relative(this.root, p) : undefined;
+    return JSON.stringify({
+      root: this.root,
+      entrypoint: relative(this.entrypoint),
+      shell: relative(this.shell),
+      fragments: (this.fragments || []).map(relative),
+      sources: (this.sources || []).map(relative),
+      extraDependencies: (this.extraDependencies || []).map(relative),
+      builds: this.builds,
+      lint: this.lint,
+    });
+  }
 }
 
 // Gets the json schema for polymer.json, generated from the typescript

@@ -590,4 +590,63 @@ suite('Project Config', () => {
 
   });
 
+  suite('toJSON()', () => {
+    test('with minimal config', () => {
+      const config = ProjectConfig.loadConfigFromFile(
+          path.join(__dirname, 'polymer-minimal.json'));
+      assert.deepEqual(JSON.parse(config.toJSON()), {
+        root: process.cwd(),
+        entrypoint: 'index.html',
+        fragments: [],
+        sources: [
+          'src/**/*',
+          'index.html',
+        ],
+        extraDependencies: [],
+      });
+    });
+
+    test('with full config', () => {
+      const config = ProjectConfig.loadConfigFromFile(
+          path.join(__dirname, 'polymer-full.json'));
+      assert.deepEqual(JSON.parse(config.toJSON()), {
+        root: path.resolve('public'),
+        entrypoint: 'entrypoint.html',
+        shell: 'shell.html',
+        fragments: ['fragment.html'],
+        sources: [
+          'src/**/*',
+          'images/**/*',
+          'entrypoint.html',
+          'shell.html',
+          'fragment.html',
+        ],
+        extraDependencies: ['extra.html'],
+        builds: [
+          {
+            preset: 'es6-bundled',
+            name: 'es6-bundled',
+            addServiceWorker: true,
+            addPushManifest: true,
+            insertPrefetchLinks: false,
+            bundle: true,
+            html: {minify: true},
+            css: {minify: true},
+            js: {minify: true, compile: false},
+            browserCapabilities: ['es2015']
+          },
+          {
+            name: 'my-build',
+            swPrecacheConfig: 'sw.conf',
+            browserCapabilities: ['es2015'],
+            basePath: true
+          },
+        ],
+        lint: {
+          rules: ['some-rule'],
+          ignoreWarnings: ['some-warning'],
+        }
+      });
+    });
+  });
 });
