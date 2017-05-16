@@ -191,7 +191,7 @@ export function applyBuildPreset(config: ProjectBuildOptions) {
     return config;
   }
 
-  const presetConfig = buildPresets.get(presetName);
+  const presetConfig = buildPresets.get(presetName) || {};
   const mergedConfig = Object.assign({}, presetConfig, config);
   // Object.assign is shallow, so we need to make sure we properly merge these
   // deep options as well.

@@ -152,7 +152,7 @@ export class ProjectConfig {
    *
    * TODO: make this method and the one below async.
    */
-  static loadOptionsFromFile(filepath: string): ProjectOptions {
+  static loadOptionsFromFile(filepath: string): ProjectOptions|null {
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
       const contents = JSON.parse(configContent);
@@ -180,7 +180,7 @@ export class ProjectConfig {
    * Given an absolute file path to a polymer.json-like ProjectOptions object,
    * return a new ProjectConfig instance created with those options.
    */
-  static loadConfigFromFile(filepath: string): ProjectConfig {
+  static loadConfigFromFile(filepath: string): ProjectConfig|null {
     let configParsed = ProjectConfig.loadOptionsFromFile(filepath);
     if (!configParsed) {
       return null;
@@ -351,10 +351,10 @@ export class ProjectConfig {
               `${validateErrorPrefix}: all "builds" require ` +
                   `a "name" property when there are multiple builds defined.`);
           console.assert(
-              !buildNames.has(buildName),
+              !buildNames.has(buildName!),
               `${validateErrorPrefix}: "builds" duplicate build name ` +
                   `"${buildName}" found. Build names must be unique.`);
-          buildNames.add(buildName);
+          buildNames.add(buildName!);
         }
       }
     }
@@ -386,7 +386,7 @@ export class ProjectConfig {
 // interface for runtime validation. See the build script in package.json for
 // more info.
 const getSchema: () => jsonschema.Schema = (() => {
-  let schema: jsonschema.Schema|undefined = undefined;
+  let schema: jsonschema.Schema;
 
   return () => {
     if (schema === undefined) {
