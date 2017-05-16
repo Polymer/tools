@@ -31,13 +31,13 @@ import {PushManifest} from '../push-manifest';
  */
 class CheckPushManifest extends Transform {
   filePath: string;
-  expectedManfiest: PushManifest;
+  expectedManifest: PushManifest;
   didAssert = false;
 
-  constructor(filePath: string, expectedManfiest: PushManifest) {
+  constructor(filePath: string, expectedManifest: PushManifest) {
     super({objectMode: true});
     this.filePath = filePath;
-    this.expectedManfiest = expectedManfiest;
+    this.expectedManifest = expectedManifest;
   }
 
   _transform(
@@ -51,7 +51,7 @@ class CheckPushManifest extends Transform {
     try {
       const pushManifestContents = file.contents.toString();
       const pushManifestJson = JSON.parse(pushManifestContents);
-      assert.deepEqual(pushManifestJson, this.expectedManfiest);
+      assert.deepEqual(pushManifestJson, this.expectedManifest);
       this.emit('match-success');
     } catch (err) {
       this.emit('match-failure', err);
@@ -77,16 +77,17 @@ class CheckPushManifest extends Transform {
 function testPushManifest(
     project: PolymerProject,
     manifestRelativePath: string|undefined,
-    expectedManfiest: PushManifest,
+    prefix: string|undefined,
+    expectedManifest: PushManifest,
     done: (err?: Error) => void): void {
   const expectedManifestAbsolutePath = path.join(
       project.config.root, manifestRelativePath || 'push-manifest.json');
   const pushManifestChecker =
-      new CheckPushManifest(expectedManifestAbsolutePath, expectedManfiest);
+      new CheckPushManifest(expectedManifestAbsolutePath, expectedManifest);
 
   vfs.src(path.join(project.config.root, '**'))
       .on('error', done)
-      .pipe(project.addPushManifest(manifestRelativePath))
+      .pipe(project.addPushManifest(manifestRelativePath, prefix))
       .on('error', done)
       .pipe(pushManifestChecker)
       .on('data', () => {/* noop: needed to start data flow */})
@@ -113,7 +114,7 @@ suite('AddPushManifest', () => {
       },
     };
 
-    testPushManifest(project, null, expectedPushManifest, done);
+    testPushManifest(project, null, null, expectedPushManifest, done);
   });
 
   test('with entrypoint and fragments config options', (done) => {
@@ -167,7 +168,7 @@ suite('AddPushManifest', () => {
       }
     };
 
-    testPushManifest(project, null, expectedPushManifest, done);
+    testPushManifest(project, null, null, expectedPushManifest, done);
   });
 
   test('with full app-shell config options', (done) => {
@@ -222,7 +223,7 @@ suite('AddPushManifest', () => {
       }
     };
 
-    testPushManifest(project, null, expectedPushManifest, done);
+    testPushManifest(project, null, null, expectedPushManifest, done);
   });
 
 
@@ -280,6 +281,43 @@ suite('AddPushManifest', () => {
     };
 
     testPushManifest(
-        project, pushManifestRelativePath, expectedPushManifest, done);
+        project, pushManifestRelativePath, null, expectedPushManifest, done);
+  });
+
+  test('with prefix', (done) => {
+    const project = new PolymerProject({
+      root: testProjectRoot,
+      entrypoint: 'entrypoint-a.html',
+      shell: 'shell.html',
+      fragments: ['entrypoint-b.html'],
+      sources: [
+        'framework.html',
+        'common-dependency.html',
+      ],
+    });
+    const expectedPushManifest: PushManifest = {
+      '/foo/shell.html': {
+        '/foo/framework.html': {
+          type: 'document',
+          weight: 1,
+        }
+      },
+      '/foo/entrypoint-b.html': {
+        '/foo/common-dependency.html': {
+          type: 'document',
+          weight: 1,
+        },
+        '/foo/example-script.js': {
+          type: 'script',
+          weight: 1,
+        },
+        '/foo/example-style.css': {
+          type: 'style',
+          weight: 1,
+        },
+      },
+    };
+
+    testPushManifest(project, null, '/foo/', expectedPushManifest, done);
   });
 });

@@ -122,9 +122,8 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
  * to be added to the overall push manifest.
  */
 async function generatePushManifestEntryForUrl(
-    analyzer: Analyzer,
-    url: string,
-    ignoreUrls?: string[]): Promise<PushManifestEntryCollection> {
+    analyzer: Analyzer, url: string, ignoreUrls?: string[]):
+    Promise<PushManifestEntryCollection> {
   const analysis = await analyzer.analyze([url]);
   const analyzedDocument = analysis.getDocument(url);
 
@@ -162,14 +161,16 @@ export class AddPushManifest extends Transform {
   filePath: string;
   private config: ProjectConfig;
   private analyzer: Analyzer;
+  private prefix: string;
 
-  constructor(config: ProjectConfig, filePath?: string) {
+  constructor(config: ProjectConfig, filePath?: string, prefix?: string) {
     super({objectMode: true});
     this.files = new Map();
     this.config = config;
     this.analyzer = new Analyzer({urlLoader: new FileMapUrlLoader(this.files)});
     this.filePath =
         path.join(this.config.root, filePath || 'push-manifest.json');
+    this.prefix = prefix || '';
   }
 
   _transform(
@@ -215,6 +216,19 @@ export class AddPushManifest extends Transform {
       pushManifest[absoluteFragmentUrl] = await generatePushManifestEntryForUrl(
           this.analyzer, absoluteFragmentUrl, fragmentIgnoreUrls);
     }
+
+    if (this.prefix) {
+      const updated: any = {};
+      for (const source of Object.keys(pushManifest)) {
+        const targets: any = {};
+        for (const target of Object.keys(pushManifest[source])) {
+          targets[this.prefix + target] = pushManifest[source][target];
+        }
+        updated[this.prefix + source] = targets;
+      }
+      return updated;
+    }
+
     return pushManifest;
   }
 }

@@ -187,7 +187,10 @@ The generated push manifest describes the following behavior: Requesting the she
 
 This method will return a transform stream that injects a new push manifest into your build (default: `push-manifest.json`). The push manifest is based off the application import graph, so make sure that this stream is added after all changes to the application source code.
 
-It optionally takes a `filePath` argument (relative to your application root) to configure the name of the generated file.
+Use the `filePath` argument to configure the name of the generated file (relative to your application root).
+
+Use the `prefix` argument to prepend a string to all resource paths in the generated manifest. This can
+be useful when a build is going to be served from a sub-directory on the server.
 
 ```js
 const gulp = require('gulp');

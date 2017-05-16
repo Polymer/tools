@@ -93,8 +93,8 @@ export class PolymerProject {
     return dependenciesStream;
   }
 
-  addPushManifest(filePath?: string): NodeJS.ReadWriteStream {
-    return new AddPushManifest(this.config, filePath);
+  addPushManifest(filePath?: string, prefix?: string): NodeJS.ReadWriteStream {
+    return new AddPushManifest(this.config, filePath, prefix);
   }
 
   /**
