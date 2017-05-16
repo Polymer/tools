@@ -126,12 +126,13 @@ export interface ProjectBuildOptions {
    * If `true`, use the build `name`. If a `string`, use that value.
    * Leading/trailing slashes are optional.
    */
-  basePath?: boolean | string;
+  basePath?: boolean|string;
 }
 
 export const buildPresets = new Map<string, ProjectBuildOptions>([
   [
-    'es5-bundled', {
+    'es5-bundled',
+    {
       name: 'es5-bundled',
       js: {minify: true, compile: true},
       css: {minify: true},
@@ -145,7 +146,8 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     }
   ],
   [
-    'es6-bundled', {
+    'es6-bundled',
+    {
       name: 'es6-bundled',
       browserCapabilities: ['es2015'],
       js: {minify: true, compile: false},
@@ -160,7 +162,8 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     }
   ],
   [
-    'es6-unbundled', {
+    'es6-unbundled',
+    {
       name: 'es6-unbundled',
       browserCapabilities: ['es2015', 'push'],
       js: {minify: true, compile: false},

@@ -344,8 +344,8 @@ export class ProjectConfig {
           const buildPreset = build.preset;
           console.assert(
               !buildPreset || isValidPreset(buildPreset),
-              `${validateErrorPrefix}: "${buildPreset}" is not a valid `
-              + ` "builds" preset.`);
+              `${validateErrorPrefix}: "${buildPreset}" is not a valid ` +
+                  ` "builds" preset.`);
           console.assert(
               buildName,
               `${validateErrorPrefix}: all "builds" require ` +
