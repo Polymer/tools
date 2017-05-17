@@ -168,7 +168,7 @@ export abstract class AsyncTransformStream<In extends{}, Out extends{}> extends
   private _initializeOnce() {
     if (this._initialized === false) {
       this._initialized = true;
-      const transformDonePromise = (async() => {
+      const transformDonePromise = (async () => {
         for
           await(const value of this._transformIter(this._inputs)) {
             // TODO(rictic): if `this.push` returns false, should we wait until
