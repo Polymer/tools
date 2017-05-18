@@ -109,10 +109,10 @@ export class PolymerProject {
    * Returns a stream transformer that adds a push manifest file to the set
    * of all input files that pass through.
    */
-  addPushManifest(filePath?: string, prefix?: string): NodeJS.ReadWriteStream {
+  addPushManifest(outPath?: string, basePath?: string): NodeJS.ReadWriteStream {
     // TODO(rictic): remove casts after this lands:
     // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
-    return new AddPushManifest(this.config, filePath, prefix) as any;
+    return new AddPushManifest(this.config, outPath, basePath) as any;
   }
 
   /**

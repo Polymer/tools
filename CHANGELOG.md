@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased-->
+## Unreleased
 <!-- Add new, unreleased changes here. -->
+
+* Fixed issue with push manifest URLs being a mix of relative and absolute URLs (now always relative), and a double-delimiter issue when using basePath.
 
 ## [1.4.0] - 2017-05-18
 

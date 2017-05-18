@@ -23,7 +23,7 @@ suite('prefetch-links', () => {
 
   suite('AddPrefetchLinks', () => {
 
-    test('adds prefetch links unbundled', async() => {
+    test('adds prefetch links unbundled', async () => {
 
       const project = new PolymerProject({
         root: 'test-fixtures/bundle-project/',
@@ -42,7 +42,7 @@ suite('prefetch-links', () => {
           html, '<link rel="prefetch" href="/simple-import-2.html">');
     });
 
-    test('adds prefetch links to bundled output', async() => {
+    test('adds prefetch links to bundled output', async () => {
 
       const project = new PolymerProject({
         root: 'test-fixtures/bundle-project/',
@@ -66,7 +66,7 @@ suite('prefetch-links', () => {
           html, '<link rel="prefetch" href="/simple-import-2.html">');
     });
 
-    test('prefetch links do not include lazy dependencies', async() => {
+    test('prefetch links do not include lazy dependencies', async () => {
 
       const project = new PolymerProject({
         root: 'test-fixtures/bundler-data/',
@@ -93,7 +93,7 @@ suite('prefetch-links', () => {
           html, '<link rel="prefetch" href="/lazy-dependency.html">');
     });
 
-    test('prefetch links are relative when base tag present', async() => {
+    test('prefetch links are relative when base tag present', async () => {
 
       const project = new PolymerProject({
         root: 'test-fixtures/differential-serving/',

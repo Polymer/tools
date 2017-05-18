@@ -292,22 +292,22 @@ suite('AddPushManifest', () => {
       ],
     });
     const expectedPushManifest: PushManifest = {
-      '/foo/shell.html': {
-        '/foo/framework.html': {
+      'foo/shell.html': {
+        'foo/framework.html': {
           type: 'document',
           weight: 1,
         }
       },
-      '/foo/entrypoint-b.html': {
-        '/foo/common-dependency.html': {
+      'foo/entrypoint-b.html': {
+        'foo/common-dependency.html': {
           type: 'document',
           weight: 1,
         },
-        '/foo/example-script.js': {
+        'foo/example-script.js': {
           type: 'script',
           weight: 1,
         },
-        '/foo/example-style.css': {
+        'foo/example-style.css': {
           type: 'style',
           weight: 1,
         },

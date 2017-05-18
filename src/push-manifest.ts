@@ -51,7 +51,7 @@ import {AsyncTransformStream} from './streams';
 export type ResourceType = 'document' | 'script' | 'style' | 'image' | 'font';
 export interface PushManifestEntry {
   type?: ResourceType;
-  weight: 1;
+  weight?: 1;
 }
 export interface PushManifestEntryCollection {
   [dependencyAbsoluteUrl: string]: PushManifestEntry;
@@ -140,6 +140,9 @@ async function generatePushManifestEntryForUrl(
   }
 
   for (const analyzedImport of analyzedImports) {
+    // TODO This import URL does not respect the document's base tag.
+    // Probably an issue more generally with all URLs analyzed out of
+    // documents, but base tags are somewhat rare.
     const analyzedImportUrl = analyzedImport.url;
     const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
     if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
@@ -158,19 +161,18 @@ async function generatePushManifestEntryForUrl(
  */
 export class AddPushManifest extends AsyncTransformStream<File, File> {
   files: Map<string, File>;
-  filePath: string;
+  outPath: string;
   private config: ProjectConfig;
   private analyzer: Analyzer;
-  private prefix: string;
+  private basePath: string;
 
-  constructor(config: ProjectConfig, filePath?: string, prefix?: string) {
+  constructor(config: ProjectConfig, outPath?: string, basePath?: string) {
     super({objectMode: true});
     this.files = new Map();
     this.config = config;
     this.analyzer = new Analyzer({urlLoader: new FileMapUrlLoader(this.files)});
-    this.filePath =
-        path.join(this.config.root, filePath || 'push-manifest.json');
-    this.prefix = prefix || '';
+    this.outPath = path.join(this.config.root, outPath || 'push-manifest.json');
+    this.basePath = (basePath || '');
   }
 
   protected async *
@@ -186,13 +188,13 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     const pushManifestContents = JSON.stringify(pushManifest, undefined, '  ');
     // Push the new push manifest into the stream.
     yield new File({
-      path: this.filePath,
+      path: this.outPath,
       contents: new Buffer(pushManifestContents),
     });
   }
 
-  async generatePushManifest() {
-    const pushManifest: any = {};
+  async generatePushManifest(): Promise<PushManifest> {
+    const pushManifest: PushManifest = {};
     // If an app-shell exists, use that as our main push URL because it has a
     // reliable URL. Otherwise, support the single entrypoint URL.
     const mainPushEntrypoint = this.config.shell || this.config.entrypoint;
@@ -209,18 +211,26 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
           this.analyzer, absoluteFragmentUrl, fragmentIgnoreUrls);
     }
 
-    if (this.prefix) {
-      const updated: any = {};
-      for (const source of Object.keys(pushManifest)) {
-        const targets: any = {};
-        for (const target of Object.keys(pushManifest[source])) {
-          targets[this.prefix + target] = pushManifest[source][target];
-        }
-        updated[this.prefix + source] = targets;
-      }
-      return updated;
-    }
+    // The URLs we got may be absolute or relative depending on how they were
+    // declared in the source. This will normalize them to relative by stripping
+    // any leading slash.
+    //
+    // TODO Decide whether they should really be relative or absolute. Relative
+    // was chosen here only because most links were already relative so it was
+    // a smaller change, but
+    // https://github.com/GoogleChrome/http2-push-manifest actually shows
+    // relative for the keys and absolute for the values.
+    const normalize = (p: string) =>
+        path.posix.join(this.basePath, p).replace(/^\/+/, '');
 
-    return pushManifest;
+    const normalized: PushManifest = {};
+    for (const source of Object.keys(pushManifest)) {
+      const targets: PushManifestEntryCollection = {};
+      for (const target of Object.keys(pushManifest[source])) {
+        targets[normalize(target)] = pushManifest[source][target];
+      }
+      normalized[normalize(source)] = targets;
+    }
+    return normalized;
   }
 }

@@ -32,7 +32,7 @@ suite('AsyncTransformStream', () => {
     transformer.on('data', (v: number) => results.push(v));
     const result = new Promise<number[]>((resolve, reject) => {
       transformer.on('end', () => resolve(results));
-      transformer.on('error', (err) => reject(err));
+      transformer.on('error', (err: any) => reject(err));
     });
     transformer.write(10);
     transformer.write(20);
