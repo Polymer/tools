@@ -62,4 +62,22 @@ suite('updateBaseTag', () => {
           done();
         });
   });
+
+  test('does nothing when base tag doesn\'t need updating', (done) => {
+    const files = new Map();
+    defaultProject.sources()
+        .pipe(defaultProject.updateBaseTag('/oldBase/'))
+        .on('data', (f: File) => files.set(unroot(f.path), f))
+        .on('data', () => {/* starts the stream */})
+        .on('end', () => {
+          const expectedFiles = [
+            'index.html',
+            'shell.html',
+          ];
+          assert.deepEqual(Array.from(files.keys()).sort(), expectedFiles);
+          const index = files.get('index.html').contents.toString();
+          assert.include(index, '<base href="/oldBase/">');
+          done();
+        });
+  });
 });
