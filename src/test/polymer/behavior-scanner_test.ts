@@ -96,14 +96,19 @@ suite('BehaviorScanner', () => {
     const deepChainedBehaviors =
         behaviors.get('Really.Really.Deep.Behavior')!.behaviorAssignments;
     assert.deepEqual(
-        childBehaviors.map((b: ScannedBehaviorAssignment) => b.name), [
-          'SimpleBehavior',
-          'CustomNamedBehavior',
-          'Really.Really.Deep.Behavior'
-        ]);
+        childBehaviors.map((b: ScannedBehaviorAssignment) => b.name),
+        ['SimpleBehavior', 'AwesomeBehavior', 'Really.Really.Deep.Behavior']);
     assert.deepEqual(
         deepChainedBehaviors.map((b: ScannedBehaviorAssignment) => b.name),
         ['Do.Re.Mi.Fa']);
   });
 
+  test('Does not count methods as properties', function() {
+    const behavior = behaviors.get('Polymer.SimpleNamespacedBehavior');
+    if (!behavior) {
+      throw new Error('Could not find Polymer.SimpleNamespacedBehavior');
+    }
+    assert.deepEqual([...behavior.methods.keys()], ['method']);
+    assert.deepEqual([...behavior.properties.keys()], ['simple']);
+  });
 });

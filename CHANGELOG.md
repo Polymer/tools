@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* Track methods on behaviors as such. They were being treated as properties.
 
 ## [2.0.1] - 2017-05-15
 

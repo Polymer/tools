@@ -9,6 +9,9 @@ var SimpleBehavior = {
  * */
 var SimpleNamespacedBehavior = {
   simple: true,
+  method: function (paramA, paramB) {
+
+  },
 };
 
 
@@ -33,4 +36,4 @@ Really.Really.Deep.Behavior = [
 @polymerBehavior
 */
 CustomBehaviorList =
-    [SimpleBehavior, CustomNamedBehavior, Really.Really.Deep.Behavior];
+    [SimpleBehavior, AwesomeBehavior, Really.Really.Deep.Behavior];

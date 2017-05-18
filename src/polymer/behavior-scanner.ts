@@ -25,7 +25,7 @@ import {Severity, Warning} from '../model/model';
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {getOrInferPrivacy, toScannedPolymerProperty} from './js-utils';
+import {getOrInferPrivacy, toScannedMethod, toScannedPolymerProperty} from './js-utils';
 
 const templatizer = 'Polymer.Templatizer';
 
@@ -85,8 +85,7 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    for (let i = 0; i < node.properties.length; i++) {
-      const prop = node.properties[i];
+    for (const prop of node.properties) {
       const name = esutil.objectKeyToString(prop.key);
       if (!name) {
         this.currentBehavior.warnings.push(new Warning({
@@ -102,9 +101,14 @@ class BehaviorVisitor implements Visitor {
       }
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
+      } else if (esutil.isFunctionType(prop.value)) {
+        const method = toScannedMethod(
+            prop, this.document.sourceRangeForNode(prop)!, this.document);
+        this.currentBehavior.addMethod(method);
       } else {
-        this.currentBehavior.addProperty(toScannedPolymerProperty(
-            prop, this.document.sourceRangeForNode(prop)!, this.document));
+        const property = toScannedPolymerProperty(
+            prop, this.document.sourceRangeForNode(prop)!, this.document);
+        this.currentBehavior.addProperty(property);
       }
     }
     this._finishBehavior();
