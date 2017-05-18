@@ -46,14 +46,16 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
 
     this._buildAnalyzer = buildAnalyzer;
 
-    const {analyzer,
-           excludes,
-           inlineCss,
-           inlineScripts,
-           rewriteUrlsInTemplates,
-           sourcemaps,
-           stripComments,
-           urlMapper} = options;
+    const {
+      analyzer,
+      excludes,
+      inlineCss,
+      inlineScripts,
+      rewriteUrlsInTemplates,
+      sourcemaps,
+      stripComments,
+      urlMapper
+    } = options;
     let {strategy} = options;
 
     const urlLoader =
@@ -63,8 +65,9 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
                                       buildAnalyzer.analyzer._fork({urlLoader});
 
     strategy = strategy ||
-        this.config.shell && generateShellMergeStrategy(urlFromPath(
-                                 this.config.root, this.config.shell));
+        this.config.shell &&
+            generateShellMergeStrategy(
+                urlFromPath(this.config.root, this.config.shell));
 
     this._bundler = new Bundler({
       analyzer: forkedAnalyzer,

@@ -55,7 +55,7 @@ export class BaseTagUpdater extends AsyncTransformStream<File, File> {
         const base = dom5.query(parsed, baseMatcher);
         if (!base || dom5.getAttribute(base, 'href') === this.newHref) {
           yield file;
-          return;
+          continue;
         }
 
         dom5.setAttribute(base, 'href', this.newHref);

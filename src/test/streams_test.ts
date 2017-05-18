@@ -16,7 +16,7 @@ import {assert} from 'chai';
 import {AsyncTransformStream} from '../streams';
 
 suite('AsyncTransformStream', () => {
-  test('transforms input', async() => {
+  test('transforms input', async () => {
     class DoubleTransformer extends AsyncTransformStream<number, number> {
       protected async *
           _transformIter(inputs: AsyncIterable<number>): AsyncIterable<number> {
@@ -43,7 +43,7 @@ suite('AsyncTransformStream', () => {
     assert.deepEqual(final, [20, 40, 60]);
   });
 
-  test('fails if the stream does not consume all input', async() => {
+  test('fails if the stream does not consume all input', async () => {
     class GivesUpAfterTwo extends AsyncTransformStream<number, number> {
       protected async *
           _transformIter(inputs: AsyncIterable<number>): AsyncIterable<number> {

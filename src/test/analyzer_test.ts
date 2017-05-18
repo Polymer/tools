@@ -272,7 +272,7 @@ suite('Analyzer', () => {
                 });
       });
 
-  test('calling sources() starts analysis', async() => {
+  test('calling sources() starts analysis', async () => {
     const config = new ProjectConfig({
       root: `test-fixtures/analyzer-data`,
       entrypoint: 'entrypoint.html',

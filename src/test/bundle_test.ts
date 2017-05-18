@@ -53,7 +53,7 @@ suite('BuildBundler', () => {
   let bundledStream: Stream;
   let files: Map<string, File>;
 
-  const setupTest = async(
+  const setupTest = async (
       projectOptions: ProjectOptions,
       bundlerOptions?: BuildBundlerOptions,
       transform?: FileTransform) => new Promise((resolve, reject) => {
@@ -124,7 +124,7 @@ suite('BuildBundler', () => {
     stream.push(file);
   });
 
-  test('entrypoint only', async() => {
+  test('entrypoint only', async () => {
     await setupTest({
       root: defaultRoot,
       entrypoint: 'entrypoint-only.html',
@@ -135,7 +135,7 @@ suite('BuildBundler', () => {
     assert.isNotOk(getFile('shared_bundle_1.html'));
   });
 
-  test('two fragments', async() => {
+  test('two fragments', async () => {
     await setupTest({
       root: defaultRoot,
       entrypoint: 'entrypoint-a.html',
@@ -168,7 +168,7 @@ suite('BuildBundler', () => {
   // entrypoint properly.  In part, this is because entrypoints can not have
   // relative paths, since they can be served from any url.   Note that the
   // test 'entrypoint and fragments' below is skipped for the same reason.
-  test.skip('shell and entrypoint', async() => {
+  test.skip('shell and entrypoint', async () => {
     await setupTest({
       entrypoint: 'entrypoint-a.html',
       shell: 'shell.html',
@@ -190,7 +190,7 @@ suite('BuildBundler', () => {
     assert.isNotOk(getFile('shared_bundle_1.html'));
   });
 
-  test('shell and fragments with shared dependency', async() => {
+  test('shell and fragments with shared dependency', async () => {
     await setupTest({
       root: defaultRoot,
       entrypoint: 'entrypoint-a.html',
@@ -227,7 +227,7 @@ suite('BuildBundler', () => {
 
   // TODO(usergenic): This test is skipped for the same reason as the test
   // above called 'shell and entrypoint'.
-  test.skip('entrypoint and fragments', async() => {
+  test.skip('entrypoint and fragments', async () => {
     await setupTest({
       entrypoint: 'entrypoint-a.html',
       fragments: [
@@ -277,7 +277,7 @@ suite('BuildBundler', () => {
     assert.isTrue(hasImport(shellDoc, 'shared_bundle_1.html'));
   });
 
-  test('bundler loads changed files from stream', async() => {
+  test('bundler loads changed files from stream', async () => {
     await setupTest(
         {
           root: path.resolve('test-fixtures/bundle-project'),
@@ -298,7 +298,7 @@ suite('BuildBundler', () => {
     assert.include(bundledHtml, '/* simple-style.css */');
   });
 
-  test('bundler deals with win32 platform separators on win32', async() => {
+  test('bundler deals with win32 platform separators on win32', async () => {
     const platformSepPaths = new FileTransform((stream, file) => {
       if (path.sep === '\\') {
         file.path = file.path.replace(/\//g, path.sep);
@@ -327,7 +327,7 @@ suite('BuildBundler', () => {
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
   });
 
-  test('bundler deals with posix platform separators on win32', async() => {
+  test('bundler deals with posix platform separators on win32', async () => {
     const posixSepPaths = new FileTransform((stream, file) => {
       if (path.sep === '\\') {
         file.path = file.path.replace(/\\/g, '/');
@@ -356,7 +356,7 @@ suite('BuildBundler', () => {
     assert.include(bundledHtml, '.simply-red', 'simple-style.css');
   });
 
-  test('bundler does not output inlined html imports', async() => {
+  test('bundler does not output inlined html imports', async () => {
     await setupTest({root: defaultRoot, entrypoint: 'entrypoint-only.html'});
     // We should have an entrypoint-only.html file (bundled).
     assert.isOk(getFile('entrypoint-only.html'));
@@ -364,7 +364,7 @@ suite('BuildBundler', () => {
     assert.isNotOk(getFile('framework.html'));
   });
 
-  test('bundler outputs html imports that are not inlined', async() => {
+  test('bundler outputs html imports that are not inlined', async () => {
     await setupTest(
         {root: defaultRoot, entrypoint: 'entrypoint-only.html'},
         {excludes: ['framework.html']});
@@ -374,7 +374,7 @@ suite('BuildBundler', () => {
     assert.isOk(getFile('framework.html'));
   });
 
-  test('bundler does not output inlined scripts or styles', async() => {
+  test('bundler does not output inlined scripts or styles', async () => {
     await setupTest({
       root: path.resolve('test-fixtures/bundle-project'),
       entrypoint: 'index.html',
@@ -384,7 +384,7 @@ suite('BuildBundler', () => {
         [path.resolve('test-fixtures/bundle-project/index.html')]);
   });
 
-  test('bundler does output scripts and styles not inlined', async() => {
+  test('bundler does output scripts and styles not inlined', async () => {
     await setupTest(
         {
           root: path.resolve('test-fixtures/bundle-project'),
@@ -409,7 +409,7 @@ suite('BuildBundler', () => {
       fragments: ['shell.html'],
     };
 
-    test('excludes: html file urls listed are not inlined', async() => {
+    test('excludes: html file urls listed are not inlined', async () => {
       await setupTest(
           projectOptions,
           {excludes: ['bower_components/loads-external-dependencies.html']});
@@ -423,7 +423,7 @@ suite('BuildBundler', () => {
 
     // TODO(usergenic): Uncomment this test after bundler's next release, which
     // includes the fix for folder references in excludes.
-    test.skip('excludes: html files in folders listed are not inlined', async() => {
+    test.skip('excludes: html files in folders listed are not inlined', async () => {
       await setupTest(projectOptions, {excludes: ['bower_components/']});
       assert.isOk(
           getFile('bower_components/loads-external-dependencies.html'),
@@ -433,7 +433,7 @@ suite('BuildBundler', () => {
           '<link rel="import" href="bower_components/loads-external-dependencies.html">');
     });
 
-    test('excludes: nothing is excluded when no excludes are given', async() => {
+    test('excludes: nothing is excluded when no excludes are given', async () => {
       await setupTest(projectOptions, {excludes: []});
       assert.isNotOk(
           getFile('bower_components/loads-external-dependencies.html'),
@@ -447,41 +447,41 @@ suite('BuildBundler', () => {
           'Inlined import content');
     });
 
-    test('inlineCss: false, does not inline external stylesheets', async() => {
+    test('inlineCss: false, does not inline external stylesheets', async () => {
       await setupTest(projectOptions, {inlineCss: false});
       assert.notInclude(getFile('shell.html'), '.test-project-style');
     });
 
-    test('inlineCss: true, inlines external stylesheets', async() => {
+    test('inlineCss: true, inlines external stylesheets', async () => {
       await setupTest(projectOptions, {inlineCss: true});
       assert.include(getFile('shell.html'), '.test-project-style');
     });
 
-    test('inlineScripts: false, does not inline external scripts', async() => {
+    test('inlineScripts: false, does not inline external scripts', async () => {
       await setupTest(projectOptions, {inlineScripts: false});
       assert.notInclude(getFile('shell.html'), 'console.log(\'shell\')');
     });
 
-    test('inlineScripts: true, inlines external scripts', async() => {
+    test('inlineScripts: true, inlines external scripts', async () => {
       await setupTest(projectOptions, {inlineScripts: true});
       assert.include(getFile('shell.html'), 'console.log(\'shell\')');
     });
 
-    test('stripComments: false, does not strip html comments', async() => {
+    test('stripComments: false, does not strip html comments', async () => {
       await setupTest(projectOptions, {stripComments: false});
       assert.include(
           getFile('shell.html'),
           '<!-- remote dependencies should be ignored during build -->');
     });
 
-    test('stripComments: true, strips html comments', async() => {
+    test('stripComments: true, strips html comments', async () => {
       await setupTest(projectOptions, {stripComments: true});
       assert.notInclude(
           getFile('shell.html'),
           '<!-- remote dependencies should be ignored during build -->');
     });
 
-    test('strategy: fn(), applies bundle strategy function', async() => {
+    test('strategy: fn(), applies bundle strategy function', async () => {
       await setupTest(projectOptions, {
         // Custom strategy creates a separate bundle for everything in the
         // `bower_components` folder.
@@ -502,7 +502,7 @@ suite('BuildBundler', () => {
       assert.include(getFile('shared_bundle_1.html'), '<div id="dep"></div>');
     });
 
-    test('urlMapper: fn(), applies bundle url mapper function', async() => {
+    test('urlMapper: fn(), applies bundle url mapper function', async () => {
       await setupTest(projectOptions, {
         urlMapper: (bundles) => {
           const map = new Map<string, Bundle>();

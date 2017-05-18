@@ -46,7 +46,7 @@
     "@types/mocha": "^2.2.33",
     "@types/sinon": "^1.16.33",
     "chai": "^3.5.0",
-    "clang-format": "=1.0.45",
+    "clang-format": "1.0.50",
     "del": "^2.2.1",
     "depcheck": "^0.6.3",
     "fs-extra": "^2.0.0",

@@ -124,33 +124,32 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
 async function generatePushManifestEntryForUrl(
     analyzer: Analyzer, url: string, ignoreUrls?: string[]):
     Promise<PushManifestEntryCollection> {
-      const analysis = await analyzer.analyze([url]);
-      const analyzedDocument = analysis.getDocument(url);
+  const analysis = await analyzer.analyze([url]);
+  const analyzedDocument = analysis.getDocument(url);
 
-      if (!(analyzedDocument instanceof Document)) {
-        const message =
-            analyzedDocument && analyzedDocument.message || 'unknown';
-        throw new Error(`Unable to get document ${url}: ${message}`);
-      }
+  if (!(analyzedDocument instanceof Document)) {
+    const message = analyzedDocument && analyzedDocument.message || 'unknown';
+    throw new Error(`Unable to get document ${url}: ${message}`);
+  }
 
-      const analyzedImports = analyzedDocument.getFeatures(
-          {kind: 'import', externalPackages: true, imported: true});
-      const pushManifestEntries: PushManifestEntryCollection = {};
-      function shouldIgnoreFile(url: string) {
-        return ignoreUrls && ignoreUrls.indexOf(url) > -1;
-      }
+  const analyzedImports = analyzedDocument.getFeatures(
+      {kind: 'import', externalPackages: true, imported: true});
+  const pushManifestEntries: PushManifestEntryCollection = {};
+  function shouldIgnoreFile(url: string) {
+    return ignoreUrls && ignoreUrls.indexOf(url) > -1;
+  }
 
-      for (const analyzedImport of analyzedImports) {
-        const analyzedImportUrl = analyzedImport.url;
-        const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
-        if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
-          pushManifestEntries[analyzedImportUrl] =
-              createPushEntryFromImport(analyzedImport);
-        }
-      }
-
-      return pushManifestEntries;
+  for (const analyzedImport of analyzedImports) {
+    const analyzedImportUrl = analyzedImport.url;
+    const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
+    if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
+      pushManifestEntries[analyzedImportUrl] =
+          createPushEntryFromImport(analyzedImport);
     }
+  }
+
+  return pushManifestEntries;
+}
 
 
 /**
