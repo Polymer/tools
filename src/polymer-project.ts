@@ -20,6 +20,7 @@ import {BuildAnalyzer} from './analyzer';
 import {BaseTagUpdater} from './base-tag-updater';
 import {BuildBundler, Options as BuildBundlerOptions} from './bundle';
 import {CustomElementsEs5AdapterInjector} from './custom-elements-es5-adapter';
+import {AddPrefetchLinks} from './prefetch-links';
 import {AddPushManifest} from './push-manifest';
 
 const logger = logging.getLogger('polymer-project');
@@ -93,6 +94,20 @@ export class PolymerProject {
     return dependenciesStream;
   }
 
+  /**
+   * Returns a stream transformer that injects 'prefetch' link tags into HTML
+   * documents based on the transitive dependencies of the document.
+   * For entrypoint documents without `<base>` tag, absolute urls are used in
+   * prefetch link hrefs.  In all other cases, link hrefs will be relative urls.
+   */
+  addPrefetchLinks(): NodeJS.ReadWriteStream {
+    return new AddPrefetchLinks(this.config) as any;
+  }
+
+  /**
+   * Returns a stream transformer that adds a push manifest file to the set
+   * of all input files that pass through.
+   */
   addPushManifest(filePath?: string, prefix?: string): NodeJS.ReadWriteStream {
     // TODO(rictic): remove casts after this lands:
     // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499

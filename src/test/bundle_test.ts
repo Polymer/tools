@@ -130,7 +130,7 @@ suite('BuildBundler', () => {
       entrypoint: 'entrypoint-only.html',
     });
     const doc = parse5(getFile('entrypoint-only.html'));
-    assert.isTrue(hasMarker(doc, 'framework'));
+    assert.isTrue(hasMarker(doc, 'framework'), 'has framework');
     assert.isFalse(hasImport(doc, 'framework.html'));
     assert.isNotOk(getFile('shared_bundle_1.html'));
   });
