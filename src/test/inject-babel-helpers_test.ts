@@ -24,7 +24,7 @@ import {PolymerProject} from '../polymer-project';
 const testProjectRoot =
     path.resolve('test-fixtures/custom-elements-es5-adapter');
 
-suite('Custom Elements ES5 Adapter', () => {
+suite('Babel Helpers Injecter', () => {
 
   let defaultProject: PolymerProject;
 
@@ -41,12 +41,10 @@ suite('Custom Elements ES5 Adapter', () => {
     });
   });
 
-  test('injects the custom elements es5 adapter in index', (done) => {
+  test('injects babel helpers inline into the entrypoint', (done) => {
     const webcomponentsLoaderFilename = 'webcomponents-loader.js';
-    const injectedAdapterFilename = 'custom-elements-es5-adapter.js';
     const files = new Map();
     defaultProject.sources()
-        .pipe(defaultProject.addCustomElementsEs5Adapter())
         .pipe(defaultProject.addBabelHelpersInEntrypoint())
         .on('data', (f: File) => files.set(unroot(f.path), f))
         .on('data', () => {/* starts the stream */})
@@ -58,18 +56,12 @@ suite('Custom Elements ES5 Adapter', () => {
           assert.deepEqual(Array.from(files.keys()).sort(), expectedFiles);
           const index = files.get('index.html').contents.toString();
           const shell = files.get('shell.html').contents.toString();
-          assert.include(index, injectedAdapterFilename);
-          assert.include(index, webcomponentsLoaderFilename);
           assert.include(index, 'babelHelpers=');
           assert(
-              index.indexOf(injectedAdapterFilename) <
-                  index.indexOf(webcomponentsLoaderFilename),
-              'the es5 adapter should come before webcomponents-loader');
-          assert(
               index.indexOf('babelHelpers=') <
-                  index.indexOf(injectedAdapterFilename),
-              'babel helpers should come before all executable code');
-          assert.notInclude(shell, injectedAdapterFilename);
+                  index.indexOf(webcomponentsLoaderFilename),
+              'babel helpers should come before all other executable code.');
+          assert.notInclude(shell, 'babelHelpers=');
           done();
         });
   });

@@ -20,6 +20,7 @@ import {BuildAnalyzer} from './analyzer';
 import {BaseTagUpdater} from './base-tag-updater';
 import {BuildBundler, Options as BuildBundlerOptions} from './bundle';
 import {CustomElementsEs5AdapterInjector} from './custom-elements-es5-adapter';
+import {BabelHelpersInjector} from './inject-babel-helpers';
 import {AddPrefetchLinks} from './prefetch-links';
 import {AddPushManifest} from './push-manifest';
 
@@ -123,6 +124,13 @@ export class PolymerProject {
     // TODO(rictic): remove casts after this lands:
     // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
     return new CustomElementsEs5AdapterInjector() as any;
+  }
+
+  addBabelHelpersInEntrypoint(entrypoint: string = this.config.entrypoint):
+      NodeJS.ReadWriteStream {
+    // TODO(rictic): remove casts after this lands:
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
+    return new BabelHelpersInjector(entrypoint) as any;
   }
 
   /**
