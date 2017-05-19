@@ -89,7 +89,7 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
           document.url ===
               urlFromPath(this._config.root, this._config.entrypoint));
       const filePath = pathFromUrl(this._config.root, documentUrl);
-      yield new File({contents: new Buffer(html), path: filePath})
+      yield new File({contents: new Buffer(html, 'utf-8'), path: filePath})
     }
   }
 }

@@ -17,7 +17,7 @@ import * as parse5 from 'parse5';
 import * as osPath from 'path';
 import {Transform} from 'stream';
 import File = require('vinyl');
-import {AsyncTransformStream} from './streams';
+import {AsyncTransformStream, getFileContents} from './streams';
 
 const pred = dom5.predicates;
 
@@ -136,7 +136,7 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
         yield file;
         continue;
       }
-      const contents = file.contents.toString();
+      const contents = await getFileContents(file);
       const doc = parse5.parse(contents, {locationInfo: true});
       dom5.removeFakeRootElements(doc);
       const scriptTags = dom5.queryAll(doc, HtmlSplitTransform.isInlineScript);
@@ -204,7 +204,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
         const splitFile = this._state.getSplitFile(filePath);
         splitFile.vinylFile = file;
         if (splitFile.isComplete) {
-          yield this._rejoin(splitFile);
+          yield await this._rejoin(splitFile);
         } else {
           splitFile.vinylFile = file;
         }
@@ -214,7 +214,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
           // this is a child file
           parentFile.setPartContent(filePath, file.contents.toString());
           if (parentFile.isComplete) {
-            yield this._rejoin(parentFile);
+            yield await this._rejoin(parentFile);
           }
         } else {
           yield file;
@@ -223,10 +223,10 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
     }
   }
 
-  _rejoin(splitFile: SplitFile) {
+  async _rejoin(splitFile: SplitFile) {
     const file = splitFile.vinylFile;
     const filePath = osPath.normalize(file.path);
-    const contents = file.contents.toString();
+    const contents = await getFileContents(file);
     const doc = parse5.parse(contents, {locationInfo: true});
     dom5.removeFakeRootElements(doc);
     const scriptTags = dom5.queryAll(doc, HtmlRejoinTransform.isExternalScript);

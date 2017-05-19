@@ -15,6 +15,7 @@
 import File = require('vinyl');
 import {UrlLoader} from 'polymer-analyzer';
 import {parseUrl} from 'polymer-analyzer/lib/core/utils';
+import {getFileContents} from './streams';
 
 /**
  * This is a `UrlLoader` for use with a `polymer-analyzer` that reads files
@@ -51,6 +52,6 @@ export class FileMapUrlLoader implements UrlLoader {
       throw new Error(`${url} not present in file map and no fallback loader.`);
     }
 
-    return file.contents.toString();
+    return getFileContents(file);
   }
 }

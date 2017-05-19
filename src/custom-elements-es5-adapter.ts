@@ -4,7 +4,7 @@ import * as parse5 from 'parse5';
 import * as url from 'url';
 
 import File = require('vinyl');
-import {AsyncTransformStream} from './streams';
+import {AsyncTransformStream, getFileContents} from './streams';
 
 const attrValueMatches = (attrName: string, regex: RegExp) => {
   return (node: parse5.ASTNode) => {
@@ -33,19 +33,7 @@ export class CustomElementsEs5AdapterInjector extends
         yield file;
         continue;
       }
-      let contents: string;
-      if (file.isBuffer()) {
-        contents = file.contents.toString('utf-8');
-      } else {
-        const stream = file.contents as NodeJS.ReadableStream;
-        stream.setEncoding('utf-8');
-        contents = '';
-        stream.on('data', (chunk: string) => contents += chunk);
-        await new Promise((resolve, reject) => {
-          stream.on('end', resolve);
-          stream.on('error', reject);
-        });
-      }
+      const contents = await getFileContents(file);
       const updatedContents = addCustomElementsEs5Adapter(contents);
       if (contents === updatedContents) {
         yield file;

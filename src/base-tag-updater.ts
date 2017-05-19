@@ -15,7 +15,7 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import File = require('vinyl');
-import {AsyncTransformStream} from './streams';
+import {AsyncTransformStream, getFileContents} from './streams';
 
 const baseMatcher = dom5.predicates.hasTagName('base');
 
@@ -36,20 +36,7 @@ export class BaseTagUpdater extends AsyncTransformStream<File, File> {
         continue;
       }
 
-      let contents: string;
-      if (file.isBuffer()) {
-        contents = file.contents.toString('utf-8');
-      } else {
-        const stream = file.contents as NodeJS.ReadableStream;
-        stream.setEncoding('utf-8');
-        contents = '';
-        stream.on('data', (chunk: string) => contents += chunk);
-        await new Promise((resolve, reject) => {
-          stream.on('end', resolve);
-          stream.on('error', reject);
-        });
-      }
-
+      const contents = await getFileContents(file);
       const parsed = parse5.parse(contents, {locationInfo: true});
       const base = dom5.query(parsed, baseMatcher);
       if (!base || dom5.getAttribute(base, 'href') === this.newHref) {
