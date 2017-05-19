@@ -121,10 +121,10 @@ suite('prefetch-links', () => {
     test('with no base tag and absolute true', () => {
       const url = 'index.html';
       const expected =
-          ('<html><head>' +
+          ('<html>' +
            '<link rel="prefetch" href="/bower_components/polymer/polymer.html">' +
            '<link rel="prefetch" href="/src/my-icons.html">' +
-           '</head><body>foo</body></html>');
+           '<body>foo</body></html>');
       const actual = createLinks(html, url, deps, true)
       assert.equal(actual, expected);
     });
@@ -132,10 +132,10 @@ suite('prefetch-links', () => {
     test('with a base tag and absolute true', () => {
       const url = 'index.html';
       const expected =
-          ('<html><head><base href="/base/">' +
+          ('<html><base href="/base/">' +
            '<link rel="prefetch" href="bower_components/polymer/polymer.html">' +
            '<link rel="prefetch" href="src/my-icons.html">' +
-           '</head><body>foo</body></html>');
+           '<body>foo</body></html>');
       const actual = createLinks(htmlWithBase, url, deps, true)
       assert.equal(actual, expected);
     });

@@ -74,6 +74,12 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
                              noLazyImports: true
                            })].filter((d) => !d.lazy);
 
+      // No need to transform a file if it has no dependencies to prefetch.
+      if (dependencies.length === 0) {
+        yield this.files.get(documentUrl)!;
+        continue;
+      }
+
       const dependencyUrls =
           new Set(dependencies.map((d) => d.url.replace(/^\//, '')));
       const html = createLinks(
@@ -99,7 +105,7 @@ export function createLinks(
     baseUrl: string,
     deps: Set<string>,
     absolute: boolean = false): string {
-  const ast = parse5.parse(html);
+  const ast = parse5.parse(html, {locationInfo: true});
   const baseTag = dom5.query(ast, dom5.predicates.hasTagName('base'));
   const baseTagHref = baseTag ? dom5.getAttribute(baseTag, 'href') : '';
 
@@ -117,6 +123,7 @@ export function createLinks(
     dom5.setAttribute(link, 'href', href);
     dom5.append(head, link);
   }
+  dom5.removeFakeRootElements(ast);
   return parse5.serialize(ast);
 }
 

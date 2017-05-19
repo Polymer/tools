@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Updated the AddPrefetchLinks transform to not insert html root element tags like `<html>`, `<head>` or `<body>`.
+
 <!-- Add new, unreleased changes here. -->
 
 ## [1.4.1] - 2017-05-18
