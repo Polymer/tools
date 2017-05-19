@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Turned on insertPrefetchLinks for the bundled presets after prefetch link bugs were fixed.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.2.1] - 2017-05-19
+* Turned on insertPrefetchLinks for the bundled presets after prefetch link bugs were fixed.
 
 ## [3.2.0] - 2017-05-15
 * Add ProjectConfig toJSON method.
