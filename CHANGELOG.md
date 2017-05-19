@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Updated the AddPrefetchLinks transform to not insert html root element tags like `<html>`, `<head>` or `<body>`.
-
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [1.4.2] - 2017-05-19
+* Updated the AddPrefetchLinks transform to not insert html root element tags like `<html>`, `<head>` or `<body>`.
 
 ## [1.4.1] - 2017-05-18
 * Updated dependency on `polymer-bundler` to use official 2.0.0 release and enable unmediated semver upgrades.
