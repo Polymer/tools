@@ -39,10 +39,9 @@ class FileTransform extends AsyncTransformStream<File, {}> {
   }
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<{}> {
-    for
-      await(const file of files) {
-        this.transform(this, file.clone());
-      }
+    for await (const file of files) {
+      this.transform(this, file.clone());
+    }
   }
 }
 

@@ -33,9 +33,8 @@ export class ForkedVinylStream extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        yield file.clone({deep: true, contents: true});
-      }
+    for await (const file of files) {
+      yield file.clone({deep: true, contents: true});
+    }
   }
 }

@@ -20,10 +20,9 @@ suite('AsyncTransformStream', () => {
     class DoubleTransformer extends AsyncTransformStream<number, number> {
       protected async *
           _transformIter(inputs: AsyncIterable<number>): AsyncIterable<number> {
-        for
-          await(const input of inputs) {
-            yield input * 2;
-          }
+        for await (const input of inputs) {
+          yield input * 2;
+        }
       }
     }
     const transformer = new DoubleTransformer({objectMode: true});
@@ -48,14 +47,13 @@ suite('AsyncTransformStream', () => {
       protected async *
           _transformIter(inputs: AsyncIterable<number>): AsyncIterable<number> {
         let i = 0;
-        for
-          await(const input of inputs) {
-            i++;
-            if (i > 2) {
-              return;
-            }
-            yield input * 3;
+        for await (const input of inputs) {
+          i++;
+          if (i > 2) {
+            return;
           }
+          yield input * 3;
+        }
       }
     }
     const transformer = new GivesUpAfterTwo({objectMode: true});

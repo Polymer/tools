@@ -42,24 +42,23 @@ class CheckPushManifest extends AsyncTransformStream<File, File> {
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
     let didAssert = false;
-    for
-      await(const file of files) {
-        if (this.filePath !== file.path) {
-          yield file;
-          continue;
-        }
-        try {
-          const pushManifestContents = file.contents.toString();
-          const pushManifestJson = JSON.parse(pushManifestContents);
-          assert.deepEqual(pushManifestJson, this.expectedManifest);
-          this.emit('match-success');
-        } catch (err) {
-          this.emit('match-failure', err);
-        }
-
-        didAssert = true;
+    for await (const file of files) {
+      if (this.filePath !== file.path) {
         yield file;
+        continue;
       }
+      try {
+        const pushManifestContents = file.contents.toString();
+        const pushManifestJson = JSON.parse(pushManifestContents);
+        assert.deepEqual(pushManifestJson, this.expectedManifest);
+        this.emit('match-success');
+      } catch (err) {
+        this.emit('match-failure', err);
+      }
+
+      didAssert = true;
+      yield file;
+    }
     if (!didAssert) {
       throw new Error(`never saw file ${this.filePath}`);
     }

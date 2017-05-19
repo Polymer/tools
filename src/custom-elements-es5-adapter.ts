@@ -28,34 +28,33 @@ export class CustomElementsEs5AdapterInjector extends
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        if (file.contents === null || file.extname !== '.html') {
-          yield file;
-          continue;
-        }
-        let contents: string;
-        if (file.isBuffer()) {
-          contents = file.contents.toString('utf-8');
-        } else {
-          const stream = file.contents as NodeJS.ReadableStream;
-          stream.setEncoding('utf-8');
-          contents = '';
-          stream.on('data', (chunk: string) => contents += chunk);
-          await new Promise((resolve, reject) => {
-            stream.on('end', resolve);
-            stream.on('error', reject);
-          });
-        }
-        const updatedContents = addCustomElementsEs5Adapter(contents);
-        if (contents === updatedContents) {
-          yield file;
-        } else {
-          const updatedFile = file.clone();
-          updatedFile.contents = new Buffer(updatedContents, 'utf-8');
-          yield updatedFile;
-        }
+    for await (const file of files) {
+      if (file.contents === null || file.extname !== '.html') {
+        yield file;
+        continue;
       }
+      let contents: string;
+      if (file.isBuffer()) {
+        contents = file.contents.toString('utf-8');
+      } else {
+        const stream = file.contents as NodeJS.ReadableStream;
+        stream.setEncoding('utf-8');
+        contents = '';
+        stream.on('data', (chunk: string) => contents += chunk);
+        await new Promise((resolve, reject) => {
+          stream.on('end', resolve);
+          stream.on('error', reject);
+        });
+      }
+      const updatedContents = addCustomElementsEs5Adapter(contents);
+      if (contents === updatedContents) {
+        yield file;
+      } else {
+        const updatedFile = file.clone();
+        updatedFile.contents = new Buffer(updatedContents, 'utf-8');
+        yield updatedFile;
+      }
+    }
   }
 }
 

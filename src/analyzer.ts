@@ -58,11 +58,10 @@ class ResolveTransform extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        this._buildAnalyzer.resolveFile(file);
-        yield file;
-      }
+    for await (const file of files) {
+      this._buildAnalyzer.resolveFile(file);
+      yield file;
+    }
   }
 }
 
@@ -92,11 +91,10 @@ class AnalyzeTransform extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        await this._buildAnalyzer.analyzeFile(file);
-        yield file;
-      }
+    for await (const file of files) {
+      await this._buildAnalyzer.analyzeFile(file);
+      yield file;
+    }
   }
 }
 

@@ -84,10 +84,9 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        this._mapFile(file);
-      }
+    for await (const file of files) {
+      this._mapFile(file);
+    }
     await this._buildBundles();
     for (const file of this.files.values()) {
       yield file;

@@ -192,12 +192,11 @@ export abstract class AsyncTransformStream<In extends{}, Out extends{}> extends
     if (this._initialized === false) {
       this._initialized = true;
       const transformDonePromise = (async () => {
-        for
-          await(const value of this._transformIter(this._inputs)) {
-            // TODO(rictic): if `this.push` returns false, should we wait until
-            //     we get a drain event to keep iterating?
-            this.push(value);
-          }
+        for await (const value of this._transformIter(this._inputs)) {
+          // TODO(rictic): if `this.push` returns false, should we wait until
+          //     we get a drain event to keep iterating?
+          this.push(value);
+        }
       })();
       transformDonePromise.then(() => {
         if (this._inputs.finished) {
@@ -262,9 +261,8 @@ export class VinylReaderTransform extends AsyncTransformStream<string, File> {
 
   protected async *
       _transformIter(paths: AsyncIterable<string>): AsyncIterable<File> {
-    for
-      await(const filePath of paths) {
-        yield new File({path: filePath, contents: await fs.readFile(filePath)});
-      }
+    for await (const filePath of paths) {
+      yield new File({path: filePath, contents: await fs.readFile(filePath)});
+    }
   }
 }

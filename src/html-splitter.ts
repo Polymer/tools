@@ -130,55 +130,52 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        const filePath = osPath.normalize(file.path);
-        if (!(file.contents && filePath.endsWith('.html'))) {
-          yield file;
+    for await (const file of files) {
+      const filePath = osPath.normalize(file.path);
+      if (!(file.contents && filePath.endsWith('.html'))) {
+        yield file;
+        continue;
+      }
+      const contents = file.contents.toString();
+      const doc = parse5.parse(contents, {locationInfo: true});
+      dom5.removeFakeRootElements(doc);
+      const scriptTags = dom5.queryAll(doc, HtmlSplitTransform.isInlineScript);
+      for (let i = 0; i < scriptTags.length; i++) {
+        const scriptTag = scriptTags[i];
+        const source = dom5.getTextContent(scriptTag);
+        const typeAtribute =
+            dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
+        const extension = extensionsForType[typeAtribute];
+        // If we don't recognize the script type attribute, don't split
+        // out.
+        if (!extension) {
           continue;
         }
-        const contents = file.contents.toString();
-        const doc = parse5.parse(contents, {locationInfo: true});
-        dom5.removeFakeRootElements(doc);
-        const scriptTags =
-            dom5.queryAll(doc, HtmlSplitTransform.isInlineScript);
-        for (let i = 0; i < scriptTags.length; i++) {
-          const scriptTag = scriptTags[i];
-          const source = dom5.getTextContent(scriptTag);
-          const typeAtribute =
-              dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
-          const extension = extensionsForType[typeAtribute];
-          // If we don't recognize the script type attribute, don't split
-          // out.
-          if (!extension) {
-            continue;
-          }
 
-          const childFilename =
-              `${osPath.basename(filePath)}_script_${i}.${extension}`;
-          const childPath =
-              osPath.join(osPath.dirname(filePath), childFilename);
-          scriptTag.childNodes = [];
-          dom5.setAttribute(scriptTag, 'src', childFilename);
-          const scriptFile = new File({
-            cwd: file.cwd,
-            base: file.base,
-            path: childPath,
-            contents: new Buffer(source),
-          });
-          this._state.addSplitPath(filePath, childPath);
-          this.push(scriptFile);
-        }
-
-        const splitContents = parse5.serialize(doc);
-        const newFile = new File({
+        const childFilename =
+            `${osPath.basename(filePath)}_script_${i}.${extension}`;
+        const childPath = osPath.join(osPath.dirname(filePath), childFilename);
+        scriptTag.childNodes = [];
+        dom5.setAttribute(scriptTag, 'src', childFilename);
+        const scriptFile = new File({
           cwd: file.cwd,
           base: file.base,
-          path: filePath,
-          contents: new Buffer(splitContents),
+          path: childPath,
+          contents: new Buffer(source),
         });
-        yield newFile;
+        this._state.addSplitPath(filePath, childPath);
+        this.push(scriptFile);
       }
+
+      const splitContents = parse5.serialize(doc);
+      const newFile = new File({
+        cwd: file.cwd,
+        base: file.base,
+        path: filePath,
+        contents: new Buffer(splitContents),
+      });
+      yield newFile;
+    }
   }
 }
 
@@ -200,31 +197,30 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        const filePath = osPath.normalize(file.path);
-        if (this._state.isSplitFile(filePath)) {
-          // this is a parent file
-          const splitFile = this._state.getSplitFile(filePath);
+    for await (const file of files) {
+      const filePath = osPath.normalize(file.path);
+      if (this._state.isSplitFile(filePath)) {
+        // this is a parent file
+        const splitFile = this._state.getSplitFile(filePath);
+        splitFile.vinylFile = file;
+        if (splitFile.isComplete) {
+          yield this._rejoin(splitFile);
+        } else {
           splitFile.vinylFile = file;
-          if (splitFile.isComplete) {
-            yield this._rejoin(splitFile);
-          } else {
-            splitFile.vinylFile = file;
+        }
+      } else {
+        const parentFile = this._state.getParentFile(filePath);
+        if (parentFile) {
+          // this is a child file
+          parentFile.setPartContent(filePath, file.contents.toString());
+          if (parentFile.isComplete) {
+            yield this._rejoin(parentFile);
           }
         } else {
-          const parentFile = this._state.getParentFile(filePath);
-          if (parentFile) {
-            // this is a child file
-            parentFile.setPartContent(filePath, file.contents.toString());
-            if (parentFile.isComplete) {
-              yield this._rejoin(parentFile);
-            }
-          } else {
-            yield file;
-          }
+          yield file;
         }
       }
+    }
   }
 
   _rejoin(splitFile: SplitFile) {

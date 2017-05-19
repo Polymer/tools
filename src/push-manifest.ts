@@ -177,11 +177,10 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    for
-      await(const file of files) {
-        this.files.set(urlFromPath(this.config.root, file.path), file);
-        yield file;
-      }
+    for await (const file of files) {
+      this.files.set(urlFromPath(this.config.root, file.path), file);
+      yield file;
+    }
 
     // Generate a push manifest, and propagate any errors up.
     const pushManifest = await this.generatePushManifest();

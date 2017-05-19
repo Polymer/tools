@@ -25,10 +25,9 @@ export class BabelHelpersInjector extends AsyncTransformStream<File, File> {
   }
 
   protected async * _transformIter(files: AsyncIterable<File>) {
-    for
-      await(const file of files) {
-        yield await this.processFile(file);
-      }
+    for await (const file of files) {
+      yield await this.processFile(file);
+    }
   }
 
   private async processFile(file: File): Promise<File> {
