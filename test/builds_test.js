@@ -51,7 +51,7 @@ suite('builds', () => {
         bundle: true,
         addServiceWorker: true,
         addPushManifest: true,
-        insertPrefetchLinks: false,
+        insertPrefetchLinks: true,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
@@ -68,7 +68,7 @@ suite('builds', () => {
         bundle: true,
         addServiceWorker: true,
         addPushManifest: true,
-        insertPrefetchLinks: false,
+        insertPrefetchLinks: true,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
