@@ -140,9 +140,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       bundle: true,
       addServiceWorker: true,
       addPushManifest: true,
-      // TODO(rictic): change this back to true once we fix
-      // https://github.com/Polymer/polymer-build/issues/203
-      insertPrefetchLinks: false,
+      insertPrefetchLinks: true,
     }
   ],
   [
@@ -156,9 +154,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       bundle: true,
       addServiceWorker: true,
       addPushManifest: true,
-      // TODO(rictic): change this back to true once we fix
-      // https://github.com/Polymer/polymer-build/issues/203
-      insertPrefetchLinks: false,
+      insertPrefetchLinks: true,
     }
   ],
   [
