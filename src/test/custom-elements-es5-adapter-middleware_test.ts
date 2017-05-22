@@ -28,13 +28,13 @@ suite('custom-elements-es5-adapter-middleware', () => {
     app = getApp({root, compile: 'always'});
   });
 
-  test('injects into entry point', async() => {
+  test('injects into entry point', async () => {
     await supertest(app).get('/').expect(200).expect((res: any) => {
       expect(res.text).to.have.string(adapterScriptName);
     });
   });
 
-  test('does not inject into non entry point', async() => {
+  test('does not inject into non entry point', async () => {
     await supertest(app)
         .get('/components/test-component/test.html')
         .expect(200)

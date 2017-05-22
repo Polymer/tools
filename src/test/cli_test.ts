@@ -63,7 +63,7 @@ suite('cli', () => {
     return stdout;
   }
 
-  test('unknown cmd parameter should not throw exception', async() => {
+  test('unknown cmd parameter should not throw exception', async () => {
     const stdout = await runCli(['--unknown-parameter']);
 
     // Assert that we printed something that looks kinda like help text to
@@ -73,7 +73,7 @@ suite('cli', () => {
     assert.match(stdout, /--package-name/);
   });
 
-  test('launches mainline server', async() => {
+  test('launches mainline server', async () => {
     await runCli([]);
   });
 

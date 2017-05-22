@@ -29,14 +29,14 @@ suite('makeApp', () => {
     assert.equal(app.packageName, 'polyserve-test');
   });
 
-  test('serves package files', async() => {
+  test('serves package files', async () => {
     let app = makeApp({root, componentDir});
     await supertest(app)
         .get('/polyserve-test/test-file.txt')
         .expect(200, 'PASS\n');
   });
 
-  test('serves component files', async() => {
+  test('serves component files', async () => {
     let app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),
@@ -46,7 +46,7 @@ suite('makeApp', () => {
         .expect(200, 'TEST COMPONENT\n');
   });
 
-  test('serves component indices', async() => {
+  test('serves component indices', async () => {
     let app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),
@@ -54,7 +54,7 @@ suite('makeApp', () => {
     await supertest(app).get('/test-component/').expect(200, 'INDEX\n');
   });
 
-  test('redirects directories without trailing slashes', async() => {
+  test('redirects directories without trailing slashes', async () => {
     let app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),

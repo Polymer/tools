@@ -45,35 +45,34 @@ export async function getTLSCertificate(
   return certObj;
 }
 
-async function _readKeyAndCert(keyPath: string, certPath: string):
-    Promise<KeyAndCert|undefined> {
-      if (!keyPath || !certPath) {
-        return;
-      }
+async function _readKeyAndCert(
+    keyPath: string, certPath: string): Promise<KeyAndCert|undefined> {
+  if (!keyPath || !certPath) {
+    return;
+  }
 
-      try {
-        const results =
-            (await Promise.all([fs.readFile(certPath), fs.readFile(keyPath)]))
-                .map(buffer => buffer.toString().trim());
-        const cert = results[0];
-        const key = results[1];
-        if (key && cert) {
-          return {cert, key};
-        }
-      } catch (err) {
-        // If the cert/key file doesn't exist, generate new TLS certificate
-        if (err.code !== 'ENOENT') {
-          throw new Error(`cannot read certificate ${err}`);
-        }
-      }
+  try {
+    const results =
+        (await Promise.all([fs.readFile(certPath), fs.readFile(keyPath)]))
+            .map(buffer => buffer.toString().trim());
+    const cert = results[0];
+    const key = results[1];
+    if (key && cert) {
+      return {cert, key};
     }
+  } catch (err) {
+    // If the cert/key file doesn't exist, generate new TLS certificate
+    if (err.code !== 'ENOENT') {
+      throw new Error(`cannot read certificate ${err}`);
+    }
+  }
+}
 
 /**
  * Generates a TLS certificate for HTTPS
  * @returns {Promise<{}>} Promise of {key: string, cert: string}
  */
-async function
-createTLSCertificate(): Promise<KeyAndCert> {
+async function createTLSCertificate(): Promise<KeyAndCert> {
   type PemCertificate = {certificate: string, serviceKey: string};
   const keys = await new Promise<PemCertificate>((resolve, reject) => {
     pem.createCertificate(
