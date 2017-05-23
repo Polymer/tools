@@ -63,6 +63,34 @@ suite('service-worker', () => {
     temp.cleanup(done);
   });
 
+  suite('hasNoFileExtension regexp', () => {
+    test('matches URL paths correctly', () => {
+      const test = (s: string) => serviceWorker.hasNoFileExtension.test(s);
+
+      assert.isTrue(test('/'));
+      assert.isTrue(test('/foo'));
+      assert.isTrue(test('/foo/'));
+      assert.isTrue(test('/foo.png/bar/'));
+      assert.isTrue(test('/foo?baz.png'));
+
+      assert.isFalse(test('/foo.png'));
+      assert.isFalse(test('/foo/bar.png'));
+    });
+  });
+
+  suite('generateServiceWorkerConfig()', () => {
+    test('should set entrypoint related options', async () => {
+      const config = await serviceWorker.generateServiceWorkerConfig({
+        project: defaultProject,
+        buildRoot: testBuildRoot,
+      });
+      assert.equal(config.navigateFallback, 'index.html');
+      assert.deepEqual(
+          config.navigateFallbackWhitelist, [serviceWorker.hasNoFileExtension]);
+      assert.equal(config.directoryIndex, '');
+    });
+  });
+
   suite('generateServiceWorker()', () => {
 
     test('should throw when options are not provided', () => {

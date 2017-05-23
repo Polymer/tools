@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
 * Service Worker generator now generates relative URLs for pre-cached assets instead of absolute. This makes it possible to cache assets when the app is served from a non-root path without re-mapping all URLs. Since server workers fetch relative to their own URL, there is no effective change for service workers served from the root path.
+* Service Worker generator now better caches the entrypoint by setting navigateFallback and related options.
 
 ## [1.4.2] - 2017-05-19
 * Updated the AddPrefetchLinks transform to not insert html root element tags like `<html>`, `<head>` or `<body>`.

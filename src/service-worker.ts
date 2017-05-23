@@ -81,12 +81,15 @@ function getBundledPrecachedAssets(project: PolymerProject) {
   return Array.from(precachedAssets);
 }
 
+// Matches URLs like "/foo.png/bar" but not "/foo/bar.png".
+export const hasNoFileExtension = /\/[^\/\.]*(\?|$)/;
+
 /**
- * Returns a promise that resolves with a generated service worker (the file
- * contents), based off of the options provided.
+ * Returns a promise that resolves with a generated service worker
+ * configuration.
  */
-export async function generateServiceWorker(options: AddServiceWorkerOptions):
-    Promise<Buffer> {
+export async function generateServiceWorkerConfig(
+    options: AddServiceWorkerOptions): Promise<SWConfig> {
   console.assert(!!options, '`project` & `buildRoot` options are required');
   console.assert(!!options.project, '`project` option is required');
   console.assert(!!options.buildRoot, '`buildRoot` option is required');
@@ -111,6 +114,29 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
     }
     return path.join(buildRoot, filePath);
   });
+
+  if (swPrecacheConfig.navigateFallback === undefined) {
+    // Map all application routes to the entrypoint.
+    swPrecacheConfig.navigateFallback =
+        path.relative(project.config.root, project.config.entrypoint);
+  }
+
+  if (swPrecacheConfig.navigateFallbackWhitelist === undefined) {
+    // Don't fall back to the entrypoint if the URL looks like a static file.
+    // We want those to 404 instead, since they are probably missing assets,
+    // not application routes. Note it's important that this matches the
+    // behavior of prpl-server.
+    swPrecacheConfig.navigateFallbackWhitelist = [hasNoFileExtension];
+  }
+
+  if (swPrecacheConfig.directoryIndex === undefined) {
+    // By default, sw-precache maps any path ending with "/" to "index.html".
+    // This is a reasonable default for matching application routes, but 1) our
+    // entrypoint might not be called "index.html", and 2) this case is already
+    // handled by the navigateFallback configuration above. Simplest to just
+    // disable this feature.
+    swPrecacheConfig.directoryIndex = '';
+  }
 
   // swPrecache will determine the right urls by stripping buildRoot.
   // NOTE:(usergenic) sw-precache generate() apparently replaces the
@@ -143,6 +169,16 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
   // Log service-worker helpful output at the debug log level
   swPrecacheConfig.logger = swPrecacheConfig.logger || logger.debug;
 
+  return swPrecacheConfig;
+}
+
+/**
+ * Returns a promise that resolves with a generated service worker (the file
+ * contents), based off of the options provided.
+ */
+export async function generateServiceWorker(options: AddServiceWorkerOptions):
+    Promise<Buffer> {
+  const swPrecacheConfig = await generateServiceWorkerConfig(options);
   return await<Promise<Buffer>>(new Promise((resolve, reject) => {
     logger.debug(`writing service worker...`, swPrecacheConfig);
     swPrecacheGenerate(
