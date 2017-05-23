@@ -17,7 +17,8 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as supertest from 'supertest-as-promised';
-import {babelCompileCache, browserNeedsCompilation} from '../compile-middleware';
+
+import {babelCompileCache, browserNeedsCompilation, isPolyfill} from '../compile-middleware';
 import {getApp} from '../start_server';
 
 chai.use(chaiAsPromised);
@@ -177,5 +178,19 @@ suite('compile-middleware', () => {
     for (const userAgent of userAgentsThatSupportES2015) {
       assert.equal(browserNeedsCompilation(userAgent), false, userAgent);
     }
+  });
+
+  test('isPolyfill', () => {
+    assert.isTrue(
+        isPolyfill.test('/webcomponentsjs/custom-elements-es5-adapter.js'));
+    assert.isTrue(isPolyfill.test('/webcomponentsjs/webcomponents-lite.js'));
+    assert.isTrue(isPolyfill.test(
+        '/bower_components/webcomponentsjs/webcomponents-lite.js'));
+
+    assert.isFalse(isPolyfill.test('/webcomponentsjs/tests/ce-import.html'));
+    assert.isFalse(
+        isPolyfill.test('/webcomponentsjs/tests/imports/current-script.js'));
+    assert.isFalse(
+        isPolyfill.test('/notwebcomponentsjs/webcomponents-lite.js'));
   });
 });

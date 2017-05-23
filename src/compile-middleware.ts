@@ -19,7 +19,6 @@ import {Request, RequestHandler, Response} from 'express';
 import * as LRU from 'lru-cache';
 import * as parse5 from 'parse5';
 import {UAParser} from 'ua-parser-js';
-import * as url from 'url';
 
 import {transformResponse} from './transform-middleware';
 
@@ -58,6 +57,10 @@ const compileMimeTypes = [
   htmlMimeType,
 ].concat(javaScriptMimeTypes);
 
+// Match the polyfills from https://github.com/webcomponents/webcomponentsjs,
+// but not their tests.
+export const isPolyfill = /(^|\/)webcomponentsjs\/[^\/]+$/;
+
 function getContentType(response: Response) {
   const contentTypeHeader = response.getHeader('Content-Type');
   return contentTypeHeader && parseContentType(contentTypeHeader).type;
@@ -75,10 +78,7 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
     shouldTransform(request: Request, response: Response) {
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
-      const isPolyfill = url.parse(request.url)
-                             .pathname.split('/')
-                             .includes('webcomponentsjs');
-      return !isPolyfill &&
+      return !isPolyfill.test(request.url) &&
           compileMimeTypes.includes(getContentType(response)) &&
           (forceCompile ||
            browserNeedsCompilation(request.headers['user-agent']));
