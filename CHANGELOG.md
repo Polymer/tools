@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [1.5.0] - 2017-05-23
 * Service Worker generator now generates relative URLs for pre-cached assets instead of absolute. This makes it possible to cache assets when the app is served from a non-root path without re-mapping all URLs. Since server workers fetch relative to their own URL, there is no effective change for service workers served from the root path.
 * Service Worker generator now better caches the entrypoint by setting navigateFallback and related options.
 
