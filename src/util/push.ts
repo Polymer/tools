@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import * as fs from 'fs';
 import * as mime from 'mime';
 import * as path from 'path';
-import * as assert from 'assert';
 
 import {ServerOptions} from '../start_server';
 

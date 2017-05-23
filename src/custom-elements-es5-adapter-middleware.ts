@@ -34,8 +34,9 @@ export function injectCustomElementsEs5Adapter(forceCompile: boolean):
       const contentType =
           contentTypeHeader && parseContentType(contentTypeHeader).type;
       // We only need to inject the adapter if we are compiling to ES5.
-      return contentType === 'text/html' && (forceCompile ||
-          browserNeedsCompilation(request.headers['user-agent']));
+      return contentType === 'text/html' &&
+          (forceCompile ||
+           browserNeedsCompilation(request.headers['user-agent']));
     },
 
     transform(_request: Request, _response: Response, body: string): string {

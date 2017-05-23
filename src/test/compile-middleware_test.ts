@@ -17,7 +17,8 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as supertest from 'supertest-as-promised';
-import {babelCompileCache, browserNeedsCompilation} from '../compile-middleware';
+
+import {babelCompileCache, browserNeedsCompilation, isPolyfill} from '../compile-middleware';
 import {getApp} from '../start_server';
 
 chai.use(chaiAsPromised);
@@ -62,7 +63,7 @@ suite('compile-middleware', () => {
       babelCompileCache.reset();
     });
 
-    test('caches html compilation results', async() => {
+    test('caches html compilation results', async () => {
       assert(!babelCompileCache.has(uncompiledHtml));
       const response =
           await supertest(app).get('/components/test-component/test.html');
@@ -71,14 +72,14 @@ suite('compile-middleware', () => {
       assert.equal(response.text.indexOf('class A {}'), -1, 'Did not compile');
     });
 
-    test('returns cached html compilation results', async() => {
+    test('returns cached html compilation results', async () => {
       babelCompileCache.set(uncompiledHtml, 'IM IN UR CACHE');
       const response =
           await supertest(app).get('/components/test-component/test.html');
       assert.equal(response.text, 'IM IN UR CACHE');
     });
 
-    test('caches javascript compilation results', async() => {
+    test('caches javascript compilation results', async () => {
       assert(!babelCompileCache.has(uncompiledJs));
       const response =
           await supertest(app).get('/components/test-component/test.js');
@@ -87,14 +88,14 @@ suite('compile-middleware', () => {
       assert.equal(response.text.indexOf('class A {}'), -1, 'Did not compile');
     });
 
-    test('returns cached js compilation results', async() => {
+    test('returns cached js compilation results', async () => {
       babelCompileCache.set(uncompiledJs, 'IM IN UR CACHE');
       const response =
           await supertest(app).get('/components/test-component/test.js');
       assert.equal(response.text, 'IM IN UR CACHE');
     });
 
-    test('honors the cache max evicting least recently used', async() => {
+    test('honors the cache max evicting least recently used', async () => {
       await supertest(app).get('/components/test-component/test.html');
       assert(babelCompileCache.has(uncompiledHtml));
       const originalMax = babelCompileCache['max'];
@@ -107,7 +108,7 @@ suite('compile-middleware', () => {
       }
     });
 
-    test('script tags with invalid javascript are unchanged', async() => {
+    test('script tags with invalid javascript are unchanged', async () => {
       const uncompiled =
           fs
               .readFileSync(path.join(
@@ -134,7 +135,7 @@ suite('compile-middleware', () => {
         babelCompileCache.reset();
       });
 
-      test('detect user-agents that do not need compilation', async() => {
+      test('detect user-agents that do not need compilation', async () => {
         assert.isFalse(babelCompileCache.has(`Unexpected .js file in cache`));
         for (const userAgent of userAgentsThatSupportES2015) {
           const response = await supertest(app)
@@ -151,7 +152,7 @@ suite('compile-middleware', () => {
         }
       });
 
-      test('detect user-agents that need compilation', async() => {
+      test('detect user-agents that need compilation', async () => {
         assert.isFalse(babelCompileCache.has(`Unexpected .js file in cache`));
         for (const userAgent of userAgentsThatDontSupportES2015) {
           const response = await supertest(app)
@@ -177,5 +178,19 @@ suite('compile-middleware', () => {
     for (const userAgent of userAgentsThatSupportES2015) {
       assert.equal(browserNeedsCompilation(userAgent), false, userAgent);
     }
+  });
+
+  test('isPolyfill', () => {
+    assert.isTrue(
+        isPolyfill.test('/webcomponentsjs/custom-elements-es5-adapter.js'));
+    assert.isTrue(isPolyfill.test('/webcomponentsjs/webcomponents-lite.js'));
+    assert.isTrue(isPolyfill.test(
+        '/bower_components/webcomponentsjs/webcomponents-lite.js'));
+
+    assert.isFalse(isPolyfill.test('/webcomponentsjs/tests/ce-import.html'));
+    assert.isFalse(
+        isPolyfill.test('/webcomponentsjs/tests/imports/current-script.js'));
+    assert.isFalse(
+        isPolyfill.test('/notwebcomponentsjs/webcomponents-lite.js'));
   });
 });

@@ -258,7 +258,8 @@ async function startVariants(
     kind: 'MultipleServers',
     control: controlServerInfo,
     mainline: mainServerInfo,
-    variants: variantServerInfos, servers,
+    variants: variantServerInfos,
+    servers,
   };
   return result;
 };
@@ -283,7 +284,7 @@ export async function startControlServer(
     res.end();
   });
   const indexPath = path.join(__dirname, '..', 'static', 'index.html');
-  app.get('/', async(_req, res) => {
+  app.get('/', async (_req, res) => {
     res.contentType('html');
     const indexContents = await fs.readFile(indexPath, 'utf-8');
     res.send(indexContents);
@@ -292,7 +293,8 @@ export async function startControlServer(
   const controlServer: ControlServer = {
     kind: 'control',
     options: options,
-    server: await startWithApp(options, app), app
+    server: await startWithApp(options, app),
+    app
   };
   return controlServer;
 }
@@ -443,21 +445,21 @@ function assertNodeVersion(options: ServerOptions) {
  * @param {ServerOptions} options
  * @returns {Promise<http.Server>} Promise of server
  */
-async function createServer(app: express.Application, options: ServerOptions):
-    Promise<http.Server> {
-      const opt: any = {spdy: {protocols: [options.protocol]}};
+async function createServer(
+    app: express.Application, options: ServerOptions): Promise<http.Server> {
+  const opt: any = {spdy: {protocols: [options.protocol]}};
 
-      if (isHttps(options.protocol)) {
-        const keys = await getTLSCertificate(options.keyPath, options.certPath);
-        opt.key = keys.key;
-        opt.cert = keys.cert;
-      } else {
-        opt.spdy.plain = true;
-        opt.spdy.ssl = false;
-      }
+  if (isHttps(options.protocol)) {
+    const keys = await getTLSCertificate(options.keyPath, options.certPath);
+    opt.key = keys.key;
+    opt.cert = keys.cert;
+  } else {
+    opt.spdy.plain = true;
+    opt.spdy.ssl = false;
+  }
 
-      return http.createServer(opt, app as any);
-    }
+  return http.createServer(opt, app as any);
+}
 
 // Sauce Labs compatible ports taken from
 // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS#SauceConnectProxyFAQS-CanIAccessApplicationsonlocalhost?
@@ -488,15 +490,14 @@ export async function startWithApp(
 async function startWithFirstAvailablePort(
     options: ServerOptions, app: express.Application, ports: number[]):
     Promise<http.Server> {
-      for (const port of ports) {
-        const server = await tryStartWithPort(options, app, port);
-        if (server) {
-          return server;
-        }
-      }
-      throw new Error(
-          `No available ports. Ports tried: ${JSON.stringify(ports)}`);
+  for (const port of ports) {
+    const server = await tryStartWithPort(options, app, port);
+    if (server) {
+      return server;
     }
+  }
+  throw new Error(`No available ports. Ports tried: ${JSON.stringify(ports)}`);
+}
 
 async function tryStartWithPort(
     options: ServerOptions, app: express.Application, port: number) {

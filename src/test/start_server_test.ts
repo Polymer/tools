@@ -39,12 +39,12 @@ suite('startServer', () => {
     assert.isOk(app);
   });
 
-  test('serves root application files', async() => {
+  test('serves root application files', async () => {
     const app = getApp({root});
     await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
   });
 
-  test('serves root application files if root isn\'t set', async() => {
+  test('serves root application files if root isn\'t set', async () => {
     const cwd = process.cwd();
     try {
       process.chdir(root);
@@ -55,7 +55,7 @@ suite('startServer', () => {
     }
   });
 
-  test('serves component files', async() => {
+  test('serves component files', async () => {
     const app = getApp({root});
     await supertest(app)
         .get('/bower_components/test-component/test-file.txt')
@@ -63,14 +63,14 @@ suite('startServer', () => {
   });
 
 
-  test('serves default entry point index.html instead of 404', async() => {
+  test('serves default entry point index.html instead of 404', async () => {
     const app = getApp({root});
     await supertest(app).get('/foo').expect(200).expect((res: any) => {
       expect(res.text).to.have.string('INDEX');
     });
   });
 
-  test('serves custom entry point from "/"', async() => {
+  test('serves custom entry point from "/"', async () => {
     const app = getApp({
       root,
       entrypoint: path.join(root, 'custom-entry.html'),
@@ -80,7 +80,7 @@ suite('startServer', () => {
     });
   });
 
-  test('serves custom entry point instead of 404', async() => {
+  test('serves custom entry point instead of 404', async () => {
     const app = getApp({
       root,
       entrypoint: path.join(root, 'custom-entry.html'),
@@ -91,7 +91,7 @@ suite('startServer', () => {
   });
 
   ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach((ext) => {
-    test(`404s ${ext} files`, async() => {
+    test(`404s ${ext} files`, async () => {
       const app = getApp({root});
 
       await supertest(app).get('/foo.' + ext).expect(404);
@@ -105,7 +105,7 @@ suite('startServer', () => {
       agent?: string,
       compile: 'always' | 'never' | 'auto',
       result: 'compiled' | 'uncompiled'
-    }) => async() => {
+    }) => async () => {
       const url = options.url;
       const agent = options.agent;
       const compile = options.compile;
@@ -209,7 +209,7 @@ suite('startServer', () => {
       consoleWarn = console.warn;
     });
 
-    teardown(async() => {
+    teardown(async () => {
       console.error = consoleError;
       console.warn = consoleWarn;
       await Promise.all([
@@ -218,7 +218,7 @@ suite('startServer', () => {
       ]);
     });
 
-    test('rewrites directory with proxy', async() => {
+    test('rewrites directory with proxy', async () => {
       await setUpProxy('normally-non-existing-path');
       await supertest(proxyServer)
           .get(
@@ -226,7 +226,7 @@ suite('startServer', () => {
           .expect(200, 'TEST COMPONENT\n');
     });
 
-    test('warns when path contains special regex characters', async() => {
+    test('warns when path contains special regex characters', async () => {
       const spy = sinon.spy();
       console.warn = spy;
       app = await startServer(
@@ -234,14 +234,14 @@ suite('startServer', () => {
       assert.equal(spy.callCount, 3);
     });
 
-    test('handles additional slashes at start or end of path', async() => {
+    test('handles additional slashes at start or end of path', async () => {
       await setUpProxy('/api/v1/');
       await supertest(proxyServer)
           .get('/api/v1/bower_components/test-component/test-file.txt')
           .expect(200, 'TEST COMPONENT\n');
     });
 
-    test('does not set up proxy that starts with components', async() => {
+    test('does not set up proxy that starts with components', async () => {
       const spy = sinon.spy();
       console.error = spy;
       app = await startServer(
@@ -249,7 +249,7 @@ suite('startServer', () => {
       assert.isTrue(spy.calledOnce);
     });
 
-    test('redirects to root of proxy', async() => {
+    test('redirects to root of proxy', async () => {
       await setUpProxy('api/v1');
       await supertest(proxyServer)
           .get('/api/v1/')
@@ -293,7 +293,7 @@ suite('startServer', () => {
         _setupServerOptions();
       });
 
-      test('generates new TLS cert/key if unspecified', async() => {
+      test('generates new TLS cert/key if unspecified', async () => {
         const createCertSpy = sinon.spy(pem, 'createCertificate');
 
         // reset paths to key/cert files so that default paths are used
@@ -321,7 +321,7 @@ suite('startServer', () => {
         }
       });
 
-      test('generates new TLS cert/key if specified files blank', async() => {
+      test('generates new TLS cert/key if specified files blank', async () => {
         const createCertSpy = sinon.spy(pem, 'createCertificate');
 
         try {
@@ -342,7 +342,7 @@ suite('startServer', () => {
         }
       });
 
-      test('reuses TLS cert/key', async() => {
+      test('reuses TLS cert/key', async () => {
         _serverOptions.keyPath = path.join(root, 'key.pem');
         _serverOptions.certPath = path.join(root, 'cert.pem');
 
@@ -485,7 +485,7 @@ suite('startServers', () => {
       process.chdir(prevCwd);
     });
 
-    test('serves files out of a given components directory', async() => {
+    test('serves files out of a given components directory', async () => {
       const servers = await startServers({});
 
       if (servers.kind !== 'MultipleServers') {
