@@ -142,10 +142,10 @@ suite('service-worker', () => {
               })
               .then((swFile: Buffer) => {
                 const fileContents = swFile.toString();
-                assert.include(fileContents, '"/index.html"');
-                assert.include(fileContents, '"/shell.html"');
-                assert.include(fileContents, '"/bower_components/dep.html"');
-                assert.notInclude(fileContents, '"/source-dir/my-app.html"');
+                assert.include(fileContents, '"index.html"');
+                assert.include(fileContents, '"shell.html"');
+                assert.include(fileContents, '"bower_components/dep.html"');
+                assert.notInclude(fileContents, '"source-dir/my-app.html"');
               });
         });
 
@@ -160,10 +160,10 @@ suite('service-worker', () => {
               })
               .then((swFile: Buffer) => {
                 const fileContents = swFile.toString();
-                assert.include(fileContents, '"/index.html"');
-                assert.include(fileContents, '"/shell.html"');
-                assert.notInclude(fileContents, '"/bower_components/dep.html"');
-                assert.notInclude(fileContents, '"/source-dir/my-app.html"');
+                assert.include(fileContents, '"index.html"');
+                assert.include(fileContents, '"shell.html"');
+                assert.notInclude(fileContents, '"bower_components/dep.html"');
+                assert.notInclude(fileContents, '"source-dir/my-app.html"');
               });
         });
 
@@ -179,10 +179,10 @@ suite('service-worker', () => {
           })
           .then((swFile: Buffer) => {
             const fileContents = swFile.toString();
-            assert.include(fileContents, '"/index.html"');
-            assert.include(fileContents, '"/shell.html"');
-            assert.include(fileContents, '"/bower_components/dep.html"');
-            assert.notInclude(fileContents, '"/source-dir/my-app.html"');
+            assert.include(fileContents, '"index.html"');
+            assert.include(fileContents, '"shell.html"');
+            assert.include(fileContents, '"bower_components/dep.html"');
+            assert.notInclude(fileContents, '"source-dir/my-app.html"');
           });
     });
 
