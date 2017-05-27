@@ -113,15 +113,11 @@ export interface ProjectBuildOptions {
   browserCapabilities?: string[];
 
   /**
-   * Apply transformations during build to support serving this build from a
+   * Update the entrypoint's `<base>` tag, to support serving this build from a
    * non-root path, such as when doing differential serving based on user
-   * agent. This works well in conjunction with the convention of using
-   * relative URLs for static resources and absolute URLs for application
-   * routes.
-   *
-   * - Find and update the entrypoint's `<base>` tag.
-   * - Prefix Service Worker pre-cached resources.
-   * - Prefix Push Manifest resources.
+   * agent. Requires that a `<base>` tag already exists. This works well in
+   * conjunction with the convention of using relative URLs for static
+   * resources and absolute URLs for application routes.
    *
    * If `true`, use the build `name`. If a `string`, use that value.
    * Leading/trailing slashes are optional.
