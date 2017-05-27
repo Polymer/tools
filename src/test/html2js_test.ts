@@ -2,7 +2,7 @@ import * as esprima from 'esprima';
 import * as estree from 'estree';
 
 import {Analyzer, InMemoryOverlayUrlLoader, Document} from 'polymer-analyzer';
-import {html2Js, getMemberPath} from '../html2js';
+import {html2Js, getMemberPath, ModuleExport} from '../html2js';
 import {assert} from 'chai';
 
 suite('html2js', () => {
@@ -19,10 +19,10 @@ suite('html2js', () => {
       })
     });
 
-    async function getJs() {
+    async function getJs(exports?: Map<string, ModuleExport>) {
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
-      return html2Js(testDoc);
+      return html2Js(testDoc, exports);
     }
 
     function setSources(sources: {[filename: string]: string}) {
@@ -155,6 +155,32 @@ export let arrow = () => {
           </script>`,
       });
       assert.equal(await getJs(), `export let obj = {};\n`);
+    });
+
+    test('specifies referenced imports in import declarations', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./dep.html">
+          <script>
+            class MyElement extends Polymer.Element {}
+          </script>
+        `,
+        'dep.html': `
+          <script>
+            Polymer.Element = {};
+          </script>
+        `,
+      });
+      const js = await getJs(new Map(Object.entries({
+        'Polymer.Element': {
+          url: 'dep.html',
+          name: 'Element',
+        }
+      })));
+      // TODO: rewrite references
+      assert.equal(js, `import { Element } from './dep.js';
+class MyElement extends Polymer.Element {
+}\n`);
     });
 
   });

@@ -9,10 +9,13 @@
   "dependencies": {
     "@types/chai": "^3.5.2",
     "@types/esprima": "^2.1.33",
+    "@types/estraverse": "^0.0.6",
     "@types/mocha": "^2.2.41",
     "@types/mz": "^0.0.31",
+    "ast-types": "^0.9.11",
     "chai": "^3.5.0",
     "esprima": "^3.1.3",
+    "estraverse": "^4.2.0",
     "jscodeshift": "^0.3.30",
     "mkdirp": "^0.5.1",
     "mocha": "^3.4.1",

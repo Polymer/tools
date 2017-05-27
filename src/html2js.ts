@@ -18,6 +18,7 @@ import * as path from 'path';
 import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace} from 'polymer-analyzer';
 import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier} from 'estree';
 
+const astTypes = require('ast-types');
 const mkdirp = require('mkdirp');
 const J = require('jscodeshift');
 
@@ -69,10 +70,15 @@ export async function convertPackage() {
   }
 }
 
+export interface ModuleExport {
+  url: string;
+  name: string;
+}
+
 /**
  * Converts a Polymer Analyzer HTML document to a JS module
  */
-export function html2Js(document: Document): string | undefined {
+export function html2Js(document: Document, exports?: Map<string, ModuleExport>): string | undefined {
   // const domModules = document.getFeatures({kind: 'dom-module'});
   // if (domModules.size > 0) {
   //   console.log('domModules', domModules);
@@ -97,12 +103,47 @@ export function html2Js(document: Document): string | undefined {
   // Unwrap module-IIFE
   program.body = getModuleBody(program);
 
+  // module path -> imported names
+  const importedReferences = new Map<string, Set<string>>();
+
+  // Rewrite all references to imports
+  if (exports !== undefined) {
+
+    astTypes.visit(program, {
+      visitMemberExpression(path: any) {
+        const memberPath = getMemberPath(path.node);
+        if (memberPath) {
+          const memberName = memberPath.join('.');
+          const moduleExport = exports.get(memberName);
+          if (moduleExport) {
+            const moduleJsUrl = htmlUrlToJs(moduleExport.url, document.url);
+            let moduleImportedNames = importedReferences.get(moduleJsUrl);
+            if (moduleImportedNames === undefined) {
+              moduleImportedNames = new Set<string>();
+              importedReferences.set(moduleJsUrl, moduleImportedNames);
+            }
+            moduleImportedNames.add(moduleExport.name);
+          }
+        }
+        this.traverse(path);
+      }
+    });
+
+  }
+
   // Rewrite HTML Imports to JS imports
   const htmlImports = document.getFeatures({kind: 'html-import'});
-  const jsImports = Array.from(htmlImports).map((i) => J.importDeclaration(
-    [], // specifiers
-    J.literal(htmlUrlToJs(i.url, document.url)) // source
-  ));
+  const jsImports = Array.from(htmlImports).map((i) => {
+    const jsUrl = htmlUrlToJs(i.url, document.url);
+    const specifierNames = importedReferences.get(jsUrl);  
+    const specifiers = specifierNames
+        ? Array.from(specifierNames).map((s) => J.importSpecifier(J.identifier(s)))
+        : [];
+    return J.importDeclaration(
+      specifiers, // specifiers
+      J.literal(jsUrl) // source
+    );
+  });
   program.body.splice(0, 0, ...jsImports);
 
   if (scriptDocument !== undefined) {
@@ -172,6 +213,7 @@ export function html2Js(document: Document): string | undefined {
       }
     }
   }
+
 
   return escodegen.generate(program, {
     comment: true,
@@ -343,7 +385,6 @@ function htmlUrlToJs(url: string, from?: string): string {
   // We've lost the actual URL string and thus the leading ./
   // This should be fixed in the Analyzer, and this hack isn't even right
   if (from !== undefined) {
-    console.log(from, jsUrl);
     jsUrl = path.relative(path.dirname(from), jsUrl);
   }
   if (!jsUrl.startsWith('.') && !jsUrl.startsWith('/')) {
@@ -351,3 +392,4 @@ function htmlUrlToJs(url: string, from?: string): string {
   }
   return jsUrl;
 }
+
