@@ -5,7 +5,6 @@ import {Analyzer, InMemoryOverlayUrlLoader, Document} from 'polymer-analyzer';
 import {html2Js, getMemberPath} from '../html2js';
 import {assert} from 'chai';
 
-
 suite('html2js', () => {
 
   suite('html2Js', () => {
@@ -20,54 +19,71 @@ suite('html2js', () => {
       })
     });
 
-    test('converts imports to .js', async () => {
-      urlLoader.urlContentsMap.set('test.html', `
-        <link rel="import" href="./dep.html">
-        <script></script>
-      `);
-      urlLoader.urlContentsMap.set('dep.html', `
-        <h1>Hi</h1>
-      `);
+    async function getJs() {
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      console.log(jsSource);
-      assert.equal(jsSource, `import './dep.js';\n`);
+      return html2Js(testDoc);
+    }
+
+    function setSources(sources: {[filename: string]: string}) {
+      for (const [filename, source] of Object.entries(sources)) {
+        urlLoader.urlContentsMap.set(filename, source);
+      }
+    }
+
+    test('converts imports to .js', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./dep.html">
+          <script></script>
+        `,
+        'dep.html': `<h1>Hi</h1>`,
+      });
+      assert.equal(await getJs(), `import './dep.js';\n`);
+    });
+
+    test('converts imports to .js without scripts', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./dep.html">
+        `,
+        'dep.html': `<h1>Hi</h1>`,
+      });
+      assert.equal(await getJs(), `import './dep.js';\n`);
     });
 
     test('unwraps top-level IIFE', async () => {
-      urlLoader.urlContentsMap.set('test.html', `
-        <dom-module>
-          <template>
-            <h1>Test</h1>
-          </template>
-          <script>
-            (function() {
-              'use strict';
+      setSources({
+        'test.html': `
+          <dom-module>
+            <template>
+              <h1>Test</h1>
+            </template>
+            <script>
+              (function() {
+                'use strict';
 
-              Polymer.Foo = 'Bar';
-            })();
-          </script>
-        </dom-module>`);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      assert.equal(jsSource, `export let Foo = 'Bar';\n`);
+                Polymer.Foo = 'Bar';
+              })();
+            </script>
+          </dom-module>
+        `,
+      });
+      assert.equal(await getJs(), `export let Foo = 'Bar';\n`);
     });
 
     test('exports a reference', async () => {
-      urlLoader.urlContentsMap.set('test.html', `
+      setSources({
+        'test.html': `
           <script>
             (function() {
               'use strict';
 
               Polymer.ArraySelectorMixin = ArraySelectorMixin;
             })();
-          </script>`);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      assert.equal(jsSource,
+          </script>`
+      });
+      assert.equal(await getJs(),
 `export {
   ArraySelectorMixin
 };
@@ -75,16 +91,15 @@ suite('html2js', () => {
     });
 
     test('exports a value to a nested namespace', async () => {
-      urlLoader.urlContentsMap.set('test.html', `
+      setSources({
+        'test.html': `
           <script>
             (function() {
               window.Polymer.version = '2.0.0';
             })();
-          </script>`);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      assert.equal(jsSource, `export let version = '2.0.0';\n`);
+          </script>`
+      });
+      assert.equal(await getJs(), `export let version = '2.0.0';\n`);
     });
 
     test('exports the result of a funciton call', async () => {
@@ -92,14 +107,12 @@ suite('html2js', () => {
           <script>
             Polymer.LegacyElementMixin = Polymer.dedupingMixin();
           </script>`);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      assert.equal(jsSource, `export let LegacyElementMixin = Polymer.dedupingMixin();\n`);
+      assert.equal(await getJs(), `export let LegacyElementMixin = Polymer.dedupingMixin();\n`);
     });
 
     test('exports a namespace object\'s properties', async () => {
-      urlLoader.urlContentsMap.set('test.html', `
+      setSources({
+        'test.html': `
           <script>
             (function() {
               'use strict';
@@ -113,11 +126,9 @@ suite('html2js', () => {
                 arrow: () => {}
               };
             })();
-          </script>`);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      assert.equal(jsSource, `export let obj = {};
+          </script>`,
+      });
+      assert.equal(await getJs(), `export let obj = {};
 export function meth() {
 }
 export function func() {
@@ -128,7 +139,8 @@ export let arrow = () => {
     });
 
     test('exports a referenced namespace', async () => {
-      urlLoader.urlContentsMap.set('test.html', `
+      setSources({
+        'test.html': `
           <script>
             (function() {
               'use strict';
@@ -140,47 +152,39 @@ export let arrow = () => {
               };
               Polymer.Namespace = Namespace;
             })();
-          </script>`);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
-      const jsSource = html2Js(testDoc);
-      assert.equal(jsSource, `export let obj = {};\n`);
+          </script>`,
+      });
+      assert.equal(await getJs(), `export let obj = {};\n`);
     });
 
   });
 
   suite('getMemberPath', () => {
 
-    test('works for a single property access', () => {
-      const program = esprima.parse(`Foo.Bar = 'A';`);
+    function getMemberExpression(source: string) {
+      const program = esprima.parse(source);
       const statement = program.body[0] as estree.ExpressionStatement;
       const expression = statement.expression as estree.AssignmentExpression;
-      const memberExpression = expression.left as estree.MemberExpression;
+      return expression.left as estree.MemberExpression;      
+    }
 
+    test('works for a single property access', () => {
+      const memberExpression = getMemberExpression(`Foo.Bar = 'A';`);
       const memberPath = getMemberPath(memberExpression);
       assert.deepEqual(memberPath, ['Foo', 'Bar']);
     });
 
     test('works for chained property access', () => {
-      const program = esprima.parse(`Foo.Bar.Baz = 'A';`);
-      const statement = program.body[0] as estree.ExpressionStatement;
-      const expression = statement.expression as estree.AssignmentExpression;
-      const memberExpression = expression.left as estree.MemberExpression;
-
+      const memberExpression = getMemberExpression(`Foo.Bar.Baz = 'A';`);
       const memberPath = getMemberPath(memberExpression);
       assert.deepEqual(memberPath, ['Foo', 'Bar', 'Baz']);
     });
 
     test('discards leading `window`', () => {
-      const program = esprima.parse(`window.Foo.Bar.Baz = 'A';`);
-      const statement = program.body[0] as estree.ExpressionStatement;
-      const expression = statement.expression as estree.AssignmentExpression;
-      const memberExpression = expression.left as estree.MemberExpression;
-
+      const memberExpression = getMemberExpression(`window.Foo.Bar.Baz = 'A';`);
       const memberPath = getMemberPath(memberExpression);
       assert.deepEqual(memberPath, ['Foo', 'Bar', 'Baz']);
     });
-
 
   });
 
