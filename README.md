@@ -1,0 +1,2 @@
+# html2js
+Escape!
