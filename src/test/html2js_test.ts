@@ -179,7 +179,7 @@ export let arrow = () => {
       })));
       // TODO: rewrite references
       assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Polymer.Element {
+class MyElement extends Element {
 }\n`);
     });
 

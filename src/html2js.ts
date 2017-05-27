@@ -116,6 +116,8 @@ export function html2Js(document: Document, exports?: Map<string, ModuleExport>)
           const memberName = memberPath.join('.');
           const moduleExport = exports.get(memberName);
           if (moduleExport) {
+
+            // Store the imported reference to we can add it to the import statement
             const moduleJsUrl = htmlUrlToJs(moduleExport.url, document.url);
             let moduleImportedNames = importedReferences.get(moduleJsUrl);
             if (moduleImportedNames === undefined) {
@@ -123,6 +125,9 @@ export function html2Js(document: Document, exports?: Map<string, ModuleExport>)
               importedReferences.set(moduleJsUrl, moduleImportedNames);
             }
             moduleImportedNames.add(moduleExport.name);
+
+            // replace the member expression
+            path.replace(J.identifier(moduleExport.name));
           }
         }
         this.traverse(path);
