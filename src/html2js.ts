@@ -15,7 +15,7 @@
 import * as escodegen from 'escodegen';
 import * as fs from 'mz/fs';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace, Analysis} from 'polymer-analyzer';
 import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier} from 'estree';
 
 const astTypes = require('ast-types');
@@ -33,11 +33,34 @@ const isNotTest = (d: Document) => !isInTests.test(d.url);
 const isInBower = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const isNotExternal = (d: Document) => !isInBower.test(d.url);
 
+
+export interface JsExport {
+  url: string;
+  name: string;
+}
+
+export interface JsModule {
+  url: string;
+  source: string;
+  exports: Set<string>;
+}
+
+export interface ExportIndex {
+  /**
+   * Map of module URL to exported names
+   */
+  modules: Map<string, JsModule>;
+
+  /**
+   * Map of namespaced name to module URL + exported name
+   */
+  namespacedExports: Map<string, JsExport>;
+}
+
 /**
  * Converts an entire package from HTML imports to JS modules
  */
 export async function convertPackage() {
-  const analysis = await analyzer.analyzePackage();
   const outDir = path.resolve(process.cwd(), 'js_out');
   console.log(`Out directory: ${outDir}`);
 
@@ -47,42 +70,75 @@ export async function convertPackage() {
     console.error(e);
   }
 
+  const analysis = await analyzer.analyzePackage();
+  const results = await convert(analysis);
+  for (const [jsUrl, newSource] of results) {
+    const outPath = path.resolve(outDir, jsUrl);
+    const jsDir = path.dirname(outPath);
+    console.log(`writing ${outPath}`);
+    mkdirp.sync(jsDir);
+    console.log(`created dir ${jsDir}`);
+    await fs.writeFile(outPath, newSource);
+  }
+}
+
+export async function convert(analysis: Analysis): Promise<Map<string, string>> {
+
   const htmlDocuments = Array.from(analysis.getFeatures({kind: 'html-document'}))
     .filter((d) => isNotExternal(d) && isNotTest(d));
 
-  // console.log(htmlDocuments.map((d) => d.url));
+  const exportIndex: ExportIndex = {
+    modules: new Map<string, JsModule>(),
+    namespacedExports: new Map<string, JsExport>(),
+  };
+
+  const results = new Map<string, string>()
 
   for (const document of htmlDocuments) {
     try {
-      const newSource = html2Js(document);
+      html2Js(document, exportIndex);
+      const jsUrl = htmlUrlToJs(document.url);
+      const module = exportIndex.modules.get(jsUrl);
+      const newSource = module && module.source;
       if (newSource) {
-        const jsUrl = htmlUrlToJs(document.url);
-        const outPath = path.resolve(outDir, jsUrl);
-        const jsDir = path.dirname(outPath);
-        console.log(`writing ${outPath}`);
-        mkdirp.sync(jsDir);
-        console.log(`created dir ${jsDir}`);
-        await fs.writeFile(outPath, newSource);
+        results.set(jsUrl, newSource);
       }
     } catch (e) {
       console.error(`Error in ${document.url}`, e);
     }
   }
-}
-
-export interface ModuleExport {
-  url: string;
-  name: string;
+  return results;
 }
 
 /**
  * Converts a Polymer Analyzer HTML document to a JS module
  */
-export function html2Js(document: Document, exports?: Map<string, ModuleExport>): string | undefined {
+export function html2Js(document: Document, exportIndex: ExportIndex): void {
   // const domModules = document.getFeatures({kind: 'dom-module'});
   // if (domModules.size > 0) {
   //   console.log('domModules', domModules);
   // }
+
+  const jsUrl = htmlUrlToJs(document.url);
+  if (exportIndex.modules.has(jsUrl)) {
+    return;
+    // throw new Error(`Already processed ${document.url}`);
+  }
+  const module: JsModule = {
+    url: jsUrl,
+    source: '',
+    exports: new Set<string>(),
+  };
+  exportIndex.modules.set(jsUrl, module);
+  // DFS to convert dependencies, so we know what exports they have
+  const htmlImports = document.getFeatures({kind: 'html-import'});
+  for (const htmlImport of htmlImports) {
+    const jsUrl = htmlUrlToJs(htmlImport.url, document.url);
+    if (exportIndex.modules.has(jsUrl)) {
+      continue;
+    }
+    html2Js(htmlImport.document, exportIndex);
+  }
 
   const scripts = document.getFeatures({kind: 'js-document'});
 
@@ -107,37 +163,32 @@ export function html2Js(document: Document, exports?: Map<string, ModuleExport>)
   const importedReferences = new Map<string, Set<string>>();
 
   // Rewrite all references to imports
-  if (exports !== undefined) {
+  astTypes.visit(program, {
+    visitMemberExpression(path: any) {
+      const memberPath = getMemberPath(path.node);
+      if (memberPath) {
+        const memberName = memberPath.join('.');
+        const moduleExport = exportIndex.namespacedExports.get(memberName);
+        if (moduleExport) {
 
-    astTypes.visit(program, {
-      visitMemberExpression(path: any) {
-        const memberPath = getMemberPath(path.node);
-        if (memberPath) {
-          const memberName = memberPath.join('.');
-          const moduleExport = exports.get(memberName);
-          if (moduleExport) {
-
-            // Store the imported reference to we can add it to the import statement
-            const moduleJsUrl = htmlUrlToJs(moduleExport.url, document.url);
-            let moduleImportedNames = importedReferences.get(moduleJsUrl);
-            if (moduleImportedNames === undefined) {
-              moduleImportedNames = new Set<string>();
-              importedReferences.set(moduleJsUrl, moduleImportedNames);
-            }
-            moduleImportedNames.add(moduleExport.name);
-
-            // replace the member expression
-            path.replace(J.identifier(moduleExport.name));
+          // Store the imported reference to we can add it to the import statement
+          const moduleJsUrl = htmlUrlToJs(moduleExport.url, document.url);
+          let moduleImportedNames = importedReferences.get(moduleJsUrl);
+          if (moduleImportedNames === undefined) {
+            moduleImportedNames = new Set<string>();
+            importedReferences.set(moduleJsUrl, moduleImportedNames);
           }
-        }
-        this.traverse(path);
-      }
-    });
+          moduleImportedNames.add(moduleExport.name);
 
-  }
+          // replace the member expression
+          path.replace(J.identifier(moduleExport.name));
+        }
+      }
+      this.traverse(path);
+    }
+  });
 
   // Rewrite HTML Imports to JS imports
-  const htmlImports = document.getFeatures({kind: 'html-import'});
   const jsImports = Array.from(htmlImports).map((i) => {
     const jsUrl = htmlUrlToJs(i.url, document.url);
     const specifierNames = importedReferences.get(jsUrl);  
@@ -161,8 +212,16 @@ export function html2Js(document: Document, exports?: Map<string, ModuleExport>)
         const {namespace, value} = exported;
         if (isNamespace(statement, scriptDocument)) {
           const exports = getNamespaceExports(value as ObjectExpression);
-          program.body.splice(i, 1, ...exports);
+          program.body.splice(i, 1, ...exports.map((e) => e.node));
           i += exports.length - 1;
+          exports.forEach((e) => {
+            module.exports.add(e.name);
+            const fullName = [...namespace, e.name].join('.');
+            exportIndex.namespacedExports.set(fullName, {
+              url: jsUrl,
+              name: e.name,
+            });
+          });
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
           // Polymer.Foo = Foo;
@@ -185,24 +244,20 @@ export function html2Js(document: Document, exports?: Map<string, ModuleExport>)
             // assumes an assignment statement!
             const nsNode = namespace.astNode.expression.right as ObjectExpression
             const exports = getNamespaceExports(nsNode);
-            program.body.splice(i, 1, ...exports);
+            program.body.splice(i, 1, ...exports.map((e) => e.node));
             i += exports.length - 1;
           } else {
             // fallback
             const exportedName = J.identifier(namespace[namespace.length - 1]);
             program.body[i] = J.exportNamedDeclaration(
               null, // declaration
-              [J.exportSpecifier(localName, exportedName)] // specifiers
-              //source
-            );
+              [J.exportSpecifier(localName, exportedName)]);
           }
         } else if (isDeclaration(value)) {
+          // TODO (justinfagnani): remove this case? Is it used?
           program.body[i] = J.exportDeclaration(
             false, // default
-            value, // declaration
-            // specifiers
-            //source
-          );
+            value);
         } else {
           const name = namespace[namespace.length - 1];
 
@@ -210,17 +265,18 @@ export function html2Js(document: Document, exports?: Map<string, ModuleExport>)
             J.variableDeclaration(
               'let',
               [J.variableDeclarator(J.identifier(name), value)]
-            ), // declaration
-            // specifiers
-            //source
-          );
+            ));
+          module.exports.add(name);
+          exportIndex.namespacedExports.set(namespace.join('.'), {
+            url: jsUrl,
+            name,
+          });
         }
       }
     }
   }
 
-
-  return escodegen.generate(program, {
+  module.source = escodegen.generate(program, {
     comment: true,
     format: {
       indent: {
@@ -259,36 +315,36 @@ function getNamespaceExports(namespace: ObjectExpression) {
 
   for (const property of namespace.properties) {
     const {key, value} = property;
+    const name = (key as Identifier).name;
     if (value.type === 'ObjectExpression') {
-      exports.push(J.exportNamedDeclaration(
-        J.variableDeclaration(
-          'let',
-          [J.variableDeclarator(key, value)]
-        ), // declaration
-        // specifiers
-        //source
-      ));
+      exports.push({
+        name,
+        node: J.exportNamedDeclaration(
+          J.variableDeclaration(
+            'let',
+            [J.variableDeclarator(key, value)]))
+      });
     } else if (value.type === 'FunctionExpression') {
       const func = value as FunctionExpression;
-      exports.push(J.exportNamedDeclaration(
-        J.functionDeclaration(
-          key, //id
-          func.params,
-          func.body,
-          func.generator
-        ) // declaration
-        // specifiers
-        //source
-      ))
+      exports.push({
+        name,
+        node: J.exportNamedDeclaration(
+          J.functionDeclaration(
+            key, //id
+            func.params,
+            func.body,
+            func.generator
+          ))
+      })
     } else if (value.type === 'ArrowFunctionExpression') {
-      exports.push(J.exportNamedDeclaration(
-        J.variableDeclaration(
-          'let',
-          [J.variableDeclarator(key, value)]
-        ), // declaration
-        // specifiers
-        //source
-      ));
+      exports.push({
+        name,
+        node: J.exportNamedDeclaration(
+          J.variableDeclaration(
+            'let',
+            [J.variableDeclarator(key, value)]
+          ))
+      });
     }
   }
 

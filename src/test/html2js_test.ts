@@ -2,7 +2,7 @@ import * as esprima from 'esprima';
 import * as estree from 'estree';
 
 import {Analyzer, InMemoryOverlayUrlLoader, Document} from 'polymer-analyzer';
-import {html2Js, getMemberPath, ModuleExport} from '../html2js';
+import {convert, html2Js, getMemberPath, JsExport} from '../html2js';
 import {assert} from 'chai';
 
 suite('html2js', () => {
@@ -19,16 +19,28 @@ suite('html2js', () => {
       })
     });
 
-    async function getJs(exports?: Map<string, ModuleExport>) {
+    async function getJs(namespacedExports?: Map<string, JsExport>) {
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
-      return html2Js(testDoc, exports);
+
+      const exportIndex = {
+        modules: new Map(),
+        namespacedExports: namespacedExports || new Map(),
+      };
+      html2Js(testDoc, exportIndex);
+      const module = exportIndex.modules.get('./test.js');
+      return module && module.source
     }
 
     function setSources(sources: {[filename: string]: string}) {
       for (const [filename, source] of Object.entries(sources)) {
         urlLoader.urlContentsMap.set(filename, source);
       }
+    }
+
+    async function getConverted(): Promise<Map<string, string>> {
+      const analysis = await analyzer.analyze(['test.html']);
+      return convert(analysis);
     }
 
     test('converts imports to .js', async () => {
@@ -171,13 +183,34 @@ export let arrow = () => {
           </script>
         `,
       });
-      const js = await getJs(new Map(Object.entries({
-        'Polymer.Element': {
-          url: 'dep.html',
-          name: 'Element',
-        }
-      })));
-      // TODO: rewrite references
+      const converted = await getConverted();
+      const js = converted.get('./test.js');
+      assert.equal(js, `import { Element } from './dep.js';
+class MyElement extends Element {
+}\n`);
+    });
+
+    test('uses imports from namespaces', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./dep.html">
+          <script>
+            class MyElement extends Polymer.Foo.Element {}
+          </script>
+        `,
+        'dep.html': `
+          <script>
+            /**
+             * @namespace
+             */
+            Polymer.Foo = {
+              Element: {},
+            };
+          </script>
+        `,
+      });
+      const converted = await getConverted();
+      const js = converted.get('./test.js');
       assert.equal(js, `import { Element } from './dep.js';
 class MyElement extends Element {
 }\n`);
