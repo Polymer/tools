@@ -33,7 +33,6 @@ const isNotTest = (d: Document) => !isInTests.test(d.url);
 const isInBower = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const isNotExternal = (d: Document) => !isInBower.test(d.url);
 
-
 export interface JsExport {
   url: string;
   name: string;
@@ -75,9 +74,9 @@ export async function convertPackage() {
   for (const [jsUrl, newSource] of results) {
     const outPath = path.resolve(outDir, jsUrl);
     const jsDir = path.dirname(outPath);
-    console.log(`writing ${outPath}`);
+    // console.log(`writing ${outPath}`);
     mkdirp.sync(jsDir);
-    console.log(`created dir ${jsDir}`);
+    // console.log(`created dir ${jsDir}`);
     await fs.writeFile(outPath, newSource);
   }
 }
@@ -170,7 +169,6 @@ export function html2Js(document: Document, exportIndex: ExportIndex): void {
         const memberName = memberPath.join('.');
         const moduleExport = exportIndex.namespacedExports.get(memberName);
         if (moduleExport) {
-
           // Store the imported reference to we can add it to the import statement
           const moduleJsUrl = htmlUrlToJs(moduleExport.url, document.url);
           let moduleImportedNames = importedReferences.get(moduleJsUrl);
@@ -181,7 +179,12 @@ export function html2Js(document: Document, exportIndex: ExportIndex): void {
           moduleImportedNames.add(moduleExport.name);
 
           // replace the member expression
-          path.replace(J.identifier(moduleExport.name));
+          if (moduleExport.name === '*') {
+            const jsModule = exportIndex.modules.get(moduleExport.url)!;
+            path.replace(J.identifier(getModuleId(jsModule.url)));
+          } else {
+            path.replace(J.identifier(moduleExport.name));
+          }
         }
       }
       this.traverse(path);
@@ -193,7 +196,13 @@ export function html2Js(document: Document, exportIndex: ExportIndex): void {
     const jsUrl = htmlUrlToJs(i.url, document.url);
     const specifierNames = importedReferences.get(jsUrl);  
     const specifiers = specifierNames
-        ? Array.from(specifierNames).map((s) => J.importSpecifier(J.identifier(s)))
+        ? Array.from(specifierNames).map((s) => {
+          if (s === '*') {
+            return J.importNamespaceSpecifier(J.identifier(getModuleId(jsUrl)));
+          } else {
+            return J.importSpecifier(J.identifier(s));
+          }
+        })
         : [];
     return J.importDeclaration(
       specifiers, // specifiers
@@ -211,6 +220,12 @@ export function html2Js(document: Document, exportIndex: ExportIndex): void {
       if (exported !== undefined) {
         const {namespace, value} = exported;
         if (isNamespace(statement, scriptDocument)) {
+          const namespaceName = namespace.join('.');
+          // TODO: combine with namespace handling below?
+          if (value.type !== 'ObjectExpression') {
+            console.warn('unable to handle non-object namespace', document.url, value.loc);
+            continue;
+          }
           const exports = getNamespaceExports(value as ObjectExpression);
           program.body.splice(i, 1, ...exports.map((e) => e.node));
           i += exports.length - 1;
@@ -222,36 +237,65 @@ export function html2Js(document: Document, exportIndex: ExportIndex): void {
               name: e.name,
             });
           });
+          exportIndex.namespacedExports.set(namespaceName, {
+            url: jsUrl,
+            name: '*',
+          });
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
           // Polymer.Foo = Foo;
           const localName = value as Identifier;
+          const namespaceName = namespace.join('.');
 
-          const features = document.getFeatures({id: localName.name});
-          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(localName.name));
+          const features = document.getFeatures({id: namespaceName});
+          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
 
           if (referencedFeature && referencedFeature.kinds.has('namespace')) {
-            const namespace = referencedFeature as Namespace;
+            // Polymer.X = X; where X is previously defined as a namespace
+            const namespaceFeature = referencedFeature as Namespace;
 
             // Remove namespace node
-            const nsIndex = program.body.findIndex((statement) => namespace.astNode === statement);
+            const nsIndex = program.body.findIndex((statement) => namespaceFeature.astNode === statement);
             program.body.splice(nsIndex, 1);
             if (nsIndex < i) {
               i--;
             }
 
             // Replace the export
-            // assumes an assignment statement!
-            const nsNode = namespace.astNode.expression.right as ObjectExpression
+            const nsParent = namespaceFeature.astNode;
+            let nsNode: ObjectExpression;
+            if (nsParent.type === 'VariableDeclaration') {
+              nsNode = nsParent.declarations[0].init as ObjectExpression;
+            } else {
+              // assumes an assignment statement!
+              nsNode = nsParent.expression.right as ObjectExpression;
+            }
             const exports = getNamespaceExports(nsNode);
             program.body.splice(i, 1, ...exports.map((e) => e.node));
             i += exports.length - 1;
+            exports.forEach((e) => {
+              module.exports.add(e.name);
+              const fullName = [...namespace, e.name].join('.');
+              exportIndex.namespacedExports.set(fullName, {
+                url: jsUrl,
+                name: e.name,
+              });
+            });
+            exportIndex.namespacedExports.set(namespaceName, {
+              url: jsUrl,
+              name: '*',
+            });
           } else {
-            // fallback
-            const exportedName = J.identifier(namespace[namespace.length - 1]);
+            // fallback, named export
+            // We could probably do better for referenced classes, functions, etc
+            const exportedName = J.identifier(namespace[namespace.length - 1]) as Identifier;
             program.body[i] = J.exportNamedDeclaration(
               null, // declaration
               [J.exportSpecifier(localName, exportedName)]);
+            exportIndex.namespacedExports.set(namespace.join('.'), {
+              url: jsUrl,
+              name: exportedName.name,
+            });
           }
         } else if (isDeclaration(value)) {
           // TODO (justinfagnani): remove this case? Is it used?
@@ -454,3 +498,13 @@ function htmlUrlToJs(url: string, from?: string): string {
   return jsUrl;
 }
 
+function getModuleId(url: string) {
+  const baseName = path.basename(url);
+  const lastDotIndex = baseName.lastIndexOf('.');
+  const mainName = baseName.substring(0, lastDotIndex);
+  return '$' + dashToCamelCase(mainName);
+}
+
+function dashToCamelCase(s: string) {
+  return s.replace(/-[a-z]/g, (m) => m[1].toUpperCase())
+}

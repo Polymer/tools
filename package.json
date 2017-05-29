@@ -22,5 +22,8 @@
     "mz": "^2.6.0",
     "polymer-analyzer": "^2.0.2",
     "source-map-support": "^0.4.15"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1"
   }
 }

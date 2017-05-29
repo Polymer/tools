@@ -1,7 +1,8 @@
 import * as esprima from 'esprima';
 import * as estree from 'estree';
+import * as path from 'path';
 
-import {Analyzer, InMemoryOverlayUrlLoader, Document} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
 import {convert, html2Js, getMemberPath, JsExport} from '../html2js';
 import {assert} from 'chai';
 
@@ -158,8 +159,9 @@ export let arrow = () => {
               'use strict';
               /**
                * @namespace
+               * @memberof Polymer
                */
-              Namespace = {
+              const Namespace = {
                 obj: {},
               };
               Polymer.Namespace = Namespace;
@@ -214,6 +216,71 @@ class MyElement extends Element {
       assert.equal(js, `import { Element } from './dep.js';
 class MyElement extends Element {
 }\n`);
+    });
+
+    test('rewrites references to namespaces', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./dep.html">
+          <script>
+            const Foo = Polymer.Foo;
+            class MyElement extends Foo.Element {}
+          </script>
+        `,
+        'dep.html': `
+          <script>
+            /**
+             * @namespace
+             */
+            Polymer.Foo = {
+              Element: {},
+            };
+          </script>
+        `,
+      });
+      const converted = await getConverted();
+      const js = converted.get('./test.js');
+      assert.equal(js, `import * as $dep from './dep.js';
+const Foo = $dep;
+class MyElement extends Foo.Element {
+}\n`);
+    });
+
+  });
+
+  suite('fixtures', () => {
+
+    let urlResolver: UrlResolver;
+    let urlLoader: UrlLoader;
+    let analyzer: Analyzer;
+
+    setup(() => {
+      urlLoader = new FSUrlLoader(path.resolve(__dirname, 'fixtures'));
+      urlResolver = new PackageUrlResolver();
+      analyzer = new Analyzer({
+        urlResolver,
+        urlLoader,
+      })
+    });
+
+    test('case-map', async () => {
+      const analysis = await analyzer.analyze(['case-map/case-map.html']);
+      const converted = await convert(analysis);
+      const caseMapSource = converted.get('./case-map/case-map.js');
+      assert.include(caseMapSource!, 'export function dashToCamelCase');
+      assert.include(caseMapSource!, 'export function camelToDashCase');
+    });
+
+    test('polymer-element', async () => {
+      const filename = 'polymer-element/polymer-element.html';
+      const analysis = await analyzer.analyze([filename]);
+      const doc = analysis.getDocument(filename) as Document;
+      const exportIndex = {
+        modules: new Map(),
+        namespacedExports: new Map(),
+      };
+      html2Js(doc, exportIndex);
+      assert(exportIndex.namespacedExports.has('Polymer.Element'));
     });
 
   });
