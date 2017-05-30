@@ -100,6 +100,11 @@ export async function convertPackage() {
 export class Html2JsConverter {
 
   analysis: Analysis;
+
+  modules = new Map<string, JsModule>();
+
+  namespacedExports = new Map<string, JsExport>();
+
   constructor(analysis: Analysis) {
     this.analysis = analysis;
   }
@@ -109,18 +114,14 @@ export class Html2JsConverter {
     const htmlDocuments = Array.from(this.analysis.getFeatures({kind: 'html-document'}))
       .filter((d) => isNotExternal(d) && isNotTest(d));
 
-    const exportIndex: ModuleIndex = {
-      modules: new Map<string, JsModule>(),
-      namespacedExports: new Map<string, JsExport>(),
-    };
 
     const results = new Map<string, string>()
 
     for (const document of htmlDocuments) {
       try {
-        this.html2Js(document, exportIndex);
+        this.html2Js(document);
         const jsUrl = htmlUrlToJs(document.url);
-        const module = exportIndex.modules.get(jsUrl);
+        const module = this.modules.get(jsUrl);
         const newSource = module && module.source;
         if (newSource) {
           results.set(jsUrl, newSource);
@@ -135,14 +136,14 @@ export class Html2JsConverter {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  html2Js(document: Document, moduleIndex: ModuleIndex): void {
+  html2Js(document: Document): void {
     // const domModules = document.getFeatures({kind: 'dom-module'});
     // if (domModules.size > 0) {
     //   console.log('domModules', domModules);
     // }
 
     const jsUrl = htmlUrlToJs(document.url);
-    if (moduleIndex.modules.has(jsUrl)) {
+    if (this.modules.has(jsUrl)) {
       return;
       // throw new Error(`Already processed ${document.url}`);
     }
@@ -153,15 +154,15 @@ export class Html2JsConverter {
       importedReferences: new Map<string, Set<string>>(),
     };
 
-    moduleIndex.modules.set(jsUrl, module);
+    this.modules.set(jsUrl, module);
     // DFS to convert dependencies, so we know what exports they have
     const htmlImports = document.getFeatures({kind: 'html-import'});
     for (const htmlImport of htmlImports) {
       const jsUrl = htmlUrlToJs(htmlImport.url, document.url);
-      if (moduleIndex.modules.has(jsUrl)) {
+      if (this.modules.has(jsUrl)) {
         continue;
       }
-      this.html2Js(htmlImport.document, moduleIndex);
+      this.html2Js(htmlImport.document);
     }
 
     const scripts = document.getFeatures({kind: 'js-document'});
@@ -183,7 +184,7 @@ export class Html2JsConverter {
     // Unwrap module-IIFE
     program.body = this.getModuleBody(program);
 
-    this.rewriteNamespacedReferences(program, moduleIndex, jsUrl, document.url);
+    this.rewriteNamespacedReferences(program, jsUrl, document.url);
 
     const importCount = this.addJsImports(program, module, htmlImports, document.url);
 
@@ -209,12 +210,12 @@ export class Html2JsConverter {
             exports.forEach((e) => {
               module.exports.add(e.name);
               const fullName = [...namespace, e.name].join('.');
-              moduleIndex.namespacedExports.set(fullName, {
+              this.namespacedExports.set(fullName, {
                 url: jsUrl,
                 name: e.name,
               });
             });
-            moduleIndex.namespacedExports.set(namespaceName, {
+            this.namespacedExports.set(namespaceName, {
               url: jsUrl,
               name: '*',
             });
@@ -254,12 +255,12 @@ export class Html2JsConverter {
               exports.forEach((e) => {
                 module.exports.add(e.name);
                 const fullName = [...namespace, e.name].join('.');
-                moduleIndex.namespacedExports.set(fullName, {
+                this.namespacedExports.set(fullName, {
                   url: jsUrl,
                   name: e.name,
                 });
               });
-              moduleIndex.namespacedExports.set(namespaceName, {
+              this.namespacedExports.set(namespaceName, {
                 url: jsUrl,
                 name: '*',
               });
@@ -270,7 +271,7 @@ export class Html2JsConverter {
               program.body[i] = J.exportNamedDeclaration(
                 null, // declaration
                 [J.exportSpecifier(localName, exportedName)]);
-              moduleIndex.namespacedExports.set(namespace.join('.'), {
+              this.namespacedExports.set(namespace.join('.'), {
                 url: jsUrl,
                 name: exportedName.name,
               });
@@ -289,7 +290,7 @@ export class Html2JsConverter {
                 [J.variableDeclarator(J.identifier(name), value)]
               ));
             module.exports.add(name);
-            moduleIndex.namespacedExports.set(namespace.join('.'), {
+            this.namespacedExports.set(namespace.join('.'), {
               url: jsUrl,
               name,
             });
@@ -316,16 +317,18 @@ export class Html2JsConverter {
    * Returns a Map of imports used for each module so import declarations can be rewritten
    * correctly.
    */
-  rewriteNamespacedReferences(program: Program, moduleIndex: ModuleIndex, jsUrl: string, baseUrl: string) {
-    const module = moduleIndex.modules.get(jsUrl)!;
+  rewriteNamespacedReferences(program: Program, jsUrl: string, baseUrl: string) {
+    const module = this.modules.get(jsUrl)!;
     const importedReferences = module.importedReferences;
+
+    const converter = this;
 
     astTypes.visit(program, {
       visitMemberExpression(path: any) {
         const memberPath = getMemberPath(path.node);
         if (memberPath) {
           const memberName = memberPath.join('.');
-          const moduleExport = moduleIndex.namespacedExports.get(memberName);
+          const moduleExport = converter.namespacedExports.get(memberName);
           if (moduleExport) {
             // Store the imported reference to we can add it to the import statement
             const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
@@ -338,7 +341,7 @@ export class Html2JsConverter {
 
             // replace the member expression
             if (moduleExport.name === '*') {
-              const jsModule = moduleIndex.modules.get(moduleExport.url)!;
+              const jsModule = converter.modules.get(moduleExport.url)!;
               path.replace(J.identifier(getModuleId(jsModule.url)));
             } else {
               path.replace(J.identifier(moduleExport.name));

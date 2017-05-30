@@ -3,7 +3,7 @@ import * as estree from 'estree';
 import * as path from 'path';
 
 import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
-import {Html2JsConverter, getMemberPath, JsExport} from '../html2js';
+import {Html2JsConverter, getMemberPath} from '../html2js';
 import {assert} from 'chai';
 
 suite('html2js', () => {
@@ -20,17 +20,12 @@ suite('html2js', () => {
       })
     });
 
-    async function getJs(namespacedExports?: Map<string, JsExport>) {
+    async function getJs() {
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
-
-      const exportIndex = {
-        modules: new Map(),
-        namespacedExports: namespacedExports || new Map(),
-      };
       const converter = new Html2JsConverter(analysis);
-      converter.html2Js(testDoc, exportIndex);
-      const module = exportIndex.modules.get('./test.js');
+      converter.html2Js(testDoc);
+      const module = converter.modules.get('./test.js');
       return module && module.source
     }
 
@@ -278,13 +273,9 @@ class MyElement extends Foo.Element {
       const filename = 'polymer-element/polymer-element.html';
       const analysis = await analyzer.analyze([filename]);
       const doc = analysis.getDocument(filename) as Document;
-      const exportIndex = {
-        modules: new Map(),
-        namespacedExports: new Map(),
-      };
       const converter = new Html2JsConverter(analysis);
-      converter.html2Js(doc, exportIndex);
-      assert(exportIndex.namespacedExports.has('Polymer.Element'));
+      converter.html2Js(doc);
+      assert(converter.namespacedExports.has('Polymer.Element'));
     });
 
   });
