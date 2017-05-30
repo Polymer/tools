@@ -182,16 +182,7 @@ class DocumentConverter {
   }
 
   convert() {
-    // DFS to convert dependencies, so we know what exports they have
-    const htmlImports = this.document.getFeatures({kind: 'html-import'});
-    for (const htmlImport of htmlImports) {
-      const jsUrl = htmlUrlToJs(htmlImport.url, this.document.url);
-      if (this.analysisConverter.modules.has(jsUrl)) {
-        continue;
-      }
-      this.analysisConverter.convertDocument(htmlImport.document);
-    }
-
+    this.convertDependencies();
     const scripts = this.document.getFeatures({kind: 'js-document'});
 
     let scriptDocument: Document|undefined = undefined;
@@ -209,7 +200,7 @@ class DocumentConverter {
 
     this.unwrapModuleBody();
     this.rewriteNamespacedReferences();
-    this.addJsImports(htmlImports);
+    this.addJsImports();
 
     if (scriptDocument !== undefined) {
       // Replace namespace assignments with exports
@@ -295,6 +286,18 @@ class DocumentConverter {
     }) + '\n';
   }
 
+  convertDependencies() {
+    // DFS to convert dependencies, so we know what exports they have
+    const htmlImports = this.document.getFeatures({kind: 'html-import'});
+    for (const htmlImport of htmlImports) {
+      const jsUrl = htmlUrlToJs(htmlImport.url, this.document.url);
+      if (this.analysisConverter.modules.has(jsUrl)) {
+        continue;
+      }
+      this.analysisConverter.convertDocument(htmlImport.document);
+    }
+  }
+
   /**
    * Rewrite namespaced references (ie, Polymer.Element) to the imported name (ie, Element).
    * 
@@ -337,7 +340,8 @@ class DocumentConverter {
     });
   }
 
-  addJsImports(htmlImports: Set<Import>) {
+  addJsImports() {
+    const htmlImports = this.document.getFeatures({kind: 'html-import'});
     const baseUrl = this.document.url;
 
     // Rewrite HTML Imports to JS imports
