@@ -157,6 +157,7 @@ class DocumentConverter {
   analysisConverter: AnalysisConverter;
   document: Document;
   program: Program;
+  currentStatementIndex = 0;  
 
   constructor(analysisConverter: AnalysisConverter, document: Document) {
     this.analysisConverter = analysisConverter;
@@ -198,94 +199,58 @@ class DocumentConverter {
       this.program = jsDoc.ast;
     }
 
-    // Unwrap module-IIFE
-    this.program.body = this.getModuleBody();
-
+    this.unwrapModuleBody();
     this.rewriteNamespacedReferences();
-
-    const importCount = this.addJsImports(htmlImports);
+    this.addJsImports(htmlImports);
 
     if (scriptDocument !== undefined) {
       // Replace namespace assignments with exports
-      for (let i = importCount; i < this.program.body.length; i++) {
-        const statement = this.program.body[i];
+      while (this.currentStatementIndex < this.program.body.length) {
+        const statement = this.program.body[this.currentStatementIndex] as Statement;
         const exported = getExport(statement, 'Polymer');
 
         if (exported !== undefined) {
           const {namespace, value} = exported;
+          const namespaceName = namespace.join('.');
           
           if (isNamespace(statement, scriptDocument)) {
-            const namespaceName = namespace.join('.');
-            // TODO: combine with namespace handling below?
-            if (value.type !== 'ObjectExpression') {
-              console.warn('unable to handle non-object namespace', this.document.url, value.loc);
-              continue;
-            }
-            const exports = getNamespaceExports(value as ObjectExpression);
-            this.program.body.splice(i, 1, ...exports.map((e) => e.node));
-            i += exports.length - 1;
-            exports.forEach((e) => {
-              this.module.exports.add(e.name);
-              const fullName = [...namespace, e.name].join('.');
-              this.analysisConverter.namespacedExports.set(fullName, {
-                url: this.jsUrl,
-                name: e.name,
-              });
-            });
-            this.analysisConverter.namespacedExports.set(namespaceName, {
-              url: this.jsUrl,
-              name: '*',
-            });
+            this.rewriteNamespace(namespaceName, value, statement);
           } else if (value.type === 'Identifier') {
             // An 'export' of the form:
             // Polymer.Foo = Foo;
             // TODO: generalize to handle namespaces and other declarations
             const localName = value as Identifier;
-            const namespaceName = namespace.join('.');
 
             const features = this.document.getFeatures({id: namespaceName});
             const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
 
             if (referencedFeature && referencedFeature.kinds.has('namespace')) {
               // Polymer.X = X; where X is previously defined as a namespace
+
+              // Find the namespace node and containing statement
               const namespaceFeature = referencedFeature as Namespace;
-
-              // Remove namespace node
-              const nsIndex = this.program.body.findIndex((statement) => namespaceFeature.astNode === statement);
-              this.program.body.splice(nsIndex, 1);
-              if (nsIndex < i) {
-                i--;
-              }
-
-              // Replace the export
               const nsParent = namespaceFeature.astNode;
               let nsNode: ObjectExpression;
               if (nsParent.type === 'VariableDeclaration') {
+                // case: const n = {...}
                 nsNode = nsParent.declarations[0].init as ObjectExpression;
               } else {
+                // case: n = {...}
                 // assumes an assignment statement!
                 nsNode = nsParent.expression.right as ObjectExpression;
               }
-              const exports = getNamespaceExports(nsNode);
-              this.program.body.splice(i, 1, ...exports.map((e) => e.node));
-              i += exports.length - 1;
-              exports.forEach((e) => {
-                this.module.exports.add(e.name);
-                const fullName = [...namespace, e.name].join('.');
-                this.analysisConverter.namespacedExports.set(fullName, {
-                  url: this.jsUrl,
-                  name: e.name,
-                });
-              });
-              this.analysisConverter.namespacedExports.set(namespaceName, {
-                url: this.jsUrl,
-                name: '*',
-              });
+
+              this.rewriteNamespace(namespaceName, nsNode, nsParent);
+
+              // Remove the namespace assignment
+              this.program.body.splice(this.currentStatementIndex, 1);
+              // Adjust current index since we removed a statement
+              this.currentStatementIndex--;
             } else {
-              // fallback, named export
-              // We could probably do better for referenced classes, functions, etc
+              // Not a namespace, fallback to a named export
+              // We could probably do better for referenced declarations
               const exportedName = J.identifier(namespace[namespace.length - 1]) as Identifier;
-              this.program.body[i] = J.exportNamedDeclaration(
+              this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
                 null, // declaration
                 [J.exportSpecifier(localName, exportedName)]);
               this.analysisConverter.namespacedExports.set(namespace.join('.'), {
@@ -295,13 +260,13 @@ class DocumentConverter {
             }
           } else if (isDeclaration(value)) {
             // TODO (justinfagnani): remove this case? Is it used?
-            this.program.body[i] = J.exportDeclaration(
+            this.program.body[this.currentStatementIndex] = J.exportDeclaration(
               false, // default
               value);
           } else {
             const name = namespace[namespace.length - 1];
 
-            this.program.body[i] = J.exportNamedDeclaration(
+            this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
               J.variableDeclaration(
                 'let',
                 [J.variableDeclarator(J.identifier(name), value)]
@@ -313,6 +278,7 @@ class DocumentConverter {
             });
           }
         }
+        this.currentStatementIndex++;
       }
     }
 
@@ -392,14 +358,14 @@ class DocumentConverter {
       );
     });
     this.program.body.splice(0, 0, ...jsImports);
-    return jsImports.length;
+    this.currentStatementIndex += jsImports.length;
   }
 
   /**
    * Returns the implied module body of a script - if there's a top-level IIFE, it
    * assumes that is an intentionally scoped ES5 module body.
    */
-  getModuleBody(): (Statement | ModuleDeclaration)[] {
+  unwrapModuleBody() {
     if (this.program.body.length === 1 &&
         this.program.body[0].type === 'ExpressionStatement') {
       const expression = (this.program.body[0] as ExpressionStatement).expression;
@@ -408,13 +374,47 @@ class DocumentConverter {
         if (callee.type === 'FunctionExpression') {
           const body = callee.body.body;
           if (body.length > 1 && isUseStrict(body[0])) {
-            return body.slice(1);
+            this.program.body = body.slice(1);
+          } else {
+            this.program.body = body;
           }
-          return body;
         }
       }
     }
-    return this.program.body;
+  }
+
+  /**
+   * Rewrites a namespace object as a set of exports.
+   * 
+   * @param name the dot-separated name of the namespace
+   * @param body the ObjectExpression body of the namespace
+   * @param statement the statement, to be replaced, that contains the namespace
+   */
+  rewriteNamespace(name: string, body: Node, statement: Statement) {
+    if (body.type !== 'ObjectExpression') {
+      console.warn('unable to handle non-object namespace', this.document.url, body.loc);
+      return;
+    }
+
+    const exports = getNamespaceExports(body as ObjectExpression);
+
+    // Replace original namespace statement with new exports
+    const nsIndex = this.program.body.indexOf(statement);
+    this.program.body.splice(nsIndex, 1, ...exports.map((e) => e.node));
+    this.currentStatementIndex += exports.length - 1;
+
+    exports.forEach((e) => {
+      this.module.exports.add(e.name);
+      const fullName = name + '.' + e.name;
+      this.analysisConverter.namespacedExports.set(fullName, {
+        url: this.jsUrl,
+        name: e.name,
+      });
+    });
+    this.analysisConverter.namespacedExports.set(name, {
+      url: this.jsUrl,
+      name: '*',
+    });
   }
 }
 
