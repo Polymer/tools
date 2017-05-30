@@ -156,6 +156,7 @@ class DocumentConverter {
   module: JsModule;
   analysisConverter: AnalysisConverter;
   document: Document;
+  scriptDocument: Document;
   program: Program;
   currentStatementIndex = 0;  
 
@@ -169,8 +170,19 @@ class DocumentConverter {
       exports: new Set<string>(),
       importedReferences: new Map<string, Set<string>>(),
     };
-
     analysisConverter.modules.set(this.jsUrl, this.module);
+
+    const scripts = this.document.getFeatures({kind: 'js-document'});
+    if (scripts.size === 0) {
+      this.program = J.program([]);
+    } else if (scripts.size > 1) {
+      console.log('multiple scripts');
+      return;
+    } else {
+      this.scriptDocument = scripts.values().next().value;
+      const jsDoc = this.scriptDocument.parsedDocument as ParsedJavaScriptDocument;
+      this.program = jsDoc.ast;
+    }
   }
 
   addExport(namespaceName: string, name: string) {
@@ -183,95 +195,78 @@ class DocumentConverter {
 
   convert() {
     this.convertDependencies();
-    const scripts = this.document.getFeatures({kind: 'js-document'});
-
-    let scriptDocument: Document|undefined = undefined;
-
-    if (scripts.size === 0) {
-      this.program = J.program([]);
-    } else if (scripts.size > 1) {
-      console.log('multiple scripts');
-      return;
-    } else {
-      scriptDocument = scripts.values().next().value;
-      const jsDoc = scriptDocument.parsedDocument as ParsedJavaScriptDocument;
-      this.program = jsDoc.ast;
-    }
-
     this.unwrapModuleBody();
     this.rewriteNamespacedReferences();
     this.addJsImports();
 
-    if (scriptDocument !== undefined) {
-      // Replace namespace assignments with exports
-      while (this.currentStatementIndex < this.program.body.length) {
-        const statement = this.program.body[this.currentStatementIndex] as Statement;
-        const exported = getExport(statement, 'Polymer');
+    // Replace namespace assignments with exports
+    while (this.currentStatementIndex < this.program.body.length) {
+      const statement = this.program.body[this.currentStatementIndex] as Statement;
+      const exported = getExport(statement, 'Polymer');
 
-        if (exported !== undefined) {
-          const {namespace, value} = exported;
-          const namespaceName = namespace.join('.');
-          
-          if (isNamespace(statement, scriptDocument)) {
-            this.rewriteNamespace(namespaceName, value, statement);
-          } else if (value.type === 'Identifier') {
-            // An 'export' of the form:
-            // Polymer.Foo = Foo;
-            // TODO: generalize to handle namespaces and other declarations
-            const localName = value as Identifier;
+      if (exported !== undefined) {
+        const {namespace, value} = exported;
+        const namespaceName = namespace.join('.');
+        
+        if (this.isNamespace(statement)) {
+          this.rewriteNamespace(namespaceName, value, statement);
+        } else if (value.type === 'Identifier') {
+          // An 'export' of the form:
+          // Polymer.Foo = Foo;
+          // TODO: generalize to handle namespaces and other declarations
+          const localName = value as Identifier;
 
-            const features = this.document.getFeatures({id: namespaceName});
-            const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
+          const features = this.document.getFeatures({id: namespaceName});
+          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
 
-            if (referencedFeature && referencedFeature.kinds.has('namespace')) {
-              // Polymer.X = X; where X is previously defined as a namespace
+          if (referencedFeature && referencedFeature.kinds.has('namespace')) {
+            // Polymer.X = X; where X is previously defined as a namespace
 
-              // Find the namespace node and containing statement
-              const namespaceFeature = referencedFeature as Namespace;
-              const nsParent = namespaceFeature.astNode;
-              let nsNode: ObjectExpression;
-              if (nsParent.type === 'VariableDeclaration') {
-                // case: const n = {...}
-                nsNode = nsParent.declarations[0].init as ObjectExpression;
-              } else {
-                // case: n = {...}
-                // assumes an assignment statement!
-                nsNode = nsParent.expression.right as ObjectExpression;
-              }
-
-              this.rewriteNamespace(namespaceName, nsNode, nsParent);
-
-              // Remove the namespace assignment
-              this.program.body.splice(this.currentStatementIndex, 1);
-              // Adjust current index since we removed a statement
-              this.currentStatementIndex--;
+            // Find the namespace node and containing statement
+            const namespaceFeature = referencedFeature as Namespace;
+            const nsParent = namespaceFeature.astNode;
+            let nsNode: ObjectExpression;
+            if (nsParent.type === 'VariableDeclaration') {
+              // case: const n = {...}
+              nsNode = nsParent.declarations[0].init as ObjectExpression;
             } else {
-              // Not a namespace, fallback to a named export
-              // We could probably do better for referenced declarations
-              const exportedName = J.identifier(namespace[namespace.length - 1]) as Identifier;
-              this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
-                null, // declaration
-                [J.exportSpecifier(localName, exportedName)]);
-              this.addExport(namespaceName, exportedName.name);
+              // case: n = {...}
+              // assumes an assignment statement!
+              nsNode = nsParent.expression.right as ObjectExpression;
             }
-          } else if (isDeclaration(value)) {
-            // TODO (justinfagnani): remove this case? Is it used?
-            this.program.body[this.currentStatementIndex] = J.exportDeclaration(
-              false, // default
-              value);
-          } else {
-            const name = namespace[namespace.length - 1];
 
+            this.rewriteNamespace(namespaceName, nsNode, nsParent);
+
+            // Remove the namespace assignment
+            this.program.body.splice(this.currentStatementIndex, 1);
+            // Adjust current index since we removed a statement
+            this.currentStatementIndex--;
+          } else {
+            // Not a namespace, fallback to a named export
+            // We could probably do better for referenced declarations
+            const exportedName = J.identifier(namespace[namespace.length - 1]) as Identifier;
             this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
-              J.variableDeclaration(
-                'let',
-                [J.variableDeclarator(J.identifier(name), value)]
-              ));
-            this.addExport(namespaceName, name);
+              null, // declaration
+              [J.exportSpecifier(localName, exportedName)]);
+            this.addExport(namespaceName, exportedName.name);
           }
+        } else if (isDeclaration(value)) {
+          // TODO (justinfagnani): remove this case? Is it used?
+          this.program.body[this.currentStatementIndex] = J.exportDeclaration(
+            false, // default
+            value);
+        } else {
+          const name = namespace[namespace.length - 1];
+
+          this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
+            J.variableDeclaration(
+              'let',
+              [J.variableDeclarator(J.identifier(name), value)]
+            ));
+          this.addExport(namespaceName, name);
         }
-        this.currentStatementIndex++;
       }
+      this.currentStatementIndex++;
     }
 
     this.module.source = escodegen.generate(this.program, {
@@ -413,6 +408,20 @@ class DocumentConverter {
     });
     this.addExport(name, '*');
   }
+
+  isNamespace(node: Node) {
+    if (this.scriptDocument == null) {
+      return false;
+    }
+    const namespaces = this.scriptDocument.getFeatures({kind: 'namespace'});
+    for (const namespace of namespaces) {
+      if (namespace.astNode === node) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }
 
 function getNamespaceExports(namespace: ObjectExpression) {
@@ -471,16 +480,6 @@ function isUseStrict(statement: Statement) {
 function isDeclaration(node: Node) {
   const type = node.type;
   return type === 'ClassDeclaration';
-}
-
-function isNamespace(node: Node, document: Document) {
-  const namespaces = document.getFeatures({kind: 'namespace'});
-  for (const namespace of namespaces) {
-    if (namespace.astNode === node) {
-      return true;
-    }
-  }
-  return false;
 }
 
 /**
