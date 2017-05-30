@@ -173,6 +173,14 @@ class DocumentConverter {
     analysisConverter.modules.set(this.jsUrl, this.module);
   }
 
+  addExport(namespaceName: string, name: string) {
+    this.module.exports.add(name);
+    this.analysisConverter.namespacedExports.set(namespaceName, {
+      url: this.jsUrl,
+      name,
+    });
+  }
+
   convert() {
     // DFS to convert dependencies, so we know what exports they have
     const htmlImports = this.document.getFeatures({kind: 'html-import'});
@@ -253,10 +261,7 @@ class DocumentConverter {
               this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
                 null, // declaration
                 [J.exportSpecifier(localName, exportedName)]);
-              this.analysisConverter.namespacedExports.set(namespace.join('.'), {
-                url: this.jsUrl,
-                name: exportedName.name,
-              });
+              this.addExport(namespaceName, exportedName.name);
             }
           } else if (isDeclaration(value)) {
             // TODO (justinfagnani): remove this case? Is it used?
@@ -271,11 +276,7 @@ class DocumentConverter {
                 'let',
                 [J.variableDeclarator(J.identifier(name), value)]
               ));
-            this.module.exports.add(name);
-            this.analysisConverter.namespacedExports.set(namespace.join('.'), {
-              url: this.jsUrl,
-              name,
-            });
+            this.addExport(namespaceName, name);
           }
         }
         this.currentStatementIndex++;
@@ -404,17 +405,9 @@ class DocumentConverter {
     this.currentStatementIndex += exports.length - 1;
 
     exports.forEach((e) => {
-      this.module.exports.add(e.name);
-      const fullName = name + '.' + e.name;
-      this.analysisConverter.namespacedExports.set(fullName, {
-        url: this.jsUrl,
-        name: e.name,
-      });
+      this.addExport(`${name}.${e.name}`, e.name);
     });
-    this.analysisConverter.namespacedExports.set(name, {
-      url: this.jsUrl,
-      name: '*',
-    });
+    this.addExport(name, '*');
   }
 }
 
