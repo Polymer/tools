@@ -3,7 +3,7 @@ import * as estree from 'estree';
 import * as path from 'path';
 
 import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
-import {convert, html2Js, getMemberPath, JsExport} from '../html2js';
+import {Html2JsConverter, getMemberPath, JsExport} from '../html2js';
 import {assert} from 'chai';
 
 suite('html2js', () => {
@@ -28,7 +28,8 @@ suite('html2js', () => {
         modules: new Map(),
         namespacedExports: namespacedExports || new Map(),
       };
-      html2Js(testDoc, exportIndex);
+      const converter = new Html2JsConverter(analysis);
+      converter.html2Js(testDoc, exportIndex);
       const module = exportIndex.modules.get('./test.js');
       return module && module.source
     }
@@ -41,7 +42,8 @@ suite('html2js', () => {
 
     async function getConverted(): Promise<Map<string, string>> {
       const analysis = await analyzer.analyze(['test.html']);
-      return convert(analysis);
+      const converter = new Html2JsConverter(analysis);
+      return converter.convert();
     }
 
     test('converts imports to .js', async () => {
@@ -265,7 +267,8 @@ class MyElement extends Foo.Element {
 
     test('case-map', async () => {
       const analysis = await analyzer.analyze(['case-map/case-map.html']);
-      const converted = await convert(analysis);
+      const converter = new Html2JsConverter(analysis);
+      const converted = await converter.convert();
       const caseMapSource = converted.get('./case-map/case-map.js');
       assert.include(caseMapSource!, 'export function dashToCamelCase');
       assert.include(caseMapSource!, 'export function camelToDashCase');
@@ -279,7 +282,8 @@ class MyElement extends Foo.Element {
         modules: new Map(),
         namespacedExports: new Map(),
       };
-      html2Js(doc, exportIndex);
+      const converter = new Html2JsConverter(analysis);
+      converter.html2Js(doc, exportIndex);
       assert(exportIndex.namespacedExports.has('Polymer.Element'));
     });
 
