@@ -3,7 +3,7 @@ import * as estree from 'estree';
 import * as path from 'path';
 
 import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
-import {Html2JsConverter, getMemberPath} from '../html2js';
+import {AnalysisConverter, getMemberPath} from '../html2js';
 import {assert} from 'chai';
 
 suite('html2js', () => {
@@ -23,8 +23,8 @@ suite('html2js', () => {
     async function getJs() {
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
-      const converter = new Html2JsConverter(analysis);
-      converter.html2Js(testDoc);
+      const converter = new AnalysisConverter(analysis);
+      converter.convertDocument(testDoc);
       const module = converter.modules.get('./test.js');
       return module && module.source
     }
@@ -37,7 +37,7 @@ suite('html2js', () => {
 
     async function getConverted(): Promise<Map<string, string>> {
       const analysis = await analyzer.analyze(['test.html']);
-      const converter = new Html2JsConverter(analysis);
+      const converter = new AnalysisConverter(analysis);
       return converter.convert();
     }
 
@@ -262,7 +262,7 @@ class MyElement extends Foo.Element {
 
     test('case-map', async () => {
       const analysis = await analyzer.analyze(['case-map/case-map.html']);
-      const converter = new Html2JsConverter(analysis);
+      const converter = new AnalysisConverter(analysis);
       const converted = await converter.convert();
       const caseMapSource = converted.get('./case-map/case-map.js');
       assert.include(caseMapSource!, 'export function dashToCamelCase');
@@ -273,8 +273,8 @@ class MyElement extends Foo.Element {
       const filename = 'polymer-element/polymer-element.html';
       const analysis = await analyzer.analyze([filename]);
       const doc = analysis.getDocument(filename) as Document;
-      const converter = new Html2JsConverter(analysis);
-      converter.html2Js(doc);
+      const converter = new AnalysisConverter(analysis);
+      converter.convertDocument(doc);
       assert(converter.namespacedExports.has('Polymer.Element'));
     });
 

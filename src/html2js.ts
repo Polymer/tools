@@ -85,7 +85,7 @@ export async function convertPackage() {
   }
 
   const analysis = await analyzer.analyzePackage();
-  const converter = new Html2JsConverter(analysis);
+  const converter = new AnalysisConverter(analysis);
   const results = await converter.convert();
   for (const [jsUrl, newSource] of results) {
     const outPath = path.resolve(outDir, jsUrl);
@@ -97,7 +97,7 @@ export async function convertPackage() {
   }
 }
 
-export class Html2JsConverter {
+export class AnalysisConverter {
 
   analysis: Analysis;
 
@@ -119,7 +119,7 @@ export class Html2JsConverter {
 
     for (const document of htmlDocuments) {
       try {
-        this.html2Js(document);
+        this.convertDocument(document);
         const jsUrl = htmlUrlToJs(document.url);
         const module = this.modules.get(jsUrl);
         const newSource = module && module.source;
@@ -136,7 +136,7 @@ export class Html2JsConverter {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  html2Js(document: Document): void {
+  convertDocument(document: Document): void {
     // const domModules = document.getFeatures({kind: 'dom-module'});
     // if (domModules.size > 0) {
     //   console.log('domModules', domModules);
@@ -145,53 +145,70 @@ export class Html2JsConverter {
     const jsUrl = htmlUrlToJs(document.url);
     if (this.modules.has(jsUrl)) {
       return;
-      // throw new Error(`Already processed ${document.url}`);
     }
-    const module: JsModule = {
-      url: jsUrl,
+    new DocumentConverter(this, document).convert();
+  }
+}
+
+class DocumentConverter {
+
+  jsUrl: string;
+  module: JsModule;
+  analysisConverter: AnalysisConverter;
+  document: Document;
+  program: Program;
+
+  constructor(analysisConverter: AnalysisConverter, document: Document) {
+    this.analysisConverter = analysisConverter;
+    this.document = document;
+    this.jsUrl = htmlUrlToJs(document.url);
+    this.module = {
+      url: this.jsUrl,
       source: '',
       exports: new Set<string>(),
       importedReferences: new Map<string, Set<string>>(),
     };
 
-    this.modules.set(jsUrl, module);
+    analysisConverter.modules.set(this.jsUrl, this.module);
+  }
+
+  convert() {
     // DFS to convert dependencies, so we know what exports they have
-    const htmlImports = document.getFeatures({kind: 'html-import'});
+    const htmlImports = this.document.getFeatures({kind: 'html-import'});
     for (const htmlImport of htmlImports) {
-      const jsUrl = htmlUrlToJs(htmlImport.url, document.url);
-      if (this.modules.has(jsUrl)) {
+      const jsUrl = htmlUrlToJs(htmlImport.url, this.document.url);
+      if (this.analysisConverter.modules.has(jsUrl)) {
         continue;
       }
-      this.html2Js(htmlImport.document);
+      this.analysisConverter.convertDocument(htmlImport.document);
     }
 
-    const scripts = document.getFeatures({kind: 'js-document'});
+    const scripts = this.document.getFeatures({kind: 'js-document'});
 
     let scriptDocument: Document|undefined = undefined;
-    let program: Program;
 
     if (scripts.size === 0) {
-      program = J.program([]);
+      this.program = J.program([]);
     } else if (scripts.size > 1) {
       console.log('multiple scripts');
       return;
     } else {
       scriptDocument = scripts.values().next().value;
       const jsDoc = scriptDocument.parsedDocument as ParsedJavaScriptDocument;
-      program = jsDoc.ast;
+      this.program = jsDoc.ast;
     }
 
     // Unwrap module-IIFE
-    program.body = this.getModuleBody(program);
+    this.program.body = this.getModuleBody();
 
-    this.rewriteNamespacedReferences(program, jsUrl, document.url);
+    this.rewriteNamespacedReferences();
 
-    const importCount = this.addJsImports(program, module, htmlImports, document.url);
+    const importCount = this.addJsImports(htmlImports);
 
     if (scriptDocument !== undefined) {
       // Replace namespace assignments with exports
-      for (let i = importCount; i < program.body.length; i++) {
-        const statement = program.body[i];
+      for (let i = importCount; i < this.program.body.length; i++) {
+        const statement = this.program.body[i];
         const exported = getExport(statement, 'Polymer');
 
         if (exported !== undefined) {
@@ -201,22 +218,22 @@ export class Html2JsConverter {
             const namespaceName = namespace.join('.');
             // TODO: combine with namespace handling below?
             if (value.type !== 'ObjectExpression') {
-              console.warn('unable to handle non-object namespace', document.url, value.loc);
+              console.warn('unable to handle non-object namespace', this.document.url, value.loc);
               continue;
             }
             const exports = getNamespaceExports(value as ObjectExpression);
-            program.body.splice(i, 1, ...exports.map((e) => e.node));
+            this.program.body.splice(i, 1, ...exports.map((e) => e.node));
             i += exports.length - 1;
             exports.forEach((e) => {
-              module.exports.add(e.name);
+              this.module.exports.add(e.name);
               const fullName = [...namespace, e.name].join('.');
-              this.namespacedExports.set(fullName, {
-                url: jsUrl,
+              this.analysisConverter.namespacedExports.set(fullName, {
+                url: this.jsUrl,
                 name: e.name,
               });
             });
-            this.namespacedExports.set(namespaceName, {
-              url: jsUrl,
+            this.analysisConverter.namespacedExports.set(namespaceName, {
+              url: this.jsUrl,
               name: '*',
             });
           } else if (value.type === 'Identifier') {
@@ -226,7 +243,7 @@ export class Html2JsConverter {
             const localName = value as Identifier;
             const namespaceName = namespace.join('.');
 
-            const features = document.getFeatures({id: namespaceName});
+            const features = this.document.getFeatures({id: namespaceName});
             const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
 
             if (referencedFeature && referencedFeature.kinds.has('namespace')) {
@@ -234,8 +251,8 @@ export class Html2JsConverter {
               const namespaceFeature = referencedFeature as Namespace;
 
               // Remove namespace node
-              const nsIndex = program.body.findIndex((statement) => namespaceFeature.astNode === statement);
-              program.body.splice(nsIndex, 1);
+              const nsIndex = this.program.body.findIndex((statement) => namespaceFeature.astNode === statement);
+              this.program.body.splice(nsIndex, 1);
               if (nsIndex < i) {
                 i--;
               }
@@ -250,48 +267,48 @@ export class Html2JsConverter {
                 nsNode = nsParent.expression.right as ObjectExpression;
               }
               const exports = getNamespaceExports(nsNode);
-              program.body.splice(i, 1, ...exports.map((e) => e.node));
+              this.program.body.splice(i, 1, ...exports.map((e) => e.node));
               i += exports.length - 1;
               exports.forEach((e) => {
-                module.exports.add(e.name);
+                this.module.exports.add(e.name);
                 const fullName = [...namespace, e.name].join('.');
-                this.namespacedExports.set(fullName, {
-                  url: jsUrl,
+                this.analysisConverter.namespacedExports.set(fullName, {
+                  url: this.jsUrl,
                   name: e.name,
                 });
               });
-              this.namespacedExports.set(namespaceName, {
-                url: jsUrl,
+              this.analysisConverter.namespacedExports.set(namespaceName, {
+                url: this.jsUrl,
                 name: '*',
               });
             } else {
               // fallback, named export
               // We could probably do better for referenced classes, functions, etc
               const exportedName = J.identifier(namespace[namespace.length - 1]) as Identifier;
-              program.body[i] = J.exportNamedDeclaration(
+              this.program.body[i] = J.exportNamedDeclaration(
                 null, // declaration
                 [J.exportSpecifier(localName, exportedName)]);
-              this.namespacedExports.set(namespace.join('.'), {
-                url: jsUrl,
+              this.analysisConverter.namespacedExports.set(namespace.join('.'), {
+                url: this.jsUrl,
                 name: exportedName.name,
               });
             }
           } else if (isDeclaration(value)) {
             // TODO (justinfagnani): remove this case? Is it used?
-            program.body[i] = J.exportDeclaration(
+            this.program.body[i] = J.exportDeclaration(
               false, // default
               value);
           } else {
             const name = namespace[namespace.length - 1];
 
-            program.body[i] = J.exportNamedDeclaration(
+            this.program.body[i] = J.exportNamedDeclaration(
               J.variableDeclaration(
                 'let',
                 [J.variableDeclarator(J.identifier(name), value)]
               ));
-            module.exports.add(name);
-            this.namespacedExports.set(namespace.join('.'), {
-              url: jsUrl,
+            this.module.exports.add(name);
+            this.analysisConverter.namespacedExports.set(namespace.join('.'), {
+              url: this.jsUrl,
               name,
             });
           }
@@ -299,7 +316,7 @@ export class Html2JsConverter {
       }
     }
 
-    module.source = escodegen.generate(program, {
+    this.module.source = escodegen.generate(this.program, {
       comment: true,
       format: {
         indent: {
@@ -317,18 +334,18 @@ export class Html2JsConverter {
    * Returns a Map of imports used for each module so import declarations can be rewritten
    * correctly.
    */
-  rewriteNamespacedReferences(program: Program, jsUrl: string, baseUrl: string) {
-    const module = this.modules.get(jsUrl)!;
+  rewriteNamespacedReferences() {
+    const analysisConverter = this.analysisConverter;
+    const module = analysisConverter.modules.get(this.jsUrl)!;
     const importedReferences = module.importedReferences;
+    const baseUrl = this.document.url;
 
-    const converter = this;
-
-    astTypes.visit(program, {
+    astTypes.visit(this.program, {
       visitMemberExpression(path: any) {
         const memberPath = getMemberPath(path.node);
         if (memberPath) {
           const memberName = memberPath.join('.');
-          const moduleExport = converter.namespacedExports.get(memberName);
+          const moduleExport = analysisConverter.namespacedExports.get(memberName);
           if (moduleExport) {
             // Store the imported reference to we can add it to the import statement
             const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
@@ -341,7 +358,7 @@ export class Html2JsConverter {
 
             // replace the member expression
             if (moduleExport.name === '*') {
-              const jsModule = converter.modules.get(moduleExport.url)!;
+              const jsModule = analysisConverter.modules.get(moduleExport.url)!;
               path.replace(J.identifier(getModuleId(jsModule.url)));
             } else {
               path.replace(J.identifier(moduleExport.name));
@@ -353,11 +370,13 @@ export class Html2JsConverter {
     });
   }
 
-  addJsImports(program: Program, module: JsModule, htmlImports: Set<Import>, baseUrl: string) {
+  addJsImports(htmlImports: Set<Import>) {
+    const baseUrl = this.document.url;
+
     // Rewrite HTML Imports to JS imports
     const jsImports = Array.from(htmlImports).map((i) => {
       const jsUrl = htmlUrlToJs(i.url, baseUrl);
-      const specifierNames = module.importedReferences.get(jsUrl);  
+      const specifierNames = this.module.importedReferences.get(jsUrl);  
       const specifiers = specifierNames
           ? Array.from(specifierNames).map((s) => {
             if (s === '*') {
@@ -372,7 +391,7 @@ export class Html2JsConverter {
         J.literal(jsUrl) // source
       );
     });
-    program.body.splice(0, 0, ...jsImports);
+    this.program.body.splice(0, 0, ...jsImports);
     return jsImports.length;
   }
 
@@ -380,10 +399,10 @@ export class Html2JsConverter {
    * Returns the implied module body of a script - if there's a top-level IIFE, it
    * assumes that is an intentionally scoped ES5 module body.
    */
-  getModuleBody(program: Program): (Statement | ModuleDeclaration)[] {
-    if (program.body.length === 1 &&
-        program.body[0].type === 'ExpressionStatement') {
-      const expression = (program.body[0] as ExpressionStatement).expression;
+  getModuleBody(): (Statement | ModuleDeclaration)[] {
+    if (this.program.body.length === 1 &&
+        this.program.body[0].type === 'ExpressionStatement') {
+      const expression = (this.program.body[0] as ExpressionStatement).expression;
       if (expression.type === 'CallExpression') {
         const callee = expression.callee;
         if (callee.type === 'FunctionExpression') {
@@ -395,7 +414,7 @@ export class Html2JsConverter {
         }
       }
     }
-    return program.body;
+    return this.program.body;
   }
 }
 
