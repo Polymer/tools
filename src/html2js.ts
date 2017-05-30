@@ -31,8 +31,8 @@ const isInTests = /(\b|\/|\\)(test)(\/|\\)/;
 const isNotTest = (d: Document) => !isInTests.test(d.url);
 
 const isInBower = /(\b|\/|\\)(bower_components)(\/|\\)/;
-const isNotExternal = (d: Document) => !isInBower.test(d.url);
-
+const isInNpm = /(\b|\/|\\)(node_modules)(\/|\\)/;
+const isNotExternal = (d: Document) => !isInBower.test(d.url) && !isInNpm.test(d.url);
 
 export interface JsExport {
   /**
@@ -85,7 +85,9 @@ export async function convertPackage() {
   }
 
   const analysis = await analyzer.analyzePackage();
-  const converter = new AnalysisConverter(analysis);
+  const converter = new AnalysisConverter(analysis, {
+    excludes: ['lib/utils/boot.html'],
+  });
   const results = await converter.convert();
   for (const [jsUrl, newSource] of results) {
     const outPath = path.resolve(outDir, jsUrl);
@@ -97,23 +99,31 @@ export async function convertPackage() {
   }
 }
 
+interface AnalysisConverterOptions {
+  excludes?: string[];
+}
+
 export class AnalysisConverter {
 
   analysis: Analysis;
+  options: AnalysisConverterOptions;
+  _excludes: Set<string>;
 
   modules = new Map<string, JsModule>();
-
   namespacedExports = new Map<string, JsExport>();
 
-  constructor(analysis: Analysis) {
+  constructor(analysis: Analysis, options?: AnalysisConverterOptions) {
     this.analysis = analysis;
+    this.options = options || {};
+    this._excludes = new Set(this.options.excludes);
   }
 
   async convert(): Promise<Map<string, string>> {
 
     const htmlDocuments = Array.from(this.analysis.getFeatures({kind: 'html-document'}))
-      .filter((d) => isNotExternal(d) && isNotTest(d));
-
+      .filter((d) => {
+        return !this._excludes.has(d.url) && isNotExternal(d) && isNotTest(d) && d.url;
+      });
 
     const results = new Map<string, string>()
 
@@ -183,6 +193,11 @@ class DocumentConverter {
       const jsDoc = this.scriptDocument.parsedDocument as ParsedJavaScriptDocument;
       this.program = jsDoc.ast;
     }
+  }
+
+  getHtmlImports() {
+    return Array.from(this.document.getFeatures({kind: 'html-import'}))
+        .filter((f: Import) => !this.analysisConverter._excludes.has(f.url));
   }
 
   addExport(namespaceName: string, name: string) {
@@ -283,7 +298,7 @@ class DocumentConverter {
 
   convertDependencies() {
     // DFS to convert dependencies, so we know what exports they have
-    const htmlImports = this.document.getFeatures({kind: 'html-import'});
+    const htmlImports = this.getHtmlImports();
     for (const htmlImport of htmlImports) {
       const jsUrl = htmlUrlToJs(htmlImport.url, this.document.url);
       if (this.analysisConverter.modules.has(jsUrl)) {
@@ -336,7 +351,7 @@ class DocumentConverter {
   }
 
   addJsImports() {
-    const htmlImports = this.document.getFeatures({kind: 'html-import'});
+    const htmlImports = this.getHtmlImports();
     const baseUrl = this.document.url;
 
     // Rewrite HTML Imports to JS imports

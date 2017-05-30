@@ -243,6 +243,35 @@ class MyElement extends Foo.Element {
 }\n`);
     });
 
+    test('excludes excluded files', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./exclude.html">
+          <link rel="import" href="./dep.html">
+          <script>
+            class MyElement extends Polymer.Element {}
+          </script>
+        `,
+        'dep.html': `
+          <script>
+            Polymer.Element = {};
+          </script>
+        `,
+        'exclude.html': `
+          <script>"no no no";</script>
+        `,
+      });
+      const analysis = await analyzer.analyze(['test.html']);
+      const converter = new AnalysisConverter(analysis, {
+        excludes: ['exclude.html'],
+      });
+      const converted = await converter.convert();
+      const js = converted.get('./test.js');
+      assert.equal(js, `import { Element } from './dep.js';
+class MyElement extends Element {
+}\n`);
+    });
+
   });
 
   suite('fixtures', () => {
