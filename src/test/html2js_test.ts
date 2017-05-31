@@ -243,6 +243,29 @@ class MyElement extends Foo.Element {
 }\n`);
     });
 
+    test('handles re-exports in namespaces', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            /**
+             * @namespace
+             * @memberof Polymer
+             */
+            const Path = {
+              isPath() {}
+            };
+            Path.isDeep = Path.isPath;
+            Polymer.Path = Path;
+          </script>
+        `,
+      });
+      const js = await getJs();
+      assert.equal(js, `export function isPath() {
+}
+export let isDeep = isPath;
+`);
+    });
+
     test('excludes excluded files', async () => {
       setSources({
         'test.html': `

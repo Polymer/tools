@@ -216,6 +216,8 @@ class DocumentConverter {
     this.rewriteNamespacedReferences();
     this.addJsImports();
 
+    let localNamespaceName: string|undefined;
+
     // Replace namespace assignments with exports
     while (this.currentStatementIndex < this.program.body.length) {
       const statement = this.program.body[this.currentStatementIndex] as Statement;
@@ -274,6 +276,28 @@ class DocumentConverter {
             value);
         } else {
           const name = namespace[namespace.length - 1];
+          this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
+            J.variableDeclaration(
+              'let',
+              [J.variableDeclarator(J.identifier(name), value)]
+            ));
+          this.addExport(namespaceName, name);
+        }
+      } else if (this.isNamespace(statement) && statement.type === 'VariableDeclaration') {
+        // Local namespace declaration, like:
+        // /** @namespace */ const Foo = {};
+        // Set the localNamespacename so we can rewrite internal references
+        const declarator = statement.declarations[0];
+        if (declarator.id.type === 'Identifier') {
+          localNamespaceName = declarator.id.name;
+        }
+      } else if (localNamespaceName) {
+        const namespaceAssignment = getExport(statement, localNamespaceName);
+
+        if (namespaceAssignment !== undefined) {
+          const {namespace, value} = namespaceAssignment;
+          const name = namespace[namespace.length - 1];
+          const namespaceName = namespace.join('.');
 
           this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
             jsc.variableDeclaration(
@@ -285,6 +309,8 @@ class DocumentConverter {
       }
       this.currentStatementIndex++;
     }
+
+    this.rewriteLocalNamespacedReferences(localNamespaceName);
 
     this.module.source = escodegen.generate(this.program, {
       comment: true,
@@ -351,6 +377,23 @@ class DocumentConverter {
       }
     });
   }
+
+  rewriteLocalNamespacedReferences(localNamespaceName?: string) {
+    if (localNamespaceName === undefined) {
+      return;
+    }
+    astTypes.visit(this.program, {
+      visitMemberExpression(path: any) {
+        const memberPath = getMemberPath(path.node);
+        if (memberPath && memberPath[0] === localNamespaceName) {
+          path.replace(path.node.property);
+        }
+        // do not visit rest of member expression
+        return false;
+      }
+    });
+  }
+
 
   addJsImports() {
     const htmlImports = this.getHtmlImports();
@@ -465,7 +508,7 @@ function getNamespaceExports(namespace: ObjectExpression) {
             func.body,
             func.generator
           ))
-      })
+      });
     } else if (value.type === 'ArrowFunctionExpression') {
       exports.push({
         name,
@@ -496,6 +539,13 @@ function isUseStrict(statement: Statement) {
 function isDeclaration(node: Node) {
   const type = node.type;
   return type === 'ClassDeclaration';
+}
+
+/**
+ * Returns true if a statement is an assignment to a namespace.
+ */
+function isNamespaceAssignment(statement: Statement, localNamespaceName: string) {
+  return getExport(statement, localNamespaceName) !== undefined;
 }
 
 /**
