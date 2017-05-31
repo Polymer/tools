@@ -100,7 +100,7 @@ suite('service-worker', () => {
                 'generateServiceWorker() resolved, expected rejection!');
           },
           (error: Error) => {
-            assert.equal(error.name, 'AssertionError');
+            assert.include(error.name, 'AssertionError');
             assert.equal(
                 error.message, '`project` & `buildRoot` options are required');
           });
@@ -115,7 +115,7 @@ suite('service-worker', () => {
                     'generateServiceWorker() resolved, expected rejection!');
               },
               (error: Error) => {
-                assert.equal(error.name, 'AssertionError');
+                assert.include(error.name, 'AssertionError');
                 assert.equal(error.message, '`project` option is required');
               });
     });
@@ -129,7 +129,7 @@ suite('service-worker', () => {
                     'generateServiceWorker() resolved, expected rejection!');
               },
               (error: Error) => {
-                assert.equal(error.name, 'AssertionError');
+                assert.include(error.name, 'AssertionError');
                 assert.equal(error.message, '`buildRoot` option is required');
               });
     });
