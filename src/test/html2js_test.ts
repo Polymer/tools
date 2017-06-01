@@ -184,8 +184,8 @@ export const arrow = () => {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Element {
+      assert.equal(js, `import { Element as $Element } from './dep.js';
+class MyElement extends $Element {
 }\n`);
     });
 
@@ -210,8 +210,8 @@ class MyElement extends Element {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Element {
+      assert.equal(js, `import { Element as $Element } from './dep.js';
+class MyElement extends $Element {
 }\n`);
     });
 
@@ -237,8 +237,8 @@ class MyElement extends Element {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import * as $dep from './dep.js';
-const Foo = $dep;
+      assert.equal(js, `import * as $$dep from './dep.js';
+const Foo = $$dep;
 class MyElement extends Foo.Element {
 }\n`);
     });
@@ -290,8 +290,8 @@ export const isDeep = isPath;
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Element {
+      assert.equal(js, `import { Element as $Element } from './dep.js';
+class MyElement extends $Element {
 }\n`);
     });
 
@@ -355,7 +355,7 @@ class MyElement extends Element {
       const program = esprima.parse(source);
       const statement = program.body[0] as estree.ExpressionStatement;
       const expression = statement.expression as estree.AssignmentExpression;
-      return expression.left as estree.MemberExpression;      
+      return expression.left as estree.MemberExpression;
     }
 
     test('works for a single property access', () => {

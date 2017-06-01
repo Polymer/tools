@@ -141,7 +141,7 @@ interface AnalysisConverterOptions {
   /**
    * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
    * the entire reference with `undefined`.
-   * 
+   *
    * These references would normally be rewritten to module imports, but in some
    * cases they are accessed without importing. The presumption is that access
    * is guarded by a conditional and replcing with `undefined` will safely
@@ -255,7 +255,7 @@ class DocumentConverter {
   /**
    * Returns the HTML Imports of a document, except imports to documents
    * specifically excluded in the AnalysisConverter.
-   * 
+   *
    * Note: Imports that are not found are not returned by the analyzer.
    */
   getHtmlImports() {
@@ -442,7 +442,7 @@ class DocumentConverter {
                 const jsModule = analysisConverter.modules.get(moduleExport.url)!;
                 path.replace(jsc.identifier(getModuleId(jsModule.url)));
               } else {
-                path.replace(jsc.identifier(moduleExport.name));
+                path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
               }
             }
           }
@@ -454,14 +454,14 @@ class DocumentConverter {
 
   /**
    * Rewrites local references to a namespace member, ie:
-   * 
+   *
    * const NS = {
    *   foo() {}
    * }
    * NS.foo();
-   * 
+   *
    * to:
-   * 
+   *
    * export foo() {}
    * foo();
    */
@@ -497,7 +497,7 @@ class DocumentConverter {
             if (s === '*') {
               return jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(jsUrl)));
             } else {
-              return jsc.importSpecifier(jsc.identifier(s));
+              return jsc.importSpecifier(jsc.identifier(s), jsc.identifier(getImportAlias(s)));
             }
           })
           : [];
@@ -709,11 +709,23 @@ function htmlUrlToJs(url: string, from?: string): string {
   return jsUrl;
 }
 
+/**
+ * Get the import alias for an imported member. Useful when generating an
+ * import statement or a reference to an imported member.
+ */
+function getImportAlias(importId: string) {
+  return '$' + importId;
+}
+
+/**
+ * Get the import name for an imported module object. Useful when generating an
+ * import statement, or a reference to an imported module object.
+ */
 function getModuleId(url: string) {
   const baseName = path.basename(url);
   const lastDotIndex = baseName.lastIndexOf('.');
   const mainName = baseName.substring(0, lastDotIndex);
-  return '$' + dashToCamelCase(mainName);
+  return '$$' + dashToCamelCase(mainName);
 }
 
 function dashToCamelCase(s: string) {
