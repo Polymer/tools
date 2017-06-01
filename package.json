@@ -4,7 +4,8 @@
     "html2js": "bin/html2js.js"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/chai": "^3.5.2",

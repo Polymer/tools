@@ -27,12 +27,12 @@ const analyzer = new Analyzer({
   urlResolver: new PackageUrlResolver(),
 });
 
-const isInTests = /(\b|\/|\\)(test)(\/|\\)/;
-const isNotTest = (d: Document) => !isInTests.test(d.url);
+const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
+const isNotTest = (d: Document) => !_isInTestRegex.test(d.url);
 
-const isInBower = /(\b|\/|\\)(bower_components)(\/|\\)/;
-const isInNpm = /(\b|\/|\\)(node_modules)(\/|\\)/;
-const isNotExternal = (d: Document) => !isInBower.test(d.url) && !isInNpm.test(d.url);
+const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
+const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
+const isNotExternal = (d: Document) => !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
 
 export interface JsExport {
   /**
@@ -81,7 +81,9 @@ export async function convertPackage() {
   try {
     await fs.mkdir(outDir);
   } catch (e) {
-    console.error(e);
+    if (e.errno !== -17) { // directory exists
+      console.error(e);
+    }
   }
 
   const analysis = await analyzer.analyzePackage();
@@ -440,10 +442,9 @@ class DocumentConverter {
 }
 
 function getNamespaceExports(namespace: ObjectExpression) {
-  const exports = [];
+  const exports: {name: string, node: Node}[] = [];
 
-  for (const property of namespace.properties) {
-    const {key, value} = property;
+  for (const {key, value}  of namespace.properties) {
     const name = (key as Identifier).name;
     if (value.type === 'ObjectExpression') {
       exports.push({

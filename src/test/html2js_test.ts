@@ -281,7 +281,7 @@ class MyElement extends Element {
     let analyzer: Analyzer;
 
     setup(() => {
-      urlLoader = new FSUrlLoader(path.resolve(__dirname, 'fixtures'));
+      urlLoader = new FSUrlLoader(path.resolve(__dirname, '../../fixtures'));
       urlResolver = new PackageUrlResolver();
       analyzer = new Analyzer({
         urlResolver,
