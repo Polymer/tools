@@ -389,7 +389,7 @@ suite('Project Config', () => {
 
         assert.throws(
             () => config.validate(),
-            /AssertionError: Polymer Config Error: a "fragments" path \(.*bar.html\) does not resolve within root \(.*public\)/);
+            /Polymer Config Error: a "fragments" path \(.*bar.html\) does not resolve within root \(.*public\)/);
       });
 
       test('throws an exception when entrypoint does not resolve within root', () => {
@@ -402,7 +402,7 @@ suite('Project Config', () => {
 
         assert.throws(
             () => config.validate(),
-            /AssertionError: Polymer Config Error: entrypoint \(.*bar.html\) does not resolve within root \(.*public\)/);
+            /Polymer Config Error: entrypoint \(.*bar.html\) does not resolve within root \(.*public\)/);
       });
 
       test('throws an exception when shell does not resolve within root', () => {
@@ -415,7 +415,7 @@ suite('Project Config', () => {
 
         assert.throws(
             () => config.validate(),
-            /AssertionError: Polymer Config Error: shell \(.*bar.html\) does not resolve within root \(.*public\)/);
+            /Polymer Config Error: shell \(.*bar.html\) does not resolve within root \(.*public\)/);
       });
 
       test('returns true when a single, unnamed build is defined', () => {
@@ -444,7 +444,7 @@ suite('Project Config', () => {
         });
         assert.throws(
             () => config.validate(),
-            'AssertionError: Polymer Config Error: "builds" ([object Object]) expected an array of build configurations.');
+            'Polymer Config Error: "builds" ([object Object]) expected an array of build configurations.');
       });
 
       test('throws an exception when builds array contains duplicate names', () => {
@@ -463,7 +463,7 @@ suite('Project Config', () => {
         });
         assert.throws(
             () => config.validate(),
-            'AssertionError: Polymer Config Error: "builds" duplicate build name "bundled" found. Build names must be unique.');
+            'Polymer Config Error: "builds" duplicate build name "bundled" found. Build names must be unique.');
       });
 
       test('throws an exception when builds array contains an unnamed build', () => {
@@ -481,7 +481,7 @@ suite('Project Config', () => {
         });
         assert.throws(
             () => config.validate(),
-            'AssertionError: Polymer Config Error: all "builds" require a "name" property when there are multiple builds defined.');
+            'Polymer Config Error: all "builds" require a "name" property when there are multiple builds defined.');
       });
 
       test('throws an exception when builds array contains an invalid preset', () => {
@@ -498,7 +498,7 @@ suite('Project Config', () => {
         });
         assert.throws(
             () => config.validate(),
-            'AssertionError: Polymer Config Error: "not-a-real-preset" is not a valid  "builds" preset.');
+            'Polymer Config Error: "not-a-real-preset" is not a valid  "builds" preset.');
       });
 
     });
