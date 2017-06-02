@@ -148,6 +148,109 @@ export const arrow = () => {
 `);
     });
 
+    test.skip('exports a namespace object and fixes local references to its properties', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               */
+              Polymer.Namespace = {
+                obj: {},
+                meth() {},
+                func: function() {
+                  return Polymer.meth();
+                },
+                arrow: () => {}
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export const obj = {};
+export function meth() {
+}
+export function func() {
+  return meth();
+}
+export const arrow = () => {
+};
+`);
+    });
+
+    test('exports a namespace function and its properties', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               * @memberof Polymer
+               */
+              Polymer.dom = function() {
+                return 'Polymer.dom result';
+              };
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFn = function() {
+                return 'Polymer.dom.subFn result';
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export const dom = function () {
+  return \'Polymer.dom result\';
+};
+export const subFn = function () {
+  return \'Polymer.dom.subFn result\';
+};
+`);
+    });
+
+    test.skip('exports a namespace function and fixes references to its properties', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               * @memberof Polymer
+               */
+              Polymer.dom = function() {
+                return 'Polymer.dom result';
+              };
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFn = function() {
+                return 'Polymer.dom.subFn result';
+              };
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFnDelegate = function() {
+                return 'Polymer.dom.subFnDelegate delegates: ' + Polymer.dom() + Polymer.dom.subFn();
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export const dom = function () {
+    return \'Polymer.dom result\';
+};
+export const subFn = function () {
+    return \'Polymer.dom.subFn result\';
+};
+export const subFnDelegate = function () {
+    return \'Polymer.dom.subFnDelegate delegates: \' + dom() + subFn();
+};
+`);
+    });
+
+
     test('exports a referenced namespace', async () => {
       setSources({
         'test.html': `
@@ -184,8 +287,8 @@ export const arrow = () => {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Element {
+      assert.equal(js, `import { Element as $Element } from './dep.js';
+class MyElement extends $Element {
 }\n`);
     });
 
@@ -210,8 +313,8 @@ class MyElement extends Element {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Element {
+      assert.equal(js, `import { Element as $Element } from './dep.js';
+class MyElement extends $Element {
 }\n`);
     });
 
@@ -237,8 +340,8 @@ class MyElement extends Element {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import * as $dep from './dep.js';
-const Foo = $dep;
+      assert.equal(js, `import * as $$dep from './dep.js';
+const Foo = $$dep;
 class MyElement extends Foo.Element {
 }\n`);
     });
@@ -290,8 +393,8 @@ export const isDeep = isPath;
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element } from './dep.js';
-class MyElement extends Element {
+      assert.equal(js, `import { Element as $Element } from './dep.js';
+class MyElement extends $Element {
 }\n`);
     });
 
@@ -355,7 +458,7 @@ class MyElement extends Element {
       const program = esprima.parse(source);
       const statement = program.body[0] as estree.ExpressionStatement;
       const expression = statement.expression as estree.AssignmentExpression;
-      return expression.left as estree.MemberExpression;      
+      return expression.left as estree.MemberExpression;
     }
 
     test('works for a single property access', () => {

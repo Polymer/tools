@@ -141,7 +141,7 @@ interface AnalysisConverterOptions {
   /**
    * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
    * the entire reference with `undefined`.
-   * 
+   *
    * These references would normally be rewritten to module imports, but in some
    * cases they are accessed without importing. The presumption is that access
    * is guarded by a conditional and replcing with `undefined` will safely
@@ -255,7 +255,7 @@ class DocumentConverter {
   /**
    * Returns the HTML Imports of a document, except imports to documents
    * specifically excluded in the AnalysisConverter.
-   * 
+   *
    * Note: Imports that are not found are not returned by the analyzer.
    */
   getHtmlImports() {
@@ -293,8 +293,8 @@ class DocumentConverter {
         const {namespace, value} = exported;
         const namespaceName = namespace.join('.');
 
-        if (this.isNamespace(statement)) {
-          this.rewriteNamespace(namespaceName, value, statement);
+        if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
+          this.rewriteNamespaceObject(namespaceName, value, statement);
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
           // Polymer.Foo = Foo;
@@ -320,7 +320,7 @@ class DocumentConverter {
               nsNode = nsParent.expression.right as ObjectExpression;
             }
 
-            this.rewriteNamespace(namespaceName, nsNode, nsParent);
+            this.rewriteNamespaceObject(namespaceName, nsNode, nsParent);
 
             // Remove the namespace assignment
             this.program.body.splice(this.currentStatementIndex, 1);
@@ -442,7 +442,7 @@ class DocumentConverter {
                 const jsModule = analysisConverter.modules.get(moduleExport.url)!;
                 path.replace(jsc.identifier(getModuleId(jsModule.url)));
               } else {
-                path.replace(jsc.identifier(moduleExport.name));
+                path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
               }
             }
           }
@@ -454,14 +454,14 @@ class DocumentConverter {
 
   /**
    * Rewrites local references to a namespace member, ie:
-   * 
+   *
    * const NS = {
    *   foo() {}
    * }
    * NS.foo();
-   * 
+   *
    * to:
-   * 
+   *
    * export foo() {}
    * foo();
    */
@@ -497,7 +497,7 @@ class DocumentConverter {
             if (s === '*') {
               return jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(jsUrl)));
             } else {
-              return jsc.importSpecifier(jsc.identifier(s));
+              return jsc.importSpecifier(jsc.identifier(s), jsc.identifier(getImportAlias(s)));
             }
           })
           : [];
@@ -539,13 +539,8 @@ class DocumentConverter {
    * @param body the ObjectExpression body of the namespace
    * @param statement the statement, to be replaced, that contains the namespace
    */
-  rewriteNamespace(name: string, body: Node, statement: Statement) {
-    if (body.type !== 'ObjectExpression') {
-      console.warn('unable to handle non-object namespace', this.document.url, body.loc);
-      return;
-    }
-
-    const exports = getNamespaceExports(body as ObjectExpression);
+  rewriteNamespaceObject(name: string, body: ObjectExpression, statement: Statement) {
+    const exports = getNamespaceExports(body);
 
     // Replace original namespace statement with new exports
     const nsIndex = this.program.body.indexOf(statement);
@@ -709,11 +704,23 @@ function htmlUrlToJs(url: string, from?: string): string {
   return jsUrl;
 }
 
+/**
+ * Get the import alias for an imported member. Useful when generating an
+ * import statement or a reference to an imported member.
+ */
+function getImportAlias(importId: string) {
+  return '$' + importId;
+}
+
+/**
+ * Get the import name for an imported module object. Useful when generating an
+ * import statement, or a reference to an imported module object.
+ */
 function getModuleId(url: string) {
   const baseName = path.basename(url);
   const lastDotIndex = baseName.lastIndexOf('.');
   const mainName = baseName.substring(0, lastDotIndex);
-  return '$' + dashToCamelCase(mainName);
+  return '$$' + dashToCamelCase(mainName);
 }
 
 function dashToCamelCase(s: string) {
