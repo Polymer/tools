@@ -286,7 +286,7 @@ class MyElement extends Element {
       analyzer = new Analyzer({
         urlResolver,
         urlLoader,
-      })
+      });
     });
 
     test('case-map', async () => {
