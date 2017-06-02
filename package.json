@@ -7,6 +7,9 @@
     "test": "npm run build && mocha",
     "build": "tsc"
   },
+  "engines" : { 
+    "node" : ">=7.6.0"
+  },
   "dependencies": {
     "@types/chai": "^3.5.2",
     "@types/esprima": "^2.1.33",
