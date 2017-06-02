@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* Minor bugfix: JSON.stringify(warning) had a bunch of extra unnecessary properties.
 
 ## [2.0.2] - 2017-05-18
 

@@ -115,7 +115,7 @@ export class Warning {
     }
   }
 
-  toJson() {
+  toJSON() {
     return {
       code: this.code,
       message: this.message,
