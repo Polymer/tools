@@ -2582,6 +2582,10 @@ typescript@^2.2.0:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.3.3.tgz#9639f3c3b40148e8ca97fe08a51dd1891bb6be22"
 
+typescript@^2.3.4:
+  version "2.3.4"
+  resolved "http://35.185.235.147/typescript/-/typescript-2.3.4.tgz#3d38321828231e434f287514959c37a82b629f42"
+
 unc-path-regex@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/unc-path-regex/-/unc-path-regex-0.1.2.tgz#e73dd3d7b0d7c5ed86fbac6b0ae7d8c6a69d50fa"
