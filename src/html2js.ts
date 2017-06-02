@@ -53,6 +53,7 @@ export interface JsModule {
   url: string;
   source: string;
   exports: Set<string>;
+
   importedReferences: Map<string, Set<string>>;
 }
 
@@ -87,22 +88,49 @@ export async function convertPackage() {
   }
 
   const analysis = await analyzer.analyzePackage();
+  // Note: These setting are only good for Polymer core and should be
+  // extracted into a config file
   const converter = new AnalysisConverter(analysis, {
-    excludes: ['lib/utils/boot.html'],
+    excludes: [
+      'lib/utils/boot.html',
+      'lib/elements/dom-module.html',
+    ],
+    referenceExcludes: ['Polymer.DomModule'],
   });
-  const results = await converter.convert();
-  for (const [jsUrl, newSource] of results) {
-    const outPath = path.resolve(outDir, jsUrl);
-    const jsDir = path.dirname(outPath);
-    // console.log(`writing ${outPath}`);
-    mkdirp.sync(jsDir);
-    // console.log(`created dir ${jsDir}`);
-    await fs.writeFile(outPath, newSource);
+
+  try {
+    const results = await converter.convert();
+    for (const [jsUrl, newSource] of results!) {
+      const outPath = path.resolve(outDir, jsUrl);
+      const jsDir = path.dirname(outPath);
+      // console.log(`writing ${outPath}`);
+      mkdirp.sync(jsDir);
+      // console.log(`created dir ${jsDir}`);
+      await fs.writeFile(outPath, newSource);
+    }
+  } catch (e) {
+    console.log('error in conversion');
+    console.error(e);
   }
 }
 
 interface AnalysisConverterOptions {
+  /**
+   * Files to exclude from conversion (ie lib/utils/boot.html). Imports
+   * to these files are also excluded.
+   */
   excludes?: string[];
+
+  /**
+   * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
+   * the entire reference with `undefined`.
+   * 
+   * These references would normally be rewritten to module imports, but in some
+   * cases they are accessed without importing. The presumption is that access
+   * is guarded by a conditional and replcing with `undefined` will safely
+   * fail the guard.
+   */
+  referenceExcludes?: string[];
 }
 
 export class AnalysisConverter {
@@ -110,6 +138,7 @@ export class AnalysisConverter {
   analysis: Analysis;
   options: AnalysisConverterOptions;
   _excludes: Set<string>;
+  _referenceExcludes: Set<string>;
 
   modules = new Map<string, JsModule>();
   namespacedExports = new Map<string, JsExport>();
@@ -118,6 +147,7 @@ export class AnalysisConverter {
     this.analysis = analysis;
     this.options = options || {};
     this._excludes = new Set(this.options.excludes);
+    this._referenceExcludes = new Set(this.options.referenceExcludes);
   }
 
   async convert(): Promise<Map<string, string>> {
@@ -353,23 +383,28 @@ class DocumentConverter {
         const memberPath = getMemberPath(path.node);
         if (memberPath) {
           const memberName = memberPath.join('.');
-          const moduleExport = analysisConverter.namespacedExports.get(memberName);
-          if (moduleExport) {
-            // Store the imported reference to we can add it to the import statement
-            const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
-            let moduleImportedNames = importedReferences.get(moduleJsUrl);
-            if (moduleImportedNames === undefined) {
-              moduleImportedNames = new Set<string>();
-              importedReferences.set(moduleJsUrl, moduleImportedNames);
-            }
-            moduleImportedNames.add(moduleExport.name);
 
-            // replace the member expression
-            if (moduleExport.name === '*') {
-              const jsModule = analysisConverter.modules.get(moduleExport.url)!;
-              path.replace(jsc.identifier(getModuleId(jsModule.url)));
-            } else {
-              path.replace(jsc.identifier(moduleExport.name));
+          if (analysisConverter._referenceExcludes.has(memberName)) {
+            path.replace(jsc.identifier('undefined'));
+          } else {
+            const moduleExport = analysisConverter.namespacedExports.get(memberName);
+            if (moduleExport) {
+              // Store the imported reference to we can add it to the import statement
+              const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
+              let moduleImportedNames = importedReferences.get(moduleJsUrl);
+              if (moduleImportedNames === undefined) {
+                moduleImportedNames = new Set<string>();
+                importedReferences.set(moduleJsUrl, moduleImportedNames);
+              }
+              moduleImportedNames.add(moduleExport.name);
+
+              // replace the member expression
+              if (moduleExport.name === '*') {
+                const jsModule = analysisConverter.modules.get(moduleExport.url)!;
+                path.replace(jsc.identifier(getModuleId(jsModule.url)));
+              } else {
+                path.replace(jsc.identifier(moduleExport.name));
+              }
             }
           }
         }
@@ -539,13 +574,6 @@ function isUseStrict(statement: Statement) {
 function isDeclaration(node: Node) {
   const type = node.type;
   return type === 'ClassDeclaration';
-}
-
-/**
- * Returns true if a statement is an assignment to a namespace.
- */
-function isNamespaceAssignment(statement: Statement, localNamespaceName: string) {
-  return getExport(statement, localNamespaceName) !== undefined;
 }
 
 /**

@@ -295,6 +295,23 @@ class MyElement extends Element {
 }\n`);
     });
 
+    test('excludes excluded references', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            if (Polymer.DomModule) {}
+          </script>
+        `,
+      });
+      const analysis = await analyzer.analyze(['test.html']);
+      const converter = new AnalysisConverter(analysis, {
+        referenceExcludes: ['Polymer.DomModule'],
+      });
+      const converted = await converter.convert();
+      const js = converted.get('./test.js');
+      assert.equal(js, `if (undefined) {\n}\n`);
+    });
+
   });
 
   suite('fixtures', () => {
