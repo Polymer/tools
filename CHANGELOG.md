@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Prefetch links are now only added for transitive dependencies.
 <!-- Add new, unreleased changes here. -->
+
+## [1.5.1] - 2017-06-02
+* Prefetch links are now only added for transitive dependencies.
 
 ## [1.5.0] - 2017-05-23
 * Service Worker generator now generates relative URLs for pre-cached assets instead of absolute. This makes it possible to cache assets when the app is served from a non-root path without re-mapping all URLs. Since server workers fetch relative to their own URL, there is no effective change for service workers served from the root path.
