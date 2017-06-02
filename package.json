@@ -4,7 +4,7 @@
     "html2js": "bin/html2js.js"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "npm run build && mocha",
     "build": "tsc"
   },
   "dependencies": {
