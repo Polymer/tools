@@ -276,10 +276,10 @@ class DocumentConverter {
             value);
         } else {
           const name = namespace[namespace.length - 1];
-          this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
-            J.variableDeclaration(
-              'let',
-              [J.variableDeclarator(J.identifier(name), value)]
+          this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
+            jsc.variableDeclaration(
+              'const',
+              [jsc.variableDeclarator(jsc.identifier(name), value)]
             ));
           this.addExport(namespaceName, name);
         }
@@ -301,7 +301,7 @@ class DocumentConverter {
 
           this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
             jsc.variableDeclaration(
-              'let',
+              'const',
               [jsc.variableDeclarator(jsc.identifier(name), value)]
             ));
           this.addExport(namespaceName, name);
@@ -460,7 +460,7 @@ class DocumentConverter {
 
     // Replace original namespace statement with new exports
     const nsIndex = this.program.body.indexOf(statement);
-    this.program.body.splice(nsIndex, 1, ...exports.map((e) => e.node));
+    this.program.body.splice(nsIndex, 1, ...exports.map((e) => e.node as Statement));
     this.currentStatementIndex += exports.length - 1;
 
     exports.forEach((e) => {
@@ -494,7 +494,7 @@ function getNamespaceExports(namespace: ObjectExpression) {
         name,
         node: jsc.exportNamedDeclaration(
           jsc.variableDeclaration(
-            'let',
+            'const',
             [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {
@@ -514,7 +514,7 @@ function getNamespaceExports(namespace: ObjectExpression) {
         name,
         node: jsc.exportNamedDeclaration(
           jsc.variableDeclaration(
-            'let',
+            'const',
             [jsc.variableDeclarator(key, value)]
           ))
       });
