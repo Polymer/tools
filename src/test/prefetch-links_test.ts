@@ -23,7 +23,7 @@ suite('prefetch-links', () => {
 
   suite('AddPrefetchLinks', () => {
 
-    test('adds prefetch links unbundled', async () => {
+    test('adds prefetch links for transitive deps of unbundled', async () => {
 
       const project = new PolymerProject({
         root: 'test-fixtures/bundle-project/',
@@ -34,36 +34,50 @@ suite('prefetch-links', () => {
           mergeStream(project.sources(), project.dependencies())
               .pipe(project.addPrefetchLinks()),
           project.config.root);
+
       const html = files.get('index.html').contents.toString();
+
+      // No prefetch links needed for direct dependency.
+      assert.notInclude(
+          html, '<link rel="prefetch" href="/simple-import.html">');
+
+      // Prefetch added for the transitive dependencies of `index.html`,
+      // which are all direct dependencies of `simple-import.html`.
       assert.include(html, '<link rel="prefetch" href="/simple-script.js">');
       assert.include(html, '<link rel="prefetch" href="/simple-style.css">');
-      assert.include(html, '<link rel="prefetch" href="/simple-import.html">');
       assert.include(
           html, '<link rel="prefetch" href="/simple-import-2.html">');
     });
 
-    test('adds prefetch links to bundled output', async () => {
+    test('add prefetch links for transitive deps of bundled', async () => {
 
       const project = new PolymerProject({
         root: 'test-fixtures/bundle-project/',
         entrypoint: 'index.html',
+        fragments: ['simple-import.html'],
       });
 
       const files = await emittedFiles(
           mergeStream(project.sources(), project.dependencies())
-              .pipe(project.bundler({inlineCss: false}))
+              .pipe(project.bundler({inlineScripts: false}))
               .pipe(project.addPrefetchLinks()),
           project.config.root);
-
-      const expectedFiles = ['index.html', 'simple-style.css'];
+      const expectedFiles =
+          ['index.html', 'simple-import.html', 'simple-script.js'];
       assert.deepEqual(expectedFiles, [...files.keys()].sort());
+
       const html = files.get('index.html').contents.toString();
-      assert.include(html, '<link rel="prefetch" href="/simple-style.css">');
-      assert.notInclude(html, '<link rel="prefetch" href="/simple-script.js">');
+
+      // `simple-import.html` is a direct dependency, so we should not add
+      // prefetch link to it.
       assert.notInclude(
           html, '<link rel="prefetch" href="/simple-import.html">');
-      assert.notInclude(
-          html, '<link rel="prefetch" href="/simple-import-2.html">');
+
+      // `simple-import.html` has inlined `simple-import-2.html` which has an
+      // external script import `simple-script.js`.  A prefetch link is added
+      // for `simple-script.js` because it is a transitive dependency of the
+      // `index.html`
+      assert.include(html, '<link rel="prefetch" href="/simple-script.js">');
     });
 
     test('prefetch links do not include lazy dependencies', async () => {
@@ -79,8 +93,14 @@ suite('prefetch-links', () => {
           project.config.root);
 
       const html = files.get('index.html').contents.toString();
-      assert.include(html, '<link rel="prefetch" href="/shell.html">');
+      // Shell is a direct dependency, so should not have a prefetch link.
+      assert.notInclude(html, '<link rel="prefetch" href="/shell.html">');
+
+      // Framework is in the shell, so is a transitive dependency of index, and
+      // should be prefetched.
       assert.include(html, '<link rel="prefetch" href="/framework.html">');
+
+      // These are lazy imports and should not be prefetched.
       assert.notInclude(
           html, '<link rel="prefetch" href="/entrypoint-a.html">');
       assert.notInclude(
@@ -98,15 +118,22 @@ suite('prefetch-links', () => {
       const project = new PolymerProject({
         root: 'test-fixtures/differential-serving/',
         entrypoint: 'index.html',
+        fragments: ['shell.html'],
       });
 
       const files = await emittedFiles(
           mergeStream(project.sources(), project.dependencies())
+              .pipe(project.bundler({inlineScripts: false}))
               .pipe(project.addPrefetchLinks()),
           project.config.root);
 
       const html = files.get('index.html').contents.toString();
-      assert.include(html, '<link rel="prefetch" href="shell.html">');
+
+      // The `external-script.js` file is imported by `shell.html` so is
+      // transitive dependency of `index.html`.  Because `index.html` has a base
+      // tag with an href, the prefetch is a relative URL.
+      assert.include(
+          html, '<link rel="prefetch" href="shell-stuff/external-script.js">');
     });
   });
 

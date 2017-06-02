@@ -57,7 +57,7 @@ suite('updateBaseTag', () => {
 
           const shell = files.get('shell.html').contents.toString();
           assert.include(shell, 'shell stuff');
-          assert.include(shell, '/unimportantBase/');
+          assert.include(shell, 'shell-stuff/');
           assert.notInclude(shell, 'newBase');
           done();
         });

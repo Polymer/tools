@@ -67,25 +67,40 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
         console.warn(`Unable to get document ${documentUrl}: ${message}`);
         continue;
       }
-      const dependencies = [...document.getFeatures({
-                             kind: 'import',
-                             externalPackages: true,
-                             imported: true,
-                             noLazyImports: true
-                           })].filter((d) => !d.lazy);
+
+      const allDependencyUrls = [
+        ...document.getFeatures({
+          kind: 'import',
+          externalPackages: true,
+          imported: true,
+          noLazyImports: true
+        })
+      ].filter((d) => !d.lazy).map((d) => d.document.url);
+
+      const directDependencyUrls = [
+        ...document.getFeatures({
+          kind: 'import',
+          externalPackages: true,
+          imported: false,
+          noLazyImports: true
+        })
+      ].filter((d) => !d.lazy).map((d) => d.document.url);
+
+      const onlyTransitiveDependencyUrls = allDependencyUrls.filter(
+          (d) => directDependencyUrls.indexOf(d) === -1);
 
       // No need to transform a file if it has no dependencies to prefetch.
-      if (dependencies.length === 0) {
+      if (onlyTransitiveDependencyUrls.length === 0) {
         yield this.files.get(documentUrl)!;
         continue;
       }
 
-      const dependencyUrls =
-          new Set(dependencies.map((d) => d.url.replace(/^\//, '')));
+      const prefetchUrls = new Set(onlyTransitiveDependencyUrls);
+
       const html = createLinks(
           document.parsedDocument.contents,
           document.parsedDocument.baseUrl,
-          dependencyUrls,
+          prefetchUrls,
           document.url ===
               urlFromPath(this._config.root, this._config.entrypoint));
       const filePath = pathFromUrl(this._config.root, documentUrl);
