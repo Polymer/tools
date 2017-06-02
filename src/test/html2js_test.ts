@@ -148,6 +148,109 @@ export const arrow = () => {
 `);
     });
 
+    test.skip('exports a namespace object and fixes local references to its properties', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               */
+              Polymer.Namespace = {
+                obj: {},
+                meth() {},
+                func: function() {
+                  return Polymer.meth();
+                },
+                arrow: () => {}
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export const obj = {};
+export function meth() {
+}
+export function func() {
+  return meth();
+}
+export const arrow = () => {
+};
+`);
+    });
+
+    test('exports a namespace function and its properties', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               * @memberof Polymer
+               */
+              Polymer.dom = function() {
+                return 'Polymer.dom result';
+              };
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFn = function() {
+                return 'Polymer.dom.subFn result';
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export const dom = function () {
+  return \'Polymer.dom result\';
+};
+export const subFn = function () {
+  return \'Polymer.dom.subFn result\';
+};
+`);
+    });
+
+    test.skip('exports a namespace function and fixes references to its properties', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               * @memberof Polymer
+               */
+              Polymer.dom = function() {
+                return 'Polymer.dom result';
+              };
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFn = function() {
+                return 'Polymer.dom.subFn result';
+              };
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFnDelegate = function() {
+                return 'Polymer.dom.subFnDelegate delegates: ' + Polymer.dom() + Polymer.dom.subFn();
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export const dom = function () {
+    return \'Polymer.dom result\';
+};
+export const subFn = function () {
+    return \'Polymer.dom.subFn result\';
+};
+export const subFnDelegate = function () {
+    return \'Polymer.dom.subFnDelegate delegates: \' + dom() + subFn();
+};
+`);
+    });
+
+
     test('exports a referenced namespace', async () => {
       setSources({
         'test.html': `
