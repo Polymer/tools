@@ -79,7 +79,7 @@ suite('html2js', () => {
           </dom-module>
         `,
       });
-      assert.equal(await getJs(), `export let Foo = 'Bar';\n`);
+      assert.equal(await getJs(), `export const Foo = 'Bar';\n`);
     });
 
     test('exports a reference', async () => {
@@ -109,7 +109,7 @@ suite('html2js', () => {
             })();
           </script>`
       });
-      assert.equal(await getJs(), `export let version = '2.0.0';\n`);
+      assert.equal(await getJs(), `export const version = '2.0.0';\n`);
     });
 
     test('exports the result of a funciton call', async () => {
@@ -117,7 +117,7 @@ suite('html2js', () => {
           <script>
             Polymer.LegacyElementMixin = Polymer.dedupingMixin();
           </script>`);
-      assert.equal(await getJs(), `export let LegacyElementMixin = Polymer.dedupingMixin();\n`);
+      assert.equal(await getJs(), `export const LegacyElementMixin = Polymer.dedupingMixin();\n`);
     });
 
     test('exports a namespace object\'s properties', async () => {
@@ -138,12 +138,12 @@ suite('html2js', () => {
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export let obj = {};
+      assert.equal(await getJs(), `export const obj = {};
 export function meth() {
 }
 export function func() {
 }
-export let arrow = () => {
+export const arrow = () => {
 };
 `);
     });
@@ -165,7 +165,7 @@ export let arrow = () => {
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export let obj = {};\n`);
+      assert.equal(await getJs(), `export const obj = {};\n`);
     });
 
     test('specifies referenced imports in import declarations', async () => {
@@ -243,6 +243,29 @@ class MyElement extends Foo.Element {
 }\n`);
     });
 
+    test('handles re-exports in namespaces', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            /**
+             * @namespace
+             * @memberof Polymer
+             */
+            const Path = {
+              isPath() {}
+            };
+            Path.isDeep = Path.isPath;
+            Polymer.Path = Path;
+          </script>
+        `,
+      });
+      const js = await getJs();
+      assert.equal(js, `export function isPath() {
+}
+export const isDeep = isPath;
+`);
+    });
+
     test('excludes excluded files', async () => {
       setSources({
         'test.html': `
@@ -270,6 +293,23 @@ class MyElement extends Foo.Element {
       assert.equal(js, `import { Element } from './dep.js';
 class MyElement extends Element {
 }\n`);
+    });
+
+    test('excludes excluded references', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            if (Polymer.DomModule) {}
+          </script>
+        `,
+      });
+      const analysis = await analyzer.analyze(['test.html']);
+      const converter = new AnalysisConverter(analysis, {
+        referenceExcludes: ['Polymer.DomModule'],
+      });
+      const converted = await converter.convert();
+      const js = converted.get('./test.js');
+      assert.equal(js, `if (undefined) {\n}\n`);
     });
 
   });
