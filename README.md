@@ -1,5 +1,7 @@
 # html2js
 
+[![Build Status](https://travis-ci.com/Polymer/html2js.svg?token=x6MxFyUe7PYM8oPW9m6b&branch=master)](https://travis-ci.com/Polymer/html2js)
+
 html2js is a tool to convert packages of HTML imports to JavaScript modules.
 
 ## Goals
