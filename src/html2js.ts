@@ -294,7 +294,7 @@ class DocumentConverter {
         const namespaceName = namespace.join('.');
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
-          this.rewriteNamespaceObject(namespaceName, value as ObjectExpression, statement);
+          this.rewriteNamespaceObject(namespaceName, value, statement);
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
           // Polymer.Foo = Foo;
@@ -540,7 +540,7 @@ class DocumentConverter {
    * @param statement the statement, to be replaced, that contains the namespace
    */
   rewriteNamespaceObject(name: string, body: ObjectExpression, statement: Statement) {
-    const exports = getNamespaceExports(body as ObjectExpression);
+    const exports = getNamespaceExports(body);
 
     // Replace original namespace statement with new exports
     const nsIndex = this.program.body.indexOf(statement);
