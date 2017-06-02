@@ -42,7 +42,7 @@ export interface JsExport {
 
   /**
    * Exported name, ie Foo for `export Foo`;
-   * 
+   *
    * The name * represents the entire module, for when the key in the
    * namespacedExports Map represents a namespace object.
    */
@@ -170,7 +170,7 @@ class DocumentConverter {
   document: Document;
   scriptDocument: Document;
   program: Program;
-  currentStatementIndex = 0;  
+  currentStatementIndex = 0;
 
   constructor(analysisConverter: AnalysisConverter, document: Document) {
     this.analysisConverter = analysisConverter;
@@ -224,7 +224,7 @@ class DocumentConverter {
       if (exported !== undefined) {
         const {namespace, value} = exported;
         const namespaceName = namespace.join('.');
-        
+
         if (this.isNamespace(statement)) {
           this.rewriteNamespace(namespaceName, value, statement);
         } else if (value.type === 'Identifier') {
@@ -312,7 +312,7 @@ class DocumentConverter {
 
   /**
    * Rewrite namespaced references (ie, Polymer.Element) to the imported name (ie, Element).
-   * 
+   *
    * Returns a Map of imports used for each module so import declarations can be rewritten
    * correctly.
    */
@@ -359,7 +359,7 @@ class DocumentConverter {
     // Rewrite HTML Imports to JS imports
     const jsImports = Array.from(htmlImports).map((i) => {
       const jsUrl = htmlUrlToJs(i.url, baseUrl);
-      const specifierNames = this.module.importedReferences.get(jsUrl);  
+      const specifierNames = this.module.importedReferences.get(jsUrl);
       const specifiers = specifierNames
           ? Array.from(specifierNames).map((s) => {
             if (s === '*') {
@@ -402,7 +402,7 @@ class DocumentConverter {
 
   /**
    * Rewrites a namespace object as a set of exports.
-   * 
+   *
    * @param name the dot-separated name of the namespace
    * @param body the ObjectExpression body of the namespace
    * @param statement the statement, to be replaced, that contains the namespace
@@ -485,7 +485,7 @@ function getNamespaceExports(namespace: ObjectExpression) {
  * Returns true if a statement is the literal "use strict".
  */
 function isUseStrict(statement: Statement) {
-  return statement.type === 'ExpressionStatement' 
+  return statement.type === 'ExpressionStatement'
       && statement.expression.type === 'Literal'
       && statement.expression.value === 'use strict';
 }
@@ -500,10 +500,10 @@ function isDeclaration(node: Node) {
 
 /**
  * If a statement appears to be an export, returns the exported declaration.
- * 
+ *
  * Implied exports are assignment expressions where the left hand side matches
  * some predicate to be refined later :)
- * 
+ *
  * @param moduleRoot If specified
  */
 function getExport(statement: Statement | ModuleDeclaration, rootModuleName: string): {namespace: string[], value: Expression} |undefined {
