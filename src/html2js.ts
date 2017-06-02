@@ -20,7 +20,7 @@ import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, 
 
 const astTypes = require('ast-types');
 const mkdirp = require('mkdirp');
-const J = require('jscodeshift');
+const jsc = require('jscodeshift');
 
 const analyzer = new Analyzer({
   urlLoader: new FSUrlLoader(process.cwd()),
@@ -186,7 +186,7 @@ class DocumentConverter {
 
     const scripts = this.document.getFeatures({kind: 'js-document'});
     if (scripts.size === 0) {
-      this.program = J.program([]);
+      this.program = jsc.program([]);
     } else if (scripts.size > 1) {
       console.log('multiple scripts');
       return;
@@ -261,24 +261,24 @@ class DocumentConverter {
           } else {
             // Not a namespace, fallback to a named export
             // We could probably do better for referenced declarations
-            const exportedName = J.identifier(namespace[namespace.length - 1]) as Identifier;
-            this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
+            const exportedName = jsc.identifier(namespace[namespace.length - 1]) as Identifier;
+            this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
               null, // declaration
-              [J.exportSpecifier(localName, exportedName)]);
+              [jsc.exportSpecifier(localName, exportedName)]);
             this.addExport(namespaceName, exportedName.name);
           }
         } else if (isDeclaration(value)) {
           // TODO (justinfagnani): remove this case? Is it used?
-          this.program.body[this.currentStatementIndex] = J.exportDeclaration(
+          this.program.body[this.currentStatementIndex] = jsc.exportDeclaration(
             false, // default
             value);
         } else {
           const name = namespace[namespace.length - 1];
 
-          this.program.body[this.currentStatementIndex] = J.exportNamedDeclaration(
-            J.variableDeclaration(
+          this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
+            jsc.variableDeclaration(
               'let',
-              [J.variableDeclarator(J.identifier(name), value)]
+              [jsc.variableDeclarator(jsc.identifier(name), value)]
             ));
           this.addExport(namespaceName, name);
         }
@@ -341,9 +341,9 @@ class DocumentConverter {
             // replace the member expression
             if (moduleExport.name === '*') {
               const jsModule = analysisConverter.modules.get(moduleExport.url)!;
-              path.replace(J.identifier(getModuleId(jsModule.url)));
+              path.replace(jsc.identifier(getModuleId(jsModule.url)));
             } else {
-              path.replace(J.identifier(moduleExport.name));
+              path.replace(jsc.identifier(moduleExport.name));
             }
           }
         }
@@ -363,15 +363,15 @@ class DocumentConverter {
       const specifiers = specifierNames
           ? Array.from(specifierNames).map((s) => {
             if (s === '*') {
-              return J.importNamespaceSpecifier(J.identifier(getModuleId(jsUrl)));
+              return jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(jsUrl)));
             } else {
-              return J.importSpecifier(J.identifier(s));
+              return jsc.importSpecifier(jsc.identifier(s));
             }
           })
           : [];
-      return J.importDeclaration(
+      return jsc.importDeclaration(
         specifiers, // specifiers
-        J.literal(jsUrl) // source
+        jsc.literal(jsUrl) // source
       );
     });
     this.program.body.splice(0, 0, ...jsImports);
@@ -449,17 +449,17 @@ function getNamespaceExports(namespace: ObjectExpression) {
     if (value.type === 'ObjectExpression') {
       exports.push({
         name,
-        node: J.exportNamedDeclaration(
-          J.variableDeclaration(
+        node: jsc.exportNamedDeclaration(
+          jsc.variableDeclaration(
             'let',
-            [J.variableDeclarator(key, value)]))
+            [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {
       const func = value as FunctionExpression;
       exports.push({
         name,
-        node: J.exportNamedDeclaration(
-          J.functionDeclaration(
+        node: jsc.exportNamedDeclaration(
+          jsc.functionDeclaration(
             key, //id
             func.params,
             func.body,
@@ -469,10 +469,10 @@ function getNamespaceExports(namespace: ObjectExpression) {
     } else if (value.type === 'ArrowFunctionExpression') {
       exports.push({
         name,
-        node: J.exportNamedDeclaration(
-          J.variableDeclaration(
+        node: jsc.exportNamedDeclaration(
+          jsc.variableDeclaration(
             'let',
-            [J.variableDeclarator(key, value)]
+            [jsc.variableDeclarator(key, value)]
           ))
       });
     }
