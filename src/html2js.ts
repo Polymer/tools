@@ -417,7 +417,7 @@ class DocumentConverter {
 
     // Replace original namespace statement with new exports
     const nsIndex = this.program.body.indexOf(statement);
-    this.program.body.splice(nsIndex, 1, ...exports.map((e) => e.node));
+    this.program.body.splice(nsIndex, 1, ...exports.map((e) => e.node as Statement));
     this.currentStatementIndex += exports.length - 1;
 
     exports.forEach((e) => {
