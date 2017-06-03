@@ -7,13 +7,14 @@
     "test": "npm run build && mocha",
     "build": "tsc"
   },
-  "engines" : { 
-    "node" : ">=7.6.0"
+  "engines": {
+    "node": ">=7.6.0"
   },
   "dependencies": {
     "@types/chai": "^3.5.2",
     "@types/esprima": "^2.1.33",
     "@types/estraverse": "^0.0.6",
+    "@types/estree": "^0.0.35",
     "@types/mocha": "^2.2.41",
     "@types/mz": "^0.0.31",
     "ast-types": "^0.9.11",
