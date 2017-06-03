@@ -190,6 +190,7 @@
           "params": []
         }
       ],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -284,6 +285,7 @@
             }
           ],
           "methods": [],
+          "staticMethods": [],
           "styling": {
             "cssVariables": [],
             "selectors": []
@@ -401,6 +403,7 @@
             }
           ],
           "methods": [],
+          "staticMethods": [],
           "styling": {
             "cssVariables": [],
             "selectors": []

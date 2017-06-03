@@ -15,21 +15,21 @@
 import * as doctrine from 'doctrine';
 import * as estree from 'estree';
 
-import * as astValue from '../javascript/ast-value';
-import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
-import {Visitor} from '../javascript/estree-visitor';
-import * as esutil from '../javascript/esutil';
-import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptScanner} from '../javascript/javascript-scanner';
-import * as jsdoc from '../javascript/jsdoc';
 import {ScannedClass, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
-
 import {extractObservers} from '../polymer/declaration-property-handlers';
-import {getOrInferPrivacy} from '../polymer/js-utils';
 import {Observer, ScannedPolymerElement} from '../polymer/polymer-element';
 import {ScannedPolymerElementMixin} from '../polymer/polymer-element-mixin';
-import {getIsValue, getMethods, getPolymerProperties, getStaticGetterValue} from '../polymer/polymer2-config';
+import {getIsValue, getPolymerProperties, getStaticGetterValue} from '../polymer/polymer2-config';
 import {MixinVisitor} from '../polymer/polymer2-mixin-scanner';
+
+import * as astValue from './ast-value';
+import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
+import {Visitor} from './estree-visitor';
+import * as esutil from './esutil';
+import {getMethods, getOrInferPrivacy, getStaticMethods} from './esutil';
+import {JavaScriptDocument} from './javascript-document';
+import {JavaScriptScanner} from './javascript-scanner';
+import * as jsdoc from './jsdoc';
 
 
 /**
@@ -185,6 +185,7 @@ export class ClassScanner implements JavaScriptScanner {
     let scannedElement: ScannedPolymerElement;
     let properties: ScannedProperty[] = [];
     let methods = new Map<string, ScannedMethod>();
+    let staticMethods = new Map<string, ScannedMethod>();
     let observers: Observer[] = [];
 
     // This will cover almost all classes, except those defined only by
@@ -199,6 +200,7 @@ export class ClassScanner implements JavaScriptScanner {
       }
       properties = getPolymerProperties(astNode, document);
       methods = getMethods(astNode, document);
+      staticMethods = getStaticMethods(astNode, document);
     }
 
     const extendsTag = jsdoc.getTag(docs, 'extends');
@@ -211,6 +213,7 @@ export class ClassScanner implements JavaScriptScanner {
       astNode,
       properties,
       methods,
+      staticMethods,
       observers,
       events: esutil.getEventComments(astNode),
       attributes: new Map(),
@@ -413,6 +416,7 @@ class ClassFinder implements Visitor {
         this._document.sourceRangeForNode(astNode)!,
         new Map(),
         getMethods(astNode, this._document),
+        getStaticMethods(astNode, this._document),
         this._getExtends(astNode, doc, warnings, this._document),
         jsdoc.getMixinApplications(this._document, astNode, doc, warnings),
         getOrInferPrivacy(namespacedName || '', doc),

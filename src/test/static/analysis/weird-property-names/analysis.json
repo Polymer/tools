@@ -108,6 +108,7 @@
         }
       ],
       "methods": [],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []

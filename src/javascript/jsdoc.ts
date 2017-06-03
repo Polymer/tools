@@ -16,9 +16,10 @@ import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
 import * as estree from 'estree';
 
-import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Privacy} from '../model/model';
 import {ScannedReference, Severity, Warning} from '../model/model';
+
+import {JavaScriptDocument} from './javascript-document';
 
 export {Annotation, Tag} from 'doctrine';
 

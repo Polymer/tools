@@ -324,6 +324,7 @@
           "metadata": {}
         }
       ],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []

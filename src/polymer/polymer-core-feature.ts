@@ -65,6 +65,7 @@ export class ScannedPolymerCoreFeature extends ScannedFeature implements
           className: 'Polymer.Base',
           properties: allProperties,
           methods: allMethods,
+          staticMethods: new Map(),
           abstract: true,
           privacy: 'public',
           // TODO(aomarks) The following should probably come from the

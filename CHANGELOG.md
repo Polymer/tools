@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Minor bugfix: JSON.stringify(warning) had a bunch of extra unnecessary properties.
+* Track static methods on classes, emit them in analysis.json.
+* Emit `superclass` for classes in analysis.json.
 
 ## [2.0.2] - 2017-05-18
 

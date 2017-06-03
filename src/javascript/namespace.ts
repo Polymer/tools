@@ -14,8 +14,9 @@
 
 import * as estree from 'estree';
 
-import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Document, Feature, Resolvable, SourceRange, Warning} from '../model/model';
+
+import {Annotation as JsDocAnnotation} from './jsdoc';
 
 /**
  * The metadata for a JavaScript namespace.

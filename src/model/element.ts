@@ -33,10 +33,6 @@ export class ScannedElement extends ScannedElementBase {
    */
   extends?: string;
 
-  constructor() {
-    super();
-  }
-
   resolve(document: Document): Element {
     return new Element(this, document);
   }

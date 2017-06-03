@@ -12,13 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as doctrine from 'doctrine';
+import * as escodegen from 'escodegen';
+
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
+import {ScannedMethod} from '../index';
+import {ImmutableSet} from '../model/immutable';
+import {Privacy} from '../model/model';
 import {ScannedEvent, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
 import {ParsedDocument} from '../parser/document';
+import * as docs from '../polymer/docs';
 import {annotateEvent} from '../polymer/docs';
 
+import {JavaScriptDocument} from './javascript-document';
 import * as jsdoc from './jsdoc';
 
 /**
@@ -158,4 +166,184 @@ export function getPropertyValue(
 export function isFunctionType(node: estree.Node): node is estree.Function {
   return node.type === 'ArrowFunctionExpression' ||
       node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration';
+}
+
+
+/**
+ * Create a ScannedMethod object from an estree Property AST node.
+ */
+export function toScannedMethod(
+    node: estree.Property|estree.MethodDefinition,
+    sourceRange: SourceRange,
+    document: ParsedDocument<any, any>): ScannedMethod {
+  const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
+  const description = parsedJsdoc.description.trim();
+  const maybeName = objectKeyToString(node.key);
+
+  const warnings: Warning[] = [];
+  if (!maybeName) {
+    warnings.push(new Warning({
+      code: 'unknown-method-name',
+      message: `Could not determine name of method from expression of type: ` +
+          `${node.key.type}`,
+      sourceRange: sourceRange,
+      severity: Severity.INFO,
+      parsedDocument: document
+    }));
+  }
+  let type = closureType(node.value, sourceRange, document);
+  const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
+  if (typeTag) {
+    type = doctrine.type.stringify(typeTag.type!) || type;
+  }
+  const name = maybeName || '';
+  const scannedMethod: ScannedMethod = {
+    name,
+    type,
+    description,
+    sourceRange,
+    warnings,
+    astNode: node,
+    jsdoc: parsedJsdoc,
+    privacy: getOrInferPrivacy(name, parsedJsdoc)
+  };
+
+  const value = node.value;
+  if (value.type === 'FunctionExpression' ||
+      value.type === 'ArrowFunctionExpression') {
+    const paramTags = new Map<string, doctrine.Tag>();
+    if (scannedMethod.jsdoc) {
+      for (const tag of (scannedMethod.jsdoc.tags || [])) {
+        if (tag.title === 'param' && tag.name) {
+          paramTags.set(tag.name, tag);
+
+        } else if (tag.title === 'return' || tag.title === 'returns') {
+          scannedMethod.return = {};
+          if (tag.type) {
+            scannedMethod.return.type = doctrine.type.stringify(tag.type!);
+          }
+          if (tag.description) {
+            scannedMethod.return.desc = tag.description;
+          }
+        }
+      }
+    }
+
+    scannedMethod.params = (value.params || []).map((nodeParam) => {
+      let type = undefined;
+      let description = undefined;
+      // With ES6 we can have a lot of param patterns. Best to leave the
+      // formatting to escodegen.
+      const name = escodegen.generate(nodeParam);
+      const tag = paramTags.get(name);
+      if (tag) {
+        if (tag.type) {
+          type = doctrine.type.stringify(tag.type);
+        }
+        if (tag.description) {
+          description = tag.description;
+        }
+      }
+      return {name, type, description};
+    });
+  }
+
+  return scannedMethod;
+}
+
+
+export function getOrInferPrivacy(
+    name: string,
+    annotation: jsdoc.Annotation|undefined,
+    defaultPrivacy: Privacy = 'public'): Privacy {
+  const explicitPrivacy = jsdoc.getPrivacy(annotation);
+  const specificName = name.slice(name.lastIndexOf('.') + 1);
+
+  if (explicitPrivacy) {
+    return explicitPrivacy;
+  }
+  if (specificName.startsWith('__')) {
+    return 'private';
+  } else if (specificName.startsWith('_')) {
+    return 'protected';
+  } else if (specificName.endsWith('_')) {
+    return 'private';
+  } else if (configurationProperties.has(specificName)) {
+    return 'protected';
+  }
+  return defaultPrivacy;
+}
+
+/**
+ * Properties on element prototypes that are part of the custom elment lifecycle
+ * or Polymer configuration syntax.
+ *
+ * TODO(rictic): only treat the Polymer ones as private when dealing with
+ *   Polymer.
+ */
+export const configurationProperties: ImmutableSet<string> = new Set([
+  'attached',
+  'attributeChanged',
+  'beforeRegister',
+  'configure',
+  'constructor',
+  'created',
+  'detached',
+  'enableCustomStyleProperties',
+  'extends',
+  'hostAttributes',
+  'is',
+  'listeners',
+  'mixins',
+  'observers',
+  'properties',
+  'ready',
+  'registered',
+]);
+
+/**
+ * Scan any methods on the given node, if it's a class expression/declaration.
+ */
+export function getMethods(node: estree.Node, document: JavaScriptDocument):
+    Map<string, ScannedMethod> {
+  const methods = new Map<string, ScannedMethod>();
+  for (const statement of _getMethods(node)) {
+    if (statement.static === false) {
+      const method = toScannedMethod(
+          statement, document.sourceRangeForNode(statement)!, document);
+      docs.annotate(method);
+      methods.set(method.name, method);
+    }
+  }
+  return methods;
+}
+
+/**
+ * Scan any static methods on the given node, if it's a class
+ * expression/declaration.
+ */
+export function getStaticMethods(
+    node: estree.Node,
+    document: JavaScriptDocument): Map<string, ScannedMethod> {
+  const methods = new Map<string, ScannedMethod>();
+  for (const method of _getMethods(node)) {
+    if (method.static === true) {
+      const scannedMethod = toScannedMethod(
+          method, document.sourceRangeForNode(method)!, document);
+      docs.annotate(scannedMethod);
+      methods.set(scannedMethod.name, scannedMethod);
+    }
+  }
+  return methods;
+}
+
+function* _getMethods(node: estree.Node) {
+  if (node.type !== 'ClassDeclaration' && node.type !== 'ClassExpression') {
+    return;
+  }
+  for (const statement of node.body.body) {
+    if (statement.type === 'MethodDefinition' && statement.kind === 'method') {
+      yield statement;
+    }
+  }
 }

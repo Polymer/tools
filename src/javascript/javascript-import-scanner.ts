@@ -15,10 +15,11 @@
 import * as estree from 'estree';
 import {resolve as resolveUrl} from 'url';
 
-import {Visitor} from '../javascript/estree-visitor';
-import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import {ScannedImport} from '../model/model';
+
+import {Visitor} from './estree-visitor';
+import {JavaScriptDocument} from './javascript-document';
+import {JavaScriptScanner} from './javascript-scanner';
 
 export class JavaScriptImportScanner implements JavaScriptScanner {
   async scan(

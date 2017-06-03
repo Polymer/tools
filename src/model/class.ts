@@ -17,7 +17,6 @@ import * as estree from 'estree';
 import * as jsdocLib from '../javascript/jsdoc';
 import {Document, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
-import {getOrInferPrivacy} from '../polymer/js-utils';
 
 import {Demo} from './element-base';
 import {ImmutableMap} from './immutable';
@@ -44,6 +43,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly summary: string;
   readonly sourceRange: SourceRange;
   readonly properties: Map<string, ScannedProperty>;
+  readonly staticMethods: ImmutableMap<string, ScannedMethod>;
   readonly methods: ImmutableMap<string, ScannedMethod>;
   readonly superClass: ScannedReference|undefined;
   readonly mixins: ScannedReference[];
@@ -56,6 +56,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
       astNode: estree.Node, jsdoc: jsdocLib.Annotation, description: string,
       sourceRange: SourceRange, properties: Map<string, ScannedProperty>,
       methods: Map<string, ScannedMethod>,
+      staticMethods: Map<string, ScannedMethod>,
       superClass: ScannedReference|undefined, mixins: ScannedReference[],
       privacy: Privacy, warnings: Warning[], abstract: boolean, demos: Demo[]) {
     this.name = className;
@@ -66,6 +67,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
     this.sourceRange = sourceRange;
     this.properties = properties;
     this.methods = methods;
+    this.staticMethods = staticMethods;
     this.superClass = superClass;
     this.mixins = mixins;
     this.privacy = privacy;
@@ -98,6 +100,7 @@ export interface ClassInit {
   readonly jsdoc?: jsdocLib.Annotation;
   readonly description: string;
   readonly properties?: ImmutableMap<string, Property>;
+  readonly staticMethods: ImmutableMap<string, Method>;
   readonly methods?: ImmutableMap<string, Method>;
   readonly superClass?: ScannedReference|undefined;
   readonly mixins?: ScannedReference[];
@@ -124,6 +127,7 @@ export class Class implements Feature {
   description: string;
   readonly properties = new Map<string, Property>();
   readonly methods = new Map<string, Method>();
+  readonly staticMethods = new Map<string, Method>();
   readonly superClass: Reference|undefined;
   /**
    * Mixins that this class declares with `@mixes`.
@@ -178,15 +182,15 @@ export class Class implements Feature {
     if (init.methods !== undefined) {
       this._overwriteInherited(this.methods, init.methods, undefined, true);
     }
-
-
-    for (const method of this.methods.values()) {
-      // methods are only public by default if they're documented.
-      method.privacy = getOrInferPrivacy(method.name, method.jsdoc);
+    if (init.staticMethods !== undefined) {
+      this._overwriteInherited(
+          this.staticMethods, init.staticMethods, undefined, true);
     }
   }
 
   protected inheritFrom(superClass: Class) {
+    this._overwriteInherited(
+        this.staticMethods, superClass.staticMethods, superClass.name);
     this._overwriteInherited(
         this.properties, superClass.properties, superClass.name);
     this._overwriteInherited(this.methods, superClass.methods, superClass.name);

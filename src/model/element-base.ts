@@ -37,6 +37,7 @@ export abstract class ScannedElementBase implements Resolvable {
   demos: {desc?: string; path: string}[] = [];
   events: Map<string, ScannedEvent> = new Map();
   sourceRange: SourceRange|undefined;
+  staticMethods: Map<string, ScannedMethod>;
   methods: Map<string, ScannedMethod>;
   astNode: estree.Node|null;
   warnings: Warning[] = [];

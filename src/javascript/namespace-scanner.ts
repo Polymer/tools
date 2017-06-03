@@ -14,13 +14,14 @@
 
 import * as estree from 'estree';
 
-import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
-import {Visitor} from '../javascript/estree-visitor';
-import * as esutil from '../javascript/esutil';
-import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptScanner} from '../javascript/javascript-scanner';
-import * as jsdoc from '../javascript/jsdoc';
 import {Warning} from '../model/model';
+
+import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
+import {Visitor} from './estree-visitor';
+import * as esutil from './esutil';
+import {JavaScriptDocument} from './javascript-document';
+import {JavaScriptScanner} from './javascript-scanner';
+import * as jsdoc from './jsdoc';
 import {ScannedNamespace} from './namespace';
 
 export class NamespaceScanner implements JavaScriptScanner {

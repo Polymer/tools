@@ -47,6 +47,7 @@
         }
       ],
       "methods": [],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -114,6 +115,7 @@
         }
       ],
       "methods": [],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -165,6 +167,25 @@
               "name": "b"
             }
           ]
+        }
+      ],
+      "staticMethods": [
+        {
+          "description": "",
+          "metadata": {},
+          "name": "glob",
+          "params": [],
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 5,
+              "line": 49
+            },
+            "start": {
+              "column": 4,
+              "line": 48
+            }
+          }
         }
       ],
       "styling": {
@@ -256,6 +277,26 @@
             }
           ],
           "inheritedFrom": "Polymer.InternalMixin"
+        }
+      ],
+      "staticMethods": [
+        {
+          "description": "",
+          "inheritedFrom": "Polymer.InternalMixin",
+          "metadata": {},
+          "name": "glob",
+          "params": [],
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 5,
+              "line": 49
+            },
+            "start": {
+              "column": 4,
+              "line": 48
+            }
+          }
         }
       ],
       "styling": {

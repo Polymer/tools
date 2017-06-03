@@ -15,16 +15,15 @@
 import * as doctrine from 'doctrine';
 import * as estree from 'estree';
 
-import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
-import {Visitor} from '../javascript/estree-visitor';
-import {getAttachedComment, isFunctionType, objectKeyToString} from '../javascript/esutil';
-import {JavaScriptDocument} from '../javascript/javascript-document';
-import {JavaScriptScanner} from '../javascript/javascript-scanner';
-import * as jsdoc from '../javascript/jsdoc';
 import {Warning} from '../model/model';
-import {getOrInferPrivacy} from '../polymer/js-utils';
 
+import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
+import {Visitor} from './estree-visitor';
+import {getAttachedComment, getOrInferPrivacy, isFunctionType, objectKeyToString} from './esutil';
 import {ScannedFunction} from './function';
+import {JavaScriptDocument} from './javascript-document';
+import {JavaScriptScanner} from './javascript-scanner';
+import * as jsdoc from './jsdoc';
 
 export class FunctionScanner implements JavaScriptScanner {
   async scan(

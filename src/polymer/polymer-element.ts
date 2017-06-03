@@ -71,6 +71,7 @@ export interface Options {
   description: string|undefined;
   properties: ScannedProperty[];
   methods: Map<string, ScannedMethod>;
+  staticMethods: Map<string, ScannedMethod>;
   attributes: Map<string, ScannedAttribute>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];

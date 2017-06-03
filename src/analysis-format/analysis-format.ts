@@ -165,7 +165,15 @@ export interface Class extends Feature {
   /** The instance methods that this feature has. */
   methods?: Method[];
 
+  /** The static, class-level methods that this feature has. */
+  staticMethods?: Method[];
+
   privacy: Privacy;
+
+  /**
+   * The class, if any, that this class extends.
+   */
+  superclass?: string;
 }
 
 export interface ElementLike extends Class {

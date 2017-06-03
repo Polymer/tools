@@ -5,7 +5,13 @@ customElements.define('my-element', Element);
  * @customElement
  * @polymer
  */
-class AnnotatedElement { static get is() {return 'annotated-elem'} }
+class AnnotatedElement {
+  static get is() {
+    return 'annotated-elem'
+  }
+
+  static staticMeth() { }
+}
 
 /**
  * @mixinFunction
@@ -29,6 +35,12 @@ class Base {
   /** Will be overriden by Subclass. */
   overriddenMethod() {
   }
+
+  static baseStaticMethod() {
+  }
+
+  static overriddenStaticMethod() {
+  }
 }
 
 class Subclass extends Base {
@@ -39,7 +51,12 @@ class Subclass extends Base {
 
   /** This method only exists on Subclass. */
   subMethod() {
+  }
 
+  static overriddenStaticMethod() {
+  }
+
+  static staticSubMethod() {
   }
 }
 

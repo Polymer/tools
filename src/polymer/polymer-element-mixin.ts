@@ -36,6 +36,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     ScannedPolymerExtension {
   readonly properties: Map<string, ScannedPolymerProperty> = new Map();
   readonly methods: Map<string, ScannedMethod> = new Map();
+  readonly staticMethods: Map<string, ScannedMethod> = new Map();
   readonly observers: Observer[] = [];
   readonly listeners: {event: string, handler: string}[] = [];
   readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];

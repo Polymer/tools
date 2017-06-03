@@ -17,7 +17,7 @@ import * as estree from 'estree';
 
 import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
-import {getAttachedComment, getEventComments, isFunctionType, objectKeyToString} from '../javascript/esutil';
+import {getAttachedComment, getEventComments, getOrInferPrivacy, isFunctionType, objectKeyToString, toScannedMethod} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
@@ -27,7 +27,7 @@ import {getBehaviorAssignmentOrWarning} from './declaration-property-handlers';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 import {parseExpressionInJsStringLiteral} from './expression-scanner';
-import {getOrInferPrivacy, toScannedMethod, toScannedPolymerProperty} from './js-utils';
+import {toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
 
 export class PolymerElementScanner implements JavaScriptScanner {
@@ -74,6 +74,7 @@ class ElementVisitor implements Visitor {
       jsdoc: docs,
       listeners: [],
       methods: new Map(),
+      staticMethods: new Map(),
       mixins: [],
       observers: [],
       superClass: undefined,
@@ -214,6 +215,7 @@ class ElementVisitor implements Visitor {
           jsdoc: jsDoc,
           listeners: [],
           methods: new Map(),
+          staticMethods: new Map(),
           mixins: [],
           observers: [],
           superClass: undefined,

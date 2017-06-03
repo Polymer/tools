@@ -16,12 +16,13 @@ import * as estree from 'estree';
 
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
+import {toScannedMethod} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
 import {Severity, Warning} from '../model/model';
 
-import {toScannedMethod, toScannedPolymerProperty} from './js-utils';
+import {toScannedPolymerProperty} from './js-utils';
 import {ScannedPolymerCoreFeature} from './polymer-core-feature';
 
 /**

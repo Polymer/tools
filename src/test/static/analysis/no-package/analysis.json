@@ -11,6 +11,7 @@
       "attributes": [],
       "properties": [],
       "methods": [],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []
@@ -40,6 +41,7 @@
       "attributes": [],
       "properties": [],
       "methods": [],
+      "staticMethods": [],
       "styling": {
         "cssVariables": [],
         "selectors": []

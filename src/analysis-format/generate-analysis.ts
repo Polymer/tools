@@ -223,10 +223,12 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
   const packageRelativePath =
       pathLib.relative(packagePath, class_.sourceRange!.file);
 
-  const properties = Array.from(class_.properties.values())
-                         .map((p) => serializeProperty(class_, path, p));
-  const methods = Array.from(class_.methods.values())
-                      .map((m) => serializeMethod(class_, path, m));
+  const properties = [...class_.properties.values()].map(
+      (p) => serializeProperty(class_, path, p));
+  const methods =
+      [...class_.methods.values()].map((m) => serializeMethod(class_, path, m));
+  const staticMethods = [...class_.staticMethods.values()].map(
+      (m) => serializeMethod(class_, path, m));
 
   const serialized: Class = {
     description: class_.description || '',
@@ -234,11 +236,13 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
     path: packageRelativePath,
     properties: properties,
     methods: methods,
+    staticMethods: staticMethods,
     demos: (class_.demos ||
             []).map(({path, desc}) => ({url: path, description: desc || ''})),
     metadata: class_.emitMetadata(),
     sourceRange: resolveSourceRangePath(path, class_.sourceRange),
     privacy: class_.privacy,
+    superclass: class_.superClass ? class_.superClass.identifier : undefined,
   };
   if (class_.name) {
     serialized.name = class_.name;

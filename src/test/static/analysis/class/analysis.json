@@ -7,6 +7,7 @@
       "path": "classes.js",
       "properties": [],
       "methods": [],
+      "staticMethods": [],
       "demos": [],
       "metadata": {},
       "sourceRange": {
@@ -37,6 +38,7 @@
       "path": "classes.js",
       "properties": [],
       "methods": [],
+      "staticMethods": [],
       "demos": [],
       "metadata": {},
       "sourceRange": {
@@ -45,8 +47,8 @@
           "column": 0
         },
         "end": {
-          "line": 7,
-          "column": 68
+          "line": 13,
+          "column": 1
         }
       },
       "privacy": "public",
@@ -69,15 +71,16 @@
       "path": "classes.js",
       "properties": [],
       "methods": [],
+      "staticMethods": [],
       "demos": [],
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 13,
+          "line": 19,
           "column": 0
         },
         "end": {
-          "line": 15,
+          "line": 21,
           "column": 1
         }
       },
@@ -97,15 +100,16 @@
       "path": "classes.js",
       "properties": [],
       "methods": [],
+      "staticMethods": [],
       "demos": [],
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 21,
+          "line": 27,
           "column": 0
         },
         "end": {
-          "line": 21,
+          "line": 27,
           "column": 37
         }
       },
@@ -134,11 +138,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 26,
+              "line": 32,
               "column": 2
             },
             "end": {
-              "line": 27,
+              "line": 33,
               "column": 3
             }
           },
@@ -151,11 +155,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 29,
+              "line": 35,
               "column": 2
             },
             "end": {
-              "line": 30,
+              "line": 36,
               "column": 3
             }
           },
@@ -163,56 +167,18 @@
           "params": []
         }
       ],
-      "demos": [],
-      "metadata": {},
-      "sourceRange": {
-        "start": {
-          "line": 24,
-          "column": 0
-        },
-        "end": {
-          "line": 31,
-          "column": 1
-        }
-      },
-      "privacy": "public"
-    },
-    {
-      "name": "Subclass",
-      "description": "",
-      "summary": "",
-      "path": "classes.js",
-      "properties": [],
-      "methods": [
+      "staticMethods": [
         {
-          "name": "baseMethod",
-          "description": "This is a base method.",
+          "name": "baseStaticMethod",
+          "description": "",
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 26,
+              "line": 38,
               "column": 2
             },
             "end": {
-              "line": 27,
-              "column": 3
-            }
-          },
-          "metadata": {},
-          "params": [],
-          "inheritedFrom": "Base"
-        },
-        {
-          "name": "overriddenMethod",
-          "description": "Overrides the method on Base.",
-          "privacy": "public",
-          "sourceRange": {
-            "start": {
-              "line": 35,
-              "column": 2
-            },
-            "end": {
-              "line": 37,
+              "line": 39,
               "column": 3
             }
           },
@@ -220,12 +186,12 @@
           "params": []
         },
         {
-          "name": "subMethod",
-          "description": "This method only exists on Subclass.",
+          "name": "overriddenStaticMethod",
+          "description": "",
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 40,
+              "line": 41,
               "column": 2
             },
             "end": {
@@ -241,11 +207,140 @@
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 33,
+          "line": 30,
           "column": 0
         },
         "end": {
           "line": 43,
+          "column": 1
+        }
+      },
+      "privacy": "public"
+    },
+    {
+      "name": "Subclass",
+      "description": "",
+      "superclass": "Base",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [
+        {
+          "name": "baseMethod",
+          "description": "This is a base method.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 32,
+              "column": 2
+            },
+            "end": {
+              "line": 33,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "inheritedFrom": "Base"
+        },
+        {
+          "name": "overriddenMethod",
+          "description": "Overrides the method on Base.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 47,
+              "column": 2
+            },
+            "end": {
+              "line": 49,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        },
+        {
+          "name": "subMethod",
+          "description": "This method only exists on Subclass.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 52,
+              "column": 2
+            },
+            "end": {
+              "line": 53,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        }
+      ],
+      "staticMethods": [
+        {
+          "name": "baseStaticMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 38,
+              "column": 2
+            },
+            "end": {
+              "line": 39,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "inheritedFrom": "Base"
+        },
+        {
+          "name": "overriddenStaticMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 55,
+              "column": 2
+            },
+            "end": {
+              "line": 56,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        },
+        {
+          "name": "staticSubMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 58,
+              "column": 2
+            },
+            "end": {
+              "line": 59,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 45,
+          "column": 0
+        },
+        "end": {
+          "line": 60,
           "column": 1
         }
       },

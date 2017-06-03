@@ -25,7 +25,7 @@ import {Severity, Warning} from '../model/model';
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {getOrInferPrivacy, toScannedMethod, toScannedPolymerProperty} from './js-utils';
+import {toScannedPolymerProperty} from './js-utils';
 
 const templatizer = 'Polymer.Templatizer';
 
@@ -102,7 +102,7 @@ class BehaviorVisitor implements Visitor {
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
       } else if (esutil.isFunctionType(prop.value)) {
-        const method = toScannedMethod(
+        const method = esutil.toScannedMethod(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
         this.currentBehavior.addMethod(method);
       } else {
@@ -146,7 +146,7 @@ class BehaviorVisitor implements Visitor {
       description: parsedJsdocs.description,
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node),
-      privacy: getOrInferPrivacy(symbol, parsedJsdocs),
+      privacy: esutil.getOrInferPrivacy(symbol, parsedJsdocs),
       abstract: jsdoc.hasTag(parsedJsdocs, 'abstract'),
       attributes: new Map(),
       properties: [],
@@ -156,6 +156,7 @@ class BehaviorVisitor implements Visitor {
       jsdoc: parsedJsdocs,
       listeners: [],
       methods: new Map(),
+      staticMethods: new Map(),
       mixins: [],
       observers: [],
       superClass: undefined,
@@ -175,7 +176,8 @@ class BehaviorVisitor implements Visitor {
           `Unable to determine name for @polymerBehavior: ${comment}`);
     }
 
-    behavior.privacy = getOrInferPrivacy(behavior.className, behavior.jsdoc);
+    behavior.privacy =
+        esutil.getOrInferPrivacy(behavior.className, behavior.jsdoc);
     this._parseChainedBehaviors(node);
 
     this.currentBehavior = this.mergeBehavior(behavior);
