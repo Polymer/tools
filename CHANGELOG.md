@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!--## Unreleased-->
+
+## [2.1.0] - 2017-06-02
 
 * Minor bugfix: JSON.stringify(warning) had a bunch of extra unnecessary properties.
 * Track static methods on classes, emit them in analysis.json.
