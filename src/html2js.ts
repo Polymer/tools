@@ -576,7 +576,7 @@ function getNamespaceExports(namespace: ObjectExpression) {
 
   for (const {key, value}  of namespace.properties) {
     const name = (key as Identifier).name;
-    if (value.type === 'ObjectExpression') {
+    if (['ObjectExpression', 'ArrayExpression', 'Literal'].includes(value.type)) {
       exports.push({
         name,
         node: jsc.exportNamedDeclaration(
@@ -605,6 +605,16 @@ function getNamespaceExports(namespace: ObjectExpression) {
             [jsc.variableDeclarator(key, value)]
           ))
       });
+    } else if (value.type === 'Identifier') {
+      exports.push({
+        name,
+        node: jsc.exportNamedDeclaration(
+          null,
+          [jsc.exportSpecifier(jsc.identifier(name), jsc.identifier(name))]
+        ),
+      });
+    } else {
+      console.warn('Namespace property not handled:', name, value);
     }
   }
 
