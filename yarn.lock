@@ -2257,6 +2257,16 @@ recast@^0.11.11, recast@^0.11.17:
     private "~0.1.5"
     source-map "~0.5.0"
 
+recast@^0.12.4:
+  version "0.12.4"
+  resolved "http://35.185.235.147/recast/-/recast-0.12.4.tgz#964dd2e17f1aa1b157b7710a4a0296d016657150"
+  dependencies:
+    ast-types "0.9.11"
+    core-js "^2.4.1"
+    esprima "~3.1.0"
+    private "~0.1.5"
+    source-map "~0.5.0"
+
 rechoir@^0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/rechoir/-/rechoir-0.6.2.tgz#85204b54dba82d5742e28c96756ef43af50e3384"
@@ -2422,15 +2432,9 @@ source-map-support@^0.2.10:
   dependencies:
     source-map "0.1.32"
 
-source-map-support@^0.4.15:
+source-map-support@^0.4.15, source-map-support@^0.4.2:
   version "0.4.15"
   resolved "http://35.185.235.147/source-map-support/-/source-map-support-0.4.15.tgz#03202df65c06d2bd8c7ec2362a193056fef8d3b1"
-  dependencies:
-    source-map "^0.5.6"
-
-source-map-support@^0.4.2:
-  version "0.4.15"
-  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.15.tgz#03202df65c06d2bd8c7ec2362a193056fef8d3b1"
   dependencies:
     source-map "^0.5.6"
 

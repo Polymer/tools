@@ -26,6 +26,7 @@
     "mocha": "^3.4.1",
     "mz": "^2.6.0",
     "polymer-analyzer": "^2.0.2",
+    "recast": "^0.12.4",
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {

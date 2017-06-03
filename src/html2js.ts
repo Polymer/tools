@@ -12,11 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as escodegen from 'escodegen';
 import * as fs from 'mz/fs';
 import * as path from 'path';
+import * as recast from 'recast';
+
 import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace, Analysis, Import} from 'polymer-analyzer';
-import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier} from 'estree';
+import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression} from 'estree';
 
 import jsc = require('jscodeshift');
 
@@ -249,7 +250,8 @@ class DocumentConverter {
     } else {
       this.scriptDocument = scripts.values().next().value;
       const jsDoc = this.scriptDocument.parsedDocument as ParsedJavaScriptDocument;
-      this.program = jsDoc.ast;
+      const file = recast.parse(jsDoc.contents);
+      this.program = file.program;
     }
   }
 
@@ -310,7 +312,10 @@ class DocumentConverter {
 
             // Find the namespace node and containing statement
             const namespaceFeature = referencedFeature as Namespace;
-            const nsParent = namespaceFeature.astNode;
+            const nsParent = this.getNode(namespaceFeature.astNode) as Statement;
+            if (nsParent == null) {
+              throw new Error(`can't find associated node for namespace`);
+            }
             let nsNode: ObjectExpression;
             if (nsParent.type === 'VariableDeclaration') {
               // case: const n = {...}
@@ -318,7 +323,8 @@ class DocumentConverter {
             } else {
               // case: n = {...}
               // assumes an assignment statement!
-              nsNode = nsParent.expression.right as ObjectExpression;
+              const expression = (nsParent as ExpressionStatement).expression as AssignmentExpression;
+              nsNode = expression.right as ObjectExpression;
             }
 
             this.rewriteNamespaceObject(namespaceName, nsNode, nsParent);
@@ -380,16 +386,9 @@ class DocumentConverter {
 
     this.rewriteLocalNamespacedReferences(localNamespaceName);
 
-    this.module.source = escodegen.generate(this.program, {
-      comment: true,
-      format: {
-        indent: {
-          style: '  ',
-          adjustMultilineComment: true,
-          base: 0,
-        },
-      }
-    }) + '\n';
+    this.module.source = recast.print(this.program, {
+      quote: 'single'
+    }).code + '\n';
   }
 
   /**
@@ -560,11 +559,27 @@ class DocumentConverter {
     }
     const namespaces = this.scriptDocument.getFeatures({kind: 'namespace'});
     for (const namespace of namespaces) {
-      if (namespace.astNode === node) {
+      if (sourceLocationsEqual(namespace.astNode, node)) {
         return true;
       }
     }
     return false;
+  }
+
+  getNode(node: Node) {
+    let associatedNode: Node|undefined;
+
+    astTypes.visit(this.program, {
+      visitNode(path: any): any {
+        if (sourceLocationsEqual(path.node, node)) {
+          associatedNode = path.node;
+          return false;
+        }
+        this.traverse(path);
+      }
+    });
+
+    return associatedNode;
   }
 
 }
@@ -740,4 +755,22 @@ function getModuleId(url: string) {
 
 function dashToCamelCase(s: string) {
   return s.replace(/-[a-z]/g, (m) => m[1].toUpperCase())
+}
+
+function sourceLocationsEqual(a: Node, b: Node): boolean {
+  if (a === b) {
+    return true;
+  }
+  const aLoc = a.loc;
+  const bLoc = b.loc;
+  if (aLoc === bLoc) {
+    return true;
+  }
+  if (aLoc == null || bLoc == null) {
+    return false;
+  }
+  return aLoc.start.column === bLoc.start.column
+      && aLoc.start.line === bLoc.start.line
+      && aLoc.end.column === bLoc.end.column
+      && aLoc.end.line === bLoc.end.line;
 }
