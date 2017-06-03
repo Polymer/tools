@@ -18,9 +18,10 @@ import * as path from 'path';
 import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace, Analysis, Import} from 'polymer-analyzer';
 import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier} from 'estree';
 
+import jsc = require('jscodeshift');
+
 const astTypes = require('ast-types');
 const mkdirp = require('mkdirp');
-const jsc = require('jscodeshift');
 
 const analyzer = new Analyzer({
   urlLoader: new FSUrlLoader(process.cwd()),
@@ -575,8 +576,12 @@ function getNamespaceExports(namespace: ObjectExpression) {
   const exports: {name: string, node: Node}[] = [];
 
   for (const {key, value}  of namespace.properties) {
+    if (key.type !== 'Identifier') {
+      console.warn(`unsupported namespace property type ${key.type}`);
+      continue;
+    }
     const name = (key as Identifier).name;
-    if (['ObjectExpression', 'ArrayExpression', 'Literal'].includes(value.type)) {
+    if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' || value.type === 'Literal') {
       exports.push({
         name,
         node: jsc.exportNamedDeclaration(
