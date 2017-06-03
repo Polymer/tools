@@ -605,6 +605,14 @@ function getNamespaceExports(namespace: ObjectExpression) {
             [jsc.variableDeclarator(key, value)]
           ))
       });
+    } else if (value.type === 'Identifier') {
+      exports.push({
+        name,
+        node: jsc.exportNamedDeclaration(
+          null,
+          [jsc.exportSpecifier(jsc.identifier(name), jsc.identifier(name))]
+        ),
+      });
     }
   }
 

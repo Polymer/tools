@@ -126,24 +126,43 @@ suite('html2js', () => {
           <script>
             (function() {
               'use strict';
+
+              /**
+               * @memberof Polymer.Namespace
+               */
+              function independentFn() {}
+
               /**
                * @namespace
+               * @memberof Polymer
                */
               Polymer.Namespace = {
                 obj: {},
                 meth() {},
                 func: function() {},
-                arrow: () => {}
+                arrow: () => {},
+                independentFn: independentFn,
               };
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {};
+      assert.equal(await getJs(), `/**
+ * @memberof Polymer.Namespace
+ */
+function independentFn() {
+}  /**
+    * @namespace
+    * @memberof Polymer
+    */
+export const obj = {};
 export function meth() {
 }
 export function func() {
 }
 export const arrow = () => {
+};
+export {
+  independentFn
 };
 `);
     });
