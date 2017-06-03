@@ -137,6 +137,8 @@ suite('html2js', () => {
                * @memberof Polymer
                */
               Polymer.Namespace = {
+                literal: 42,
+                arr: [],
                 obj: {},
                 meth() {},
                 func: function() {},
@@ -154,6 +156,8 @@ function independentFn() {
     * @namespace
     * @memberof Polymer
     */
+export const literal = 42;
+export const arr = [];
 export const obj = {};
 export function meth() {
 }
