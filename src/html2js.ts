@@ -115,6 +115,9 @@ export async function convertPackage() {
       'lib/elements/dom-module.html',
     ],
     referenceExcludes: ['Polymer.DomModule'],
+    mutableExports: {
+      'Polymer.telemetry': ['instanceCount'],
+    },
   });
 
   try {
@@ -133,7 +136,7 @@ export async function convertPackage() {
   }
 }
 
-interface AnalysisConverterOptions {
+export interface AnalysisConverterOptions {
   /**
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
    * to these files are also excluded.
@@ -150,6 +153,14 @@ interface AnalysisConverterOptions {
    * fail the guard.
    */
   referenceExcludes?: string[];
+
+  /**
+   * For each namespace you can set a list of references (ie,
+   * 'Polymer.telemetry.instanceCount') that need to be mutable and cannot be
+   * exported as `const` variables. They will be exported as `let` variables
+   * instead.
+   */
+  mutableExports?: {[namespaceName: string]: string[]};
 }
 
 /**
@@ -226,9 +237,11 @@ class DocumentConverter {
   scriptDocument: Document;
   program: Program;
   currentStatementIndex = 0;
+  _mutableExports: {[namespaceName: string]: string[]};
 
   constructor(analysisConverter: AnalysisConverter, document: Document) {
     this.analysisConverter = analysisConverter;
+    this._mutableExports = <any>Object.assign({}, this.analysisConverter.options.mutableExports);
     this.document = document;
     this.jsUrl = htmlUrlToJs(document.url);
     this.module = {
@@ -571,7 +584,8 @@ class DocumentConverter {
    * @param statement the statement, to be replaced, that contains the namespace
    */
   rewriteNamespaceObject(name: string, body: ObjectExpression, statement: Statement) {
-    const exports = getNamespaceExports(body);
+    const mutableExports = this._mutableExports[name];
+    const exports = getNamespaceExports(body, mutableExports);
 
     // Replace original namespace statement with new exports
     const nsIndex = this.program.body.indexOf(statement);
@@ -618,7 +632,7 @@ class DocumentConverter {
 /**
  * Returns export declarations for each of a namespace objects members.
  */
-function getNamespaceExports(namespace: ObjectExpression) {
+function getNamespaceExports(namespace: ObjectExpression, mutableExports?: string[]) {
   const exports: {name: string, node: Node}[] = [];
 
   for (const {key, value}  of namespace.properties) {
@@ -628,11 +642,12 @@ function getNamespaceExports(namespace: ObjectExpression) {
     }
     const name = (key as Identifier).name;
     if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' || value.type === 'Literal') {
+      const isMutable = !!(mutableExports && mutableExports.includes(name));
       exports.push({
         name,
         node: jsc.exportNamedDeclaration(
           jsc.variableDeclaration(
-            'const',
+            isMutable ? 'let' : 'const',
             [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {

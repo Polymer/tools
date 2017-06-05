@@ -3,7 +3,7 @@ import * as estree from 'estree';
 import * as path from 'path';
 
 import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
-import {AnalysisConverter, getMemberPath} from '../html2js';
+import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../html2js';
 import {assert} from 'chai';
 
 suite('html2js', () => {
@@ -20,10 +20,10 @@ suite('html2js', () => {
       })
     });
 
-    async function getJs() {
+    async function getJs(options?: AnalysisConverterOptions) {
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
-      const converter = new AnalysisConverter(analysis);
+      const converter = new AnalysisConverter(analysis, options);
       converter.convertDocument(testDoc);
       const module = converter.modules.get('./test.js');
       return module && module.source
@@ -110,7 +110,7 @@ suite('html2js', () => {
       assert.equal(await getJs(), `export const version = '2.0.0';\n`);
     });
 
-    test('exports the result of a funciton call', async () => {
+    test('exports the result of a function call', async () => {
       urlLoader.urlContentsMap.set('test.html', `
           <script>
             Polymer.LegacyElementMixin = Polymer.dedupingMixin();
@@ -193,6 +193,37 @@ export function thisReferenceFn() {
 }
 `);
     });
+
+    test('exports a mutable reference if set via mutableExports', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               */
+              Polymer.Namespace = {
+                immutableLiteral: 42,
+                mutableLiteral: 0,
+                increment() {
+                  Polymer.Namespace.mutableLiteral++;
+                },
+              };
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs({
+        mutableExports: {'Polymer.Namespace': ['mutableLiteral']}
+      }), `export const immutableLiteral = 42;
+export let mutableLiteral = 0;
+
+export function increment() {
+  mutableLiteral++;
+}
+`);
+    });
+
 
     test('exports a namespace function and its properties', async () => {
       setSources({
