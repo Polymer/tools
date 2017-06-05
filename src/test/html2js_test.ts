@@ -377,6 +377,37 @@ const Foo = $$dep;
 class MyElement extends Foo.Element {}\n`);
     });
 
+    test('handles both named imports and namespace imports', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./dep.html">
+          <script>
+            const Foo = Polymer.Foo;
+            const Bar = Foo.Element;
+            const Baz = Polymer.Foo.Element;
+          </script>
+        `,
+        'dep.html': `
+          <script>
+            /**
+             * @namespace
+             */
+            Polymer.Foo = {
+              Element: {},
+            };
+          </script>
+        `,
+      });
+      const converted = await getConverted();
+      const js = converted.get('./test.js');
+      assert.equal(js, `import * as $$dep from './dep.js';
+import { Element as $Element } from './dep.js';
+const Foo = $$dep;
+const Bar = Foo.Element;
+const Baz = $Element;
+`);
+    });
+
     test('handles re-exports in namespaces', async () => {
       setSources({
         'test.html': `

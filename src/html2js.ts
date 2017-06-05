@@ -493,25 +493,52 @@ class DocumentConverter {
     const baseUrl = this.document.url;
 
     // Rewrite HTML Imports to JS imports
-    const jsImports = Array.from(htmlImports).map((i) => {
-      const jsUrl = htmlUrlToJs(i.url, baseUrl);
+    const jsImportDeclarations:any[] = [];
+    for (const htmlImport of htmlImports) {
+      const jsUrl = htmlUrlToJs(htmlImport.url, baseUrl);
       const specifierNames = this.module.importedReferences.get(jsUrl);
-      const specifiers = specifierNames
-          ? Array.from(specifierNames).map((s) => {
-            if (s === '*') {
-              return jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(jsUrl)));
-            } else {
-              return jsc.importSpecifier(jsc.identifier(s), jsc.identifier(getImportAlias(s)));
-            }
-          })
-          : [];
-      return jsc.importDeclaration(
-        specifiers, // specifiers
-        jsc.literal(jsUrl) // source
-      );
-    });
-    this.program.body.splice(0, 0, ...jsImports);
-    this.currentStatementIndex += jsImports.length;
+      const namedSpecifiers: any[] = [];
+      let namespaceSpecifier;
+      // Properly set each specifier name as either a named import specifier
+      // or as the single '*' namespace import specifier.
+      specifierNames && specifierNames.forEach((s) => {
+        if (s === '*') {
+          namespaceSpecifier = jsc.importNamespaceSpecifier(
+              jsc.identifier(getModuleId(jsUrl))
+          );
+        } else {
+          namedSpecifiers.push(
+            jsc.importSpecifier(
+              jsc.identifier(s),
+              jsc.identifier(getImportAlias(s))
+            )
+          );
+        }
+      });
+      // If no namespace or named specifier were found, just import the file
+      // Otherwise, create new import declarations that include found specifiers
+      if (!namespaceSpecifier && namedSpecifiers.length === 0) {
+        jsImportDeclarations.push(jsc.importDeclaration(
+          [],
+          jsc.literal(jsUrl)
+        ));
+      } else {
+        if (namespaceSpecifier) {
+          jsImportDeclarations.push(jsc.importDeclaration(
+            [namespaceSpecifier], // specifiers
+            jsc.literal(jsUrl) // source
+          ));
+        }
+        if (namedSpecifiers.length > 0) {
+          jsImportDeclarations.push(jsc.importDeclaration(
+            namedSpecifiers,
+            jsc.literal(jsUrl)
+          ));
+        }
+      }
+    }
+    this.program.body.splice(0, 0, ...jsImportDeclarations);
+    this.currentStatementIndex += jsImportDeclarations.length;
   }
 
   /**
