@@ -161,7 +161,7 @@ export { independentFn };
 `);
     });
 
-    test.skip('exports a namespace object and fixes local references to its properties', async () => {
+    test('exports a namespace object and fixes local references to its properties', async () => {
       setSources({
         'test.html': `
           <script>
@@ -171,24 +171,25 @@ export { independentFn };
                * @namespace
                */
               Polymer.Namespace = {
-                obj: {},
                 meth() {},
-                func: function() {
-                  return Polymer.meth();
+                polymerReferenceFn: function() {
+                  return Polymer.Namespace.meth();
                 },
-                arrow: () => {}
+                thisReferenceFn: function() {
+                  return this.meth();
+                },
               };
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {};
-export function meth() {
+      assert.equal(await getJs(), `export function meth() {
 }
-export function func() {
+export function polymerReferenceFn() {
   return meth();
 }
-export const arrow = () => {
-};
+export function thisReferenceFn() {
+  return this.meth();
+}
 `);
     });
 
@@ -277,13 +278,24 @@ export const subFnDelegate = function () {
                */
               const Namespace = {
                 obj: {},
+                func: function() {},
+                referencingFunc: function() {
+                  return Polymer.Namespace.func();
+                },
               };
               Polymer.Namespace = Namespace;
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {};\n`);
+      assert.equal(await getJs(), `export const obj = {};
+export function func() {
+}
+export function referencingFunc() {
+  return func();
+}
+`);
     });
+
 
     test('specifies referenced imports in import declarations', async () => {
       setSources({

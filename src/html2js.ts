@@ -298,6 +298,7 @@ class DocumentConverter {
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
           this.rewriteNamespaceObject(namespaceName, value, statement);
+          localNamespaceName = namespaceName;
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
           // Polymer.Foo = Foo;
@@ -326,7 +327,6 @@ class DocumentConverter {
               const expression = (nsParent as ExpressionStatement).expression as AssignmentExpression;
               nsNode = expression.right as ObjectExpression;
             }
-
             this.rewriteNamespaceObject(namespaceName, nsNode, nsParent);
 
             // Remove the namespace assignment
@@ -384,7 +384,13 @@ class DocumentConverter {
       this.currentStatementIndex++;
     }
 
-    this.rewriteLocalNamespacedReferences(localNamespaceName);
+    if (localNamespaceName !== undefined) {
+      // TODO(fks) 06-05-2017: Make general purpose, and not Polymer specific
+      if (!localNamespaceName.startsWith('Polymer.')) {
+        this.rewriteLocalNamespacedReferences('Polymer.' + localNamespaceName);
+      }
+      this.rewriteLocalNamespacedReferences(localNamespaceName);
+    }
 
     this.module.source = recast.print(this.program, {
       quote: 'single'
@@ -472,11 +478,12 @@ class DocumentConverter {
     astTypes.visit(this.program, {
       visitMemberExpression(path: any) {
         const memberPath = getMemberPath(path.node);
-        if (memberPath && memberPath[0] === localNamespaceName) {
+        const memberName = memberPath && memberPath.slice(0, -1).join('.');
+        if (memberName && memberName === localNamespaceName) {
           path.replace(path.node.property);
         }
-        // do not visit rest of member expression
-        return false;
+        // Keep searching for references to rewrite
+        this.traverse(path);
       }
     });
   }
@@ -698,7 +705,9 @@ export function getMemberPath(expression: Expression): string[] | undefined {
   }
   const property = expression.property.name;
 
-  if (expression.object.type === 'Identifier') {
+  if (expression.object.type === 'ThisExpression') {
+    return ['this', property];
+  } else if (expression.object.type === 'Identifier') {
     if (expression.object.name === 'window') {
       return [property];
     } else {
