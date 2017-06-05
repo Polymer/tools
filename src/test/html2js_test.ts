@@ -182,11 +182,12 @@ export { independentFn };
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export function meth() {
-}
+      assert.equal(await getJs(), `export function meth() {}
+
 export function polymerReferenceFn() {
   return meth();
 }
+
 export function thisReferenceFn() {
   return this.meth();
 }
@@ -288,8 +289,8 @@ export const subFnDelegate = function () {
           </script>`,
       });
       assert.equal(await getJs(), `export const obj = {};
-export function func() {
-}
+export function func() {}
+
 export function referencingFunc() {
   return func();
 }
