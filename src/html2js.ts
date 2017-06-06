@@ -510,44 +510,24 @@ class DocumentConverter {
     for (const htmlImport of htmlImports) {
       const jsUrl = htmlUrlToJs(htmlImport.url, baseUrl);
       const specifierNames = this.module.importedReferences.get(jsUrl);
-      const namedSpecifiers: any[] = [];
-      let namespaceSpecifier;
-      // Properly set each specifier name as either a named import specifier
-      // or as the single '*' namespace import specifier.
-      specifierNames && specifierNames.forEach((s) => {
-        if (s === '*') {
-          namespaceSpecifier = jsc.importNamespaceSpecifier(
-              jsc.identifier(getModuleId(jsUrl))
-          );
-        } else {
-          namedSpecifiers.push(
-            jsc.importSpecifier(
-              jsc.identifier(s),
-              jsc.identifier(getImportAlias(s))
-            )
-          );
-        }
-      });
-      // If no namespace or named specifier were found, just import the file
-      // Otherwise, create new import declarations that include found specifiers
-      if (!namespaceSpecifier && namedSpecifiers.length === 0) {
+      const specifierNamesArray = specifierNames ? Array.from(specifierNames) : [];
+      const hasNamespaceReference = specifierNamesArray.some((s) => s === '*');
+      const namedSpecifiers = specifierNamesArray
+          .filter((s) => s !== '*')
+          .map((s) => jsc.importSpecifier(jsc.identifier(s), jsc.identifier(getImportAlias(s))));
+      // If a module namespace was referenced, create a new namespace import
+      if (hasNamespaceReference) {
         jsImportDeclarations.push(jsc.importDeclaration(
-          [],
-          jsc.literal(jsUrl)
-        ));
-      } else {
-        if (namespaceSpecifier) {
-          jsImportDeclarations.push(jsc.importDeclaration(
-            [namespaceSpecifier], // specifiers
-            jsc.literal(jsUrl) // source
-          ));
-        }
-        if (namedSpecifiers.length > 0) {
-          jsImportDeclarations.push(jsc.importDeclaration(
-            namedSpecifiers,
-            jsc.literal(jsUrl)
-          ));
-        }
+          [jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(jsUrl)))],
+          jsc.literal(jsUrl)));
+      }
+      // If any named imports were referenced, create a new import for all named
+      // members. If `namedSpecifiers` is empty but a namespace wasn't imported
+      // either, then still add an empty importDeclaration to trigger the load.
+      if (namedSpecifiers.length > 0 || !hasNamespaceReference) {
+        jsImportDeclarations.push(jsc.importDeclaration(
+          namedSpecifiers,
+          jsc.literal(jsUrl)));
       }
     }
     this.program.body.splice(0, 0, ...jsImportDeclarations);
