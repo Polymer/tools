@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as dom5 from 'dom5';
 import * as fs from 'mz/fs';
+import * as parse5 from 'parse5';
 import * as path from 'path';
 import * as recast from 'recast';
 
@@ -201,11 +203,6 @@ export class AnalysisConverter {
    * Converts a Polymer Analyzer HTML document to a JS module
    */
   convertDocument(document: Document): void {
-    // const domModules = document.getFeatures({kind: 'dom-module'});
-    // if (domModules.size > 0) {
-    //   console.log('domModules', domModules);
-    // }
-
     const jsUrl = htmlUrlToJs(document.url);
     if (this.modules.has(jsUrl)) {
       return;
@@ -283,6 +280,7 @@ class DocumentConverter {
     this.unwrapModuleBody();
     this.rewriteNamespacedReferences();
     this.addJsImports();
+    this.inlineTemplates();
 
     let localNamespaceName: string|undefined;
 
@@ -387,8 +385,47 @@ class DocumentConverter {
     this.rewriteLocalNamespacedReferences(localNamespaceName);
 
     this.module.source = recast.print(this.program, {
-      quote: 'single'
+      quote: 'single',
+      wrapColumn: 80,
+      tabWidth: 2,
     }).code + '\n';
+  }
+
+  inlineTemplates() {
+    if (this.scriptDocument === undefined) {
+      return;
+    }
+    const elements = this.scriptDocument.getFeatures({'kind': 'polymer-element'});
+    for (const element of elements) {
+      const domModule = element.domModule;
+      if (domModule === undefined) {
+        continue;
+      }
+      const template = dom5.query(domModule, (e) => e.tagName === 'template');
+      if (template === null) {
+        continue;
+      }
+      const templateText = parse5.serialize((template as any).content).trim();
+      const node = this.getNode(element.astNode)!;
+
+      if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+        // A Polymer 2.0 class-based element
+        node.body.body.splice(0, 0, jsc.methodDefinition(
+          'get',
+          jsc.identifier('template'),
+          jsc.functionExpression(
+            null,
+            [],
+            jsc.blockStatement([jsc.returnStatement(jsc.literal(templateText))]))
+        ));
+      } else if (node.type === 'CallExpression') {
+        // A Polymer hybrid/legacy factory function element
+        (node.arguments[0] as ObjectExpression).properties.splice(0, 0, jsc.property(
+          'init',
+          jsc.identifier('_template'),
+          jsc.literal(templateText)));
+      }
+    }
   }
 
   /**

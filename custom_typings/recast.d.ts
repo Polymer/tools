@@ -9,6 +9,8 @@ declare module 'recast' {
 
   export interface Options {
     quote?: 'single' | 'double' | 'auto';
+    wrapColumn?: number;
+    tabWidth?: number;
   }
 
   export function parse(source: string): File;
