@@ -283,6 +283,7 @@ class DocumentConverter {
     this.inlineTemplates();
 
     let localNamespaceName: string|undefined;
+    let namespaceName: string|undefined;
 
     // Walk through all top-level statements and replace namespace assignments
     // with module exports.
@@ -292,10 +293,11 @@ class DocumentConverter {
 
       if (exported !== undefined) {
         const {namespace, value} = exported;
-        const namespaceName = namespace.join('.');
+        namespaceName = namespace.join('.');
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
           this.rewriteNamespaceObject(namespaceName, value, statement);
+          localNamespaceName = namespaceName;
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
           // Polymer.Foo = Foo;
@@ -303,7 +305,8 @@ class DocumentConverter {
           const localName = value as Identifier;
 
           const features = this.document.getFeatures({id: namespaceName});
-          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
+          // TODO(fks) 06-06-2017: '!' required below due to Typscript bug, remove when fixed
+          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName!));
 
           if (referencedFeature && referencedFeature.kinds.has('namespace')) {
             // Polymer.X = X; where X is previously defined as a namespace
@@ -324,7 +327,6 @@ class DocumentConverter {
               const expression = (nsParent as ExpressionStatement).expression as AssignmentExpression;
               nsNode = expression.right as ObjectExpression;
             }
-
             this.rewriteNamespaceObject(namespaceName, nsNode, nsParent);
 
             // Remove the namespace assignment
@@ -369,7 +371,7 @@ class DocumentConverter {
         if (namespaceAssignment !== undefined) {
           const {namespace, value} = namespaceAssignment;
           const name = namespace[namespace.length - 1];
-          const namespaceName = namespace.join('.');
+          namespaceName = namespace.join('.');
 
           this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
             jsc.variableDeclaration(
@@ -383,6 +385,7 @@ class DocumentConverter {
     }
 
     this.rewriteLocalNamespacedReferences(localNamespaceName);
+    this.rewriteLocalNamespacedReferences(namespaceName);
 
     this.module.source = recast.print(this.program, {
       quote: 'single',
@@ -509,7 +512,8 @@ class DocumentConverter {
     astTypes.visit(this.program, {
       visitMemberExpression(path: any) {
         const memberPath = getMemberPath(path.node);
-        if (memberPath && memberPath[0] === localNamespaceName) {
+        const memberName = memberPath && memberPath.slice(0, -1).join('.');
+        if (memberName && memberName === localNamespaceName) {
           path.replace(path.node.property);
         }
         // do not visit rest of member expression
@@ -735,7 +739,9 @@ export function getMemberPath(expression: Expression): string[] | undefined {
   }
   const property = expression.property.name;
 
-  if (expression.object.type === 'Identifier') {
+  if (expression.object.type === 'ThisExpression') {
+    return ['this', property];
+  } else if (expression.object.type === 'Identifier') {
     if (expression.object.name === 'window') {
       return [property];
     } else {

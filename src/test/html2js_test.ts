@@ -161,7 +161,7 @@ export { independentFn };
 `);
     });
 
-    test.skip('exports a namespace object and fixes local references to its properties', async () => {
+    test('exports a namespace object and fixes local references to its properties', async () => {
       setSources({
         'test.html': `
           <script>
@@ -171,24 +171,26 @@ export { independentFn };
                * @namespace
                */
               Polymer.Namespace = {
-                obj: {},
                 meth() {},
-                func: function() {
-                  return Polymer.meth();
+                polymerReferenceFn: function() {
+                  return Polymer.Namespace.meth();
                 },
-                arrow: () => {}
+                thisReferenceFn: function() {
+                  return this.meth();
+                },
               };
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {};
-export function meth() {
-}
-export function func() {
+      assert.equal(await getJs(), `export function meth() {}
+
+export function polymerReferenceFn() {
   return meth();
 }
-export const arrow = () => {
-};
+
+export function thisReferenceFn() {
+  return this.meth();
+}
 `);
     });
 
@@ -277,13 +279,31 @@ export const subFnDelegate = function () {
                */
               const Namespace = {
                 obj: {},
+                func: function() {},
+                localReferencingFunc: function() {
+                  return Namespace.func();
+                },
+                globalReferencingFunc: function() {
+                  return Polymer.Namespace.func();
+                },
               };
               Polymer.Namespace = Namespace;
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {};\n`);
+      assert.equal(await getJs(), `export const obj = {};
+export function func() {}
+
+export function localReferencingFunc() {
+  return func();
+}
+
+export function globalReferencingFunc() {
+  return func();
+}
+`);
     });
+
 
     test('specifies referenced imports in import declarations', async () => {
       setSources({
