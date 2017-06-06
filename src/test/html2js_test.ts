@@ -94,9 +94,7 @@ suite('html2js', () => {
           </script>`
       });
       assert.equal(await getJs(),
-`export {
-  ArraySelectorMixin
-};
+`export { ArraySelectorMixin };
 `);
     });
 
@@ -148,26 +146,18 @@ suite('html2js', () => {
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `/**
+      assert.equal(await getJs(),`/**
  * @memberof Polymer.Namespace
  */
-function independentFn() {
-}  /**
-    * @namespace
-    * @memberof Polymer
-    */
+function independentFn() {}
+
 export const literal = 42;
 export const arr = [];
 export const obj = {};
-export function meth() {
-}
-export function func() {
-}
-export const arrow = () => {
-};
-export {
-  independentFn
-};
+export function meth() {}
+export function func() {}
+export const arrow = () => {};
+export { independentFn };
 `);
     });
 
@@ -224,11 +214,12 @@ export const arrow = () => {
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const dom = function () {
-  return \'Polymer.dom result\';
+      assert.equal(await getJs(), `export const dom = function() {
+  return 'Polymer.dom result';
 };
-export const subFn = function () {
-  return \'Polymer.dom.subFn result\';
+
+export const subFn = function() {
+  return 'Polymer.dom.subFn result';
 };
 `);
     });
@@ -311,8 +302,7 @@ export const subFnDelegate = function () {
       const converted = await getConverted();
       const js = converted.get('./test.js');
       assert.equal(js, `import { Element as $Element } from './dep.js';
-class MyElement extends $Element {
-}\n`);
+class MyElement extends $Element {}\n`);
     });
 
     test('uses imports from namespaces', async () => {
@@ -337,8 +327,7 @@ class MyElement extends $Element {
       const converted = await getConverted();
       const js = converted.get('./test.js');
       assert.equal(js, `import { Element as $Element } from './dep.js';
-class MyElement extends $Element {
-}\n`);
+class MyElement extends $Element {}\n`);
     });
 
     test('rewrites references to namespaces', async () => {
@@ -365,8 +354,7 @@ class MyElement extends $Element {
       const js = converted.get('./test.js');
       assert.equal(js, `import * as $$dep from './dep.js';
 const Foo = $$dep;
-class MyElement extends Foo.Element {
-}\n`);
+class MyElement extends Foo.Element {}\n`);
     });
 
     test('handles re-exports in namespaces', async () => {
@@ -386,8 +374,7 @@ class MyElement extends Foo.Element {
         `,
       });
       const js = await getJs();
-      assert.equal(js, `export function isPath() {
-}
+      assert.equal(js, `export function isPath() {}
 export const isDeep = isPath;
 `);
     });
@@ -417,8 +404,7 @@ export const isDeep = isPath;
       const converted = await converter.convert();
       const js = converted.get('./test.js');
       assert.equal(js, `import { Element as $Element } from './dep.js';
-class MyElement extends $Element {
-}\n`);
+class MyElement extends $Element {}\n`);
     });
 
     test('excludes excluded references', async () => {
@@ -435,7 +421,7 @@ class MyElement extends $Element {
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `if (undefined) {\n}\n`);
+      assert.equal(js, `if (undefined) {}\n`);
     });
 
   });
