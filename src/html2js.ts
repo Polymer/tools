@@ -479,8 +479,8 @@ class DocumentConverter {
         if (memberName && memberName === localNamespaceName) {
           path.replace(path.node.property);
         }
-        // Keep searching for references to rewrite
-        this.traverse(path);
+        // do not visit rest of member expression
+        return false;
       }
     });
   }
