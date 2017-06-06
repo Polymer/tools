@@ -424,6 +424,63 @@ class MyElement extends $Element {}\n`);
       assert.equal(js, `if (undefined) {}\n`);
     });
 
+    test('inlines templates into class-based Polymer elements', async () => {
+      setSources({
+        'test.html': `
+          <dom-module id="test-element">
+            <template>
+              <h1>Hi!</h1>
+            </template>
+            <script>
+              /**
+               * @customElement
+               * @polymer
+               */
+              class TestElement extends Polymer.Element {
+                static get is() { return 'test-element'; }
+              }
+            </script>
+          </dom-module>
+        `,
+      });
+      const js = await getJs();
+      assert.equal(js, `/**
+ * @customElement
+ * @polymer
+ */
+class TestElement extends Polymer.Element {
+  get template() {
+    return '<h1>Hi!</h1>';
+  }
+
+  static get is() { return 'test-element'; }
+}
+`);
+    });
+
+    test('inlines templates into factory-based Polymer elements', async () => {
+      setSources({
+        'test.html': `
+          <dom-module id="test-element">
+            <template>
+              <h1>Hi!</h1>
+            </template>
+            <script>
+              Polymer({
+                is: 'test-element',
+              });
+            </script>
+          </dom-module>
+        `,
+      });
+      const js = await getJs();
+      assert.equal(js, `Polymer({
+  _template: '<h1>Hi!</h1>',
+  is: 'test-element'
+});
+`);
+    });
+
   });
 
   suite('fixtures', () => {
