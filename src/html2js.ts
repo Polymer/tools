@@ -285,6 +285,7 @@ class DocumentConverter {
     this.addJsImports();
 
     let localNamespaceName: string|undefined;
+    let namespaceName: string|undefined;
 
     // Walk through all top-level statements and replace namespace assignments
     // with module exports.
@@ -294,7 +295,7 @@ class DocumentConverter {
 
       if (exported !== undefined) {
         const {namespace, value} = exported;
-        const namespaceName = namespace.join('.');
+        namespaceName = namespace.join('.');
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
           this.rewriteNamespaceObject(namespaceName, value, statement);
@@ -306,7 +307,8 @@ class DocumentConverter {
           const localName = value as Identifier;
 
           const features = this.document.getFeatures({id: namespaceName});
-          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName));
+          // TODO(fks) 06-06-2017: '!' required below due to Typscript bug, remove when fixed
+          const referencedFeature = Array.from(features).find((f) => f.identifiers.has(namespaceName!));
 
           if (referencedFeature && referencedFeature.kinds.has('namespace')) {
             // Polymer.X = X; where X is previously defined as a namespace
@@ -371,7 +373,7 @@ class DocumentConverter {
         if (namespaceAssignment !== undefined) {
           const {namespace, value} = namespaceAssignment;
           const name = namespace[namespace.length - 1];
-          const namespaceName = namespace.join('.');
+          namespaceName = namespace.join('.');
 
           this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
             jsc.variableDeclaration(
@@ -384,13 +386,8 @@ class DocumentConverter {
       this.currentStatementIndex++;
     }
 
-    if (localNamespaceName !== undefined) {
-      // TODO(fks) 06-05-2017: Make general purpose, and not Polymer specific
-      if (!localNamespaceName.startsWith('Polymer.')) {
-        this.rewriteLocalNamespacedReferences('Polymer.' + localNamespaceName);
-      }
-      this.rewriteLocalNamespacedReferences(localNamespaceName);
-    }
+    this.rewriteLocalNamespacedReferences(localNamespaceName);
+    this.rewriteLocalNamespacedReferences(namespaceName);
 
     this.module.source = recast.print(this.program, {
       quote: 'single'

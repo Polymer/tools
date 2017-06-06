@@ -280,7 +280,10 @@ export const subFnDelegate = function () {
               const Namespace = {
                 obj: {},
                 func: function() {},
-                referencingFunc: function() {
+                localReferencingFunc: function() {
+                  return Namespace.func();
+                },
+                globalReferencingFunc: function() {
                   return Polymer.Namespace.func();
                 },
               };
@@ -291,7 +294,11 @@ export const subFnDelegate = function () {
       assert.equal(await getJs(), `export const obj = {};
 export function func() {}
 
-export function referencingFunc() {
+export function localReferencingFunc() {
+  return func();
+}
+
+export function globalReferencingFunc() {
   return func();
 }
 `);
