@@ -367,8 +367,15 @@ export class ProjectConfig {
    * will be relative to root.
    */
   toJSON(): string {
-    const relative = (p: string | null | undefined) =>
-        p ? path.relative(this.root, p) : undefined;
+    const relative = (glob?: string) => {
+      if (glob) {
+        if (glob.startsWith('!')) {
+          return '!' + path.relative(this.root, glob.substr(1));
+        }
+        return path.relative(this.root, glob);
+      }
+      return undefined;
+    };
     const obj = {
       entrypoint: relative(this.entrypoint),
       shell: relative(this.shell),
