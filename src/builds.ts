@@ -66,6 +66,9 @@ export interface ProjectBuildOptions {
    * are prefetched immediately. Add dependency prefetching by inserting `<link
    * rel="prefetch">` tags into entrypoint and `<link rel="import">` tags into
    * fragments and shell for all dependencies.
+   *
+   * Note this option may trigger duplicate requests. See
+   * https://github.com/Polymer/polymer-build/issues/239 for details.
    */
   insertPrefetchLinks?: boolean;
 
@@ -136,7 +139,6 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       bundle: true,
       addServiceWorker: true,
       addPushManifest: true,
-      insertPrefetchLinks: true,
     }
   ],
   [
@@ -150,7 +152,6 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       bundle: true,
       addServiceWorker: true,
       addPushManifest: true,
-      insertPrefetchLinks: true,
     }
   ],
   [
@@ -164,7 +165,6 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       bundle: false,
       addServiceWorker: true,
       addPushManifest: true,
-      insertPrefetchLinks: true,
     }
   ],
 ]);

@@ -51,7 +51,6 @@ suite('builds', () => {
         bundle: true,
         addServiceWorker: true,
         addPushManifest: true,
-        insertPrefetchLinks: true,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
@@ -68,7 +67,6 @@ suite('builds', () => {
         bundle: true,
         addServiceWorker: true,
         addPushManifest: true,
-        insertPrefetchLinks: true,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
@@ -85,7 +83,6 @@ suite('builds', () => {
         bundle: false,
         addServiceWorker: true,
         addPushManifest: true,
-        insertPrefetchLinks: true,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
@@ -100,7 +97,6 @@ suite('builds', () => {
         bundle: false,
         addServiceWorker: false,
         addPushManifest: false,
-        insertPrefetchLinks: false,
       };
       const expectedBuildConfig = {
         preset: 'es5-bundled',
@@ -111,7 +107,6 @@ suite('builds', () => {
         bundle: false,
         addServiceWorker: false,
         addPushManifest: false,
-        insertPrefetchLinks: false,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
