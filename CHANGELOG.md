@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.3.0] - 2017-06-09
+* Removed `insertPrefetchLinks` from build presets. See https://github.com/Polymer/polymer-build/issues/239 for details.
+
 ## [3.2.1] - 2017-05-19
 * Turned on insertPrefetchLinks for the bundled presets after prefetch link bugs were fixed.
 
