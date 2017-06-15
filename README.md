@@ -1,6 +1,7 @@
-# polyserve
-
 [![Build Status](https://travis-ci.org/Polymer/polyserve.svg?branch=master)](https://travis-ci.org/Polymer/polyserve)
+[![NPM version](http://img.shields.io/npm/v/polyserve.svg)](https://www.npmjs.com/package/polyserve)
+
+# polyserve
 
 A simple development server for web projects.
 
