@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/Polymer/polymer-linter.svg?branch=master)](https://travis-ci.org/Polymer/polymer-linter)
+[![NPM version](http://img.shields.io/npm/v/polymer-linter.svg)](https://www.npmjs.com/package/polymer-linter)
+
 # Polymer Linter
 
 A library for finding and reporting on suspicious patterns and errors in web projects.
