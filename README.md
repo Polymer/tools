@@ -1,5 +1,5 @@
-[![NPM version](http://img.shields.io/npm/v/polymer-analyzer.svg)](https://npmjs.org/package/polymer-analyzer)
 [![Build Status](https://travis-ci.org/Polymer/polymer-analyzer.svg?branch=master)](https://travis-ci.org/Polymer/polymer-analyzer)
+[![NPM version](http://img.shields.io/npm/v/polymer-analyzer.svg)](https://www.npmjs.com/package/polymer-analyzer)
 
 # Polymer Analyzer
 
