@@ -38,6 +38,25 @@ const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
 const isNotExternal = (d: Document) => !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
 
+
+function generatePackageJson(bowerJson: any, npmName: string, npmVersion?: string) {
+  return {
+    name: npmName,
+    flat: true,
+    version: npmVersion || bowerJson.version,
+    description: bowerJson.description,
+    author: bowerJson.author,
+    contributors: bowerJson.contributors || bowerJson.authors,
+    keywords: bowerJson.keywords,
+    main: (typeof bowerJson.main === 'string') ? bowerJson.main : undefined,
+    repository: bowerJson.repository,
+    homepage: bowerJson.homepage,
+    dependencies: {},
+    devDependencies: {}
+  };
+}
+
+
 export interface JsExport {
   /**
    * URL of the JS module.
@@ -109,8 +128,11 @@ export async function convertPackage() {
   }
 
   const analysis = await analyzer.analyzePackage();
+
   // TODO(justinfagnani): These setting are only good for Polymer core and should be
   // extracted into a config file
+  const npmPackageName = '@polymer/polymer';
+  const npmPackageVersion = '3.0.0-pre.2';
   const converter = new AnalysisConverter(analysis, {
     excludes: [
       'lib/utils/boot.html',
@@ -133,9 +155,21 @@ export async function convertPackage() {
       await fs.writeFile(outPath, newSource);
     }
   } catch (e) {
-    console.log('error in conversion');
+    console.log('error in codebase conversion');
     console.error(e);
   }
+
+  try {
+    const bowerJsonPath = path.resolve('bower.json');
+    const bowerJson = await fs.readFile(bowerJsonPath);
+    const packageJsonPath = path.resolve(outDir, 'package.json');
+    const packageJson = generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
+  } catch (e) {
+    console.log('error in bower.json -> package.json conversion');
+    console.error(e);
+  }
+
 }
 
 export interface AnalysisConverterOptions {
