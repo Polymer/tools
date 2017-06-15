@@ -1,5 +1,14 @@
 # Change Log
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](http://semver.org/).
+
+## Unreleased
+- Moved development-only dependencies in package.json to devDependencies.
+<!-- Add new, unreleased changes here. -->
+
 ## [v2.3.0](https://github.com/Polymer/dom5/tree/v2.3.0) (2017-05-03)
 - **Added** `insertAfter()` function
 
