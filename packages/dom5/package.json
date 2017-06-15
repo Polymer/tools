@@ -16,6 +16,7 @@
     "lint": "tslint dom5.ts"
   },
   "dependencies": {
+    "@types/parse5": "^2.2.32",
     "clone": "^2.1.0",
     "parse5": "^2.2.2"
   },
@@ -24,7 +25,6 @@
     "@types/clone": "^0.1.29",
     "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.0",
-    "@types/parse5": "^2.2.32",
     "chai": "^3.3.0",
     "clang-format": "=1.0.49",
     "mocha": "^2.0.1",
