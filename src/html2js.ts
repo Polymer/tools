@@ -138,7 +138,11 @@ export async function convertPackage() {
       'lib/utils/boot.html',
       'lib/elements/dom-module.html',
     ],
-    referenceExcludes: ['Polymer.DomModule'],
+    referenceExcludes: [
+      'Polymer.DomModule',
+      'Polymer.log',
+      'Polymer.sanitizeDOMValue'
+    ],
     mutableExports: {
       'Polymer.telemetry': ['instanceCount'],
     },
