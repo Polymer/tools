@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 
+* Comments are now only associated with classes and other objects if they are touching (<2 newlines between them).
+
 ## [2.1.0] - 2017-06-02
 
 * Minor bugfix: JSON.stringify(warning) had a bunch of extra unnecessary properties.

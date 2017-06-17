@@ -15,3 +15,7 @@ Namespace.AlsoAssignment = class ThisNameAlsoIgnored { }
  * @memberof Declared
  */
 AnotherAssignment = class IgnoreIgnoreIgnore { }
+
+let NotAClass; // this comment should not be attached to a class
+
+class ClassWithNoJsDoc { }

@@ -124,6 +124,7 @@ suite('Class', () => {
         'Assignment',
         'Namespace.AlsoAssignment',
         'Declared.AnotherAssignment',
+        'ClassWithNoJsDoc',
       ]);
 
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
@@ -150,6 +151,11 @@ suite('Class', () => {
         {
           description: 'Declared namespace works too',
           name: 'Declared.AnotherAssignment',
+          privacy: 'public',
+        },
+        {
+          description: '',
+          name: 'ClassWithNoJsDoc',
           privacy: 'public',
         },
       ]);
@@ -287,6 +293,7 @@ suite('Class', () => {
         'Assignment',
         'Namespace.AlsoAssignment',
         'Declared.AnotherAssignment',
+        'ClassWithNoJsDoc',
       ]);
 
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
@@ -313,6 +320,11 @@ suite('Class', () => {
         {
           description: 'Declared namespace works too',
           name: 'Declared.AnotherAssignment',
+          privacy: 'public',
+        },
+        {
+          description: '',
+          name: 'ClassWithNoJsDoc',
           privacy: 'public',
         },
       ]);
