@@ -20,7 +20,10 @@ suite('html2js', () => {
       })
     });
 
-    async function getJs(options?: AnalysisConverterOptions) {
+    async function getJs(partialOptions?: Partial<AnalysisConverterOptions>) {
+      const options: AnalysisConverterOptions = Object.assign({
+        rootModuleName: 'Polymer',
+      }, partialOptions);
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
       const converter = new AnalysisConverter(analysis, options);
@@ -37,7 +40,9 @@ suite('html2js', () => {
 
     async function getConverted(): Promise<Map<string, string>> {
       const analysis = await analyzer.analyze(['test.html']);
-      const converter = new AnalysisConverter(analysis);
+      const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
+      });
       return converter.convert();
     }
 
@@ -579,6 +584,7 @@ export const isDeep = isPath;
       });
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
         excludes: ['exclude.html'],
       });
       const converted = await converter.convert();
@@ -597,6 +603,7 @@ class MyElement extends $Element {}\n`);
       });
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
         referenceExcludes: ['Polymer.DomModule'],
       });
       const converted = await converter.convert();
@@ -680,7 +687,9 @@ class TestElement extends Polymer.Element {
 
     test('case-map', async () => {
       const analysis = await analyzer.analyze(['case-map/case-map.html']);
-      const converter = new AnalysisConverter(analysis);
+      const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
+      });
       const converted = await converter.convert();
       const caseMapSource = converted.get('./case-map/case-map.js');
       assert.include(caseMapSource!, 'export function dashToCamelCase');
@@ -691,7 +700,9 @@ class TestElement extends Polymer.Element {
       const filename = 'polymer-element/polymer-element.html';
       const analysis = await analyzer.analyze([filename]);
       const doc = analysis.getDocument(filename) as Document;
-      const converter = new AnalysisConverter(analysis);
+      const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
+      });
       converter.convertDocument(doc);
       assert(converter.namespacedExports.has('Polymer.Element'));
     });
