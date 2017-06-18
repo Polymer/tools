@@ -21,7 +21,7 @@ import {Document, ParsedJavaScriptDocument, Namespace, Import} from 'polymer-ana
 import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression, BlockStatement} from 'estree';
 
 import jsc = require('jscodeshift');
-import { JsModule, AnalysisConverter } from "./analysis-converter";
+import { JsModule, AnalysisConverter } from './analysis-converter';
 
 const astTypes = require('ast-types');
 
@@ -98,6 +98,19 @@ export class DocumentConverter {
     this.addJsImports();
     this.inlineTemplates();
 
+    const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
+
+    this.rewriteLocalNamespacedReferences(localNamespaceName);
+    this.rewriteLocalNamespacedReferences(namespaceName);
+
+    this.module.source = recast.print(this.program, {
+      quote: 'single',
+      wrapColumn: 80,
+      tabWidth: 2,
+    }).code + '\n';
+  }
+
+  rewriteNamespaceExports()  {
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
 
@@ -209,6 +222,11 @@ export class DocumentConverter {
       wrapColumn: 80,
       tabWidth: 2,
     }).code + '\n';
+    
+    return {
+      localNamespaceName,
+      namespaceName,
+    };
   }
 
   inlineTemplates() {
