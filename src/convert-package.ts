@@ -15,7 +15,7 @@
 import * as fs from 'mz/fs';
 import * as path from 'path';
 import { Analyzer, FSUrlLoader, PackageUrlResolver } from "polymer-analyzer/lib";
-import { AnalysisConverterOptions, AnalysisConverter } from "./html2js";
+import { AnalysisConverterOptions, AnalysisConverter } from "./analysis-converter";
 
 const mkdirp = require('mkdirp');
 

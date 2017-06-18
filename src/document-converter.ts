@@ -21,7 +21,7 @@ import {Document, ParsedJavaScriptDocument, Namespace, Import} from 'polymer-ana
 import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression, BlockStatement} from 'estree';
 
 import jsc = require('jscodeshift');
-import { JsModule, AnalysisConverter } from "./html2js";
+import { JsModule, AnalysisConverter } from "./analysis-converter";
 
 const astTypes = require('ast-types');
 

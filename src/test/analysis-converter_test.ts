@@ -1,14 +1,28 @@
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
 import * as esprima from 'esprima';
 import * as estree from 'estree';
 import * as path from 'path';
 
 import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
-import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../html2js';
+import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../analysis-converter';
 import {assert} from 'chai';
 
-suite('html2js', () => {
+suite('AnalysisConverter', () => {
 
-  suite('html2Js', () => {
+  suite('convertDocument', () => {
 
     let urlLoader: InMemoryOverlayUrlLoader;
     let analyzer: Analyzer;
