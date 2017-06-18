@@ -17,7 +17,7 @@ suite('html2js', () => {
       urlLoader = new InMemoryOverlayUrlLoader();
       analyzer = new Analyzer({
         urlLoader: urlLoader
-      })
+      });
     });
 
     async function getJs(partialOptions?: Partial<AnalysisConverterOptions>) {
