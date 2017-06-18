@@ -9,6 +9,7 @@ declare module 'command-line-args' {
       multiple?: boolean;
       defaultOption?: boolean;
       defaultValue?: any;
+      description?: string;
     }
 
   }
