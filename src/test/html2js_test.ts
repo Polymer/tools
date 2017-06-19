@@ -161,6 +161,86 @@ export { independentFn };
 `);
     });
 
+    test('modifies `this` references correctly for exports', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               * @memberof Polymer
+               */
+              const Namespace = {
+                fn: function() {
+                  this.foobar();
+                },
+                // NOTE: this is not a valid reference to Namespace.foobar
+                isArrowFn: () => {
+                  this.foobar();
+                },
+                ifBlock: function() {
+                  if (this.foobar) {
+                    this.foobar();
+                  }
+                },
+                iffeFn: function() {
+                  (function() {
+                    this.foobar();
+                  })();
+                },
+                inlineFn: function() {
+                  function inline() {
+                    this.foobar();
+                  }
+                  inline();
+                },
+                arrowFn: function() {
+                  const baz = () => {
+                    this.foobar();
+                  };
+                },
+              };
+              Polymer.Namespace = Namespace;
+            })();
+          </script>`,
+      });
+      assert.equal(await getJs(), `export function fn() {
+  foobar();
+}
+
+export const isArrowFn = () => {
+  this.foobar();
+};
+
+export function ifBlock() {
+  if (foobar) {
+    foobar();
+  }
+}
+
+export function iffeFn() {
+  (function() {
+    this.foobar();
+  })();
+}
+
+export function inlineFn() {
+  function inline() {
+    this.foobar();
+  }
+  inline();
+}
+
+export function arrowFn() {
+  const baz = () => {
+    foobar();
+  };
+}
+`);
+    });
+
+
     test('exports a namespace object and fixes local references to its properties', async () => {
       setSources({
         'test.html': `
@@ -189,7 +269,7 @@ export function polymerReferenceFn() {
 }
 
 export function thisReferenceFn() {
-  return this.meth();
+  return meth();
 }
 `);
     });
@@ -297,7 +377,6 @@ export const subFnDelegate = function () {
 `);
     });
 
-
     test('exports a referenced namespace', async () => {
       setSources({
         'test.html': `
@@ -309,7 +388,9 @@ export const subFnDelegate = function () {
                * @memberof Polymer
                */
               const Namespace = {
-                obj: {},
+                obj: {
+                  deepFunc: function() {},
+                },
                 func: function() {},
                 localReferencingFunc: function() {
                   return Namespace.func();
@@ -317,12 +398,21 @@ export const subFnDelegate = function () {
                 globalReferencingFunc: function() {
                   return Polymer.Namespace.func();
                 },
+                thisReferenceFn: function() {
+                  this.func();
+                },
+                deepReferenceFn: function() {
+                  this.obj.deepFunc();
+                },
               };
               Polymer.Namespace = Namespace;
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {};
+      assert.equal(await getJs(), `export const obj = {
+  deepFunc: function() {},
+};
+
 export function func() {}
 
 export function localReferencingFunc() {
@@ -331,6 +421,14 @@ export function localReferencingFunc() {
 
 export function globalReferencingFunc() {
   return func();
+}
+
+export function thisReferenceFn() {
+  func();
+}
+
+export function deepReferenceFn() {
+  obj.deepFunc();
 }
 `);
     });

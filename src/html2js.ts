@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as recast from 'recast';
 
 import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace, Analysis, Import} from 'polymer-analyzer';
-import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression} from 'estree';
+import {BlockStatement, Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression} from 'estree';
 
 import jsc = require('jscodeshift');
 
@@ -435,6 +435,7 @@ class DocumentConverter {
       this.currentStatementIndex++;
     }
 
+    this.rewriteNamespaceThisReferences(namespaceName);
     this.rewriteLocalNamespacedReferences(localNamespaceName);
     this.rewriteLocalNamespacedReferences(namespaceName);
 
@@ -556,20 +557,74 @@ class DocumentConverter {
    * export foo() {}
    * foo();
    */
-  rewriteLocalNamespacedReferences(localNamespaceName?: string) {
-    if (localNamespaceName === undefined) {
+  rewriteLocalNamespacedReferences(namespaceName?: string) {
+    if (namespaceName === undefined) {
       return;
     }
     astTypes.visit(this.program, {
       visitMemberExpression(path: any) {
         const memberPath = getMemberPath(path.node);
         const memberName = memberPath && memberPath.slice(0, -1).join('.');
-        if (memberName && memberName === localNamespaceName) {
+        if (memberName && memberName === namespaceName) {
           path.replace(path.node.property);
+          return false;
         }
-        // do not visit rest of member expression
-        return false;
+        // Keep looking, this MemberExpression could still contain the
+        // MemberExpression that we are looking for.
+        this.traverse(path);
+        return;
       }
+    });
+  }
+
+  /**
+   * Rewrite `this` references that refer to the namespace object. Replace with
+   * an explicit reference to the namespace. This simplifies the rest of our
+   * transform pipeline by letting it assume that all namespace references
+   * are explicit.
+   *
+   * NOTE(fks): References to the namespace object still need to be corrected
+   * after this step, so timing is important: Only run after exports have
+   * been created, but before all namespace references are corrected.
+   */
+  rewriteNamespaceThisReferences(namespaceName?: string) {
+    if (namespaceName === undefined) {
+      return;
+    }
+    astTypes.visit(this.program, {
+      visitExportNamedDeclaration: (path: any) => {
+        if (path.node.declaration && path.node.declaration.type === 'FunctionDeclaration') {
+          this.rewriteSingleScopeThisReferences(path.node.declaration.body, namespaceName);
+        }
+        return false;
+      },
+      visitExportDefaultDeclaration: (path: any) => {
+        if (path.node.declaration && path.node.declaration.type === 'FunctionDeclaration') {
+          this.rewriteSingleScopeThisReferences(path.node.declaration.body, namespaceName);
+        }
+        return false;
+      },
+    });
+  }
+
+  /**
+   * Rewrite `this` references to the explicit namespaceReference identifier
+   * within a single BlockStatement. Don't traverse deeper into new scopes.
+   */
+  rewriteSingleScopeThisReferences(blockStatement: BlockStatement, namespaceReference: string) {
+    astTypes.visit(blockStatement, {
+      visitFunctionExpression(_path: any) {
+        // Don't visit into new scopes
+        return false;
+      },
+      visitFunctionDeclaration(_path: any) {
+        // Don't visit into new scopes
+        return false;
+      },
+      visitThisExpression(path: any) {
+        path.replace(jsc.identifier(namespaceReference));
+        return false;
+      },
     });
   }
 
