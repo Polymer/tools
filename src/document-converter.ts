@@ -13,283 +13,22 @@
  */
 
 import * as dom5 from 'dom5';
-import * as fs from 'mz/fs';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import * as recast from 'recast';
 
-import {Analyzer, FSUrlLoader, PackageUrlResolver, Document, ParsedJavaScriptDocument, Namespace, Analysis, Import} from 'polymer-analyzer';
-import {BlockStatement, Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression} from 'estree';
+import {Document, ParsedJavaScriptDocument, Namespace, Import} from 'polymer-analyzer';
+import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression, BlockStatement} from 'estree';
 
 import jsc = require('jscodeshift');
+import { JsModule, AnalysisConverter } from './analysis-converter';
 
 const astTypes = require('ast-types');
-const mkdirp = require('mkdirp');
-
-const analyzer = new Analyzer({
-  urlLoader: new FSUrlLoader(process.cwd()),
-  urlResolver: new PackageUrlResolver(),
-});
-
-const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
-const isNotTest = (d: Document) => !_isInTestRegex.test(d.url);
-
-const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
-const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
-const isNotExternal = (d: Document) => !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
-
-
-function generatePackageJson(bowerJson: any, npmName: string, npmVersion?: string) {
-  return {
-    name: npmName,
-    private: true,
-    flat: true,
-    version: npmVersion || bowerJson.version,
-    description: bowerJson.description,
-    author: bowerJson.author,
-    contributors: bowerJson.contributors || bowerJson.authors,
-    keywords: bowerJson.keywords,
-    main: (typeof bowerJson.main === 'string') ? bowerJson.main : undefined,
-    repository: bowerJson.repository,
-    homepage: bowerJson.homepage,
-    dependencies: {},
-    devDependencies: {}
-  };
-}
-
-
-export interface JsExport {
-  /**
-   * URL of the JS module.
-   */
-  url: string;
-
-  /**
-   * Exported name, ie Foo for `export Foo`;
-   *
-   * The name * represents the entire module, for when the key in the
-   * namespacedExports Map represents a namespace object.
-   */
-  name: string;
-}
-
-export interface JsModule {
-  /**
-   * Package-relative URL of the converted JS module.
-   */
-  url: string;
-
-  /**
-   * Converted source of the JS module.
-   */
-  source: string;
-
-  /**
-   * Set of exported names.
-   */
-  exports: Set<string>;
-
-  /**
-   * Map of module URL (ie, polymer-element.js) to imported references
-   * (ie, Element). This map is used to rewrite import statements to
-   * only include what's used in an importing module.
-   */
-  importedReferences: Map<string, Set<string>>;
-}
-
-/**
- * A collection of converted JS modules and exported namespaced identifiers.
- */
-export interface ModuleIndex {
-  /**
-   * Map of module URL to JsModule
-   */
-  modules: Map<string, JsModule>;
-
-  /**
-   * Map of namespaced id (ie, Polymer.Element) to module URL
-   * (ie, polymeer-element.js) + exported name (ie, Element).
-   */
-  namespacedExports: Map<string, JsExport>;
-}
-
-type ConvertPackageOptions = AnalysisConverterOptions & {
-
-  /**
-   * The directory to write converted JavaScript files to.
-   */
-  outDir?: string;
-
-  /**
-   * The npm package name to use in package.json
-   */
-  packageName?: string;
-
-  npmVersion?: string;
-};
-
-/**
- * Converts an entire package from HTML imports to JS modules
- */
-export async function convertPackage(options: ConvertPackageOptions = {}) {
-  const outDir = options && (options.outDir) || 'js_out';
-  const outDirResolved = path.resolve(process.cwd(), outDir);
-  console.log(`Out directory: ${outDirResolved}`);
-
-  try {
-    await fs.mkdir(outDirResolved);
-  } catch (e) {
-    if (e.errno !== -17) { // directory exists
-      console.error(e);
-    }
-  }
-
-  const analysis = await analyzer.analyzePackage();
-
-  // TODO(justinfagnani): These setting are only good for Polymer core and should be
-  // extracted into a config file
-  const npmPackageName = options.packageName || '@polymer/polymer';
-  const npmPackageVersion = options.npmVersion;
-  const converter = new AnalysisConverter(analysis, {
-    rootModuleName: options.rootModuleName || 'Polymer',
-    excludes: options.excludes || [
-      'lib/utils/boot.html',
-      'lib/elements/dom-module.html',
-    ],
-    referenceExcludes: options.referenceExcludes || [
-      'Polymer.DomModule',
-      'Polymer.log',
-      'Polymer.sanitizeDOMValue'
-    ],
-    mutableExports: options.mutableExports || {
-      'Polymer.telemetry': ['instanceCount'],
-    },
-  });
-
-  try {
-    const results = await converter.convert();
-    for (const [jsUrl, newSource] of results!) {
-      const outPath = path.resolve(outDirResolved, jsUrl);
-      const jsDir = path.dirname(outPath);
-      // console.log(`writing ${outPath}`);
-      mkdirp.sync(jsDir);
-      // console.log(`created dir ${jsDir}`);
-      await fs.writeFile(outPath, newSource);
-    }
-  } catch (e) {
-    console.log('error in codebase conversion');
-    console.error(e);
-  }
-
-  try {
-    const bowerJsonPath = path.resolve('bower.json');
-    const bowerJson = await fs.readFile(bowerJsonPath);
-    const packageJsonPath = path.resolve(outDir, 'package.json');
-    const packageJson = generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
-    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
-  } catch (e) {
-    console.log('error in bower.json -> package.json conversion');
-    console.error(e);
-  }
-
-}
-
-export interface AnalysisConverterOptions {
-
-  /**
-   * The root namespace name that is used to detect exports.
-   */
-  rootModuleName?: string;
-
-  /**
-   * Files to exclude from conversion (ie lib/utils/boot.html). Imports
-   * to these files are also excluded.
-   */
-  excludes?: string[];
-
-  /**
-   * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
-   * the entire reference with `undefined`.
-   *
-   * These references would normally be rewritten to module imports, but in some
-   * cases they are accessed without importing. The presumption is that access
-   * is guarded by a conditional and replcing with `undefined` will safely
-   * fail the guard.
-   */
-  referenceExcludes?: string[];
-
-  /**
-   * For each namespace you can set a list of references (ie,
-   * 'Polymer.telemetry.instanceCount') that need to be mutable and cannot be
-   * exported as `const` variables. They will be exported as `let` variables
-   * instead.
-   */
-  mutableExports?: {[namespaceName: string]: string[]};
-}
-
-/**
- * Converts an entire Analysis object.
- */
-export class AnalysisConverter {
-
-  analysis: Analysis;
-  rootModuleName: string|undefined;
-  _excludes: Set<string>;
-  _referenceExcludes: Set<string>;
-  _mutableExports?: {[namespaceName: string]: string[]};
-
-  modules = new Map<string, JsModule>();
-  namespacedExports = new Map<string, JsExport>();
-
-  constructor(analysis: Analysis, options: AnalysisConverterOptions = {}) {
-    this.analysis = analysis;
-    this.rootModuleName = options.rootModuleName;
-    this._excludes = new Set(options.excludes);
-    this._referenceExcludes = new Set(options.referenceExcludes);
-    this._mutableExports = options.mutableExports;
-  }
-
-  async convert(): Promise<Map<string, string>> {
-
-    const htmlDocuments = Array.from(this.analysis.getFeatures({kind: 'html-document'}))
-      .filter((d) => {
-        return !this._excludes.has(d.url) && isNotExternal(d) && isNotTest(d) && d.url;
-      });
-
-    const results = new Map<string, string>()
-
-    for (const document of htmlDocuments) {
-      try {
-        this.convertDocument(document);
-        const jsUrl = htmlUrlToJs(document.url);
-        const module = this.modules.get(jsUrl);
-        const newSource = module && module.source;
-        if (newSource) {
-          results.set(jsUrl, newSource);
-        }
-      } catch (e) {
-        console.error(`Error in ${document.url}`, e);
-      }
-    }
-    return results;
-  }
-
-  /**
-   * Converts a Polymer Analyzer HTML document to a JS module
-   */
-  convertDocument(document: Document): void {
-    const jsUrl = htmlUrlToJs(document.url);
-    if (this.modules.has(jsUrl)) {
-      return;
-    }
-    new DocumentConverter(this, document).convert();
-  }
-}
 
 /**
  * Converts a Document and its dependencies.
  */
-class DocumentConverter {
+export class DocumentConverter {
 
   jsUrl: string;
   module: JsModule;
@@ -359,6 +98,19 @@ class DocumentConverter {
     this.addJsImports();
     this.inlineTemplates();
 
+    const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
+
+    this.rewriteLocalNamespacedReferences(localNamespaceName);
+    this.rewriteLocalNamespacedReferences(namespaceName);
+
+    this.module.source = recast.print(this.program, {
+      quote: 'single',
+      wrapColumn: 80,
+      tabWidth: 2,
+    }).code + '\n';
+  }
+
+  rewriteNamespaceExports()  {
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
 
@@ -470,6 +222,11 @@ class DocumentConverter {
       wrapColumn: 80,
       tabWidth: 2,
     }).code + '\n';
+    
+    return {
+      localNamespaceName,
+      namespaceName,
+    };
   }
 
   inlineTemplates() {

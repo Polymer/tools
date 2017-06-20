@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { convertPackage } from './html2js';
+import { convertPackage } from './convert-package.js';
 
 import commandLineArgs = require('command-line-args')
 
