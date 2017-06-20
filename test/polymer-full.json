@@ -10,7 +10,7 @@
   ],
   "sources": [
     "src/**/*",
-    "images/**/*"
+    "!images/**/*"
   ],
   "builds": [
     {

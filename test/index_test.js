@@ -614,7 +614,7 @@ suite('Project Config', () => {
         fragments: ['fragment.html'],
         sources: [
           'src/**/*',
-          'images/**/*',
+          '!images/**/*',
           'entrypoint.html',
           'shell.html',
           'fragment.html',
