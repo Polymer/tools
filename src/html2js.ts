@@ -42,6 +42,7 @@ const isNotExternal = (d: Document) => !_isInBowerRegex.test(d.url) && !_isInNpm
 function generatePackageJson(bowerJson: any, npmName: string, npmVersion?: string) {
   return {
     name: npmName,
+    private: true,
     flat: true,
     version: npmVersion || bowerJson.version,
     description: bowerJson.description,
