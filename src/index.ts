@@ -29,16 +29,27 @@ const logger = logging.getLogger('polymer-project-config');
 export const defaultSourceGlobs = ['src/**/*'];
 
 /**
- * Resolve any glob to the given path, even if glob
+ * Resolve any glob or path from the given path, even if glob
  * is negative (begins with '!').
  */
-function resolveGlob(fromPath: string, glob: string): string {
+function globResolve(fromPath: string, glob: string): string {
   if (glob.startsWith('!')) {
     const includeGlob = glob.substring(1);
     return '!' + path.resolve(fromPath, includeGlob);
   } else {
     return path.resolve(fromPath, glob);
   }
+}
+
+/**
+ * Returns a relative path for a glob or path, even if glob
+ * is negative (begins with '!').
+ */
+function globRelative(fromPath: string, glob: string): string {
+  if (glob.startsWith('!')) {
+    return '!' + path.relative(fromPath, glob.substr(1));
+  }
+  return path.relative(fromPath, glob);
 }
 
 /**
@@ -234,13 +245,13 @@ export class ProjectConfig {
      * extraDependencies
      */
     this.extraDependencies = (options.extraDependencies ||
-                              []).map((glob) => resolveGlob(this.root, glob));
+                              []).map((glob) => globResolve(this.root, glob));
 
     /**
      * sources
      */
     this.sources = (options.sources || defaultSourceGlobs)
-                       .map((glob) => resolveGlob(this.root, glob));
+                       .map((glob) => globResolve(this.root, glob));
     this.sources.push(this.entrypoint);
     if (this.shell) {
       this.sources.push(this.shell);
@@ -367,14 +378,18 @@ export class ProjectConfig {
    * will be relative to root.
    */
   toJSON(): string {
-    const relative = (p: string | null | undefined) =>
-        p ? path.relative(this.root, p) : undefined;
     const obj = {
-      entrypoint: relative(this.entrypoint),
-      shell: relative(this.shell),
-      fragments: (this.fragments || []).map(relative),
-      sources: (this.sources || []).map(relative),
-      extraDependencies: (this.extraDependencies || []).map(relative),
+      entrypoint: globRelative(this.root, this.entrypoint),
+      shell: this.shell ? globRelative(this.root, this.shell) : undefined,
+      fragments: this.fragments.map((absolutePath) => {
+        return globRelative(this.root, absolutePath);
+      }),
+      sources: this.sources.map((absolutePath) => {
+        return globRelative(this.root, absolutePath);
+      }),
+      extraDependencies: this.extraDependencies.map((absolutePath) => {
+        return globRelative(this.root, absolutePath);
+      }),
       builds: this.builds,
       lint: this.lint,
     };
