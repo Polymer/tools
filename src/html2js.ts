@@ -42,6 +42,7 @@ const isNotExternal = (d: Document) => !_isInBowerRegex.test(d.url) && !_isInNpm
 function generatePackageJson(bowerJson: any, npmName: string, npmVersion?: string) {
   return {
     name: npmName,
+    private: true,
     flat: true,
     version: npmVersion || bowerJson.version,
     description: bowerJson.description,
@@ -112,15 +113,31 @@ export interface ModuleIndex {
   namespacedExports: Map<string, JsExport>;
 }
 
+type ConvertPackageOptions = AnalysisConverterOptions & {
+
+  /**
+   * The directory to write converted JavaScript files to.
+   */
+  outDir?: string;
+
+  /**
+   * The npm package name to use in package.json
+   */
+  packageName?: string;
+
+  npmVersion?: string;
+};
+
 /**
  * Converts an entire package from HTML imports to JS modules
  */
-export async function convertPackage() {
-  const outDir = path.resolve(process.cwd(), 'js_out');
-  console.log(`Out directory: ${outDir}`);
+export async function convertPackage(options: ConvertPackageOptions = {}) {
+  const outDir = options && (options.outDir) || 'js_out';
+  const outDirResolved = path.resolve(process.cwd(), outDir);
+  console.log(`Out directory: ${outDirResolved}`);
 
   try {
-    await fs.mkdir(outDir);
+    await fs.mkdir(outDirResolved);
   } catch (e) {
     if (e.errno !== -17) { // directory exists
       console.error(e);
@@ -131,19 +148,20 @@ export async function convertPackage() {
 
   // TODO(justinfagnani): These setting are only good for Polymer core and should be
   // extracted into a config file
-  const npmPackageName = '@polymer/polymer';
-  const npmPackageVersion = '3.0.0-pre.2';
+  const npmPackageName = options.packageName || '@polymer/polymer';
+  const npmPackageVersion = options.npmVersion;
   const converter = new AnalysisConverter(analysis, {
-    excludes: [
+    rootModuleName: options.rootModuleName || 'Polymer',
+    excludes: options.excludes || [
       'lib/utils/boot.html',
       'lib/elements/dom-module.html',
     ],
-    referenceExcludes: [
+    referenceExcludes: options.referenceExcludes || [
       'Polymer.DomModule',
       'Polymer.log',
       'Polymer.sanitizeDOMValue'
     ],
-    mutableExports: {
+    mutableExports: options.mutableExports || {
       'Polymer.telemetry': ['instanceCount'],
     },
   });
@@ -151,7 +169,7 @@ export async function convertPackage() {
   try {
     const results = await converter.convert();
     for (const [jsUrl, newSource] of results!) {
-      const outPath = path.resolve(outDir, jsUrl);
+      const outPath = path.resolve(outDirResolved, jsUrl);
       const jsDir = path.dirname(outPath);
       // console.log(`writing ${outPath}`);
       mkdirp.sync(jsDir);
@@ -177,6 +195,12 @@ export async function convertPackage() {
 }
 
 export interface AnalysisConverterOptions {
+
+  /**
+   * The root namespace name that is used to detect exports.
+   */
+  rootModuleName?: string;
+
   /**
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
    * to these files are also excluded.
@@ -209,18 +233,20 @@ export interface AnalysisConverterOptions {
 export class AnalysisConverter {
 
   analysis: Analysis;
-  options: AnalysisConverterOptions;
+  rootModuleName: string|undefined;
   _excludes: Set<string>;
   _referenceExcludes: Set<string>;
+  _mutableExports?: {[namespaceName: string]: string[]};
 
   modules = new Map<string, JsModule>();
   namespacedExports = new Map<string, JsExport>();
 
-  constructor(analysis: Analysis, options?: AnalysisConverterOptions) {
+  constructor(analysis: Analysis, options: AnalysisConverterOptions = {}) {
     this.analysis = analysis;
-    this.options = options || {};
-    this._excludes = new Set(this.options.excludes);
-    this._referenceExcludes = new Set(this.options.referenceExcludes);
+    this.rootModuleName = options.rootModuleName;
+    this._excludes = new Set(options.excludes);
+    this._referenceExcludes = new Set(options.referenceExcludes);
+    this._mutableExports = options.mutableExports;
   }
 
   async convert(): Promise<Map<string, string>> {
@@ -276,7 +302,7 @@ class DocumentConverter {
 
   constructor(analysisConverter: AnalysisConverter, document: Document) {
     this.analysisConverter = analysisConverter;
-    this._mutableExports = <any>Object.assign({}, this.analysisConverter.options.mutableExports);
+    this._mutableExports = <any>Object.assign({}, this.analysisConverter._mutableExports);
     this.document = document;
     this.jsUrl = htmlUrlToJs(document.url);
     this.module = {
@@ -340,7 +366,7 @@ class DocumentConverter {
     // with module exports.
     while (this.currentStatementIndex < this.program.body.length) {
       const statement = this.program.body[this.currentStatementIndex] as Statement;
-      const exported = getExport(statement, 'Polymer');
+      const exported = getExport(statement, this.analysisConverter.rootModuleName);
 
       if (exported !== undefined) {
         const {namespace, value} = exported;
@@ -822,7 +848,7 @@ function isDeclaration(node: Node) {
  *
  * @param moduleRoot If specified
  */
-function getExport(statement: Statement | ModuleDeclaration, rootModuleName: string): {namespace: string[], value: Expression} |undefined {
+function getExport(statement: Statement | ModuleDeclaration, rootModuleName?: string): {namespace: string[], value: Expression} |undefined {
   if (!(statement.type === 'ExpressionStatement'
       && statement.expression.type === 'AssignmentExpression')) {
     return undefined;

@@ -20,10 +20,10 @@ process.title = 'analyze';
 
 require('source-map-support').install();
 
-const {convertPackage} = require('../lib/html2js');
+const {run} = require('../lib/cli');
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
 });
 
-convertPackage();
+run();
