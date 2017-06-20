@@ -215,11 +215,14 @@ function htmlUrlToJs(url: string, from?: string): string {
   // We've lost the actual URL string and thus the leading ./
   // This should be fixed in the Analyzer, and this hack isn't even right
   if (from !== undefined) {
-    jsUrl = path.relative(path.dirname(from), jsUrl);
+    jsUrl = path.posix.relative(path.posix.dirname(from), jsUrl);
   }
   if (!jsUrl.startsWith('.') && !jsUrl.startsWith('/')) {
     jsUrl = './' + jsUrl;
   }
+  // Fix any references to ./bower_components/* to point to siblings instead
+  if (jsUrl.startsWith('./bower_components/')) {
+    jsUrl = '../' + jsUrl.slice('./bower_components/'.length);
+  }
   return jsUrl;
 }
-

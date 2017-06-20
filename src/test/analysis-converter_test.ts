@@ -64,11 +64,13 @@ suite('AnalysisConverter', () => {
       setSources({
         'test.html': `
           <link rel="import" href="./dep.html">
+          <link rel="import" href="../dep.html">
           <script></script>
         `,
         'dep.html': `<h1>Hi</h1>`,
+        'bower_components/dep.html': `<h1>Hi</h1>`,
       });
-      assert.equal(await getJs(), `import './dep.js';\n`);
+      assert.equal(await getJs(), `import './dep.js';\nimport '../dep.js';\n`);
     });
 
     test('converts imports to .js without scripts', async () => {
