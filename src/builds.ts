@@ -80,7 +80,29 @@ export interface ProjectBuildOptions {
    * reduce the number of file requests. This is optimal for sending to clients
    * or serving from servers that are not HTTP/2 compatible.
    */
-  bundle?: boolean;
+  bundle?: boolean|{
+
+    /** URLs of files and/or folders that should not be inlined. */
+    excludes?: string[],
+
+    /** Inline external CSS file contents into <style> tags. */
+    inlineCss?: boolean,
+
+    /** Inline external Javascript file contents into <script> tags. */
+    inlineScripts?: boolean,
+
+    /** Rewrite element attributes inside of templates when inlining html. */
+    rewriteUrlsInTemplates?: boolean,
+
+    /** Create identity source maps for inline scripts. */
+    sourcemaps?: boolean,
+
+    /**
+     * Remove all comments except those tagged '@license', or starting with
+     * `<!--!` or `<!--#`, when true.
+     */
+    stripComments?: boolean,
+  };
 
   /** Options for processing HTML. */
   html?: {
