@@ -100,10 +100,10 @@ export class DocumentConverter {
 
     const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
     
-    this.rewriteExcludedReferences();
     this.rewriteNamespaceThisReferences(namespaceName);
     this.rewriteLocalNamespacedReferences(localNamespaceName);
     this.rewriteLocalNamespacedReferences(namespaceName);
+    this.rewriteExcludedReferences();
 
     this.module.source = recast.print(this.program, {
       quote: 'single',
