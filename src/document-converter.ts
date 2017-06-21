@@ -99,9 +99,11 @@ export class DocumentConverter {
     this.inlineTemplates();
 
     const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
-
+    
+    this.rewriteNamespaceThisReferences(namespaceName);
     this.rewriteLocalNamespacedReferences(localNamespaceName);
     this.rewriteLocalNamespacedReferences(namespaceName);
+    this.rewriteExcludedReferences();
 
     this.module.source = recast.print(this.program, {
       quote: 'single',
@@ -212,16 +214,6 @@ export class DocumentConverter {
       }
       this.currentStatementIndex++;
     }
-
-    this.rewriteNamespaceThisReferences(namespaceName);
-    this.rewriteLocalNamespacedReferences(localNamespaceName);
-    this.rewriteLocalNamespacedReferences(namespaceName);
-
-    this.module.source = recast.print(this.program, {
-      quote: 'single',
-      wrapColumn: 80,
-      tabWidth: 2,
-    }).code + '\n';
     
     return {
       localNamespaceName,
@@ -298,28 +290,41 @@ export class DocumentConverter {
         if (memberPath) {
           const memberName = memberPath.join('.');
 
+          const moduleExport = analysisConverter.namespacedExports.get(memberName);
+          if (moduleExport) {
+            // Store the imported reference to we can add it to the import statement
+            const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
+            let moduleImportedNames = importedReferences.get(moduleJsUrl);
+            if (moduleImportedNames === undefined) {
+              moduleImportedNames = new Set<string>();
+              importedReferences.set(moduleJsUrl, moduleImportedNames);
+            }
+            moduleImportedNames.add(moduleExport.name);
+
+            // replace the member expression
+            if (moduleExport.name === '*') {
+              const jsModule = analysisConverter.modules.get(moduleExport.url)!;
+              path.replace(jsc.identifier(getModuleId(jsModule.url)));
+            } else {
+              path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
+            }
+          }
+        }
+        this.traverse(path);
+      }
+    });
+  }
+
+  rewriteExcludedReferences() {
+    const analysisConverter = this.analysisConverter;
+
+    astTypes.visit(this.program, {
+      visitMemberExpression(path: any) {
+        const memberPath = getMemberPath(path.node);
+        if (memberPath) {
+          const memberName = memberPath.join('.');
           if (analysisConverter._referenceExcludes.has(memberName)) {
             path.replace(jsc.identifier('undefined'));
-          } else {
-            const moduleExport = analysisConverter.namespacedExports.get(memberName);
-            if (moduleExport) {
-              // Store the imported reference to we can add it to the import statement
-              const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
-              let moduleImportedNames = importedReferences.get(moduleJsUrl);
-              if (moduleImportedNames === undefined) {
-                moduleImportedNames = new Set<string>();
-                importedReferences.set(moduleJsUrl, moduleImportedNames);
-              }
-              moduleImportedNames.add(moduleExport.name);
-
-              // replace the member expression
-              if (moduleExport.name === '*') {
-                const jsModule = analysisConverter.modules.get(moduleExport.url)!;
-                path.replace(jsc.identifier(getModuleId(jsModule.url)));
-              } else {
-                path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
-              }
-            }
           }
         }
         this.traverse(path);

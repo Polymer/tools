@@ -627,6 +627,59 @@ class MyElement extends $Element {}\n`);
       assert.equal(js, `if (undefined) {}\n`);
     });
 
+    test('handles excluded exported references', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            Polymer.Settings = settings;
+          </script>
+        `,
+      });
+      const analysis = await analyzer.analyze(['test.html']);
+      const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
+        referenceExcludes: ['Polymer.Settings'],
+      });
+      const converted = await converter.convert();
+      const js = converted.get('./test.js');
+      assert.equal(js, `export { settings as Settings };\n`);
+    });
+
+    test.skip('handles excluded local namespace references', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            let rootPath;
+
+            /**
+             * @memberof Polymer
+             */
+            Polymer.rootPath = rootPath;
+
+            /**
+             * @memberof Polymer
+             */
+            Polymer.setRootPath = function(path) {
+              Polymer.rootPath = path;
+            }
+          </script>
+        `,
+      });
+      const analysis = await analyzer.analyze(['test.html']);
+      const converter = new AnalysisConverter(analysis, {
+        rootModuleName: 'Polymer',
+        referenceExcludes: ['Polymer.rootPath'],
+      });
+      const converted = await converter.convert();
+      const js = converted.get('./test.js');
+      assert.equal(js, `let rootPath;
+export { rootPath };
+export const setRootPath = function(path) {
+  rootPath = path;
+};
+`);
+    });
+
     test('inlines templates into class-based Polymer elements', async () => {
       setSources({
         'test.html': `

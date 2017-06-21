@@ -80,12 +80,13 @@ export async function convertPackage(options: ConvertPackageOptions = {}) {
   const converter = new AnalysisConverter(analysis, {
     rootModuleName: options.rootModuleName || 'Polymer',
     excludes: options.excludes || [
-      'lib/utils/boot.html',
       'lib/elements/dom-module.html',
     ],
     referenceExcludes: options.referenceExcludes || [
       'Polymer.DomModule',
+      'Polymer.Settings',
       'Polymer.log',
+      'Polymer.rootPath',
       'Polymer.sanitizeDOMValue'
     ],
     mutableExports: options.mutableExports || {
