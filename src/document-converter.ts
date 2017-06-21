@@ -22,6 +22,7 @@ import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, 
 
 import jsc = require('jscodeshift');
 import { JsModule, AnalysisConverter } from './analysis-converter';
+import { htmlUrlToJs } from "./url-converter";
 
 const astTypes = require('ast-types');
 
@@ -657,27 +658,6 @@ export function getMemberPath(expression: Expression): string[] | undefined {
     }
   }
   return undefined;
-}
-
-/**
- * Converts an HTML Import path to a JS module path.
- */
-function htmlUrlToJs(url: string, from?: string): string {
-  const htmlExtension = '.html';
-  let jsUrl = url;
-  if (url.endsWith(htmlExtension)) {
-    jsUrl = url.substring(0, url.length - htmlExtension.length) + '.js';
-  }
-
-  // We've lost the actual URL string and thus the leading ./
-  // This should be fixed in the Analyzer, and this hack isn't even right
-  if (from !== undefined) {
-    jsUrl = path.relative(path.dirname(from), jsUrl);
-  }
-  if (!jsUrl.startsWith('.') && !jsUrl.startsWith('/')) {
-    jsUrl = './' + jsUrl;
-  }
-  return jsUrl;
 }
 
 /**

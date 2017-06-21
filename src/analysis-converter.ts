@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as path from 'path';
 
 import {Document, Analysis} from 'polymer-analyzer';
 import {Expression} from 'estree';
 
 import { DocumentConverter } from "./document-converter";
+import { htmlUrlToJs } from "./url-converter";
 
 const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
 const isNotTest = (d: Document) => !_isInTestRegex.test(d.url);
@@ -200,29 +200,4 @@ export function getMemberPath(expression: Expression): string[] | undefined {
     }
   }
   return undefined;
-}
-
-/**
- * Converts an HTML Import path to a JS module path.
- */
-function htmlUrlToJs(url: string, from?: string): string {
-  const htmlExtension = '.html';
-  let jsUrl = url;
-  if (url.endsWith(htmlExtension)) {
-    jsUrl = url.substring(0, url.length - htmlExtension.length) + '.js';
-  }
-
-  // We've lost the actual URL string and thus the leading ./
-  // This should be fixed in the Analyzer, and this hack isn't even right
-  if (from !== undefined) {
-    jsUrl = path.posix.relative(path.posix.dirname(from), jsUrl);
-  }
-  if (!jsUrl.startsWith('.') && !jsUrl.startsWith('/')) {
-    jsUrl = './' + jsUrl;
-  }
-  // Fix any references to ./bower_components/* to point to siblings instead
-  if (jsUrl.startsWith('./bower_components/')) {
-    jsUrl = '../' + jsUrl.slice('./bower_components/'.length);
-  }
-  return jsUrl;
 }
