@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!--## Unreleased-->
 
+## [2.2.0] - 2017-06-22
+
 * Comments are now only associated with classes and other objects if they are touching (<2 newlines between them).
 
 ## [2.1.0] - 2017-06-02
