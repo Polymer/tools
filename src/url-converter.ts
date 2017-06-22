@@ -36,5 +36,13 @@ export function htmlUrlToJs(url: string, from?: string): string {
   if (jsUrl.startsWith('./bower_components/')) {
     jsUrl = '../' + jsUrl.slice('./bower_components/'.length);
   }
+
+  // Temporary workaround for urls that run outside of the current packages
+  if (jsUrl.endsWith('shadycss/apply-shim.js')) {
+    jsUrl = jsUrl.replace('shadycss/apply-shim.js', '../@webcomponents/shadycss/apply-shim.min.js');
+  }
+  if (jsUrl.endsWith('shadycss/custom-style-interface.js')) {
+    jsUrl = jsUrl.replace('shadycss/custom-style-interface.js', '../@webcomponents/shadycss/custom-style-interface.min.js');
+  }
   return jsUrl;
 }
