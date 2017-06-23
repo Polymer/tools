@@ -14,7 +14,7 @@
 
 import {expect} from 'chai';
 import * as path from 'path';
-import * as supertest from 'supertest-as-promised';
+import * as supertest from 'supertest';
 import {getApp} from '../start_server';
 
 const root = path.join(__dirname, '..', '..', 'test');

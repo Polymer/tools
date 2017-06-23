@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import * as supertest from 'supertest-as-promised';
+import * as supertest from 'supertest';
 
 import {makeApp} from '../make_app';
 
