@@ -83,6 +83,35 @@ suite('AnalysisConverter', () => {
       assert.equal(await getJs(), `import './dep.js';\n`);
     });
 
+    test('converts implicit imports to .js', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./foo.html">
+          <script>
+            console.log(Polymer.foo);
+            console.log(Polymer.bar);
+          </script>
+        `,
+        'foo.html': `
+          <link rel="import" href="./bar.html">
+          <script>
+            Polymer.foo = 42;
+          </script>
+        `,
+        'bar.html': `
+          <script>
+            Polymer.bar = 'Life, Universe, Everything';
+          </script>
+        `,
+      });
+      assert.equal(await getJs(), `import { foo as $foo } from './foo.js';
+import { bar as $bar } from './bar.js';
+console.log($foo);
+console.log($bar);
+`);
+    });
+
+
     test('unwraps top-level IIFE', async () => {
       setSources({
         'test.html': `

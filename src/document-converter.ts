@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as recast from 'recast';
 
 import {Document, ParsedJavaScriptDocument, Namespace, Import} from 'polymer-analyzer';
-import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression, BlockStatement} from 'estree';
+import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression, BlockStatement, ImportDeclaration} from 'estree';
 
 import jsc = require('jscodeshift');
 import { JsModule, AnalysisConverter } from './analysis-converter';
@@ -26,6 +26,33 @@ import { htmlUrlToJs } from "./url-converter";
 
 const astTypes = require('ast-types');
 
+/**
+ * Convert a module specifier & an optional set of named exports (or '*' to
+ * import entire namespace) to a set of ImportDeclaration objects.
+ */
+function getImportDeclarations(specifierUrl: string, namedExports?: Set<string>) {
+  const jsImportDeclarations: ImportDeclaration[] = [];
+  const namedExportsArray = namedExports ? Array.from(namedExports) : [];
+  const hasNamespaceReference = namedExportsArray.some((s) => s === '*');
+  const namedSpecifiers = namedExportsArray
+      .filter((s) => s !== '*')
+      .map((s) => jsc.importSpecifier(jsc.identifier(s), jsc.identifier(getImportAlias(s))));
+  // If a module namespace was referenced, create a new namespace import
+  if (hasNamespaceReference) {
+    jsImportDeclarations.push(jsc.importDeclaration(
+      [jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(specifierUrl)))],
+      jsc.literal(specifierUrl)));
+  }
+  // If any named imports were referenced, create a new import for all named
+  // members. If `namedSpecifiers` is empty but a namespace wasn't imported
+  // either, then still add an empty importDeclaration to trigger the load.
+  if (namedSpecifiers.length > 0 || !hasNamespaceReference) {
+    jsImportDeclarations.push(jsc.importDeclaration(
+      namedSpecifiers,
+      jsc.literal(specifierUrl)));
+  }
+  return jsImportDeclarations;
+}
 /**
  * Converts a Document and its dependencies.
  */
@@ -100,7 +127,7 @@ export class DocumentConverter {
     this.inlineTemplates();
 
     const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
-    
+
     this.rewriteNamespaceThisReferences(namespaceName);
     this.rewriteLocalNamespacedReferences(localNamespaceName);
     this.rewriteLocalNamespacedReferences(namespaceName);
@@ -215,7 +242,7 @@ export class DocumentConverter {
       }
       this.currentStatementIndex++;
     }
-    
+
     return {
       localNamespaceName,
       namespaceName,
@@ -421,34 +448,24 @@ export class DocumentConverter {
    * Injects JS imports at the top of the program.
    */
   addJsImports() {
-    const htmlImports = this.getHtmlImports();
     const baseUrl = this.document.url;
+    const htmlImports = this.getHtmlImports();
+    const jsImportUrls = new Set(htmlImports.map((s) => htmlUrlToJs(s.url, baseUrl)));
 
     // Rewrite HTML Imports to JS imports
     const jsImportDeclarations:any[] = [];
-    for (const htmlImport of htmlImports) {
-      const jsUrl = htmlUrlToJs(htmlImport.url, baseUrl);
-      const specifierNames = this.module.importedReferences.get(jsUrl);
-      const specifierNamesArray = specifierNames ? Array.from(specifierNames) : [];
-      const hasNamespaceReference = specifierNamesArray.some((s) => s === '*');
-      const namedSpecifiers = specifierNamesArray
-          .filter((s) => s !== '*')
-          .map((s) => jsc.importSpecifier(jsc.identifier(s), jsc.identifier(getImportAlias(s))));
-      // If a module namespace was referenced, create a new namespace import
-      if (hasNamespaceReference) {
-        jsImportDeclarations.push(jsc.importDeclaration(
-          [jsc.importNamespaceSpecifier(jsc.identifier(getModuleId(jsUrl)))],
-          jsc.literal(jsUrl)));
-      }
-      // If any named imports were referenced, create a new import for all named
-      // members. If `namedSpecifiers` is empty but a namespace wasn't imported
-      // either, then still add an empty importDeclaration to trigger the load.
-      if (namedSpecifiers.length > 0 || !hasNamespaceReference) {
-        jsImportDeclarations.push(jsc.importDeclaration(
-          namedSpecifiers,
-          jsc.literal(jsUrl)));
+    for (const jsImportUrl of jsImportUrls) {
+      const specifierNames = this.module.importedReferences.get(jsImportUrl);
+      jsImportDeclarations.push(...getImportDeclarations(jsImportUrl, specifierNames));
+    }
+    // Add JS imports for any implicit HTML imports
+    for (const jsImplicitImportUrl of this.module.importedReferences.keys()) {
+      if (!jsImportUrls.has(jsImplicitImportUrl)) {
+        const specifierNames = this.module.importedReferences.get(jsImplicitImportUrl);
+        jsImportDeclarations.push(...getImportDeclarations(jsImplicitImportUrl, specifierNames));
       }
     }
+
     this.program.body.splice(0, 0, ...jsImportDeclarations);
     this.currentStatementIndex += jsImportDeclarations.length;
   }
