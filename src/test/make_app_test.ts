@@ -76,4 +76,25 @@ suite('makeApp', () => {
     assert.equal(app.packageName, 'no_bower_json');
   });
 
+  test('serves scoped package files', async () => {
+    let app = makeApp({
+      root, componentDir,
+      packageName: '@polymer/polyserve-test',
+    });
+    await supertest(app)
+        .get('/@polymer/polyserve-test/test-file.txt')
+        .expect(200, 'PASS\n');
+  });
+
+  test('serves scoped component files', async () => {
+    let app = makeApp({
+      root,
+      componentDir: path.join(root, 'node_modules'),
+      packageName: '@polymer/polyserve-test',
+    });
+    await supertest(app)
+        .get('/@polymer/test-component/test-file.txt')
+        .expect(200, 'TEST COMPONENT\n');
+  });
+
 });
