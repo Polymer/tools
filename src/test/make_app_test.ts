@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import * as supertest from 'supertest-as-promised';
+import * as supertest from 'supertest';
 
 import {makeApp} from '../make_app';
 
@@ -74,6 +74,27 @@ suite('makeApp', () => {
         {root: path.resolve(__dirname, 'no_bower_json/'), componentDir});
     assert.isFalse(called);
     assert.equal(app.packageName, 'no_bower_json');
+  });
+
+  test('serves scoped package files', async () => {
+    let app = makeApp({
+      root, componentDir,
+      packageName: '@polymer/polyserve-test',
+    });
+    await supertest(app)
+        .get('/@polymer/polyserve-test/test-file.txt')
+        .expect(200, 'PASS\n');
+  });
+
+  test('serves scoped component files', async () => {
+    let app = makeApp({
+      root,
+      componentDir: path.join(root, 'node_modules'),
+      packageName: '@polymer/polyserve-test',
+    });
+    await supertest(app)
+        .get('/@polymer/test-component/test-file.txt')
+        .expect(200, 'TEST COMPONENT\n');
   });
 
 });

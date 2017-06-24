@@ -64,12 +64,13 @@ export function makeApp(options: AppOptions): PolyserveApplication {
     // Serve local files from . and other components from bower_components
     const url = parseUrl(req.url, true);
     let splitPath = url.pathname.split('/').slice(1);
+    const splitPackagePath = packageName.split('/');
 
-    if (splitPath[0] === packageName) {
+    if (arrayStartsWith(splitPath, splitPackagePath)) {
       if (root) {
-        splitPath = [root].concat(splitPath.slice(1));
+        splitPath = [root].concat(splitPath.slice(splitPackagePath.length));
       } else {
-        splitPath = splitPath.slice(1);
+        splitPath = splitPath.slice(splitPackagePath.length);
       }
     } else {
       splitPath = [componentDir].concat(splitPath);
@@ -101,4 +102,13 @@ export function makeApp(options: AppOptions): PolyserveApplication {
   });
   app.packageName = packageName;
   return app;
+}
+
+function arrayStartsWith(array: any[], prefix: any[]) {
+  for (let i = 0; i < prefix.length; i++) {
+    if (i >= array.length || array[i] !== prefix[i]) {
+      return false;
+    }
+  }
+  return true;
 }

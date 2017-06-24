@@ -20,7 +20,7 @@ import * as path from 'path';
 import * as pem from 'pem';
 import * as sinon from 'sinon';
 import * as http from 'spdy';
-import * as supertest from 'supertest-as-promised';
+import * as supertest from 'supertest';
 import * as tmp from 'tmp';
 
 import {getApp, ServerOptions} from '../start_server';

@@ -16,7 +16,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as supertest from 'supertest-as-promised';
+import * as supertest from 'supertest';
 
 import {babelCompileCache, browserNeedsCompilation, isPolyfill} from '../compile-middleware';
 import {getApp} from '../start_server';

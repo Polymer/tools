@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+* Allow package names to include a '/'
+
 ## [0.19.1](https://github.com/PolymerLabs/polyserve/tree/v0.19.1) (2017-05-22)
 
 * Allow webcomponentsjs polyfill *tests* to be compiled.
