@@ -59,6 +59,7 @@ export async function run(): Promise<StartServerResult> {
     componentDir: cliOptions['component-dir'],
     componentUrl: cliOptions['component-url'],
     packageName: cliOptions['package-name'],
+    npm: cliOptions['npm'],
     protocol: cliOptions['protocol'],
     keyPath: cliOptions['key'],
     certPath: cliOptions['cert'],

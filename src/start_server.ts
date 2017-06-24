@@ -23,8 +23,8 @@ import * as send from 'send';
 import * as http from 'spdy';
 import * as url from 'url';
 
-import {bowerConfig} from './bower_config';
 import {babelCompile} from './compile-middleware';
+import {getComponentDir, getPackageName} from './config';
 import {injectCustomElementsEs5Adapter} from './custom-elements-es5-adapter-middleware';
 import {makeApp} from './make_app';
 import {openBrowser} from './util/open_browser';
@@ -76,6 +76,12 @@ export interface ServerOptions {
   /** The package name to use for the root directory **/
   packageName?: string;
 
+  /**
+   * Sets npm mode: component directory is 'node_modules' and the package name
+   * is read from package.json.
+   */
+  npm?: boolean;
+
   /** The HTTP protocol to use */
   protocol?: string;
 
@@ -105,15 +111,10 @@ function applyDefaultServerOptions(options: ServerOptions) {
     compile: options.compile || 'auto',
     certPath: options.certPath || 'cert.pem',
     keyPath: options.keyPath || 'key.pem',
-    // TODO(usergenic): The current behavior of polyserve is to use
-    // bower_components for directory and components for url. We should
-    // honor the value of `directory` of `.bowerrc` if found in the root dir
-    // of the app, to get user-defined defaults.
-    componentDir: options.componentDir || 'bower_components',
+    componentDir: getComponentDir(options),
     componentUrl: options.componentUrl || 'components'
   });
-  withDefaults.packageName = options.packageName ||
-      bowerConfig(withDefaults.root).name || path.basename(process.cwd());
+  withDefaults.packageName = getPackageName(withDefaults);
   return withDefaults;
 }
 
@@ -326,7 +327,6 @@ export function getApp(options: ServerOptions): express.Express {
     root: root,
     headers: options.headers,
   });
-  options.packageName = polyserve.packageName;
 
   const filePathRegex: RegExp = /.*\/.+\..{1,}$/;
 

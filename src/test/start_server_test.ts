@@ -39,63 +39,108 @@ suite('startServer', () => {
     assert.isOk(app);
   });
 
-  test('serves root application files', async () => {
-    const app = getApp({root});
-    await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
-  });
+  suite('application serving', () => {
 
-  test('serves root application files if root isn\'t set', async () => {
-    const cwd = process.cwd();
-    try {
-      process.chdir(root);
-      const app = getApp({});
-      await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
-    } finally {
-      process.chdir(cwd);
-    }
-  });
-
-  test('serves component files', async () => {
-    const app = getApp({root});
-    await supertest(app)
-        .get('/bower_components/test-component/test-file.txt')
-        .expect(200, 'TEST COMPONENT\n');
-  });
-
-
-  test('serves default entry point index.html instead of 404', async () => {
-    const app = getApp({root});
-    await supertest(app).get('/foo').expect(200).expect((res: any) => {
-      expect(res.text).to.have.string('INDEX');
-    });
-  });
-
-  test('serves custom entry point from "/"', async () => {
-    const app = getApp({
-      root,
-      entrypoint: path.join(root, 'custom-entry.html'),
-    });
-    await supertest(app).get('/').expect(200).expect((res: any) => {
-      expect(res.text).to.have.string('CUSTOM-ENTRY');
-    });
-  });
-
-  test('serves custom entry point instead of 404', async () => {
-    const app = getApp({
-      root,
-      entrypoint: path.join(root, 'custom-entry.html'),
-    });
-    await supertest(app).get('/not/a/file').expect(200).expect((res: any) => {
-      expect(res.text).to.have.string('CUSTOM-ENTRY');
-    });
-  });
-
-  ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach((ext) => {
-    test(`404s ${ext} files`, async () => {
+    test('serves root application files', async () => {
       const app = getApp({root});
-
-      await supertest(app).get('/foo.' + ext).expect(404);
+      await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
     });
+
+    test('serves root application files if root isn\'t set', async () => {
+      const cwd = process.cwd();
+      try {
+        process.chdir(root);
+        const app = getApp({});
+        await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
+      } finally {
+        process.chdir(cwd);
+      }
+    });
+
+    test('serves component files', async () => {
+      const app = getApp({root});
+      await supertest(app)
+          .get('/bower_components/test-component/test-file.txt')
+          .expect(200, 'TEST COMPONENT\n');
+    });
+
+
+    test('serves default entry point index.html instead of 404', async () => {
+      const app = getApp({root});
+      await supertest(app).get('/foo').expect(200).expect((res: any) => {
+        expect(res.text).to.have.string('INDEX');
+      });
+    });
+
+    test('serves custom entry point from "/"', async () => {
+      const app = getApp({
+        root,
+        entrypoint: path.join(root, 'custom-entry.html'),
+      });
+      await supertest(app).get('/').expect(200).expect((res: any) => {
+        expect(res.text).to.have.string('CUSTOM-ENTRY');
+      });
+    });
+
+    test('serves custom entry point instead of 404', async () => {
+      const app = getApp({
+        root,
+        entrypoint: path.join(root, 'custom-entry.html'),
+      });
+      await supertest(app).get('/not/a/file').expect(200).expect((res: any) => {
+        expect(res.text).to.have.string('CUSTOM-ENTRY');
+      });
+    });
+
+    ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach(
+        (ext) => {
+          test(`404s ${ext} files`, async () => {
+            const app = getApp({root});
+
+            await supertest(app).get('/foo.' + ext).expect(404);
+          });
+        });
+
+  });
+
+  suite('component serving', () => {  //
+
+    test('serves component files', async () => {
+      const app = getApp({root});
+      await supertest(app)
+          .get('/components/polyserve-test/test-file.txt')
+          .expect(200, 'PASS\n');
+    });
+
+    test('serves component files from an npm package', async () => {
+      const app = getApp({
+        root: path.join(__dirname, '../../test/npm-package'),
+      });
+      await supertest(app)
+          .get('/components/an-npm-package/test-file.txt')
+          .expect(200, 'NPM\n');
+    });
+
+    test(
+        'serves component files from a bower package w/ package.json',
+        async () => {
+          const app = getApp({
+            root: path.join(__dirname, '../../test/combo-package'),
+          });
+          await supertest(app)
+              .get('/components/a-bower-package/test-file.txt')
+              .expect(200, 'COMBO\n');
+        });
+
+    test('serves component files from a package w/ n config', async () => {
+      const app = getApp({
+        root: path.join(__dirname, '../../test/no_config'),
+      });
+      await supertest(app)
+          .get('/components/no_config/test-file.txt')
+          .expect(200, 'NO CONFIG\n');
+    });
+
   });
 
   suite('compilation', () => {
