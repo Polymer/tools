@@ -15,7 +15,6 @@ const gulp = require('gulp');
 const mocha = require('gulp-mocha');
 const tslint_lib = require('gulp-tslint');
 const typescript = require('gulp-typescript');
-const typings = require('gulp-typings');
 const mergeStream = require('merge-stream');
 const path = require('path');
 const runSequence = require('run-sequence');
@@ -30,11 +29,7 @@ function task(name, deps, impl) {
 }
 
 module.exports.init = function() {
-  task('init', () => {
-    if (fs.existsSync('./typings.json')) {
-      gulp.src('./typings.json').pipe(typings())
-    }
-  });
+  task('init', () => {});
 }
 
 module.exports.depcheck = function depcheck(options) {
@@ -138,7 +133,7 @@ module.exports.build = function(options) {
 }
 
 module.exports.clean = function(options) {
-  const defaultOptions = {buildArtifacts: ['lib/', 'typings/']};
+  const defaultOptions = {buildArtifacts: ['lib/']};
   options = Object.assign({}, defaultOptions, options);
 
   task('clean', () => {
