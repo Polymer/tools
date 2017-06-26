@@ -132,8 +132,13 @@ async function generatePushManifestEntryForUrl(
     throw new Error(`Unable to get document ${url}: ${message}`);
   }
 
-  const analyzedImports = analyzedDocument.getFeatures(
-      {kind: 'import', externalPackages: true, imported: true});
+  const analyzedImports =
+      [...analyzedDocument.getFeatures({
+        kind: 'import',
+        externalPackages: true,
+        imported: true,
+        noLazyImports: true,
+      })].filter((i) => !(i.type === 'html-import' && i.lazy));
   const pushManifestEntries: PushManifestEntryCollection = {};
   function shouldIgnoreFile(url: string) {
     return ignoreUrls && ignoreUrls.indexOf(url) > -1;

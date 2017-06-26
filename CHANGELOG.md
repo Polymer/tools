@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* The `addPushManifest` feature now honors the laziness of html-imports and excludes them from the set of their importers' pushed assets.
 <!-- Add new, unreleased changes here. -->
 
 ## [1.5.1] - 2017-06-02

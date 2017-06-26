@@ -147,20 +147,7 @@ suite('AddPushManifest', () => {
           weight: 1,
         },
       },
-      'entrypoint-c.html': {
-        'common-dependency.html': {
-          type: 'document',
-          weight: 1,
-        },
-        'example-script.js': {
-          type: 'script',
-          weight: 1,
-        },
-        'example-style.css': {
-          type: 'style',
-          weight: 1,
-        },
-      }
+      'entrypoint-c.html': {},
     };
 
     testPushManifest(project, null, null, expectedPushManifest, done);
@@ -202,20 +189,7 @@ suite('AddPushManifest', () => {
           weight: 1,
         },
       },
-      'entrypoint-c.html': {
-        'common-dependency.html': {
-          type: 'document',
-          weight: 1,
-        },
-        'example-script.js': {
-          type: 'script',
-          weight: 1,
-        },
-        'example-style.css': {
-          type: 'style',
-          weight: 1,
-        },
-      }
+      'entrypoint-c.html': {}
     };
 
     testPushManifest(project, null, null, expectedPushManifest, done);
@@ -259,20 +233,7 @@ suite('AddPushManifest', () => {
           weight: 1,
         },
       },
-      'entrypoint-c.html': {
-        'common-dependency.html': {
-          type: 'document',
-          weight: 1,
-        },
-        'example-script.js': {
-          type: 'script',
-          weight: 1,
-        },
-        'example-style.css': {
-          type: 'style',
-          weight: 1,
-        },
-      }
+      'entrypoint-c.html': {}
     };
 
     testPushManifest(
