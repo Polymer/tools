@@ -257,10 +257,17 @@ export class PolymerElement extends Element implements PolymerExtension {
     }
 
     if (domModule) {
-      this.description = this.description || domModule.comment || '';
       this.domModule = domModule.node;
       this.slots = this.slots.concat(domModule.slots);
       this.localIds = domModule.localIds.slice();
+      if (domModule.comment) {
+        const domModuleJsdoc = jsdoc.parseJsdoc(domModule.comment);
+        this.demos = [...jsdoc.extractDemos(domModuleJsdoc), ...this.demos];
+        if (domModuleJsdoc.description) {
+          this.description =
+              (domModuleJsdoc.description + '\n\n' + this.description).trim();
+        }
+      }
     }
 
     if (scannedElement.pseudo) {

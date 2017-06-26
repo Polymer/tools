@@ -17,6 +17,7 @@ import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 import * as util from 'util';
 
+import {isFakeNode} from '../html/html-document';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {Document, ScannedDocument} from './document';
@@ -89,17 +90,78 @@ export class InlineDocument extends Document {
 }
 
 export function getAttachedCommentText(node: ASTNode): string|undefined {
-  // When the element is defined in a document fragment with a structure of
-  // imports -> comment explaining the element -> then its dom-module, the
-  // comment will be attached to <head>, rather than being a sibling to the
-  // <dom-module>, thus the need to walk up and previous so aggressively.
-  const parentComments = dom5.nodeWalkAllPrior(node, dom5.isCommentNode);
-  const comment = <string|undefined>(
-      parentComments[0] ? parentComments[0]['data'] : undefined);
+  const commentNode = getAttachedCommentNode(node);
+  if (!commentNode) {
+    return;
+  }
+  const comment = dom5.getTextContent(commentNode);
   if (!comment || /@license/.test(comment)) {
     return;
   }
   return jsdoc.unindent(comment).trim();
+}
+
+function getAttachedCommentNode(node: ASTNode): ASTNode|undefined {
+  for (const predecessor of getPreviousSiblings(node)) {
+    // Ignore nodes that are effectively invisible to the element author.
+    if (isFakeNode(predecessor)) {
+      continue;
+    }
+    if (dom5.isTextNode(predecessor)) {
+      const text = dom5.getTextContent(predecessor).trim();
+      if (text === '') {
+        continue;
+      }
+    }
+    if (dom5.isCommentNode(predecessor)) {
+      return predecessor;
+    }
+    // not a text or comment node, so there's another element between `node` and
+    // the nearest comment. no attached comment node.
+    return;
+  }
+}
+
+/**
+ * An iterable over siblings that come before the given node.
+ *
+ * Note that this method gives siblings from the author's point of view, not the
+ * pedantic parser's point of view, so we need to traverse some fake nodes.
+ * e.g. consider this document
+ *
+ *     <link rel="import" href="foo.html">
+ *     <dom-module></dom-module>
+ *
+ * For this method's purposes, these nodes are siblings, but in the AST they're
+ * actually cousins! The link is in a hallucinated <head> node, and the
+ * dom-module is in a hallucinated <body> node, so to get to the link we need
+ * to go up to the body, then back to the head, then back down, but only if
+ * the head and body are hallucinated.
+ */
+function* getPreviousSiblings(node: ASTNode): Iterable<ASTNode> {
+  const parent = node.parentNode;
+  if (parent) {
+    const siblings = parent.childNodes!;
+    for (let i = siblings.indexOf(node) - 1; i >= 0; i--) {
+      const predecessor = siblings[i];
+      if (isFakeNode(predecessor)) {
+        if (predecessor.childNodes) {
+          yield* iterReverse(predecessor.childNodes);
+        }
+      } else {
+        yield predecessor;
+      }
+    }
+    if (isFakeNode(parent)) {
+      yield* getPreviousSiblings(parent);
+    }
+  }
+}
+
+function* iterReverse<V>(arr: Array<V>): Iterable<V> {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    yield arr[i];
+  }
 }
 
 function isLocationInfo(loc: (parse5.LocationInfo|parse5.ElementLocationInfo)):

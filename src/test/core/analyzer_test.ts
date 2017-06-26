@@ -666,6 +666,20 @@ suite('Analyzer', () => {
     });
   });
 
+  suite('documentation extraction', () => {
+    test('we get the wrong description for paper-input', async() => {
+      const document = await analyzeDocument('static/paper-input.html');
+      const [element] =
+          document.getFeatures({kind: 'element', id: 'paper-input'});
+      assert(
+          !/fresh new hell/.test(element.description),
+          `Doesn't pick up on unexpected html comments.`);
+      assert(
+          element.description.startsWith('Material design: [Text fields]'),
+          `Does get the message right.`);
+    });
+  });
+
   test('analyzes a document with a namespace', async() => {
     const document = await analyzeDocument('static/namespaces/import-all.html');
     if (!(document instanceof Document)) {

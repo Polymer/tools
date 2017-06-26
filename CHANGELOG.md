@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Fixed a bug where we were too aggressive in associating HTML comments with
+  nodes, such that any comment that came before a `<script>` tag e.g. could
+  become part of the description of the element defined therin.
+
 ## [2.2.1] - 2017-07-06
 
 * Removed TypeScript from production dependencies until TypeScript analysis is fully supported.

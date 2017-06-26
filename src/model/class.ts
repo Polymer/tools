@@ -140,7 +140,7 @@ export class Class implements Feature {
   readonly mixins: Reference[] = [];
   readonly abstract: boolean;
   readonly privacy: Privacy;
-  readonly demos: Demo[];
+  demos: Demo[];
   private readonly _parsedDocument: ParsedDocument;
 
   constructor(init: ClassInit, document: Document) {
