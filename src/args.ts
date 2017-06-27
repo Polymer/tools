@@ -81,6 +81,12 @@ export let args: ArgDescriptor[] = [
     type: String,
   },
   {
+    name: 'npm',
+    description: 'Sets npm mode: component directory is "node_modules" and ' +
+        'the package name is read from package.json',
+    type: Boolean,
+  },
+  {
     name: 'open',
     alias: 'o',
     description: 'The page to open in the default browser on startup.',

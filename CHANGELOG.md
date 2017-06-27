@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 
 * Allow package names to include a '/'
+* Added --npm flag which sets component folder to node_modules and reads package 
+  name from package.json.
 
 ## [0.19.1](https://github.com/PolymerLabs/polyserve/tree/v0.19.1) (2017-05-22)
 

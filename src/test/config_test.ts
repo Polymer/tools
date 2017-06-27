@@ -15,13 +15,14 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {bowerConfig} from '../bower_config';
+import {getPackageName} from '../config';
 
-suite('bowerConfig', () => {
+suite('getPackageName', () => {
 
-  test('reads bower.json', () => {
-    let config = bowerConfig(path.join(__dirname, '..', '..', 'test'));
-    assert.equal(config.name, 'polyserve-test');
+  test('reads from bower.json', () => {
+    const name =
+        getPackageName({root: path.join(__dirname, '..', '..', 'test')});
+    assert.equal(name, 'polyserve-test');
   });
 
 });

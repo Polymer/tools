@@ -16,13 +16,11 @@ import * as express from 'express';
 import * as path from 'path';
 import {parse as parseUrl} from 'url';
 
-import {bowerConfig} from './bower_config';
-
 import send = require('send');
 
 export interface AppOptions {
   componentDir: string;
-  packageName?: string;
+  packageName: string;
   headers?: {[name: string]: string};
   root?: string;
   compile?: 'always'|'never'|'auto';
@@ -45,18 +43,13 @@ export interface PolyserveApplication extends express.Express {
 export function makeApp(options: AppOptions): PolyserveApplication {
   const root = options.root;
   const baseComponentDir = options.componentDir;
-  const componentDir = path.isAbsolute(baseComponentDir) ?
-      baseComponentDir :
-      path.join(root, baseComponentDir);
-  let packageName = options.packageName;
-  if (!packageName) {
-    packageName = bowerConfig(root).name;
+  const componentDir = path.resolve(root, baseComponentDir);
+  const packageName = options.packageName;
+  const headers = options.headers || {};
+
+  if (packageName == null) {
+    throw new Error('packageName not provided');
   }
-  if (!packageName) {
-    packageName = path.basename(root || process.cwd());
-    console.log(`no bower.json detected, using name "${packageName}"`);
-  }
-  let headers = options.headers || {};
 
   const app: PolyserveApplication = <PolyserveApplication>express();
 
