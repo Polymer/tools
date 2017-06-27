@@ -1,4 +1,7 @@
-# polymer-build
+[![Build Status](https://travis-ci.org/Polymer/polymer-build.svg?branch=master)](https://travis-ci.org/Polymer/polymer-build)
+[![NPM version](http://img.shields.io/npm/v/polymer-build.svg)](https://www.npmjs.com/package/polymer-build)
+
+# Polymer Build
 
 polymer-build is a library for building Polymer projects.
 
