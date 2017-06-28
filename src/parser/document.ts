@@ -20,7 +20,7 @@ import {correctSourceRange, LocationOffset, SourcePosition, SourceRange, uncorre
  * @template AstNode The AST type of the document.
  * @template Visitor The type of the visitors that can walk the document.
  */
-export abstract class ParsedDocument<AstNode, Visitor> {
+export abstract class ParsedDocument<AstNode = any, Visitor = any> {
   abstract type: string;
   url: string;
   baseUrl: string;
@@ -178,7 +178,7 @@ export interface StringifyOptions {
    * Parsed (and possibly modified) documents that exist inside this document
    * whose stringified contents should be used instead of what is in `ast`.
    */
-  inlineDocuments?: ParsedDocument<any, any>[];
+  inlineDocuments?: ParsedDocument[];
 }
 
 /**

@@ -30,7 +30,7 @@ import {Warning} from './warning';
  * The metadata for all features and elements defined in one document
  */
 export class ScannedDocument {
-  document: ParsedDocument<any, any>;
+  document: ParsedDocument;
   features: ScannedFeature[];
   warnings: Warning[];
   isInline = false;
@@ -43,7 +43,7 @@ export class ScannedDocument {
   }
 
   constructor(
-      document: ParsedDocument<any, any>, features: ScannedFeature[],
+      document: ParsedDocument, features: ScannedFeature[],
       warnings: Warning[] = []) {
     this.document = document;
     this.features = features;
@@ -154,7 +154,7 @@ export class Document implements Feature, Queryable {
     return this._scannedDocument.astNode;
   }
 
-  get parsedDocument(): ParsedDocument<any, any> {
+  get parsedDocument(): ParsedDocument {
     return this._scannedDocument.document;
   }
 
@@ -379,12 +379,13 @@ export class Document implements Feature, Queryable {
         let subResult = localFeature.toString();
         if (subResult === '[object Object]') {
           subResult = `<${
-          localFeature.constructor.name
-          } kinds="${
-          Array.from(localFeature.kinds).join(', ')
-          }" ids="${
-          Array.from(localFeature.identifiers).join(',')
-          }">}`;
+                          localFeature.constructor.name
+                        } kinds="${
+                                   Array.from(localFeature.kinds).join(', ')
+                                 }" ids="${
+                                           Array.from(localFeature.identifiers)
+                                               .join(',')
+                                         }">}`;
         }
         result.push(`  ${subResult}`);
       }

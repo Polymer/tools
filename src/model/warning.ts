@@ -24,7 +24,7 @@ export interface WarningInit {
   readonly sourceRange: SourceRange;
   readonly severity: Severity;
   readonly code: string;
-  readonly parsedDocument: ParsedDocument<any, any>;
+  readonly parsedDocument: ParsedDocument;
 }
 export class Warning {
   readonly code: string;
@@ -32,7 +32,7 @@ export class Warning {
   readonly sourceRange: SourceRange;
   readonly severity: Severity;
 
-  private readonly _parsedDocument: ParsedDocument<any, any>;
+  private readonly _parsedDocument: ParsedDocument;
 
   constructor(init: WarningInit) {
     ({

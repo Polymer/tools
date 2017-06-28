@@ -73,7 +73,7 @@ export abstract class DatabindingExpression {
 
   private readonly _expressionAst: estree.Program;
   private readonly locationOffset: LocationOffset;
-  private readonly _document: ParsedDocument<any, any>;
+  private readonly _document: ParsedDocument;
 
   /**
    * Toplevel properties on the model that are referenced in this expression.
@@ -85,7 +85,7 @@ export abstract class DatabindingExpression {
 
   constructor(
       sourceRange: SourceRange, expressionText: string, ast: estree.Program,
-      limitation: ExpressionLimitation, document: ParsedDocument<any, any>) {
+      limitation: ExpressionLimitation, document: ParsedDocument) {
     this.sourceRange = sourceRange;
     this.expressionText = expressionText;
     this._expressionAst = ast;

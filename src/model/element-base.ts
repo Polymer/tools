@@ -50,7 +50,7 @@ export abstract class ScannedElementBase implements Resolvable {
 
   applyHtmlComment(
       commentText: string|undefined,
-      containingDocument: ParsedDocument<any, any>|undefined) {
+      containingDocument: ParsedDocument|undefined) {
     if (commentText && containingDocument) {
       const commentJsdoc = jsdoc.parseJsdoc(commentText);
       // Add a Warning if there are already jsdoc tags or a description for this

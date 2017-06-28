@@ -28,7 +28,7 @@ import {ScannedPolymerProperty} from './polymer-element';
 export function toScannedPolymerProperty(
     node: estree.Property|estree.MethodDefinition,
     sourceRange: SourceRange,
-    document: ParsedDocument<any, any>): ScannedPolymerProperty {
+    document: ParsedDocument): ScannedPolymerProperty {
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
   const maybeName = objectKeyToString(node.key);

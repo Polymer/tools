@@ -38,8 +38,7 @@ suite('scan()', () => {
     const visitor2 = Symbol('visitor2');
     const visitor3 = Symbol('visitor3');
     const scanner: Scanner<any, any, any> = {
-      async scan(
-          _: ParsedDocument<any, any>, visit: (visitor: any) => Promise<void>) {
+      async scan(_: ParsedDocument, visit: (visitor: any) => Promise<void>) {
         // two visitors in one batch
         await Promise.all([visit(visitor1), visit(visitor2)]);
 
@@ -132,7 +131,7 @@ function makeTestScanner(options: TestScannerMakerOptions):
  * scan is called.
  */
 class ScannerStub implements Scanner<any, any, any> {
-  calls: {document: ParsedDocument<any, any>}[];
+  calls: {document: ParsedDocument}[];
   features: ScannedFeature[];
   constructor(features: ScannedFeature[]) {
     this.features = features;

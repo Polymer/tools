@@ -47,8 +47,7 @@ export type Reference = Warning | SourceRange | undefined;
  * Non-test code probably wants WarningPrinter instead.
  */
 export class CodeUnderliner {
-  private _parsedDocumentGetter:
-      (url: string) => Promise<ParsedDocument<any, any>>;
+  private _parsedDocumentGetter: (url: string) => Promise<ParsedDocument>;
   constructor(urlLoader: UrlLoader) {
     const analyzer = new Analyzer({urlLoader});
     this._parsedDocumentGetter = async(url: string) => {

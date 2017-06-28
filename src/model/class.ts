@@ -141,7 +141,7 @@ export class Class implements Feature {
   readonly abstract: boolean;
   readonly privacy: Privacy;
   readonly demos: Demo[];
-  private readonly _parsedDocument: ParsedDocument<any, any>;
+  private readonly _parsedDocument: ParsedDocument;
 
   constructor(init: ClassInit, document: Document) {
     ({

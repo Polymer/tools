@@ -17,7 +17,7 @@ import {ParsedDocument} from '../parser/document';
 
 export function underlineCode(
     sourceRange: SourceRange,
-    parsedDocument: ParsedDocument<any, any>,
+    parsedDocument: ParsedDocument,
     colorizer = (s: string) => s): string|undefined {
   const relativeRange =
       parsedDocument.absoluteToRelativeSourceRange(sourceRange);
@@ -38,8 +38,8 @@ export function underlineCode(
 }
 
 function _getRelavantSourceCode(
-    relativeRange: SourceRange,
-    parsedDocument: ParsedDocument<any, any>): string|undefined {
+    relativeRange: SourceRange, parsedDocument: ParsedDocument): string|
+    undefined {
   if (parsedDocument === null) {
     return;
   }

@@ -97,9 +97,8 @@ export const CLOSURE_CONSTRUCTOR_MAP = new Map(
  * @return {string} The type of that expression, in Closure terms.
  */
 export function closureType(
-    node: estree.Node,
-    sourceRange: SourceRange,
-    document: ParsedDocument<any, any>): string {
+    node: estree.Node, sourceRange: SourceRange, document: ParsedDocument):
+    string {
   if (node.type.match(/Expression$/)) {
     return node.type.substr(0, node.type.length - 10);
   } else if (node.type === 'Literal') {
@@ -185,7 +184,7 @@ export function isFunctionType(node: estree.Node): node is estree.Function {
 export function toScannedMethod(
     node: estree.Property|estree.MethodDefinition,
     sourceRange: SourceRange,
-    document: ParsedDocument<any, any>): ScannedMethod {
+    document: ParsedDocument): ScannedMethod {
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
   const maybeName = objectKeyToString(node.key);

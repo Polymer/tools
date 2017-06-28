@@ -58,7 +58,7 @@ import {LanguageAnalyzer} from './language-analyzer';
  * appear to be statefull with respect to file updates.
  */
 export class AnalysisContext {
-  readonly parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
+  readonly parsers = new Map<string, Parser<ParsedDocument>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
     ['css', new CssParser()],
@@ -355,9 +355,8 @@ export class AnalysisContext {
    * Scans a ParsedDocument.
    */
   private async _scanDocument(
-      document: ParsedDocument<any, any>, maybeAttachedComment?: string,
-      maybeContainingDocument?: ParsedDocument<any, any>):
-      Promise<ScannedDocument> {
+      document: ParsedDocument, maybeAttachedComment?: string,
+      maybeContainingDocument?: ParsedDocument): Promise<ScannedDocument> {
     const {features: scannedFeatures, warnings} =
         await this._getScannedFeatures(document);
     // If there's an HTML comment that applies to this document then we assume
@@ -382,7 +381,7 @@ export class AnalysisContext {
     return scannedDocument;
   }
 
-  private async _getScannedFeatures(document: ParsedDocument<any, any>) {
+  private async _getScannedFeatures(document: ParsedDocument) {
     const scanners = this._scanners.get(document.type);
     if (scanners) {
       return scan(document, scanners);
@@ -448,7 +447,7 @@ export class AnalysisContext {
   /**
    * Caching + loading wrapper around _parseContents.
    */
-  private async _parse(resolvedUrl: string): Promise<ParsedDocument<any, any>> {
+  private async _parse(resolvedUrl: string): Promise<ParsedDocument> {
     return this._cache.parsedDocumentPromises.getOrCompute(
         resolvedUrl, async() => {
           const content = await this.load(resolvedUrl);
@@ -463,7 +462,7 @@ export class AnalysisContext {
    */
   private _parseContents(
       type: string, contents: string, url: string,
-      inlineInfo?: InlineDocInfo<any>): ParsedDocument<any, any> {
+      inlineInfo?: InlineDocInfo<any>): ParsedDocument {
     const parser = this.parsers.get(type);
     if (parser == null) {
       throw new NoKnownParserError(`No parser for for file type ${type}`);
