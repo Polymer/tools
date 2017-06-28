@@ -24,6 +24,8 @@ import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import chaiAsPromised = require('chai-as-promised');
 use(chaiAsPromised);
 
+
+
 suite('DependencyGraph', () => {
 
   function assertStringSetsEqual(
@@ -101,49 +103,47 @@ suite('DependencyGraph', () => {
 
   suite('whenReady', () => {
 
-    test('resolves for a single added document', () => {
+    test('resolves for a single added document', async() => {
       const graph = new DependencyGraph();
-      assert.isFulfilled(graph.whenReady('a'));
+      const done = graph.whenReady('a');
       graph.addDocument('a', []);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
+      await done;
     });
 
-    test('resolves for a single rejected document', () => {
+    test('resolves for a single rejected document', async() => {
       const graph = new DependencyGraph();
-      const done = assert.isFulfilled(graph.whenReady('a'));
+      const done = graph.whenReady('a');
       graph.rejectDocument('a', new Error('because'));
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
-      return done;
+      await done;
     });
 
-    test('resolves for a document with an added dependency', () => {
+    test('resolves for a document with an added dependency', async() => {
       const graph = new DependencyGraph();
-      const done = assert.isFulfilled(graph.whenReady('a'));
+      const done = graph.whenReady('a');
       graph.addDocument('a', ['b']);
       graph.addDocument('b', []);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
-      return done;
+      await done;
     });
 
-    test('resolves for a document with a rejected dependency', () => {
+    test('resolves for a document with a rejected dependency', async() => {
       const graph = new DependencyGraph();
-      const done = assert.isFulfilled(graph.whenReady('a'));
+      const done = graph.whenReady('a');
       graph.addDocument('a', ['b']);
       graph.rejectDocument('b', new Error('because'));
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
-      return done;
+      await done;
     });
 
     test('resolves for a simple cycle', async() => {
       const graph = new DependencyGraph();
-      const promises = [
-        assert.isFulfilled(graph.whenReady('a')),
-        assert.isFulfilled(graph.whenReady('b'))
-      ];
+      const promises = [graph.whenReady('a'), graph.whenReady('b')];
       graph.addDocument('a', ['b']);
       graph.addDocument('b', ['a']);
       await Promise.all(promises);

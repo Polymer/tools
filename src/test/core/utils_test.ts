@@ -20,6 +20,7 @@ import {Url} from 'url';
 import {Deferred, parseUrl} from '../../core/utils';
 
 import chaiAsPromised = require('chai-as-promised');
+import {invertPromise} from '../test-utils';
 use(chaiAsPromised);
 
 suite('parseUrl', () => {
@@ -71,16 +72,14 @@ suite('Deferred', () => {
 
   test('resolves', async() => {
     const deferred = new Deferred<string>();
-    const done = assert.becomes(deferred.promise, 'foo');
     deferred.resolve('foo');
-    await done;
+    assert.deepEqual(await deferred.promise, 'foo');
   });
 
   test('rejects', async() => {
     const deferred = new Deferred<string>();
-    const done = assert.isRejected(deferred.promise, 'foo');
     deferred.reject(new Error('foo'));
-    await done;
+    assert.deepEqual((await invertPromise(deferred.promise)).message, 'foo');
   });
 
   test('resolves only once', async() => {

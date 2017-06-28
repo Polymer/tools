@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Program} from 'estree';
+import {Node} from 'estree';
 
 import {Scanner} from '../scanning/scanner';
 
@@ -20,4 +20,4 @@ import {Visitor} from './estree-visitor';
 import {JavaScriptDocument} from './javascript-document';
 
 export interface JavaScriptScanner extends
-    Scanner<JavaScriptDocument, Program, Visitor>, Visitor {}
+    Scanner<JavaScriptDocument, Node, Visitor>, Visitor {}

@@ -54,23 +54,28 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
       astNode: inlineInfo.astNode, isInline,
     });
     if (parseError) {
-      const start =
-          sourceFile.getLineAndCharacterOfPosition(parseError.start || 0);
-      const end = sourceFile.getLineAndCharacterOfPosition(
-          (parseError.start || 0) + (parseError.length || 0));
-      throw new WarningCarryingException(new Warning({
-        code: 'parse-error',
-        severity: Severity.ERROR,
-        message: ts.flattenDiagnosticMessageText(parseError.messageText, '\n'),
-        sourceRange: correctSourceRange(
-            {
-              file: url,
-              start: {column: start.character, line: start.line},
-              end: {column: end.character, line: end.line}
-            },
-            inlineInfo.locationOffset)!,
-        parsedDocument: result,
-      }));
+      if (parseError.start && parseError.length) {
+        const start =
+            sourceFile.getLineAndCharacterOfPosition(parseError.start);
+        const end = sourceFile.getLineAndCharacterOfPosition(
+            parseError.start + parseError.length);
+        throw new WarningCarryingException(new Warning({
+          code: 'parse-error',
+          severity: Severity.ERROR,
+          message:
+              ts.flattenDiagnosticMessageText(parseError.messageText, '\n'),
+          sourceRange: correctSourceRange(
+              {
+                file: url,
+                start: {column: start.character, line: start.line},
+                end: {column: end.character, line: end.line}
+              },
+              inlineInfo.locationOffset)!,
+          parsedDocument: result,
+        }));
+      }
+      throw new Error(
+          ts.flattenDiagnosticMessageText(parseError.messageText, '\n'));
     }
     return result;
   }

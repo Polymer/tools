@@ -32,7 +32,7 @@ import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
 
-import {CodeUnderliner} from '../test-utils';
+import {CodeUnderliner, invertPromise} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
@@ -544,7 +544,7 @@ suite('Analyzer', () => {
 
     test('returns a Promise that rejects for non-existant files', async() => {
       const context = await getContext(analyzer);
-      await assert.isRejected(context['_parse']('static/not-found'));
+      await invertPromise(context['_parse']('static/not-found'));
     });
   });
 

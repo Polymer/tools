@@ -124,7 +124,7 @@ function makeTestScanner(options: TestScannerMakerOptions):
     await visit();
     return {features: ['test-feature'], warnings: []};
   });
-  return {scan: options.scan || simpleScan};
+  return {scan: options.scan || simpleScan} as any;
 }
 
 /**

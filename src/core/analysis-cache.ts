@@ -113,11 +113,9 @@ export class AnalysisCache {
   toString() {
     return `<AnalysisCache
         scannedDocuments:
-            ${Array.from(this.scannedDocuments.keys())
-        .join('\n            ')}
+            ${Array.from(this.scannedDocuments.keys()).join('\n            ')}
         analyzedDocuments:
-            ${Array.from(this.analyzedDocuments.keys())
-        .join('\n            ')}
+            ${Array.from(this.analyzedDocuments.keys()).join('\n            ')}
       >`;
   }
 }
