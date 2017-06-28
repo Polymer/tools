@@ -24,8 +24,6 @@ import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import chaiAsPromised = require('chai-as-promised');
 use(chaiAsPromised);
 
-
-
 suite('DependencyGraph', () => {
 
   function assertStringSetsEqual(
