@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Modified the `bundle` property in project build options to support the subset of `polymer-bundler` options which can be serialized in a JSON file.
 <!-- Add new, unreleased changes here. -->
+
+## [3.4.0] - 2017-06-21
+* Modified the `bundle` property in project build options to support the subset of `polymer-bundler` options which can be serialized in a JSON file.
 
 ## [3.3.0] - 2017-06-09
 * Removed `insertPrefetchLinks` from build presets. See https://github.com/Polymer/polymer-build/issues/239 for details.
