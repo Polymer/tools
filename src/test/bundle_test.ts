@@ -216,9 +216,9 @@ suite('BuildBundler', () => {
     assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointCDoc, 'common-dependency.html'));
 
-    // entrypoints import shell
-    assert.isTrue(hasImport(entrypointBDoc, 'shell.html'));
-    assert.isTrue(hasImport(entrypointCDoc, 'shell.html'));
+    // entrypoints don't import shell
+    assert.isFalse(hasImport(entrypointBDoc, 'shell.html'));
+    assert.isFalse(hasImport(entrypointCDoc, 'shell.html'));
 
     // No shared-bundle with a shell
     assert.isNotOk(getFile('shared_bundle_1.html'));

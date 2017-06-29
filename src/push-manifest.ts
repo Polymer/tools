@@ -14,6 +14,7 @@
 
 import * as path from 'path';
 import {Analyzer, Document, Import} from 'polymer-analyzer';
+import {buildDepsIndex} from 'polymer-bundler/lib/deps-index';
 import {ProjectConfig} from 'polymer-project-config';
 import File = require('vinyl');
 
@@ -122,8 +123,7 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
  * to be added to the overall push manifest.
  */
 async function generatePushManifestEntryForUrl(
-    analyzer: Analyzer, url: string, ignoreUrls?: string[]):
-    Promise<PushManifestEntryCollection> {
+    analyzer: Analyzer, url: string): Promise<PushManifestEntryCollection> {
   const analysis = await analyzer.analyze([url]);
   const analyzedDocument = analysis.getDocument(url);
 
@@ -140,9 +140,6 @@ async function generatePushManifestEntryForUrl(
         noLazyImports: true,
       })].filter((i) => !(i.type === 'html-import' && i.lazy));
   const pushManifestEntries: PushManifestEntryCollection = {};
-  function shouldIgnoreFile(url: string) {
-    return ignoreUrls && ignoreUrls.indexOf(url) > -1;
-  }
 
   for (const analyzedImport of analyzedImports) {
     // TODO This import URL does not respect the document's base tag.
@@ -150,7 +147,7 @@ async function generatePushManifestEntryForUrl(
     // documents, but base tags are somewhat rare.
     const analyzedImportUrl = analyzedImport.url;
     const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
-    if (!shouldIgnoreFile(analyzedImportUrl) && !analyzedImportEntry) {
+    if (!analyzedImportEntry) {
       pushManifestEntries[analyzedImportUrl] =
           createPushEntryFromImport(analyzedImport);
     }
@@ -198,21 +195,28 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
   }
 
   async generatePushManifest(): Promise<PushManifest> {
-    const pushManifest: PushManifest = {};
+    // Bundler's buildDepsIndex code generates an index with all fragments and
+    // all lazy-imports encountered are the keys, so we'll use that function to
+    // produce the set of all fragments to generate push-manifest entries for.
+    const allFragments =
+        new Set((await buildDepsIndex(
+                     this.config.allFragments.map(
+                         (path) => urlFromPath(this.config.root, path)),
+                     this.analyzer))
+                    .entrypointToDeps.keys());
+
     // If an app-shell exists, use that as our main push URL because it has a
     // reliable URL. Otherwise, support the single entrypoint URL.
-    const mainPushEntrypoint = this.config.shell || this.config.entrypoint;
-    // Generate the dependencies to push for the shell
-    const absoluteShellUrl = urlFromPath(this.config.root, mainPushEntrypoint);
-    pushManifest[absoluteShellUrl] =
-        await generatePushManifestEntryForUrl(this.analyzer, absoluteShellUrl);
-    const shellImportUrls = Object.keys(pushManifest[absoluteShellUrl]);
-    const fragmentIgnoreUrls = [absoluteShellUrl].concat(shellImportUrls);
+    const mainPushEntrypointUrl = urlFromPath(
+        this.config.root, this.config.shell || this.config.entrypoint);
+    allFragments.add(mainPushEntrypointUrl);
+
     // Generate the dependencies to push for each fragment.
-    for (const fragment of this.config.fragments) {
-      const absoluteFragmentUrl = urlFromPath(this.config.root, fragment);
+    const pushManifest: PushManifest = {};
+    for (const fragment of allFragments) {
+      const absoluteFragmentUrl = fragment;
       pushManifest[absoluteFragmentUrl] = await generatePushManifestEntryForUrl(
-          this.analyzer, absoluteFragmentUrl, fragmentIgnoreUrls);
+          this.analyzer, absoluteFragmentUrl);
     }
 
     // The URLs we got may be absolute or relative depending on how they were
