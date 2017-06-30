@@ -6,9 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+<!-- Add new, unreleased changes here. -->
+
+## [1.6.0] - 2017-06-29
 * Automatically recognize any lazy-imports encountered as fragments when generating push-manifest.
 * The `addPushManifest` feature now honors the laziness of html-imports and excludes them from the set of their importers' pushed assets.
-<!-- Add new, unreleased changes here. -->
+* Upgraded Polymer Bundler to 2.2.0, which updated the shell strategy so that the shell is no longer linked to from other bundles. See [Bundler issue #471](https://github.com/Polymer/polymer-bundler/issues/471) for more details.
 
 ## [1.5.1] - 2017-06-02
 * Prefetch links are now only added for transitive dependencies.
