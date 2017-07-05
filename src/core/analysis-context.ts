@@ -37,7 +37,6 @@ import {PolymerElementScanner} from '../polymer/polymer-element-scanner';
 import {PseudoElementScanner} from '../polymer/pseudo-element-scanner';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
-import {TypeScriptPreparser} from '../typescript/typescript-preparser';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
@@ -62,7 +61,6 @@ export class AnalysisContext {
   readonly parsers = new Map<string, Parser<ParsedDocument<any, any>>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
-    ['ts', new TypeScriptPreparser()],
     ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);

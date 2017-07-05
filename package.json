@@ -59,6 +59,7 @@
     "source-map-support": "^0.4.2",
     "temp": "^0.8.3",
     "tslint": "^4.1.1",
+    "typescript": "^2.2.0",
     "typescript-json-schema": "^0.10.0",
     "watchy": "^0.6.6"
   },
@@ -83,8 +84,7 @@
     "jsonschema": "^1.1.0",
     "parse5": "^2.2.1",
     "shady-css-parser": "0.0.8",
-    "strip-indent": "^2.0.0",
-    "typescript": "^2.2.0"
+    "strip-indent": "^2.0.0"
   },
   "engines": {
     "node": ">=6"

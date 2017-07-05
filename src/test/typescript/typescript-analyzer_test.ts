@@ -17,6 +17,7 @@ import * as ts from 'typescript';
 
 import {AnalysisContext} from '../../core/analysis-context';
 import {TypeScriptAnalyzer} from '../../typescript/typescript-analyzer';
+import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
@@ -26,7 +27,11 @@ async function getTypeScriptAnalyzer(files: {[url: string]: string}) {
     urlLoader.urlContentsMap.set(url, files[url]!);
   }
   const urlResolver = new PackageUrlResolver();
-  const analysisContext = new AnalysisContext({urlLoader, urlResolver});
+  const analysisContext = new AnalysisContext({
+    parsers: new Map([['ts', new TypeScriptPreparser()]]),
+    urlLoader,
+    urlResolver
+  });
   // This puts documents into the scanned document cache
   await Promise.all(Object.keys(files).map((url) => analysisContext.scan(url)));
   return new TypeScriptAnalyzer(analysisContext);

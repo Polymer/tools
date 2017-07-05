@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!--## Unreleased-->
+## Unreleased
+
+* Removed TypeScript from production dependencies until TypeScript analysis is fully supported.
 
 ## [2.2.0] - 2017-06-22
 
