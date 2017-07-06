@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [2.2.1] - 2017-07-06
+
 * Removed TypeScript from production dependencies until TypeScript analysis is fully supported.
 
 ## [2.2.0] - 2017-06-22
