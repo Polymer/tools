@@ -54,9 +54,10 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
       astNode: inlineInfo.astNode, isInline,
     });
     if (parseError) {
-      const start = sourceFile.getLineAndCharacterOfPosition(parseError.start);
+      const start =
+          sourceFile.getLineAndCharacterOfPosition(parseError.start || 0);
       const end = sourceFile.getLineAndCharacterOfPosition(
-          parseError.start + parseError.length);
+          (parseError.start || 0) + (parseError.length || 0));
       throw new WarningCarryingException(new Warning({
         code: 'parse-error',
         severity: Severity.ERROR,
