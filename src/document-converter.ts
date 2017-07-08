@@ -13,6 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as estree from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import * as recast from 'recast';
@@ -263,7 +264,8 @@ export class DocumentConverter {
       if (template === null) {
         continue;
       }
-      const templateText = parse5.serialize((template as any).content).trim();
+
+      const templateLiteral = nodeToTemplateLiteral((template as any).content);
       const node = this.getNode(element.astNode)!;
 
       if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
@@ -274,14 +276,14 @@ export class DocumentConverter {
           jsc.functionExpression(
             null,
             [],
-            jsc.blockStatement([jsc.returnStatement(jsc.literal(templateText))]))
+            jsc.blockStatement([jsc.returnStatement(templateLiteral)]))
         ));
       } else if (node.type === 'CallExpression') {
         // A Polymer hybrid/legacy factory function element
         (node.arguments[0] as ObjectExpression).properties.splice(0, 0, jsc.property(
           'init',
           jsc.identifier('_template'),
-          jsc.literal(templateText)));
+          templateLiteral));
       }
     }
   }
@@ -716,4 +718,28 @@ function sourceLocationsEqual(a: Node, b: Node): boolean {
       && aLoc.start.line === bLoc.start.line
       && aLoc.end.column === bLoc.end.column
       && aLoc.end.line === bLoc.end.line;
+}
+
+function nodeToTemplateLiteral(node: parse5.ASTNode): estree.TemplateLiteral {
+  const lines = parse5.serialize(node).split('\n');
+
+  // Remove empty / whitespace-only leading lines.
+  while (/^\s*$/.test(lines[0])) {
+    lines.shift();
+  }
+  // Remove empty / whitespace-only trailing lines.
+  while (/^\s*$/.test(lines[lines.length - 1])) {
+    lines.pop();
+  }
+
+  const cooked = '\n' + lines.join('\n') + '\n';
+
+  // The `\` -> `\\` replacement must occur first so that the backslashes
+  // introduced by later replacements are not replaced.
+  const raw = cooked
+    .replace('\\', '\\\\')
+    .replace('`', '\\`')
+    .replace('$', '\\$');
+
+  return jsc.templateLiteral([jsc.templateElement({cooked, raw}, true)], []);
 }

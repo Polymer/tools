@@ -712,21 +712,25 @@ export const setRootPath = function(path) {
     test('inlines templates into class-based Polymer elements', async () => {
       setSources({
         'test.html': `
-          <dom-module id="test-element">
-            <template>
-              <h1>Hi!</h1>
-            </template>
-            <script>
-              /**
-               * @customElement
-               * @polymer
-               */
-              class TestElement extends Polymer.Element {
-                static get is() { return 'test-element'; }
-              }
-            </script>
-          </dom-module>
-        `,
+<dom-module id="test-element">
+  <template>
+    <h1>Hi!</h1>
+    <div>
+      This template has multiple lines.<br>
+      This template contains special characters: \` \$
+    </div>
+  </template>
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class TestElement extends Polymer.Element {
+      static get is() { return 'test-element'; }
+    }
+  </script>
+</dom-module>
+`,
       });
       const js = await getJs();
       assert.equal(js, `/**
@@ -735,7 +739,13 @@ export const setRootPath = function(path) {
  */
 class TestElement extends Polymer.Element {
   get template() {
-    return '<h1>Hi!</h1>';
+    return \`
+    <h1>Hi!</h1>
+    <div>
+      This template has multiple lines.<br>
+      This template contains special characters: \\\` \\$
+    </div>
+\`;
   }
 
   static get is() { return 'test-element'; }
@@ -746,21 +756,24 @@ class TestElement extends Polymer.Element {
     test('inlines templates into factory-based Polymer elements', async () => {
       setSources({
         'test.html': `
-          <dom-module id="test-element">
-            <template>
-              <h1>Hi!</h1>
-            </template>
-            <script>
-              Polymer({
-                is: 'test-element',
-              });
-            </script>
-          </dom-module>
-        `,
+  <dom-module id="test-element">
+    <template>
+      <h1>Hi!</h1>
+    </template>
+    <script>
+      Polymer({
+        is: 'test-element',
+      });
+    </script>
+  </dom-module>
+`,
       });
       const js = await getJs();
       assert.equal(js, `Polymer({
-  _template: '<h1>Hi!</h1>',
+  _template: \`
+      <h1>Hi!</h1>
+\`,
+
   is: 'test-element'
 });
 `);

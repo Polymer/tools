@@ -142,7 +142,7 @@ declare module 'jscodeshift' {
 
     export function templateLiteral(quasis: estree.TemplateElement[], expressions: estree.Expression[]): estree.TemplateLiteral;
 
-    export function templateElement(value: '[object Object]', tail: boolean): estree.TemplateElement;
+    export function templateElement(value: {cooked: String, raw: String}, tail: boolean): estree.TemplateElement;
 
     export function noop(): estree.Noop;
 
