@@ -18,7 +18,7 @@ import * as estree from 'estree';
 import * as path from 'path';
 import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
 
-import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../analysis-converter';
+import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../../analysis-converter';
 
 suite('AnalysisConverter', () => {
 

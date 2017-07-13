@@ -4,10 +4,12 @@
     "html2js": "bin/html2js.js"
   },
   "scripts": {
-    "test": "npm run build && mocha && npm run lint",
     "build": "tsc",
+    "test": "npm run build && mocha && npm run lint",
     "lint": "tslint -p ./",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "test:integration": "npm run build && mocha lib/test/integration",
+    "update:fixtures": "html2js --in fixtures/polymer --out fixtures/polymer_expected --clear"
   },
   "engines": {
     "node": ">=7.6.0"
