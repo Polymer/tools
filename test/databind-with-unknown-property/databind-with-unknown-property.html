@@ -18,21 +18,11 @@
       </template>
     </dom-repeat>
 
-    <dom-repeat as="smeerp" indexAs="gavagai">
-      <template>
-        <div id="{{smeerp}}" title="{{gavagai}}"></div>
-      </template>
-    </dom-repeat>
-
     <template is='dom-repeat'>
       <div id="{{item}}" title="{{index}}"></div>
     </template>
 
     <template is='dom-repeat' as="tribble" index-as="rabbit">
-      <div id="{{tribble}}" title="{{rabbit}}"></div>
-    </template>
-
-    <template is='dom-repeat' as="tribble" indexAs="rabbit">
       <div id="{{tribble}}" title="{{rabbit}}"></div>
     </template>
 
