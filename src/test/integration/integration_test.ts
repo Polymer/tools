@@ -1,8 +1,9 @@
+import {assert} from 'chai';
 import * as fs from 'mz/fs';
 import * as path from 'path';
 import {Document} from 'polymer-analyzer';
+
 import {configureAnalyzer, configureConverter} from '../../convert-package';
-import {assert} from 'chai';
 
 
 suite('integration tests', function() {

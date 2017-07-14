@@ -28,6 +28,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     defaultValue: 'html2js_out',
     description: 'The directory to write converted files to.'
   },
+  {name: 'in', type: String, description: 'The directory to convert.'},
   {
     name: 'root-module',
     type: String,
@@ -48,6 +49,11 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     name: 'npm-version',
     type: String,
     description: 'Version string to use for package.json'
+  },
+  {
+    name: 'clear',
+    type: Boolean,
+    description: 'Clear the out directory (if one exists) before running.',
   },
 ];
 
@@ -71,11 +77,13 @@ export async function run() {
   }
 
   await convertPackage({
+    inDir: options['in'],
     outDir: options['out'],
     excludes: options['exclude'],
     rootModuleName: options['root-module'],
     packageName: options['package-name'],
     npmVersion: options['npm-version'],
+    clearOutDir: options['clear'],
   });
 
   console.log('Done');

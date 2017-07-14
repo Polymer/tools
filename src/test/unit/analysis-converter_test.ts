@@ -932,28 +932,6 @@ Polymer({
       });
     });
 
-    test('case-map', async () => {
-      const analysis = await analyzer.analyze(['case-map/case-map.html']);
-      const converter = new AnalysisConverter(analysis, {
-        rootModuleName: 'Polymer',
-      });
-      const converted = await converter.convert();
-      const caseMapSource = converted.get('./case-map/case-map.js')!;
-      assert.include(caseMapSource, 'export function dashToCamelCase');
-      assert.include(caseMapSource, 'export function camelToDashCase');
-    });
-
-    test('polymer-element', async () => {
-      const filename = 'polymer-element/polymer-element.html';
-      const analysis = await analyzer.analyze([filename]);
-      const doc = analysis.getDocument(filename) as Document;
-      const converter = new AnalysisConverter(analysis, {
-        rootModuleName: 'Polymer',
-      });
-      converter.convertDocument(doc);
-      assert(converter.namespacedExports.has('Polymer.Element'));
-    });
-
   });
 
   suite('getMemberPath', () => {

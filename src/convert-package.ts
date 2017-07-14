@@ -14,7 +14,8 @@
 
 import * as fs from 'mz/fs';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import * as rimraf from 'rimraf';
 
 import {AnalysisConverter, AnalysisConverterOptions} from './analysis-converter';
 
@@ -40,6 +41,11 @@ function generatePackageJson(
 
 type ConvertPackageOptions = AnalysisConverterOptions&{
   /**
+   * The directory to read HTML files from.
+   */
+  readonly inDir?: string;
+
+  /**
    * The directory to write converted JavaScript files to.
    */
   readonly outDir?: string;
@@ -50,27 +56,15 @@ type ConvertPackageOptions = AnalysisConverterOptions&{
   readonly packageName?: string;
 
   readonly npmVersion?: string;
+
+  /**
+   * Flag: If true, clear the out directory before writing to it.
+   */
+  clearOutDir?: boolean;
 };
 
-/**
- * Converts an entire package from HTML imports to JS modules
- */
-export async function convertPackage(options: ConvertPackageOptions = {}) {
-  const outDir = options && (options.outDir) || 'js_out';
-  const outDirResolved = path.resolve(process.cwd(), outDir);
-  console.log(`Out directory: ${outDirResolved}`);
-
-  try {
-    await fs.mkdir(outDirResolved);
-  } catch (e) {
-    if (e.errno !== -17) {  // directory exists
-      console.error(e);
-    }
-  }
-
-  const urlLoader =
-      new InMemoryOverlayUrlLoader(new FSUrlLoader(process.cwd()));
-
+export function configureAnalyzer(options: ConvertPackageOptions) {
+  const inDir = options.inDir || process.cwd();
 
   // TODO(fks) 07-06-2015: Convert this to a configurable option
   // 'lib/utils/boot.html' - This is a special file that overwrites exports
@@ -78,21 +72,20 @@ export async function convertPackage(options: ConvertPackageOptions = {}) {
   const bootOverrideHtml = `<script>
   window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
 </script>`;
+  const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(inDir));
   urlLoader.urlContentsMap.set('lib/utils/boot.html', bootOverrideHtml);
   urlLoader.urlContentsMap.set(
       'bower_components/polymer/lib/utils/boot.html', bootOverrideHtml);
 
-  const analyzer = new Analyzer({
+  return new Analyzer({
     urlLoader,
     urlResolver: new PackageUrlResolver(),
   });
-  const analysis = await analyzer.analyzePackage();
+}
 
-  // TODO(justinfagnani): These setting are only good for Polymer core and
-  // should be extracted into a config file
-  const npmPackageName = options.packageName || '@polymer/polymer';
-  const npmPackageVersion = options.npmVersion;
-  const converter = new AnalysisConverter(analysis, {
+export function configureConverter(
+    analysis: Analysis, options: ConvertPackageOptions) {
+  return new AnalysisConverter(analysis, {
     rootModuleName: options.rootModuleName || 'Polymer',
     excludes: options.excludes ||
         [
@@ -110,24 +103,49 @@ export async function convertPackage(options: ConvertPackageOptions = {}) {
       'Polymer.telemetry': ['instanceCount'],
     },
   });
+}
 
-  try {
-    const results = await converter.convert();
-    for (const [jsUrl, newSource] of results!) {
-      const outPath = path.resolve(outDirResolved, jsUrl);
-      const jsDir = path.dirname(outPath);
-      // console.log(`writing ${outPath}`);
-      mkdirp.sync(jsDir);
-      // console.log(`created dir ${jsDir}`);
-      await fs.writeFile(outPath, newSource);
-    }
-  } catch (e) {
-    console.log('error in codebase conversion');
-    console.error(e);
+/**
+ * Converts an entire package from HTML imports to JS modules
+ */
+export async function convertPackage(options: ConvertPackageOptions = {}) {
+  const inDir = options.inDir || process.cwd();
+  const outDir = options.outDir || 'js_out';
+  const outDirResolved = path.resolve(process.cwd(), outDir);
+  console.log(`Out directory: ${outDirResolved}`);
+
+  // TODO(justinfagnani): These setting are only good for Polymer core
+  // and should be extracted into a config file.
+  const npmPackageName = options.packageName || '@polymer/polymer';
+  const npmPackageVersion = options.npmVersion;
+
+  const analyzer = configureAnalyzer(options);
+  const analysis = await analyzer.analyzePackage();
+  const converter = configureConverter(analysis, options);
+  const results = await converter.convert();
+
+  if (options.clearOutDir) {
+    rimraf.sync(outDirResolved);
   }
 
   try {
-    const bowerJsonPath = path.resolve('bower.json');
+    await fs.mkdir(outDirResolved);
+  } catch (e) {
+    if (e.errno === -17) {  // directory exists
+      // do nothing
+    } else {
+      throw e;
+    }
+  }
+
+  for (const [jsUrl, newSource] of results!) {
+    const outPath = path.resolve(outDirResolved, jsUrl);
+    mkdirp.sync(path.dirname(outPath));
+    await fs.writeFile(outPath, newSource);
+  }
+
+  try {
+    const bowerJsonPath = path.resolve(inDir, 'bower.json');
     const bowerJson = await fs.readFile(bowerJsonPath);
     const packageJsonPath = path.resolve(outDir, 'package.json');
     const packageJson =

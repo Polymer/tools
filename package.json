@@ -21,6 +21,7 @@
     "@types/estree": "^0.0.35",
     "@types/mocha": "^2.2.41",
     "@types/mz": "^0.0.31",
+    "@types/rimraf": "0.0.28",
     "ast-types": "^0.9.11",
     "chai": "^3.5.0",
     "command-line-args": "^4.0.6",
@@ -33,6 +34,7 @@
     "mz": "^2.6.0",
     "polymer-analyzer": "^2.0.2",
     "recast": "^0.12.4",
+    "rimraf": "^2.6.1",
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {
