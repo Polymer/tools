@@ -34,7 +34,7 @@ suite('AnalysisConverter', () => {
       });
     });
 
-    async function getJs(partialOptions?: Partial<AnalysisConverterOptions>) {
+    async function getConverter(partialOptions?: Partial<AnalysisConverterOptions>) {
       const options: AnalysisConverterOptions = Object.assign({
         rootModuleName: 'Polymer',
       }, partialOptions);
@@ -42,6 +42,11 @@ suite('AnalysisConverter', () => {
       const testDoc = analysis.getDocument('test.html') as Document;
       const converter = new AnalysisConverter(analysis, options);
       converter.convertDocument(testDoc);
+      return converter;
+    }
+
+    async function getJs(partialOptions?: Partial<AnalysisConverterOptions>) {
+      const converter = await getConverter(partialOptions);
       const module = converter.modules.get('./test.js');
       return module && module.source
     }
@@ -108,6 +113,95 @@ suite('AnalysisConverter', () => {
 import { bar as $bar } from './bar.js';
 console.log($foo);
 console.log($bar);
+`);
+    });
+
+    test('imports namespace itself if called directly', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./foo.html">
+          <script>
+            console.log(window.Polymer());
+            console.log(Polymer());
+            console.log(Polymer.foo);
+            console.log(Polymer['bar']);
+          </script>
+        `,
+        'foo.html': `
+          <script>
+            window.Polymer = function() {};
+            Polymer.foo = 42;
+            Polymer.bar = 43;
+          </script>
+        `,
+      });
+      assert.equal(await getJs(), `import { Polymer as $Polymer, foo as $foo } from \'./foo.js\';
+console.log($Polymer());
+console.log($Polymer());
+console.log($foo);
+console.log($Polymer[\'bar\']);
+`);
+    });
+
+    test('imports namespace itself if called indirectly', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./foo.html">
+          <script>
+            var P = Polymer;
+            var Po = window.Polymer;
+            P();
+            Po();
+          </script>
+        `,
+        'foo.html': `
+          <script>
+            window.Polymer = function() {};
+          </script>
+        `,
+      });
+      assert.equal(await getJs(), `import { Polymer as $Polymer } from \'./foo.js\';
+var P = $Polymer;
+var Po = $Polymer;
+P();
+Po();
+`);
+    });
+
+    test('imports _polymerFn as Polymer from polymer-fn.js', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./polymer.html">
+          <script>
+            console.log(window.Polymer());
+            console.log(Polymer());
+          </script>
+        `,
+        'polymer.html': `
+          <link rel="import" href="./lib/legacy/polymer-fn.html">
+        `,
+        'lib/legacy/polymer-fn.html': `
+          <script>
+            window.Polymer._polymerFn = function(info) {
+              console.log("hey there, i'm the polymer function!");
+            };
+          </script>
+        `,
+      });
+      const converter = await getConverter();
+      assert.equal(converter.modules.get('./test.js')!.source,
+`import './polymer.js';
+import { Polymer as $Polymer } from './lib/legacy/polymer-fn.js';
+console.log($Polymer());
+console.log($Polymer());
+`);
+      assert.equal(converter.modules.get('./polymer.js')!.source,
+`import './lib/legacy/polymer-fn.js';
+`);
+      assert.equal(converter.modules.get('./lib/legacy/polymer-fn.js')!.source,
+`export const Polymer = function(info) {
+  console.log("hey there, i\'m the polymer function!");
+};
 `);
     });
 

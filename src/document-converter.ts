@@ -22,10 +22,22 @@ import {Document, ParsedJavaScriptDocument, Namespace, Import} from 'polymer-ana
 import {Program, ExpressionStatement, Statement, ModuleDeclaration, Expression, Node, ObjectExpression, FunctionExpression, Identifier, AssignmentExpression, BlockStatement, ImportDeclaration} from 'estree';
 
 import jsc = require('jscodeshift');
-import { JsModule, AnalysisConverter } from './analysis-converter';
+import { JsModule, JsExport, AnalysisConverter } from './analysis-converter';
 import { htmlUrlToJs } from "./url-converter";
 
 const astTypes = require('ast-types');
+
+/**
+ * Replace a jscodeshift path node with an export identifier for the given
+ * JsExport & JsModule. Nothing is returned, the path node is modified.
+ */
+function replacePathWithExportIdentifier(path: any, moduleExport: JsExport, jsModule: JsModule) {
+  if (moduleExport.name === '*') {
+    path.replace(jsc.identifier(getModuleId(jsModule.url)));
+  } else {
+    path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
+  }
+}
 
 /**
  * Convert a module specifier & an optional set of named exports (or '*' to
@@ -209,7 +221,14 @@ export class DocumentConverter {
             false, // default
             value);
         } else {
-          const name = namespace[namespace.length - 1];
+          let name = namespace[namespace.length - 1];
+          // Special Polymer workaround: Register & rewrite the
+          // `Polymer._polymerFn` export as if it were the `Polymer()`
+          // namespace function.
+          if (namespaceName === 'Polymer._polymerFn') {
+            namespaceName = 'Polymer';
+            name = 'Polymer';
+          }
           this.program.body[this.currentStatementIndex] = jsc.exportNamedDeclaration(
             jsc.variableDeclaration(
               'const',
@@ -310,37 +329,58 @@ export class DocumentConverter {
    */
   rewriteNamespacedReferences() {
     const analysisConverter = this.analysisConverter;
+    const rootModuleName = analysisConverter.rootModuleName;
     const module = analysisConverter.modules.get(this.jsUrl)!;
     const importedReferences = module.importedReferences;
     const baseUrl = this.document.url;
 
+    /**
+     * Add the given JsExport to the current module's `importedReferences` map.
+     */
+    function addToImportedReferences(moduleExport: JsExport) {
+      const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
+      let moduleImportedNames = importedReferences.get(moduleJsUrl);
+      if (moduleImportedNames === undefined) {
+        moduleImportedNames = new Set<string>();
+        importedReferences.set(moduleJsUrl, moduleImportedNames);
+      }
+      moduleImportedNames.add(moduleExport.name);
+    }
+
     astTypes.visit(this.program, {
+      visitIdentifier(path: any) {
+        const memberName = path.node.name;
+        const isRootModuleIdentifier = (memberName === rootModuleName);
+        if (!isRootModuleIdentifier || getMemberPath(path.parent.node)) {
+          return false;
+        }
+        const moduleExport = analysisConverter.namespacedExports.get(memberName);
+        if (!moduleExport) {
+          return false;
+        }
+        // Store the imported reference & rewrite the Identifier
+        const jsModule = analysisConverter.modules.get(moduleExport.url);
+        addToImportedReferences(moduleExport);
+        replacePathWithExportIdentifier(path, moduleExport, jsModule!);
+        return false;
+      },
       visitMemberExpression(path: any) {
         const memberPath = getMemberPath(path.node);
-        if (memberPath) {
-          const memberName = memberPath.join('.');
-
-          const moduleExport = analysisConverter.namespacedExports.get(memberName);
-          if (moduleExport) {
-            // Store the imported reference to we can add it to the import statement
-            const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
-            let moduleImportedNames = importedReferences.get(moduleJsUrl);
-            if (moduleImportedNames === undefined) {
-              moduleImportedNames = new Set<string>();
-              importedReferences.set(moduleJsUrl, moduleImportedNames);
-            }
-            moduleImportedNames.add(moduleExport.name);
-
-            // replace the member expression
-            if (moduleExport.name === '*') {
-              const jsModule = analysisConverter.modules.get(moduleExport.url)!;
-              path.replace(jsc.identifier(getModuleId(jsModule.url)));
-            } else {
-              path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
-            }
-          }
+        if (!memberPath) {
+          this.traverse(path);
+          return;
         }
-        this.traverse(path);
+        const memberName = memberPath.join('.');
+        const moduleExport = analysisConverter.namespacedExports.get(memberName);
+        if (!moduleExport) {
+          this.traverse(path);
+          return;
+        }
+        // Store the imported reference & rewrite the MemberExpression
+        const jsModule = analysisConverter.modules.get(moduleExport.url);
+        addToImportedReferences(moduleExport);
+        replacePathWithExportIdentifier(path, moduleExport, jsModule!);
+        return false;
       }
     });
   }
