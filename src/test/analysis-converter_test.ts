@@ -18,7 +18,11 @@ import * as estree from 'estree';
 import * as path from 'path';
 import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
 
-import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../../analysis-converter';
+import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../analysis-converter';
+import {configureAnalyzer, configureConverter} from '../convert-package';
+
+
+const fixturesDirPath = path.resolve(__dirname, '../../fixtures');
 
 suite('AnalysisConverter', () => {
 
@@ -961,6 +965,28 @@ Polymer({
       assert.deepEqual(memberPath, ['Foo', 'Bar', 'Baz']);
     });
 
+  });
+
+  test('case-map', async () => {
+    const options = {inDir: fixturesDirPath};
+    const analyzer = configureAnalyzer(options);
+    const analysis = await analyzer.analyze(['case-map/case-map.html']);
+    const converter = configureConverter(analysis, options);
+    const converted = await converter.convert();
+    const caseMapSource = converted.get('./case-map/case-map.js');
+    assert.include(caseMapSource!, 'export function dashToCamelCase');
+    assert.include(caseMapSource!, 'export function camelToDashCase');
+  });
+
+  test('polymer-element', async () => {
+    const options = {inDir: fixturesDirPath};
+    const filename = 'polymer-element/polymer-element.html';
+    const analyzer = configureAnalyzer(options);
+    const analysis = await analyzer.analyze([filename]);
+    const doc = analysis.getDocument(filename) as Document;
+    const converter = configureConverter(analysis, {});
+    converter.convertDocument(doc);
+    assert(converter.namespacedExports.has('Polymer.Element'));
   });
 
 });

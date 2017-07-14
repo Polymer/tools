@@ -61,5 +61,6 @@ typings/
 .env
 
 /lib
+/fixtures/polymer_expected
 
 src/gen-ts-types/def/*.js

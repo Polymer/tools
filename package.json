@@ -8,8 +8,8 @@
     "test": "npm run build && mocha && npm run lint",
     "lint": "tslint -p ./",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
-    "test:integration": "npm run build && mocha lib/test/integration",
-    "update:fixtures": "html2js --in fixtures/polymer --out fixtures/polymer_expected --clear"
+    "polymer:test": "npm run build && node scripts/polymer-integration-test",
+    "polymer:checkpoint": "html2js --in fixtures/polymer --out fixtures/polymer_expected --clear"
   },
   "engines": {
     "node": ">=7.6.0"
@@ -38,7 +38,9 @@
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {
+    "chalk": "^2.0.1",
     "clang-format": "^1.0.53",
+    "diff": "^3.3.0",
     "gulp": "^3.9.1",
     "tslint": "^5.5.0",
     "typescript": "^2.4.1"
