@@ -919,6 +919,21 @@ Polymer({
 `);
     });
 
+    test('converts arbitrary elements', async () => {
+      setSources({
+        'test.html': `
+<custom-style><style>foo{}</style></custom-style>
+`,
+      });
+      const js = await getJs();
+      assert.equal(js, `
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+$_documentContainer.innerHTML = \`<custom-style><style>foo{}</style></custom-style>\`;
+document.appendChild($_documentContainer);
+`);
+    });
+
   });
 
   suite('fixtures', () => {

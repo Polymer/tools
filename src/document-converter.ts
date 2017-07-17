@@ -69,6 +69,16 @@ function getImportDeclarations(
   }
   return jsImportDeclarations;
 }
+
+
+const elementBlacklist = new Set<string|undefined>([
+  'base',
+  'link',
+  'meta',
+  'script',
+  'dom-module',
+]);
+
 /**
  * Converts a Document and its dependencies.
  */
@@ -146,6 +156,7 @@ export class DocumentConverter {
     this.unwrapModuleBody();
     this.rewriteNamespacedReferences();
     this.addJsImports();
+    this.convertElements();
     this.inlineTemplates();
 
     const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
@@ -163,6 +174,60 @@ export class DocumentConverter {
                              })
                              .code +
         '\n';
+  }
+
+  convertElements() {
+    const ast = this.document.parsedDocument.ast as parse5.ASTNode;
+    if (ast.childNodes === undefined) {
+      return;
+    }
+    const htmlElement = ast.childNodes!.find((n) => n.tagName === 'html');
+    const head = htmlElement!.childNodes!.find((n) => n.tagName === 'head')!;
+    const body = htmlElement!.childNodes!.find((n) => n.tagName === 'body')!;
+    const elements = [
+      ...head.childNodes!.filter(
+          (n: parse5.ASTNode) => n.tagName !== undefined),
+      ...body.childNodes!.filter((n: parse5.ASTNode) => n.tagName !== undefined)
+    ];
+
+    const genericElements =
+        elements.filter((e) => !elementBlacklist.has(e.tagName));
+    if (genericElements.length === 0) {
+      return;
+    }
+    const varName = `$_documentContainer`;
+    const fragment = {
+      nodeName: '#document-fragment',
+      attrs: [],
+      childNodes: genericElements,
+    };
+    const templateValue = nodeToTemplateLiteral(fragment as any, false);
+
+    const statements = [
+      jsc.variableDeclaration(
+          'const', [jsc.variableDeclarator(
+                       jsc.identifier(varName),
+                       jsc.callExpression(
+                           jsc.memberExpression(
+                               jsc.identifier('document'),
+                               jsc.identifier('createElement')),
+                           [jsc.literal('div')]))]),
+      jsc.expressionStatement(jsc.callExpression(
+          jsc.memberExpression(
+              jsc.identifier(varName), jsc.identifier('setAttribute')),
+          [jsc.literal('style'), jsc.literal('display: none;')])),
+      jsc.expressionStatement(jsc.assignmentExpression(
+          '=',
+          jsc.memberExpression(
+              jsc.identifier(varName), jsc.identifier('innerHTML')),
+          templateValue)),
+      jsc.expressionStatement(jsc.callExpression(
+          jsc.memberExpression(
+              jsc.identifier('document'), jsc.identifier('appendChild')),
+          [jsc.identifier(varName)]))
+    ];
+    this.program.body.splice(this.currentStatementIndex, 0, ...statements);
+    this.currentStatementIndex += statements.length;
   }
 
   rewriteNamespaceExports() {
@@ -794,7 +859,8 @@ function sourceLocationsEqual(a: Node, b: Node): boolean {
       aLoc.end.column === bLoc.end.column && aLoc.end.line === bLoc.end.line;
 }
 
-function nodeToTemplateLiteral(node: parse5.ASTNode): estree.TemplateLiteral {
+function nodeToTemplateLiteral(
+    node: parse5.ASTNode, addNewlines = true): estree.TemplateLiteral {
   const lines = parse5.serialize(node).split('\n');
 
   // Remove empty / whitespace-only leading lines.
@@ -806,7 +872,10 @@ function nodeToTemplateLiteral(node: parse5.ASTNode): estree.TemplateLiteral {
     lines.pop();
   }
 
-  const cooked = '\n' + lines.join('\n') + '\n';
+  let cooked = lines.join('\n');
+  if (addNewlines) {
+    cooked = `\n${cooked}\n`;
+  }
 
   // The `\` -> `\\` replacement must occur first so that the backslashes
   // introduced by later replacements are not replaced.
