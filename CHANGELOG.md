@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* [Breaking] Upgraded `polymer-bundler` to 3.x, which includes new default behavior around the `rewriteUrlsInTemplates` option in support of Polymer 2.x defaults.  Polymer 1.x project developers should set the option `rewriteUrlsInTemplates: true`.  See [using polymer-bundler programmatically](https://github.com/polymer/polymer-bundler#using-polymer-bundler-programmatically) for more information.
 <!-- Add new, unreleased changes here. -->
 
 ## [1.6.0] - 2017-06-29

@@ -139,6 +139,8 @@ mergeStream(project.sources(), project.dependencies())
   .pipe(gulp.dest('build/'));
 ```
 
+NOTE: When working programmatically with Bundler, **Polymer 1.x** projects should include `rewriteUrlsInTemplates: true` when their projects rely on custom element definitions which use relative paths inside style tags and element attributes.  **Polymer 2.x** uses the `assetpath` property added to dom-modules during bundling to resolve relative urls in style tags and provides the [importPath](https://www.polymer-project.org/2.0/docs/devguide/dom-template#urls-in-templates) binding to prefix relative paths in templates.
+
 ### Generating a Service Worker
 
 #### generateServiceWorker()

@@ -420,16 +420,11 @@ suite('BuildBundler', () => {
           '<link rel="import" href="bower_components/loads-external-dependencies.html">');
     });
 
-    // TODO(usergenic): Uncomment this test after bundler's next release, which
-    // includes the fix for folder references in excludes.
-    test.skip('excludes: html files in folders listed are not inlined', async () => {
+    test('excludes: html files in folders listed are not inlined', async () => {
       await setupTest(projectOptions, {excludes: ['bower_components/']});
-      assert.isOk(
-          getFile('bower_components/loads-external-dependencies.html'),
-          'Excluded import is passed through the bundler');
       assert.include(
           getFile('shell.html'),
-          '<link rel="import" href="bower_components/loads-external-dependencies.html">');
+          '<link rel="import" href="bower_components/dep.html">');
     });
 
     test('excludes: nothing is excluded when no excludes are given', async () => {
@@ -466,6 +461,17 @@ suite('BuildBundler', () => {
       assert.include(getFile('shell.html'), 'console.log(\'shell\')');
     });
 
+    test('rewriteUrlsInTemplates: false, does not rewrite urls', async () => {
+      await setupTest(projectOptions, {rewriteUrlsInTemplates: false});
+      assert.include(getFile('shell.html'), 'url(\'dep-bg.png\')');
+    });
+
+    test('rewriteUrlsInTemplates: true, rewrites relative urls', async () => {
+      await setupTest(projectOptions, {rewriteUrlsInTemplates: true});
+      assert.include(
+          getFile('shell.html'), 'url("bower_components/dep-bg.png")');
+    });
+
     test('stripComments: false, does not strip html comments', async () => {
       await setupTest(projectOptions, {stripComments: false});
       assert.include(
@@ -498,7 +504,9 @@ suite('BuildBundler', () => {
         }
       });
       assert.isOk(getFile('shared_bundle_1.html'));
-      assert.include(getFile('shared_bundle_1.html'), '<div id="dep"></div>');
+      assert.include(
+          getFile('shared_bundle_1.html'),
+          '<dom-module id="dep" assetpath="bower_components/"');
     });
 
     test('urlMapper: fn(), applies bundle url mapper function', async () => {
