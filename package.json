@@ -4,21 +4,26 @@
     "html2js": "bin/html2js.js"
   },
   "scripts": {
-    "test": "npm run build && mocha && npm run lint",
     "build": "tsc",
+    "test": "npm run build && mocha && npm run lint",
     "lint": "tslint -p ./",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "polymer:test": "node lib/tools/test-polymer",
+    "polymer:checkpoint": "node lib/tools/checkpoint-polymer",
+    "clean": "rm -rf ./lib/ && rm -rf ./fixtures/generated/*"
   },
   "engines": {
     "node": ">=7.6.0"
   },
   "dependencies": {
     "@types/chai": "^3.5.2",
+    "@types/diff": "^3.2.0",
     "@types/esprima": "^2.1.33",
     "@types/estraverse": "^0.0.6",
     "@types/estree": "^0.0.35",
     "@types/mocha": "^2.2.41",
     "@types/mz": "^0.0.31",
+    "@types/rimraf": "0.0.28",
     "ast-types": "^0.9.11",
     "chai": "^3.5.0",
     "command-line-args": "^4.0.6",
@@ -31,10 +36,13 @@
     "mz": "^2.6.0",
     "polymer-analyzer": "^2.0.2",
     "recast": "^0.12.4",
+    "rimraf": "^2.6.1",
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {
+    "chalk": "^2.0.1",
     "clang-format": "^1.0.53",
+    "diff": "^3.3.0",
     "gulp": "^3.9.1",
     "tslint": "^5.5.0",
     "typescript": "^2.4.1"

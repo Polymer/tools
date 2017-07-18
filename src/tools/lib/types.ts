@@ -58,7 +58,7 @@ export interface Field {
 
 type TypeDefSingle = Def|Or|string|StringConstructor|NumberConstructor|
     BooleanConstructor|RegExpConstructor|null;
-export type TypeDef = TypeDefSingle | TypeDefSingle[];
+export type TypeDef = TypeDefSingle|TypeDefSingle[];
 
 export function typeString(type: TypeDef) {
   let isArray = false;

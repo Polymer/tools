@@ -61,5 +61,6 @@ typings/
 .env
 
 /lib
+/fixtures/generated
 
 src/gen-ts-types/def/*.js
