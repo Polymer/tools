@@ -16,28 +16,11 @@ import * as fs from 'mz/fs';
 import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 import * as rimraf from 'rimraf';
-
+import {generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {AnalysisConverter, AnalysisConverterOptions} from './analysis-converter';
 
 const mkdirp = require('mkdirp');
 
-function generatePackageJson(
-    bowerJson: any, npmName: string, npmVersion?: string) {
-  return {
-    name: npmName,
-    flat: true,
-    version: npmVersion || bowerJson.version,
-    description: bowerJson.description,
-    author: bowerJson.author,
-    contributors: bowerJson.contributors || bowerJson.authors,
-    keywords: bowerJson.keywords,
-    main: (typeof bowerJson.main === 'string') ? bowerJson.main : undefined,
-    repository: bowerJson.repository,
-    homepage: bowerJson.homepage,
-    dependencies: {},
-    devDependencies: {}
-  };
-}
 
 type ConvertPackageOptions = AnalysisConverterOptions&{
   /**
@@ -53,9 +36,12 @@ type ConvertPackageOptions = AnalysisConverterOptions&{
   /**
    * The npm package name to use in package.json
    */
-  readonly packageName?: string;
+  readonly packageName: string;
 
-  readonly npmVersion?: string;
+  /**
+   * The npm package version to use in package.json
+   */
+  readonly packageVersion: string;
 
   /**
    * Flag: If true, clear the out directory before writing to it.
@@ -84,7 +70,8 @@ export function configureAnalyzer(options: ConvertPackageOptions) {
 }
 
 export function configureConverter(
-    analysis: Analysis, options: ConvertPackageOptions) {
+  analysis: Analysis, options: ConvertPackageOptions) {
+  const outDir = options.outDir || 'js_out';
   return new AnalysisConverter(analysis, {
     rootModuleName: options.rootModuleName || 'Polymer',
     excludes: options.excludes ||
@@ -108,17 +95,17 @@ export function configureConverter(
 /**
  * Converts an entire package from HTML imports to JS modules
  */
-export async function convertPackage(options: ConvertPackageOptions = {}) {
+export async function convertPackage(options: ConvertPackageOptions) {
   const inDir = options.inDir || process.cwd();
   const outDir = options.outDir || 'js_out';
   const outDirResolved = path.resolve(process.cwd(), outDir);
   console.log(`Out directory: ${outDirResolved}`);
 
+  const npmPackageName = options.packageName;
+  const npmPackageVersion = options.packageVersion;
+
   // TODO(justinfagnani): These setting are only good for Polymer core
   // and should be extracted into a config file.
-  const npmPackageName = options.packageName || '@polymer/polymer';
-  const npmPackageVersion = options.npmVersion;
-
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
@@ -145,13 +132,10 @@ export async function convertPackage(options: ConvertPackageOptions = {}) {
   }
 
   try {
-    const bowerJsonPath = path.resolve(inDir, 'bower.json');
-    const bowerJson = await fs.readFile(bowerJsonPath);
-    const packageJsonPath = path.resolve(outDir, 'package.json');
+    const bowerJson = readJson('bower.json');
     const packageJson =
         generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
-    await fs.writeFile(
-        packageJsonPath, JSON.stringify(packageJson, undefined, 2));
+    writeJson(packageJson, outDir, 'package.json');
   } catch (e) {
     console.log('error in bower.json -> package.json conversion');
     console.error(e);
