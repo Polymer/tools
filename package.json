@@ -8,14 +8,16 @@
     "test": "npm run build && mocha && npm run lint",
     "lint": "tslint -p ./",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
-    "polymer:test": "npm run build && node scripts/polymer-integration-test",
-    "polymer:checkpoint": "html2js --in fixtures/polymer --out fixtures/polymer_expected --clear"
+    "polymer:test": "node lib/tools/test-polymer",
+    "polymer:checkpoint": "node lib/tools/checkpoint-polymer",
+    "clean": "rm -rf ./lib/ && rm -rf ./fixtures/generated/*"
   },
   "engines": {
     "node": ">=7.6.0"
   },
   "dependencies": {
     "@types/chai": "^3.5.2",
+    "@types/diff": "^3.2.0",
     "@types/esprima": "^2.1.33",
     "@types/estraverse": "^0.0.6",
     "@types/estree": "^0.0.35",

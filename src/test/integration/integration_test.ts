@@ -1,5 +1,18 @@
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
 import {assert} from 'chai';
-import * as fs from 'mz/fs';
 import * as path from 'path';
 import {Document} from 'polymer-analyzer';
 
@@ -32,24 +45,6 @@ suite('integration tests', function() {
     const converter = configureConverter(analysis, {});
     converter.convertDocument(doc);
     assert(converter.namespacedExports.has('Polymer.Element'));
-  });
-
-  test('polymer', async () => {
-
-    const expectedDir = path.join(fixturesDirPath, 'polymer_expected');
-    const options = {
-      inDir: path.join(fixturesDirPath, 'polymer'),
-    };
-    const analyzer = configureAnalyzer(options);
-    const analysis = await analyzer.analyzePackage();
-    const converter = configureConverter(analysis, {});
-    const results = await converter.convert();
-    for (const [jsPath, jsContents] of results) {
-      const expectedJsPath = path.resolve(expectedDir, jsPath);
-      const expectedJsContents = fs.readFileSync(expectedJsPath, 'utf8');
-      assert.equal(jsContents, expectedJsContents);
-    }
-    // assert(converter.namespacedExports.has('Polymer.Element'));
   });
 
 });
