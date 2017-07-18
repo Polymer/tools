@@ -14,13 +14,14 @@
 
 import * as fs from 'mz/fs';
 import * as path from 'path';
-import { Analyzer, PackageUrlResolver } from "polymer-analyzer/lib";
-import {FSUrlOverrideLoader} from './fs-url-loader-overrides';
-import { AnalysisConverterOptions, AnalysisConverter } from "./analysis-converter";
+import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+
+import {AnalysisConverter, AnalysisConverterOptions} from './analysis-converter';
 
 const mkdirp = require('mkdirp');
 
-function generatePackageJson(bowerJson: any, npmName: string, npmVersion?: string) {
+function generatePackageJson(
+    bowerJson: any, npmName: string, npmVersion?: string) {
   return {
     name: npmName,
     flat: true,
@@ -37,19 +38,18 @@ function generatePackageJson(bowerJson: any, npmName: string, npmVersion?: strin
   };
 }
 
-type ConvertPackageOptions = AnalysisConverterOptions & {
-
+type ConvertPackageOptions = AnalysisConverterOptions&{
   /**
    * The directory to write converted JavaScript files to.
    */
-  outDir?: string;
+  readonly outDir?: string;
 
   /**
    * The npm package name to use in package.json
    */
-  packageName?: string;
+  readonly packageName?: string;
 
-  npmVersion?: string;
+  readonly npmVersion?: string;
 };
 
 /**
@@ -63,44 +63,49 @@ export async function convertPackage(options: ConvertPackageOptions = {}) {
   try {
     await fs.mkdir(outDirResolved);
   } catch (e) {
-    if (e.errno !== -17) { // directory exists
+    if (e.errno !== -17) {  // directory exists
       console.error(e);
     }
   }
 
-  // TODO(fks) 07-06-2015: Convert this to a configurable option
-  const overrideMap = new Map();
+  const urlLoader =
+      new InMemoryOverlayUrlLoader(new FSUrlLoader(process.cwd()));
 
+
+  // TODO(fks) 07-06-2015: Convert this to a configurable option
   // 'lib/utils/boot.html' - This is a special file that overwrites exports
   // and does other things that make less sense in an ESM world.
   const bootOverrideHtml = `<script>
   window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
 </script>`;
-  overrideMap.set('lib/utils/boot.html', bootOverrideHtml);
-  overrideMap.set('bower_components/polymer/lib/utils/boot.html', bootOverrideHtml);
+  urlLoader.urlContentsMap.set('lib/utils/boot.html', bootOverrideHtml);
+  urlLoader.urlContentsMap.set(
+      'bower_components/polymer/lib/utils/boot.html', bootOverrideHtml);
 
   const analyzer = new Analyzer({
-    urlLoader: new FSUrlOverrideLoader(overrideMap, process.cwd()),
+    urlLoader,
     urlResolver: new PackageUrlResolver(),
   });
   const analysis = await analyzer.analyzePackage();
 
-  // TODO(justinfagnani): These setting are only good for Polymer core and should be
-  // extracted into a config file
+  // TODO(justinfagnani): These setting are only good for Polymer core and
+  // should be extracted into a config file
   const npmPackageName = options.packageName || '@polymer/polymer';
   const npmPackageVersion = options.npmVersion;
   const converter = new AnalysisConverter(analysis, {
     rootModuleName: options.rootModuleName || 'Polymer',
-    excludes: options.excludes || [
-      'lib/elements/dom-module.html',
-    ],
-    referenceExcludes: options.referenceExcludes || [
-      'Polymer.DomModule',
-      'Polymer.Settings',
-      'Polymer.log',
-      'Polymer.rootPath',
-      'Polymer.sanitizeDOMValue'
-    ],
+    excludes: options.excludes ||
+        [
+          'lib/elements/dom-module.html',
+        ],
+    referenceExcludes: options.referenceExcludes ||
+        [
+          'Polymer.DomModule',
+          'Polymer.Settings',
+          'Polymer.log',
+          'Polymer.rootPath',
+          'Polymer.sanitizeDOMValue'
+        ],
     mutableExports: options.mutableExports || {
       'Polymer.telemetry': ['instanceCount'],
     },
@@ -125,11 +130,12 @@ export async function convertPackage(options: ConvertPackageOptions = {}) {
     const bowerJsonPath = path.resolve('bower.json');
     const bowerJson = await fs.readFile(bowerJsonPath);
     const packageJsonPath = path.resolve(outDir, 'package.json');
-    const packageJson = generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
-    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
+    const packageJson =
+        generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
+    await fs.writeFile(
+        packageJsonPath, JSON.stringify(packageJson, undefined, 2));
   } catch (e) {
     console.log('error in bower.json -> package.json conversion');
     console.error(e);
   }
-
 }

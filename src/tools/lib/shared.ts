@@ -13,11 +13,11 @@
  */
 
 export const defaults = {
-  "null": null,
-  "emptyArray": [],
-  "false": false,
-  "true": true,
-  "undefined": undefined,
+  'null': null,
+  'emptyArray': [],
+  'false': false,
+  'true': true,
+  'undefined': undefined,
 };
 
 export function geq(_x: number) {

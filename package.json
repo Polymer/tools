@@ -4,8 +4,10 @@
     "html2js": "bin/html2js.js"
   },
   "scripts": {
-    "test": "npm run build && mocha",
-    "build": "tsc"
+    "test": "npm run build && mocha && npm run lint",
+    "build": "tsc",
+    "lint": "tslint -p ./",
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
   },
   "engines": {
     "node": ">=7.6.0"
@@ -32,7 +34,9 @@
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {
+    "clang-format": "^1.0.53",
     "gulp": "^3.9.1",
-    "typescript": "^2.3.4"
+    "tslint": "^5.5.0",
+    "typescript": "^2.4.1"
   }
 }

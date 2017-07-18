@@ -40,7 +40,6 @@ export class Def {
     this._build = fields;
     return this;
   }
-
 }
 
 export class Or {
@@ -57,8 +56,8 @@ export interface Field {
   default?: any;
 }
 
-type TypeDefSingle = Def | Or | string | StringConstructor | NumberConstructor
-    | BooleanConstructor | RegExpConstructor | null;
+type TypeDefSingle = Def|Or|string|StringConstructor|NumberConstructor|
+    BooleanConstructor|RegExpConstructor|null;
 export type TypeDef = TypeDefSingle | TypeDefSingle[];
 
 export function typeString(type: TypeDef) {
@@ -105,23 +104,22 @@ export function nullable(type: TypeDef): boolean {
 }
 
 class TypeApi {
-
   types = new Map<string, Def>();
 
   // Arrow function to support tear-offs
-  def = (name: string) => {
-
-    let def = this.types.get(name);
-    if (def === undefined) {
-      def = new Def(name);
-      this.types.set(name, def);
-    }
-    return def;
-  };
+  def =
+      (name: string) => {
+        let def = this.types.get(name);
+        if (def === undefined) {
+          def = new Def(name);
+          this.types.set(name, def);
+        }
+        return def;
+      }
 
   or(..._defs: TypeDef[]) {
     return new Or(_defs);
-  };
-};
+  }
+}
 
 export const Type = new TypeApi();

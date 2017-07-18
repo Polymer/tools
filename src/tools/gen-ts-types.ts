@@ -14,10 +14,12 @@
 
 require('source-map-support').install();
 
-import { Type, typeString, Field, Def, nullable } from './lib/types';
+import {Type, typeString, Field, Def, nullable} from './lib/types';
 
 const fork = {
-  use(o: any) { return o; },
+  use(o: any) {
+    return o;
+  },
 };
 
 function leadingLowerCase(s: string) {
@@ -54,39 +56,38 @@ require('./def/es6')(fork);
 require('./def/babel')(fork);
 require('./def/esprima')(fork);
 
-const types = Array.from(Type.types.values())
-const builders = types
-  .filter((t) => t._build != null)
-  .map((t) => {
-    const name = leadingLowerCase(t._name);
-    const fields = t._build.map((f) => getField(t, f)!);
+const types = Array.from(Type.types.values());
+const builders = types.filter((t) => t._build != null).map((t) => {
+  const name = leadingLowerCase(t._name);
+  const fields = t._build.map((f) => getField(t, f)!);
 
-    let lastRequiredIndex = -1;
-    for (let i = 0; i < fields.length; i++) {
-      const field = fields[i];
-      if (field === undefined) {
-        console.error(`field not found: ${t._build[i]} for type ${t._name}`);
-      }
-      const optional = field.default != null || nullable(field.type);
-      if (!optional) {
-        lastRequiredIndex = i;
-      }
+  let lastRequiredIndex = -1;
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i];
+    if (field === undefined) {
+      console.error(`field not found: ${t._build[i]} for type ${t._name}`);
     }
+    const optional = field.default != null || nullable(field.type);
+    if (!optional) {
+      lastRequiredIndex = i;
+    }
+  }
 
-    let i = 0;
-    const args = t._build.map((f) => {
-      const field = getField(t, f);
-      if (field == null) {
-        console.error(`field ${f} not found for type ${t._name}`);
-        return '';
-      }
-      const optional = i > lastRequiredIndex && (field.default !== null || nullable(field.type));
-      i++;
-      const name = getName(field.name);
-      return `${name}${optional ? '?' : ''}: ${typeString(field.type)}`;
-    });
-    return `export function ${name}(${args.join(', ')}): estree.${t._name};\n`;
+  let i = 0;
+  const args = t._build.map((f) => {
+    const field = getField(t, f);
+    if (field == null) {
+      console.error(`field ${f} not found for type ${t._name}`);
+      return '';
+    }
+    const optional = i > lastRequiredIndex &&
+        (field.default !== null || nullable(field.type));
+    i++;
+    const name = getName(field.name);
+    return `${name}${optional ? '?' : ''}: ${typeString(field.type)}`;
   });
+  return `export function ${name}(${args.join(', ')}): estree.${t._name};\n`;
+});
 
 const declaration = `
 // Note: This file is generated and has known type-checking warnings

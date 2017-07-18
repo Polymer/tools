@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {assert} from 'chai';
 import * as esprima from 'esprima';
 import * as estree from 'estree';
 import * as path from 'path';
+import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
 
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, Document, UrlLoader, UrlResolver, PackageUrlResolver} from 'polymer-analyzer';
 import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../analysis-converter';
-import {assert} from 'chai';
 
 suite('AnalysisConverter', () => {
 
@@ -29,15 +29,16 @@ suite('AnalysisConverter', () => {
 
     setup(() => {
       urlLoader = new InMemoryOverlayUrlLoader();
-      analyzer = new Analyzer({
-        urlLoader: urlLoader
-      });
+      analyzer = new Analyzer({urlLoader: urlLoader});
     });
 
-    async function getConverter(partialOptions?: Partial<AnalysisConverterOptions>) {
-      const options: AnalysisConverterOptions = Object.assign({
-        rootModuleName: 'Polymer',
-      }, partialOptions);
+    async function getConverter(
+        partialOptions?: Partial<AnalysisConverterOptions>) {
+      const options: AnalysisConverterOptions = Object.assign(
+          {
+            rootModuleName: 'Polymer',
+          },
+          partialOptions);
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
       const converter = new AnalysisConverter(analysis, options);
@@ -45,10 +46,11 @@ suite('AnalysisConverter', () => {
       return converter;
     }
 
+    /** Gets the converted module source for test.js given test.html */
     async function getJs(partialOptions?: Partial<AnalysisConverterOptions>) {
       const converter = await getConverter(partialOptions);
       const module = converter.modules.get('./test.js');
-      return module && module.source
+      return module && '\n' + module.source;
     }
 
     function setSources(sources: {[filename: string]: string}) {
@@ -75,7 +77,10 @@ suite('AnalysisConverter', () => {
         'dep.html': `<h1>Hi</h1>`,
         'bower_components/dep.html': `<h1>Hi</h1>`,
       });
-      assert.equal(await getJs(), `import './dep.js';\nimport '../dep.js';\n`);
+      assert.deepEqual(await getJs(), `
+import './dep.js';
+import '../dep.js';
+`);
     });
 
     test('converts imports to .js without scripts', async () => {
@@ -85,7 +90,9 @@ suite('AnalysisConverter', () => {
         `,
         'dep.html': `<h1>Hi</h1>`,
       });
-      assert.equal(await getJs(), `import './dep.js';\n`);
+      assert.deepEqual(await getJs(), `
+import './dep.js';
+`);
     });
 
     test('converts implicit imports to .js', async () => {
@@ -109,7 +116,8 @@ suite('AnalysisConverter', () => {
           </script>
         `,
       });
-      assert.equal(await getJs(), `import { foo as $foo } from './foo.js';
+      assert.deepEqual(await getJs(), `
+import { foo as $foo } from './foo.js';
 import { bar as $bar } from './bar.js';
 console.log($foo);
 console.log($bar);
@@ -135,7 +143,8 @@ console.log($bar);
           </script>
         `,
       });
-      assert.equal(await getJs(), `import { Polymer as $Polymer, foo as $foo } from \'./foo.js\';
+      assert.deepEqual(await getJs(), `
+import { Polymer as $Polymer, foo as $foo } from \'./foo.js\';
 console.log($Polymer());
 console.log($Polymer());
 console.log($foo);
@@ -160,7 +169,8 @@ console.log($Polymer[\'bar\']);
           </script>
         `,
       });
-      assert.equal(await getJs(), `import { Polymer as $Polymer } from \'./foo.js\';
+      assert.deepEqual(await getJs(), `
+import { Polymer as $Polymer } from './foo.js';
 var P = $Polymer;
 var Po = $Polymer;
 P();
@@ -189,17 +199,19 @@ Po();
         `,
       });
       const converter = await getConverter();
-      assert.equal(converter.modules.get('./test.js')!.source,
-`import './polymer.js';
+      assert.deepEqual(
+          converter.modules.get('./test.js')!.source, `import './polymer.js';
 import { Polymer as $Polymer } from './lib/legacy/polymer-fn.js';
 console.log($Polymer());
 console.log($Polymer());
 `);
-      assert.equal(converter.modules.get('./polymer.js')!.source,
-`import './lib/legacy/polymer-fn.js';
+      assert.deepEqual(
+          converter.modules.get('./polymer.js')!.source,
+          `import './lib/legacy/polymer-fn.js';
 `);
-      assert.equal(converter.modules.get('./lib/legacy/polymer-fn.js')!.source,
-`export const Polymer = function(info) {
+      assert.deepEqual(
+          converter.modules.get('./lib/legacy/polymer-fn.js')!.source,
+          `export const Polymer = function(info) {
   console.log("hey there, i\'m the polymer function!");
 };
 `);
@@ -223,7 +235,9 @@ console.log($Polymer());
           </dom-module>
         `,
       });
-      assert.equal(await getJs(), `export const Foo = 'Bar';\n`);
+      assert.deepEqual(await getJs(), `
+export const Foo = 'Bar';
+`);
     });
 
     test('exports a reference', async () => {
@@ -237,8 +251,8 @@ console.log($Polymer());
             })();
           </script>`
       });
-      assert.equal(await getJs(),
-`export { ArraySelectorMixin };
+      assert.deepEqual(await getJs(), `
+export { ArraySelectorMixin };
 `);
     });
 
@@ -251,7 +265,9 @@ console.log($Polymer());
             })();
           </script>`
       });
-      assert.equal(await getJs(), `export const version = '2.0.0';\n`);
+      assert.deepEqual(await getJs(), `
+export const version = '2.0.0';
+`);
     });
 
     test('exports the result of a function call', async () => {
@@ -259,7 +275,9 @@ console.log($Polymer());
           <script>
             Polymer.LegacyElementMixin = Polymer.dedupingMixin();
           </script>`);
-      assert.equal(await getJs(), `export const LegacyElementMixin = Polymer.dedupingMixin();\n`);
+      assert.deepEqual(await getJs(), `
+export const LegacyElementMixin = Polymer.dedupingMixin();
+`);
     });
 
     test('exports a namespace object\'s properties', async () => {
@@ -290,7 +308,8 @@ console.log($Polymer());
             })();
           </script>`,
       });
-      assert.equal(await getJs(),`/**
+      assert.deepEqual(await getJs(), `
+/**
  * @memberof Polymer.Namespace
  */
 function independentFn() {}
@@ -349,7 +368,8 @@ export { independentFn };
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export function fn() {
+      assert.deepEqual(await getJs(), `
+export function fn() {
   foobar();
 }
 
@@ -385,9 +405,11 @@ export function arrowFn() {
     });
 
 
-    test('exports a namespace object and fixes local references to its properties', async () => {
-      setSources({
-        'test.html': `
+    test(
+        'exports a namespace object and fixes local references to its properties',
+        async () => {
+          setSources({
+            'test.html': `
           <script>
             (function() {
               'use strict';
@@ -405,8 +427,9 @@ export function arrowFn() {
               };
             })();
           </script>`,
-      });
-      assert.equal(await getJs(), `export function meth() {}
+          });
+          assert.deepEqual(await getJs(), `
+export function meth() {}
 
 export function polymerReferenceFn() {
   return meth();
@@ -416,7 +439,7 @@ export function thisReferenceFn() {
   return meth();
 }
 `);
-    });
+        });
 
     test('exports a mutable reference if set via mutableExports', async () => {
       setSources({
@@ -437,9 +460,11 @@ export function thisReferenceFn() {
             })();
           </script>`,
       });
-      assert.equal(await getJs({
-        mutableExports: {'Polymer.Namespace': ['mutableLiteral']}
-      }), `export const immutableLiteral = 42;
+      assert.deepEqual(
+          await getJs(
+              {mutableExports: {'Polymer.Namespace': ['mutableLiteral']}}),
+          `
+export const immutableLiteral = 42;
 export let mutableLiteral = 0;
 
 export function increment() {
@@ -471,7 +496,8 @@ export function increment() {
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const dom = function() {
+      assert.deepEqual(await getJs(), `
+export const dom = function() {
   return 'Polymer.dom result';
 };
 
@@ -481,9 +507,11 @@ export const subFn = function() {
 `);
     });
 
-    test.skip('exports a namespace function and fixes references to its properties', async () => {
-      setSources({
-        'test.html': `
+    test.skip(
+        'exports a namespace function and fixes references to its properties',
+        async () => {
+          setSources({
+            'test.html': `
           <script>
             (function() {
               'use strict';
@@ -508,18 +536,19 @@ export const subFn = function() {
               };
             })();
           </script>`,
-      });
-      assert.equal(await getJs(), `export const dom = function () {
-    return \'Polymer.dom result\';
+          });
+          assert.deepEqual(await getJs(), `
+export const dom = function () {
+    return 'Polymer.dom result';
 };
 export const subFn = function () {
-    return \'Polymer.dom.subFn result\';
+    return 'Polymer.dom.subFn result';
 };
 export const subFnDelegate = function () {
-    return \'Polymer.dom.subFnDelegate delegates: \' + dom() + subFn();
+    return 'Polymer.dom.subFnDelegate delegates: ' + dom() + subFn();
 };
 `);
-    });
+        });
 
     test('exports a referenced namespace', async () => {
       setSources({
@@ -553,7 +582,8 @@ export const subFnDelegate = function () {
             })();
           </script>`,
       });
-      assert.equal(await getJs(), `export const obj = {
+      assert.deepEqual(await getJs(), `
+export const obj = {
   deepFunc: function() {},
 };
 
@@ -594,8 +624,10 @@ export function deepReferenceFn() {
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element as $Element } from './dep.js';
-class MyElement extends $Element {}\n`);
+      assert.deepEqual('\n' + js, `
+import { Element as $Element } from './dep.js';
+class MyElement extends $Element {}
+`);
     });
 
     test('uses imports from namespaces', async () => {
@@ -619,8 +651,10 @@ class MyElement extends $Element {}\n`);
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element as $Element } from './dep.js';
-class MyElement extends $Element {}\n`);
+      assert.deepEqual('\n' + js, `
+import { Element as $Element } from './dep.js';
+class MyElement extends $Element {}
+`);
     });
 
     test('rewrites references to namespaces', async () => {
@@ -645,9 +679,11 @@ class MyElement extends $Element {}\n`);
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import * as $$dep from './dep.js';
+      assert.deepEqual('\n' + js, `
+import * as $$dep from './dep.js';
 const Foo = $$dep;
-class MyElement extends Foo.Element {}\n`);
+class MyElement extends Foo.Element {}
+`);
     });
 
     test('handles both named imports and namespace imports', async () => {
@@ -673,7 +709,7 @@ class MyElement extends Foo.Element {}\n`);
       });
       const converted = await getConverted();
       const js = converted.get('./test.js');
-      assert.equal(js, `import * as $$dep from './dep.js';
+      assert.deepEqual(js, `import * as $$dep from './dep.js';
 import { Element as $Element } from './dep.js';
 const Foo = $$dep;
 const Bar = Foo.Element;
@@ -698,7 +734,8 @@ const Baz = $Element;
         `,
       });
       const js = await getJs();
-      assert.equal(js, `export function isPath() {}
+      assert.deepEqual(js, `
+export function isPath() {}
 export const isDeep = isPath;
 `);
     });
@@ -728,8 +765,10 @@ export const isDeep = isPath;
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `import { Element as $Element } from './dep.js';
-class MyElement extends $Element {}\n`);
+      assert.deepEqual('\n' + js, `
+import { Element as $Element } from './dep.js';
+class MyElement extends $Element {}
+`);
     });
 
     test('excludes excluded references', async () => {
@@ -747,7 +786,7 @@ class MyElement extends $Element {}\n`);
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `if (undefined) {}\n`);
+      assert.deepEqual(js, `if (undefined) {}\n`);
     });
 
     test('handles excluded exported references', async () => {
@@ -765,7 +804,7 @@ class MyElement extends $Element {}\n`);
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `export { settings as Settings };\n`);
+      assert.deepEqual(js, `export { settings as Settings };\n`);
     });
 
     test.skip('handles excluded local namespace references', async () => {
@@ -795,7 +834,8 @@ class MyElement extends $Element {}\n`);
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
-      assert.equal(js, `let rootPath;
+      assert.deepEqual('\n' + js, `
+let rootPath;
 export { rootPath };
 export const setRootPath = function(path) {
   rootPath = path;
@@ -827,7 +867,8 @@ export const setRootPath = function(path) {
 `,
       });
       const js = await getJs();
-      assert.equal(js, `/**
+      assert.deepEqual(js, `
+/**
  * @customElement
  * @polymer
  */
@@ -863,7 +904,8 @@ class TestElement extends Polymer.Element {
 `,
       });
       const js = await getJs();
-      assert.equal(js, `Polymer({
+      assert.deepEqual(js, `
+Polymer({
   _template: \`
       <h1>Hi!</h1>
 \`,
@@ -896,9 +938,9 @@ class TestElement extends Polymer.Element {
         rootModuleName: 'Polymer',
       });
       const converted = await converter.convert();
-      const caseMapSource = converted.get('./case-map/case-map.js');
-      assert.include(caseMapSource!, 'export function dashToCamelCase');
-      assert.include(caseMapSource!, 'export function camelToDashCase');
+      const caseMapSource = converted.get('./case-map/case-map.js')!;
+      assert.include(caseMapSource, 'export function dashToCamelCase');
+      assert.include(caseMapSource, 'export function camelToDashCase');
     });
 
     test('polymer-element', async () => {

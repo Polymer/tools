@@ -13,24 +13,25 @@
  */
 
 
-import {Document, Analysis} from 'polymer-analyzer';
 import {Expression} from 'estree';
+import {Analysis, Document} from 'polymer-analyzer';
 
-import { DocumentConverter } from "./document-converter";
-import { htmlUrlToJs } from "./url-converter";
+import {DocumentConverter} from './document-converter';
+import {htmlUrlToJs} from './url-converter';
 
 const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
 const isNotTest = (d: Document) => !_isInTestRegex.test(d.url);
 
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
-const isNotExternal = (d: Document) => !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
+const isNotExternal = (d: Document) =>
+    !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
 
 export interface JsExport {
   /**
    * URL of the JS module.
    */
-  url: string;
+  readonly url: string;
 
   /**
    * Exported name, ie Foo for `export Foo`;
@@ -38,14 +39,14 @@ export interface JsExport {
    * The name * represents the entire module, for when the key in the
    * namespacedExports Map represents a namespace object.
    */
-  name: string;
+  readonly name: string;
 }
 
 export interface JsModule {
   /**
    * Package-relative URL of the converted JS module.
    */
-  url: string;
+  readonly url: string;
 
   /**
    * Converted source of the JS module.
@@ -55,14 +56,14 @@ export interface JsModule {
   /**
    * Set of exported names.
    */
-  exports: Set<string>;
+  readonly exports: Set<string>;
 
   /**
    * Map of module URL (ie, polymer-element.js) to imported references
    * (ie, Element). This map is used to rewrite import statements to
    * only include what's used in an importing module.
    */
-  importedReferences: Map<string, Set<string>>;
+  readonly importedReferences: Map<string, Set<string>>;
 }
 
 /**
@@ -72,28 +73,27 @@ export interface ModuleIndex {
   /**
    * Map of module URL to JsModule
    */
-  modules: Map<string, JsModule>;
+  readonly modules: Map<string, JsModule>;
 
   /**
    * Map of namespaced id (ie, Polymer.Element) to module URL
    * (ie, polymeer-element.js) + exported name (ie, Element).
    */
-  namespacedExports: Map<string, JsExport>;
+  readonly namespacedExports: Map<string, JsExport>;
 }
 
 
 export interface AnalysisConverterOptions {
-
   /**
    * The root namespace name that is used to detect exports.
    */
-  rootModuleName?: string;
+  readonly rootModuleName?: string;
 
   /**
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
    * to these files are also excluded.
    */
-  excludes?: string[];
+  readonly excludes?: string[];
 
   /**
    * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
@@ -104,7 +104,7 @@ export interface AnalysisConverterOptions {
    * is guarded by a conditional and replcing with `undefined` will safely
    * fail the guard.
    */
-  referenceExcludes?: string[];
+  readonly referenceExcludes?: string[];
 
   /**
    * For each namespace you can set a list of references (ie,
@@ -112,25 +112,26 @@ export interface AnalysisConverterOptions {
    * exported as `const` variables. They will be exported as `let` variables
    * instead.
    */
-  mutableExports?: {[namespaceName: string]: string[]};
+  readonly mutableExports?: {[namespaceName: string]: string[]};
 }
 
 /**
  * Converts an entire Analysis object.
  */
 export class AnalysisConverter {
+  private readonly _analysis: Analysis;
+  readonly rootModuleName: string|undefined;
+  // These three properties are 'protected' in that they're accessable from
+  // DocumentConverter.
+  readonly _excludes: ReadonlySet<string>;
+  readonly _referenceExcludes: ReadonlySet<string>;
+  readonly _mutableExports?: {readonly [namespaceName: string]: string[]};
 
-  analysis: Analysis;
-  rootModuleName: string|undefined;
-  _excludes: Set<string>;
-  _referenceExcludes: Set<string>;
-  _mutableExports?: {[namespaceName: string]: string[]};
-
-  modules = new Map<string, JsModule>();
-  namespacedExports = new Map<string, JsExport>();
+  readonly modules = new Map<string, JsModule>();
+  readonly namespacedExports = new Map<string, JsExport>();
 
   constructor(analysis: Analysis, options: AnalysisConverterOptions = {}) {
-    this.analysis = analysis;
+    this._analysis = analysis;
     this.rootModuleName = options.rootModuleName;
     this._excludes = new Set(options.excludes);
     this._referenceExcludes = new Set(options.referenceExcludes);
@@ -138,13 +139,14 @@ export class AnalysisConverter {
   }
 
   async convert(): Promise<Map<string, string>> {
+    const htmlDocuments =
+        Array.from(this._analysis.getFeatures({kind: 'html-document'}))
+            .filter((d) => {
+              return !this._excludes.has(d.url) && isNotExternal(d) &&
+                  isNotTest(d) && d.url;
+            });
 
-    const htmlDocuments = Array.from(this.analysis.getFeatures({kind: 'html-document'}))
-      .filter((d) => {
-        return !this._excludes.has(d.url) && isNotExternal(d) && isNotTest(d) && d.url;
-      });
-
-    const results = new Map<string, string>()
+    const results = new Map<string, string>();
 
     for (const document of htmlDocuments) {
       try {
@@ -178,7 +180,7 @@ export class AnalysisConverter {
  * Returns an array of identifiers if an expression is a chain of property
  * access, as used in namespace-style exports.
  */
-export function getMemberPath(expression: Expression): string[] | undefined {
+export function getMemberPath(expression: Expression): string[]|undefined {
   if (expression.type !== 'MemberExpression' ||
       expression.property.type !== 'Identifier') {
     return;

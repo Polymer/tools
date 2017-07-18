@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { posix as path } from 'path';
+import {posix as path} from 'path';
 
 /**
  * Converts an HTML Import path to a JS module path.
@@ -39,10 +39,14 @@ export function htmlUrlToJs(url: string, from?: string): string {
 
   // Temporary workaround for urls that run outside of the current packages
   if (jsUrl.endsWith('shadycss/apply-shim.js')) {
-    jsUrl = jsUrl.replace('shadycss/apply-shim.js', '../@webcomponents/shadycss/apply-shim.min.js');
+    jsUrl = jsUrl.replace(
+        'shadycss/apply-shim.js',
+        '../@webcomponents/shadycss/apply-shim.min.js');
   }
   if (jsUrl.endsWith('shadycss/custom-style-interface.js')) {
-    jsUrl = jsUrl.replace('shadycss/custom-style-interface.js', '../@webcomponents/shadycss/custom-style-interface.min.js');
+    jsUrl = jsUrl.replace(
+        'shadycss/custom-style-interface.js',
+        '../@webcomponents/shadycss/custom-style-interface.min.js');
   }
   return jsUrl;
 }

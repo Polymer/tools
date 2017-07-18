@@ -12,39 +12,39 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { convertPackage } from './convert-package.js';
+import {convertPackage} from './convert-package.js';
 
-import commandLineArgs = require('command-line-args')
+import commandLineArgs = require('command-line-args');
 
 const optionDefinitions: commandLineArgs.OptionDefinition[] = [
-  { 
+  {
     name: 'help',
     type: Boolean,
     description: 'Show this help message.',
   },
-  { 
+  {
     name: 'out',
     type: String,
     defaultValue: 'html2js_out',
     description: 'The directory to write converted files to.'
   },
-  { 
+  {
     name: 'root-module',
     type: String,
     description: 'Root namespace name to use to detect exports.'
   },
-  { 
+  {
     name: 'exclude',
     type: String,
     multiple: true,
     description: 'Exclude a file from conversion.'
   },
-  { 
+  {
     name: 'package-name',
     type: String,
     description: 'npm package name to use for package.json'
   },
-  { 
+  {
     name: 'npm-version',
     type: String,
     description: 'Version string to use for package.json'
@@ -52,7 +52,6 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
 ];
 
 export async function run() {
-
   const options = commandLineArgs(optionDefinitions);
 
   if (options['help']) {
