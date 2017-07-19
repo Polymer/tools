@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {convertPackage} from './convert-package.js';
-
+import * as inquirer from 'inquirer';
 import commandLineArgs = require('command-line-args');
+import { convertPackage } from './convert-package';
+import { readJson } from './manifest-converter';
+import * as semver from 'semver';
 
 const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   {
@@ -41,7 +43,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     description: 'Exclude a file from conversion.'
   },
   {
-    name: 'package-name',
+    name: 'npm-name',
     type: String,
     description: 'npm package name to use for package.json'
   },
@@ -76,13 +78,60 @@ export async function run() {
     return;
   }
 
+  // TODO: each file is not always needed, refactor to optimize loading
+  let inBowerJson;
+  let inPackageJson;
+  let outPackageJson;
+  try {
+    outPackageJson = readJson(options['out'], 'package.json');
+  } catch (e) {
+    // do nothing
+  }
+  try {
+    inPackageJson = readJson(options['in'], 'package.json');
+  } catch (e) {
+    // do nothing
+  }
+  try {
+    inBowerJson = readJson('bower.json');
+  } catch (e) {
+    // do nothing
+  }
+
+  let npmPackageName = options['npm-name']
+    || inPackageJson && inPackageJson.name
+    || outPackageJson && outPackageJson.name;
+  let npmPackageVersion = options['npm-version']
+    || inPackageJson && inPackageJson.version
+    || outPackageJson && outPackageJson.version;
+
+  // Prompt user for new package name & version if none exists
+  // TODO(fks) 07-19-2017: Add option to suppress prompts
+  if (!npmPackageName) {
+    npmPackageName = (await inquirer.prompt([{
+      type: 'input',
+      name: 'npm-name',
+      message: 'npm package name?',
+      default: inBowerJson && `@polymer/${inBowerJson.name}`,
+    }]))['npm-name'];
+  }
+
+  if (!npmPackageVersion) {
+    npmPackageVersion = (await inquirer.prompt([{
+      type: 'input',
+      name: 'npm-version',
+      message: 'npm package version?',
+      default: inBowerJson && semver.inc(inBowerJson.version, 'major'),
+    }]))['npm-version'];
+  }
+
   await convertPackage({
     inDir: options['in'],
     outDir: options['out'],
     excludes: options['exclude'],
     rootModuleName: options['root-module'],
-    packageName: options['package-name'],
-    npmVersion: options['npm-version'],
+    packageName: npmPackageName,
+    packageVersion: npmPackageVersion,
     clearOutDir: options['clear'],
   });
 

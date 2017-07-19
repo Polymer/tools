@@ -59,11 +59,14 @@ function rework(line: string) {
     process.exit(1);
   }
 
-  const analyzer = configureAnalyzer({
+  const options = {
     inDir: sourceDir,
-  });
+    packageName: '@polymer/polymer',
+    packageVersion: '3.0.0',
+  };
+  const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
-  const converter = configureConverter(analysis, {});
+  const converter = configureConverter(analysis, options);
   const resultsUnsorted = await converter.convert();
   const results = [...resultsUnsorted.entries()].sort((a, b) => {
     const aPath = a[0];
