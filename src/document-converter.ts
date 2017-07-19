@@ -880,7 +880,7 @@ function nodeToTemplateLiteral(
   // The `\` -> `\\` replacement must occur first so that the backslashes
   // introduced by later replacements are not replaced.
   const raw =
-      cooked.replace('\\', '\\\\').replace('`', '\\`').replace('$', '\\$');
+      cooked.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
   return jsc.templateLiteral([jsc.templateElement({cooked, raw}, true)], []);
 }

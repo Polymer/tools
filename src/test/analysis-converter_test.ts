@@ -855,7 +855,7 @@ export const setRootPath = function(path) {
     <h1>Hi!</h1>
     <div>
       This template has multiple lines.<br>
-      This template contains special characters: \` \$
+      This template contains duplicated special characters: \` \$ \` \$
     </div>
   </template>
   <script>
@@ -882,7 +882,7 @@ class TestElement extends Polymer.Element {
     <h1>Hi!</h1>
     <div>
       This template has multiple lines.<br>
-      This template contains special characters: \\\` \\$
+      This template contains duplicated special characters: \\\` \\$ \\\` \\$
     </div>
 \`;
   }
