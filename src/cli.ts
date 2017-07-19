@@ -99,11 +99,11 @@ export async function run() {
   }
 
   let npmPackageName = options['npm-name']
-    || inPackageJson.name
-    || outPackageJson.name;
+    || inPackageJson && inPackageJson.name
+    || outPackageJson && outPackageJson.name;
   let npmPackageVersion = options['npm-version']
-    || inPackageJson.version
-    || outPackageJson.version;
+    || inPackageJson && inPackageJson.version
+    || outPackageJson && outPackageJson.version;
 
   // Prompt user for new package name & version if none exists
   // TODO(fks) 07-19-2017: Add option to suppress prompts

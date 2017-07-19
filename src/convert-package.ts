@@ -71,7 +71,6 @@ export function configureAnalyzer(options: ConvertPackageOptions) {
 
 export function configureConverter(
   analysis: Analysis, options: ConvertPackageOptions) {
-  const outDir = options.outDir || 'js_out';
   return new AnalysisConverter(analysis, {
     rootModuleName: options.rootModuleName || 'Polymer',
     excludes: options.excludes ||
@@ -96,7 +95,6 @@ export function configureConverter(
  * Converts an entire package from HTML imports to JS modules
  */
 export async function convertPackage(options: ConvertPackageOptions) {
-  const inDir = options.inDir || process.cwd();
   const outDir = options.outDir || 'js_out';
   const outDirResolved = path.resolve(process.cwd(), outDir);
   console.log(`Out directory: ${outDirResolved}`);

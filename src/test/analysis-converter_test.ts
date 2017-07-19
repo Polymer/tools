@@ -983,7 +983,11 @@ document.appendChild($_documentContainer);
   });
 
   test('case-map', async () => {
-    const options = {inDir: fixturesDirPath};
+    const options = {
+      inDir: fixturesDirPath,
+      packageName: 'case-map',
+      packageVersion: '1.0.0',
+    };
     const analyzer = configureAnalyzer(options);
     const analysis = await analyzer.analyze(['case-map/case-map.html']);
     const converter = configureConverter(analysis, options);
@@ -994,12 +998,16 @@ document.appendChild($_documentContainer);
   });
 
   test('polymer-element', async () => {
-    const options = {inDir: fixturesDirPath};
+    const options = {
+      inDir: fixturesDirPath,
+      packageName: 'polymer-element',
+      packageVersion: '1.0.0'
+    };
     const filename = 'polymer-element/polymer-element.html';
     const analyzer = configureAnalyzer(options);
     const analysis = await analyzer.analyze([filename]);
     const doc = analysis.getDocument(filename) as Document;
-    const converter = configureConverter(analysis, {});
+    const converter = configureConverter(analysis, options);
     converter.convertDocument(doc);
     assert(converter.namespacedExports.has('Polymer.Element'));
   });

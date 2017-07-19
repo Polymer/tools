@@ -50,6 +50,8 @@ const convertedDir = path.join(fixturesDirPath, 'expected');
     inDir: sourceDir,
     outDir: convertedDir,
     clearOutDir: true,
+    packageName: '@polymer/polymer',
+    packageVersion: '3.0.0',
   });
   console.log(`Done.`);
 
