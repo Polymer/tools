@@ -13,11 +13,12 @@
  */
 
 import * as doctrine from 'doctrine';
+import * as escodegen from 'escodegen';
 import * as estree from 'estree';
 
 import {ScannedClass, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 import {extractObservers} from '../polymer/declaration-property-handlers';
-import {Observer, ScannedPolymerElement} from '../polymer/polymer-element';
+import {mergePropertyDeclarations, Observer, ScannedPolymerElement} from '../polymer/polymer-element';
 import {ScannedPolymerElementMixin} from '../polymer/polymer-element-mixin';
 import {getIsValue, getPolymerProperties, getStaticGetterValue} from '../polymer/polymer2-config';
 import {MixinVisitor} from '../polymer/polymer2-mixin-scanner';
@@ -183,7 +184,6 @@ export class ClassScanner implements JavaScriptScanner {
     let warnings: Warning[] = [];
 
     let scannedElement: ScannedPolymerElement;
-    let properties: ScannedProperty[] = [];
     let methods = new Map<string, ScannedMethod>();
     let staticMethods = new Map<string, ScannedMethod>();
     let observers: Observer[] = [];
@@ -198,7 +198,17 @@ export class ClassScanner implements JavaScriptScanner {
         observers = observersResult.observers;
         warnings = warnings.concat(observersResult.warnings);
       }
-      properties = getPolymerProperties(astNode, document);
+      const polymerProps = getPolymerProperties(astNode, document);
+      for (const prop of polymerProps) {
+        const constructorProp = class_.properties.get(prop.name);
+        let finalProp;
+        if (constructorProp) {
+          finalProp = mergePropertyDeclarations(constructorProp, prop);
+        } else {
+          finalProp = prop;
+        }
+        class_.properties.set(prop.name, finalProp);
+      }
       methods = getMethods(astNode, document);
       staticMethods = getStaticMethods(astNode, document);
     }
@@ -211,7 +221,7 @@ export class ClassScanner implements JavaScriptScanner {
       className: class_.name,
       tagName,
       astNode,
-      properties,
+      properties: [...class_.properties.values()],
       methods,
       staticMethods,
       observers,
@@ -405,8 +415,9 @@ class ClassFinder implements Visitor {
     const namespacedName = name && getNamespacedIdentifier(name, doc);
 
     const warnings: Warning[] = [];
-    // TODO(rictic): scan the constructor and look for assignments to this.foo
-    //     to determine properties.
+    const properties =
+        extractPropertiesFromConstructor(astNode, this._document);
+
     this.classes.push(new ScannedClass(
         namespacedName,
         name,
@@ -414,7 +425,7 @@ class ClassFinder implements Visitor {
         doc,
         (doc.description || '').trim(),
         this._document.sourceRangeForNode(astNode)!,
-        new Map(),
+        properties,
         getMethods(astNode, this._document),
         getStaticMethods(astNode, this._document),
         this._getExtends(astNode, doc, warnings, this._document),
@@ -572,5 +583,101 @@ class CustomElementsDefineCallFinder implements Visitor {
       parsedDocument: this._document,
     }));
     return null;
+  }
+}
+
+export function extractPropertiesFromConstructor(
+    astNode: estree.Node, document: JavaScriptDocument) {
+  const properties = new Map<string, ScannedProperty>();
+  if (!(astNode.type === 'ClassExpression' ||
+        astNode.type === 'ClassDeclaration')) {
+    return properties;
+  }
+  for (const method of astNode.body.body) {
+    if (method.type !== 'MethodDefinition' || method.kind !== 'constructor') {
+      continue;
+    }
+    const constructor = method;
+    for (const statement of constructor.value.body.body) {
+      if (statement.type !== 'ExpressionStatement') {
+        continue;
+      }
+      let name;
+      let astNode;
+      let defaultValue;
+      if (statement.expression.type === 'AssignmentExpression') {
+        // statements like:
+        // /** @public The foo. */
+        // this.foo = baz;
+        name = getPropertyNameOnThisExpression(statement.expression.left);
+        astNode = statement.expression.left;
+        defaultValue = escodegen.generate(statement.expression.right);
+      } else if (statement.expression.type === 'MemberExpression') {
+        // statements like:
+        // /** @public The foo. */
+        // this.foo;
+        name = getPropertyNameOnThisExpression(statement.expression);
+        astNode = statement;
+      } else {
+        continue;
+      }
+      if (name === undefined) {
+        continue;
+      }
+      const comment = esutil.getAttachedComment(statement);
+      const jsdocAnn =
+          comment === undefined ? undefined : jsdoc.parseJsdoc(comment);
+      if (!jsdocAnn || jsdocAnn.tags.length === 0) {
+        // The comment only counts if there's a jsdoc annotation in there
+        // somewhere.
+        // Otherwise it's just an assignment, maybe to a property in a
+        // super class or something.
+        continue;
+      }
+      const description = getDescription(jsdocAnn);
+      let type = undefined;
+      const typeTag = jsdoc.getTag(jsdocAnn, 'type');
+      if (typeTag && typeTag.type) {
+        type = doctrine.type.stringify(typeTag.type);
+      }
+      properties.set(name, {
+        name,
+        astNode,
+        type,
+        default: defaultValue,
+        jsdoc: jsdocAnn,
+        sourceRange: document.sourceRangeForNode(astNode)!, description,
+        privacy: getOrInferPrivacy(name, jsdocAnn),
+        warnings: [],
+        readOnly: jsdoc.hasTag(jsdocAnn, 'const'),
+      });
+    }
+  }
+
+  return properties;
+}
+
+function getPropertyNameOnThisExpression(node: estree.Node) {
+  if (node.type !== 'MemberExpression' || node.computed ||
+      node.object.type !== 'ThisExpression' ||
+      node.property.type !== 'Identifier') {
+    return;
+  }
+  return node.property.name;
+}
+
+function getDescription(jsdocAnn: jsdoc.Annotation): string|undefined {
+  if (jsdocAnn.description) {
+    return jsdocAnn.description;
+  }
+  // These tags can be used to describe a field.
+  // e.g.:
+  //    /** @type {string} the name of the animal */
+  //    this.name = name || 'Rex';
+  const tagSet = new Set(['public', 'private', 'protected', 'type']);
+  for (const tag of jsdocAnn.tags) {
+    if (tagSet.has(tag.title) && tag.description) {
+      return tag.description;
+    }
   }
 }

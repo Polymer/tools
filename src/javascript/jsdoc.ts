@@ -188,11 +188,29 @@ export function extractDemos(jsdoc: Annotation|undefined):
   return demos;
 }
 
-export function join(...jsdocs: Annotation[]): Annotation {
+export function join(...jsdocs: Array<Annotation|undefined>): Annotation {
   return {
-    description:
-        jsdocs.map((jsdoc) => jsdoc.description || '').join('\n\n').trim(),
-    tags: jsdocs.map((jsdoc) => jsdoc.tags)
+    description: jsdocs.map((jsdoc) => jsdoc && jsdoc.description || '')
+                     .join('\n\n')
+                     .trim(),
+    tags: jsdocs.map((jsdoc) => jsdoc && jsdoc.tags || [])
               .reduce((acc, tags) => acc.concat(tags)),
   };
+}
+
+/**
+ * Assume that if the same symbol is documented in multiple places, the longer
+ * description is probably the intended one.
+ *
+ * TODO(rictic): unify logic with join(...)'s above.
+ */
+export function pickBestDescription(...descriptions: Array<string|undefined>):
+    string {
+  let description = '';
+  for (const desc of descriptions) {
+    if (desc && desc.length > description.length) {
+      description = desc;
+    }
+  }
+  return description;
 }

@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "clean": "mkdir -p lib/ && rm -rf lib/",
-    "build": "gulp build",
+    "build": "gulp build --silent",
     "release": "npm run compile",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",

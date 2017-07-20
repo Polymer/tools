@@ -544,6 +544,56 @@ namespaced name.`,
           tagName: 'my-app',
           warningUnderlines: [],
         }]);
+  });
 
+  test('can infer properties assigned to in the constructor', async() => {
+    const elements = await getElements('test-element-16.js');
+    const [element] = elements;
+    const elementData = await Promise.all(elements.map(getTestProps));
+    assert.deepEqual(elementData, [
+      {
+        className: 'TestElement',
+        tagName: 'test-element',
+        superClass: 'Polymer.Element',
+        description: '',
+        summary: '',
+        attributes: [],
+        properties: [
+          {
+            name: 'foo',
+            description: 'This description lives in the constructor.',
+            type: 'string'
+          },
+          {
+            name: 'constructorOnly_',
+            description: 'This is a private field on the element.',
+            type: 'number'
+          }
+        ],
+        methods: [],
+        warningUnderlines: [],
+      },
+    ]);
+
+    assert.containSubset([...element.properties.values()], [
+      {
+        name: 'foo',
+        privacy: 'protected',
+        description: 'This description lives in the constructor.',
+        type: 'string',
+        default: `'bar'`,
+        published: true,
+        notify: true,
+        warnings: [],
+      },
+      {
+        name: 'constructorOnly_',
+        privacy: 'private',
+        description: 'This is a private field on the element.',
+        type: 'number',
+        readOnly: true,
+        warnings: [],
+      }
+    ]);
   });
 });

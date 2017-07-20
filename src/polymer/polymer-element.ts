@@ -15,8 +15,9 @@
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
+import {getOrInferPrivacy} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
-import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
+import {Annotation as JsDocAnnotation, Annotation} from '../javascript/jsdoc';
 import {ImmutableArray} from '../model/immutable';
 import {Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
@@ -43,7 +44,71 @@ export interface BasePolymerProperty {
 
 export interface ScannedPolymerProperty extends ScannedProperty,
                                                 BasePolymerProperty {}
+
 export interface PolymerProperty extends Property, BasePolymerProperty {}
+
+export function mergePropertyDeclarations(
+    propA: Readonly<ScannedPolymerProperty>,
+    propB: Readonly<ScannedPolymerProperty>): ScannedPolymerProperty {
+  if (propA.name !== propB.name) {
+    throw new Error(
+        `Tried to merge properties with different names: ` +
+        `'${propA.name}' and ' ${propB.name}'`);
+  }
+  const name = propA.name;
+  const description =
+      jsdoc.pickBestDescription(propA.description, propB.description);
+  const jsdocAnn: Annotation = {description: description || '', tags: []};
+  if (propA.jsdoc) {
+    jsdocAnn.tags.push(...propA.jsdoc.tags);
+  }
+  if (propB.jsdoc) {
+    jsdocAnn.tags.push(...propB.jsdoc.tags);
+  }
+  const privacy = getOrInferPrivacy(propA.name, jsdocAnn);
+  const warnings = [...propA.warnings, ...propB.warnings];
+  // If either are marked as readOnly, both are.
+  const readOnly = propA.readOnly || propB.readOnly;
+
+  // Handle all regular property metadata.
+  const scannedRegularProperty: ScannedProperty = {
+    // calculated above with care
+    name,
+    privacy,
+    description,
+    warnings,
+    readOnly,
+    jsdoc: jsdocAnn,
+
+    // prefer A, but take B if there's no A.
+    sourceRange: propA.sourceRange || propB.sourceRange,
+    astNode: propA.astNode || propB.astNode,
+    changeEvent: propA.changeEvent || propB.changeEvent,
+    default: propA.default || propB.default,
+    type: propA.type || propB.type,
+  };
+  const scannedPolymerProperty: ScannedPolymerProperty = scannedRegularProperty;
+
+  // For the scannedPolymerProperty keys, set them if they're there
+  const keys = [
+    'published' as 'published',
+    'notify' as 'notify',
+    'observer' as 'observer',
+    'observerNode' as 'observerNode',
+    'observerExpression' as 'observerExpression',
+    'reflectToAttribute' as 'reflectToAttribute',
+    'computedExpression' as 'computedExpression'
+  ];
+  for (const key of keys) {
+    if (propA[key] || propB[key]) {
+      scannedPolymerProperty[key] = propA[key] || propB[key];
+    }
+  }
+  if (propA.published || propB.published) {
+    scannedPolymerProperty.published = propA.published || propB.published;
+  }
+  return scannedPolymerProperty;
+}
 
 export class LocalId {
   name: string;
@@ -103,6 +168,10 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
 
 export function addProperty(
     target: ScannedPolymerExtension, prop: ScannedPolymerProperty) {
+  const existingProp = target.properties.get(prop.name);
+  if (existingProp) {
+    prop = mergePropertyDeclarations(existingProp, prop);
+  }
   target.properties.set(prop.name, prop);
   const attributeName = propertyToAttributeName(prop.name);
   // Don't produce attributes or events for nonpublic properties, properties

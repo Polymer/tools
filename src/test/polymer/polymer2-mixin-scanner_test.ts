@@ -434,4 +434,45 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
       }
     ]);
   });
+
+  test('infers properties from the constructor', async() => {
+    const mixins = await getMixins('test-mixin-11.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
+    assert.deepEqual(mixinData, [
+      {
+        name: 'TestMixin',
+        description: '',
+        summary: '',
+        attributes: [{name: 'foo'}],
+        methods: [],
+        properties: [
+          {
+            name: 'foo',
+          },
+          {name: 'constructorProp'}
+        ],
+        underlinedWarnings: [],
+      },
+    ]);
+
+    const [mixin] = mixins;
+    assert.containSubset([...mixin.properties.values()], [
+      {
+        name: 'foo',
+        privacy: 'public',
+        description: 'This description is in the constructor.',
+        type: 'string',
+        published: true,
+        notify: true,
+        warnings: [],
+      },
+      {
+        name: 'constructorProp',
+        default: '10',
+        description: 'This property is defined only in the constructor.',
+        privacy: 'public',
+        warnings: [],
+      }
+    ]);
+  });
 });

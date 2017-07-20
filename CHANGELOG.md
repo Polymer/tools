@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Fixed a bug where we were too aggressive in associating HTML comments with
   nodes, such that any comment that came before a `<script>` tag e.g. could
   become part of the description of the element defined therin.
+* Added support for recognizing instance properties in constructors.
+  * The properties must be annotated with a jsdoc tag to be recognized.
+  * Specific handling of the following tags is supported:
+    * `@public`, `@private`, `@protected`, `@type`, and `@const`
+    * The description can be combined with a visibility or type annotation. e.g.
+      * `/** @type {number} How many bacon wrapped waffles to eat. */`
 
 ## [2.2.1] - 2017-07-06
 

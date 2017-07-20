@@ -15,6 +15,7 @@
 import * as estree from 'estree';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
+import {extractPropertiesFromConstructor} from '../javascript/class-scanner';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {getMethods, getOrInferPrivacy, getStaticMethods} from '../javascript/esutil';
@@ -199,6 +200,11 @@ export class MixinVisitor implements Visitor {
     }
 
     mixin.classAstNode = node;
+    const constructorProperties =
+        extractPropertiesFromConstructor(node, this._document);
+    for (const prop of constructorProperties.values()) {
+      mixin.addProperty(prop);
+    }
     getPolymerProperties(node, this._document)
         .forEach((p) => mixin.addProperty(p));
     getMethods(node, this._document).forEach((m) => mixin.addMethod(m));
@@ -207,6 +213,7 @@ export class MixinVisitor implements Visitor {
 
     mixin.events = esutil.getEventComments(node);
     // mixin.sourceRange = this._document.sourceRangeForNode(node);
+
     return mixin;
   }
 }
