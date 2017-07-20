@@ -18,7 +18,10 @@
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "polymer:test": "node lib/tools/test-polymer",
     "polymer:checkpoint": "node lib/tools/checkpoint-polymer",
-    "clean": "rm -rf ./lib/ && rm -rf ./fixtures/generated/*"
+    "clean": "rm -rf ./lib/ && rm -rf ./fixtures/generated/*",
+    "quicktest": "npm run build && mocha",
+    "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
+    "prepublishOnly": "npm run build"
   },
   "engines": {
     "node": ">=7.6.0"
@@ -57,6 +60,7 @@
     "diff": "^3.3.0",
     "gulp": "^3.9.1",
     "tslint": "^5.5.0",
-    "typescript": "^2.4.1"
+    "typescript": "^2.4.1",
+    "watchy": "^0.7.0"
   }
 }

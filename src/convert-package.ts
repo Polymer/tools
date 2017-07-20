@@ -16,8 +16,9 @@ import * as fs from 'mz/fs';
 import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 import * as rimraf from 'rimraf';
-import {generatePackageJson, readJson, writeJson} from './manifest-converter';
+
 import {AnalysisConverter, AnalysisConverterOptions} from './analysis-converter';
+import {generatePackageJson, readJson, writeJson} from './manifest-converter';
 
 const mkdirp = require('mkdirp');
 
@@ -70,9 +71,9 @@ export function configureAnalyzer(options: ConvertPackageOptions) {
 }
 
 export function configureConverter(
-  analysis: Analysis, options: ConvertPackageOptions) {
+    analysis: Analysis, options: ConvertPackageOptions) {
   return new AnalysisConverter(analysis, {
-    rootModuleName: options.rootModuleName || 'Polymer',
+    rootNamespaces: options.rootNamespaces || ['Polymer'],
     excludes: options.excludes ||
         [
           'lib/elements/dom-module.html',

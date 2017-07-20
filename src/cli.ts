@@ -14,8 +14,8 @@
 
 import * as inquirer from 'inquirer';
 import commandLineArgs = require('command-line-args');
-import { convertPackage } from './convert-package';
-import { readJson } from './manifest-converter';
+import {convertPackage} from './convert-package';
+import {readJson} from './manifest-converter';
 import * as semver from 'semver';
 
 const optionDefinitions: commandLineArgs.OptionDefinition[] = [
@@ -32,15 +32,16 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   },
   {name: 'in', type: String, description: 'The directory to convert.'},
   {
-    name: 'root-module',
+    name: 'root-namespace',
     type: String,
-    description: 'Root namespace name to use to detect exports.'
+    description: 'Root namespace name(s) to use to detect exports.',
+    multiple: true
   },
   {
     name: 'exclude',
     type: String,
     multiple: true,
-    description: 'Exclude a file from conversion.'
+    description: 'Exclude file(s) from conversion.'
   },
   {
     name: 'npm-name',
@@ -59,8 +60,19 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   },
 ];
 
+interface Options {
+  help?: boolean;
+  out: string;
+  in ?: string;
+  'root-namespace'?: string[];
+  exclude: string[];
+  'npm-name': string;
+  'npm-version': string;
+  clear: boolean;
+}
+
 export async function run() {
-  const options = commandLineArgs(optionDefinitions);
+  const options: Options = commandLineArgs(optionDefinitions) as any;
 
   if (options['help']) {
     const getUsage = require('command-line-usage');
@@ -79,16 +91,18 @@ export async function run() {
   }
 
   // TODO: each file is not always needed, refactor to optimize loading
-  let inBowerJson;
-  let inPackageJson;
+  let inBowerJson: {name: string, version: string}|undefined;
+  let inPackageJson: {name: string, version: string}|undefined;
   let outPackageJson;
   try {
-    outPackageJson = readJson(options['out'], 'package.json');
+    outPackageJson = readJson(options.out, 'package.json');
   } catch (e) {
     // do nothing
   }
   try {
-    inPackageJson = readJson(options['in'], 'package.json');
+    if (options.in) {
+      inPackageJson = readJson(options.in, 'package.json');
+    }
   } catch (e) {
     // do nothing
   }
@@ -98,12 +112,12 @@ export async function run() {
     // do nothing
   }
 
-  let npmPackageName = options['npm-name']
-    || inPackageJson && inPackageJson.name
-    || outPackageJson && outPackageJson.name;
-  let npmPackageVersion = options['npm-version']
-    || inPackageJson && inPackageJson.version
-    || outPackageJson && outPackageJson.version;
+  let npmPackageName = options['npm-name'] ||
+      inPackageJson && inPackageJson.name ||
+      outPackageJson && outPackageJson.name;
+  let npmPackageVersion = options['npm-version'] ||
+      inPackageJson && inPackageJson.version ||
+      outPackageJson && outPackageJson.version;
 
   // Prompt user for new package name & version if none exists
   // TODO(fks) 07-19-2017: Add option to suppress prompts
@@ -126,14 +140,12 @@ export async function run() {
   }
 
   await convertPackage({
-    inDir: options['in'],
-    outDir: options['out'],
-    excludes: options['exclude'],
-    rootModuleName: options['root-module'],
+    inDir: options.in,
+    outDir: options.out,
+    excludes: options.exclude,
+    rootNamespaces: options['root-namespace'],
     packageName: npmPackageName,
     packageVersion: npmPackageVersion,
-    clearOutDir: options['clear'],
+    clearOutDir: options.clear,
   });
-
-  console.log('Done');
 }

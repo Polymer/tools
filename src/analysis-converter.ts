@@ -87,7 +87,7 @@ export interface AnalysisConverterOptions {
   /**
    * The root namespace name that is used to detect exports.
    */
-  readonly rootModuleName?: string;
+  readonly rootNamespaces?: Iterable<string>;
 
   /**
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
@@ -120,7 +120,7 @@ export interface AnalysisConverterOptions {
  */
 export class AnalysisConverter {
   private readonly _analysis: Analysis;
-  readonly rootModuleName: string|undefined;
+  readonly rootNamespaces: ReadonlySet<string>;
   // These three properties are 'protected' in that they're accessable from
   // DocumentConverter.
   readonly _excludes: ReadonlySet<string>;
@@ -132,7 +132,7 @@ export class AnalysisConverter {
 
   constructor(analysis: Analysis, options: AnalysisConverterOptions = {}) {
     this._analysis = analysis;
-    this.rootModuleName = options.rootModuleName;
+    this.rootNamespaces = new Set(options.rootNamespaces || []);
     this._excludes = new Set(options.excludes);
     this._referenceExcludes = new Set(options.referenceExcludes);
     this._mutableExports = options.mutableExports;
