@@ -143,16 +143,6 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
       fallback: 'iteration',
     });
   }
-
-  forEachNode(callback: (node: Node) => void) {
-    traverse(this.ast, {
-      enter(node, _parent) {
-        callback(node);
-      },
-      fallback: 'iteration',
-    });
-  }
-
   protected _sourceRangeForNode(node: Node): SourceRange|undefined {
     if (!node || !node.loc) {
       return;

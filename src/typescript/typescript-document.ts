@@ -40,11 +40,6 @@ export class ParsedTypeScriptDocument extends ParsedDocument<Node, Visitor> {
     }
   }
 
-  forEachNode(_callback: (node: Node) => void) {
-    // TODO(justinfagnani): implement
-    throw new Error('unsupported');
-  }
-
   protected _sourceRangeForNode(_node: Node): SourceRange|undefined {
     // TODO(justinfagnani): implement
     throw new Error('unsupported');

@@ -21,7 +21,7 @@ import cssbeautify = require('cssbeautify');
 
 export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
 
-class ShadyVisitor extends shady.NodeVisitor<void> {
+class ShadyVisitor extends shady.NodeVisitor<shady.Node, void> {
   private visitors: Visitor[];
   constructor(visitors: Visitor[]) {
     super();
@@ -59,7 +59,9 @@ class ShadyVisitor extends shady.NodeVisitor<void> {
   }
   declaration(declaration: shady.Declaration) {
     this.allVisitors(declaration);
-    this.visit(declaration.value);
+    if (declaration.value) {
+      this.visit(declaration.value);
+    }
   }
   expression(expression: shady.Expression) {
     this.allVisitors(expression);
@@ -81,16 +83,13 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     shadyVisitor.visit(this.ast);
   }
 
-  forEachNode(_callback: (node: shady.Node) => void) {
-    throw new Error('Not implemented');
-  }
-
-  protected _sourceRangeForNode(_node: shady.Node): SourceRange {
-    throw new Error('Not implemented');
+  protected _sourceRangeForNode(node: shady.Node): SourceRange {
+    return this.offsetsToSourceRange(node.range.start, node.range.end);
   }
 
   stringify(options?: StringifyOptions) {
     options = options || {};
+    shadyStringifier.visit;
     const beautifulResults = cssbeautify(
         shadyStringifier.stringify(this.ast),
         {indent: '  ', autosemicolon: true, openbrace: 'end-of-line'});

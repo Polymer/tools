@@ -40,13 +40,6 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     });
   }
 
-  forEachNode(callback: (node: ASTNode) => void) {
-    dom5.nodeWalk(this.ast, (node) => {
-      callback(node);
-      return false;
-    });
-  }
-
   // An element node with end tag information will produce a source range that
   // includes the closing tag.  It is assumed for offset calculation that the
   // closing tag is always of the expected `</${tagName}>` form.

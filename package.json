@@ -83,7 +83,7 @@
     "estraverse": "^4.2.0",
     "jsonschema": "^1.1.0",
     "parse5": "^2.2.1",
-    "shady-css-parser": "0.0.8",
+    "shady-css-parser": "^0.1.0",
     "strip-indent": "^2.0.0"
   },
   "engines": {

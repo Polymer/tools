@@ -47,10 +47,6 @@ export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
     }
   }
 
-  forEachNode(callback: (node: Json) => void) {
-    this.visit([{visit: callback}]);
-  }
-
   protected _sourceRangeForNode(_node: Json): SourceRange {
     throw new Error('Not Implemented.');
   }

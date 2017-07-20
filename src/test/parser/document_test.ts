@@ -20,9 +20,6 @@ class TestDocument extends ParsedDocument<null, null> {
   visit(_visitors: null[]): void {
     throw new Error('Method not implemented.');
   }
-  forEachNode(_callback: (node: null) => void): void {
-    throw new Error('Method not implemented.');
-  }
   protected _sourceRangeForNode(_node: null): SourceRange|undefined {
     throw new Error('Method not implemented.');
   }
