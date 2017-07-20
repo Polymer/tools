@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [2.2.2] - 2017-07-20
 
 * Fixed a bug where we were too aggressive in associating HTML comments with
   nodes, such that any comment that came before a `<script>` tag e.g. could
