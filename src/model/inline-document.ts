@@ -102,41 +102,56 @@ export function getAttachedCommentText(node: ASTNode): string|undefined {
 }
 
 function getAttachedCommentNode(node: ASTNode): ASTNode|undefined {
-  for (const predecessor of getPreviousSiblings(node)) {
-    // Ignore nodes that are effectively invisible to the element author.
-    if (isFakeNode(predecessor)) {
+  const predecessors = getPreviousSiblings(node);
+  const visiblePredecessors = filterOutInvisibleNodes(predecessors);
+  const [closestVisiblePredecessor] = visiblePredecessors;
+  if (!closestVisiblePredecessor) {
+    return;  // no predecessors at all
+  }
+  if (!dom5.isCommentNode(closestVisiblePredecessor)) {
+    return;  // attached node isn't a comment
+  }
+  return closestVisiblePredecessor;
+}
+
+/**
+ * Filter out nodes that are just whitespace, or aren't present in the original
+ * source text of the file.
+ */
+function*
+    filterOutInvisibleNodes(nodeIter: Iterable<ASTNode>): Iterable<ASTNode> {
+  for (const node of nodeIter) {
+    // Ignore nodes that aren't present in the original text of the file,
+    // like parser-hallucinated <head> and <body> nodes.
+    if (isFakeNode(node)) {
       continue;
     }
-    if (dom5.isTextNode(predecessor)) {
-      const text = dom5.getTextContent(predecessor).trim();
+    // Ignore text nodes that are just whitespace
+    if (dom5.isTextNode(node)) {
+      const text = dom5.getTextContent(node).trim();
       if (text === '') {
         continue;
       }
     }
-    if (dom5.isCommentNode(predecessor)) {
-      return predecessor;
-    }
-    // not a text or comment node, so there's another element between `node` and
-    // the nearest comment. no attached comment node.
-    return;
+    yield node;
   }
 }
 
 /**
  * An iterable over siblings that come before the given node.
  *
- * Note that this method gives siblings from the author's point of view, not the
- * pedantic parser's point of view, so we need to traverse some fake nodes.
- * e.g. consider this document
+ * Note that this method gives siblings from the author's point of view, not
+ * the pedantic parser's point of view, so we need to traverse some fake
+ * nodes. e.g. consider this document
  *
  *     <link rel="import" href="foo.html">
  *     <dom-module></dom-module>
  *
- * For this method's purposes, these nodes are siblings, but in the AST they're
- * actually cousins! The link is in a hallucinated <head> node, and the
- * dom-module is in a hallucinated <body> node, so to get to the link we need
- * to go up to the body, then back to the head, then back down, but only if
- * the head and body are hallucinated.
+ * For this method's purposes, these nodes are siblings, but in the AST
+ * they're actually cousins! The link is in a hallucinated <head> node, and
+ * the dom-module is in a hallucinated <body> node, so to get to the link we
+ * need to go up to the body, then back to the head, then back down, but
+ * only if the head and body are hallucinated.
  */
 function* getPreviousSiblings(node: ASTNode): Iterable<ASTNode> {
   const parent = node.parentNode;

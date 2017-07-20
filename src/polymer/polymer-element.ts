@@ -260,6 +260,8 @@ export class PolymerElement extends Element implements PolymerExtension {
       this.domModule = domModule.node;
       this.slots = this.slots.concat(domModule.slots);
       this.localIds = domModule.localIds.slice();
+      // If there's a domModule and it's got a comment, that comment documents
+      // this element too. Extract its description and @demo annotations.
       if (domModule.comment) {
         const domModuleJsdoc = jsdoc.parseJsdoc(domModule.comment);
         this.demos = [...jsdoc.extractDemos(domModuleJsdoc), ...this.demos];
