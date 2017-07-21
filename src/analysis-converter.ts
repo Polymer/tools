@@ -21,9 +21,6 @@ import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
 import {htmlUrlToJs} from './url-converter';
 
-const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
-const isNotTest = (d: Document) => !_isInTestRegex.test(d.url);
-
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
 const isNotExternal = (d: Document) =>
@@ -108,8 +105,7 @@ export class AnalysisConverter {
         [...this._analysis.getFeatures({kind: 'html-document'})]
             // Excludes
             .filter((d) => {
-              return !this._excludes.has(d.url) && isNotExternal(d) &&
-                  isNotTest(d) && d.url;
+              return !this._excludes.has(d.url) && isNotExternal(d) && d.url;
             });
     const [toConvertToModules, toKeepAsHtml] =
         partition(htmlDocuments, (d) => this._includes.has(d.url));
