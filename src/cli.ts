@@ -32,9 +32,11 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   },
   {name: 'in', type: String, description: 'The directory to convert.'},
   {
-    name: 'root-namespace',
+    name: 'namespace',
     type: String,
-    description: 'Root namespace name(s) to use to detect exports.',
+    description: 'Namespace name(s) to use to detect exports. ' +
+        'Namespaces documented in the code with @namespace will be ' +
+        'automatically detected.',
     multiple: true
   },
   {
@@ -64,7 +66,7 @@ interface Options {
   help?: boolean;
   out: string;
   in ?: string;
-  'root-namespace'?: string[];
+  namespace?: string[];
   exclude: string[];
   'npm-name': string;
   'npm-version': string;
@@ -143,7 +145,7 @@ export async function run() {
     inDir: options.in,
     outDir: options.out,
     excludes: options.exclude,
-    rootNamespaces: options['root-namespace'],
+    namespaces: options.namespace,
     packageName: npmPackageName,
     packageVersion: npmPackageVersion,
     clearOutDir: options.clear,

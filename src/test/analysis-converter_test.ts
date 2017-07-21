@@ -38,8 +38,7 @@ suite('AnalysisConverter', () => {
 
     async function getConverter(
         partialOptions?: Partial<AnalysisConverterOptions>) {
-      const options =
-          Object.assign({rootNamespaces: ['Polymer']}, partialOptions);
+      const options = Object.assign({namespaces: ['Polymer']}, partialOptions);
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
       const converter = new AnalysisConverter(analysis, options);
@@ -63,7 +62,7 @@ suite('AnalysisConverter', () => {
     async function getConverted(): Promise<Map<string, string>> {
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
-        rootNamespaces: ['Polymer'],
+        namespaces: ['Polymer'],
       });
       return converter.convert();
     }
@@ -761,7 +760,7 @@ export const isDeep = isPath;
       });
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
-        rootNamespaces: ['Polymer'],
+        namespaces: ['Polymer'],
         excludes: ['exclude.html'],
       });
       const converted = await converter.convert();
@@ -782,7 +781,7 @@ class MyElement extends $Element {}
       });
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
-        rootNamespaces: ['Polymer'],
+        namespaces: ['Polymer'],
         referenceExcludes: ['Polymer.DomModule'],
       });
       const converted = await converter.convert();
@@ -800,7 +799,7 @@ class MyElement extends $Element {}
       });
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
-        rootNamespaces: ['Polymer'],
+        namespaces: ['Polymer'],
         referenceExcludes: ['Polymer.Settings'],
       });
       const converted = await converter.convert();
@@ -830,7 +829,7 @@ class MyElement extends $Element {}
       });
       const analysis = await analyzer.analyze(['test.html']);
       const converter = new AnalysisConverter(analysis, {
-        rootNamespaces: ['Polymer'],
+        namespaces: ['Polymer'],
         referenceExcludes: ['Polymer.rootPath'],
       });
       const converted = await converter.convert();
@@ -942,10 +941,72 @@ document.appendChild($_documentContainer);
         `,
         'qux.html': `<script>Foo.qux = 'lol';</script>`
       });
-      assert.deepEqual(await getJs({rootNamespaces: ['Foo', 'Baz']}), `
+      assert.deepEqual(await getJs({namespaces: ['Foo', 'Baz']}), `
 import { qux as $qux } from './qux.js';
 export const bar = 10;
 export { $qux as zug };
+`);
+    });
+
+    test('converts declared namespaces', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./polymer.html">
+          <script>
+            class Element extends Polymer.Element {};
+          </script>
+        `,
+        'polymer.html': `
+          <script>
+            /** @namespace */
+            const Polymer = {};
+            Polymer.Element = class Element {}
+          </script>
+        `
+      });
+      assert.deepEqual(
+          await getJs({namespaces: [/* No explicit namespaces! */]}), `
+import { Element as $Element } from './polymer.js';
+class Element extends $Element {}
+`);
+      const converter = await getConverter();
+      const polymerModule = converter.modules.get('./polymer.js');
+      assert.deepEqual(polymerModule && '\n' + polymerModule.source, `
+/** @namespace */
+const Polymer = {};
+export const Element = class Element {};
+`);
+    });
+
+    test('converts declared nested namespaces', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./ns.html">
+          <script>
+            class Element extends NS.SubSpace.Element {};
+          </script>
+        `,
+        'ns.html': `
+          <script>
+            /** @namespace */
+            const NS = {};
+            /** @namespace */
+            NS.SubSpace = {};
+            NS.SubSpace.Element = class Element {}
+          </script>
+        `
+      });
+      assert.deepEqual(
+          await getJs({namespaces: [/* No explicit namespaces! */]}), `
+import { Element as $Element } from './ns.js';
+class Element extends $Element {}
+`);
+      const converter = await getConverter();
+      const polymerModule = converter.modules.get('./ns.js');
+      assert.deepEqual(polymerModule && '\n' + polymerModule.source, `
+/** @namespace */
+const NS = {};
+export const Element = class Element {};
 `);
     });
   });
@@ -1023,7 +1084,9 @@ export { $qux as zug };
     const doc = analysis.getDocument(filename) as Document;
     const converter = configureConverter(analysis, options);
     converter.convertDocument(doc);
-    assert(converter.namespacedExports.has('Polymer.Element'));
+    assert(
+        converter.namespacedExports.has('Polymer.Element'),
+        'Can find Polymer.Element');
   });
 
 });

@@ -243,8 +243,7 @@ export class DocumentConverter {
     while (this.currentStatementIndex < this.program.body.length) {
       const statement =
           this.program.body[this.currentStatementIndex] as Statement;
-      const exported =
-          getExport(statement, this.analysisConverter.rootNamespaces);
+      const exported = getExport(statement, this.analysisConverter.namespaces);
 
       if (exported !== undefined) {
         const {namespace, value} = exported;
@@ -425,7 +424,7 @@ export class DocumentConverter {
    */
   rewriteNamespacedReferences() {
     const analysisConverter = this.analysisConverter;
-    const rootNamespaces = analysisConverter.rootNamespaces;
+    const namespaces = analysisConverter.namespaces;
     const module = analysisConverter.modules.get(this.jsUrl)!;
     const importedReferences = module.importedReferences;
     const baseUrl = this.document.url;
@@ -446,7 +445,7 @@ export class DocumentConverter {
     astTypes.visit(this.program, {
       visitIdentifier(path: AstPath<Identifier>) {
         const memberName = path.node.name;
-        const isRootModuleIdentifier = rootNamespaces.has(memberName);
+        const isRootModuleIdentifier = namespaces.has(memberName);
         if (!isRootModuleIdentifier ||
             (path.parent && getMemberPath(path.parent.node))) {
           return false;
@@ -775,8 +774,7 @@ function isDeclaration(node: Node) {
  * @param moduleRoot If specified
  */
 function getExport(
-    statement: Statement|ModuleDeclaration,
-    rootNamespaces: ReadonlySet<string>):
+    statement: Statement|ModuleDeclaration, namespaces: ReadonlySet<string>):
     {namespace: string[], value: Expression}|undefined {
   if (!(statement.type === 'ExpressionStatement' &&
         statement.expression.type === 'AssignmentExpression')) {
@@ -789,7 +787,7 @@ function getExport(
 
   const namespace = getMemberPath(assignment.left);
 
-  if (namespace !== undefined && rootNamespaces.has(namespace[0])) {
+  if (namespace !== undefined && namespaces.has(namespace[0])) {
     return {
       namespace,
       value: assignment.right,
