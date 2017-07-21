@@ -14,7 +14,7 @@
 
 import * as path from 'path';
 import * as logging from 'plylog';
-import {Analyzer, Document, Severity, UrlLoader, Warning, WarningPrinter} from 'polymer-analyzer';
+import {Analyzer, Document, Severity, UrlLoader, Warning, WarningFilter, WarningPrinter} from 'polymer-analyzer';
 import {parseUrl} from 'polymer-analyzer/lib/core/utils';
 import {ProjectConfig} from 'polymer-project-config';
 import {PassThrough, Transform} from 'stream';
@@ -110,6 +110,7 @@ export class BuildAnalyzer {
   private _sourcesProcessingStream: NodeJS.ReadWriteStream;
   private _dependenciesStream: Transform;
   private _dependenciesProcessingStream: NodeJS.ReadWriteStream;
+  private _warningsFilter: WarningFilter;
 
   files = new Map<string, File>();
   warnings = new Set<Warning>();
@@ -135,6 +136,13 @@ export class BuildAnalyzer {
     this.allFragmentsToAnalyze = new Set(this.config.allFragments);
     this.analyzeDependencies = new Promise((resolve, _reject) => {
       this._resolveDependencyAnalysis = resolve;
+    });
+
+    const lintOptions: Partial<typeof config.lint> = (this.config.lint || {});
+
+    this._warningsFilter = new WarningFilter({
+      warningCodesToIgnore: new Set(lintOptions.ignoreWarnings || []),
+      minimumSeverity: Severity.WARNING
     });
   }
 
@@ -353,7 +361,9 @@ export class BuildAnalyzer {
       throw new Error(`Unable to get document ${url}: ${message}`);
     }
 
-    doc.getWarnings({imported: true}).forEach((w) => this.warnings.add(w));
+    doc.getWarnings({imported: true})
+        .filter((w) => !this._warningsFilter.shouldIgnore(w))
+        .forEach((w) => this.warnings.add(w));
 
     const scripts = new Set<string>();
     const styles = new Set<string>();
