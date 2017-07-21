@@ -38,7 +38,8 @@ suite('AnalysisConverter', () => {
 
     async function getConverter(
         partialOptions?: Partial<AnalysisConverterOptions>) {
-      const options = Object.assign({namespaces: ['Polymer']}, partialOptions);
+      const options = Object.assign(
+          {namespaces: ['Polymer'], mainFiles: ['test.html']}, partialOptions);
       const analysis = await analyzer.analyze(['test.html']);
       const testDoc = analysis.getDocument('test.html') as Document;
       const converter = new AnalysisConverter(analysis, options);
@@ -60,9 +61,11 @@ suite('AnalysisConverter', () => {
     }
 
     async function getConverted(): Promise<Map<string, string>> {
-      const analysis = await analyzer.analyze(['test.html']);
+      const mainFiles = ['test.html'];
+      const analysis = await analyzer.analyze(mainFiles);
       const converter = new AnalysisConverter(analysis, {
         namespaces: ['Polymer'],
+        mainFiles,
       });
       return converter.convert();
     }
@@ -762,6 +765,7 @@ export const isDeep = isPath;
       const converter = new AnalysisConverter(analysis, {
         namespaces: ['Polymer'],
         excludes: ['exclude.html'],
+        mainFiles: ['test.html']
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
@@ -783,6 +787,7 @@ class MyElement extends $Element {}
       const converter = new AnalysisConverter(analysis, {
         namespaces: ['Polymer'],
         referenceExcludes: ['Polymer.DomModule'],
+        mainFiles: ['test.html']
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
@@ -801,6 +806,7 @@ class MyElement extends $Element {}
       const converter = new AnalysisConverter(analysis, {
         namespaces: ['Polymer'],
         referenceExcludes: ['Polymer.Settings'],
+        mainFiles: ['test.html'],
       });
       const converted = await converter.convert();
       const js = converted.get('./test.js');
@@ -1062,6 +1068,7 @@ export const Element = class Element {};
       inDir: fixturesDirPath,
       packageName: 'case-map',
       packageVersion: '1.0.0',
+      mainFiles: ['case-map/case-map.html']
     };
     const analyzer = configureAnalyzer(options);
     const analysis = await analyzer.analyze(['case-map/case-map.html']);

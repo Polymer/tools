@@ -90,6 +90,8 @@ export interface AnalysisConverterOptions {
    */
   readonly namespaces?: Iterable<string>;
 
+  readonly mainFiles?: Iterable<string>;
+
   /**
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
    * to these files are also excluded.
@@ -125,6 +127,7 @@ export class AnalysisConverter {
   // These three properties are 'protected' in that they're accessable from
   // DocumentConverter.
   readonly _excludes: ReadonlySet<string>;
+  readonly _includes: ReadonlySet<string>;
   readonly _referenceExcludes: ReadonlySet<string>;
   readonly _mutableExports?: {readonly [namespaceName: string]: string[]};
 
@@ -142,14 +145,27 @@ export class AnalysisConverter {
     this._excludes = new Set(options.excludes);
     this._referenceExcludes = new Set(options.referenceExcludes);
     this._mutableExports = options.mutableExports;
+    const importedFiles = [...this._analysis.getFeatures(
+                               {kind: 'import', externalPackages: false})]
+                              .map((imp) => imp.url)
+                              .filter(
+                                  (url) =>
+                                      !(url.startsWith('bower_components') ||
+                                        url.startsWith('node_modules')));
+    this._includes = new Set([...importedFiles, ...options.mainFiles || []]);
   }
 
   async convert(): Promise<Map<string, string>> {
     const htmlDocuments =
-        Array.from(this._analysis.getFeatures({kind: 'html-document'}))
+        [...this._analysis.getFeatures({kind: 'html-document'})]
+            // Excludes
             .filter((d) => {
               return !this._excludes.has(d.url) && isNotExternal(d) &&
                   isNotTest(d) && d.url;
+            })
+            // Includes
+            .filter((d) => {
+              return this._includes.has(d.url);
             });
 
     const results = new Map<string, string>();

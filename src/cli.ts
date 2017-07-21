@@ -43,7 +43,18 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     name: 'exclude',
     type: String,
     multiple: true,
-    description: 'Exclude file(s) from conversion.'
+    description: 'File(s) to exclude from conversion.',
+    defaultValue: []
+  },
+  {
+    name: 'include',
+    type: String,
+    multiple: true,
+    description:
+        'Root file(s) to include in the conversion. Automatically includes' +
+        ' files listed in the bower.json main field, and any file that ' +
+        'is HTML imported.',
+    defaultValue: []
   },
   {
     name: 'npm-name',
@@ -68,9 +79,10 @@ interface Options {
   in ?: string;
   namespace?: string[];
   exclude: string[];
-  'npm-name': string;
-  'npm-version': string;
-  clear: boolean;
+  include: string[];
+  'npm-name'?: string;
+  'npm-version'?: string;
+  clear?: boolean;
 }
 
 export async function run() {
@@ -93,7 +105,7 @@ export async function run() {
   }
 
   // TODO: each file is not always needed, refactor to optimize loading
-  let inBowerJson: {name: string, version: string}|undefined;
+  let inBowerJson: {name: string, version: string, main: any}|undefined;
   let inPackageJson: {name: string, version: string}|undefined;
   let outPackageJson;
   try {
@@ -120,6 +132,15 @@ export async function run() {
   let npmPackageVersion = options['npm-version'] ||
       inPackageJson && inPackageJson.version ||
       outPackageJson && outPackageJson.version;
+
+  let bowerMainAny = (inBowerJson && inBowerJson.main) || [];
+  if (!Array.isArray(bowerMainAny)) {
+    bowerMainAny = [bowerMainAny];
+  }
+  const bowerMain: string[] =
+      bowerMainAny.filter((m: any) => typeof m === 'string');
+
+  const mainFiles = [...bowerMain, ...options.include];
 
   // Prompt user for new package name & version if none exists
   // TODO(fks) 07-19-2017: Add option to suppress prompts
@@ -149,5 +170,6 @@ export async function run() {
     packageName: npmPackageName,
     packageVersion: npmPackageVersion,
     clearOutDir: options.clear,
+    mainFiles
   });
 }

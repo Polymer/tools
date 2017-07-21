@@ -89,6 +89,7 @@ export function configureConverter(
     mutableExports: options.mutableExports || {
       'Polymer.telemetry': ['instanceCount'],
     },
+    mainFiles: options.mainFiles
   });
 }
 
@@ -103,8 +104,6 @@ export async function convertPackage(options: ConvertPackageOptions) {
   const npmPackageName = options.packageName;
   const npmPackageVersion = options.packageVersion;
 
-  // TODO(justinfagnani): These setting are only good for Polymer core
-  // and should be extracted into a config file.
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
@@ -124,7 +123,7 @@ export async function convertPackage(options: ConvertPackageOptions) {
     }
   }
 
-  for (const [jsUrl, newSource] of results!) {
+  for (const [jsUrl, newSource] of results) {
     const outPath = path.resolve(outDirResolved, jsUrl);
     mkdirp.sync(path.dirname(outPath));
     await fs.writeFile(outPath, newSource);
