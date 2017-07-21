@@ -17,7 +17,6 @@ require('source-map-support').install();
 
 import * as path from 'path';
 import {exec} from 'mz/child_process';
-import {mkdir} from 'mz/fs';
 import {convertPackage} from '../convert-package';
 import rimraf = require('rimraf');
 
@@ -29,16 +28,7 @@ const convertedDir = path.join(fixturesDirPath, 'expected');
 
 (async () => {
 
-  try {
-    await mkdir(fixturesDirPath);
-  } catch (e) {
-    if (e.errno === -17) {  // directory exists
-      // do nothing
-    } else {
-      throw e;
-    }
-  }
-
+  await exec(`mkdir -p ${fixturesDirPath}`);
   console.log(`Cloning ${repoUrl} to ${sourceDir}...`);
   rimraf.sync(sourceDir);
   await exec(

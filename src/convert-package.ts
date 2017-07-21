@@ -131,7 +131,7 @@ export async function convertPackage(options: ConvertPackageOptions) {
   }
 
   try {
-    const bowerJson = readJson('bower.json');
+    const bowerJson = readJson(path.join(options.inDir || '.', 'bower.json'));
     const packageJson =
         generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
     writeJson(packageJson, outDir, 'package.json');
