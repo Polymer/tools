@@ -123,8 +123,8 @@ export async function convertPackage(options: ConvertPackageOptions) {
     }
   }
 
-  for (const [jsUrl, newSource] of results) {
-    const outPath = path.resolve(outDirResolved, jsUrl);
+  for (const [newPath, newSource] of results) {
+    const outPath = path.resolve(outDirResolved, newPath);
     mkdirp.sync(path.dirname(outPath));
     await fs.writeFile(outPath, newSource);
   }

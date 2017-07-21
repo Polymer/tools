@@ -74,20 +74,20 @@ function rework(line: string) {
   ].map((f) => `./${f}`).filter((f) => f !== './package.json');
   const allPathsUnsorted = new Set([...resultPaths, ...expectedPaths]);
   const allPaths = [...allPathsUnsorted].sort((a, b) => a.localeCompare(b));
-  for (const jsPath of allPaths) {
-    const jsContents = results.get(jsPath);
+  for (const outPath of allPaths) {
+    const jsContents = results.get(outPath);
     if (jsContents === undefined) {
       exitCode = 1;
-      console.log(chalk.bold.red(`✕ ${jsPath} (missing file)`));
+      console.log(chalk.bold.red(`✕ ${outPath} (missing file)`));
       continue;
     }
-    const expectedJsPath = path.resolve(expectedDir, jsPath);
+    const expectedJsPath = path.resolve(expectedDir, outPath);
     let expectedJsContents;
     try {
       expectedJsContents = fs.readFileSync(expectedJsPath, 'utf8');
     } catch (e) {
       exitCode = 1;
-      console.log(chalk.bold.red(`✕ ${jsPath} (unexpected file)`));
+      console.log(chalk.bold.red(`✕ ${outPath} (unexpected file)`));
       continue;
     }
 
@@ -95,10 +95,10 @@ function rework(line: string) {
         'string', expectedJsContents, jsContents, 'expected', 'converted');
     const lines = patch.split('\n').slice(4).map(rework).filter(Boolean);
     if (lines.length === 0) {
-      console.log(chalk.dim('✓ ' + jsPath));
+      console.log(chalk.dim('✓ ' + outPath));
     } else {
       exitCode = 1;
-      console.log(chalk.bold.red('✕ ' + jsPath));
+      console.log(chalk.bold.red('✕ ' + outPath));
       console.log('');
       console.log(lines.join('\n'));
       console.log('');

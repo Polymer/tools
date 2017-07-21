@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-
+import * as dom5 from 'dom5';
 import {Expression} from 'estree';
+import * as parse5 from 'parse5';
 import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
@@ -162,15 +163,13 @@ export class AnalysisConverter {
             .filter((d) => {
               return !this._excludes.has(d.url) && isNotExternal(d) &&
                   isNotTest(d) && d.url;
-            })
-            // Includes
-            .filter((d) => {
-              return this._includes.has(d.url);
             });
+    const [toConvertToModules, toKeepAsHtml] =
+        partition(htmlDocuments, (d) => this._includes.has(d.url));
 
     const results = new Map<string, string>();
 
-    for (const document of htmlDocuments) {
+    for (const document of toConvertToModules) {
       try {
         this.convertDocument(document);
         const jsUrl = htmlUrlToJs(document.url);
@@ -183,6 +182,15 @@ export class AnalysisConverter {
         console.error(`Error in ${document.url}`, e);
       }
     }
+
+    for (const document of toKeepAsHtml) {
+      try {
+        results.set('./' + document.url, this.convertJustHtmlImports(document));
+      } catch (e) {
+        console.error(`Error in ${document.url}`, e);
+      }
+    }
+
     return results;
   }
 
@@ -195,6 +203,33 @@ export class AnalysisConverter {
       return;
     }
     new DocumentConverter(this, document).convert();
+  }
+
+  /**
+   * Converts only the HTML Imports in a document to module script tags.
+   */
+  convertJustHtmlImports(document: Document): string {
+    let source = document.parsedDocument.contents;
+    const imports = [...document.getFeatures({kind: 'html-import'})];
+    // Go bottom up, so our changes to the source don't clash
+    imports.reverse();
+    for (const imp of imports) {
+      // Only replace imports that are actually in the document.
+      if (!imp.sourceRange) {
+        continue;
+      }
+      const scriptTag =
+          parse5.treeAdapters.default.createElement('script', '', []);
+      dom5.setAttribute(scriptTag, 'type', 'module');
+      dom5.setAttribute(scriptTag, 'src', htmlUrlToJs(imp.url));
+      const container = parse5.treeAdapters.default.createDocumentFragment();
+      dom5.append(container, scriptTag);
+      const replacementText = parse5.serialize(container);
+      const [start, end] =
+          document.parsedDocument.sourceRangeToOffsets(imp.sourceRange);
+      source = source.slice(0, start) + replacementText + source.slice(end);
+    }
+    return source;
   }
 }
 
@@ -224,4 +259,18 @@ export function getMemberPath(expression: Expression): string[]|undefined {
     }
   }
   return undefined;
+}
+
+function partition<V>(
+    iter: Iterable<V>, predicate: (v: V) => boolean): [V[], V[]] {
+  const yes = [];
+  const no = [];
+  for (const val of iter) {
+    if (predicate(val)) {
+      yes.push(val);
+    } else {
+      no.push(val);
+    }
+  }
+  return [yes, no];
 }

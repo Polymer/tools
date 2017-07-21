@@ -36,22 +36,20 @@ suite('AnalysisConverter', () => {
       analyzer = new Analyzer({urlLoader: urlLoader});
     });
 
-    async function getConverter(
-        partialOptions?: Partial<AnalysisConverterOptions>) {
+    async function convert(partialOptions?: Partial<AnalysisConverterOptions>) {
       const options = Object.assign(
           {namespaces: ['Polymer'], mainFiles: ['test.html']}, partialOptions);
-      const analysis = await analyzer.analyze(['test.html']);
-      const testDoc = analysis.getDocument('test.html') as Document;
+      const analysis =
+          await analyzer.analyze([...urlLoader.urlContentsMap.keys()]);
       const converter = new AnalysisConverter(analysis, options);
-      converter.convertDocument(testDoc);
-      return converter;
+      return converter.convert();
     }
 
     /** Gets the converted module source for test.js given test.html */
     async function getJs(partialOptions?: Partial<AnalysisConverterOptions>) {
-      const converter = await getConverter(partialOptions);
-      const module = converter.modules.get('./test.js');
-      return module && '\n' + module.source;
+      const results = await convert(partialOptions);
+      const source = results.get('./test.js');
+      return source === undefined ? undefined : '\n' + source;
     }
 
     function setSources(sources: {[filename: string]: string}) {
@@ -201,19 +199,17 @@ Po();
           </script>
         `,
       });
-      const converter = await getConverter();
-      assert.deepEqual(
-          converter.modules.get('./test.js')!.source, `import './polymer.js';
+      const results = await convert();
+      assert.deepEqual(results.get('./test.js'), `import './polymer.js';
 import { Polymer as $Polymer } from './lib/legacy/polymer-fn.js';
 console.log($Polymer());
 console.log($Polymer());
 `);
       assert.deepEqual(
-          converter.modules.get('./polymer.js')!.source,
-          `import './lib/legacy/polymer-fn.js';
+          results.get('./polymer.js'), `import './lib/legacy/polymer-fn.js';
 `);
       assert.deepEqual(
-          converter.modules.get('./lib/legacy/polymer-fn.js')!.source,
+          results.get('./lib/legacy/polymer-fn.js'),
           `export const Polymer = function(info) {
   console.log("hey there, i\'m the polymer function!");
 };
@@ -970,14 +966,14 @@ export { $qux as zug };
           </script>
         `
       });
-      assert.deepEqual(
-          await getJs({namespaces: [/* No explicit namespaces! */]}), `
+      const results =
+          await convert({namespaces: [/* No explicit namespaces! */]});
+      assert.deepEqual('\n' + results.get('./test.js'), `
 import { Element as $Element } from './polymer.js';
 class Element extends $Element {}
 `);
-      const converter = await getConverter();
-      const polymerModule = converter.modules.get('./polymer.js');
-      assert.deepEqual(polymerModule && '\n' + polymerModule.source, `
+
+      assert.deepEqual('\n' + results.get('./polymer.js'), `
 /** @namespace */
 const Polymer = {};
 export const Element = class Element {};
@@ -1002,18 +998,39 @@ export const Element = class Element {};
           </script>
         `
       });
-      assert.deepEqual(
-          await getJs({namespaces: [/* No explicit namespaces! */]}), `
+      const results =
+          await convert({namespaces: [/* No explicit namespaces! */]});
+      assert.deepEqual('\n' + results.get('./test.js'), `
 import { Element as $Element } from './ns.js';
 class Element extends $Element {}
 `);
-      const converter = await getConverter();
-      const polymerModule = converter.modules.get('./ns.js');
-      assert.deepEqual(polymerModule && '\n' + polymerModule.source, `
+      assert.deepEqual('\n' + results.get('./ns.js'), `
 /** @namespace */
 const NS = {};
 export const Element = class Element {};
 `);
+    });
+
+    test('converts unimported html to use script type=module', async () => {
+      setSources({
+        'test.html': `
+                <script>
+                  Polymer.Element = class Element {};
+                </script>`,
+        'index.html': `
+                <link rel="import" href="./test.html">
+
+                <div>Hello world!</div>`
+      });
+      const results = await convert();
+      assert.deepEqual('\n' + results.get('./test.js'), `
+export const Element = class Element {};
+`);
+
+      assert.deepEqual(results.get('./index.html'), `
+                <script type="module" src="./test.js"></script>
+
+                <div>Hello world!</div>`);
     });
   });
 
