@@ -1086,6 +1086,146 @@ export const Element = class Element {};
                 <div>Hello world!</div>`
       });
     });
+
+    test('converts multiple scripts in one html file', async () => {
+      setSources({
+        'test.html': `
+<link rel="import" href="./polymer.html">
+<script>
+  class FooElem extends Polymer.Element {};
+</script>
+<script>
+  class BarElem extends Polymer.Element {};
+</script>
+`,
+        'polymer.html': `
+<script>
+  Polymer.Element = class Element {};
+</script>
+`
+      });
+      assertSources(await convert(), {
+        './test.js': `
+import { Element as $Element } from './polymer.js';
+class FooElem extends $Element {}
+class BarElem extends $Element {}
+`
+      });
+    });
+
+    test('converts interspersed html and scripts', async () => {
+      setSources({
+        'test.html': `
+<link rel="import" href="./polymer.html">
+<div>Top</div>
+<script>
+  class FooElem extends Polymer.Element {};
+</script>
+<div>Middle</div>
+<script>
+  class BarElem extends Polymer.Element {};
+</script>
+<div>Bottom</div>
+`,
+        'polymer.html': `
+<script>
+  Polymer.Element = class Element {};
+</script>
+`
+      });
+      assertSources(await convert(), {
+        './test.js': `
+import { Element as $Element } from './polymer.js';
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+$_documentContainer.innerHTML = \`<div>Top</div><div>Middle</div><div>Bottom</div>\`;
+document.appendChild($_documentContainer);
+class FooElem extends $Element {}
+class BarElem extends $Element {}
+`
+      });
+    });
+
+    test('converts multiple elements with templates in a file', async () => {
+      setSources({
+        'test.html': `
+<link rel="import" href="./polymer.html">
+<dom-module id="foo-elem">
+  <template>
+    <div>foo-element body</div>
+  </template>
+</dom-module>
+<script>
+  customElements.define('foo-elem', class FooElem extends Polymer.Element {});
+</script>
+<dom-module id="bar-elem">
+  <template>
+    <div>bar body</div>
+  </template>
+  <script>
+    customElements.define('bar-elem', class BarElem extends Polymer.Element {});
+  </script>
+</dom-module>
+<div>Random footer</div>
+`,
+        'polymer.html': `
+<script>
+  Polymer.Element = class Element {};
+</script>
+`
+      });
+      assertSources(await convert(), {
+        './test.js': `
+import { Element as $Element } from './polymer.js';
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+$_documentContainer.innerHTML = \`<div>Random footer</div>\`;
+document.appendChild($_documentContainer);
+customElements.define('foo-elem', class FooElem extends $Element {
+  get template() {
+    return \`
+    <div>foo-element body</div>
+\`;
+  }
+});
+customElements.define('bar-elem', class BarElem extends $Element {
+  get template() {
+    return \`
+    <div>bar body</div>
+\`;
+  }
+});
+`
+      });
+    });
+
+    test('writes new imports as relative from the source file', async () => {
+      setSources({
+        'subdir/element.html': `
+          <link rel="import" href="../lib.html">
+        `,
+        'subdir/index.html': `
+          <link rel="import" href="../lib.html">
+          <link rel="import" href="./element.html">
+        `,
+        'lib.html': `
+          <script>
+            Polymer.Element = class Element {};
+          </script>
+        `
+      });
+      assertSources(await convert({mainFiles: ['subdir/element.html']}), {
+        './subdir/element.js': `
+import '../lib.js';
+`,
+
+        './subdir/index.html': `
+
+          <script type="module" src="../lib.js"></script>
+          <script type="module" src="./element.js"></script>
+        `
+      });
+    });
   });
 
   suite('fixtures', () => {

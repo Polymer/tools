@@ -117,19 +117,13 @@ export class DocumentConverter {
 
   convert(): Iterable<JsModule> {
     const scripts = this.document.getFeatures({kind: 'js-document'});
-    if (scripts.size === 0) {
-      this.program = jsc.program([]);
-    } else if (scripts.size === 1) {
-      const [script] = scripts;
+    const statements = [];
+    for (const script of scripts) {
       const jsDoc = script.parsedDocument as ParsedJavaScriptDocument;
       const file = recast.parse(jsDoc.contents);
-      this.program = file.program;
-    } else {
-      // TODO(justinfagnani): better warning wording, plus actionable
-      // reccomendation or decide on some default handling of multiple scripts.
-      console.log('multiple scripts');
-      return [];
+      statements.push(...file.program.body);
     }
+    this.program = jsc.program(statements);
     this.convertDependencies();
     this.unwrapIIFEPeusdoModule();
     const importedReferences = this.rewriteNamespacedReferences();

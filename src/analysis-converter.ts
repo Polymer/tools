@@ -15,6 +15,7 @@
 import * as dom5 from 'dom5';
 import {Expression} from 'estree';
 import * as parse5 from 'parse5';
+import * as path from 'path';
 import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
@@ -172,7 +173,13 @@ export class AnalysisConverter {
       const scriptTag =
           parse5.treeAdapters.default.createElement('script', '', []);
       dom5.setAttribute(scriptTag, 'type', 'module');
-      dom5.setAttribute(scriptTag, 'src', htmlUrlToJs(imp.url));
+      const packageRelativeUrl = htmlUrlToJs(imp.url);
+      let fileRelativeUrl =
+          path.relative(path.dirname(document.url), packageRelativeUrl);
+      if (!fileRelativeUrl.startsWith('../')) {
+        fileRelativeUrl = `./${fileRelativeUrl}`;
+      }
+      dom5.setAttribute(scriptTag, 'src', fileRelativeUrl);
       const container = parse5.treeAdapters.default.createDocumentFragment();
       dom5.append(container, scriptTag);
       const replacementText = parse5.serialize(container);
