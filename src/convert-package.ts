@@ -58,6 +58,9 @@ export function configureAnalyzer(options: ConvertPackageOptions) {
   // and does other things that make less sense in an ESM world.
   const bootOverrideHtml = `<script>
   window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
+
+  /** @namespace */
+  let Polymer;
 </script>`;
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(inDir));
   urlLoader.urlContentsMap.set('lib/utils/boot.html', bootOverrideHtml);
