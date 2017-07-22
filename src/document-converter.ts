@@ -24,6 +24,7 @@ import jsc = require('jscodeshift');
 import {AnalysisConverter} from './analysis-converter';
 import {htmlUrlToJs} from './url-converter';
 import {JsModule, JsExport, NamespaceMemberToExport} from './js-module';
+import {serializeNode} from './util';
 
 const astTypes = require('ast-types');
 type AstPath<N extends Node> = {
@@ -115,7 +116,7 @@ export class DocumentConverter {
         .filter((f: Import) => !this.analysisConverter._excludes.has(f.url));
   }
 
-  convert(): Iterable<JsModule> {
+  convertToJsModule(): Iterable<JsModule> {
     const scripts = this.document.getFeatures({kind: 'js-document'});
     const statements = [];
     for (const script of scripts) {
@@ -147,6 +148,84 @@ export class DocumentConverter {
       exportedNamespaceMembers: exportMigrationRecords,
       es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
     }];
+  }
+  convertButKeepAsHtml() {
+    this.convertDependencies();
+
+    const edits: Array<{offsets: [number, number], replacementText: string}> =
+        [];
+    for (const script of this.document.getFeatures({kind: 'js-document'})) {
+      const astNode = script.astNode;
+      if (!astNode || dom5.getAttribute(astNode, 'type') === 'module') {
+        continue;  // ignore unknown script tags and preexisting modules
+      }
+      const sourceRange = script.astNode ?
+          this.document.parsedDocument.sourceRangeForNode(script.astNode) :
+          undefined;
+      if (!sourceRange) {
+        continue;  // nothing we can do about scripts without known positions
+      }
+      const offsets =
+          this.document.parsedDocument.sourceRangeToOffsets(sourceRange);
+
+      const file = recast.parse(script.parsedDocument.contents);
+      this.program = file.program;
+
+      this.unwrapIIFEPeusdoModule();
+      const importedReferences = this.rewriteNamespacedReferences();
+      this.addJsImports(importedReferences);
+      // Don't conver the HTML.
+      // Don't inline templates, they're fine where they are.
+      // Don't rewrite exports, we can't export anything.
+
+      this.rewriteExcludedReferences();
+
+
+      const newScriptTag =
+          parse5.treeAdapters.default.createElement('script', '', []);
+      dom5.setAttribute(newScriptTag, 'type', 'module');
+      dom5.setTextContent(
+          newScriptTag,
+          '\n' +
+              recast
+                  .print(
+                      this.program,
+                      {quote: 'single', wrapColumn: 80, tabWidth: 2})
+                  .code +
+              '\n');
+      const replacementText = serializeNode(newScriptTag);
+      edits.push({offsets, replacementText});
+    }
+
+    for (const imp of this.document.getFeatures({kind: 'html-import'})) {
+      // Only replace imports that are actually in the document.
+      if (!imp.sourceRange) {
+        continue;
+      }
+      const offsets =
+          this.document.parsedDocument.sourceRangeToOffsets(imp.sourceRange);
+      const scriptTag =
+          parse5.treeAdapters.default.createElement('script', '', []);
+      dom5.setAttribute(scriptTag, 'type', 'module');
+      const packageRelativeUrl = htmlUrlToJs(imp.url);
+      let fileRelativeUrl =
+          path.relative(path.dirname(this.document.url), packageRelativeUrl);
+      if (!fileRelativeUrl.startsWith('../')) {
+        fileRelativeUrl = `./${fileRelativeUrl}`;
+      }
+      dom5.setAttribute(scriptTag, 'src', fileRelativeUrl);
+      const replacementText = serializeNode(scriptTag);
+      edits.push({offsets, replacementText});
+    }
+
+    // Apply edits from bottom to top, so that the offsets stay valid.
+    edits.sort(({offsets: [startA]}, {offsets: [startB]}) => startB - startA);
+    let contents = this.document.parsedDocument.contents;
+    for (const {offsets: [start, end], replacementText} of edits) {
+      contents =
+          contents.slice(0, start) + replacementText + contents.slice(end);
+    }
+    return contents;
   }
 
   /**
@@ -489,6 +568,9 @@ export class DocumentConverter {
     return importedReferences;
   }
 
+  /**
+   * Remove references to _referenceExcludes.
+   */
   private rewriteExcludedReferences() {
     const analysisConverter = this.analysisConverter;
 
