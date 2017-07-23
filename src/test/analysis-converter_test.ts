@@ -18,8 +18,9 @@ import * as estree from 'estree';
 import * as path from 'path';
 import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
 
-import {AnalysisConverter, AnalysisConverterOptions, getMemberPath} from '../analysis-converter';
+import {AnalysisConverter, AnalysisConverterOptions} from '../analysis-converter';
 import {configureAnalyzer, configureConverter} from '../convert-package';
+import {getMemberPath} from '../util';
 
 
 const fixturesDirPath = path.resolve(__dirname, '../../fixtures');

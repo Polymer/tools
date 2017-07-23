@@ -17,33 +17,20 @@ import * as estree from 'estree';
 import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import, ParsedJavaScriptDocument} from 'polymer-analyzer';
+import {Document, Import} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import jsc = require('jscodeshift');
 import {AnalysisConverter} from './analysis-converter';
 import {htmlUrlToJs} from './url-converter';
 import {JsModule, JsExport, NamespaceMemberToExport} from './js-module';
-import {serializeNode} from './util';
+import {serializeNode, getModuleId, getImportAlias, nodeToTemplateLiteral, sourceLocationsEqual} from './util';
 
 const astTypes = require('ast-types');
-interface AstPath<N extends Node> {
+interface AstPath<N extends Node = Node> {
   node: N;
   parent?: {node: Node};
   replace(replacement: Node): void;
-}
-
-/**
- * Replace a jscodeshift path node with an export identifier for the given
- * JsExport & JsModule. Nothing is returned, the path node is modified.
- */
-function replacePathWithExportIdentifier(
-    path: any, moduleExport: JsExport, jsModule: JsModule) {
-  if (moduleExport.name === '*') {
-    path.replace(jsc.identifier(getModuleId(jsModule.url)));
-  } else {
-    path.replace(jsc.identifier(getImportAlias(moduleExport.name)));
-  }
 }
 
 /**
@@ -101,7 +88,7 @@ export class DocumentConverter {
   constructor(analysisConverter: AnalysisConverter, document: Document) {
     this.analysisConverter = analysisConverter;
     this._mutableExports =
-        <any>Object.assign({}, this.analysisConverter._mutableExports);
+        Object.assign({}, this.analysisConverter._mutableExports!);
     this.document = document;
     this.jsUrl = htmlUrlToJs(document.url);
   }
@@ -121,8 +108,7 @@ export class DocumentConverter {
     const scripts = this.document.getFeatures({kind: 'js-document'});
     const statements = [];
     for (const script of scripts) {
-      const jsDoc = script.parsedDocument as ParsedJavaScriptDocument;
-      const file = recast.parse(jsDoc.contents);
+      const file = recast.parse(script.parsedDocument.contents);
       statements.push(...file.program.body);
     }
     this.program = jsc.program(statements);
@@ -150,6 +136,7 @@ export class DocumentConverter {
       es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
     }];
   }
+
   convertButKeepAsHtml() {
     this.convertDependencies();
 
@@ -302,6 +289,10 @@ export class DocumentConverter {
     this.program.body.splice(insertionPoint, 0, ...statements);
   }
 
+  /**
+   * Find places in this.program that look like they're exporting symbols by
+   * writing them onto namespaces. Transform these into ES6 module exports.
+   */
   private rewriteNamespaceExports() {
     const exportMigrationRecords: NamespaceMemberToExport[] = [];
     let currentStatementIndex = 0;
@@ -468,6 +459,10 @@ export class DocumentConverter {
     };
   }
 
+  /**
+   * Find Polymer element templates in the original HTML. Insert these templates
+   * as strings as part of the javascript element declaration.
+   */
   private inlineTemplates() {
     const elements = this.document.getFeatures({'kind': 'polymer-element'});
     for (const element of elements) {
@@ -512,6 +507,8 @@ export class DocumentConverter {
 
   /**
    * Convert dependencies first, so we know what exports they have.
+   *
+   * Mutates this.analysisConverter to register their exports.
    */
   private convertDependencies() {
     const htmlImports = this.getHtmlImports();
@@ -525,18 +522,18 @@ export class DocumentConverter {
   }
 
   /**
-   * Rewrite namespaced references (ie, Polymer.Element) to the imported name
-   * (ie, Element).
+   * Rewrite namespaced references to the imported name. e.g. changes
+   * Polymer.Element -> $Element
    *
-   * Returns a Map of imports used for each module so import declarations can be
-   * rewritten correctly.
+   * Also mutates this.module.importedReferences to include the imported urls
+   * and names so that the proper imports can be added in a later pass.
    */
   private rewriteNamespacedReferences() {
     const analysisConverter = this.analysisConverter;
     const importedReferences = new Map<string, Set<string>>();
 
     /**
-     * Add the given JsExport to the current module's `importedReferences` map.
+     * Add the given JsExport to this.module's `importedReferences` map.
      */
     const addToImportedReferences = (moduleExport: JsExport) => {
       const moduleJsUrl = htmlUrlToJs(moduleExport.url, this.document.url);
@@ -551,21 +548,20 @@ export class DocumentConverter {
     astTypes.visit(this.program, {
       visitIdentifier(path: AstPath<Identifier>) {
         const memberName = path.node.name;
-        const isRootModuleIdentifier =
-            analysisConverter.namespaces.has(memberName);
-        if (!isRootModuleIdentifier ||
-            (path.parent && getMemberPath(path.parent.node))) {
+        const isNamespace = analysisConverter.namespaces.has(memberName);
+        const parentIsMemberExpression =
+            (path.parent && getMemberPath(path.parent.node)) !== undefined;
+        if (!isNamespace || parentIsMemberExpression) {
           return false;
         }
-        const moduleExport =
+        const exportOfMember =
             analysisConverter.namespacedExports.get(memberName);
-        if (!moduleExport) {
+        if (!exportOfMember) {
           return false;
         }
         // Store the imported reference & rewrite the Identifier
-        const jsModule = analysisConverter.modules.get(moduleExport.url);
-        addToImportedReferences(moduleExport);
-        replacePathWithExportIdentifier(path, moduleExport, jsModule!);
+        addToImportedReferences(exportOfMember);
+        path.replace(exportOfMember.expressionToAccess());
         return false;
       },
       visitMemberExpression(path: AstPath<MemberExpression>) {
@@ -575,16 +571,15 @@ export class DocumentConverter {
           return;
         }
         const memberName = memberPath.join('.');
-        const moduleExport =
+        const exportOfMember =
             analysisConverter.namespacedExports.get(memberName);
-        if (!moduleExport) {
+        if (!exportOfMember) {
           this.traverse(path);
           return;
         }
         // Store the imported reference & rewrite the MemberExpression
-        const jsModule = analysisConverter.modules.get(moduleExport.url);
-        addToImportedReferences(moduleExport);
-        replacePathWithExportIdentifier(path, moduleExport, jsModule!);
+        addToImportedReferences(exportOfMember);
+        path.replace(exportOfMember.expressionToAccess());
         return false;
       }
     });
@@ -718,7 +713,8 @@ export class DocumentConverter {
   }
 
   /**
-   * Injects JS imports at the top of the program.
+   * Injects JS imports at the top of the program based on html imports and
+   * the imports in this.module.importedReferences.
    */
   private addJsImports(  //
       importedReferences: ReadonlyMap<string, ReadonlySet<string>>) {
@@ -780,6 +776,14 @@ export class DocumentConverter {
     return false;
   }
 
+  /**
+   * Find the node in this.program that corresponds to the same part of code
+   * as the given node.
+   *
+   * This method is necessary because this.program is parsed locally, but the
+   * given node may have come from the analyzer (so a different parse run,
+   * possibly by a different parser, though they output the same format).
+   */
   private getNode(node: Node) {
     let associatedNode: Node|undefined;
 
@@ -928,73 +932,6 @@ export function getMemberPath(expression: Node): string[]|undefined {
   }
   return undefined;
 }
-
-/**
- * Get the import alias for an imported member. Useful when generating an
- * import statement or a reference to an imported member.
- */
-function getImportAlias(importId: string) {
-  return '$' + importId;
-}
-
-/**
- * Get the import name for an imported module object. Useful when generating an
- * import statement, or a reference to an imported module object.
- */
-function getModuleId(url: string) {
-  const baseName = path.basename(url);
-  const lastDotIndex = baseName.lastIndexOf('.');
-  const mainName = baseName.substring(0, lastDotIndex);
-  return '$$' + dashToCamelCase(mainName);
-}
-
-function dashToCamelCase(s: string) {
-  return s.replace(/-[a-z]/g, (m) => m[1].toUpperCase());
-}
-
-function sourceLocationsEqual(a: Node, b: Node): boolean {
-  if (a === b) {
-    return true;
-  }
-  const aLoc = a.loc;
-  const bLoc = b.loc;
-  if (aLoc === bLoc) {
-    return true;
-  }
-  if (aLoc == null || bLoc == null) {
-    return false;
-  }
-  return aLoc.start.column === bLoc.start.column &&
-      aLoc.start.line === bLoc.start.line &&
-      aLoc.end.column === bLoc.end.column && aLoc.end.line === bLoc.end.line;
-}
-
-function nodeToTemplateLiteral(
-    node: parse5.ASTNode, addNewlines = true): estree.TemplateLiteral {
-  const lines = parse5.serialize(node).split('\n');
-
-  // Remove empty / whitespace-only leading lines.
-  while (/^\s*$/.test(lines[0])) {
-    lines.shift();
-  }
-  // Remove empty / whitespace-only trailing lines.
-  while (/^\s*$/.test(lines[lines.length - 1])) {
-    lines.pop();
-  }
-
-  let cooked = lines.join('\n');
-  if (addNewlines) {
-    cooked = `\n${cooked}\n`;
-  }
-
-  // The `\` -> `\\` replacement must occur first so that the backslashes
-  // introduced by later replacements are not replaced.
-  const raw =
-      cooked.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
-
-  return jsc.templateLiteral([jsc.templateElement({cooked, raw}, true)], []);
-}
-
 
 function* enumerate<V>(iter: Iterable<V>): Iterable<[number, V]> {
   let i = 0;

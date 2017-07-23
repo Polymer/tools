@@ -12,6 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as estree from 'estree';
+
+import {getImportAlias, getModuleId} from './util';
+
+import jsc = require('jscodeshift');
+
+
 export interface JsModule {
   /**
    * Package-relative URL of the converted JS module.
@@ -31,7 +38,7 @@ export interface JsModule {
   readonly exportedNamespaceMembers: ReadonlyArray<NamespaceMemberToExport>;
 }
 
-export interface JsExport {
+export class JsExport {
   /**
    * URL of the JS module.
    */
@@ -44,6 +51,19 @@ export interface JsExport {
    * namespacedExports Map represents a namespace object.
    */
   readonly name: string;
+
+  constructor(url: string, name: string) {
+    this.url = url;
+    this.name = name;
+  }
+
+  expressionToAccess(): estree.Expression {
+    if (this.name === '*') {
+      return jsc.identifier(getModuleId(this.url));
+    } else {
+      return jsc.identifier(getImportAlias(this.name));
+    }
+  }
 }
 
 export interface NamespaceMemberToExport {

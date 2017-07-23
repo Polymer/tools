@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Expression} from 'estree';
 import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
@@ -149,7 +148,7 @@ export class AnalysisConverter {
       for (const expr of jsModule.exportedNamespaceMembers) {
         this.namespacedExports.set(
             expr.oldNamespacedName,
-            {name: expr.es6ExportName, url: jsModule.url});
+            new JsExport(jsModule.url, expr.es6ExportName));
       }
     }
   }
@@ -160,34 +159,6 @@ export class AnalysisConverter {
   convertHtmlToHtml(document: Document): string {
     return new DocumentConverter(this, document).convertButKeepAsHtml();
   }
-}
-
-/**
- * Returns an array of identifiers if an expression is a chain of property
- * access, as used in namespace-style exports.
- */
-export function getMemberPath(expression: Expression): string[]|undefined {
-  if (expression.type !== 'MemberExpression' ||
-      expression.property.type !== 'Identifier') {
-    return;
-  }
-  const property = expression.property.name;
-
-  if (expression.object.type === 'ThisExpression') {
-    return ['this', property];
-  } else if (expression.object.type === 'Identifier') {
-    if (expression.object.name === 'window') {
-      return [property];
-    } else {
-      return [expression.object.name, property];
-    }
-  } else if (expression.object.type === 'MemberExpression') {
-    const prefixPath = getMemberPath(expression.object);
-    if (prefixPath !== undefined) {
-      return [...prefixPath, property];
-    }
-  }
-  return undefined;
 }
 
 function partition<V>(
