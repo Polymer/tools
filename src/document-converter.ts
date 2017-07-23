@@ -14,10 +14,10 @@
 
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
-import {AssignmentExpression, BlockStatement, Expression, ExpressionStatement, FunctionExpression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
+import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import, Namespace, ParsedJavaScriptDocument} from 'polymer-analyzer';
+import {Document, Import, ParsedJavaScriptDocument} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import jsc = require('jscodeshift');
@@ -333,7 +333,7 @@ export class DocumentConverter {
     // Walk through all top-level statements and replace namespace assignments
     // with module exports.
     while (currentStatementIndex < this.program.body.length) {
-      const statement = this.program.body[currentStatementIndex] as Statement;
+      const statement = this.program.body[currentStatementIndex];
       const exported = getExport(statement, this.analysisConverter.namespaces);
 
       if (exported !== undefined) {
@@ -348,7 +348,7 @@ export class DocumentConverter {
           // Polymer.Foo = Foo;
           // TODO(justinfagnani): generalize to handle namespaces and other
           // declarations
-          const localName = value as Identifier;
+          const localName = value;
 
           const features = this.document.getFeatures({id: namespaceName});
           // TODO(fks) 06-06-2017: '!' required below due to Typscript bug,
@@ -360,22 +360,34 @@ export class DocumentConverter {
             // Polymer.X = X; where X is previously defined as a namespace
 
             // Find the namespace node and containing statement
-            const namespaceFeature = referencedFeature as Namespace;
-            const nsParent =
-                this.getNode(namespaceFeature.astNode) as Statement;
+            const namespaceFeature = referencedFeature;
+            const nsParent = this.getNode(namespaceFeature.astNode);
             if (nsParent == null) {
               throw new Error(`can't find associated node for namespace`);
             }
             let nsNode: ObjectExpression;
-            if (nsParent.type === 'VariableDeclaration') {
+            if (nsParent.type === 'VariableDeclaration' &&
+                nsParent.declarations.length > 0) {
               // case: const n = {...}
-              nsNode = nsParent.declarations[0].init as ObjectExpression;
-            } else {
+              const declaration = nsParent.declarations[0]!;
+              if (declaration.init &&
+                  declaration.init.type === 'ObjectExpression') {
+                nsNode = declaration.init;
+              } else {
+                continue;
+              }
+            } else if (
+                nsParent.type === 'ExpressionStatement' &&
+                nsParent.expression.type === 'AssignmentExpression') {
               // case: n = {...}
-              // assumes an assignment statement!
-              const expression = (nsParent as ExpressionStatement).expression as
-                  AssignmentExpression;
-              nsNode = expression.right as ObjectExpression;
+              const expression = nsParent.expression;
+              if (expression.right.type === 'ObjectExpression') {
+                nsNode = expression.right;
+              } else {
+                continue;
+              }
+            } else {
+              continue;
             }
             rewriteNamespaceObject(namespaceName, nsNode, nsParent);
 
@@ -388,7 +400,7 @@ export class DocumentConverter {
             // We could probably do better for referenced declarations, ie move
             // the export to the declaration
             const exportedName =
-                jsc.identifier(namespace[namespace.length - 1]) as Identifier;
+                jsc.identifier(namespace[namespace.length - 1]);
             this.program.body[currentStatementIndex] =
                 jsc.exportNamedDeclaration(
                     null,  // declaration
@@ -468,8 +480,13 @@ export class DocumentConverter {
         continue;
       }
 
-      const templateLiteral = nodeToTemplateLiteral((template as any).content);
-      const node = this.getNode(element.astNode)!;
+      const templateLiteral = nodeToTemplateLiteral(
+          parse5.treeAdapters.default.getTemplateContent(template));
+      const node = this.getNode(element.astNode);
+
+      if (node === undefined) {
+        continue;
+      }
 
       if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
         // A Polymer 2.0 class-based element
@@ -494,7 +511,7 @@ export class DocumentConverter {
   }
 
   /**
-   *  Convert dependencies first, so we know what exports they have.
+   * Convert dependencies first, so we know what exports they have.
    */
   private convertDependencies() {
     const htmlImports = this.getHtmlImports();
@@ -731,16 +748,16 @@ export class DocumentConverter {
   }
 
   /**
-   * Returns the implied module body of a script - if there's a top-level IIFE,
-   * it assumes that is an intentionally scoped ES5 module body.
+   * Mutates this.program to unwrap the toplevel IIFE if there is one.
+   * This assumes that the IIFE is an intentionally scoped ES5 module body.
    */
   private unwrapIIFEPeusdoModule() {
     if (this.program.body.length === 1 &&
         this.program.body[0].type === 'ExpressionStatement') {
-      const expression =
-          (this.program.body[0] as ExpressionStatement).expression;
-      if (expression.type === 'CallExpression') {
-        const callee = expression.callee;
+      const statement = this.program.body[0];
+      if (statement.type === 'ExpressionStatement' &&
+          statement.expression.type === 'CallExpression') {
+        const callee = statement.expression.callee;
         if (callee.type === 'FunctionExpression') {
           const body = callee.body.body;
           if (body.length > 1 && isUseStrict(body[0])) {
@@ -754,9 +771,6 @@ export class DocumentConverter {
   }
 
   private isNamespace(node: Node) {
-    if (this.document == null) {
-      return false;
-    }
     const namespaces = this.document.getFeatures({kind: 'namespace'});
     for (const namespace of namespaces) {
       if (sourceLocationsEqual(namespace.astNode, node)) {
@@ -799,7 +813,7 @@ function getNamespaceExports(
       console.warn(`unsupported namespace property type ${key.type}`);
       continue;
     }
-    const name = (key as Identifier).name;
+    const name = key.name;
     if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' ||
         value.type === 'Literal') {
       const isMutable = !!(mutableExports && mutableExports.includes(name));
@@ -809,7 +823,7 @@ function getNamespaceExports(
             isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {
-      const func = value as FunctionExpression;
+      const func = value;
       exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.functionDeclaration(
