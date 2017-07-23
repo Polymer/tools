@@ -1227,60 +1227,103 @@ import '../lib.js';
       });
     });
 
-    test(
-        'converts non-module scripts in preserved html to module scripts',
-        async () => {
-          setSources({
-            'index.html': `
-              <div>This is some html.</div>
-              <link rel="import" href="./polymer.html">
-              <script>
-                document.registerElement(
-                  'foo-elem', class FooElem extends Polymer.Element {});
-              </script>
-              <script type="module">
-                // this should not be changed
-                document.registerElement(
-                  'bar-elem', class BarElem extends HTMLElement {});
-              </script>
-              <script>
-                document.registerElement(
-                  'baz-elem', class BazElem extends Polymer.Element {});
-              </script>
-            `,
-            'polymer.html': `
-                <script>
-                  Polymer.Element = class Element {};
-                </script>
-            `
-          });
-          assertSources(await convert(), {
-            './polymer.js': `
+    test('converts scripts in preserved html properly', async () => {
+      setSources({
+        'index.html': `
+          <div>This is some html.</div>
+          <link rel="import" href="./polymer.html">
+          <script>
+            document.registerElement(
+              'foo-elem', class FooElem extends Polymer.Element {});
+          </script>
+          <script type="module">
+            // this should not be changed because it is a module already
+            document.registerElement(
+              'bar-elem', class BarElem extends HTMLElement {});
+          </script>
+          <script>
+            document.registerElement(
+              'baz-elem', class BazElem extends Polymer.Element {});
+          </script>
+        `,
+        'polymer.html': `
+            <script>
+              Polymer.Element = class Element {};
+            </script>
+        `
+      });
+      assertSources(await convert(), {
+        './polymer.js': `
 export const Element = class Element {};
 `,
 
-            './index.html': `
+        './index.html': `
 
-              <div>This is some html.</div>
-              <script type="module" src="./polymer.js"></script>
-              <script type="module">
+          <div>This is some html.</div>
+          <script type="module" src="./polymer.js"></script>
+          <script type="module">
 import { Element as $Element } from './polymer.js';
 document.registerElement(
   'foo-elem', class FooElem extends $Element {});
 </script>
-              <script type="module">
-                // this should not be changed
-                document.registerElement(
-                  'bar-elem', class BarElem extends HTMLElement {});
-              </script>
-              <script type="module">
+          <script type="module">
+            // this should not be changed because it is a module already
+            document.registerElement(
+              'bar-elem', class BarElem extends HTMLElement {});
+          </script>
+          <script type="module">
 import { Element as $Element } from './polymer.js';
 document.registerElement(
   'baz-elem', class BazElem extends $Element {});
 </script>
-            `,
-          });
-        });
+        `,
+      });
+    });
+
+    test(`don't transform scripts that do not need it`, async () => {
+      setSources({
+        'index.html': `
+          <div>This is some html.</div>
+          <script>
+            document.registerElement(
+              'foo-elem', class FooElem extends HTMLElement {});
+          </script>
+        `
+      });
+      assertSources(await convert(), {
+        './index.html': `
+
+          <div>This is some html.</div>
+          <script>
+            document.registerElement(
+              'foo-elem', class FooElem extends HTMLElement {});
+          </script>
+        `,
+      });
+    });
+
+    test(`it handles document.currentScript.ownerDocument`, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            console.log(document.currentScript.ownerDocument);
+            console.log(
+              window.document.currentScript.ownerDocument.querySelectorAll(
+                'div'));
+            console.log(foo.document.currentScript.ownerDocument);
+          </script>
+        `
+      });
+      assertSources(await convert(), {
+        './test.js': `
+console.log(window.document);
+console.log(
+  window.document.querySelectorAll(
+    'div'));
+console.log(foo.document.currentScript.ownerDocument);
+`
+      });
+    });
   });
 
   suite('fixtures', () => {

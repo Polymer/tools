@@ -27,10 +27,11 @@ import {JsModule, JsExport, NamespaceMemberToExport} from './js-module';
 import {serializeNode} from './util';
 
 const astTypes = require('ast-types');
-type AstPath<N extends Node> = {
-  node: N,
-  parent?: {node: Node}
-};
+interface AstPath<N extends Node> {
+  node: N;
+  parent?: {node: Node};
+  replace(replacement: Node): void;
+}
 
 /**
  * Replace a jscodeshift path node with an export identifier for the given
@@ -152,8 +153,11 @@ export class DocumentConverter {
   convertButKeepAsHtml() {
     this.convertDependencies();
 
-    const edits: Array<{offsets: [number, number], replacementText: string}> =
-        [];
+    interface Edit {
+      offsets: [number, number];
+      replacementText: string;
+    }
+    const edits: Array<Edit> = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const astNode = script.astNode;
       if (!astNode || dom5.getAttribute(astNode, 'type') === 'module') {
@@ -173,13 +177,16 @@ export class DocumentConverter {
 
       this.unwrapIIFEPeusdoModule();
       const importedReferences = this.rewriteNamespacedReferences();
-      this.addJsImports(importedReferences);
+      const wereImportsAdded = this.addJsImports(importedReferences);
       // Don't conver the HTML.
       // Don't inline templates, they're fine where they are.
       // Don't rewrite exports, we can't export anything.
 
       this.rewriteExcludedReferences();
 
+      if (!wereImportsAdded) {
+        continue;  // no imports, no reason to convert to a module
+      }
 
       const newScriptTag =
           parse5.treeAdapters.default.createElement('script', '', []);
@@ -569,18 +576,32 @@ export class DocumentConverter {
   }
 
   /**
-   * Remove references to _referenceExcludes.
+   * Rewrite references in _referenceExcludes and well known properties that
+   * don't work well in modular code.
    */
   private rewriteExcludedReferences() {
     const analysisConverter = this.analysisConverter;
 
+    const mapOfRewrites = new Map<string, Node>();
+    const windowDotDocument = jsc.memberExpression(
+        jsc.identifier('window'), jsc.identifier('document'));
+    mapOfRewrites.set(
+        'document.currentScript.ownerDocument', windowDotDocument);
+    mapOfRewrites.set(
+        'window.document.currentScript.ownerDocument', windowDotDocument);
+
+    for (const reference of analysisConverter._referenceExcludes) {
+      mapOfRewrites.set(reference, jsc.identifier('undefined'));
+    }
+
     astTypes.visit(this.program, {
-      visitMemberExpression(path: any) {
+      visitMemberExpression(path: AstPath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
-        if (memberPath) {
+        if (memberPath !== undefined) {
           const memberName = memberPath.join('.');
-          if (analysisConverter._referenceExcludes.has(memberName)) {
-            path.replace(jsc.identifier('undefined'));
+          const replacement = mapOfRewrites.get(memberName);
+          if (replacement) {
+            path.replace(replacement);
           }
         }
         this.traverse(path);
@@ -607,7 +628,7 @@ export class DocumentConverter {
       return;
     }
     astTypes.visit(this.program, {
-      visitMemberExpression(path: any) {
+      visitMemberExpression(path: AstPath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         const memberName = memberPath && memberPath.slice(0, -1).join('.');
         if (memberName && memberName === namespaceName) {
@@ -637,22 +658,24 @@ export class DocumentConverter {
       return;
     }
     astTypes.visit(this.program, {
-      visitExportNamedDeclaration: (path: any) => {
-        if (path.node.declaration &&
-            path.node.declaration.type === 'FunctionDeclaration') {
-          this.rewriteSingleScopeThisReferences(
-              path.node.declaration.body, namespaceName);
-        }
-        return false;
-      },
-      visitExportDefaultDeclaration: (path: any) => {
-        if (path.node.declaration &&
-            path.node.declaration.type === 'FunctionDeclaration') {
-          this.rewriteSingleScopeThisReferences(
-              path.node.declaration.body, namespaceName);
-        }
-        return false;
-      },
+      visitExportNamedDeclaration:
+          (path: AstPath<estree.ExportNamedDeclaration>) => {
+            if (path.node.declaration &&
+                path.node.declaration.type === 'FunctionDeclaration') {
+              this.rewriteSingleScopeThisReferences(
+                  path.node.declaration.body, namespaceName);
+            }
+            return false;
+          },
+      visitExportDefaultDeclaration:
+          (path: AstPath<estree.ExportDefaultDeclaration>) => {
+            if (path.node.declaration &&
+                path.node.declaration.type === 'FunctionDeclaration') {
+              this.rewriteSingleScopeThisReferences(
+                  path.node.declaration.body, namespaceName);
+            }
+            return false;
+          },
     });
   }
 
@@ -663,15 +686,15 @@ export class DocumentConverter {
   private rewriteSingleScopeThisReferences(
       blockStatement: BlockStatement, namespaceReference: string) {
     astTypes.visit(blockStatement, {
-      visitFunctionExpression(_path: any) {
+      visitFunctionExpression(_path: AstPath<estree.FunctionExpression>) {
         // Don't visit into new scopes
         return false;
       },
-      visitFunctionDeclaration(_path: any) {
+      visitFunctionDeclaration(_path: AstPath<estree.FunctionDeclaration>) {
         // Don't visit into new scopes
         return false;
       },
-      visitThisExpression(path: any) {
+      visitThisExpression(path: AstPath<estree.ThisExpression>) {
         path.replace(jsc.identifier(namespaceReference));
         return false;
       },
@@ -689,7 +712,7 @@ export class DocumentConverter {
         new Set(htmlImports.map((s) => htmlUrlToJs(s.url, baseUrl)));
 
     // Rewrite HTML Imports to JS imports
-    const jsImportDeclarations: any[] = [];
+    const jsImportDeclarations = [];
     for (const jsImportUrl of jsImportUrls) {
       const specifierNames = importedReferences.get(jsImportUrl);
       jsImportDeclarations.push(
@@ -705,6 +728,7 @@ export class DocumentConverter {
     }
 
     this.program.body.splice(0, 0, ...jsImportDeclarations);
+    return jsImportDeclarations.length > 0;
   }
 
   /**
@@ -747,12 +771,14 @@ export class DocumentConverter {
     let associatedNode: Node|undefined;
 
     astTypes.visit(this.program, {
-      visitNode(path: any): any {
+      visitNode(path: AstPath<Node>): boolean |
+      undefined {
         if (sourceLocationsEqual(path.node, node)) {
           associatedNode = path.node;
           return false;
         }
         this.traverse(path);
+        return undefined;
       }
     });
 
