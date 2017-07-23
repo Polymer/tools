@@ -52,37 +52,13 @@ export interface JsModule {
   /**
    * Converted source of the JS module.
    */
-  source: string;
+  readonly source: string;
 
   /**
    * Set of exported names.
    */
-  readonly exports: Set<string>;
-
-  /**
-   * Map of module URL (ie, polymer-element.js) to imported references
-   * (ie, Element). This map is used to rewrite import statements to
-   * only include what's used in an importing module.
-   */
-  readonly importedReferences: Map<string, Set<string>>;
+  readonly exports: ReadonlySet<string>;
 }
-
-/**
- * A collection of converted JS modules and exported namespaced identifiers.
- */
-export interface ModuleIndex {
-  /**
-   * Map of module URL to JsModule
-   */
-  readonly modules: Map<string, JsModule>;
-
-  /**
-   * Map of namespaced id (ie, Polymer.Element) to module URL
-   * (ie, polymeer-element.js) + exported name (ie, Element).
-   */
-  readonly namespacedExports: Map<string, JsExport>;
-}
-
 
 export interface AnalysisConverterOptions {
   /**
@@ -97,7 +73,7 @@ export interface AnalysisConverterOptions {
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
    * to these files are also excluded.
    */
-  readonly excludes?: string[];
+  readonly excludes?: ReadonlyArray<string>;
 
   /**
    * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
@@ -108,7 +84,7 @@ export interface AnalysisConverterOptions {
    * is guarded by a conditional and replcing with `undefined` will safely
    * fail the guard.
    */
-  readonly referenceExcludes?: string[];
+  readonly referenceExcludes?: ReadonlyArray<string>;
 
   /**
    * For each namespace you can set a list of references (ie,
@@ -116,7 +92,8 @@ export interface AnalysisConverterOptions {
    * exported as `const` variables. They will be exported as `let` variables
    * instead.
    */
-  readonly mutableExports?: {[namespaceName: string]: string[]};
+  readonly mutableExports?:
+      {readonly [namespaceName: string]: ReadonlyArray<string>};
 }
 
 /**
@@ -130,7 +107,8 @@ export class AnalysisConverter {
   readonly _excludes: ReadonlySet<string>;
   readonly _includes: ReadonlySet<string>;
   readonly _referenceExcludes: ReadonlySet<string>;
-  readonly _mutableExports?: {readonly [namespaceName: string]: string[]};
+  readonly _mutableExports?:
+      {readonly [namespaceName: string]: ReadonlyArray<string>};
 
   readonly modules = new Map<string, JsModule>();
   readonly namespacedExports = new Map<string, JsExport>();
@@ -143,8 +121,8 @@ export class AnalysisConverter {
     ].map((n) => n.name);
     this.namespaces =
         new Set([...declaredNamespaces, ...(options.namespaces || [])]);
-    this._excludes = new Set(options.excludes);
-    this._referenceExcludes = new Set(options.referenceExcludes);
+    this._excludes = new Set(options.excludes!);
+    this._referenceExcludes = new Set(options.referenceExcludes!);
     this._mutableExports = options.mutableExports;
     const importedFiles = [...this._analysis.getFeatures(
                                {kind: 'import', externalPackages: false})]
@@ -202,7 +180,10 @@ export class AnalysisConverter {
     if (this.modules.has(jsUrl)) {
       return;
     }
-    new DocumentConverter(this, document).convert();
+    const jsModule = new DocumentConverter(this, document).convert();
+    if (jsModule) {
+      this.modules.set(jsModule.url, jsModule);
+    }
   }
 
   /**
