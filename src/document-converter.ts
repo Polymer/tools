@@ -484,12 +484,11 @@ export class DocumentConverter {
                                   templateLiteral)]))));
       } else if (node.type === 'CallExpression') {
         // A Polymer hybrid/legacy factory function element
-        (node.arguments[0] as ObjectExpression)
-            .properties.splice(
-                0,
-                0,
-                jsc.property(
-                    'init', jsc.identifier('_template'), templateLiteral));
+        const arg = node.arguments[0];
+        if (arg && arg.type === 'ObjectExpression') {
+          arg.properties.unshift(jsc.property(
+              'init', jsc.identifier('_template'), templateLiteral));
+        }
       }
     }
   }
