@@ -105,13 +105,12 @@ export class DocumentConverter {
   }
 
   convertToJsModule(): Iterable<JsModule> {
-    const scripts = this.document.getFeatures({kind: 'js-document'});
-    const statements = [];
-    for (const script of scripts) {
+    const toplevelStatements = [];
+    for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const file = recast.parse(script.parsedDocument.contents);
-      statements.push(...file.program.body);
+      toplevelStatements.push(...file.program.body);
     }
-    this.program = jsc.program(statements);
+    this.program = jsc.program(toplevelStatements);
     this.convertDependencies();
     this.unwrapIIFEPeusdoModule();
     const importedReferences = this.rewriteNamespacedReferences();
