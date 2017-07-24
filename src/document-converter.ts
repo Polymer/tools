@@ -21,8 +21,9 @@ import {Document, Import, Namespace, ParsedJavaScriptDocument} from 'polymer-ana
 import * as recast from 'recast';
 
 import jsc = require('jscodeshift');
-import {JsExport, AnalysisConverter, JsModule} from './analysis-converter';
+import {AnalysisConverter} from './analysis-converter';
 import {htmlUrlToJs} from './url-converter';
+import {JsModule, JsExport, NamespaceMemberToExport} from './js-module';
 
 const astTypes = require('ast-types');
 type AstPath<N extends Node> = {
@@ -83,10 +84,6 @@ const elementBlacklist = new Set<string|undefined>([
   'dom-module',
 ]);
 
-export interface ExportMigrationRecord {
-  oldNamespacedName: string;
-  es6ExportName: string;
-}
 
 /**
  * Converts a Document and its dependencies.
@@ -118,7 +115,7 @@ export class DocumentConverter {
         .filter((f: Import) => !this.analysisConverter._excludes.has(f.url));
   }
 
-  convert(): JsModule|undefined {
+  convert(): Iterable<JsModule> {
     const scripts = this.document.getFeatures({kind: 'js-document'});
     if (scripts.size === 0) {
       this.program = jsc.program([]);
@@ -131,7 +128,7 @@ export class DocumentConverter {
       // TODO(justinfagnani): better warning wording, plus actionable
       // reccomendation or decide on some default handling of multiple scripts.
       console.log('multiple scripts');
-      return;
+      return [];
     }
     this.convertDependencies();
     this.unwrapIIFEPeusdoModule();
@@ -150,12 +147,12 @@ export class DocumentConverter {
 
     const outputProgram = recast.print(
         this.program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
-    return {
+    return [{
       url: this.jsUrl,
       source: outputProgram.code + '\n',
-      exportMigrationRecords: exportMigrationRecords,
+      exportedNamespaceMembers: exportMigrationRecords,
       es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
-    };
+    }];
   }
 
   /**
@@ -226,7 +223,7 @@ export class DocumentConverter {
   }
 
   private rewriteNamespaceExports() {
-    const exportMigrationRecords: ExportMigrationRecord[] = [];
+    const exportMigrationRecords: NamespaceMemberToExport[] = [];
     let currentStatementIndex = 0;
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
@@ -528,8 +525,8 @@ export class DocumentConverter {
    * export foo() {}
    * foo();
    */
-  private rewriteReferencesToTheLocallyDefinedNamespace(namespaceName?:
-                                                            string) {
+  private rewriteReferencesToTheLocallyDefinedNamespace(  //
+      namespaceName?: string) {
     if (namespaceName === undefined) {
       return;
     }
@@ -608,8 +605,8 @@ export class DocumentConverter {
   /**
    * Injects JS imports at the top of the program.
    */
-  private addJsImports(importedReferences:
-                           ReadonlyMap<string, ReadonlySet<string>>) {
+  private addJsImports(  //
+      importedReferences: ReadonlyMap<string, ReadonlySet<string>>) {
     const baseUrl = this.document.url;
     const htmlImports = this.getHtmlImports();
     const jsImportUrls =
