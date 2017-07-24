@@ -57,7 +57,7 @@ export interface JsModule {
   /**
    * Set of exported names.
    */
-  readonly exports: ReadonlySet<string>;
+  readonly es6Exports: ReadonlySet<string>;
 
   readonly exportMigrationRecords: ReadonlyArray<ExportMigrationRecord>;
 }
