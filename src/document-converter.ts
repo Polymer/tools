@@ -21,8 +21,9 @@ import {Document, Import, Namespace, ParsedJavaScriptDocument} from 'polymer-ana
 import * as recast from 'recast';
 
 import jsc = require('jscodeshift');
-import {JsModule, JsExport, AnalysisConverter} from './analysis-converter';
+import {AnalysisConverter} from './analysis-converter';
 import {htmlUrlToJs} from './url-converter';
+import {JsModule, JsExport, NamespaceMemberToExport} from './js-module';
 
 const astTypes = require('ast-types');
 type AstPath<N extends Node> = {
@@ -48,7 +49,7 @@ function replacePathWithExportIdentifier(
  * import entire namespace) to a set of ImportDeclaration objects.
  */
 function getImportDeclarations(
-    specifierUrl: string, namedExports?: Set<string>) {
+    specifierUrl: string, namedExports?: Iterable<string>) {
   const jsImportDeclarations: ImportDeclaration[] = [];
   const namedExportsArray = namedExports ? Array.from(namedExports) : [];
   const hasNamespaceReference = namedExportsArray.some((s) => s === '*');
@@ -83,23 +84,17 @@ const elementBlacklist = new Set<string|undefined>([
   'dom-module',
 ]);
 
+
 /**
  * Converts a Document and its dependencies.
  */
 export class DocumentConverter {
-  readonly jsUrl: string;
-  readonly module: JsModule;
-  readonly analysisConverter: AnalysisConverter;
-  readonly document: Document;
-  readonly scriptDocument: Document;
-  readonly program: Program;
-  /**
-   * The next statement to convert.
-   *
-   * An index into the toplevel statements array of the program.
-   */
-  private currentStatementIndex = 0;
-  private readonly _mutableExports: {[namespaceName: string]: string[]};
+  private readonly jsUrl: string;
+  private readonly analysisConverter: AnalysisConverter;
+  private readonly document: Document;
+  private program: Program;
+  private readonly _mutableExports:
+      {readonly [namespaceName: string]: ReadonlyArray<string>};
 
   constructor(analysisConverter: AnalysisConverter, document: Document) {
     this.analysisConverter = analysisConverter;
@@ -107,29 +102,6 @@ export class DocumentConverter {
         <any>Object.assign({}, this.analysisConverter._mutableExports);
     this.document = document;
     this.jsUrl = htmlUrlToJs(document.url);
-    this.module = {
-      url: this.jsUrl,
-      source: '',
-      exports: new Set<string>(),
-      importedReferences: new Map<string, Set<string>>(),
-    };
-    analysisConverter.modules.set(this.jsUrl, this.module);
-
-    const scripts = this.document.getFeatures({kind: 'js-document'});
-    if (scripts.size === 0) {
-      this.program = jsc.program([]);
-    } else if (scripts.size > 1) {
-      // TODO(justinfagnani): better warning wording, plus actionable
-      // reccomendation or decide on some default handling of multiple scripts.
-      console.log('multiple scripts');
-      return;
-    } else {
-      this.scriptDocument = scripts.values().next().value;
-      const jsDoc =
-          this.scriptDocument.parsedDocument as ParsedJavaScriptDocument;
-      const file = recast.parse(jsDoc.contents);
-      this.program = file.program;
-    }
   }
 
   /**
@@ -138,49 +110,57 @@ export class DocumentConverter {
    *
    * Note: Imports that are not found are not returned by the analyzer.
    */
-  getHtmlImports() {
+  private getHtmlImports() {
     return Array.from(this.document.getFeatures({kind: 'html-import'}))
         .filter((f: Import) => !this.analysisConverter._excludes.has(f.url));
   }
 
-  /**
-   * Adds an export to this module's metadata and to the AnalysisConverter's
-   * namespacedExports index.
-   */
-  addExport(namespaceName: string, name: string) {
-    this.module.exports.add(name);
-    this.analysisConverter.namespacedExports.set(namespaceName, {
-      url: this.jsUrl,
-      name,
-    });
-  }
-
-  convert() {
+  convert(): Iterable<JsModule> {
+    const scripts = this.document.getFeatures({kind: 'js-document'});
+    if (scripts.size === 0) {
+      this.program = jsc.program([]);
+    } else if (scripts.size === 1) {
+      const [script] = scripts;
+      const jsDoc = script.parsedDocument as ParsedJavaScriptDocument;
+      const file = recast.parse(jsDoc.contents);
+      this.program = file.program;
+    } else {
+      // TODO(justinfagnani): better warning wording, plus actionable
+      // reccomendation or decide on some default handling of multiple scripts.
+      console.log('multiple scripts');
+      return [];
+    }
     this.convertDependencies();
-    this.unwrapModuleBody();
-    this.rewriteNamespacedReferences();
-    this.addJsImports();
-    this.convertElements();
+    this.unwrapIIFEPeusdoModule();
+    const importedReferences = this.rewriteNamespacedReferences();
+    this.addJsImports(importedReferences);
+    this.insertCodeToGenerateHtmlElements();
     this.inlineTemplates();
 
-    const {localNamespaceName, namespaceName} = this.rewriteNamespaceExports();
+    const {localNamespaceName, namespaceName, exportMigrationRecords} =
+        this.rewriteNamespaceExports();
 
     this.rewriteNamespaceThisReferences(namespaceName);
-    this.rewriteLocalNamespacedReferences(localNamespaceName);
-    this.rewriteLocalNamespacedReferences(namespaceName);
+    this.rewriteReferencesToTheLocallyDefinedNamespace(localNamespaceName);
+    this.rewriteReferencesToTheLocallyDefinedNamespace(namespaceName);
     this.rewriteExcludedReferences();
 
-    this.module.source = recast
-                             .print(this.program, {
-                               quote: 'single',
-                               wrapColumn: 80,
-                               tabWidth: 2,
-                             })
-                             .code +
-        '\n';
+    const outputProgram = recast.print(
+        this.program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
+    return [{
+      url: this.jsUrl,
+      source: outputProgram.code + '\n',
+      exportedNamespaceMembers: exportMigrationRecords,
+      es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
+    }];
   }
 
-  convertElements() {
+  /**
+   * Recreate the HTML contents from the original HTML document by adding
+   * code to the top of this.program that constructs equivalent DOM and insert
+   * it into `window.document`.
+   */
+  private insertCodeToGenerateHtmlElements() {
     const ast = this.document.parsedDocument.ast as parse5.ASTNode;
     if (ast.childNodes === undefined) {
       return;
@@ -230,19 +210,50 @@ export class DocumentConverter {
               jsc.identifier('document'), jsc.identifier('appendChild')),
           [jsc.identifier(varName)]))
     ];
-    this.program.body.splice(this.currentStatementIndex, 0, ...statements);
-    this.currentStatementIndex += statements.length;
+    let insertionPoint = 0;
+    for (const [idx, statement] of enumerate(this.program.body)) {
+      if (statement.type === 'ImportDeclaration') {
+        continue;
+      }
+      // First stement past the imports.
+      insertionPoint = idx;
+      break;
+    }
+    this.program.body.splice(insertionPoint, 0, ...statements);
   }
 
-  rewriteNamespaceExports() {
+  private rewriteNamespaceExports() {
+    const exportMigrationRecords: NamespaceMemberToExport[] = [];
+    let currentStatementIndex = 0;
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
 
+    const rewriteNamespaceObject =
+        (name: string,
+         body: ObjectExpression,
+         statement: Statement | ModuleDeclaration) => {
+          const mutableExports = this._mutableExports[name];
+          const namespaceExports = getNamespaceExports(body, mutableExports);
+
+          // Replace original namespace statement with new exports
+          const nsIndex = this.program.body.indexOf(statement);
+          this.program.body.splice(
+              nsIndex, 1, ...namespaceExports.map((e) => e.node));
+          currentStatementIndex += namespaceExports.length - 1;
+          for (const e of namespaceExports) {
+            exportMigrationRecords.push({
+              oldNamespacedName: `${name}.${e.name}`,
+              es6ExportName: e.name
+            });
+          }
+          exportMigrationRecords.push(
+              {oldNamespacedName: name, es6ExportName: '*'});
+        };
+
     // Walk through all top-level statements and replace namespace assignments
     // with module exports.
-    while (this.currentStatementIndex < this.program.body.length) {
-      const statement =
-          this.program.body[this.currentStatementIndex] as Statement;
+    while (currentStatementIndex < this.program.body.length) {
+      const statement = this.program.body[currentStatementIndex] as Statement;
       const exported = getExport(statement, this.analysisConverter.namespaces);
 
       if (exported !== undefined) {
@@ -250,7 +261,7 @@ export class DocumentConverter {
         namespaceName = namespace.join('.');
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
-          this.rewriteNamespaceObject(namespaceName, value, statement);
+          rewriteNamespaceObject(namespaceName, value, statement);
           localNamespaceName = namespaceName;
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
@@ -286,27 +297,30 @@ export class DocumentConverter {
                   AssignmentExpression;
               nsNode = expression.right as ObjectExpression;
             }
-            this.rewriteNamespaceObject(namespaceName, nsNode, nsParent);
+            rewriteNamespaceObject(namespaceName, nsNode, nsParent);
 
             // Remove the namespace assignment
-            this.program.body.splice(this.currentStatementIndex, 1);
+            this.program.body.splice(currentStatementIndex, 1);
             // Adjust current index since we removed a statement
-            this.currentStatementIndex--;
+            currentStatementIndex--;
           } else {
             // Not a namespace, fallback to a named export
             // We could probably do better for referenced declarations, ie move
             // the export to the declaration
             const exportedName =
                 jsc.identifier(namespace[namespace.length - 1]) as Identifier;
-            this.program.body[this.currentStatementIndex] =
+            this.program.body[currentStatementIndex] =
                 jsc.exportNamedDeclaration(
                     null,  // declaration
                     [jsc.exportSpecifier(localName, exportedName)]);
-            this.addExport(namespaceName, exportedName.name);
+            exportMigrationRecords.push({
+              es6ExportName: exportedName.name,
+              oldNamespacedName: namespaceName
+            });
           }
         } else if (isDeclaration(value)) {
           // TODO (justinfagnani): remove this case? Is it used? Add a test
-          this.program.body[this.currentStatementIndex] = jsc.exportDeclaration(
+          this.program.body[currentStatementIndex] = jsc.exportDeclaration(
               false,  // default
               value);
         } else {
@@ -318,11 +332,12 @@ export class DocumentConverter {
             namespaceName = 'Polymer';
             name = 'Polymer';
           }
-          this.program.body[this.currentStatementIndex] =
+          this.program.body[currentStatementIndex] =
               jsc.exportNamedDeclaration(jsc.variableDeclaration(
                   'const',
                   [jsc.variableDeclarator(jsc.identifier(name), value)]));
-          this.addExport(namespaceName, name);
+          exportMigrationRecords.push(
+              {oldNamespacedName: namespaceName, es6ExportName: name});
         }
       } else if (
           this.isNamespace(statement) &&
@@ -343,28 +358,26 @@ export class DocumentConverter {
           const name = namespace[namespace.length - 1];
           namespaceName = namespace.join('.');
 
-          this.program.body[this.currentStatementIndex] =
+          this.program.body[currentStatementIndex] =
               jsc.exportNamedDeclaration(jsc.variableDeclaration(
                   'const',
                   [jsc.variableDeclarator(jsc.identifier(name), value)]));
-          this.addExport(namespaceName, name);
+          exportMigrationRecords.push(
+              {oldNamespacedName: namespaceName, es6ExportName: name});
         }
       }
-      this.currentStatementIndex++;
+      currentStatementIndex++;
     }
 
     return {
       localNamespaceName,
       namespaceName,
+      exportMigrationRecords,
     };
   }
 
-  inlineTemplates() {
-    if (this.scriptDocument === undefined) {
-      return;
-    }
-    const elements =
-        this.scriptDocument.getFeatures({'kind': 'polymer-element'});
+  private inlineTemplates() {
+    const elements = this.document.getFeatures({'kind': 'polymer-element'});
     for (const element of elements) {
       const domModule = element.domModule;
       if (domModule === undefined) {
@@ -404,7 +417,7 @@ export class DocumentConverter {
   /**
    *  Convert dependencies first, so we know what exports they have.
    */
-  convertDependencies() {
+  private convertDependencies() {
     const htmlImports = this.getHtmlImports();
     for (const htmlImport of htmlImports) {
       const jsUrl = htmlUrlToJs(htmlImport.url, this.document.url);
@@ -422,30 +435,28 @@ export class DocumentConverter {
    * Returns a Map of imports used for each module so import declarations can be
    * rewritten correctly.
    */
-  rewriteNamespacedReferences() {
+  private rewriteNamespacedReferences() {
     const analysisConverter = this.analysisConverter;
-    const namespaces = analysisConverter.namespaces;
-    const module = analysisConverter.modules.get(this.jsUrl)!;
-    const importedReferences = module.importedReferences;
-    const baseUrl = this.document.url;
+    const importedReferences = new Map<string, Set<string>>();
 
     /**
      * Add the given JsExport to the current module's `importedReferences` map.
      */
-    function addToImportedReferences(moduleExport: JsExport) {
-      const moduleJsUrl = htmlUrlToJs(moduleExport.url, baseUrl);
+    const addToImportedReferences = (moduleExport: JsExport) => {
+      const moduleJsUrl = htmlUrlToJs(moduleExport.url, this.document.url);
       let moduleImportedNames = importedReferences.get(moduleJsUrl);
       if (moduleImportedNames === undefined) {
         moduleImportedNames = new Set<string>();
         importedReferences.set(moduleJsUrl, moduleImportedNames);
       }
       moduleImportedNames.add(moduleExport.name);
-    }
+    };
 
     astTypes.visit(this.program, {
       visitIdentifier(path: AstPath<Identifier>) {
         const memberName = path.node.name;
-        const isRootModuleIdentifier = namespaces.has(memberName);
+        const isRootModuleIdentifier =
+            analysisConverter.namespaces.has(memberName);
         if (!isRootModuleIdentifier ||
             (path.parent && getMemberPath(path.parent.node))) {
           return false;
@@ -481,9 +492,10 @@ export class DocumentConverter {
         return false;
       }
     });
+    return importedReferences;
   }
 
-  rewriteExcludedReferences() {
+  private rewriteExcludedReferences() {
     const analysisConverter = this.analysisConverter;
 
     astTypes.visit(this.program, {
@@ -513,7 +525,8 @@ export class DocumentConverter {
    * export foo() {}
    * foo();
    */
-  rewriteLocalNamespacedReferences(namespaceName?: string) {
+  private rewriteReferencesToTheLocallyDefinedNamespace(  //
+      namespaceName?: string) {
     if (namespaceName === undefined) {
       return;
     }
@@ -543,7 +556,7 @@ export class DocumentConverter {
    * after this step, so timing is important: Only run after exports have
    * been created, but before all namespace references are corrected.
    */
-  rewriteNamespaceThisReferences(namespaceName?: string) {
+  private rewriteNamespaceThisReferences(namespaceName?: string) {
     if (namespaceName === undefined) {
       return;
     }
@@ -571,7 +584,7 @@ export class DocumentConverter {
    * Rewrite `this` references to the explicit namespaceReference identifier
    * within a single BlockStatement. Don't traverse deeper into new scopes.
    */
-  rewriteSingleScopeThisReferences(
+  private rewriteSingleScopeThisReferences(
       blockStatement: BlockStatement, namespaceReference: string) {
     astTypes.visit(blockStatement, {
       visitFunctionExpression(_path: any) {
@@ -592,7 +605,8 @@ export class DocumentConverter {
   /**
    * Injects JS imports at the top of the program.
    */
-  addJsImports() {
+  private addJsImports(  //
+      importedReferences: ReadonlyMap<string, ReadonlySet<string>>) {
     const baseUrl = this.document.url;
     const htmlImports = this.getHtmlImports();
     const jsImportUrls =
@@ -601,29 +615,27 @@ export class DocumentConverter {
     // Rewrite HTML Imports to JS imports
     const jsImportDeclarations: any[] = [];
     for (const jsImportUrl of jsImportUrls) {
-      const specifierNames = this.module.importedReferences.get(jsImportUrl);
+      const specifierNames = importedReferences.get(jsImportUrl);
       jsImportDeclarations.push(
           ...getImportDeclarations(jsImportUrl, specifierNames));
     }
     // Add JS imports for any implicit HTML imports
-    for (const jsImplicitImportUrl of this.module.importedReferences.keys()) {
+    for (const jsImplicitImportUrl of importedReferences.keys()) {
       if (!jsImportUrls.has(jsImplicitImportUrl)) {
-        const specifierNames =
-            this.module.importedReferences.get(jsImplicitImportUrl);
+        const specifierNames = importedReferences.get(jsImplicitImportUrl);
         jsImportDeclarations.push(
             ...getImportDeclarations(jsImplicitImportUrl, specifierNames));
       }
     }
 
     this.program.body.splice(0, 0, ...jsImportDeclarations);
-    this.currentStatementIndex += jsImportDeclarations.length;
   }
 
   /**
    * Returns the implied module body of a script - if there's a top-level IIFE,
    * it assumes that is an intentionally scoped ES5 module body.
    */
-  unwrapModuleBody() {
+  private unwrapIIFEPeusdoModule() {
     if (this.program.body.length === 1 &&
         this.program.body[0].type === 'ExpressionStatement') {
       const expression =
@@ -642,35 +654,11 @@ export class DocumentConverter {
     }
   }
 
-  /**
-   * Rewrites a namespace object as a set of exports.
-   *
-   * @param name the dot-separated name of the namespace
-   * @param body the ObjectExpression body of the namespace
-   * @param statement the statement, to be replaced, that contains the namespace
-   */
-  rewriteNamespaceObject(
-      name: string, body: ObjectExpression, statement: Statement) {
-    const mutableExports = this._mutableExports[name];
-    const exports = getNamespaceExports(body, mutableExports);
-
-    // Replace original namespace statement with new exports
-    const nsIndex = this.program.body.indexOf(statement);
-    this.program.body.splice(
-        nsIndex, 1, ...exports.map((e) => e.node as Statement));
-    this.currentStatementIndex += exports.length - 1;
-
-    exports.forEach((e) => {
-      this.addExport(`${name}.${e.name}`, e.name);
-    });
-    this.addExport(name, '*');
-  }
-
-  isNamespace(node: Node) {
-    if (this.scriptDocument == null) {
+  private isNamespace(node: Node) {
+    if (this.document == null) {
       return false;
     }
-    const namespaces = this.scriptDocument.getFeatures({kind: 'namespace'});
+    const namespaces = this.document.getFeatures({kind: 'namespace'});
     for (const namespace of namespaces) {
       if (sourceLocationsEqual(namespace.astNode, node)) {
         return true;
@@ -679,7 +667,7 @@ export class DocumentConverter {
     return false;
   }
 
-  getNode(node: Node) {
+  private getNode(node: Node) {
     let associatedNode: Node|undefined;
 
     astTypes.visit(this.program, {
@@ -698,10 +686,12 @@ export class DocumentConverter {
 
 /**
  * Returns export declarations for each of a namespace objects members.
+ *
+ * Pure, does no mutation.
  */
 function getNamespaceExports(
-    namespace: ObjectExpression, mutableExports?: string[]) {
-  const exports: {name: string, node: Node}[] = [];
+    namespace: ObjectExpression, mutableExports?: ReadonlyArray<string>) {
+  const exportRecords: {name: string, node: Node}[] = [];
 
   for (const {key, value} of namespace.properties) {
     if (key.type !== 'Identifier') {
@@ -712,14 +702,14 @@ function getNamespaceExports(
     if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' ||
         value.type === 'Literal') {
       const isMutable = !!(mutableExports && mutableExports.includes(name));
-      exports.push({
+      exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
             isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {
       const func = value as FunctionExpression;
-      exports.push({
+      exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.functionDeclaration(
             key,  // id
@@ -728,13 +718,13 @@ function getNamespaceExports(
             func.generator))
       });
     } else if (value.type === 'ArrowFunctionExpression') {
-      exports.push({
+      exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
             'const', [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'Identifier') {
-      exports.push({
+      exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(
             null,
@@ -745,7 +735,7 @@ function getNamespaceExports(
     }
   }
 
-  return exports;
+  return exportRecords;
 }
 
 /**
@@ -888,4 +878,13 @@ function nodeToTemplateLiteral(
       cooked.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
   return jsc.templateLiteral([jsc.templateElement({cooked, raw}, true)], []);
+}
+
+
+function* enumerate<V>(iter: Iterable<V>): Iterable<[number, V]> {
+  let i = 0;
+  for (const val of iter) {
+    yield [i, val];
+    i++;
+  }
 }

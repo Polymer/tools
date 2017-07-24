@@ -18,6 +18,7 @@ import * as parse5 from 'parse5';
 import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
+import {JsExport, JsModule} from './js-module';
 import {htmlUrlToJs} from './url-converter';
 
 const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
@@ -27,62 +28,6 @@ const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
 const isNotExternal = (d: Document) =>
     !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
-
-export interface JsExport {
-  /**
-   * URL of the JS module.
-   */
-  readonly url: string;
-
-  /**
-   * Exported name, ie Foo for `export Foo`;
-   *
-   * The name * represents the entire module, for when the key in the
-   * namespacedExports Map represents a namespace object.
-   */
-  readonly name: string;
-}
-
-export interface JsModule {
-  /**
-   * Package-relative URL of the converted JS module.
-   */
-  readonly url: string;
-
-  /**
-   * Converted source of the JS module.
-   */
-  source: string;
-
-  /**
-   * Set of exported names.
-   */
-  readonly exports: Set<string>;
-
-  /**
-   * Map of module URL (ie, polymer-element.js) to imported references
-   * (ie, Element). This map is used to rewrite import statements to
-   * only include what's used in an importing module.
-   */
-  readonly importedReferences: Map<string, Set<string>>;
-}
-
-/**
- * A collection of converted JS modules and exported namespaced identifiers.
- */
-export interface ModuleIndex {
-  /**
-   * Map of module URL to JsModule
-   */
-  readonly modules: Map<string, JsModule>;
-
-  /**
-   * Map of namespaced id (ie, Polymer.Element) to module URL
-   * (ie, polymeer-element.js) + exported name (ie, Element).
-   */
-  readonly namespacedExports: Map<string, JsExport>;
-}
-
 
 export interface AnalysisConverterOptions {
   /**
@@ -97,7 +42,7 @@ export interface AnalysisConverterOptions {
    * Files to exclude from conversion (ie lib/utils/boot.html). Imports
    * to these files are also excluded.
    */
-  readonly excludes?: string[];
+  readonly excludes?: Iterable<string>;
 
   /**
    * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
@@ -108,7 +53,7 @@ export interface AnalysisConverterOptions {
    * is guarded by a conditional and replcing with `undefined` will safely
    * fail the guard.
    */
-  readonly referenceExcludes?: string[];
+  readonly referenceExcludes?: Iterable<string>;
 
   /**
    * For each namespace you can set a list of references (ie,
@@ -116,7 +61,8 @@ export interface AnalysisConverterOptions {
    * exported as `const` variables. They will be exported as `let` variables
    * instead.
    */
-  readonly mutableExports?: {[namespaceName: string]: string[]};
+  readonly mutableExports?:
+      {readonly [namespaceName: string]: ReadonlyArray<string>};
 }
 
 /**
@@ -130,7 +76,8 @@ export class AnalysisConverter {
   readonly _excludes: ReadonlySet<string>;
   readonly _includes: ReadonlySet<string>;
   readonly _referenceExcludes: ReadonlySet<string>;
-  readonly _mutableExports?: {readonly [namespaceName: string]: string[]};
+  readonly _mutableExports?:
+      {readonly [namespaceName: string]: ReadonlyArray<string>};
 
   readonly modules = new Map<string, JsModule>();
   readonly namespacedExports = new Map<string, JsExport>();
@@ -143,8 +90,8 @@ export class AnalysisConverter {
     ].map((n) => n.name);
     this.namespaces =
         new Set([...declaredNamespaces, ...(options.namespaces || [])]);
-    this._excludes = new Set(options.excludes);
-    this._referenceExcludes = new Set(options.referenceExcludes);
+    this._excludes = new Set(options.excludes!);
+    this._referenceExcludes = new Set(options.referenceExcludes!);
     this._mutableExports = options.mutableExports;
     const importedFiles = [...this._analysis.getFeatures(
                                {kind: 'import', externalPackages: false})]
@@ -202,7 +149,15 @@ export class AnalysisConverter {
     if (this.modules.has(jsUrl)) {
       return;
     }
-    new DocumentConverter(this, document).convert();
+    const jsModules = new DocumentConverter(this, document).convert();
+    for (const jsModule of jsModules) {
+      this.modules.set(jsModule.url, jsModule);
+      for (const expr of jsModule.exportedNamespaceMembers) {
+        this.namespacedExports.set(
+            expr.oldNamespacedName,
+            {name: expr.es6ExportName, url: jsModule.url});
+      }
+    }
   }
 
   /**
