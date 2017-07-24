@@ -12,13 +12,53 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import commandLineArgs = require('command-line-args');
 import {convertPackage} from './convert-package';
 import {readJson} from './manifest-converter';
 import * as semver from 'semver';
+import {Runner} from './workspace/sync-workspace';
+import {convertWorkspace} from './convert-workspace';
+
+const githubTokenMessage = `
+You need to create a github token and place it in a file named 'github-token'.
+The token does not need any 'public repos' permissions.
+
+Generate a token here:   https://github.com/settings/tokens
+
+Then:
+
+echo 'PASTE TOKEN HEX HERE' > ./github-token
+`;
 
 const optionDefinitions: commandLineArgs.OptionDefinition[] = [
+  {
+    name: 'repo',
+    alias: 'r',
+    type: String,
+    multiple: true,
+    description:
+        'Repositories to convert.  (This is the default option, so the ' +
+        '--repo/-r switch itself is not required.)',
+    defaultOption: true
+  },
+  {
+    name: 'workspace-dir',
+    alias: 'd',
+    type: String,
+    defaultValue: 'html2js_workspace',
+    description:
+        'Override the default path "html2js_workspace" where the repositories ' +
+        'will be cloned to.'
+  },
+  {
+    name: 'github-token',
+    alias: 'g',
+    type: String,
+    description: 'Provide github token via command-line flag instead of ' +
+        '"github-token" file.'
+  },
   {
     name: 'help',
     type: Boolean,
@@ -74,15 +114,18 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
 ];
 
 interface Options {
+  repo?: string[];
   help?: boolean;
   out: string;
-  in ?: string;
+  'in'?: string;
   namespace?: string[];
   exclude: string[];
   include: string[];
   'npm-name'?: string;
   'npm-version'?: string;
   clear?: boolean;
+  'workspace-dir'?: string;
+  'github-token'?: string;
 }
 
 export async function run() {
@@ -101,6 +144,25 @@ export async function run() {
       }
     ]);
     console.log(usage);
+    return;
+  }
+
+  if (options['repo']) {
+    console.log(
+        `Repositories specified, using workspace ${options['workspace-dir']}`);
+
+    loadGitHubToken(options);
+    if (!options['github-token']) {
+      console.error(githubTokenMessage);
+      return;
+    }
+    const runner = new Runner({
+      repos: options['repo'] as string[],
+      githubToken: options['github-token'] as string,
+      workspaceDir: options['workspace-dir']!,
+    });
+    const {dir, repos} = await runner.run();
+    convertWorkspace({inDir: dir, repos: [...repos.keys()]});
     return;
   }
 
@@ -172,4 +234,27 @@ export async function run() {
     clearOutDir: options.clear,
     mainFiles
   });
+}
+
+
+/**
+ * Checks for github-token in the RunnerOptions and if not specified, will look
+ * in the github-token file in working folder.  If that doesn't exist either,
+ * we message to the user that we need a token and exit the process.
+ */
+function loadGitHubToken(options: Options) {
+  // TODO(usergenic): Maybe support GITHUB_TOKEN as an environment variable,
+  // since this would be a better solution for Travis deployments etc.
+  const githubFilename = 'github-token';
+  if (!options['github-token']) {
+    if (!fs.existsSync(githubFilename)) {
+      console.error(`Missing file "${githubFilename}"`);
+      return;
+    }
+    try {
+      options['github-token'] = fs.readFileSync(githubFilename, 'utf8').trim();
+    } catch (e) {
+      console.error(`Unable to load file ${githubFilename}: ${e.message}`);
+    }
+  }
 }

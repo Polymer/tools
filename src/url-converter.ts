@@ -60,17 +60,6 @@ function convertBowerDependencyUrl(dependencyUrl: OriginalDocumentUrl):
   }
   jsUrl = jsUrlPieces.join('/');
 
-  // Temporary workaround for urls that run outside of the current packages
-  if (jsUrl.endsWith('shadycss/apply-shim.html')) {
-    jsUrl = jsUrl.replace(
-        'shadycss/apply-shim.html', 'shadycss/entrypoints/apply-shim.js');
-  }
-  if (jsUrl.endsWith('shadycss/custom-style-interface.html')) {
-    jsUrl = jsUrl.replace(
-        'shadycss/custom-style-interface.html',
-        'shadycss/entrypoints/custom-style-interface.js');
-  }
-
   return jsUrl as ConvertedDocumentUrl;
 }
 
@@ -99,6 +88,21 @@ export function convertDocumentUrl(htmlUrl: OriginalDocumentUrl):
   if (isBowerDependencyUrl(htmlUrl)) {
     jsUrl = convertBowerDependencyUrl(htmlUrl);
   }
+
+  // Temporary workaround for imports of some shadycss files that wrapped
+  // ES6 modules.
+  if (jsUrl.endsWith('shadycss/apply-shim.html')) {
+    jsUrl = jsUrl.replace(
+                'shadycss/apply-shim.html',
+                'shadycss/entrypoints/apply-shim.js') as ConvertedDocumentUrl;
+  }
+  if (jsUrl.endsWith('shadycss/custom-style-interface.html')) {
+    jsUrl = jsUrl.replace(
+                'shadycss/custom-style-interface.html',
+                'shadycss/entrypoints/custom-style-interface.js') as
+        ConvertedDocumentUrl;
+  }
+
   // Convert all HTML URLs to point to JS equivilent
   if (jsUrl.endsWith(htmlExtension)) {
     jsUrl = fixHtmlExtension(jsUrl) as ConvertedDocumentUrl;

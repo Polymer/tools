@@ -22,7 +22,6 @@ import * as path from 'path';
 import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
-import {AnalysisConverter} from './analysis-converter';
 import {JsExport, JsModule} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
@@ -31,6 +30,7 @@ import {findAvailableIdentifier, getMemberPath, getModuleId, getNodeGivenAnalyze
 import jsc = require('jscodeshift');
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
+import {ConverterMetadata} from './converter-metadata';
 
 /**
  * Pairs a subtree of an AST (`path` as a `NodePath`) to be replaced with a
@@ -133,18 +133,24 @@ const elementBlacklist = new Set<string|undefined>([
 export class DocumentConverter {
   private readonly originalUrl: OriginalDocumentUrl;
   private readonly convertedUrl: ConvertedDocumentUrl;
-  private readonly analysisConverter: AnalysisConverter;
+  private readonly analysisConverter: ConverterMetadata;
   private readonly document: Document;
   private readonly _mutableExports:
       {readonly [namespaceName: string]: ReadonlyArray<string>};
 
-  constructor(analysisConverter: AnalysisConverter, document: Document) {
+  private readonly packageName: string;
+  private readonly packageType: 'element'|'application';
+  constructor(
+      analysisConverter: ConverterMetadata, document: Document,
+      packageName: string, packageType: 'element'|'application') {
     this.analysisConverter = analysisConverter;
     this._mutableExports =
-        Object.assign({}, this.analysisConverter._mutableExports!);
+        Object.assign({}, this.analysisConverter.mutableExports!);
     this.document = document;
     this.originalUrl = getDocumentUrl(document);
     this.convertedUrl = convertDocumentUrl(this.originalUrl);
+    this.packageName = packageName;
+    this.packageType = packageType;
   }
 
   /**
@@ -157,7 +163,7 @@ export class DocumentConverter {
     return Array.from(this.document.getFeatures({kind: 'html-import'}))
         .filter(
             (f: Import) =>
-                !this.analysisConverter._excludes.has(f.document.url));
+                !this.analysisConverter.excludes.has(f.document.url));
   }
 
   convertToJsModule(): Iterable<JsModule> {
@@ -616,8 +622,8 @@ export class DocumentConverter {
    * don't work well in modular code.
    */
   private rewriteExcludedReferences(program: Program) {
-    const mapOfRewrites = new Map(this.analysisConverter._referenceRewrites);
-    for (const reference of this.analysisConverter._referenceExcludes) {
+    const mapOfRewrites = new Map(this.analysisConverter.referenceRewrites);
+    for (const reference of this.analysisConverter.referenceExcludes) {
       mapOfRewrites.set(reference, jsc.identifier('undefined'));
     }
 
@@ -797,8 +803,8 @@ export class DocumentConverter {
     const isImportFromLocalFile =
         !this.convertedUrl.startsWith('./node_modules');
     const isImportToLocalFile = !jsRootUrl.startsWith('./node_modules');
-    const isPackageScoped = this.analysisConverter.packageName.includes('/');
-    const isPackageElement = this.analysisConverter.packageType === 'element';
+    const isPackageScoped = this.packageName.includes('/');
+    const isPackageElement = this.packageType === 'element';
     let importUrl = getRelativeUrl(this.convertedUrl, jsRootUrl);
     // If this document is an external dependency, or if this document is
     // importing a local file, just return normal relative URL between the two

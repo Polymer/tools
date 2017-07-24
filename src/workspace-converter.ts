@@ -23,12 +23,7 @@ import {convertDocumentUrl, getDocumentUrl} from './url-converter';
 import jsc = require('jscodeshift');
 import {ConverterMetadata} from './converter-metadata';
 
-const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
-const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
-const isNotExternal = (d: Document) =>
-    !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
-
-export interface BaseConverterOptions {
+export interface WorkspaceConverterOptions {
   /**
    * Namespace names used to detect exports. Namespaces declared in the
    * code with an @namespace declaration are automatically detected.
@@ -36,7 +31,7 @@ export interface BaseConverterOptions {
   readonly namespaces?: Iterable<string>;
 
   /**
-   * Files to exclude from conversion (ie lib/utils/boot.html). Imports
+   * Files to exclude from conversion (ie polymer/lib/utils/boot.html). Imports
    * to these files are also excluded.
    */
   readonly excludes?: Iterable<string>;
@@ -62,22 +57,12 @@ export interface BaseConverterOptions {
       {readonly [namespaceName: string]: ReadonlyArray<string>};
 }
 
-export interface AnalysisConverterOptions extends BaseConverterOptions {
-  readonly packageName: string;
-  readonly packageType?: 'element'|'application';
-  readonly mainFiles?: Iterable<string>;
-}
-
 /**
  * Converts an entire Analysis object.
  */
-export class AnalysisConverter implements ConverterMetadata {
+export class WorkspaceConverter implements ConverterMetadata {
   private readonly _analysis: Analysis;
   readonly namespaces: ReadonlySet<string>;
-  // These three properties are 'protected' in that they're accessable from
-  // DocumentConverter.
-  readonly packageName: string;
-  readonly packageType: 'element'|'application';
 
   readonly excludes: ReadonlySet<string>;
   readonly includes: ReadonlySet<string>;
@@ -92,7 +77,7 @@ export class AnalysisConverter implements ConverterMetadata {
 
   readonly dangerousReferences: ReadonlyMap<string, string>;
 
-  constructor(analysis: Analysis, options: AnalysisConverterOptions) {
+  constructor(analysis: Analysis, options: WorkspaceConverterOptions) {
     this._analysis = analysis;
     const declaredNamespaces = [
       ...analysis.getFeatures(
@@ -114,8 +99,6 @@ export class AnalysisConverter implements ConverterMetadata {
         `document.currentScript is always \`null\` in an ES6 module.`);
     this.dangerousReferences = dangerousReferences;
 
-    this.packageName = options.packageName;
-    this.packageType = options.packageType || 'element';
     this.excludes = new Set(options.excludes!);
     this.referenceExcludes = new Set(options.referenceExcludes!);
     this.mutableExports = options.mutableExports;
@@ -126,7 +109,7 @@ export class AnalysisConverter implements ConverterMetadata {
                                   (url) =>
                                       !(url.startsWith('bower_components') ||
                                         url.startsWith('node_modules')));
-    this.includes = new Set([...importedFiles, ...options.mainFiles || []]);
+    this.includes = new Set(importedFiles);
   }
 
   async convert(): Promise<Map<string, string>> {
@@ -134,7 +117,7 @@ export class AnalysisConverter implements ConverterMetadata {
         [...this._analysis.getFeatures({kind: 'html-document'})]
             // Excludes
             .filter((d) => {
-              return !this.excludes.has(d.url) && isNotExternal(d) && d.url;
+              return !this.excludes.has(d.url) && d.url;
             });
 
     const results = new Map<string, string>();
@@ -148,6 +131,13 @@ export class AnalysisConverter implements ConverterMetadata {
           convertedModule = this.convertHtmlToHtml(document);
         }
         if (convertedModule) {
+          if (convertedModule.url.endsWith(
+                  'shadycss/entrypoints/apply-shim.js') ||
+              convertedModule.url.endsWith(
+                  'shadycss/entrypoints/custom-style-interface.js')) {
+            // These are already ES6, and messed with in url-converter.
+            continue;
+          }
           results.set(convertedModule.url, convertedModule.source);
         }
       } catch (e) {
@@ -164,10 +154,9 @@ export class AnalysisConverter implements ConverterMetadata {
   convertDocument(document: Document): JsModule|undefined {
     const jsUrl = convertDocumentUrl(getDocumentUrl(document));
     if (!this.modules.has(jsUrl)) {
-      this.handleNewJsModules(
-          new DocumentConverter(
-              this, document, this.packageName, this.packageType)
-              .convertToJsModule());
+      const newModules =
+          this.getDocumentConverter(document).convertToJsModule();
+      this.handleNewJsModules(newModules);
     }
     return this.modules.get(jsUrl);
   }
@@ -178,10 +167,9 @@ export class AnalysisConverter implements ConverterMetadata {
   convertHtmlToHtml(document: Document): JsModule|undefined {
     const htmlUrl = `./${document.url}`;
     if (!this.modules.has(htmlUrl)) {
-      this.handleNewJsModules(
-          new DocumentConverter(
-              this, document, this.packageName, this.packageType)
-              .convertAsToplevelHtmlDocument());
+      const newModules =
+          this.getDocumentConverter(document).convertAsToplevelHtmlDocument();
+      this.handleNewJsModules(newModules);
     }
     return this.modules.get(htmlUrl);
   }
@@ -195,5 +183,11 @@ export class AnalysisConverter implements ConverterMetadata {
             new JsExport(jsModule.url, expr.es6ExportName));
       }
     }
+  }
+
+  private getDocumentConverter(document: Document): DocumentConverter {
+    const basePackageName = document.url.split('/')[0];
+    const packageName = `@polymer/${basePackageName}`;
+    return new DocumentConverter(this, document, packageName, 'element');
   }
 }
