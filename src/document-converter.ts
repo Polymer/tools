@@ -221,8 +221,16 @@ export class DocumentConverter {
               jsc.identifier('document'), jsc.identifier('appendChild')),
           [jsc.identifier(varName)]))
     ];
-    this.program.body.splice(this.currentStatementIndex, 0, ...statements);
-    this.currentStatementIndex += statements.length;
+    let insertionPoint = 0;
+    for (const [idx, statement] of enumerate(this.program.body)) {
+      if (statement.type === 'ImportDeclaration') {
+        continue;
+      }
+      // First stement past the imports.
+      insertionPoint = idx;
+      break;
+    }
+    this.program.body.splice(insertionPoint, 0, ...statements);
   }
 
   private rewriteNamespaceExports() {
@@ -612,7 +620,6 @@ export class DocumentConverter {
     }
 
     this.program.body.splice(0, 0, ...jsImportDeclarations);
-    this.currentStatementIndex += jsImportDeclarations.length;
   }
 
   /**
@@ -892,4 +899,13 @@ function nodeToTemplateLiteral(
       cooked.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
   return jsc.templateLiteral([jsc.templateElement({cooked, raw}, true)], []);
+}
+
+
+function* enumerate<V>(iter: Iterable<V>): Iterable<[number, V]> {
+  let i = 0;
+  for (const val of iter) {
+    yield [i, val];
+    i++;
+  }
 }
