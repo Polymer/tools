@@ -77,13 +77,9 @@ export function configureConverter(
     analysis: Analysis, options: ConvertPackageOptions) {
   return new AnalysisConverter(analysis, {
     namespaces: options.namespaces,
-    excludes: options.excludes ||
-        [
-          'lib/elements/dom-module.html',
-        ],
+    excludes: options.excludes || [],
     referenceExcludes: options.referenceExcludes ||
         [
-          'Polymer.DomModule',
           'Polymer.Settings',
           'Polymer.log',
           'Polymer.rootPath',
