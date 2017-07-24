@@ -104,28 +104,20 @@ export class AnalysisConverter {
             .filter((d) => {
               return !this._excludes.has(d.url) && isNotExternal(d) && d.url;
             });
-    const [toConvertToModules, toKeepAsHtml] =
-        partition(htmlDocuments, (d) => this._includes.has(d.url));
 
     const results = new Map<string, string>();
 
-    for (const document of toConvertToModules) {
+    for (const document of htmlDocuments) {
       try {
-        this.convertDocument(document);
-        const jsUrl = htmlUrlToJs(document.url);
-        const module = this.modules.get(jsUrl);
-        const newSource = module && module.source;
-        if (newSource) {
-          results.set(jsUrl, newSource);
+        let convertedModule;
+        if (this._includes.has(document.url)) {
+          convertedModule = this.convertDocument(document);
+        } else {
+          convertedModule = this.convertHtmlToHtml(document);
         }
-      } catch (e) {
-        console.error(`Error in ${document.url}`, e);
-      }
-    }
-
-    for (const document of toKeepAsHtml) {
-      try {
-        results.set('./' + document.url, this.convertHtmlToHtml(document));
+        if (convertedModule) {
+          results.set(convertedModule.url, convertedModule.source);
+        }
       } catch (e) {
         console.error(`Error in ${document.url}`, e);
       }
@@ -137,12 +129,28 @@ export class AnalysisConverter {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  convertDocument(document: Document): void {
+  convertDocument(document: Document): JsModule|undefined {
     const jsUrl = htmlUrlToJs(document.url);
-    if (this.modules.has(jsUrl)) {
-      return;
+    if (!this.modules.has(jsUrl)) {
+      this.handleNewJsModules(
+          new DocumentConverter(this, document).convertToJsModule());
     }
-    const jsModules = new DocumentConverter(this, document).convertToJsModule();
+    return this.modules.get(jsUrl);
+  }
+
+  /**
+   * Converts HTML Imports and inline scripts to module scripts as necessary.
+   */
+  convertHtmlToHtml(document: Document): JsModule|undefined {
+    const htmlUrl = `./${document.url}`;
+    if (!this.modules.has(htmlUrl)) {
+      this.handleNewJsModules(
+          new DocumentConverter(this, document).convertButKeepAsHtml());
+    }
+    return this.modules.get(htmlUrl);
+  }
+
+  private handleNewJsModules(jsModules: Iterable<JsModule>): void {
     for (const jsModule of jsModules) {
       this.modules.set(jsModule.url, jsModule);
       for (const expr of jsModule.exportedNamespaceMembers) {
@@ -152,25 +160,4 @@ export class AnalysisConverter {
       }
     }
   }
-
-  /**
-   * Converts only the HTML Imports in a document to module script tags.
-   */
-  convertHtmlToHtml(document: Document): string {
-    return new DocumentConverter(this, document).convertButKeepAsHtml();
-  }
-}
-
-function partition<V>(
-    iter: Iterable<V>, predicate: (v: V) => boolean): [V[], V[]] {
-  const yes = [];
-  const no = [];
-  for (const val of iter) {
-    if (predicate(val)) {
-      yes.push(val);
-    } else {
-      no.push(val);
-    }
-  }
-  return [yes, no];
 }

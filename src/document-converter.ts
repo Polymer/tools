@@ -136,7 +136,7 @@ export class DocumentConverter {
     }];
   }
 
-  convertButKeepAsHtml() {
+  convertButKeepAsHtml(): Iterable<JsModule> {
     this.convertDependencies();
 
     interface Edit {
@@ -218,7 +218,12 @@ export class DocumentConverter {
       contents =
           contents.slice(0, start) + replacementText + contents.slice(end);
     }
-    return contents;
+    return [{
+      url: './' + this.document.url,
+      source: contents,
+      exportedNamespaceMembers: [],
+      es6Exports: new Set()
+    }];
   }
 
   /**
