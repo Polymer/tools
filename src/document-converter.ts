@@ -83,6 +83,11 @@ const elementBlacklist = new Set<string|undefined>([
   'dom-module',
 ]);
 
+export interface ExportMigrationRecord {
+  oldNamespacedName: string;
+  es6ExportName: string;
+}
+
 /**
  * Converts a Document and its dependencies.
  */
@@ -118,18 +123,6 @@ export class DocumentConverter {
         .filter((f: Import) => !this.analysisConverter._excludes.has(f.url));
   }
 
-  /**
-   * Adds an export to this module's metadata and to the AnalysisConverter's
-   * namespacedExports index.
-   */
-  addExport(exports: Set<string>, namespaceName: string, name: string) {
-    exports.add(name);
-    this.analysisConverter.namespacedExports.set(namespaceName, {
-      url: this.jsUrl,
-      name,
-    });
-  }
-
   convert(): JsModule|undefined {
     const scripts = this.document.getFeatures({kind: 'js-document'});
     if (scripts.size === 0) {
@@ -154,7 +147,7 @@ export class DocumentConverter {
     this.insertCodeToGenerateHtmlElements();
     this.inlineTemplates();
 
-    const {localNamespaceName, namespaceName, exports} =
+    const {localNamespaceName, namespaceName, exports: exportRecords} =
         this.rewriteNamespaceExports();
 
     this.rewriteNamespaceThisReferences(namespaceName);
@@ -164,7 +157,12 @@ export class DocumentConverter {
 
     const outputProgram = recast.print(
         this.program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
-    return {url: this.jsUrl, source: outputProgram.code + '\n', exports};
+    return {
+      url: this.jsUrl,
+      source: outputProgram.code + '\n',
+      exportMigrationRecords: exportRecords,
+      exports: new Set(exportRecords.map((r) => r.es6ExportName))
+    };
   }
 
   /**
@@ -227,7 +225,7 @@ export class DocumentConverter {
   }
 
   rewriteNamespaceExports() {
-    const exports = new Set();
+    const exps: ExportMigrationRecord[] = [];
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
 
@@ -243,7 +241,7 @@ export class DocumentConverter {
         namespaceName = namespace.join('.');
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
-          this.rewriteNamespaceObject(namespaceName, value, statement, exports);
+          this.rewriteNamespaceObject(namespaceName, value, statement, exps);
           localNamespaceName = namespaceName;
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
@@ -279,8 +277,7 @@ export class DocumentConverter {
                   AssignmentExpression;
               nsNode = expression.right as ObjectExpression;
             }
-            this.rewriteNamespaceObject(
-                namespaceName, nsNode, nsParent, exports);
+            this.rewriteNamespaceObject(namespaceName, nsNode, nsParent, exps);
 
             // Remove the namespace assignment
             this.program.body.splice(this.currentStatementIndex, 1);
@@ -296,7 +293,10 @@ export class DocumentConverter {
                 jsc.exportNamedDeclaration(
                     null,  // declaration
                     [jsc.exportSpecifier(localName, exportedName)]);
-            this.addExport(exports, namespaceName, exportedName.name);
+            exps.push({
+              es6ExportName: exportedName.name,
+              oldNamespacedName: namespaceName
+            });
           }
         } else if (isDeclaration(value)) {
           // TODO (justinfagnani): remove this case? Is it used? Add a test
@@ -316,7 +316,7 @@ export class DocumentConverter {
               jsc.exportNamedDeclaration(jsc.variableDeclaration(
                   'const',
                   [jsc.variableDeclarator(jsc.identifier(name), value)]));
-          this.addExport(exports, namespaceName, name);
+          exps.push({oldNamespacedName: namespaceName, es6ExportName: name});
         }
       } else if (
           this.isNamespace(statement) &&
@@ -341,7 +341,7 @@ export class DocumentConverter {
               jsc.exportNamedDeclaration(jsc.variableDeclaration(
                   'const',
                   [jsc.variableDeclarator(jsc.identifier(name), value)]));
-          this.addExport(exports, namespaceName, name);
+          exps.push({oldNamespacedName: namespaceName, es6ExportName: name});
         }
       }
       this.currentStatementIndex++;
@@ -350,7 +350,7 @@ export class DocumentConverter {
     return {
       localNamespaceName,
       namespaceName,
-      exports,
+      exports: exps,
     };
   }
 
@@ -640,7 +640,7 @@ export class DocumentConverter {
    */
   rewriteNamespaceObject(
       name: string, body: ObjectExpression,
-      statement: Statement|ModuleDeclaration, exports: Set<string>) {
+      statement: Statement|ModuleDeclaration, exprs: ExportMigrationRecord[]) {
     const mutableExports = this._mutableExports[name];
     const namespaceExports = getNamespaceExports(body, mutableExports);
 
@@ -650,9 +650,10 @@ export class DocumentConverter {
         nsIndex, 1, ...namespaceExports.map((e) => e.node));
     this.currentStatementIndex += namespaceExports.length - 1;
     for (const e of namespaceExports) {
-      this.addExport(exports, `${name}.${e.name}`, e.name);
+      exprs.push(
+          {oldNamespacedName: `${name}.${e.name}`, es6ExportName: e.name});
     }
-    this.addExport(exports, name, '*');
+    exprs.push({oldNamespacedName: name, es6ExportName: '*'});
   }
 
   isNamespace(node: Node) {

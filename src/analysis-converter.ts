@@ -17,7 +17,7 @@ import {Expression} from 'estree';
 import * as parse5 from 'parse5';
 import {Analysis, Document} from 'polymer-analyzer';
 
-import {DocumentConverter} from './document-converter';
+import {DocumentConverter, ExportMigrationRecord} from './document-converter';
 import {htmlUrlToJs} from './url-converter';
 
 const _isInTestRegex = /(\b|\/|\\)(test)(\/|\\)/;
@@ -58,6 +58,8 @@ export interface JsModule {
    * Set of exported names.
    */
   readonly exports: ReadonlySet<string>;
+
+  readonly exportMigrationRecords: ReadonlyArray<ExportMigrationRecord>;
 }
 
 export interface AnalysisConverterOptions {
@@ -183,6 +185,11 @@ export class AnalysisConverter {
     const jsModule = new DocumentConverter(this, document).convert();
     if (jsModule) {
       this.modules.set(jsModule.url, jsModule);
+      for (const expr of jsModule.exportMigrationRecords) {
+        this.namespacedExports.set(
+            expr.oldNamespacedName,
+            {name: expr.es6ExportName, url: jsModule.url});
+      }
     }
   }
 
