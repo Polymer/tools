@@ -22,6 +22,7 @@ import * as recast from 'recast';
 
 import {AnalysisConverter} from './analysis-converter';
 import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
+import {unwrapIIFEPeusdoModule} from './passes/unwrap-iife-pseudo-module';
 import {htmlUrlToJs} from './url-converter';
 import {getImportAlias, getModuleId, nodeToTemplateLiteral, serializeNode, sourceLocationsEqual} from './util';
 
@@ -118,7 +119,7 @@ export class DocumentConverter {
     }
     const program = jsc.program(combinedToplevelStatements);
     this.convertDependencies();
-    this.unwrapIIFEPeusdoModule(program);
+    unwrapIIFEPeusdoModule(program);
     const importedReferences = this.rewriteNamespacedReferences(program);
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
@@ -172,7 +173,7 @@ export class DocumentConverter {
         continue;
       }
 
-      this.unwrapIIFEPeusdoModule(program);
+      unwrapIIFEPeusdoModule(program);
       const importedReferences = this.rewriteNamespacedReferences(program);
       const wereImportsAdded = this.addJsImports(program, importedReferences);
       // Don't convert the HTML.
@@ -829,29 +830,6 @@ export class DocumentConverter {
     return jsImportDeclarations.length > 0;
   }
 
-  /**
-   * Mutates program to unwrap the toplevel IIFE if there is one.
-   * This assumes that the IIFE is an intentionally scoped ES5 module body.
-   */
-  private unwrapIIFEPeusdoModule(program: Program) {
-    if (program.body.length === 1 &&
-        program.body[0].type === 'ExpressionStatement') {
-      const statement = program.body[0];
-      if (statement.type === 'ExpressionStatement' &&
-          statement.expression.type === 'CallExpression') {
-        const callee = statement.expression.callee;
-        if (callee.type === 'FunctionExpression') {
-          const body = callee.body.body;
-          if (body.length > 1 && isUseStrict(body[0])) {
-            program.body = body.slice(1);
-          } else {
-            program.body = body;
-          }
-        }
-      }
-    }
-  }
-
   private isNamespace(node: Node) {
     const namespaces = this.document.getFeatures({kind: 'namespace'});
     for (const namespace of namespaces) {
@@ -943,14 +921,7 @@ function getNamespaceExports(
   return exportRecords;
 }
 
-/**
- * Returns true if a statement is the literal "use strict".
- */
-function isUseStrict(statement: Statement) {
-  return statement.type === 'ExpressionStatement' &&
-      statement.expression.type === 'Literal' &&
-      statement.expression.value === 'use strict';
-}
+
 
 /**
  * Returns true if a node is a class or function declaration
