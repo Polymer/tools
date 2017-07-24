@@ -14,6 +14,12 @@
 
 import * as estree from 'estree';
 
+/**
+ * If the given program consists of a single IIFE, move its contents up and out,
+ * as an ES6 module doesn't need an IIFE to contain its local variables.
+ *
+ * @param program The program. Is mutated.
+ */
 export function unwrapIIFEPeusdoModule(program: estree.Program) {
   if (program.body.length !== 1) {
     return;
@@ -25,8 +31,11 @@ export function unwrapIIFEPeusdoModule(program: estree.Program) {
   }
   const callee = statement.expression.callee;
   if ((callee.type !== 'FunctionExpression' &&
-       callee.type !== 'ArrowFunctionExpression') ||
-      callee.body.type !== 'BlockStatement') {
+       callee.type !== 'ArrowFunctionExpression')) {
+    return;
+  }
+  if (callee.body.type !== 'BlockStatement' || callee.async ||
+      callee.generator || callee.params.length > 0) {
     return;
   }
   const body = callee.body.body;
