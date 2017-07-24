@@ -227,12 +227,34 @@ export class DocumentConverter {
 
   private rewriteNamespaceExports() {
     const exportMigrationRecords: ExportMigrationRecord[] = [];
+    let currentStatementIndex = 0;
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
 
+    const rewriteNamespaceObject =
+        (name: string,
+         body: ObjectExpression,
+         statement: Statement | ModuleDeclaration) => {
+          const mutableExports = this._mutableExports[name];
+          const namespaceExports = getNamespaceExports(body, mutableExports);
+
+          // Replace original namespace statement with new exports
+          const nsIndex = this.program.body.indexOf(statement);
+          this.program.body.splice(
+              nsIndex, 1, ...namespaceExports.map((e) => e.node));
+          currentStatementIndex += namespaceExports.length - 1;
+          for (const e of namespaceExports) {
+            exportMigrationRecords.push({
+              oldNamespacedName: `${name}.${e.name}`,
+              es6ExportName: e.name
+            });
+          }
+          exportMigrationRecords.push(
+              {oldNamespacedName: name, es6ExportName: '*'});
+        };
+
     // Walk through all top-level statements and replace namespace assignments
     // with module exports.
-    let currentStatementIndex = 0;
     while (currentStatementIndex < this.program.body.length) {
       const statement = this.program.body[currentStatementIndex] as Statement;
       const exported = getExport(statement, this.analysisConverter.namespaces);
@@ -242,10 +264,7 @@ export class DocumentConverter {
         namespaceName = namespace.join('.');
 
         if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
-          const {currentStatementOffset, exportMigrationRecords: newRecords} =
-              this.rewriteNamespaceObject(namespaceName, value, statement);
-          exportMigrationRecords.push(...newRecords);
-          currentStatementIndex += currentStatementOffset;
+          rewriteNamespaceObject(namespaceName, value, statement);
           localNamespaceName = namespaceName;
         } else if (value.type === 'Identifier') {
           // An 'export' of the form:
@@ -281,10 +300,7 @@ export class DocumentConverter {
                   AssignmentExpression;
               nsNode = expression.right as ObjectExpression;
             }
-            const {currentStatementOffset, exportMigrationRecords: newRecords} =
-                this.rewriteNamespaceObject(namespaceName, nsNode, nsParent);
-            exportMigrationRecords.push(...newRecords);
-            currentStatementIndex += currentStatementOffset;
+            rewriteNamespaceObject(namespaceName, nsNode, nsParent);
 
             // Remove the namespace assignment
             this.program.body.splice(currentStatementIndex, 1);
@@ -639,40 +655,6 @@ export class DocumentConverter {
         }
       }
     }
-  }
-
-  /**
-   * Rewrites a namespace object as a set of exports.
-   *
-   * Mutates this.program.
-   *
-   * @param name the dot-separated name of the namespace
-   * @param body the ObjectExpression body of the namespace
-   * @param statement the statement, to be replaced, that contains the namespace
-   * @return New export migration records and the statementIndex offset from the
-   * changes.
-   */
-  private rewriteNamespaceObject(
-      name: string, body: ObjectExpression,
-      statement: Statement|ModuleDeclaration): {
-    exportMigrationRecords: Iterable<ExportMigrationRecord>,
-    currentStatementOffset: number
-  } {
-    const mutableExports = this._mutableExports[name];
-    const namespaceExports = getNamespaceExports(body, mutableExports);
-
-    // Replace original namespace statement with new exports
-    const nsIndex = this.program.body.indexOf(statement);
-    this.program.body.splice(
-        nsIndex, 1, ...namespaceExports.map((e) => e.node));
-    const currentStatementOffset = namespaceExports.length - 1;
-    const exportMigrationRecords = [];
-    for (const e of namespaceExports) {
-      exportMigrationRecords.push(
-          {oldNamespacedName: `${name}.${e.name}`, es6ExportName: e.name});
-    }
-    exportMigrationRecords.push({oldNamespacedName: name, es6ExportName: '*'});
-    return {exportMigrationRecords, currentStatementOffset};
   }
 
   private isNamespace(node: Node) {
