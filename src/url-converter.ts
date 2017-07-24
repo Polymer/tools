@@ -38,15 +38,15 @@ export function htmlUrlToJs(url: string, from?: string): string {
   }
 
   // Temporary workaround for urls that run outside of the current packages
+  // Also, TODO(rictic): point these at @webcomponentsjs/shadycss/...
   if (jsUrl.endsWith('shadycss/apply-shim.js')) {
     jsUrl = jsUrl.replace(
-        'shadycss/apply-shim.js',
-        '../@webcomponents/shadycss/apply-shim.min.js');
+        'shadycss/apply-shim.js', 'shadycss/entrypoints/apply-shim.js');
   }
   if (jsUrl.endsWith('shadycss/custom-style-interface.js')) {
     jsUrl = jsUrl.replace(
         'shadycss/custom-style-interface.js',
-        '../@webcomponents/shadycss/custom-style-interface.min.js');
+        'shadycss/entrypoints/custom-style-interface.js');
   }
   return jsUrl;
 }

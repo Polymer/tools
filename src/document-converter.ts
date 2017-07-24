@@ -532,8 +532,7 @@ export class DocumentConverter {
    * Mutates this.analysisConverter to register their exports.
    */
   private convertDependencies() {
-    const htmlImports = this.getHtmlImports();
-    for (const htmlImport of htmlImports) {
+    for (const htmlImport of this.getHtmlImports()) {
       const jsUrl = htmlUrlToJs(htmlImport.url, this.document.url);
       if (this.analysisConverter.modules.has(jsUrl)) {
         continue;

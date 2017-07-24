@@ -1325,6 +1325,47 @@ console.log(foo.document.currentScript.ownerDocument);
 `
       });
     });
+
+    const testName = `it handles imports that are modules but write to globals`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="../shadycss/custom-style-interface.html">
+          <link rel="import" href="../shadycss/apply-shim.html">
+          <script>
+            console.log(ShadyCSS.flush());
+          </script>
+        `,
+        'index.html': `
+          <link rel="import" href="../shadycss/custom-style-interface.html">
+          <link rel="import" href="../shadycss/apply-shim.html">
+          <script>
+            console.log(ShadyCSS.flush());
+          </script>
+        `,
+        'bower_components/shadycss/custom-style-interface.html': ``,
+        'bower_components/shadycss/apply-shim.html': ``,
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+import '../shadycss/entrypoints/custom-style-interface.js';
+import '../shadycss/entrypoints/apply-shim.js';
+console.log(ShadyCSS.flush());
+`,
+
+        './index.html': `
+
+          <script type="module" src="../shadycss/entrypoints/custom-style-interface.js"></script>
+          <script type="module" src="../shadycss/entrypoints/apply-shim.js"></script>
+          <script type="module">
+import '../shadycss/entrypoints/custom-style-interface.js';
+import '../shadycss/entrypoints/apply-shim.js';
+console.log(ShadyCSS.flush());
+</script>
+        `
+      });
+    });
   });
 
   suite('fixtures', () => {
