@@ -17,10 +17,10 @@ require('source-map-support').install();
 
 import * as path from 'path';
 import {exec} from 'mz/child_process';
+import {exists} from 'mz/fs';
 import {convertPackage} from '../convert-package';
-// import rimraf = require('rimraf');
 
-// const repoUrl = 'https://github.com/Polymer/polymer.git';
+const repoUrl = 'https://github.com/Polymer/polymer.git';
 const fixturesDirPath =
     path.resolve(__dirname, '../../fixtures/generated/polymer');
 const sourceDir = path.join(fixturesDirPath, 'source');
@@ -29,11 +29,12 @@ const convertedDir = path.join(fixturesDirPath, 'expected');
 (async () => {
 
   await exec(`mkdir -p ${fixturesDirPath}`);
-  // console.log(`Cloning ${repoUrl} to ${sourceDir}...`);
-  // rimraf.sync(sourceDir);
-  // await exec(
-  //     'git clone https://github.com/Polymer/polymer.git source --depth=1',
-  //     {cwd: fixturesDirPath});
+  if (!await exists(sourceDir)) {
+    console.log(`Cloning ${repoUrl} to ${sourceDir}...`);
+    await exec(
+        'git clone https://github.com/Polymer/polymer.git source --depth=1',
+        {cwd: fixturesDirPath});
+  }
 
   console.log(`Converting...`);
   await convertPackage({
