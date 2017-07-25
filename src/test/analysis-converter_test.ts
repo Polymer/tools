@@ -1303,7 +1303,7 @@ document.registerElement(
       });
     });
 
-    test(`it handles document.currentScript.ownerDocument`, async () => {
+    test(`handles document.currentScript.ownerDocument`, async () => {
       setSources({
         'test.html': `
           <script>
@@ -1326,7 +1326,7 @@ console.log(foo.document.currentScript.ownerDocument);
       });
     });
 
-    let testName = `it handles imports that are modules but write to globals`;
+    let testName = `handles imports that are modules but write to globals`;
     test(testName, async () => {
       setSources({
         'test.html': `
@@ -1367,7 +1367,7 @@ console.log(ShadyCSS.flush());
       });
     });
 
-    testName = `it handles inline scripts that write to global configuration ` +
+    testName = `handles inline scripts that write to global configuration ` +
         `properties`;
     test(testName, async () => {
       setSources({
@@ -1409,6 +1409,46 @@ import '../shadycss/entrypoints/apply-shim.js';
 console.log(ShadyDOM.flush());
 </script>
         `
+      });
+    });
+
+    testName =
+        `finds the right element declaration to associate the template with`;
+    test.skip(testName, async () => {
+      setSources({
+        'test.html': `
+<dom-module id="foo"><template>foo</template></dom-module>
+<script>
+  Polymer({
+    is: 'foo'
+  });
+</script>
+
+<dom-module id="bar"><template>bar</template></dom-module>
+<script>
+  Polymer({
+    is: 'bar'
+  });
+</script>
+        `
+      });
+      assertSources(await convert(), {
+        './test.js': `
+Polymer({
+  _template: \`
+foo
+\`,
+
+  is: 'foo'
+});
+Polymer({
+  _template: \`
+bar
+\`,
+
+  is: 'bar'
+});
+`
       });
     });
   });
