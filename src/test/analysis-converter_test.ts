@@ -1326,7 +1326,7 @@ console.log(foo.document.currentScript.ownerDocument);
       });
     });
 
-    const testName = `it handles imports that are modules but write to globals`;
+    let testName = `it handles imports that are modules but write to globals`;
     test(testName, async () => {
       setSources({
         'test.html': `
@@ -1362,6 +1362,51 @@ console.log(ShadyCSS.flush());
 import '../shadycss/entrypoints/custom-style-interface.js';
 import '../shadycss/entrypoints/apply-shim.js';
 console.log(ShadyCSS.flush());
+</script>
+        `
+      });
+    });
+
+    testName = `it handles inline scripts that write to global configuration ` +
+        `properties`;
+    test(testName, async () => {
+      setSources({
+        'index.html': `
+          <script>
+            window.ShadyDOM = {force: true};
+          </script>
+          <script>
+            Polymer = {
+              rootPath: 'earlyRootPath/'
+            }
+          </script>
+          <link rel="import" href="../shadycss/custom-style-interface.html">
+          <link rel="import" href="../shadycss/apply-shim.html">
+          <script>
+            console.log(ShadyDOM.flush());
+          </script>
+        `,
+        'bower_components/shadycss/custom-style-interface.html': ``,
+        'bower_components/shadycss/apply-shim.html': ``,
+      });
+
+      assertSources(await convert(), {
+        './index.html': `
+
+          <script>
+            window.ShadyDOM = {force: true};
+          </script>
+          <script>
+            Polymer = {
+              rootPath: 'earlyRootPath/'
+            }
+          </script>
+          <script type="module" src="../shadycss/entrypoints/custom-style-interface.js"></script>
+          <script type="module" src="../shadycss/entrypoints/apply-shim.js"></script>
+          <script type="module">
+import '../shadycss/entrypoints/custom-style-interface.js';
+import '../shadycss/entrypoints/apply-shim.js';
+console.log(ShadyDOM.flush());
 </script>
         `
       });

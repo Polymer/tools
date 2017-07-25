@@ -165,6 +165,11 @@ export class DocumentConverter {
       const file = recast.parse(script.parsedDocument.contents);
       this.program = file.program;
 
+      if (this.writesToGlobalSettingsObjects()) {
+        continue;
+      }
+
+      this.unwrapIIFEPeusdoModule();
       const importedReferences = this.rewriteNamespacedReferences();
       const wereImportsAdded = this.addJsImports(importedReferences);
       // Don't convert the HTML.
@@ -228,6 +233,34 @@ export class DocumentConverter {
       exportedNamespaceMembers: [],
       es6Exports: new Set()
     }];
+  }
+
+  private writesToGlobalSettingsObjects() {
+    let containsWriteToGlobalSettingsObject = false;
+    const globalSettingsObjects =
+        new Set<string>(['Polymer', 'Polymer.Settings', 'ShadyDOM']);
+
+    function getNamespacedName(node: Node) {
+      if (node.type === 'Identifier') {
+        return node.name;
+      }
+      const memberPath = getMemberPath(node);
+      if (memberPath) {
+        return memberPath.join('.');
+      }
+      return undefined;
+    }
+    astTypes.visit(this.program, {
+      visitAssignmentExpression(path: AstPath<estree.AssignmentExpression>) {
+        const name = getNamespacedName(path.node.left);
+        if (globalSettingsObjects.has(name!)) {
+          containsWriteToGlobalSettingsObject = true;
+        }
+        return false;
+      },
+    });
+
+    return containsWriteToGlobalSettingsObject;
   }
 
   /**
