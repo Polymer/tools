@@ -282,7 +282,9 @@ export class DocumentConverter {
           templateValue)),
       jsc.expressionStatement(jsc.callExpression(
           jsc.memberExpression(
-              jsc.identifier('document'), jsc.identifier('appendChild')),
+              jsc.memberExpression(
+                  jsc.identifier('document'), jsc.identifier('head')),
+              jsc.identifier('appendChild')),
           [jsc.identifier(varName)]))
     ];
     let insertionPoint = 0;

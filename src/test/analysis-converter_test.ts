@@ -975,7 +975,7 @@ Polymer({
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<custom-style><style>foo{}</style></custom-style>\`;
-document.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer);
 `
       });
     });
@@ -1140,7 +1140,7 @@ import { Element as $Element } from './polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Top</div><div>Middle</div><div>Bottom</div>\`;
-document.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer);
 class FooElem extends $Element {}
 class BarElem extends $Element {}
 `
@@ -1181,7 +1181,7 @@ import { Element as $Element } from './polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
-document.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer);
 customElements.define('foo-elem', class FooElem extends $Element {
   get template() {
     return \`
