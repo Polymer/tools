@@ -17,14 +17,17 @@ import * as estree from 'estree';
 import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import} from 'polymer-analyzer';
+import {Document, Import, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
-import jsc = require('jscodeshift');
 import {AnalysisConverter} from './analysis-converter';
+import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
 import {htmlUrlToJs} from './url-converter';
-import {JsModule, JsExport, NamespaceMemberToExport} from './js-module';
-import {serializeNode, getModuleId, getImportAlias, nodeToTemplateLiteral, sourceLocationsEqual} from './util';
+import {getImportAlias, getModuleId, nodeToTemplateLiteral, serializeNode, sourceLocationsEqual} from './util';
+
+
+import jsc = require('jscodeshift');
+
 
 const astTypes = require('ast-types');
 interface AstPath<N extends Node = Node> {
@@ -125,6 +128,7 @@ export class DocumentConverter {
     this.rewriteReferencesToTheLocallyDefinedNamespace(localNamespaceName);
     this.rewriteReferencesToTheLocallyDefinedNamespace(namespaceName);
     this.rewriteExcludedReferences();
+    this.warnOnDangerousReferences();
 
     const outputProgram = recast.print(
         this.program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
@@ -136,7 +140,7 @@ export class DocumentConverter {
     }];
   }
 
-  convertButKeepAsHtml(): Iterable<JsModule> {
+  convertAsToplevelHtmlDocument(): Iterable<JsModule> {
     this.convertDependencies();
 
     interface Edit {
@@ -146,7 +150,7 @@ export class DocumentConverter {
     const edits: Array<Edit> = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const astNode = script.astNode;
-      if (!astNode || dom5.getAttribute(astNode, 'type') === 'module') {
+      if (!astNode || !isLegacyJavascriptTag(astNode)) {
         continue;  // ignore unknown script tags and preexisting modules
       }
       const sourceRange = script.astNode ?
@@ -161,14 +165,14 @@ export class DocumentConverter {
       const file = recast.parse(script.parsedDocument.contents);
       this.program = file.program;
 
-      this.unwrapIIFEPeusdoModule();
       const importedReferences = this.rewriteNamespacedReferences();
       const wereImportsAdded = this.addJsImports(importedReferences);
-      // Don't conver the HTML.
+      // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
       // Don't rewrite exports, we can't export anything.
 
       this.rewriteExcludedReferences();
+      this.warnOnDangerousReferences();
 
       if (!wereImportsAdded) {
         continue;  // no imports, no reason to convert to a module
@@ -190,22 +194,22 @@ export class DocumentConverter {
       edits.push({offsets, replacementText});
     }
 
-    for (const imp of this.document.getFeatures({kind: 'html-import'})) {
+    for (const htmlImport of this.document.getFeatures({kind: 'html-import'})) {
       // Only replace imports that are actually in the document.
-      if (!imp.sourceRange) {
+      if (!htmlImport.sourceRange) {
         continue;
       }
-      const offsets =
-          this.document.parsedDocument.sourceRangeToOffsets(imp.sourceRange);
-      const scriptTag =
-          parse5.treeAdapters.default.createElement('script', '', []);
-      dom5.setAttribute(scriptTag, 'type', 'module');
-      const packageRelativeUrl = htmlUrlToJs(imp.url);
+      const offsets = this.document.parsedDocument.sourceRangeToOffsets(
+          htmlImport.sourceRange);
+
+      const packageRelativeUrl = htmlUrlToJs(htmlImport.url);
       let fileRelativeUrl =
           path.relative(path.dirname(this.document.url), packageRelativeUrl);
       if (!fileRelativeUrl.startsWith('../')) {
         fileRelativeUrl = `./${fileRelativeUrl}`;
       }
+      const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
+                            .childNodes![0];
       dom5.setAttribute(scriptTag, 'src', fileRelativeUrl);
       const replacementText = serializeNode(scriptTag);
       edits.push({offsets, replacementText});
@@ -369,6 +373,8 @@ export class DocumentConverter {
                   declaration.init.type === 'ObjectExpression') {
                 nsNode = declaration.init;
               } else {
+                // we only know how to handle object literals here,
+                // bail on the other cases.
                 continue;
               }
             } else if (
@@ -379,9 +385,12 @@ export class DocumentConverter {
               if (expression.right.type === 'ObjectExpression') {
                 nsNode = expression.right;
               } else {
+                // we only know how to handle object literals here,
+                // bail on the other cases.
                 continue;
               }
             } else {
+              // Not a known kind of namespace declaration.
               continue;
             }
             rewriteNamespaceObject(namespaceName, nsNode, nsParent);
@@ -484,6 +493,14 @@ export class DocumentConverter {
       const node = this.getNode(element.astNode);
 
       if (node === undefined) {
+        console.warn(
+            new Warning({
+              code: 'not-found',
+              message: `Can't find recat node for element ${element.tagName}`,
+              parsedDocument: this.document.parsedDocument,
+              severity: Severity.WARNING,
+              sourceRange: element.sourceRange!
+            }).toString());
         continue;
       }
 
@@ -595,17 +612,8 @@ export class DocumentConverter {
    * don't work well in modular code.
    */
   private rewriteExcludedReferences() {
-    const analysisConverter = this.analysisConverter;
-
-    const mapOfRewrites = new Map<string, Node>();
-    const windowDotDocument = jsc.memberExpression(
-        jsc.identifier('window'), jsc.identifier('document'));
-    mapOfRewrites.set(
-        'document.currentScript.ownerDocument', windowDotDocument);
-    mapOfRewrites.set(
-        'window.document.currentScript.ownerDocument', windowDotDocument);
-
-    for (const reference of analysisConverter._referenceExcludes) {
+    const mapOfRewrites = new Map(this.analysisConverter._referenceRewrites);
+    for (const reference of this.analysisConverter._referenceExcludes) {
       mapOfRewrites.set(reference, jsc.identifier('undefined'));
     }
 
@@ -617,6 +625,32 @@ export class DocumentConverter {
           const replacement = mapOfRewrites.get(memberName);
           if (replacement) {
             path.replace(replacement);
+          }
+        }
+        this.traverse(path);
+      }
+    });
+  }
+
+  private warnOnDangerousReferences() {
+    const dangerousReferences = this.analysisConverter.dangerousReferences;
+    astTypes.visit(this.program, {
+      visitMemberExpression(path: AstPath<MemberExpression>) {
+        const memberPath = getMemberPath(path.node);
+        if (memberPath !== undefined) {
+          const memberName = memberPath.join('.');
+          const warningMessage = dangerousReferences.get(memberName);
+          if (warningMessage) {
+            // TODO(rictic): track the relationship between the programs and
+            // documents so we can display real Warnings here.
+            console.warn(`Issue in ${this.document.url}: ${warningMessage}`);
+            // console.warn(new Warning({
+            //                code: 'dangerous-ref',
+            //                message: warningMessage,
+            //                parsedDocument???,
+            //                severity: Severity.WARNING,
+            //                sourceRange???
+            //              }).toString());
           }
         }
         this.traverse(path);
@@ -943,4 +977,33 @@ function* enumerate<V>(iter: Iterable<V>): Iterable<[number, V]> {
     yield [i, val];
     i++;
   }
+}
+
+const legacyJavascriptTypes: ReadonlySet<string|null> = new Set([
+  // lol
+  // https://dev.w3.org/html5/spec-preview/the-script-element.html#scriptingLanguages
+  null,
+  '',
+  'application/ecmascript',
+  'application/javascript',
+  'application/x-ecmascript',
+  'application/x-javascript',
+  'text/ecmascript',
+  'text/javascript',
+  'text/javascript1.0',
+  'text/javascript1.1',
+  'text/javascript1.2',
+  'text/javascript1.3',
+  'text/javascript1.4',
+  'text/javascript1.5',
+  'text/jscript',
+  'text/livescript',
+  'text/x-ecmascript',
+  'text/x-javascript',
+]);
+function isLegacyJavascriptTag(scriptNode: parse5.ASTNode) {
+  if (scriptNode.tagName !== 'script') {
+    return false;
+  }
+  return legacyJavascriptTypes.has(dom5.getAttribute(scriptNode, 'type'));
 }

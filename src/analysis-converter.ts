@@ -12,11 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as estree from 'estree';
 import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
 import {htmlUrlToJs} from './url-converter';
+
+
+import jsc = require('jscodeshift');
 
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
@@ -76,6 +80,10 @@ export class AnalysisConverter {
   readonly modules = new Map<string, JsModule>();
   readonly namespacedExports = new Map<string, JsExport>();
 
+  readonly _referenceRewrites: ReadonlyMap<string, estree.Node>;
+
+  readonly dangerousReferences: ReadonlyMap<string, string>;
+
   constructor(analysis: Analysis, options: AnalysisConverterOptions = {}) {
     this._analysis = analysis;
     const declaredNamespaces = [
@@ -84,6 +92,20 @@ export class AnalysisConverter {
     ].map((n) => n.name);
     this.namespaces =
         new Set([...declaredNamespaces, ...(options.namespaces || [])]);
+
+    const referenceRewrites = new Map<string, estree.Node>();
+    const windowDotDocument = jsc.memberExpression(
+        jsc.identifier('window'), jsc.identifier('document'));
+    referenceRewrites.set(
+        'document.currentScript.ownerDocument', windowDotDocument);
+    this._referenceRewrites = referenceRewrites;
+
+    const dangerousReferences = new Map<string, string>();
+    dangerousReferences.set(
+        'document.currentScript',
+        `document.currentScript is always \`null\` in an ES6 module.`);
+    this.dangerousReferences = dangerousReferences;
+
     this._excludes = new Set(options.excludes!);
     this._referenceExcludes = new Set(options.referenceExcludes!);
     this._mutableExports = options.mutableExports;
@@ -144,8 +166,8 @@ export class AnalysisConverter {
   convertHtmlToHtml(document: Document): JsModule|undefined {
     const htmlUrl = `./${document.url}`;
     if (!this.modules.has(htmlUrl)) {
-      this.handleNewJsModules(
-          new DocumentConverter(this, document).convertButKeepAsHtml());
+      this.handleNewJsModules(new DocumentConverter(this, document)
+                                  .convertAsToplevelHtmlDocument());
     }
     return this.modules.get(htmlUrl);
   }
