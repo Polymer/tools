@@ -8,17 +8,17 @@
 
 declare module 'jscodeshift' {
 
+  import * as estree from 'estree';
+
   declare module jscodeshift {
-
-    import * as estree from 'estree';
-
     export function sourceLocation(start: estree.Position, end: estree.Position, source?: (string|null)): estree.SourceLocation;
 
     export function position(line: number, column: number): estree.Position;
 
     export function file(program: estree.Program, name?: (string|null)): estree.File;
 
-    export function program(body: estree.Statement[]): estree.Program;
+    // TODO(rictic): teach gen-ts-types to get this type union right.
+    export function program(body: Array<estree.Statement|estree.ModuleDeclaration>): estree.Program;
 
     export function identifier(name: string): estree.Identifier;
 
