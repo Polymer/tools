@@ -165,7 +165,7 @@ export class DocumentConverter {
       const file = recast.parse(script.parsedDocument.contents);
       this.program = file.program;
 
-      if (this.writesToGlobalSettingsObjects()) {
+      if (this.containsWriteToGlobalSettingsObject()) {
         continue;
       }
 
@@ -235,8 +235,10 @@ export class DocumentConverter {
     }];
   }
 
-  private writesToGlobalSettingsObjects() {
+  private containsWriteToGlobalSettingsObject() {
     let containsWriteToGlobalSettingsObject = false;
+    // Note that we look for writes to these objects exactly, not to writes to
+    // members of these objects.
     const globalSettingsObjects =
         new Set<string>(['Polymer', 'Polymer.Settings', 'ShadyDOM']);
 
