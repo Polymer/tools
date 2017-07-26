@@ -20,7 +20,7 @@ import * as estree from 'estree';
  *
  * @param program The program. Is mutated.
  */
-export function unwrapIIFEPeusdoModule(program: estree.Program) {
+export function removeWrappingIIFE(program: estree.Program) {
   if (program.body.length !== 1) {
     return;
   }

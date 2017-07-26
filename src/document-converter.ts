@@ -22,7 +22,7 @@ import * as recast from 'recast';
 
 import {AnalysisConverter} from './analysis-converter';
 import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
-import {unwrapIIFEPeusdoModule} from './passes/unwrap-iife-pseudo-module';
+import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {htmlUrlToJs} from './url-converter';
 import {getImportAlias, getModuleId, nodeToTemplateLiteral, serializeNode, sourceLocationsEqual} from './util';
 
@@ -119,7 +119,7 @@ export class DocumentConverter {
     }
     const program = jsc.program(combinedToplevelStatements);
     this.convertDependencies();
-    unwrapIIFEPeusdoModule(program);
+    removeWrappingIIFE(program);
     const importedReferences = this.rewriteNamespacedReferences(program);
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
@@ -173,7 +173,7 @@ export class DocumentConverter {
         continue;
       }
 
-      unwrapIIFEPeusdoModule(program);
+      removeWrappingIIFE(program);
       const importedReferences = this.rewriteNamespacedReferences(program);
       const wereImportsAdded = this.addJsImports(program, importedReferences);
       // Don't convert the HTML.
