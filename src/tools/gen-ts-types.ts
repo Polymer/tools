@@ -98,10 +98,9 @@ const declaration = `
 // that exports jscodeshift
 
 declare module 'jscodeshift' {
+  import * as estree from 'estree';
 
   declare module jscodeshift {
-
-    import * as estree from 'estree';
 
     ${builders.join('\n    ')}
   }
