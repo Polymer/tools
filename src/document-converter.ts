@@ -16,7 +16,7 @@ import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
-import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
+import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, Node, ObjectExpression, Program} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Document, Import, isPositionInsideRange, Severity, Warning} from 'polymer-analyzer';
@@ -175,7 +175,16 @@ export class DocumentConverter {
       const wereImportsAdded = this.addJsImports(program, importedReferences);
       // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
-      // Don't rewrite exports, we can't export anything.
+
+      const {localNamespaceName, namespaceName} =
+          this.rewriteNamespaceExports(program);
+      this.rewriteNamespaceThisReferences(program, namespaceName);
+      this.rewriteReferencesToTheLocallyDefinedNamespace(
+          program, localNamespaceName);
+      this.rewriteReferencesToTheLocallyDefinedNamespace(
+          program, namespaceName);
+      this.rewriteExcludedReferences(program);
+
 
       this.rewriteExcludedReferences(program);
       this.warnOnDangerousReferences(program);
@@ -325,7 +334,7 @@ export class DocumentConverter {
       if (statement.type === 'ImportDeclaration') {
         continue;
       }
-      // First stement past the imports.
+      // First statement past the imports.
       insertionPoint = idx;
       break;
     }
@@ -338,22 +347,19 @@ export class DocumentConverter {
    */
   private rewriteNamespaceExports(program: Program) {
     const exportMigrationRecords: NamespaceMemberToExport[] = [];
-    let currentStatementIndex = 0;
     let localNamespaceName: string|undefined;
     let namespaceName: string|undefined;
 
-    const rewriteNamespaceObject =
-        (name: string,
-         body: ObjectExpression,
-         statement: Statement | ModuleDeclaration) => {
+    const newRewriteNamespaceObject =
+        (name: string, body: ObjectExpression, path: NodePath) => {
           const mutableExports = this._mutableExports[name];
           const namespaceExports = getNamespaceExports(body, mutableExports);
 
-          // Replace original namespace statement with new exports
-          const nsIndex = program.body.indexOf(statement);
-          program.body.splice(
-              nsIndex, 1, ...namespaceExports.map((e) => e.node));
-          currentStatementIndex += namespaceExports.length - 1;
+          for (const {node} of namespaceExports) {
+            path.insertBefore(node);
+          }
+          path.prune();
+
           for (const e of namespaceExports) {
             exportMigrationRecords.push({
               oldNamespacedName: `${name}.${e.name}`,
@@ -364,116 +370,100 @@ export class DocumentConverter {
               {oldNamespacedName: name, es6ExportName: '*'});
         };
 
-    // Walk through all top-level statements and replace namespace assignments
-    // with module exports.
-    while (currentStatementIndex < program.body.length) {
-      const statement = program.body[currentStatementIndex];
-      const exported = getExport(statement, this.analysisConverter.namespaces);
+    const handleApparentExports =
+        (path: NodePath,
+         exportedExpression: estree.Expression,
+         namespaceMemberPath: string[]) => {
+          namespaceName = namespaceMemberPath.join('.');
+          if (this.isNamespace(path.node) &&
+              exportedExpression.type === 'ObjectExpression') {
+            newRewriteNamespaceObject(namespaceName, exportedExpression, path);
+            localNamespaceName = namespaceName;
+          } else if (exportedExpression.type === 'Identifier') {
+            // An 'export' of the form:
+            // Polymer.Foo = Foo;
+            // TODO(justinfagnani): generalize to handle namespaces and other
+            // declarations
+            const localName = exportedExpression;
 
-      if (exported !== undefined) {
-        const {namespace, value} = exported;
-        namespaceName = namespace.join('.');
+            const namespaceFeatures = this.document.getFeatures(
+                {id: namespaceName, kind: 'namespace'});
 
-        if (this.isNamespace(statement) && value.type === 'ObjectExpression') {
-          rewriteNamespaceObject(namespaceName, value, statement);
-          localNamespaceName = namespaceName;
-        } else if (value.type === 'Identifier') {
-          // An 'export' of the form:
-          // Polymer.Foo = Foo;
-          // TODO(justinfagnani): generalize to handle namespaces and other
-          // declarations
-          const localName = value;
+            if (namespaceFeatures.size > 0) {
+              // // Polymer.X = X; where X is previously defined as a namespace
 
-          const features = this.document.getFeatures({id: namespaceName});
-          // TODO(fks) 06-06-2017: '!' required below due to Typscript bug,
-          // remove when fixed
-          const referencedFeature = Array.from(features).find(
-              (f) => f.identifiers.has(namespaceName!));
+              const [namespaceFeature] = this.document.getFeatures(
+                  {id: namespaceName, kind: 'namespace'});
 
-          if (referencedFeature && referencedFeature.kinds.has('namespace')) {
-            // Polymer.X = X; where X is previously defined as a namespace
-
-            // Find the namespace node and containing statement
-            const namespaceFeature = referencedFeature;
-            const nsParent = this.getNode(program, namespaceFeature.astNode);
-            if (nsParent == null) {
-              throw new Error(`can't find associated node for namespace`);
-            }
-            let nsNode: ObjectExpression;
-            if (nsParent.type === 'VariableDeclaration' &&
-                nsParent.declarations.length > 0) {
-              // case: const n = {...}
-              const declaration = nsParent.declarations[0]!;
-              if (declaration.init &&
-                  declaration.init.type === 'ObjectExpression') {
-                nsNode = declaration.init;
-              } else {
-                // we only know how to handle object literals here,
-                // bail on the other cases.
-                continue;
+              // Find the namespace node and containing statement
+              const namespaceDeclarationStatement =
+                  this.getNodePath(program, namespaceFeature.astNode);
+              if (namespaceDeclarationStatement == null) {
+                throw new Error(`can't find associated node for namespace`);
               }
-            } else if (
-                nsParent.type === 'ExpressionStatement' &&
-                nsParent.expression.type === 'AssignmentExpression') {
-              // case: n = {...}
-              const expression = nsParent.expression;
-              if (expression.right.type === 'ObjectExpression') {
-                nsNode = expression.right;
-              } else {
-                // we only know how to handle object literals here,
-                // bail on the other cases.
-                continue;
+              const namespaceDeclarationValue =
+                  getAssignmentValue(namespaceDeclarationStatement.node);
+              if (!namespaceDeclarationValue ||
+                  namespaceDeclarationValue.type !== 'ObjectExpression') {
+                return;
               }
+              newRewriteNamespaceObject(
+                  namespaceName,
+                  namespaceDeclarationValue,
+                  namespaceDeclarationStatement);
+
+              // Remove the namespace assignment
+              path.prune();
             } else {
-              // Not a known kind of namespace declaration.
-              continue;
+              // Not a namespace, fallback to a named export
+              // We could probably do better for referenced declarations, ie
+              // move the export to the declaration
+              const exportedName =
+                  namespaceMemberPath[namespaceMemberPath.length - 1];
+              path.replace(jsc.exportNamedDeclaration(
+                  null,  // declaration
+                  [jsc.exportSpecifier(
+                      localName, jsc.identifier(exportedName))]));
+              exportMigrationRecords.push({
+                es6ExportName: exportedName,
+                oldNamespacedName: namespaceName
+              });
             }
-            rewriteNamespaceObject(namespaceName, nsNode, nsParent);
-
-            // Remove the namespace assignment
-            program.body.splice(currentStatementIndex, 1);
-            // Adjust current index since we removed a statement
-            currentStatementIndex--;
+          } else if (isDeclaration(exportedExpression)) {
+            // TODO (justinfagnani): remove this case? Is it used? Add a
+            // test
+            path.replace(jsc.exportDefaultDeclaration(exportedExpression));
           } else {
-            // Not a namespace, fallback to a named export
-            // We could probably do better for referenced declarations, ie move
-            // the export to the declaration
-            const exportedName =
-                jsc.identifier(namespace[namespace.length - 1]);
-            program.body[currentStatementIndex] = jsc.exportNamedDeclaration(
-                null,  // declaration
-                [jsc.exportSpecifier(localName, exportedName)]);
-            exportMigrationRecords.push({
-              es6ExportName: exportedName.name,
-              oldNamespacedName: namespaceName
-            });
+            let name = namespaceMemberPath[namespaceMemberPath.length - 1];
+            // Special Polymer workaround: Register & rewrite the
+            // `Polymer._polymerFn` export as if it were the `Polymer()`
+            // namespace function.
+            if (namespaceName === 'Polymer._polymerFn') {
+              namespaceName = 'Polymer';
+              name = 'Polymer';
+            }
+            path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
+                'const', [jsc.variableDeclarator(
+                             jsc.identifier(name), exportedExpression)])));
+            exportMigrationRecords.push(
+                {oldNamespacedName: namespaceName, es6ExportName: name});
           }
-        } else if (isDeclaration(value)) {
-          // TODO (justinfagnani): remove this case? Is it used? Add a test
-          program.body[currentStatementIndex] =
-              jsc.exportDefaultDeclaration(value);
-        } else {
-          let name = namespace[namespace.length - 1];
-          // Special Polymer workaround: Register & rewrite the
-          // `Polymer._polymerFn` export as if it were the `Polymer()`
-          // namespace function.
-          if (namespaceName === 'Polymer._polymerFn') {
-            namespaceName = 'Polymer';
-            name = 'Polymer';
-          }
-          program.body[currentStatementIndex] =
-              jsc.exportNamedDeclaration(jsc.variableDeclaration(
-                  'const',
-                  [jsc.variableDeclarator(jsc.identifier(name), value)]));
-          exportMigrationRecords.push(
-              {oldNamespacedName: namespaceName, es6ExportName: name});
-        }
+        };
+
+    visitToplevelStatements(program, (path: NodePath<Node>) => {
+      const statement = path.node;
+      const exported = getExport(statement, this.analysisConverter.namespaces);
+      if (exported !== undefined) {
+        const {namespace: namespaceMemberPath, value} = exported;
+        handleApparentExports(path, value, namespaceMemberPath);
+        return;
       } else if (
           this.isNamespace(statement) &&
           statement.type === 'VariableDeclaration') {
         // Local namespace declaration, like:
         // /** @namespace */ const Foo = {};
-        // Set the localNamespacename so we can rewrite internal references
+        // Set the localNamespacename so we can rewrite internal
+        // references
         const declarator = statement.declarations[0];
         if (declarator.id.type === 'Identifier') {
           localNamespaceName = declarator.id.name;
@@ -487,16 +477,13 @@ export class DocumentConverter {
           const name = namespace[namespace.length - 1];
           namespaceName = namespace.join('.');
 
-          program.body[currentStatementIndex] =
-              jsc.exportNamedDeclaration(jsc.variableDeclaration(
-                  'const',
-                  [jsc.variableDeclarator(jsc.identifier(name), value)]));
+          path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
+              'const', [jsc.variableDeclarator(jsc.identifier(name), value)])));
           exportMigrationRecords.push(
               {oldNamespacedName: namespaceName, es6ExportName: name});
         }
       }
-      currentStatementIndex++;
-    }
+    });
 
     return {
       localNamespaceName,
@@ -506,16 +493,16 @@ export class DocumentConverter {
   }
 
   /**
-   * Find Polymer element templates in the original HTML. Insert these templates
-   * as strings as part of the javascript element declaration.
+   * Find Polymer element templates in the original HTML. Insert these
+   * templates as strings as part of the javascript element declaration.
    */
   private inlineTemplates(program: Program, scriptDocument: Document) {
     const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
 
     for (const element of elements) {
-      // This is an analyzer wart. There's no way to avoid getting features from
-      // the containing document when querying an inline document.
-      // Filed as https://github.com/Polymer/polymer-analyzer/issues/712
+      // This is an analyzer wart. There's no way to avoid getting features
+      // from the containing document when querying an inline document. Filed
+      // as https://github.com/Polymer/polymer-analyzer/issues/712
       if (element.sourceRange === undefined ||
           !isPositionInsideRange(
               element.sourceRange.start, scriptDocument.sourceRange)) {
@@ -588,8 +575,8 @@ export class DocumentConverter {
    * Rewrite namespaced references to the imported name. e.g. changes
    * Polymer.Element -> $Element
    *
-   * Also mutates this.module.importedReferences to include the imported urls
-   * and names so that the proper imports can be added in a later pass.
+   * Returns a map of from url to identifier of the references we should
+   * import.
    */
   private rewriteNamespacedReferences(program: Program) {
     const analysisConverter = this.analysisConverter;
@@ -735,9 +722,9 @@ export class DocumentConverter {
   }
 
   /**
-   * Rewrite `this` references that refer to the namespace object. Replace with
-   * an explicit reference to the namespace. This simplifies the rest of our
-   * transform pipeline by letting it assume that all namespace references
+   * Rewrite `this` references that refer to the namespace object. Replace
+   * with an explicit reference to the namespace. This simplifies the rest of
+   * our transform pipeline by letting it assume that all namespace references
    * are explicit.
    *
    * NOTE(fks): References to the namespace object still need to be corrected
@@ -894,13 +881,21 @@ export class DocumentConverter {
    * possibly by a different parser, though they output the same format).
    */
   private getNode(program: Program, node: Node) {
-    let associatedNode: Node|undefined;
+    const associatedNodePath = this.getNodePath(program, node);
+    if (associatedNodePath) {
+      return associatedNodePath.node;
+    }
+    return;
+  }
+
+  private getNodePath(program: Program, node: Node) {
+    let associatedNodePath: NodePath|undefined;
 
     astTypes.visit(program, {
       visitNode(path: NodePath<Node>): boolean |
       undefined {
         if (sourceLocationsEqual(path.node, node)) {
-          associatedNode = path.node;
+          associatedNodePath = path;
           return false;
         }
         this.traverse(path);
@@ -908,7 +903,7 @@ export class DocumentConverter {
       }
     });
 
-    return associatedNode;
+    return associatedNodePath;
   }
 }
 
@@ -984,8 +979,7 @@ function isDeclaration(node: Node) {
  *
  * @param moduleRoot If specified
  */
-function getExport(
-    statement: Statement|ModuleDeclaration, namespaces: ReadonlySet<string>):
+function getExport(statement: estree.Node, namespaces: ReadonlySet<string>):
     {namespace: string[], value: Expression}|undefined {
   if (!(statement.type === 'ExpressionStatement' &&
         statement.expression.type === 'AssignmentExpression')) {
@@ -1012,7 +1006,7 @@ function getExport(
  * access, as used in namespace-style exports.
  */
 export function getMemberPath(expression: Node): string[]|undefined {
-  if (expression.type !== 'MemberExpression' ||
+  if (expression.type !== 'MemberExpression' || expression.computed ||
       expression.property.type !== 'Identifier') {
     return;
   }
@@ -1070,4 +1064,40 @@ function isLegacyJavascriptTag(scriptNode: parse5.ASTNode) {
     return false;
   }
   return legacyJavascriptTypes.has(dom5.getAttribute(scriptNode, 'type'));
+}
+
+function visitToplevelStatements(
+    program: Program, cb: (path: NodePath) => void) {
+  astTypes.visit(program, {
+    visitNode(path: NodePath<Node>) {
+      if (!path.parent) {
+        // toplevel program
+        this.traverse(path);
+        return;
+      }
+      if (path.parent.node.type !== 'Program') {
+        // not a toplevel statement, skip it
+        return false;
+      }
+      this.traverse(path);
+
+      // ok, path.node must be a toplevel statement of the program.
+      cb(path);
+      return;
+    }
+  });
+}
+
+function getAssignmentValue(node: estree.Node): estree.Expression|null|
+    undefined {
+  if (node.type === 'VariableDeclaration' && node.declarations.length > 0) {
+    // case: const n = {...}
+    return node.declarations[0].init;
+  } else if (
+      node.type === 'ExpressionStatement' &&
+      node.expression.type === 'AssignmentExpression') {
+    // case: n = {...}
+    return node.expression.right;
+  }
+  return;
 }

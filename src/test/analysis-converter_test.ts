@@ -1565,6 +1565,41 @@ bar
 `
       });
     });
+
+    testName = `convert namespace assignments on maintained inline scripts`;
+    test.skip(testName, async () => {
+      setSources({
+        'index.html': `
+          <link rel="import" href="./polymer.html">
+          <script>
+            Polymer.foo = class Foo {foo() {}};
+            new Polymer.foo().foo();
+          </script>
+        `,
+        'polymer.html': `
+          <script>
+            /** @namespace */
+            const Polymer = {};
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        './index.html': `
+
+          <script type="module" src="./polymer.js"></script>
+          <script type="module">
+import './polymer.js';
+export const foo = class Foo {foo() {}};
+new foo().foo();
+</script>
+        `,
+        './polymer.js': `
+/** @namespace */
+const Polymer = {};
+        `
+      });
+    });
   });
 
   suite('fixtures', () => {
