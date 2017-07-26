@@ -17,7 +17,7 @@ import * as estree from 'estree';
 import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import, Severity, Warning} from 'polymer-analyzer';
+import {Document, Import, isPositionInsideRange, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import {AnalysisConverter} from './analysis-converter';
@@ -107,18 +107,21 @@ export class DocumentConverter {
   }
 
   convertToJsModule(): Iterable<JsModule> {
-    const toplevelStatements = [];
+    const combinedToplevelStatements = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
-      const file = recast.parse(script.parsedDocument.contents);
-      toplevelStatements.push(...file.program.body);
+      const scriptProgram =
+          recast.parse(script.parsedDocument.contents).program;
+      // We need to inline templates on a per-script basis, otherwise we run
+      // into trouble matching up analyzer AST nodes with our own.
+      this.inlineTemplates(scriptProgram, script);
+      combinedToplevelStatements.push(...scriptProgram.body);
     }
-    const program = jsc.program(toplevelStatements);
+    const program = jsc.program(combinedToplevelStatements);
     this.convertDependencies();
     this.unwrapIIFEPeusdoModule(program);
     const importedReferences = this.rewriteNamespacedReferences(program);
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
-    this.inlineTemplates(program);
 
     const {localNamespaceName, namespaceName, exportMigrationRecords} =
         this.rewriteNamespaceExports(program);
@@ -511,9 +514,18 @@ export class DocumentConverter {
    * Find Polymer element templates in the original HTML. Insert these templates
    * as strings as part of the javascript element declaration.
    */
-  private inlineTemplates(program: Program) {
-    const elements = this.document.getFeatures({'kind': 'polymer-element'});
+  private inlineTemplates(program: Program, scriptDocument: Document) {
+    const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
+
     for (const element of elements) {
+      // This is an analyzer wart. There's no way to avoid getting features from
+      // the containing document when querying an inline document.
+      // Filed as https://github.com/Polymer/polymer-analyzer/issues/712
+      if (element.sourceRange === undefined ||
+          !isPositionInsideRange(
+              element.sourceRange.start, scriptDocument.sourceRange)) {
+        continue;
+      }
       const domModule = element.domModule;
       if (domModule === undefined) {
         continue;

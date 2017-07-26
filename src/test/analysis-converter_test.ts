@@ -1414,7 +1414,7 @@ console.log(ShadyDOM.flush());
 
     testName =
         `finds the right element declaration to associate the template with`;
-    test.skip(testName, async () => {
+    test(testName, async () => {
       setSources({
         'test.html': `
 <dom-module id="foo"><template>foo</template></dom-module>
