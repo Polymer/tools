@@ -443,10 +443,6 @@ export class DocumentConverter {
                 oldNamespacedName: namespaceName
               });
             }
-          } else if (isDeclaration(exportedExpression)) {
-            // TODO (justinfagnani): remove this case? Is it used? Add a
-            // test
-            path.replace(jsc.exportDefaultDeclaration(exportedExpression));
           } else {
             let name = namespaceMemberPath[namespaceMemberPath.length - 1];
             // Special Polymer workaround: Register & rewrite the
@@ -978,15 +974,6 @@ function getNamespaceExports(
   return exportRecords;
 }
 
-
-
-/**
- * Returns true if a node is a class or function declaration
- */
-function isDeclaration(node: Node) {
-  const type = node.type;
-  return type === 'ClassDeclaration';
-}
 
 /**
  * If a statement appears to be an export, returns the exported declaration.
