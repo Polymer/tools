@@ -1,7 +1,5 @@
 declare module 'command-line-args' {
-
   module commandLineArgs {
-
     interface OptionDefinition {
       name: string;
       alias?: string;
@@ -11,11 +9,11 @@ declare module 'command-line-args' {
       defaultValue?: any;
       description?: string;
     }
-
   }
 
-  function commandLineArgs(options: OptionDefinition[], argv?: string[])
-      : {[name: string]: any};
+  function commandLineArgs(
+      options: commandLineArgs.OptionDefinition[],
+      argv?: string[]): {[name: string]: any};
 
   export = commandLineArgs;
 }

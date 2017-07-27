@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as astTypes from 'ast-types';
+import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, ModuleDeclaration, Node, ObjectExpression, Program, Statement} from 'estree';
@@ -27,14 +29,6 @@ import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl
 import {getImportAlias, getModuleId, nodeToTemplateLiteral, serializeNode, sourceLocationsEqual} from './util';
 
 import jsc = require('jscodeshift');
-
-
-const astTypes = require('ast-types');
-interface AstPath<N extends Node = Node> {
-  node: N;
-  parent?: {node: Node};
-  replace(replacement: Node): void;
-}
 
 /**
  * Convert a module specifier & an optional set of named exports (or '*' to
@@ -257,7 +251,7 @@ export class DocumentConverter {
       return undefined;
     }
     astTypes.visit(program, {
-      visitAssignmentExpression(path: AstPath<estree.AssignmentExpression>) {
+      visitAssignmentExpression(path: NodePath<estree.AssignmentExpression>) {
         const name = getNamespacedName(path.node.left);
         if (globalSettingsObjects.has(name!)) {
           containsWriteToGlobalSettingsObject = true;
@@ -456,9 +450,8 @@ export class DocumentConverter {
           }
         } else if (isDeclaration(value)) {
           // TODO (justinfagnani): remove this case? Is it used? Add a test
-          program.body[currentStatementIndex] = jsc.exportDeclaration(
-              false,  // default
-              value);
+          program.body[currentStatementIndex] =
+              jsc.exportDefaultDeclaration(value);
         } else {
           let name = namespace[namespace.length - 1];
           // Special Polymer workaround: Register & rewrite the
@@ -615,7 +608,7 @@ export class DocumentConverter {
     };
 
     astTypes.visit(program, {
-      visitIdentifier(path: AstPath<Identifier>) {
+      visitIdentifier(path: NodePath<Identifier>) {
         const memberName = path.node.name;
         const isNamespace = analysisConverter.namespaces.has(memberName);
         const parentIsMemberExpression =
@@ -633,7 +626,7 @@ export class DocumentConverter {
         path.replace(exportOfMember.expressionToAccess());
         return false;
       },
-      visitMemberExpression(path: AstPath<MemberExpression>) {
+      visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (!memberPath) {
           this.traverse(path);
@@ -666,7 +659,7 @@ export class DocumentConverter {
     }
 
     astTypes.visit(program, {
-      visitMemberExpression(path: AstPath<MemberExpression>) {
+      visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (memberPath !== undefined) {
           const memberName = memberPath.join('.');
@@ -682,8 +675,9 @@ export class DocumentConverter {
 
   private warnOnDangerousReferences(program: Program) {
     const dangerousReferences = this.analysisConverter.dangerousReferences;
+    const originalUrl = this.originalUrl;
     astTypes.visit(program, {
-      visitMemberExpression(path: AstPath<MemberExpression>) {
+      visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (memberPath !== undefined) {
           const memberName = memberPath.join('.');
@@ -691,7 +685,7 @@ export class DocumentConverter {
           if (warningMessage) {
             // TODO(rictic): track the relationship between the programs and
             // documents so we can display real Warnings here.
-            console.warn(`Issue in ${this.originalUrl}: ${warningMessage}`);
+            console.warn(`Issue in ${originalUrl}: ${warningMessage}`);
             // console.warn(new Warning({
             //                code: 'dangerous-ref',
             //                message: warningMessage,
@@ -725,7 +719,7 @@ export class DocumentConverter {
       return;
     }
     astTypes.visit(program, {
-      visitMemberExpression(path: AstPath<MemberExpression>) {
+      visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         const memberName = memberPath && memberPath.slice(0, -1).join('.');
         if (memberName && memberName === namespaceName) {
@@ -757,7 +751,7 @@ export class DocumentConverter {
     }
     astTypes.visit(program, {
       visitExportNamedDeclaration:
-          (path: AstPath<estree.ExportNamedDeclaration>) => {
+          (path: NodePath<estree.ExportNamedDeclaration>) => {
             if (path.node.declaration &&
                 path.node.declaration.type === 'FunctionDeclaration') {
               this.rewriteSingleScopeThisReferences(
@@ -766,7 +760,7 @@ export class DocumentConverter {
             return false;
           },
       visitExportDefaultDeclaration:
-          (path: AstPath<estree.ExportDefaultDeclaration>) => {
+          (path: NodePath<estree.ExportDefaultDeclaration>) => {
             if (path.node.declaration &&
                 path.node.declaration.type === 'FunctionDeclaration') {
               this.rewriteSingleScopeThisReferences(
@@ -784,15 +778,15 @@ export class DocumentConverter {
   private rewriteSingleScopeThisReferences(
       blockStatement: BlockStatement, namespaceReference: string) {
     astTypes.visit(blockStatement, {
-      visitFunctionExpression(_path: AstPath<estree.FunctionExpression>) {
+      visitFunctionExpression(_path: NodePath<estree.FunctionExpression>) {
         // Don't visit into new scopes
         return false;
       },
-      visitFunctionDeclaration(_path: AstPath<estree.FunctionDeclaration>) {
+      visitFunctionDeclaration(_path: NodePath<estree.FunctionDeclaration>) {
         // Don't visit into new scopes
         return false;
       },
-      visitThisExpression(path: AstPath<estree.ThisExpression>) {
+      visitThisExpression(path: NodePath<estree.ThisExpression>) {
         path.replace(jsc.identifier(namespaceReference));
         return false;
       },
@@ -903,7 +897,7 @@ export class DocumentConverter {
     let associatedNode: Node|undefined;
 
     astTypes.visit(program, {
-      visitNode(path: AstPath<Node>): boolean |
+      visitNode(path: NodePath<Node>): boolean |
       undefined {
         if (sourceLocationsEqual(path.node, node)) {
           associatedNode = path.node;
