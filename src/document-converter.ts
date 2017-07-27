@@ -121,12 +121,14 @@ export class DocumentConverter {
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
 
-    const {localNamespaceName, namespaceName, exportMigrationRecords} =
+    const {localNamespaceNames, namespaceName, exportMigrationRecords} =
         this.rewriteNamespaceExports(program);
 
     this.rewriteNamespaceThisReferences(program, namespaceName);
-    this.rewriteReferencesToTheLocallyDefinedNamespace(
-        program, localNamespaceName);
+    for (const localNamespacename of localNamespaceNames) {
+      this.rewriteReferencesToTheLocallyDefinedNamespace(
+          program, localNamespacename);
+    }
     this.rewriteReferencesToTheLocallyDefinedNamespace(program, namespaceName);
     this.rewriteExcludedReferences(program);
     this.warnOnDangerousReferences(program);
@@ -176,11 +178,13 @@ export class DocumentConverter {
       // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
 
-      const {localNamespaceName, namespaceName} =
+      const {localNamespaceNames, namespaceName} =
           this.rewriteNamespaceExports(program);
       this.rewriteNamespaceThisReferences(program, namespaceName);
-      this.rewriteReferencesToTheLocallyDefinedNamespace(
-          program, localNamespaceName);
+      for (const localNamespaceName of localNamespaceNames) {
+        this.rewriteReferencesToTheLocallyDefinedNamespace(
+            program, localNamespaceName);
+      }
       this.rewriteReferencesToTheLocallyDefinedNamespace(
           program, namespaceName);
       this.rewriteExcludedReferences(program);
@@ -347,7 +351,7 @@ export class DocumentConverter {
    */
   private rewriteNamespaceExports(program: Program) {
     const exportMigrationRecords: NamespaceMemberToExport[] = [];
-    let localNamespaceName: string|undefined;
+    const localNamespaceNames = new Set<string>();
     let namespaceName: string|undefined;
 
     const newRewriteNamespaceObject =
@@ -378,7 +382,7 @@ export class DocumentConverter {
           if (this.isNamespace(path.node) &&
               exportedExpression.type === 'ObjectExpression') {
             newRewriteNamespaceObject(namespaceName, exportedExpression, path);
-            localNamespaceName = namespaceName;
+            localNamespaceNames.add(namespaceName);
           } else if (exportedExpression.type === 'Identifier') {
             // An 'export' of the form:
             // Polymer.Foo = Foo;
@@ -466,11 +470,10 @@ export class DocumentConverter {
         // references
         const declarator = statement.declarations[0];
         if (declarator.id.type === 'Identifier') {
-          localNamespaceName = declarator.id.name;
+          localNamespaceNames.add(declarator.id.name);
         }
-      } else if (localNamespaceName) {
-        const namespaceAssignment =
-            getExport(statement, new Set([localNamespaceName]));
+      } else {
+        const namespaceAssignment = getExport(statement, localNamespaceNames);
 
         if (namespaceAssignment !== undefined) {
           const {namespace, value} = namespaceAssignment;
@@ -486,7 +489,7 @@ export class DocumentConverter {
     });
 
     return {
-      localNamespaceName,
+      localNamespaceNames,
       namespaceName,
       exportMigrationRecords,
     };
