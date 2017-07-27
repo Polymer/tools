@@ -121,15 +121,20 @@ export class DocumentConverter {
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
 
-    const {localNamespaceNames, namespaceName, exportMigrationRecords} =
+    const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         this.rewriteNamespaceExports(program);
 
-    this.rewriteNamespaceThisReferences(program, namespaceName);
+    for (const namespaceName of namespaceNames) {
+      this.rewriteNamespaceThisReferences(program, namespaceName);
+    }
     for (const localNamespacename of localNamespaceNames) {
       this.rewriteReferencesToTheLocallyDefinedNamespace(
           program, localNamespacename);
     }
-    this.rewriteReferencesToTheLocallyDefinedNamespace(program, namespaceName);
+    for (const namespaceName of namespaceNames) {
+      this.rewriteReferencesToTheLocallyDefinedNamespace(
+          program, namespaceName);
+    }
     this.rewriteExcludedReferences(program);
     this.warnOnDangerousReferences(program);
 
@@ -178,15 +183,19 @@ export class DocumentConverter {
       // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
 
-      const {localNamespaceNames, namespaceName} =
+      const {localNamespaceNames, namespaceNames} =
           this.rewriteNamespaceExports(program);
-      this.rewriteNamespaceThisReferences(program, namespaceName);
+      for (const namespaceName of namespaceNames) {
+        this.rewriteNamespaceThisReferences(program, namespaceName);
+      }
       for (const localNamespaceName of localNamespaceNames) {
         this.rewriteReferencesToTheLocallyDefinedNamespace(
             program, localNamespaceName);
       }
-      this.rewriteReferencesToTheLocallyDefinedNamespace(
-          program, namespaceName);
+      for (const namespaceName of namespaceNames) {
+        this.rewriteReferencesToTheLocallyDefinedNamespace(
+            program, namespaceName);
+      }
       this.rewriteExcludedReferences(program);
 
 
@@ -352,7 +361,7 @@ export class DocumentConverter {
   private rewriteNamespaceExports(program: Program) {
     const exportMigrationRecords: NamespaceMemberToExport[] = [];
     const localNamespaceNames = new Set<string>();
-    let namespaceName: string|undefined;
+    const namespaceNames = new Set<string>();
 
     const newRewriteNamespaceObject =
         (name: string, body: ObjectExpression, path: NodePath) => {
@@ -378,7 +387,8 @@ export class DocumentConverter {
         (path: NodePath,
          exportedExpression: estree.Expression,
          namespaceMemberPath: string[]) => {
-          namespaceName = namespaceMemberPath.join('.');
+          const namespaceName = namespaceMemberPath.join('.');
+          namespaceNames.add(namespaceName);
           if (this.isNamespace(path.node) &&
               exportedExpression.type === 'ObjectExpression') {
             newRewriteNamespaceObject(namespaceName, exportedExpression, path);
@@ -442,15 +452,18 @@ export class DocumentConverter {
             // Special Polymer workaround: Register & rewrite the
             // `Polymer._polymerFn` export as if it were the `Polymer()`
             // namespace function.
+            let correctedNamespaceName = namespaceName;
             if (namespaceName === 'Polymer._polymerFn') {
-              namespaceName = 'Polymer';
+              correctedNamespaceName = 'Polymer';
               name = 'Polymer';
             }
             path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
                 'const', [jsc.variableDeclarator(
                              jsc.identifier(name), exportedExpression)])));
-            exportMigrationRecords.push(
-                {oldNamespacedName: namespaceName, es6ExportName: name});
+            exportMigrationRecords.push({
+              oldNamespacedName: correctedNamespaceName,
+              es6ExportName: name
+            });
           }
         };
 
@@ -478,7 +491,8 @@ export class DocumentConverter {
         if (namespaceAssignment !== undefined) {
           const {namespace, value} = namespaceAssignment;
           const name = namespace[namespace.length - 1];
-          namespaceName = namespace.join('.');
+          const namespaceName = namespace.join('.');
+          namespaceNames.add(namespaceName);
 
           path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
               'const', [jsc.variableDeclarator(jsc.identifier(name), value)])));
@@ -490,7 +504,7 @@ export class DocumentConverter {
 
     return {
       localNamespaceNames,
-      namespaceName,
+      namespaceNames,
       exportMigrationRecords,
     };
   }
