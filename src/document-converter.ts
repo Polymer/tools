@@ -133,14 +133,8 @@ export class DocumentConverter {
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
     }
-    for (const localNamespacename of localNamespaceNames) {
-      this.rewriteReferencesToTheLocallyDefinedNamespace(
-          program, localNamespacename);
-    }
-    for (const namespaceName of namespaceNames) {
-      this.rewriteReferencesToTheLocallyDefinedNamespace(
-          program, namespaceName);
-    }
+    this.rewriteReferencesLocallyDefinedNamespaceMembers(
+        program, new Set([...localNamespaceNames, ...namespaceNames]));
     this.rewriteExcludedReferences(program);
     this.warnOnDangerousReferences(program);
 
@@ -197,16 +191,8 @@ export class DocumentConverter {
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
-      for (const localNamespaceName of localNamespaceNames) {
-        this.rewriteReferencesToTheLocallyDefinedNamespace(
-            program, localNamespaceName);
-      }
-      for (const namespaceName of namespaceNames) {
-        this.rewriteReferencesToTheLocallyDefinedNamespace(
-            program, namespaceName);
-      }
-      this.rewriteExcludedReferences(program);
-
+      this.rewriteReferencesLocallyDefinedNamespaceMembers(
+          program, new Set([...localNamespaceNames, ...namespaceNames]));
 
       this.rewriteExcludedReferences(program);
       this.warnOnDangerousReferences(program);
@@ -571,16 +557,16 @@ export class DocumentConverter {
    * export foo() {}
    * foo();
    */
-  private rewriteReferencesToTheLocallyDefinedNamespace(  //
-      program: Program, namespaceName?: string) {
-    if (namespaceName === undefined) {
-      return;
+  private rewriteReferencesLocallyDefinedNamespaceMembers(  //
+      program: Program, namespaceNames: ReadonlySet<string>) {
+    if (namespaceNames.size === 0) {
+      return;  // minor optimization, but saves a tree walk.
     }
     astTypes.visit(program, {
       visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         const memberName = memberPath && memberPath.slice(0, -1).join('.');
-        if (memberName && memberName === namespaceName) {
+        if (memberName && namespaceNames.has(memberName)) {
           path.replace(path.node.property);
           return false;
         }
