@@ -12,12 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as astTypes from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
 import jsc = require('jscodeshift');
+import {NodePath} from 'ast-types';
 
 export function serializeNode(node: parse5.ASTNode): string {
   const container = parse5.treeAdapters.default.createDocumentFragment();
@@ -95,9 +97,8 @@ export function nodeToTemplateLiteral(
  * Returns an array of identifiers if an expression is a chain of property
  * access, as used in namespace-style exports.
  */
-export function getMemberPath(expression: estree.Expression): string[]|
-    undefined {
-  if (expression.type !== 'MemberExpression' ||
+export function getMemberPath(expression: estree.Node): string[]|undefined {
+  if (expression.type !== 'MemberExpression' || expression.computed ||
       expression.property.type !== 'Identifier') {
     return;
   }
@@ -118,4 +119,39 @@ export function getMemberPath(expression: estree.Expression): string[]|
     }
   }
   return undefined;
+}
+
+
+/**
+ * Find the node in program that corresponds to the same part of code
+ * as the given node.
+ *
+ * This method is necessary because program is parsed locally, but the
+ * given node may have come from the analyzer (so a different parse run,
+ * possibly by a different parser, though they output the same format).
+ */
+export function getNode(program: estree.Program, node: estree.Node) {
+  const associatedNodePath = getNodePath(program, node);
+  if (associatedNodePath) {
+    return associatedNodePath.node;
+  }
+  return;
+}
+
+export function getNodePath(program: estree.Program, node: estree.Node) {
+  let associatedNodePath: NodePath|undefined;
+
+  astTypes.visit(program, {
+    visitNode(path: NodePath<estree.Node>): boolean |
+    undefined {
+      if (sourceLocationsEqual(path.node, node)) {
+        associatedNodePath = path;
+        return false;
+      }
+      this.traverse(path);
+      return undefined;
+    }
+  });
+
+  return associatedNodePath;
 }

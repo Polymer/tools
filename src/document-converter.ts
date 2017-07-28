@@ -16,19 +16,20 @@ import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
-import {BlockStatement, Expression, Identifier, ImportDeclaration, MemberExpression, Node, ObjectExpression, Program} from 'estree';
+import {BlockStatement, Identifier, ImportDeclaration, MemberExpression, Node, Program} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Document, Import, isPositionInsideRange, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import {AnalysisConverter} from './analysis-converter';
-import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
+import {JsExport, JsModule} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
-import {getImportAlias, getModuleId, nodeToTemplateLiteral, serializeNode, sourceLocationsEqual} from './util';
+import {getImportAlias, getMemberPath, getModuleId, getNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 import jsc = require('jscodeshift');
+import {RewriteNamespaceExportsPass} from './passes/rewrite-namespace-exports';
 
 /**
  * Convert a module specifier & an optional set of named exports (or '*' to
@@ -121,8 +122,14 @@ export class DocumentConverter {
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
 
+
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
-        this.rewriteNamespaceExports(program);
+        new RewriteNamespaceExportsPass(
+            program,
+            this.document,
+            this._mutableExports,
+            this.analysisConverter.namespaces)
+            .run();
 
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
@@ -184,7 +191,12 @@ export class DocumentConverter {
       // Don't inline templates, they're fine where they are.
 
       const {localNamespaceNames, namespaceNames} =
-          this.rewriteNamespaceExports(program);
+          new RewriteNamespaceExportsPass(
+              program,
+              this.document,
+              this._mutableExports,
+              this.analysisConverter.namespaces)
+              .run();
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
@@ -355,155 +367,6 @@ export class DocumentConverter {
   }
 
   /**
-   * Find places in program that look like they're exporting symbols by
-   * writing them onto namespaces. Transform these into ES6 module exports.
-   */
-  private rewriteNamespaceExports(program: Program) {
-    const exportMigrationRecords: NamespaceMemberToExport[] = [];
-    const localNamespaceNames: ReadonlySet<string> =
-        new Set(getLocalNamesOfLocallyDeclaredNamespaces(this.document));
-    const namespaceNames = new Set<string>();
-
-    const rewriteNamespaceObject = (  //
-        fullyQualifiedName: string,
-        body: ObjectExpression,
-        nodePath: NodePath) => {
-      const mutableExports = this._mutableExports[fullyQualifiedName];
-      const namespaceExports = getNamespaceExports(body, mutableExports);
-
-      for (const {node} of namespaceExports) {
-        nodePath.insertBefore(node);
-      }
-      nodePath.prune();
-
-      for (const e of namespaceExports) {
-        exportMigrationRecords.push({
-          oldNamespacedName: `${fullyQualifiedName}.${e.name}`,
-          es6ExportName: e.name
-        });
-      }
-      exportMigrationRecords.push(
-          {oldNamespacedName: fullyQualifiedName, es6ExportName: '*'});
-    };
-
-    const handleNamespaceDeclarations =
-        (nodePath: NodePath,
-         exportedExpression: estree.Expression,
-         fullyQualifiedNamePath: string[]) => {
-          const fullyQualifiedName = fullyQualifiedNamePath.join('.');
-          namespaceNames.add(fullyQualifiedName);
-          if (this.isNamespace(nodePath.node) &&
-              exportedExpression.type === 'ObjectExpression') {
-            rewriteNamespaceObject(
-                fullyQualifiedName, exportedExpression, nodePath);
-          } else if (exportedExpression.type === 'Identifier') {
-            // An 'export' of the form:
-            // Polymer.Foo = Foo;
-            // TODO(justinfagnani): generalize to handle namespaces and other
-            // declarations
-            const namespaceFeatures = this.document.getFeatures(
-                {id: fullyQualifiedName, kind: 'namespace'});
-
-            if (namespaceFeatures.size > 0) {
-              // // Polymer.X = X; where X is previously defined as a namespace
-
-              const [namespaceFeature] = this.document.getFeatures(
-                  {id: fullyQualifiedName, kind: 'namespace'});
-
-              // Find the namespace node and containing statement
-              const namespaceDeclarationStatement =
-                  this.getNodePath(program, namespaceFeature.astNode);
-              if (namespaceDeclarationStatement == null) {
-                throw new Error(`can't find associated node for namespace`);
-              }
-              const namespaceDeclarationValue =
-                  getAssignmentValue(namespaceDeclarationStatement.node);
-              if (!namespaceDeclarationValue ||
-                  namespaceDeclarationValue.type !== 'ObjectExpression') {
-                return;
-              }
-              rewriteNamespaceObject(
-                  fullyQualifiedName,
-                  namespaceDeclarationValue,
-                  namespaceDeclarationStatement);
-
-              // Remove the namespace assignment
-              nodePath.prune();
-            } else {
-              // Not a namespace, fallback to a named export
-              // We could probably do better for referenced declarations, ie
-              // move the export to the declaration
-              const exportedName =
-                  fullyQualifiedNamePath[fullyQualifiedNamePath.length - 1];
-              nodePath.replace(jsc.exportNamedDeclaration(
-                  null,  // declaration
-                  [jsc.exportSpecifier(
-                      exportedExpression, jsc.identifier(exportedName))]));
-              exportMigrationRecords.push({
-                es6ExportName: exportedName,
-                oldNamespacedName: fullyQualifiedName
-              });
-            }
-          } else {
-            let name =
-                fullyQualifiedNamePath[fullyQualifiedNamePath.length - 1];
-            // Special Polymer workaround: Register & rewrite the
-            // `Polymer._polymerFn` export as if it were the `Polymer()`
-            // namespace function.
-            let correctedNamespaceName = fullyQualifiedName;
-            if (fullyQualifiedName === 'Polymer._polymerFn') {
-              correctedNamespaceName = 'Polymer';
-              name = 'Polymer';
-            }
-            nodePath.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
-                'const', [jsc.variableDeclarator(
-                             jsc.identifier(name), exportedExpression)])));
-            exportMigrationRecords.push({
-              oldNamespacedName: correctedNamespaceName,
-              es6ExportName: name
-            });
-          }
-        };
-
-    visitToplevelStatements(program, (path: NodePath<Node>) => {
-      const statement = path.node;
-      const namespaceDeclaration = extractNamespaceDeclaration(
-          statement, this.analysisConverter.namespaces);
-      if (namespaceDeclaration !== undefined) {
-        const {memberPath: namespaceMemberPath, value} = namespaceDeclaration;
-        handleNamespaceDeclarations(path, value, namespaceMemberPath);
-        return;
-      }
-
-      const localNamespaceDeclaration =
-          extractNamespaceDeclaration(statement, localNamespaceNames);
-
-      if (localNamespaceDeclaration === undefined) {
-        return;
-      }
-
-      const {memberPath, value} = localNamespaceDeclaration;
-      const nameExportedAs = memberPath[memberPath.length - 1];
-      const fullyQualifiedName = memberPath.join('.');
-      namespaceNames.add(fullyQualifiedName);
-
-      path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
-          'const',
-          [jsc.variableDeclarator(jsc.identifier(nameExportedAs), value)])));
-      exportMigrationRecords.push({
-        oldNamespacedName: fullyQualifiedName,
-        es6ExportName: nameExportedAs
-      });
-    });
-
-    return {
-      localNamespaceNames,
-      namespaceNames,
-      exportMigrationRecords,
-    };
-  }
-
-  /**
    * Find Polymer element templates in the original HTML. Insert these
    * templates as strings as part of the javascript element declaration.
    */
@@ -530,7 +393,7 @@ export class DocumentConverter {
 
       const templateLiteral = nodeToTemplateLiteral(
           parse5.treeAdapters.default.getTemplateContent(template));
-      const node = this.getNode(program, element.astNode);
+      const node = getNode(program, element.astNode);
 
       if (node === undefined) {
         console.warn(
@@ -872,162 +735,8 @@ export class DocumentConverter {
     // Return true if any imports were added, false otherwise
     return jsImportDeclarations.length > 0;
   }
-
-  private isNamespace(node: Node) {
-    const namespaces = this.document.getFeatures({kind: 'namespace'});
-    for (const namespace of namespaces) {
-      if (sourceLocationsEqual(namespace.astNode, node)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Find the node in program that corresponds to the same part of code
-   * as the given node.
-   *
-   * This method is necessary because program is parsed locally, but the
-   * given node may have come from the analyzer (so a different parse run,
-   * possibly by a different parser, though they output the same format).
-   */
-  private getNode(program: Program, node: Node) {
-    const associatedNodePath = this.getNodePath(program, node);
-    if (associatedNodePath) {
-      return associatedNodePath.node;
-    }
-    return;
-  }
-
-  private getNodePath(program: Program, node: Node) {
-    let associatedNodePath: NodePath|undefined;
-
-    astTypes.visit(program, {
-      visitNode(path: NodePath<Node>): boolean |
-      undefined {
-        if (sourceLocationsEqual(path.node, node)) {
-          associatedNodePath = path;
-          return false;
-        }
-        this.traverse(path);
-        return undefined;
-      }
-    });
-
-    return associatedNodePath;
-  }
 }
 
-/**
- * Returns export declarations for each of a namespace objects members.
- *
- * Pure, does no mutation.
- */
-function getNamespaceExports(
-    namespace: ObjectExpression, mutableExports?: ReadonlyArray<string>) {
-  const exportRecords: {name: string, node: Node}[] = [];
-
-  for (const {key, value} of namespace.properties) {
-    if (key.type !== 'Identifier') {
-      console.warn(`unsupported namespace property type ${key.type}`);
-      continue;
-    }
-    const name = key.name;
-    if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' ||
-        value.type === 'Literal') {
-      const isMutable = !!(mutableExports && mutableExports.includes(name));
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
-      });
-    } else if (value.type === 'FunctionExpression') {
-      const func = value;
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(jsc.functionDeclaration(
-            key,  // id
-            func.params,
-            func.body,
-            func.generator))
-      });
-    } else if (value.type === 'ArrowFunctionExpression') {
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            'const', [jsc.variableDeclarator(key, value)]))
-      });
-    } else if (value.type === 'Identifier') {
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(
-            null,
-            [jsc.exportSpecifier(jsc.identifier(name), jsc.identifier(name))]),
-      });
-    } else {
-      console.warn('Namespace property not handled:', name, value);
-    }
-  }
-
-  return exportRecords;
-}
-
-
-/**
- * If a statement appears to be an export, returns the exported declaration.
- *
- * @param moduleRoot If specified
- */
-function extractNamespaceDeclaration(
-    statement: estree.Node, namespaces: ReadonlySet<string>):
-    {memberPath: string[], value: Expression}|undefined {
-  if (!(statement.type === 'ExpressionStatement' &&
-        statement.expression.type === 'AssignmentExpression')) {
-    return undefined;
-  }
-  const assignment = statement.expression;
-  if (!(assignment.left.type === 'MemberExpression')) {
-    return undefined;
-  }
-
-  const memberPath = getMemberPath(assignment.left);
-
-  if (memberPath !== undefined && namespaces.has(memberPath[0])) {
-    return {
-      memberPath,
-      value: assignment.right,
-    };
-  }
-  return undefined;
-}
-
-/**
- * Returns an array of identifiers if an expression is a chain of property
- * access, as used in namespace-style exports.
- */
-export function getMemberPath(expression: Node): string[]|undefined {
-  if (expression.type !== 'MemberExpression' || expression.computed ||
-      expression.property.type !== 'Identifier') {
-    return;
-  }
-  const property = expression.property.name;
-
-  if (expression.object.type === 'ThisExpression') {
-    return ['this', property];
-  } else if (expression.object.type === 'Identifier') {
-    if (expression.object.name === 'window') {
-      return [property];
-    } else {
-      return [expression.object.name, property];
-    }
-  } else if (expression.object.type === 'MemberExpression') {
-    const prefixPath = getMemberPath(expression.object);
-    if (prefixPath !== undefined) {
-      return [...prefixPath, property];
-    }
-  }
-  return undefined;
-}
 
 function* enumerate<V>(iter: Iterable<V>): Iterable<[number, V]> {
   let i = 0;
@@ -1064,54 +773,4 @@ function isLegacyJavascriptTag(scriptNode: parse5.ASTNode) {
     return false;
   }
   return legacyJavascriptTypes.has(dom5.getAttribute(scriptNode, 'type'));
-}
-
-function visitToplevelStatements(
-    program: Program, cb: (path: NodePath) => void) {
-  astTypes.visit(program, {
-    visitNode(path: NodePath<Node>) {
-      if (!path.parent) {
-        // toplevel program
-        this.traverse(path);
-        return;
-      }
-      if (path.parent.node.type !== 'Program') {
-        // not a toplevel statement, skip it
-        return false;
-      }
-      this.traverse(path);
-
-      // ok, path.node must be a toplevel statement of the program.
-      cb(path);
-      return;
-    }
-  });
-}
-
-function getAssignmentValue(node: estree.Node): estree.Expression|null|
-    undefined {
-  if (node.type === 'VariableDeclaration' && node.declarations.length > 0) {
-    // case: const n = {...}
-    return node.declarations[0].init;
-  } else if (
-      node.type === 'ExpressionStatement' &&
-      node.expression.type === 'AssignmentExpression') {
-    // case: n = {...}
-    return node.expression.right;
-  }
-  return;
-}
-
-function* getLocalNamesOfLocallyDeclaredNamespaces(document: Document) {
-  for (const namespace of document.getFeatures({kind: 'namespace'})) {
-    if (namespace.astNode && namespace.astNode.type) {
-      const astNode = namespace.astNode as estree.Node;
-      if (astNode.type === 'VariableDeclaration') {
-        const declaration = astNode.declarations[0];
-        if (declaration.id.type === 'Identifier') {
-          yield declaration.id.name;
-        }
-      }
-    }
-  }
 }
