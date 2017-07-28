@@ -636,6 +636,11 @@ export class DocumentConverter {
   private rewriteSingleScopeThisReferences(
       blockStatement: BlockStatement, namespaceReference: string) {
     astTypes.visit(blockStatement, {
+      visitThisExpression(path: NodePath<estree.ThisExpression>) {
+        path.replace(jsc.identifier(namespaceReference));
+        return false;
+      },
+
       visitFunctionExpression(_path: NodePath<estree.FunctionExpression>) {
         // Don't visit into new scopes
         return false;
@@ -644,10 +649,12 @@ export class DocumentConverter {
         // Don't visit into new scopes
         return false;
       },
-      visitThisExpression(path: NodePath<estree.ThisExpression>) {
-        path.replace(jsc.identifier(namespaceReference));
+      visitMethodDefinition(_path: NodePath) {
+        // Don't visit into new scopes
         return false;
       },
+      // Note: we do visit into ArrowFunctionExpressions because they
+      //     inherit the containing `this` context.
     });
   }
 
