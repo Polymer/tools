@@ -360,7 +360,8 @@ export class DocumentConverter {
    */
   private rewriteNamespaceExports(program: Program) {
     const exportMigrationRecords: NamespaceMemberToExport[] = [];
-    const localNamespaceNames = new Set<string>();
+    const localNamespaceNames: ReadonlySet<string> =
+        new Set(getLocalNamesOfLocallyDeclaredNamespaces(this.document));
     const namespaceNames = new Set<string>();
 
     const newRewriteNamespaceObject =
@@ -392,7 +393,6 @@ export class DocumentConverter {
           if (this.isNamespace(path.node) &&
               exportedExpression.type === 'ObjectExpression') {
             newRewriteNamespaceObject(namespaceName, exportedExpression, path);
-            localNamespaceNames.add(namespaceName);
           } else if (exportedExpression.type === 'Identifier') {
             // An 'export' of the form:
             // Polymer.Foo = Foo;
@@ -470,17 +470,6 @@ export class DocumentConverter {
         const {namespace: namespaceMemberPath, value} = exported;
         handleApparentExports(path, value, namespaceMemberPath);
         return;
-      } else if (
-          this.isNamespace(statement) &&
-          statement.type === 'VariableDeclaration') {
-        // Local namespace declaration, like:
-        // /** @namespace */ const Foo = {};
-        // Set the localNamespacename so we can rewrite internal
-        // references
-        const declarator = statement.declarations[0];
-        if (declarator.id.type === 'Identifier') {
-          localNamespaceNames.add(declarator.id.name);
-        }
       } else {
         const namespaceAssignment = getExport(statement, localNamespaceNames);
 
@@ -1104,4 +1093,18 @@ function getAssignmentValue(node: estree.Node): estree.Expression|null|
     return node.expression.right;
   }
   return;
+}
+
+function* getLocalNamesOfLocallyDeclaredNamespaces(document: Document) {
+  for (const namespace of document.getFeatures({kind: 'namespace'})) {
+    if (namespace.astNode && namespace.astNode.type) {
+      const astNode = namespace.astNode as estree.Node;
+      if (astNode.type === 'VariableDeclaration') {
+        const declaration = astNode.declarations[0];
+        if (declaration.id.type === 'Identifier') {
+          yield declaration.id.name;
+        }
+      }
+    }
+  }
 }
