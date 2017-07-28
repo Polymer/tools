@@ -17,7 +17,7 @@ import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
-import {htmlUrlToJs} from './url-converter';
+import {convertDocumentUrl, getDocumentUrl} from './url-converter';
 
 
 import jsc = require('jscodeshift');
@@ -28,6 +28,8 @@ const isNotExternal = (d: Document) =>
     !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
 
 export interface AnalysisConverterOptions {
+  readonly packageName: string;
+  readonly packageType?: 'element'|'application';
   /**
    * Namespace names used to detect exports. Namespaces declared in the
    * code with an @namespace declaration are automatically detected.
@@ -71,6 +73,9 @@ export class AnalysisConverter {
   readonly namespaces: ReadonlySet<string>;
   // These three properties are 'protected' in that they're accessable from
   // DocumentConverter.
+  readonly packageName: string;
+  readonly packageType: 'element'|'application';
+
   readonly _excludes: ReadonlySet<string>;
   readonly _includes: ReadonlySet<string>;
   readonly _referenceExcludes: ReadonlySet<string>;
@@ -84,7 +89,7 @@ export class AnalysisConverter {
 
   readonly dangerousReferences: ReadonlyMap<string, string>;
 
-  constructor(analysis: Analysis, options: AnalysisConverterOptions = {}) {
+  constructor(analysis: Analysis, options: AnalysisConverterOptions) {
     this._analysis = analysis;
     const declaredNamespaces = [
       ...analysis.getFeatures(
@@ -106,6 +111,8 @@ export class AnalysisConverter {
         `document.currentScript is always \`null\` in an ES6 module.`);
     this.dangerousReferences = dangerousReferences;
 
+    this.packageName = options.packageName;
+    this.packageType = options.packageType || 'element';
     this._excludes = new Set(options.excludes!);
     this._referenceExcludes = new Set(options.referenceExcludes!);
     this._mutableExports = options.mutableExports;
@@ -152,7 +159,7 @@ export class AnalysisConverter {
    * Converts a Polymer Analyzer HTML document to a JS module
    */
   convertDocument(document: Document): JsModule|undefined {
-    const jsUrl = htmlUrlToJs(document.url);
+    const jsUrl = convertDocumentUrl(getDocumentUrl(document));
     if (!this.modules.has(jsUrl)) {
       this.handleNewJsModules(
           new DocumentConverter(this, document).convertToJsModule());

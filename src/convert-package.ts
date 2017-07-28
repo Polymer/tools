@@ -76,6 +76,8 @@ export function configureAnalyzer(options: ConvertPackageOptions) {
 export function configureConverter(
     analysis: Analysis, options: ConvertPackageOptions) {
   return new AnalysisConverter(analysis, {
+    packageName: options.packageName,
+    packageType: 'element',
     namespaces: options.namespaces,
     excludes: options.excludes || [],
     referenceExcludes: options.referenceExcludes ||
@@ -107,7 +109,6 @@ export async function convertPackage(options: ConvertPackageOptions) {
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
   const results = await converter.convert();
-
   if (options.clearOutDir) {
     rimraf.sync(outDirResolved);
   }

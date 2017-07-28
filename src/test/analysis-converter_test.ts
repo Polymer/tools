@@ -41,7 +41,8 @@ suite('AnalysisConverter', () => {
       const options = {
         namespaces: ['Polymer'],
         mainFiles: ['test.html'],
-        ...partialOptions
+        packageName: 'some-package',
+        ...partialOptions,
       };
       const analysis =
           await analyzer.analyze([...urlLoader.urlContentsMap.keys()]);
@@ -89,6 +90,119 @@ import '../dep.js';
 `
       });
     });
+
+    test('converts dependency imports for an element', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./nested/test.html">
+          <link rel="import" href="../app-storage/app-storage.html">
+          <script></script>
+        `,
+        'nested/test.html': `
+          <link rel="import" href="../../app-route/app-route.html">
+          <script></script>
+        `,
+        'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
+        'bower_components/app-route/app-route.html': `<h1>Hi</h1>`,
+      });
+      assertSources(await convert(), {
+        './test.js': `
+import './nested/test.js';
+import '../@polymer/app-storage/app-storage.js';
+`,
+        './nested/test.js': `
+import '../../@polymer/app-route/app-route.js';
+`,
+      });
+    });
+
+    test(
+        'converts dependency imports for an element with a scoped package name',
+        async () => {
+          setSources({
+            'test.html': `
+          <link rel="import" href="./nested/test.html">
+          <link rel="import" href="../app-storage/app-storage.html">
+          <script></script>
+        `,
+            'nested/test.html': `
+          <link rel="import" href="../../app-route/app-route.html">
+          <script></script>
+        `,
+            'bower_components/app-route/app-route.html': `<h1>Hi</h1>`,
+            'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
+          });
+          assertSources(
+              await convert({packageName: '@some-scope/some-package'}), {
+                './test.js': `
+import './nested/test.js';
+import '../../@polymer/app-storage/app-storage.js';
+`,
+                './nested/test.js': `
+import '../../../@polymer/app-route/app-route.js';
+`
+              });
+        });
+
+    test('converts dependency imports for an npm application', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./nested/test.html">
+          <link rel="import" href="./bower_components/app-storage/app-storage.html">
+          <link rel="import" href="/bower_components/app-route/app-route.html">
+          <script></script>
+        `,
+        'nested/test.html': `
+          <link rel="import" href="../bower_components/app-storage/app-storage.html">
+          <link rel="import" href="/bower_components/app-route/app-route.html">
+          <script></script>
+        `,
+        'bower_components/app-route/app-route.html': `<h1>Hi</h1>`,
+        'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
+      });
+      assertSources(await convert({packageType: 'application'}), {
+        './test.js': `
+import './nested/test.js';
+import './node_modules/@polymer/app-storage/app-storage.js';
+import '/node_modules/@polymer/app-route/app-route.js';
+`,
+        './nested/test.js': `
+import '../node_modules/@polymer/app-storage/app-storage.js';
+import '/node_modules/@polymer/app-route/app-route.js';
+`,
+      });
+    });
+
+    test(
+        'converts dependency imports for an npm application with a scoped package name',
+        async () => {
+          setSources({
+            'test.html': `
+          <link rel="import" href="./nested/test.html">
+          <link rel="import" href="./bower_components/app-storage/app-storage.html">
+          <link rel="import" href="/bower_components/app-route/app-route.html">
+          <script></script>
+        `,
+            'nested/test.html': `
+          <link rel="import" href="../bower_components/app-storage/app-storage.html">
+          <link rel="import" href="/bower_components/app-route/app-route.html">
+          <script></script>
+        `,
+            'bower_components/app-route/app-route.html': `<h1>Hi</h1>`,
+            'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
+          });
+          assertSources(await convert({packageType: 'application'}), {
+            './test.js': `
+import './nested/test.js';
+import './node_modules/@polymer/app-storage/app-storage.js';
+import '/node_modules/@polymer/app-route/app-route.js';
+`,
+            './nested/test.js': `
+import '../node_modules/@polymer/app-storage/app-storage.js';
+import '/node_modules/@polymer/app-route/app-route.js';
+`,
+          });
+        });
 
     test('converts imports to .js without scripts', async () => {
       setSources({
@@ -1349,18 +1463,18 @@ console.log(foo.document.currentScript.ownerDocument);
 
       assertSources(await convert(), {
         './test.js': `
-import '../shadycss/entrypoints/custom-style-interface.js';
-import '../shadycss/entrypoints/apply-shim.js';
+import '../@webcomponents/shadycss/entrypoints/custom-style-interface.js';
+import '../@webcomponents/shadycss/entrypoints/apply-shim.js';
 console.log(ShadyCSS.flush());
 `,
 
         './index.html': `
 
-          <script type="module" src="../shadycss/entrypoints/custom-style-interface.js"></script>
-          <script type="module" src="../shadycss/entrypoints/apply-shim.js"></script>
+          <script type="module" src="../@webcomponents/shadycss/entrypoints/custom-style-interface.js"></script>
+          <script type="module" src="../@webcomponents/shadycss/entrypoints/apply-shim.js"></script>
           <script type="module">
-import '../shadycss/entrypoints/custom-style-interface.js';
-import '../shadycss/entrypoints/apply-shim.js';
+import '../@webcomponents/shadycss/entrypoints/custom-style-interface.js';
+import '../@webcomponents/shadycss/entrypoints/apply-shim.js';
 console.log(ShadyCSS.flush());
 </script>
         `
@@ -1401,11 +1515,11 @@ console.log(ShadyCSS.flush());
               rootPath: 'earlyRootPath/'
             }
           </script>
-          <script type="module" src="../shadycss/entrypoints/custom-style-interface.js"></script>
-          <script type="module" src="../shadycss/entrypoints/apply-shim.js"></script>
+          <script type="module" src="../@webcomponents/shadycss/entrypoints/custom-style-interface.js"></script>
+          <script type="module" src="../@webcomponents/shadycss/entrypoints/apply-shim.js"></script>
           <script type="module">
-import '../shadycss/entrypoints/custom-style-interface.js';
-import '../shadycss/entrypoints/apply-shim.js';
+import '../@webcomponents/shadycss/entrypoints/custom-style-interface.js';
+import '../@webcomponents/shadycss/entrypoints/apply-shim.js';
 console.log(ShadyDOM.flush());
 </script>
         `

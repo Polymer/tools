@@ -14,6 +14,7 @@
 
 import * as estree from 'estree';
 
+import {ConvertedDocumentUrl} from './url-converter';
 import {getImportAlias, getModuleId} from './util';
 
 import jsc = require('jscodeshift');
@@ -23,7 +24,7 @@ export interface JsModule {
   /**
    * Package-relative URL of the converted JS module.
    */
-  readonly url: string;
+  readonly url: ConvertedDocumentUrl;
 
   /**
    * Converted source of the JS module.
@@ -42,7 +43,7 @@ export class JsExport {
   /**
    * URL of the JS module.
    */
-  readonly url: string;
+  readonly url: ConvertedDocumentUrl;
 
   /**
    * Exported name, ie Foo for `export Foo`;
@@ -52,7 +53,7 @@ export class JsExport {
    */
   readonly name: string;
 
-  constructor(url: string, name: string) {
+  constructor(url: ConvertedDocumentUrl, name: string) {
     this.url = url;
     this.name = name;
   }

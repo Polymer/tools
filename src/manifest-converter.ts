@@ -11,7 +11,8 @@ interface DependencyMap {
   [bower: string]: DependencyMapEntry;
 }
 
-const dependencyMap: DependencyMap = readJson(__dirname, '../dependency-map.json');
+export const dependencyMap: DependencyMap =
+    readJson(__dirname, '../dependency-map.json');
 
 /**
  * helper function to read and parse JSON.
@@ -34,7 +35,8 @@ export function writeJson(json: any, ...pathPieces: string[]) {
 /**
  * Given a bower.json manifest, generate a package.json manifest for npm.
  */
-export function generatePackageJson(bowerJson: any, npmName: string, npmVersion: string) {
+export function generatePackageJson(
+    bowerJson: any, npmName: string, npmVersion: string) {
   const packageJson = {
     name: npmName,
     flat: true,

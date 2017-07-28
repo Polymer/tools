@@ -486,5 +486,9 @@
   "polymer": {
     "npm": "@polymer/polymer",
     "semver": "^3.0.0"
+  },
+  "hydrolysis": {
+    "npm": "hydrolysis",
+    "semver": "^1.0.0"
   }
 }
