@@ -657,7 +657,7 @@ export const subFn = function() {
       });
     });
 
-    test.skip(
+    test(
         'exports a namespace function and fixes references to its properties',
         async () => {
           setSources({
@@ -689,14 +689,16 @@ export const subFn = function() {
           });
           assertSources(await convert(), {
             './test.js': `
-export const dom = function () {
-    return 'Polymer.dom result';
+export const dom = function() {
+  return 'Polymer.dom result';
 };
-export const subFn = function () {
-    return 'Polymer.dom.subFn result';
+
+export const subFn = function() {
+  return 'Polymer.dom.subFn result';
 };
-export const subFnDelegate = function () {
-    return 'Polymer.dom.subFnDelegate delegates: ' + dom() + subFn();
+
+export const subFnDelegate = function() {
+  return 'Polymer.dom.subFnDelegate delegates: ' + dom() + subFn();
 };
 `
           });
@@ -1566,10 +1568,8 @@ bar
       });
     });
 
-    // Skipped test because it should pass, but doesn't yet.
-    // Part of tracking down https://github.com/Polymer/html2js/issues/74
     testName = `convert namespace assignments on maintained inline scripts`;
-    test.skip(testName, async () => {
+    test(testName, async () => {
       setSources({
         'index.html': `
           <link rel="import" href="./polymer.html">
@@ -1599,7 +1599,7 @@ new foo().foo();
         './polymer.js': `
 /** @namespace */
 const Polymer = {};
-        `
+`
       });
     });
   });

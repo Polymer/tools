@@ -133,9 +133,15 @@ export class DocumentConverter {
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
     }
-    this.rewriteReferencesLocallyDefinedNamespaceMembers(
-        program, new Set([...localNamespaceNames, ...namespaceNames]));
     this.rewriteExcludedReferences(program);
+    this.rewriteReferencesToNamespaceMembers(
+        program,
+        new Set([
+          ...localNamespaceNames,
+          ...namespaceNames,
+        ]),
+        new Set([...exportMigrationRecords.map((r) => r.oldNamespacedName)]));
+
     this.warnOnDangerousReferences(program);
 
     const outputProgram =
@@ -183,18 +189,23 @@ export class DocumentConverter {
       // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
 
-      const {localNamespaceNames, namespaceNames} = rewriteNamespacesAsExports(
-          program,
-          this.document,
-          this._mutableExports,
-          this.analysisConverter.namespaces);
+      const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
+          rewriteNamespacesAsExports(
+              program,
+              this.document,
+              this._mutableExports,
+              this.analysisConverter.namespaces);
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
-      this.rewriteReferencesLocallyDefinedNamespaceMembers(
-          program, new Set([...localNamespaceNames, ...namespaceNames]));
-
       this.rewriteExcludedReferences(program);
+      this.rewriteReferencesToNamespaceMembers(
+          program,
+          new Set([
+            ...localNamespaceNames,
+            ...namespaceNames,
+          ]),
+          new Set([...exportMigrationRecords.map((r) => r.oldNamespacedName)]));
       this.warnOnDangerousReferences(program);
 
       if (!wereImportsAdded) {
@@ -557,18 +568,20 @@ export class DocumentConverter {
    * export foo() {}
    * foo();
    */
-  private rewriteReferencesLocallyDefinedNamespaceMembers(  //
-      program: Program, namespaceNames: ReadonlySet<string>) {
-    if (namespaceNames.size === 0) {
-      return;  // minor optimization, but saves a tree walk.
-    }
+  private rewriteReferencesToNamespaceMembers(
+      program: Program, namespaceNames: ReadonlySet<string>,
+      namespaceMembers: ReadonlySet<string>) {
     astTypes.visit(program, {
       visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
-        const memberName = memberPath && memberPath.slice(0, -1).join('.');
-        if (memberName && namespaceNames.has(memberName)) {
-          path.replace(path.node.property);
-          return false;
+        if (memberPath) {
+          const namespace = memberPath.slice(0, -1).join('.');
+          const fullyQualifiedName = memberPath.join('.');
+          if (namespaceNames.has(namespace) ||
+              namespaceMembers.has(fullyQualifiedName)) {
+            path.replace(path.node.property);
+            return false;
+          }
         }
         // Keep looking, this MemberExpression could still contain the
         // MemberExpression that we are looking for.
