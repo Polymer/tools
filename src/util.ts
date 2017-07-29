@@ -131,13 +131,11 @@ export function getMemberPath(expression: estree.Node): string[]|undefined {
  * possibly by a different parser, though they output the same format).
  */
 export function getNode(program: estree.Program, node: estree.Node) {
-  const associatedNodePath = getNodePath(program, node);
-  if (associatedNodePath) {
-    return associatedNodePath.node;
-  }
-  return;
+  const nodePath = getNodePath(program, node);
+  return nodePath ? nodePath.node : undefined;
 }
 
+/** Like `getNode`, but returns the `NodePath` for mutating the AST. */
 export function getNodePath(program: estree.Program, node: estree.Node) {
   let associatedNodePath: NodePath|undefined;
 

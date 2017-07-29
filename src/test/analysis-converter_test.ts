@@ -1566,6 +1566,8 @@ bar
       });
     });
 
+    // Skipped test because it should pass, but doesn't yet.
+    // Part of tracking down https://github.com/Polymer/html2js/issues/74
     testName = `convert namespace assignments on maintained inline scripts`;
     test.skip(testName, async () => {
       setSources({
