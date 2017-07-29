@@ -18,7 +18,7 @@ import jsc = require('jscodeshift');
 import {Document} from 'polymer-analyzer';
 import {NodePath} from 'ast-types';
 import * as astTypes from 'ast-types';
-import {sourceLocationsEqual, getNodePath, getMemberPath} from '../util';
+import {sourceLocationsEqual, getNodePathGivenAnalyzerAstNode, getMemberPath} from '../util';
 
 export class RewriteNamespaceExportsPass {
   /**
@@ -192,8 +192,8 @@ export class RewriteNamespaceExportsPass {
       // // Polymer.X = X; where X is previously defined as a namespace
 
       // Find the namespace node and containing statement
-      const namespaceDeclarationStatement =
-          getNodePath(this.program, namespaceFeature.astNode);
+      const namespaceDeclarationStatement = getNodePathGivenAnalyzerAstNode(
+          this.program, namespaceFeature.astNode);
       if (namespaceDeclarationStatement == null) {
         throw new Error(`can't find associated node for namespace`);
       }

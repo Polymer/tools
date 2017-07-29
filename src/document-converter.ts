@@ -26,7 +26,7 @@ import {AnalysisConverter} from './analysis-converter';
 import {JsExport, JsModule} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
-import {getImportAlias, getMemberPath, getModuleId, getNode, nodeToTemplateLiteral, serializeNode} from './util';
+import {getImportAlias, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 import jsc = require('jscodeshift');
 import {RewriteNamespaceExportsPass} from './passes/rewrite-namespace-exports';
@@ -393,7 +393,7 @@ export class DocumentConverter {
 
       const templateLiteral = nodeToTemplateLiteral(
           parse5.treeAdapters.default.getTemplateContent(template));
-      const node = getNode(program, element.astNode);
+      const node = getNodeGivenAnalyzerAstNode(program, element.astNode);
 
       if (node === undefined) {
         console.warn(

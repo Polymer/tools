@@ -130,13 +130,15 @@ export function getMemberPath(expression: estree.Node): string[]|undefined {
  * given node may have come from the analyzer (so a different parse run,
  * possibly by a different parser, though they output the same format).
  */
-export function getNode(program: estree.Program, node: estree.Node) {
-  const nodePath = getNodePath(program, node);
+export function getNodeGivenAnalyzerAstNode(
+    program: estree.Program, node: estree.Node) {
+  const nodePath = getNodePathGivenAnalyzerAstNode(program, node);
   return nodePath ? nodePath.node : undefined;
 }
 
 /** Like `getNode`, but returns the `NodePath` for mutating the AST. */
-export function getNodePath(program: estree.Program, node: estree.Node) {
+export function getNodePathGivenAnalyzerAstNode(
+    program: estree.Program, node: estree.Node) {
   let associatedNodePath: NodePath|undefined;
 
   astTypes.visit(program, {
