@@ -20,7 +20,17 @@ import {NodePath} from 'ast-types';
 import * as astTypes from 'ast-types';
 import {sourceLocationsEqual, getNodePathGivenAnalyzerAstNode, getMemberPath} from '../util';
 
-export class RewriteNamespaceExportsPass {
+export function rewriteNamespacesAsExports(
+    program: estree.Program,
+    document: Document,
+    _mutableExports: {readonly [namespaceName: string]: ReadonlyArray<string>},
+    namespaces: ReadonlySet<string>) {
+  return new RewriteNamespaceExportsPass(
+             program, document, _mutableExports, namespaces)
+      .run();
+}
+
+class RewriteNamespaceExportsPass {
   /**
    * The local, potentially private names of some namespaces.
    */
@@ -32,7 +42,8 @@ export class RewriteNamespaceExportsPass {
    */
   private readonly exportMigrationRecords: NamespaceMemberToExport[] = [];
   constructor(
-      private program: estree.Program, private document: Document,
+      private readonly program: estree.Program,
+      private readonly document: Document,
       private readonly _mutableExports:
           {readonly [namespaceName: string]: ReadonlyArray<string>},
       private readonly namespaces: ReadonlySet<string>) {

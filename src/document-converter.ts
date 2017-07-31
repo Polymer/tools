@@ -29,7 +29,7 @@ import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl
 import {getImportAlias, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 import jsc = require('jscodeshift');
-import {RewriteNamespaceExportsPass} from './passes/rewrite-namespace-exports';
+import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 
 /**
  * Convert a module specifier & an optional set of named exports (or '*' to
@@ -124,12 +124,11 @@ export class DocumentConverter {
 
 
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
-        new RewriteNamespaceExportsPass(
+        rewriteNamespacesAsExports(
             program,
             this.document,
             this._mutableExports,
-            this.analysisConverter.namespaces)
-            .run();
+            this.analysisConverter.namespaces);
 
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
@@ -190,13 +189,11 @@ export class DocumentConverter {
       // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
 
-      const {localNamespaceNames, namespaceNames} =
-          new RewriteNamespaceExportsPass(
-              program,
-              this.document,
-              this._mutableExports,
-              this.analysisConverter.namespaces)
-              .run();
+      const {localNamespaceNames, namespaceNames} = rewriteNamespacesAsExports(
+          program,
+          this.document,
+          this._mutableExports,
+          this.analysisConverter.namespaces);
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
