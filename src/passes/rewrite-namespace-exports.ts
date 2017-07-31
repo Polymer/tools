@@ -51,17 +51,6 @@ class RewriteNamespaceExportsPass {
         new Set(getLocalNamesOfLocallyDeclaredNamespaces(this.document));
   }
 
-  run() {
-    visitToplevelStatements(
-        this.program, (path) => this.rewriteToplevelStatement(path, path.node));
-
-    return {
-      localNamespaceNames: this.localNamespaceNames,
-      namespaceNames: this.namespaceNames,
-      exportMigrationRecords: this.exportMigrationRecords,
-    };
-  }
-
   /**
    * The core of the rewrite pass.
    *
@@ -71,20 +60,29 @@ class RewriteNamespaceExportsPass {
    *
    * Mutates this.program, this.namespaceNames, and this.exportMigrationRecords.
    */
-  private rewriteToplevelStatement(path: NodePath, statement: estree.Node) {
-    const namespaceDeclaration =
-        extractNamespaceDeclaration(statement, this.namespaces);
-    const localNamespaceDeclaration =
-        extractNamespaceDeclaration(statement, this.localNamespaceNames);
+  run() {
+    for (const path of toplevelStatements(this.program)) {
+      const statement = path.node;
+      const namespaceDeclaration =
+          getNamespaceDeclaration(statement, this.namespaces);
+      const localNamespaceDeclaration =
+          getNamespaceDeclaration(statement, this.localNamespaceNames);
 
-    if (namespaceDeclaration !== undefined) {
-      const {memberPath: namespaceMemberPath, value} = namespaceDeclaration;
-      this.rewriteDeclaration(path, value, namespaceMemberPath);
-      return;
-    } else if (localNamespaceDeclaration !== undefined) {
-      const {memberPath, value} = localNamespaceDeclaration;
-      this.rewriteLocalDeclaration(path, value, memberPath);
-    }  // otherwise, not a namespace declaration at all.
+      if (namespaceDeclaration !== undefined) {
+        const {memberPath: namespaceMemberPath, value} = namespaceDeclaration;
+        this.rewriteDeclaration(path, value, namespaceMemberPath);
+        continue;
+      } else if (localNamespaceDeclaration !== undefined) {
+        const {memberPath, value} = localNamespaceDeclaration;
+        this.rewriteLocalDeclaration(path, value, memberPath);
+      }  // otherwise, not a namespace declaration at all.
+    }
+
+    return {
+      localNamespaceNames: this.localNamespaceNames,
+      namespaceNames: this.namespaceNames,
+      exportMigrationRecords: this.exportMigrationRecords,
+    };
   }
 
   /**
@@ -166,6 +164,8 @@ class RewriteNamespaceExportsPass {
     const mutableExports = this._mutableExports[fullyQualifiedName];
     const namespaceExports = getNamespaceExports(body, mutableExports);
 
+    // Replace nodePath with some number of namespace exports. Easiest way
+    // is to insert the exports before nodePath, then remove nodePath.
     for (const {node} of namespaceExports) {
       nodePath.insertBefore(node);
     }
@@ -210,7 +210,7 @@ class RewriteNamespaceExportsPass {
       }
       const namespaceDeclarationValue =
           getAssignmentValue(namespaceDeclarationStatement.node);
-      if (!namespaceDeclarationValue ||
+      if (namespaceDeclarationValue === undefined ||
           namespaceDeclarationValue.type !== 'ObjectExpression') {
         return;
       }
@@ -271,13 +271,13 @@ function getLocalNamesOfLocallyDeclaredNamespaces(document: Document) {
 }
 
 /**
- * Calls `cb` for each statement at the top level of `program`.
+ * Yields the NodePath for each statement at the top level of `program`.
  *
- * Like `program.body.forEach(cb)` except it passes in NodePaths rather than
- * Nodes, so that `cb` can mutate the AST with the NodePath api.
+ * Like `yield* program.body` except it yields NodePaths rather than
+ * Nodes, so that the caller can mutate the AST with the NodePath api.
  */
-function visitToplevelStatements(
-    program: estree.Program, cb: (path: NodePath) => void) {
+function* toplevelStatements(program: estree.Program) {
+  const nodePaths: NodePath[] = [];
   astTypes.visit(program, {
     visitNode(path: NodePath<estree.Node>) {
       if (!path.parent) {
@@ -292,20 +292,20 @@ function visitToplevelStatements(
       this.traverse(path);
 
       // ok, path.node must be a toplevel statement of the program.
-      cb(path);
+      nodePaths.push(path);
       return;
     }
   });
+  yield* nodePaths;
 }
 
 /**
  * Return the right hand side of an assignment/variable declaration.
  */
-function getAssignmentValue(node: estree.Node): estree.Expression|null|
-    undefined {
+function getAssignmentValue(node: estree.Node): estree.Expression|undefined {
   if (node.type === 'VariableDeclaration' && node.declarations.length > 0) {
     // case: const n = {...}
-    return node.declarations[0].init;
+    return node.declarations[0].init || undefined;
   } else if (
       node.type === 'ExpressionStatement' &&
       node.expression.type === 'AssignmentExpression') {
@@ -317,8 +317,6 @@ function getAssignmentValue(node: estree.Node): estree.Expression|null|
 
 /**
  * Returns export declarations for each of a namespace object's members.
- *
- * Pure, does no mutation.
  */
 function getNamespaceExports(
     namespace: estree.ObjectExpression,
@@ -374,7 +372,7 @@ function getNamespaceExports(
  * If a statement assigns to a namespace or property/deeply nested property of a
  * namespace, return info about the declaration.
  */
-function extractNamespaceDeclaration(
+function getNamespaceDeclaration(
     statement: estree.Node, namespaces: ReadonlySet<string>):
     {memberPath: string[], value: estree.Expression}|undefined {
   if (!(statement.type === 'ExpressionStatement' &&
