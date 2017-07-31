@@ -133,7 +133,9 @@ export class DocumentConverter {
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
     }
-    this.rewriteExcludedReferences(program);
+    this.rewriteExcludedReferences(
+        program,
+        new Set(exportMigrationRecords.map((r) => r.oldNamespacedName)));
     this.rewriteReferencesToNamespaceMembers(
         program,
         new Set([
@@ -198,7 +200,9 @@ export class DocumentConverter {
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
-      this.rewriteExcludedReferences(program);
+      this.rewriteExcludedReferences(
+          program,
+          new Set(exportMigrationRecords.map((r) => r.oldNamespacedName)));
       this.rewriteReferencesToNamespaceMembers(
           program,
           new Set([
@@ -488,6 +492,21 @@ export class DocumentConverter {
           return;
         }
         const memberName = memberPath.join('.');
+        const writeNodePath = getAssignmentNodePathTo(path);
+        if (writeNodePath) {
+          const setterName = getSetterName(memberPath);
+          const exportOfMember =
+              analysisConverter.namespacedExports.get(setterName);
+          if (!exportOfMember) {
+            // warn about writing to an exported value without a setter?
+            this.traverse(path);
+            return;
+          }
+          addToImportedReferences(exportOfMember);
+          writeNodePath.replace(jsc.callExpression(
+              exportOfMember.expressionToAccess(), [writeNodePath.node.right]));
+          return false;
+        }
         const exportOfMember =
             analysisConverter.namespacedExports.get(memberName);
         if (!exportOfMember) {
@@ -507,24 +526,37 @@ export class DocumentConverter {
    * Rewrite references in _referenceExcludes and well known properties that
    * don't work well in modular code.
    */
-  private rewriteExcludedReferences(program: Program) {
+  private rewriteExcludedReferences(
+      program: Program, writeExceptions: ReadonlySet<string>) {
     const mapOfRewrites = new Map(this.analysisConverter._referenceRewrites);
     for (const reference of this.analysisConverter._referenceExcludes) {
       mapOfRewrites.set(reference, jsc.identifier('undefined'));
     }
 
+    const handleRewrite = (path: NodePath, memberName: string) => {
+      const replacement = mapOfRewrites.get(memberName);
+      if (replacement) {
+        if (replacement.type === 'Identifier' &&
+            replacement.name === 'undefined' &&
+            writeExceptions.has(memberName) && isAssigningTo(path)) {
+          /**
+           * If `path` is a name / pattern that's being written to, we don't
+           * want to rewrite it to `undefined`.
+           */
+          return;
+        }
+        path.replace(replacement);
+      }
+    };
+
     astTypes.visit(program, {
       visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (memberPath !== undefined) {
-          const memberName = memberPath.join('.');
-          const replacement = mapOfRewrites.get(memberName);
-          if (replacement) {
-            path.replace(replacement);
-          }
+          handleRewrite(path, memberPath.join('.'));
         }
         this.traverse(path);
-      }
+      },
     });
   }
 
@@ -776,4 +808,51 @@ function isLegacyJavascriptTag(scriptNode: parse5.ASTNode) {
     return false;
   }
   return legacyJavascriptTypes.has(dom5.getAttribute(scriptNode, 'type'));
+}
+
+/**
+ * Returns true iff the given NodePath is assigned to in an assignment
+ * expression in the following examples, `foo` is an Identifier that's assigned
+ * to:
+ *
+ *    foo = 10;
+ *    window.foo = 10;
+ *
+ * And in these examples `foo` is not:
+ *
+ *     bar = foo;
+ *     foo();
+ *     const foo = 10;
+ *     this.foo = 10;
+ */
+function isAssigningTo(path: NodePath): boolean {
+  return getAssignmentNodePathTo(path) !== undefined;
+}
+
+function getAssignmentNodePathTo(path: NodePath):
+    NodePath<estree.AssignmentExpression>|undefined {
+  if (!path.parent) {
+    return undefined;
+  }
+  const parentNode = path.parent.node;
+  if (parentNode.type === 'AssignmentExpression') {
+    if (parentNode.left === path.node) {
+      return path.parent as NodePath<estree.AssignmentExpression>;
+    }
+    return undefined;
+  }
+  if (parentNode.type === 'MemberExpression' &&
+      parentNode.property === path.node &&
+      parentNode.object.type === 'Identifier' &&
+      parentNode.object.name === 'window') {
+    return getAssignmentNodePathTo(path.parent);
+  }
+  return undefined;
+}
+
+function getSetterName(memberPath: string[]): string {
+  const lastSegment = memberPath[memberPath.length - 1];
+  memberPath[memberPath.length - 1] =
+      `set${lastSegment.charAt(0).toUpperCase()}${lastSegment.slice(1)}`;
+  return memberPath.join('.');
 }

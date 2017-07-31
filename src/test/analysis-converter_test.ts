@@ -1602,6 +1602,57 @@ const Polymer = {};
 `
       });
     });
+
+    test(`convert writes into setter calls`, async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./settings.html">
+
+          <script>
+            Polymer.foo = 'hello';
+            window.Polymer.bar.baz = Polymer.foo + 10 * 10 ** 10;
+          </script>
+        `,
+        'settings.html': `
+          <script>
+            Polymer.foo = 'default';
+            Polymer.setFoo = function(newFoo) {
+              Polymer.foo = newFoo;
+            }
+
+            /** @namespace */
+            Polymer.bar = {
+              baz: 100,
+              setBaz: function(newBaz) {
+                this.baz = newBaz;
+              }
+            };
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        './settings.js': `
+export const foo = 'default';
+
+export const setFoo = function(newFoo) {
+  foo = newFoo;
+};
+
+export const baz = 100;
+
+export function setBaz(newBaz) {
+  baz = newBaz;
+}
+`,
+
+        './test.js': `
+import { setFoo as $setFoo, setBaz as $setBaz, foo as $foo } from './settings.js';
+$setFoo('hello');
+$setBaz($foo + 10 * (10 ** 10));
+`,
+      });
+    });
   });
 
   suite('fixtures', () => {
