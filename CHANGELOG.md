@@ -11,9 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-## Unreleased
+## 1.5.0 - 2017-08-01
 
 - [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.
+- Updated to the latest stable version of the analyzer, including support for many new annotations and a large number of bugfixes.
 
 ## 1.4.0 - 2017-04-10
 
