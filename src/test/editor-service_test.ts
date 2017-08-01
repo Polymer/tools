@@ -16,14 +16,29 @@ import * as chai from 'chai';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, PackageUrlResolver, Severity, SourceRange, Warning, WarningPrinter} from 'polymer-analyzer';
-import {CodeUnderliner, invertPromise} from 'polymer-analyzer/lib/test/test-utils';
+import {FSUrlLoader, PackageUrlResolver, Severity, UrlLoader, Warning} from 'polymer-analyzer';
+import {CodeUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 
 import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
 import {LocalEditorService} from '../local-editor-service';
 import {RemoteEditorService} from '../remote-editor-service';
 
 chai.use(require('chai-subset'));
+
+function singleFileLoader(
+    path: string, contentsGetter: () => string): UrlLoader {
+  return {
+    canLoad() {
+      return true;
+    },
+    async load(reqPath: string) {
+      if (reqPath === path) {
+        return contentsGetter();
+      }
+      throw new Error(`Unknown file: ${reqPath}`);
+    }
+  };
+}
 
 function editorTests(editorFactory: (basedir: string) => EditorService) {
   const basedir = path.join(__dirname, 'static');
@@ -128,18 +143,18 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         inheritedFrom: undefined,
       },
       {
-        name: 'inherit-please',
-        description: 'A property provided by SimpleBehavior.',
-        type: 'number',
-        sortKey: 'ddd-inherit-please',
-        inheritedFrom: 'MyNamespace.SimpleBehavior',
-      },
-      {
         name: 'deeply-inherited-property',
         description: 'This is a deeply inherited property.',
         type: 'Array',
         sortKey: 'ddd-deeply-inherited-property',
         inheritedFrom: 'MyNamespace.SubBehavior',
+      },
+      {
+        name: 'inherit-please',
+        description: 'A property provided by SimpleBehavior.',
+        type: 'number',
+        sortKey: 'ddd-inherit-please',
+        inheritedFrom: 'MyNamespace.SimpleBehavior',
       },
       {
         name: 'on-local-property-changed',
@@ -156,13 +171,6 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         inheritedFrom: undefined,
       },
       {
-        name: 'on-inherit-please-changed',
-        description: 'Fired when the `inheritPlease` property changes.',
-        type: 'CustomEvent',
-        sortKey: 'eee-ddd-on-inherit-please-changed',
-        inheritedFrom: 'MyNamespace.SimpleBehavior',
-      },
-      {
         name: 'on-deeply-inherited-property-changed',
         description:
             'Fired when the `deeplyInheritedProperty` property changes.',
@@ -170,12 +178,18 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         sortKey: 'eee-ddd-on-deeply-inherited-property-changed',
         inheritedFrom: 'MyNamespace.SubBehavior',
       },
+      {
+        name: 'on-inherit-please-changed',
+        description: 'Fired when the `inheritPlease` property changes.',
+        type: 'CustomEvent',
+        sortKey: 'eee-ddd-on-inherit-please-changed',
+        inheritedFrom: 'MyNamespace.SimpleBehavior',
+      },
     ]
   };
   const indexContents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
 
   let editorService: EditorService;
-  const underliner = new CodeUnderliner(new FSUrlLoader(basedir));
   setup(async() => {
     editorService = editorFactory(basedir);
   });
@@ -243,53 +257,39 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     const contentsPath = path.join('editor-service', 'references.html');
     const contents = fs.readFileSync(path.join(basedir, contentsPath), 'utf-8');
-    const loader = {canLoad: () => true, load: () => Promise.resolve(contents)};
-    const warningPrinter = new WarningPrinter(
-        null as any, {analyzer: new Analyzer({urlLoader: loader})});
+    const underliner =
+        new CodeUnderliner(singleFileLoader(contentsPath, () => contents));
 
+    let testName =
+        `it supports getting the references to an element from its tag`;
+    test(testName, async() => {
+      await editorService.fileChanged(contentsPath, `${contents}`);
 
-    async function getUnderlinedText(sourceRange: SourceRange|undefined) {
-      if (!sourceRange) {
-        return 'No source range produced';
-      }
-      return '\n' + await warningPrinter.getUnderlinedText(sourceRange);
-    }
-
-    test(
-        `it supports getting the references to ` +
-            `an element from its tag`,
-        async() => {
-          await editorService.fileChanged(contentsPath, `${contents}`);
-
-          let references =
-              await editorService.getReferencesForFeatureAtPosition(
-                  contentsPath, {line: 7, column: 3});
-          let ranges = await Promise.all(
-              references.map(async r => await getUnderlinedText(r)));
-
-          deepEqual(ranges, [
-            `
+      let references = (await editorService.getReferencesForFeatureAtPosition(
+          contentsPath, {line: 7, column: 3}))!;
+      let ranges = await underliner.underline(references);
+      deepEqual(ranges, [
+        `
   <anonymous-class one></anonymous-class>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-            `
+        `
   <anonymous-class two></anonymous-class>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-          ]);
+      ]);
 
-          references = await editorService.getReferencesForFeatureAtPosition(
-              contentsPath, {line: 8, column: 3});
-          ranges = await Promise.all(
-              references.map(async r => await getUnderlinedText(r)));
+      references = (await editorService.getReferencesForFeatureAtPosition(
+          contentsPath, {line: 8, column: 3}))!;
+      ranges = await underliner.underline(references);
 
-          deepEqual(ranges, [
-            `
+      deepEqual(ranges, [
+        `
   <simple-element one></simple-element>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-            `
+        `
     <simple-element two></simple-element>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-          ]);
-        });
+      ]);
+    });
   });
 
   suite('getDefinitionForFeatureAtPosition', function() {
@@ -375,15 +375,15 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           elementTypeahead);
     });
 
-    test(
-        'Get attribute completions when editing an existing attribute',
-        async() => {
-          await editorService.fileChanged(indexFile, indexContents);
-          deepEqual(
-              await editorService.getTypeaheadCompletionsAtPosition(
-                  indexFile, localAttributePosition),
-              attributeTypeahead);
-        });
+    let testName =
+        'Get attribute completions when editing an existing attribute';
+    test(testName, async() => {
+      await editorService.fileChanged(indexFile, indexContents);
+      deepEqual(
+          (await editorService.getTypeaheadCompletionsAtPosition(
+              indexFile, localAttributePosition)),
+          attributeTypeahead);
+    });
 
     test('Get attribute completions when adding a new attribute', async() => {
       await editorService.fileChanged(indexFile, indexContents);
@@ -404,40 +404,39 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       }
     });
 
-    test(
-        'Get attribute value completions for non-notifying property',
-        async() => {
-          const testFile = path.join('editor-service', 'value-completion.html');
-          const testContents =
-              fs.readFileSync(path.join(basedir, testFile), 'utf-8');
-          await editorService.fileChanged(testFile, testContents);
-          deepEqual(
-              await editorService.getTypeaheadCompletionsAtPosition(testFile, {
-                line: 4,
-                column: 49 /* after the space after the element name */
-              }),
+    testName = 'Get attribute value completions for non-notifying property';
+    test(testName, async() => {
+      const testFile = path.join('editor-service', 'value-completion.html');
+      const testContents =
+          fs.readFileSync(path.join(basedir, testFile), 'utf-8');
+      await editorService.fileChanged(testFile, testContents);
+      deepEqual(
+          await editorService.getTypeaheadCompletionsAtPosition(testFile, {
+            line: 4,
+            column: 49 /* after the space after the element name */
+          }),
+          {
+            'attributes': [
               {
-                'attributes': [
-                  {
-                    'autocompletion': '[[foo]]',
-                    'description': '',
-                    'name': 'foo',
-                    'sortKey': 'aaa-foo',
-                    'type': 'string',
-                    'inheritedFrom': undefined
-                  },
-                  {
-                    'autocompletion': '[[bar]]',
-                    'description': '',
-                    'name': 'bar',
-                    'sortKey': 'aaa-bar',
-                    'type': 'string',
-                    'inheritedFrom': undefined
-                  }
-                ],
-                'kind': 'attribute-values'
-              });
-        });
+                'autocompletion': '[[bar]]',
+                'description': '',
+                'name': 'bar',
+                'sortKey': 'aaa-bar',
+                'type': 'string',
+                'inheritedFrom': undefined
+              },
+              {
+                'autocompletion': '[[foo]]',
+                'description': '',
+                'name': 'foo',
+                'sortKey': 'aaa-foo',
+                'type': 'string',
+                'inheritedFrom': undefined
+              },
+            ],
+            'kind': 'attribute-values'
+          });
+    });
 
     test('Get attribute value completions for notifying property', async() => {
       const testFile = path.join('editor-service', 'value-completion.html');
@@ -452,6 +451,14 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           {
             'attributes': [
               {
+                'autocompletion': '{{bar}}',
+                'description': '',
+                'name': 'bar',
+                'sortKey': 'aaa-bar',
+                'type': 'string',
+                'inheritedFrom': undefined
+              },
+              {
                 'autocompletion': '{{foo}}',
                 'description': '',
                 'name': 'foo',
@@ -459,14 +466,6 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
                 'type': 'string',
                 'inheritedFrom': undefined
               },
-              {
-                'autocompletion': '{{bar}}',
-                'description': '',
-                'name': 'bar',
-                'sortKey': 'aaa-bar',
-                'type': 'string',
-                'inheritedFrom': undefined
-              }
             ],
             'kind': 'attribute-values'
           });
@@ -487,6 +486,14 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               {
                 'attributes': [
                   {
+                    'autocompletion': 'bar',
+                    'description': '',
+                    'name': 'bar',
+                    'sortKey': 'aaa-bar',
+                    'type': 'string',
+                    'inheritedFrom': undefined
+                  },
+                  {
                     'autocompletion': 'foo',
                     'description': '',
                     'name': 'foo',
@@ -494,14 +501,6 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
                     'type': 'string',
                     'inheritedFrom': undefined
                   },
-                  {
-                    'autocompletion': 'bar',
-                    'description': '',
-                    'name': 'bar',
-                    'sortKey': 'aaa-bar',
-                    'type': 'string',
-                    'inheritedFrom': undefined
-                  }
                 ],
                 'kind': 'attribute-values'
               });
@@ -575,9 +574,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const goodContents =
           fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
       // Load a file with a syntax error
-      await invertPromise(editorService.fileChanged(
+      await editorService.fileChanged(
           path.join(basedir, 'syntax-error.js'),
-          'var var var var var var var var “hello”'));
+          'var var var var var var var var “hello”');
 
       await editorService.fileChanged(indexFile, `${goodContents}
           <script src="./syntax-error.js"></script>`);
@@ -600,16 +599,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
   suite('getWarningsForFile', function() {
     let fileContents = '';
-    const loader = {
-      canLoad: () => true,
-      load: () => Promise.resolve(fileContents)
-    };
-    const warningPrinter = new WarningPrinter(
-        null as any, {analyzer: new Analyzer({urlLoader: loader})});
-
-    async function getUnderlinedText(warning: Warning) {
-      return '\n' + await warningPrinter.getUnderlinedText(warning.sourceRange);
-    }
+    const underliner =
+        new CodeUnderliner(singleFileLoader(indexFile, () => fileContents));
 
     test('For a good document we get no warnings', async() => {
       await editorService.fileChanged(indexFile, indexContents);
@@ -627,7 +618,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           1);
       assert.containSubset(
           warnings, [{code: 'could-not-load', severity: Severity.ERROR}]);
-      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+      assert.deepEqual(await underliner.underline(warnings[0].sourceRange), `
 <link rel="import" href="./does-not-exist.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~`);
       assert.match(
@@ -637,7 +628,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test(`Warn on imports of files that don't parse.`, async() => {
       const badImport = `<script src="../js-parse-error.js"></script>`;
-      fileContents = `${badImport}\n\n${indexContents}`;
+      const fileContents = `${badImport}\n\n${indexContents}`;
       await editorService.fileChanged(indexFile, fileContents);
       const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
@@ -649,7 +640,9 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
               file: 'editor-service/index.html',
             }
           }]);
-      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+      const underliner =
+          new CodeUnderliner(singleFileLoader(indexFile, () => fileContents));
+      assert.deepEqual(await underliner.underline(warnings[0].sourceRange), `
 <script src="../js-parse-error.js"></script>
             ~~~~~~~~~~~~~~~~~~~~~~`);
     });
@@ -664,7 +657,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test(`Warn on syntax errors in inline javascript documents`, async() => {
       const badScript = `\n<script>var var var var var let const;</script>`;
-      fileContents = badScript;
+      const fileContents = badScript;
       await editorService.fileChanged(indexFile, fileContents);
       const warnings = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
@@ -674,39 +667,39 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             message: 'Unexpected token var',
             sourceRange: {file: 'editor-service/index.html'}
           }]);
-      assert.deepEqual(await getUnderlinedText(warnings[0]), `
+      const underliner =
+          new CodeUnderliner(singleFileLoader(indexFile, () => fileContents));
+      assert.deepEqual(await underliner.underline(warnings[0].sourceRange), `
 <script>var var var var var let const;</script>
             ~`);
     });
 
-    test(
-        `Do not warn on a sibling import ` +
-            `if configured with a package url resolver`,
-        async() => {
-          const testBaseDir = path.join(basedir, 'package-url-resolver');
-          editorService = editorFactory(testBaseDir);
-          const warnings =
-              await editorService.getWarningsForFile('simple-elem.html');
-          deepEqual(warnings, []);
-        });
+    let testName = `Do not warn on a sibling import ` +
+        `if configured with a package url resolver`;
+    test(testName, async() => {
+      const testBaseDir = path.join(basedir, 'package-url-resolver');
+      editorService = editorFactory(testBaseDir);
+      const warnings =
+          await editorService.getWarningsForFile('simple-elem.html');
+      deepEqual(warnings, []);
+    });
 
-    test(
-        `Warn about parse errors in the file ` +
-            `we're requesting errors for.`,
-        async() => {
-          const warnings =
-              await editorService.getWarningsForFile('js-parse-error.js');
-          deepEqual(warnings, [{
-                      code: 'parse-error',
-                      message: 'Unexpected token ,',
-                      severity: Severity.ERROR,
-                      sourceRange: {
-                        file: 'js-parse-error.js',
-                        start: {line: 17, column: 8},
-                        end: {line: 17, column: 8}
-                      }
-                    }]);
-        });
+    testName = `Warn about parse errors in the file ` +
+        `we're requesting errors for.`;
+    test(testName, async() => {
+      const warnings =
+          await editorService.getWarningsForFile('js-parse-error.js');
+      deepEqual(JSON.parse(JSON.stringify(warnings)), [{
+                  code: 'parse-error',
+                  message: 'Unexpected token ,',
+                  severity: Severity.ERROR,
+                  sourceRange: {
+                    file: 'js-parse-error.js',
+                    start: {line: 17, column: 8},
+                    end: {line: 17, column: 8}
+                  }
+                }]);
+    });
 
     {
       const fooPropUsePosition = {line: 2, column: 16};
@@ -724,6 +717,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       test('Jump to definition for properties in databindings.', async() => {
         let location = await editorService.getDefinitionForFeatureAtPosition(
             'polymer/element-with-databinding.html', fooPropUsePosition);
+        const underliner = new CodeUnderliner(new FSUrlLoader(basedir));
+
         deepEqual(await underliner.underline(location), `
         foo: String,
         ~~~~~~~~~~~`);
@@ -738,19 +733,19 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         kind: 'properties-in-polymer-databinding',
         properties: [
           {
+            description: 'A private internal prop.',
+            name: '_internal',
+            sortKey: 'aaa-_internal',
+            type: 'string',
+            inheritedFrom: undefined,
+          },
+          {
             description: 'This is the foo property.',
             name: 'foo',
             sortKey: 'aaa-foo',
             type: 'string',
             inheritedFrom: undefined,
           },
-          {
-            description: 'A private internal prop.',
-            name: '_internal',
-            sortKey: 'aaa-_internal',
-            type: 'string',
-            inheritedFrom: undefined,
-          }
         ]
       };
       test('Give autocompletions for positions in databindings.', async() => {
@@ -762,7 +757,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             'polymer/element-with-databinding.html', internalPropUsePosition);
         deepEqual(completions, databindingCompletions);
       });
-    };
+    }
   });
 
   suite('regression tests', () => {

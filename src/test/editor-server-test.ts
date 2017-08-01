@@ -94,7 +94,7 @@ suite('RemoteEditorService', () => {
 
         async function sendRequest(request: any) {
           child.send(request);
-        };
+        }
 
         async function getNextResponse(expectedId: number) {
           const message = await new Promise<any>((resolve) => {
@@ -112,7 +112,7 @@ suite('RemoteEditorService', () => {
           }
           throw new Error(
               `Response with unexpected kind: ${util.inspect(message.value)}`);
-        };
+        }
 
         editorServiceInterfaceTests(sendRequest, getNextResponse);
       });
@@ -139,7 +139,7 @@ suite('RemoteEditorService', () => {
           err ? reject(err) : resolve();
         });
       });
-    };
+    }
 
     async function getNextResponse(expectedId: number) {
       const line =

@@ -13,7 +13,7 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Analyzer, AnalyzerOptions, Attribute, Document, Element, InMemoryOverlayUrlLoader, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 import {Linter, registry, Rule} from 'polymer-linter';
 import {ProjectConfig} from 'polymer-project-config';
@@ -34,9 +34,12 @@ export interface Options extends AnalyzerOptions { polymerJsonPath?: string; }
 export class LocalEditorService extends EditorService {
   private readonly _analyzer: Analyzer;
   private readonly _linter: Linter;
+  private readonly overlay: InMemoryOverlayUrlLoader;
   constructor(options: Options) {
     super();
-    this._analyzer = new Analyzer(options);
+    this.overlay = new InMemoryOverlayUrlLoader(options.urlLoader);
+    this._analyzer =
+        new Analyzer(Object.assign({}, options, {urlLoader: this.overlay}));
     // TODO(rictic): watch for changes of polymer.json
     let rules: Set<Rule> = new Set();
     if (options.polymerJsonPath) {
@@ -58,7 +61,12 @@ export class LocalEditorService extends EditorService {
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<void> {
-    await this._analyzer.analyze(localPath, contents);
+    if (contents == null) {
+      this.overlay.urlContentsMap.delete(localPath);
+    } else {
+      this.overlay.urlContentsMap.set(localPath, contents);
+    }
+    await this._analyzer.filesChanged([localPath]);
   }
 
   async getDocumentationAtPosition(localPath: string, position: SourcePosition):
@@ -94,24 +102,35 @@ export class LocalEditorService extends EditorService {
   async getReferencesForFeatureAtPosition(
       localPath: string,
       position: SourcePosition): Promise<SourceRange[]|undefined> {
-    const document = await this._analyzer.analyze(localPath);
+    const analysis = await this._analyzer.analyze([localPath]);
+    const document = analysis.getDocument(localPath);
+    if (!(document instanceof Document)) {
+      return;
+    }
     const location = await this._getAstAtPosition(document, position);
     if (!location) {
       return;
     }
     if (location.kind === 'tagName') {
-      return Array
-          .from(document.getById(
-              'element-reference', location.element.tagName!,
-              {externalPackages: true, imported: true}))
-          .map(e => e.sourceRange);
+      return [
+        ...document.getFeatures({
+          kind: 'element-reference',
+          id: location.element.tagName!,
+          externalPackages: true,
+          imported: true
+        })
+      ].map(e => e.sourceRange);
     }
   }
 
   async getTypeaheadCompletionsAtPosition(
       localPath: string,
       position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
-    const document = await this._analyzer.analyze(localPath);
+    const analysis = await this._analyzer.analyze([localPath]);
+    const document = analysis.getDocument(localPath);
+    if (!(document instanceof Document)) {
+      return;
+    }
     const location = await this._getAstAtPosition(document, position);
     if (!location) {
       return;
@@ -122,28 +141,30 @@ export class LocalEditorService extends EditorService {
       const element = feature.element;
       return {
         kind: 'properties-in-polymer-databinding',
-        properties: element.properties.concat(element.methods).map((p) => {
-          const sortPrefix = p.inheritedFrom ? 'ddd-' : 'aaa-';
-          return {
-            name: p.name,
-            description: p.description || '',
-            type: p.type,
-            sortKey: sortPrefix + p.name,
-            inheritedFrom: p.inheritedFrom
-          };
-        })
+        properties:
+            [...element.properties.values(), ...element.methods.values()]
+                .map((p) => {
+                  const sortPrefix = p.inheritedFrom ? 'ddd-' : 'aaa-';
+                  return {
+                    name: p.name,
+                    description: p.description || '',
+                    type: p.type,
+                    sortKey: sortPrefix + p.name,
+                    inheritedFrom: p.inheritedFrom
+                  };
+                })
+                .sort(compareAttributeResults)
       };
     }
     if (location.kind === 'tagName' || location.kind === 'text') {
-      const elements =
-          Array
-              .from(document.getByKind(
-                  'element', {externalPackages: true, imported: true}))
-              .filter(e => e.tagName);
+      const elements = [
+        ...document.getFeatures(
+            {kind: 'element', externalPackages: true, imported: true})
+      ].filter(e => e.tagName);
       return {
         kind: 'element-tags',
         elements: elements.map(e => {
-          const attributesSpace = e.attributes.length > 0 ? ' ' : '';
+          const attributesSpace = e.attributes.size > 0 ? ' ' : '';
           return {
             tagname: e.tagName!,
             description: e.description,
@@ -164,84 +185,92 @@ export class LocalEditorService extends EditorService {
           this.getAncestorDomModuleForElement(document, location.element);
       if (!domModule || !domModule.id)
         return;
-      const outerElement = document.getOnlyAtId(
-          'element', domModule.id, {imported: true, externalPackages: true});
+      const [outerElement] = document.getFeatures({
+        kind: 'element',
+        id: domModule.id,
+        imported: true,
+        externalPackages: true
+      });
       if (!outerElement)
         return;
       const sortPrefixes = this._createSortPrefixes(outerElement);
-      const innerElement = document.getOnlyAtId(
-          'element', location.element.nodeName,
-          {imported: true, externalPackages: true});
+      const [innerElement] = document.getFeatures({
+        kind: 'element',
+        id: location.element.nodeName,
+        imported: true,
+        externalPackages: true
+      });
       if (!innerElement)
         return;
-      const innerAttribute = innerElement.attributes.find(
-          (value) => value.name === location.attribute);
+      const innerAttribute = innerElement.attributes.get(location.attribute);
       if (!innerAttribute)
         return;
       const attributeValue =
           dom5.getAttribute(location.element, innerAttribute.name)!;
       const hasDelimeters = /^\s*(\{\{|\[\[)/.test(attributeValue);
+      const attributes = [...outerElement.properties.values()].map(p => {
+        const sortKey = (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
+        let autocompletion: string;
+        if (attributeValue && hasDelimeters) {
+          autocompletion = p.name;
+        } else {
+          if (innerAttribute.changeEvent) {
+            autocompletion = `{{${p.name}}}`;
+          } else {
+            autocompletion = `[[${p.name}]]`;
+          }
+        }
+        return {
+          name: p.name,
+          description: p.description || '',
+          type: p.type,
+          autocompletion: autocompletion,
+          inheritedFrom: p.inheritedFrom, sortKey
+        };
+      });
       return {
         kind: 'attribute-values',
-        attributes: outerElement.properties.map(p => {
-          const sortKey =
-              (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
-          let autocompletion: string;
-          if (attributeValue && hasDelimeters) {
-            autocompletion = p.name;
-          } else {
-            if (innerAttribute.changeEvent) {
-              autocompletion = `{{${p.name}}}`;
-            } else {
-              autocompletion = `[[${p.name}]]`;
-            }
-          }
-          return {
-            name: p.name,
-            description: p.description || '',
-            type: p.type,
-            autocompletion: autocompletion,
-            inheritedFrom: p.inheritedFrom, sortKey
-          };
-        })
+        attributes: attributes.sort(compareAttributeResults)
       };
     }
 
     if (location.kind === 'attribute') {
-      const elements = document.getById(
-          'element', location.element.nodeName,
-          {externalPackages: true, imported: true});
+      const [element] = document.getFeatures({
+        kind: 'element',
+        id: location.element.nodeName,
+        externalPackages: true,
+        imported: true
+      });
       let attributes: AttributeCompletion[] = [];
-      for (const element of elements) {
+      if (element) {
         const sortPrefixes = this._createSortPrefixes(element);
-        const elementAttributes: AttributeCompletion[] =
-            element.attributes.map(p => {
-              const sortKey =
-                  (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
-              return {
-                name: p.name,
-                description: p.description || '',
-                type: p.type,
-                inheritedFrom: p.inheritedFrom, sortKey
-              };
-            });
+        attributes.push(...[...element.attributes.values()].map(p => {
+          const sortKey =
+              (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
+          return {
+            name: p.name,
+            description: p.description || '',
+            type: p.type,
+            inheritedFrom: p.inheritedFrom, sortKey
+          };
+        }));
 
-        const eventAttributes: AttributeCompletion[] =
-            element.events.map((e) => {
-              const postfix = sortPrefixes.get(e.inheritedFrom) || 'ddd-';
-              const sortKey = `eee-${postfix}on-${e.name}`;
-              return {
-                name: `on-${e.name}`,
-                description: e.description || '',
-                type: e.type || 'CustomEvent',
-                inheritedFrom: e.inheritedFrom, sortKey
-              };
-            });
-        attributes =
-            attributes.concat(elementAttributes).concat(eventAttributes);
+        attributes.push(...[...element.events.values()].map((e) => {
+          const postfix = sortPrefixes.get(e.inheritedFrom) || 'ddd-';
+          const sortKey = `eee-${postfix}on-${e.name}`;
+          return {
+            name: `on-${e.name}`,
+            description: e.description || '',
+            type: e.type || 'CustomEvent',
+            inheritedFrom: e.inheritedFrom, sortKey
+          };
+        }));
       }
-      return {kind: 'attributes', attributes};
-    };
+      return {
+        kind: 'attributes',
+        attributes: attributes.sort(compareAttributeResults)
+      };
+    }
   }
 
   _createSortPrefixes(element: Element): Map<string|undefined, string> {
@@ -262,11 +291,11 @@ export class LocalEditorService extends EditorService {
   _generateAutoCompletionForElement(e: Element): string {
     let autocompletion = `<${e.tagName}`;
     let tabindex = 1;
-    if (e.attributes.length) {
+    if (e.attributes.size > 0) {
       autocompletion += ` $${tabindex++}`;
     }
     autocompletion += `>`;
-    if (e.slots.length === 1 && !e.slots[0].name) {
+    if (e.slots.length === 1 && !e.slots[0]!.name) {
       autocompletion += `$${tabindex++}`;
     } else {
       for (const slot of e.slots) {
@@ -290,7 +319,8 @@ export class LocalEditorService extends EditorService {
     }
     const elementSourcePosition =
         parsedDocument.sourceRangeForNode(element)!.start;
-    const domModules = document.getByKind('dom-module', {imported: false});
+    const domModules =
+        document.getFeatures({kind: 'dom-module', imported: false});
     for (const domModule of domModules) {
       if (isPositionInsideRange(
               elementSourcePosition,
@@ -304,7 +334,7 @@ export class LocalEditorService extends EditorService {
     return this._linter.lint([localPath]);
   }
 
-  async getWarningsForPackage() {
+  async getWarningsForPackage(): Promise<Warning[]> {
     return this._linter.lintPackage();
   }
 
@@ -318,7 +348,11 @@ export class LocalEditorService extends EditorService {
    */
   private async _getFeatureAt(localPath: string, position: SourcePosition):
       Promise<Element|Property|Attribute|DatabindingFeature|undefined> {
-    const document = await this._analyzer.analyze(localPath);
+    const analysis = await this._analyzer.analyze([localPath]);
+    const document = analysis.getDocument(localPath);
+    if (!(document instanceof Document)) {
+      return;
+    }
     const location = await this._getAstAtPosition(document, position);
     if (!location) {
       return;
@@ -333,29 +367,38 @@ export class LocalEditorService extends EditorService {
       document: Document, astLocation: AstLocation, position: SourcePosition):
       Promise<Element|Attribute|DatabindingFeature|undefined> {
     if (astLocation.kind === 'tagName') {
-      return document.getOnlyAtId(
-          'element', astLocation.element.nodeName,
-          {imported: true, externalPackages: true});
+      return getOnly(document.getFeatures({
+        kind: 'element',
+        id: astLocation.element.nodeName,
+        imported: true,
+        externalPackages: true
+      }));
     } else if (astLocation.kind === 'attribute') {
-      const elements = document.getById(
-          'element', astLocation.element.nodeName,
-          {imported: true, externalPackages: true});
+      const elements = document.getFeatures({
+        kind: 'element',
+        id: astLocation.element.nodeName,
+        imported: true,
+        externalPackages: true
+      });
       if (elements.size === 0) {
         return;
       }
 
-      return concatMap(elements, (el) => el.attributes)
+      return concatMap(elements, (el) => el.attributes.values())
           .find(at => at.name === astLocation.attribute);
     } else if (
         astLocation.kind === 'attributeValue' || astLocation.kind === 'text') {
-      const domModules = document.getByKind('dom-module');
+      const domModules = document.getFeatures({kind: 'dom-module'});
       for (const domModule of domModules) {
         if (!domModule.id) {
           continue;
         }
-        const elements = document.getById(
-            'polymer-element', domModule.id,
-            {imported: true, externalPackages: true});
+        const elements = document.getFeatures({
+          kind: 'polymer-element',
+          id: domModule.id,
+          imported: true,
+          externalPackages: true
+        });
         if (elements.size !== 1) {
           continue;
         }
@@ -408,8 +451,8 @@ class DatabindingFeature {
     this.element = element;
     this.expression = expression;
     this.propertyName = propertyName;
-    this.property = element.properties.find((p) => p.name === propertyName) ||
-        element.methods.find(m => m.name === propertyName);
+    this.property = element.properties.get(propertyName!) ||
+        element.methods.get(propertyName!);
   }
 }
 
@@ -418,10 +461,31 @@ function isProperty(d: any): d is(ScannedProperty | Property) {
   return 'type' in d;
 }
 
-function concatMap<I, O>(inputs: Iterable<I>, f: (i: I) => O[]): O[] {
+function concatMap<I, O>(inputs: Iterable<I>, f: (i: I) => Iterable<O>): O[] {
   let results: O[] = [];
   for (const input of inputs) {
-    results = results.concat(f(input));
+    results.push(...f(input));
   }
   return results;
+}
+
+function getOnly<V>(set: Set<V>) {
+  if (set.size !== 1) {
+    return undefined;
+  }
+  return set.values().next().value!;
+}
+
+function compareAttributeResults<
+    A extends{sortKey: string, name: string, inheritedFrom?: string}>(
+    a1: A, a2: A): number {
+  let comparison = a1.sortKey.localeCompare(a2.sortKey);
+  if (comparison !== 0) {
+    return comparison;
+  }
+  comparison = (a1.inheritedFrom || '').localeCompare(a2.inheritedFrom || '');
+  if (comparison !== 0) {
+    return comparison;
+  }
+  return a1.name.localeCompare(a2.name);
 }

@@ -1,16 +1,4 @@
 language: node_js
-cache:
-  directories:
-  - yarn  # dir where we install the yarn command
 node_js:
-  - "4"
   - "6"
-before_install:
-- mkdir -p ./yarn/node_modules
-# yes this uses the deprecated yarnpkg. installing yarn with -g --prefix ./foo
-# silently fails in npm v3.10.3
-- npm install -g --prefix ./yarn yarnpkg
-install:
-- ./yarn/bin/yarn install --pure-lockfile
-script:
-- npm test
+  - "node"

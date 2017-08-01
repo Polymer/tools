@@ -19,7 +19,14 @@
  *     https://github.com/atom/atom-languageclient
  */
 
-import {SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Severity, SourcePosition, SourceRange} from 'polymer-analyzer';
+
+export interface Warning {
+  code: string;
+  message: string;
+  sourceRange: SourceRange;
+  severity: Severity;
+}
 
 export type TypeaheadCompletion = ElementCompletion | AttributesCompletion |
     AttributeValuesCompletion | DatabindingPropertiesCompletion;
@@ -112,14 +119,16 @@ export abstract class EditorService {
    * Gives the locations for references of an element at a given location.
    */
   abstract async getReferencesForFeatureAtPosition(
-      localPath: string, position: SourcePosition): Promise<SourceRange[]>;
+      localPath: string,
+      position: SourcePosition): Promise<undefined|Array<SourceRange>>;
 
   /**
    * Gives the location for the definition for a feature. For example, for a
    * v1 custom element, it will find its class.
    */
   abstract async getDefinitionForFeatureAtPosition(
-      localPath: string, position: SourcePosition): Promise<SourceRange>;
+      localPath: string,
+      position: SourcePosition): Promise<SourceRange|undefined>;
 
   /**
    * Assuming that the user is typing at the given location, what suggestions

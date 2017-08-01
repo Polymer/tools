@@ -13,12 +13,12 @@
  */
 
 import * as path from 'path';
-import {FSUrlLoader, PackageUrlResolver, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {FSUrlLoader, PackageUrlResolver, WarningCarryingException} from 'polymer-analyzer';
 import * as util from 'util';
 import {CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {AttributeCompletion, EditorService} from '../editor-service';
+import {AttributeCompletion, EditorService, Warning} from '../editor-service';
 import {hookUpRemoteConsole} from '../intercept-logs';
 import {LocalEditorService} from '../local-editor-service';
 
@@ -33,7 +33,7 @@ export class AutoDisposable implements Disposable {
   }
 
   protected readonly _disposables: Disposable[] = [];
-};
+}
 
 
 interface SettingsWrapper {
@@ -87,7 +87,7 @@ export default class LanguageServer extends AutoDisposable {
       connection.onInitialize((params): InitializeResult => {
         // Normalize across the two ways that the workspace may be
         // communicated to us.
-        let workspaceUri = getWorkspaceUri(params.rootUri, params.rootPath);
+        const workspaceUri = getWorkspaceUri(params.rootUri, params.rootPath);
         if (!workspaceUri || workspaceUri.scheme !== 'file') {
           reject(
               `Got invalid workspaceUri from client: ` +
@@ -153,11 +153,13 @@ export default class LanguageServer extends AutoDisposable {
     }));
 
     this._connection.onHover(async(textPosition) => {
-      return this.handleErrors(this.getDocsForHover(textPosition), undefined);
+      return this.handleErrors(
+          this.getDocsForHover(textPosition), undefined) as Promise<Hover>;
     });
 
     this._connection.onDefinition(async(textPosition) => {
-      return this.handleErrors(this.getDefinition(textPosition), undefined);
+      return this.handleErrors(
+          this.getDefinition(textPosition), undefined) as Promise<Definition>;
     });
 
     this._connection.onCompletion(async(textPosition) => {
