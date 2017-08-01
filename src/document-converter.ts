@@ -19,7 +19,7 @@ import * as estree from 'estree';
 import {BlockStatement, Identifier, ImportDeclaration, MemberExpression, Node, Program} from 'estree';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import, isPositionInsideRange, Severity, Warning} from 'polymer-analyzer';
+import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import {AnalysisConverter} from './analysis-converter';
@@ -244,6 +244,30 @@ export class DocumentConverter {
       dom5.setAttribute(scriptTag, 'src', importUrl);
       const replacementText = serializeNode(scriptTag);
       edits.push({offsets, replacementText});
+    }
+    for (const scriptImport of this.document.getFeatures(
+             {kind: 'html-script'})) {
+      if (!scriptImport.sourceRange || !scriptImport.astNode ||
+          !dom5.predicates.hasTagName('script')(scriptImport.astNode) ||
+          !scriptImport.document) {
+        continue;
+      }
+      const containingHtmlDocument =
+          this.document.parsedDocument as ParsedHtmlDocument;
+      const rangeOfNode =
+          containingHtmlDocument.sourceRangeForNode(scriptImport.astNode);
+      if (!rangeOfNode) {
+        continue;
+      }
+      const offsets = containingHtmlDocument.sourceRangeToOffsets(rangeOfNode);
+
+      const correctedUrl = this.formatImportUrl(
+          convertDocumentUrl(getDocumentUrl(scriptImport.document)),
+          scriptImport.url);
+      dom5.setAttribute(scriptImport.astNode, 'src', correctedUrl);
+
+      edits.push(
+          {offsets, replacementText: serializeNode(scriptImport.astNode)});
     }
 
     // Apply edits from bottom to top, so that the offsets stay valid.

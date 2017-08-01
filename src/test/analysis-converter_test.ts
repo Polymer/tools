@@ -1653,6 +1653,31 @@ $setBaz($foo + 10 * (10 ** 10));
 `,
       });
     });
+
+    testName = `we convert urls of external scripts in html to html transforms`;
+    test(testName, async () => {
+      setSources({
+        'index.html': `
+          <script src="../foo/foo.js"></script>
+        `,
+        'bower_components/foo/foo.js': `
+          console.log('hello world');
+        `
+      });
+
+      assertSources(await convert({packageName: 'polymer'}), {
+        './index.html': `
+
+          <script src="../foo/foo.js"></script>
+        `,
+      });
+      assertSources(await convert({packageName: '@polymer/polymer'}), {
+        './index.html': `
+
+          <script src="../../foo/foo.js"></script>
+        `,
+      });
+    });
   });
 
   suite('fixtures', () => {

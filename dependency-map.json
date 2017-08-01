@@ -490,5 +490,9 @@
   "hydrolysis": {
     "npm": "hydrolysis",
     "semver": "^1.0.0"
+  },
+  "web-component-tester": {
+    "npm": "web-component-tester",
+    "semver": "^6.0.0"
   }
 }
