@@ -411,7 +411,8 @@ export class DocumentConverter {
                 jsc.identifier('template'),
                 jsc.functionExpression(
                     null, [], jsc.blockStatement([jsc.returnStatement(
-                                  templateLiteral)]))));
+                                  templateLiteral)])),
+                true));
       } else if (node.type === 'CallExpression') {
         // A Polymer hybrid/legacy factory function element
         const arg = node.arguments[0];

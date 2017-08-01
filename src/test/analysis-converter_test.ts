@@ -1035,7 +1035,7 @@ export const setRootPath = function(path) {
  * @polymer
  */
 class TestElement extends Polymer.Element {
-  get template() {
+  static get template() {
     return \`
     <h1>Hi!</h1>
     <div>
@@ -1299,14 +1299,14 @@ $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
 document.head.appendChild($_documentContainer);
 customElements.define('foo-elem', class FooElem extends $Element {
-  get template() {
+  static get template() {
     return \`
     <div>foo-element body</div>
 \`;
   }
 });
 customElements.define('bar-elem', class BarElem extends $Element {
-  get template() {
+  static get template() {
     return \`
     <div>bar body</div>
 \`;
