@@ -378,11 +378,11 @@ export class DocumentConverter {
     ];
     let insertionPoint = 0;
     for (const [idx, statement] of enumerate(program.body)) {
+      insertionPoint = idx;
       if (statement.type === 'ImportDeclaration') {
+        insertionPoint++;  // cover the case where the import is at the end
         continue;
       }
-      // First statement past the imports.
-      insertionPoint = idx;
       break;
     }
     program.body.splice(insertionPoint, 0, ...statements);

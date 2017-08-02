@@ -1084,13 +1084,22 @@ Polymer({
       setSources({
         'test.html': `
 <custom-style><style>foo{}</style></custom-style>
+<link rel="import" href="./foo.html">
 `,
+        'foo.html': `<div>hello world!</div>`
       });
       assertSources(await convert(), {
         './test.js': `
+import './foo.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<custom-style><style>foo{}</style></custom-style>\`;
+document.head.appendChild($_documentContainer);
+`,
+        './foo.js': `
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+$_documentContainer.innerHTML = \`<div>hello world!</div>\`;
 document.head.appendChild($_documentContainer);
 `
       });
