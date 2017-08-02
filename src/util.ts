@@ -121,6 +121,11 @@ export function getMemberPath(expression: estree.Node): string[]|undefined {
   return undefined;
 }
 
+/** Like getMemberPath but joins the name back up into a single string. */
+export function getMemberName(expression: estree.Node): string|undefined {
+  const path = getMemberPath(expression);
+  return path ? path.join('.') : path;
+}
 
 /**
  * Find the node in program that corresponds to the same part of code
@@ -154,4 +159,42 @@ export function getNodePathGivenAnalyzerAstNode(
   });
 
   return associatedNodePath;
+}
+
+/**
+ * Yields the NodePath for each statement at the top level of `program`.
+ *
+ * Like `yield* program.body` except it yields NodePaths rather than
+ * Nodes, so that the caller can mutate the AST with the NodePath api.
+ */
+export function* toplevelStatements(program: estree.Program) {
+  const nodePaths: NodePath[] = [];
+  astTypes.visit(program, {
+    visitNode(path: NodePath<estree.Node>) {
+      if (!path.parent) {
+        // toplevel program
+        this.traverse(path);
+        return;
+      }
+      if (path.parent.node.type !== 'Program') {
+        // not a toplevel statement, skip it
+        return false;
+      }
+      this.traverse(path);
+
+      // ok, path.node must be a toplevel statement of the program.
+      nodePaths.push(path);
+      return;
+    }
+  });
+  yield* nodePaths;
+}
+
+/**
+ * Returns true if a statement is the literal "use strict".
+ */
+export function isUseStrict(statement: estree.Statement) {
+  return statement.type === 'ExpressionStatement' &&
+      statement.expression.type === 'Literal' &&
+      statement.expression.value === 'use strict';
 }

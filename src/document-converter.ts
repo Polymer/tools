@@ -30,6 +30,7 @@ import {getImportAlias, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode,
 
 import jsc = require('jscodeshift');
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
+import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 
 /**
  * Convert a module specifier & an optional set of named exports (or '*' to
@@ -117,6 +118,7 @@ export class DocumentConverter {
     }
     const program = jsc.program(combinedToplevelStatements);
     this.convertDependencies();
+    removeUnnecessaryEventListeners(program);
     removeWrappingIIFE(program);
     const importedReferences = this.rewriteNamespacedReferences(program);
     this.addJsImports(program, importedReferences);
@@ -183,6 +185,7 @@ export class DocumentConverter {
         continue;
       }
 
+      removeUnnecessaryEventListeners(program);
       removeWrappingIIFE(program);
       const importedReferences = this.rewriteNamespacedReferences(program);
       const wereImportsAdded = this.addJsImports(program, importedReferences);

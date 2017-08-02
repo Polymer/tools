@@ -1678,6 +1678,49 @@ $setBaz($foo + 10 * (10 ** 10));
         `,
       });
     });
+
+    test(`remove WebComponentsReady`, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            addEventListener('WebComponentsReady', () => {
+              class XFoo extends HTMLElement {
+                connectedCallback() {
+                  this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
+                  super.connectedCallback();
+                  this.spy.restore();
+                }
+              }
+              customElements.define('x-foo', XFoo);
+
+            });
+
+            HTMLImports.whenReady(function() {
+              Polymer({
+                is: 'data-popup'
+              });
+            });
+          </script>
+        `,
+      });
+
+      assertSources(await convert({packageName: 'polymer'}), {
+        './test.js': `
+class XFoo extends HTMLElement {
+  connectedCallback() {
+    this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
+    super.connectedCallback();
+    this.spy.restore();
+  }
+}
+customElements.define('x-foo', XFoo);
+
+Polymer({
+  is: 'data-popup'
+});
+`,
+      });
+    });
   });
 
   suite('fixtures', () => {
