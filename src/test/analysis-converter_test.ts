@@ -1692,6 +1692,13 @@ $setBaz($foo + 10 * (10 ** 10));
                 }
               }
               customElements.define('x-foo', XFoo);
+
+            });
+
+            HTMLImports.whenReady(function() {
+              Polymer({
+                is: 'data-popup'
+              });
             });
           </script>
         `,
@@ -1707,6 +1714,10 @@ class XFoo extends HTMLElement {
   }
 }
 customElements.define('x-foo', XFoo);
+
+Polymer({
+  is: 'data-popup'
+});
 `,
       });
     });

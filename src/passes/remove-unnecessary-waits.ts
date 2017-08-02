@@ -17,8 +17,9 @@ import * as estree from 'estree';
 import {getMemberName, toplevelStatements} from '../util';
 
 /**
- * Unwrap the bodies of any listeners for the `WebComponentsReady` event, as
- * the closest equivalent in modules world happens by default.
+ * Unwrap the bodies of any listeners for the `WebComponentsReady` event, or
+ * callbacks passed to `HTMLImports.whenReady` as the closest equivalent in
+ * modules world happens by default.
  *
  * @param program The program. Is mutated.
  */
@@ -29,22 +30,14 @@ export function removeUnnecessaryEventListeners(program: estree.Program) {
         statement.expression.type !== 'CallExpression') {
       continue;
     }
-    const args = statement.expression.arguments;
-    if (args.length !== 2) {
-      continue;
+    let memberName = getMemberName(statement.expression.callee);
+    if (!memberName && statement.expression.callee.type === 'Identifier') {
+      memberName = statement.expression.callee.name;
     }
-    const callee = statement.expression.callee;
-    let memberName = getMemberName(callee);
-    if (!memberName && callee.type === 'Identifier') {
-      memberName = callee.name;
-    }
-    if (!(memberName === 'addEventListener' ||
-          memberName === 'document.addEventListener')) {
-      continue;
-    }
-    const [eventName, callback] = args;
-    if (eventName.type !== 'Literal' ||
-        eventName.value !== 'WebComponentsReady') {
+    const callback =
+        getWebComponentsReadyCallback(memberName, statement.expression) ||
+        getHtmlImportsReadyCallback(memberName, statement.expression);
+    if (!callback) {
       continue;
     }
     if ((callback.type !== 'FunctionExpression' &&
@@ -60,4 +53,36 @@ export function removeUnnecessaryEventListeners(program: estree.Program) {
     }
     nodePath.prune();
   }
+}
+
+function getWebComponentsReadyCallback(
+    memberName: string|undefined,
+    callExpression: estree.CallExpression): estree.Node|undefined {
+  const args = callExpression.arguments;
+  if (args.length !== 2) {
+    return;
+  }
+  if (!(memberName === 'addEventListener' ||
+        memberName === 'document.addEventListener')) {
+    return;
+  }
+  const [eventName, callback] = args;
+  if (eventName.type !== 'Literal' ||
+      eventName.value !== 'WebComponentsReady') {
+    return;
+  }
+  return callback;
+}
+
+function getHtmlImportsReadyCallback(
+    memberName: string|undefined,
+    callExpression: estree.CallExpression): estree.Node|undefined {
+  const args = callExpression.arguments;
+  if (args.length !== 1) {
+    return;
+  }
+  if (memberName !== 'HTMLImports.whenReady') {
+    return;
+  }
+  return args[0];
 }
