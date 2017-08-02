@@ -247,19 +247,20 @@ export class DocumentConverter {
     }
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
-      if (!scriptImport.sourceRange || !scriptImport.astNode ||
-          !dom5.predicates.hasTagName('script')(scriptImport.astNode) ||
-          !scriptImport.document) {
+      if (  // ignore fake script imports injected by various hacks in the
+            // analyzer
+          !scriptImport.sourceRange || !scriptImport.astNode) {
         continue;
+      }
+      if (!dom5.predicates.hasTagName('script')(scriptImport.astNode)) {
+        throw new Error(
+            `Expected an 'html-script' kinded feature to ` +
+            `have a script tag for an AST node.`);
       }
       const containingHtmlDocument =
           this.document.parsedDocument as ParsedHtmlDocument;
-      const rangeOfNode =
-          containingHtmlDocument.sourceRangeForNode(scriptImport.astNode);
-      if (!rangeOfNode) {
-        continue;
-      }
-      const offsets = containingHtmlDocument.sourceRangeToOffsets(rangeOfNode);
+      const offsets = containingHtmlDocument.sourceRangeToOffsets(
+          containingHtmlDocument.sourceRangeForNode(scriptImport.astNode)!);
 
       const correctedUrl = this.formatImportUrl(
           convertDocumentUrl(getDocumentUrl(scriptImport.document)),
