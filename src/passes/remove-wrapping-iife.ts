@@ -13,6 +13,7 @@
  */
 
 import * as estree from 'estree';
+import {isUseStrict} from '../util';
 
 /**
  * If the given program consists of a single IIFE, move its contents up and out,
@@ -44,13 +45,4 @@ export function removeWrappingIIFE(program: estree.Program) {
   } else {
     program.body = body;
   }
-}
-
-/**
- * Returns true if a statement is the literal "use strict".
- */
-function isUseStrict(statement: estree.Statement) {
-  return statement.type === 'ExpressionStatement' &&
-      statement.expression.type === 'Literal' &&
-      statement.expression.value === 'use strict';
 }

@@ -17,8 +17,7 @@ import {NamespaceMemberToExport} from '../js-module';
 import jsc = require('jscodeshift');
 import {Document} from 'polymer-analyzer';
 import {NodePath} from 'ast-types';
-import * as astTypes from 'ast-types';
-import {sourceLocationsEqual, getNodePathGivenAnalyzerAstNode, getMemberPath} from '../util';
+import {sourceLocationsEqual, getNodePathGivenAnalyzerAstNode, getMemberPath, toplevelStatements} from '../util';
 
 export function rewriteNamespacesAsExports(
     program: estree.Program,
@@ -270,34 +269,6 @@ function getLocalNamesOfLocallyDeclaredNamespaces(document: Document) {
   return names;
 }
 
-/**
- * Yields the NodePath for each statement at the top level of `program`.
- *
- * Like `yield* program.body` except it yields NodePaths rather than
- * Nodes, so that the caller can mutate the AST with the NodePath api.
- */
-function* toplevelStatements(program: estree.Program) {
-  const nodePaths: NodePath[] = [];
-  astTypes.visit(program, {
-    visitNode(path: NodePath<estree.Node>) {
-      if (!path.parent) {
-        // toplevel program
-        this.traverse(path);
-        return;
-      }
-      if (path.parent.node.type !== 'Program') {
-        // not a toplevel statement, skip it
-        return false;
-      }
-      this.traverse(path);
-
-      // ok, path.node must be a toplevel statement of the program.
-      nodePaths.push(path);
-      return;
-    }
-  });
-  yield* nodePaths;
-}
 
 /**
  * Return the right hand side of an assignment/variable declaration.

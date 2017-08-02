@@ -1678,6 +1678,38 @@ $setBaz($foo + 10 * (10 ** 10));
         `,
       });
     });
+
+    test(`remove WebComponentsReady`, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            addEventListener('WebComponentsReady', () => {
+              class XFoo extends HTMLElement {
+                connectedCallback() {
+                  this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
+                  super.connectedCallback();
+                  this.spy.restore();
+                }
+              }
+              customElements.define('x-foo', XFoo);
+            });
+          </script>
+        `,
+      });
+
+      assertSources(await convert({packageName: 'polymer'}), {
+        './test.js': `
+class XFoo extends HTMLElement {
+  connectedCallback() {
+    this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
+    super.connectedCallback();
+    this.spy.restore();
+  }
+}
+customElements.define('x-foo', XFoo);
+`,
+      });
+    });
   });
 
   suite('fixtures', () => {
