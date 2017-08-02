@@ -133,9 +133,7 @@ export class DocumentConverter {
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
     }
-    this.rewriteExcludedReferences(
-        program,
-        new Set(exportMigrationRecords.map((r) => r.oldNamespacedName)));
+    this.rewriteExcludedReferences(program);
     this.rewriteReferencesToNamespaceMembers(
         program,
         new Set([
@@ -200,9 +198,7 @@ export class DocumentConverter {
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
-      this.rewriteExcludedReferences(
-          program,
-          new Set(exportMigrationRecords.map((r) => r.oldNamespacedName)));
+      this.rewriteExcludedReferences(program);
       this.rewriteReferencesToNamespaceMembers(
           program,
           new Set([
@@ -492,8 +488,8 @@ export class DocumentConverter {
           return;
         }
         const memberName = memberPath.join('.');
-        const writeNodePath = getAssignmentNodePathTo(path);
-        if (writeNodePath) {
+        const assignmentPath = getPathOfAssignmentTo(path);
+        if (assignmentPath) {
           const setterName = getSetterName(memberPath);
           const exportOfMember =
               analysisConverter.namespacedExports.get(setterName);
@@ -503,8 +499,9 @@ export class DocumentConverter {
             return;
           }
           addToImportedReferences(exportOfMember);
-          writeNodePath.replace(jsc.callExpression(
-              exportOfMember.expressionToAccess(), [writeNodePath.node.right]));
+          assignmentPath.replace(jsc.callExpression(
+              exportOfMember.expressionToAccess(),
+              [assignmentPath.node.right]));
           return false;
         }
         const exportOfMember =
@@ -526,19 +523,22 @@ export class DocumentConverter {
    * Rewrite references in _referenceExcludes and well known properties that
    * don't work well in modular code.
    */
-  private rewriteExcludedReferences(
-      program: Program, writeExceptions: ReadonlySet<string>) {
+  private rewriteExcludedReferences(program: Program) {
     const mapOfRewrites = new Map(this.analysisConverter._referenceRewrites);
     for (const reference of this.analysisConverter._referenceExcludes) {
       mapOfRewrites.set(reference, jsc.identifier('undefined'));
     }
 
-    const handleRewrite = (path: NodePath, memberName: string) => {
+    /**
+     * Rewrite the given path of the given member by `mapOfRewrites`.
+     *
+     * Never rewrite an assignment to assign to `undefined`.
+     */
+    const rewrite = (path: NodePath, memberName: string) => {
       const replacement = mapOfRewrites.get(memberName);
       if (replacement) {
         if (replacement.type === 'Identifier' &&
-            replacement.name === 'undefined' &&
-            writeExceptions.has(memberName) && isAssigningTo(path)) {
+            replacement.name === 'undefined' && isAssigningTo(path)) {
           /**
            * If `path` is a name / pattern that's being written to, we don't
            * want to rewrite it to `undefined`.
@@ -553,7 +553,7 @@ export class DocumentConverter {
       visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (memberPath !== undefined) {
-          handleRewrite(path, memberPath.join('.'));
+          rewrite(path, memberPath.join('.'));
         }
         this.traverse(path);
       },
@@ -826,10 +826,14 @@ function isLegacyJavascriptTag(scriptNode: parse5.ASTNode) {
  *     this.foo = 10;
  */
 function isAssigningTo(path: NodePath): boolean {
-  return getAssignmentNodePathTo(path) !== undefined;
+  return getPathOfAssignmentTo(path) !== undefined;
 }
 
-function getAssignmentNodePathTo(path: NodePath):
+/**
+ * Like isAssigningTo, but returns the NodePath of the assignment rather than
+ * true, and undefined rather than false.
+ */
+function getPathOfAssignmentTo(path: NodePath):
     NodePath<estree.AssignmentExpression>|undefined {
   if (!path.parent) {
     return undefined;
@@ -845,11 +849,18 @@ function getAssignmentNodePathTo(path: NodePath):
       parentNode.property === path.node &&
       parentNode.object.type === 'Identifier' &&
       parentNode.object.name === 'window') {
-    return getAssignmentNodePathTo(path.parent);
+    return getPathOfAssignmentTo(path.parent);
   }
   return undefined;
 }
 
+/**
+ * Give the name of the setter we should use to set the given memberPath. Does
+ * not check to see if the setter exists, just returns the name it would have.
+ * e.g.
+ *
+ *     ['Polymer', 'foo', 'bar']    =>    'Polymer.foo.setBar'
+ */
 function getSetterName(memberPath: string[]): string {
   const lastSegment = memberPath[memberPath.length - 1];
   memberPath[memberPath.length - 1] =
