@@ -69,7 +69,6 @@ const elementBlacklist = new Set<string|undefined>([
   'link',
   'meta',
   'script',
-  'dom-module',
 ]);
 
 
@@ -338,8 +337,13 @@ export class DocumentConverter {
       ...body.childNodes!.filter((n: parse5.ASTNode) => n.tagName !== undefined)
     ];
 
-    const genericElements =
-        elements.filter((e) => !elementBlacklist.has(e.tagName));
+    const usedDomModules =
+        new Set([...this.document.getFeatures({kind: 'polymer-element'})].map(
+            (el) => el.domModule));
+    const genericElements = filterClone(
+        elements,
+        (e) => !(elementBlacklist.has(e.tagName) || usedDomModules.has(e)));
+
     if (genericElements.length === 0) {
       return;
     }
@@ -895,4 +899,20 @@ function getSetterName(memberPath: string[]): string {
   memberPath[memberPath.length - 1] =
       `set${lastSegment.charAt(0).toUpperCase()}${lastSegment.slice(1)}`;
   return memberPath.join('.');
+}
+
+function filterClone(
+    nodes: parse5.ASTNode[], filter: dom5.Predicate): parse5.ASTNode[] {
+  const clones = [];
+  for (const node of nodes) {
+    if (!filter(node)) {
+      continue;
+    }
+    const clone = dom5.cloneNode(node);
+    clones.push(clone);
+    if (node.childNodes) {
+      clone.childNodes = filterClone(node.childNodes, filter);
+    }
+  }
+  return clones;
 }

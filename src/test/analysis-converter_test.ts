@@ -351,7 +351,7 @@ export const Polymer = function(info) {
     test('unwraps top-level IIFE', async () => {
       setSources({
         'test.html': `
-          <dom-module>
+          <dom-module id="foo-elem">
             <template>
               <h1>Test</h1>
             </template>
@@ -359,7 +359,7 @@ export const Polymer = function(info) {
               (function() {
                 'use strict';
 
-                Polymer.Foo = 'Bar';
+                Polymer({is: 'foo-elem'});
               })();
             </script>
           </dom-module>
@@ -367,7 +367,13 @@ export const Polymer = function(info) {
       });
       assertSources(await convert(), {
         './test.js': `
-export const Foo = 'Bar';
+Polymer({
+  _template: \`
+              <h1>Test</h1>
+\`,
+
+  is: 'foo-elem'
+});
 `
       });
     });
@@ -1727,6 +1733,39 @@ customElements.define('x-foo', XFoo);
 Polymer({
   is: 'data-popup'
 });
+`,
+      });
+    });
+
+    test(`clones unclaimed dom-modules, leaves out scripts`, async () => {
+      setSources({
+        'test.html': `
+          <dom-module>
+            <template>
+              Scripts in here are cloned
+              <script>foo</script>
+            </template>
+            <script>// this is not cloned</script>
+          </dom-module>
+        `,
+      });
+
+      assertSources(await convert({packageName: 'polymer'}), {
+        './test.js': `
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+
+$_documentContainer.innerHTML = \`<dom-module>
+            <template>
+              Scripts in here are cloned
+              <script>foo</script>
+            </template>
+` +
+            '            ' +
+            `
+          </dom-module>\`;
+
+document.head.appendChild($_documentContainer);
 `,
       });
     });
