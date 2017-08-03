@@ -1,5 +1,5 @@
 {
-  "name": "html2js",
+  "name": "@polymer/html2js",
   "description": "Converts Bower + HTML Imports packages to npm + JS modules",
   "version": "0.0.0",
   "author": "The Polymer Project Authors",
