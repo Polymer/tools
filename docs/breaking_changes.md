@@ -16,9 +16,13 @@ A list of known limitations and behavior changes when using HTML2JS:
 
 ## Rare
 
+- Evaluation order
+  - An HTML Import could interleave HTML with JS. html2js injects all HTML into the document first, then it runs the rest of the script in the file.
+  - JS Modules are deferred, so they run after all HTML has been parsed, and `document.write` is a noop.
+
 - ElementClass.template
   - this is a rarely used static property on the element class. when the template
-    is defined using a dom-module it is an HTMLTemplateElement, but after inlining it is a string.
+    is defined using a `<dom-module>` it is an HTMLTemplateElement, but after inlining it is a string.
 
 - `document.currentScript`
   - this was a way to get access to the script element of the currently executing
