@@ -64,3 +64,6 @@ typings/
 /fixtures/generated
 
 src/gen-ts-types/def/*.js
+
+html2js_workspace/
+github-token
