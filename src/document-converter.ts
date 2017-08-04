@@ -26,41 +26,96 @@ import {AnalysisConverter} from './analysis-converter';
 import {JsExport, JsModule} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
-import {getImportAlias, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
+import {findAvailableIdentifier, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 import jsc = require('jscodeshift');
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 
 /**
+ * Pairs a subtree of an AST (`path` as a `NodePath`) to be replaced with a
+ * reference to a particular import binding represented by the JSExport
+ * `target`.
+ */
+type ImportReference = {
+  path: NodePath,
+  target: JsExport,
+};
+
+/**
  * Convert a module specifier & an optional set of named exports (or '*' to
  * import entire namespace) to a set of ImportDeclaration objects.
  */
 function getImportDeclarations(
-    specifierUrl: string, namedExports?: Iterable<string>) {
-  const jsImportDeclarations: ImportDeclaration[] = [];
-  const namedExportsArray = namedExports ? Array.from(namedExports) : [];
-  const hasNamespaceReference = namedExportsArray.some((s) => s === '*');
+    specifierUrl: string,
+    namedImports: Iterable<JsExport>,
+    importReferences: ReadonlySet<ImportReference> = new Set(),
+    usedIdentifiers: Set<string> = new Set()): ImportDeclaration[] {
+  // A map from imports (as `JsExport`s) to their assigned specifier names.
+  const assignedNames = new Map<JsExport, string>();
+  // Find an unused identifier and mark it as used.
+  function assignAlias(import_: JsExport, requestedAlias: string) {
+    const alias = findAvailableIdentifier(requestedAlias, usedIdentifiers);
+    usedIdentifiers.add(alias);
+    assignedNames.set(import_, alias);
+    return alias;
+  }
+
+  const namedImportsArray = Array.from(namedImports);
   const namedSpecifiers =
-      namedExportsArray.filter((s) => s !== '*')
-          .map(
-              (s) => jsc.importSpecifier(
-                  jsc.identifier(s), jsc.identifier(getImportAlias(s))));
+      namedImportsArray.filter((import_) => import_.name !== '*')
+          .map((import_) => {
+            const name = import_.name;
+            const alias = assignAlias(import_, import_.name);
+
+            if (alias === name) {
+              return jsc.importSpecifier(jsc.identifier(name));
+            } else {
+              return jsc.importSpecifier(
+                  jsc.identifier(name), jsc.identifier(alias));
+            }
+          });
+
+  const importDeclarations: ImportDeclaration[] = [];
+
   // If a module namespace was referenced, create a new namespace import
-  if (hasNamespaceReference) {
-    jsImportDeclarations.push(jsc.importDeclaration(
-        [jsc.importNamespaceSpecifier(
-            jsc.identifier(getModuleId(specifierUrl)))],
+  const namespaceImports =
+      namedImportsArray.filter((import_) => import_.name === '*');
+  if (namespaceImports.length > 1) {
+    throw new Error(
+        `More than one namespace import was given for '${specifierUrl}'.`);
+  }
+
+  const namespaceImport = namespaceImports[0];
+  if (namespaceImport) {
+    const alias = assignAlias(namespaceImport, getModuleId(specifierUrl));
+
+    importDeclarations.push(jsc.importDeclaration(
+        [jsc.importNamespaceSpecifier(jsc.identifier(alias))],
         jsc.literal(specifierUrl)));
   }
+
   // If any named imports were referenced, create a new import for all named
   // members. If `namedSpecifiers` is empty but a namespace wasn't imported
   // either, then still add an empty importDeclaration to trigger the load.
-  if (namedSpecifiers.length > 0 || !hasNamespaceReference) {
-    jsImportDeclarations.push(
+  if (namedSpecifiers.length > 0 || namespaceImport === undefined) {
+    importDeclarations.push(
         jsc.importDeclaration(namedSpecifiers, jsc.literal(specifierUrl)));
   }
-  return jsImportDeclarations;
+
+  // Replace all references to all imports with the assigned name for each
+  // import.
+  for (const {target, path} of importReferences) {
+    const assignedName = assignedNames.get(target);
+    if (!assignedName) {
+      throw new Error(
+          `The import '${target.name}' was not assigned an identifier.`);
+    }
+
+    path.replace(jsc.identifier(assignedName));
+  }
+
+  return importDeclarations;
 }
 
 
@@ -119,7 +174,7 @@ export class DocumentConverter {
     this.convertDependencies();
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFE(program);
-    const importedReferences = this.rewriteNamespacedReferences(program);
+    const importedReferences = this.collectNamespacedReferences(program);
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
 
@@ -186,7 +241,7 @@ export class DocumentConverter {
 
       removeUnnecessaryEventListeners(program);
       removeWrappingIIFE(program);
-      const importedReferences = this.rewriteNamespacedReferences(program);
+      const importedReferences = this.collectNamespacedReferences(program);
       const wereImportsAdded = this.addJsImports(program, importedReferences);
       // Don't convert the HTML.
       // Don't inline templates, they're fine where they are.
@@ -479,20 +534,23 @@ export class DocumentConverter {
    * Returns a map of from url to identifier of the references we should
    * import.
    */
-  private rewriteNamespacedReferences(program: Program) {
+  private collectNamespacedReferences(program: Program):
+      Map<ConvertedDocumentUrl, Set<ImportReference>> {
     const analysisConverter = this.analysisConverter;
-    const importedReferences = new Map<ConvertedDocumentUrl, Set<string>>();
+    const importedReferences =
+        new Map<ConvertedDocumentUrl, Set<ImportReference>>();
 
     /**
-     * Add the given JsExport to this.module's `importedReferences` map.
+     * Add the given JsExport and referencing NodePath to this.module's
+     * `importedReferences` map.
      */
-    const addToImportedReferences = (moduleExport: JsExport) => {
-      let moduleImportedNames = importedReferences.get(moduleExport.url);
+    const addToImportedReferences = (target: JsExport, path: NodePath) => {
+      let moduleImportedNames = importedReferences.get(target.url);
       if (moduleImportedNames === undefined) {
-        moduleImportedNames = new Set<string>();
-        importedReferences.set(moduleExport.url, moduleImportedNames);
+        moduleImportedNames = new Set<ImportReference>();
+        importedReferences.set(target.url, moduleImportedNames);
       }
-      moduleImportedNames.add(moduleExport.name);
+      moduleImportedNames.add({target, path});
     };
 
     astTypes.visit(program, {
@@ -509,9 +567,8 @@ export class DocumentConverter {
         if (!exportOfMember) {
           return false;
         }
-        // Store the imported reference & rewrite the Identifier
-        addToImportedReferences(exportOfMember);
-        path.replace(exportOfMember.expressionToAccess());
+        // Store the imported reference
+        addToImportedReferences(exportOfMember, path);
         return false;
       },
       visitMemberExpression(path: NodePath<MemberExpression>) {
@@ -531,10 +588,13 @@ export class DocumentConverter {
             this.traverse(path);
             return;
           }
-          addToImportedReferences(exportOfMember);
-          assignmentPath.replace(jsc.callExpression(
-              exportOfMember.expressionToAccess(),
-              [assignmentPath.node.right]));
+          const [callPath] = assignmentPath.replace(jsc.callExpression(
+              jsc.identifier(setterName), [assignmentPath.node.right]));
+          if (!callPath) {
+            throw new Error(
+                'Failed to replace a namespace object property set with a setter function call.');
+          }
+          addToImportedReferences(exportOfMember, callPath.get('callee')!);
           return false;
         }
         const exportOfMember =
@@ -543,9 +603,8 @@ export class DocumentConverter {
           this.traverse(path);
           return;
         }
-        // Store the imported reference & rewrite the MemberExpression
-        addToImportedReferences(exportOfMember);
-        path.replace(exportOfMember.expressionToAccess());
+        // Store the imported reference
+        addToImportedReferences(exportOfMember, path);
         return false;
       }
     });
@@ -775,28 +834,54 @@ export class DocumentConverter {
   private addJsImports(
       program: Program,
       importedReferences:
-          ReadonlyMap<ConvertedDocumentUrl, ReadonlySet<string>>): boolean {
+          ReadonlyMap<ConvertedDocumentUrl, ReadonlySet<ImportReference>>):
+      boolean {
+    // Collect Identifier nodes within trees that will be completely replaced
+    // with an import reference.
+    const ignoredIdentifiers: Set<Identifier> = new Set();
+    for (const referenceSet of importedReferences.values()) {
+      for (const reference of referenceSet) {
+        astTypes.visit(reference.path.node, {
+          visitIdentifier(path: NodePath<Identifier>): (boolean | void) {
+            ignoredIdentifiers.add(path.node);
+            this.traverse(path);
+          },
+        });
+      }
+    }
+    const usedIdentifiers = collectIdentifierNames(program, ignoredIdentifiers);
+
     const jsExplicitImports = new Set<string>();
     // Rewrite HTML Imports to JS imports
     const jsImportDeclarations = [];
     for (const htmlImport of this.getHtmlImports()) {
       const importedJsDocumentUrl =
           convertDocumentUrl(getDocumentUrl(htmlImport.document));
-      const specifierNames = importedReferences.get(importedJsDocumentUrl);
+
+      const references = importedReferences.get(importedJsDocumentUrl);
+      const namedExports =
+          new Set([...(references || [])].map((ref) => ref.target));
+
       const jsFormattedImportUrl =
           this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
-      jsImportDeclarations.push(
-          ...getImportDeclarations(jsFormattedImportUrl, specifierNames));
+      jsImportDeclarations.push(...getImportDeclarations(
+          jsFormattedImportUrl, namedExports, references, usedIdentifiers));
+
       jsExplicitImports.add(importedJsDocumentUrl);
     }
     // Add JS imports for any additional, implicit HTML imports
     for (const jsImplicitImportUrl of importedReferences.keys()) {
-      if (!jsExplicitImports.has(jsImplicitImportUrl)) {
-        const specifierNames = importedReferences.get(jsImplicitImportUrl);
-        const jsFormattedImportUrl = this.formatImportUrl(jsImplicitImportUrl);
-        jsImportDeclarations.push(
-            ...getImportDeclarations(jsFormattedImportUrl, specifierNames));
+      if (jsExplicitImports.has(jsImplicitImportUrl)) {
+        continue;
       }
+
+      const references = importedReferences.get(jsImplicitImportUrl);
+      const namedExports =
+          new Set([...(references || [])].map((ref) => ref.target));
+
+      const jsFormattedImportUrl = this.formatImportUrl(jsImplicitImportUrl);
+      jsImportDeclarations.push(...getImportDeclarations(
+          jsFormattedImportUrl, namedExports, references, usedIdentifiers));
     }
     // Prepend JS imports into the program body
     program.body.splice(0, 0, ...jsImportDeclarations);
@@ -915,4 +1000,26 @@ function filterClone(
     }
   }
   return clones;
+}
+
+/**
+ * Finds all identifiers within the given program and creates a set of their
+ * names (strings). Identifiers in the `ignored` argument set will not
+ * contribute to the output set.
+ */
+function collectIdentifierNames(
+    program: estree.Program, ignored: ReadonlySet<Identifier>): Set<string> {
+  const identifiers = new Set();
+  astTypes.visit(program, {
+    visitIdentifier(path: NodePath<Identifier>): (boolean | void) {
+      const node = path.node;
+
+      if (!ignored.has(node)) {
+        identifiers.add(path.node.name);
+      }
+
+      this.traverse(path);
+    },
+  });
+  return identifiers;
 }

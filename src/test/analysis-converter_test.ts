@@ -241,10 +241,10 @@ import './dep.js';
       });
       assertSources(await convert(), {
         './test.js': `
-import { foo as $foo } from './foo.js';
-import { bar as $bar } from './bar.js';
-console.log($foo);
-console.log($bar);
+import { foo } from './foo.js';
+import { bar } from './bar.js';
+console.log(foo);
+console.log(bar);
 `
       });
     });
@@ -270,11 +270,11 @@ console.log($bar);
       });
       assertSources(await convert(), {
         './test.js': `
-import { Polymer as $Polymer, foo as $foo } from \'./foo.js\';
-console.log($Polymer());
-console.log($Polymer());
-console.log($foo);
-console.log($Polymer[\'bar\']);
+import { Polymer, foo } from \'./foo.js\';
+console.log(Polymer());
+console.log(Polymer());
+console.log(foo);
+console.log(Polymer[\'bar\']);
 `
       });
     });
@@ -298,9 +298,9 @@ console.log($Polymer[\'bar\']);
       });
       assertSources(await convert(), {
         './test.js': `
-import { Polymer as $Polymer } from './foo.js';
-var P = $Polymer;
-var Po = $Polymer;
+import { Polymer } from './foo.js';
+var P = Polymer;
+var Po = Polymer;
 P();
 Po();
 `
@@ -330,9 +330,9 @@ Po();
       assertSources(await convert(), {
         './test.js': `
 import './polymer.js';
-import { Polymer as $Polymer } from './lib/legacy/polymer-fn.js';
-console.log($Polymer());
-console.log($Polymer());
+import { Polymer } from './lib/legacy/polymer-fn.js';
+console.log(Polymer());
+console.log(Polymer());
 `,
 
         './polymer.js': `
@@ -786,8 +786,8 @@ export function deepReferenceFn() {
       });
       assertSources(await convert(), {
         './test.js': `
-import { Element as $Element } from './dep.js';
-class MyElement extends $Element {}
+import { Element } from './dep.js';
+class MyElement extends Element {}
 `
       });
     });
@@ -813,8 +813,8 @@ class MyElement extends $Element {}
       });
       assertSources(await convert(), {
         './test.js': `
-import { Element as $Element } from './dep.js';
-class MyElement extends $Element {}
+import { Element } from './dep.js';
+class MyElement extends Element {}
 `
       });
     });
@@ -841,8 +841,8 @@ class MyElement extends $Element {}
       });
       assertSources(await convert(), {
         './test.js': `
-import * as $$dep from './dep.js';
-const Foo = $$dep;
+import * as dep from './dep.js';
+const Foo = dep;
 class MyElement extends Foo.Element {}
 `
       });
@@ -871,11 +871,11 @@ class MyElement extends Foo.Element {}
       });
       assertSources(await convert(), {
         './test.js': `
-import * as $$dep from './dep.js';
-import { Element as $Element } from './dep.js';
-const Foo = $$dep;
+import * as dep from './dep.js';
+import { Element as Element$0 } from './dep.js';
+const Foo = dep;
 const Bar = Foo.Element;
-const Baz = $Element;
+const Baz = Element$0;
 `
       });
     });
@@ -929,8 +929,8 @@ export const isDeep = isPath;
           }),
           {
             './test.js': `
-import { Element as $Element } from './dep.js';
-class MyElement extends $Element {}
+import { Element } from './dep.js';
+class MyElement extends Element {}
 `
           });
     });
@@ -1124,9 +1124,9 @@ document.head.appendChild($_documentContainer);
       });
       assertSources(await convert({namespaces: ['Foo', 'Baz']}), {
         './test.js': `
-import { qux as $qux } from './qux.js';
+import { qux } from './qux.js';
 export const bar = 10;
-export { $qux as zug };
+export { qux as zug };
 `
       });
     });
@@ -1150,8 +1150,8 @@ export { $qux as zug };
       assertSources(
           await convert({namespaces: [/* No explicit namespaces! */]}), {
             './test.js': `
-import { Element as $Element } from './polymer.js';
-class Element extends $Element {}
+import { Element as Element$0 } from './polymer.js';
+class Element extends Element$0 {}
 `,
 
             './polymer.js': `
@@ -1183,8 +1183,8 @@ export const Element = class Element {};
       assertSources(
           await convert({namespaces: [/* No explicit namespaces! */]}), {
             './test.js': `
-import { Element as $Element } from './ns.js';
-class Element extends $Element {}
+import { Element as Element$0 } from './ns.js';
+class Element extends Element$0 {}
 `,
 
             './ns.js': `
@@ -1238,9 +1238,9 @@ export const Element = class Element {};
       });
       assertSources(await convert(), {
         './test.js': `
-import { Element as $Element } from './polymer.js';
-class FooElem extends $Element {}
-class BarElem extends $Element {}
+import { Element } from './polymer.js';
+class FooElem extends Element {}
+class BarElem extends Element {}
 `
       });
     });
@@ -1267,13 +1267,13 @@ class BarElem extends $Element {}
       });
       assertSources(await convert(), {
         './test.js': `
-import { Element as $Element } from './polymer.js';
+import { Element } from './polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Top</div><div>Middle</div><div>Bottom</div>\`;
 document.head.appendChild($_documentContainer);
-class FooElem extends $Element {}
-class BarElem extends $Element {}
+class FooElem extends Element {}
+class BarElem extends Element {}
 `
       });
     });
@@ -1308,19 +1308,19 @@ class BarElem extends $Element {}
       });
       assertSources(await convert(), {
         './test.js': `
-import { Element as $Element } from './polymer.js';
+import { Element } from './polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
 document.head.appendChild($_documentContainer);
-customElements.define('foo-elem', class FooElem extends $Element {
+customElements.define('foo-elem', class FooElem extends Element {
   static get template() {
     return \`
     <div>foo-element body</div>
 \`;
   }
 });
-customElements.define('bar-elem', class BarElem extends $Element {
+customElements.define('bar-elem', class BarElem extends Element {
   static get template() {
     return \`
     <div>bar body</div>
@@ -1394,9 +1394,9 @@ export const Element = class Element {};
           <div>This is some html.</div>
           <script type="module" src="./polymer.js"></script>
           <script type="module">
-import { Element as $Element } from './polymer.js';
+import { Element } from './polymer.js';
 document.registerElement(
-  'foo-elem', class FooElem extends $Element {});
+  'foo-elem', class FooElem extends Element {});
 </script>
           <script type="module">
             // this should not be changed because it is a module already
@@ -1404,9 +1404,9 @@ document.registerElement(
               'bar-elem', class BarElem extends HTMLElement {});
           </script>
           <script type="module">
-import { Element as $Element } from './polymer.js';
+import { Element } from './polymer.js';
 document.registerElement(
-  'baz-elem', class BazElem extends $Element {});
+  'baz-elem', class BazElem extends Element {});
 </script>
         `,
       });
@@ -1662,9 +1662,9 @@ export function setBaz(newBaz) {
 `,
 
         './test.js': `
-import { setFoo as $setFoo, setBaz as $setBaz, foo as $foo } from './settings.js';
-$setFoo('hello');
-$setBaz($foo + 10 * (10 ** 10));
+import { setFoo, setBaz, foo } from './settings.js';
+setFoo('hello');
+setBaz(foo + 10 * (10 ** 10));
 `,
       });
     });
@@ -1767,6 +1767,64 @@ $_documentContainer.innerHTML = \`<dom-module>
 
 document.head.appendChild($_documentContainer);
 `,
+      });
+    });
+
+    testName =
+        'Import aliases do not conflict with local identifiers or other imports.';
+    test(testName, async () => {
+      setSources({
+        'NS1-foo.html': `
+            <script>
+              NS1.foo = "NS1.foo";
+            </script>
+          `,
+        'NS2-foo.html': `
+            <script>
+              NS2.foo = "NS2.foo";
+            </script>
+          `,
+        'NS3-foo.html': `
+            <script>
+              NS3.foo = "NS3.foo";
+            </script>
+          `,
+        'test.html': `
+            <link rel="import" href="./NS1-foo.html">
+            <link rel="import" href="./NS2-foo.html">
+            <link rel="import" href="./NS3-foo.html">
+            <script>
+              var foo = "foo";
+              var foo$1 = "foo$1";
+              var foo$2 = "foo$2";
+              // Log local variables.
+              console.log(foo);
+              console.log(foo$1);
+              console.log(foo$2);
+              // Log imports.
+              console.log(NS1.foo);
+              console.log(NS2.foo);
+              console.log(NS3.foo);
+            </script>
+          `,
+      });
+      assertSources(await convert({namespaces: ['NS1', 'NS2', 'NS3']}), {
+        './test.js': `
+import { foo as foo$0 } from './NS1-foo.js';
+import { foo as foo$3 } from './NS2-foo.js';
+import { foo as foo$4 } from './NS3-foo.js';
+var foo = "foo";
+var foo$1 = "foo$1";
+var foo$2 = "foo$2";
+// Log local variables.
+console.log(foo);
+console.log(foo$1);
+console.log(foo$2);
+// Log imports.
+console.log(foo$0);
+console.log(foo$3);
+console.log(foo$4);
+`
       });
     });
   });

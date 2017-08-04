@@ -35,15 +35,19 @@ export function getModuleId(url: string) {
   const baseName = path.basename(url);
   const lastDotIndex = baseName.lastIndexOf('.');
   const mainName = baseName.substring(0, lastDotIndex);
-  return '$$' + dashToCamelCase(mainName);
+  return dashToCamelCase(mainName);
 }
 
 /**
- * Get the import alias for an imported member. Useful when generating an
- * import statement or a reference to an imported member.
+ * Finds an unused identifier name given a requested name and set of used names.
  */
-export function getImportAlias(importId: string) {
-  return '$' + importId;
+export function findAvailableIdentifier(requested: string, used: Set<string>) {
+  let suffix = 0;
+  let alias = requested;
+  while (used.has(alias)) {
+    alias = requested + '$' + (suffix++);
+  }
+  return alias;
 }
 
 function dashToCamelCase(s: string) {

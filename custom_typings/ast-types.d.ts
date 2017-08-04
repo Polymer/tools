@@ -6,6 +6,8 @@ declare module 'ast-types' {
     node: N;
     parent?: NodePath;
 
+    get<NKey extends keyof N>(name: NKey): NodePath<N[NKey]>|undefined;
+
     canBeFirstInStatement(): boolean;
     firstInStatement(): boolean;
 
@@ -15,7 +17,7 @@ declare module 'ast-types' {
     prune(): void;
     insertBefore(node: Node): this;
     insertAfter(node: Node): this;
-    replace(replacement: Node): NodePath[];
+    replace<R extends Node>(replacement: R): NodePath<R>[];
 
     /**
      * The value encapsulated by this Path, generally equal to

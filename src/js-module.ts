@@ -12,13 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-
 import {ConvertedDocumentUrl} from './url-converter';
-import {getImportAlias, getModuleId} from './util';
-
-import jsc = require('jscodeshift');
-
 
 export interface JsModule {
   /**
@@ -56,14 +50,6 @@ export class JsExport {
   constructor(url: ConvertedDocumentUrl, name: string) {
     this.url = url;
     this.name = name;
-  }
-
-  expressionToAccess(): estree.Expression {
-    if (this.name === '*') {
-      return jsc.identifier(getModuleId(this.url));
-    } else {
-      return jsc.identifier(getImportAlias(this.name));
-    }
   }
 }
 
