@@ -78,10 +78,9 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
     shouldTransform(request: Request, response: Response) {
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
-      const userAgentHeader = request.get('user-agent');
       return !isPolyfill.test(request.url) &&
           compileMimeTypes.includes(getContentType(response)) &&
-          (forceCompile || browserNeedsCompilation(userAgentHeader));
+          (forceCompile || browserNeedsCompilation(request.get('user-agent')));
     },
 
     transform(request: Request, response: Response, body: string): string {
