@@ -62,7 +62,13 @@ const compileMimeTypes = [
 export const isPolyfill = /(^|\/)webcomponentsjs\/[^\/]+$/;
 
 function getContentType(response: Response) {
-  const contentTypeHeader = response.getHeader('Content-Type');
+  let contentTypeHeader = response.getHeader('Content-Type');
+  if (Array.isArray(contentTypeHeader)) {
+    contentTypeHeader = contentTypeHeader[0]!;
+  }
+  if (typeof contentTypeHeader === 'number') {
+    contentTypeHeader = contentTypeHeader + '';
+  }
   return contentTypeHeader && parseContentType(contentTypeHeader).type;
 }
 
@@ -78,10 +84,13 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
     shouldTransform(request: Request, response: Response) {
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
+      let userAgentHeader = request.headers['user-agent'];
+      if (Array.isArray(userAgentHeader)) {
+        userAgentHeader = userAgentHeader[0]!;
+      }
       return !isPolyfill.test(request.url) &&
           compileMimeTypes.includes(getContentType(response)) &&
-          (forceCompile ||
-           browserNeedsCompilation(request.headers['user-agent']));
+          (forceCompile || browserNeedsCompilation(userAgentHeader));
     },
 
     transform(request: Request, response: Response, body: string): string {
