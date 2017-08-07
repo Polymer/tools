@@ -30,20 +30,11 @@ export function injectCustomElementsEs5Adapter(forceCompile: boolean):
     RequestHandler {
   return transformResponse({
     shouldTransform(request: Request, response: Response): boolean {
-      let contentTypeHeader = response.getHeader('Content-Type');
-      if (Array.isArray(contentTypeHeader)) {
-        contentTypeHeader = contentTypeHeader[0]!;
-      }
-      if (typeof contentTypeHeader === 'number') {
-        contentTypeHeader = contentTypeHeader + '';
-      }
+      const contentTypeHeader = response.get('Content-Type');
       const contentType =
           contentTypeHeader && parseContentType(contentTypeHeader).type;
       // We only need to inject the adapter if we are compiling to ES5.
-      let userAgentHeader = request.headers['user-agent'];
-      if (Array.isArray(userAgentHeader)) {
-        userAgentHeader = userAgentHeader[0]!;
-      }
+      const userAgentHeader = request.get('user-agent');
       return contentType === 'text/html' &&
           (forceCompile || browserNeedsCompilation(userAgentHeader));
     },
