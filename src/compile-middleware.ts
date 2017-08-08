@@ -62,7 +62,7 @@ const compileMimeTypes = [
 export const isPolyfill = /(^|\/)webcomponentsjs\/[^\/]+$/;
 
 function getContentType(response: Response) {
-  const contentTypeHeader = response.getHeader('Content-Type');
+  const contentTypeHeader = response.get('Content-Type');
   return contentTypeHeader && parseContentType(contentTypeHeader).type;
 }
 
@@ -80,8 +80,7 @@ export function babelCompile(forceCompile: boolean): RequestHandler {
       // polyfills/shims.
       return !isPolyfill.test(request.url) &&
           compileMimeTypes.includes(getContentType(response)) &&
-          (forceCompile ||
-           browserNeedsCompilation(request.headers['user-agent']));
+          (forceCompile || browserNeedsCompilation(request.get('user-agent')));
     },
 
     transform(request: Request, response: Response, body: string): string {

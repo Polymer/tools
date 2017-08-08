@@ -323,11 +323,12 @@ suite('startServer', () => {
       _teardownStubServer();
     });
 
-    test('rejects unsupported Node version (< 5) only', function() {
+    test('rejects unsupported Node version (< 5) only', async () => {
       if (_nodeVersion < 5) {
-        return assert.isRejected(startServer(_serverOptions));
+        return assert.throws(async () => await startServer(_serverOptions));
       } else {
-        return assert.becomes(_startStubServer(_serverOptions), _stubServer);
+        return assert.deepEqual(
+            await _startStubServer(_serverOptions), _stubServer);
       }
     });
 
