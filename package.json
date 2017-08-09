@@ -4,6 +4,7 @@
   "description": "Detect browser capabilities from a user agent string.",
   "repository": "git+https://github.com/Polymer/browser-capabilities.git",
   "main": "lib/browser-capabilities.js",
+  "types": "lib/browser-capabilities.d.ts",
   "engines": {
     "node": ">=6.0"
   },
