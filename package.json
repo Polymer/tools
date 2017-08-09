@@ -22,6 +22,7 @@
     "chai": "^4.1.1",
     "clang-format": "^1.0.53",
     "mocha": "^3.5.0",
+    "source-map-support": "^0.4.15",
     "typescript": "^2.4.2",
     "watchy": "^0.7.0"
   },
