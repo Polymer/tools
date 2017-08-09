@@ -1,4 +1,5 @@
 [![Travis Build Status](https://travis-ci.org/Polymer/browser-capabilities.svg?branch=master)](https://travis-ci.org/Polymer/browser-capabilities)
+[![Build status](https://ci.appveyor.com/api/projects/status/gn1iuc8qgx8l86yf?svg=true)](https://ci.appveyor.com/project/aomarks/browser-capabilities)
 
 # browser-capabilities
 
