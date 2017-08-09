@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+
+## [0.2.0] - 2017-08-09
 - Add JavaScript modules capability.
 
 ## [0.1.1] - 2017-08-08
