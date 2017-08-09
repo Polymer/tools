@@ -25,6 +25,17 @@ import {getMemberPath} from '../util';
 
 const fixturesDirPath = path.resolve(__dirname, '../../fixtures');
 
+/*
+A few conventions in these tests:
+  - Most are written as two calls, setSources and assertSources.
+    The first defines the code we're converting, the second asserts
+    on the output of the conversion.
+  - test.html is considered a `main` file. If it's given in setSources it
+    will be converted to js even if it's not imported by anything else.
+  - index.html is the convention for a file that is intended to be maintained
+    as HTML.
+ */
+
 suite('AnalysisConverter', () => {
 
   suite('convertDocument', () => {
@@ -1825,6 +1836,90 @@ console.log(foo$0);
 console.log(foo$3);
 console.log(foo$4);
 `
+      });
+    });
+
+    test('styles are not converted to imperative code by default', async () => {
+      setSources({
+        'index.html': `
+          <style>
+            body { color: red; }
+          </style>
+          <custom-style>
+            <style is="custom-style">
+              body { background-color: var(--happy, yellow); }
+            </style>
+          </custom-style>
+        `
+      });
+      assertSources(await convert(), {
+        './index.html': `
+
+          <style>
+            body { color: red; }
+          </style>
+          <custom-style>
+            <style is="custom-style">
+              body { background-color: var(--happy, yellow); }
+            </style>
+          </custom-style>
+        `
+      });
+    });
+    testName = 'when there is a style import, ' +
+        'all inline styles are converted to imperative scripts';
+    test(testName, async () => {
+      setSources({
+        'index.html': `
+          <style>
+            body { color: red; }
+          </style>
+          <style is="custom-style" include="foo-bar">
+            body { font-size: 10px; }
+          </style>
+          <custom-style>
+            <style is="custom-style">
+              body { background-color: var(--happy, yellow); }
+            </style>
+          </custom-style>
+        `
+      });
+      assertSources(await convert(), {
+        './index.html': `
+
+          <script type="module">
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+
+$_documentContainer.innerHTML = \`<style>
+            body { color: red; }
+          </style>\`;
+
+document.head.appendChild($_documentContainer);
+</script>
+          <script type="module">
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+
+$_documentContainer.innerHTML = \`<style is="custom-style" include="foo-bar">
+            body { font-size: 10px; }
+          </style>\`;
+
+document.head.appendChild($_documentContainer);
+</script>
+          <script type="module">
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+
+$_documentContainer.innerHTML = \`<custom-style>
+            <style is="custom-style">
+              body { background-color: var(--happy, yellow); }
+            </style>
+          </custom-style>\`;
+
+document.head.appendChild($_documentContainer);
+</script>
+        `
       });
     });
   });

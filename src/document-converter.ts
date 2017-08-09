@@ -218,7 +218,7 @@ export class DocumentConverter {
 
   convertAsToplevelHtmlDocument(): Iterable<JsModule> {
     this.convertDependencies();
-
+    const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
     interface Edit {
       offsets: [number, number];
       replacementText: string;
@@ -230,13 +230,12 @@ export class DocumentConverter {
         continue;  // ignore unknown script tags and preexisting modules
       }
       const sourceRange = script.astNode ?
-          this.document.parsedDocument.sourceRangeForNode(script.astNode) :
+          htmlDocument.sourceRangeForNode(script.astNode) :
           undefined;
       if (!sourceRange) {
         continue;  // nothing we can do about scripts without known positions
       }
-      const offsets =
-          this.document.parsedDocument.sourceRangeToOffsets(sourceRange);
+      const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
       const file = recast.parse(script.parsedDocument.contents);
       const program = file.program;
@@ -295,8 +294,7 @@ export class DocumentConverter {
       if (!htmlImport.sourceRange) {
         continue;
       }
-      const offsets = this.document.parsedDocument.sourceRangeToOffsets(
-          htmlImport.sourceRange);
+      const offsets = htmlDocument.sourceRangeToOffsets(htmlImport.sourceRange);
 
       const importedJsDocumentUrl =
           convertDocumentUrl(getDocumentUrl(htmlImport.document));
@@ -310,9 +308,9 @@ export class DocumentConverter {
     }
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
-      if (  // ignore fake script imports injected by various hacks in the
-            // analyzer
-          !scriptImport.sourceRange || !scriptImport.astNode) {
+      // ignore fake script imports injected by various hacks in the
+      // analyzer
+      if (!scriptImport.sourceRange || !scriptImport.astNode) {
         continue;
       }
       if (!dom5.predicates.hasTagName('script')(scriptImport.astNode)) {
@@ -320,10 +318,8 @@ export class DocumentConverter {
             `Expected an 'html-script' kinded feature to ` +
             `have a script tag for an AST node.`);
       }
-      const containingHtmlDocument =
-          this.document.parsedDocument as ParsedHtmlDocument;
-      const offsets = containingHtmlDocument.sourceRangeToOffsets(
-          containingHtmlDocument.sourceRangeForNode(scriptImport.astNode)!);
+      const offsets = htmlDocument.sourceRangeToOffsets(
+          htmlDocument.sourceRangeForNode(scriptImport.astNode)!);
 
       const correctedUrl = this.formatImportUrl(
           convertDocumentUrl(getDocumentUrl(scriptImport.document)),
@@ -332,6 +328,49 @@ export class DocumentConverter {
 
       edits.push(
           {offsets, replacementText: serializeNode(scriptImport.astNode)});
+    }
+
+    // We need to ensure that custom styles are inserted into the document
+    // *after* the styles they depend on are, which may have been imported.
+    // We can depend on the fact that <script type="module"> tags are run in
+    // order. So we'll convert all of the style tags into scripts that insert
+    // those styles, ensuring that we also preserve the relative order of
+    // styles.
+    const p = dom5.predicates;
+    const hasIncludedStyle = !!dom5.nodeWalk(
+        htmlDocument.ast,
+        p.AND(
+            p.hasTagName('style'),
+            p.OR(
+                p.hasAttrValue('is', 'custom-style'),
+                p.parentMatches(p.hasTagName('custom-style'))),
+            p.hasAttr('include')));
+    if (hasIncludedStyle) {
+      const tagsToInsertImperatively = dom5.nodeWalkAll(
+          htmlDocument.ast,
+          p.OR(
+              p.hasTagName('custom-style'),
+              p.AND(
+                  p.hasTagName('style'),
+                  p.NOT(p.parentMatches(p.hasTagName('custom-style'))))));
+      for (const tag of tagsToInsertImperatively) {
+        const offsets = htmlDocument.sourceRangeToOffsets(
+            htmlDocument.sourceRangeForNode(tag)!);
+        const scriptTag =
+            parse5.parseFragment(`<script type="module"></script>`)
+                .childNodes![0];
+        const program = jsc.program(this.getCodeToInsertDomNodes([tag]));
+        dom5.setTextContent(
+            scriptTag,
+            '\n' +
+                recast
+                    .print(
+                        program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
+                    .code +
+                '\n');
+        const replacementText = serializeNode(scriptTag);
+        edits.push({offsets, replacementText});
+      }
     }
 
     // Apply edits from bottom to top, so that the offsets stay valid.
@@ -408,15 +447,29 @@ export class DocumentConverter {
     if (genericElements.length === 0) {
       return;
     }
+    const statements = this.getCodeToInsertDomNodes(genericElements);
+    let insertionPoint = 0;
+    for (const [idx, statement] of enumerate(program.body)) {
+      insertionPoint = idx;
+      if (statement.type === 'ImportDeclaration') {
+        insertionPoint++;  // cover the case where the import is at the end
+        continue;
+      }
+      break;
+    }
+    program.body.splice(insertionPoint, 0, ...statements);
+  }
+
+  private getCodeToInsertDomNodes(nodes: parse5.ASTNode[]): estree.Statement[] {
     const varName = `$_documentContainer`;
     const fragment = {
       nodeName: '#document-fragment',
       attrs: [],
-      childNodes: genericElements,
+      childNodes: nodes,
     };
     const templateValue = nodeToTemplateLiteral(fragment as any, false);
 
-    const statements = [
+    return [
       jsc.variableDeclaration(
           'const', [jsc.variableDeclarator(
                        jsc.identifier(varName),
@@ -441,16 +494,6 @@ export class DocumentConverter {
               jsc.identifier('appendChild')),
           [jsc.identifier(varName)]))
     ];
-    let insertionPoint = 0;
-    for (const [idx, statement] of enumerate(program.body)) {
-      insertionPoint = idx;
-      if (statement.type === 'ImportDeclaration') {
-        insertionPoint++;  // cover the case where the import is at the end
-        continue;
-      }
-      break;
-    }
-    program.body.splice(insertionPoint, 0, ...statements);
   }
 
   /**
