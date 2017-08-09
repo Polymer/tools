@@ -23,7 +23,9 @@ export type BrowserCapability =
     // HTTP/2 Server Push.
     'push' |
     // Service Worker API.
-    'serviceworker';
+    'serviceworker' |
+    // JavaScript modules.
+    'modules';
 
 // TODO: This should have type UAParser, but its typings are wrong so that
 // class can't be referenced as a type. Fix the typings.
@@ -36,26 +38,31 @@ const browserPredicates: {
     es2015: since(49),
     push: since(41),
     serviceworker: since(45),
+    modules: since(61),
   },
   'Chromium': {
     es2015: since(49),
     push: since(41),
     serviceworker: since(45),
+    modules: since(61),
   },
   'OPR': {
     es2015: since(36),
     push: since(28),
     serviceworker: since(32),
+    modules: since(48),
   },
   'Vivaldi': {
     es2015: since(1),
     push: since(1),
     serviceworker: since(1),
+    modules: () => false,
   },
   'Mobile Safari': {
     es2015: since(10),
     push: since(9, 2),
     serviceworker: () => false,
+    modules: since(10, 3),
   },
   'Safari': {
     es2015: since(10),
@@ -67,6 +74,7 @@ const browserPredicates: {
     },
     // https://webkit.org/status/#specification-service-workers
     serviceworker: () => false,
+    modules: since(10, 1),
   },
   'Edge': {
     // Edge versions before 15.15063 may contain a JIT bug affecting ES6
@@ -75,11 +83,13 @@ const browserPredicates: {
     push: since(12),
     // https://developer.microsoft.com/en-us/microsoft-edge/platform/status/serviceworker/
     serviceworker: () => false,
+    modules: () => false,
   },
   'Firefox': {
     es2015: since(51),
     push: since(36),
     serviceworker: since(44),
+    modules: () => false,
   },
 };
 

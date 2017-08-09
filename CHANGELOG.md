@@ -1,6 +1,7 @@
 # Change Log
 
 ## [Unreleased]
+- Add JavaScript modules capability.
 
 ## [0.1.1] - 2017-08-08
 - Declare TypeScript typings.

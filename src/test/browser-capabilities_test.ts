@@ -27,8 +27,8 @@ suite('capabilities', function() {
 
   test('chrome has all the capabilities', () => {
     assertBrowserCapabilities(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36',
-        ['es2015', 'push', 'serviceworker']);
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.31 Safari/537.36',
+        ['es2015', 'push', 'serviceworker', 'modules']);
   });
 
   test('edge es2015 support is predicated on minor browser version', () => {
@@ -43,10 +43,10 @@ suite('capabilities', function() {
   test('safari push capability is predicated on macOS version', () => {
     assertBrowserCapabilities(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30',
-        ['es2015']);
+        ['es2015', 'modules']);
     assertBrowserCapabilities(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30',
-        ['es2015', 'push']);
+        ['es2015', 'push', 'modules']);
   });
 
   test('parseVersion parses with fallback to -1', () => {
