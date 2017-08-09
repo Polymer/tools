@@ -12,15 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// Install source map support for stack traces, etc.
-require('source-map-support').install();
-
+import * as chalk from 'chalk';
+import * as diff from 'diff';
 import * as fs from 'mz/fs';
 import * as path from 'path';
+
 import {configureAnalyzer, configureConverter} from '../convert-package';
 
-import diff = require('diff');
-import chalk = require('chalk');
+// Install source map support for stack traces, etc.
+require('source-map-support').install();
 
 const fixturesDirPath =
     path.resolve(__dirname, '../../fixtures/generated/polymer');
