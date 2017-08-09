@@ -23,7 +23,7 @@ import {convertWorkspace} from './convert-workspace';
 
 const githubTokenMessage = `
 You need to create a github token and place it in a file named 'github-token'.
-The token does not need any 'public repos' permissions.
+The token does not need any permissions.
 
 Generate a token here:   https://github.com/settings/tokens
 
