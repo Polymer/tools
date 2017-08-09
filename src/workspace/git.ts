@@ -177,8 +177,6 @@ export class GitHubConnection {
       ++page;
     } while (repos.length > 0);
 
-    // TODO(usergenic): Update this function to support user repos as well as
-    // the org repos.
     return names;
   }
 
