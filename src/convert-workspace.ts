@@ -19,6 +19,7 @@ import * as semver from 'semver';
 
 import {BaseConverterOptions} from './analysis-converter';
 import {generatePackageJson, readJson, writeJson} from './manifest-converter';
+import {polymerFileOverrides} from './special-casing';
 import {WorkspaceConverter} from './workspace-converter';
 
 interface ConvertWorkspaceOptions extends BaseConverterOptions {
@@ -29,17 +30,10 @@ interface ConvertWorkspaceOptions extends BaseConverterOptions {
 export function configureAnalyzer(options: ConvertWorkspaceOptions) {
   const inDir = options.inDir || process.cwd();
 
-  // TODO(fks) 07-06-2015: Convert this to a configurable option
-  // 'polymer/lib/utils/boot.html' - This is a special file that overwrites
-  // exports and does other things that make less sense in an ESM world.
-  const bootOverrideHtml = `<script>
-      window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
-
-      /** @namespace */
-      let Polymer;
-    </script>`;
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(inDir));
-  urlLoader.urlContentsMap.set('polymer/lib/utils/boot.html', bootOverrideHtml);
+  for (const [url, contents] of polymerFileOverrides) {
+    urlLoader.urlContentsMap.set(`polymer/${url}`, contents);
+  }
 
   return new Analyzer({
     urlLoader,
