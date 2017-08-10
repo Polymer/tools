@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 
-import {convertDocumentUrl, ConvertedDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from '../url-converter';
+import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from '../url-converter';
 
 suite('src/url-converter', () => {
 
@@ -22,9 +22,10 @@ suite('src/url-converter', () => {
 
     test('converts a local html url to expected js url', () => {
       assert.equal(
-          convertDocumentUrl('foo.html' as OriginalDocumentUrl), './foo.js');
+          convertHtmlDocumentUrl('foo.html' as OriginalDocumentUrl),
+          './foo.js');
       assert.equal(
-          convertDocumentUrl('foo/foo.html' as OriginalDocumentUrl),
+          convertHtmlDocumentUrl('foo/foo.html' as OriginalDocumentUrl),
           './foo/foo.js');
     });
 
@@ -32,17 +33,17 @@ suite('src/url-converter', () => {
         'converts a bower_components/ (external) html url to expected js url',
         () => {
           assert.equal(
-              convertDocumentUrl(
+              convertHtmlDocumentUrl(
                   'bower_components/polymer/polymer.html' as
                   OriginalDocumentUrl),
               './node_modules/@polymer/polymer/polymer.js');
           assert.equal(
-              convertDocumentUrl(
+              convertHtmlDocumentUrl(
                   'bower_components/paper-item/src/paper-item.html' as
                   OriginalDocumentUrl),
               './node_modules/@polymer/paper-item/src/paper-item.js');
           assert.equal(
-              convertDocumentUrl(
+              convertHtmlDocumentUrl(
                   'bower_components/promise-polyfill/promise-polyfill.html' as
                   OriginalDocumentUrl),
               './node_modules/@polymer/promise-polyfill/promise-polyfill.js');
@@ -51,12 +52,12 @@ suite('src/url-converter', () => {
 
     test('handles special whitelisted url conversions', () => {
       assert.equal(
-          convertDocumentUrl(
+          convertHtmlDocumentUrl(
               'bower_components/shadycss/apply-shim.html' as
               OriginalDocumentUrl),
           './node_modules/@webcomponents/shadycss/entrypoints/apply-shim.js');
       assert.equal(
-          convertDocumentUrl(
+          convertHtmlDocumentUrl(
               'bower_components/shadycss/custom-style-interface.html' as
               OriginalDocumentUrl),
           './node_modules/@webcomponents/shadycss/entrypoints/custom-style-interface.js');

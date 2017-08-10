@@ -1950,6 +1950,21 @@ var metaDatas = IronMeta.types;
 `
       });
     });
+
+    test('External scripts get turned into imports too', async () => {
+      setSources({
+        'test.html': `
+          <script src='foo.js'></script>
+        `,
+        'foo.js': 'console.log("foo");'
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+import './foo.js';
+`
+      });
+    });
   });
 
   suite('fixtures', () => {

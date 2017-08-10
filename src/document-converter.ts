@@ -24,7 +24,7 @@ import * as recast from 'recast';
 
 import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
-import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
 import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 import jsc = require('jscodeshift');
@@ -154,7 +154,7 @@ export class DocumentConverter {
         Object.assign({}, this.analysisConverter.mutableExports!);
     this.document = document;
     this.originalUrl = getDocumentUrl(document);
-    this.convertedUrl = convertDocumentUrl(this.originalUrl);
+    this.convertedUrl = convertHtmlDocumentUrl(this.originalUrl);
     this.packageName = packageName;
     this.packageType = packageType;
   }
@@ -187,9 +187,16 @@ export class DocumentConverter {
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFE(program);
     const importedReferences = this.collectNamespacedReferences(program);
+    // Add imports for every non-module <script> tag to just import the file
+    // itself.
+    for (const scriptImports of this.document.getFeatures(
+             {kind: 'html-script'})) {
+      const oldScriptUrl = getDocumentUrl(scriptImports.document);
+      const newScriptUrl = convertJsDocumentUrl(oldScriptUrl);
+      importedReferences.set(newScriptUrl, new Set());
+    }
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
-
 
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
@@ -296,7 +303,7 @@ export class DocumentConverter {
       const offsets = htmlDocument.sourceRangeToOffsets(htmlImport.sourceRange);
 
       const importedJsDocumentUrl =
-          convertDocumentUrl(getDocumentUrl(htmlImport.document));
+          convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
       const importUrl =
           this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
       const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
@@ -321,7 +328,7 @@ export class DocumentConverter {
           htmlDocument.sourceRangeForNode(scriptImport.astNode)!);
 
       const correctedUrl = this.formatImportUrl(
-          convertDocumentUrl(getDocumentUrl(scriptImport.document)),
+          convertHtmlDocumentUrl(getDocumentUrl(scriptImport.document)),
           scriptImport.url);
       dom5.setAttribute(scriptImport.astNode, 'src', correctedUrl);
 
@@ -572,7 +579,7 @@ export class DocumentConverter {
   private convertDependencies() {
     for (const htmlImport of this.getHtmlImports()) {
       const importedJsDocumentUrl =
-          convertDocumentUrl(getDocumentUrl(htmlImport.document));
+          convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
       if (this.analysisConverter.modules.has(importedJsDocumentUrl)) {
         continue;
       }
@@ -929,7 +936,7 @@ export class DocumentConverter {
     const jsImportDeclarations = [];
     for (const htmlImport of this.getHtmlImports()) {
       const importedJsDocumentUrl =
-          convertDocumentUrl(getDocumentUrl(htmlImport.document));
+          convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
 
       const references = importedReferences.get(importedJsDocumentUrl);
       const namedExports =

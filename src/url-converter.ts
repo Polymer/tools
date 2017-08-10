@@ -73,7 +73,7 @@ export function getDocumentUrl(document: Document): OriginalDocumentUrl {
 /**
  * Converts an HTML Import path to a JS module path.
  */
-export function convertDocumentUrl(htmlUrl: OriginalDocumentUrl):
+export function convertHtmlDocumentUrl(htmlUrl: OriginalDocumentUrl):
     ConvertedDocumentUrl {
   // TODO(fks): This can be removed later if type-checking htmlUrl is enough
   if (htmlUrl.startsWith('.') || htmlUrl.startsWith('/')) {
@@ -111,6 +111,24 @@ export function convertDocumentUrl(htmlUrl: OriginalDocumentUrl):
   return ('./' + jsUrl) as ConvertedDocumentUrl;
 }
 
+export function convertJsDocumentUrl(oldUrl: OriginalDocumentUrl):
+    ConvertedDocumentUrl {
+  // TODO(fks): This can be removed later if type-checking htmlUrl is enough
+  if (oldUrl.startsWith('.') || oldUrl.startsWith('/')) {
+    throw new Error(
+        `convertDocumentUrl() expects an OriginalDocumentUrl string` +
+        `from the analyzer, but got "${oldUrl}"`);
+  }
+  let newUrl: string = oldUrl;
+  // If url points to a bower_components dependency, update it to point to
+  // its equivilent node_modules npm dependency.
+  if (isBowerDependencyUrl(oldUrl)) {
+    newUrl = convertBowerDependencyUrl(oldUrl);
+  }
+
+  // TODO(fks): Revisit this format? The analyzer returns URLs without this
+  return ('./' + newUrl) as ConvertedDocumentUrl;
+}
 
 /**
  * Gets a relative URL from one JS module URL to another. Handles expected

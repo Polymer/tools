@@ -17,7 +17,7 @@ import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
-import {convertDocumentUrl, getDocumentUrl} from './url-converter';
+import {convertHtmlDocumentUrl, getDocumentUrl} from './url-converter';
 
 
 import jsc = require('jscodeshift');
@@ -152,7 +152,7 @@ export class WorkspaceConverter implements ConverterMetadata {
    * Converts a Polymer Analyzer HTML document to a JS module
    */
   convertDocument(document: Document): JsModule|undefined {
-    const jsUrl = convertDocumentUrl(getDocumentUrl(document));
+    const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
     if (!this.modules.has(jsUrl)) {
       const newModules =
           this.getDocumentConverter(document).convertToJsModule();
