@@ -1965,6 +1965,25 @@ import './foo.js';
 `
       });
     });
+
+    testName = `don't treat all values on a namespace as namespaces themselves`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            Polymer.IronSelection = function() {};
+            Polymer.IronSelection.prototype = {};
+          </script>
+`
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+export const IronSelection = function() {};
+IronSelection.prototype = {};
+`
+      });
+    });
   });
 
   suite('fixtures', () => {

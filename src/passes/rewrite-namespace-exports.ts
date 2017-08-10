@@ -356,8 +356,13 @@ function getNamespaceDeclaration(
   }
 
   const memberPath = getMemberPath(assignment.left);
-
-  if (memberPath !== undefined && namespaces.has(memberPath[0])) {
+  if (memberPath === undefined) {
+    return undefined;
+  }
+  const isNamespace = namespaces.has(memberPath.join('.'));
+  const isAssignmentToNamespace =
+      namespaces.has(memberPath.slice(0, -1).join('.'));
+  if (isNamespace || isAssignmentToNamespace) {
     return {
       memberPath,
       value: assignment.right,
