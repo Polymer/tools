@@ -22,7 +22,8 @@
     "clean": "rm -rf ./lib/ && rm -rf ./fixtures/generated/*",
     "quicktest": "npm run build && mocha",
     "test:watch": "watchy -w src/ -w custom_typings/ -- npm run quicktest --loglevel=silent",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm test",
+    "prepare": "npm run build"
   },
   "engines": {
     "node": ">=7.6.0"
