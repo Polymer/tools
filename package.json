@@ -17,10 +17,10 @@
     "lint": "tslint -p ./",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "polymer:clean": "mkdir -p ./fixtures/generated/polymer && rm -rf ./fixtures/generated/polymer",
-    "polymer:test": "node lib/tools/test-polymer",
-    "polymer:checkpoint": "node lib/tools/checkpoint-polymer",
+    "polymer:test": "npm run build && node lib/tools/test-polymer",
+    "polymer:checkpoint": "npm run build && node lib/tools/checkpoint-polymer",
     "clean": "rm -rf ./lib/ && rm -rf ./fixtures/generated/*",
-    "quicktest": "npm run build && mocha",
+    "quicktest": "tsc || echo '' && mocha",
     "test:watch": "watchy -w src/ -w custom_typings/ -- npm run quicktest --loglevel=silent",
     "prepublishOnly": "npm test",
     "prepare": "npm run build"
