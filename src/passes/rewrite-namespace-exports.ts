@@ -359,7 +359,11 @@ function getNamespaceDeclaration(
   if (memberPath === undefined) {
     return undefined;
   }
+
+  // If we're assigning directly to a namespace `Polymer = {}`
   const isNamespace = namespaces.has(memberPath.join('.'));
+  // If we're assigning to a property directly on a namespace
+  // `Polymer.foo = {}`
   const isAssignmentToNamespace =
       namespaces.has(memberPath.slice(0, -1).join('.'));
   if (isNamespace || isAssignmentToNamespace) {
