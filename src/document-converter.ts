@@ -22,10 +22,10 @@ import * as path from 'path';
 import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
-import {JsExport, JsModule} from './js-module';
+import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {convertDocumentUrl, ConvertedDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
-import {findAvailableIdentifier, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
+import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 import jsc = require('jscodeshift');
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
@@ -202,13 +202,11 @@ export class DocumentConverter {
       this.rewriteNamespaceThisReferences(program, namespaceName);
     }
     this.rewriteExcludedReferences(program);
-    this.rewriteReferencesToNamespaceMembers(
-        program,
-        new Set([
-          ...localNamespaceNames,
-          ...namespaceNames,
-        ]),
-        new Set([...exportMigrationRecords.map((r) => r.oldNamespacedName)]));
+    this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
+    this.rewriteReferencesToNamespaceMembers(program, new Set([
+                                               ...localNamespaceNames,
+                                               ...namespaceNames,
+                                             ]));
 
     this.warnOnDangerousReferences(program);
 
@@ -264,13 +262,11 @@ export class DocumentConverter {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }
       this.rewriteExcludedReferences(program);
-      this.rewriteReferencesToNamespaceMembers(
-          program,
-          new Set([
-            ...localNamespaceNames,
-            ...namespaceNames,
-          ]),
-          new Set([...exportMigrationRecords.map((r) => r.oldNamespacedName)]));
+      this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
+      this.rewriteReferencesToNamespaceMembers(program, new Set([
+                                                 ...localNamespaceNames,
+                                                 ...namespaceNames,
+                                               ]));
       this.warnOnDangerousReferences(program);
 
       if (!wereImportsAdded) {
@@ -750,22 +746,42 @@ export class DocumentConverter {
    * foo();
    */
   private rewriteReferencesToNamespaceMembers(
-      program: Program, namespaceNames: ReadonlySet<string>,
-      namespaceMembers: ReadonlySet<string>) {
+      program: Program, namespaceNames: ReadonlySet<string>) {
     astTypes.visit(program, {
       visitMemberExpression(path: NodePath<MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (memberPath) {
           const namespace = memberPath.slice(0, -1).join('.');
-          const fullyQualifiedName = memberPath.join('.');
-          if (namespaceNames.has(namespace) ||
-              namespaceMembers.has(fullyQualifiedName)) {
+          if (namespaceNames.has(namespace)) {
             path.replace(path.node.property);
             return false;
           }
         }
         // Keep looking, this MemberExpression could still contain the
         // MemberExpression that we are looking for.
+        this.traverse(path);
+        return;
+      }
+    });
+  }
+
+  private rewriteReferencesToLocalExports(
+      program: estree.Program,
+      exportMigrationRecords: Iterable<NamespaceMemberToExport>) {
+    const rewriteMap = new Map<string|undefined, string>(
+        [...exportMigrationRecords]
+            .filter((m) => m.es6ExportName !== '*')
+            .map(
+                (m) => [m.oldNamespacedName,
+                        m.es6ExportName] as [string, string]));
+    astTypes.visit(program, {
+      visitMemberExpression(path: NodePath<MemberExpression>) {
+        const memberName = getMemberName(path.node);
+        const newLocalName = rewriteMap.get(memberName);
+        if (newLocalName) {
+          path.replace(jsc.identifier(newLocalName));
+          return false;
+        }
         this.traverse(path);
         return;
       }

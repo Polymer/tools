@@ -674,11 +674,11 @@ export const subFn = function() {
       });
     });
 
-    test(
-        'exports a namespace function and fixes references to its properties',
-        async () => {
-          setSources({
-            'test.html': `
+    let testName =
+        'exports a namespace function and fixes references to its properties';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
           <script>
             (function() {
               'use strict';
@@ -703,9 +703,9 @@ export const subFn = function() {
               };
             })();
           </script>`,
-          });
-          assertSources(await convert(), {
-            './test.js': `
+      });
+      assertSources(await convert(), {
+        './test.js': `
 export const dom = function() {
   return 'Polymer.dom result';
 };
@@ -718,8 +718,8 @@ export const subFnDelegate = function() {
   return 'Polymer.dom.subFnDelegate delegates: ' + dom() + subFn();
 };
 `
-          });
-        });
+      });
+    });
 
     test('exports a referenced namespace', async () => {
       setSources({
@@ -1468,7 +1468,7 @@ console.log(foo.document.currentScript.ownerDocument);
       });
     });
 
-    let testName = `handles imports that are modules but write to globals`;
+    testName = `handles imports that are modules but write to globals`;
     test(testName, async () => {
       setSources({
         'test.html': `
@@ -1920,6 +1920,34 @@ $_documentContainer.innerHTML = \`<custom-style>
 document.head.appendChild($_documentContainer);
 </script>
         `
+      });
+    });
+
+    test('accessing properties on exports is supported', async () => {
+      setSources({
+        'test.html': `
+<script>
+
+  (function() {
+
+    function IronMeta() {}
+
+    Polymer.IronMeta = IronMeta;
+
+    var metaDatas = Polymer.IronMeta.types;
+  })();
+</script>
+`
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+function IronMeta() {}
+
+export { IronMeta };
+
+var metaDatas = IronMeta.types;
+`
       });
     });
   });
