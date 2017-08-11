@@ -19,9 +19,12 @@ import * as path from 'path';
 
 import {configureAnalyzer, configureConverter} from '../convert-package';
 import {ConvertedDocumentUrl} from '../url-converter';
+import {FluentIterable} from '../utils/itertools';
+
 
 // Install source map support for stack traces, etc.
 require('source-map-support').install();
+
 
 const fixturesDirPath =
     path.resolve(__dirname, '../../fixtures/generated/polymer');
@@ -70,10 +73,11 @@ function rework(line: string) {
   const converter = configureConverter(analysis, options);
   const results = await converter.convert();
   const resultPaths = results.keys();
-  const expectedPaths = [...walkDir(expectedDir)]
+  const expectedPaths = new FluentIterable(walkDir(expectedDir))
                             .map((f) => `./${f}` as ConvertedDocumentUrl)
                             .filter((f) => f !== './package.json');
-  const allPathsUnsorted = new Set([...resultPaths, ...expectedPaths]);
+  const allPathsUnsorted = new Set(
+      FluentIterable.chain<ConvertedDocumentUrl>([resultPaths, expectedPaths]));
   const allPaths = [...allPathsUnsorted].sort((a, b) => a.localeCompare(b));
   for (const outPath of allPaths) {
     const jsContents = results.get(outPath);

@@ -12,14 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as commandLineArgs from 'command-line-args';
 import * as fs from 'fs';
 import * as inquirer from 'inquirer';
-import commandLineArgs = require('command-line-args');
-import {convertPackage} from './convert-package';
-import {readJson} from './manifest-converter';
 import * as semver from 'semver';
-import {Runner} from './workspace/sync-workspace';
+
+import {convertPackage} from './convert-package';
 import {convertWorkspace} from './convert-workspace';
+import {readJson} from './manifest-converter';
+import {Runner} from './workspace/sync-workspace';
 
 const githubTokenMessage = `
 You need to create a github token and place it in a file named 'github-token'.

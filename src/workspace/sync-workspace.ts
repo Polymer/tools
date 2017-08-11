@@ -12,31 +12,24 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-declare function require(name: string): any;
+import Bottleneck from 'bottleneck';
+import * as child_process from 'child_process';
+import * as fs from 'fs';
+import * as nodegit from 'nodegit';
+import * as path from 'path';
+import * as resolve from 'resolve';
+
+import * as git from './git';
+import {GitHubRepo} from './git';
+import * as util from './util';
+import {Workspace} from './workspace';
+
 try {
   require('source-map-support').install();
 } catch (err) {
 }
 
-import Bottleneck from 'bottleneck';
-// import * as chalk from 'chalk';
-import * as child_process from 'child_process';
-import * as fs from 'fs';
-// import * as GitHub from 'github';
-import * as nodegit from 'nodegit';
-// import * as pad from 'pad';
-import * as path from 'path';
-import * as resolve from 'resolve';
-
-import * as git from './git';
-// import {test} from './test';
-// import {TestResult, TestResultValue} from './test-result';
-import * as util from './util';
-import {Workspace} from './workspace';
-
-// import promisify = require('promisify-node');
 import rimrafCallback = require('rimraf');
-import {GitHubRepo} from './git';
 
 const rimraf = (dir: string) => new Promise(
     (resolve, reject) =>
@@ -322,7 +315,7 @@ export class Runner {
             `Test repo: ${git.serializeGitHubRepoRef(repo[1].githubRepoRef)}`);
       }
       const workspaceReposToRequire =
-          Array.from(this._workspace.repos.entries())
+          [...this._workspace.repos.entries()]
               .filter((_repo) => false /*!repo[1].test*/)
               .sort((a, b) => a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0));
       if (workspaceReposToRequire.length > 0) {
@@ -353,7 +346,7 @@ export class Runner {
       }
     }
     if (ownersToFetchRepoNamesFor.size === 0) {
-      return Array.from(repoRefs);
+      return [...repoRefs];
     }
 
     // const wildcardSearches =
@@ -365,8 +358,8 @@ export class Runner {
     // advance of the expand call and put the progress bar message there.
     const allGitHubRepoRefs: git.GitHubRepoRef[] =
         (await util.promiseAllWithProgress(
-             Array.from(ownersToFetchRepoNamesFor)
-                 .map((owner) => this._github.getRepoFullNames(owner)),
+             [...ownersToFetchRepoNamesFor].map(
+                 (owner) => this._github.getRepoFullNames(owner)),
              progressMessage || 'Fetching repo names for wildcard search...'))
             .reduce((a, b) => a.concat(b))
             .map(git.parseGitHubRepoRefString);
@@ -463,7 +456,7 @@ export class Runner {
       dependencies: {},
       resolutions: {}
     };
-    for (const repo of Array.from(this._workspace.repos.values())
+    for (const repo of [...this._workspace.repos.values()]
          /*  .filter(repo => repo.test)*/) {
       const repoPath = path.join(this._workspace.dir, repo.dir);
       // TODO(usergenic): Verify that we can assume bower.json is the config
@@ -519,7 +512,7 @@ export class Runner {
 
     // Make bower config point bower packages of workspace repos to themselves
     // to override whatever any direct or transitive dependencies say.
-    for (const repo of Array.from(this._workspace.repos.entries())) {
+    for (const repo of [...this._workspace.repos.entries()]) {
       const sha = await git.getHeadSha(repo[1].nodegitRepo!);
       bowerConfig.dependencies[repo[0]] = `./${repo[1].dir}#${sha}`;
     }
@@ -546,7 +539,7 @@ export class Runner {
   // async _testAllTheThings(): Promise<TestResult[]> {
   //   const testPromises: Promise<TestResult>[] = [];
 
-  //   for (const repo of Array.from(this._workspace.repos.values())
+  //   for (const repo of [...this._workspace.repos.values()]
   //            .filter(repo => repo.test)) {
   //     try {
   //       const testPromise = this._testRateLimiter.schedule(() => {
@@ -648,7 +641,7 @@ export class Runner {
   // }
 
   // async _convertAllTheThings() {
-  //   for (const repo of Array.from(this._workspace.repos.values())) {
+  //   for (const repo of [...this._workspace.repos.values()]) {
   //     console.log(`Converting ${
   //                               repo.githubRepoRef.ownerName
   //                             }/${repo.githubRepoRef.repoName}`);
@@ -672,7 +665,7 @@ export class Runner {
 
     // If it turns out there are no repos in the workspace to test, we can
     // stop here.
-    // if (!Array.from(this._workspace.repos.values()).some((repo) =>
+    // if (![...this._workspace.repos.values()].some((repo) =>
     // repo.test)) {
     //   console.log('No repos to test.  Exiting.  (Run tattoo -h for help)');
     //   return;

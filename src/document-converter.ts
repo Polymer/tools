@@ -17,21 +17,21 @@ import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {BlockStatement, Identifier, ImportDeclaration, MemberExpression, Node, Program} from 'estree';
+import * as jsc from 'jscodeshift';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
+import {ConverterMetadata} from './converter-metadata';
 import {ConversionOutput, JsExport, NamespaceMemberToExport} from './js-module';
+import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
+import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
+import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
 import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
-
-import jsc = require('jscodeshift');
-import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
-import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
-import {ConverterMetadata} from './converter-metadata';
-import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
+import {FluentIterable} from './utils/itertools';
 
 /**
  * Pairs a subtree of an AST (`path` as a `NodePath`) to be replaced with a
@@ -68,7 +68,7 @@ function getImportDeclarations(
     return alias;
   }
 
-  const namedImportsArray = Array.from(namedImports);
+  const namedImportsArray = [...namedImports];
   const namedSpecifiers =
       namedImportsArray.filter((import_) => import_.name !== '*')
           .map((import_) => {
@@ -173,7 +173,7 @@ export class DocumentConverter {
    * Note: Imports that are not found are not returned by the analyzer.
    */
   private getHtmlImports() {
-    return Array.from(this.document.getFeatures({kind: 'html-import'}))
+    return new FluentIterable(this.document.getFeatures({kind: 'html-import'}))
         .filter(
             (f: Import) =>
                 !this.analysisConverter.excludes.has(f.document.url));
@@ -218,10 +218,11 @@ export class DocumentConverter {
     }
     this.rewriteExcludedReferences(program);
     this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
-    this.rewriteReferencesToNamespaceMembers(program, new Set([
-                                               ...localNamespaceNames,
-                                               ...namespaceNames,
-                                             ]));
+    this.rewriteReferencesToNamespaceMembers(
+        program, new Set(FluentIterable.chain([
+          localNamespaceNames,
+          namespaceNames,
+        ])));
 
     this.warnOnDangerousReferences(program);
 
@@ -287,10 +288,11 @@ export class DocumentConverter {
       }
       this.rewriteExcludedReferences(program);
       this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
-      this.rewriteReferencesToNamespaceMembers(program, new Set([
-                                                 ...localNamespaceNames,
-                                                 ...namespaceNames,
-                                               ]));
+      this.rewriteReferencesToNamespaceMembers(
+          program, new Set(FluentIterable.chain([
+            localNamespaceNames,
+            namespaceNames,
+          ])));
       this.warnOnDangerousReferences(program);
 
       if (!wereImportsAdded) {
@@ -465,8 +467,9 @@ export class DocumentConverter {
     ];
 
     const usedDomModules =
-        new Set([...this.document.getFeatures({kind: 'polymer-element'})].map(
-            (el) => el.domModule));
+        new Set(new FluentIterable(this.document.getFeatures({
+                  kind: 'polymer-element'
+                })).map((el) => el.domModule));
     const genericElements = filterClone(
         elements,
         (e) => !(elementBlacklist.has(e.tagName) || usedDomModules.has(e)));
@@ -801,7 +804,7 @@ export class DocumentConverter {
       program: estree.Program,
       exportMigrationRecords: Iterable<NamespaceMemberToExport>) {
     const rewriteMap = new Map<string|undefined, string>(
-        [...exportMigrationRecords]
+        new FluentIterable(exportMigrationRecords)
             .filter((m) => m.es6ExportName !== '*')
             .map(
                 (m) => [m.oldNamespacedName,
@@ -964,8 +967,8 @@ export class DocumentConverter {
           convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
 
       const references = importedReferences.get(importedJsDocumentUrl);
-      const namedExports =
-          new Set([...(references || [])].map((ref) => ref.target));
+      const namedExports = new Set(
+          new FluentIterable(references || []).map((ref) => ref.target));
 
       const jsFormattedImportUrl =
           this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
@@ -981,8 +984,8 @@ export class DocumentConverter {
       }
 
       const references = importedReferences.get(jsImplicitImportUrl);
-      const namedExports =
-          new Set([...(references || [])].map((ref) => ref.target));
+      const namedExports = new Set(
+          new FluentIterable(references || []).map((ref) => ref.target));
 
       const jsFormattedImportUrl = this.formatImportUrl(jsImplicitImportUrl);
       jsImportDeclarations.push(...getImportDeclarations(

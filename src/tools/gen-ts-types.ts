@@ -56,7 +56,7 @@ require('./def/es6')(fork);
 require('./def/babel')(fork);
 require('./def/esprima')(fork);
 
-const types = Array.from(Type.types.values());
+const types = [...Type.types.values()];
 const builders = types.filter((t) => t._build != null).map((t) => {
   const name = leadingLowerCase(t._name);
   const fields = t._build.map((f) => getField(t, f)!);

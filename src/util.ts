@@ -20,6 +20,7 @@ import * as jsc from 'jscodeshift';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Analysis} from 'polymer-analyzer';
+import {FluentIterable} from './utils/itertools';
 
 export function serializeNode(node: parse5.ASTNode): string {
   const container = parse5.treeAdapters.default.createDocumentFragment();
@@ -212,14 +213,14 @@ export function isUseStrict(statement: estree.Statement) {
 }
 
 export function getNamespaces(analysis: Analysis) {
-  return [
-    ...analysis.getFeatures(
-        {kind: 'namespace', externalPackages: true, imported: true})
-  ].map((n) => {
-    const name = n.name;
-    if (name.startsWith('window.')) {
-      return name.slice('window.'.length);
-    }
-    return name;
-  });
+  return new FluentIterable(
+             analysis.getFeatures(
+                 {kind: 'namespace', externalPackages: true, imported: true}))
+      .map((n) => {
+        const name = n.name;
+        if (name.startsWith('window.')) {
+          return name.slice('window.'.length);
+        }
+        return name;
+      });
 }

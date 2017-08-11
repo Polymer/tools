@@ -12,12 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-import {NamespaceMemberToExport} from '../js-module';
-import jsc = require('jscodeshift');
-import {Document} from 'polymer-analyzer';
 import {NodePath} from 'ast-types';
-import {sourceLocationsEqual, getNodePathGivenAnalyzerAstNode, getMemberPath, toplevelStatements} from '../util';
+import * as estree from 'estree';
+import * as jsc from 'jscodeshift';
+import {Document} from 'polymer-analyzer';
+
+import {NamespaceMemberToExport} from '../js-module';
+import {getMemberPath, getNodePathGivenAnalyzerAstNode, sourceLocationsEqual, toplevelStatements} from '../util';
 
 export function rewriteNamespacesAsExports(
     program: estree.Program,

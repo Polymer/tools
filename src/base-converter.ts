@@ -20,6 +20,7 @@ import {DocumentConverter} from './document-converter';
 import {ConversionOutput, JsExport} from './js-module';
 import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
+import {FluentIterable} from './utils/itertools';
 
 export interface BaseConverterOptions {
   /**
@@ -74,7 +75,7 @@ export abstract class BaseConverter {
   constructor(analysis: Analysis, options: BaseConverterOptions) {
     this._analysis = analysis;
     this.namespaces =
-        new Set([...getNamespaces(analysis), ...(options.namespaces || [])]);
+        new Set(getNamespaces(analysis).concat(options.namespaces || []));
 
     const referenceRewrites = new Map<string, estree.Node>();
     const windowDotDocument = jsc.memberExpression(
@@ -93,13 +94,14 @@ export abstract class BaseConverter {
     this.referenceExcludes = new Set(options.referenceExcludes!);
     this.mutableExports = options.mutableExports;
 
-    const importedFiles = [...this._analysis.getFeatures(
-                               {kind: 'import', externalPackages: false})]
-                              .map((imp) => imp.url)
-                              .filter(
-                                  (url) =>
-                                      !(url.startsWith('bower_components') ||
-                                        url.startsWith('node_modules')));
+    const importedFiles =
+        new FluentIterable(this._analysis.getFeatures(
+                               {kind: 'import', externalPackages: false}))
+            .map((imp) => imp.url)
+            .filter(
+                (url) =>
+                    !(url.startsWith('bower_components') ||
+                      url.startsWith('node_modules')));
     this.includes = new Set(importedFiles);
   }
 
