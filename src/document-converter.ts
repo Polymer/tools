@@ -42,6 +42,12 @@ type ImportReference = {
   target: JsExport,
 };
 
+/** Represents a change to a portion of a file. */
+interface Edit {
+  offsets: [number, number];
+  replacementText: string;
+}
+
 /**
  * Convert a module specifier & an optional set of named exports (or '*' to
  * import entire namespace) to a set of ImportDeclaration objects.
@@ -219,10 +225,7 @@ export class DocumentConverter {
   convertAsToplevelHtmlDocument(): Iterable<JsModule> {
     this.convertDependencies();
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
-    interface Edit {
-      offsets: [number, number];
-      replacementText: string;
-    }
+
     const edits: Array<Edit> = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const astNode = script.astNode;
@@ -337,40 +340,15 @@ export class DocumentConverter {
     // those styles, ensuring that we also preserve the relative order of
     // styles.
     const p = dom5.predicates;
-    const hasIncludedStyle = !!dom5.nodeWalk(
-        htmlDocument.ast,
-        p.AND(
-            p.hasTagName('style'),
-            p.OR(
-                p.hasAttrValue('is', 'custom-style'),
-                p.parentMatches(p.hasTagName('custom-style'))),
-            p.hasAttr('include')));
-    if (hasIncludedStyle) {
-      const tagsToInsertImperatively = dom5.nodeWalkAll(
-          htmlDocument.ast,
-          p.OR(
-              p.hasTagName('custom-style'),
-              p.AND(
-                  p.hasTagName('style'),
-                  p.NOT(p.parentMatches(p.hasTagName('custom-style'))))));
-      for (const tag of tagsToInsertImperatively) {
-        const offsets = htmlDocument.sourceRangeToOffsets(
-            htmlDocument.sourceRangeForNode(tag)!);
-        const scriptTag =
-            parse5.parseFragment(`<script type="module"></script>`)
-                .childNodes![0];
-        const program = jsc.program(this.getCodeToInsertDomNodes([tag]));
-        dom5.setTextContent(
-            scriptTag,
-            '\n' +
-                recast
-                    .print(
-                        program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
-                    .code +
-                '\n');
-        const replacementText = serializeNode(scriptTag);
-        edits.push({offsets, replacementText});
-      }
+    const hasIncludedStyle = p.AND(
+        p.hasTagName('style'),
+        p.OR(
+            p.hasAttrValue('is', 'custom-style'),
+            p.parentMatches(p.hasTagName('custom-style'))),
+        p.hasAttr('include'));
+
+    if (dom5.nodeWalk(htmlDocument.ast, hasIncludedStyle)) {
+      edits.push(...this.convertStylesToScriptsThatInsertThem(htmlDocument));
     }
 
     // Apply edits from bottom to top, so that the offsets stay valid.
@@ -386,6 +364,36 @@ export class DocumentConverter {
       exportedNamespaceMembers: [],
       es6Exports: new Set()
     }];
+  }
+
+  private *
+      convertStylesToScriptsThatInsertThem(htmlDocument: ParsedHtmlDocument):
+          Iterable<Edit> {
+    const p = dom5.predicates;
+    const tagsToInsertImperatively = dom5.nodeWalkAll(
+        htmlDocument.ast,
+        p.OR(
+            p.hasTagName('custom-style'),
+            p.AND(
+                p.hasTagName('style'),
+                p.NOT(p.parentMatches(p.hasTagName('custom-style'))))));
+    for (const tag of tagsToInsertImperatively) {
+      const offsets = htmlDocument.sourceRangeToOffsets(
+          htmlDocument.sourceRangeForNode(tag)!);
+      const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
+                            .childNodes![0];
+      const program = jsc.program(this.getCodeToInsertDomNodes([tag]));
+      dom5.setTextContent(
+          scriptTag,
+          '\n' +
+              recast
+                  .print(
+                      program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
+                  .code +
+              '\n');
+      const replacementText = serializeNode(scriptTag);
+      yield {offsets, replacementText};
+    }
   }
 
   private containsWriteToGlobalSettingsObject(program: Program) {
