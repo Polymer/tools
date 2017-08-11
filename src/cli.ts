@@ -169,7 +169,7 @@ export async function run() {
   // TODO: each file is not always needed, refactor to optimize loading
   let inBowerJson: {name: string, version: string, main: any}|undefined;
   let inPackageJson: {name: string, version: string}|undefined;
-  let outPackageJson;
+  let outPackageJson: {name: string, version: string}|undefined;
   try {
     outPackageJson = readJson(options.out, 'package.json');
   } catch (e) {
@@ -206,22 +206,23 @@ export async function run() {
 
   // Prompt user for new package name & version if none exists
   // TODO(fks) 07-19-2017: Add option to suppress prompts
-  if (!npmPackageName) {
+  if (typeof npmPackageName !== 'string') {
     npmPackageName = (await inquirer.prompt([{
-      type: 'input',
-      name: 'npm-name',
-      message: 'npm package name?',
-      default: inBowerJson && `@polymer/${inBowerJson.name}`,
-    }]))['npm-name'];
+                       type: 'input',
+                       name: 'npm-name',
+                       message: 'npm package name?',
+                       default: inBowerJson && `@polymer/${inBowerJson.name}`,
+                     }]))['npm-name'] as string;
   }
 
-  if (!npmPackageVersion) {
-    npmPackageVersion = (await inquirer.prompt([{
-      type: 'input',
-      name: 'npm-version',
-      message: 'npm package version?',
-      default: inBowerJson && semver.inc(inBowerJson.version, 'major'),
-    }]))['npm-version'];
+  if (typeof npmPackageVersion !== 'string') {
+    npmPackageVersion =
+        (await inquirer.prompt([{
+          type: 'input',
+          name: 'npm-version',
+          message: 'npm package version?',
+          default: inBowerJson && semver.inc(inBowerJson.version, 'major'),
+        }]))['npm-version'] as string;
   }
 
   await convertPackage({
@@ -229,7 +230,7 @@ export async function run() {
     outDir: options.out,
     excludes: options.exclude,
     namespaces: options.namespace,
-    packageName: npmPackageName,
+    packageName: npmPackageName.toLowerCase(),
     packageVersion: npmPackageVersion,
     clearOutDir: options.clear,
     mainFiles
