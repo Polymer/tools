@@ -81,6 +81,7 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
   for (const repo of options.repos) {
     try {
       const bowerJson = readJson(path.join(options.inDir, repo, 'bower.json'));
+      // TODO(https://github.com/Polymer/html2js/issues/122): unhardcode
       const npmPackageName = `@polymer/${repo}`;
       const npmPackageVersion =
           bowerJson.version ? semver.inc(bowerJson.version, 'major') : '3.0.0';
