@@ -227,7 +227,8 @@ const typeMap = new Map([
   ['String', 'string'],
   ['Number', 'number'],
   ['Boolean', 'boolean'],
-  ['Array', 'any[]'],
+  ['*', '{}'],
+  ['Array', '{}[]'],
 ]);
 
 interface TsType {
@@ -238,13 +239,18 @@ interface TsType {
 function getTsType(type?: string): TsType {
   let optional = false;
 
-  // default to 'any'
-  type = type || 'any';
+  // default to '{}' in preference to 'any'
+  type = type || '{}';
   
   // handle Closure optionals
   if (type.endsWith('=')) {
     optional = true;
     type = type.substring(0, type.length - 1);
+  }
+
+  // handle Closure unknown type
+  if (type.startsWith('?')) {
+    type = '{}';
   }
 
   // convert from Closure
