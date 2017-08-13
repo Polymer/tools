@@ -65,6 +65,11 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     description: 'Show this help message.',
   },
   {
+    name: 'version',
+    type: Boolean,
+    description: 'Display the version number and exit',
+  },
+  {
     name: 'out',
     type: String,
     defaultValue: 'html2js_out',
@@ -116,6 +121,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
 interface Options {
   repo?: string[];
   help?: boolean;
+  version?: boolean;
   out: string;
   'in'?: string;
   namespace?: string[];
@@ -136,7 +142,13 @@ export async function run() {
     const usage = getUsage([
       {
         header: 'html2js',
-        content: 'Convert HTML Imports to JavaScript modules',
+        content: `Convert HTML Imports to JavaScript modules
+
+If no GitHub repository names are given, html2js converts the current
+directory as a package. If repositories are provided, they are cloned into a
+workspace directory as sibling folders as they would be in a Bower
+installation.
+`,
       },
       {
         header: 'Options',
@@ -144,6 +156,11 @@ export async function run() {
       }
     ]);
     console.log(usage);
+    return;
+  }
+
+  if (options['version']) {
+    console.log(require('../package.json').version);
     return;
   }
 
