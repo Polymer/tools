@@ -35,11 +35,11 @@ import { Element } from '../../@polymer/polymer/polymer-element.js';
 export const MyElement = class extends Element {
   static get template() {
     return `
-    <h2>Hello [[prop1]]!</h2>
+    <h2>Hello Modules!</h2>
 `;
   }
 
-  static get is() { return 'p6-element'; }
+  static get is() { return 'my-element'; }
   // ...
 }
 window.customElements.define(MyElement.is, MyElement);
