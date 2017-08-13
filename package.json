@@ -1,7 +1,7 @@
 {
   "name": "@polymer/html2js",
   "description": "Converts Bower + HTML Imports packages to npm + JS modules",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "The Polymer Project Authors",
   "repository": {
     "type": "git",
