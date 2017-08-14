@@ -16,6 +16,7 @@ import * as estree from 'estree';
 import {Document} from 'polymer-analyzer';
 
 import {JsExport, JsModule} from './js-module';
+import {OriginalDocumentUrl} from './url-converter';
 
 export interface ConverterMetadata {
   readonly namespaces: ReadonlySet<string>;
@@ -34,5 +35,5 @@ export interface ConverterMetadata {
   readonly mutableExports?:
       {readonly [namespaceName: string]: ReadonlyArray<string>};
 
-  convertDocument(document: Document): void;
+  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>): void;
 }

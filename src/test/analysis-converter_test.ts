@@ -2003,6 +2003,35 @@ export const foo = 10;
 `
       });
     });
+
+    testName = `deal with cyclic dependency graphs`;
+    test(testName, async () => {
+      setSources({
+        'a.html': `
+          <link rel="import" href="./b.html">
+          <script>
+            Polymer.foo = 5;
+          </script>
+        `,
+        'b.html': `
+          <link rel="import" href="./a.html">
+          <script>
+            Polymer.bar = 20;
+          </script>
+        `,
+      });
+
+      assertSources(await convert(), {
+        './a.js': `
+import './b.js';
+export const foo = 5;
+`,
+        './b.js': `
+import './a.js';
+export const bar = 20;
+`
+      });
+    });
   });
 
   suite('fixtures', () => {
@@ -2078,7 +2107,7 @@ export const foo = 10;
     const analysis = await analyzer.analyze([filename]);
     const doc = analysis.getDocument(filename) as Document;
     const converter = configureConverter(analysis, options);
-    converter.convertDocument(doc);
+    converter.convertDocument(doc, new Set());
     assert(
         converter.namespacedExports.has('Polymer.Element'),
         'Can find Polymer.Element');

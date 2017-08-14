@@ -13,15 +13,14 @@
  */
 
 import * as estree from 'estree';
+import * as jsc from 'jscodeshift';
 import {Analysis, Document} from 'polymer-analyzer';
 
+import {ConverterMetadata} from './converter-metadata';
 import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
-import {convertHtmlDocumentUrl, getDocumentUrl} from './url-converter';
+import {convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
-
-import jsc = require('jscodeshift');
-import {ConverterMetadata} from './converter-metadata';
 
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
@@ -139,9 +138,9 @@ export class AnalysisConverter implements ConverterMetadata {
       try {
         let convertedModule;
         if (this.includes.has(document.url)) {
-          convertedModule = this.convertDocument(document);
+          convertedModule = this.convertDocument(document, new Set());
         } else {
-          convertedModule = this.convertHtmlToHtml(document);
+          convertedModule = this.convertHtmlToHtml(document, new Set());
         }
         if (convertedModule) {
           results.set(convertedModule.url, convertedModule.source);
@@ -157,12 +156,13 @@ export class AnalysisConverter implements ConverterMetadata {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  convertDocument(document: Document): JsModule|undefined {
+  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>):
+      JsModule|undefined {
     const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
     if (!this.modules.has(jsUrl)) {
       this.handleNewJsModules(
           new DocumentConverter(
-              this, document, this.packageName, this.packageType)
+              this, document, this.packageName, this.packageType, visited)
               .convertToJsModule());
     }
     return this.modules.get(jsUrl);
@@ -171,12 +171,13 @@ export class AnalysisConverter implements ConverterMetadata {
   /**
    * Converts HTML Imports and inline scripts to module scripts as necessary.
    */
-  convertHtmlToHtml(document: Document): JsModule|undefined {
+  convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>):
+      JsModule|undefined {
     const htmlUrl = `./${document.url}`;
     if (!this.modules.has(htmlUrl)) {
       this.handleNewJsModules(
           new DocumentConverter(
-              this, document, this.packageName, this.packageType)
+              this, document, this.packageName, this.packageType, visited)
               .convertAsToplevelHtmlDocument());
     }
     return this.modules.get(htmlUrl);

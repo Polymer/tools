@@ -147,9 +147,14 @@ export class DocumentConverter {
 
   private readonly packageName: string;
   private readonly packageType: 'element'|'application';
+
+  // Dependencies not to convert, because they already have been / are currently
+  // being converted.
+  private readonly visited: Set<OriginalDocumentUrl>;
   constructor(
       analysisConverter: ConverterMetadata, document: Document,
-      packageName: string, packageType: 'element'|'application') {
+      packageName: string, packageType: 'element'|'application',
+      visited: Set<OriginalDocumentUrl>) {
     this.analysisConverter = analysisConverter;
     this._mutableExports =
         Object.assign({}, this.analysisConverter.mutableExports!);
@@ -158,6 +163,7 @@ export class DocumentConverter {
     this.convertedUrl = convertHtmlDocumentUrl(this.originalUrl);
     this.packageName = packageName;
     this.packageType = packageType;
+    this.visited = visited;
   }
 
   /**
@@ -579,13 +585,15 @@ export class DocumentConverter {
    * Mutates this.analysisConverter to register their exports.
    */
   private convertDependencies() {
+    this.visited.add(this.originalUrl);
     for (const htmlImport of this.getHtmlImports()) {
-      const importedJsDocumentUrl =
-          convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
-      if (this.analysisConverter.modules.has(importedJsDocumentUrl)) {
+      const documentUrl = getDocumentUrl(htmlImport.document);
+      const importedJsDocumentUrl = convertHtmlDocumentUrl(documentUrl);
+      if (this.visited.has(documentUrl) ||
+          this.analysisConverter.modules.has(importedJsDocumentUrl)) {
         continue;
       }
-      this.analysisConverter.convertDocument(htmlImport.document);
+      this.analysisConverter.convertDocument(htmlImport.document, this.visited);
     }
   }
 

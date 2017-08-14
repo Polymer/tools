@@ -13,16 +13,14 @@
  */
 
 import * as estree from 'estree';
+import * as jsc from 'jscodeshift';
 import {Analysis, Document} from 'polymer-analyzer';
 
+import {ConverterMetadata} from './converter-metadata';
 import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
-import {convertHtmlDocumentUrl, getDocumentUrl} from './url-converter';
+import {convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
-
-
-import jsc = require('jscodeshift');
-import {ConverterMetadata} from './converter-metadata';
 
 export interface WorkspaceConverterOptions {
   /**
@@ -123,9 +121,9 @@ export class WorkspaceConverter implements ConverterMetadata {
       try {
         let convertedModule;
         if (this.includes.has(document.url)) {
-          convertedModule = this.convertDocument(document);
+          convertedModule = this.convertDocument(document, new Set());
         } else {
-          convertedModule = this.convertHtmlToHtml(document);
+          convertedModule = this.convertHtmlToHtml(document, new Set());
         }
         if (convertedModule) {
           if (convertedModule.url.endsWith(
@@ -148,11 +146,12 @@ export class WorkspaceConverter implements ConverterMetadata {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  convertDocument(document: Document): JsModule|undefined {
+  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>):
+      JsModule|undefined {
     const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
     if (!this.modules.has(jsUrl)) {
       const newModules =
-          this.getDocumentConverter(document).convertToJsModule();
+          this.getDocumentConverter(document, visited).convertToJsModule();
       this.handleNewJsModules(newModules);
     }
     return this.modules.get(jsUrl);
@@ -161,11 +160,12 @@ export class WorkspaceConverter implements ConverterMetadata {
   /**
    * Converts HTML Imports and inline scripts to module scripts as necessary.
    */
-  convertHtmlToHtml(document: Document): JsModule|undefined {
+  convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>):
+      JsModule|undefined {
     const htmlUrl = `./${document.url}`;
     if (!this.modules.has(htmlUrl)) {
-      const newModules =
-          this.getDocumentConverter(document).convertAsToplevelHtmlDocument();
+      const newModules = this.getDocumentConverter(document, visited)
+                             .convertAsToplevelHtmlDocument();
       this.handleNewJsModules(newModules);
     }
     return this.modules.get(htmlUrl);
@@ -182,9 +182,12 @@ export class WorkspaceConverter implements ConverterMetadata {
     }
   }
 
-  private getDocumentConverter(document: Document): DocumentConverter {
+  private getDocumentConverter(
+      document: Document,
+      visited: Set<OriginalDocumentUrl>): DocumentConverter {
     const basePackageName = document.url.split('/')[0];
     const packageName = `@polymer/${basePackageName}`;
-    return new DocumentConverter(this, document, packageName, 'element');
+    return new DocumentConverter(
+        this, document, packageName, 'element', visited);
   }
 }
