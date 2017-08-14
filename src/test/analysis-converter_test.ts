@@ -48,16 +48,42 @@ suite('AnalysisConverter', () => {
       analyzer = new Analyzer({urlLoader: urlLoader});
     });
 
-    async function convert(partialOptions?: Partial<AnalysisConverterOptions>) {
+    function interceptWarnings() {
+      const warnings: string[] = [];
+      const originalConsoleWarn = console.warn;
+      const originalConsoleErr = console.error;
+
+      console.warn = console.error = (...args: any[]) => {
+        warnings.push(args.join(''));
+      };
+
+      return function unintercept() {
+        console.warn = originalConsoleWarn;
+        console.error = originalConsoleErr;
+        return warnings;
+      };
+    }
+
+    async function convert(partialOptions?: Partial<AnalysisConverterOptions>&
+                           {expectedWarnings?: string[]}) {
       const options = {
         namespaces: ['Polymer'],
         mainFiles: ['test.html'],
         packageName: 'some-package',
         ...partialOptions,
       };
+      const stopIntercepting = interceptWarnings();
       const analysis =
           await analyzer.analyze([...urlLoader.urlContentsMap.keys()]);
-      return new AnalysisConverter(analysis, options).convert();
+      const result = await new AnalysisConverter(analysis, options).convert();
+      const warnings = stopIntercepting();
+      const expectedWarnings =
+          partialOptions && partialOptions.expectedWarnings || [];
+      assert.deepEqual(
+          warnings,
+          expectedWarnings,
+          'console.warn() and console.error() calls differ from expected.');
+      return result;
     }
 
     function assertSources(
@@ -94,7 +120,13 @@ suite('AnalysisConverter', () => {
         'dep.html': `<h1>Hi</h1>`,
         'bower_components/dep.html': `<h1>Hi</h1>`,
       });
-      assertSources(await convert(), {
+      const expectedWarnings = [
+        `WARN: bower->npm mapping for "dep.html" not found`,
+        `WARN: bower->npm mapping for "dep.html" not found`,
+        `WARN: bower->npm mapping for "dep.html" not found`,
+        `WARN: bower->npm mapping for "dep.html" not found`,
+      ];
+      assertSources(await convert({expectedWarnings}), {
         './test.js': `
 import './dep.js';
 import '../dep.js';
@@ -1685,19 +1717,20 @@ setBaz(foo + 10 * (10 ** 10));
           console.log('hello world');
         `
       });
-
-      assertSources(await convert({packageName: 'polymer'}), {
+      const expectedWarnings = [`WARN: bower->npm mapping for "foo" not found`];
+      assertSources(await convert({packageName: 'polymer', expectedWarnings}), {
         './index.html': `
 
           <script src="../foo/foo.js"></script>
         `,
       });
-      assertSources(await convert({packageName: '@polymer/polymer'}), {
-        './index.html': `
+      assertSources(
+          await convert({packageName: '@polymer/polymer', expectedWarnings}), {
+            './index.html': `
 
           <script src="../../foo/foo.js"></script>
         `,
-      });
+          });
     });
 
     test(`remove WebComponentsReady`, async () => {
@@ -2020,8 +2053,11 @@ export const foo = 10;
           </script>
         `,
       });
-
-      assertSources(await convert(), {
+      const expectedWarnings =
+          ['Cycle in dependency graph found where b.html imports a.html.\n' +
+           '    html2js does not yet support rewriting references among ' +
+           'cyclic dependencies.'];
+      assertSources(await convert({expectedWarnings}), {
         './a.js': `
 import './b.js';
 export const foo = 5;
@@ -2030,6 +2066,56 @@ export const foo = 5;
 import './a.js';
 export const bar = 20;
 `
+      });
+    });
+
+    testName = `Deal with cyclic references`;
+    test(testName, async () => {
+      setSources({
+        'a.html': `
+          <link rel="import" href="./b.html">
+          <script>
+            Polymer.foo = function() {
+              return Polymer.bar || 10;
+            }
+          </script>
+        `,
+        'b.html': `
+          <link rel="import" href="./a.html">
+          <script>
+            Polymer.bar = (function() {
+              if (Polymer.foo) {
+                return 50;
+              }
+              return 5;
+            })();
+          </script>
+      `
+      });
+
+      const expectedWarnings =
+          ['Cycle in dependency graph found where b.html imports a.html.\n' +
+           '    html2js does not yet support rewriting references among ' +
+           'cyclic dependencies.'];
+      assertSources(await convert({expectedWarnings}), {
+        './a.js': `
+import { bar } from './b.js';
+
+export const foo = function() {
+  return bar || 10;
+};
+`,
+        // TODO(rictic): we should rewrite Polymer.foo here, but that's tricky…
+        './b.js': `
+import './a.js';
+
+export const bar = (function() {
+  if (Polymer.foo) {
+    return 50;
+  }
+  return 5;
+})();
+`,
       });
     });
   });

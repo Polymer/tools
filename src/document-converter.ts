@@ -589,8 +589,15 @@ export class DocumentConverter {
     for (const htmlImport of this.getHtmlImports()) {
       const documentUrl = getDocumentUrl(htmlImport.document);
       const importedJsDocumentUrl = convertHtmlDocumentUrl(documentUrl);
-      if (this.visited.has(documentUrl) ||
-          this.analysisConverter.modules.has(importedJsDocumentUrl)) {
+      if (this.analysisConverter.modules.has(importedJsDocumentUrl)) {
+        continue;
+      }
+      if (this.visited.has(documentUrl)) {
+        console.warn(
+            `Cycle in dependency graph found where ` +
+            `${this.originalUrl} imports ${documentUrl}.\n` +
+            `    html2js does not yet support rewriting references among ` +
+            `cyclic dependencies.`);
         continue;
       }
       this.analysisConverter.convertDocument(htmlImport.document, this.visited);
