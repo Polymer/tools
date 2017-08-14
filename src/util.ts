@@ -13,13 +13,13 @@
  */
 
 import * as astTypes from 'ast-types';
+import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
+import * as jsc from 'jscodeshift';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-
-import jsc = require('jscodeshift');
-import {NodePath} from 'ast-types';
+import {Analysis} from 'polymer-analyzer';
 
 export function serializeNode(node: parse5.ASTNode): string {
   const container = parse5.treeAdapters.default.createDocumentFragment();
@@ -209,4 +209,17 @@ export function isUseStrict(statement: estree.Statement) {
   return statement.type === 'ExpressionStatement' &&
       statement.expression.type === 'Literal' &&
       statement.expression.value === 'use strict';
+}
+
+export function getNamespaces(analysis: Analysis) {
+  return [
+    ...analysis.getFeatures(
+        {kind: 'namespace', externalPackages: true, imported: true})
+  ].map((n) => {
+    const name = n.name;
+    if (name.startsWith('window.')) {
+      return name.slice('window.'.length);
+    }
+    return name;
+  });
 }

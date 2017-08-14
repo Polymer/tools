@@ -18,7 +18,7 @@ import {Analysis, Document} from 'polymer-analyzer';
 import {DocumentConverter} from './document-converter';
 import {JsExport, JsModule} from './js-module';
 import {convertHtmlDocumentUrl, getDocumentUrl} from './url-converter';
-
+import {getNamespaces} from './util';
 
 import jsc = require('jscodeshift');
 import {ConverterMetadata} from './converter-metadata';
@@ -94,18 +94,8 @@ export class AnalysisConverter implements ConverterMetadata {
 
   constructor(analysis: Analysis, options: AnalysisConverterOptions) {
     this._analysis = analysis;
-    const declaredNamespaces = [
-      ...analysis.getFeatures(
-          {kind: 'namespace', externalPackages: true, imported: true})
-    ].map((n) => {
-      const name = n.name;
-      if (name.startsWith('window.')) {
-        return name.slice('window.'.length);
-      }
-      return name;
-    });
     this.namespaces =
-        new Set([...declaredNamespaces, ...(options.namespaces || [])]);
+        new Set([...getNamespaces(analysis), ...(options.namespaces || [])]);
 
     const referenceRewrites = new Map<string, estree.Node>();
     const windowDotDocument = jsc.memberExpression(
