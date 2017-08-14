@@ -1166,8 +1166,6 @@ class Element extends Element$0 {}
 `,
 
             './polymer.js': `
-/** @namespace */
-const Polymer = {};
 export const Element = class Element {};
 `
           });
@@ -1199,8 +1197,6 @@ class Element extends Element$0 {}
 `,
 
             './ns.js': `
-/** @namespace */
-const NS = {};
 export const Element = class Element {};
 `
           });
@@ -1623,8 +1619,7 @@ new foo().foo();
 </script>
         `,
         './polymer.js': `
-/** @namespace */
-const Polymer = {};
+
 `
       });
     });
@@ -1981,6 +1976,30 @@ import './foo.js';
         './test.js': `
 export const IronSelection = function() {};
 IronSelection.prototype = {};
+`
+      });
+    });
+
+    testName = `deal with initializing a namespace by self-assignment`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            /** @namespace */
+            var NS1 = NS1 || {};
+            /** @namespace */
+            window.NS2 = window.NS2 || {};
+            /** @namespace */
+            NS2.SubNS = window.NS2.SubNS || {};
+
+            NS2.SubNS.foo = 10;
+          </script>
+`
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+export const foo = 10;
 `
       });
     });

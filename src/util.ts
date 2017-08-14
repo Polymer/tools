@@ -131,6 +131,14 @@ export function getMemberName(expression: estree.Node): string|undefined {
   return path ? path.join('.') : path;
 }
 
+export function getMemberOrIdentifierName(expression: estree.Node): string|
+    undefined {
+  if (expression.type === 'Identifier') {
+    return expression.name;
+  }
+  return getMemberName(expression);
+}
+
 /**
  * Find the node in program that corresponds to the same part of code
  * as the given node.

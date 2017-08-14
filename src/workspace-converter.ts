@@ -82,7 +82,13 @@ export class WorkspaceConverter implements ConverterMetadata {
     const declaredNamespaces = [
       ...analysis.getFeatures(
           {kind: 'namespace', externalPackages: true, imported: true})
-    ].map((n) => n.name);
+    ].map((n) => {
+      const name = n.name;
+      if (name.startsWith('window.')) {
+        return name.slice('window.'.length);
+      }
+      return name;
+    });
     this.namespaces =
         new Set([...declaredNamespaces, ...(options.namespaces || [])]);
 

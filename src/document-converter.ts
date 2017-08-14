@@ -31,6 +31,7 @@ import jsc = require('jscodeshift');
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {ConverterMetadata} from './converter-metadata';
+import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 
 /**
  * Pairs a subtree of an AST (`path` as a `NodePath`) to be replaced with a
@@ -198,6 +199,7 @@ export class DocumentConverter {
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
 
+    removeNamespaceInitializers(program, this.analysisConverter.namespaces);
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
             program,
