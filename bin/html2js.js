@@ -16,7 +16,7 @@
 
 'use strict';
 
-process.title = 'analyze';
+process.title = 'html2js';
 
 require('source-map-support').install();
 
