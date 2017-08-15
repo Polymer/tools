@@ -23,6 +23,7 @@ import {polymerFileOverrides} from './special-casing';
 import {WorkspaceConverter} from './workspace-converter';
 
 interface ConvertWorkspaceOptions extends BaseConverterOptions {
+  packageVersion?: string;
   inDir: string;
   repos: string[];
 }
@@ -89,8 +90,9 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
         depMapping = {npm: bowerName};
       }
 
-      const npmPackageVersion =
-          bowerJson.version ? semver.inc(bowerJson.version, 'major') : '3.0.0';
+      const npmPackageVersion = options.packageVersion ||
+          (bowerJson.version && semver.inc(bowerJson.version, 'major')) ||
+          '3.0.0';
       const packageJson =
           generatePackageJson(bowerJson, depMapping.npm, npmPackageVersion);
       writeJson(packageJson, options.inDir, repo, 'package.json');

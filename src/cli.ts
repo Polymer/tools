@@ -179,7 +179,11 @@ installation.
       workspaceDir: options['workspace-dir']!,
     });
     const {dir, repos} = await runner.run();
-    convertWorkspace({inDir: dir, repos: [...repos.keys()]});
+    convertWorkspace({
+      inDir: dir,
+      repos: [...repos.keys()],
+      packageVersion: options['npm-version']
+    });
     return;
   }
 
