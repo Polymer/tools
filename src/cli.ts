@@ -112,6 +112,12 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     description: 'Version string to use for package.json'
   },
   {
+    name: 'prerelease-version',
+    type: String,
+    description: 'A suffix like `pre.1` to put into the version in ' +
+        'generated package.json files.'
+  },
+  {
     name: 'clear',
     type: Boolean,
     description: 'Clear the out directory (if one exists) before running.',
@@ -132,6 +138,7 @@ interface Options {
   clear?: boolean;
   'workspace-dir'?: string;
   'github-token'?: string;
+  'prerelease-version'?: string;
 }
 
 export async function run() {
@@ -182,7 +189,8 @@ installation.
     convertWorkspace({
       inDir: dir,
       repos: [...repos.keys()],
-      packageVersion: options['npm-version']
+      packageVersion: options['npm-version'],
+      prereleaseVersion: options['prerelease-version'],
     });
     return;
   }
@@ -254,6 +262,7 @@ installation.
     packageName: npmPackageName.toLowerCase(),
     packageVersion: npmPackageVersion,
     clearOutDir: options.clear,
+    prereleaseVersion: options['prerelease-version'],
     mainFiles
   });
 }

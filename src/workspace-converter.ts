@@ -135,8 +135,6 @@ export class WorkspaceConverter implements ConverterMetadata {
         continue;
       }
       if (convertedModule.type === 'delete-file') {
-        console.log(
-            `adding a delete record to results for ${convertedModule.url}`);
         results.set(convertedModule.url, undefined);
       } else {
         results.set(convertedModule.url, convertedModule.source);

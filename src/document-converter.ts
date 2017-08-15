@@ -229,7 +229,6 @@ export class DocumentConverter {
         recast.print(program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
     const deletedHtmlFileUrl =
         ('./' + this.originalUrl) as ConvertedDocumentUrl;
-    console.log(`Returning an output record to delete: ${deletedHtmlFileUrl}`);
     return [
       {
         type: 'js-module',

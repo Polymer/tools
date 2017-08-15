@@ -44,7 +44,7 @@ type ConvertPackageOptions = AnalysisConverterOptions&{
    * The npm package version to use in package.json
    */
   readonly packageVersion: string;
-
+  readonly prereleaseVersion?: string;
   /**
    * Flag: If true, clear the out directory before writing to it.
    */
@@ -96,7 +96,9 @@ export async function convertPackage(options: ConvertPackageOptions) {
   console.log(`Out directory: ${outDirResolved}`);
 
   const npmPackageName = options.packageName;
-  const npmPackageVersion = options.packageVersion;
+  const npmPackageVersion = options.prereleaseVersion ?
+      `${options.packageVersion}-${options.prereleaseVersion}` :
+      options.packageVersion;
 
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();

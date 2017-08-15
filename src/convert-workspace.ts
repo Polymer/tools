@@ -24,6 +24,7 @@ import {WorkspaceConverter} from './workspace-converter';
 
 interface ConvertWorkspaceOptions extends BaseConverterOptions {
   packageVersion?: string;
+  prereleaseVersion?: string;
   inDir: string;
   repos: string[];
 }
@@ -71,7 +72,6 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
   for (const [outUrl, newSource] of results) {
     const outPath = path.join(options.inDir, outUrl);
     if (newSource === undefined) {
-      console.log(`deleting ${outPath}`);
       await fs.unlink(outPath);
     } else {
       await fs.writeFile(outPath, newSource);
@@ -95,9 +95,12 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
         depMapping = {npm: bowerName};
       }
 
-      const npmPackageVersion = options.packageVersion ||
+      let npmPackageVersion = options.packageVersion ||
           (bowerJson.version && semver.inc(bowerJson.version, 'major')) ||
           '3.0.0';
+      if (options.prereleaseVersion) {
+        npmPackageVersion = `${npmPackageVersion}-${options.prereleaseVersion}`;
+      }
       const packageJson =
           generatePackageJson(bowerJson, depMapping.npm, npmPackageVersion);
       writeJson(packageJson, options.inDir, repo, 'package.json');
