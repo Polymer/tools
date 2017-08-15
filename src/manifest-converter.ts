@@ -22,7 +22,7 @@ interface DependencyMapEntry {
   semver: string;
 }
 interface DependencyMap {
-  [bower: string]: DependencyMapEntry;
+  [bower: string]: DependencyMapEntry|undefined;
 }
 
 export const dependencyMap: DependencyMap =
