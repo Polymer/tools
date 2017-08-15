@@ -1,479 +1,479 @@
 {
   "app-layout": {
     "npm": "@polymer/app-layout",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "app-elements": {
     "npm": "@polymer/app-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "app-localize-behavior": {
     "npm": "@polymer/app-localize-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "app-pouchdb": {
     "npm": "@polymer/app-pouchdb",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "app-route": {
     "npm": "@polymer/app-route",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "app-storage": {
     "npm": "@polymer/app-storage",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-flex-layout": {
     "npm": "@polymer/iron-flex-layout",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-media-query": {
     "npm": "@polymer/iron-media-query",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-resizable-behavior": {
     "npm": "@polymer/iron-resizable-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-scroll-target-behavior": {
     "npm": "@polymer/iron-scroll-target-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "app-layout-templates": {
     "npm": "@polymer/app-layout-templates",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-icon": {
     "npm": "@polymer/iron-icon",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-icons": {
     "npm": "@polymer/iron-icons",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-selector": {
     "npm": "@polymer/iron-selector",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-drawer-panel": {
     "npm": "@polymer/paper-drawer-panel",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-header-panel": {
     "npm": "@polymer/paper-header-panel",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-icon-button": {
     "npm": "@polymer/paper-icon-button",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-item": {
     "npm": "@polymer/paper-item",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-material": {
     "npm": "@polymer/paper-material",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-menu": {
     "npm": "@polymer/paper-menu",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-styles": {
     "npm": "@polymer/paper-styles",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-toggle-button": {
     "npm": "@polymer/paper-toggle-button",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-toolbar": {
     "npm": "@polymer/paper-toolbar",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-ajax": {
     "npm": "@polymer/iron-ajax",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-location": {
     "npm": "@polymer/iron-location",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "chartjs-element": {
     "npm": "@polymer/chartjs-element",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-component-page": {
     "npm": "@polymer/iron-component-page",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "data-elements": {
     "npm": "@polymer/data-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-jsonp-library": {
     "npm": "@polymer/iron-jsonp-library",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "font-roboto": {
     "npm": "@polymer/font-roboto",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "font-roboto-local": {
     "npm": "@polymer/font-roboto-local",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-cc-cvc-input": {
     "npm": "@polymer/gold-cc-cvc-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-form-element-behavior": {
     "npm": "@polymer/iron-form-element-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-input": {
     "npm": "@polymer/paper-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-cc-expiration-input": {
     "npm": "@polymer/gold-cc-expiration-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-a11y-keys-behavior": {
     "npm": "@polymer/iron-a11y-keys-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-validator-behavior": {
     "npm": "@polymer/iron-validator-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-validatable-behavior": {
     "npm": "@polymer/iron-validatable-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-cc-input": {
     "npm": "@polymer/gold-cc-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-elements": {
     "npm": "@polymer/gold-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-email-input": {
     "npm": "@polymer/gold-email-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-phone-input": {
     "npm": "@polymer/gold-phone-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "gold-zip-input": {
     "npm": "@polymer/gold-zip-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-input": {
     "npm": "@polymer/iron-input",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-a11y-announcer": {
     "npm": "@polymer/iron-a11y-announcer",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-a11y-keys": {
     "npm": "@polymer/iron-a11y-keys",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-autogrow-textarea": {
     "npm": "@polymer/iron-autogrow-textarea",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-behaviors": {
     "npm": "@polymer/iron-behaviors",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-behaviors-collection": {
     "npm": "@polymer/iron-behaviors-collection",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-range-behavior": {
     "npm": "@polymer/iron-range-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-overlay-behavior": {
     "npm": "@polymer/iron-overlay-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-scroll-threshold": {
     "npm": "@polymer/iron-scroll-threshold",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-menu-behavior": {
     "npm": "@polymer/iron-menu-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-checked-element-behavior": {
     "npm": "@polymer/iron-checked-element-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-collapse": {
     "npm": "@polymer/iron-collapse",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-doc-viewer": {
     "npm": "@polymer/iron-doc-viewer",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-demo-helpers": {
     "npm": "@polymer/iron-demo-helpers",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "marked-element": {
     "npm": "@polymer/marked-element",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "prism-element": {
     "npm": "@polymer/prism-element",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-button": {
     "npm": "@polymer/paper-button",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-dropdown": {
     "npm": "@polymer/iron-dropdown",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "neon-animation": {
     "npm": "@polymer/neon-animation",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-elements": {
     "npm": "@polymer/iron-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "icon-behaviors-collection": {
     "npm": "@polymer/icon-behaviors-collection",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "icon-input-elements": {
     "npm": "@polymer/icon-input-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-fit-behavior": {
     "npm": "@polymer/iron-fit-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-iconset": {
     "npm": "@polymer/iron-iconset",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-iconset-svg": {
     "npm": "@polymer/iron-iconset-svg",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-image": {
     "npm": "@polymer/iron-image",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-list": {
     "npm": "@polymer/iron-list",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-pages": {
     "npm": "@polymer/iron-pages",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-swipeable-container": {
     "npm": "@polymer/iron-swipeable-container",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-test-helpers": {
     "npm": "@polymer/iron-test-helpers",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-form": {
     "npm": "@polymer/iron-form",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-meta": {
     "npm": "@polymer/iron-meta",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-input-elements": {
     "npm": "@polymer/iron-input-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-label": {
     "npm": "@polymer/iron-label",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-localstorage": {
     "npm": "@polymer/iron-localstorage",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "iron-signals": {
     "npm": "@polymer/iron-signals",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "layout-elements": {
     "npm": "@polymer/layout-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "neon-elements": {
     "npm": "@polymer/neon-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-badge": {
     "npm": "@polymer/paper-badge",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-behaviors": {
     "npm": "@polymer/paper-behaviors",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-ripple": {
     "npm": "@polymer/paper-ripple",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-card": {
     "npm": "@polymer/paper-card",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-checkbox": {
     "npm": "@polymer/paper-checkbox",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-dialog": {
     "npm": "@polymer/paper-dialog",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-dialog-behavior": {
     "npm": "@polymer/paper-dialog-behavior",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-dialog-scrollable": {
     "npm": "@polymer/paper-dialog-scrollable",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-dropdown-menu": {
     "npm": "@polymer/paper-dropdown-menu",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-menu-button": {
     "npm": "@polymer/paper-menu-button",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-elements": {
     "npm": "@polymer/paper-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-input-elements": {
     "npm": "@polymer/paper-input-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-overlay-elements": {
     "npm": "@polymer/paper-overlay-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-ui-elements": {
     "npm": "@polymer/paper-ui-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-fab": {
     "npm": "@polymer/paper-fab",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-listbox": {
     "npm": "@polymer/paper-listbox",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-radio-button": {
     "npm": "@polymer/paper-radio-button",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-radio-group": {
     "npm": "@polymer/paper-radio-group",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-slider": {
     "npm": "@polymer/paper-slider",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-linear-progress": {
     "npm": "@polymer/paper-linear-progress",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-progress": {
     "npm": "@polymer/paper-progress",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-scroll-header-panel": {
     "npm": "@polymer/paper-scroll-header-panel",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-spinner": {
     "npm": "@polymer/paper-spinner",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-swatch-picker": {
     "npm": "@polymer/paper-swatch-picker",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-tabs": {
     "npm": "@polymer/paper-tabs",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-text-field": {
     "npm": "@polymer/paper-text-field",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-toast": {
     "npm": "@polymer/paper-toast",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "paper-tooltip": {
     "npm": "@polymer/paper-tooltip",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "platinum-bluetooth": {
     "npm": "@polymer/platinum-bluetooth",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "platinum-elements": {
     "npm": "@polymer/platinum-elements",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "platinum-https-redirect": {
     "npm": "@polymer/platinum-https-redirect",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "platinum-push-messaging": {
     "npm": "@polymer/platinum-push-messaging",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "platinum-sw": {
     "npm": "@polymer/platinum-sw",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "polymer-starter-kit": {
     "npm": "@polymer/polymer-starter-kit",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "promise-polyfill": {
     "npm": "@polymer/promise-polyfill",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "seed-element": {
     "npm": "@polymer/seed-element",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "performance-benchmark": {
     "npm": "@polymer/performance-benchmark",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "test-fixture": {
     "npm": "@polymer/test-fixture",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "shadycss": {
     "npm": "@webcomponents/shadycss",
@@ -485,7 +485,7 @@
   },
   "polymer": {
     "npm": "@polymer/polymer",
-    "semver": "^3.0.0"
+    "semver": "^3.0.0-dev"
   },
   "hydrolysis": {
     "npm": "hydrolysis",
