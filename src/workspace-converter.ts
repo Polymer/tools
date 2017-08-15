@@ -16,10 +16,11 @@ import * as estree from 'estree';
 import * as jsc from 'jscodeshift';
 import {Analysis, Document} from 'polymer-analyzer';
 
+import {BaseConverter} from './base-converter';
 import {ConverterMetadata} from './converter-metadata';
 import {DocumentConverter} from './document-converter';
 import {ConversionOutput, JsExport} from './js-module';
-import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
 
 export interface WorkspaceConverterOptions {
@@ -59,8 +60,9 @@ export interface WorkspaceConverterOptions {
 /**
  * Converts an entire Analysis object.
  */
-export class WorkspaceConverter implements ConverterMetadata {
-  private readonly _analysis: Analysis;
+export class WorkspaceConverter extends BaseConverter implements
+    ConverterMetadata {
+  protected readonly _analysis: Analysis;
   readonly namespaces: ReadonlySet<string>;
 
   readonly excludes: ReadonlySet<string>;
@@ -77,6 +79,7 @@ export class WorkspaceConverter implements ConverterMetadata {
   readonly dangerousReferences: ReadonlyMap<string, string>;
 
   constructor(analysis: Analysis, options: WorkspaceConverterOptions) {
+    super();
     this._analysis = analysis;
     this.namespaces =
         new Set([...getNamespaces(analysis), ...(options.namespaces || [])]);
@@ -107,81 +110,7 @@ export class WorkspaceConverter implements ConverterMetadata {
     this.includes = new Set(importedFiles);
   }
 
-  async convert(): Promise<Map<ConvertedDocumentUrl, string|undefined>> {
-    const htmlDocuments =
-        [...this._analysis.getFeatures({kind: 'html-document'})]
-            // Excludes
-            .filter((d) => {
-              return !this.excludes.has(d.url) && d.url;
-            });
-
-    const results = new Map<ConvertedDocumentUrl, string|undefined>();
-
-    for (const document of htmlDocuments) {
-      try {
-        this.includes.has(document.url) ?
-            this.convertDocument(document, new Set()) :
-            this.convertHtmlToHtml(document, new Set());
-      } catch (e) {
-        console.error(`Error in ${document.url}`, e);
-      }
-    }
-
-    for (const convertedModule of this.outputs.values()) {
-      if (convertedModule.url.endsWith('shadycss/entrypoints/apply-shim.js') ||
-          convertedModule.url.endsWith(
-              'shadycss/entrypoints/custom-style-interface.js')) {
-        // These are already ES6, and messed with in url-converter.
-        continue;
-      }
-      if (convertedModule.type === 'delete-file') {
-        results.set(convertedModule.url, undefined);
-      } else {
-        results.set(convertedModule.url, convertedModule.source);
-      }
-    }
-
-    return results;
-  }
-
-  /**
-   * Converts a Polymer Analyzer HTML document to a JS module
-   */
-  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>) {
-    const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
-    if (!this.outputs.has(jsUrl)) {
-      const newModules =
-          this.getDocumentConverter(document, visited).convertToJsModule();
-      this.handleNewJsModules(newModules);
-    }
-  }
-
-  /**
-   * Converts HTML Imports and inline scripts to module scripts as necessary.
-   */
-  convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>) {
-    const htmlUrl = `./${document.url}` as ConvertedDocumentUrl;
-    if (!this.outputs.has(htmlUrl)) {
-      const newModules = this.getDocumentConverter(document, visited)
-                             .convertAsToplevelHtmlDocument();
-      this.handleNewJsModules(newModules);
-    }
-  }
-
-  private handleNewJsModules(outputs: Iterable<ConversionOutput>): void {
-    for (const output of outputs) {
-      this.outputs.set(output.url, output);
-      if (output.type === 'js-module') {
-        for (const expr of output.exportedNamespaceMembers) {
-          this.namespacedExports.set(
-              expr.oldNamespacedName,
-              new JsExport(output.url, expr.es6ExportName));
-        }
-      }
-    }
-  }
-
-  private getDocumentConverter(
+  protected getDocumentConverter(
       document: Document,
       visited: Set<OriginalDocumentUrl>): DocumentConverter {
     const basePackageName = document.url.split('/')[0];

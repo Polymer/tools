@@ -16,10 +16,11 @@ import * as estree from 'estree';
 import * as jsc from 'jscodeshift';
 import {Analysis, Document} from 'polymer-analyzer';
 
+import {BaseConverter} from './base-converter';
 import {ConverterMetadata} from './converter-metadata';
 import {DocumentConverter} from './document-converter';
 import {ConversionOutput, JsExport} from './js-module';
-import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
 
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
@@ -70,8 +71,9 @@ export interface AnalysisConverterOptions extends BaseConverterOptions {
 /**
  * Converts an entire Analysis object.
  */
-export class AnalysisConverter implements ConverterMetadata {
-  private readonly _analysis: Analysis;
+export class AnalysisConverter extends BaseConverter implements
+    ConverterMetadata {
+  protected readonly _analysis: Analysis;
   readonly namespaces: ReadonlySet<string>;
   // These three properties are 'protected' in that they're accessable from
   // DocumentConverter.
@@ -92,6 +94,7 @@ export class AnalysisConverter implements ConverterMetadata {
   readonly dangerousReferences: ReadonlyMap<string, string>;
 
   constructor(analysis: Analysis, options: AnalysisConverterOptions) {
+    super();
     this._analysis = analysis;
     this.namespaces =
         new Set([...getNamespaces(analysis), ...(options.namespaces || [])]);
@@ -124,73 +127,15 @@ export class AnalysisConverter implements ConverterMetadata {
     this.includes = new Set([...importedFiles, ...options.mainFiles || []]);
   }
 
-  async convert(): Promise<Map<ConvertedDocumentUrl, string|undefined>> {
-    const htmlDocuments =
-        [...this._analysis.getFeatures({kind: 'html-document'})]
-            // Excludes
-            .filter((d) => {
-              return !this.excludes.has(d.url) && isNotExternal(d) && d.url;
-            });
 
-    for (const document of htmlDocuments) {
-      try {
-        this.includes.has(document.url) ?
-            this.convertDocument(document, new Set()) :
-            this.convertHtmlToHtml(document, new Set());
-      } catch (e) {
-        console.error(`Error in ${document.url}`, e);
-      }
-    }
-
-    const results = new Map<ConvertedDocumentUrl, string|undefined>();
-    for (const convertedModule of this.outputs.values()) {
-      if (convertedModule.type === 'delete-file') {
-        results.set(convertedModule.url, undefined);
-      } else {
-        results.set(convertedModule.url, convertedModule.source);
-      }
-    }
-
-    return results;
+  protected getDocumentConverter(
+      document: Document,
+      visited: Set<OriginalDocumentUrl>): DocumentConverter {
+    return new DocumentConverter(
+        this, document, this.packageName, this.packageType, visited);
   }
 
-  /**
-   * Converts a Polymer Analyzer HTML document to a JS module
-   */
-  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>): void {
-    const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
-    if (!this.outputs.has(jsUrl)) {
-      this.handleNewJsModules(
-          new DocumentConverter(
-              this, document, this.packageName, this.packageType, visited)
-              .convertToJsModule());
-    }
-  }
-
-  /**
-   * Converts HTML Imports and inline scripts to module scripts as necessary.
-   */
-  convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>):
-      void {
-    const htmlUrl = `./${document.url}` as ConvertedDocumentUrl;
-    if (!this.outputs.has(htmlUrl)) {
-      this.handleNewJsModules(
-          new DocumentConverter(
-              this, document, this.packageName, this.packageType, visited)
-              .convertAsToplevelHtmlDocument());
-    }
-  }
-
-  private handleNewJsModules(outputs: Iterable<ConversionOutput>): void {
-    for (const output of outputs) {
-      this.outputs.set(output.url, output);
-      if (output.type === 'js-module') {
-        for (const expr of output.exportedNamespaceMembers) {
-          this.namespacedExports.set(
-              expr.oldNamespacedName,
-              new JsExport(output.url, expr.es6ExportName));
-        }
-      }
-    }
+  protected filter(document: Document) {
+    return isNotExternal(document) && !!document.url;
   }
 }
