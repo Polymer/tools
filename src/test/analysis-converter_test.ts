@@ -20,6 +20,7 @@ import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 
 import {AnalysisConverter, AnalysisConverterOptions} from '../analysis-converter';
 import {configureAnalyzer, configureConverter} from '../convert-package';
+import {ConvertedDocumentUrl} from '../url-converter';
 import {getMemberPath} from '../util';
 
 
@@ -87,20 +88,30 @@ suite('AnalysisConverter', () => {
     }
 
     function assertSources(
-        results: Map<string, string>, expected: {[path: string]: string}) {
+        results: Map<string, string|undefined>,
+        expected: {[path: string]: string | undefined}) {
       for (const [expectedPath, expectedContents] of Object.entries(expected)) {
+        assert.isTrue(
+            results.has(expectedPath),
+            `No output named ${expectedPath} was generated. ` +
+                `Generated outputs: ${[...results.keys()].join(', ')}`);
         const actualContents = results.get(expectedPath);
         if (actualContents === undefined) {
-          assert.isTrue(
-              'false',
-              `No file named ${expectedPath} was generated. ` +
-                  `Generated files: ${[...results.keys()].join(', ')}`);
-          return;
+          assert.deepEqual(
+              actualContents,
+              expectedContents,
+              `${expectedPath} was unexpectedly deleted!`);
+        } else if (expectedContents === undefined) {
+          assert.deepEqual(
+              actualContents,
+              expectedContents,
+              `${expectedPath} should have been deleted`);
+        } else {
+          assert.deepEqual(
+              '\n' + actualContents,
+              expectedContents,
+              `Content of ${expectedPath} is wrong`);
         }
-        assert.deepEqual(
-            '\n' + actualContents,
-            expectedContents,
-            `Content of ${expectedPath} is wrong`);
       }
     }
 
@@ -130,7 +141,8 @@ suite('AnalysisConverter', () => {
         './test.js': `
 import './dep.js';
 import '../dep.js';
-`
+`,
+        './test.html': undefined
       });
     });
 
@@ -156,6 +168,8 @@ import '../@polymer/app-storage/app-storage.js';
         './nested/test.js': `
 import '../../@polymer/app-route/app-route.js';
 `,
+        './test.html': undefined,
+        './nested/test.html': undefined,
       });
     });
 
@@ -2177,7 +2191,8 @@ export const bar = (function() {
     const analysis = await analyzer.analyze(['case-map/case-map.html']);
     const converter = configureConverter(analysis, options);
     const converted = await converter.convert();
-    const caseMapSource = converted.get('./case-map/case-map.js');
+    const caseMapSource =
+        converted.get('./case-map/case-map.js' as ConvertedDocumentUrl);
     assert.include(caseMapSource!, 'export function dashToCamelCase');
     assert.include(caseMapSource!, 'export function camelToDashCase');
   });

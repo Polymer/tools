@@ -18,8 +18,8 @@ import {Analysis, Document} from 'polymer-analyzer';
 
 import {ConverterMetadata} from './converter-metadata';
 import {DocumentConverter} from './document-converter';
-import {JsExport, JsModule} from './js-module';
-import {convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConversionOutput, JsExport} from './js-module';
+import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
 
 export interface WorkspaceConverterOptions {
@@ -69,7 +69,7 @@ export class WorkspaceConverter implements ConverterMetadata {
   readonly mutableExports?:
       {readonly [namespaceName: string]: ReadonlyArray<string>};
 
-  readonly modules = new Map<string, JsModule>();
+  readonly outputs = new Map<ConvertedDocumentUrl, ConversionOutput>();
   readonly namespacedExports = new Map<string, JsExport>();
 
   readonly referenceRewrites: ReadonlyMap<string, estree.Node>;
@@ -107,7 +107,7 @@ export class WorkspaceConverter implements ConverterMetadata {
     this.includes = new Set(importedFiles);
   }
 
-  async convert(): Promise<Map<string, string>> {
+  async convert(): Promise<Map<ConvertedDocumentUrl, string|undefined>> {
     const htmlDocuments =
         [...this._analysis.getFeatures({kind: 'html-document'})]
             // Excludes
@@ -115,28 +115,31 @@ export class WorkspaceConverter implements ConverterMetadata {
               return !this.excludes.has(d.url) && d.url;
             });
 
-    const results = new Map<string, string>();
+    const results = new Map<ConvertedDocumentUrl, string|undefined>();
 
     for (const document of htmlDocuments) {
       try {
-        let convertedModule;
-        if (this.includes.has(document.url)) {
-          convertedModule = this.convertDocument(document, new Set());
-        } else {
-          convertedModule = this.convertHtmlToHtml(document, new Set());
-        }
-        if (convertedModule) {
-          if (convertedModule.url.endsWith(
-                  'shadycss/entrypoints/apply-shim.js') ||
-              convertedModule.url.endsWith(
-                  'shadycss/entrypoints/custom-style-interface.js')) {
-            // These are already ES6, and messed with in url-converter.
-            continue;
-          }
-          results.set(convertedModule.url, convertedModule.source);
-        }
+        this.includes.has(document.url) ?
+            this.convertDocument(document, new Set()) :
+            this.convertHtmlToHtml(document, new Set());
       } catch (e) {
         console.error(`Error in ${document.url}`, e);
+      }
+    }
+
+    for (const convertedModule of this.outputs.values()) {
+      if (convertedModule.url.endsWith('shadycss/entrypoints/apply-shim.js') ||
+          convertedModule.url.endsWith(
+              'shadycss/entrypoints/custom-style-interface.js')) {
+        // These are already ES6, and messed with in url-converter.
+        continue;
+      }
+      if (convertedModule.type === 'delete-file') {
+        console.log(
+            `adding a delete record to results for ${convertedModule.url}`);
+        results.set(convertedModule.url, undefined);
+      } else {
+        results.set(convertedModule.url, convertedModule.source);
       }
     }
 
@@ -146,38 +149,36 @@ export class WorkspaceConverter implements ConverterMetadata {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>):
-      JsModule|undefined {
+  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>) {
     const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
-    if (!this.modules.has(jsUrl)) {
+    if (!this.outputs.has(jsUrl)) {
       const newModules =
           this.getDocumentConverter(document, visited).convertToJsModule();
       this.handleNewJsModules(newModules);
     }
-    return this.modules.get(jsUrl);
   }
 
   /**
    * Converts HTML Imports and inline scripts to module scripts as necessary.
    */
-  convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>):
-      JsModule|undefined {
-    const htmlUrl = `./${document.url}`;
-    if (!this.modules.has(htmlUrl)) {
+  convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>) {
+    const htmlUrl = `./${document.url}` as ConvertedDocumentUrl;
+    if (!this.outputs.has(htmlUrl)) {
       const newModules = this.getDocumentConverter(document, visited)
                              .convertAsToplevelHtmlDocument();
       this.handleNewJsModules(newModules);
     }
-    return this.modules.get(htmlUrl);
   }
 
-  private handleNewJsModules(jsModules: Iterable<JsModule>): void {
-    for (const jsModule of jsModules) {
-      this.modules.set(jsModule.url, jsModule);
-      for (const expr of jsModule.exportedNamespaceMembers) {
-        this.namespacedExports.set(
-            expr.oldNamespacedName,
-            new JsExport(jsModule.url, expr.es6ExportName));
+  private handleNewJsModules(outputs: Iterable<ConversionOutput>): void {
+    for (const output of outputs) {
+      this.outputs.set(output.url, output);
+      if (output.type === 'js-module') {
+        for (const expr of output.exportedNamespaceMembers) {
+          this.namespacedExports.set(
+              expr.oldNamespacedName,
+              new JsExport(output.url, expr.es6ExportName));
+        }
       }
     }
   }

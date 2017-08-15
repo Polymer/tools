@@ -14,7 +14,22 @@
 
 import {ConvertedDocumentUrl} from './url-converter';
 
+export type ConversionOutput = DeleteFile | HtmlFile | JsModule;
+
+export interface DeleteFile {
+  readonly type: 'delete-file';
+  readonly url: ConvertedDocumentUrl;
+}
+
+export interface HtmlFile {
+  readonly type: 'html-file';
+  readonly url: ConvertedDocumentUrl;
+
+  readonly source: string;
+}
+
 export interface JsModule {
+  readonly type: 'js-module';
   /**
    * Package-relative URL of the converted JS module.
    */

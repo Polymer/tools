@@ -119,7 +119,11 @@ export async function convertPackage(options: ConvertPackageOptions) {
   for (const [newPath, newSource] of results) {
     const outPath = path.resolve(outDirResolved, newPath);
     mkdirp.sync(path.dirname(outPath));
-    await fs.writeFile(outPath, newSource);
+    if (newSource !== undefined) {
+      await fs.writeFile(outPath, newSource);
+    } else {
+      await fs.unlink(outPath);
+    }
   }
 
   try {

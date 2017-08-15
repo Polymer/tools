@@ -22,7 +22,7 @@ import * as path from 'path';
 import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
-import {JsExport, JsModule, NamespaceMemberToExport} from './js-module';
+import {ConversionOutput, JsExport, NamespaceMemberToExport} from './js-module';
 import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
 import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
@@ -179,7 +179,7 @@ export class DocumentConverter {
                 !this.analysisConverter.excludes.has(f.document.url));
   }
 
-  convertToJsModule(): Iterable<JsModule> {
+  convertToJsModule(): Iterable<ConversionOutput> {
     const combinedToplevelStatements = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const scriptProgram =
@@ -227,15 +227,25 @@ export class DocumentConverter {
 
     const outputProgram =
         recast.print(program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
-    return [{
-      url: this.convertedUrl,
-      source: outputProgram.code + '\n',
-      exportedNamespaceMembers: exportMigrationRecords,
-      es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
-    }];
+    const deletedHtmlFileUrl =
+        ('./' + this.originalUrl) as ConvertedDocumentUrl;
+    console.log(`Returning an output record to delete: ${deletedHtmlFileUrl}`);
+    return [
+      {
+        type: 'js-module',
+        url: this.convertedUrl,
+        source: outputProgram.code + '\n',
+        exportedNamespaceMembers: exportMigrationRecords,
+        es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
+      },
+      {
+        type: 'delete-file',
+        url: deletedHtmlFileUrl,
+      }
+    ];
   }
 
-  convertAsToplevelHtmlDocument(): Iterable<JsModule> {
+  convertAsToplevelHtmlDocument(): Iterable<ConversionOutput> {
     this.convertDependencies();
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
 
@@ -370,10 +380,9 @@ export class DocumentConverter {
           contents.slice(0, start) + replacementText + contents.slice(end);
     }
     return [{
+      type: 'html-file',
       url: ('./' + this.originalUrl) as ConvertedDocumentUrl,
       source: contents,
-      exportedNamespaceMembers: [],
-      es6Exports: new Set()
     }];
   }
 
@@ -589,7 +598,7 @@ export class DocumentConverter {
     for (const htmlImport of this.getHtmlImports()) {
       const documentUrl = getDocumentUrl(htmlImport.document);
       const importedJsDocumentUrl = convertHtmlDocumentUrl(documentUrl);
-      if (this.analysisConverter.modules.has(importedJsDocumentUrl)) {
+      if (this.analysisConverter.outputs.has(importedJsDocumentUrl)) {
         continue;
       }
       if (this.visited.has(documentUrl)) {

@@ -18,8 +18,8 @@ import {Analysis, Document} from 'polymer-analyzer';
 
 import {ConverterMetadata} from './converter-metadata';
 import {DocumentConverter} from './document-converter';
-import {JsExport, JsModule} from './js-module';
-import {convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConversionOutput, JsExport} from './js-module';
+import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
 
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
@@ -84,7 +84,7 @@ export class AnalysisConverter implements ConverterMetadata {
   readonly mutableExports?:
       {readonly [namespaceName: string]: ReadonlyArray<string>};
 
-  readonly modules = new Map<string, JsModule>();
+  readonly outputs = new Map<ConvertedDocumentUrl, ConversionOutput>();
   readonly namespacedExports = new Map<string, JsExport>();
 
   readonly referenceRewrites: ReadonlyMap<string, estree.Node>;
@@ -124,7 +124,7 @@ export class AnalysisConverter implements ConverterMetadata {
     this.includes = new Set([...importedFiles, ...options.mainFiles || []]);
   }
 
-  async convert(): Promise<Map<string, string>> {
+  async convert(): Promise<Map<ConvertedDocumentUrl, string|undefined>> {
     const htmlDocuments =
         [...this._analysis.getFeatures({kind: 'html-document'})]
             // Excludes
@@ -132,21 +132,22 @@ export class AnalysisConverter implements ConverterMetadata {
               return !this.excludes.has(d.url) && isNotExternal(d) && d.url;
             });
 
-    const results = new Map<string, string>();
-
     for (const document of htmlDocuments) {
       try {
-        let convertedModule;
-        if (this.includes.has(document.url)) {
-          convertedModule = this.convertDocument(document, new Set());
-        } else {
-          convertedModule = this.convertHtmlToHtml(document, new Set());
-        }
-        if (convertedModule) {
-          results.set(convertedModule.url, convertedModule.source);
-        }
+        this.includes.has(document.url) ?
+            this.convertDocument(document, new Set()) :
+            this.convertHtmlToHtml(document, new Set());
       } catch (e) {
         console.error(`Error in ${document.url}`, e);
+      }
+    }
+
+    const results = new Map<ConvertedDocumentUrl, string|undefined>();
+    for (const convertedModule of this.outputs.values()) {
+      if (convertedModule.type === 'delete-file') {
+        results.set(convertedModule.url, undefined);
+      } else {
+        results.set(convertedModule.url, convertedModule.source);
       }
     }
 
@@ -156,40 +157,39 @@ export class AnalysisConverter implements ConverterMetadata {
   /**
    * Converts a Polymer Analyzer HTML document to a JS module
    */
-  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>):
-      JsModule|undefined {
+  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>): void {
     const jsUrl = convertHtmlDocumentUrl(getDocumentUrl(document));
-    if (!this.modules.has(jsUrl)) {
+    if (!this.outputs.has(jsUrl)) {
       this.handleNewJsModules(
           new DocumentConverter(
               this, document, this.packageName, this.packageType, visited)
               .convertToJsModule());
     }
-    return this.modules.get(jsUrl);
   }
 
   /**
    * Converts HTML Imports and inline scripts to module scripts as necessary.
    */
   convertHtmlToHtml(document: Document, visited: Set<OriginalDocumentUrl>):
-      JsModule|undefined {
-    const htmlUrl = `./${document.url}`;
-    if (!this.modules.has(htmlUrl)) {
+      void {
+    const htmlUrl = `./${document.url}` as ConvertedDocumentUrl;
+    if (!this.outputs.has(htmlUrl)) {
       this.handleNewJsModules(
           new DocumentConverter(
               this, document, this.packageName, this.packageType, visited)
               .convertAsToplevelHtmlDocument());
     }
-    return this.modules.get(htmlUrl);
   }
 
-  private handleNewJsModules(jsModules: Iterable<JsModule>): void {
-    for (const jsModule of jsModules) {
-      this.modules.set(jsModule.url, jsModule);
-      for (const expr of jsModule.exportedNamespaceMembers) {
-        this.namespacedExports.set(
-            expr.oldNamespacedName,
-            new JsExport(jsModule.url, expr.es6ExportName));
+  private handleNewJsModules(outputs: Iterable<ConversionOutput>): void {
+    for (const output of outputs) {
+      this.outputs.set(output.url, output);
+      if (output.type === 'js-module') {
+        for (const expr of output.exportedNamespaceMembers) {
+          this.namespacedExports.set(
+              expr.oldNamespacedName,
+              new JsExport(output.url, expr.es6ExportName));
+        }
       }
     }
   }

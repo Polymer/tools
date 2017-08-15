@@ -69,8 +69,13 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
   const results = await converter.convert();
 
   for (const [outUrl, newSource] of results) {
-    // filter by repos we're converting
-    await fs.writeFile(path.join(options.inDir, outUrl), newSource);
+    const outPath = path.join(options.inDir, outUrl);
+    if (newSource === undefined) {
+      console.log(`deleting ${outPath}`);
+      await fs.unlink(outPath);
+    } else {
+      await fs.writeFile(outPath, newSource);
+    }
   }
 
   for (const repo of await fs.readdir(options.inDir)) {
