@@ -17,7 +17,7 @@ import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 import * as semver from 'semver';
 
-import {BaseConverterOptions} from './analysis-converter';
+import {BaseConverterOptions} from './base-converter';
 import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {polymerFileOverrides} from './special-casing';
 import {WorkspaceConverter} from './workspace-converter';
