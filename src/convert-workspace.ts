@@ -18,7 +18,7 @@ import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 import * as semver from 'semver';
 
 import {BaseConverterOptions} from './analysis-converter';
-import {generatePackageJson, readJson, writeJson} from './manifest-converter';
+import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {polymerFileOverrides} from './special-casing';
 import {WorkspaceConverter} from './workspace-converter';
 
@@ -72,15 +72,27 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
     await fs.writeFile(path.join(options.inDir, outUrl), newSource);
   }
 
-  for (const repo of options.repos) {
+  for (const repo of await fs.readdir(options.inDir)) {
+    const bowerPath = path.join(options.inDir, repo, 'bower.json');
+    const bowerExists = await fs.exists(bowerPath);
+    if (!bowerExists) {
+      continue;
+    }
     try {
-      const bowerJson = readJson(path.join(options.inDir, repo, 'bower.json'));
+      const bowerJson = readJson(bowerPath);
       // TODO(https://github.com/Polymer/html2js/issues/122): unhardcode
-      const npmPackageName = `@polymer/${repo.toLowerCase()}`;
+      const bowerName = bowerJson.name;
+
+      let depMapping: {npm: string}|undefined = dependencyMap[bowerName];
+      if (!depMapping) {
+        console.warn(`"${bowerName}" npm mapping not found`);
+        depMapping = {npm: bowerName};
+      }
+
       const npmPackageVersion =
           bowerJson.version ? semver.inc(bowerJson.version, 'major') : '3.0.0';
       const packageJson =
-          generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
+          generatePackageJson(bowerJson, depMapping.npm, npmPackageVersion);
       writeJson(packageJson, options.inDir, repo, 'package.json');
     } catch (e) {
       console.log('error in bower.json -> package.json conversion');
