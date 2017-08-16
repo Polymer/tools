@@ -15,6 +15,7 @@
 import * as path from 'path';
 
 import {ForkOptions, LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../core/analyzer';
+import {CssCustomPropertyScanner} from '../css/css-custom-property-scanner';
 import {CssParser} from '../css/css-parser';
 import {HtmlCustomElementReferenceScanner} from '../html/html-element-reference-scanner';
 import {HtmlImportScanner} from '../html/html-import-scanner';
@@ -116,6 +117,7 @@ export class AnalysisContext {
           new ClassScanner()
         ]
       ],
+      ['css', [new CssCustomPropertyScanner()]]
     ]);
   }
 

@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+ ## Unreleased
+
+* Scan for CSS custom variable uses and assignments.
 
 ## [2.2.2] - 2017-07-20
 

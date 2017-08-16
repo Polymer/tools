@@ -19,57 +19,7 @@ import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
 
 import cssbeautify = require('cssbeautify');
 
-export interface Visitor { visit(node: shady.Node, path: shady.Node[]): void; }
-
-class ShadyVisitor extends shady.NodeVisitor<shady.Node, void> {
-  private visitors: Visitor[];
-  constructor(visitors: Visitor[]) {
-    super();
-    this.visitors = visitors;
-  }
-  private allVisitors(node: shady.Node) {
-    for (const visitor of this.visitors) {
-      visitor.visit(node, this.path);
-    }
-  }
-  stylesheet(stylesheet: shady.Stylesheet) {
-    this.allVisitors(stylesheet);
-    for (const rule of stylesheet.rules) {
-      this.visit(rule);
-    }
-  }
-  atRule(atRule: shady.AtRule) {
-    this.allVisitors(atRule);
-    if (atRule.rulelist) {
-      this.visit(atRule.rulelist);
-    }
-  }
-  comment(comment: shady.Comment) {
-    this.allVisitors(comment);
-  }
-  rulelist(rulelist: shady.Rulelist) {
-    this.allVisitors(rulelist);
-    for (const rule of rulelist.rules) {
-      this.visit(rule);
-    }
-  }
-  ruleset(ruleset: shady.Ruleset) {
-    this.allVisitors(ruleset);
-    this.visit(ruleset.rulelist);
-  }
-  declaration(declaration: shady.Declaration) {
-    this.allVisitors(declaration);
-    if (declaration.value) {
-      this.visit(declaration.value);
-    }
-  }
-  expression(expression: shady.Expression) {
-    this.allVisitors(expression);
-  }
-  discarded(discarded: shady.Discarded) {
-    this.allVisitors(discarded);
-  }
-}
+export interface Visitor { visit(node: shady.Node): void; }
 
 export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
   type = 'css';
@@ -79,12 +29,23 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
   }
 
   visit(visitors: Visitor[]) {
-    const shadyVisitor = new ShadyVisitor(visitors);
-    shadyVisitor.visit(this.ast);
+    for (const node of this) {
+      for (const visitor of visitors) {
+        visitor.visit(node);
+      }
+    }
+  }
+
+  sourceRangeForNode(node: shady.Node): SourceRange {
+    return this.sourceRangeForShadyRange(node.range);
+  }
+
+  sourceRangeForShadyRange(range: shady.Range): SourceRange {
+    return this.offsetsToSourceRange(range.start, range.end);
   }
 
   protected _sourceRangeForNode(node: shady.Node): SourceRange {
-    return this.offsetsToSourceRange(node.range.start, node.range.end);
+    return this.sourceRangeForShadyRange(node.range);
   }
 
   stringify(options?: StringifyOptions) {
@@ -100,6 +61,10 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
                .map((line) => line === '' ? '' : indent + line)
                .join('\n') +
         '\n';
+  }
+
+  * [Symbol.iterator](): Iterator<shady.Node> {
+    yield* shady.iterateOverAst(this.ast);
   }
 }
 

@@ -13,6 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
+import {ASTNode, treeAdapters} from 'parse5';
 import {resolve as resolveUrl} from 'url';
 
 import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, ScannedImport, ScannedInlineDocument} from '../model/model';
@@ -39,7 +40,7 @@ export class HtmlStyleScanner implements HtmlScanner {
       visit: (visitor: HtmlVisitor) => Promise<void>) {
     const features: (ScannedImport|ScannedInlineDocument)[] = [];
 
-    await visit(async(node) => {
+    const visitor = async(node: ASTNode) => {
       if (isStyleNode(node)) {
         const tagName = node.nodeName;
         if (tagName === 'link') {
@@ -65,7 +66,19 @@ export class HtmlStyleScanner implements HtmlScanner {
               node));
         }
       }
-    });
+      // Descend into templates.
+      if (node.tagName === 'template') {
+        const content = treeAdapters.default.getTemplateContent(node);
+        if (content) {
+          dom5.nodeWalk(content, (n) => {
+            visitor(n);
+            return false;
+          });
+        }
+      }
+    };
+
+    await visit(visitor);
 
     return {features};
   }
