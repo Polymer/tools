@@ -142,9 +142,6 @@ export class DocumentConverter {
   private readonly convertedUrl: ConvertedDocumentUrl;
   private readonly analysisConverter: ConverterMetadata;
   private readonly document: Document;
-  private readonly _mutableExports:
-      {readonly [namespaceName: string]: ReadonlyArray<string>};
-
   private readonly packageName: string;
   private readonly packageType: 'element'|'application';
 
@@ -156,8 +153,6 @@ export class DocumentConverter {
       packageName: string, packageType: 'element'|'application',
       visited: Set<OriginalDocumentUrl>) {
     this.analysisConverter = analysisConverter;
-    this._mutableExports =
-        Object.assign({}, this.analysisConverter.mutableExports!);
     this.document = document;
     this.originalUrl = getDocumentUrl(document);
     this.convertedUrl = convertHtmlDocumentUrl(this.originalUrl);
@@ -208,10 +203,7 @@ export class DocumentConverter {
     removeNamespaceInitializers(program, this.analysisConverter.namespaces);
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
-            program,
-            this.document,
-            this._mutableExports,
-            this.analysisConverter.namespaces);
+            program, this.document, this.analysisConverter.namespaces);
 
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
@@ -279,10 +271,7 @@ export class DocumentConverter {
 
       const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
           rewriteNamespacesAsExports(
-              program,
-              this.document,
-              this._mutableExports,
-              this.analysisConverter.namespaces);
+              program, this.document, this.analysisConverter.namespaces);
       for (const namespaceName of namespaceNames) {
         this.rewriteNamespaceThisReferences(program, namespaceName);
       }

@@ -80,9 +80,6 @@ export function configureConverter(
           'Polymer.rootPath',
           'Polymer.sanitizeDOMValue'
         ],
-    mutableExports: options.mutableExports || {
-      'Polymer.telemetry': ['instanceCount'],
-    },
     mainFiles: options.mainFiles
   });
 }

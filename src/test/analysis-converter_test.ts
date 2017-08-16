@@ -669,11 +669,8 @@ export function thisReferenceFn() {
             })();
           </script>`,
       });
-      assertSources(
-          await convert(
-              {mutableExports: {'Polymer.Namespace': ['mutableLiteral']}}),
-          {
-            './test.js': `
+      assertSources(await convert(), {
+        './test.js': `
 export const immutableLiteral = 42;
 export let mutableLiteral = 0;
 
@@ -681,7 +678,7 @@ export function increment() {
   mutableLiteral++;
 }
 `
-          });
+      });
     });
 
 

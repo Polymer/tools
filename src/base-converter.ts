@@ -45,15 +45,6 @@ export interface BaseConverterOptions {
    * fail the guard.
    */
   readonly referenceExcludes?: Iterable<string>;
-
-  /**
-   * For each namespace you can set a list of references (ie,
-   * 'Polymer.telemetry.instanceCount') that need to be mutable and cannot be
-   * exported as `const` variables. They will be exported as `let` variables
-   * instead.
-   */
-  readonly mutableExports?:
-      {readonly [namespaceName: string]: ReadonlyArray<string>};
 }
 
 export abstract class BaseConverter {
@@ -62,9 +53,6 @@ export abstract class BaseConverter {
 
   readonly excludes: ReadonlySet<string>;
   readonly includes: ReadonlySet<string>;
-  readonly mutableExports?:
-      {readonly [namespaceName: string]: ReadonlyArray<string>};
-
   readonly referenceRewrites: ReadonlyMap<string, estree.Node>;
   readonly dangerousReferences: ReadonlyMap<string, string>;
   readonly referenceExcludes: ReadonlySet<string>;
@@ -92,7 +80,6 @@ export abstract class BaseConverter {
 
     this.excludes = new Set(options.excludes!);
     this.referenceExcludes = new Set(options.referenceExcludes!);
-    this.mutableExports = options.mutableExports;
 
     const importedFiles =
         new FluentIterable(this._analysis.getFeatures(

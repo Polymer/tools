@@ -32,8 +32,5 @@ export interface ConverterMetadata {
 
   readonly dangerousReferences: ReadonlyMap<string, string>;
 
-  readonly mutableExports?:
-      {readonly [namespaceName: string]: ReadonlyArray<string>};
-
   convertDocument(document: Document, visited: Set<OriginalDocumentUrl>): void;
 }

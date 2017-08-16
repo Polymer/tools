@@ -12,22 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
 import * as estree from 'estree';
 import * as jsc from 'jscodeshift';
 import {Document} from 'polymer-analyzer';
 
 import {NamespaceMemberToExport} from '../js-module';
-import {getMemberPath, getNodePathGivenAnalyzerAstNode, sourceLocationsEqual, toplevelStatements} from '../util';
+import {getMemberName, getMemberPath, getNodePathGivenAnalyzerAstNode, sourceLocationsEqual, toplevelStatements} from '../util';
 
 export function rewriteNamespacesAsExports(
     program: estree.Program,
     document: Document,
-    _mutableExports: {readonly [namespaceName: string]: ReadonlyArray<string>},
     namespaces: ReadonlySet<string>) {
-  return new RewriteNamespaceExportsPass(
-             program, document, _mutableExports, namespaces)
-      .run();
+  return new RewriteNamespaceExportsPass(program, document, namespaces).run();
 }
 
 class RewriteNamespaceExportsPass {
@@ -36,6 +34,7 @@ class RewriteNamespaceExportsPass {
    */
   private readonly localNamespaceNames: ReadonlySet<string>;
   private readonly namespaceNames = new Set<string>();
+  private readonly mutableNames: ReadonlySet<string>;
   /**
    * Tracks the mapping between the old namespaced way of referencing a value
    * and the name given when it's exported from this module.
@@ -44,9 +43,8 @@ class RewriteNamespaceExportsPass {
   constructor(
       private readonly program: estree.Program,
       private readonly document: Document,
-      private readonly _mutableExports:
-          {readonly [namespaceName: string]: ReadonlyArray<string>},
       private readonly namespaces: ReadonlySet<string>) {
+    this.mutableNames = getMutableNames(program);
     this.localNamespaceNames =
         new Set(getLocalNamesOfLocallyDeclaredNamespaces(this.document));
   }
@@ -161,8 +159,8 @@ class RewriteNamespaceExportsPass {
   private rewriteNamespaceObject(
       fullyQualifiedName: string, body: estree.ObjectExpression,
       nodePath: NodePath) {
-    const mutableExports = this._mutableExports[fullyQualifiedName];
-    const namespaceExports = getNamespaceExports(body, mutableExports);
+    const namespaceExports =
+        getNamespaceExports(body, this.mutableNames, fullyQualifiedName);
 
     // Replace nodePath with some number of namespace exports. Easiest way
     // is to insert the exports before nodePath, then remove nodePath.
@@ -292,7 +290,8 @@ function getAssignmentValue(node: estree.Node): estree.Expression|undefined {
  */
 function getNamespaceExports(
     namespace: estree.ObjectExpression,
-    mutableExports?: ReadonlyArray<string>) {
+    mutableNames: ReadonlySet<string>,
+    namespaceName: string) {
   const exportRecords: {name: string, node: estree.Node}[] = [];
 
   for (const {key, value} of namespace.properties) {
@@ -301,13 +300,14 @@ function getNamespaceExports(
       continue;
     }
     const name = key.name;
+    const fullName = `${namespaceName}.${name}`;
     if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' ||
         value.type === 'Literal') {
-      const isMutable = !!(mutableExports && mutableExports.includes(name));
       exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
+            mutableNames.has(fullName) ? 'let' : 'const',
+            [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {
       const func = value;
@@ -323,7 +323,8 @@ function getNamespaceExports(
       exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            'const', [jsc.variableDeclarator(key, value)]))
+            mutableNames.has(fullName) ? 'let' : 'const',
+            [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'Identifier') {
       exportRecords.push({
@@ -374,4 +375,32 @@ function getNamespaceDeclaration(
     };
   }
   return undefined;
+}
+
+function getMutableNames(program: estree.Program): Set<string> {
+  const mutable = new Set<string>();
+  const assignedOnce = new Set<string>();
+  astTypes.visit(program, {
+    visitAssignmentExpression(path: NodePath<estree.AssignmentExpression>) {
+      const memberName = getMemberName(path.node.left);
+      if (memberName !== undefined) {
+        if (assignedOnce.has(memberName)) {
+          mutable.add(memberName);
+        } else {
+          assignedOnce.add(memberName);
+        }
+      }
+      this.traverse(path);
+    },
+
+    visitUpdateExpression(path: NodePath<estree.UpdateExpression>) {
+      const memberName = getMemberName(path.node.argument);
+      if (memberName) {
+        mutable.add(memberName);
+      }
+      this.traverse(path);
+    }
+  });
+
+  return mutable;
 }
