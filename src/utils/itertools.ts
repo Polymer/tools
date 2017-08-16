@@ -17,40 +17,56 @@
 A set of tools for working with iterables. Will break out into its own module
 once it's been proven here.
 
+TODO(rictic): evaluate https://github.com/ReactiveX/IxJS and potentially replace
+    this file with that library.
+
 Design Principles:
 
   - Only work with iterables.
-  - Each function does one and only one thing.
+  - Each method does one and only one thing.
   - If something can be done as a one liner in standard javascript then it does
     not need to be a function here.
-    - e.g. `const val = first(iterable)` can just be written
-           `const [val] = iterable;` so we don't need a `first` function.
-  - Assume correct code. For example, predicates must return `true` and `false`
+    - e.g. `const val = iterable.first()` can just be written
+           `const [val] = iterable;` so we don't need a `first` method.
+  - Assume typed code. For example, predicates must return `true` and `false`
     rather than truthy and falsy values.
 
 */
 
+
+// TODO(rictic): short function like iter() as shorthand for the constructor?
+// TODO(rictic): consider a first() method, as it's chainable.
+interface Generator<V> {
+  (): Iterator<V>;
+}
+
+function isIterable(x: any): x is Iterable<any> {
+  return !!x[Symbol.iterator];
+}
+
 export class FluentIterable<V> implements Iterable<V> {
-  private readonly wrappedIterable: Iterable<V>;
-  constructor(wrappedIterable: Iterable<V>) {
-    this.wrappedIterable = wrappedIterable;
+  private readonly _wrappedIterable: Iterable<V>|Generator<V>;
+  constructor(wrappedIterable: Iterable<V>|Generator<V>) {
+    this._wrappedIterable = wrappedIterable;
+    const w = wrappedIterable;
+    if (isIterable(w)) {
+      this[Symbol.iterator] = () => w[Symbol.iterator]();
+    } else {
+      this[Symbol.iterator] = w;
+    }
   }
 
-  [Symbol.iterator]() {
-    return this.wrappedIterable[Symbol.iterator]();
-  }
+  [Symbol.iterator]: Generator<V>;
 
   /**
    * Create one iterable from many by yielding all of the elements of each in
    * turn.
    */
   static chain<V>(iterables: Iterable<Iterable<V>>): FluentIterable<V> {
-    return new FluentIterable({
-      * [Symbol.iterator]() {
-          for (const iterable of iterables) {
-            yield* iterable;
-          }
-        }
+    return new FluentIterable(function*() {
+      for (const iterable of iterables) {
+        yield* iterable;
+      }
     });
   }
 
@@ -59,14 +75,12 @@ export class FluentIterable<V> implements Iterable<V> {
    */
   map<U>(mapper: (v: V, idx: number) => U): FluentIterable<U> {
     const self = this;
-    return new FluentIterable({
-      * [Symbol.iterator]() {
-          let i = 0;
-          for (const val of self) {
-            yield mapper(val, i);
-            i++;
-          }
-        }
+    return new FluentIterable(function*() {
+      let i = 0;
+      for (const val of self) {
+        yield mapper(val, i);
+        i++;
+      }
     });
   }
 
@@ -79,14 +93,12 @@ export class FluentIterable<V> implements Iterable<V> {
 
   filter(predicate: (v: V) => boolean): FluentIterable<V> {
     const self = this;
-    return new FluentIterable({
-      * [Symbol.iterator]() {
-          for (const val of self) {
-            if (predicate(val) === true) {
-              yield val;
-            }
-          }
+    return new FluentIterable(function*() {
+      for (const val of self) {
+        if (predicate(val) === true) {
+          yield val;
         }
+      }
     });
   }
 
@@ -98,17 +110,15 @@ export class FluentIterable<V> implements Iterable<V> {
    */
   take(count: number): FluentIterable<V> {
     const self = this;
-    return new FluentIterable({
-      * [Symbol.iterator]() {
-          let remaining = count;
-          for (const val of self) {
-            if (remaining <= 0) {
-              return;
-            }
-            yield val;
-            remaining--;
-          }
+    return new FluentIterable(function*() {
+      let remaining = count;
+      for (const val of self) {
+        if (remaining <= 0) {
+          return;
         }
+        yield val;
+        remaining--;
+      }
     });
   }
 
@@ -121,16 +131,14 @@ export class FluentIterable<V> implements Iterable<V> {
 
   takeWhile(predicate: (v: V) => boolean): FluentIterable<V> {
     const self = this;
-    return new FluentIterable({
-      * [Symbol.iterator]() {
-          for (const val of self) {
-            if (predicate(val) === true) {
-              yield val;
-            } else {
-              return;
-            }
-          }
+    return new FluentIterable(function*() {
+      for (const val of self) {
+        if (predicate(val) === true) {
+          yield val;
+        } else {
+          return;
         }
+      }
     });
   }
 
@@ -157,8 +165,8 @@ export class FluentIterable<V> implements Iterable<V> {
 
   /** Return the final value in the iterable, or undefined if it's empty. */
   last(): V|undefined {
-    if (Array.isArray(this.wrappedIterable)) {
-      return this.wrappedIterable[this.wrappedIterable.length - 1];
+    if (Array.isArray(this._wrappedIterable)) {
+      return this._wrappedIterable[this._wrappedIterable.length - 1];
     }
     let result = undefined;
     for (const value of this) {
