@@ -72,12 +72,13 @@ function rework(line: string) {
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
   const results = await converter.convert();
-  const resultPaths = results.keys();
+  const resultPaths = new FluentIterable(results.entries())
+                          .filter(([_, v]) => v !== undefined)
+                          .map(([k]) => k);
   const expectedPaths = new FluentIterable(walkDir(expectedDir))
                             .map((f) => `./${f}` as ConvertedDocumentUrl)
                             .filter((f) => f !== './package.json');
-  const allPathsUnsorted = new Set(
-      FluentIterable.chain<ConvertedDocumentUrl>([resultPaths, expectedPaths]));
+  const allPathsUnsorted = new Set(resultPaths.concat(expectedPaths));
   const allPaths = [...allPathsUnsorted].sort((a, b) => a.localeCompare(b));
   for (const outPath of allPaths) {
     const jsContents = results.get(outPath);
