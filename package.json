@@ -1,15 +1,15 @@
 {
-  "name": "@polymer/html2js",
+  "name": "polymer-modulizer",
   "description": "Converts Bower + HTML Imports packages to npm + JS modules",
   "version": "0.2.1",
   "author": "The Polymer Project Authors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Polymer/html2js.git"
+    "url": "https://github.com/Polymer/polymer-modulizer.git"
   },
   "license": "BSD-3-Clause",
   "bin": {
-    "html2js": "bin/html2js.js"
+    "modulizer": "bin/modulizer.js"
   },
   "scripts": {
     "build": "tsc",

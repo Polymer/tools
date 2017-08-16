@@ -62,7 +62,7 @@ typings/
 
 /lib
 /fixtures/generated
-/html2js_workspace
+/modulizer_workspace
 
 src/gen-ts-types/def/*.js
 

@@ -1,4 +1,4 @@
-A list of known limitations and behavior changes when using HTML2JS:
+A list of known limitations and behavior changes when using polymer-modulizer:
 
 ## Common
 
@@ -17,7 +17,7 @@ A list of known limitations and behavior changes when using HTML2JS:
 ## Rare
 
 - Evaluation order
-  - An HTML Import could interleave HTML with JS. html2js injects all HTML into the document first, then it runs the rest of the script in the file.
+  - An HTML Import could interleave HTML with JS. polymer-modulizer injects all HTML into the document first, then it runs the rest of the script in the file.
   - JS Modules are deferred, so they run after all HTML has been parsed, and `document.write` is a noop.
 
 - ElementClass.template

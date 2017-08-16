@@ -83,7 +83,8 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
     }
     try {
       const bowerJson = readJson(bowerPath);
-      // TODO(https://github.com/Polymer/html2js/issues/122): unhardcode
+      // TODO(https://github.com/Polymer/polymer-modulizer/issues/122):
+      // unhardcode
       const bowerName = bowerJson.name;
 
       let depMapping: {npm: string}|undefined = dependencyMap[bowerName];

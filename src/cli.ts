@@ -48,9 +48,9 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     name: 'workspace-dir',
     alias: 'd',
     type: String,
-    defaultValue: 'html2js_workspace',
+    defaultValue: 'modulizer_workspace',
     description:
-        'Override the default path "html2js_workspace" where the repositories ' +
+        'Override the default path "modulizer_workspace" where the repositories ' +
         'will be cloned to.'
   },
   {
@@ -73,7 +73,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   {
     name: 'out',
     type: String,
-    defaultValue: 'html2js_out',
+    defaultValue: 'modulizer_out',
     description: 'The directory to write converted files to.'
   },
   {name: 'in', type: String, description: 'The directory to convert.'},
@@ -149,10 +149,10 @@ export async function run() {
     const getUsage = require('command-line-usage');
     const usage = getUsage([
       {
-        header: 'html2js',
+        header: 'modulizer',
         content: `Convert HTML Imports to JavaScript modules
 
-If no GitHub repository names are given, html2js converts the current
+If no GitHub repository names are given, modulizer converts the current
 directory as a package. If repositories are provided, they are cloned into a
 workspace directory as sibling folders as they would be in a Bower
 installation.
