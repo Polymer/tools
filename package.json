@@ -50,6 +50,7 @@
     "estraverse": "^4.2.0",
     "github": "^9.2.0",
     "inquirer": "^3.2.0",
+    "ix": "^2.0.1",
     "jscodeshift": "^0.3.30",
     "mkdirp": "^0.5.1",
     "mocha": "^3.4.1",

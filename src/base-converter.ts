@@ -13,6 +13,7 @@
  */
 
 import * as estree from 'estree';
+import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
 import {Analysis, Document} from 'polymer-analyzer';
 
@@ -20,7 +21,6 @@ import {DocumentConverter} from './document-converter';
 import {ConversionOutput, JsExport} from './js-module';
 import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
 import {getNamespaces} from './util';
-import {FluentIterable} from './utils/itertools';
 
 export interface BaseConverterOptions {
   /**
@@ -81,14 +81,14 @@ export abstract class BaseConverter {
     this.excludes = new Set(options.excludes!);
     this.referenceExcludes = new Set(options.referenceExcludes!);
 
-    const importedFiles =
-        new FluentIterable(this._analysis.getFeatures(
-                               {kind: 'import', externalPackages: false}))
-            .map((imp) => imp.url)
-            .filter(
-                (url) =>
-                    !(url.startsWith('bower_components') ||
-                      url.startsWith('node_modules')));
+    const importedFiles = IterableX
+                              .from(this._analysis.getFeatures(
+                                  {kind: 'import', externalPackages: false}))
+                              .map((imp) => imp.url)
+                              .filter(
+                                  (url) =>
+                                      !(url.startsWith('bower_components') ||
+                                        url.startsWith('node_modules')));
     this.includes = new Set(importedFiles);
   }
 

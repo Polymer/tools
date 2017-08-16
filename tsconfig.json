@@ -3,7 +3,8 @@
     "target": "es2017",
     "module": "commonjs",
     "lib": [
-      "es2017"
+      "es2017",
+      "esnext.asynciterable"
     ],
     "sourceMap": true,
     "outDir": "./lib",

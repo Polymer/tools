@@ -17,6 +17,7 @@ import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {BlockStatement, Identifier, ImportDeclaration, MemberExpression, Node, Program} from 'estree';
+import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
 import * as parse5 from 'parse5';
 import * as path from 'path';
@@ -31,7 +32,6 @@ import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
 import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
-import {FluentIterable} from './utils/itertools';
 
 /**
  * Pairs a subtree of an AST (`path` as a `NodePath`) to be replaced with a
@@ -170,7 +170,7 @@ export class DocumentConverter {
    * Note: Imports that are not found are not returned by the analyzer.
    */
   private getHtmlImports() {
-    return new FluentIterable(this.document.getFeatures({kind: 'html-import'}))
+    return IterableX.from(this.document.getFeatures({kind: 'html-import'}))
         .filter(
             (f: Import) =>
                 !this.analysisConverter.excludes.has(f.document.url));
@@ -213,10 +213,11 @@ export class DocumentConverter {
     this.rewriteExcludedReferences(program);
     this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
     this.rewriteReferencesToNamespaceMembers(
-        program, new Set(FluentIterable.chain([
-          localNamespaceNames,
-          namespaceNames,
-        ])));
+        program,
+        new Set(IterableX.from(localNamespaceNames)
+                    .concat(
+                        namespaceNames,
+                        )));
 
     this.warnOnDangerousReferences(program);
 
@@ -280,10 +281,8 @@ export class DocumentConverter {
       this.rewriteExcludedReferences(program);
       this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
       this.rewriteReferencesToNamespaceMembers(
-          program, new Set(FluentIterable.chain([
-            localNamespaceNames,
-            namespaceNames,
-          ])));
+          program,
+          new Set(IterableX.from(localNamespaceNames).concat(namespaceNames)));
       this.warnOnDangerousReferences(program);
 
       if (!wereImportsAdded) {
@@ -796,7 +795,7 @@ export class DocumentConverter {
       program: estree.Program,
       exportMigrationRecords: Iterable<NamespaceMemberToExport>) {
     const rewriteMap = new Map<string|undefined, string>(
-        new FluentIterable(exportMigrationRecords)
+        IterableX.from(exportMigrationRecords)
             .filter((m) => m.es6ExportName !== '*')
             .map(
                 (m) => [m.oldNamespacedName,
@@ -959,8 +958,8 @@ export class DocumentConverter {
           convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
 
       const references = importedReferences.get(importedJsDocumentUrl);
-      const namedExports = new Set(
-          new FluentIterable(references || []).map((ref) => ref.target));
+      const namedExports =
+          new Set(IterableX.from(references || []).map((ref) => ref.target));
 
       const jsFormattedImportUrl =
           this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
@@ -976,8 +975,8 @@ export class DocumentConverter {
       }
 
       const references = importedReferences.get(jsImplicitImportUrl);
-      const namedExports = new Set(
-          new FluentIterable(references || []).map((ref) => ref.target));
+      const namedExports =
+          new Set(IterableX.from(references || []).map((ref) => ref.target));
 
       const jsFormattedImportUrl = this.formatImportUrl(jsImplicitImportUrl);
       jsImportDeclarations.push(...getImportDeclarations(
