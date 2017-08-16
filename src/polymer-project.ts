@@ -110,9 +110,7 @@ export class PolymerProject {
    * of all input files that pass through.
    */
   addPushManifest(outPath?: string, basePath?: string): NodeJS.ReadWriteStream {
-    // TODO(rictic): remove casts after this lands:
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
-    return new AddPushManifest(this.config, outPath, basePath) as any;
+    return new AddPushManifest(this.config, outPath, basePath);
   }
 
   /**
@@ -121,16 +119,12 @@ export class PolymerProject {
    * to browsers that support the native Custom Elements API.
    */
   addCustomElementsEs5Adapter(): NodeJS.ReadWriteStream {
-    // TODO(rictic): remove casts after this lands:
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
-    return new CustomElementsEs5AdapterInjector() as any;
+    return new CustomElementsEs5AdapterInjector();
   }
 
   addBabelHelpersInEntrypoint(entrypoint: string = this.config.entrypoint):
       NodeJS.ReadWriteStream {
-    // TODO(rictic): remove casts after this lands:
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
-    return new BabelHelpersInjector(entrypoint) as any;
+    return new BabelHelpersInjector(entrypoint);
   }
 
   /**
@@ -139,6 +133,6 @@ export class PolymerProject {
    * `<base>` tag does not already exist.
    */
   updateBaseTag(baseHref: string): NodeJS.ReadWriteStream {
-    return new BaseTagUpdater(this.config.entrypoint, baseHref) as any;
+    return new BaseTagUpdater(this.config.entrypoint, baseHref);
   }
 }

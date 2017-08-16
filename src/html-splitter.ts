@@ -102,14 +102,17 @@ export class SplitFile {
     this.outstandingPartCount++;
   }
 
-  setPartContent(path: string, content: string): void {    
-    console.assert(this.parts.get(path) !== undefined, 
-    	`Trying to save unexpected file part "${path}".`);
-    console.assert(this.parts.get(path) === null, 
-    	`Trying to save already-saved file part "${path}".`);
-    console.assert(this.outstandingPartCount > 0, 
-    	`Trying to save valid file part "${path}", ` + 
-    	`but somehow no file parts are outstanding.`);
+  setPartContent(path: string, content: string): void {
+    console.assert(
+        this.parts.get(path) !== undefined,
+        `Trying to save unexpected file part "${path}".`);
+    console.assert(
+        this.parts.get(path) === null,
+        `Trying to save already-saved file part "${path}".`);
+    console.assert(
+        this.outstandingPartCount > 0,
+        `Trying to save valid file part "${path}", ` +
+            `but somehow no file parts are outstanding.`);
     this.parts.set(path, content);
     this.outstandingPartCount--;
   }

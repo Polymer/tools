@@ -157,10 +157,6 @@ export class BuildAnalyzer {
       nodir: true,
     });
 
-    // TODO(rictic): there are two extremely hacky `as any` casts here.
-    //     remove them once this PR has landed:
-    //     https://github.com/DefinitelyTyped/DefinitelyTyped/pull/16499
-
     // _sourcesProcessingStream: Pipe the sources stream through...
     //   1. The resolver stream, to resolve each file loaded via the analyzer
     //   2. The analyzer stream, to analyze app fragments for dependencies
@@ -174,7 +170,7 @@ export class BuildAnalyzer {
                 (err: Error) =>
                     this._sourcesProcessingStream.emit('error', err))
             .on('end', this.onSourcesStreamComplete.bind(this))
-            .pipe(new AnalyzeTransform(this)) as any;
+            .pipe(new AnalyzeTransform(this));
 
     // _dependenciesProcessingStream: Pipe the dependencies stream through...
     //   1. The vinyl loading stream, to load file objects from file paths
@@ -188,7 +184,7 @@ export class BuildAnalyzer {
             .on('error',
                 (err: Error) =>
                     this._dependenciesProcessingStream.emit('error', err))
-            .pipe(new ResolveTransform(this)) as any;
+            .pipe(new ResolveTransform(this));
   }
 
   /**
