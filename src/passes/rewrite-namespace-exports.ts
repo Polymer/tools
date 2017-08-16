@@ -122,7 +122,7 @@ class RewriteNamespaceExportsPass {
         name = 'Polymer';
       }
       nodePath.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
-          'const',
+          this.mutableNames.has(correctedNamespaceName) ? 'let' : 'const',
           [jsc.variableDeclarator(jsc.identifier(name), exportedExpression)])));
       this.exportMigrationRecords.push(
           {oldNamespacedName: correctedNamespaceName, es6ExportName: name});
@@ -140,12 +140,11 @@ class RewriteNamespaceExportsPass {
     this.namespaceNames.add(fullyQualifiedName);
 
     path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
-        'const',
+        this.mutableNames.has(fullyQualifiedName) ? 'let' : 'const',
         [jsc.variableDeclarator(jsc.identifier(nameExportedAs), value)])));
     this.exportMigrationRecords.push(
         {oldNamespacedName: fullyQualifiedName, es6ExportName: nameExportedAs});
   }
-
 
   /**
    * Given an object literal, like `{foo: x, bar: y}`, converts it into a

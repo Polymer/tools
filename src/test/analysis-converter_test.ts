@@ -1695,9 +1695,10 @@ new foo().foo();
         `
       });
 
+      // Note(rictic): we don't yet get that `baz` can't be `const` here.
       assertSources(await convert(), {
         './settings.js': `
-export const foo = 'default';
+export let foo = 'default';
 
 export const setFoo = function(newFoo) {
   foo = newFoo;
