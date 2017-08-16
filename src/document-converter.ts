@@ -1131,6 +1131,9 @@ function domModuleCanBeInlined(domModule: parse5.ASTNode) {
   let templateTagsSeen = 0;
   for (const node of domModule.childNodes || []) {
     if (node.tagName === 'template') {
+      if (node.attrs.length > 0) {
+        return false;  // attributes on template
+      }
       templateTagsSeen++;
     } else if (node.tagName === 'script') {
       // this is fine, scripts are handled elsewhere

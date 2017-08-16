@@ -2130,6 +2130,55 @@ export const bar = (function() {
 `,
       });
     });
+
+    testName = `don't inline nonstandard dom-modules`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <dom-module id="dom-module-attr" attr></dom-module>
+          <dom-module id="just-fine">
+            <template>Hello world</template>
+          </dom-module>
+          <dom-module id="multiple-templates">
+            <template></template>
+            <template></template>
+          </dom-module>
+          <script>
+            customElements.define(
+                'dom-module-attr', class extends HTMLElement{});
+            customElements.define(
+                'just-fine', class extends HTMLElement{});
+            customElements.define(
+                'multiple-templates', class extends HTMLElement{});
+          </script>
+        `
+      });
+      assertSources(await convert(), {
+        './test.js': `
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+
+$_documentContainer.innerHTML = \`<dom-module id="dom-module-attr" attr=""></dom-module><dom-module id="multiple-templates">
+            <template></template>
+            <template></template>
+          </dom-module>\`;
+
+document.head.appendChild($_documentContainer);
+customElements.define(
+    'dom-module-attr', class extends HTMLElement{});
+customElements.define(
+    'just-fine', class extends HTMLElement{
+  static get template() {
+    return \`
+Hello world
+\`;
+  }
+});
+customElements.define(
+    'multiple-templates', class extends HTMLElement{});
+`,
+      });
+    });
   });
 
   suite('fixtures', () => {
