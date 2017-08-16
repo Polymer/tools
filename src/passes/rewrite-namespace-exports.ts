@@ -273,12 +273,12 @@ function getLocalNamesOfLocallyDeclaredNamespaces(document: Document) {
  */
 function getAssignmentValue(node: estree.Node): estree.Expression|undefined {
   if (node.type === 'VariableDeclaration' && node.declarations.length > 0) {
-    // case: const n = {...}
+    // case: `const n = {...}`
     return node.declarations[0].init || undefined;
   } else if (
       node.type === 'ExpressionStatement' &&
       node.expression.type === 'AssignmentExpression') {
-    // case: n = {...}
+    // case: `n = {...}`
     return node.expression.right;
   }
   return;
@@ -376,10 +376,19 @@ function getNamespaceDeclaration(
   return undefined;
 }
 
+/**
+ * Find all nested names that are written to multiple times. i.e. they must all
+ * be rewritten as `let` and can't be represented as a `const`.
+ *
+ * We used the heuristic that they're assigned to more than once, or they're
+ * updated in a `++` or `--` operation.
+ */
 function getMutableNames(program: estree.Program): Set<string> {
   const mutable = new Set<string>();
   const assignedOnce = new Set<string>();
   astTypes.visit(program, {
+
+    /** DeeplyNestedNamespace = 'something'; */
     visitAssignmentExpression(path: NodePath<estree.AssignmentExpression>) {
       const memberName = getMemberName(path.node.left);
       if (memberName !== undefined) {
@@ -392,6 +401,7 @@ function getMutableNames(program: estree.Program): Set<string> {
       this.traverse(path);
     },
 
+    /** Unary '++' or '--' */
     visitUpdateExpression(path: NodePath<estree.UpdateExpression>) {
       const memberName = getMemberName(path.node.argument);
       if (memberName) {
