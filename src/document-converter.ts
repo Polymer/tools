@@ -148,6 +148,8 @@ export class DocumentConverter {
   // Dependencies not to convert, because they already have been / are currently
   // being converted.
   private readonly visited: Set<OriginalDocumentUrl>;
+
+  private readonly _claimedDomModules = new Set<parse5.ASTNode>();
   constructor(
       analysisConverter: ConverterMetadata, document: Document,
       packageName: string, packageType: 'element'|'application',
@@ -455,13 +457,10 @@ export class DocumentConverter {
       ...body.childNodes!.filter((n: parse5.ASTNode) => n.tagName !== undefined)
     ];
 
-    const usedDomModules =
-        new Set(new FluentIterable(this.document.getFeatures({
-                  kind: 'polymer-element'
-                })).map((el) => el.domModule));
     const genericElements = filterClone(
         elements,
-        (e) => !(elementBlacklist.has(e.tagName) || usedDomModules.has(e)));
+        (e) => !(
+            elementBlacklist.has(e.tagName) || this._claimedDomModules.has(e)));
 
     if (genericElements.length === 0) {
       return;
@@ -535,6 +534,10 @@ export class DocumentConverter {
       if (domModule === undefined) {
         continue;
       }
+      if (!domModuleCanBeInlined(domModule)) {
+        continue;
+      }
+      this._claimedDomModules.add(domModule);
       const template = dom5.query(domModule, (e) => e.tagName === 'template');
       if (template === null) {
         continue;
@@ -1119,4 +1122,28 @@ function collectIdentifierNames(
     },
   });
   return identifiers;
+}
+
+function domModuleCanBeInlined(domModule: parse5.ASTNode) {
+  if (domModule.attrs.some((a) => a.name !== 'id')) {
+    return false;  // attributes other than 'id' on dom-module
+  }
+  let templateTagsSeen = 0;
+  for (const node of domModule.childNodes || []) {
+    if (node.tagName === 'template') {
+      templateTagsSeen++;
+    } else if (node.tagName === 'script') {
+      // this is fine, scripts are handled elsewhere
+    } else if (
+        dom5.isTextNode(node) && dom5.getTextContent(node).trim() === '') {
+      // empty text nodes are fine
+    } else {
+      return false;  // anything else, we can't convert it
+    }
+  }
+  if (templateTagsSeen > 1) {
+    return false;  // more than one template tag, can't convert
+  }
+
+  return true;
 }
