@@ -28,7 +28,7 @@ export const polymerFileOverrides: ReadonlyMap<string, string> = new Map([
 
   // Temporary workaround while we consider better options for the
   // WebComponentsReady event.
-  // See: https://github.com/Polymer/html2js/issues/111
+  // See: https://github.com/Polymer/polymer-modulizer/issues/111
   [
     'lib/utils/unresolved.html',
     `

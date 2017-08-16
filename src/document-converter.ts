@@ -604,7 +604,7 @@ export class DocumentConverter {
         console.warn(
             `Cycle in dependency graph found where ` +
             `${this.originalUrl} imports ${documentUrl}.\n` +
-            `    html2js does not yet support rewriting references among ` +
+            `    modulizer does not yet support rewriting references among ` +
             `cyclic dependencies.`);
         continue;
       }

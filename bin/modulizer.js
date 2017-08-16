@@ -16,7 +16,7 @@
 
 'use strict';
 
-process.title = 'html2js';
+process.title = 'modulizer';
 
 require('source-map-support').install();
 
