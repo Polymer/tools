@@ -54,7 +54,8 @@ export function configureConverter(
           'Polymer.Settings',
           'Polymer.log',
           'Polymer.rootPath',
-          'Polymer.sanitizeDOMValue'
+          'Polymer.sanitizeDOMValue',
+          'Polymer.Collection',
         ],
   });
 }
