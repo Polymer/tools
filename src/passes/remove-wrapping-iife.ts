@@ -13,36 +13,35 @@
  */
 
 import * as estree from 'estree';
-import {isUseStrict} from '../util';
+import {isUseStrict, toplevelStatements} from '../util';
 
 /**
- * If the given program consists of a single IIFE, move its contents up and out,
- * as an ES6 module doesn't need an IIFE to contain its local variables.
+ * Unwrap toplevel IIFEs.
  *
- * @param program The program. Is mutated.
+ * An ES6 module doesn't need IIFEs to contain its local variables.
  */
-export function removeWrappingIIFE(program: estree.Program) {
-  if (program.body.length !== 1) {
-    return;
-  }
-  const statement = program.body[0];
-  if (statement.type !== 'ExpressionStatement' ||
-      statement.expression.type !== 'CallExpression') {
-    return;
-  }
-  const callee = statement.expression.callee;
-  if ((callee.type !== 'FunctionExpression' &&
-       callee.type !== 'ArrowFunctionExpression')) {
-    return;
-  }
-  if (callee.body.type !== 'BlockStatement' || callee.async ||
-      callee.generator || callee.params.length > 0) {
-    return;
-  }
-  const body = callee.body.body;
-  if (body.length > 0 && isUseStrict(body[0])) {
-    program.body = body.slice(1);
-  } else {
-    program.body = body;
+export function removeWrappingIIFEs(program: estree.Program) {
+  for (const path of toplevelStatements(program)) {
+    const statement = path.node;
+    if (statement.type !== 'ExpressionStatement' ||
+        statement.expression.type !== 'CallExpression') {
+      continue;
+    }
+    const callee = statement.expression.callee;
+    if ((callee.type !== 'FunctionExpression' &&
+         callee.type !== 'ArrowFunctionExpression')) {
+      continue;
+    }
+    if (callee.body.type !== 'BlockStatement' || callee.async ||
+        callee.generator || callee.params.length > 0) {
+      continue;
+    }
+    for (const bodyStatement of callee.body.body) {
+      if (isUseStrict(bodyStatement)) {
+        continue;
+      }
+      path.insertBefore(bodyStatement);
+    }
+    path.prune();
   }
 }

@@ -28,7 +28,7 @@ import {ConverterMetadata} from './converter-metadata';
 import {ConversionOutput, JsExport, NamespaceMemberToExport} from './js-module';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
-import {removeWrappingIIFE} from './passes/remove-wrapping-iife';
+import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
 import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
@@ -191,7 +191,7 @@ export class DocumentConverter {
     const program = jsc.program(combinedToplevelStatements);
     this.convertDependencies();
     removeUnnecessaryEventListeners(program);
-    removeWrappingIIFE(program);
+    removeWrappingIIFEs(program);
     const importedReferences = this.collectNamespacedReferences(program);
     // Add imports for every non-module <script> tag to just import the file
     // itself.
@@ -408,7 +408,7 @@ export class DocumentConverter {
 
     rewriteToplevelThis(program);
     removeUnnecessaryEventListeners(program);
-    removeWrappingIIFE(program);
+    removeWrappingIIFEs(program);
     const importedReferences = this.collectNamespacedReferences(program);
     const wereImportsAdded = this.addJsImports(program, importedReferences);
     // Don't convert the HTML.
