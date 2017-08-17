@@ -9,7 +9,11 @@
     "**/node_modules": true,
     "**/bower_components": true,
     "lib/**": true,
-    "html2js_workspace/**": true
+    "html2js_workspace/**": true,
+    "modulizer_workspace/**": true,
+    "untouched_workspace/**": true,
+    "modularizer_workspace/**": true,
+    "fixtures/generated/**": true
   },
   "html.format.enable": false
 }
