@@ -245,6 +245,7 @@ export class DocumentConverter {
   convertAsToplevelHtmlDocument(): Iterable<ConversionOutput> {
     this.convertDependencies();
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
+    const p = dom5.predicates;
 
     const edits: Array<Edit> = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
@@ -261,35 +262,56 @@ export class DocumentConverter {
       const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
       const file = recast.parse(script.parsedDocument.contents);
-      const program = file.program;
+      const program = this.rewriteInlineScript(file.program);
 
-      if (this.containsWriteToGlobalSettingsObject(program)) {
+      if (program === undefined) {
         continue;
       }
 
-      rewriteToplevelThis(program);
-      removeUnnecessaryEventListeners(program);
-      removeWrappingIIFE(program);
-      const importedReferences = this.collectNamespacedReferences(program);
-      const wereImportsAdded = this.addJsImports(program, importedReferences);
-      // Don't convert the HTML.
-      // Don't inline templates, they're fine where they are.
+      const newScriptTag =
+          parse5.treeAdapters.default.createElement('script', '', []);
+      dom5.setAttribute(newScriptTag, 'type', 'module');
+      dom5.setTextContent(
+          newScriptTag,
+          '\n' +
+              recast
+                  .print(
+                      program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
+                  .code +
+              '\n');
+      const replacementText = serializeNode(newScriptTag);
+      edits.push({offsets, replacementText});
+    }
 
-      const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
-          rewriteNamespacesAsExports(
-              program, this.document, this.analysisConverter.namespaces);
-      for (const namespaceName of namespaceNames) {
-        this.rewriteNamespaceThisReferences(program, namespaceName);
+    const demoSnippetTemplates = dom5.nodeWalkAll(
+        htmlDocument.ast,
+        p.AND(
+            p.hasTagName('template'),
+            p.parentMatches(p.hasTagName('demo-snippet'))));
+    const scriptsToConvert = [];
+    for (const demoSnippetTemplate of demoSnippetTemplates) {
+      scriptsToConvert.push(...dom5.nodeWalkAll(
+          demoSnippetTemplate,
+          p.hasTagName('script'),
+          [],
+          dom5.childNodesIncludeTemplate));
+    }
+    for (const astNode of scriptsToConvert) {
+      if (!isLegacyJavascriptTag(astNode)) {
+        continue;
       }
-      this.rewriteExcludedReferences(program);
-      this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
-      this.rewriteReferencesToNamespaceMembers(
-          program,
-          new Set(IterableX.from(localNamespaceNames).concat(namespaceNames)));
-      this.warnOnDangerousReferences(program);
+      const sourceRange =
+          astNode ? htmlDocument.sourceRangeForNode(astNode) : undefined;
+      if (!sourceRange) {
+        continue;  // nothing we can do about scripts without known positions
+      }
+      const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
-      if (!wereImportsAdded) {
-        continue;  // no imports, no reason to convert to a module
+      const file = recast.parse(dom5.getTextContent(astNode));
+      const program = this.rewriteInlineScript(file.program);
+
+      if (program === undefined) {
+        continue;
       }
 
       const newScriptTag =
@@ -354,7 +376,6 @@ export class DocumentConverter {
     // order. So we'll convert all of the style tags into scripts that insert
     // those styles, ensuring that we also preserve the relative order of
     // styles.
-    const p = dom5.predicates;
     const hasIncludedStyle = p.AND(
         p.hasTagName('style'),
         p.OR(
@@ -378,6 +399,39 @@ export class DocumentConverter {
       url: ('./' + this.originalUrl) as ConvertedDocumentUrl,
       source: contents,
     }];
+  }
+
+  private rewriteInlineScript(program: estree.Program) {
+    if (this.containsWriteToGlobalSettingsObject(program)) {
+      return undefined;
+    }
+
+    rewriteToplevelThis(program);
+    removeUnnecessaryEventListeners(program);
+    removeWrappingIIFE(program);
+    const importedReferences = this.collectNamespacedReferences(program);
+    const wereImportsAdded = this.addJsImports(program, importedReferences);
+    // Don't convert the HTML.
+    // Don't inline templates, they're fine where they are.
+
+    const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
+        rewriteNamespacesAsExports(
+            program, this.document, this.analysisConverter.namespaces);
+    for (const namespaceName of namespaceNames) {
+      this.rewriteNamespaceThisReferences(program, namespaceName);
+    }
+    this.rewriteExcludedReferences(program);
+    this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
+    this.rewriteReferencesToNamespaceMembers(
+        program,
+        new Set(IterableX.from(localNamespaceNames).concat(namespaceNames)));
+    this.warnOnDangerousReferences(program);
+
+    if (!wereImportsAdded) {
+      return undefined;  // no imports, no reason to convert to a module
+    }
+
+    return program;
   }
 
   private *

@@ -2225,6 +2225,44 @@ console.log(this);
       });
     });
 
+    testName = `convert scripts inside demo snippet scripts`;
+    test(testName, async () => {
+      setSources({
+        'index.html': `
+          <link rel="import" href="./polymer.html">
+          <demo-snippet>
+            <template>
+              <script>
+                console.log(Polymer.foo);
+              </script>
+            </template>
+          </demo-snippet>
+        `,
+        'polymer.html': `
+          <script>
+            /** @namespace */
+            const Polymer = {};
+            Polymer.foo = 10;
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        './index.html': `
+
+          <script type="module" src="./polymer.js"></script>
+          <demo-snippet>
+            <template>
+              <script type="module">
+import { foo } from './polymer.js';
+console.log(foo);
+</script>
+            </template>
+          </demo-snippet>
+        `,
+      });
+    });
+
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
           `only of an element definition`;
