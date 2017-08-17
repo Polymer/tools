@@ -2263,6 +2263,28 @@ console.log(foo);
       });
     });
 
+    testName = `Unwrap multiple IIFEs`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              console.log('one');
+            })();
+            (function() {
+              console.log('two');
+            })();
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+console.log('one');
+console.log('two');
+`,
+      });
+    });
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
           `only of an element definition`;
