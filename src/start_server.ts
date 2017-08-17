@@ -365,7 +365,7 @@ export function getApp(options: ServerOptions): express.Express {
   const forceCompile = options.compile === 'always';
   if (options.compile === 'auto' || forceCompile) {
     app.use('*', injectCustomElementsEs5Adapter(forceCompile));
-    app.use('*', babelCompile(forceCompile));
+    app.use('*', babelCompile(forceCompile, options.componentUrl));
   }
 
   app.use(`/${componentUrl}/`, polyserve);

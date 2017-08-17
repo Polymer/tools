@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <script src="before.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="after.js"></script>
+</head>
+
+<body>
+  <script type="module">
+    import {foo} from 'lib-module.js';
+    doSomething(foo);
+  </script>
+
+  <script type="module">
+    import {foo} from 'lib-module.js';
+    doSomethingElse(foo);
+  </script>
+
+  <script>inlineNotModuleStuff();<script>
+
+  <script src="external.js" type="module"></script>
+</body>
+</html>

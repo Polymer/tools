@@ -1,0 +1,63 @@
+<!DOCTYPE html><html><head>
+  <script src="before.js"></script>
+  
+<script>
+  // Injected by Polyserve.
+  (function() {
+    window.WCT = window.WCT || {};
+    var originalWaitFor = window.WCT.waitFor;
+    window.WCT.waitFor = function(cb) {
+      window._wctCallback = function() {
+        if (originalWaitFor) {
+          originalWaitFor(cb);
+        } else {
+          cb();
+        }
+      };
+    };
+  }());
+</script>
+<script src="../../web-component-tester/browser.js"></script>
+  <script src="after.js"></script>
+</head>
+
+<body>
+  <script src="/components/requirejs/require.js"></script>
+<script>
+  // Injected by Polyserve.
+  (function() {
+    var originalRequire = window.require;
+    var moduleCount = 0;
+    window.require = function(deps, factory) {
+      moduleCount++;
+      originalRequire(deps, function(...args) {
+        if (factory) {
+          factory(...args);
+        }
+        moduleCount--;
+        if (moduleCount === 0) {
+          window._wctCallback();
+        }
+      });
+    };
+  })();
+</script>
+
+<script>require(['lib-module.js'], function (_libModule) {
+    'use strict';
+
+    doSomething(_libModule.foo);
+});</script>
+
+  <script>require(['lib-module.js'], function (_libModule) {
+    'use strict';
+
+    doSomethingElse(_libModule.foo);
+});</script>
+
+  <script>inlineNotModuleStuff();<script>
+
+  <script src="external.js" type="module"></script>
+
+
+</body></html>

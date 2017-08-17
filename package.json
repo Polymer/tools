@@ -24,6 +24,7 @@
   "dependencies": {
     "@types/assert": "0.0.29",
     "@types/babel-core": "^6.7.14",
+    "@types/babylon": "^6.16.2",
     "@types/compression": "^0.0.33",
     "@types/content-type": "^1.1.0",
     "@types/express": "^4.0.36",
@@ -47,6 +48,7 @@
     "babel-plugin-transform-es2015-for-of": "^6.18.0",
     "babel-plugin-transform-es2015-function-name": "^6.9.0",
     "babel-plugin-transform-es2015-literals": "^6.8.0",
+    "babel-plugin-transform-es2015-modules-amd": "^6.24.1",
     "babel-plugin-transform-es2015-object-super": "^6.8.0",
     "babel-plugin-transform-es2015-parameters": "^6.18.0",
     "babel-plugin-transform-es2015-shorthand-properties": "^6.18.0",
@@ -56,6 +58,7 @@
     "babel-plugin-transform-es2015-typeof-symbol": "^6.18.0",
     "babel-plugin-transform-es2015-unicode-regex": "^6.11.0",
     "babel-plugin-transform-regenerator": "^6.16.1",
+    "babylon": "^6.17.4",
     "browser-capabilities": "^0.2.0",
     "command-line-args": "^3.0.1",
     "command-line-usage": "^3.0.3",
@@ -72,6 +75,7 @@
     "parse5": "^2.2.3",
     "pem": "^1.8.3",
     "polymer-build": "^2.0.0",
+    "requirejs": "^2.3.4",
     "resolve": "^1.0.0",
     "send": "^0.14.1",
     "spdy": "^3.3.3"

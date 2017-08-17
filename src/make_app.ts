@@ -30,6 +30,14 @@ export interface PolyserveApplication extends express.Express {
   packageName: string;
 }
 
+// When we automatically transform ES modules to AMD modules (see
+// compile-middleware.ts), we inject a dependency on the RequireJS loader. We
+// include RequireJS as an NPM dependency of Polyserve so that users don't need
+// to make it a dependency of their project. This is our local path to the
+// library.
+const localRequirePath =
+    path.join(__dirname, '..', 'node_modules', 'requirejs', 'require.js');
+
 /**
  * Make a polyserve express app.
  * @param  {Object} options
@@ -90,6 +98,18 @@ export function makeApp(options: AppOptions): PolyserveApplication {
               res.statusCode = 301;
               res.setHeader('Location', req.originalUrl + '/');
               res.end('Redirecting to ' + req.originalUrl + '/');
+            })
+        .on('error',
+            (err) => {
+              // A RequireJS found in the user's components directory will win
+              // over our verison.
+              if (err.statusCode === 404 &&
+                  err.path.endsWith('/requirejs/require.js')) {
+                send(req, localRequirePath).pipe(res);
+              } else {
+                res.statusCode = err.statusCode;
+                res.end(err.Error);
+              }
             })
         .pipe(res);
   });
