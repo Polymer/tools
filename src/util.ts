@@ -162,11 +162,15 @@ export function getNodePathGivenAnalyzerAstNode(
   astTypes.visit(program, {
     visitNode(path: NodePath<estree.Node>): boolean |
     undefined {
-      if (sourceLocationsEqual(path.node, node)) {
+      // Traverse first, because we want the most specific node that exactly
+      // matches the given node.
+      this.traverse(path);
+      if (associatedNodePath === undefined &&
+          sourceLocationsEqual(path.node, node) &&
+          path.node.type === node.type) {
         associatedNodePath = path;
         return false;
       }
-      this.traverse(path);
       return undefined;
     }
   });

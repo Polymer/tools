@@ -2179,6 +2179,41 @@ customElements.define(
 `,
       });
     });
+
+    suite('regression tests', () => {
+      testName =
+          `regression test: propagate templates for scripts consisting ` +
+          `only of an element definition`;
+      test(testName, async () => {
+        setSources({
+          'test.html': `
+        <dom-module id='url-bar'>
+          <template>
+            <div>Implementation here</div>
+          </template>
+          <script>
+            Polymer({
+              is: 'url-bar',
+            })
+          </script>
+        </dom-module>
+        `
+        });
+
+        assertSources(await convert(), {
+          './test.js': `
+Polymer({
+  _template: \`
+            <div>Implementation here</div>
+\`,
+
+  is: 'url-bar'
+})
+`,
+        });
+      });
+    });
+
   });
 
   suite('fixtures', () => {
