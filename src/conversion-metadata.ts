@@ -18,7 +18,7 @@ import {Document} from 'polymer-analyzer';
 import {ConversionOutput, JsExport} from './js-module';
 import {ConvertedDocumentUrl, OriginalDocumentUrl} from './url-converter';
 
-export interface ConverterMetadata {
+export interface ConversionMetadata {
   readonly namespaces: ReadonlySet<string>;
 
   readonly excludes: ReadonlySet<string>;

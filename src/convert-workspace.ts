@@ -47,7 +47,8 @@ export function configureConverter(
     analysis: Analysis, options: ConvertWorkspaceOptions) {
   return new WorkspaceConverter(analysis, {
     namespaces: options.namespaces,
-    excludes: options.excludes,
+    excludes:
+        [...(options.excludes || []), 'neon-animation/web-animations.html'],
     referenceExcludes: options.referenceExcludes ||
         [
           'Polymer.DomModule',

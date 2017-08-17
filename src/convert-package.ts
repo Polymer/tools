@@ -72,7 +72,8 @@ export function configureConverter(
     packageName: options.packageName,
     packageType: 'element',
     namespaces: options.namespaces,
-    excludes: options.excludes || [],
+    excludes:
+        [...(options.excludes || []), 'neon-animation/web-animations.html'],
     referenceExcludes: options.referenceExcludes ||
         [
           'Polymer.Settings',

@@ -24,7 +24,7 @@ import * as path from 'path';
 import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
-import {ConverterMetadata} from './converter-metadata';
+import {ConversionMetadata} from './conversion-metadata';
 import {ConversionOutput, JsExport, NamespaceMemberToExport} from './js-module';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
@@ -141,7 +141,7 @@ const elementBlacklist = new Set<string|undefined>([
 export class DocumentConverter {
   private readonly originalUrl: OriginalDocumentUrl;
   private readonly convertedUrl: ConvertedDocumentUrl;
-  private readonly analysisConverter: ConverterMetadata;
+  private readonly conversionMetadata: ConversionMetadata;
   private readonly document: Document;
   private readonly packageName: string;
   private readonly packageType: 'element'|'application';
@@ -152,10 +152,10 @@ export class DocumentConverter {
 
   private readonly _claimedDomModules = new Set<parse5.ASTNode>();
   constructor(
-      analysisConverter: ConverterMetadata, document: Document,
+      analysisConverter: ConversionMetadata, document: Document,
       packageName: string, packageType: 'element'|'application',
       visited: Set<OriginalDocumentUrl>) {
-    this.analysisConverter = analysisConverter;
+    this.conversionMetadata = analysisConverter;
     this.document = document;
     this.originalUrl = getDocumentUrl(document);
     this.convertedUrl = convertHtmlDocumentUrl(this.originalUrl);
@@ -172,12 +172,22 @@ export class DocumentConverter {
    */
   private getHtmlImports() {
     return IterableX.from(this.document.getFeatures({kind: 'html-import'}))
-        .filter(
-            (f: Import) =>
-                !this.analysisConverter.excludes.has(f.document.url));
+        .filter((f: Import) => {
+          for (const exclude of this.conversionMetadata.excludes) {
+            if (f.document.url.endsWith(exclude)) {
+              return false;
+            }
+          }
+          return true;
+        });
   }
 
   convertToJsModule(): Iterable<ConversionOutput> {
+    for (const exclude of this.conversionMetadata.excludes) {
+      if (this.originalUrl.endsWith(exclude)) {
+        return [];
+      }
+    }
     const combinedToplevelStatements = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const scriptProgram =
@@ -204,10 +214,10 @@ export class DocumentConverter {
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
 
-    removeNamespaceInitializers(program, this.analysisConverter.namespaces);
+    removeNamespaceInitializers(program, this.conversionMetadata.namespaces);
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
-            program, this.document, this.analysisConverter.namespaces);
+            program, this.document, this.conversionMetadata.namespaces);
 
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
@@ -329,15 +339,15 @@ export class DocumentConverter {
       edits.push({offsets, replacementText});
     }
 
-    for (const htmlImport of this.document.getFeatures({kind: 'html-import'})) {
+    for (const htmlImport of this.getHtmlImports()) {
       // Only replace imports that are actually in the document.
       if (!htmlImport.sourceRange) {
         continue;
       }
       const offsets = htmlDocument.sourceRangeToOffsets(htmlImport.sourceRange);
 
-      const importedJsDocumentUrl =
-          convertHtmlDocumentUrl(getDocumentUrl(htmlImport.document));
+      const htmlDocumentUrl = getDocumentUrl(htmlImport.document);
+      const importedJsDocumentUrl = convertHtmlDocumentUrl(htmlDocumentUrl);
       const importUrl =
           this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
       const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
@@ -416,7 +426,7 @@ export class DocumentConverter {
 
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
-            program, this.document, this.analysisConverter.namespaces);
+            program, this.document, this.conversionMetadata.namespaces);
     for (const namespaceName of namespaceNames) {
       this.rewriteNamespaceThisReferences(program, namespaceName);
     }
@@ -648,7 +658,7 @@ export class DocumentConverter {
     for (const htmlImport of this.getHtmlImports()) {
       const documentUrl = getDocumentUrl(htmlImport.document);
       const importedJsDocumentUrl = convertHtmlDocumentUrl(documentUrl);
-      if (this.analysisConverter.outputs.has(importedJsDocumentUrl)) {
+      if (this.conversionMetadata.outputs.has(importedJsDocumentUrl)) {
         continue;
       }
       if (this.visited.has(documentUrl)) {
@@ -659,7 +669,8 @@ export class DocumentConverter {
             `cyclic dependencies.`);
         continue;
       }
-      this.analysisConverter.convertDocument(htmlImport.document, this.visited);
+      this.conversionMetadata.convertDocument(
+          htmlImport.document, this.visited);
     }
   }
 
@@ -672,7 +683,7 @@ export class DocumentConverter {
    */
   private collectNamespacedReferences(program: Program):
       Map<ConvertedDocumentUrl, Set<ImportReference>> {
-    const analysisConverter = this.analysisConverter;
+    const analysisConverter = this.conversionMetadata;
     const importedReferences =
         new Map<ConvertedDocumentUrl, Set<ImportReference>>();
 
@@ -752,8 +763,8 @@ export class DocumentConverter {
    * don't work well in modular code.
    */
   private rewriteExcludedReferences(program: Program) {
-    const mapOfRewrites = new Map(this.analysisConverter.referenceRewrites);
-    for (const reference of this.analysisConverter.referenceExcludes) {
+    const mapOfRewrites = new Map(this.conversionMetadata.referenceRewrites);
+    for (const reference of this.conversionMetadata.referenceExcludes) {
       mapOfRewrites.set(reference, jsc.identifier('undefined'));
     }
 
@@ -789,7 +800,7 @@ export class DocumentConverter {
   }
 
   private warnOnDangerousReferences(program: Program) {
-    const dangerousReferences = this.analysisConverter.dangerousReferences;
+    const dangerousReferences = this.conversionMetadata.dangerousReferences;
     const originalUrl = this.originalUrl;
     astTypes.visit(program, {
       visitMemberExpression(path: NodePath<MemberExpression>) {

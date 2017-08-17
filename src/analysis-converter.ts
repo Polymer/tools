@@ -15,7 +15,7 @@
 import {Analysis, Document} from 'polymer-analyzer';
 
 import {BaseConverter, BaseConverterOptions} from './base-converter';
-import {ConverterMetadata} from './converter-metadata';
+import {ConversionMetadata} from './conversion-metadata';
 import {DocumentConverter} from './document-converter';
 import {OriginalDocumentUrl} from './url-converter';
 
@@ -34,7 +34,7 @@ export interface AnalysisConverterOptions extends BaseConverterOptions {
  * Converts an entire Analysis object.
  */
 export class AnalysisConverter extends BaseConverter implements
-    ConverterMetadata {
+    ConversionMetadata {
   readonly packageName: string;
   readonly packageType: 'element'|'application';
 
