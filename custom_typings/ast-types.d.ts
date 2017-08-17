@@ -152,12 +152,8 @@ declare module 'ast-types' {
         void|boolean;
     visitIdentifier?
         (this: VisitorContext, path: NodePath<estree.Identifier>): void|boolean;
-    visitSimpleLiteral?
-        (this: VisitorContext, path: NodePath<estree.SimpleLiteral>):
-            void|boolean;
-    visitRegExpLiteral?
-        (this: VisitorContext, path: NodePath<estree.RegExpLiteral>):
-            void|boolean;
+    visitLiteral?(this: VisitorContext, path: NodePath<estree.SimpleLiteral>):
+        void|boolean;
     visitForOfStatement?
         (this: VisitorContext, path: NodePath<estree.ForOfStatement>):
             void|boolean;

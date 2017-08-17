@@ -2180,9 +2180,53 @@ customElements.define(
       });
     });
 
+    testName = `rewrite toplevel 'this' to 'window'`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            console.log(this);
+            function foo() {
+              console.log(this);
+            }
+            class Foo {
+              constructor() {
+                this.bar = 10;
+              }
+            }
+            if (this) {
+              this;
+            }
+          </script>
+          <script>
+            'use strict';
+            console.log(this);
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+console.log(window);
+function foo() {
+  console.log(this);
+}
+class Foo {
+  constructor() {
+    this.bar = 10;
+  }
+}
+if (window) {
+  window;
+}
+'use strict';
+console.log(this);
+`,
+      });
+    });
+
     suite('regression tests', () => {
-      testName =
-          `regression test: propagate templates for scripts consisting ` +
+      testName = `propagate templates for scripts consisting ` +
           `only of an element definition`;
       test(testName, async () => {
         setSources({
