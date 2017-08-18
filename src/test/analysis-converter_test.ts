@@ -1809,7 +1809,7 @@ $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<dom-module>
             <template>
               Scripts in here are cloned
-              <script>foo</script>
+              <script>foo&lt;/script>
             </template>
 ` +
             '            ' +
@@ -1907,7 +1907,7 @@ console.log(foo$4);
       });
     });
     testName = 'when there is a style import, ' +
-        'all inline styles are converted to imperative scripts';
+        'all inline styles and body elements are converted to imperative scripts';
     test(testName, async () => {
       setSources({
         'index.html': `
@@ -1922,12 +1922,20 @@ console.log(foo$4);
               body { background-color: var(--happy, yellow); }
             </style>
           </custom-style>
+          <foo-elem></foo-elem>
         `
       });
       assertSources(await convert(), {
         './index.html': `
 
-          <script type="module">
+          <!-- FIXME(polymer-modulizer):
+        These imperative modules that innerHTML your HTML are
+        a hacky way to be sure that any mixins in included style
+        modules are ready before any elements that reference them are
+        instantiated, otherwise the CSS @apply mixin polyfill won't be
+        able to expand the underlying CSS custom properties.
+        -->
+    <script type="module">
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
@@ -1949,7 +1957,6 @@ document.head.appendChild($_documentContainer);
 </script>
           <script type="module">
 const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<custom-style>
             <style is="custom-style">
@@ -1957,7 +1964,12 @@ $_documentContainer.innerHTML = \`<custom-style>
             </style>
           </custom-style>\`;
 
-document.head.appendChild($_documentContainer);
+document.body.appendChild($_documentContainer);
+</script>
+          <script type="module">
+const $_documentContainer = document.createElement('div');
+$_documentContainer.innerHTML = \`<foo-elem></foo-elem>\`;
+document.body.appendChild($_documentContainer);
 </script>
         `
       });

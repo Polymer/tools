@@ -448,13 +448,31 @@ export class DocumentConverter {
       convertStylesToScriptsThatInsertThem(htmlDocument: ParsedHtmlDocument):
           Iterable<Edit> {
     const p = dom5.predicates;
-    const tagsToInsertImperatively = dom5.nodeWalkAll(
-        htmlDocument.ast,
-        p.OR(
-            p.hasTagName('custom-style'),
-            p.AND(
-                p.hasTagName('style'),
-                p.NOT(p.parentMatches(p.hasTagName('custom-style'))))));
+    const head = dom5.nodeWalk(htmlDocument.ast, p.hasTagName('head'));
+    const body = dom5.nodeWalk(htmlDocument.ast, p.hasTagName('body'));
+    if (head === null || body === null) {
+      throw new Error(`HTML Parser error, got a document without a head/body?`);
+    }
+
+    const tagsToInsertImperatively = [
+      ...dom5.nodeWalkAll(
+          head,
+          p.OR(
+              p.hasTagName('custom-style'),
+              p.AND(
+                  p.hasTagName('style'),
+                  p.NOT(p.parentMatches(p.hasTagName('custom-style')))))),
+    ];
+
+    const apology = `<!-- FIXME(polymer-modulizer):
+        These imperative modules that innerHTML your HTML are
+        a hacky way to be sure that any mixins in included style
+        modules are ready before any elements that reference them are
+        instantiated, otherwise the CSS @apply mixin polyfill won't be
+        able to expand the underlying CSS custom properties.
+        -->
+    `;
+    let first = true;
     for (const tag of tagsToInsertImperatively) {
       const offsets = htmlDocument.sourceRangeToOffsets(
           htmlDocument.sourceRangeForNode(tag)!);
@@ -469,7 +487,37 @@ export class DocumentConverter {
                       program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
                   .code +
               '\n');
-      const replacementText = serializeNode(scriptTag);
+      let replacementText = serializeNode(scriptTag);
+      if (first) {
+        replacementText = apology + replacementText;
+        first = false;
+      }
+      yield {offsets, replacementText};
+    }
+
+    for (const bodyNode of body.childNodes || []) {
+      if (bodyNode.nodeName.startsWith('#') || bodyNode.tagName === 'script') {
+        continue;
+      }
+      const offsets = htmlDocument.sourceRangeToOffsets(
+          htmlDocument.sourceRangeForNode(bodyNode)!);
+      const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
+                            .childNodes![0];
+      const program =
+          jsc.program(this.getCodeToInsertDomNodes([bodyNode], true));
+      dom5.setTextContent(
+          scriptTag,
+          '\n' +
+              recast
+                  .print(
+                      program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
+                  .code +
+              '\n');
+      let replacementText = serializeNode(scriptTag);
+      if (first) {
+        replacementText = apology + replacementText;
+        first = false;
+      }
       yield {offsets, replacementText};
     }
   }
@@ -544,7 +592,8 @@ export class DocumentConverter {
     program.body.splice(insertionPoint, 0, ...statements);
   }
 
-  private getCodeToInsertDomNodes(nodes: parse5.ASTNode[]): estree.Statement[] {
+  private getCodeToInsertDomNodes(
+      nodes: parse5.ASTNode[], activeInBody = false): estree.Statement[] {
     const varName = `$_documentContainer`;
     const fragment = {
       nodeName: '#document-fragment',
@@ -553,15 +602,32 @@ export class DocumentConverter {
     };
     const templateValue = nodeToTemplateLiteral(fragment as any, false);
 
+    const createDiv = jsc.variableDeclaration('const', [
+      jsc.variableDeclarator(
+          jsc.identifier(varName),
+          jsc.callExpression(
+              jsc.memberExpression(
+                  jsc.identifier('document'), jsc.identifier('createElement')),
+              [jsc.literal('div')]))
+    ]);
+    if (activeInBody) {
+      return [
+        createDiv,
+        jsc.expressionStatement(jsc.assignmentExpression(
+            '=',
+            jsc.memberExpression(
+                jsc.identifier(varName), jsc.identifier('innerHTML')),
+            templateValue)),
+        jsc.expressionStatement(jsc.callExpression(
+            jsc.memberExpression(
+                jsc.memberExpression(
+                    jsc.identifier('document'), jsc.identifier('body')),
+                jsc.identifier('appendChild')),
+            [jsc.identifier(varName)]))
+      ];
+    }
     return [
-      jsc.variableDeclaration(
-          'const', [jsc.variableDeclarator(
-                       jsc.identifier(varName),
-                       jsc.callExpression(
-                           jsc.memberExpression(
-                               jsc.identifier('document'),
-                               jsc.identifier('createElement')),
-                           [jsc.literal('div')]))]),
+      createDiv,
       jsc.expressionStatement(jsc.callExpression(
           jsc.memberExpression(
               jsc.identifier(varName), jsc.identifier('setAttribute')),
