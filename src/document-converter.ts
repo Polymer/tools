@@ -470,6 +470,7 @@ export class DocumentConverter {
         modules are ready before any elements that reference them are
         instantiated, otherwise the CSS @apply mixin polyfill won't be
         able to expand the underlying CSS custom properties.
+        See: https://github.com/Polymer/polymer-modulizer/issues/154
         -->
     `;
     let first = true;
