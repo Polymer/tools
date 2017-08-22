@@ -14,7 +14,7 @@ We are opening this tool now so we can work in the open, and to gather feedback 
  2. 📞 Please report any issues you find!
  3. 👷🏽‍ Pardon the dust. Some parts of the workflow, like testing the output of multi-package conversions, are still under construction.
  4. 🔄 Be ready to update and run the tool again in the future to pick up changes in output.
- 5. 📚 _If_ you want to publish the output of the tool, use a pre-release version and tag for now, until we can make stronger garuntees about the API of the output it generates. 
+ 5. 📚 _If_ you want to publish the output of the tool, use a pre-release version and tag for now, until we can make stronger guarantees about the API of the output it generates.
 
 Good luck, the future is exciting! 😎 Please join us for discussion in the [`#modulizer` Slack channel](https://polymer.slack.com/messages/G6R11FXEC/).
 
@@ -77,7 +77,7 @@ modulizer owner/repo owner2/repo2
 
 The will create a `modulizer_workspace` directory and checkout the repos and their Bower dependencies and convert them all in place. You can then run `polymer serve` in the workspace directory and try out the results in Chrome 61 or Safari 10.1 (or Edge and Firefox with the appropriate flags turned on).
 
-## Conversion Guidlines
+## Conversion Guidelines
 
 polymer-modulizer works best on well-structured projects, where each HTML file is conceptually a single module already, and references to objects other files, even though via globals, are kept to simple, declarative forms.
 
@@ -107,17 +107,17 @@ polymer-modulizer works best on well-structured projects, where each HTML file i
 
     Scripts can have a single, top-level, IIFE, which is automatically unwrapped during conversion, and exports can appear in the top-level of that IIFE.
  
- 1. Reccomendation: Only include a single namespace definition per file.
+ 1. Recommendation: Only include a single namespace definition per file.
 
     polymer-modulizer converts each HTML Import file to a module. If a file contains multiple namespaces they will be converted to exported objects, rather than their own module. You can break up HTML Imports into smaller, single-namespace-containing, files to generate separate modules.
 
  1. Don't change your API!
 
-    Becuase polymer-modulizer automatically converts usage of dependencies from HTML to JavaScript modules, it has to assume that those dependencies have the same API it would have generated for them. That means that if you convert a package, and then change its API, that users who convert their components will have a much harder time getting their components working.
+    Because polymer-modulizer automatically converts usage of dependencies from HTML to JavaScript modules, it has to assume that those dependencies have the same API it would have generated for them. That means that if you convert a package, and then change its API, that users who convert their components will have a much harder time getting their components working.
 
- 1. Publish your converted package witha major version bump.
+ 1. Publish your converted package with a major version bump.
 
-    Even though we reccomend not making breaking API changes, the mere repackaging of HTML Imports to JavaScript modules is a breaking change. polymer-modulizer assumes that converted dependencies have a higher major version number.
+    Even though we recommend not making breaking API changes, the mere repackaging of HTML Imports to JavaScript modules is a breaking change. polymer-modulizer assumes that converted dependencies have a higher major version number.
 
  1. `importHref` and lazy-imports are not supported yet.
 
@@ -125,7 +125,7 @@ polymer-modulizer works best on well-structured projects, where each HTML file i
 
 ## Status
 
-polymer-modulizer is under heavy construction, but can already convert Polymer core and many elements. Demos often work, though sometimes with a few manual fixes. Work is continuing on getting tests to run and pass automatically, and in generating more idomatic JavaScript modules.
+polymer-modulizer is under heavy construction, but can already convert Polymer core and many elements. Demos often work, though sometimes with a few manual fixes. Work is continuing on getting tests to run and pass automatically, and in generating more idiomatic JavaScript modules.
 
 Please file any issues you have with conversions.
 
