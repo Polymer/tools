@@ -4,7 +4,7 @@
   "main": "index.js",
   "repository": "https://github.com/Polymer/gen-typescript-declarations.git",
   "author": "Justin Fagnani <justinfagnani@google.com>",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "dependencies": {
     "escodegen": "^1.8.1",
     "polymer-analyzer": "next"
