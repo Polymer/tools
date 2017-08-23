@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [2.0.3] - 2017-08-23
+
+- Fix handling of the `index-as` attribute on dom-repeat.
+
 ## [2.0.2] - 2017-05-15
 
 - Upgraded dependency `polymer-analyzer` to ^2.0.0, to support its official release.
