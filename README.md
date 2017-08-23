@@ -26,7 +26,7 @@ You can specify either individual rules, or rule collections. See `polymer lint 
 polymer-lint is run on the command line through Polymer CLI:
 
 ```
-  npm install -g polymer-cli@next
+  npm install -g polymer-cli
   cd my-project
   polymer lint
 ```
