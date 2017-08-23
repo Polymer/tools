@@ -46,6 +46,10 @@ polymer-lint is also integrated into a number of editor plugins for instant as-y
 
 ![Animated gif of the VSCode with the linter running.](https://cloud.githubusercontent.com/assets/1659/23933285/ad63eb62-08fa-11e7-819b-641bf83cf9c6.gif)
 
+### Use with other tools
+
+The linter checks specifically for potential issues in custom elements and Polymer. It's best paired with other more general purpose linters such as [eslint](https://eslint.org/) and [htmlint](https://github.com/htmllint/htmllint).
+
 ## Extending and contributing
 
 The linter is built on top of the [polymer analyzer](https://github.com/Polymer/polymer-analyzer). A lint rule is given a `Document` object with an AST that can be walked, as well as the ability to query high level features of the document like imports and custom elements. From this is just has to return an array of warnings to display.
