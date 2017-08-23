@@ -60,7 +60,9 @@ class DatabindWithUnknownProperty extends HtmlRule {
         const scope = parsedDocument.sourceRangeForNode(domRepeat)!;
         const itemProperty = dom5.getAttribute(domRepeat, 'as') || 'item';
         const indexProperty =
-            dom5.getAttribute(domRepeat, 'indexAs') || 'index';
+            dom5.getAttribute(domRepeat, 'index-as') ||
+            dom5.getAttribute(domRepeat, 'indexAs') ||
+            'index';
         scopedProperties.push({scope, property: itemProperty});
         scopedProperties.push({scope, property: indexProperty});
       }
