@@ -63,23 +63,24 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
     /**
      * Applies all visiting callbacks from `visitors`.
      */
-    const applyScanners = (callbackName: string, node: Node, parent: Node) => {
-      for (const visitor of visitors) {
-        if (_shouldSkip(visitor, callbackName, node.type)) {
-          continue;
-        }
-        if (callbackName in visitor) {
-          // TODO(rictic): is there a maintainable way to enforce the
-          //     mapping between callback names and the types of the first
-          //     arg?
-          const result: VisitResult =
-              (visitor as any)[callbackName](node, parent);
-          if (result) {
-            handleVisitorResult(result, callbackName, visitor, node.type);
+    const applyScanners =
+        (callbackName: string, node: Node, parent: Node | null) => {
+          for (const visitor of visitors) {
+            if (_shouldSkip(visitor, callbackName, node.type)) {
+              continue;
+            }
+            if (callbackName in visitor) {
+              // TODO(rictic): is there a maintainable way to enforce the
+              //     mapping between callback names and the types of the first
+              //     arg?
+              const result: VisitResult =
+                  (visitor as any)[callbackName](node, parent);
+              if (result) {
+                handleVisitorResult(result, callbackName, visitor, node.type);
+              }
+            }
           }
-        }
-      }
-    };
+        };
 
     // a visitor to break early, or to skip a subtree of the AST. We need to
     // track this ourselves because we're running all the visitors at once.

@@ -266,7 +266,7 @@ class BehaviorVisitor implements Visitor {
 /**
  * gets the expression representing a behavior from a node.
  */
-function behaviorExpression(node: estree.Node): estree.Node|undefined {
+function behaviorExpression(node: estree.Node): estree.Node|null|undefined {
   switch (node.type) {
     case 'ExpressionStatement':
       // need to cast to `any` here because ExpressionStatement is super
@@ -282,7 +282,8 @@ function behaviorExpression(node: estree.Node): estree.Node|undefined {
  * checks whether an expression is a simple array containing only member
  * expressions or identifiers.
  */
-function isSimpleBehaviorArray(expression: estree.Node|undefined): boolean {
+function isSimpleBehaviorArray(expression: estree.Node|undefined|
+                               null): boolean {
   if (!expression || expression.type !== 'ArrayExpression') {
     return false;
   }

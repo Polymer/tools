@@ -375,8 +375,8 @@ class ClassFinder implements Visitor {
         esutil.getAttachedComment(statement) || '';
     const doc = jsdoc.parseJsdoc(comment);
     if (value.type === 'ClassExpression') {
-      const name =
-          assignedName || value.id && astValue.getIdentifierName(value.id);
+      const name = assignedName ||
+          value.id && astValue.getIdentifierName(value.id) || undefined;
 
       this._classFound(name, doc, value);
     } else {

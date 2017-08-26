@@ -22,7 +22,7 @@ import {ScannedPolymerProperty} from './polymer-element';
 
 export function getStaticGetterValue(
     node: estree.ClassDeclaration|estree.ClassExpression,
-    name: string): estree.Expression|undefined {
+    name: string): estree.Expression|undefined|null {
   const getter = node.body.body.find(
       (n) => n.type === 'MethodDefinition' && n.static === true &&
           n.kind === 'get' && getIdentifierName(n.key) === name);
