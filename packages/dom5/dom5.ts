@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="./custom_typings/main.d.ts" />
 import * as cloneObject from 'clone';
 import {ASTNode as Node, treeAdapters} from 'parse5';
 export {ASTNode as Node} from 'parse5';
@@ -312,7 +311,7 @@ export function treeMap<U>(node: Node, mapfn: (node: Node) => U[]): U[] {
   return results;
 }
 
-export type GetChildNodes = (node: Node) => Node[] | undefined;
+export type GetChildNodes = (node: Node) => Node[]|undefined;
 
 export const defaultChildNodes: GetChildNodes = node => node.childNodes;
 
