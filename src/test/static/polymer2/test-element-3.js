@@ -32,3 +32,18 @@ class SubElement extends BaseElement {
     };
   }
 }
+
+/**
+ * @customElement
+ * @polymer
+ * @memberOf Polymer
+ */
+class WindowBaseElement extends window.Polymer.Element {}
+
+window.Polymer.WindowBaseElement = WindowBaseElement;
+
+/**
+ * @customElement
+ * @polymer
+ */
+class WindowSubElement extends Polymer.WindowBaseElement {}

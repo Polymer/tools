@@ -468,8 +468,11 @@ class ClassFinder implements Visitor {
       // If no @extends tag, look for a superclass.
       const superClass = node.superClass;
       if (superClass != null) {
-        const extendsId = getIdentifierName(superClass);
+        let extendsId = getIdentifierName(superClass);
         if (extendsId != null) {
+          if (extendsId.startsWith('window.')) {
+            extendsId = extendsId.substring('window.'.length);
+          }
           const sourceRange = document.sourceRangeForNode(superClass)!;
           return new ScannedReference(extendsId, sourceRange);
         }
