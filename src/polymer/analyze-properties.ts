@@ -119,7 +119,8 @@ export function analyzeProperties(
             prop.readOnly = !!astValue.expressionToValue(propertyArg.value);
             break;
           case 'reflectToAttribute':
-            prop.reflectToAttribute = !!astValue.expressionToValue(propertyArg);
+            prop.reflectToAttribute =
+                !!astValue.expressionToValue(propertyArg.value);
             break;
           case 'computed':
             isComputed = true;

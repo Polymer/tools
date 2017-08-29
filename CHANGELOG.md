@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  ## Unreleased
 
 * Scan for CSS custom variable uses and assignments.
+* Fix value of reflectToAttribute for polymer properties
 
 ## [2.2.2] - 2017-07-20
 
