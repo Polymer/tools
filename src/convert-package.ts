@@ -122,7 +122,7 @@ export async function convertPackage(options: ConvertPackageOptions) {
     mkdirp.sync(path.dirname(outPath));
     if (newSource !== undefined) {
       await fs.writeFile(outPath, newSource);
-    } else {
+    } else if (fs.existsSync(outPath)) {
       await fs.unlink(outPath);
     }
   }
