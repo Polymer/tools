@@ -2298,6 +2298,79 @@ console.log('two');
 `,
       });
     });
+
+    testName = 'copy over comments in a page with scripts';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <!-- First comment -->
+          <script></script>
+          <!-- Second comment -->
+          <script>
+            // comment in script
+            console.log('second script');
+          </script>
+          <!-- Another comment -->
+          <!-- Final trailing comment -->
+        `
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+/* First comment */
+;
+
+// comment in script
+/* Second comment */
+console.log('second script');
+
+/* Another comment */
+/* Final trailing comment */
+;
+`,
+      });
+    });
+
+    testName = 'copy over comments in a page without scripts';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <!-- First comment -->
+          <!-- Second comment -->
+          <!-- Final trailing comment -->
+        `
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+/* First comment */
+/* Second comment */
+/* Final trailing comment */
+;
+`,
+      });
+    });
+
+    testName = 'copy over license comments properly';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <!-- @license This is a license -->
+          <!-- Second comment -->
+          <!-- Final trailing comment -->
+        `
+      });
+
+      assertSources(await convert(), {
+        './test.js': `
+/** @license This is a license */
+/* Second comment */
+/* Final trailing comment */
+;
+`,
+      });
+    });
+
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
           `only of an element definition`;
