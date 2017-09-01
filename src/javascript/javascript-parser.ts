@@ -47,7 +47,8 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
         contents,
         ast: null as any,
         locationOffset: inlineInfo.locationOffset,
-        astNode: inlineInfo.astNode, isInline,
+        astNode: inlineInfo.astNode,
+        isInline,
         parsedAsSourceType: 'script',
       });
       throw new WarningCarryingException(
@@ -59,7 +60,8 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       contents,
       ast: result.program,
       locationOffset: inlineInfo.locationOffset,
-      astNode: inlineInfo.astNode, isInline,
+      astNode: inlineInfo.astNode,
+      isInline,
       parsedAsSourceType: result.sourceType,
     });
   }
@@ -68,9 +70,9 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
 
 export type ParseResult = {
   type: 'success',
-  sourceType: 'script' | 'module',
+  sourceType: 'script'|'module',
   program: estree.Program
-} | {
+}|{
   type: 'failure',
   warning: {
     sourceRange: SourceRange,

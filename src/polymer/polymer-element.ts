@@ -156,10 +156,6 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
   observers: Observer[];
   listeners: {event: string, handler: string}[];
   behaviorAssignments: ScannedBehaviorAssignment[];
-  // FIXME(rictic): domModule and scriptElement aren't known at a file local
-  //     level. Remove them here, they should only exist on PolymerElement.
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
   // TODO(justinfagnani): Not Polymer-specific, and hopefully not necessary
   pseudo: boolean;
 
@@ -216,10 +212,6 @@ export class ScannedPolymerElement extends ScannedElement implements
   observers: Observer[] = [];
   listeners: {event: string, handler: string}[] = [];
   behaviorAssignments: ScannedBehaviorAssignment[] = [];
-  // FIXME(rictic): domModule and scriptElement aren't known at a file local
-  //     level. Remove them here, they should only exist on PolymerElement.
-  domModule?: dom5.Node;
-  scriptElement?: dom5.Node;
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
   abstract: boolean = false;
@@ -280,7 +272,6 @@ export interface PolymerExtension extends ElementBase {
   > ;
   listeners: ImmutableArray<{event: string, handler: string}>;
   behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment>;
-  scriptElement?: dom5.Node;
   localIds: ImmutableArray<LocalId>;
 
   emitPropertyMetadata(property: PolymerProperty): any;
@@ -299,7 +290,6 @@ export class PolymerElement extends Element implements PolymerExtension {
   readonly listeners: ImmutableArray<{event: string, handler: string}> = [];
   readonly behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment> = [];
   readonly domModule?: dom5.Node;
-  readonly scriptElement?: dom5.Node;
   readonly localIds: ImmutableArray<LocalId> = [];
 
   constructor(scannedElement: ScannedPolymerElement, document: Document) {
@@ -309,7 +299,6 @@ export class PolymerElement extends Element implements PolymerExtension {
     this.observers = Array.from(scannedElement.observers);
     this.listeners = Array.from(scannedElement.listeners);
     this.behaviorAssignments = Array.from(scannedElement.behaviorAssignments);
-    this.scriptElement = scannedElement.scriptElement;
 
     const domModules = scannedElement.tagName == null ?
         new Set<DomModule>() :
