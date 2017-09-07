@@ -22,7 +22,7 @@ Good luck, the future is exciting! 😎 Please join us for discussion in the [`#
 
 polymer-modulizer is designed to convert HTML Imports, and especially those containing Polymer and Polymer elements, to JavaScript modules as automatically as possible.
 
-polymer-modulizer tries to strike a balance between supporting the general semantics of HTML Imports and generating idiomatic JavaScript modules. It converts assignments to global namespace objects to module exports, and references to namespaces as imported names. 
+polymer-modulizer tries to strike a balance between supporting the general semantics of HTML Imports and generating idiomatic JavaScript modules. It converts assignments to global namespace objects to module exports, and references to namespaces as imported names.
 
 ### Example
 
@@ -63,7 +63,26 @@ window.customElements.define(MyElement.is, MyElement);
 
 ## Usage
 
-polymer-modulizer has two modes. Given no default arguments, it converts the current directory as a package. Given one or more GitHub repository names, it creates a workspace and converts those repositories and their dependencies at once.
+Install polymer-modulizer from npm:
+
+```
+npm install -g polymer-modulizer
+```
+
+`polymer-modulizer` has two modes: package mode, which converts the current directory as a package,
+or workspace mode, which takes a list of GitHub repositories and creates a workspace out of them
+(converting the repos and their dependencies at once).
+
+### Local (package) mode
+
+This converts the current directory as a `bower` package. You _must_ run `bower install` in
+this directory before running modulizer. The following command will convert the files and
+add the new ones in the current directory:
+
+```sh
+bower cache clean && bower install
+modulizer --out .
+```
 
 ### Workspace mode
 
@@ -86,11 +105,11 @@ polymer-modulizer works best on well-structured projects, where each HTML file i
     polymer-modulizer can convert your dependencies in a workspace, but in order to publish your package, you'll need your dependencies published as modules too. Now is a great time to contact the owners of project you depend on to get them to convert their components.
 
  1. If you need to make changes to your project to have it convert properly, make these to the original HTML source.
- 
+
     The updated HTML-based project should be published as a new version so that client can upgrade to it before converting themselves.
 
  1. Make sure files are annotated correctly.
- 
+
     Especially important are `@namespace` annotations on namespace objects.
 
     If your documentation, including namespaces, displays correctly in `iron-component-page`/`iron-doc-viewer` or webcomponents.org, it's a good sign it can be automatically converted.
@@ -98,7 +117,7 @@ polymer-modulizer works best on well-structured projects, where each HTML file i
  1. Be careful with multiple scripts in one file.
 
     Scripts are concatenated, so they could have name collisions.
-    
+
     Tests, demos and other top-level HTML files aren't converted to JavaScript (just their references to HTML Imports are converted), so they are a little more flexible.
 
  1. Only export from the top-level of a script.
@@ -106,7 +125,7 @@ polymer-modulizer works best on well-structured projects, where each HTML file i
     JavaScript export can only appear at the top-level of a module, so assignments to namespace objects which serve as exports in HTML Imports can only be converted if they're at the top-level of a script.
 
     Scripts can have a single, top-level, IIFE, which is automatically unwrapped during conversion, and exports can appear in the top-level of that IIFE.
- 
+
  1. Recommendation: Only include a single namespace definition per file.
 
     polymer-modulizer converts each HTML Import file to a module. If a file contains multiple namespaces they will be converted to exported objects, rather than their own module. You can break up HTML Imports into smaller, single-namespace-containing, files to generate separate modules.
