@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as supertest from 'supertest';
 
-import {babelCompileCache, browserNeedsCompilation, isPolyfill} from '../compile-middleware';
+import {babelCompileCache, isPolyfill} from '../compile-middleware';
 import {getApp} from '../start_server';
 
 chai.use(chaiAsPromised);
@@ -167,15 +167,6 @@ suite('compile-middleware', () => {
         }
       });
     });
-  });
-
-  test('browserNeedsCompilation', () => {
-    for (const userAgent of userAgentsThatDontSupportES2015OrModules) {
-      assert.equal(browserNeedsCompilation(userAgent), true, userAgent);
-    }
-    for (const userAgent of userAgentsThatSupportES2015AndModules) {
-      assert.equal(browserNeedsCompilation(userAgent), false, userAgent);
-    }
   });
 
   test('isPolyfill', () => {

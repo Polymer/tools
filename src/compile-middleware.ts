@@ -99,9 +99,17 @@ export function babelCompile(
     shouldTransform(request: Request, response: Response) {
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
-      return !isPolyfill.test(request.url) &&
-          compileMimeTypes.includes(getContentType(response)) &&
-          (forceCompile || browserNeedsCompilation(request.get('user-agent')));
+      if (isPolyfill.test(request.url)) {
+        return false;
+      }
+      if (!compileMimeTypes.includes(getContentType(response))) {
+        return false;
+      }
+      if (forceCompile) {
+        return true;
+      }
+      const capabilities = browserCapabilities(request.get('user-agent'));
+      return !capabilities.has('es2015') || !capabilities.has('modules');
     },
 
     transform(request: Request, response: Response, body: string): string {
@@ -303,9 +311,4 @@ function hasImportOrExport(js: string): boolean {
     }
   }
   return false;
-}
-
-export function browserNeedsCompilation(userAgent: string): boolean {
-  const capabilities = browserCapabilities(userAgent);
-  return !capabilities.has('es2015') || !capabilities.has('modules');
 }

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Auto-compile now includes transformation of ES modules to AMD modules with RequireJS for browsers that do not support ES modules. Includes special handling for WCT.
+* Fix #48 where we would incorrectly inject the ES5 adapter for browsers that supported ES2015 but not modules.
 
 ## [0.20.0](https://github.com/PolymerLabs/polyserve/tree/v0.20.0) (2017-08-08)
 
