@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {browserCapabilities} from 'browser-capabilities';
 import {parse as parseContentType} from 'content-type';
 import {Request, RequestHandler, Response} from 'express';
 import {addCustomElementsEs5Adapter} from 'polymer-build';
 
-import {browserNeedsCompilation} from './compile-middleware';
 import {transformResponse} from './transform-middleware';
 
 /**
@@ -35,7 +35,8 @@ export function injectCustomElementsEs5Adapter(forceCompile: boolean):
           contentTypeHeader && parseContentType(contentTypeHeader).type;
       // We only need to inject the adapter if we are compiling to ES5.
       return contentType === 'text/html' &&
-          (forceCompile || browserNeedsCompilation(request.get('user-agent')));
+          (forceCompile ||
+           !browserCapabilities(request.get('user-agent')).has('es2015'));
     },
 
     transform(_request: Request, _response: Response, body: string): string {
