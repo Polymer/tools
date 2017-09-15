@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [0.21.1](https://github.com/PolymerLabs/polyserve/tree/v0.21.1) (2017-09-15)
+
 * Fix issue where requirejs is installed somewhere other than in polyserve's own node_modules subfolder.
 
 ## [0.21.0](https://github.com/PolymerLabs/polyserve/tree/v0.21.0) (2017-09-13)
