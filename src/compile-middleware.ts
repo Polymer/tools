@@ -167,7 +167,9 @@ function compileHtml(
     const src = dom5.getAttribute(scriptTag, 'src');
     const isInline = !src;
 
-    if (src && src.includes('web-component-tester/browser.js')) {
+    if (src &&
+        (src.includes('web-component-tester/browser.js') ||
+         src.includes('wct-browser-legacy/browser.js'))) {
       wctScriptTag = scriptTag;
     }
 
