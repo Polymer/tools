@@ -267,9 +267,9 @@ function compileHtml(
     var moduleCount = 0;
     window.require = function(deps, factory) {
       moduleCount++;
-      originalRequire(deps, function(...args) {
+      originalRequire(deps, function() {
         if (factory) {
-          factory(...args);
+          factory.apply(undefined, arguments);
         }
         moduleCount--;
         if (moduleCount === 0) {
