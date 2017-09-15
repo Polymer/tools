@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Fix issue where requirejs is installed somewhere other than in polyserve's own node_modules subfolder.
+
 ## [0.21.0](https://github.com/PolymerLabs/polyserve/tree/v0.21.0) (2017-09-13)
 
 * Auto-compile now includes transformation of ES modules to AMD modules with RequireJS for browsers that do not support ES modules. Includes special handling for WCT.

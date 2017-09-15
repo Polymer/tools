@@ -34,9 +34,16 @@ export interface PolyserveApplication extends express.Express {
 // compile-middleware.ts), we inject a dependency on the RequireJS loader. We
 // include RequireJS as an NPM dependency of Polyserve so that users don't need
 // to make it a dependency of their project. This is our local path to the
-// library.
-const localRequirePath =
-    path.join(__dirname, '..', 'node_modules', 'requirejs', 'require.js');
+// library.  The resolved path of the `requirejs` package is actually its
+// `bin/r.js` file, so we have to truncate and change the path to get to the
+// `require.js` file we actually want.  Using a regexp here to guard against
+// a future version of RequireJS moving its main to a location at different
+// depth.
+// Resolved path: "somethingsomething/requirejs/bin/r.js"
+// Regexp match segment: "somethingsomething/requirejs/"
+const localRequirePath = path.join(
+    require.resolve('requirejs').match(/.*[/\\]requirejs[/\\]/)[0],
+    'require.js');
 
 /**
  * Make a polyserve express app.
