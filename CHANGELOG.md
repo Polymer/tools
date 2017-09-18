@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [0.22.0](https://github.com/PolymerLabs/polyserve/tree/v0.22.0) (2017-09-18)
+
 * Identify wct-browser-legacy as a web-component-tester client package, to add a hook for deferring mocha execution in support of requirejs.
 * Change `x(...args)` syntax to `x.apply(undefined, arguments)` to support IE11.
 
