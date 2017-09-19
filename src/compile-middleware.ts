@@ -55,9 +55,8 @@ const es2015Plugins = [
   'babel-plugin-transform-regenerator',
 ].map((name) => require(name));
 
-const modulesPlugins = [
-  'babel-plugin-transform-es2015-modules-amd',
-].map((name) => require(name));
+const modulesPlugins =
+    ['babel-plugin-transform-es2015-modules-amd'].map((name) => require(name));
 
 const javaScriptMimeTypes = [
   'application/javascript',
@@ -68,10 +67,7 @@ const javaScriptMimeTypes = [
 
 const htmlMimeType = 'text/html';
 
-const compileMimeTypes = [
-  htmlMimeType,
-  ...javaScriptMimeTypes,
-];
+const compileMimeTypes = [htmlMimeType, ...javaScriptMimeTypes];
 
 interface CompileOptions {
   transformES2015: boolean;
@@ -113,16 +109,16 @@ export function babelCompile(
     },
 
     transform(request: Request, response: Response, body: string): string {
-      const cached = babelCompileCache.get(body);
-      if (cached !== undefined) {
-        return cached;
-      }
-
       const capabilities = browserCapabilities(request.get('user-agent'));
       const options = {
         transformES2015: forceCompile || !capabilities.has('es2015'),
         transformModules: forceCompile || !capabilities.has('modules'),
       };
+      const optionsLeader = JSON.stringify(options);
+      const cached = babelCompileCache.get(optionsLeader + body);
+      if (cached !== undefined) {
+        return cached;
+      }
 
       let transformed;
       const contentType = getContentType(response);
@@ -133,7 +129,7 @@ export function babelCompile(
       } else {
         transformed = body;
       }
-      babelCompileCache.set(body, transformed);
+      babelCompileCache.set(optionsLeader + body, transformed);
       return transformed;
     },
   });

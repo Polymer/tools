@@ -39,7 +39,7 @@ const userAgentsThatSupportES2015AndModules = [
 
 function readTestFile(p: string) {
   return fs.readFileSync(path.join(root, p)).toString();
-};
+}
 
 suite('compile-middleware', () => {
 
@@ -50,6 +50,8 @@ suite('compile-middleware', () => {
         readTestFile('bower_components/test-component/test.html');
     const uncompiledJs =
         readTestFile('bower_components/test-component/test.js');
+    const optionsLeader =
+        JSON.stringify({transformES2015: true, transformModules: true});
 
     beforeEach(() => {
       app = getApp({
@@ -62,32 +64,34 @@ suite('compile-middleware', () => {
     });
 
     test('caches html compilation results', async () => {
-      assert(!babelCompileCache.has(uncompiledHtml));
+      assert(!babelCompileCache.has(optionsLeader + uncompiledHtml));
       const response =
           await supertest(app).get('/components/test-component/test.html');
-      assert(babelCompileCache.has(uncompiledHtml));
-      assert.equal(response.text, babelCompileCache.get(uncompiledHtml));
+      assert(babelCompileCache.has(optionsLeader + uncompiledHtml));
+      assert.equal(
+          response.text, babelCompileCache.get(optionsLeader + uncompiledHtml));
       assert.equal(response.text.indexOf('class A {}'), -1, 'Did not compile');
     });
 
     test('returns cached html compilation results', async () => {
-      babelCompileCache.set(uncompiledHtml, 'IM IN UR CACHE');
+      babelCompileCache.set(optionsLeader + uncompiledHtml, 'IM IN UR CACHE');
       const response =
           await supertest(app).get('/components/test-component/test.html');
       assert.equal(response.text, 'IM IN UR CACHE');
     });
 
     test('caches javascript compilation results', async () => {
-      assert(!babelCompileCache.has(uncompiledJs));
+      assert(!babelCompileCache.has(optionsLeader + uncompiledJs));
       const response =
           await supertest(app).get('/components/test-component/test.js');
-      assert(babelCompileCache.has(uncompiledJs));
-      assert.equal(response.text, babelCompileCache.get(uncompiledJs));
+      assert(babelCompileCache.has(optionsLeader + uncompiledJs));
+      assert.equal(
+          response.text, babelCompileCache.get(optionsLeader + uncompiledJs));
       assert.equal(response.text.indexOf('class A {}'), -1, 'Did not compile');
     });
 
     test('returns cached js compilation results', async () => {
-      babelCompileCache.set(uncompiledJs, 'IM IN UR CACHE');
+      babelCompileCache.set(optionsLeader + uncompiledJs, 'IM IN UR CACHE');
       const response =
           await supertest(app).get('/components/test-component/test.js');
       assert.equal(response.text, 'IM IN UR CACHE');
@@ -95,12 +99,14 @@ suite('compile-middleware', () => {
 
     test('honors the cache max evicting least recently used', async () => {
       await supertest(app).get('/components/test-component/test.html');
-      assert(babelCompileCache.has(uncompiledHtml));
+      assert(babelCompileCache.has(optionsLeader + uncompiledHtml));
       const originalMax = babelCompileCache['max'];
       babelCompileCache['max'] = babelCompileCache.length;
       try {
         await supertest(app).get('/components/test-component/test.js');
-        assert(!babelCompileCache.has(uncompiledHtml), 'cached html evicted');
+        assert(
+            !babelCompileCache.has(optionsLeader + uncompiledHtml),
+            'cached html evicted');
       } finally {
         babelCompileCache['max'] = originalMax;
       }
@@ -112,10 +118,14 @@ suite('compile-middleware', () => {
               .readFileSync(path.join(
                   root, 'bower_components/compile-test/script-tags.html'))
               .toString();
-      assert(!babelCompileCache.has(uncompiled), 'Unexpected entry in cache');
+      assert(
+          !babelCompileCache.has(optionsLeader + uncompiled),
+          'Unexpected entry in cache');
       const response =
           await supertest(app).get('/components/compile-test/script-tags.html');
-      assert(babelCompileCache.has(uncompiled), 'Missing cache entry');
+      assert(
+          babelCompileCache.has(optionsLeader + uncompiled),
+          'Missing cache entry');
       assert.include(response.text, `<script>\nthis is not valid\n</script>`);
       // The valid script tag should still be compiled.
       assert.notInclude(response.text, `<script>\nclass A {}\n</script>`);
@@ -140,7 +150,7 @@ suite('compile-middleware', () => {
                                .get('/components/test-component/test.js')
                                .set('User-Agent', userAgent);
           assert.isFalse(
-              babelCompileCache.has(uncompiledJs),
+              babelCompileCache.has(optionsLeader + uncompiledJs),
               `Unexpected .js file in cache User-Agent ${userAgent}`);
           assert.include(
               response.text,
@@ -157,7 +167,7 @@ suite('compile-middleware', () => {
                                .get('/components/test-component/test.js')
                                .set('User-Agent', userAgent);
           assert.isTrue(
-              babelCompileCache.has(uncompiledJs),
+              babelCompileCache.has(optionsLeader + uncompiledJs),
               `Expected .js file in cache User-Agent ${userAgent}`);
           assert.notInclude(
               response.text,
