@@ -1,0 +1,26 @@
+{
+  "name": "polymer-workspaces",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "repository": "https://github.com/Polymer/polymer-workspaces.git",
+  "author": "Fred K. Schott <fschott@google.com>",
+  "license": "MIT",
+  "scripts": {
+    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "lint": "tslint -p ./",
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.0",
+    "clang-format": "^1.0.55",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2"
+  },
+  "dependencies": {
+    "@types/rimraf": "^2.0.2",
+    "github": "^11.0.0",
+    "rimraf": "^2.6.2"
+  }
+}
