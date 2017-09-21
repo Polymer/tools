@@ -94,7 +94,7 @@ Then run:
 modulizer owner/repo owner2/repo2
 ```
 
-The will create a `modulizer_workspace` directory and checkout the repos and their Bower dependencies and convert them all in place. You can then run `polymer serve` in the workspace directory and try out the results in Chrome 61 or Safari 10.1 (or Edge and Firefox with the appropriate flags turned on).
+This will create a `modulizer_workspace` directory and checkout the repos and their Bower dependencies and convert them all in place. You can then run `polymer serve` in the workspace directory and try out the results in Chrome 61 or Safari 10.1 (or Edge and Firefox with the appropriate flags turned on).
 
 ## Conversion Guidelines
 
