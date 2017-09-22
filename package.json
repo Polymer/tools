@@ -10,11 +10,18 @@
     "format": "find src | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint -p ./",
     "build": "tsc",
-    "build:watch": "tsc --watch"
+    "build:watch": "tsc --watch",
+    "test": "npm run build && mocha"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
+    "@types/nock": "^8.2.1",
     "@types/node": "^8.0.0",
+    "chai": "^4.1.2",
     "clang-format": "^1.0.55",
+    "mocha": "^3.5.3",
+    "nock": "^9.0.18",
     "tslint": "^5.7.0",
     "typescript": "^2.5.2"
   },
