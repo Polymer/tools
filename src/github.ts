@@ -42,7 +42,7 @@ export interface GitHubRepoData {
  * An object that describes properties of an entire GitHub repo AND a reference
  * to a specific branch/tag/commit/etc.
  */
-export interface GitHubRepo extends GitHubRepoData { ref: string; }
+export interface GitHubRepo extends GitHubRepoData { ref?: string; }
 
 /**
  * Returns true if the response is a redirect to another repo
@@ -65,13 +65,28 @@ function createGitHubRepoDataFromApi(obj: any): GitHubRepoData {
 }
 
 /**
+ * Create a simpiler GitHubRepoReference object from a GitHubRepoData object &
+ * a references string.
+ */
+function createGitHubRepoReferenceFromDataAndReference(
+    data: GitHubRepoData, ref?: string): GitHubRepoReference {
+  return {
+    fullName: data.fullName,
+    owner: data.owner,
+    name: data.name,
+    ref: ref || undefined,
+  };
+}
+
+/**
  * Given a GitHubRepoData object & a reference, returns a full GitHubRepo
  * object.
  */
 function createGitHubRepoFromDataAndReference(
-    data: GitHubRepoData, ref: string): GitHubRepo {
+    data: GitHubRepoData, ref?: string): GitHubRepo {
   return Object.assign({}, data, {ref});
 }
+
 
 /**
  * Given a reference pattern (of form `user/repo` or `user/repo#ref`), return
@@ -118,19 +133,25 @@ export class GitHubConnection {
     this._cache = new Map();
   }
 
+  setCache(key: string, value: GitHubRepoData) {
+    return this._cache.set(key.toLowerCase(), value);
+  }
+
+  getCached(key: string): GitHubRepoData|undefined {
+    return this._cache.get(key.toLowerCase());
+  }
+
   /**
    * Given a GitHubRepoReference, load its full, hydrated GitHubRepo object.
    */
   async getRepoInfo(repoReference: GitHubRepoReference): Promise<GitHubRepo> {
-    const cachedRepo = this._cache.get(repoReference.fullName);
+    const cachedRepo = this.getCached(repoReference.fullName);
     if (cachedRepo !== undefined) {
       return createGitHubRepoFromDataAndReference(
-          cachedRepo, repoReference.ref || cachedRepo.defaultBranch);
+          cachedRepo, repoReference.ref);
     }
-    const repoRef =
-        createGithubRepoReferenceFromPattern(repoReference.fullName);
     const response = await this._github.repos.get(
-        {owner: repoRef.owner, repo: repoRef.name});
+        {owner: repoReference.owner, repo: repoReference.name});
     // TODO(usergenic): Patch to _handle_ redirects and/or include
     // details in error messaging.  This was encountered because we
     // tried to request Polymer/hydrolysis which has been renamed to
@@ -138,13 +159,12 @@ export class GitHubConnection {
     if (isRedirect(response)) {
       console.log('Repo ${owner}/${repo} has moved permanently.');
       console.log(response);
-      throw new Error(
-          `Repo ${repoRef.owner}/${repoRef.name} could not be loaded.`);
+      throw new Error(`Repo ${repoReference.owner}/${
+          repoReference.name} could not be loaded.`);
     }
     const repoData = createGitHubRepoDataFromApi(response.data);
-    this._cache.set(repoReference.fullName, repoData);
-    return createGitHubRepoFromDataAndReference(
-        repoData, repoReference.ref || repoData.defaultBranch);
+    this.setCache(repoReference.fullName, repoData);
+    return createGitHubRepoFromDataAndReference(repoData, repoReference.ref);
   }
 
   /**
@@ -182,7 +202,7 @@ export class GitHubConnection {
         }
       }
       for (const repo of pageRepos) {
-        this._cache.set(repo.fullName, repo);
+        this.setCache(repo.fullName, repo);
         allRepos.push(repo);
       }
       ++page;
@@ -239,7 +259,7 @@ export class GitHubConnection {
               return cachedRepo.fullName.toLowerCase().startsWith(namePattern);
             })
             .forEach((cachedRepo) => {
-              allGitHubRepos.push(createGitHubRepoFromDataAndReference(
+              allGitHubRepos.push(createGitHubRepoReferenceFromDataAndReference(
                   cachedRepo, ref || cachedRepo.defaultBranch));
             });
       })();

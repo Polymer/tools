@@ -17,9 +17,12 @@ const {promisify} = require('util');
 const {exec: _exec} = require('child_process');
 const exec = promisify(_exec);
 
+export type StdOut = string;
+export type StdErr = string;
+export type ExecResult = [StdOut, StdErr];
+
 export default async function(
-    cwd: string, command: string, options?: ExecOptions):
-    Promise<[string, string]> {
+    cwd: string, command: string, options?: ExecOptions): Promise<ExecResult> {
   const commandOptions = Object.assign({}, options, {cwd});
   const {stdout, stderr} = await exec(command, commandOptions);
   return [stdout.toString('utf8').trim(), stderr.toString('utf8').trim()];

@@ -153,7 +153,7 @@ export class Workspace {
       } else {
         await repo.session.clone(repo.github.cloneUrl);
       }
-      await repo.session.checkout(repo.github.ref);
+      await repo.session.checkout(repo.github.ref || repo.github.defaultBranch);
     }
   }
 
