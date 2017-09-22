@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -19,11 +19,9 @@ import {existsSync} from './util/fs';
 
 export class GitSession {
   cwd: string;
-  private exec: string;
 
   constructor(cwd: string) {
     this.cwd = cwd;
-    this.exec = exec.bind(null, cwd);
   }
 
   /**
@@ -38,15 +36,6 @@ export class GitSession {
    */
   async getHeadSha(): Promise<string> {
     return (await exec(this.cwd, `git rev-parse HEAD`))[0];
-  }
-
-  /**
-   * Resets the repo back to a clean state. Note that this deletes any untracked
-   * files in the repo directory, created through tooling or otherwise.
-   */
-  async reset(): Promise<void> {
-    await exec(this.cwd, `git reset --hard`);
-    await exec(this.cwd, `git clean -fd`);
   }
 
   /**
@@ -68,27 +57,16 @@ export class GitSession {
    * Run `git checkout [branch]`.
    */
   async checkout(branch: string): Promise<string> {
-    return (await exec(this.cwd, `git checkout ${branch}`))[0];
+    return (await exec(this.cwd, `git checkout ${branch} --`))[0];
   }
 
   /**
-   * Run `git commit -m [message]`.
+   * Resets the repo back to a clean state. Note that this deletes any
+   * uncommitted changes and untracked files in the repo directory, created
+   * through tooling or otherwise.
    */
-  async commit(message: string): Promise<string> {
-    return (await exec(this.cwd, `git commit -m ${message}`))[0];
-  }
-
-  /**
-   * Run `git push [remoteName] [branchName]`.
-   */
-  async push(remoteName: string, branchName: string): Promise<string> {
-    return (await exec(this.cwd, `git push ${remoteName} ${branchName}`))[0];
-  }
-
-  /**
-   * Run `git add -A`.
-   */
-  async addAllFiles(): Promise<string> {
-    return (await exec(this.cwd, `git add -A`))[0];
+  async destroyAllUncommittedChangesAndFiles(): Promise<void> {
+    await exec(this.cwd, `git reset --hard`);
+    await exec(this.cwd, `git clean -fd`);
   }
 }

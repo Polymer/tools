@@ -107,11 +107,9 @@ function createGithubRepoReferenceFromPattern(pattern: string):
 export class GitHubConnection {
   private _cache: Map<string, GitHubRepoData>;
   private _github: GitHub;
-  private _token: string;
 
   constructor(token: string) {
     this.resetCache();
-    this._token = token;
     this._github = new GitHub({protocol: 'https'});
     this._github.authenticate({type: 'oauth', token: token});
   }
