@@ -9,7 +9,7 @@
  */
 // Requires node >= 7.6
 
-import { Analyzer, Feature, Element, Package, FSUrlLoader, PackageUrlResolver, Property, ElementMixin, Method } from 'polymer-analyzer';
+import { Analyzer, Feature, Element, Analysis, FSUrlLoader, PackageUrlResolver, Property, ElementMixin, Method } from 'polymer-analyzer';
 import { Function as ResolvedFunction} from 'polymer-analyzer/lib/javascript/function';
 import { generate } from 'escodegen';
 
@@ -24,16 +24,16 @@ const header = `declare namespace Polymer {
 `;
 const footer = `}`;
 
-export function generateDeclarations() {
+export function generateDeclarations(): Promise<string> {
   const analyzer = new Analyzer({
     urlLoader: new FSUrlLoader(),
     urlResolver: new PackageUrlResolver(),
   });
 
-  analyzer.analyzePackage().then(generatePackage);
+  return analyzer.analyzePackage().then(generatePackage);
 }
 
-function generatePackage(pkg: Package) {
+function generatePackage(pkg: Analysis): Promise<string> {
   const declarations = [header];
   
   for (const feature of pkg.getFeatures()) {
@@ -57,7 +57,7 @@ function generatePackage(pkg: Package) {
 
   declarations.push(footer);
 
-  process.stdout.write(declarations.join('\n'));
+  return Promise.resolve(declarations.join('\n'));
 }
 
 function genElementDeclaration(element: Element, declarations: string[], indent: number = 0) {
@@ -236,6 +236,7 @@ const typeMap = new Map([
   ['String', 'string'],
   ['Number', 'number'],
   ['Boolean', 'boolean'],
+  ['*', 'any'],
   ['Array', 'any[]'],
 ]);
 
@@ -247,13 +248,17 @@ interface TsType {
 function getTsType(type?: string): TsType {
   let optional = false;
 
-  // default to 'any'
   type = type || 'any';
   
   // handle Closure optionals
   if (type.endsWith('=')) {
     optional = true;
     type = type.substring(0, type.length - 1);
+  }
+
+  // handle Closure unknown type
+  if (type.startsWith('?')) {
+    type = type + '|null';
   }
 
   // convert from Closure
