@@ -143,9 +143,10 @@ export class Workspace {
    * Given all the repos defined in the workspace, lets iterate through them
    * and either clone them or update their clones and set them to the specific
    * refs.
+   * TODO(fks) 09-25-2017: Better error handling. Standardize/format errors
+   * so that single type of error thrown.
    */
   private async _cloneOrUpdateWorkspaceRepos(repos: WorkspaceRepo[]) {
-    // Clone git repos.
     for (const repo of repos) {
       if (repo.session.isGit()) {
         await repo.session.fetch();
@@ -213,7 +214,7 @@ export class Workspace {
    */
   async init(
       patterns: {include: string[], exclude?: string[]},
-      options: WorkspaceInitOptions): Promise<void> {
+      options: WorkspaceInitOptions): Promise<WorkspaceRepo[]> {
     await this._initValidate();
     // Fetch our repos from the given patterns.
     const githubRepos =
@@ -228,6 +229,7 @@ export class Workspace {
     await this._installWorkspaceDependencies();
     // All done!
     this._initializedRepos = workspaceRepos;
+    return this._initializedRepos;
   }
 
   /**
