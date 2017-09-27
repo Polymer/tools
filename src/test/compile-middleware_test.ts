@@ -224,6 +224,10 @@ suite('compile-middleware', () => {
       await assertGolden('test-suite-no-wct.html');
     });
 
+    test('does not transform HTML when nomodule script exists', async () => {
+      await assertGolden('test-suite-nomodule.html');
+    });
+
     test('transforms module-looking JS', async () => {
       await assertGolden('lib-module.js');
     });

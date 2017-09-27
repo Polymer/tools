@@ -143,7 +143,16 @@ function compileHtml(
   const document = parse5.parse(source);
   let requireScriptTag, wctScriptTag;
 
-  for (const scriptTag of dom5.queryAll(document, isJsScriptNode)) {
+  const jsNodes = dom5.queryAll(document, isJsScriptNode);
+
+  // Assume that if this document has a nomodule script, the author is already
+  // handling browsers that don't support modules, and we don't need to
+  // transform anything.
+  if (jsNodes.find((node) => dom5.hasAttribute(node, 'nomodule'))) {
+    return source;
+  }
+
+  for (const scriptTag of jsNodes) {
     // Is this a module script we should transform?
     const transformingModule = options.transformModules &&
         dom5.getAttribute(scriptTag, 'type') === 'module';

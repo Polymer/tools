@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Fix issue with module scripts being compiled when a nomodule script exists.
+
 ## [0.22.1](https://github.com/PolymerLabs/polyserve/tree/v0.22.1) (2017-09-19)
 
 * Fixes issue with the babel compile cache where different compilation options were using the same namespace. ([#216](https://github.com/Polymer/polyserve/issues/216)).
