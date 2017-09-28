@@ -27,9 +27,9 @@ const header = `declare namespace Polymer {
 `;
 const footer = `}`;
 
-export function generateDeclarations(): Promise<string> {
+export function generateDeclarations(root: string): Promise<string> {
   const analyzer = new Analyzer({
-    urlLoader: new FSUrlLoader(),
+    urlLoader: new FSUrlLoader(root),
     urlResolver: new PackageUrlResolver(),
   });
 

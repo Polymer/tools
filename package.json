@@ -4,10 +4,13 @@
   "description": "Generate TypeScript type declarations for Polymer components.",
   "main": "lib/gen-ts.js",
   "types": "lib/gen-ts.d.ts",
+  "bin": "bin/gen-typescript-declarations",
   "directories": {
     "lib": "lib"
   },
   "dependencies": {
+    "command-line-args": "^4.0.7",
+    "command-line-usage": "^4.0.1",
     "escodegen": "^1.9.0",
     "polymer-analyzer": "^2.3.0"
   },
