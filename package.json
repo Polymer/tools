@@ -1,12 +1,35 @@
 {
   "name": "gen-typescript-declarations",
-  "version": "0.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/Polymer/gen-typescript-declarations.git",
-  "author": "Justin Fagnani <justinfagnani@google.com>",
-  "license": "BSD-3-Clause",
+  "version": "0.1.0",
+  "description": "Generate TypeScript type declarations for Polymer components.",
+  "main": "lib/gen-ts.js",
+  "types": "lib/gen-ts.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
   "dependencies": {
-    "escodegen": "^1.8.1",
-    "polymer-analyzer": "next"
-  }
+    "escodegen": "^1.9.0",
+    "polymer-analyzer": "^2.3.0"
+  },
+  "devDependencies": {
+    "clang-format": "^1.0.55",
+    "mocha": "^3.5.3",
+    "typescript": "^2.5.3"
+  },
+  "scripts": {
+    "clean": "rm -rf lib",
+    "build": "npm run clean && tsc",
+    "build:watch": "tsc --watch",
+    "test": "npm run build && mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/gen-typescript-declarations.git"
+  },
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Polymer/gen-typescript-declarations/issues"
+  },
+  "homepage": "https://github.com/Polymer/gen-typescript-declarations#readme"
 }
