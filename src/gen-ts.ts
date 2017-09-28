@@ -108,7 +108,7 @@ function genElementDeclaration(
     d += `${idt(indent)}class ${className} {\n`;
   }
 
-  for (const property of element.properties) {
+  for (const [, property] of element.properties) {
     if (property.privacy === 'private' || property.inheritedFrom != null) {
       continue;
     }
@@ -116,7 +116,7 @@ function genElementDeclaration(
         getTypeAnnotation(property, true)};\n`;
   }
 
-  for (const method of element.methods) {
+  for (const [, method] of element.methods) {
     const methodText = genMethod(method, indent + 2);
     if (methodText) {
       d += methodText;
@@ -145,14 +145,14 @@ function genMixinDeclaration(
 
   d += `${idt(indent)}interface ${name} ${extendsText}{\n`
 
-  for (const property of mixin.properties) {
+  for (const [, property] of mixin.properties) {
     const propertyText = genProperty(property, indent + 2);
     if (propertyText) {
       d += propertyText;
     }
   }
 
-  for (const method of mixin.methods) {
+  for (const [, method] of mixin.methods) {
     const methodText = genMethod(method, indent + 2);
     if (methodText) {
       d += methodText;
