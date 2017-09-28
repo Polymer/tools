@@ -18,6 +18,7 @@
   },
   "scripts": {
     "clean": "rm -rf lib",
+    "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
     "test": "npm run build && mocha"
