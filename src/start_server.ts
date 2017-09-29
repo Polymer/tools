@@ -102,6 +102,9 @@ export interface ServerOptions {
   additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
+export type ExpressAppMapper = (app: express.Express, options: ServerOptions) =>
+    Promise<express.Express>;
+
 function applyDefaultServerOptions(options: ServerOptions) {
   const withDefaults: ServerOptions = Object.assign({}, options);
   Object.assign(withDefaults, {
@@ -119,20 +122,34 @@ function applyDefaultServerOptions(options: ServerOptions) {
 }
 
 /**
+ * @param {ServerOptions} options used to configure the generated polyserve app
+ *     and server.
+ * @param {ExpressAppMapper} appMapper optional mapper function which is called
+ *     with the generated polyserve app and the options used to generate
+ *     it and returns an optional substitution Express app.  This is usually one
+ *     that mounts the original app, to add routes or middleware in advance of
+ *     polyserve's catch-all routes.
  * @return {Promise} A Promise that completes when the server has started.
  * @deprecated Please use `startServers` instead. This function will be removed
  *     in a future release.
  */
-export async function startServer(options: ServerOptions):
-    Promise<http.Server> {
-  return (await _startServer(options)).server;
+export async function startServer(
+    options: ServerOptions,
+    appMapper?: ExpressAppMapper): Promise<http.Server> {
+  return (await _startServer(options, appMapper)).server;
 }
 
-async function _startServer(options: ServerOptions) {
+async function _startServer(
+    options: ServerOptions, appMapper?: ExpressAppMapper) {
   options = options || {};
   assertNodeVersion(options);
   try {
-    const app = getApp(options);
+    let app = getApp(options);
+    if (appMapper) {
+      // If the map function doesn't return an app, we should fallback to the
+      // original app, hence the `appMapper(app) || app`.
+      app = await appMapper(app, options) || app;
+    }
     const server = await startWithApp(options, app);
     return {app, server};
   } catch (e) {
@@ -189,17 +206,18 @@ export type StartServerResult = MainlineServer | MultipleServersInfo;
  * Starts one or more web servers, based on the given options and
  * variant bower_components directories that are found in the root dir.
  */
-export async function startServers(options: ServerOptions):
-    Promise<StartServerResult> {
+export async function startServers(
+    options: ServerOptions,
+    appMapper?: ExpressAppMapper): Promise<StartServerResult> {
   options = applyDefaultServerOptions(options);
   const variants = await findVariants(options);
   // TODO(rictic): support manually configuring variants? tracking more
   //   metadata about them besides their names?
   if (variants.length > 0) {
-    return await startVariants(options, variants);
+    return await startVariants(options, variants, appMapper);
   }
 
-  const serverAndApp = await _startServer(options);
+  const serverAndApp = await _startServer(options, appMapper);
   return {
     options,
     kind: 'mainline',
@@ -223,10 +241,12 @@ async function findVariants(options: ServerOptions) {
 }
 
 async function startVariants(
-    options: ServerOptions, variants: {name: string, directory: string}[]) {
+    options: ServerOptions,
+    variants: {name: string, directory: string}[],
+    appMapper?: ExpressAppMapper) {
   const mainlineOptions = Object.assign({}, options);
   mainlineOptions.port = 0;
-  const mainServer = await _startServer(mainlineOptions);
+  const mainServer = await _startServer(mainlineOptions, appMapper);
   const mainServerInfo: MainlineServer = {
     kind: 'mainline',
     server: mainServer.server,
@@ -239,7 +259,7 @@ async function startVariants(
     const variantOpts = Object.assign({}, options);
     variantOpts.port = 0;
     variantOpts.componentDir = variant.directory;
-    const variantServer = await _startServer(variantOpts);
+    const variantServer = await _startServer(variantOpts, appMapper);
     variantServerInfos.push({
       kind: 'variant',
       variantName: variant.name,

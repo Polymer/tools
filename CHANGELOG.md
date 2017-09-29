@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Added ability to modify and/or substitute generated express apps for when calling startServers, to support more flexibility in request handler ordering and middleware scenarios.
 * Fix issue with module scripts being compiled when a nomodule script exists.
 
 ## [0.22.1](https://github.com/PolymerLabs/polyserve/tree/v0.22.1) (2017-09-19)

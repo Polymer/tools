@@ -15,6 +15,7 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
+import * as express from 'express';
 import * as fs from 'mz/fs';
 import * as path from 'path';
 import * as pem from 'pem';
@@ -24,7 +25,7 @@ import * as supertest from 'supertest';
 import * as tmp from 'tmp';
 
 import {getApp, ServerOptions} from '../start_server';
-import {startServer, startServers} from '../start_server';
+import {MainlineServer, startServer, startServers} from '../start_server';
 
 
 chai.use(chaiAsPromised);
@@ -518,6 +519,36 @@ suite('startServer', () => {
 });
 
 suite('startServers', () => {
+  suite('replace generated app with optional appMapper argument', () => {
+
+    let prevCwd: string;
+    setup(() => {
+      prevCwd = process.cwd();
+      process.chdir(root);
+    });
+
+    teardown(() => {
+      process.chdir(prevCwd);
+    });
+
+    test('allows replacing app with parent app', async () => {
+      const server = <MainlineServer>await startServers(
+          {}, async (app: express.Express) => {
+            const newApp = express();
+            newApp.use('x', function(_, res) {
+              res.send('x');
+            });
+            newApp.use('*', app);
+            return newApp;
+          });
+
+      assert.equal(server.kind, 'mainline');
+
+      supertest(server.server).get('/x').expect(200, 'have an x\n');
+      supertest(server.server).get('/test-file.txt').expect(200, 'PASS\n');
+    });
+  });
+
   suite('variants', () => {
     const variantsRoot = path.join(root, 'variants');
 
