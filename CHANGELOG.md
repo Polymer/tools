@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## [0.23.0](https://github.com/PolymerLabs/polyserve/tree/0.23.0) (2017-10-02)
+
 * Added ability to modify and/or substitute generated express apps for when calling startServers, to support more flexibility in request handler ordering and middleware scenarios.
 * Fix issue with module scripts being compiled when a nomodule script exists.
+* Updated polymer-build to 2.1.0 which includes polymer-build 3.1.0 which inlines external stylesheet links in templates.
 
 ## [0.22.1](https://github.com/PolymerLabs/polyserve/tree/v0.22.1) (2017-09-19)
 
