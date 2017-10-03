@@ -15,8 +15,8 @@
 import * as GitHub from 'github';
 
 /**
- * An object that describes a user's reference to a specific repo on GitHub,
- * and optionally a specific ref (branch/tag/sha).
+ * A reference to a specific repo on GitHub, and optionally a specific ref
+ * (branch/tag/sha).
  */
 export interface GitHubRepoReference {
   owner: string;
@@ -65,7 +65,7 @@ function createGitHubRepoDataFromApi(obj: any): GitHubRepoData {
 }
 
 /**
- * Create a simpiler GitHubRepoReference object from a GitHubRepoData object &
+ * Create a simpiler GitHubRepoReference object from a GitHubRepoData object and
  * a references string.
  */
 function createGitHubRepoReferenceFromDataAndReference(
@@ -74,7 +74,7 @@ function createGitHubRepoReferenceFromDataAndReference(
     fullName: data.fullName,
     owner: data.owner,
     name: data.name,
-    ref: ref || undefined,
+    ref: ref,
   };
 }
 
@@ -84,7 +84,7 @@ function createGitHubRepoReferenceFromDataAndReference(
  */
 function createGitHubRepoFromDataAndReference(
     data: GitHubRepoData, ref?: string): GitHubRepo {
-  return Object.assign({}, data, {ref});
+  return {...data, ref};
 }
 
 
@@ -95,6 +95,7 @@ function createGitHubRepoFromDataAndReference(
  */
 function createGithubRepoReferenceFromPattern(pattern: string):
     GitHubRepoReference {
+  // NOTE(fks) 10-03-2017: This can be replaced with RegEx for perf, if needed.
   const hashSplit = pattern.split('#');
   const slashSplit = hashSplit[0].split('/');
 
@@ -118,6 +119,7 @@ function createGithubRepoReferenceFromPattern(pattern: string):
  * consumption.
  *
  * TODO(fks) 09-21-2017: Add back parallelization & throttling.
+ *                       https://github.com/Polymer/polymer-workspaces/issues/2
  */
 export class GitHubConnection {
   private _cache: Map<string, GitHubRepoData>;
@@ -180,14 +182,14 @@ export class GitHubConnection {
     let isOrg = true;
 
     do {
+      let responseData;
       if (isOrg) {
         try {
           const response = await this._github.repos.getForOrg(
               {org: owner, per_page: pageSize, page: page});
-          pageRepos = response.data.filter((obj: any) => !obj.private)
-                          .map(createGitHubRepoDataFromApi);
+          responseData = response.data;
         } catch (e) {
-          // Maybe owner is not an org.
+          // Owner is not an org? Continue as if owner is a user.
           isOrg = false;
         }
       }
@@ -195,12 +197,14 @@ export class GitHubConnection {
         try {
           const response = await this._github.repos.getForUser(
               {username: owner, per_page: pageSize, page: page});
-          pageRepos = response.data.filter((obj: any) => !obj.private)
-                          .map(createGitHubRepoDataFromApi);
+          responseData = response.data;
         } catch (e) {
-          pageRepos = [];
+          // Owner is not an user, either? End and return any repos found.
+          responseData = [];
         }
       }
+      pageRepos = responseData.filter((obj: any) => !obj.private)
+                      .map(createGitHubRepoDataFromApi);
       for (const repo of pageRepos) {
         this.setCache(repo.fullName, repo);
         allRepos.push(repo);

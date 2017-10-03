@@ -14,8 +14,8 @@
 
 import {assert} from 'chai';
 import {GitHubConnection} from '../github';
-import * as mockApi from './__mock-api__';
-import {testApiToken} from './__mock-api__';
+import * as mockApi from './_util/mock-api';
+import {testApiToken} from './_util/mock-api';
 
 
 suite('src/github', () => {

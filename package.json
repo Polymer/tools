@@ -5,8 +5,8 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "repository": "https://github.com/Polymer/polymer-workspaces.git",
-  "author": "Fred K. Schott <fschott@google.com>",
-  "license": "MIT",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
   "scripts": {
     "format": "find src | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint -p ./",

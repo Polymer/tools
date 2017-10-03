@@ -1,6 +1,6 @@
 # polymer-workspaces
 
-Perform work across multiple Polymer repos. Useful for simple batch updates & batch publishing across all Polymer elements, tools, and/or libraries.
+Perform work across multiple GitHub repos. Useful for simple batch updates & batch publishing across all Polymer elements, tools, and/or libraries.
 
 ```
 yarn add polymer-workspaces

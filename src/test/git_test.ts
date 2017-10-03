@@ -55,8 +55,8 @@ suite('src/git', function() {
 
       test('returns true if current directory is a git repo', async () => {
         mkdirSync(testDir);
-        const result = await exec(testDir, `git init`);
-        assert.equal(result[1], '');
+        const result = await exec(testDir, `git`, [`init`]);
+        assert.equal(result.stderr, '');
         assert.isTrue(gitSession.isGit());
       });
 

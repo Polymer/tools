@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import {promisify} from 'util';
+import fs = require('fs');
+import path = require('path');
+import util = require('util');
 
 import {GitSession} from './git';
 import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
@@ -23,7 +23,7 @@ import exec, {checkCommand} from './util/exec';
 import {existsSync} from './util/fs';
 
 import _rimraf = require('rimraf');
-const rimraf: (dir: string) => void = promisify(_rimraf);
+const rimraf: (dir: string) => void = util.promisify(_rimraf);
 
 interface GitHubRepoError {
   error: Error;
@@ -188,7 +188,7 @@ export class Workspace {
    * and also includes the devDependencies from all workspace repos under test.
    */
   private async _installWorkspaceDependencies() {
-    await exec(this.dir, `bower install -F`, {maxBuffer: 1000 * 1024});
+    await exec(this.dir, `bower`, ['install', '-F'], {maxBuffer: 1000 * 1024});
   }
 
   /**

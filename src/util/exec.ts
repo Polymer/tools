@@ -13,27 +13,31 @@
  */
 
 import {ExecOptions} from 'child_process';
-const {promisify} = require('util');
-const {exec: _exec} = require('child_process');
-const exec = promisify(_exec);
+import util = require('util');
+const {promisify} = util;
+const {execFile: _execFile} = require('child_process');
+const execFile = promisify(_execFile);
 
-export type StdOut = string;
-export type StdErr = string;
-export type ExecResult = [StdOut, StdErr];
+export interface ExecResult {
+  stdout: string;
+  stderr: string;
+}
 
-export default async function(
-    cwd: string, command: string, options?: ExecOptions): Promise<ExecResult> {
-  const commandOptions = Object.assign({}, options, {cwd});
-  const {stdout, stderr} = await exec(command, commandOptions);
-  return [stdout.toString('utf8').trim(), stderr.toString('utf8').trim()];
+export default async function exec(
+    cwd: string, command: string, args?: string[], options?: ExecOptions):
+    Promise<ExecResult> {
+  const commandOptions = {...options, cwd: cwd} as ExecOptions;
+  const {stdout, stderr} = await execFile(command, args, commandOptions);
+  // exec/execFile attach unneccesary extra newlines/whitespace
+  return {stdout: stdout.trim(), stderr: stderr.trim()};
 }
 
 export async function checkCommand(commandName: string): Promise<boolean> {
   try {
-    const {stdout} = await exec(
-        'command -v ' + commandName + ' 2>/dev/null' +
-        ' && { echo >&1 \'' + commandName + ' found\'; exit 0; }');
-    return !!stdout;
+    // the "command" command will exit with an error code, which Node
+    // will throw from execFile() as an error object.
+    await execFile('command', ['-v', commandName]);
+    return true;
   } catch (err) {
     return false;
   }

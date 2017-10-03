@@ -12,39 +12,40 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as path from 'path';
+import path = require('path');
 
 import exec, {ExecResult} from './util/exec';
 import {existsSync} from './util/fs';
 
 export class GitSession {
-  cwd: string;
+  dir: string;
 
-  constructor(cwd: string) {
-    this.cwd = cwd;
+  constructor(dir: string) {
+    this.dir = dir;
   }
 
   /**
    * Returns true if directory exists and its own git repo.
    */
   isGit(): boolean {
-    return existsSync(path.join(this.cwd, '.git'));
+    return existsSync(path.join(this.dir, '.git'));
   }
 
   /**
    * Returns the git commit hash at HEAD.
    */
   async getHeadSha(): Promise<ExecResult> {
-    return (await exec(this.cwd, `git rev-parse HEAD`));
+    return await exec(this.dir, 'git', ['rev-parse', 'HEAD']);
   }
 
   /**
-   * Run `git clone [url] [this.cwd]`.
+   * Run `git clone [url] [this.dir]`.
    */
   async clone(url: string): Promise<ExecResult> {
-    return (await exec(
+    return await exec(
         process.cwd(),
-        `git clone ${url} ${this.cwd} --depth 1 --no-single-branch`));
+        'git',
+        ['clone', url, this.dir, '--depth', '1', '--no-single-branch']);
   }
 
   /**
@@ -52,14 +53,14 @@ export class GitSession {
    * from default.
    */
   async fetch(remoteName: string = ''): Promise<ExecResult> {
-    return (await exec(this.cwd, `git fetch ${remoteName} --depth 1`));
+    return await exec(this.dir, 'git', ['fetch', remoteName, '--depth', '1']);
   }
 
   /**
    * Run `git checkout [branch]`.
    */
   async checkout(branch: string): Promise<ExecResult> {
-    return (await exec(this.cwd, `git checkout ${branch} --`));
+    return await exec(this.dir, 'git', ['checkout', branch, '--']);
   }
 
   /**
@@ -69,8 +70,8 @@ export class GitSession {
    */
   async destroyAllUncommittedChangesAndFiles():
       Promise<{reset: ExecResult, clean: ExecResult}> {
-    const resetResult = await exec(this.cwd, `git reset --hard`);
-    const cleanResult = await exec(this.cwd, `git clean -fd`);
+    const resetResult = await exec(this.dir, 'git', ['reset', '--hard']);
+    const cleanResult = await exec(this.dir, 'git', ['clean', '-fd']);
     return {
       reset: resetResult,
       clean: cleanResult,

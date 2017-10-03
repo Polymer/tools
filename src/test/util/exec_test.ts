@@ -20,8 +20,15 @@ suite('src/util/exec', () => {
   suite('exec()', () => {
 
     test('returns false if current directory does not exist', async () => {
-      const result = await exec(process.cwd(), 'pwd');
-      assert.deepEqual(result, [process.cwd(), '']);
+      const testCwd = process.cwd();
+      const result = await exec(testCwd, 'pwd');
+      assert.deepEqual(result, {stdout: testCwd, stderr: ''});
+    });
+
+    test('passes arguments correctly', async () => {
+      const testOutput = 'HELLO THERE';
+      const result = await exec('', 'echo', [testOutput]);
+      assert.deepEqual(result, {stdout: testOutput, stderr: ''});
     });
 
   });

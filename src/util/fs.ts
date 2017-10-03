@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as fs from 'fs';
+import fs = require('fs');
 
 /**
  * Synchronously determines whether the given file exists.
