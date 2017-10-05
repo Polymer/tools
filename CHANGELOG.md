@@ -2,6 +2,8 @@
 
 ## Unreleased
 <!-- Add new, unreleased items here. -->
+
+## v1.0.2 [10-05-2017]
 - Fix gitRepo.fetch() for when no branchName is given
 - Fix gitRepo.getHeadSha() & add tests
 - When expanding repo patterns, Filter out repos that don't match the reference branch
