@@ -88,64 +88,61 @@ suite('src/github', () => {
       test('handles dynamic owner/*#ref pattern', async () => {
         const references = await githubConnection.expandRepoPatterns(
             ['polymerelements/*#ABCDEFGH']);
-        assert.deepEqual(references, [
-          {
-            owner: 'PolymerElements',
-            name: 'paper-appbar',
-            fullName: 'PolymerElements/paper-appbar',
-            ref: 'ABCDEFGH'
-          },
-          {
-            owner: 'PolymerElements',
-            name: 'paper-button',
-            fullName: 'PolymerElements/paper-button',
-            ref: 'ABCDEFGH'
-          },
-          {
-            owner: 'PolymerElements',
-            name: 'iron-ajax',
-            fullName: 'PolymerElements/iron-ajax',
-            ref: 'ABCDEFGH'
-          }
-        ]);
+        assert.deepEqual(references, [{
+                           owner: 'PolymerElements',
+                           name: 'paper-appbar',
+                           fullName: 'PolymerElements/paper-appbar',
+                           ref: 'ABCDEFGH'
+                         }]);
       });
 
       test('handles dynamic owner/partial-name-* pattern', async () => {
-        const references = await githubConnection.expandRepoPatterns(
-            ['polymerelements/paper-*']);
-        assert.deepEqual(references, [
-          {
-            owner: 'PolymerElements',
-            name: 'paper-appbar',
-            fullName: 'PolymerElements/paper-appbar',
-            ref: undefined
-          },
-          {
-            owner: 'PolymerElements',
-            name: 'paper-button',
-            fullName: 'PolymerElements/paper-button',
-            ref: undefined
-          },
-        ]);
+        assert.deepEqual(
+            await githubConnection.expandRepoPatterns(
+                ['polymerelements/paper-*']),
+            [
+              {
+                owner: 'PolymerElements',
+                name: 'paper-appbar',
+                fullName: 'PolymerElements/paper-appbar',
+                ref: undefined
+              },
+              {
+                owner: 'PolymerElements',
+                name: 'paper-button',
+                fullName: 'PolymerElements/paper-button',
+                ref: undefined
+              },
+            ]);
+        assert.deepEqual(
+            await githubConnection.expandRepoPatterns(
+                ['polymerelements/iron-*']),
+            [
+              {
+                owner: 'PolymerElements',
+                name: 'iron-ajax',
+                fullName: 'PolymerElements/iron-ajax',
+                ref: undefined
+              },
+            ]);
       });
 
       test('handles dynamic owner/partial-name-*#ref pattern', async () => {
-        const references = await githubConnection.expandRepoPatterns(
-            ['polymerelements/paper-*#ABCDEFGH']);
-        assert.deepEqual(references, [
-          {
-            owner: 'PolymerElements',
-            name: 'paper-appbar',
-            fullName: 'PolymerElements/paper-appbar',
-            ref: 'ABCDEFGH'
-          },
-          {
-            owner: 'PolymerElements',
-            name: 'paper-button',
-            fullName: 'PolymerElements/paper-button',
-            ref: 'ABCDEFGH'
-          },
-        ]);
+        assert.deepEqual(
+            await githubConnection.expandRepoPatterns(
+                ['polymerelements/paper-*#ABCDEFGH']),
+            [
+              {
+                owner: 'PolymerElements',
+                name: 'paper-appbar',
+                fullName: 'PolymerElements/paper-appbar',
+                ref: 'ABCDEFGH'
+              },
+            ]);
+        assert.deepEqual(
+            await githubConnection.expandRepoPatterns(
+                ['polymerelements/iron-*#ABCDEFGH']),
+            []);
       });
 
     });

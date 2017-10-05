@@ -12,9 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {existsSync} from './fs';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import {existsSync} from './fs';
 
 /**
  * @returns a dictionary object of dev dependencies from the bower.json
