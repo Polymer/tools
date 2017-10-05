@@ -69,3 +69,4 @@ typings/
 src/gen-ts-types/def/*.js
 
 github-token
+.DS_Store

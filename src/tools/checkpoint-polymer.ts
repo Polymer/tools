@@ -40,7 +40,7 @@ const convertedDir = path.join(fixturesDirPath, 'expected');
   await convertPackage({
     inDir: sourceDir,
     outDir: convertedDir,
-    clearOutDir: true,
+    cleanOutDir: true,
     packageName: '@polymer/polymer',
     packageVersion: '3.0.0',
   });

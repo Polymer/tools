@@ -14,7 +14,7 @@
 
 import {ConvertedDocumentUrl} from './url-converter';
 
-export type ConversionOutput = DeleteFile | HtmlFile | JsModule;
+export type ConversionOutput = DeleteFile|HtmlFile|JsModule;
 
 export interface DeleteFile {
   readonly type: 'delete-file';

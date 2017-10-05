@@ -15,7 +15,6 @@
 import {fs} from 'mz';
 import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
-import * as semver from 'semver';
 
 import {BaseConverterOptions} from './base-converter';
 import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifest-converter';
@@ -23,10 +22,8 @@ import {polymerFileOverrides} from './special-casing';
 import {WorkspaceConverter} from './workspace-converter';
 
 interface ConvertWorkspaceOptions extends BaseConverterOptions {
-  packageVersion?: string;
-  prereleaseVersion?: string;
+  packageVersion: string;
   inDir: string;
-  repos: string[];
 }
 
 export function configureAnalyzer(options: ConvertWorkspaceOptions) {
@@ -62,7 +59,6 @@ export function configureConverter(
 }
 
 export async function convertWorkspace(options: ConvertWorkspaceOptions) {
-  console.log('Converting Workspace');
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
@@ -95,14 +91,8 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
         depMapping = {npm: bowerName};
       }
 
-      let npmPackageVersion = options.packageVersion ||
-          (bowerJson.version && semver.inc(bowerJson.version, 'major')) ||
-          '3.0.0';
-      if (options.prereleaseVersion) {
-        npmPackageVersion = `${npmPackageVersion}-${options.prereleaseVersion}`;
-      }
       const packageJson =
-          generatePackageJson(bowerJson, depMapping.npm, npmPackageVersion);
+          generatePackageJson(bowerJson, depMapping.npm, options.packageVersion);
       writeJson(packageJson, options.inDir, repo, 'package.json');
     } catch (e) {
       console.log('error in bower.json -> package.json conversion');

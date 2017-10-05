@@ -89,7 +89,7 @@ suite('AnalysisConverter', () => {
 
     function assertSources(
         results: Map<string, string|undefined>,
-        expected: {[path: string]: string | undefined}) {
+        expected: {[path: string]: string|undefined}) {
       for (const [expectedPath, expectedContents] of Object.entries(expected)) {
         assert.isTrue(
             results.has(expectedPath),

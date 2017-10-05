@@ -20,9 +20,9 @@ import {dependencyMap} from './manifest-converter';
 const htmlExtension = '.html';
 
 /** A package-rooted URL path to a document; format returned by the analyzer */
-export type OriginalDocumentUrl = string & {_OriginalDocumentUrl: never};
+export type OriginalDocumentUrl = string&{_OriginalDocumentUrl: never};
 /** A package-rooted URL path to a converted document/module; './'-prefixed */
-export type ConvertedDocumentUrl = string & {_ConvertedDocumentUrl: never};
+export type ConvertedDocumentUrl = string&{_ConvertedDocumentUrl: never};
 
 /**
  * Given an HTML url relative to the project root, return true if that url
