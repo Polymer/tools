@@ -30,34 +30,52 @@ suite('src/git', function() {
 
   suite('GitRepo', () => {
 
-    const testDir = path.join(__dirname, 'POLYMER_WORKSPACES_GIT_TEST_DIR');
-    let gitRepo: GitRepo;
+    const gitDir = path.join(__dirname, 'POLYMER_WORKSPACES_GIT_DIR');
+    const emptyDir = path.join(__dirname, 'POLYMER_WORKSPACES_EMPTY_DIR');
+    const doesNotExistDir =
+        path.join(__dirname, 'POLYMER_WORKSPACES_DOES_NOT_EXIST_DIR');
 
     setup(async () => {
-      await rimraf(testDir);
-      gitRepo = new GitRepo(testDir);
+      mkdirSync(gitDir);
+      mkdirSync(emptyDir);
+      const gitInitResult = await exec(gitDir, `git`, [`init`]);
+      assert.equal(gitInitResult.stderr, '');
     });
 
-    suiteTeardown(async () => {
-      return await rimraf(testDir);
+    teardown(async () => {
+      await rimraf(gitDir);
+      await rimraf(emptyDir);
     });
 
     suite('gitRepo.isGit()', () => {
 
       test('returns false if current directory does not exist', async () => {
-        assert.isFalse(gitRepo.isGit());
+        const doesNotExistGitRepo = new GitRepo(doesNotExistDir);
+        assert.isFalse(doesNotExistGitRepo.isGit());
       });
 
       test('returns false if current directory is not a git repo', async () => {
-        mkdirSync(testDir);
-        assert.isFalse(gitRepo.isGit());
+        const emptyGitRepo = new GitRepo(emptyDir);
+        assert.isFalse(emptyGitRepo.isGit());
       });
 
       test('returns true if current directory is a git repo', async () => {
-        mkdirSync(testDir);
-        const result = await exec(testDir, `git`, [`init`]);
-        assert.equal(result.stderr, '');
+        const gitRepo = new GitRepo(gitDir);
         assert.isTrue(gitRepo.isGit());
+      });
+
+    });
+
+    suite('gitRepo.getHeadSha()', () => {
+
+      test('returns the head SHA for a given git repo', async () => {
+        // Empty repos have no HEAD commit. Create one so that this makes sense.
+        await exec(
+            gitDir, 'git', ['commit', '-m', '"test commit"', '--allow-empty']);
+        const gitRepo = new GitRepo(gitDir);
+        const gitHeadSha = await gitRepo.getHeadSha();
+        assert.isString(gitHeadSha);
+        assert.isOk(gitHeadSha.length > 6);
       });
 
     });

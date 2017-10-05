@@ -33,8 +33,8 @@ export class GitRepo {
   /**
    * Returns the git commit hash at HEAD.
    */
-  async getHeadSha(): Promise<ExecResult> {
-    return await exec(this.dir, 'git', ['rev-parse', 'HEAD']);
+  async getHeadSha(): Promise<string> {
+    return (await exec(this.dir, 'git', ['rev-parse', 'HEAD'])).stdout;
   }
 
   /**
@@ -51,8 +51,10 @@ export class GitRepo {
    * Run `git fetch [remoteName]`. If remoteName is not given, git will fetch
    * from default.
    */
-  async fetch(remoteName: string = ''): Promise<ExecResult> {
-    return await exec(this.dir, 'git', ['fetch', remoteName, '--depth', '1']);
+  async fetch(remoteName?: string): Promise<ExecResult> {
+    const commandArgs = remoteName ? ['fetch', remoteName, '--depth', '1'] :
+                                     ['fetch', '--depth', '1'];
+    return await exec(this.dir, 'git', commandArgs);
   }
 
   /**
