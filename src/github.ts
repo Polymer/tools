@@ -15,7 +15,7 @@
 import * as GitHub from 'github';
 
 /**
- * A reference to a specific repo on GitHub, and optionally a specific ref
+ * A reference to a GitHub repo, with an optional reference to a specific ref
  * (branch/tag/sha).
  */
 export interface GitHubRepoReference {
@@ -26,9 +26,9 @@ export interface GitHubRepoReference {
 }
 
 /**
- * An object that describes properties of an entire GitHub repo, returned
- * from the API. This data is independent from any one reference and can
- * be cached for multiple runs/references.
+ * All GitHub repo data, returned from the GitHub API. This data is independent
+ * from any one reference and can be cached for multiple runs /
+ * GitHubRepoReference objects.
  */
 export interface GitHubRepoData {
   owner: string;
@@ -39,8 +39,8 @@ export interface GitHubRepoData {
 }
 
 /**
- * An object that describes properties of an entire GitHub repo AND a reference
- * to a specific branch/tag/commit/etc.
+ * A complete GitHub repo object. Includes all data from GitHub and an optional
+ * reference to a specific branch/tag/sha/etc.
  */
 export interface GitHubRepo extends GitHubRepoData { ref?: string; }
 
@@ -79,8 +79,8 @@ function createGitHubRepoReferenceFromDataAndReference(
 }
 
 /**
- * Given a GitHubRepoData object & a reference, returns a full GitHubRepo
- * object.
+ * Given a GitHubRepoData object & an optional reference, returns a full
+ * GitHubRepo object.
  */
 function createGitHubRepoFromDataAndReference(
     data: GitHubRepoData, ref?: string): GitHubRepo {

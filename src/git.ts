@@ -12,12 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import path = require('path');
-
 import exec, {ExecResult} from './util/exec';
 import {existsSync} from './util/fs';
+import path = require('path');
 
-export class GitSession {
+export class GitRepo {
   dir: string;
 
   constructor(dir: string) {

@@ -11,9 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import fs = require('fs');
-import path = require('path');
+
 import {existsSync} from './fs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * @returns a dictionary object of dev dependencies from the bower.json
@@ -39,7 +40,7 @@ export function mergedBowerConfigsFromRepos(repos: {dir: string}[]): {
     dependencies: {},
     resolutions: {},
   };
-  /*  .filter(repo => repo.test)*/ for (const repo of repos) {
+  for (const repo of repos) {
     // TODO(usergenic): Verify that we can assume bower.json is the config
     // file in the event any repo-specific .bowerrc files are capable of
     // redefining its name.

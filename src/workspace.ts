@@ -16,7 +16,7 @@ import fs = require('fs');
 import path = require('path');
 import util = require('util');
 
-import {GitSession} from './git';
+import {GitRepo} from './git';
 import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
 import exec, {checkCommand} from './util/exec';
@@ -32,12 +32,12 @@ interface GitHubRepoError {
 
 /**
  * A WorkspaceRepo contains all data to specify the github repo, as well as
- * an active session into the local git repository.
+ * an active session to interact with the local git repository.
  */
 export interface WorkspaceRepo {
   dir: string;
+  git: GitRepo;
   github: GitHubRepo;
-  session: GitSession;
 }
 
 export interface WorkspaceInitOptions {
@@ -90,14 +90,14 @@ export class Workspace {
   }
 
   /**
-   * Create a new WorkspaceRepo -- including a new active GitSession - for a
+   * Create a new WorkspaceRepo -- includes an active GitRepo session - for a
    * given GitHubRepo object.
    */
   private _openWorkspaceRepo(repo: GitHubRepo): WorkspaceRepo {
     const sessionDir = path.resolve(this.dir, repo.name);
     return {
       dir: sessionDir,
-      session: new GitSession(sessionDir),
+      git: new GitRepo(sessionDir),
       github: repo,
     };
   }
@@ -130,7 +130,7 @@ export class Workspace {
     // nodegit, we need to remove it.  This happens when there's not a --fresh
     // invocation and bower installed the dependency instead of git.
     for (const repo of repos) {
-      if (existsSync(repo.dir) && !repo.session.isGit()) {
+      if (existsSync(repo.dir) && !repo.git.isGit()) {
         if (options.verbose) {
           console.log(`Removing existing folder: ${repo.dir}...`);
         }
@@ -148,13 +148,13 @@ export class Workspace {
    */
   private async _cloneOrUpdateWorkspaceRepos(repos: WorkspaceRepo[]) {
     for (const repo of repos) {
-      if (repo.session.isGit()) {
-        await repo.session.fetch();
-        await repo.session.destroyAllUncommittedChangesAndFiles();
+      if (repo.git.isGit()) {
+        await repo.git.fetch();
+        await repo.git.destroyAllUncommittedChangesAndFiles();
       } else {
-        await repo.session.clone(repo.github.cloneUrl);
+        await repo.git.clone(repo.github.cloneUrl);
       }
-      await repo.session.checkout(repo.github.ref || repo.github.defaultBranch);
+      await repo.git.checkout(repo.github.ref || repo.github.defaultBranch);
     }
   }
 
@@ -172,7 +172,7 @@ export class Workspace {
     // Make bower config point bower packages of workspace repos to themselves
     // to override whatever any direct or transitive dependencies say.
     for (const repo of repos) {
-      const sha = await repo.session.getHeadSha();
+      const sha = await repo.git.getHeadSha();
       bowerConfig.dependencies[repo.github.name] =
           `./${repo.github.name}#${sha}`;
     }

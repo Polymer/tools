@@ -23,6 +23,9 @@ export interface ExecResult {
   stderr: string;
 }
 
+/**
+ * A helper function for working with Node's core execFile() method.
+ */
 export default async function exec(
     cwd: string, command: string, args?: string[], options?: ExecOptions):
     Promise<ExecResult> {
@@ -32,6 +35,10 @@ export default async function exec(
   return {stdout: stdout.trim(), stderr: stderr.trim()};
 }
 
+/**
+ * A helper function to check whether a shell command exists or not.
+ * Useful for user-facing warnings.
+ */
 export async function checkCommand(commandName: string): Promise<boolean> {
   try {
     // the "command" command will exit with an error code, which Node
