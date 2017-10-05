@@ -65,9 +65,27 @@ export function setup() {
 
   nock('https://api.github.com')
       .persist()
-      .get('/orgs/polymerelements/repos')
-      .query({page: 1, per_page: 50, access_token: testApiToken})
-      .reply(200, [], {Status: '200 OK'});
+      .get('/repos/PolymerElements/paper-appbar/git/refs/heads/ABCDEFGH')
+      .query({access_token: testApiToken})
+      .reply(200, {ref: 'refs/heads/ABCDEFGH'}, {Status: '200 OK'});
+
+  nock('https://api.github.com')
+      .persist()
+      .get('/repos/PolymerElements/paper-button/git/refs/heads/ABCDEFGH')
+      .query({access_token: testApiToken})
+      .reply(
+          200,
+          [
+            {ref: 'refs/heads/ABCDEFGH-MATCH-1'},
+            {ref: 'refs/heads/ABCDEFGH-MATCH-2'}
+          ],
+          {Status: '200 OK'});
+
+  nock('https://api.github.com')
+      .persist()
+      .get('/repos/PolymerElements/iron-ajax/git/refs/heads/ABCDEFGH')
+      .query({access_token: testApiToken})
+      .reply(200, '', {Status: '404 NOT FOUND'});
 }
 
 export function teardown() {

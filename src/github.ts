@@ -47,8 +47,19 @@ export interface GitHubRepo extends GitHubRepoData { ref?: string; }
 /**
  * Returns true if the response is a redirect to another repo
  */
-function isRedirect(response: any): boolean {
-  return !!(response.meta && response.meta.status.match(/^301\b/));
+function isSuccessResponse(response: any): boolean {
+  return !!(
+      response.meta && response.meta.status &&
+      response.meta.status.match(/^200\b/));
+}
+
+/**
+ * Returns true if the response is a redirect to another repo
+ */
+function isRedirectResponse(response: any): boolean {
+  return !!(
+      response.meta && response.meta.status &&
+      response.meta.status.match(/^301\b/));
 }
 
 /**
@@ -158,7 +169,7 @@ export class GitHubConnection {
     // details in error messaging.  This was encountered because we
     // tried to request Polymer/hydrolysis which has been renamed to
     // Polymer/polymer-analyzer and the API doesn't auto-follow this.
-    if (isRedirect(response)) {
+    if (isRedirectResponse(response)) {
       console.log('Repo ${owner}/${repo} has moved permanently.');
       console.log(response);
       throw new Error(`Repo ${repoReference.owner}/${
@@ -258,14 +269,38 @@ export class GitHubConnection {
             pattern.substring(0, pattern.indexOf('*')).toLowerCase();
         const ref = pattern.includes('#') &&
             pattern.substring(pattern.indexOf('#') + 1);
-        (await this.getOwnerRepos(owner))
-            .filter((cachedRepo) => {
-              return cachedRepo.fullName.toLowerCase().startsWith(namePattern);
-            })
-            .forEach((cachedRepo) => {
-              allGitHubRepos.push(createGitHubRepoReferenceFromDataAndReference(
-                  cachedRepo, ref || cachedRepo.defaultBranch));
-            });
+        const allOwnerRepos = await this.getOwnerRepos(owner);
+        // Filter all of this owner's repos for possible matches:
+        for (const possibleMatch of allOwnerRepos) {
+          // If the repo's fullName doesn't match the pattern prefix, ignore it.
+          if (!possibleMatch.fullName.toLowerCase().startsWith(namePattern)) {
+            continue;
+          }
+          // If a branch was defined after the wildcard but this repo doesn't
+          // have a ref with that name, ignore it.
+          if (ref && ref !== possibleMatch.defaultBranch) {
+            try {
+              const response = await this._github.gitdata.getReference({
+                owner: possibleMatch.owner,
+                repo: possibleMatch.name,
+                ref: 'heads/' + ref,
+              });
+              // GitHub API peculiarity: if ref isn't an exact match, GitHub
+              // switches behavior and returns all references that have `ref` as
+              // a prefix. Since we only want exact matches, add an extra check
+              // that the API did not return an array.
+              if (!isSuccessResponse(response) ||
+                  Array.isArray(response.data)) {
+                continue;
+              }
+            } catch (err) {
+              continue;
+            }
+          }
+          // Otherwise, it's a match! Add it to allGitHubRepos to be returned.
+          allGitHubRepos.push(createGitHubRepoReferenceFromDataAndReference(
+              possibleMatch, ref || possibleMatch.defaultBranch));
+        }
       })();
     }));
 
