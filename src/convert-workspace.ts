@@ -21,6 +21,14 @@ import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifes
 import {polymerFileOverrides} from './special-casing';
 import {WorkspaceConverter} from './workspace-converter';
 
+import mkdirpCallback = require('mkdirp');
+
+
+const mkdirp = (dir: string) =>
+    new Promise((resolve, reject) => mkdirpCallback(dir, (e, made) => {
+                  return e == null ? resolve(made) : reject(e);
+                }));
+
 interface ConvertWorkspaceOptions extends BaseConverterOptions {
   packageVersion: string;
   inDir: string;
@@ -74,29 +82,59 @@ export async function convertWorkspace(options: ConvertWorkspaceOptions) {
   }
 
   for (const repo of await fs.readdir(options.inDir)) {
-    const bowerPath = path.join(options.inDir, repo, 'bower.json');
-    const bowerExists = await fs.exists(bowerPath);
-    if (!bowerExists) {
-      continue;
-    }
-    try {
-      const bowerJson = readJson(bowerPath);
-      // TODO(https://github.com/Polymer/polymer-modulizer/issues/122):
-      // unhardcode
-      const bowerName = bowerJson.name;
+    await writePackageJson(options, repo);
+    await writeNpmSymlink(options, repo);
+  }
+}
 
-      let depMapping: {npm: string}|undefined = dependencyMap[bowerName];
-      if (!depMapping) {
-        console.warn(`"${bowerName}" npm mapping not found`);
-        depMapping = {npm: bowerName};
-      }
+async function writeNpmSymlink(options: ConvertWorkspaceOptions, repo: string) {
+  const repoPath = path.join(options.inDir, repo);
+  const packageJsonPath = path.join(repoPath, 'package.json');
+  if (!await fs.exists(packageJsonPath)) {
+    return;
+  }
+  const packageJson = readJson(packageJsonPath);
+  let packageName = packageJson['name'] as string;
+  let parentName = path.join(options.inDir, 'node_modules');
+  if (packageName.startsWith('@')) {
+    const slashIndex = packageName.indexOf('/');
+    const scopeName = packageName.substring(0, slashIndex);
+    parentName = path.join(parentName, scopeName);
+    packageName = packageName.substring(slashIndex + 1);
+  }
+  try {
+    await mkdirp(parentName);
+    const linkName = path.join(parentName, packageName);
+    await fs.symlink(path.resolve(repoPath), path.resolve(linkName));
+  } catch (e) {
+    console.error(e);
+  }
+}
 
-      const packageJson =
-          generatePackageJson(bowerJson, depMapping.npm, options.packageVersion);
-      writeJson(packageJson, options.inDir, repo, 'package.json');
-    } catch (e) {
-      console.log('error in bower.json -> package.json conversion');
-      console.error(e);
+async function writePackageJson(
+    options: ConvertWorkspaceOptions, repo: string) {
+  const bowerPath = path.join(options.inDir, repo, 'bower.json');
+  const bowerExists = await fs.exists(bowerPath);
+  if (!bowerExists) {
+    return;
+  }
+  try {
+    const bowerJson = readJson(bowerPath);
+    // TODO(https://github.com/Polymer/polymer-modulizer/issues/122):
+    // unhardcode
+    const bowerName = bowerJson.name;
+
+    let depMapping: {npm: string}|undefined = dependencyMap[bowerName];
+    if (!depMapping) {
+      console.warn(`"${bowerName}" npm mapping not found`);
+      depMapping = {npm: bowerName};
     }
+
+    const packageJson =
+        generatePackageJson(bowerJson, depMapping.npm, options.packageVersion);
+    writeJson(packageJson, options.inDir, repo, 'package.json');
+  } catch (e) {
+    console.log('error in bower.json -> package.json conversion');
+    console.error(e);
   }
 }

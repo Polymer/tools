@@ -32,6 +32,7 @@
     "@types/chai": "^3.5.2",
     "@types/esprima": "^2.1.33",
     "@types/inquirer": "^0.0.35",
+    "@types/mkdirp": "^0.5.1",
     "@types/mz": "^0.0.31",
     "@types/rimraf": "2.0.2",
     "@types/semver": "^5.3.32",
