@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import * as semver from 'semver';
-import * as chalk from 'chalk';
 
+import {CliOptions} from '../cli';
 import {convertPackage} from '../convert-package';
 import {readJson} from '../manifest-converter';
-import {CliOptions} from '../cli';
 
 export default async function run(options: CliOptions) {
   // Ok, we're updating a package in a directory not under our control.
@@ -92,7 +92,7 @@ export default async function run(options: CliOptions) {
   }
 
   console.log(
-    chalk.dim('[1/2]') + ' 🌀  ' + chalk.magenta(`Converting Package...`));
+      chalk.dim('[1/2]') + ' 🌀  ' + chalk.magenta(`Converting Package...`));
 
   await convertPackage({
     inDir: options.in,
@@ -106,5 +106,5 @@ export default async function run(options: CliOptions) {
   });
 
   console.log(
-    chalk.dim('[2/2]') + ' 🎉  ' + chalk.magenta(`Conversion Complete!`));
+      chalk.dim('[2/2]') + ' 🎉  ' + chalk.magenta(`Conversion Complete!`));
 }

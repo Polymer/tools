@@ -14,8 +14,8 @@
 
 import * as commandLineArgs from 'command-line-args';
 
-import runWorkspaceCommand from './cli/command-workspace';
 import runPackageCommand from './cli/command-package';
+import runWorkspaceCommand from './cli/command-workspace';
 
 const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   {
@@ -101,7 +101,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     type: Boolean,
     defaultValue: false,
     description: 'If given, clear the existing build/workspace folder ' +
-    +    'before beginning.'
+        +'before beginning.'
   },
   {
     name: 'force',

@@ -57,8 +57,8 @@ function loadGitHubToken(): string|null {
 export default async function run(options: CliOptions) {
   const workspaceDir = options['workspace-dir'];
   console.log(
-    chalk.dim('[1/3]') + ' 🚧  ' +
-    chalk.magenta(`Setting Up Workspace "${workspaceDir}"...`));
+      chalk.dim('[1/3]') + ' 🚧  ' +
+      chalk.magenta(`Setting Up Workspace "${workspaceDir}"...`));
 
   if (!options['npm-version']) {
     throw new Error('--npm-version required');
@@ -88,7 +88,7 @@ export default async function run(options: CliOptions) {
 
   console.log(
       chalk.dim('[2/3]') + ' 🌀  ' +
-    chalk.magenta(`Converting ${reposToConvert.length} Package(s)...`));
+      chalk.magenta(`Converting ${reposToConvert.length} Package(s)...`));
 
   await convertWorkspace({
     inDir: options['workspace-dir']!,
