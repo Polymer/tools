@@ -17,6 +17,7 @@ import path = require('path');
 import util = require('util');
 
 import {GitRepo} from './git';
+import {NpmPackage} from './npm';
 import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
 import exec, {checkCommand} from './util/exec';
@@ -37,6 +38,7 @@ interface GitHubRepoError {
 export interface WorkspaceRepo {
   dir: string;
   git: GitRepo;
+  npm: NpmPackage;
   github: GitHubRepo;
 }
 
@@ -98,6 +100,7 @@ export class Workspace {
     return {
       dir: sessionDir,
       git: new GitRepo(sessionDir),
+      npm: new NpmPackage(sessionDir),
       github: repo,
     };
   }
@@ -206,6 +209,10 @@ export class Workspace {
       throw new Error(
           'polymer-workspace: global "bower" command not found. Install bower on your machine and then retry.');
     }
+    if (!(await checkCommand('npm'))) {
+      throw new Error(
+          'polymer-workspace: global "npm" command not found. Install npm on your machine and then retry.');
+    }
   }
 
   /**
@@ -263,7 +270,13 @@ export class Workspace {
   /**
    * (Not Yet Implemented) Publish a new version to NPM.
    */
-  async publish() {
-    throw new Error('TODO: Implement!');
+  async publishPackagesToNpm(
+      workspaceRepos: WorkspaceRepo[], distTag = 'latest') {
+    if (!this._initializedRepos) {
+      throw new Error('Workspace has not been initialized, run init() first.');
+    }
+    await Promise.all(workspaceRepos.map((repo) => {
+      return repo.npm.publishToNpm(distTag);
+    }));
   }
 }
