@@ -236,20 +236,23 @@ export class Workspace {
     await this._installWorkspaceDependencies();
     // All done!
     this._initializedRepos = workspaceRepos;
-    return this._initializedRepos;
+    return workspaceRepos;
   }
 
   /**
    * Run some function of work over each workspace repo, returning a collection
    * of successes and failures for each run.
    */
-  async run(fn: (repo: WorkspaceRepo) => Promise<void>) {
+  async run(
+      workspaceRepos: WorkspaceRepo[],
+      fn: (repo: WorkspaceRepo) => Promise<void>):
+      Promise<[WorkspaceRepo[], Map<string, Error>]> {
     if (!this._initializedRepos) {
       throw new Error('Workspace has not been initialized, run init() first.');
     }
     const successRuns = [];
     const failRuns = new Map();
-    for (const workspaceRepo of this._initializedRepos) {
+    for (const workspaceRepo of workspaceRepos) {
       try {
         await fn(workspaceRepo);
         successRuns.push(workspaceRepo);
@@ -261,10 +264,41 @@ export class Workspace {
   }
 
   /**
-   * (Not Yet Implemented) Commit changes and push them up!
+   * Create a new branch on each repo.
    */
-  async push() {
-    throw new Error('TODO: Implement!');
+  async startNewBranch(workspaceRepos: WorkspaceRepo[], newBranch: string) {
+    if (!this._initializedRepos) {
+      throw new Error('Workspace has not been initialized, run init() first.');
+    }
+    await Promise.all(workspaceRepos.map((repo) => {
+      return repo.git.createBranch(newBranch);
+    }));
+  }
+
+  /**
+   * Commit changes on each repo with the given commit message.
+   */
+  async commitChanges(workspaceRepos: WorkspaceRepo[], message: string) {
+    if (!this._initializedRepos) {
+      throw new Error('Workspace has not been initialized, run init() first.');
+    }
+    await Promise.all(workspaceRepos.map((repo) => {
+      return repo.git.commit(message);
+    }));
+  }
+
+  /**
+   * Push the current repo HEAD to the given `pushToBranch` branch on GitHub.
+   */
+  async pushChangesToGithub(
+      workspaceRepos: WorkspaceRepo[], pushToBranch?: string,
+      forcePush = false) {
+    if (!this._initializedRepos) {
+      throw new Error('Workspace has not been initialized, run init() first.');
+    }
+    await Promise.all(workspaceRepos.map((repo) => {
+      return repo.git.pushCurrentBranchToOrigin(pushToBranch, forcePush);
+    }));
   }
 
   /**

@@ -58,7 +58,7 @@ export class GitRepo {
   }
 
   /**
-   * Run `git checkout [branch]`.
+   * Run `git checkout [branch] --`.
    */
   async checkout(branch: string): Promise<ExecResult> {
     return await exec(this.dir, 'git', ['checkout', branch, '--']);
@@ -77,5 +77,34 @@ export class GitRepo {
       reset: resetResult,
       clean: cleanResult,
     };
+  }
+
+  /**
+   * Run `git commit -Am [message]`.
+   */
+  async commit(message: string): Promise<ExecResult> {
+    return await exec(this.dir, 'git', ['commit', '-a', '-m', message]);
+  }
+
+  /**
+   * Run `git checkout -b [branch]`.
+   */
+  async createBranch(branch: string): Promise<ExecResult> {
+    return await exec(this.dir, 'git', ['checkout', '-b', branch]);
+  }
+
+  /**
+   * Run `git push` with options to push to a specific branch & --force.
+   */
+  async pushCurrentBranchToOrigin(originBranch?: string, forcePush = false):
+      Promise<ExecResult> {
+    return await exec(this.dir, 'git', [
+      'push',
+      'origin',
+      // if originBranch is set, tell git to push to that specific branch
+      // at origin. Otherwise, push to the default, current branch.
+      originBranch ? `HEAD:${originBranch}` : `HEAD`,
+      ...(forcePush ? ['--force'] : [])
+    ]);
   }
 }

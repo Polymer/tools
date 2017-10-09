@@ -30,9 +30,15 @@ export default async function exec(
     cwd: string, command: string, args?: string[], options?: ExecOptions):
     Promise<ExecResult> {
   const commandOptions = {...options, cwd: cwd} as ExecOptions;
-  const {stdout, stderr} = await execFile(command, args, commandOptions);
-  // exec/execFile attach unneccesary extra newlines/whitespace
-  return {stdout: stdout.trim(), stderr: stderr.trim()};
+  try {
+    const {stdout, stderr} = await execFile(command, args, commandOptions);
+    // Trim unneccesary extra newlines/whitespace from exec/execFile output
+    return {stdout: stdout.trim(), stderr: stderr.trim()};
+  } catch (err) {
+    // If an error happens, attach the working directory to the error object
+    err.cwd = cwd;
+    throw err;
+  }
 }
 
 /**
