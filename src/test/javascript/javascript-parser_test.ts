@@ -19,7 +19,7 @@ import stripIndent = require('strip-indent');
 
 import * as esutil from '../../javascript/esutil';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {JavaScriptParser, JavaScriptModuleParser, JavaScriptScriptParser} from '../../javascript/javascript-parser';
 
 suite('JavaScriptParser', () => {
   let parser: JavaScriptParser;
@@ -112,5 +112,43 @@ suite('JavaScriptParser', () => {
       const document = parser.parse(contents, 'test-file.js');
       assert.deepEqual(document.stringify({}), contents);
     });
+  });
+});
+
+suite('JavaScriptModuleParser', () => {
+
+  let parser: JavaScriptModuleParser;
+
+  setup(() => {
+    parser = new JavaScriptModuleParser();
+  });
+
+  suite('parse()', () => {
+    test('parses an ES6 module', () => {
+      const contents = `
+    import foo from 'foo';
+  `;
+      const document = parser.parse(contents, '/static/es6-support.js');
+      assert.instanceOf(document, JavaScriptDocument);
+      assert.equal(document.url, '/static/es6-support.js');
+      assert.equal(document.ast.type, 'Program');
+      assert.equal(document.parsedAsSourceType, 'module');
+    });
+  });
+});
+
+suite('JavaScriptScriptParser', () => {
+
+  let parser: JavaScriptScriptParser;
+
+  setup(() => {
+    parser = new JavaScriptScriptParser();
+  });
+
+  test('throws a syntax error when parsing es6 module', () => {
+    const contents = `
+      import foo from 'foo';
+    `;
+    assert.throws(() => parser.parse(contents, '/static/es6-support.js'));
   });
 });
