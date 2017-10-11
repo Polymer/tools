@@ -189,7 +189,7 @@ export class GitHubConnection {
     const allRepos: GitHubRepoData[] = [];
     let pageRepos: GitHubRepoData[] = [];
     const pageSize = 50;
-    let page = 0;
+    let page = 1;
     let isOrg = true;
 
     do {
