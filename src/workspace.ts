@@ -65,11 +65,21 @@ export class Workspace {
     this._github = new GitHubConnection(options.token);
   }
 
-  private isInitialized() {
+  /**
+   * Helper function that returns true when workspace.init() has been run.
+   */
+  isInitialized() {
+    return !!this._initializedRepos;
   }
 
+  /**
+   * Helper function that throws an error when workspace has not yet been
+   * initialized.
+   */
   private assertInitialized() {
-    throw new Error('Workspace has not been initialized, run init() first.');
+    if (!this.isInitialized()) {
+      throw new Error('Workspace has not been initialized, run init() first.');
+    }
   }
 
   /**
@@ -236,7 +246,7 @@ export class Workspace {
    */
   async init(
       patterns: {include: string[], exclude?: string[]},
-      options: WorkspaceInitOptions): Promise<WorkspaceRepo[]> {
+      options?: WorkspaceInitOptions): Promise<WorkspaceRepo[]> {
     await this._initValidate();
     // Fetch our repos from the given patterns.
     const githubRepos =
