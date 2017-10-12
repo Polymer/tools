@@ -275,8 +275,9 @@ export class Workspace {
     if (!this._initializedRepos) {
       throw new Error('Workspace has not been initialized, run init() first.');
     }
-    await Promise.all(workspaceRepos.map((repo) => {
-      return repo.npm.publishToNpm(distTag);
-    }));
+    // TODO(fks) 10-12-2017: Convert to a batch processer flow that doesn't halt
+    // on first error.
+    await Promise.all(
+        workspaceRepos.map((repo) => repo.npm.publishToNpm(distTag)));
   }
 }

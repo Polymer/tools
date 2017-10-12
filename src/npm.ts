@@ -15,6 +15,8 @@
 import exec, {ExecResult} from './util/exec';
 import fs = require('fs');
 import path = require('path');
+import _util = require('util');
+const {promisify} = _util;
 
 export class NpmPackage {
   dir: string;
@@ -34,9 +36,10 @@ export class NpmPackage {
    * Return the current package manifest. Throws if there are any issues
    * reading/parsing the file contents.
    */
-  async getPackageManifest(): Promise<any|null> {
+  async getPackageManifest(): Promise<any> {
     const packageManifestLoc = path.join(this.dir, 'package.json');
-    const packageManifest = fs.readFileSync(packageManifestLoc).toString();
+    const packageManifest =
+        await promisify(fs.readFile)(packageManifestLoc, 'utf-8');
     return JSON.parse(packageManifest);
   }
 
@@ -45,6 +48,6 @@ export class NpmPackage {
    * (use "latest" to mimic the npm default).
    */
   async publishToNpm(tagName: string): Promise<ExecResult> {
-    return await exec(this.dir, 'npm', ['publish', '--tag', tagName]);
+    return exec(this.dir, 'npm', ['publish', '--tag', tagName]);
   }
 }
