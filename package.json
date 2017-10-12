@@ -9,8 +9,10 @@
     "lib": "lib"
   },
   "dependencies": {
+    "@types/doctrine": "0.0.3",
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.1",
+    "doctrine": "^2.0.0",
     "escodegen": "^1.9.0",
     "polymer-analyzer": "^2.3.0"
   },
