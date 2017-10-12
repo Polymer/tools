@@ -61,6 +61,7 @@ export class GitRepo {
    * Run `git checkout [branch] --`.
    */
   async checkout(branch: string): Promise<ExecResult> {
+    // Include the '--' so that branch is explicitly interpretted as branch name
     return await exec(this.dir, 'git', ['checkout', branch, '--']);
   }
 
@@ -80,7 +81,7 @@ export class GitRepo {
   }
 
   /**
-   * Run `git commit -Am [message]`.
+   * Run `git commit -am [message]`.
    */
   async commit(message: string): Promise<ExecResult> {
     return await exec(this.dir, 'git', ['commit', '-a', '-m', message]);

@@ -32,6 +32,14 @@ interface GitHubRepoError {
 }
 
 /**
+ * When running a batch process, return an array of two items: the
+ * WorkspaceRepos where the until of work completed successfully, and a Map of
+ * all WorkspaceRepos where the work failed (pointing to the thrown Error in
+ * each directory).
+ */
+export type BatchProcessResponse = [WorkspaceRepo[], Map<WorkspaceRepo, Error>];
+
+/**
  * A WorkspaceRepo contains all data to specify the github repo, as well as
  * an active session to interact with the local git repository.
  */
@@ -55,6 +63,13 @@ export class Workspace {
   constructor(options: {token: string, dir: string}) {
     this.dir = options.dir;
     this._github = new GitHubConnection(options.token);
+  }
+
+  private isInitialized() {
+  }
+
+  private assertInitialized() {
+    throw new Error('Workspace has not been initialized, run init() first.');
   }
 
   /**
@@ -198,7 +213,7 @@ export class Workspace {
    * Validate your environment/workspace/context before running. Throw if bad.
    */
   private async _initValidate() {
-    if (this._initializedRepos) {
+    if (this.isInitialized()) {
       throw new Error('Workspace has already been initialized.');
     }
     if (!(await checkCommand('git'))) {
@@ -246,12 +261,10 @@ export class Workspace {
   async run(
       workspaceRepos: WorkspaceRepo[],
       fn: (repo: WorkspaceRepo) => Promise<void>):
-      Promise<[WorkspaceRepo[], Map<string, Error>]> {
-    if (!this._initializedRepos) {
-      throw new Error('Workspace has not been initialized, run init() first.');
-    }
+      Promise<BatchProcessResponse> {
+    this.assertInitialized();
     const successRuns = [];
-    const failRuns = new Map();
+    const failRuns = new Map<WorkspaceRepo, Error>();
     for (const workspaceRepo of workspaceRepos) {
       try {
         await fn(workspaceRepo);
@@ -267,9 +280,7 @@ export class Workspace {
    * Create a new branch on each repo.
    */
   async startNewBranch(workspaceRepos: WorkspaceRepo[], newBranch: string) {
-    if (!this._initializedRepos) {
-      throw new Error('Workspace has not been initialized, run init() first.');
-    }
+    this.assertInitialized();
     await Promise.all(workspaceRepos.map((repo) => {
       return repo.git.createBranch(newBranch);
     }));
@@ -279,9 +290,7 @@ export class Workspace {
    * Commit changes on each repo with the given commit message.
    */
   async commitChanges(workspaceRepos: WorkspaceRepo[], message: string) {
-    if (!this._initializedRepos) {
-      throw new Error('Workspace has not been initialized, run init() first.');
-    }
+    this.assertInitialized();
     await Promise.all(workspaceRepos.map((repo) => {
       return repo.git.commit(message);
     }));
@@ -293,9 +302,7 @@ export class Workspace {
   async pushChangesToGithub(
       workspaceRepos: WorkspaceRepo[], pushToBranch?: string,
       forcePush = false) {
-    if (!this._initializedRepos) {
-      throw new Error('Workspace has not been initialized, run init() first.');
-    }
+    this.assertInitialized();
     await Promise.all(workspaceRepos.map((repo) => {
       return repo.git.pushCurrentBranchToOrigin(pushToBranch, forcePush);
     }));
