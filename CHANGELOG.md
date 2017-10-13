@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
-## [2.1.0] - 2017-10-12
+## [2.1.0] - 2017-10-13
 - Warn for old-style @apply without parentheses, and var() with a fallback value of a bare css variable.
   - These are our first automatically fixable warnings. An upcoming version of the CLI and IDE will be able to automatically fix these warnings.
 
