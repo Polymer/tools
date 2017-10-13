@@ -29,6 +29,7 @@ registry.register(
       'style-into-template',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
+      'deprecated-css-custom-property-syntax',
     ]));
 
 registry.register(new RuleCollection(
@@ -46,6 +47,7 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'style-into-template',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
+      'deprecated-css-custom-property-syntax',
     ]));
 
 registry.register(new RuleCollection(

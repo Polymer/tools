@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [2.1.0] - 2017-10-12
+- Warn for old-style @apply without parentheses, and var() with a fallback value of a bare css variable.
+  - These are our first automatically fixable warnings. An upcoming version of the CLI and IDE will be able to automatically fix these warnings.
+
 ## [2.0.3] - 2017-08-23
 
 - Fix handling of the `index-as` attribute on dom-repeat.

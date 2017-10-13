@@ -14,14 +14,14 @@
 
 /** TODO(rictic): upstream this file and its tests into the analyzer. */
 
-import {comparePositionAndRange, isPositionInsideRange, ParsedDocument, SourceRange, Warning} from 'polymer-analyzer';
+import {Analysis, Analyzer, comparePositionAndRange, Document, isPositionInsideRange, ParsedDocument, SourceRange, Warning} from 'polymer-analyzer';
 
 
 /**
  * A warning that may include information on how to mechanically
  * fix it.
  */
-export interface FixableWarning extends Warning {
+export class FixableWarning extends Warning {
   /**
    * If the problem has a single automatic fix, this is it.
    *
@@ -167,4 +167,20 @@ function doRangesOverlap(a: SourceRange, b: SourceRange) {
 function areRangesEqual(a: SourceRange, b: SourceRange) {
   return a.start.line === b.start.line && a.start.column === b.start.column &&
       a.end.line === b.end.line && a.end.column === b.end.column;
+}
+
+export function makeParseLoader(analyzer: Analyzer, analysis?: Analysis) {
+  return async(url: string) => {
+    if (analysis) {
+      const cachedResult = analysis.getDocument(url);
+      if (cachedResult instanceof Document) {
+        return cachedResult.parsedDocument;
+      }
+    }
+    const result = (await analyzer.analyze([url])).getDocument(url);
+    if (result instanceof Document) {
+      return result.parsedDocument;
+    }
+    throw new Error(`Cannot load file at:  ${url}`);
+  };
 }
