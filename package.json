@@ -9,22 +9,30 @@
     "lib": "lib"
   },
   "dependencies": {
+    "@types/doctrine": "0.0.3",
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.1",
+    "doctrine": "^2.0.0",
     "escodegen": "^1.9.0",
     "polymer-analyzer": "^2.3.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
+    "chai": "^4.1.2",
     "clang-format": "^1.0.55",
     "mocha": "^3.5.3",
-    "typescript": "^2.5.3"
+    "source-map-support": "^0.5.0",
+    "typescript": "^2.5.3",
+    "watchy": "^0.7.0"
   },
   "scripts": {
     "clean": "rm -rf lib",
     "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
-    "test": "npm run build && mocha"
+    "test": "npm run build && mocha",
+    "test:watch": "watchy -w src -- npm run test"
   },
   "repository": {
     "type": "git",
