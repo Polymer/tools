@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- Support warning about and automatically fixing some simple uses of some 1.0 elements to their 2.0 usage styles.
 
 ## [2.1.0] - 2017-10-13
 - Warn for old-style @apply without parentheses, and var() with a fallback value of a bare css variable.
