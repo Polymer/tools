@@ -60,3 +60,18 @@
     <div slot="content">Content here!</div>
   </template>
 </paper-scroll-header-panel>
+
+
+<dom-module id="foo-bar">
+  <template>
+    <slot></slot>
+    <slot name="foo" existing-nonsense-attribute="bar" old-content-selector=".foo">
+      Fallback content here
+    </slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>
