@@ -68,7 +68,7 @@ export class Workspace {
   /**
    * Helper function that returns true when workspace.init() has been run.
    */
-  isInitialized() {
+  get isInitialized() {
     return !!this._initializedRepos;
   }
 
@@ -77,7 +77,7 @@ export class Workspace {
    * initialized.
    */
   private assertInitialized() {
-    if (!this.isInitialized()) {
+    if (!this.isInitialized) {
       throw new Error('Workspace has not been initialized, run init() first.');
     }
   }
@@ -223,7 +223,7 @@ export class Workspace {
    * Validate your environment/workspace/context before running. Throw if bad.
    */
   private async _initValidate() {
-    if (this.isInitialized()) {
+    if (this.isInitialized) {
       throw new Error('Workspace has already been initialized.');
     }
     if (!(await checkCommand('git'))) {

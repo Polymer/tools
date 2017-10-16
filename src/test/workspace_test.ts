@@ -59,17 +59,17 @@ suite('src/workspace', function() {
 
     });
 
-    suite('workspace.isInitialized()', () => {
+    suite('workspace.isInitialized', () => {
 
       test('returns false before init has been run', async () => {
         const workspace = new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
-        assert.isFalse(workspace.isInitialized());
+        assert.isFalse(workspace.isInitialized);
       });
 
       test('returns true after init has been run', async () => {
         const workspace = new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
         await workspace.init({include: []});
-        assert.isTrue(workspace.isInitialized());
+        assert.isTrue(workspace.isInitialized);
       });
 
     });
