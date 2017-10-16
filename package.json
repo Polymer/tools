@@ -19,9 +19,11 @@
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
+    "bower": "^1.8.2",
     "chai": "^4.1.2",
     "clang-format": "^1.0.55",
     "mocha": "^3.5.3",
+    "rimraf": "^2.6.2",
     "source-map-support": "^0.5.0",
     "typescript": "^2.5.3",
     "watchy": "^0.7.0"
@@ -31,8 +33,11 @@
     "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
-    "test": "npm run build && mocha",
-    "test:watch": "watchy -w src -- npm run test"
+    "test": "npm run test:setup-once && npm run build && mocha",
+    "test:watch": "watchy -w src -- npm run test",
+    "test:setup": "scripts/setup-fixtures.sh",
+    "test:setup-once": "mkdir src/test/fixtures && npm run test:setup || true",
+    "test:make-goldens": "scripts/make-goldens.js"
   },
   "repository": {
     "type": "git",
