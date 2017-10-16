@@ -39,7 +39,8 @@ suite('src/git', function() {
       fs.mkdirSync(emptyDir);
       const gitInitResult = await exec(gitDir, `git`, [`init`]);
       assert.equal(gitInitResult.stderr, '');
-      const gitCommitResult = await exec(gitDir, `git`, [`commit`, `--allow-empty`, `-m`, `"testing"`]);
+      const gitCommitResult = await exec(
+          gitDir, `git`, [`commit`, `--allow-empty`, `-m`, `"testing"`]);
       assert.equal(gitCommitResult.stderr, '');
     });
 
@@ -78,30 +79,27 @@ suite('src/git', function() {
 
     });
 
-    suite('gitRepo.createBranch()', async() => {
+    suite('gitRepo.createBranch()', async () => {
 
       test('creates a new branch in the git repo', async () => {
         const gitRepo = new GitRepo(gitDir);
         await gitRepo.createBranch('abcdefgh');
-        const getBranchNameResult = await exec(
-          gitDir, 'git', ['status']);
+        const getBranchNameResult = await exec(gitDir, 'git', ['status']);
         assert.include(getBranchNameResult.stdout, 'On branch abcdefgh');
       });
 
     });
 
-    suite('gitRepo.checkout()', async() => {
+    suite('gitRepo.checkout()', async () => {
 
       test('creates a new branch in the git repo', async () => {
         const gitRepo = new GitRepo(gitDir);
         await exec(gitDir, 'git', ['checkout', '-b', 'branch-1']);
         await exec(gitDir, 'git', ['checkout', '-b', 'branch-2']);
-        const getBranch2NameResult = await exec(
-          gitDir, 'git', ['status']);
+        const getBranch2NameResult = await exec(gitDir, 'git', ['status']);
         assert.include(getBranch2NameResult.stdout, 'On branch branch-2');
         await gitRepo.checkout('branch-1');
-        const getBranch1NameResult = await exec(
-          gitDir, 'git', ['status']);
+        const getBranch1NameResult = await exec(gitDir, 'git', ['status']);
         assert.include(getBranch1NameResult.stdout, 'On branch branch-1');
       });
 

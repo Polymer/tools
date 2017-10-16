@@ -22,9 +22,18 @@ import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
 import exec, {checkCommand} from './util/exec';
 import {existsSync} from './util/fs';
+import {BatchProcessResponse, batchProcess, concurrencyPresets} from './util/batch-process';
 
 import _rimraf = require('rimraf');
 const rimraf: (dir: string) => void = util.promisify(_rimraf);
+
+async function collectFailures(
+    collection: Map<WorkspaceRepo, Error>,
+    failures: Map<WorkspaceRepo, Error>) {
+  for (const [repo, error] of failures) {
+    collection.set(repo, error);
+  }
+}
 
 interface GitHubRepoError {
   error: Error;
@@ -154,28 +163,26 @@ export class Workspace {
       fs.mkdirSync(workspaceDir);
     }
 
-    // If a folder exists for a workspace repo and it can't be opened with
-    // nodegit, we need to remove it.  This happens when there's not a --fresh
+    // If a folder exists for a workspace repo and it can't be opened,
+    // we need to remove it.  This happens when there's not a --fresh
     // invocation and bower installed the dependency instead of git.
-    for (const repo of repos) {
+    await Promise.all(repos.map(async (repo) => {
       if (existsSync(repo.dir) && !repo.git.isGit()) {
         if (options.verbose) {
           console.log(`Removing existing folder: ${repo.dir}...`);
         }
         await rimraf(repo.dir);
       }
-    }
+    }));
   }
 
   /**
    * Given all the repos defined in the workspace, lets iterate through them
    * and either clone them or update their clones and set them to the specific
    * refs.
-   * TODO(fks) 09-25-2017: Better error handling. Standardize/format errors
-   * so that single type of error thrown.
    */
   private async _cloneOrUpdateWorkspaceRepos(repos: WorkspaceRepo[]) {
-    for (const repo of repos) {
+    return batchProcess(repos, async (repo: WorkspaceRepo) => {
       if (repo.git.isGit()) {
         await repo.git.fetch();
         await repo.git.destroyAllUncommittedChangesAndFiles();
@@ -183,7 +190,7 @@ export class Workspace {
         await repo.git.clone(repo.github.cloneUrl);
       }
       await repo.git.checkout(repo.github.ref || repo.github.defaultBranch);
-    }
+    }, {concurrency: concurrencyPresets.fs});
   }
 
   /**
@@ -194,19 +201,18 @@ export class Workspace {
    */
   private async _configureBowerWorkspace(repos: WorkspaceRepo[]) {
     fs.writeFileSync(path.join(this.dir, '.bowerrc'), '{"directory": "."}');
-
     const bowerConfig = mergedBowerConfigsFromRepos(repos);
-
     // Make bower config point bower packages of workspace repos to themselves
     // to override whatever any direct or transitive dependencies say.
-    for (const repo of repos) {
+    const results = await batchProcess(repos, async (repo) => {
       const sha = await repo.git.getHeadSha();
       bowerConfig.dependencies[repo.github.name] =
           `./${repo.github.name}#${sha}`;
-    }
+    }, {concurrency: concurrencyPresets.fs});
 
     fs.writeFileSync(
         path.join(this.dir, 'bower.json'), JSON.stringify(bowerConfig));
+    return results;
   }
 
   /**
@@ -246,22 +252,40 @@ export class Workspace {
    */
   async init(
       patterns: {include: string[], exclude?: string[]},
-      options?: WorkspaceInitOptions): Promise<WorkspaceRepo[]> {
+      options?: WorkspaceInitOptions): Promise<{
+    workspaceRepos: WorkspaceRepo[],
+    failures: Map<WorkspaceRepo, Error>
+  }> {
+    // Validate the current environment is polymer-workspace-ready.
     await this._initValidate();
+
     // Fetch our repos from the given patterns.
     const githubRepos =
         await this._determineGitHubRepos(patterns.include, patterns.exclude);
-    const workspaceRepos = githubRepos.map((r) => this._openWorkspaceRepo(r));
+    let workspaceRepos = githubRepos.map((r) => this._openWorkspaceRepo(r));
+    const failedWorkspaceRepos = new Map<WorkspaceRepo, Error>();
+
     // Clean up the workspace folder and prepare it for repo clones.
     await this._prepareWorkspaceFolders(workspaceRepos, options);
+
     // Update in-place and/or clone repositories from GitHub.
-    await this._cloneOrUpdateWorkspaceRepos(workspaceRepos);
-    // Setup Bower and install all required dependencies.
-    await this._configureBowerWorkspace(workspaceRepos);
+    const repoUpdateResults =
+        await this._cloneOrUpdateWorkspaceRepos(workspaceRepos);
+    collectFailures(failedWorkspaceRepos, repoUpdateResults.failures);
+    workspaceRepos = [...repoUpdateResults.successes.keys()];
+
+    // Setup Bower for the entire workspace.
+    const bowerConfigureResults =
+        await this._configureBowerWorkspace(workspaceRepos);
+    collectFailures(failedWorkspaceRepos, bowerConfigureResults.failures);
+    workspaceRepos = [...bowerConfigureResults.successes.keys()];
+
+    // Install bower dependencies.
     await this._installWorkspaceDependencies();
+
     // All done!
     this._initializedRepos = workspaceRepos;
-    return workspaceRepos;
+    return {workspaceRepos, failures: failedWorkspaceRepos};
   }
 
   /**
@@ -270,40 +294,32 @@ export class Workspace {
    */
   async run(
       workspaceRepos: WorkspaceRepo[],
-      fn: (repo: WorkspaceRepo) => Promise<void>):
-      Promise<BatchProcessResponse> {
+      fn: (repo: WorkspaceRepo) => Promise<void>,
+      concurrency = 1): Promise<BatchProcessResponse<WorkspaceRepo>> {
     this.assertInitialized();
-    const successRuns = [];
-    const failRuns = new Map<WorkspaceRepo, Error>();
-    for (const workspaceRepo of workspaceRepos) {
-      try {
-        await fn(workspaceRepo);
-        successRuns.push(workspaceRepo);
-      } catch (err) {
-        failRuns.set(workspaceRepo, err);
-      }
-    }
-    return [successRuns, failRuns];
+    return batchProcess(workspaceRepos, fn, {concurrency});
   }
 
   /**
    * Create a new branch on each repo.
    */
-  async startNewBranch(workspaceRepos: WorkspaceRepo[], newBranch: string) {
+  async startNewBranch(workspaceRepos: WorkspaceRepo[], newBranch: string):
+      Promise<BatchProcessResponse<WorkspaceRepo>> {
     this.assertInitialized();
-    await Promise.all(workspaceRepos.map((repo) => {
+    return batchProcess(workspaceRepos, (repo) => {
       return repo.git.createBranch(newBranch);
-    }));
+    }, {concurrency: concurrencyPresets.fs});
   }
 
   /**
    * Commit changes on each repo with the given commit message.
    */
-  async commitChanges(workspaceRepos: WorkspaceRepo[], message: string) {
+  async commitChanges(workspaceRepos: WorkspaceRepo[], message: string):
+      Promise<BatchProcessResponse<WorkspaceRepo>> {
     this.assertInitialized();
-    await Promise.all(workspaceRepos.map((repo) => {
+    return batchProcess(workspaceRepos, (repo) => {
       return repo.git.commit(message);
-    }));
+    }, {concurrency: concurrencyPresets.fs});
   }
 
   /**
@@ -311,24 +327,22 @@ export class Workspace {
    */
   async pushChangesToGithub(
       workspaceRepos: WorkspaceRepo[], pushToBranch?: string,
-      forcePush = false) {
+      forcePush = false): Promise<BatchProcessResponse<WorkspaceRepo>> {
     this.assertInitialized();
-    await Promise.all(workspaceRepos.map((repo) => {
+    return batchProcess(workspaceRepos, (repo) => {
       return repo.git.pushCurrentBranchToOrigin(pushToBranch, forcePush);
-    }));
+    }, {concurrency: concurrencyPresets.github});
   }
 
   /**
    * (Not Yet Implemented) Publish a new version to NPM.
    */
   async publishPackagesToNpm(
-      workspaceRepos: WorkspaceRepo[], distTag = 'latest') {
-    if (!this._initializedRepos) {
-      throw new Error('Workspace has not been initialized, run init() first.');
-    }
-    // TODO(fks) 10-12-2017: Convert to a batch processer flow that doesn't halt
-    // on first error.
-    await Promise.all(
-        workspaceRepos.map((repo) => repo.npm.publishToNpm(distTag)));
+      workspaceRepos: WorkspaceRepo[],
+      distTag = 'latest'): Promise<BatchProcessResponse<WorkspaceRepo>> {
+    this.assertInitialized();
+    return batchProcess(workspaceRepos, (repo) => {
+      return repo.npm.publishToNpm(distTag);
+    }, {concurrency: concurrencyPresets.npmPublish});
   }
 }
