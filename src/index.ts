@@ -12,4 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export {Workspace, WorkspaceRepo} from './workspace';
+/** Export WorkspaceCreator out of the main package. */
+export {WorkspaceCreator, WorkspaceRepo} from './workspace-creator';
+
+/** Expose all operations. */
+export * from './workspace-ops';

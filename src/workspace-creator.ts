@@ -20,7 +20,7 @@ import {GitRepo} from './git';
 import {NpmPackage} from './npm';
 import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
-import exec, {checkCommand} from './util/exec';
+import exec, {checkCommand, ExecResult} from './util/exec';
 import {existsSync} from './util/fs';
 import {BatchProcessResponse, batchProcess, concurrencyPresets} from './util/batch-process';
 
@@ -32,6 +32,42 @@ async function collectFailures(
     failures: Map<WorkspaceRepo, Error>) {
   for (const [repo, error] of failures) {
     collection.set(repo, error);
+  }
+}
+
+/**
+ * Either clone the given WorkspaceRepo or fetch/update an existing local git
+ * repo, checking out the specific repo refs.
+ */
+async function cloneOrUpdateWorkspaceRepo(repo: WorkspaceRepo) {
+  if (repo.git.isGit()) {
+    await repo.git.fetch();
+    await repo.git.destroyAllUncommittedChangesAndFiles();
+  } else {
+    await repo.git.clone(repo.github.cloneUrl);
+  }
+  await repo.git.checkout(repo.github.ref || repo.github.defaultBranch);
+}
+
+/**
+ * Validate your environment/workspace/context before running. Throws an
+ * exception if a problem is found.
+ *
+ * This is required so that we can use the globally installed commands without
+ * installing and compiling our own copies.
+ */
+async function validateEnvironment() {
+  if (!(await checkCommand('git'))) {
+    throw new Error(
+        'polymer-workspace: global "git" command not found. Install git on your machine and then retry.');
+  }
+  if (!(await checkCommand('bower'))) {
+    throw new Error(
+        'polymer-workspace: global "bower" command not found. Install bower on your machine and then retry.');
+  }
+  if (!(await checkCommand('npm'))) {
+    throw new Error(
+        'polymer-workspace: global "npm" command not found. Install npm on your machine and then retry.');
   }
 }
 
@@ -64,10 +100,18 @@ export interface WorkspaceInitOptions {
   verbose?: boolean;
 }
 
-export class Workspace {
+/**
+ * WorkspaceCreator - An instance for creating new workspaces. The `init()`
+ * method drives the loading, creation, and configuration of each workspace
+ * repo. Repos are loaded from GitHub, and a GitHub API Token is required to
+ * use.
+ *
+ * A WorkspaceCreator instance returns WorkspaceRepo objects, which the user
+ * can use to interact with each repo in the workspace.
+ */
+export class WorkspaceCreator {
   dir: string;
   private _github: GitHubConnection;
-  private _initializedRepos: WorkspaceRepo[]|undefined;
 
   constructor(options: {token: string, dir: string}) {
     this.dir = options.dir;
@@ -75,20 +119,48 @@ export class Workspace {
   }
 
   /**
-   * Helper function that returns true when workspace.init() has been run.
+   * Initialize the workspace. This is the driver of all initialization and
+   * setup logic.
    */
-  get isInitialized() {
-    return !!this._initializedRepos;
+  async init(
+      patterns: {include: string[], exclude?: string[]},
+      options?: WorkspaceInitOptions): Promise<{
+    workspaceRepos: WorkspaceRepo[],
+    failures: Map<WorkspaceRepo, Error>
+  }> {
+    // Validate the current environment is polymer-workspace-ready.
+    await validateEnvironment();
+
+    // Fetch our repos from the given patterns.
+    const githubRepos =
+        await this._determineGitHubRepos(patterns.include, patterns.exclude);
+    let workspaceRepos = githubRepos.map((r) => this._openWorkspaceRepo(r));
+    const failedWorkspaceRepos = new Map<WorkspaceRepo, Error>();
+
+    // Clean up the workspace folder and prepare it for repo clones.
+    await this._prepareWorkspaceFolders(workspaceRepos, options);
+
+    // Update in-place and/or clone repositories from GitHub.
+    const repoUpdateResults =
+        await this._cloneOrUpdateWorkspaceRepos(workspaceRepos);
+    collectFailures(failedWorkspaceRepos, repoUpdateResults.failures);
+    workspaceRepos = [...repoUpdateResults.successes.keys()];
+
+    // Setup Bower for the entire workspace.
+    const bowerConfigureResults =
+        await this._configureBowerWorkspace(workspaceRepos);
+    collectFailures(failedWorkspaceRepos, bowerConfigureResults.failures);
+    workspaceRepos = [...bowerConfigureResults.successes.keys()];
+
+    // All done!
+    return {workspaceRepos, failures: failedWorkspaceRepos};
   }
 
   /**
-   * Helper function that throws an error when workspace has not yet been
-   * initialized.
+   * Install all bower dependencies in the initialized workspace.
    */
-  private assertInitialized() {
-    if (!this.isInitialized) {
-      throw new Error('Workspace has not been initialized, run init() first.');
-    }
+  async installBowerDependencies(): Promise<ExecResult> {
+    return exec(this.dir, `bower`, ['install', '-F'], {maxBuffer: 1000 * 1024});
   }
 
   /**
@@ -182,15 +254,9 @@ export class Workspace {
    * refs.
    */
   private async _cloneOrUpdateWorkspaceRepos(repos: WorkspaceRepo[]) {
-    return batchProcess(repos, async (repo: WorkspaceRepo) => {
-      if (repo.git.isGit()) {
-        await repo.git.fetch();
-        await repo.git.destroyAllUncommittedChangesAndFiles();
-      } else {
-        await repo.git.clone(repo.github.cloneUrl);
-      }
-      await repo.git.checkout(repo.github.ref || repo.github.defaultBranch);
-    }, {concurrency: concurrencyPresets.fs});
+    return batchProcess(repos, cloneOrUpdateWorkspaceRepo, {
+      concurrency: concurrencyPresets.fs
+    });
   }
 
   /**
@@ -213,136 +279,5 @@ export class Workspace {
     fs.writeFileSync(
         path.join(this.dir, 'bower.json'), JSON.stringify(bowerConfig));
     return results;
-  }
-
-  /**
-   * Creates a .bowerrc that tells bower to use the workspace dir (`.`) as
-   * the installation dir (instead of default (`./bower_components`) dir.
-   * Creates a bower.json which sets all the workspace repos as dependencies
-   * and also includes the devDependencies from all workspace repos under test.
-   */
-  private async _installWorkspaceDependencies() {
-    await exec(this.dir, `bower`, ['install', '-F'], {maxBuffer: 1000 * 1024});
-  }
-
-  /**
-   * Validate your environment/workspace/context before running. Throw if bad.
-   */
-  private async _initValidate() {
-    if (this.isInitialized) {
-      throw new Error('Workspace has already been initialized.');
-    }
-    if (!(await checkCommand('git'))) {
-      throw new Error(
-          'polymer-workspace: global "git" command not found. Install git on your machine and then retry.');
-    }
-    if (!(await checkCommand('bower'))) {
-      throw new Error(
-          'polymer-workspace: global "bower" command not found. Install bower on your machine and then retry.');
-    }
-    if (!(await checkCommand('npm'))) {
-      throw new Error(
-          'polymer-workspace: global "npm" command not found. Install npm on your machine and then retry.');
-    }
-  }
-
-  /**
-   * Initialize the Workspace. This is the driver of all initialization and
-   * setup logic.
-   */
-  async init(
-      patterns: {include: string[], exclude?: string[]},
-      options?: WorkspaceInitOptions): Promise<{
-    workspaceRepos: WorkspaceRepo[],
-    failures: Map<WorkspaceRepo, Error>
-  }> {
-    // Validate the current environment is polymer-workspace-ready.
-    await this._initValidate();
-
-    // Fetch our repos from the given patterns.
-    const githubRepos =
-        await this._determineGitHubRepos(patterns.include, patterns.exclude);
-    let workspaceRepos = githubRepos.map((r) => this._openWorkspaceRepo(r));
-    const failedWorkspaceRepos = new Map<WorkspaceRepo, Error>();
-
-    // Clean up the workspace folder and prepare it for repo clones.
-    await this._prepareWorkspaceFolders(workspaceRepos, options);
-
-    // Update in-place and/or clone repositories from GitHub.
-    const repoUpdateResults =
-        await this._cloneOrUpdateWorkspaceRepos(workspaceRepos);
-    collectFailures(failedWorkspaceRepos, repoUpdateResults.failures);
-    workspaceRepos = [...repoUpdateResults.successes.keys()];
-
-    // Setup Bower for the entire workspace.
-    const bowerConfigureResults =
-        await this._configureBowerWorkspace(workspaceRepos);
-    collectFailures(failedWorkspaceRepos, bowerConfigureResults.failures);
-    workspaceRepos = [...bowerConfigureResults.successes.keys()];
-
-    // Install bower dependencies.
-    await this._installWorkspaceDependencies();
-
-    // All done!
-    this._initializedRepos = workspaceRepos;
-    return {workspaceRepos, failures: failedWorkspaceRepos};
-  }
-
-  /**
-   * Run some function of work over each workspace repo, returning a collection
-   * of successes and failures for each run.
-   */
-  async run(
-      workspaceRepos: WorkspaceRepo[],
-      fn: (repo: WorkspaceRepo) => Promise<void>,
-      concurrency = 1): Promise<BatchProcessResponse<WorkspaceRepo>> {
-    this.assertInitialized();
-    return batchProcess(workspaceRepos, fn, {concurrency});
-  }
-
-  /**
-   * Create a new branch on each repo.
-   */
-  async startNewBranch(workspaceRepos: WorkspaceRepo[], newBranch: string):
-      Promise<BatchProcessResponse<WorkspaceRepo>> {
-    this.assertInitialized();
-    return batchProcess(workspaceRepos, (repo) => {
-      return repo.git.createBranch(newBranch);
-    }, {concurrency: concurrencyPresets.fs});
-  }
-
-  /**
-   * Commit changes on each repo with the given commit message.
-   */
-  async commitChanges(workspaceRepos: WorkspaceRepo[], message: string):
-      Promise<BatchProcessResponse<WorkspaceRepo>> {
-    this.assertInitialized();
-    return batchProcess(workspaceRepos, (repo) => {
-      return repo.git.commit(message);
-    }, {concurrency: concurrencyPresets.fs});
-  }
-
-  /**
-   * Push the current repo HEAD to the given `pushToBranch` branch on GitHub.
-   */
-  async pushChangesToGithub(
-      workspaceRepos: WorkspaceRepo[], pushToBranch?: string,
-      forcePush = false): Promise<BatchProcessResponse<WorkspaceRepo>> {
-    this.assertInitialized();
-    return batchProcess(workspaceRepos, (repo) => {
-      return repo.git.pushCurrentBranchToOrigin(pushToBranch, forcePush);
-    }, {concurrency: concurrencyPresets.github});
-  }
-
-  /**
-   * (Not Yet Implemented) Publish a new version to NPM.
-   */
-  async publishPackagesToNpm(
-      workspaceRepos: WorkspaceRepo[],
-      distTag = 'latest'): Promise<BatchProcessResponse<WorkspaceRepo>> {
-    this.assertInitialized();
-    return batchProcess(workspaceRepos, (repo) => {
-      return repo.npm.publishToNpm(distTag);
-    }, {concurrency: concurrencyPresets.npmPublish});
   }
 }

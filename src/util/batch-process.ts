@@ -55,3 +55,13 @@ export async function batchProcess<T>(
   }));
   return {successes: successRuns, failures: failRuns};
 }
+
+/**
+ * A generic function interface, useful for extending the batchProcess generic
+ * function signature.
+ * See: https://www.typescriptlang.org/docs/handbook/generics.html
+ */
+export interface BatchProcessFn<T> {
+  (items: T[], fn: (repo: T) => Promise<any>,
+   options?: {concurrency: number}): Promise<BatchProcessResponse<T>>;
+}
