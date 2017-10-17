@@ -67,11 +67,18 @@ suite('closureTypeToTypeScript', () => {
   });
 
   test('union', () => {
-    check('string|number', '(string|number)');
+    check('string|number', 'string|number');
   });
 
-  test('paren flattening', () => {
+  test('paren edge cases', () => {
     check('(string)', 'string');
+    check('((string))', 'string');
+
+    check('(string|number)', 'string|number');
+    check('(string)|(number)', 'string|number');
+    check('((string)|(number))', 'string|number');
+
+    check('!Array<((string|number))>', '(string|number)[]');
   });
 
   test('nested array', () => {
@@ -84,6 +91,8 @@ suite('closureTypeToTypeScript', () => {
 
   test('function', () => {
     check('function()', '() => any');
+    check('!function()', '() => any');
+    check('?function()', '(() => any)|null');
 
     check(
         'function(string, number): boolean',

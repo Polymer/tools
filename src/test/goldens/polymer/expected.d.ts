@@ -102,7 +102,7 @@ declare namespace Polymer {
   /**
    * Sets the global sanitizeDOMValue available via `Polymer.sanitizeDOMValue`.
    */
-  function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string, p2: string, p3: Node|null) => any|undefined)): any;
+  function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string, p2: string, p3: Node|null) => any)|undefined): any;
 
 
   /**
@@ -261,7 +261,7 @@ declare namespace Polymer {
      * Polymer.Path.normalize('foo.bar.0.baz')        // 'foo.bar.0.baz'
      * ```
      */
-    function normalize(path: (string|(string|number)[])): string;
+    function normalize(path: string|(string|number)[]): string;
 
 
     /**
@@ -275,21 +275,21 @@ declare namespace Polymer {
      * Polymer.Path.split('foo.bar.0.baz')        // ['foo', 'bar', '0', 'baz']
      * ```
      */
-    function split(path: (string|(string|number)[])): string[];
+    function split(path: string|(string|number)[]): string[];
 
 
     /**
      * Reads a value from a path.  If any sub-property in the path is `undefined`,
      * this method returns `undefined` (will never throw.
      */
-    function get(root: Object|null, path: (string|(string|number)[]), info: any): any;
+    function get(root: Object|null, path: string|(string|number)[], info: any): any;
 
 
     /**
      * Sets a value to a path.  If any sub-property in the path is `undefined`,
      * this method will no-op.
      */
-    function set(root: Object|null, path: (string|(string|number)[]), value: any): (string|undefined);
+    function set(root: Object|null, path: string|(string|number)[], value: any): string|undefined;
   }
 
   /**
@@ -428,7 +428,7 @@ declare namespace Polymer {
    * in the majority of cases simply facades directly to the standard native
    * API.
    */
-  function dom(obj: (Node|Event|null)): (DomApi|null|EventApi|null);
+  function dom(obj: Node|Event|null): DomApi|null|EventApi|null;
 
 
   /**
@@ -438,7 +438,7 @@ declare namespace Polymer {
    * to ensure that any legacy behaviors can rely on legacy Polymer API on
    * the underlying element.
    */
-  function mixinBehaviors(behaviors: (Object|null|Array|null), klass: (HTMLElement|() => any)): () => any;
+  function mixinBehaviors(behaviors: Object|null|Array|null, klass: HTMLElement|(() => any)): () => any;
 
 
   /**

@@ -39,17 +39,18 @@ export function closureTypeToTypeScript(closureType: string): string {
  * Format the given Closure type expression AST node as a TypeScript type
  * annotation string.
  */
-function serialize(node: doctrine.Type): string {
+function serialize(node: doctrine.Type, greedy = false): string {
   let t = '';
 
   let nullable = null;
-
   if (isNullable(node)) {  // ?foo
     nullable = true;
     node = node.expression;
   } else if (isNonNullable(node)) {  // !foo
     nullable = false;
     node = node.expression;
+  } else {
+    nullable = nullableByDefault(node);
   }
 
   if (isArray(node)) {  // Array<foo>
@@ -73,9 +74,16 @@ function serialize(node: doctrine.Type): string {
     return '';
   }
 
-  if (nullable === true || (nullable === null && nullableByDefault(node))) {
+  if (nullable) {
+    greedy = true;
+  }
+  if (greedy && ambiguousPrecendence(node)) {
+    t = `(${t})`;
+  }
+  if (nullable) {
     t = `${t}|null`;
   }
+
   return t;
 }
 
@@ -96,12 +104,34 @@ function nullableByDefault(node: doctrine.Type): boolean {
   return isArray(node);
 }
 
+/**
+ * Return whether the given node should be wrapped in parenthesis when it is an
+ * argument to a greedy operator. For example, if we are serializing a union,
+ * and one of the arguments is itself a union, then that argument should be
+ * wrapped in parenthesis to avoid precendence problems.
+ */
+function ambiguousPrecendence(node: doctrine.Type): boolean {
+  if (isFunction(node)) {
+    return true;
+  }
+  if (isUnion(node)) {
+    if (node.elements.length === 1) {
+      // Unions of length 1 get collapsed, so recurse in case we hit a
+      // descendent that is ambiguous.
+      return ambiguousPrecendence(node.elements[0]);
+    }
+    return true;
+  }
+  return false;
+}
+
 function serializeArray(node: doctrine.type.TypeApplication): string {
   if (node.applications.length !== 1) {
     console.error('Invalid array expression.');
     return '';
   }
-  return serialize(node.applications[0]) + '[]';
+  const arg = node.applications[0];
+  return serialize(arg, true) + '[]';
 }
 
 function serializeUnion(node: doctrine.type.UnionType): string {
@@ -109,7 +139,7 @@ function serializeUnion(node: doctrine.type.UnionType): string {
     // `(string)` will be represented as a union of length one. Just flatten.
     return serialize(node.elements[0]);
   }
-  return '(' + node.elements.map(e => serialize(e)).join('|') + ')';
+  return node.elements.map(e => serialize(e, true)).join('|');
 }
 
 function serializeFunction(node: doctrine.type.FunctionType): string {

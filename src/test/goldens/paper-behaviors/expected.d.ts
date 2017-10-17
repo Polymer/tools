@@ -14,7 +14,7 @@ declare namespace Polymer {
      * with via the pointer.
      */
     noink: boolean;
-    _rippleContainer: (Element|null|undefined);
+    _rippleContainer: Element|null|undefined;
 
     /**
      * Ensures a `<paper-ripple>` element is available when the element is
