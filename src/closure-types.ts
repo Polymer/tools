@@ -26,7 +26,12 @@ const {parseType} = require('doctrine/lib/typed.js');
  * `Array<string>` => `string[]|null`).
  */
 export function closureTypeToTypeScript(closureType: string): string {
-  const ast = parseType(closureType);
+  let ast;
+  try {
+    ast = parseType(closureType);
+  } catch {
+    return 'any';
+  }
   return serialize(ast);
 }
 

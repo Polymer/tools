@@ -156,6 +156,35 @@ MyMethod(param1: string, param2: any): boolean;
 `);
   });
 
+  test('document', () => {
+    assert.equal(
+        serializeTsDeclarations({
+          kind: 'document',
+          members: [
+            {
+              kind: 'interface',
+              name: 'MyInterface',
+              extends: [],
+              properties: [],
+              methods: []
+            },
+            {
+              kind: 'class',
+              name: 'MyClass',
+              extends: '',
+              properties: [],
+              methods: []
+            },
+          ],
+        }),
+        `interface MyInterface {
+}
+
+class MyClass {
+}
+`);
+
+  });
   test('namespace', () => {
     assert.equal(
         serializeTsDeclarations({

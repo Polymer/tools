@@ -11,15 +11,17 @@
 
 import * as util from 'util';
 
-import {Class, Function, Interface, Namespace, Property} from './ts-ast';
+import {Class, Document, Function, Interface, Namespace, Property} from './ts-ast';
 
 /**
  * Encode a TypeScript AST node in TypeScript declaration file syntax (d.ts).
  */
 export function serializeTsDeclarations(
-    node: Namespace|Class|Interface|Function|Property,
+    node: Document|Namespace|Class|Interface|Function|Property,
     depth: number = 0): string {
   switch (node.kind) {
+    case 'document':
+      return serializeDocument(node);
     case 'namespace':
       return serializeNamespace(node, depth);
     case 'class':
@@ -34,6 +36,10 @@ export function serializeTsDeclarations(
       const never: never = node;
       throw new Error(`Unknown node kind: ${util.inspect(never)}`);
   }
+}
+
+function serializeDocument(node: Document): string {
+  return node.members.map((m) => serializeTsDeclarations(m)).join('\n');
 }
 
 function serializeNamespace(node: Namespace, depth: number): string {

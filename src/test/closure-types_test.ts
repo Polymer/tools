@@ -89,4 +89,8 @@ suite('closureTypeToTypeScript', () => {
         'function(string, number): boolean',
         '(p0: string, p1: number) => boolean');
   });
+
+  test('returns any when invalid', () => {
+    check('><', 'any');
+  });
 });

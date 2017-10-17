@@ -9,6 +9,11 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+export interface Document {
+  kind: 'document';
+  members: Array<Namespace|Class|Interface|Function>;
+}
+
 export interface Namespace {
   kind: 'namespace';
   name: string;

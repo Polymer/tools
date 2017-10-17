@@ -1,271 +1,348 @@
-declare namespace Polymer {
-  type Constructor<T> = new(...args: any[]) => T;
+namespace Polymer {
 
-  Polymer.dedupingMixin(mixin: T): any;
-
-  interface PropertyAccessors {
-    attributeChangedCallback(name: string, old: ?string|null, value: ?string|null): any;
-    _initializeProperties(): any;
-    _initializeProtoProperties(props: Object): any;
-    _initializeInstanceProperties(props: Object): any;
-    _ensureAttribute(attribute: string, value: string): any;
-    _attributeToProperty(attribute: string, value: ?string|null, type?: any): any;
-    _propertyToAttribute(property: string, attribute?: string, value?: any): any;
-    _valueToNodeAttribute(node: Element, value: any, attribute: string): any;
-    _serializeValue(value: any): (string|undefined);
-    _deserializeValue(value: ?string|null, type?: any): any;
-    _createPropertyAccessor(property: string, readOnly?: boolean): any;
-    _hasAccessor(property: string): boolean;
-    _setProperty(property: string, value: any): any;
-    _setPendingProperty(property: string, value: any): boolean;
-    _isPropertyPending(prop: string): boolean;
-    _invalidateProperties(): any;
-    _enableProperties(): any;
-    _flushProperties(): any;
-    ready(): any;
-    _propertiesChanged(currentProps: !Object, changedProps: !Object, oldProps: !Object): any;
-    _shouldPropertyChange(property: string, value: any, old: any): boolean;
-  }
-  const PropertyAccessors: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<PropertyAccessors>;
-
-  Polymer.setRootPath(path: string): any;
-
-  Polymer.setSanitizeDOMValue(newSanitizeDOMValue: ((function (*, string, string, Node): *)|undefined)): any;
-
-  Polymer.setPassiveTouchGestures(usePassive: boolean): any;
-
-  class DomModule extends HTMLElement {
+  interface DomModule extends Polymer.Element {
     attributeChangedCallback(name: any, old: any, value: any): any;
-    register(id?: string): any;
+
+    /**
+     * Registers the dom-module at a given id. This method should only be called
+     * when a dom-module is imperatively created. For
+     * example, `document.createElement('dom-module').register('foo')`.
+     */
+    register(id: any): any;
   }
 
-  interface TemplateStamp {
-    _stampTemplate(template: !HTMLTemplateElement): !StampedTemplate;
-    _addMethodEventListenerToNode(node: Node, eventName: string, methodName: string, context?: any): Function;
-    _addEventListenerToNode(node: Node, eventName: string, handler: Function): any;
-    _removeEventListenerFromNode(node: Node, eventName: string, handler: Function): any;
-  }
-  const TemplateStamp: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<TemplateStamp>;
-
-  interface PropertyEffects extends TemplateStamp, PropertyAccessors{
-    _stampTemplate(template: !HTMLTemplateElement): !StampedTemplate;
-    _initializeProperties(): any;
-    _initializeProtoProperties(props: Object): any;
-    _initializeInstanceProperties(props: Object): any;
-    _setProperty(property: any, value: any): any;
-    _setPendingProperty(property: string, value: any, shouldNotify?: boolean): boolean;
-    _invalidateProperties(): any;
-    ready(): any;
-    _propertiesChanged(currentProps: any, changedProps: any, oldProps: any): any;
-    _addPropertyEffect(property: string, type: string, effect?: Object): any;
-    _removePropertyEffect(property: string, type: string, effect?: Object): any;
-    _hasPropertyEffect(property: string, type?: string): boolean;
-    _hasReadOnlyEffect(property: string): boolean;
-    _hasNotifyEffect(property: string): boolean;
-    _hasReflectEffect(property: string): boolean;
-    _hasComputedEffect(property: string): boolean;
-    _setPendingPropertyOrPath(path: (string|!Array.<(number|string)>), value: any, shouldNotify?: boolean, isPathNotification?: boolean): boolean;
-    _setUnmanagedPropertyToNode(node: Node, prop: string, value: any): any;
-    _enqueueClient(client: Object): any;
-    _flushClients(): any;
-    _readyClients(): any;
-    setProperties(props: Object, setReadOnly?: boolean): any;
-    _propagatePropertyChanges(changedProps: Object, oldProps: Object, hasPaths: boolean): any;
-    linkPaths(to: (string|!Array.<(string|number)>), from: (string|!Array.<(string|number)>)): any;
-    unlinkPaths(path: (string|!Array.<(string|number)>)): any;
-    notifySplices(path: string, splices: any[]): any;
-    get(path: (string|!Array.<(string|number)>), root?: Object): any;
-    set(path: (string|!Array.<(string|number)>), value: any, root?: Object): any;
-    push(path: (string|!Array.<(string|number)>), ...items: any): number;
-    pop(path: (string|!Array.<(string|number)>)): any;
-    splice(path: (string|!Array.<(string|number)>), start: number, deleteCount: number, ...items: any): any[];
-    shift(path: (string|!Array.<(string|number)>)): any;
-    unshift(path: (string|!Array.<(string|number)>), ...items: any): number;
-    notifyPath(path: string, value?: any): any;
-    _createReadOnlyProperty(property: string, protectedSetter?: boolean): any;
-    _createPropertyObserver(property: string, methodName: string, dynamicFn?: boolean): any;
-    _createMethodObserver(expression: string, dynamicFn?: (boolean|Object)): any;
-    _createNotifyingProperty(property: string): any;
-    _createReflectedProperty(property: string): any;
-    _createComputedProperty(property: string, expression: string, dynamicFn?: (boolean|Object)): any;
-    _bindTemplate(template: HTMLTemplateElement, instanceBinding?: boolean): !TemplateInfo;
-    _removeBoundDom(dom: !StampedTemplate): any;
-  }
-  const PropertyEffects: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<PropertyEffects>;
-
-  interface ElementMixin extends PropertyEffects{
-    _template: [object Object];
-    _importPath: [object Object];
-    rootPath: [object Object];
-    importPath: [object Object];
-    root: [object Object];
-    $: [object Object];
-    attributeChangedCallback(name: string, old: ?string|null, value: ?string|null): any;
-    _initializeProperties(): any;
-    ready(): any;
-    _readyClients(): any;
-    connectedCallback(): any;
-    disconnectedCallback(): any;
-    _attachDom(dom: StampedTemplate): ShadowRoot;
-    updateStyles(properties?: Object): any;
-    resolveUrl(url: string, base?: string): string;
-  }
-  const ElementMixin: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<ElementMixin>;
-
-  class Element {
+  interface Element extends Polymer.Element {
   }
 
-  interface GestureEventListeners {
-    _addEventListenerToNode(node: any, eventName: any, handler: any): any;
-    _removeEventListenerFromNode(node: any, eventName: any, handler: any): any;
+  interface Templatizer {
+
+    /**
+     * Generates an anonymous `TemplateInstance` class (stored as `this.ctor`)
+     * for the provided template.  This method should be called once per
+     * template to prepare an element for stamping the template, followed
+     * by `stamp` to create new instances of the template.
+     */
+    templatize(template: HTMLTemplateElement|null, mutableData: any): any;
+
+    /**
+     * Creates an instance of the template prepared by `templatize`.  The object
+     * returned is an instance of the anonymous class generated by `templatize`
+     * whose `root` property is a document fragment containing newly cloned
+     * template content, and which has property accessors corresponding to
+     * properties referenced in template bindings.
+     */
+    stamp(model: any): TemplateInstanceBase|null;
+
+    /**
+     * Returns the template "model" (`TemplateInstance`) associated with
+     * a given element, which serves as the binding scope for the template
+     * instance the element is contained in.  A template model should be used
+     * to manipulate data associated with this template instance.
+     */
+    modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
   }
-  const GestureEventListeners: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<GestureEventListeners>;
 
-  Polymer.importHref(href: string, onload?: Function, onerror?: Function, optAsync?: boolean): HTMLLinkElement;
+  interface DomBind extends Polymer.Element {
 
-  Polymer.enqueueDebouncer(debouncer: Polymer.Debouncer): any;
-
-  Polymer.flush(): any;
-
-  Polymer.dom(obj: (!Node|Event)): (DomApi|EventApi);
-
-  interface LegacyElementMixin extends ElementMixin, GestureEventListeners{
-    isAttached: [object Object];
-    _debouncers: [object Object];
-    attributeChangedCallback(name: string, old: ?string|null, value: ?string|null): any;
-    _initializeProperties(): any;
-    ready(): any;
-    connectedCallback(): any;
-    disconnectedCallback(): any;
-    created(): any;
-    attached(): any;
-    detached(): any;
-    attributeChanged(name: string, old: ?string|null, value: ?string|null): any;
-    _registered(): any;
-    _ensureAttributes(): any;
-    _applyListeners(): any;
-    serialize(value: any): (string|undefined);
-    deserialize(value: string, type: any): any;
-    reflectPropertyToAttribute(property: string, attribute?: string, value?: any): any;
-    serializeValueToAttribute(value: any, attribute: string, node: Element): any;
-    extend(prototype: Object, api: Object): Object;
-    mixin(target: Object, source: Object): Object;
-    chainObject(object: Object, prototype: Object): Object;
-    instanceTemplate(template: HTMLTemplateElement): DocumentFragment;
-    fire(type: string, detail?: any, options?: {bubbles: (boolean|undefined), cancelable: (boolean|undefined), composed: (boolean|undefined)}): Event;
-    listen(node: Element, eventName: string, methodName: string): any;
-    unlisten(node: Element, eventName: string, methodName: string): any;
-    setScrollDirection(direction?: string, node?: Element): any;
-    $$(slctr: string): Element;
-    distributeContent(): any;
-    getEffectiveChildNodes(): Array.<Node>;
-    queryDistributedElements(selector: string): Array.<Node>;
-    getEffectiveChildren(): Array.<Node>;
-    getEffectiveTextContent(): string;
-    queryEffectiveChildren(selector: string): Object.<Node>;
-    queryAllEffectiveChildren(selector: string): Array.<Node>;
-    getContentChildNodes(slctr?: string): Array.<Node>;
-    getContentChildren(slctr?: string): Array.<HTMLElement>;
-    isLightDescendant(node: ?Node|null): boolean;
-    isLocalDescendant(node?: Element): boolean;
-    scopeSubtree(container: any, shouldObserve: any): any;
-    getComputedStyleValue(property: string): string;
-    debounce(jobName: string, callback: function (), wait: number): Object;
-    isDebouncerActive(jobName: string): boolean;
-    flushDebouncer(jobName: string): any;
-    cancelDebouncer(jobName: string): any;
-    async(callback: Function, waitTime?: number): number;
-    cancelAsync(handle: number): any;
-    create(tag: string, props: Object): Element;
-    importHref(href: string, onload: Function, onerror: Function, optAsync: boolean): HTMLLinkElement;
-    elementMatches(selector: string, node?: Element): boolean;
-    toggleAttribute(name: string, bool?: boolean, node?: Element): any;
-    toggleClass(name: string, bool?: boolean, node?: Element): any;
-    transform(transformText: string, node?: Element): any;
-    translate3d(x: number, y: number, z: number, node?: Element): any;
-    arrayDelete(arrayOrPath: (string|!Array.<(number|string)>), item: any): any[];
-    _logger(level: string, args: any[]): any;
-    _log(...args: any): any;
-    _warn(...args: any): any;
-    _error(...args: any): any;
-    _logf(methodName: string, ...args: any): any[];
-  }
-  const LegacyElementMixin: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<LegacyElementMixin>;
-
-  Polymer.mixinBehaviors(behaviors: !(Object|Array), klass: (!HTMLElement|function (new: HTMLElement))): function (new: HTMLElement);
-
-  Polymer.Class(info: !PolymerInit): function (new: HTMLElement);
-
-  interface MutableData {
-    _shouldPropertyChange(property: string, value: any, old: any): boolean;
-  }
-  const MutableData: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<MutableData>;
-
-  interface OptionalMutableData {
-    mutableData: [object Object];
-    _shouldPropertyChange(property: string, value: any, old: any): boolean;
-  }
-  const OptionalMutableData: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<OptionalMutableData>;
-
-  class DomBind extends domBindBase {
+    /**
+     * assumes only one observed attribute
+     */
     attributeChangedCallback(): any;
     connectedCallback(): any;
     disconnectedCallback(): any;
+    __insertChildren(): any;
+    __removeChildren(): any;
+
+    /**
+     * Forces the element to render its content. This is typically only
+     * necessary to call if HTMLImports with the async attribute are used.
+     */
     render(): any;
   }
 
-  class DomRepeat extends domRepeatBase {
-    items: any[];
-    as: [object Object];
-    indexAs: [object Object];
-    itemsIndexAs: [object Object];
-    sort: [object Object];
-    filter: [object Object];
-    observe: [object Object];
-    delay: [object Object];
-    renderedItemCount: [object Object];
-    initialCount: [object Object];
-    targetFramerate: [object Object];
-    _targetFrameTime: [object Object];
+  interface DomRepeat extends Polymer.Element {
+
+    /**
+     * An array containing items determining how many instances of the template
+     * to stamp and that that each template instance should bind to.
+     */
+    items: Array|null;
+
+    /**
+     * The name of the variable to add to the binding scope for the array
+     * element associated with a given template instance.
+     */
+    as: string;
+
+    /**
+     * The name of the variable to add to the binding scope with the index
+     * of the instance in the sorted and filtered list of rendered items.
+     * Note, for the index in the `this.items` array, use the value of the
+     * `itemsIndexAs` property.
+     */
+    indexAs: string;
+
+    /**
+     * The name of the variable to add to the binding scope with the index
+     * of the instance in the `this.items` array. Note, for the index of
+     * this instance in the sorted and filtered list of rendered items,
+     * use the value of the `indexAs` property.
+     */
+    itemsIndexAs: string;
+
+    /**
+     * A function that should determine the sort order of the items.  This
+     * property should either be provided as a string, indicating a method
+     * name on the element's host, or else be an actual function.  The
+     * function should match the sort function passed to `Array.sort`.
+     * Using a sort function has no effect on the underlying `items` array.
+     */
+    sort: Function|null;
+
+    /**
+     * A function that can be used to filter items out of the view.  This
+     * property should either be provided as a string, indicating a method
+     * name on the element's host, or else be an actual function.  The
+     * function should match the sort function passed to `Array.filter`.
+     * Using a filter function has no effect on the underlying `items` array.
+     */
+    filter: Function|null;
+
+    /**
+     * When using a `filter` or `sort` function, the `observe` property
+     * should be set to a space-separated list of the names of item
+     * sub-fields that should trigger a re-sort or re-filter when changed.
+     * These should generally be fields of `item` that the sort or filter
+     * function depends on.
+     */
+    observe: string;
+
+    /**
+     * When using a `filter` or `sort` function, the `delay` property
+     * determines a debounce time after a change to observed item
+     * properties that must pass before the filter or sort is re-run.
+     * This is useful in rate-limiting shuffling of the view when
+     * item changes may be frequent.
+     */
+    delay: number;
+
+    /**
+     * Count of currently rendered items after `filter` (if any) has been applied.
+     * If "chunking mode" is enabled, `renderedItemCount` is updated each time a
+     * set of template instances is rendered.
+     */
+    renderedItemCount: number;
+
+    /**
+     * Defines an initial count of template instances to render after setting
+     * the `items` array, before the next paint, and puts the `dom-repeat`
+     * into "chunking mode".  The remaining items will be created and rendered
+     * incrementally at each animation frame therof until all instances have
+     * been rendered.
+     */
+    initialCount: number;
+
+    /**
+     * When `initialCount` is used, this property defines a frame rate to
+     * target by throttling the number of instances rendered each frame to
+     * not exceed the budget for the target frame rate.  Setting this to a
+     * higher number will allow lower latency and higher throughput for
+     * things like event handlers, but will result in a longer time for the
+     * remaining items to complete rendering.
+     */
+    targetFramerate: number;
+    _targetFrameTime: number;
     disconnectedCallback(): any;
     connectedCallback(): any;
+    __ensureTemplatized(): any;
+    __getMethodHost(): any;
+    __sortChanged(sort: any): any;
+    __filterChanged(filter: any): any;
+    __computeFrameTime(rate: any): any;
+    __initializeChunking(): any;
+    __tryRenderChunk(): any;
+    __requestRenderChunk(): any;
+    __renderChunk(): any;
+    __observeChanged(): any;
+    __itemsChanged(change: any): any;
+    __handleObservedPaths(path: any): any;
+    __debounceRender(fn: () => any, delay = 0: any): any;
+
+    /**
+     * Forces the element to render its content. Normally rendering is
+     * asynchronous to a provoking change. This is done for efficiency so
+     * that multiple changes trigger only a single render. The render method
+     * should be called if, for example, template rendering is required to
+     * validate application state.
+     */
     render(): any;
+    __render(): any;
+    __applyFullRefresh(): any;
+    __detachInstance(idx: any): any;
+    __attachInstance(idx: any, parent: any): any;
+    __detachAndRemoveInstance(idx: any): any;
+    __stampInstance(item: any, instIdx: any, itemIdx: any): any;
+    __insertInstance(item: any, instIdx: any, itemIdx: any): any;
+
+    /**
+     * Implements extension point from Templatize mixin
+     */
     _showHideChildren(hidden: any): any;
-    itemForElement(el: HTMLElement): any;
-    indexForElement(el: HTMLElement): any;
-    modelForElement(el: HTMLElement): TemplateInstanceBase;
+
+    /**
+     * responsible for notifying item.<path> changes to inst for key
+     */
+    __handleItemPath(path: any, value: any): any;
+
+    /**
+     * Returns the item associated with a given element stamped by
+     * this `dom-repeat`.
+     * 
+     * Note, to modify sub-properties of the item,
+     * `modelForElement(el).set('item.<sub-prop>', value)`
+     * should be used.
+     */
+    itemForElement(el: HTMLElement|null): any;
+
+    /**
+     * Returns the inst index for a given element stamped by this `dom-repeat`.
+     * If `sort` is provided, the index will reflect the sorted order (rather
+     * than the original array order).
+     */
+    indexForElement(el: HTMLElement|null): any;
+
+    /**
+     * Returns the template "model" associated with a given element, which
+     * serves as the binding scope for the template instance the element is
+     * contained in. A template model is an instance of `Polymer.Base`, and
+     * should be used to manipulate data associated with this template instance.
+     * 
+     * Example:
+     * 
+     *   let model = modelForElement(el);
+     *   if (model.index < 10) {
+     *     model.set('item.checked', true);
+     *   }
+     */
+    modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
   }
 
-  class DomIf extends Polymer.Element {
-    if: [object Object];
-    restamp: [object Object];
+  interface DomIf extends Polymer.Element {
+
+    /**
+     * A boolean indicating whether this template should stamp.
+     */
+    if: boolean;
+
+    /**
+     * When true, elements will be removed from DOM and discarded when `if`
+     * becomes false and re-created and added back to the DOM when `if`
+     * becomes true.  By default, stamped elements will be hidden but left
+     * in the DOM when `if` becomes false, which is generally results
+     * in better performance.
+     */
+    restamp: boolean;
     connectedCallback(): any;
     disconnectedCallback(): any;
+    __debounceRender(): any;
+
+    /**
+     * Forces the element to render its content. Normally rendering is
+     * asynchronous to a provoking change. This is done for efficiency so
+     * that multiple changes trigger only a single render. The render method
+     * should be called if, for example, template rendering is required to
+     * validate application state.
+     */
     render(): any;
+    __render(): any;
+    __ensureInstance(): any;
+    __syncHostProperties(): any;
+    __teardownInstance(): any;
     _showHideChildren(): any;
   }
 
-  interface ArraySelectorMixin extends ElementMixin{
-    items: any[];
-    multi: [object Object];
-    selected: [object Object];
-    selectedItem: [object Object];
-    toggle: [object Object];
-    clearSelection(): any;
-    isSelected(item: any): boolean;
-    isIndexSelected(idx: number): boolean;
-    deselect(item: any): any;
-    deselectIndex(idx: number): any;
-    select(item: any): any;
-    selectIndex(idx: number): any;
-  }
-  const ArraySelectorMixin: <T extends Constructor<HTMLElement>>(base: T) => T & Constructor<ArraySelectorMixin>;
-
-  class ArraySelector extends baseArraySelector {
+  interface ArraySelector extends Polymer.Element {
   }
 
-  class CustomStyle extends HTMLElement {
-    getStyle(): HTMLStyleElement;
+  interface CustomStyle extends Polymer.Element {
+
+    /**
+     * Returns the light-DOM `<style>` child this element wraps.  Upon first
+     * call any style modules referenced via the `include` attribute will be
+     * concatenated to this element's `<style>`.
+     */
+    getStyle(): HTMLStyleElement|null;
   }
 
+  interface MutableDataBehavior {
+
+    /**
+     * Overrides `Polymer.PropertyEffects` to provide option for skipping
+     * strict equality checking for Objects and Arrays.
+     * 
+     * This method pulls the value to dirty check against from the `__dataTemp`
+     * cache (rather than the normal `__data` cache) for Objects.  Since the temp
+     * cache is cleared at the end of a turn, this implementation allows
+     * side-effects of deep object changes to be processed by re-setting the
+     * same object (using the temp cache as an in-turn backstop to prevent
+     * cycles due to 2-way notification).
+     */
+    _shouldPropertyChange(property: string, value: any, old: any): boolean;
+  }
+
+  interface OptionalMutableDataBehavior {
+
+    /**
+     * Instance-level flag for configuring the dirty-checking strategy
+     * for this element.  When true, Objects and Arrays will skip dirty
+     * checking, otherwise strict equality checking will be used.
+     */
+    mutableData: boolean;
+
+    /**
+     * Overrides `Polymer.PropertyEffects` to skip strict equality checking
+     * for Objects and Arrays.
+     * 
+     * Pulls the value to dirty check against from the `__dataTemp` cache
+     * (rather than the normal `__data` cache) for Objects.  Since the temp
+     * cache is cleared at the end of a turn, this implementation allows
+     * side-effects of deep object changes to be processed by re-setting the
+     * same object (using the temp cache as an in-turn backstop to prevent
+     * cycles due to 2-way notification).
+     */
+    _shouldPropertyChange(property: string, value: any, old: any): boolean;
+  }
+}
+
+interface TemplateInstanceBase extends Polymer.Element {
+  _addEventListenerToNode(node: any, eventName: any, handler: any): any;
+
+  /**
+   * Overrides default property-effects implementation to intercept
+   * textContent bindings while children are "hidden" and cache in
+   * private storage for later retrieval.
+   */
+  _setUnmanagedPropertyToNode(node: any, prop: any, value: any): any;
+
+  /**
+   * Configure the given `props` by calling `_setPendingProperty`. Also
+   * sets any properties stored in `__hostProps`.
+   */
+  _configureProperties(props: Object|null): any;
+
+  /**
+   * Forwards a host property to this instance.  This method should be
+   * called on instances from the `options.forwardHostProp` callback
+   * to propagate changes of host properties to each instance.
+   * 
+   * Note this method enqueues the change, which are flushed as a batch.
+   */
+  forwardHostProp(prop: string, value: any): any;
+
+  /**
+   * Shows or hides the template instance top level child elements. For
+   * text nodes, `textContent` is removed while "hidden" and replaced when
+   * "shown."
+   */
+  _showHideChildren(hide: boolean): any;
 }
