@@ -1,5 +1,24 @@
 namespace Polymer {
 
+  /**
+   * The `dom-module` element registers the dom it contains to the name given
+   * by the module's id attribute. It provides a unified database of dom
+   * accessible via its static `import` API.
+   * 
+   * A key use case of `dom-module` is for providing custom element `<template>`s
+   * via HTML imports that are parsed by the native HTML parser, that can be
+   * relocated during a bundling pass and still looked up by `id`.
+   * 
+   * Example:
+   * 
+   *     <dom-module id="foo">
+   *       <img src="stuff.png">
+   *     </dom-module>
+   * 
+   * Then in code in some other location that cannot access the dom-module above
+   * 
+   *     let img = customElements.get('dom-module').import('foo', 'img');
+   */
   interface DomModule extends Polymer.Element {
     attributeChangedCallback(name: any, old: any, value: any): any;
 
@@ -11,9 +30,72 @@ namespace Polymer {
     register(id: any): any;
   }
 
+  /**
+   * Base class that provides the core API for Polymer's meta-programming
+   * features including template stamping, data-binding, attribute deserialization,
+   * and property change observation.
+   */
   interface Element extends Polymer.Element {
   }
 
+  /**
+   * The `Polymer.Templatizer` behavior adds methods to generate instances of
+   * templates that are each managed by an anonymous `Polymer.PropertyEffects`
+   * instance where data-bindings in the stamped template content are bound to
+   * accessors on itself.
+   * 
+   * This behavior is provided in Polymer 2.x as a hybrid-element convenience
+   * only.  For non-hybrid usage, the `Polymer.Templatize` library
+   * should be used instead.
+   * 
+   * Example:
+   * 
+   *     // Get a template from somewhere, e.g. light DOM
+   *     let template = this.querySelector('template');
+   *     // Prepare the template
+   *     this.templatize(template);
+   *     // Instance the template with an initial data model
+   *     let instance = this.stamp({myProp: 'initial'});
+   *     // Insert the instance's DOM somewhere, e.g. light DOM
+   *     Polymer.dom(this).appendChild(instance.root);
+   *     // Changing a property on the instance will propagate to bindings
+   *     // in the template
+   *     instance.myProp = 'new value';
+   * 
+   * Users of `Templatizer` may need to implement the following abstract
+   * API's to determine how properties and paths from the host should be
+   * forwarded into to instances:
+   * 
+   *     _forwardHostPropV2: function(prop, value)
+   * 
+   * Likewise, users may implement these additional abstract API's to determine
+   * how instance-specific properties that change on the instance should be
+   * forwarded out to the host, if necessary.
+   * 
+   *     _notifyInstancePropV2: function(inst, prop, value)
+   * 
+   * In order to determine which properties are instance-specific and require
+   * custom notification via `_notifyInstanceProp`, define an `_instanceProps`
+   * object containing keys for each instance prop, for example:
+   * 
+   *     _instanceProps: {
+   *       item: true,
+   *       index: true
+   *     }
+   * 
+   * Any properties used in the template that are not defined in _instanceProp
+   * will be forwarded out to the Templatize `owner` automatically.
+   * 
+   * Users may also implement the following abstract function to show or
+   * hide any DOM generated using `stamp`:
+   * 
+   *     _showHideChildren: function(shouldHide)
+   * 
+   * Note that some callbacks are suffixed with `V2` in the Polymer 2.x behavior
+   * as the implementations will need to differ from the callbacks required
+   * by the 1.x Templatizer API due to changes in the `TemplateInstance` API
+   * between versions 1.x and 2.x.
+   */
   interface Templatizer {
 
     /**
@@ -42,6 +124,16 @@ namespace Polymer {
     modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
   }
 
+  /**
+   * Custom element to allow using Polymer's template features (data binding,
+   * declarative event listeners, etc.) in the main document without defining
+   * a new custom element.
+   * 
+   * `<template>` tags utilizing bindings may be wrapped with the `<dom-bind>`
+   * element, which will immediately stamp the wrapped template into the main
+   * document and bind elements to the `dom-bind` element itself as the
+   * binding scope.
+   */
   interface DomBind extends Polymer.Element {
 
     /**
@@ -60,6 +152,93 @@ namespace Polymer {
     render(): any;
   }
 
+  /**
+   * The `<dom-repeat>` element will automatically stamp and binds one instance
+   * of template content to each object in a user-provided array.
+   * `dom-repeat` accepts an `items` property, and one instance of the template
+   * is stamped for each item into the DOM at the location of the `dom-repeat`
+   * element.  The `item` property will be set on each instance's binding
+   * scope, thus templates should bind to sub-properties of `item`.
+   * 
+   * Example:
+   * 
+   * ```html
+   * <dom-module id="employee-list">
+   * 
+   *   <template>
+   * 
+   *     <div> Employee list: </div>
+   *     <template is="dom-repeat" items="{{employees}}">
+   *         <div>First name: <span>{{item.first}}</span></div>
+   *         <div>Last name: <span>{{item.last}}</span></div>
+   *     </template>
+   * 
+   *   </template>
+   * 
+   *   <script>
+   *     Polymer({
+   *       is: 'employee-list',
+   *       ready: function() {
+   *         this.employees = [
+   *             {first: 'Bob', last: 'Smith'},
+   *             {first: 'Sally', last: 'Johnson'},
+   *             ...
+   *         ];
+   *       }
+   *     });
+   *   < /script>
+   * 
+   * </dom-module>
+   * ```
+   * 
+   * Notifications for changes to items sub-properties will be forwarded to template
+   * instances, which will update via the normal structured data notification system.
+   * 
+   * Mutations to the `items` array itself should be made using the Array
+   * mutation API's on `Polymer.Base` (`push`, `pop`, `splice`, `shift`,
+   * `unshift`), and template instances will be kept in sync with the data in the
+   * array.
+   * 
+   * Events caught by event handlers within the `dom-repeat` template will be
+   * decorated with a `model` property, which represents the binding scope for
+   * each template instance.  The model is an instance of Polymer.Base, and should
+   * be used to manipulate data on the instance, for example
+   * `event.model.set('item.checked', true);`.
+   * 
+   * Alternatively, the model for a template instance for an element stamped by
+   * a `dom-repeat` can be obtained using the `modelForElement` API on the
+   * `dom-repeat` that stamped it, for example
+   * `this.$.domRepeat.modelForElement(event.target).set('item.checked', true);`.
+   * This may be useful for manipulating instance data of event targets obtained
+   * by event handlers on parents of the `dom-repeat` (event delegation).
+   * 
+   * A view-specific filter/sort may be applied to each `dom-repeat` by supplying a
+   * `filter` and/or `sort` property.  This may be a string that names a function on
+   * the host, or a function may be assigned to the property directly.  The functions
+   * should implemented following the standard `Array` filter/sort API.
+   * 
+   * In order to re-run the filter or sort functions based on changes to sub-fields
+   * of `items`, the `observe` property may be set as a space-separated list of
+   * `item` sub-fields that should cause a re-filter/sort when modified.  If
+   * the filter or sort function depends on properties not contained in `items`,
+   * the user should observe changes to those properties and call `render` to update
+   * the view based on the dependency change.
+   * 
+   * For example, for an `dom-repeat` with a filter of the following:
+   * 
+   * ```js
+   * isEngineer: function(item) {
+   *     return item.type == 'engineer' || item.manager.type == 'engineer';
+   * }
+   * ```
+   * 
+   * Then the `observe` property should be configured as follows:
+   * 
+   * ```html
+   * <template is="dom-repeat" items="{{employees}}"
+   *           filter="isEngineer" observe="type manager.type">
+   * ```
+   */
   interface DomRepeat extends Polymer.Element {
 
     /**
@@ -227,6 +406,21 @@ namespace Polymer {
     modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
   }
 
+  /**
+   * The `<dom-if>` element will stamp a light-dom `<template>` child when
+   * the `if` property becomes truthy, and the template can use Polymer
+   * data-binding and declarative event features when used in the context of
+   * a Polymer element's template.
+   * 
+   * When `if` becomes falsy, the stamped content is hidden but not
+   * removed from dom. When `if` subsequently becomes truthy again, the content
+   * is simply re-shown. This approach is used due to its favorable performance
+   * characteristics: the expense of creating template content is paid only
+   * once and lazily.
+   * 
+   * Set the `restamp` property to true to force the stamped content to be
+   * created / destroyed when the `if` condition changes.
+   */
   interface DomIf extends Polymer.Element {
 
     /**
@@ -261,9 +455,109 @@ namespace Polymer {
     _showHideChildren(): any;
   }
 
+  /**
+   * Element implementing the `Polymer.ArraySelector` mixin, which records
+   * dynamic associations between item paths in a master `items` array and a
+   * `selected` array such that path changes to the master array (at the host)
+   * element or elsewhere via data-binding) are correctly propagated to items
+   * in the selected array and vice-versa.
+   * 
+   * The `items` property accepts an array of user data, and via the
+   * `select(item)` and `deselect(item)` API, updates the `selected` property
+   * which may be bound to other parts of the application, and any changes to
+   * sub-fields of `selected` item(s) will be kept in sync with items in the
+   * `items` array.  When `multi` is false, `selected` is a property
+   * representing the last selected item.  When `multi` is true, `selected`
+   * is an array of multiply selected items.
+   * 
+   * Example:
+   * 
+   * ```html
+   * <dom-module id="employee-list">
+   * 
+   *   <template>
+   * 
+   *     <div> Employee list: </div>
+   *     <template is="dom-repeat" id="employeeList" items="{{employees}}">
+   *         <div>First name: <span>{{item.first}}</span></div>
+   *         <div>Last name: <span>{{item.last}}</span></div>
+   *         <button on-click="toggleSelection">Select</button>
+   *     </template>
+   * 
+   *     <array-selector id="selector" items="{{employees}}" selected="{{selected}}" multi toggle></array-selector>
+   * 
+   *     <div> Selected employees: </div>
+   *     <template is="dom-repeat" items="{{selected}}">
+   *         <div>First name: <span>{{item.first}}</span></div>
+   *         <div>Last name: <span>{{item.last}}</span></div>
+   *     </template>
+   * 
+   *   </template>
+   * 
+   * </dom-module>
+   * ```
+   * 
+   * ```js
+   * Polymer({
+   *   is: 'employee-list',
+   *   ready() {
+   *     this.employees = [
+   *         {first: 'Bob', last: 'Smith'},
+   *         {first: 'Sally', last: 'Johnson'},
+   *         ...
+   *     ];
+   *   },
+   *   toggleSelection(e) {
+   *     let item = this.$.employeeList.itemForElement(e.target);
+   *     this.$.selector.select(item);
+   *   }
+   * });
+   * ```
+   */
   interface ArraySelector extends Polymer.Element {
   }
 
+  /**
+   * Custom element for defining styles in the main document that can take
+   * advantage of [shady DOM](https://github.com/webcomponents/shadycss) shims
+   * for style encapsulation, custom properties, and custom mixins.
+   * 
+   * - Document styles defined in a `<custom-style>` are shimmed to ensure they
+   *   do not leak into local DOM when running on browsers without native
+   *   Shadow DOM.
+   * - Custom properties can be defined in a `<custom-style>`. Use the `html` selector
+   *   to define custom properties that apply to all custom elements.
+   * - Custom mixins can be defined in a `<custom-style>`, if you import the optional
+   *   [apply shim](https://github.com/webcomponents/shadycss#about-applyshim)
+   *   (`shadycss/apply-shim.html`).
+   * 
+   * To use:
+   * 
+   * - Import `custom-style.html`.
+   * - Place a `<custom-style>` element in the main document, wrapping an inline `<style>` tag that
+   *   contains the CSS rules you want to shim.
+   * 
+   * For example:
+   * 
+   * ```
+   * <!-- import apply shim--only required if using mixins -->
+   * <link rel="import href="bower_components/shadycss/apply-shim.html">
+   * <!-- import custom-style element -->
+   * <link rel="import" href="bower_components/polymer/lib/elements/custom-style.html">
+   * ...
+   * <custom-style>
+   *   <style>
+   *     html {
+   *       --custom-color: blue;
+   *       --custom-mixin: {
+   *         font-weight: bold;
+   *         color: red;
+   *       };
+   *     }
+   *   </style>
+   * </custom-style>
+   * ```
+   */
   interface CustomStyle extends Polymer.Element {
 
     /**
@@ -274,6 +568,36 @@ namespace Polymer {
     getStyle(): HTMLStyleElement|null;
   }
 
+  /**
+   * Legacy element behavior to skip strict dirty-checking for objects and arrays,
+   * (always consider them to be "dirty") for use on legacy API Polymer elements.
+   * 
+   * By default, `Polymer.PropertyEffects` performs strict dirty checking on
+   * objects, which means that any deep modifications to an object or array will
+   * not be propagated unless "immutable" data patterns are used (i.e. all object
+   * references from the root to the mutation were changed).
+   * 
+   * Polymer also provides a proprietary data mutation and path notification API
+   * (e.g. `notifyPath`, `set`, and array mutation API's) that allow efficient
+   * mutation and notification of deep changes in an object graph to all elements
+   * bound to the same object graph.
+   * 
+   * In cases where neither immutable patterns nor the data mutation API can be
+   * used, applying this mixin will cause Polymer to skip dirty checking for
+   * objects and arrays (always consider them to be "dirty").  This allows a
+   * user to make a deep modification to a bound object graph, and then either
+   * simply re-set the object (e.g. `this.items = this.items`) or call `notifyPath`
+   * (e.g. `this.notifyPath('items')`) to update the tree.  Note that all
+   * elements that wish to be updated based on deep mutations must apply this
+   * mixin or otherwise skip strict dirty checking for objects/arrays.
+   * 
+   * In order to make the dirty check strategy configurable, see
+   * `Polymer.OptionalMutableDataBehavior`.
+   * 
+   * Note, the performance characteristics of propagating large object graphs
+   * will be worse as opposed to using strict dirty checking with immutable
+   * patterns or Polymer's path notification API.
+   */
   interface MutableDataBehavior {
 
     /**
@@ -290,6 +614,38 @@ namespace Polymer {
     _shouldPropertyChange(property: string, value: any, old: any): boolean;
   }
 
+  /**
+   * Legacy element behavior to add the optional ability to skip strict
+   * dirty-checking for objects and arrays (always consider them to be
+   * "dirty") by setting a `mutable-data` attribute on an element instance.
+   * 
+   * By default, `Polymer.PropertyEffects` performs strict dirty checking on
+   * objects, which means that any deep modifications to an object or array will
+   * not be propagated unless "immutable" data patterns are used (i.e. all object
+   * references from the root to the mutation were changed).
+   * 
+   * Polymer also provides a proprietary data mutation and path notification API
+   * (e.g. `notifyPath`, `set`, and array mutation API's) that allow efficient
+   * mutation and notification of deep changes in an object graph to all elements
+   * bound to the same object graph.
+   * 
+   * In cases where neither immutable patterns nor the data mutation API can be
+   * used, applying this mixin will allow Polymer to skip dirty checking for
+   * objects and arrays (always consider them to be "dirty").  This allows a
+   * user to make a deep modification to a bound object graph, and then either
+   * simply re-set the object (e.g. `this.items = this.items`) or call `notifyPath`
+   * (e.g. `this.notifyPath('items')`) to update the tree.  Note that all
+   * elements that wish to be updated based on deep mutations must apply this
+   * mixin or otherwise skip strict dirty checking for objects/arrays.
+   * 
+   * While this behavior adds the ability to forgo Object/Array dirty checking,
+   * the `mutableData` flag defaults to false and must be set on the instance.
+   * 
+   * Note, the performance characteristics of propagating large object graphs
+   * will be worse by relying on `mutableData: true` as opposed to using
+   * strict dirty checking with immutable patterns or Polymer's path notification
+   * API.
+   */
   interface OptionalMutableDataBehavior {
 
     /**

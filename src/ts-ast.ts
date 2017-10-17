@@ -23,6 +23,7 @@ export interface Namespace {
 export interface Class {
   kind: 'class';
   name: string;
+  description: string;
   extends: string;
   properties: Property[];
   methods: Function[];
@@ -31,6 +32,7 @@ export interface Class {
 export interface Interface {
   kind: 'interface';
   name: string;
+  description: string;
   extends: string[];
   properties: Property[];
   methods: Function[];

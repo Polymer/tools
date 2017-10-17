@@ -74,7 +74,11 @@ function serializeClass(node: Class|Interface, depth: number): string {
 
 function serializeInterface(node: Interface, depth: number): string {
   const i = indent(depth);
-  let out = `${i}${node.kind} ${node.name}`;
+  let out = '';
+  if (node.description) {
+    out += formatComment(node.description, depth);
+  }
+  out += `${i}${node.kind} ${node.name}`;
   if (node.extends.length) {
     out += ' extends ' + node.extends.join(', ');
   }
