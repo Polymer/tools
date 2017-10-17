@@ -99,6 +99,12 @@ suite('closureTypeToTypeScript', () => {
         '(p0: string, p1: number) => boolean');
   });
 
+  test('function object', () => {
+    check('Function', 'Function|null');
+    check('?Function', 'Function|null');
+    check('!Function', 'Function');
+  });
+
   test('returns any when invalid', () => {
     check('><', 'any');
   });
