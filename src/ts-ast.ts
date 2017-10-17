@@ -26,7 +26,7 @@ export interface Class {
   description: string;
   extends: string;
   properties: Property[];
-  methods: Function[];
+  methods: Method[];
 }
 
 export interface Interface {
@@ -35,16 +35,19 @@ export interface Interface {
   description: string;
   extends: string[];
   properties: Property[];
-  methods: Function[];
+  methods: Method[];
 }
 
-export interface Function {
-  kind: 'function';
+export interface FunctionLike {
   name: string;
   description: string;
   params: Param[];
   returns: string;
 }
+
+export interface Function extends FunctionLike { kind: 'function'; }
+
+export interface Method extends FunctionLike { kind: 'method'; }
 
 export interface Property {
   kind: 'property';

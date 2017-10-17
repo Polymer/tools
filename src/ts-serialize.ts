@@ -11,7 +11,7 @@
 
 import * as util from 'util';
 
-import {Class, Document, Function, Interface, Namespace, Property} from './ts-ast';
+import {Class, Document, Function, Interface, Method, Namespace, Property} from './ts-ast';
 
 /**
  * Encode a TypeScript AST node in TypeScript declaration file syntax (d.ts).
@@ -29,7 +29,7 @@ export function serializeTsDeclarations(
     case 'interface':
       return serializeInterface(node, depth);
     case 'function':
-      return serializeMethod(node, depth);
+      return serializeFunctionOrMethod(node, depth);
     case 'property':
       return serializeProperty(node, depth);
     default:
@@ -63,7 +63,7 @@ function serializeClass(node: Class|Interface, depth: number): string {
     out += serializeProperty(property, depth + 1);
   }
   for (const method of node.methods) {
-    out += serializeMethod(method, depth + 1);
+    out += serializeFunctionOrMethod(method, depth + 1);
   }
   if (!out.endsWith('\n')) {
     out += '\n';
@@ -87,7 +87,7 @@ function serializeInterface(node: Interface, depth: number): string {
     out += serializeProperty(property, depth + 1);
   }
   for (const method of node.methods) {
-    out += serializeMethod(method, depth + 1);
+    out += serializeFunctionOrMethod(method, depth + 1);
   }
   if (!out.endsWith('\n')) {
     out += '\n';
@@ -96,13 +96,18 @@ function serializeInterface(node: Interface, depth: number): string {
   return out;
 }
 
-function serializeMethod(node: Function, depth: number): string {
+function serializeFunctionOrMethod(
+    node: Function|Method, depth: number): string {
   const i = indent(depth);
   let out = '';
   if (node.description) {
     out += '\n' + formatComment(node.description, depth);
   }
-  out += `${i}${node.name}(`;
+  out += i;
+  if (node.kind === 'function') {
+    out += 'function ';
+  }
+  out += `${node.name}(`;
   out += node.params.map(({name, type}) => `${name}: ${type}`).join(', ');
   out += `): ${node.returns};\n`;
   return out;

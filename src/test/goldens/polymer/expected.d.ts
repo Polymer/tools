@@ -1,5 +1,152 @@
 namespace Polymer {
 
+
+  /**
+   * Wraps an ES6 class expression mixin such that the mixin is only applied
+   * if it has not already been applied its base argument. Also memoizes mixin
+   * applications.
+   */
+  function dedupingMixin(mixin: T|null): any;
+
+  namespace CaseMap {
+
+
+    /**
+     * Converts "dash-case" identifier (e.g. `foo-bar-baz`) to "camelCase"
+     * (e.g. `fooBarBaz`).
+     */
+    function dashToCamelCase(dash: string): string;
+
+
+    /**
+     * Converts "camelCase" identifier (e.g. `fooBarBaz`) to "dash-case"
+     * (e.g. `foo-bar-baz`).
+     */
+    function camelToDashCase(camel: string): string;
+  }
+
+  namespace Async {
+
+    namespace timeOut {
+
+
+      /**
+       * Returns a sub-module with the async interface providing the provided
+       * delay.
+       */
+      function after(delay: number): AsyncInterface|null;
+    }
+
+    namespace idlePeriod {
+
+
+      /**
+       * Enqueues a function called at `requestIdleCallback` timing.
+       */
+      function run(fn: (p0: IdleDeadline|null) => any): number;
+
+
+      /**
+       * Cancels a previously enqueued `idlePeriod` callback.
+       */
+      function cancel(handle: number): any;
+    }
+
+    namespace microTask {
+
+
+      /**
+       * Enqueues a function called at microtask timing.
+       */
+      function run(callback: Function|null): number;
+
+
+      /**
+       * Cancels a previously enqueued `microTask` callback.
+       */
+      function cancel(handle: number): any;
+    }
+  }
+
+  namespace ResolveUrl {
+
+
+    /**
+     * Resolves the given URL against the provided `baseUri'.
+     */
+    function resolveUrl(url: string, baseURI: any): string;
+
+
+    /**
+     * Resolves any relative URL's in the given CSS text against the provided
+     * `ownerDocument`'s `baseURI`.
+     */
+    function resolveCss(cssText: string, baseURI: string): string;
+
+
+    /**
+     * Returns a path from a given `url`. The path includes the trailing
+     * `/` from the url.
+     */
+    function pathFromUrl(url: string): string;
+  }
+
+
+  /**
+   * Sets the global rootPath property used by `Polymer.ElementMixin` and
+   * available via `Polymer.rootPath`.
+   */
+  function setRootPath(path: string): any;
+
+
+  /**
+   * Sets the global sanitizeDOMValue available via `Polymer.sanitizeDOMValue`.
+   */
+  function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string, p2: string, p3: Node|null) => any|undefined)): any;
+
+
+  /**
+   * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
+   */
+  function setPassiveTouchGestures(usePassive: boolean): any;
+
+  namespace StyleGather {
+
+
+    /**
+     * Returns CSS text of styles in a space-separated list of `dom-module`s.
+     */
+    function cssFromModules(moduleIds: string): string;
+
+
+    /**
+     * Returns CSS text of styles in a given `dom-module`.  CSS in a `dom-module`
+     * can come either from `<style>`s within the first `<template>`, or else
+     * from one or more `<link rel="import" type="css">` links outside the
+     * template.
+     * 
+     * Any `<styles>` processed are removed from their original location.
+     */
+    function cssFromModule(moduleId: string): string;
+
+
+    /**
+     * Returns CSS text of `<styles>` within a given template.
+     * 
+     * Any `<styles>` processed are removed from their original location.
+     */
+    function cssFromTemplate(template: HTMLTemplateElement|null, baseURI: string): string;
+
+
+    /**
+     * Returns CSS text from stylesheets loaded via `<link rel="import" type="css">`
+     * links within the specified `dom-module`.
+     */
+    function cssFromModuleImports(moduleId: string): string;
+
+    function _cssFromModuleImports(module: HTMLElement): string;
+  }
+
   /**
    * The `dom-module` element registers the dom it contains to the name given
    * by the module's id attribute. It provides a unified database of dom
@@ -30,12 +177,408 @@ namespace Polymer {
     register(id: any): any;
   }
 
+  namespace Path {
+
+
+    /**
+     * Returns true if the given string is a structured data path (has dots).
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.isPath('foo.bar.baz') // true
+     * Polymer.Path.isPath('foo')         // false
+     * ```
+     */
+    function isPath(path: string): boolean;
+
+
+    /**
+     * Returns the root property name for the given path.
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.root('foo.bar.baz') // 'foo'
+     * Polymer.Path.root('foo')         // 'foo'
+     * ```
+     */
+    function root(path: string): string;
+
+
+    /**
+     * Given `base` is `foo.bar`, `foo` is an ancestor, `foo.bar` is not
+     * Returns true if the given path is an ancestor of the base path.
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.isAncestor('foo.bar', 'foo')         // true
+     * Polymer.Path.isAncestor('foo.bar', 'foo.bar')     // false
+     * Polymer.Path.isAncestor('foo.bar', 'foo.bar.baz') // false
+     * ```
+     */
+    function isAncestor(base: string, path: string): boolean;
+
+
+    /**
+     * Given `base` is `foo.bar`, `foo.bar.baz` is an descendant
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.isDescendant('foo.bar', 'foo.bar.baz') // true
+     * Polymer.Path.isDescendant('foo.bar', 'foo.bar')     // false
+     * Polymer.Path.isDescendant('foo.bar', 'foo')         // false
+     * ```
+     */
+    function isDescendant(base: string, path: string): boolean;
+
+
+    /**
+     * Replaces a previous base path with a new base path, preserving the
+     * remainder of the path.
+     * 
+     * User must ensure `path` has a prefix of `base`.
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.translate('foo.bar', 'zot' 'foo.bar.baz') // 'zot.baz'
+     * ```
+     */
+    function translate(base: string, newBase: string, path: string): string;
+
+
+    /**
+     * Converts array-based paths to flattened path.  String-based paths
+     * are returned as-is.
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.normalize(['foo.bar', 0, 'baz'])  // 'foo.bar.0.baz'
+     * Polymer.Path.normalize('foo.bar.0.baz')        // 'foo.bar.0.baz'
+     * ```
+     */
+    function normalize(path: (string|(string|number)[])): string;
+
+
+    /**
+     * Splits a path into an array of property names. Accepts either arrays
+     * of path parts or strings.
+     * 
+     * Example:
+     * 
+     * ```
+     * Polymer.Path.split(['foo.bar', 0, 'baz'])  // ['foo', 'bar', '0', 'baz']
+     * Polymer.Path.split('foo.bar.0.baz')        // ['foo', 'bar', '0', 'baz']
+     * ```
+     */
+    function split(path: (string|(string|number)[])): string[];
+
+
+    /**
+     * Reads a value from a path.  If any sub-property in the path is `undefined`,
+     * this method returns `undefined` (will never throw.
+     */
+    function get(root: Object|null, path: (string|(string|number)[]), info: any): any;
+
+
+    /**
+     * Sets a value to a path.  If any sub-property in the path is `undefined`,
+     * this method will no-op.
+     */
+    function set(root: Object|null, path: (string|(string|number)[]), value: any): (string|undefined);
+  }
+
   /**
    * Base class that provides the core API for Polymer's meta-programming
    * features including template stamping, data-binding, attribute deserialization,
    * and property change observation.
    */
   interface Element extends Polymer.Element {
+  }
+
+  namespace Gestures {
+
+
+    /**
+     * Finds the element rendered on the screen at the provided coordinates.
+     * 
+     * Similar to `document.elementFromPoint`, but pierces through
+     * shadow roots.
+     */
+    function deepTargetFind(x: number, y: number): Element|null;
+
+
+    /**
+     * Adds an event listener to a node for the given gesture type.
+     */
+    function addListener(node: Node|null, evType: string, handler: Function|null): boolean;
+
+
+    /**
+     * Removes an event listener from a node for the given gesture type.
+     */
+    function removeListener(node: Node|null, evType: string, handler: Function|null): boolean;
+
+
+    /**
+     * Registers a new gesture event recognizer for adding new custom
+     * gesture event types.
+     */
+    function register(recog: GestureRecognizer|null): any;
+
+
+    /**
+     * Sets scrolling direction on node.
+     * 
+     * This value is checked on first move, thus it should be called prior to
+     * adding event listeners.
+     */
+    function setTouchAction(node: Element|null, value: string): any;
+
+
+    /**
+     * Prevents the dispatch and default action of the given event name.
+     */
+    function prevent(evName: string): any;
+
+
+    /**
+     * Reset the 2500ms timeout on processing mouse input after detecting touch input.
+     * 
+     * Touch inputs create synthesized mouse inputs anywhere from 0 to 2000ms after the touch.
+     * This method should only be called during testing with simulated touch inputs.
+     * Calling this method in production may cause duplicate taps or other Gestures.
+     */
+    function resetMouseCanceller(): any;
+  }
+
+
+  /**
+   * Convenience method for importing an HTML document imperatively.
+   * 
+   * This method creates a new `<link rel="import">` element with
+   * the provided URL and appends it to the document to start loading.
+   * In the `onload` callback, the `import` property of the `link`
+   * element will contain the imported document contents.
+   */
+  function importHref(href: string, onload: any, onerror: any, optAsync: any): HTMLLinkElement|null;
+
+  namespace RenderStatus {
+
+
+    /**
+     * Enqueues a callback which will be run before the next render, at
+     * `requestAnimationFrame` timing.
+     * 
+     * This method is useful for enqueuing work that requires DOM measurement,
+     * since measurement may not be reliable in custom element callbacks before
+     * the first render, as well as for batching measurement tasks in general.
+     * 
+     * Tasks in this queue may be flushed by calling `Polymer.RenderStatus.flush()`.
+     */
+    function beforeNextRender(context: any, callback: () => any, args: Array|null): any;
+
+
+    /**
+     * Enqueues a callback which will be run after the next render, equivalent
+     * to one task (`setTimeout`) after the next `requestAnimationFrame`.
+     * 
+     * This method is useful for tuning the first-render performance of an
+     * element or application by deferring non-critical work until after the
+     * first paint.  Typical non-render-critical work may include adding UI
+     * event listeners and aria attributes.
+     */
+    function afterNextRender(context: any, callback: () => any, args: Array|null): any;
+  }
+
+
+  /**
+   * Adds a `Polymer.Debouncer` to a list of globally flushable tasks.
+   */
+  function enqueueDebouncer(debouncer: Polymer.Debouncer|null): any;
+
+
+  /**
+   * Forces several classes of asynchronously queued tasks to flush:
+   * - Debouncers added via `enqueueDebouncer`
+   * - ShadyDOM distribution
+   */
+  function flush(): any;
+
+  namespace dom {
+
+
+    /**
+     * Cross-platform `element.matches` shim.
+     */
+    function matchesSelector(node: Element, selector: string): boolean;
+  }
+
+
+  /**
+   * Legacy DOM and Event manipulation API wrapper factory used to abstract
+   * differences between native Shadow DOM and "Shady DOM" when polyfilling on
+   * older browsers.
+   * 
+   * Note that in Polymer 2.x use of `Polymer.dom` is no longer required and
+   * in the majority of cases simply facades directly to the standard native
+   * API.
+   */
+  function dom(obj: (Node|Event|null)): (DomApi|null|EventApi|null);
+
+
+  /**
+   * Applies a "legacy" behavior or array of behaviors to the provided class.
+   * 
+   * Note: this method will automatically also apply the `Polymer.LegacyElementMixin`
+   * to ensure that any legacy behaviors can rely on legacy Polymer API on
+   * the underlying element.
+   */
+  function mixinBehaviors(behaviors: (Object|null|Array|null), klass: (HTMLElement|() => any)): () => any;
+
+
+  /**
+   * Generates a class that extends `Polymer.LegacyElement` based on the
+   * provided info object.  Metadata objects on the `info` object
+   * (`properties`, `observers`, `listeners`, `behaviors`, `is`) are used
+   * for Polymer's meta-programming systems, and any functions are copied
+   * to the generated class.
+   * 
+   * Valid "metadata" values are as follows:
+   * 
+   * `is`: String providing the tag name to register the element under. In
+   * addition, if a `dom-module` with the same id exists, the first template
+   * in that `dom-module` will be stamped into the shadow root of this element,
+   * with support for declarative event listeners (`on-...`), Polymer data
+   * bindings (`[[...]]` and `{{...}}`), and id-based node finding into
+   * `this.$`.
+   * 
+   * `properties`: Object describing property-related metadata used by Polymer
+   * features (key: property names, value: object containing property metadata).
+   * Valid keys in per-property metadata include:
+   * - `type` (String|Number|Object|Array|...): Used by
+   *   `attributeChangedCallback` to determine how string-based attributes
+   *   are deserialized to JavaScript property values.
+   * - `notify` (boolean): Causes a change in the property to fire a
+   *   non-bubbling event called `<property>-changed`. Elements that have
+   *   enabled two-way binding to the property use this event to observe changes.
+   * - `readOnly` (boolean): Creates a getter for the property, but no setter.
+   *   To set a read-only property, use the private setter method
+   *   `_setProperty(property, value)`.
+   * - `observer` (string): Observer method name that will be called when
+   *   the property changes. The arguments of the method are
+   *   `(value, previousValue)`.
+   * - `computed` (string): String describing method and dependent properties
+   *   for computing the value of this property (e.g. `'computeFoo(bar, zot)'`).
+   *   Computed properties are read-only by default and can only be changed
+   *   via the return value of the computing method.
+   * 
+   * `observers`: Array of strings describing multi-property observer methods
+   *  and their dependent properties (e.g. `'observeABC(a, b, c)'`).
+   * 
+   * `listeners`: Object describing event listeners to be added to each
+   *  instance of this element (key: event name, value: method name).
+   * 
+   * `behaviors`: Array of additional `info` objects containing metadata
+   * and callbacks in the same format as the `info` object here which are
+   * merged into this element.
+   * 
+   * `hostAttributes`: Object listing attributes to be applied to the host
+   *  once created (key: attribute name, value: attribute value).  Values
+   *  are serialized based on the type of the value.  Host attributes should
+   *  generally be limited to attributes such as `tabIndex` and `aria-...`.
+   *  Attributes in `hostAttributes` are only applied if a user-supplied
+   *  attribute is not already present (attributes in markup override
+   *  `hostAttributes`).
+   * 
+   * In addition, the following Polymer-specific callbacks may be provided:
+   * - `registered`: called after first instance of this element,
+   * - `created`: called during `constructor`
+   * - `attached`: called during `connectedCallback`
+   * - `detached`: called during `disconnectedCallback`
+   * - `ready`: called before first `attached`, after all properties of
+   *   this element have been propagated to its template and all observers
+   *   have run
+   */
+  function Class(info: PolymerInit): () => any;
+
+  namespace Templatize {
+
+
+    /**
+     * Returns an anonymous `Polymer.PropertyEffects` class bound to the
+     * `<template>` provided.  Instancing the class will result in the
+     * template being stamped into document fragment stored as the instance's
+     * `root` property, after which it can be appended to the DOM.
+     * 
+     * Templates may utilize all Polymer data-binding features as well as
+     * declarative event listeners.  Event listeners and inline computing
+     * functions in the template will be called on the host of the template.
+     * 
+     * The constructor returned takes a single argument dictionary of initial
+     * property values to propagate into template bindings.  Additionally
+     * host properties can be forwarded in, and instance properties can be
+     * notified out by providing optional callbacks in the `options` dictionary.
+     * 
+     * Valid configuration in `options` are as follows:
+     * 
+     * - `forwardHostProp(property, value)`: Called when a property referenced
+     *   in the template changed on the template's host. As this library does
+     *   not retain references to templates instanced by the user, it is the
+     *   templatize owner's responsibility to forward host property changes into
+     *   user-stamped instances.  The `instance.forwardHostProp(property, value)`
+     *    method on the generated class should be called to forward host
+     *   properties into the template to prevent unnecessary property-changed
+     *   notifications. Any properties referenced in the template that are not
+     *   defined in `instanceProps` will be notified up to the template's host
+     *   automatically.
+     * - `instanceProps`: Dictionary of property names that will be added
+     *   to the instance by the templatize owner.  These properties shadow any
+     *   host properties, and changes within the template to these properties
+     *   will result in `notifyInstanceProp` being called.
+     * - `mutableData`: When `true`, the generated class will skip strict
+     *   dirty-checking for objects and arrays (always consider them to be
+     *   "dirty").
+     * - `notifyInstanceProp(instance, property, value)`: Called when
+     *   an instance property changes.  Users may choose to call `notifyPath`
+     *   on e.g. the owner to notify the change.
+     * - `parentModel`: When `true`, events handled by declarative event listeners
+     *   (`on-event="handler"`) will be decorated with a `model` property pointing
+     *   to the template instance that stamped it.  It will also be returned
+     *   from `instance.parentModel` in cases where template instance nesting
+     *   causes an inner model to shadow an outer model.
+     * 
+     * Note that the class returned from `templatize` is generated only once
+     * for a given `<template>` using `options` from the first call for that
+     * template, and the cached class is returned for all subsequent calls to
+     * `templatize` for that template.  As such, `options` callbacks should not
+     * close over owner-specific properties since only the first `options` is
+     * used; rather, callbacks are called bound to the `owner`, and so context
+     * needed from the callbacks (such as references to `instances` stamped)
+     * should be stored on the `owner` such that they can be retrieved via `this`.
+     */
+    function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options: any): () => any;
+
+
+    /**
+     * Returns the template "model" associated with a given element, which
+     * serves as the binding scope for the template instance the element is
+     * contained in. A template model is an instance of
+     * `TemplateInstanceBase`, and should be used to manipulate data
+     * associated with this template instance.
+     * 
+     * Example:
+     * 
+     *   let model = modelForElement(el);
+     *   if (model.index < 10) {
+     *     model.set('item.checked', true);
+     *   }
+     */
+    function modelForElement(template: HTMLTemplateElement|null, node: Node|null): TemplateInstanceBase|null;
   }
 
   /**

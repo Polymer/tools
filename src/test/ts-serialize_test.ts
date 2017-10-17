@@ -25,11 +25,11 @@ suite('serializeTsDeclarations', () => {
         serializeTsDeclarations(property), '"my-unsafe-property": string;\n');
   });
 
-  test('method with description', () => {
+  test('function with description', () => {
     const method: Function = {
       kind: 'function',
       name: 'MyMethod',
-      description: 'This is my method.\nIt has a multi-line description.',
+      description: 'This is my function.\nIt has a multi-line description.',
       params: [
         {
           kind: 'param',
@@ -46,10 +46,10 @@ suite('serializeTsDeclarations', () => {
     };
     assert.equal(serializeTsDeclarations(method), `
 /**
- * This is my method.
+ * This is my function.
  * It has a multi-line description.
  */
-MyMethod(param1: string, param2: any): boolean;
+function MyMethod(param1: string, param2: any): boolean;
 `);
   });
 
@@ -78,14 +78,14 @@ MyMethod(param1: string, param2: any): boolean;
       ],
       methods: [
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod1',
           description: '',
           params: [],
           returns: 'boolean',
         },
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod2',
           description: '',
           params: [],
@@ -135,14 +135,14 @@ interface MyInterface extends MyBase1, MyBase2 {
       ],
       methods: [
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod1',
           description: '',
           params: [],
           returns: 'boolean',
         },
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod2',
           description: '',
           params: [],

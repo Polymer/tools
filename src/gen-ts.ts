@@ -10,6 +10,7 @@
  */
 
 import * as analyzer from 'polymer-analyzer';
+import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/function';
 
 import {closureTypeToTypeScript} from './closure-types';
 import * as ts from './ts-ast';
@@ -63,6 +64,9 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
   for (const behavior of doc.getFeatures({kind: 'behavior'})) {
     handleElementOrBehavior(behavior, root);
   }
+  for (const fn of doc.getFeatures({kind: 'function'})) {
+    handleFunction(fn, root);
+  }
 }
 
 /**
@@ -108,7 +112,7 @@ function handleElementOrBehavior(
     });
   }
 
-  const methods = new Array<ts.Function>();
+  const methods = new Array<ts.Method>();
   for (const method of feature.methods.values()) {
     if (method.inheritedFrom) {
       continue;
@@ -122,7 +126,7 @@ function handleElementOrBehavior(
       });
     }
     methods.push({
-      kind: 'function',
+      kind: 'method',
       name: method.name || '',
       description: method.description || '',
       params: params,
@@ -139,6 +143,34 @@ function handleElementOrBehavior(
     extends: extends_,
     properties: properties,
     methods: methods,
+  });
+}
+
+/**
+ * Add the given Function to the given TypeScript declarations document.
+ */
+function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
+  const parts = feature.name.split('.');
+  const name = parts[parts.length - 1];
+  const parent = findOrCreateNamespace(root, parts.slice(0, -1));
+
+  const params: ts.Param[] = [];
+  for (const param of feature.params || []) {
+    params.push({
+      kind: 'param',
+      name: param.name,
+      type: param.type ? closureTypeToTypeScript(param.type) : 'any',
+    });
+  }
+
+  parent.members.push({
+    kind: 'function',
+    name: name,
+    description: feature.description || '',
+    params: params,
+    returns: feature.return && feature.return.type ?
+        closureTypeToTypeScript(feature.return.type) :
+        'any',
   });
 }
 
