@@ -37,7 +37,7 @@
     "test:watch": "watchy -w src -- npm run test",
     "test:setup": "scripts/setup-fixtures.sh",
     "test:setup-once": "mkdir src/test/fixtures && npm run test:setup || true",
-    "test:make-goldens": "scripts/make-goldens.js"
+    "test:make-goldens": "npm run build && scripts/make-goldens.js"
   },
   "repository": {
     "type": "git",
