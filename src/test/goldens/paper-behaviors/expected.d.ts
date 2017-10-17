@@ -1,4 +1,4 @@
-namespace Polymer {
+declare namespace Polymer {
 
   /**
    * `Polymer.PaperRippleBehavior` dynamically implements a ripple

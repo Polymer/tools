@@ -1,4 +1,4 @@
-namespace Polymer {
+declare namespace Polymer {
 
 
   /**

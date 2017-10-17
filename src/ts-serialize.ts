@@ -43,8 +43,13 @@ function serializeDocument(node: Document): string {
 }
 
 function serializeNamespace(node: Namespace, depth: number): string {
+  let out = ''
   const i = indent(depth)
-  let out = `${i}namespace ${node.name} {\n`;
+  out += i
+  if (depth === 0) {
+    out += 'declare ';
+  }
+  out += `namespace ${node.name} {\n`;
   for (const member of node.members) {
     out += '\n' + serializeTsDeclarations(member, depth + 1);
   }
@@ -53,8 +58,16 @@ function serializeNamespace(node: Namespace, depth: number): string {
 }
 
 function serializeClass(node: Class|Interface, depth: number): string {
+  let out = '';
   const i = indent(depth);
-  let out = `${i}${node.kind} ${node.name}`;
+  if (node.description) {
+    out += formatComment(node.description, depth);
+  }
+  out += i;
+  if (depth === 0) {
+    out += 'declare ';
+  }
+  out += `class ${node.name}`;
   if (node.extends) {
     out += ' extends ' + node.extends;
   }
@@ -73,12 +86,13 @@ function serializeClass(node: Class|Interface, depth: number): string {
 }
 
 function serializeInterface(node: Interface, depth: number): string {
-  const i = indent(depth);
   let out = '';
+  const i = indent(depth);
   if (node.description) {
     out += formatComment(node.description, depth);
   }
-  out += `${i}${node.kind} ${node.name}`;
+  out += i;
+  out += `interface ${node.name}`;
   if (node.extends.length) {
     out += ' extends ' + node.extends.join(', ');
   }
@@ -98,10 +112,13 @@ function serializeInterface(node: Interface, depth: number): string {
 
 function serializeFunctionOrMethod(
     node: Function|Method, depth: number): string {
+  let out = ''
   const i = indent(depth);
-  let out = '';
   if (node.description) {
     out += '\n' + formatComment(node.description, depth);
+  }
+  if (depth === 0) {
+    out += 'declare ';
   }
   out += i;
   if (node.kind === 'function') {
@@ -114,8 +131,8 @@ function serializeFunctionOrMethod(
 }
 
 function serializeProperty(node: Property, depth: number): string {
-  const i = indent(depth);
   let out = '';
+  const i = indent(depth);
   if (node.description) {
     out += '\n' + formatComment(node.description, depth);
   }

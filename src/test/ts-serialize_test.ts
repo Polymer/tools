@@ -49,7 +49,7 @@ suite('serializeTsDeclarations', () => {
  * This is my function.
  * It has a multi-line description.
  */
-function MyMethod(param1: string, param2: any): boolean;
+declare function MyMethod(param1: string, param2: any): boolean;
 `);
   });
 
@@ -153,7 +153,7 @@ interface MyInterface extends MyBase1, MyBase2 {
     assert.equal(serializeTsDeclarations(c), `/**
  * Description of MyClass.
  */
-class MyClass extends MyBase {
+declare class MyClass extends MyBase {
   myProperty1: string;
   myProperty2: any;
   MyMethod1(): boolean;
@@ -188,7 +188,7 @@ class MyClass extends MyBase {
         `interface MyInterface {
 }
 
-class MyClass {
+declare class MyClass {
 }
 `);
 
@@ -210,7 +210,7 @@ class MyClass {
             },
           ],
         }),
-        `namespace MyNamespace {
+        `declare namespace MyNamespace {
 
   interface MyInterface {
   }
@@ -246,7 +246,7 @@ class MyClass {
             },
           ],
         }),
-        `namespace MyNamespace1 {
+        `declare namespace MyNamespace1 {
 
   namespace MyNamespace2 {
 
