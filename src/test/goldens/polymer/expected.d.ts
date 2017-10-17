@@ -261,7 +261,7 @@ declare namespace Polymer {
      * Polymer.Path.normalize('foo.bar.0.baz')        // 'foo.bar.0.baz'
      * ```
      */
-    function normalize(path: string|(string|number)[]): string;
+    function normalize(path: string|Array<string|number>): string;
 
 
     /**
@@ -275,21 +275,21 @@ declare namespace Polymer {
      * Polymer.Path.split('foo.bar.0.baz')        // ['foo', 'bar', '0', 'baz']
      * ```
      */
-    function split(path: string|(string|number)[]): string[];
+    function split(path: string|Array<string|number>): Array<string>;
 
 
     /**
      * Reads a value from a path.  If any sub-property in the path is `undefined`,
      * this method returns `undefined` (will never throw.
      */
-    function get(root: Object|null, path: string|(string|number)[], info: any): any;
+    function get(root: Object|null, path: string|Array<string|number>, info: any): any;
 
 
     /**
      * Sets a value to a path.  If any sub-property in the path is `undefined`,
      * this method will no-op.
      */
-    function set(root: Object|null, path: string|(string|number)[], value: any): string|undefined;
+    function set(root: Object|null, path: string|Array<string|number>, value: any): string|undefined;
   }
 
   /**
@@ -380,7 +380,7 @@ declare namespace Polymer {
      * 
      * Tasks in this queue may be flushed by calling `Polymer.RenderStatus.flush()`.
      */
-    function beforeNextRender(context: any, callback: () => any, args: Array|null): any;
+    function beforeNextRender(context: any, callback: () => any, args: Array<any>|null): any;
 
 
     /**
@@ -392,7 +392,7 @@ declare namespace Polymer {
      * first paint.  Typical non-render-critical work may include adding UI
      * event listeners and aria attributes.
      */
-    function afterNextRender(context: any, callback: () => any, args: Array|null): any;
+    function afterNextRender(context: any, callback: () => any, args: Array<any>|null): any;
   }
 
 
@@ -438,7 +438,7 @@ declare namespace Polymer {
    * to ensure that any legacy behaviors can rely on legacy Polymer API on
    * the underlying element.
    */
-  function mixinBehaviors(behaviors: Object|null|Array|null, klass: HTMLElement|(() => any)): () => any;
+  function mixinBehaviors(behaviors: Object|null|Array<any>|null, klass: HTMLElement|(() => any)): () => any;
 
 
   /**
@@ -788,7 +788,7 @@ declare namespace Polymer {
      * An array containing items determining how many instances of the template
      * to stamp and that that each template instance should bind to.
      */
-    items: Array|null;
+    items: Array<any>|null;
 
     /**
      * The name of the variable to add to the binding scope for the array

@@ -23,7 +23,7 @@ const {parseType} = require('doctrine/lib/typed.js');
 
 /**
  * Convert from a type annotation in Closure syntax to TypeScript syntax (e.g
- * `Array<string>` => `string[]|null`).
+ * `Array` => `Array<any>|null`).
  */
 export function closureTypeToTypeScript(closureType: string): string {
   let ast;
@@ -53,12 +53,14 @@ function serialize(node: doctrine.Type, greedy = false): string {
     nullable = nullableByDefault(node);
   }
 
-  if (isArray(node)) {  // Array<foo>
+  if (isParameterizedArray(node)) {  // Array<foo>
     t = serializeArray(node);
   } else if (isUnion(node)) {  // foo|bar
     t = serializeUnion(node);
   } else if (isFunction(node)) {  // function(foo): bar
     t = serializeFunction(node);
+  } else if (isBareArray(node)) {  // Array
+    t = 'Array<any>';
   } else if (isAllLiteral(node)) {  // *
     t = 'any';
   } else if (isNullableLiteral(node)) {  // ?
@@ -101,7 +103,7 @@ function nullableByDefault(node: doctrine.Type): boolean {
     }
     return true;
   }
-  return isArray(node);
+  return isParameterizedArray(node);
 }
 
 /**
@@ -131,7 +133,7 @@ function serializeArray(node: doctrine.type.TypeApplication): string {
     return '';
   }
   const arg = node.applications[0];
-  return serialize(arg, true) + '[]';
+  return `Array<${serialize(arg)}>`;
 }
 
 function serializeUnion(node: doctrine.type.UnionType): string {
@@ -156,10 +158,16 @@ function serializeFunction(node: doctrine.type.FunctionType): string {
   return out;
 }
 
-function isArray(node: doctrine.Type): node is doctrine.type.TypeApplication {
+function isParameterizedArray(node: doctrine.Type):
+    node is doctrine.type.TypeApplication {
   return node.type === 'TypeApplication' &&
       node.expression.type === 'NameExpression' &&
       node.expression.name === 'Array';
+}
+
+function isBareArray(node: doctrine.Type):
+    node is doctrine.type.TypeApplication {
+  return node.type === 'NameExpression' && node.name === 'Array';
 }
 
 function isUnion(node: doctrine.Type): node is doctrine.type.UnionType {
