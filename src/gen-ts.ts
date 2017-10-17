@@ -8,295 +8,185 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// Requires node >= 7.6
 
-import {generate} from 'escodegen';
-import {Analysis, Analyzer, Element, ElementMixin, Feature, FSUrlLoader, Method, PackageUrlResolver, Property} from 'polymer-analyzer';
-import {Function as ResolvedFunction} from 'polymer-analyzer/lib/javascript/function';
+import * as analyzer from 'polymer-analyzer';
 
-const isInTestsRegex = /(\b|\/|\\)(test)(\/|\\)/;
-const isTest = (f: Feature) =>
-    f.sourceRange && isInTestsRegex.test(f.sourceRange.file);
+import {closureTypeToTypeScript} from './closure-types';
+import * as ts from './ts-ast';
+import {serializeTsDeclarations} from './ts-serialize';
 
-// const declarationKinds = ['element', 'element-mixin', 'namespace',
-// 'function']; const isDeclaration = (f: Feature) =>
-// declarationKinds.some((kind) => f.kinds.has(kind));
-
-const header = `declare namespace Polymer {
-  type Constructor<T> = new(...args: any[]) => T;
-`;
-const footer = `}`;
-
-export function generateDeclarations(root: string): Promise<string> {
-  const analyzer = new Analyzer({
-    urlLoader: new FSUrlLoader(root),
-    urlResolver: new PackageUrlResolver(),
+/**
+ * Analyze all files in the given directory using Polymer Analyzer, and return
+ * a TypeScript declarations document string that describes its contents.
+ */
+export async function generateDeclarations(rootDir: string): Promise<string> {
+  const a = new analyzer.Analyzer({
+    urlLoader: new analyzer.FSUrlLoader(rootDir),
+    urlResolver: new analyzer.PackageUrlResolver(),
   });
-
-  return analyzer.analyzePackage().then(generatePackage);
+  const analysis = await a.analyzePackage();
+  const ast = analyzerToAst(analysis);
+  return serializeTsDeclarations(ast);
 }
 
-function generatePackage(pkg: Analysis): Promise<string> {
-  const declarations = [header];
+/**
+ * Make a TypeScript declarations document from the given Polymer Analyzer
+ * result.
+ */
+function analyzerToAst(analysis: analyzer.Analysis): ts.Document {
+  const root: ts.Document = {
+    kind: 'document',
+    members: [],
+  };
 
-  for (const feature of pkg.getFeatures()) {
-    // if (feature.sourceRange == null) {
-    //   continue;
-    // }
-    if (isTest(feature)) {
+  for (const doc of analysis.getFeatures({kind: 'js-document'})) {
+    // TODO This is a very crude exclusion rule.
+    if (doc.url.match(/(test|demo)\//)) {
       continue;
     }
-
-    if (feature.kinds.has('element')) {
-      genElementDeclaration(feature as Element, declarations, 2);
-    } else if (feature.kinds.has('element-mixin')) {
-      genMixinDeclaration(feature as ElementMixin, declarations, 2);
-    } else if (feature.kinds.has('namespace')) {
-      // genNamespaceDeclaration(feature, declarations);
-    } else if (feature.kinds.has('function')) {
-      genFunctionDeclaration(feature as ResolvedFunction, declarations, 2);
-    }
+    handleDocument(doc, root);
   }
 
-  declarations.push(footer);
-
-  return Promise.resolve(declarations.join('\n'));
+  return root;
 }
 
-function genElementDeclaration(
-    element: Element, declarations: string[], indent: number = 0) {
-  if (!element.className) {
-    // TODO: handle elements with tagnae, but no exported class
-    return;
+/**
+ * Extend the given TypeScript declarations document with all of the relevant
+ * items in the given Polymer Analyzer document.
+ */
+function handleDocument(doc: analyzer.Document, root: ts.Document) {
+  // TODO Should we traverse and serialize all features in the same order they
+  // were originally declared, instead of grouping by type as we do here?
+  for (const element of doc.getFeatures({kind: 'element'})) {
+    handleElementOrBehavior(element, root);
   }
-  const {name: className, namespace: namespaceName} =
-      getNamespaceAndName(element.className);
-  if (namespaceName !== 'Polymer') {
-    // TODO: handle non-Polymer namespaces
-    return;
+  for (const behavior of doc.getFeatures({kind: 'behavior'})) {
+    handleElementOrBehavior(behavior, root);
   }
+}
 
-  const node = element.astNode;
-  let d = '';
-
-  if (node == null) {
-    process.stderr.write(`no AST node for ${element.className}\n`);
-    d += `${idt(indent)}class ${className} {\n`;
-  } else if (
-      node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
-    d += `${idt(indent)}class ${node.id!.name} extends ${
-        generate(node.superClass)} {\n`;
-  } else if (node.type === 'VariableDeclaration') {
-    // We can't output the variable initializer, so we union the mixins
-    let supers: string[] = [];
-    if (element.superClass) {
-      const superName =
-          getNamespaceAndName(element.superClass.identifier).name!;
-      supers.push(superName)
-    }
-    for (const mixin of element.mixins) {
-      const mixinName = getNamespaceAndName(mixin.identifier).name!;
-      supers.push(mixinName)
-    }
-    const type = supers.map((s) => `Constructor<${s}>`).join('&');
-
-    d += `${idt(indent)}const ${className}: ${type};\n`;
-    declarations.push(d);
-    return;
+/**
+ * Add the given Element or Behavior to the given TypeScript declarations
+ * document.
+ */
+function handleElementOrBehavior(
+    feature: analyzer.Element|analyzer.PolymerBehavior, root: ts.Document) {
+  let className, parent;
+  if (feature.className) {
+    const parts = feature.className.split('.');
+    className = parts[parts.length - 1];
+    parent = findOrCreateNamespace(root, parts.slice(0, -1));
+  } else if (feature.tagName) {
+    className = kebabToCamel(feature.tagName);
+    parent = root;
   } else {
-    process.stderr.write(`no AST node for ${element.className}\n`);
-    d += `${idt(indent)}class ${className} {\n`;
+    console.error('Could not find a name.');
+    return;
   }
 
-  for (const [, property] of element.properties) {
-    if (property.privacy === 'private' || property.inheritedFrom != null) {
+  const extends_ = new Array<string>();
+  if (isPolymerElement(feature)) {
+    // TODO Only do this when it's a legacy Polymer element.
+    extends_.push('Polymer.Element');
+    for (const behavior of feature.behaviorAssignments) {
+      extends_.push(behavior.name);
+    }
+  } else if (isElement(feature)) {
+    extends_.push('HTMLElement');
+  }
+
+  const properties = new Array<ts.Property>();
+  for (const property of feature.properties.values()) {
+    if (property.inheritedFrom) {
       continue;
     }
-    d += `${idt(indent)}  ${getVisibility(property)}${property.name}${
-        getTypeAnnotation(property, true)};\n`;
+    properties.push({
+      kind: 'property',
+      name: property.name || '',
+      description: property.description || '',
+      type: property.type ? closureTypeToTypeScript(property.type) : 'any',
+    });
   }
 
-  for (const [, method] of element.methods) {
-    const methodText = genMethod(method, indent + 2);
-    if (methodText) {
-      d += methodText;
+  const methods = new Array<ts.Function>();
+  for (const method of feature.methods.values()) {
+    if (method.inheritedFrom) {
+      continue;
     }
-  }
-
-  d += `${idt(indent)}}\n`;
-  declarations.push(d);
-}
-
-function genMixinDeclaration(
-    mixin: ElementMixin, declarations: string[], indent: number = 0) {
-  const {name, namespace: namespaceName} = getNamespaceAndName(mixin.name);
-  if (namespaceName !== 'Polymer') {
-    // TODO: handle non-Polymer namespaces
-    return;
-  }
-
-  let d = '';
-
-  const extendsText = (mixin.mixins && mixin.mixins.length > 0) ?
-      ('extends ' +
-       mixin.mixins.map((m) => getNamespaceAndName(m.identifier).name)
-           .join(', ')) :
-      '';
-
-  d += `${idt(indent)}interface ${name} ${extendsText}{\n`
-
-  for (const [, property] of mixin.properties) {
-    const propertyText = genProperty(property, indent + 2);
-    if (propertyText) {
-      d += propertyText;
+    const params: ts.Param[] = [];
+    for (const param of method.params || []) {
+      params.push({
+        kind: 'param',
+        name: param.name,
+        type: param.type ? closureTypeToTypeScript(param.type) : 'any',
+      });
     }
+    methods.push({
+      kind: 'function',
+      name: method.name || '',
+      description: method.description || '',
+      params: params,
+      returns: method.return && method.return.type ?
+          closureTypeToTypeScript(method.return.type) :
+          'any',
+    });
   }
 
-  for (const [, method] of mixin.methods) {
-    const methodText = genMethod(method, indent + 2);
-    if (methodText) {
-      d += methodText;
-    }
-  }
-
-  d += `${idt(indent)}}\n`;
-  d += `${idt(indent)}const ${name}: ` +
-      `<T extends Constructor<HTMLElement>>(base: T) => ` +
-      `T & Constructor<${name}>;\n`;
-  declarations.push(d);
-}
-
-function genFunctionDeclaration(
-    func: ResolvedFunction, declarations: string[], indent: number = 0) {
-  if (func.privacy === 'private') {
-    return;
-  }
-  const {namespace: namespaceName} = getNamespaceAndName(func.name);
-  if (namespaceName !== 'Polymer') {
-    // TODO: handle non-Polymer namespaces
-    return;
-  }
-  declarations.push(genMethod(func, indent)!);
-  // const paramText = func.params
-  //   ? func.params.map(genParameter).join(', ')
-  //   : '';
-  // declarations.push(`${idt(indent)}function
-  // ${name}(${paramText})${getTypeAnnotation(func.return)};\n`);
-}
-
-const idt = (indent: number = 0) => ' '.repeat(indent);
-
-/**
- * Property
- *
- * @param property
- * @param indent
- */
-function genProperty(property: Property, indent: number): string|undefined {
-  if (property.privacy === 'private' || property.inheritedFrom != null) {
-    return;
-  }
-  return `${idt(indent)}${getVisibility(property)}${property.name}` +
-      `${getTypeAnnotation(property, true)};\n`;
+  parent.members.push({
+    kind: 'interface',
+    name: className,
+    description: feature.description,
+    extends: extends_,
+    properties: properties,
+    methods: methods,
+  });
 }
 
 /**
- * Method
- *
- * @param method
- * @param indent
+ * Traverse the given node to find the namespace AST node with the given path.
+ * If it could not be found, add one and return it.
  */
-function genMethod(method: Method, indent: number): string|undefined {
-  if (method.privacy === 'private' || method.inheritedFrom != null) {
-    return;
+function findOrCreateNamespace(
+    root: ts.Document|ts.Namespace, path: string[]): ts.Document|ts.Namespace {
+  if (!path.length) {
+    return root;
   }
-  const returnType = method.return && getTsType(method.return.type);
-  const returnTypeText = (returnType && returnType.type) || 'any';
-  const paramText =
-      method.params ? method.params.map(genParameter).join(', ') : '';
-  return `${idt(indent)}${getVisibility(method)}${method.name}` +
-      `(${paramText}): ${returnTypeText};\n`;
+  let first: ts.Namespace|undefined;
+  for (const member of root.members) {
+    if (member.kind === 'namespace' && member.name === path[0]) {
+      first = member;
+      break;
+    }
+  }
+  if (!first) {
+    first = {
+      kind: 'namespace',
+      name: path[0],
+      members: [],
+    };
+    root.members.push(first);
+  }
+  return findOrCreateNamespace(first, path.slice(1));
 }
 
 /**
- * Parameter
- *
- * @param parameter
+ * Type guard that checks if a Polymer Analyzer feature is an Element.
  */
-function genParameter(parameter: {name: string; type?: string;}) {
-  const {type, optional} = getTsType(parameter.type);
-  return `${parameter.name}${optional ? '?' : ''}: ${type}`;
+function isElement(feature: analyzer.Feature): feature is analyzer.Element {
+  return feature.kinds.has('element');
 }
 
-function getVisibility(property: Property) {
-  // `protected` is not allowed on interfaces :(
-  if (property.privacy == null || property.privacy === 'public' ||
-      property.privacy === 'protected') {
-    return '';
-  }
-  return property.privacy + ' ';
+/**
+ * Type guard that checks if a Polymer Analyzer feature is a PolymerElement.
+ */
+function isPolymerElement(feature: analyzer.Feature):
+    feature is analyzer.PolymerElement {
+  return feature.kinds.has('polymer-element');
 }
 
-function getTypeAnnotation(
-    hasType?: {type?: string, name?: string}, defaultAny: boolean = false) {
-  if (hasType &&
-      (hasType.name && hasType.name.startsWith('...') ||
-       hasType.type === 'Array')) {
-    return `: any[]`;
-  }
-  let type = defaultAny ? 'any' : null;
-  if (hasType && hasType.type) {
-    type = hasType.type;
-  }
-  return type ? `: ${getTsType(type)}` : '';
-}
-
-const typeMap = new Map([
-  ['function', 'Function'],
-  ['String', 'string'],
-  ['Number', 'number'],
-  ['Boolean', 'boolean'],
-  ['*', 'any'],
-  ['Array', 'any[]'],
-]);
-
-interface TsType {
-  type: string, optional: boolean;
-}
-
-function getTsType(type?: string): TsType {
-  let optional = false;
-
-  type = type || 'any';
-
-  // handle Closure optionals
-  if (type.endsWith('=')) {
-    optional = true;
-    type = type.substring(0, type.length - 1);
-  }
-
-  // handle Closure unknown type
-  if (type.startsWith('?')) {
-    type = type + '|null';
-  }
-
-  // convert from Closure
-  if (typeMap.has(type)) {
-    type = typeMap.get(type)!;
-  }
-  return {type, optional};
-}
-
-function getNamespaceAndName(name: string):
-    {name?: string, namespace?: string} {
-  if (typeof name === 'string') {
-    const lastDotIndex = name.lastIndexOf('.');
-    if (lastDotIndex !== -1) {
-      return {
-        name: name.substring(lastDotIndex + 1, name.length),
-        namespace: name.substring(0, lastDotIndex)
-      };
-    }
-  }
-  return {name};
+/**
+ * Convert kebab-case to CamelCase.
+ */
+function kebabToCamel(s: string): string {
+  return s.replace(/(^|-)(.)/g, (_match, _p0, p1) => p1.toUpperCase());
 }
