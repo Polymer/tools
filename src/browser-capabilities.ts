@@ -19,11 +19,11 @@ import {UAParser} from 'ua-parser-js';
  */
 export type BrowserCapability =
     // ECMAScript 2015 (aka ES6).
-    'es2015' |
+    'es2015'|
     // HTTP/2 Server Push.
-    'push' |
+    'push'|
     // Service Worker API.
-    'serviceworker' |
+    'serviceworker'|
     // JavaScript modules.
     'modules';
 
@@ -99,7 +99,7 @@ const browserPredicates: {
 export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
   const ua = new UAParser(userAgent);
   const capabilities = new Set<BrowserCapability>();
-  const predicates = browserPredicates[ua.getBrowser().name] || {};
+  const predicates = browserPredicates[ua.getBrowser().name || ''] || {};
   for (const capability of Object.keys(predicates) as BrowserCapability[]) {
     if (predicates[capability](ua)) {
       capabilities.add(capability);
