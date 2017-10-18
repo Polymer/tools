@@ -87,7 +87,8 @@ const browserPredicates: {
   },
   'Firefox': {
     es2015: since(51),
-    push: since(36),
+    // Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1409570
+    push: () => false,
     serviceworker: since(44),
     modules: () => false,
   },
