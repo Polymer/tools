@@ -35,11 +35,13 @@ suite('serializeTsDeclarations', () => {
           kind: 'param',
           name: 'param1',
           type: 'string',
+          optional: false,
         },
         {
           kind: 'param',
           name: 'param2',
           type: 'any',
+          optional: true,
         },
       ],
       returns: 'boolean',
@@ -49,7 +51,7 @@ suite('serializeTsDeclarations', () => {
  * This is my function.
  * It has a multi-line description.
  */
-declare function MyMethod(param1: string, param2: any): boolean;
+declare function MyMethod(param1: string, param2?: any): boolean;
 `);
   });
 

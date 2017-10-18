@@ -12,7 +12,7 @@
 import * as analyzer from 'polymer-analyzer';
 import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/function';
 
-import {closureTypeToTypeScript} from './closure-types';
+import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
 import * as ts from './ts-ast';
 import {serializeTsDeclarations} from './ts-serialize';
 
@@ -119,10 +119,12 @@ function handleElementOrBehavior(
     }
     const params: ts.Param[] = [];
     for (const param of method.params || []) {
+      const {optional, type} = closureParamToTypeScript(param.type || '');
       params.push({
         kind: 'param',
         name: param.name,
-        type: param.type ? closureTypeToTypeScript(param.type) : 'any',
+        type,
+        optional,
       });
     }
     methods.push({
@@ -156,10 +158,12 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
 
   const params: ts.Param[] = [];
   for (const param of feature.params || []) {
+    const {optional, type} = closureParamToTypeScript(param.type || '');
     params.push({
       kind: 'param',
       name: param.name,
-      type: param.type ? closureTypeToTypeScript(param.type) : 'any',
+      type,
+      optional,
     });
   }
 
