@@ -9,7 +9,8 @@
  * additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as fs from 'fs';
+import * as fsExtra from 'fs-extra';
+import * as path from 'path';
 import {generateDeclarations} from './gen-ts';
 
 const commandLineArgs = require('command-line-args') as any;
@@ -33,9 +34,10 @@ const argDefs = [
     description: 'Root directory of the package to analyze (default ".").',
   },
   {
-    name: 'out',
+    name: 'outDir',
     type: String,
-    description: 'Type declarations output file path (default stdout).',
+    description:
+        'Type declarations output directory (default concatenated to stdout).',
   },
 ];
 
@@ -61,13 +63,25 @@ async function run(argv: string[]) {
     return;
   }
 
-  const declarations = await generateDeclarations(args.root);
+  const fileMap = await generateDeclarations(args.root);
 
-  if (args.out) {
-    fs.writeFileSync(args.out, declarations);
+  if (args.outDir) {
+    console.log('Writing type declarations to ' + path.resolve(args.outDir));
+    await writeFileMap(args.outDir, fileMap);
   } else {
-    process.stdout.write(declarations);
+    const concatenated = [...fileMap.values()].join('\n');
+    process.stdout.write(concatenated);
   }
+}
+
+async function writeFileMap(
+    rootDir: string, files: Map<string, string>): Promise<void> {
+  const promises = [];
+  for (const [relPath, contents] of files) {
+    const fullPath = path.join(rootDir, relPath);
+    promises.push(fsExtra.outputFile(fullPath, contents));
+  }
+  await Promise.all(promises);
 }
 
 (async () => {
