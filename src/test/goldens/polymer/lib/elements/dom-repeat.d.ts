@@ -254,3 +254,7 @@ declare namespace Polymer {
     modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
   }
 }
+
+interface HTMLElementTagNameMap {
+  "dom-repeat": Polymer.DomRepeat;
+}

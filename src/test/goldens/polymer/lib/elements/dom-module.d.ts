@@ -30,3 +30,7 @@ declare namespace Polymer {
     register(id?: string): any;
   }
 }
+
+interface HTMLElementTagNameMap {
+  "dom-module": Polymer.DomModule;
+}

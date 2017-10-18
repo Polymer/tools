@@ -51,3 +51,7 @@ declare namespace Polymer {
     getStyle(): HTMLStyleElement|null;
   }
 }
+
+interface HTMLElementTagNameMap {
+  "custom-style": Polymer.CustomStyle;
+}

@@ -110,14 +110,21 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
  */
 function handleElementOrBehavior(
     feature: analyzer.Element|analyzer.PolymerBehavior, root: ts.Document) {
-  let className, parent;
+  let fullName;   // Fully qualified reference, e.g. `Polymer.DomModule`.
+  let className;  // Just the class name e.g. `DomModule`.
+  let parent;     // Where in the namespace tree does this live.
+
   if (feature.className) {
-    const parts = feature.className.split('.');
-    className = parts[parts.length - 1];
-    parent = findOrCreateNamespace(root, parts.slice(0, -1));
+    let namespacePath;
+    [namespacePath, className] = splitReference(feature.className);
+    fullName = feature.className;
+    parent = findOrCreateNamespace(root, namespacePath);
+
   } else if (feature.tagName) {
     className = kebabToCamel(feature.tagName);
+    fullName = className;
     parent = root;
+
   } else {
     console.error('Could not find a name.');
     return;
@@ -181,15 +188,28 @@ function handleElementOrBehavior(
     properties: properties,
     methods: methods,
   });
+
+  // The `HTMLElementTagNameMap` global interface maps custom element tag names
+  // to their definitions, so that TypeScript knows that e.g.
+  // `dom.createElement('my-foo')` returns a `MyFoo`. Augment the map with this
+  // custom element.
+  if (isElement(feature) && feature.tagName) {
+    const elementMap = findOrCreateInterface(root, 'HTMLElementTagNameMap');
+    elementMap.properties.push({
+      kind: 'property',
+      name: feature.tagName,
+      description: '',
+      type: fullName,
+    });
+  }
 }
 
 /**
  * Add the given Function to the given TypeScript declarations document.
  */
 function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
-  const parts = feature.name.split('.');
-  const name = parts[parts.length - 1];
-  const parent = findOrCreateNamespace(root, parts.slice(0, -1));
+  const [namespacePath, name] = splitReference(feature.name);
+  const parent = findOrCreateNamespace(root, namespacePath);
 
   const params: ts.Param[] = [];
   for (const param of feature.params || []) {
@@ -241,6 +261,31 @@ function findOrCreateNamespace(
 }
 
 /**
+ * Traverse the given node to find the interface AST node with the given path.
+ * If it could not be found, add one and return it.
+ */
+function findOrCreateInterface(
+    root: ts.Document|ts.Namespace, reference: string): ts.Interface {
+  const [namespacePath, name] = splitReference(reference);
+  const namespace_ = findOrCreateNamespace(root, namespacePath);
+  for (const member of namespace_.members) {
+    if (member.kind === 'interface' && member.name === name) {
+      return member;
+    }
+  }
+  const interface_: ts.Interface = {
+    kind: 'interface',
+    name: name,
+    description: '',
+    extends: [],
+    properties: [],
+    methods: [],
+  };
+  namespace_.members.push(interface_);
+  return interface_;
+}
+
+/**
  * Type guard that checks if a Polymer Analyzer feature is an Element.
  */
 function isElement(feature: analyzer.Feature): feature is analyzer.Element {
@@ -260,4 +305,15 @@ function isPolymerElement(feature: analyzer.Feature):
  */
 function kebabToCamel(s: string): string {
   return s.replace(/(^|-)(.)/g, (_match, _p0, p1) => p1.toUpperCase());
+}
+
+/**
+ * Split a reference into an array of namespace path parts, and a name part
+ * (e.g. `"Foo.Bar.Baz"` => `[ ["Foo", "Bar"], "Baz" ]`).
+ */
+function splitReference(reference: string): [string[], string] {
+  const parts = reference.split('.');
+  const namespacePath = parts.slice(0, -1);
+  const name = parts[parts.length - 1];
+  return [namespacePath, name];
 }

@@ -71,3 +71,7 @@ interface PaperButton extends Polymer.Element, Polymer.PaperButtonBehavior {
   raised: boolean;
   _calculateElevation(): any;
 }
+
+interface HTMLElementTagNameMap {
+  "paper-button": PaperButton;
+}

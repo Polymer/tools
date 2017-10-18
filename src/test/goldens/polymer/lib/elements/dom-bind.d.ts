@@ -28,3 +28,7 @@ declare namespace Polymer {
     render(): any;
   }
 }
+
+interface HTMLElementTagNameMap {
+  "dom-bind": Polymer.DomBind;
+}

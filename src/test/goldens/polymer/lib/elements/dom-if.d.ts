@@ -49,3 +49,7 @@ declare namespace Polymer {
     _showHideChildren(): any;
   }
 }
+
+interface HTMLElementTagNameMap {
+  "dom-if": Polymer.DomIf;
+}
