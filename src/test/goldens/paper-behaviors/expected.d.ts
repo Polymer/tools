@@ -1,5 +1,12 @@
-namespace Polymer {
+declare namespace Polymer {
 
+  /**
+   * `Polymer.PaperRippleBehavior` dynamically implements a ripple
+   * when the element has focus via pointer or keyboard.
+   * 
+   * NOTE: This behavior is intended to be used in conjunction with and after
+   * `Polymer.IronButtonState` and `Polymer.IronControlState`.
+   */
   interface PaperRippleBehavior {
 
     /**
@@ -7,7 +14,7 @@ namespace Polymer {
      * with via the pointer.
      */
     noink: boolean;
-    _rippleContainer: (Element|null|undefined);
+    _rippleContainer: Element|null|undefined;
 
     /**
      * Ensures a `<paper-ripple>` element is available when the element is
@@ -73,11 +80,19 @@ namespace Polymer {
     _computeKeyboardClass(receivedFocusFromKeyboard: any): any;
   }
 
+  /**
+   * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
+   */
   interface PaperInkyFocusBehavior {
     _createRipple(): any;
     _focusedChanged(receivedFocusFromKeyboard: any): any;
   }
 
+  /**
+   * Use `Polymer.PaperCheckedElementBehavior` to implement a custom element
+   * that has a `checked` property similar to `Polymer.IronCheckedElementBehavior`
+   * and is compatible with having a ripple effect.
+   */
   interface PaperCheckedElementBehavior {
 
     /**

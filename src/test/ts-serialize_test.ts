@@ -25,11 +25,11 @@ suite('serializeTsDeclarations', () => {
         serializeTsDeclarations(property), '"my-unsafe-property": string;\n');
   });
 
-  test('method with description', () => {
+  test('function with description', () => {
     const method: Function = {
       kind: 'function',
       name: 'MyMethod',
-      description: 'This is my method.\nIt has a multi-line description.',
+      description: 'This is my function.\nIt has a multi-line description.',
       params: [
         {
           kind: 'param',
@@ -46,10 +46,10 @@ suite('serializeTsDeclarations', () => {
     };
     assert.equal(serializeTsDeclarations(method), `
 /**
- * This is my method.
+ * This is my function.
  * It has a multi-line description.
  */
-MyMethod(param1: string, param2: any): boolean;
+declare function MyMethod(param1: string, param2: any): boolean;
 `);
   });
 
@@ -57,6 +57,7 @@ MyMethod(param1: string, param2: any): boolean;
     const i: Interface = {
       kind: 'interface',
       name: 'MyInterface',
+      description: 'Description of MyInterface.',
       extends: [
         'MyBase1',
         'MyBase2',
@@ -77,14 +78,14 @@ MyMethod(param1: string, param2: any): boolean;
       ],
       methods: [
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod1',
           description: '',
           params: [],
           returns: 'boolean',
         },
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod2',
           description: '',
           params: [],
@@ -92,9 +93,10 @@ MyMethod(param1: string, param2: any): boolean;
         },
       ],
     };
-    assert.equal(
-        serializeTsDeclarations(i),
-        `interface MyInterface extends MyBase1, MyBase2 {
+    assert.equal(serializeTsDeclarations(i), `/**
+ * Description of MyInterface.
+ */
+interface MyInterface extends MyBase1, MyBase2 {
 
   /**
    * Description of myProperty1.
@@ -115,6 +117,7 @@ MyMethod(param1: string, param2: any): boolean;
     const c: Class = {
       kind: 'class',
       name: 'MyClass',
+      description: 'Description of MyClass.',
       extends: 'MyBase',
       properties: [
         {
@@ -132,14 +135,14 @@ MyMethod(param1: string, param2: any): boolean;
       ],
       methods: [
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod1',
           description: '',
           params: [],
           returns: 'boolean',
         },
         {
-          kind: 'function',
+          kind: 'method',
           name: 'MyMethod2',
           description: '',
           params: [],
@@ -147,7 +150,10 @@ MyMethod(param1: string, param2: any): boolean;
         },
       ],
     };
-    assert.equal(serializeTsDeclarations(c), `class MyClass extends MyBase {
+    assert.equal(serializeTsDeclarations(c), `/**
+ * Description of MyClass.
+ */
+declare class MyClass extends MyBase {
   myProperty1: string;
   myProperty2: any;
   MyMethod1(): boolean;
@@ -164,6 +170,7 @@ MyMethod(param1: string, param2: any): boolean;
             {
               kind: 'interface',
               name: 'MyInterface',
+              description: '',
               extends: [],
               properties: [],
               methods: []
@@ -171,6 +178,7 @@ MyMethod(param1: string, param2: any): boolean;
             {
               kind: 'class',
               name: 'MyClass',
+              description: '',
               extends: '',
               properties: [],
               methods: []
@@ -180,11 +188,12 @@ MyMethod(param1: string, param2: any): boolean;
         `interface MyInterface {
 }
 
-class MyClass {
+declare class MyClass {
 }
 `);
 
   });
+
   test('namespace', () => {
     assert.equal(
         serializeTsDeclarations({
@@ -194,13 +203,14 @@ class MyClass {
             {
               kind: 'interface',
               name: 'MyInterface',
+              description: '',
               extends: [],
               properties: [],
               methods: []
             },
           ],
         }),
-        `namespace MyNamespace {
+        `declare namespace MyNamespace {
 
   interface MyInterface {
   }
@@ -225,6 +235,7 @@ class MyClass {
                     {
                       kind: 'interface',
                       name: 'MyInterface',
+                      description: '',
                       extends: [],
                       properties: [],
                       methods: []
@@ -235,7 +246,7 @@ class MyClass {
             },
           ],
         }),
-        `namespace MyNamespace1 {
+        `declare namespace MyNamespace1 {
 
   namespace MyNamespace2 {
 

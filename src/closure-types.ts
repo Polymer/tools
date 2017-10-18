@@ -23,7 +23,7 @@ const {parseType} = require('doctrine/lib/typed.js');
 
 /**
  * Convert from a type annotation in Closure syntax to TypeScript syntax (e.g
- * `Array<string>` => `string[]|null`).
+ * `Array` => `Array<any>|null`).
  */
 export function closureTypeToTypeScript(closureType: string): string {
   let ast;
@@ -39,25 +39,28 @@ export function closureTypeToTypeScript(closureType: string): string {
  * Format the given Closure type expression AST node as a TypeScript type
  * annotation string.
  */
-function serialize(node: doctrine.Type): string {
+function serialize(node: doctrine.Type, greedy = false): string {
   let t = '';
 
   let nullable = null;
-
   if (isNullable(node)) {  // ?foo
     nullable = true;
     node = node.expression;
   } else if (isNonNullable(node)) {  // !foo
     nullable = false;
     node = node.expression;
+  } else {
+    nullable = nullableByDefault(node);
   }
 
-  if (isArray(node)) {  // Array<foo>
+  if (isParameterizedArray(node)) {  // Array<foo>
     t = serializeArray(node);
   } else if (isUnion(node)) {  // foo|bar
     t = serializeUnion(node);
   } else if (isFunction(node)) {  // function(foo): bar
     t = serializeFunction(node);
+  } else if (isBareArray(node)) {  // Array
+    t = 'Array<any>';
   } else if (isAllLiteral(node)) {  // *
     t = 'any';
   } else if (isNullableLiteral(node)) {  // ?
@@ -73,9 +76,16 @@ function serialize(node: doctrine.Type): string {
     return '';
   }
 
-  if (nullable === true || (nullable === null && nullableByDefault(node))) {
+  if (nullable) {
+    greedy = true;
+  }
+  if (greedy && ambiguousPrecendence(node)) {
+    t = `(${t})`;
+  }
+  if (nullable) {
     t = `${t}|null`;
   }
+
   return t;
 }
 
@@ -93,7 +103,28 @@ function nullableByDefault(node: doctrine.Type): boolean {
     }
     return true;
   }
-  return isArray(node);
+  return isParameterizedArray(node);
+}
+
+/**
+ * Return whether the given node should be wrapped in parenthesis when it is an
+ * argument to a greedy operator. For example, if we are serializing a union,
+ * and one of the arguments is itself a union, then that argument should be
+ * wrapped in parenthesis to avoid precendence problems.
+ */
+function ambiguousPrecendence(node: doctrine.Type): boolean {
+  if (isFunction(node)) {
+    return true;
+  }
+  if (isUnion(node)) {
+    if (node.elements.length === 1) {
+      // Unions of length 1 get collapsed, so recurse in case we hit a
+      // descendent that is ambiguous.
+      return ambiguousPrecendence(node.elements[0]);
+    }
+    return true;
+  }
+  return false;
 }
 
 function serializeArray(node: doctrine.type.TypeApplication): string {
@@ -101,7 +132,8 @@ function serializeArray(node: doctrine.type.TypeApplication): string {
     console.error('Invalid array expression.');
     return '';
   }
-  return serialize(node.applications[0]) + '[]';
+  const arg = node.applications[0];
+  return `Array<${serialize(arg)}>`;
 }
 
 function serializeUnion(node: doctrine.type.UnionType): string {
@@ -109,7 +141,7 @@ function serializeUnion(node: doctrine.type.UnionType): string {
     // `(string)` will be represented as a union of length one. Just flatten.
     return serialize(node.elements[0]);
   }
-  return '(' + node.elements.map(e => serialize(e)).join('|') + ')';
+  return node.elements.map(e => serialize(e, true)).join('|');
 }
 
 function serializeFunction(node: doctrine.type.FunctionType): string {
@@ -126,10 +158,16 @@ function serializeFunction(node: doctrine.type.FunctionType): string {
   return out;
 }
 
-function isArray(node: doctrine.Type): node is doctrine.type.TypeApplication {
+function isParameterizedArray(node: doctrine.Type):
+    node is doctrine.type.TypeApplication {
   return node.type === 'TypeApplication' &&
       node.expression.type === 'NameExpression' &&
       node.expression.name === 'Array';
+}
+
+function isBareArray(node: doctrine.Type):
+    node is doctrine.type.TypeApplication {
+  return node.type === 'NameExpression' && node.name === 'Array';
 }
 
 function isUnion(node: doctrine.Type): node is doctrine.type.UnionType {
