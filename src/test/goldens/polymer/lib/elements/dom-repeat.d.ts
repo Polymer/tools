@@ -93,7 +93,7 @@ declare namespace Polymer {
      * An array containing items determining how many instances of the template
      * to stamp and that that each template instance should bind to.
      */
-    items: Array<any>|null;
+    items: any[]|null;
 
     /**
      * The name of the variable to add to the binding scope for the array

@@ -13,7 +13,7 @@ declare namespace Polymer {
      * 
      * Tasks in this queue may be flushed by calling `Polymer.RenderStatus.flush()`.
      */
-    function beforeNextRender(context: any, callback: () => any, args: Array<any>|null): any;
+    function beforeNextRender(context: any, callback: () => any, args: any[]|null): any;
 
 
     /**
@@ -25,6 +25,6 @@ declare namespace Polymer {
      * first paint.  Typical non-render-critical work may include adding UI
      * event listeners and aria attributes.
      */
-    function afterNextRender(context: any, callback: () => any, args: Array<any>|null): any;
+    function afterNextRender(context: any, callback: () => any, args: any[]|null): any;
   }
 }

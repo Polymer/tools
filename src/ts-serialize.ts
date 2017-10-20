@@ -49,7 +49,14 @@ export function serializeType(
       return node.name;
 
     case 'array':
-      return `Array<${serializeType(node.itemType)}>`;
+      if (node.itemType.kind === 'name') {
+        // Use the concise `foo[]` syntax when the item type is simple.
+        return `${serializeType(node.itemType)}[]`;
+      } else {
+        // Otherwise use the `Array<foo>` syntax which is easier to read with
+        // complex types (e.g. arrays of arrays).
+        return `Array<${serializeType(node.itemType)}>`;
+      }
 
     case 'union':
       return node.members.map((member) => serializeType(member, true))

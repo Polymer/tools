@@ -8,7 +8,7 @@ declare namespace Polymer {
    * to ensure that any legacy behaviors can rely on legacy Polymer API on
    * the underlying element.
    */
-  function mixinBehaviors(behaviors: Object|null|Array<any>|null, klass: HTMLElement|(() => any)): () => any;
+  function mixinBehaviors(behaviors: Object|null|any[]|null, klass: HTMLElement|(() => any)): () => any;
 
 
   /**

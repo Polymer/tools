@@ -59,18 +59,18 @@ suite('closureTypeToTypeScript', () => {
   });
 
   test('nullable array', () => {
-    check('Array<string>', 'Array<string>|null');
-    check('?Array<string>', 'Array<string>|null');
+    check('Array<string>', 'string[]|null');
+    check('?Array<string>', 'string[]|null');
   });
 
   test('non-nullable array', () => {
-    check('!Array<string>', 'Array<string>');
+    check('!Array<string>', 'string[]');
   });
 
   test('bare array', () => {
-    check('Array', 'Array<any>|null');
-    check('?Array', 'Array<any>|null');
-    check('!Array', 'Array<any>');
+    check('Array', 'any[]|null');
+    check('?Array', 'any[]|null');
+    check('!Array', 'any[]');
   });
 
   test('union', () => {
@@ -89,7 +89,7 @@ suite('closureTypeToTypeScript', () => {
   });
 
   test('nested array', () => {
-    check('!Array<!Array<string>>', 'Array<Array<string>>');
+    check('!Array<!Array<string>>', 'Array<string[]>');
   });
 
   test('array union', () => {
@@ -136,11 +136,11 @@ suite('closureParamToTypeScript', () => {
   });
 
   test('optional array', () => {
-    check('Array=', 'Array<any>|null', true);
+    check('Array=', 'any[]|null', true);
   });
 
   test('required array', () => {
-    check('Array', 'Array<any>|null', false);
+    check('Array', 'any[]|null', false);
   });
 
   test('invalid required', () => {
