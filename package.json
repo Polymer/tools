@@ -33,7 +33,7 @@
   },
   "scripts": {
     "clean": "rm -rf lib",
-    "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
+    "format": "find src -name '*.ts' -not -path 'src/test/fixtures/*' -not -path 'src/test/goldens/*' | xargs clang-format --style=file -i",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
     "test": "npm run test:setup-once && npm run build && mocha",
