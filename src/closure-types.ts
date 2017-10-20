@@ -18,34 +18,38 @@
 // https://github.com/google/closure-compiler/wiki/Types-in-the-Closure-Type-System
 
 import * as doctrine from 'doctrine';
+
+import * as ts from './ts-ast';
+
 const {parseType, parseParamType} = require('doctrine/lib/typed.js');
 
 /**
- * Convert from a type annotation in Closure syntax to TypeScript syntax (e.g
- * `Array` => `Array<any>|null`).
+ * Convert from a type annotation in Closure syntax to a TypeScript type
+ * expression AST (e.g `Array` => `Array<any>|null`).
  */
-export function closureTypeToTypeScript(closureType: string): string {
+export function closureTypeToTypeScript(closureType: string): ts.Type {
   let ast;
   try {
     ast = parseType(closureType);
   } catch {
-    return 'any';
+    return ts.anyType;
   }
-  return serialize(ast);
+  return convert(ast);
 }
 
 /**
- * Convert from a parameter type annotation in Closure syntax to TypeScript
- * syntax (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
+ * Convert from a parameter type annotation in Closure syntax to a TypeScript
+ * type expression AST
+ * (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
  */
 export function closureParamToTypeScript(closureType: string):
-    {optional: boolean, type: string} {
+    {optional: boolean, type: ts.Type} {
   let ast;
   try {
     ast = parseParamType(closureType);
   } catch {
     return {
-      type: 'any',
+      type: ts.anyType,
       // It's important we try to get optional right even if we can't parse
       // the annotation, because non-optional arguments can't follow optional
       // ones.
@@ -55,7 +59,7 @@ export function closureParamToTypeScript(closureType: string):
   const optional = ast.type === 'OptionalType';
   return {
     optional,
-    type: serialize(optional ? ast.expression : ast),
+    type: convert(optional ? ast.expression : ast),
   };
 }
 
@@ -63,10 +67,8 @@ export function closureParamToTypeScript(closureType: string):
  * Format the given Closure type expression AST node as a TypeScript type
  * annotation string.
  */
-function serialize(node: doctrine.Type, greedy = false): string {
-  let t = '';
-
-  let nullable = null;
+function convert(node: doctrine.Type): ts.Type {
+  let nullable;
   if (isNullable(node)) {  // ?foo
     nullable = true;
     node = node.expression;
@@ -77,37 +79,33 @@ function serialize(node: doctrine.Type, greedy = false): string {
     nullable = nullableByDefault(node);
   }
 
+  let t: ts.Type;
+
   if (isParameterizedArray(node)) {  // Array<foo>
-    t = serializeArray(node);
+    t = convertArray(node);
   } else if (isUnion(node)) {  // foo|bar
-    t = serializeUnion(node);
+    t = convertUnion(node);
   } else if (isFunction(node)) {  // function(foo): bar
-    t = serializeFunction(node);
+    t = convertFunction(node);
   } else if (isBareArray(node)) {  // Array
-    t = 'Array<any>';
+    t = {kind: 'array', itemType: ts.anyType};
   } else if (isAllLiteral(node)) {  // *
-    t = 'any';
+    t = ts.anyType;
   } else if (isNullableLiteral(node)) {  // ?
-    t = 'any';
+    t = ts.anyType;
   } else if (isNullLiteral(node)) {  // null
-    t = 'null';
+    t = ts.nullType;
   } else if (isUndefinedLiteral(node)) {  // undefined
-    t = 'undefined';
+    t = ts.undefinedType;
   } else if (isName(node)) {  // string, Object, MyClass, etc.
-    t = node.name;
+    t = {kind: 'name', name: node.name};
   } else {
     console.error('Unknown syntax.');
-    return '';
+    return ts.anyType;
   }
 
   if (nullable) {
-    greedy = true;
-  }
-  if (greedy && ambiguousPrecendence(node)) {
-    t = `(${t})`;
-  }
-  if (nullable) {
-    t = `${t}|null`;
+    t = {kind: 'union', members: [t, ts.nullType]};
   }
 
   return t;
@@ -130,56 +128,38 @@ function nullableByDefault(node: doctrine.Type): boolean {
   return isParameterizedArray(node);
 }
 
-/**
- * Return whether the given node should be wrapped in parenthesis when it is an
- * argument to a greedy operator. For example, if we are serializing a union,
- * and one of the arguments is itself a union, then that argument should be
- * wrapped in parenthesis to avoid precendence problems.
- */
-function ambiguousPrecendence(node: doctrine.Type): boolean {
-  if (isFunction(node)) {
-    return true;
-  }
-  if (isUnion(node)) {
-    if (node.elements.length === 1) {
-      // Unions of length 1 get collapsed, so recurse in case we hit a
-      // descendent that is ambiguous.
-      return ambiguousPrecendence(node.elements[0]);
-    }
-    return true;
-  }
-  return false;
+function convertArray(node: doctrine.type.TypeApplication): ts.Type {
+  const applications = node.applications;
+  return {
+    kind: 'array',
+    itemType: applications.length === 1 ? convert(applications[0]) : ts.anyType,
+  };
 }
 
-function serializeArray(node: doctrine.type.TypeApplication): string {
-  if (node.applications.length !== 1) {
-    console.error('Invalid array expression.');
-    return '';
-  }
-  const arg = node.applications[0];
-  return `Array<${serialize(arg)}>`;
-}
-
-function serializeUnion(node: doctrine.type.UnionType): string {
+function convertUnion(node: doctrine.type.UnionType): ts.Type {
   if (node.elements.length === 1) {
     // `(string)` will be represented as a union of length one. Just flatten.
-    return serialize(node.elements[0]);
+    return convert(node.elements[0]);
   }
-  return node.elements.map(e => serialize(e, true)).join('|');
+  return {
+    kind: 'union',
+    members: node.elements.map(convert),
+  };
 }
 
-function serializeFunction(node: doctrine.type.FunctionType): string {
-  let out = '(';
-  for (let i = 0; i < node.params.length; i++) {
-    if (i > 0) {
-      out += ', ';
-    }
-    out += `p${i}: ${serialize(node.params[i])}`;
-  }
-  // Casting because typings are wrong: `FunctionType.result` is not an array.
-  const result = node.result as any;
-  out += ') => ' + (result && serialize(result) || 'any');
-  return out;
+function convertFunction(node: doctrine.type.FunctionType): ts.FunctionType {
+  return {
+    kind: 'function',
+    params: node.params.map((param, idx) => {
+      return {
+        // TypeScript wants named parameters, but we don't have names.
+        name: 'p' + idx,
+        type: convert(param),
+      };
+    }),
+    // Cast because typings are wrong: `FunctionType.result` is not an array.
+    returns: node.result ? convert(node.result as any) : ts.anyType,
+  };
 }
 
 function isParameterizedArray(node: doctrine.Type):

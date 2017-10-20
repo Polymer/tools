@@ -12,11 +12,12 @@
 import {assert} from 'chai';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from '../closure-types';
+import {serializeType} from '../ts-serialize';
 
 suite('closureTypeToTypeScript', () => {
 
   function check(closureType: string, expectedType: string) {
-    const actualType = closureTypeToTypeScript(closureType);
+    const actualType = serializeType(closureTypeToTypeScript(closureType));
     assert.equal(actualType, expectedType);
   }
 
@@ -58,18 +59,18 @@ suite('closureTypeToTypeScript', () => {
   });
 
   test('nullable array', () => {
-    check('Array<string>', 'Array<string>|null');
-    check('?Array<string>', 'Array<string>|null');
+    check('Array<string>', 'string[]|null');
+    check('?Array<string>', 'string[]|null');
   });
 
   test('non-nullable array', () => {
-    check('!Array<string>', 'Array<string>');
+    check('!Array<string>', 'string[]');
   });
 
   test('bare array', () => {
-    check('Array', 'Array<any>|null');
-    check('?Array', 'Array<any>|null');
-    check('!Array', 'Array<any>');
+    check('Array', 'any[]|null');
+    check('?Array', 'any[]|null');
+    check('!Array', 'any[]');
   });
 
   test('union', () => {
@@ -88,7 +89,7 @@ suite('closureTypeToTypeScript', () => {
   });
 
   test('nested array', () => {
-    check('!Array<!Array<string>>', 'Array<Array<string>>');
+    check('!Array<!Array<string>>', 'Array<string[]>');
   });
 
   test('array union', () => {
@@ -120,8 +121,10 @@ suite('closureParamToTypeScript', () => {
 
   function check(
       closureType: string, expectedType: string, expectedOptional: boolean) {
-    const actual = closureParamToTypeScript(closureType);
-    assert.deepEqual(actual, {type: expectedType, optional: expectedOptional});
+    const {type: actualType, optional: actualOptional} =
+        closureParamToTypeScript(closureType);
+    assert.equal(serializeType(actualType), expectedType);
+    assert.equal(actualOptional, expectedOptional);
   }
 
   test('optional string', () => {
@@ -133,11 +136,11 @@ suite('closureParamToTypeScript', () => {
   });
 
   test('optional array', () => {
-    check('Array=', 'Array<any>|null', true);
+    check('Array=', 'any[]|null', true);
   });
 
   test('required array', () => {
-    check('Array', 'Array<any>|null', false);
+    check('Array', 'any[]|null', false);
   });
 
   test('invalid required', () => {

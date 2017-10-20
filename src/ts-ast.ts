@@ -43,7 +43,7 @@ export interface FunctionLike {
   name: string;
   description: string;
   params: Param[];
-  returns: string;
+  returns: Type;
 }
 
 export interface Function extends FunctionLike { kind: 'function'; }
@@ -54,12 +54,61 @@ export interface Property {
   kind: 'property';
   name: string;
   description: string;
-  type: string;
+  type: Type;
 }
 
 export interface Param {
   kind: 'param';
   name: string;
-  type: string;
+  type: Type;
   optional: boolean;
 }
+
+// A TypeScript type expression.
+export type Type = NameType|UnionType|ArrayType|FunctionType;
+
+// string, MyClass, null, undefined, any
+export interface NameType {
+  kind: 'name';
+  name: string;
+}
+
+// foo|bar
+export interface UnionType {
+  kind: 'union';
+  members: Type[];
+}
+
+// Array<foo>
+export interface ArrayType {
+  kind: 'array';
+  itemType: Type;
+}
+
+// (foo: bar) => baz
+export interface FunctionType {
+  kind: 'function';
+  params: ParamType[];
+  returns: Type;
+}
+
+// foo: bar
+export interface ParamType {
+  name: string;
+  type: Type;
+}
+
+export const anyType: NameType = {
+  kind: 'name',
+  name: 'any',
+};
+
+export const nullType: NameType = {
+  kind: 'name',
+  name: 'null',
+};
+
+export const undefinedType: NameType = {
+  kind: 'name',
+  name: 'undefined',
+};

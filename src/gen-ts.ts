@@ -150,7 +150,7 @@ function handleElementOrBehavior(
       kind: 'property',
       name: property.name || '',
       description: property.description || '',
-      type: property.type ? closureTypeToTypeScript(property.type) : 'any',
+      type: property.type ? closureTypeToTypeScript(property.type) : ts.anyType,
     });
   }
 
@@ -176,7 +176,7 @@ function handleElementOrBehavior(
       params: params,
       returns: method.return && method.return.type ?
           closureTypeToTypeScript(method.return.type) :
-          'any',
+          ts.anyType,
     });
   }
 
@@ -199,7 +199,7 @@ function handleElementOrBehavior(
       kind: 'property',
       name: feature.tagName,
       description: '',
-      type: fullName,
+      type: {kind: 'name', name: fullName},
     });
   }
 }
@@ -229,7 +229,7 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
     params: params,
     returns: feature.return && feature.return.type ?
         closureTypeToTypeScript(feature.return.type) :
-        'any',
+        ts.anyType,
   });
 }
 

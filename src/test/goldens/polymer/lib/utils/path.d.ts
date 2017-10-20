@@ -98,7 +98,7 @@ declare namespace Polymer {
      * Polymer.Path.split('foo.bar.0.baz')        // ['foo', 'bar', '0', 'baz']
      * ```
      */
-    function split(path: string|Array<string|number>): Array<string>;
+    function split(path: string|Array<string|number>): string[];
 
 
     /**

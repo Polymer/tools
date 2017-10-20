@@ -9,7 +9,7 @@ suite('serializeTsDeclarations', () => {
       kind: 'property',
       name: 'myProperty',
       description: '',
-      type: 'string',
+      type: {kind: 'name', name: 'string'},
     };
     assert.equal(serializeTsDeclarations(property), 'myProperty: string;\n');
   });
@@ -19,7 +19,7 @@ suite('serializeTsDeclarations', () => {
       kind: 'property',
       name: 'my-unsafe-property',
       description: '',
-      type: 'string',
+      type: {kind: 'name', name: 'string'},
     };
     assert.equal(
         serializeTsDeclarations(property), '"my-unsafe-property": string;\n');
@@ -34,17 +34,17 @@ suite('serializeTsDeclarations', () => {
         {
           kind: 'param',
           name: 'param1',
-          type: 'string',
+          type: {kind: 'name', name: 'string'},
           optional: false,
         },
         {
           kind: 'param',
           name: 'param2',
-          type: 'any',
+          type: {kind: 'name', name: 'any'},
           optional: true,
         },
       ],
-      returns: 'boolean',
+      returns: {kind: 'name', name: 'boolean'},
     };
     assert.equal(serializeTsDeclarations(method), `
 /**
@@ -69,13 +69,13 @@ declare function MyMethod(param1: string, param2?: any): boolean;
           kind: 'property',
           name: 'myProperty1',
           description: 'Description of myProperty1.',
-          type: 'string',
+          type: {kind: 'name', name: 'string'},
         },
         {
           kind: 'property',
           name: 'myProperty2',
           description: 'Description of myProperty2.',
-          type: 'any',
+          type: {kind: 'name', name: 'any'},
         },
       ],
       methods: [
@@ -84,14 +84,14 @@ declare function MyMethod(param1: string, param2?: any): boolean;
           name: 'MyMethod1',
           description: '',
           params: [],
-          returns: 'boolean',
+          returns: {kind: 'name', name: 'boolean'},
         },
         {
           kind: 'method',
           name: 'MyMethod2',
           description: '',
           params: [],
-          returns: 'any',
+          returns: {kind: 'name', name: 'any'},
         },
       ],
     };
@@ -126,13 +126,13 @@ interface MyInterface extends MyBase1, MyBase2 {
           kind: 'property',
           name: 'myProperty1',
           description: '',
-          type: 'string',
+          type: {kind: 'name', name: 'string'},
         },
         {
           kind: 'property',
           name: 'myProperty2',
           description: '',
-          type: 'any',
+          type: {kind: 'name', name: 'any'},
         },
       ],
       methods: [
@@ -141,14 +141,14 @@ interface MyInterface extends MyBase1, MyBase2 {
           name: 'MyMethod1',
           description: '',
           params: [],
-          returns: 'boolean',
+          returns: {kind: 'name', name: 'boolean'},
         },
         {
           kind: 'method',
           name: 'MyMethod2',
           description: '',
           params: [],
-          returns: 'any',
+          returns: {kind: 'name', name: 'any'},
         },
       ],
     };

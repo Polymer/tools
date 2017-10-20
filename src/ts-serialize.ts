@@ -11,13 +11,14 @@
 
 import * as util from 'util';
 
-import {Class, Document, Function, Interface, Method, Namespace, Param, Property} from './ts-ast';
+import * as ts from './ts-ast';
 
 /**
- * Encode a TypeScript AST node in TypeScript declaration file syntax (d.ts).
+ * Serialize a TypeScript declarations file AST to a string.
  */
 export function serializeTsDeclarations(
-    node: Document|Namespace|Class|Interface|Function|Property,
+    node: ts.Document|ts.Namespace|ts.Class|ts.Interface|ts.Function|
+    ts.Property,
     depth: number = 0): string {
   switch (node.kind) {
     case 'document':
@@ -34,15 +35,52 @@ export function serializeTsDeclarations(
       return serializeProperty(node, depth);
     default:
       const never: never = node;
-      throw new Error(`Unknown node kind: ${util.inspect(never)}`);
+      throw new Error(`Unknown declarations AST kind: ${util.inspect(never)}`);
   }
 }
 
-function serializeDocument(node: Document): string {
+/**
+ * Serialize a TypeScript type expression AST to a string.
+ */
+export function serializeType(
+    node: ts.Type, maybeParenthesize = false): string {
+  switch (node.kind) {
+    case 'name':
+      return node.name;
+
+    case 'array':
+      if (node.itemType.kind === 'name') {
+        // Use the concise `foo[]` syntax when the item type is simple.
+        return `${serializeType(node.itemType)}[]`;
+      } else {
+        // Otherwise use the `Array<foo>` syntax which is easier to read with
+        // complex types (e.g. arrays of arrays).
+        return `Array<${serializeType(node.itemType)}>`;
+      }
+
+    case 'union':
+      return node.members.map((member) => serializeType(member, true))
+          .join('|');
+
+    case 'function':
+      const params = node.params.map(
+          (param) => `${param.name}: ${serializeType(param.type)}`);
+      const func = `(${params.join(', ')}) => ${serializeType(node.returns)}`;
+      // The function syntax is ambiguous when part of a union, so add parens
+      // (e.g. `() => string|null` vs `(() => string)|null`).
+      return maybeParenthesize ? `(${func})` : func;
+
+    default:
+      const never: never = node;
+      throw new Error(`Unknown type AST kind: ${util.inspect(never)}`);
+  }
+}
+
+function serializeDocument(node: ts.Document): string {
   return node.members.map((m) => serializeTsDeclarations(m)).join('\n');
 }
 
-function serializeNamespace(node: Namespace, depth: number): string {
+function serializeNamespace(node: ts.Namespace, depth: number): string {
   let out = ''
   const i = indent(depth)
   out += i
@@ -57,7 +95,7 @@ function serializeNamespace(node: Namespace, depth: number): string {
   return out;
 }
 
-function serializeClass(node: Class|Interface, depth: number): string {
+function serializeClass(node: ts.Class|ts.Interface, depth: number): string {
   let out = '';
   const i = indent(depth);
   if (node.description) {
@@ -85,7 +123,7 @@ function serializeClass(node: Class|Interface, depth: number): string {
   return out;
 }
 
-function serializeInterface(node: Interface, depth: number): string {
+function serializeInterface(node: ts.Interface, depth: number): string {
   let out = '';
   const i = indent(depth);
   if (node.description) {
@@ -111,7 +149,7 @@ function serializeInterface(node: Interface, depth: number): string {
 }
 
 function serializeFunctionOrMethod(
-    node: Function|Method, depth: number): string {
+    node: ts.Function|ts.Method, depth: number): string {
   let out = ''
   const i = indent(depth);
   if (node.description) {
@@ -126,21 +164,22 @@ function serializeFunctionOrMethod(
   }
   out += `${node.name}(`;
   out += node.params.map(serializeParam).join(', ');
-  out += `): ${node.returns};\n`;
+  out += `): ${serializeType(node.returns)};\n`;
   return out;
 }
 
-function serializeParam(param: Param): string {
-  return `${param.name}${param.optional ? '?' : ''}: ${param.type}`;
+function serializeParam(param: ts.Param): string {
+  return `${param.name}${param.optional ? '?' : ''}: ${
+      serializeType(param.type)}`;
 }
 
-function serializeProperty(node: Property, depth: number): string {
+function serializeProperty(node: ts.Property, depth: number): string {
   let out = '';
   const i = indent(depth);
   if (node.description) {
     out += '\n' + formatComment(node.description, depth);
   }
-  out += `${i}${quotePropertyName(node.name)}: ${node.type};\n`;
+  out += `${i}${quotePropertyName(node.name)}: ${serializeType(node.type)};\n`;
   return out;
 }
 
