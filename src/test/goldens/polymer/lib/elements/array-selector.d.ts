@@ -62,3 +62,7 @@ declare namespace Polymer {
   interface ArraySelector extends Polymer.Element {
   }
 }
+
+interface HTMLElementTagNameMap {
+  "array-selector": Polymer.ArraySelector;
+}
