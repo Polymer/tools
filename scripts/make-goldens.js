@@ -20,20 +20,23 @@
  */
 
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const path = require('path');
-const rimraf = require('rimraf');
+
 const {generateDeclarations} = require('../lib/gen-ts');
 
 const fixturesDir = path.join(__dirname, '..', 'src', 'test', 'fixtures');
 const goldensDir = path.join(__dirname, '..', 'src', 'test', 'goldens');
 
-rimraf.sync(goldensDir);
-fs.mkdirSync(goldensDir);
+fsExtra.emptyDir(goldensDir);
 
-for (const dir of fs.readdirSync(fixturesDir)) {
-  generateDeclarations(path.join(fixturesDir, dir)).then((declarations) => {
-    const outDir = path.join(goldensDir, dir);
-    fs.mkdirSync(outDir);
-    fs.writeFileSync(path.join(outDir, 'expected.d.ts'), declarations);
+for (const fixture of fs.readdirSync(fixturesDir)) {
+  console.log('making goldens for ' + fixture);
+  generateDeclarations(path.join(fixturesDir, fixture)).then((declarations) => {
+    for (const [filename, contents] of declarations) {
+      const outPath = path.join(goldensDir, fixture, filename);
+      fsExtra.mkdirsSync(path.dirname(outPath));
+      fs.writeFileSync(outPath, contents);
+    };
   });
 }

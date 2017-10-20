@@ -168,6 +168,7 @@ declare class MyClass extends MyBase {
     assert.equal(
         serializeTsDeclarations({
           kind: 'document',
+          path: 'my-document.d.ts',
           members: [
             {
               kind: 'interface',

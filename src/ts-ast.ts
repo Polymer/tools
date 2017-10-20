@@ -11,6 +11,7 @@
 
 export interface Document {
   kind: 'document';
+  path: string;
   members: Array<Namespace|Class|Interface|Function>;
 }
 

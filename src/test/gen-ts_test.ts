@@ -11,6 +11,7 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
+import * as glob from 'glob';
 import * as path from 'path';
 
 import {generateDeclarations} from '../gen-ts';
@@ -21,11 +22,20 @@ const goldens = path.join(__dirname, '..', '..', 'src', 'test', 'goldens');
 suite('generateDeclarations', () => {
   for (const fixture of fs.readdirSync(goldens)) {
     test(fixture, async () => {
-      const golden =
-          fs.readFileSync(path.join(goldens, fixture, 'expected.d.ts'));
-      const declarations =
-          await generateDeclarations(path.join(fixtures, fixture));
-      assert.equal(declarations, golden.toString());
+      const actual = await generateDeclarations(path.join(fixtures, fixture));
+      const golden = readDirAsMap(path.join(goldens, fixture));
+      (assert as any).hasAllKeys(actual, [...golden.keys()]);
+      for (const filename of actual.keys()) {
+        assert.equal(actual.get(filename), golden.get(filename), filename);
+      }
     }).timeout(30000);  // These tests can take a long time.
   }
 });
+
+function readDirAsMap(dir: string): Map<string, string> {
+  const files = new Map<string, string>();
+  for (const filename of glob.sync('**', {cwd: dir, nodir: true})) {
+    files.set(filename, fs.readFileSync(path.join(dir, filename)).toString());
+  }
+  return files;
+}

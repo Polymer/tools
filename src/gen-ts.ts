@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
 import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/function';
 
@@ -18,37 +19,71 @@ import {serializeTsDeclarations} from './ts-serialize';
 
 /**
  * Analyze all files in the given directory using Polymer Analyzer, and return
- * a TypeScript declarations document string that describes its contents.
+ * TypeScript declaration document strings in a map keyed by relative path.
  */
-export async function generateDeclarations(rootDir: string): Promise<string> {
+export async function generateDeclarations(rootDir: string):
+    Promise<Map<string, string>> {
   const a = new analyzer.Analyzer({
     urlLoader: new analyzer.FSUrlLoader(rootDir),
     urlResolver: new analyzer.PackageUrlResolver(),
   });
   const analysis = await a.analyzePackage();
-  const ast = analyzerToAst(analysis);
-  return serializeTsDeclarations(ast);
+  const outFiles = new Map<string, string>();
+  for (const tsDoc of analyzerToAst(analysis)) {
+    outFiles.set(tsDoc.path, serializeTsDeclarations(tsDoc));
+  }
+  return outFiles;
 }
 
 /**
- * Make a TypeScript declarations document from the given Polymer Analyzer
+ * Make TypeScript declaration documents from the given Polymer Analyzer
  * result.
  */
-function analyzerToAst(analysis: analyzer.Analysis): ts.Document {
-  const root: ts.Document = {
-    kind: 'document',
-    members: [],
-  };
-
-  for (const doc of analysis.getFeatures({kind: 'js-document'})) {
+function analyzerToAst(analysis: analyzer.Analysis): ts.Document[] {
+  // Analyzer can produce multiple JS documents with the same URL (e.g. an HTML
+  // file with multiple inline scripts). We also might have multiple files with
+  // the same basename (e.g. `foo.html` with an inline script, and `foo.js`).
+  // We want to produce one declarations file for each basename, so we first
+  // group Analyzer documents by their declarations filename.
+  const declarationDocs = new Map<string, analyzer.Document[]>();
+  for (const jsDoc of analysis.getFeatures({kind: 'js-document'})) {
     // TODO This is a very crude exclusion rule.
-    if (doc.url.match(/(test|demo)\//)) {
+    if (jsDoc.url.match(/(test|demo)\//)) {
       continue;
     }
-    handleDocument(doc, root);
+    const filename = makeDeclarationsFilename(jsDoc.url);
+    let docs = declarationDocs.get(filename);
+    if (!docs) {
+      docs = [];
+      declarationDocs.set(filename, docs);
+    }
+    docs.push(jsDoc);
   }
 
-  return root;
+  const tsDocs = new Array<ts.Document>();
+  for (const [declarationsFilename, analyzerDocs] of declarationDocs) {
+    const tsDoc: ts.Document = {
+      kind: 'document',
+      path: declarationsFilename,
+      members: [],
+    };
+    for (const analyzerDoc of analyzerDocs) {
+      handleDocument(analyzerDoc, tsDoc);
+    }
+    if (tsDoc.members.length) {
+      tsDocs.push(tsDoc);
+    }
+  }
+  return tsDocs;
+}
+
+/**
+ * Create a TypeScript declarations filename for the given source document URL.
+ * Simply replaces the file extension with `d.ts`.
+ */
+function makeDeclarationsFilename(sourceUrl: string): string {
+  const parsed = path.parse(sourceUrl);
+  return path.join(parsed.dir, parsed.name) + '.d.ts';
 }
 
 /**
