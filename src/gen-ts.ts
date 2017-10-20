@@ -94,10 +94,10 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
   // TODO Should we traverse and serialize all features in the same order they
   // were originally declared, instead of grouping by type as we do here?
   for (const element of doc.getFeatures({kind: 'element'})) {
-    handleElementOrBehavior(element, root);
+    handleElement(element, root);
   }
   for (const behavior of doc.getFeatures({kind: 'behavior'})) {
-    handleElementOrBehavior(behavior, root);
+    handleBehavior(behavior, root);
   }
   for (const fn of doc.getFeatures({kind: 'function'})) {
     handleFunction(fn, root);
@@ -105,11 +105,9 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
 }
 
 /**
- * Add the given Element or Behavior to the given TypeScript declarations
- * document.
+ * Add the given Element to the given TypeScript declarations document.
  */
-function handleElementOrBehavior(
-    feature: analyzer.Element|analyzer.PolymerBehavior, root: ts.Document) {
+function handleElement(feature: analyzer.Element, root: ts.Document) {
   let fullName;   // Fully qualified reference, e.g. `Polymer.DomModule`.
   let className;  // Just the class name e.g. `DomModule`.
   let parent;     // Where in the namespace tree does this live.
@@ -141,59 +139,20 @@ function handleElementOrBehavior(
     extends_.push('HTMLElement');
   }
 
-  const properties = new Array<ts.Property>();
-  for (const property of feature.properties.values()) {
-    if (property.inheritedFrom) {
-      continue;
-    }
-    properties.push({
-      kind: 'property',
-      name: property.name || '',
-      description: property.description || '',
-      type: property.type ? closureTypeToTypeScript(property.type) : ts.anyType,
-    });
-  }
-
-  const methods = new Array<ts.Method>();
-  for (const method of feature.methods.values()) {
-    if (method.inheritedFrom) {
-      continue;
-    }
-    const params: ts.Param[] = [];
-    for (const param of method.params || []) {
-      const {optional, type} = closureParamToTypeScript(param.type || '');
-      params.push({
-        kind: 'param',
-        name: param.name,
-        type,
-        optional,
-      });
-    }
-    methods.push({
-      kind: 'method',
-      name: method.name || '',
-      description: method.description || '',
-      params: params,
-      returns: method.return && method.return.type ?
-          closureTypeToTypeScript(method.return.type) :
-          ts.anyType,
-    });
-  }
-
   parent.members.push({
     kind: 'interface',
     name: className,
     description: feature.description,
     extends: extends_,
-    properties: properties,
-    methods: methods,
+    properties: handleProperties(feature.properties.values()),
+    methods: handleMethods(feature.methods.values()),
   });
 
   // The `HTMLElementTagNameMap` global interface maps custom element tag names
   // to their definitions, so that TypeScript knows that e.g.
   // `dom.createElement('my-foo')` returns a `MyFoo`. Augment the map with this
   // custom element.
-  if (isElement(feature) && feature.tagName) {
+  if (feature.tagName) {
     const elementMap = findOrCreateInterface(root, 'HTMLElementTagNameMap');
     elementMap.properties.push({
       kind: 'property',
@@ -202,6 +161,27 @@ function handleElementOrBehavior(
       type: {kind: 'name', name: fullName},
     });
   }
+}
+
+/**
+ * Add the given Polymer Behavior to the given TypeScript declarations
+ * document.
+ */
+function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
+  if (!feature.className) {
+    console.error('Could not find a name.');
+    return;
+  }
+  const [namespacePath, className] = splitReference(feature.className);
+  const parent = findOrCreateNamespace(root, namespacePath);
+  parent.members.push({
+    kind: 'interface',
+    name: className,
+    description: feature.description,
+    extends: [],
+    properties: handleProperties(feature.properties.values()),
+    methods: handleMethods(feature.methods.values()),
+  });
 }
 
 /**
@@ -232,6 +212,63 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
         ts.anyType,
   });
 }
+
+/**
+ * Convert the given Analyzer properties to their TypeScript declaration
+ * equivalent.
+ */
+function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
+    ts.Property[] {
+  const tsProperties = new Array<ts.Property>();
+  for (const property of analyzerProperties) {
+    if (property.inheritedFrom) {
+      continue;
+    }
+    tsProperties.push({
+      kind: 'property',
+      name: property.name || '',
+      description: property.description || '',
+      type: property.type ? closureTypeToTypeScript(property.type) : ts.anyType,
+    });
+  }
+  return tsProperties;
+}
+
+
+/**
+ * Convert the given Analyzer methods to their TypeScript declaration
+ * equivalent.
+ */
+function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
+    ts.Method[] {
+  const tsMethods = new Array<ts.Method>();
+  for (const method of analyzerMethods) {
+    if (method.inheritedFrom) {
+      continue;
+    }
+    const params: ts.Param[] = [];
+    for (const param of method.params || []) {
+      const {optional, type} = closureParamToTypeScript(param.type || '');
+      params.push({
+        kind: 'param',
+        name: param.name,
+        type,
+        optional,
+      });
+    }
+    tsMethods.push({
+      kind: 'method',
+      name: method.name || '',
+      description: method.description || '',
+      params: params,
+      returns: method.return && method.return.type ?
+          closureTypeToTypeScript(method.return.type) :
+          ts.anyType,
+    });
+  }
+  return tsMethods;
+}
+
 
 /**
  * Traverse the given node to find the namespace AST node with the given path.
