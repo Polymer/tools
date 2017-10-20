@@ -60,4 +60,5 @@ export interface Param {
   kind: 'param';
   name: string;
   type: string;
+  optional: boolean;
 }

@@ -11,7 +11,7 @@
 
 import {assert} from 'chai';
 
-import {closureTypeToTypeScript} from '../closure-types';
+import {closureParamToTypeScript, closureTypeToTypeScript} from '../closure-types';
 
 suite('closureTypeToTypeScript', () => {
 
@@ -113,5 +113,38 @@ suite('closureTypeToTypeScript', () => {
 
   test('returns any when invalid', () => {
     check('><', 'any');
+  });
+});
+
+suite('closureParamToTypeScript', () => {
+
+  function check(
+      closureType: string, expectedType: string, expectedOptional: boolean) {
+    const actual = closureParamToTypeScript(closureType);
+    assert.deepEqual(actual, {type: expectedType, optional: expectedOptional});
+  }
+
+  test('optional string', () => {
+    check('string=', 'string', true);
+  });
+
+  test('required string', () => {
+    check('string', 'string', false);
+  });
+
+  test('optional array', () => {
+    check('Array=', 'Array<any>|null', true);
+  });
+
+  test('required array', () => {
+    check('Array', 'Array<any>|null', false);
+  });
+
+  test('invalid required', () => {
+    check('><', 'any', false);
+  });
+
+  test('invalid optional', () => {
+    check('><=', 'any', true);
   });
 });

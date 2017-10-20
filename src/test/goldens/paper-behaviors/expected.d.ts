@@ -32,7 +32,7 @@ declare namespace Polymer {
      * Ensures this element contains a ripple effect. For startup efficiency
      * the ripple effect is dynamically on demand when needed.
      */
-    ensureRipple(optTriggeringEvent: any): any;
+    ensureRipple(optTriggeringEvent?: Event): any;
 
     /**
      * Returns the `<paper-ripple>` element used by this element to create

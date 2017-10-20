@@ -11,7 +11,7 @@
 
 import * as util from 'util';
 
-import {Class, Document, Function, Interface, Method, Namespace, Property} from './ts-ast';
+import {Class, Document, Function, Interface, Method, Namespace, Param, Property} from './ts-ast';
 
 /**
  * Encode a TypeScript AST node in TypeScript declaration file syntax (d.ts).
@@ -125,9 +125,13 @@ function serializeFunctionOrMethod(
     out += 'function ';
   }
   out += `${node.name}(`;
-  out += node.params.map(({name, type}) => `${name}: ${type}`).join(', ');
+  out += node.params.map(serializeParam).join(', ');
   out += `): ${node.returns};\n`;
   return out;
+}
+
+function serializeParam(param: Param): string {
+  return `${param.name}${param.optional ? '?' : ''}: ${param.type}`;
 }
 
 function serializeProperty(node: Property, depth: number): string {

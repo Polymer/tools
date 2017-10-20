@@ -74,7 +74,7 @@ declare namespace Polymer {
     /**
      * Resolves the given URL against the provided `baseUri'.
      */
-    function resolveUrl(url: string, baseURI: any): string;
+    function resolveUrl(url: string, baseURI?: string|null): string;
 
 
     /**
@@ -174,7 +174,7 @@ declare namespace Polymer {
      * when a dom-module is imperatively created. For
      * example, `document.createElement('dom-module').register('foo')`.
      */
-    register(id: any): any;
+    register(id?: string): any;
   }
 
   namespace Path {
@@ -282,7 +282,7 @@ declare namespace Polymer {
      * Reads a value from a path.  If any sub-property in the path is `undefined`,
      * this method returns `undefined` (will never throw.
      */
-    function get(root: Object|null, path: string|Array<string|number>, info: any): any;
+    function get(root: Object|null, path: string|Array<string|number>, info?: Object|null): any;
 
 
     /**
@@ -365,7 +365,7 @@ declare namespace Polymer {
    * In the `onload` callback, the `import` property of the `link`
    * element will contain the imported document contents.
    */
-  function importHref(href: string, onload: any, onerror: any, optAsync: any): HTMLLinkElement|null;
+  function importHref(href: string, onload?: Function|null, onerror?: Function|null, optAsync?: boolean): HTMLLinkElement|null;
 
   namespace RenderStatus {
 
@@ -561,7 +561,7 @@ declare namespace Polymer {
      * needed from the callbacks (such as references to `instances` stamped)
      * should be stored on the `owner` such that they can be retrieved via `this`.
      */
-    function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options: any): () => any;
+    function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options?: Object|null): () => any;
 
 
     /**
@@ -647,7 +647,7 @@ declare namespace Polymer {
      * template to prepare an element for stamping the template, followed
      * by `stamp` to create new instances of the template.
      */
-    templatize(template: HTMLTemplateElement|null, mutableData: any): any;
+    templatize(template: HTMLTemplateElement|null, mutableData?: boolean): any;
 
     /**
      * Creates an instance of the template prepared by `templatize`.  The object
@@ -656,7 +656,7 @@ declare namespace Polymer {
      * template content, and which has property accessors corresponding to
      * properties referenced in template bindings.
      */
-    stamp(model: any): TemplateInstanceBase|null;
+    stamp(model?: Object|null): TemplateInstanceBase|null;
 
     /**
      * Returns the template "model" (`TemplateInstance`) associated with

@@ -11,7 +11,6 @@
 
 // TODO Object<foo>, Object<foo, bar>
 // TODO Record types
-// TODO Optional param =
 // TODO Function variadic parameters
 //
 // Useful resources for working on this package:
@@ -19,7 +18,7 @@
 // https://github.com/google/closure-compiler/wiki/Types-in-the-Closure-Type-System
 
 import * as doctrine from 'doctrine';
-const {parseType} = require('doctrine/lib/typed.js');
+const {parseType, parseParamType} = require('doctrine/lib/typed.js');
 
 /**
  * Convert from a type annotation in Closure syntax to TypeScript syntax (e.g
@@ -33,6 +32,31 @@ export function closureTypeToTypeScript(closureType: string): string {
     return 'any';
   }
   return serialize(ast);
+}
+
+/**
+ * Convert from a parameter type annotation in Closure syntax to TypeScript
+ * syntax (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
+ */
+export function closureParamToTypeScript(closureType: string):
+    {optional: boolean, type: string} {
+  let ast;
+  try {
+    ast = parseParamType(closureType);
+  } catch {
+    return {
+      type: 'any',
+      // It's important we try to get optional right even if we can't parse
+      // the annotation, because non-optional arguments can't follow optional
+      // ones.
+      optional: closureType.endsWith('='),
+    };
+  }
+  const optional = ast.type === 'OptionalType';
+  return {
+    optional,
+    type: serialize(optional ? ast.expression : ast),
+  };
 }
 
 /**
