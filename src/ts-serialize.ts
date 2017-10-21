@@ -97,7 +97,7 @@ function serializeNamespace(node: ts.Namespace, depth: number): string {
   return out;
 }
 
-function serializeClass(node: ts.Class|ts.Interface, depth: number): string {
+function serializeClass(node: ts.Class, depth: number): string {
   let out = '';
   const i = indent(depth);
   if (node.description) {
