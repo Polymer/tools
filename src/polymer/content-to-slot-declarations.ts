@@ -26,6 +26,10 @@ import stripIndent = require('strip-indent');
 
 const p = dom5.predicates;
 
+// TODO: this should be in default collections, but it shouldn't have a
+//     fix, because the fix isn't safe, it introduces a breaking change.
+//     https://github.com/Polymer/polymer-linter/issues/111
+
 class ContentToSlotDeclarations extends HtmlRule {
   code = 'content-to-slot-declarations';
   description = stripIndent(`
