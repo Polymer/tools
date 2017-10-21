@@ -99,6 +99,9 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
   for (const behavior of doc.getFeatures({kind: 'behavior'})) {
     handleBehavior(behavior, root);
   }
+  for (const mixin of doc.getFeatures({kind: 'element-mixin'})) {
+    handleMixin(mixin, root);
+  }
   for (const fn of doc.getFeatures({kind: 'function'})) {
     handleFunction(fn, root);
   }
@@ -179,6 +182,22 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
     name: className,
     description: feature.description,
     extends: [],
+    properties: handleProperties(feature.properties.values()),
+    methods: handleMethods(feature.methods.values()),
+  });
+}
+
+/**
+ * Add the given Mixin to the given TypeScript declarations document.
+ */
+function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
+  const [namespacePath, name] = splitReference(feature.name);
+  const parent = findOrCreateNamespace(root, namespacePath);
+
+  parent.members.push({
+    kind: 'mixin',
+    name: name,
+    description: feature.description || '',
     properties: handleProperties(feature.properties.values()),
     methods: handleMethods(feature.methods.values()),
   });
