@@ -37,7 +37,7 @@
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
     "test": "npm run build && npm run lint && mocha lib/test/*.js lib/test/**/*.js",
-    "test:watch": "watchy -w src/ -- npm test --loglevel=silent",
+    "test:watch": "watchy -w src/,test/ -- npm test --loglevel=silent",
     "test:integration": "npm run build && cd test/integration && bower install --silent && cd ../../ && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },
   "repository": {

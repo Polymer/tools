@@ -1,0 +1,13 @@
+<dom-module id="foo-bar">
+  <template>
+    <content></content>
+    <content select=".foo" existing-nonsense-attribute="bar">
+      Fallback content here
+    </content>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>

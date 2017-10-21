@@ -23,7 +23,7 @@ import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
-const ruleId = 'content-to-slot-usages';
+const ruleId = 'content-to-slot-declarations';
 
 suite(ruleId, () => {
   let analyzer: Analyzer;

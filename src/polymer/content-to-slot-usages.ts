@@ -13,7 +13,6 @@
  */
 
 import * as dom5 from 'dom5';
-import * as parse5 from 'parse5';
 import {treeAdapters} from 'parse5';
 import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
@@ -86,10 +85,10 @@ addPredicate(
     [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
 
 class ContentToSlot extends HtmlRule {
-  code = 'content-to-slot';
+  code = 'content-to-slot-usages';
   description = stripIndent(`
-      Warns when using <content> instead of Shadow Dom v1's <slot> element.
-  `).trim();
+      Warns when an element should have a \`slot\` attribute but does not.
+    `).trim();
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
@@ -98,8 +97,6 @@ class ContentToSlot extends HtmlRule {
     //    we should also support converting based on the old-content-selector
     //    attribute.
     this.convertUsages(parsedDocument, document, warnings);
-
-    this.convertDeclarations(parsedDocument, document, warnings);
 
     return warnings;
   }
@@ -176,67 +173,6 @@ class ContentToSlot extends HtmlRule {
       }
     }
   }
-
-  convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: FixableWarning[]) {
-    for (const element of document.getFeatures({kind: 'polymer-element'})) {
-      const domModule = element.domModule;
-      if (!domModule) {
-        continue;
-      }
-      const template = dom5.query(domModule, p.hasTagName('template'));
-      if (!template) {
-        continue;
-      }
-      const contentNodes = dom5.queryAll(
-          treeAdapters.default.getTemplateContent(template),
-          p.hasTagName('content'));
-      const slots = new Set<string>();
-      for (const contentNode of contentNodes) {
-        const warning = new FixableWarning({
-          code: 'content-to-slot-declaration',
-          message:
-              `<content> tags are part of the deprecated Shadow Dom v0 API. ` +
-              `Replace with a <slot> tag.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForStartTag(contentNode)!
-        });
-        const attrs = [...contentNode.attrs];
-        const selectorAttr = attrs.find((a) => a.name === 'select');
-        const selector = selectorAttr && selectorAttr.value;
-        let slotName = null;
-        if (selector) {
-          slotName = slotNameForSelector(selector);
-          while (slots.has(slotName)) {
-            slotName += '-unique-suffix';
-          }
-          slots.add(slotName);
-          attrs.unshift({name: 'name', value: slotName});
-          attrs.push({name: 'old-content-selector', value: selector});
-        }
-        const slotElement = treeAdapters.default.createElement('slot', '', []);
-        for (const {name, value} of attrs) {
-          dom5.setAttribute(slotElement, name, value);
-        }
-        dom5.removeAttribute(slotElement, 'select');
-        const fragment = parse5.treeAdapters.default.createDocumentFragment();
-        dom5.append(fragment, slotElement);
-        warning.fix = [
-          {
-            replacementText: parse5.serialize(fragment).slice(0, -7),
-            range: parsedDocument.sourceRangeForStartTag(contentNode)!
-          },
-          {
-            replacementText: '</slot>',
-            range: parsedDocument.sourceRangeForEndTag(contentNode)!
-          }
-        ];
-        warnings.push(warning);
-      }
-    }
-  }
 }
 
 // NOTE(rictic): This only works for very, very simple selectors. Do something
@@ -257,14 +193,6 @@ function simpleSelectorToPredicate(simpleSelector: string): dom5.Predicate {
     return () => true;
   }
   return p.hasTagName(simpleSelector);
-}
-
-function slotNameForSelector(selector: string) {
-  const identifierMatch = selector.match(/[a-zA-Z-_0-9]+/);
-  if (identifierMatch) {
-    return identifierMatch[0];
-  }
-  return 'rename-me';
 }
 
 registry.register(new ContentToSlot());
