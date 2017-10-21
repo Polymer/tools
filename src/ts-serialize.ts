@@ -108,9 +108,20 @@ function serializeClass(node: ts.Class, depth: number): string {
     out += 'declare ';
   }
   out += `class ${node.name}`;
-  if (node.extends) {
+
+  if (node.mixins.length) {
+    const i2 = indent(depth + 1);
+    out += ' extends';
+    for (const mixin of node.mixins) {
+      out += `\n${i2}${mixin}(`;
+    }
+    out += `\n${i2}${node.extends || 'Object'}`;
+    out += ')'.repeat(node.mixins.length)
+
+  } else if (node.extends) {
     out += ' extends ' + node.extends;
   }
+
   out += ' {\n';
   for (const property of node.properties) {
     out += serializeProperty(property, depth + 1);

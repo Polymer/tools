@@ -26,6 +26,7 @@ export interface Class {
   name: string;
   description: string;
   extends: string;
+  mixins: string[];
   properties: Property[];
   methods: Method[];
 }
