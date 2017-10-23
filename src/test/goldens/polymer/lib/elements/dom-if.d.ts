@@ -15,7 +15,7 @@ declare namespace Polymer {
    * Set the `restamp` property to true to force the stamped content to be
    * created / destroyed when the `if` condition changes.
    */
-  interface DomIf extends Polymer.Element {
+  class DomIf extends Polymer.Element {
 
     /**
      * A boolean indicating whether this template should stamp.

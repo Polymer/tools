@@ -19,7 +19,7 @@ declare namespace Polymer {
    * 
    *     let img = customElements.get('dom-module').import('foo', 'img');
    */
-  interface DomModule extends Polymer.Element {
+  class DomModule extends HTMLElement {
     attributeChangedCallback(name: any, old: any, value: any): any;
 
     /**

@@ -41,7 +41,7 @@ declare namespace Polymer {
    * </custom-style>
    * ```
    */
-  interface CustomStyle extends Polymer.Element {
+  class CustomStyle extends HTMLElement {
 
     /**
      * Returns the light-DOM `<style>` child this element wraps.  Upon first

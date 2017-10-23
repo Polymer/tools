@@ -5,6 +5,8 @@ declare namespace Polymer {
    * features including template stamping, data-binding, attribute deserialization,
    * and property change observation.
    */
-  interface Element extends Polymer.Element {
+  class Element extends
+    Polymer.ElementMixin(
+    HTMLElement) {
   }
 }

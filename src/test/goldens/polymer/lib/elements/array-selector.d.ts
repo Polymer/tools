@@ -59,7 +59,9 @@ declare namespace Polymer {
    * });
    * ```
    */
-  interface ArraySelector extends Polymer.Element {
+  class ArraySelector extends
+    Polymer.ArraySelectorMixin(
+    Polymer.Element) {
   }
 
   /**

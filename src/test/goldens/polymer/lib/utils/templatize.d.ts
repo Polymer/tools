@@ -1,4 +1,6 @@
-interface TemplateInstanceBase extends Polymer.Element {
+declare class TemplateInstanceBase extends
+  Polymer.PropertyEffects(
+  Polymer.Element) {
   _addEventListenerToNode(node: any, eventName: any, handler: any): any;
 
   /**
