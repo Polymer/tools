@@ -39,7 +39,7 @@ export interface InlineDocInfo<AstNode> {
  * @template N The AST node type
  */
 export class ScannedInlineDocument implements ScannedFeature, Resolvable {
-  type: 'html'|'javascript'|'css'|/* etc */ string;
+  type: 'html'|'js'|'css'|/* etc */ string;
 
   contents: string;
 

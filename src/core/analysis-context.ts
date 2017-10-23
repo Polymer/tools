@@ -24,6 +24,7 @@ import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {ClassScanner} from '../javascript/class-scanner';
 import {FunctionScanner} from '../javascript/function-scanner';
+import {JavaScriptImportScanner} from '../javascript/javascript-import-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
@@ -114,7 +115,8 @@ export class AnalysisContext {
           new BehaviorScanner(),
           new NamespaceScanner(),
           new FunctionScanner(),
-          new ClassScanner()
+          new ClassScanner(),
+          new JavaScriptImportScanner()
         ]
       ],
       ['css', [new CssCustomPropertyScanner()]]

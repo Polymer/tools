@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
+* Scan for module imports in inline and external JavaScript, analyzing the entire import graph.
 
 ## [2.3.0] - 2017-09-25
 
