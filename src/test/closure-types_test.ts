@@ -12,12 +12,11 @@
 import {assert} from 'chai';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from '../closure-types';
-import {serializeType} from '../ts-serialize';
 
 suite('closureTypeToTypeScript', () => {
 
   function check(closureType: string, expectedType: string) {
-    const actualType = serializeType(closureTypeToTypeScript(closureType));
+    const actualType = closureTypeToTypeScript(closureType).serialize();
     assert.equal(actualType, expectedType);
   }
 
@@ -123,7 +122,7 @@ suite('closureParamToTypeScript', () => {
       closureType: string, expectedType: string, expectedOptional: boolean) {
     const {type: actualType, optional: actualOptional} =
         closureParamToTypeScript(closureType);
-    assert.equal(serializeType(actualType), expectedType);
+    assert.equal(actualType.serialize(), expectedType);
     assert.equal(actualOptional, expectedOptional);
   }
 

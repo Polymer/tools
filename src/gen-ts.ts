@@ -15,7 +15,6 @@ import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/func
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
 import * as ts from './ts-ast';
-import {serializeTsDeclarations} from './ts-serialize';
 
 /**
  * Analyze all files in the given directory using Polymer Analyzer, and return
@@ -30,7 +29,7 @@ export async function generateDeclarations(rootDir: string):
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
   for (const tsDoc of analyzerToAst(analysis)) {
-    outFiles.set(tsDoc.path, serializeTsDeclarations(tsDoc));
+    outFiles.set(tsDoc.path, tsDoc.serialize())
   }
   return outFiles;
 }
@@ -62,11 +61,7 @@ function analyzerToAst(analysis: analyzer.Analysis): ts.Document[] {
 
   const tsDocs = [];
   for (const [declarationsFilename, analyzerDocs] of declarationDocs) {
-    const tsDoc: ts.Document = {
-      kind: 'document',
-      path: declarationsFilename,
-      members: [],
-    };
+    const tsDoc = new ts.Document({path: declarationsFilename});
     for (const analyzerDoc of analyzerDocs) {
       handleDocument(analyzerDoc, tsDoc);
     }
@@ -140,8 +135,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
 
   if (constructable) {
     // TODO How do we handle behaviors with classes?
-    parent.members.push({
-      kind: 'class',
+    const c = new ts.Class({
       name: shortName,
       description: feature.description,
       extends: (feature.extends) ||
@@ -150,25 +144,26 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
       properties: handleProperties(feature.properties.values()),
       methods: handleMethods(feature.methods.values()),
     });
+    parent.members.push(c);
 
   } else {
     // TODO How do we handle mixins when we are emitting an interface? We don't
     // currently define interfaces for mixins, so we can't just add them to
     // extends.
-    const extends_ = [];
-    if (isPolymerElement(feature)) {
-      extends_.push('Polymer.Element');
-      extends_.push(
-          ...feature.behaviorAssignments.map((behavior) => behavior.name));
-    }
-    parent.members.push({
-      kind: 'interface',
+    const i = new ts.Interface({
       name: shortName,
       description: feature.description,
-      extends: extends_,
       properties: handleProperties(feature.properties.values()),
       methods: handleMethods(feature.methods.values()),
     });
+
+    if (isPolymerElement(feature)) {
+      i.extends.push('Polymer.Element');
+      i.extends.push(...feature.behaviorAssignments.map(
+          (behavior) => behavior.name));
+    }
+
+    parent.members.push(i);
   }
 
   // The `HTMLElementTagNameMap` global interface maps custom element tag names
@@ -177,12 +172,10 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
   // custom element.
   if (feature.tagName) {
     const elementMap = findOrCreateInterface(root, 'HTMLElementTagNameMap');
-    elementMap.properties.push({
-      kind: 'property',
+    elementMap.properties.push(new ts.Property({
       name: feature.tagName,
-      description: '',
-      type: {kind: 'name', name: fullName},
-    });
+      type: new ts.NameType(fullName),
+    }));
   }
 }
 
@@ -196,15 +189,11 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
     return;
   }
   const [namespacePath, className] = splitReference(feature.className);
-  const parent = findOrCreateNamespace(root, namespacePath);
-  parent.members.push({
-    kind: 'interface',
-    name: className,
-    description: feature.description,
-    extends: [],
-    properties: handleProperties(feature.properties.values()),
-    methods: handleMethods(feature.methods.values()),
-  });
+  const i = new ts.Interface({name: className});
+  i.description = feature.description;
+  i.properties = handleProperties(feature.properties.values());
+  i.methods = handleMethods(feature.methods.values());
+  findOrCreateNamespace(root, namespacePath).members.push(i);
 }
 
 /**
@@ -212,15 +201,11 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
  */
 function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
   const [namespacePath, name] = splitReference(feature.name);
-  const parent = findOrCreateNamespace(root, namespacePath);
-
-  parent.members.push({
-    kind: 'mixin',
-    name: name,
-    description: feature.description || '',
-    properties: handleProperties(feature.properties.values()),
-    methods: handleMethods(feature.methods.values()),
-  });
+  const m = new ts.Mixin({name});
+  m.description = feature.description;
+  m.properties = handleProperties(feature.properties.values());
+  m.methods = handleMethods(feature.methods.values());
+  findOrCreateNamespace(root, namespacePath).members.push(m);
 }
 
 /**
@@ -228,26 +213,19 @@ function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
  */
 function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
   const [namespacePath, name] = splitReference(feature.name);
-  const parent = findOrCreateNamespace(root, namespacePath);
 
-  const params: ts.Param[] = [];
+  const f = new ts.Function({
+    name,
+    description: feature.description,
+    returns: closureTypeToTypeScript(feature.return && feature.return.type)
+  });
+
   for (const param of feature.params || []) {
-    const {optional, type} = closureParamToTypeScript(param.type);
-    params.push({
-      kind: 'param',
-      name: param.name,
-      type,
-      optional,
-    });
+    const {type, optional} = closureParamToTypeScript(param.type);
+    f.params.push(new ts.Param(param.name, type, optional));
   }
 
-  parent.members.push({
-    kind: 'function',
-    name: name,
-    description: feature.description || '',
-    params: params,
-    returns: closureTypeToTypeScript(feature.return && feature.return.type),
-  });
+  findOrCreateNamespace(root, namespacePath).members.push(f);
 }
 
 /**
@@ -261,14 +239,14 @@ function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
     if (property.inheritedFrom) {
       continue;
     }
-    tsProperties.push({
-      kind: 'property',
-      name: property.name || '',
-      description: property.description || '',
+    const p = new ts.Property({
+      name: property.name,
       // TODO If this is a Polymer property with no default value, then the
       // type should really be `<type>|undefined`.
       type: closureTypeToTypeScript(property.type),
     });
+    p.description = property.description || '';
+    tsProperties.push(p);
   }
   return tsProperties;
 }
@@ -285,23 +263,18 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     if (method.inheritedFrom) {
       continue;
     }
-    const params: ts.Param[] = [];
-    for (const param of method.params || []) {
-      const {optional, type} = closureParamToTypeScript(param.type);
-      params.push({
-        kind: 'param',
-        name: param.name,
-        type,
-        optional,
-      });
-    }
-    tsMethods.push({
-      kind: 'method',
-      name: method.name || '',
-      description: method.description || '',
-      params: params,
-      returns: closureTypeToTypeScript(method.return && method.return.type),
+    const m = new ts.Method({
+      name: method.name,
+      returns: closureTypeToTypeScript(method.return && method.return.type)
     });
+    m.description = method.description || '';
+
+    for (const param of method.params || []) {
+      const {type, optional} = closureParamToTypeScript(param.type);
+      m.params.push(new ts.Param(param.name, type, optional));
+    }
+
+    tsMethods.push(m);
   }
   return tsMethods;
 }
@@ -324,11 +297,7 @@ function findOrCreateNamespace(
     }
   }
   if (!first) {
-    first = {
-      kind: 'namespace',
-      name: path[0],
-      members: [],
-    };
+    first = new ts.Namespace({name: path[0]});
     root.members.push(first);
   }
   return findOrCreateNamespace(first, path.slice(1));
@@ -347,16 +316,9 @@ function findOrCreateInterface(
       return member;
     }
   }
-  const interface_: ts.Interface = {
-    kind: 'interface',
-    name: name,
-    description: '',
-    extends: [],
-    properties: [],
-    methods: [],
-  };
-  namespace_.members.push(interface_);
-  return interface_;
+  const i = new ts.Interface({name});
+  namespace_.members.push(i);
+  return i;
 }
 
 /**
