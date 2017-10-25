@@ -1,11 +1,11 @@
 import {assert} from 'chai';
 
-import {Class, Function, Interface, Property} from '../ts-ast';
+import * as ts from '../ts-ast';
 import {serializeTsDeclarations} from '../ts-serialize';
 
 suite('serializeTsDeclarations', () => {
   test('property', () => {
-    const property: Property = {
+    const property: ts.Property = {
       kind: 'property',
       name: 'myProperty',
       description: '',
@@ -15,7 +15,7 @@ suite('serializeTsDeclarations', () => {
   });
 
   test('property with unsafe name', () => {
-    const property: Property = {
+    const property: ts.Property = {
       kind: 'property',
       name: 'my-unsafe-property',
       description: '',
@@ -26,7 +26,7 @@ suite('serializeTsDeclarations', () => {
   });
 
   test('function with description', () => {
-    const method: Function = {
+    const method: ts.Function = {
       kind: 'function',
       name: 'MyMethod',
       description: 'This is my function.\nIt has a multi-line description.',
@@ -56,7 +56,7 @@ declare function MyMethod(param1: string, param2?: any): boolean;
   });
 
   test('interface', () => {
-    const i: Interface = {
+    const i: ts.Interface = {
       kind: 'interface',
       name: 'MyInterface',
       description: 'Description of MyInterface.',
@@ -166,7 +166,7 @@ declare class MyClass extends MyBase {
   });
 
   test('class mixins', () => {
-    const c: Class = {
+    const c: ts.Class = {
       kind: 'class',
       name: 'MyClass',
       description: '',
