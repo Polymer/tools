@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+* Root directories can now be relative paths
+
 ## [0.23.0](https://github.com/PolymerLabs/polyserve/tree/0.23.0) (2017-10-02)
 
 * Added ability to modify and/or substitute generated express apps for when calling startServers, to support more flexibility in request handler ordering and middleware scenarios.

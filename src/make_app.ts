@@ -48,7 +48,7 @@ const localRequirePath = require.resolve('requirejs/require.js');
  * @return {Object} An express app which can be served with `app.get`
  */
 export function makeApp(options: AppOptions): PolyserveApplication {
-  const root = options.root;
+  const root = path.resolve(options.root);
   const baseComponentDir = options.componentDir;
   const componentDir = path.resolve(root, baseComponentDir);
   const packageName = options.packageName;

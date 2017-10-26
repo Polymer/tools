@@ -37,6 +37,13 @@ suite('makeApp', () => {
         .expect(200, 'PASS\n');
   });
 
+  test('supports relative roots', async () => {
+    let app = makeApp({root: './test', componentDir, packageName});
+    await supertest(app)
+        .get('/polyserve-test/test-file.txt')
+        .expect(200, 'PASS\n');
+  });
+
   test('serves component files', async () => {
     let app = makeApp({
       root,
