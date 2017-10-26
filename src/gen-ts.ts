@@ -232,7 +232,7 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
 
   const params: ts.Param[] = [];
   for (const param of feature.params || []) {
-    const {optional, type} = closureParamToTypeScript(param.type || '');
+    const {optional, type} = closureParamToTypeScript(param.type);
     params.push({
       kind: 'param',
       name: param.name,
@@ -246,9 +246,7 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
     name: name,
     description: feature.description || '',
     params: params,
-    returns: feature.return && feature.return.type ?
-        closureTypeToTypeScript(feature.return.type) :
-        ts.anyType,
+    returns: closureTypeToTypeScript(feature.return && feature.return.type),
   });
 }
 
@@ -269,7 +267,7 @@ function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
       description: property.description || '',
       // TODO If this is a Polymer property with no default value, then the
       // type should really be `<type>|undefined`.
-      type: closureTypeToTypeScript(property.type || ''),
+      type: closureTypeToTypeScript(property.type),
     });
   }
   return tsProperties;
@@ -289,7 +287,7 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     }
     const params: ts.Param[] = [];
     for (const param of method.params || []) {
-      const {optional, type} = closureParamToTypeScript(param.type || '');
+      const {optional, type} = closureParamToTypeScript(param.type);
       params.push({
         kind: 'param',
         name: param.name,
@@ -302,9 +300,7 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
       name: method.name || '',
       description: method.description || '',
       params: params,
-      returns: method.return && method.return.type ?
-          closureTypeToTypeScript(method.return.type) :
-          ts.anyType,
+      returns: closureTypeToTypeScript(method.return && method.return.type),
     });
   }
   return tsMethods;
