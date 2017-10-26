@@ -121,6 +121,7 @@ interface MyInterface extends MyBase1, MyBase2 {
       name: 'MyClass',
       description: 'Description of MyClass.',
       extends: 'MyBase',
+      mixins: [],
       properties: [
         {
           kind: 'property',
@@ -164,6 +165,32 @@ declare class MyClass extends MyBase {
 `);
   });
 
+  test('class mixins', () => {
+    const c: Class = {
+      kind: 'class',
+      name: 'MyClass',
+      description: '',
+      extends: 'MyBase',
+      mixins: ['Mixin1', 'Mixin2'],
+      properties: [
+        {
+          kind: 'property',
+          name: 'myProperty',
+          description: '',
+          type: {kind: 'name', name: 'string'},
+        },
+      ],
+      methods: [],
+    };
+    assert.equal(serializeTsDeclarations(c), `declare class MyClass extends
+  Mixin1(
+  Mixin2(
+  MyBase)) {
+  myProperty: string;
+}
+`);
+  });
+
   test('document', () => {
     assert.equal(
         serializeTsDeclarations({
@@ -183,6 +210,7 @@ declare class MyClass extends MyBase {
               name: 'MyClass',
               description: '',
               extends: '',
+              mixins: [],
               properties: [],
               methods: []
             },

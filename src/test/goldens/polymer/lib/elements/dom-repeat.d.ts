@@ -87,7 +87,9 @@ declare namespace Polymer {
    *           filter="isEngineer" observe="type manager.type">
    * ```
    */
-  interface DomRepeat extends Polymer.Element {
+  class DomRepeat extends
+    Polymer.OptionalMutableData(
+    Polymer.Element) {
 
     /**
      * An array containing items determining how many instances of the template

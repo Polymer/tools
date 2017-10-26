@@ -12,13 +12,13 @@
 export interface Document {
   kind: 'document';
   path: string;
-  members: Array<Namespace|Class|Interface|Function>;
+  members: Array<Namespace|Class|Interface|Mixin|Function>;
 }
 
 export interface Namespace {
   kind: 'namespace';
   name: string;
-  members: Array<Namespace|Class|Interface|Function>;
+  members: Array<Namespace|Class|Interface|Mixin|Function>;
 }
 
 export interface Class {
@@ -26,6 +26,7 @@ export interface Class {
   name: string;
   description: string;
   extends: string;
+  mixins: string[];
   properties: Property[];
   methods: Method[];
 }
@@ -35,6 +36,16 @@ export interface Interface {
   name: string;
   description: string;
   extends: string[];
+  properties: Property[];
+  methods: Method[];
+}
+
+// A class mixin using the pattern described at:
+// https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html
+export interface Mixin {
+  kind: 'mixin';
+  name: string;
+  description: string;
   properties: Property[];
   methods: Method[];
 }

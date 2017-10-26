@@ -60,7 +60,7 @@ function analyzerToAst(analysis: analyzer.Analysis): ts.Document[] {
     docs.push(jsDoc);
   }
 
-  const tsDocs = new Array<ts.Document>();
+  const tsDocs = [];
   for (const [declarationsFilename, analyzerDocs] of declarationDocs) {
     const tsDoc: ts.Document = {
       kind: 'document',
@@ -94,10 +94,13 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
   // TODO Should we traverse and serialize all features in the same order they
   // were originally declared, instead of grouping by type as we do here?
   for (const element of doc.getFeatures({kind: 'element'})) {
-    handleElementOrBehavior(element, root);
+    handleElement(element, root);
   }
   for (const behavior of doc.getFeatures({kind: 'behavior'})) {
-    handleElementOrBehavior(behavior, root);
+    handleBehavior(behavior, root);
+  }
+  for (const mixin of doc.getFeatures({kind: 'element-mixin'})) {
+    handleMixin(mixin, root);
   }
   for (const fn of doc.getFeatures({kind: 'function'})) {
     handleFunction(fn, root);
@@ -105,24 +108,29 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
 }
 
 /**
- * Add the given Element or Behavior to the given TypeScript declarations
- * document.
+ * Add the given Element to the given TypeScript declarations document.
  */
-function handleElementOrBehavior(
-    feature: analyzer.Element|analyzer.PolymerBehavior, root: ts.Document) {
+function handleElement(feature: analyzer.Element, root: ts.Document) {
+  // Whether this element has a constructor that is assigned and can be called.
+  // If it does we'll emit a class, otherwise an interface.
+  let constructable;
+
   let fullName;   // Fully qualified reference, e.g. `Polymer.DomModule`.
-  let className;  // Just the class name e.g. `DomModule`.
+  let shortName;  // Just the last part of the name, e.g. `DomModule`.
   let parent;     // Where in the namespace tree does this live.
 
   if (feature.className) {
+    constructable = true;
     let namespacePath;
-    [namespacePath, className] = splitReference(feature.className);
+    [namespacePath, shortName] = splitReference(feature.className);
     fullName = feature.className;
     parent = findOrCreateNamespace(root, namespacePath);
 
   } else if (feature.tagName) {
-    className = kebabToCamel(feature.tagName);
-    fullName = className;
+    constructable = false;
+    shortName = kebabToCamel(feature.tagName);
+    fullName = shortName;
+    // We're going to pollute the global scope with an interface.
     parent = root;
 
   } else {
@@ -130,70 +138,44 @@ function handleElementOrBehavior(
     return;
   }
 
-  const extends_ = new Array<string>();
-  if (isPolymerElement(feature)) {
-    // TODO Only do this when it's a legacy Polymer element.
-    extends_.push('Polymer.Element');
-    for (const behavior of feature.behaviorAssignments) {
-      extends_.push(behavior.name);
-    }
-  } else if (isElement(feature)) {
-    extends_.push('HTMLElement');
-  }
+  if (constructable) {
+    // TODO How do we handle behaviors with classes?
+    parent.members.push({
+      kind: 'class',
+      name: shortName,
+      description: feature.description,
+      extends: (feature.extends) ||
+          (isPolymerElement(feature) ? 'Polymer.Element' : 'HTMLElement'),
+      mixins: feature.mixins.map((mixin) => mixin.identifier),
+      properties: handleProperties(feature.properties.values()),
+      methods: handleMethods(feature.methods.values()),
+    });
 
-  const properties = new Array<ts.Property>();
-  for (const property of feature.properties.values()) {
-    if (property.inheritedFrom) {
-      continue;
+  } else {
+    // TODO How do we handle mixins when we are emitting an interface? We don't
+    // currently define interfaces for mixins, so we can't just add them to
+    // extends.
+    const extends_ = [];
+    if (isPolymerElement(feature)) {
+      extends_.push('Polymer.Element');
+      extends_.push(
+          ...feature.behaviorAssignments.map((behavior) => behavior.name));
     }
-    properties.push({
-      kind: 'property',
-      name: property.name || '',
-      description: property.description || '',
-      type: property.type ? closureTypeToTypeScript(property.type) : ts.anyType,
+    parent.members.push({
+      kind: 'interface',
+      name: shortName,
+      description: feature.description,
+      extends: extends_,
+      properties: handleProperties(feature.properties.values()),
+      methods: handleMethods(feature.methods.values()),
     });
   }
-
-  const methods = new Array<ts.Method>();
-  for (const method of feature.methods.values()) {
-    if (method.inheritedFrom) {
-      continue;
-    }
-    const params: ts.Param[] = [];
-    for (const param of method.params || []) {
-      const {optional, type} = closureParamToTypeScript(param.type || '');
-      params.push({
-        kind: 'param',
-        name: param.name,
-        type,
-        optional,
-      });
-    }
-    methods.push({
-      kind: 'method',
-      name: method.name || '',
-      description: method.description || '',
-      params: params,
-      returns: method.return && method.return.type ?
-          closureTypeToTypeScript(method.return.type) :
-          ts.anyType,
-    });
-  }
-
-  parent.members.push({
-    kind: 'interface',
-    name: className,
-    description: feature.description,
-    extends: extends_,
-    properties: properties,
-    methods: methods,
-  });
 
   // The `HTMLElementTagNameMap` global interface maps custom element tag names
   // to their definitions, so that TypeScript knows that e.g.
   // `dom.createElement('my-foo')` returns a `MyFoo`. Augment the map with this
   // custom element.
-  if (isElement(feature) && feature.tagName) {
+  if (feature.tagName) {
     const elementMap = findOrCreateInterface(root, 'HTMLElementTagNameMap');
     elementMap.properties.push({
       kind: 'property',
@@ -205,6 +187,43 @@ function handleElementOrBehavior(
 }
 
 /**
+ * Add the given Polymer Behavior to the given TypeScript declarations
+ * document.
+ */
+function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
+  if (!feature.className) {
+    console.error('Could not find a name.');
+    return;
+  }
+  const [namespacePath, className] = splitReference(feature.className);
+  const parent = findOrCreateNamespace(root, namespacePath);
+  parent.members.push({
+    kind: 'interface',
+    name: className,
+    description: feature.description,
+    extends: [],
+    properties: handleProperties(feature.properties.values()),
+    methods: handleMethods(feature.methods.values()),
+  });
+}
+
+/**
+ * Add the given Mixin to the given TypeScript declarations document.
+ */
+function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
+  const [namespacePath, name] = splitReference(feature.name);
+  const parent = findOrCreateNamespace(root, namespacePath);
+
+  parent.members.push({
+    kind: 'mixin',
+    name: name,
+    description: feature.description || '',
+    properties: handleProperties(feature.properties.values()),
+    methods: handleMethods(feature.methods.values()),
+  });
+}
+
+/**
  * Add the given Function to the given TypeScript declarations document.
  */
 function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
@@ -213,7 +232,7 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
 
   const params: ts.Param[] = [];
   for (const param of feature.params || []) {
-    const {optional, type} = closureParamToTypeScript(param.type || '');
+    const {optional, type} = closureParamToTypeScript(param.type);
     params.push({
       kind: 'param',
       name: param.name,
@@ -227,11 +246,66 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
     name: name,
     description: feature.description || '',
     params: params,
-    returns: feature.return && feature.return.type ?
-        closureTypeToTypeScript(feature.return.type) :
-        ts.anyType,
+    returns: closureTypeToTypeScript(feature.return && feature.return.type),
   });
 }
+
+/**
+ * Convert the given Analyzer properties to their TypeScript declaration
+ * equivalent.
+ */
+function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
+    ts.Property[] {
+  const tsProperties = <ts.Property[]>[];
+  for (const property of analyzerProperties) {
+    if (property.inheritedFrom) {
+      continue;
+    }
+    tsProperties.push({
+      kind: 'property',
+      name: property.name || '',
+      description: property.description || '',
+      // TODO If this is a Polymer property with no default value, then the
+      // type should really be `<type>|undefined`.
+      type: closureTypeToTypeScript(property.type),
+    });
+  }
+  return tsProperties;
+}
+
+
+/**
+ * Convert the given Analyzer methods to their TypeScript declaration
+ * equivalent.
+ */
+function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
+    ts.Method[] {
+  const tsMethods = <ts.Method[]>[];
+  for (const method of analyzerMethods) {
+    if (method.inheritedFrom) {
+      continue;
+    }
+    const params: ts.Param[] = [];
+    for (const param of method.params || []) {
+      const {optional, type} = closureParamToTypeScript(param.type);
+      params.push({
+        kind: 'param',
+        name: param.name,
+        type,
+        optional,
+      });
+    }
+    tsMethods.push({
+      kind: 'method',
+      name: method.name || '',
+      description: method.description || '',
+      params: params,
+      returns: closureTypeToTypeScript(method.return && method.return.type),
+    });
+  }
+  return tsMethods;
+}
+
 
 /**
  * Traverse the given node to find the namespace AST node with the given path.
@@ -283,13 +357,6 @@ function findOrCreateInterface(
   };
   namespace_.members.push(interface_);
   return interface_;
-}
-
-/**
- * Type guard that checks if a Polymer Analyzer feature is an Element.
- */
-function isElement(feature: analyzer.Feature): feature is analyzer.Element {
-  return feature.kinds.has('element');
 }
 
 /**

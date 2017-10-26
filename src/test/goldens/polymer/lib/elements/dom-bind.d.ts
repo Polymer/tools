@@ -10,7 +10,11 @@ declare namespace Polymer {
    * document and bind elements to the `dom-bind` element itself as the
    * binding scope.
    */
-  interface DomBind extends Polymer.Element {
+  class DomBind extends
+    Polymer.PropertyEffects(
+    Polymer.OptionalMutableData(
+    Polymer.GestureEventListeners(
+    Polymer.Element))) {
 
     /**
      * assumes only one observed attribute

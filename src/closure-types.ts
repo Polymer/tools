@@ -27,7 +27,11 @@ const {parseType, parseParamType} = require('doctrine/lib/typed.js');
  * Convert from a type annotation in Closure syntax to a TypeScript type
  * expression AST (e.g `Array` => `Array<any>|null`).
  */
-export function closureTypeToTypeScript(closureType: string): ts.Type {
+export function closureTypeToTypeScript(closureType: (string|null|undefined)):
+    ts.Type {
+  if (!closureType) {
+    return ts.anyType;
+  }
   let ast;
   try {
     ast = parseType(closureType);
@@ -42,8 +46,11 @@ export function closureTypeToTypeScript(closureType: string): ts.Type {
  * type expression AST
  * (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
  */
-export function closureParamToTypeScript(closureType: string):
+export function closureParamToTypeScript(closureType: (string|null|undefined)):
     {optional: boolean, type: ts.Type} {
+  if (!closureType) {
+    return {type: ts.anyType, optional: false};
+  }
   let ast;
   try {
     ast = parseParamType(closureType);

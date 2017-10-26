@@ -17,8 +17,8 @@ import * as ts from './ts-ast';
  * Serialize a TypeScript declarations file AST to a string.
  */
 export function serializeTsDeclarations(
-    node: ts.Document|ts.Namespace|ts.Class|ts.Interface|ts.Function|
-    ts.Property,
+    node: (ts.Document|ts.Namespace|ts.Class|ts.Interface|ts.Mixin|
+           ts.Function|ts.Property),
     depth: number = 0): string {
   switch (node.kind) {
     case 'document':
@@ -29,6 +29,8 @@ export function serializeTsDeclarations(
       return serializeClass(node, depth);
     case 'interface':
       return serializeInterface(node, depth);
+    case 'mixin':
+      return serializeMixin(node, depth);
     case 'function':
       return serializeFunctionOrMethod(node, depth);
     case 'property':
@@ -95,7 +97,7 @@ function serializeNamespace(node: ts.Namespace, depth: number): string {
   return out;
 }
 
-function serializeClass(node: ts.Class|ts.Interface, depth: number): string {
+function serializeClass(node: ts.Class, depth: number): string {
   let out = '';
   const i = indent(depth);
   if (node.description) {
@@ -106,9 +108,20 @@ function serializeClass(node: ts.Class|ts.Interface, depth: number): string {
     out += 'declare ';
   }
   out += `class ${node.name}`;
-  if (node.extends) {
+
+  if (node.mixins.length) {
+    const i2 = indent(depth + 1);
+    out += ' extends';
+    for (const mixin of node.mixins) {
+      out += `\n${i2}${mixin}(`;
+    }
+    out += `\n${i2}${node.extends || 'Object'}`;
+    out += ')'.repeat(node.mixins.length)
+
+  } else if (node.extends) {
     out += ' extends ' + node.extends;
   }
+
   out += ' {\n';
   for (const property of node.properties) {
     out += serializeProperty(property, depth + 1);
@@ -145,6 +158,31 @@ function serializeInterface(node: ts.Interface, depth: number): string {
     out += '\n';
   }
   out += `${i}}\n`;
+  return out;
+}
+
+function serializeMixin(node: ts.Mixin, depth: number): string {
+  let out = '';
+  const i = indent(depth);
+  const i2 = indent(depth + 1);
+  if (node.description) {
+    out += formatComment(node.description, depth);
+  }
+  out += i;
+  if (depth === 0) {
+    out += 'declare ';
+  }
+  out += `function ${node.name}`;
+  out += `<T extends new(...args: any[]) => {}>(base: T): {\n`;
+  out += `${i2}new(...args: any[]): {\n`;
+  for (const property of node.properties) {
+    out += serializeProperty(property, depth + 2);
+  }
+  for (const method of node.methods) {
+    out += serializeFunctionOrMethod(method, depth + 2);
+  }
+  out += `${i2}}\n`;
+  out += `${i}} & T\n`;
   return out;
 }
 
