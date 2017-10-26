@@ -98,7 +98,7 @@ declare namespace Polymer {
        * When `multi` is false, this is the currently selected item, or `null`
        * if no item is selected.
        */
-      selected: Object|null|Object[]|null|null;
+      selected: Object|null|Object[];
 
       /**
        * When `multi` is false, this is the currently selected item, or `null`

@@ -142,10 +142,6 @@ function convertArray(node: doctrine.type.TypeApplication): ts.Type {
 }
 
 function convertUnion(node: doctrine.type.UnionType): ts.Type {
-  if (node.elements.length === 1) {
-    // `(string)` will be represented as a union of length one. Just flatten.
-    return convert(node.elements[0]);
-  }
   return new ts.UnionType(node.elements.map(convert));
 }
 

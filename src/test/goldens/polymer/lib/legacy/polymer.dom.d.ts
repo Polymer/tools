@@ -19,5 +19,5 @@ declare namespace Polymer {
    * in the majority of cases simply facades directly to the standard native
    * API.
    */
-  function dom(obj: Node|Event|null): DomApi|null|EventApi|null;
+  function dom(obj: Node|Event|null): DomApi|null|EventApi;
 }

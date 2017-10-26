@@ -65,6 +65,7 @@ function analyzerToAst(analysis: analyzer.Analysis): ts.Document[] {
     for (const analyzerDoc of analyzerDocs) {
       handleDocument(analyzerDoc, tsDoc);
     }
+    tsDoc.simplify();
     if (tsDoc.members.length) {
       tsDocs.push(tsDoc);
     }
