@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as dom5 from 'dom5';
 import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
@@ -83,10 +84,12 @@ export abstract class ScannedElementBase implements Resolvable {
 export class Slot {
   name: string;
   range: SourceRange;
+  astNode?: dom5.Node;
 
-  constructor(name: string, range: SourceRange) {
+  constructor(name: string, range: SourceRange, astNode: dom5.Node|undefined) {
     this.name = name;
     this.range = range;
+    this.astNode = astNode;
   }
 }
 

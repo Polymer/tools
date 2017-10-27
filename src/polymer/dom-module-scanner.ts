@@ -132,7 +132,8 @@ export class DomModuleScanner implements HtmlScanner {
                   .map(
                       (s) => new Slot(
                           dom5.getAttribute(s, 'name') || '',
-                          document.sourceRangeForNode(s)!));
+                          document.sourceRangeForNode(s)!,
+                          s));
           localIds =
               dom5.queryAll(templateContent, dom5.predicates.hasAttr('id'))
                   .map(

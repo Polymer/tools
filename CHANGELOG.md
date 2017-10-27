@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- Add new, unreleased changes here. -->
 * Scan for module imports in inline and external JavaScript, analyzing the entire import graph.
 * Changed the way HTML script tag containing document features are made available to the JavaScript document, by creating a ScriptTagBackReferenceImport instead of appending the HTML document features directly to JavaScript document.
+* [minor] Add an `astNode` property on `Slot`.
 
 ## [2.3.0] - 2017-09-25
 
