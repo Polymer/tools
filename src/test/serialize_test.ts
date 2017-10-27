@@ -1,52 +1,35 @@
 import {assert} from 'chai';
 
-import {Class, Function, Interface, Property} from '../ts-ast';
-import {serializeTsDeclarations} from '../ts-serialize';
+import * as ts from '../ts-ast';
 
 suite('serializeTsDeclarations', () => {
   test('property', () => {
-    const property: Property = {
-      kind: 'property',
+    const p = new ts.Property({
       name: 'myProperty',
-      description: '',
-      type: {kind: 'name', name: 'string'},
-    };
-    assert.equal(serializeTsDeclarations(property), 'myProperty: string;\n');
+      type: new ts.NameType('string'),
+    });
+    assert.equal(p.serialize(), 'myProperty: string;\n');
   });
 
   test('property with unsafe name', () => {
-    const property: Property = {
-      kind: 'property',
+    const p = new ts.Property({
       name: 'my-unsafe-property',
-      description: '',
-      type: {kind: 'name', name: 'string'},
-    };
-    assert.equal(
-        serializeTsDeclarations(property), '"my-unsafe-property": string;\n');
+      type: new ts.NameType('string'),
+    });
+    assert.equal(p.serialize(), '"my-unsafe-property": string;\n');
   });
 
   test('function with description', () => {
-    const method: Function = {
-      kind: 'function',
+    const m = new ts.Function({
       name: 'MyMethod',
-      description: 'This is my function.\nIt has a multi-line description.',
-      params: [
-        {
-          kind: 'param',
-          name: 'param1',
-          type: {kind: 'name', name: 'string'},
-          optional: false,
-        },
-        {
-          kind: 'param',
-          name: 'param2',
-          type: {kind: 'name', name: 'any'},
-          optional: true,
-        },
-      ],
-      returns: {kind: 'name', name: 'boolean'},
-    };
-    assert.equal(serializeTsDeclarations(method), `
+      returns: new ts.NameType('boolean'),
+    });
+    m.description = 'This is my function.\nIt has a multi-line description.';
+    m.params = [
+      new ts.Param('param1', new ts.NameType('string')),
+      new ts.Param('param2', new ts.NameType('any'), true),
+    ];
+    assert.equal(m.serialize(), `
 /**
  * This is my function.
  * It has a multi-line description.
@@ -56,46 +39,28 @@ declare function MyMethod(param1: string, param2?: any): boolean;
   });
 
   test('interface', () => {
-    const i: Interface = {
-      kind: 'interface',
+    const i = new ts.Interface({
       name: 'MyInterface',
       description: 'Description of MyInterface.',
-      extends: [
-        'MyBase1',
-        'MyBase2',
-      ],
+      extends: ['MyBase1', 'MyBase2'],
       properties: [
-        {
-          kind: 'property',
+        new ts.Property({
           name: 'myProperty1',
           description: 'Description of myProperty1.',
-          type: {kind: 'name', name: 'string'},
-        },
-        {
-          kind: 'property',
+          type: new ts.NameType('string'),
+        }),
+        new ts.Property({
           name: 'myProperty2',
           description: 'Description of myProperty2.',
-          type: {kind: 'name', name: 'any'},
-        },
+          type: new ts.NameType('any'),
+        }),
       ],
       methods: [
-        {
-          kind: 'method',
-          name: 'MyMethod1',
-          description: '',
-          params: [],
-          returns: {kind: 'name', name: 'boolean'},
-        },
-        {
-          kind: 'method',
-          name: 'MyMethod2',
-          description: '',
-          params: [],
-          returns: {kind: 'name', name: 'any'},
-        },
+        new ts.Method({name: 'MyMethod1', returns: new ts.NameType('boolean')}),
+        new ts.Method({name: 'MyMethod2', returns: new ts.NameType('any')}),
       ],
-    };
-    assert.equal(serializeTsDeclarations(i), `/**
+    });
+    assert.equal(i.serialize(), `/**
  * Description of MyInterface.
  */
 interface MyInterface extends MyBase1, MyBase2 {
@@ -116,44 +81,24 @@ interface MyInterface extends MyBase1, MyBase2 {
   });
 
   test('class', () => {
-    const c: Class = {
-      kind: 'class',
-      name: 'MyClass',
-      description: 'Description of MyClass.',
-      extends: 'MyBase',
-      mixins: [],
-      properties: [
-        {
-          kind: 'property',
-          name: 'myProperty1',
-          description: '',
-          type: {kind: 'name', name: 'string'},
-        },
-        {
-          kind: 'property',
-          name: 'myProperty2',
-          description: '',
-          type: {kind: 'name', name: 'any'},
-        },
-      ],
-      methods: [
-        {
-          kind: 'method',
-          name: 'MyMethod1',
-          description: '',
-          params: [],
-          returns: {kind: 'name', name: 'boolean'},
-        },
-        {
-          kind: 'method',
-          name: 'MyMethod2',
-          description: '',
-          params: [],
-          returns: {kind: 'name', name: 'any'},
-        },
-      ],
-    };
-    assert.equal(serializeTsDeclarations(c), `/**
+    const c = new ts.Class({name: 'MyClass'});
+    c.description = 'Description of MyClass.';
+    c.extends = 'MyBase';
+    c.properties = [
+      new ts.Property({
+        name: 'myProperty1',
+        type: new ts.NameType('string'),
+      }),
+      new ts.Property({
+        name: 'myProperty2',
+        type: new ts.NameType('any'),
+      }),
+    ];
+    c.methods = [
+      new ts.Method({name: 'MyMethod1', returns: new ts.NameType('boolean')}),
+      new ts.Method({name: 'MyMethod2', returns: new ts.NameType('any')}),
+    ];
+    assert.equal(c.serialize(), `/**
  * Description of MyClass.
  */
 declare class MyClass extends MyBase {
@@ -166,23 +111,16 @@ declare class MyClass extends MyBase {
   });
 
   test('class mixins', () => {
-    const c: Class = {
-      kind: 'class',
-      name: 'MyClass',
-      description: '',
-      extends: 'MyBase',
-      mixins: ['Mixin1', 'Mixin2'],
-      properties: [
-        {
-          kind: 'property',
-          name: 'myProperty',
-          description: '',
-          type: {kind: 'name', name: 'string'},
-        },
-      ],
-      methods: [],
-    };
-    assert.equal(serializeTsDeclarations(c), `declare class MyClass extends
+    const c = new ts.Class({name: 'MyClass'});
+    c.extends = 'MyBase';
+    c.mixins = ['Mixin1', 'Mixin2'];
+    c.properties = [
+      new ts.Property({
+        name: 'myProperty',
+        type: new ts.NameType('string'),
+      }),
+    ];
+    assert.equal(c.serialize(), `declare class MyClass extends
   Mixin1(
   Mixin2(
   MyBase)) {
@@ -192,31 +130,14 @@ declare class MyClass extends MyBase {
   });
 
   test('document', () => {
-    assert.equal(
-        serializeTsDeclarations({
-          kind: 'document',
-          path: 'my-document.d.ts',
-          members: [
-            {
-              kind: 'interface',
-              name: 'MyInterface',
-              description: '',
-              extends: [],
-              properties: [],
-              methods: []
-            },
-            {
-              kind: 'class',
-              name: 'MyClass',
-              description: '',
-              extends: '',
-              mixins: [],
-              properties: [],
-              methods: []
-            },
-          ],
-        }),
-        `interface MyInterface {
+    const d = new ts.Document({
+      path: 'my-document.d.ts',
+      members: [
+        new ts.Interface({name: 'MyInterface'}),
+        new ts.Class({name: 'MyClass'}),
+      ]
+    });
+    assert.equal(d.serialize(), `interface MyInterface {
 }
 
 declare class MyClass {
@@ -226,22 +147,13 @@ declare class MyClass {
   });
 
   test('namespace', () => {
-    assert.equal(
-        serializeTsDeclarations({
-          kind: 'namespace',
-          name: 'MyNamespace',
-          members: [
-            {
-              kind: 'interface',
-              name: 'MyInterface',
-              description: '',
-              extends: [],
-              properties: [],
-              methods: []
-            },
-          ],
-        }),
-        `declare namespace MyNamespace {
+    const n = new ts.Namespace({
+      name: 'MyNamespace',
+      members: [
+        new ts.Interface({name: 'MyInterface'}),
+      ]
+    });
+    assert.equal(n.serialize(), `declare namespace MyNamespace {
 
   interface MyInterface {
   }
@@ -250,34 +162,23 @@ declare class MyClass {
   });
 
   test('deep namespace', () => {
-    assert.equal(
-        serializeTsDeclarations({
-          kind: 'namespace',
-          name: 'MyNamespace1',
+    const n = new ts.Namespace({
+      name: 'MyNamespace1',
+      members: [
+        new ts.Namespace({
+          name: 'MyNamespace2',
           members: [
-            {
-              kind: 'namespace',
-              name: 'MyNamespace2',
+            new ts.Namespace({
+              name: 'MyNamespace3',
               members: [
-                {
-                  kind: 'namespace',
-                  name: 'MyNamespace3',
-                  members: [
-                    {
-                      kind: 'interface',
-                      name: 'MyInterface',
-                      description: '',
-                      extends: [],
-                      properties: [],
-                      methods: []
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+                new ts.Interface({name: 'MyInterface'}),
+              ]
+            }),
+          ]
         }),
-        `declare namespace MyNamespace1 {
+      ]
+    });
+    assert.equal(n.serialize(), `declare namespace MyNamespace1 {
 
   namespace MyNamespace2 {
 

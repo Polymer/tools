@@ -95,7 +95,7 @@ function convert(node: doctrine.Type): ts.Type {
   } else if (isFunction(node)) {  // function(foo): bar
     t = convertFunction(node);
   } else if (isBareArray(node)) {  // Array
-    t = {kind: 'array', itemType: ts.anyType};
+    t = new ts.ArrayType(ts.anyType);
   } else if (isAllLiteral(node)) {  // *
     t = ts.anyType;
   } else if (isNullableLiteral(node)) {  // ?
@@ -105,14 +105,14 @@ function convert(node: doctrine.Type): ts.Type {
   } else if (isUndefinedLiteral(node)) {  // undefined
     t = ts.undefinedType;
   } else if (isName(node)) {  // string, Object, MyClass, etc.
-    t = {kind: 'name', name: node.name};
+    t = new ts.NameType(node.name);
   } else {
     console.error('Unknown syntax.');
     return ts.anyType;
   }
 
   if (nullable) {
-    t = {kind: 'union', members: [t, ts.nullType]};
+    t = new ts.UnionType([t, ts.nullType]);
   }
 
   return t;
@@ -137,10 +137,8 @@ function nullableByDefault(node: doctrine.Type): boolean {
 
 function convertArray(node: doctrine.type.TypeApplication): ts.Type {
   const applications = node.applications;
-  return {
-    kind: 'array',
-    itemType: applications.length === 1 ? convert(applications[0]) : ts.anyType,
-  };
+  return new ts.ArrayType(
+      applications.length === 1 ? convert(applications[0]) : ts.anyType);
 }
 
 function convertUnion(node: doctrine.type.UnionType): ts.Type {
@@ -148,25 +146,18 @@ function convertUnion(node: doctrine.type.UnionType): ts.Type {
     // `(string)` will be represented as a union of length one. Just flatten.
     return convert(node.elements[0]);
   }
-  return {
-    kind: 'union',
-    members: node.elements.map(convert),
-  };
+  return new ts.UnionType(node.elements.map(convert));
 }
 
 function convertFunction(node: doctrine.type.FunctionType): ts.FunctionType {
-  return {
-    kind: 'function',
-    params: node.params.map((param, idx) => {
-      return {
-        // TypeScript wants named parameters, but we don't have names.
-        name: 'p' + idx,
-        type: convert(param),
-      };
-    }),
-    // Cast because typings are wrong: `FunctionType.result` is not an array.
-    returns: node.result ? convert(node.result as any) : ts.anyType,
-  };
+  return new ts.FunctionType(
+      node.params.map(
+          (param, idx) => new ts.ParamType(
+              // TypeScript wants named parameters, but we don't have names.
+              'p' + idx,
+              convert(param))),
+      // Cast because typings are wrong: `FunctionType.result` is not an array.
+      node.result ? convert(node.result as any) : ts.anyType);
 }
 
 function isParameterizedArray(node: doctrine.Type):
