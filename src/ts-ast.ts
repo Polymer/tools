@@ -12,6 +12,9 @@
 // TODO Document classes better.
 // TODO Try to make serialization methods easier to read.
 
+export type Node = Document|Namespace|Class|Interface|Mixin|Function|Method|
+    Type|ParamType|Property;
+
 export class Document {
   readonly kind = 'document';
   path: string;
@@ -23,6 +26,28 @@ export class Document {
   }) {
     this.path = data.path;
     this.members = data.members || [];
+  }
+
+  /**
+   * Iterate over all nodes in the document, depth first. Includes all
+   * recursive ancestors, and the document itself.
+   */
+  * traverse(): Iterable<Node> {
+    for (const m of this.members) {
+      yield* m.traverse();
+    }
+    yield this;
+  }
+
+  /**
+   * Clean up this AST.
+   */
+  simplify() {
+    for (const node of this.traverse()) {
+      if (node.kind === 'union') {
+        node.simplify();
+      }
+    }
   }
 
   serialize(): string {
@@ -41,6 +66,13 @@ export class Namespace {
   }) {
     this.name = data.name;
     this.members = data.members || [];
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const m of this.members) {
+      yield* m.traverse();
+    }
+    yield this;
   }
 
   serialize(depth: number = 0): string {
@@ -82,6 +114,16 @@ export class Class {
     this.mixins = data.mixins || [];
     this.properties = data.properties || [];
     this.methods = data.methods || [];
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const p of this.properties) {
+      yield* p.traverse();
+    }
+    for (const m of this.methods) {
+      yield* m.traverse();
+    }
+    yield this;
   }
 
   serialize(depth: number = 0): string {
@@ -146,6 +188,16 @@ export class Interface {
     this.methods = data.methods || [];
   }
 
+  * traverse(): Iterable<Node> {
+    for (const p of this.properties) {
+      yield* p.traverse();
+    }
+    for (const m of this.methods) {
+      yield* m.traverse();
+    }
+    yield this;
+  }
+
   serialize(depth: number = 0): string {
     let out = '';
     const i = indent(depth);
@@ -191,6 +243,16 @@ export class Mixin {
     this.description = data.description || '';
     this.properties = data.properties || [];
     this.methods = data.methods || [];
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const p of this.properties) {
+      yield* p.traverse();
+    }
+    for (const m of this.methods) {
+      yield* m.traverse();
+    }
+    yield this;
   }
 
   serialize(depth: number = 0): string {
@@ -258,9 +320,29 @@ export abstract class FunctionLike {
   }
 }
 
-export class Function extends FunctionLike { readonly kind = 'function'; }
+export class Function extends FunctionLike {
+  readonly kind = 'function';
 
-export class Method extends FunctionLike { readonly kind = 'method'; }
+  * traverse(): Iterable<Node> {
+    for (const p of this.params) {
+      yield* p.traverse();
+    }
+    yield* this.returns.traverse();
+    yield this;
+  }
+}
+
+export class Method extends FunctionLike {
+  readonly kind = 'method';
+
+  * traverse(): Iterable<Node> {
+    for (const p of this.params) {
+      yield* p.traverse();
+    }
+    yield* this.returns.traverse();
+    yield this;
+  }
+}
 
 export class Property {
   readonly kind = 'property';
@@ -272,6 +354,11 @@ export class Property {
     this.name = data.name;
     this.description = data.description || '';
     this.type = data.type || anyType;
+  }
+
+  * traverse(): Iterable<Node> {
+    yield* this.type.traverse();
+    yield this;
   }
 
   serialize(depth: number = 0): string {
@@ -297,6 +384,11 @@ export class Param {
     this.optional = optional;
   }
 
+  * traverse(): Iterable<Node> {
+    yield* this.type.traverse();
+    yield this;
+  }
+
   serialize(): string {
     return `${this.name}${this.optional ? '?' : ''}: ${this.type.serialize()}`;
   }
@@ -314,6 +406,10 @@ export class NameType {
     this.name = name;
   };
 
+  * traverse(): Iterable<Node> {
+    yield this;
+  }
+
   serialize(): string {
     return this.name;
   }
@@ -326,6 +422,50 @@ export class UnionType {
 
   constructor(members: Type[]) {
     this.members = members;
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const m of this.members) {
+      yield* m.traverse();
+    }
+    yield this;
+  }
+
+  /**
+   * Simplify this union type:
+   *
+   * 1) Flatten nested unions (`foo|(bar|baz)` -> `foo|bar|baz`).
+   * 2) De-duplicate identical members (`foo|bar|foo` -> `foo|bar`).
+   */
+  simplify() {
+    const flattened = [];
+    for (const m of this.members) {
+      if (m.kind === 'union') {
+        // Note we are not recursing here, because we assume we're being called
+        // via a depth-first walk, so any union members have already been
+        // simplified.
+        flattened.push(...m.members);
+      } else {
+        flattened.push(m);
+      }
+    }
+
+    // TODO This only de-dupes Name types. We should de-dupe Arrays and
+    // Functions too.
+    const deduped = [];
+    const names = new Set();
+    for (const m of flattened) {
+      if (m.kind === 'name') {
+        if (names.has(m.name)) {
+          continue;
+        }
+        names.add(m.name);
+      }
+      deduped.push(m);
+    }
+
+    // TODO Sort null and undefined to the end of the array.
+    this.members = deduped;
   }
 
   serialize(): string {
@@ -352,6 +492,11 @@ export class ArrayType {
     this.itemType = itemType;
   }
 
+  * traverse(): Iterable<Node> {
+    yield* this.itemType.traverse();
+    yield this;
+  }
+
   serialize(): string {
     if (this.itemType.kind === 'name') {
       // Use the concise `foo[]` syntax when the item type is simple.
@@ -375,6 +520,14 @@ export class FunctionType {
     this.returns = returns;
   }
 
+  * traverse(): Iterable<Node> {
+    for (const p of this.params) {
+      yield* p.traverse();
+    }
+    yield* this.returns.traverse();
+    yield this;
+  }
+
   serialize(): string {
     const params =
         this.params.map((param) => `${param.name}: ${param.type.serialize()}`);
@@ -384,8 +537,14 @@ export class FunctionType {
 
 // foo: bar
 export class ParamType {
+  readonly kind = 'param';
   name: string;
   type: Type;
+
+  * traverse(): Iterable<Node> {
+    yield* this.type.traverse();
+    yield this;
+  }
 
   constructor(name: string, type: Type) {
     this.name = name;
