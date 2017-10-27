@@ -50,6 +50,10 @@ export function toScannedPolymerProperty(
   if (typeTag) {
     type = doctrine.type.stringify(typeTag.type!) || type;
   }
+  if (type instanceof Warning) {
+    warnings.push(type);
+    type = 'Object';
+  }
   const name = maybeName || '';
   const result: ScannedPolymerProperty = {
     name,

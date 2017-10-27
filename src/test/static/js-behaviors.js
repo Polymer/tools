@@ -9,9 +9,13 @@ var SimpleBehavior = {
  * */
 var SimpleNamespacedBehavior = {
   simple: true,
-  method: function (paramA, paramB) {
+  method: function(paramA, paramB) {
 
   },
+  object: {},
+  array: [],
+  attached: true ? null : function() {},
+  templateLiteral: `foo`
 };
 
 

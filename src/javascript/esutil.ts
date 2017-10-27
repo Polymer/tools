@@ -21,7 +21,7 @@ import * as estree from 'estree';
 import {ScannedMethod} from '../index';
 import {ImmutableSet} from '../model/immutable';
 import {Privacy} from '../model/model';
-import {ScannedEvent, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
+import {ScannedEvent, Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 import * as docs from '../polymer/docs';
 import {annotateEvent} from '../polymer/docs';
@@ -88,6 +88,13 @@ export function objectKeyToString(key: estree.Node): string|undefined {
 export const CLOSURE_CONSTRUCTOR_MAP = new Map(
     [['Boolean', 'boolean'], ['Number', 'number'], ['String', 'string']]);
 
+const VALID_EXPRESSION_TYPES = new Map([
+  ['FunctionExpression', 'Function'],
+  ['ObjectExpression', 'Object'],
+  ['ArrayExpression', 'Array'],
+  ['TemplateLiteral', 'string']
+]);
+
 /**
  * AST expression -> Closure type.
  *
@@ -98,22 +105,23 @@ export const CLOSURE_CONSTRUCTOR_MAP = new Map(
  */
 export function closureType(
     node: estree.Node, sourceRange: SourceRange, document: ParsedDocument):
-    string {
-  if (node.type.match(/Expression$/)) {
-    return node.type.substr(0, node.type.length - 10);
+    string|Warning {
+  const type = VALID_EXPRESSION_TYPES.get(node.type);
+  if (type) {
+    return type;
   } else if (node.type === 'Literal') {
     return typeof node.value;
   } else if (node.type === 'Identifier') {
     return CLOSURE_CONSTRUCTOR_MAP.get(node.name) || node.name;
-  } else {
-    throw new WarningCarryingException(new Warning({
-      code: 'no-closure-type',
-      message: `Unable to determine closure type for expression of type ` +
-          `${node.type}`,
-      severity: Severity.WARNING, sourceRange,
-      parsedDocument: document,
-    }));
   }
+  return new Warning({
+    code: 'no-closure-type',
+    message: `Unable to determine closure type for expression of type ` +
+        `${node.type}`,
+    severity: Severity.WARNING,
+    sourceRange,
+    parsedDocument: document,
+  });
 }
 
 export function getAttachedComment(node: estree.Node): string|undefined {
@@ -150,10 +158,10 @@ function getLeadingComments(node: estree.Node): string[]|undefined {
   }
   const comments = [];
   for (const comment of node.leadingComments || []) {
-    // Espree says any comment that immediately precedes a node is "leading",
-    // but we want to be stricter and require them to be touching. If we don't
-    // have locations for some reason, err on the side of including the
-    // comment.
+    // Espree says any comment that immediately precedes a node is
+    // "leading", but we want to be stricter and require them to be
+    // touching. If we don't have locations for some reason, err on the
+    // side of including the comment.
     if (!node.loc || !comment.loc ||
         node.loc.start.line - comment.loc.end.line < 2) {
       comments.push(comment.value);
@@ -204,6 +212,10 @@ export function toScannedMethod(
   const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
   if (typeTag) {
     type = doctrine.type.stringify(typeTag.type!) || type;
+  }
+  if (type instanceof Warning) {
+    warnings.push(type);
+    type = 'Function';
   }
   const name = maybeName || '';
   const scannedMethod: ScannedMethod = {
@@ -284,8 +296,8 @@ export function getOrInferPrivacy(
 }
 
 /**
- * Properties on element prototypes that are part of the custom elment lifecycle
- * or Polymer configuration syntax.
+ * Properties on element prototypes that are part of the custom elment
+ * lifecycle or Polymer configuration syntax.
  *
  * TODO(rictic): only treat the Polymer ones as private when dealing with
  *   Polymer.

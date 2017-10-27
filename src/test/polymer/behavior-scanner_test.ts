@@ -30,7 +30,7 @@ suite('BehaviorScanner', () => {
   let behaviors: Map<string, ScannedBehavior>;
   let behaviorsList: ScannedBehavior[];
 
-  suiteSetup(async() => {
+  suiteSetup(async () => {
     const parser = new JavaScriptParser();
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/js-behaviors.js'), 'utf8');
@@ -74,8 +74,8 @@ suite('BehaviorScanner', () => {
   test('Supports behaviors On.Property.Paths', () => {
     assert(behaviors.has('Really.Really.Deep.Behavior'));
     assert.equal(
-        behaviors.get('Really.Really.Deep.Behavior')!.properties
-            .get('deep')!.name,
+        behaviors.get('Really.Really.Deep.Behavior')!.properties.get('deep')!
+            .name,
         'deep');
   });
 
@@ -109,6 +109,25 @@ suite('BehaviorScanner', () => {
       throw new Error('Could not find Polymer.SimpleNamespacedBehavior');
     }
     assert.deepEqual([...behavior.methods.keys()], ['method']);
-    assert.deepEqual([...behavior.properties.keys()], ['simple']);
+    assert.deepEqual(
+        [...behavior.properties.keys()],
+        ['simple', 'object', 'array', 'attached', 'templateLiteral']);
+  });
+
+  test('Correctly transforms property types', function() {
+    const behavior = behaviors.get('Polymer.SimpleNamespacedBehavior');
+    if (!behavior) {
+      throw new Error('Could not find Polymer.SimpleNamespacedBehavior');
+    }
+    assert.deepEqual(
+        [...behavior.properties.values()].map(
+            (p) => ({name: p.name, type: p.type})),
+        [
+          {name: 'simple', type: 'boolean'},
+          {name: 'object', type: 'Object'},
+          {name: 'array', type: 'Array'},
+          {name: 'attached', type: 'Object'},
+          {name: 'templateLiteral', type: 'string'}
+        ]);
   });
 });
