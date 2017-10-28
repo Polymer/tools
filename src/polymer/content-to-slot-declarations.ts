@@ -56,11 +56,11 @@ class ContentToSlotDeclarations extends HtmlRule {
       if (!template) {
         continue;
       }
-      const contentNodes = dom5.queryAll(
+      const contentElements = dom5.queryAll(
           treeAdapters.default.getTemplateContent(template),
           p.hasTagName('content'));
-      const slots = new Set<string>();
-      for (const contentNode of contentNodes) {
+      const slotNames = new Set<string>();
+      for (const contentElement of contentElements) {
         const warning = new FixableWarning({
           code: 'content-to-slot-declaration',
           message:
@@ -68,42 +68,59 @@ class ContentToSlotDeclarations extends HtmlRule {
               `Replace with a <slot> tag.`,
           parsedDocument,
           severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForStartTag(contentNode)!
+          sourceRange: parsedDocument.sourceRangeForStartTag(contentElement)!
         });
-        const attrs = [...contentNode.attrs];
-        const selectorAttr = attrs.find((a) => a.name === 'select');
-        const selector = selectorAttr && selectorAttr.value;
-        let slotName = null;
-        if (selector) {
-          slotName = slotNameForSelector(selector);
-          while (slots.has(slotName)) {
-            slotName += '-unique-suffix';
-          }
-          slots.add(slotName);
-          attrs.unshift({name: 'name', value: slotName});
-          attrs.push({name: 'old-content-selector', value: selector});
-        }
-        const slotElement = treeAdapters.default.createElement('slot', '', []);
-        for (const {name, value} of attrs) {
-          dom5.setAttribute(slotElement, name, value);
-        }
-        dom5.removeAttribute(slotElement, 'select');
-        const fragment = parse5.treeAdapters.default.createDocumentFragment();
-        dom5.append(fragment, slotElement);
+        const slotElementText =
+            getSerializedSlotElement(contentElement, slotNames);
+        const slotElementStartTag =
+            slotElementText.slice(0, -7); /* cut </slot> off the end */
         warning.fix = [
           {
-            replacementText: parse5.serialize(fragment).slice(0, -7),
-            range: parsedDocument.sourceRangeForStartTag(contentNode)!
+            replacementText: slotElementStartTag,
+            range: parsedDocument.sourceRangeForStartTag(contentElement)!
           },
           {
             replacementText: '</slot>',
-            range: parsedDocument.sourceRangeForEndTag(contentNode)!
+            range: parsedDocument.sourceRangeForEndTag(contentElement)!
           }
         ];
         warnings.push(warning);
       }
     }
   }
+}
+
+/**
+ * Given a <content> element, return a serialized <slot> element to replace it.
+ *
+ * This requires coming up with a unique slot name, stashing the selector so
+ * that we can migrate users, and copying over any other attributes. Children of
+ * the <content> element aren't touched, as we're just replacing the start and
+ * end tags.
+ */
+function getSerializedSlotElement(
+    contentElement: dom5.Node, slotNames: Set<string>) {
+  const attrs = [...contentElement.attrs];
+  const selectorAttr = attrs.find((a) => a.name === 'select');
+  const selector = selectorAttr && selectorAttr.value;
+  let slotName = null;
+  if (selector) {
+    slotName = slotNameForSelector(selector);
+    while (slotNames.has(slotName)) {
+      slotName += '-unique-suffix';
+    }
+    slotNames.add(slotName);
+    attrs.unshift({name: 'name', value: slotName});
+    attrs.push({name: 'old-content-selector', value: selector});
+  }
+  const slotElement = treeAdapters.default.createElement('slot', '', []);
+  for (const {name, value} of attrs) {
+    dom5.setAttribute(slotElement, name, value);
+  }
+  dom5.removeAttribute(slotElement, 'select');
+  const fragment = parse5.treeAdapters.default.createDocumentFragment();
+  dom5.append(fragment, slotElement);
+  return parse5.serialize(fragment);
 }
 
 function slotNameForSelector(selector: string) {
