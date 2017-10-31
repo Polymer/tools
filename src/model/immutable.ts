@@ -24,34 +24,13 @@
 
 
 /** A zero-overhead immutable view of an array. */
-export declare interface ImmutableArray<V> {
-  readonly [index: number]: V|undefined;
-  readonly length: number;
-  slice(left?: number, right?: number): Array<V>;
-  map<U>(f: (v: V, idx: number) => U): Array<U>;
-  forEach(f: (v: V, idx: number) => void): void;
-  concat(...arrs: V[][]): Array<V>;
-  [Symbol.iterator](): Iterator<V>;
-}
+export declare type ImmutableArray<V> = ReadonlyArray<V>;
 
 /** A zero-overhead immutable view of a set. */
-export declare interface ImmutableSet<V> {
-  readonly size: number;
-  has(candidate: V): boolean;
-  values(): Iterable<V>;
-  [Symbol.iterator](): Iterator<V>;
-}
+export declare type ImmutableSet<V> = ReadonlySet<V>;
 
 /** A zero-overhead immutable view of a map. */
-export declare interface ImmutableMap<K, V> {
-  readonly size: number;
-  has(candidate: K): boolean;
-  get(key: K): V|undefined;
-  keys(): Iterable<K>;
-  values(): Iterable<V>;
-  entries(): Iterable<[K, V]>;
-  [Symbol.iterator](): Iterator<[K, V]>;
-}
+export declare type ImmutableMap<K, V> = ReadonlyMap<K, V>;
 
 export function asImmutable<V>(array: Array<V>): ImmutableArray<V>;
 export function asImmutable<V>(set: Set<V>): ImmutableSet<V>;

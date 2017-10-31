@@ -115,7 +115,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
             _data: string,
             _writeByteOrderMark: boolean,
             _onError?: (message: string) => void,
-            _sourceFiles?: ts.SourceFile[]): void => {
+            _sourceFiles?: ReadonlyArray<ts.SourceFile>): void => {
       throw new Error('unsupported operation');
     };
   }

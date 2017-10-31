@@ -18,10 +18,8 @@ import * as fs from 'fs';
 import * as memoryStreams from 'memory-streams';
 import * as path from 'path';
 
-import {Analyzer} from '../../core/analyzer';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {Severity, Warning} from '../../model/model';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {WarningPrinter} from '../../warning/warning-printer';
 
 const parser = new JavaScriptParser();
@@ -57,13 +55,10 @@ const goodJobWarning = new Warning({
 suite('WarningPrinter', () => {
   let output: NodeJS.WritableStream;
   let printer: WarningPrinter;
-  let analyzer: Analyzer;
   let originalChalkEnabled: boolean;
 
   setup(() => {
     output = new memoryStreams.WritableStream();
-    const urlLoader = new FSUrlLoader(staticTestDir);
-    analyzer = new Analyzer({urlLoader});
     printer = new WarningPrinter(output, {color: false});
     originalChalkEnabled = chalk.enabled;
     (chalk as any).enabled = true;
