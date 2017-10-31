@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [2.4.1] - 2017-10-31
+* Minor fixes for TypeScript 2.6 compatibility.
+
 ## [2.4.0] - 2017-10-26
 
 * Scan for module imports in inline and external JavaScript, analyzing the entire import graph.
