@@ -25,7 +25,7 @@
     "prepare": "npm run build"
   },
   "engines": {
-    "node": ">=7.6.0"
+    "node": ">=8.0.0"
   },
   "dependencies": {
     "@types/chai": "^3.5.2",

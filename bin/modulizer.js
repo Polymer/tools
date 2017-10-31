@@ -18,12 +18,32 @@
 
 process.title = 'modulizer';
 
+/*
+ * NOTE: The contents of this file should work on as many version of Node.js
+ * as possible. This means it *can not* use any >ES5 syntax and features.
+ * Other files, which may use >=ES2015 syntax, should only be loaded
+ * asynchronously after this version check has been performed.
+ */
+
+const semver = require('semver');
+const version = require('../package.json').engines.node;
+
+// Exit early if the user's node version is too low.
+if (!semver.satisfies(process.version, version)) {
+  console.log(
+      'Polymer Modulizer requires Node version ' + version + '. ' +
+      'You have ' + process.version + '.\n' +
+      'See https://www.polymer-project.org/2.0/docs/tools/node-support ' +
+      'for details.');
+  process.exit(1);
+}
+
 require('source-map-support').install();
 
-const {run} = require('../lib/cli/index');
+const cli = require('../lib/cli/index');
 
-process.on('unhandledRejection', (reason, p) => {
+process.on('unhandledRejection', function(reason, p) {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
 });
 
-run();
+cli.run();
