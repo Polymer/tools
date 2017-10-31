@@ -9,11 +9,12 @@
     "@types/fast-levenshtein": "0.0.1",
     "@types/node": "^6",
     "@types/parse5": "^2.2.34",
+    "css-what": "^2.1.0",
     "dom5": "^2.0.0",
     "estraverse": "^4.2.0",
     "fast-levenshtein": "^2.0.6",
     "parse5": "^2.2.1",
-    "polymer-analyzer": "^2.0.0",
+    "polymer-analyzer": "^2.4.0",
     "strip-indent": "^2.0.0"
   },
   "devDependencies": {
@@ -36,7 +37,7 @@
     "clean": "rm -rf lib; mkdir -p lib",
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
-    "test": "npm run build && npm run lint && mocha lib/test/*.js lib/test/**/*.js",
+    "test": "npm run build && mocha lib/test/*.js lib/test/**/*.js && npm run lint",
     "test:watch": "watchy -w src/,test/ -- npm test --loglevel=silent",
     "test:integration": "npm run build && cd test/integration && bower install --silent && cd ../../ && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },

@@ -41,6 +41,27 @@ suite(ruleId, () => {
     assert.deepEqual(warnings, []);
   });
 
+  test('warns for the proper cases and with the right messages', async() => {
+    const warnings = await linter.lint([`${ruleId}/${ruleId}.html`]);
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
+      `
+    <slot name="foo" old-content-selector="!)@#(*(@!#*"></slot>
+                                          ~~~~~~~~~~~~~`,
+      `
+    <slot name="bar" old-content-selector=".bar .baz"></slot>
+                                          ~~~~~~~~~~~`,
+      `
+    <slot name="bar" old-content-selector=".bar > .baz"></slot>
+                                          ~~~~~~~~~~~~~`
+    ]);
+
+    assert.deepEqual(warnings.map((w) => w.message), [
+      'Unmatched selector: !)@#(*(@!#*',
+      'Unsupported CSS operator: descendant',
+      'Unsupported CSS operator: child'
+    ]);
+  });
+
   test('applies automatic-safe fixes', async() => {
     const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);

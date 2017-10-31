@@ -61,3 +61,27 @@
   </template>
 </paper-scroll-header-panel>
 
+<foo-bar>
+  <div class="foo" slot="foo"></div>
+  <div class="bar" slot="bar"></div>
+  <div class="baz">
+    <div class="foo"></div>
+  </div>
+</foo-bar>
+
+<dom-module id="foo-bar">
+  <template>
+    <slot name="foo" old-content-selector=".foo">
+      Foo
+    </slot>
+    <slot name="bar" old-content-selector=".bar">
+      Bar
+    </slot>
+    <slot></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>

@@ -12,77 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+
 import * as dom5 from 'dom5';
 import {treeAdapters} from 'parse5';
-import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
+import {Document, Element, ParsedHtmlDocument, Severity, Slot} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
 import {FixableWarning, Replacement} from '../warning';
 
 import stripIndent = require('strip-indent');
-
-
-const p = dom5.predicates;
-
-const config =
-    new Map<string, Array<{predicate: dom5.Predicate, slot: string}>>();
-
-function addPredicate(
-    tagname: string, slots: Array<{selector: string, slot: string}>) {
-  config.set(
-      tagname, slots.map((s) => ({
-                           predicate: simpleSelectorToPredicate(s.selector),
-                           slot: s.slot
-                         })));
-}
-
-addPredicate(
-    'paper-header-panel',
-    [{selector: 'paper-toolbar, .paper-header', slot: 'header'}]);
-
-addPredicate('paper-scroll-header-panel', [
-  {selector: 'paper-toolbar, .paper-header', slot: 'header'},
-  {selector: '*', slot: 'content'}
-]);
-
-addPredicate('paper-toolbar', [
-  {selector: '.middle', slot: 'middle'},
-  {selector: '.bottom', slot: 'bottom'},
-  {selector: '*', slot: 'top'}
-]);
-
-addPredicate('paper-drawer-panel', [
-  {selector: '[drawer]', slot: 'drawer'},
-  {selector: '[main]', slot: 'main'}
-]);
-
-addPredicate('paper-icon-item', [{selector: '[item-icon]', slot: 'item-icon'}]);
-
-addPredicate('paper-menu-button', [
-  {selector: '.dropdown-trigger', slot: 'dropdown-trigger'},
-  {selector: '.dropdown-content', slot: 'dropdown-content'},
-]);
-
-addPredicate(
-    'iron-dropdown',
-    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
-
-addPredicate('paper-input', [
-  {selector: '[prefix]', slot: 'prefix'},
-  {selector: '[suffix]', slot: 'suffix'},
-]);
-
-addPredicate('paper-input-container', [
-  {selector: '[prefix]', slot: 'prefix'},
-  {selector: '[suffix]', slot: 'suffix'},
-  {selector: '[add-on]', slot: 'add-on'},
-  {selector: '*', slot: 'input'},
-]);
-
-addPredicate(
-    'paper-dropdown-menu',
-    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
+import cssWhat = require('css-what');
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot-usages';
@@ -93,20 +33,29 @@ class ContentToSlot extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
 
-    // TODO(rictic): rather than just hard coding translation rules as above,
-    //    we should also support converting based on the old-content-selector
-    //    attribute.
-    this.convertUsages(parsedDocument, document, warnings);
+    const elements = document.getFeatures({kind: 'element'});
+    for (const element of elements) {
+      // Look for selector errors in locally defined elements.
+      const result = determineMigrationDescriptors(element);
+      if (!result.success) {
+        for (const error of result.value) {
+          warnings.push(new FixableWarning({
+            code: 'invalid-old-content-selector',
+            parsedDocument,
+            severity: Severity.WARNING,
+            message: error.message,
+            sourceRange: parsedDocument.sourceRangeForAttributeValue(
+                             error.slot.astNode!, 'old-content-selector') ||
+                parsedDocument.sourceRangeForStartTag(error.slot.astNode!)!
+          }));
+        }
+      }
+    }
 
-    return warnings;
-  }
-
-  convertUsages(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: FixableWarning[]) {
     const references = document.getFeatures({kind: 'element-reference'});
     for (const reference of references) {
-      const contentDescriptors = config.get(reference.tagName);
+      const contentDescriptors =
+          getMigrationDescriptors(reference.tagName, document);
       if (!contentDescriptors) {
         continue;
       }
@@ -172,27 +121,219 @@ class ContentToSlot extends HtmlRule {
         warnings.push(warning);
       }
     }
+    return warnings;
   }
 }
 
-// NOTE(rictic): This only works for very, very simple selectors. Do something
-//   smarter here.
-function simpleSelectorToPredicate(simpleSelector: string): dom5.Predicate {
-  simpleSelector = simpleSelector.trim();
-  const pieces = simpleSelector.split(',');
-  if (pieces.length > 1) {
-    return p.OR(...pieces.map(simpleSelectorToPredicate));
-  }
-  if (simpleSelector[0] === '.') {
-    return p.hasClass(simpleSelector.slice(1));
-  }
-  if (simpleSelector.startsWith('[') && simpleSelector.endsWith(']')) {
-    return p.hasAttr(simpleSelector.slice(1, -1));
-  }
-  if (simpleSelector === '*') {
-    return () => true;
-  }
-  return p.hasTagName(simpleSelector);
+/**
+ * Describes how what elements to add a certain slot attribute to, when
+ * migrating usages of a certain element from content to slot.
+ */
+interface SlotMigrationDescriptor {
+  /** If an element matches this predicate... */
+  predicate: dom5.Predicate;
+  /** ... it should be given a slot attribute with this as its value. */
+  slot: string;
 }
+
+/**
+ * Returns a description of how to migrate the children of a given element to
+ * distribute using slots rather than the shadow dom v0 content system. This
+ * assumes that the given element has already been migrated to slots, and is
+ * either statically known to the linter (see configuration below), or uses the
+ * `old-content-selector` attribute to explain how it used to do distribution.
+ */
+function getMigrationDescriptors(tagName: string, document: Document):
+    ReadonlyArray<SlotMigrationDescriptor>|undefined {
+  const [element, ] = document.getFeatures(
+      {kind: 'element', id: tagName, imported: true, externalPackages: true});
+  if (element) {
+    const result = determineMigrationDescriptors(element);
+    // If we can determine descriptors dynamically, return those.
+    if (result.success && result.value.length > 0) {
+      return result.value;
+    }
+  }
+
+  // Otherwise, try to get the descriptors from our hardcoded knowledge of
+  // elements.
+  return staticConfig.get(tagName);
+}
+
+class DescriptorError {
+  constructor(public readonly message: string, public readonly slot: Slot) {
+  }
+}
+
+type Result<Good, Bad> = {
+  success: true,
+  value: Good
+}|{success: false, value: Bad};
+type MigrationResult = Result<
+    ReadonlyArray<SlotMigrationDescriptor>,
+    ReadonlyArray<DescriptorError>>;
+
+const descriptorsCache = new WeakMap<Element, MigrationResult>();
+function determineMigrationDescriptors(element: Element): MigrationResult {
+  const cachedResult = descriptorsCache.get(element);
+  if (cachedResult) {
+    return cachedResult;
+  }
+  const descriptors = [];
+  const errors = [];
+  for (const slot of element.slots) {
+    if (slot.astNode) {
+      const selector = dom5.getAttribute(slot.astNode, 'old-content-selector');
+      if (!selector) {
+        continue;
+      }
+      try {
+        descriptors.push(
+            {predicate: elementSelectorToPredicate(selector), slot: slot.name});
+      } catch (e) {
+        errors.push(new DescriptorError(e.message || ('' + e), slot));
+      }
+    }
+  }
+  let result: MigrationResult;
+  if (errors.length > 0) {
+    result = {success: false, value: errors};
+  } else {
+    result = {success: true, value: descriptors};
+  }
+  descriptorsCache.set(element, result);
+  return result;
+}
+
+/**
+ * Converts a css selector into a dom5 predicate.
+ *
+ * This is intended for handling only selectors that match an individual element
+ * in isolation, it does throws if the selector talks about relationships
+ * between elements like `.foo .bar` or `.foo > .bar`.
+ */
+function elementSelectorToPredicate(simpleSelector: string): dom5.Predicate {
+  const parsed = cssWhat(simpleSelector);
+  // The output of cssWhat is two levels of arrays. The outer level are any
+  // selectors joined with a comma, so it matches if any of the inner selectors
+  // match. The inner array are simple selectors like `.foo` and `#bar` which
+  // must all match.
+  return dom5.predicates.OR(...parsed.map((simpleSelectors) => {
+    return dom5.predicates.AND(
+        ...simpleSelectors.map(simpleSelectorToPredicate));
+  }));
+}
+
+function simpleSelectorToPredicate(selector: cssWhat.Simple) {
+  switch (selector.type) {
+    case 'adjacent':
+    case 'child':
+    case 'descendant':
+    case 'parent':
+    case 'sibling':
+    case 'pseudo':
+      throw new Error(`Unsupported CSS operator: ${selector.type}`);
+    case 'attribute':
+      return attributeSelectorToPredicate(selector);
+    case 'tag':
+      return dom5.predicates.hasTagName(selector.name);
+    case 'universal':
+      return () => true;
+  }
+  const never: never = selector;
+  throw new Error(`Unexpected node type from css parser: ${never}`);
+}
+
+function attributeSelectorToPredicate(selector: cssWhat.Attribute):
+    dom5.Predicate {
+  switch (selector.action) {
+    case 'exists':
+      return dom5.predicates.hasAttr(selector.name);
+    case 'equals':
+      return dom5.predicates.hasAttrValue(selector.name, selector.value);
+    case 'start':
+      return (el) => {
+        const attrValue = dom5.getAttribute(el, selector.name);
+        return attrValue != null && attrValue.startsWith(selector.value);
+      };
+    case 'end':
+      return (el) => {
+        const attrValue = dom5.getAttribute(el, selector.name);
+        return attrValue != null && attrValue.endsWith(selector.value);
+      };
+    case 'element':
+      return dom5.predicates.hasSpaceSeparatedAttrValue(
+          selector.name, selector.value);
+    case 'any':
+      return (el) => {
+        const attrValue = dom5.getAttribute(el, selector.name);
+        return attrValue != null && attrValue.includes(selector.value);
+      };
+  }
+  const never: never = selector.action;
+  throw new Error(
+      `Unexpected type of attribute matcher from CSS parser ${never}`);
+}
+
+const staticConfig =
+    new Map<string, Array<{predicate: dom5.Predicate, slot: string}>>();
+
+// Configure statically known slot->content conversions.
+function addPredicate(
+    tagname: string, slots: Array<{selector: string, slot: string}>) {
+  staticConfig.set(
+      tagname, slots.map((s) => ({
+                           predicate: elementSelectorToPredicate(s.selector),
+                           slot: s.slot
+                         })));
+}
+
+addPredicate(
+    'paper-header-panel',
+    [{selector: 'paper-toolbar, .paper-header', slot: 'header'}]);
+
+addPredicate('paper-scroll-header-panel', [
+  {selector: 'paper-toolbar, .paper-header', slot: 'header'},
+  {selector: '*', slot: 'content'}
+]);
+
+addPredicate('paper-toolbar', [
+  {selector: '.middle', slot: 'middle'},
+  {selector: '.bottom', slot: 'bottom'},
+  {selector: '*', slot: 'top'}
+]);
+
+addPredicate('paper-drawer-panel', [
+  {selector: '[drawer]', slot: 'drawer'},
+  {selector: '[main]', slot: 'main'}
+]);
+
+addPredicate('paper-icon-item', [{selector: '[item-icon]', slot: 'item-icon'}]);
+
+addPredicate('paper-menu-button', [
+  {selector: '.dropdown-trigger', slot: 'dropdown-trigger'},
+  {selector: '.dropdown-content', slot: 'dropdown-content'},
+]);
+
+addPredicate(
+    'iron-dropdown',
+    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
+
+addPredicate('paper-input', [
+  {selector: '[prefix]', slot: 'prefix'},
+  {selector: '[suffix]', slot: 'suffix'},
+]);
+
+addPredicate('paper-input-container', [
+  {selector: '[prefix]', slot: 'prefix'},
+  {selector: '[suffix]', slot: 'suffix'},
+  {selector: '[add-on]', slot: 'add-on'},
+  {selector: '*', slot: 'input'},
+]);
+
+addPredicate(
+    'paper-dropdown-menu',
+    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
+
 
 registry.register(new ContentToSlot());

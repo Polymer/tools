@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Support warning about and automatically fixing some simple uses of some 1.0 elements to their 2.0 usage styles.
+  - To add this fixable lint warning for your own elements, simply add the `old-content-selector` attribute to your new `<slot>` element. Set its value to the value that your old `<content>` element had for its `select` attribute.
+    - e.g. if you had `<content select=".some-content">` and migrated to `<slot name="new-content" old-content-selector=".some-content">` then the linter will warn about and add `slot="new-content"` to children of your element that match `.some-content`.
+<slot old-content-selector=".some-content"></slot>>
 - Support warning about and automatically fixing element declarations that use `<content>` to use `<slot>` instead. This is a breaking change to an element,
 so it is not on by default.
+  - It automatically adds the `old-content-selector` attribute to migrated `<slot>` elements, so uses can be automatically upgraded as well.
 
 ## [2.1.0] - 2017-10-13
 - Warn for old-style @apply without parentheses, and var() with a fallback value of a bare css variable.
