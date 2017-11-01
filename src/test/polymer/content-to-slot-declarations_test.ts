@@ -19,7 +19,6 @@ import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
 import {applyEdits, makeParseLoader} from '../../warning';
-import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -27,12 +26,10 @@ const ruleId = 'content-to-slot-declarations';
 
 suite(ruleId, () => {
   let analyzer: Analyzer;
-  let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
-    warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 

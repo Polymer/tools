@@ -12,14 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Warning, WarningPrinter} from 'polymer-analyzer';
+import {Warning} from 'polymer-analyzer';
 
 export class WarningPrettyPrinter {
-  private _printer: WarningPrinter;
-  constructor() {
-    this._printer = new WarningPrinter(null as any);
-  }
-
   prettyPrint(warnings: Warning[]): string[] {
     return warnings.map(
         (w) => '\n' + w.toString({verbosity: 'code-only', color: false}));
