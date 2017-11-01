@@ -233,7 +233,7 @@ async function findVariants(options: ServerOptions) {
   const filesInRoot = await fs.readdir(root);
   const variants = filesInRoot
                        .map(f => {
-                         const match = f.match(/^bower_components-(.*)/!);
+                         const match = f.match(`^${options.componentDir}-(.*)`);
                          return match && {name: match[1], directory: match[0]};
                        })
                        .filter(f => f != null && f.name !== '');

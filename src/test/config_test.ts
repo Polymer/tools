@@ -15,7 +15,7 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {getPackageName} from '../config';
+import {getPackageName, getComponentDir} from '../config';
 
 suite('getPackageName', () => {
 
@@ -23,6 +23,22 @@ suite('getPackageName', () => {
     const name =
         getPackageName({root: path.join(__dirname, '..', '..', 'test')});
     assert.equal(name, 'polyserve-test');
+  });
+
+});
+
+suite('getComponentDir', () => {
+
+  test('defaults to bower_components', () => {
+    const dir =
+        getComponentDir({root: path.join(__dirname, '..', '..', 'test')});
+    assert.equal(dir, 'bower_components');
+  });
+
+  test('reads from .bowerrc', () => {
+    const dir =
+        getComponentDir({root: path.join(__dirname, '..', '..', 'test', 'bowerrc')});
+    assert.equal(dir, 'my_components');
   });
 
 });

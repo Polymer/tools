@@ -602,4 +602,56 @@ suite('startServers', () => {
       assert.match(pageResponse.text, /Polyserve/);
     });
   });
+  suite('variants with .bowerrc', () => {
+    const variantsRoot = path.join(root, 'variants-bowerrc');
+
+    let prevCwd: string;
+    setup(() => {
+      prevCwd = process.cwd();
+      process.chdir(variantsRoot);
+    });
+
+    teardown(() => {
+      process.chdir(prevCwd);
+    });
+
+    test('serves files out of the components directory specified by .bowerrc', async () => {
+      const servers = await startServers({});
+      if (servers.kind !== 'MultipleServers') {
+        throw new Error('Expected startServers to start multiple servers');
+      }
+
+      const mainlineServer = servers.mainline;
+      await supertest(mainlineServer.server)
+          .get('/components/contents.txt')
+          .expect(200, 'my-mainline\n');
+
+      const fooServer = servers.variants.find(s => s.variantName === 'foo');
+      await supertest(fooServer.server)
+          .get('/components/contents.txt')
+          .expect(200, 'my-foo\n');
+
+      const barServer = servers.variants.find(s => s.variantName === 'bar');
+      await supertest(barServer.server)
+          .get('/components/contents.txt')
+          .expect(200, 'my-bar\n');
+
+      const dispatchServer = servers.control;
+      const dispatchTester = supertest(dispatchServer.server);
+      const apiResponse =
+          await dispatchTester.get('/api/serverInfo').expect(200);
+      assert.deepEqual(JSON.parse(apiResponse.text), {
+        packageName: 'variants-bowerrc-test',
+        mainlineServer: {port: mainlineServer.server.address().port},
+        variants: [
+          {name: 'bar', port: barServer.server.address().port},
+          {name: 'foo', port: fooServer.server.address().port}
+        ]
+      });
+      const pageResponse = await dispatchTester.get('/').expect(200);
+      // Assert that some polyserve html is served.
+      assert.match(pageResponse.text, /<html>/);
+      assert.match(pageResponse.text, /Polyserve/);
+    });
+  });
 });
