@@ -87,19 +87,16 @@ function makeDeclarationsFilename(sourceUrl: string): string {
  * items in the given Polymer Analyzer document.
  */
 function handleDocument(doc: analyzer.Document, root: ts.Document) {
-  // TODO Should we traverse and serialize all features in the same order they
-  // were originally declared, instead of grouping by type as we do here?
-  for (const element of doc.getFeatures({kind: 'element'})) {
-    handleElement(element, root);
-  }
-  for (const behavior of doc.getFeatures({kind: 'behavior'})) {
-    handleBehavior(behavior, root);
-  }
-  for (const mixin of doc.getFeatures({kind: 'element-mixin'})) {
-    handleMixin(mixin, root);
-  }
-  for (const fn of doc.getFeatures({kind: 'function'})) {
-    handleFunction(fn, root);
+  for (const feature of doc.getFeatures()) {
+    if (feature.kinds.has('element')) {
+      handleElement(feature as analyzer.Element, root);
+    } else if (feature.kinds.has('behavior')) {
+      handleBehavior(feature as analyzer.PolymerBehavior, root);
+    } else if (feature.kinds.has('element-mixin')) {
+      handleMixin(feature as analyzer.ElementMixin, root);
+    } else if (feature.kinds.has('function')) {
+      handleFunction(feature as AnalyzerFunction, root);
+    }
   }
 }
 
