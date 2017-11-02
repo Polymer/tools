@@ -33,6 +33,15 @@ declare class TemplateInstanceBase extends
   _showHideChildren(hide: boolean): any;
 }
 
+declare class klass {
+}
+
+declare namespace templateInfo {
+
+  class templatizeTemplateClass {
+  }
+}
+
 declare namespace Polymer {
 
   namespace Templatize {
@@ -109,4 +118,10 @@ declare namespace Polymer {
      */
     function modelForElement(template: HTMLTemplateElement|null, node: Node|null): TemplateInstanceBase|null;
   }
+}
+
+/**
+ * Subclass base class and add reference for this specific template
+ */
+declare class klass {
 }

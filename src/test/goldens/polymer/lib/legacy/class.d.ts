@@ -76,3 +76,18 @@ declare namespace Polymer {
    */
   function Class(info: PolymerInit): () => any;
 }
+
+declare class PolymerGenerated {
+  created(): any;
+  _registered(): any;
+  _applyListeners(): any;
+
+  /**
+   * only apply if not already set.
+   */
+  _ensureAttributes(): any;
+  ready(): any;
+  attached(): any;
+  detached(): any;
+  attributeChanged(name: any, old: any, value: any): any;
+}
