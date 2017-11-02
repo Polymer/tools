@@ -16,6 +16,7 @@
 
 import {Analysis, Analyzer, comparePositionAndRange, Document, isPositionInsideRange, ParsedDocument, SourceRange, Warning} from 'polymer-analyzer';
 
+import stable = require('stable');
 
 /**
  * A warning that may include information on how to mechanically
@@ -86,9 +87,7 @@ export async function applyEdits(
     }
   }
 
-  for (const entry of replacementsByFile) {
-    const file = entry[0];
-    const replacements = entry[1];
+  for (const [file, replacements] of replacementsByFile) {
     const document = await loader(file);
     let contents = document.contents;
     /**
@@ -96,8 +95,11 @@ export async function applyEdits(
      * so in order for their source ranges in the file to all be valid at the
      * time we apply them, we simply need to apply them starting from the end
      * of the document and working backwards to the beginning.
+     *
+     * To preserve ordering of insertions to the same position, we use a stable
+     * sort.
      */
-    replacements.sort((a, b) => {
+    stable.inplace(replacements, (a, b) => {
       const leftEdgeComp =
           comparePositionAndRange(b.range.start, a.range, true);
       if (leftEdgeComp !== 0) {
@@ -128,14 +130,14 @@ function canApply(
         replacements.get(replacement.range.file) || [];
     // TODO(rictic): binary search
     for (const acceptedReplacement of fileLocalReplacements) {
-      if (doRangesOverlap(replacement.range, acceptedReplacement.range)) {
+      if (!areReplacementsCompatible(replacement, acceptedReplacement)) {
         return false;
       }
     }
     // Also check consistency between multiple replacements in this edit.
     for (let j = 0; j < i; j++) {
       const acceptedReplacement = edit[j];
-      if (doRangesOverlap(replacement.range, acceptedReplacement.range)) {
+      if (!areReplacementsCompatible(replacement, acceptedReplacement)) {
         return false;
       }
     }
@@ -154,14 +156,23 @@ function canApply(
   return true;
 }
 
-function doRangesOverlap(a: SourceRange, b: SourceRange) {
-  if (a.file !== b.file) {
-    return false;
+function areReplacementsCompatible(a: Replacement, b: Replacement) {
+  if (a.range.file !== b.range.file) {
+    return true;
   }
-  return areRangesEqual(a, b) || isPositionInsideRange(a.start, b, false) ||
-      isPositionInsideRange(a.end, b, false) ||
-      isPositionInsideRange(b.start, a, false) ||
-      isPositionInsideRange(b.end, a, false);
+
+  if (areRangesEqual(a.range, b.range)) {
+    // Equal ranges are compatible if the ranges are empty (i.e. the edit is an
+    // insertion, not a replacement).
+    return (
+        a.range.start.column === a.range.end.column &&
+        a.range.start.line === a.range.end.line);
+  }
+  return !(
+      isPositionInsideRange(a.range.start, b.range, false) ||
+      isPositionInsideRange(a.range.end, b.range, false) ||
+      isPositionInsideRange(b.range.start, a.range, false) ||
+      isPositionInsideRange(b.range.end, a.range, false));
 }
 
 function areRangesEqual(a: SourceRange, b: SourceRange) {

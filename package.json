@@ -15,6 +15,7 @@
     "fast-levenshtein": "^2.0.6",
     "parse5": "^2.2.1",
     "polymer-analyzer": "^2.4.1",
+    "stable": "^0.1.6",
     "strip-indent": "^2.0.0"
   },
   "devDependencies": {

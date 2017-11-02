@@ -18,11 +18,14 @@ import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
+import {applyEdits, makeParseLoader} from '../../warning';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-suite('style-into-template', () => {
+const code = 'style-into-template';
+
+suite(code, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,7 +33,7 @@ suite('style-into-template', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter();
-    linter = new Linter(registry.getRules(['style-into-template']), analyzer);
+    linter = new Linter(registry.getRules([code]), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -44,14 +47,29 @@ suite('style-into-template', () => {
   });
 
   test('warns for a file with a style outside template', async() => {
-    const warnings = await linter.lint(
-        ['move-style-into-template/style-child-of-dom-module.html']);
-    assert.deepEqual(warningPrinter.prettyPrint(warnings), [`
+    const warnings =
+        await linter.lint([`${code}/style-child-of-dom-module.html`]);
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
+      `
+  <link rel="import" href="./bar.css">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+  <link rel="import" type="css" href="./foo.css">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
   <style>
-  ~~~~~~~
-    * {color: red;}
-~~~~~~~~~~~~~~~~~~~
-  </style>
-~~~~~~~~~~`]);
+  ~~~~~~~`,
+    ]);
+  });
+
+  test('applies automatic-safe fixes', async() => {
+    const warnings = await linter.lint([`${code}/before-fixes.html`]);
+    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
+    const loader = makeParseLoader(analyzer, await analyzer.analyze([]));
+    const result = await applyEdits(edits, loader);
+    assert.deepEqual(result.incompatibleEdits, []);
+    assert.deepEqual(
+        result.editedFiles.get(`${code}/before-fixes.html`),
+        (await loader(`${code}/after-fixes.html`)).contents);
   });
 });

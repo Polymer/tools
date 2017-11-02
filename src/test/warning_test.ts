@@ -14,80 +14,17 @@
 
 import {assert} from 'chai';
 import {knuthShuffle} from 'knuth-shuffle';
-import {Analyzer, Document, ParsedDocument, UrlLoader} from 'polymer-analyzer';
+import {Analyzer, Document, InMemoryOverlayUrlLoader, ParsedDocument} from 'polymer-analyzer';
 
 import {applyEdits, Replacement} from '../warning';
 
-/**
- * TODO(rictic): import these two classes from analyzer once this lands:
- *    https://github.com/Polymer/polymer-analyzer/pull/545
- */
-class FailUrlLoader implements UrlLoader {
-  canLoad(_url: string): boolean {
-    return true;
-  }
-  load(url: string): Promise<string> {
-    throw new Error(`${url} not known in InMemoryOverlayLoader`);
-  }
-}
-
-/**
- * Resolves requests first from an in-memory map of file contents, and if a
- * file isn't found there, defers to another url loader.
- *
- * Useful for the editor use case. An editor will have a number of files in open
- * buffers at any time. For these files, the editor's in-memory buffer is
- * canonical, so that their contents are read even when they have unsaved
- * changes. For all other files, we can load the files using another loader,
- * e.g. from disk.
- */
-export class InMemoryOverlayLoader implements UrlLoader {
-  private readonly _fallbackLoader: UrlLoader;
-  private readonly _memoryMap = new Map<string, string>();
-
-  constructor(fallbackLoader?: UrlLoader) {
-    this._fallbackLoader = fallbackLoader || new FailUrlLoader();
-    if (this._fallbackLoader.readDirectory) {
-      this.readDirectory =
-          this._fallbackLoader.readDirectory.bind(this._fallbackLoader);
-    }
-  }
-
-  canLoad(url: string): boolean {
-    if (this._memoryMap.has(url)) {
-      return true;
-    }
-    return this._fallbackLoader.canLoad(url);
-  }
-
-  async load(url: string): Promise<string> {
-    const contents = this._memoryMap.get(url);
-    if (typeof contents === 'string') {
-      return contents;
-    }
-    return this._fallbackLoader.load(url);
-  }
-
-  // We have this method if our underlying loader has it.
-  readDirectory?: (pathFromRoot: string, deep?: boolean) => Promise<string[]>;
-
-  mapFile(url: string, contents: string) {
-    this._memoryMap.set(url, contents);
-  }
-
-  unmapFile(url: string) {
-    this._memoryMap.delete(url);
-  }
-}
-
-
 suite('applyEdits', () => {
-  let memoryMap: InMemoryOverlayLoader;
+  let memoryMap: InMemoryOverlayUrlLoader;
   let loader: (url: string) => Promise<ParsedDocument<any, any>>;
 
   setup(() => {
-    memoryMap = new InMemoryOverlayLoader();
-    memoryMap.mapFile('test.html', 'abc');
+    memoryMap = new InMemoryOverlayUrlLoader();
+    memoryMap.urlContentsMap.set('test.html', 'abc');
     const analyzer = new Analyzer({urlLoader: memoryMap});
     loader = async(url: string) => {
       const analysis = await analyzer.analyze([url]);
@@ -114,7 +51,7 @@ suite('applyEdits', () => {
 
   test('works in the trivial case', async() => {
     const contents = 'abc';
-    memoryMap.mapFile('test.html', contents);
+    memoryMap.urlContentsMap.set('test.html', contents);
 
     const result = await applyEdits([], loader);
     assert.deepEqual(result.appliedEdits, []);
@@ -187,5 +124,19 @@ suite('applyEdits', () => {
           Array.from(result.editedFiles.entries()),
           [['test.html', '0000111334']]);
     }
+  });
+
+  testName = 'can do two inserts into the same location without conflict';
+  test(testName, async() => {
+    const edits = [
+      [makeTestReplacement(0, 0, 0, 0, 'xxxx')],
+      [makeTestReplacement(0, 0, 0, 0, 'yyyy')],
+    ];
+    const result = await applyEdits(edits, loader);
+    assert.deepEqual(result.appliedEdits, edits);
+    assert.deepEqual(result.incompatibleEdits, []);
+    assert.deepEqual(
+        Array.from(result.editedFiles.entries()),
+        [['test.html', 'yyyyxxxxabc']]);
   });
 });
