@@ -323,7 +323,7 @@ declare namespace Polymer {
        * This method notifies other paths to the same array that a
        * splice occurred to the array.
        */
-      push(path: string|Array<string|number>, ...items: any): number;
+      push(path: string|Array<string|number>, ...items: any[]): number;
 
       /**
        * Removes an item from the end of array at the path specified.
@@ -346,7 +346,7 @@ declare namespace Polymer {
        * This method notifies other paths to the same array that a
        * splice occurred to the array.
        */
-      splice(path: string|Array<string|number>, start: number, deleteCount: number, ...items: any): any[]|null;
+      splice(path: string|Array<string|number>, start: number, deleteCount: number, ...items: any[]): any[]|null;
 
       /**
        * Removes an item from the beginning of array at the path specified.
@@ -368,7 +368,7 @@ declare namespace Polymer {
        * This method notifies other paths to the same array that a
        * splice occurred to the array.
        */
-      unshift(path: string|Array<string|number>, ...items: any): number;
+      unshift(path: string|Array<string|number>, ...items: any[]): number;
 
       /**
        * Notify that a path has changed.

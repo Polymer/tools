@@ -1,5 +1,5 @@
-/// <reference path="../polymer/polymer.d.ts" />
-/// <reference path="../iron-checked-element-behavior/iron-checked-element-behavior.d.ts" />
+/// <reference path="bower_components/polymer/polymer.d.ts" />
+/// <reference path="bower_components/iron-checked-element-behavior/iron-checked-element-behavior.d.ts" />
 /// <reference path="paper-inky-focus-behavior.d.ts" />
 
 declare namespace Polymer {

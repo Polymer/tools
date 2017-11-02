@@ -119,34 +119,43 @@ suite('closureTypeToTypeScript', () => {
 suite('closureParamToTypeScript', () => {
 
   function check(
-      closureType: string, expectedType: string, expectedOptional: boolean) {
-    const {type: actualType, optional: actualOptional} =
-        closureParamToTypeScript(closureType);
-    assert.equal(actualType.serialize(), expectedType);
-    assert.equal(actualOptional, expectedOptional);
+      closureType: string,
+      expectedType: string,
+      expectedOptional: boolean,
+      expectedRest: boolean) {
+    const actual = closureParamToTypeScript(closureType);
+    assert.equal(actual.type.serialize(), expectedType);
+    assert.equal(actual.optional, expectedOptional);
+    assert.equal(actual.rest, expectedRest);
   }
 
   test('optional string', () => {
-    check('string=', 'string', true);
+    check('string=', 'string', true, false);
   });
 
   test('required string', () => {
-    check('string', 'string', false);
+    check('string', 'string', false, false);
   });
 
   test('optional array', () => {
-    check('Array=', 'any[]|null', true);
+    check('Array=', 'any[]|null', true, false);
   });
 
   test('required array', () => {
-    check('Array', 'any[]|null', false);
+    check('Array', 'any[]|null', false, false);
   });
 
   test('invalid required', () => {
-    check('><', 'any', false);
+    check('><', 'any', false, false);
   });
 
   test('invalid optional', () => {
-    check('><=', 'any', true);
+    check('><=', 'any', true, false);
+  });
+
+  test('rest parameter', () => {
+    check('...string', 'string[]', false, true);
+    check('...*', 'any[]', false, true);
+    check('...Array<string>', 'Array<string[]|null>', false, true);
   });
 });

@@ -249,8 +249,8 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
   });
 
   for (const param of feature.params || []) {
-    const {type, optional} = closureParamToTypeScript(param.type);
-    f.params.push(new ts.Param(param.name, type, optional));
+    const {type, optional, rest} = closureParamToTypeScript(param.type);
+    f.params.push(new ts.Param({name: param.name, type, optional, rest}));
   }
 
   findOrCreateNamespace(root, namespacePath).members.push(f);
@@ -298,8 +298,8 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     m.description = method.description || '';
 
     for (const param of method.params || []) {
-      const {type, optional} = closureParamToTypeScript(param.type);
-      m.params.push(new ts.Param(param.name, type, optional));
+      const {type, optional, rest} = closureParamToTypeScript(param.type);
+      m.params.push(new ts.Param({name: param.name, type, optional, rest}));
     }
 
     tsMethods.push(m);

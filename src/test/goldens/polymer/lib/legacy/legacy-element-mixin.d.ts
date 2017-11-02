@@ -1,4 +1,4 @@
-/// <reference path="../../../shadycss/apply-shim.d.ts" />
+/// <reference path="../../bower_components/shadycss/apply-shim.d.ts" />
 /// <reference path="../mixins/element-mixin.d.ts" />
 /// <reference path="../mixins/gesture-event-listeners.d.ts" />
 /// <reference path="../mixins/dir-mixin.d.ts" />
@@ -404,22 +404,22 @@ declare namespace Polymer {
       /**
        * Facades `console.log` as an override point.
        */
-      _log(...args: any): any;
+      _log(...args: any[]): any;
 
       /**
        * Facades `console.warn` as an override point.
        */
-      _warn(...args: any): any;
+      _warn(...args: any[]): any;
 
       /**
        * Facades `console.error` as an override point.
        */
-      _error(...args: any): any;
+      _error(...args: any[]): any;
 
       /**
        * Formats a message using the element type an a method name.
        */
-      _logf(methodName: string, ...args: any): any[]|null;
+      _logf(methodName: string, ...args: any[]): any[]|null;
     }
   } & T
 }

@@ -1,6 +1,6 @@
-/// <reference path="../polymer/polymer.d.ts" />
-/// <reference path="../iron-behaviors/iron-button-state.d.ts" />
-/// <reference path="../paper-ripple/paper-ripple.d.ts" />
+/// <reference path="bower_components/polymer/polymer.d.ts" />
+/// <reference path="bower_components/iron-behaviors/iron-button-state.d.ts" />
+/// <reference path="bower_components/paper-ripple/paper-ripple.d.ts" />
 
 declare namespace Polymer {
 

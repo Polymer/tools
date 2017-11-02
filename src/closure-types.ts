@@ -11,7 +11,6 @@
 
 // TODO Object<foo>, Object<foo, bar>
 // TODO Record types
-// TODO Function variadic parameters
 //
 // Useful resources for working on this package:
 // https://eslint.org/doctrine/demo/
@@ -47,10 +46,11 @@ export function closureTypeToTypeScript(closureType: (string|null|undefined)):
  * (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
  */
 export function closureParamToTypeScript(closureType: (string|null|undefined)):
-    {optional: boolean, type: ts.Type} {
+    {type: ts.Type, optional: boolean, rest: boolean} {
   if (!closureType) {
-    return {type: ts.anyType, optional: false};
+    return {type: ts.anyType, optional: false, rest: false};
   }
+
   let ast;
   try {
     ast = parseParamType(closureType);
@@ -61,13 +61,34 @@ export function closureParamToTypeScript(closureType: (string|null|undefined)):
       // the annotation, because non-optional arguments can't follow optional
       // ones.
       optional: closureType.endsWith('='),
+      rest: false,
     };
   }
-  const optional = ast.type === 'OptionalType';
-  return {
-    optional,
-    type: convert(optional ? ast.expression : ast),
-  };
+
+  // Optional and Rest types are always the top-level node.
+  switch (ast.type) {
+    case 'OptionalType':
+      return {
+        type: convert(ast.expression),
+        optional: true,
+        rest: false,
+      };
+    case 'RestType':
+      return {
+        // The Closure type annotation for a rest parameter looks like
+        // `...foo`, where `foo` is implicitly an array. The TypeScript
+        // equivalent is explicitly an array, so we wrap it in one here.
+        type: new ts.ArrayType(convert(ast.expression)),
+        optional: false,
+        rest: true,
+      };
+    default:
+      return {
+        type: convert(ast),
+        optional: false,
+        rest: false,
+      };
+  }
 }
 
 /**
