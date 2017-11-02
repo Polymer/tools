@@ -19,10 +19,27 @@ import {dependencyMap} from './manifest-converter';
 
 const htmlExtension = '.html';
 
-/** A package-rooted URL path to a document; format returned by the analyzer */
+/**
+ * A URL path to an document, pre-conversion. Always relative to the current
+ * project (package, workspace, etc).
+ */
 export type OriginalDocumentUrl = string&{_OriginalDocumentUrl: never};
-/** A package-rooted URL path to a converted document/module; './'-prefixed */
+
+/**
+ * A URL path to a document, post-conversion. Uses npm naming for all urls
+ * containing package names. Always relative to the current project (package,
+ * workspace, etc).
+ */
 export type ConvertedDocumentUrl = string&{_ConvertedDocumentUrl: never};
+/**
+ * A file path to where a document will be written, post-conversion. Unlike
+ * ConvertedDocumentUrl, this url keeps the original package folder and Bower
+ * package name. Useful in workspace projects where converted files should still
+ * be written to the original analyzed repo.
+ */
+export type ConvertedDocumentFilePath =
+    string&{_ConvertedDocumentFilePath: never};
+
 
 /**
  * Given an HTML url relative to the project root, return true if that url
