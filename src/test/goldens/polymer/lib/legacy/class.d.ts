@@ -1,3 +1,5 @@
+/// <reference path="legacy-element-mixin.d.ts" />
+
 declare namespace Polymer {
 
 

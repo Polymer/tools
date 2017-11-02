@@ -1,3 +1,5 @@
+/// <reference path="../mixins/mutable-data.d.ts" />
+
 declare namespace Polymer {
 
   /**

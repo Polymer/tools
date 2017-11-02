@@ -1,3 +1,7 @@
+/// <reference path="../../polymer-element.d.ts" />
+/// <reference path="../utils/mixin.d.ts" />
+/// <reference path="../utils/array-splice.d.ts" />
+
 declare namespace Polymer {
 
   /**

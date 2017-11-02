@@ -1,3 +1,7 @@
+/// <reference path="boot.d.ts" />
+/// <reference path="array-splice.d.ts" />
+/// <reference path="async.d.ts" />
+
 declare namespace Polymer {
 
   /**

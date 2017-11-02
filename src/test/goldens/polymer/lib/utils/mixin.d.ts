@@ -1,3 +1,5 @@
+/// <reference path="boot.d.ts" />
+
 declare namespace Polymer {
 
 

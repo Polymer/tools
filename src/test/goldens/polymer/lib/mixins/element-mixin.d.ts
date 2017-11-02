@@ -1,3 +1,12 @@
+/// <reference path="../utils/boot.d.ts" />
+/// <reference path="../utils/settings.d.ts" />
+/// <reference path="../utils/mixin.d.ts" />
+/// <reference path="../utils/case-map.d.ts" />
+/// <reference path="../utils/style-gather.d.ts" />
+/// <reference path="../utils/resolve-url.d.ts" />
+/// <reference path="../elements/dom-module.d.ts" />
+/// <reference path="property-effects.d.ts" />
+
 declare namespace Polymer {
 
   /**

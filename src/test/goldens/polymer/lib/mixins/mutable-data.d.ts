@@ -1,3 +1,5 @@
+/// <reference path="../utils/mixin.d.ts" />
+
 declare namespace Polymer {
 
   /**

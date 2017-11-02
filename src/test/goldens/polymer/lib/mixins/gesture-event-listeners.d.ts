@@ -1,3 +1,7 @@
+/// <reference path="../utils/boot.d.ts" />
+/// <reference path="../utils/mixin.d.ts" />
+/// <reference path="../utils/gestures.d.ts" />
+
 declare namespace Polymer {
 
   /**

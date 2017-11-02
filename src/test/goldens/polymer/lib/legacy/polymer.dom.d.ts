@@ -1,3 +1,8 @@
+/// <reference path="../utils/boot.d.ts" />
+/// <reference path="../utils/settings.d.ts" />
+/// <reference path="../utils/flattened-nodes-observer.d.ts" />
+/// <reference path="../utils/flush.d.ts" />
+
 declare namespace Polymer {
 
   namespace dom {
