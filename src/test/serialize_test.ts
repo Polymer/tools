@@ -135,9 +135,16 @@ declare class MyClass extends MyBase {
       members: [
         new ts.Interface({name: 'MyInterface'}),
         new ts.Class({name: 'MyClass'}),
-      ]
+      ],
+      referencePaths: [
+        './other-types.d.ts',
+        '../more/types.d.ts',
+      ],
     });
-    assert.equal(d.serialize(), `interface MyInterface {
+    assert.equal(d.serialize(), `/// <reference path="./other-types.d.ts" />
+/// <reference path="../more/types.d.ts" />
+
+interface MyInterface {
 }
 
 declare class MyClass {
