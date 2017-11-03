@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {ResolvedUrl} from '../model/url';
+
 import {UrlLoader} from './url-loader';
 
 /**
@@ -22,12 +24,12 @@ export class PrefixedUrlLoader implements UrlLoader {
   constructor(public prefix: string, public delegate: UrlLoader) {
   }
 
-  canLoad(url: string): boolean {
+  canLoad(url: ResolvedUrl): boolean {
     return url.startsWith(this.prefix) &&
         this.delegate.canLoad(this._unprefix(url));
   }
 
-  async load(url: string): Promise<string> {
+  async load(url: ResolvedUrl): Promise<string> {
     if (!url.startsWith(this.prefix)) {
       throw new Error(
           `Can not load "${url}", does not match prefix "${this.prefix}".`);
@@ -35,7 +37,7 @@ export class PrefixedUrlLoader implements UrlLoader {
     return this.delegate.load(this._unprefix(url));
   }
 
-  private _unprefix(url: string): string {
-    return url.slice(this.prefix.length);
+  private _unprefix(url: ResolvedUrl): ResolvedUrl {
+    return url.slice(this.prefix.length) as ResolvedUrl;
   }
 }

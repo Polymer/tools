@@ -14,9 +14,10 @@
 
 import {getAttribute, predicates as p, query} from 'dom5';
 import {parse as parseHtml} from 'parse5';
-import {resolve as resolveUrl} from 'url';
 
+import {ScannedImport} from '../index';
 import {InlineDocInfo} from '../model/model';
+import {FileRelativeUrl, ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
 
 import {ParsedHtmlDocument} from './html-document';
@@ -28,7 +29,7 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
    * @param {string} htmlString an HTML document.
    * @param {string} href is the path of the document.
    */
-  parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
+  parse(contents: string, url: ResolvedUrl, inlineInfo?: InlineDocInfo<any>):
       ParsedHtmlDocument {
     const ast = parseHtml(contents, {locationInfo: true});
 
@@ -40,8 +41,14 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
             p.hasTagName('base'),
             p.hasAttr('href')));
 
-    const baseUrl =
-        baseTag ? resolveUrl(url, getAttribute(baseTag, 'href')!) : url;
+    let baseUrl;
+    if (baseTag) {
+      const baseHref = getAttribute(baseTag, 'href')! as FileRelativeUrl;
+      baseUrl = ScannedImport.resolveUrl(url, baseHref) as any as ResolvedUrl;
+    } else {
+      baseUrl = url;
+    }
+
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     return new ParsedHtmlDocument({

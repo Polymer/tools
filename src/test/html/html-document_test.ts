@@ -21,12 +21,13 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
+import {ResolvedUrl} from '../../model/url';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
 suite('ParsedHtmlDocument', () => {
   const parser: HtmlParser = new HtmlParser();
-  const url = './source-ranges/html-complicated.html';
+  const url = './source-ranges/html-complicated.html' as ResolvedUrl;
   const basedir = path.join(__dirname, '../static/');
   const file = fs.readFileSync(path.join(basedir, `${url}`), 'utf8');
   const document: ParsedHtmlDocument = parser.parse(file, url);
@@ -114,7 +115,7 @@ suite('ParsedHtmlDocument', () => {
     const testName =
         'works for unclosed tags with attributes and no text content';
     test(testName, async() => {
-      const url = 'unclosed-tag-attributes.html';
+      const url = 'unclosed-tag-attributes.html' as ResolvedUrl;
       const document = parser.parse(await analyzer.load(url), url);
 
       const tag = dom5.query(document.ast, dom5.predicates.hasTagName('tag'))!;

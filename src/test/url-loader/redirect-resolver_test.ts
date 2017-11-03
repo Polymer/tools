@@ -14,6 +14,7 @@
 
 import {assert} from 'chai';
 
+import {PackageRelativeUrl} from '../../model/url';
 import {RedirectResolver} from '../../url-loader/redirect-resolver';
 
 
@@ -23,18 +24,22 @@ suite('RedirectResolver', function() {
 
     test('canResolve is true if the prefix matches with protocol', () => {
       const resolver = new RedirectResolver('proto://site/', 'some/path');
-      assert.isTrue(resolver.canResolve('proto://site/something.html'));
+      assert.isTrue(resolver.canResolve(
+          'proto://site/something.html' as PackageRelativeUrl));
     });
 
     test('canResolve is true if the prefix matches without protocol', () => {
       const resolver = new RedirectResolver('/site/', 'some/path');
-      assert.isTrue(resolver.canResolve('/site/something.html'));
+      assert.isTrue(
+          resolver.canResolve('/site/something.html' as PackageRelativeUrl));
     });
 
     test('canResolve is false if the prefix doesn\'t match', () => {
       const resolver = new RedirectResolver('proto://site/', 'some/path');
-      assert.isFalse(resolver.canResolve('/site/something.html'));
-      assert.isFalse(resolver.canResolve('protzo://site/something.html'));
+      assert.isFalse(
+          resolver.canResolve('/site/something.html' as PackageRelativeUrl));
+      assert.isFalse(resolver.canResolve(
+          'protzo://site/something.html' as PackageRelativeUrl));
     });
 
   });
@@ -43,13 +48,14 @@ suite('RedirectResolver', function() {
     test('if prefix matches, url is rewritten', () => {
       const resolver = new RedirectResolver('proto://site/', 'some/path/');
       assert.equal(
-          resolver.resolve('proto://site/something.html'),
+          resolver.resolve('proto://site/something.html' as PackageRelativeUrl),
           'some/path/something.html');
     });
     test('if prefix doesn\'t match, resolve throws', () => {
       const resolver = new RedirectResolver('proto://site/', 'some/path/');
       assert.throws(
-          () => resolver.resolve('protoz://site/something.html'),
+          () => resolver.resolve(
+              'protoz://site/something.html' as PackageRelativeUrl),
           /RedirectResolver/);
     });
   });

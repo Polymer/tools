@@ -17,6 +17,7 @@ import {assert} from 'chai';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlCustomElementReferenceScanner, HtmlElementReferenceScanner} from '../../html/html-element-reference-scanner';
 import {HtmlParser} from '../../html/html-parser';
+import {ResolvedUrl} from '../../model/url';
 import {CodeUnderliner} from '../test-utils';
 
 suite('HtmlElementReferenceScanner', () => {
@@ -38,7 +39,8 @@ suite('HtmlElementReferenceScanner', () => {
         </div>
       </body></html>`;
 
-      const document = new HtmlParser().parse(contents, 'test-document.html');
+      const document =
+          new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -75,7 +77,8 @@ suite('HtmlCustomElementReferenceScanner', () => {
           </template>
         </body></html>`;
 
-      const document = new HtmlParser().parse(contents, 'test-document.html');
+      const document =
+          new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);

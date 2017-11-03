@@ -21,6 +21,7 @@ import {ParsedTypeScriptDocument} from '../../typescript/typescript-document';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 import {WarningCarryingException} from '../../model/model';
 import {CodeUnderliner} from '../test-utils';
+import {ResolvedUrl} from '../../model/url';
 
 suite('TypeScriptParser', () => {
   let parser: TypeScriptPreparser;
@@ -39,7 +40,8 @@ suite('TypeScriptParser', () => {
           bar: string = 'baz';
         }
       `;
-      const document = parser.parse(contents, '/typescript/test.ts');
+      const document =
+          parser.parse(contents, '/typescript/test.ts' as ResolvedUrl);
       assert.instanceOf(document, ParsedTypeScriptDocument);
       assert.equal(document.url, '/typescript/test.ts');
       const sourceFile = document.ast as ts.SourceFile;
@@ -55,7 +57,7 @@ suite('TypeScriptParser', () => {
       const url = 'ts-parse-error.ts';
       let error: WarningCarryingException|undefined = undefined;
       try {
-        parser.parse(contents, url);
+        parser.parse(contents, url as ResolvedUrl);
       } catch (e) {
         if (!(e instanceof WarningCarryingException)) {
           console.log(e);
@@ -85,7 +87,7 @@ const const const const const #!@(~~)!();
           }
         }`).trim() +
             '\n';
-        const document = parser.parse(contents, 'test-file.js');
+        const document = parser.parse(contents, 'test-file.js' as ResolvedUrl);
         assert.deepEqual(document.stringify({}), contents);
       });
     });

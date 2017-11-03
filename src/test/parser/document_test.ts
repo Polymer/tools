@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {assert} from 'chai';
+
 import {SourceRange} from '../../model/model';
+import {ResolvedUrl} from '../../model/url';
 import {ParsedDocument, StringifyOptions} from '../../parser/document';
 
 class TestDocument extends ParsedDocument<null, null> {
@@ -31,10 +33,10 @@ class TestDocument extends ParsedDocument<null, null> {
     super({
       ast: null,
       astNode: null,
-      baseUrl: 'test-document', contents,
+      baseUrl: 'test-document' as ResolvedUrl, contents,
       isInline: false,
       locationOffset: undefined,
-      url: 'test-document'
+      url: 'test-document' as ResolvedUrl
     });
   }
 }

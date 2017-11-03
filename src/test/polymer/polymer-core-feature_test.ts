@@ -18,6 +18,7 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {ResolvedUrl} from '../../model/url';
 import {PolymerCoreFeatureScanner} from '../../polymer/polymer-core-feature-scanner';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
@@ -54,7 +55,7 @@ suite('PolymerCoreFeatureScanner', () => {
 
     const parser = new JavaScriptParser();
     const scanner = new PolymerCoreFeatureScanner();
-    const doc = parser.parse(js, 'features.js');
+    const doc = parser.parse(js, 'features.js' as ResolvedUrl);
     const visit = (visitor: Visitor) => Promise.resolve(doc.visit([visitor]));
     const {features} = await scanner.scan(doc, visit);
 

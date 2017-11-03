@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+
 import {UrlLoader} from './url-loader';
 
 
@@ -48,11 +50,11 @@ export class InMemoryOverlayUrlLoader implements UrlLoader {
     }
   }
 
-  canLoad(url: string): boolean {
+  canLoad(url: ResolvedUrl): boolean {
     return this.urlContentsMap.has(url) || this._fallbackLoader.canLoad(url);
   }
 
-  async load(url: string): Promise<string> {
+  async load(url: ResolvedUrl): Promise<string> {
     const contents = this.urlContentsMap.get(url);
     if (typeof contents === 'string') {
       return contents;
@@ -61,5 +63,6 @@ export class InMemoryOverlayUrlLoader implements UrlLoader {
   }
 
   // We have this method if our underlying loader has it.
-  readDirectory?: (pathFromRoot: string, deep?: boolean) => Promise<string[]>;
+  readDirectory?:
+      (pathFromRoot: string, deep?: boolean) => Promise<PackageRelativeUrl[]>;
 }

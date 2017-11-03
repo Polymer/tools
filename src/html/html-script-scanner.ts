@@ -13,9 +13,9 @@
  */
 
 import * as dom5 from 'dom5';
-import {resolve as resolveUrl} from 'url';
 
 import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, ScannedImport, ScannedInlineDocument} from '../model/model';
+import {FileRelativeUrl} from '../model/url';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlScanner} from './html-scanner';
@@ -39,12 +39,12 @@ export class HtmlScriptScanner implements HtmlScanner {
 
     const myVisitor: HtmlVisitor = (node) => {
       if (isJsScriptNode(node)) {
-        const src = dom5.getAttribute(node, 'src');
+        const src =
+            dom5.getAttribute(node, 'src') as FileRelativeUrl | undefined;
         if (src) {
-          const importUrl = resolveUrl(document.baseUrl, src);
           features.push(new ScannedScriptTagImport(
               'html-script',
-              importUrl,
+              ScannedScriptTagImport.resolveUrl(document.baseUrl, src),
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'src')!,
               node,

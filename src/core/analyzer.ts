@@ -17,6 +17,7 @@
 import * as path from 'path';
 
 import {Analysis, Document, Warning} from '../model/model';
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
 import {Scanner} from '../scanning/scanner';
 import {UrlLoader} from '../url-loader/url-loader';
@@ -48,7 +49,7 @@ export interface ForkOptions { urlLoader?: UrlLoader; }
 export class NoKnownParserError extends Error {};
 
 export type ScannerTable = Map<string, Scanner<any, any, any>[]>;
-export type LazyEdgeMap = Map<string, string[]>;
+export type LazyEdgeMap = Map<ResolvedUrl, PackageRelativeUrl[]>;
 
 /**
  * A static analyzer for web projects.
@@ -84,11 +85,11 @@ export class Analyzer {
     const previousAnalysisComplete = this._analysisComplete;
     this._analysisComplete = (async() => {
       const previousContext = await previousAnalysisComplete;
-      return await previousContext.analyze(urls);
+      return await previousContext.analyze(this.brandUserInputUrls(urls));
     })();
     const context = await this._analysisComplete;
-    const results = new Map(urls.map(
-        (url) => [url, context.getDocument(url)] as
+    const results = new Map(this.brandUserInputUrls(urls).map(
+        (url) => [url, context.getDocument(context.resolveUrl(url))] as
             [string, Document | Warning]));
     return new Analysis(results);
   }
@@ -103,7 +104,8 @@ export class Analyzer {
             `This analyzer doesn't support analyzerPackage, ` +
             `the urlLoader can't list the files in a directory.`);
       }
-      const allFiles = await previousContext.loader.readDirectory('', true);
+      const allFiles =
+          await previousContext.loader.readDirectory('' as ResolvedUrl, true);
       // TODO(rictic): parameterize this, perhaps with polymer.json.
       const filesInPackage =
           allFiles.filter((file) => !Analysis.isExternal(file));
@@ -114,7 +116,7 @@ export class Analyzer {
       const newContext = await previousContext.analyze(filesWithParsers);
 
       const documentsOrWarnings = new Map(filesWithParsers.map(
-          (url) => [url, newContext.getDocument(url)] as
+          (url) => [url, newContext.getDocument(newContext.resolveUrl(url))] as
               [string, Document | Warning]));
       _package = new Analysis(documentsOrWarnings);
       return newContext;
@@ -136,7 +138,7 @@ export class Analyzer {
     const previousAnalysisComplete = this._analysisComplete;
     this._analysisComplete = (async() => {
       const previousContext = await previousAnalysisComplete;
-      return await previousContext.filesChanged(urls);
+      return await previousContext.filesChanged(this.brandUserInputUrls(urls));
     })();
     await this._analysisComplete;
   }
@@ -188,7 +190,7 @@ export class Analyzer {
    * semantics defined by `UrlLoader` and should only be used to check
    * resolved URLs.
    */
-  canLoad(resolvedUrl: string): boolean {
+  canLoad(resolvedUrl: ResolvedUrl): boolean {
     return this._urlLoader.canLoad(resolvedUrl);
   }
 
@@ -197,7 +199,7 @@ export class Analyzer {
    * defined by `UrlLoader` and should only be used to attempt to load resolved
    * URLs.
    */
-  async load(resolvedUrl: string) {
+  async load(resolvedUrl: ResolvedUrl) {
     return (await this._analysisComplete).load(resolvedUrl);
   }
 
@@ -205,13 +207,22 @@ export class Analyzer {
    * Returns `true` if the given `url` can be resolved.
    */
   canResolveUrl(url: string): boolean {
-    return this._urlResolver.canResolve(url);
+    return this._urlResolver.canResolve(this.brandUserInputUrl(url));
   }
 
   /**
    * Resoves `url` to a new location.
    */
-  resolveUrl(url: string): string {
-    return this._urlResolver.resolve(url);
+  resolveUrl(url: string): ResolvedUrl {
+    return this._urlResolver.resolve(this.brandUserInputUrl(url));
+  }
+
+  // Urls from the user are assumed to be package relative.
+  private brandUserInputUrls(urls: string[]): PackageRelativeUrl[] {
+    return urls as PackageRelativeUrl[];
+  }
+
+  private brandUserInputUrl(url: string): PackageRelativeUrl {
+    return url as PackageRelativeUrl;
   }
 }

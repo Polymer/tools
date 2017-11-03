@@ -20,6 +20,7 @@ import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ScannedNamespace} from '../../javascript/namespace';
 import {NamespaceScanner} from '../../javascript/namespace-scanner';
+import {ResolvedUrl} from '../../model/url';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
@@ -31,7 +32,7 @@ suite('NamespaceScanner', () => {
   async function getNamespaces(filename: string): Promise<any[]> {
     const file = await urlLoader.load(filename);
     const parser = new JavaScriptParser();
-    const document = parser.parse(file, filename);
+    const document = parser.parse(file, filename as ResolvedUrl);
     const scanner = new NamespaceScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));

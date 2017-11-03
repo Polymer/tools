@@ -15,6 +15,7 @@
 import {assert} from 'chai';
 
 import {AnalysisCache} from '../../core/analysis-cache';
+import {ResolvedUrl} from '../../model/url';
 
 suite('AnalysisCache', () => {
   test('it can be constructed', () => {
@@ -23,29 +24,41 @@ suite('AnalysisCache', () => {
 
   function addFakeDocumentToCache(
       cache: AnalysisCache, path: string, dependencies: string[]) {
-    cache.parsedDocumentPromises.set(path, `parsed ${path} promise` as any);
-    cache.scannedDocumentPromises.set(path, `scanned ${path} promise` as any);
-    cache.analyzedDocumentPromises.set(path, `analyzed ${path} promise` as any);
-    cache.scannedDocuments.set(path, `scanned ${path}` as any);
-    cache.analyzedDocuments.set(path, `analyzed ${path}` as any);
-    cache.dependencyGraph.addDocument(path, dependencies);
+    const resolvedPath = path as ResolvedUrl;
+    const resolvedDependencies = dependencies as ResolvedUrl[];
+    cache.parsedDocumentPromises.set(
+        resolvedPath, `parsed ${resolvedPath} promise` as any);
+    cache.scannedDocumentPromises.set(
+        resolvedPath, `scanned ${resolvedPath} promise` as any);
+    cache.analyzedDocumentPromises.set(
+        resolvedPath, `analyzed ${resolvedPath} promise` as any);
+    cache.scannedDocuments.set(resolvedPath, `scanned ${resolvedPath}` as any);
+    cache.analyzedDocuments.set(
+        resolvedPath, `analyzed ${resolvedPath}` as any);
+    cache.dependencyGraph.addDocument(resolvedPath, resolvedDependencies);
   }
 
   async function assertHasDocument(cache: AnalysisCache, path: string) {
+    const resolvedPath = path as ResolvedUrl;
     assert.equal(
         await cache.parsedDocumentPromises.getOrCompute(
-            path, null as any) as any,
-        `parsed ${path} promise`);
+            resolvedPath, null as any) as any,
+        `parsed ${resolvedPath} promise`);
     assert.equal(
         await cache.scannedDocumentPromises.getOrCompute(
-            path, null as any) as any,
-        `scanned ${path} promise`);
+            resolvedPath, null as any) as any,
+        `scanned ${resolvedPath} promise`);
     // caller must assert on cache.analyzedDocumentPromises themselves
-    assert.equal(cache.scannedDocuments.get(path) as any, `scanned ${path}`);
-    assert.equal(cache.analyzedDocuments.get(path) as any, `analyzed ${path}`);
+    assert.equal(
+        cache.scannedDocuments.get(resolvedPath) as any,
+        `scanned ${resolvedPath}`);
+    assert.equal(
+        cache.analyzedDocuments.get(resolvedPath) as any,
+        `analyzed ${resolvedPath}`);
   }
 
-  function assertNotHasDocument(cache: AnalysisCache, path: string) {
+  function assertNotHasDocument(cache: AnalysisCache, p: string) {
+    const path = p as ResolvedUrl;
     assert.isFalse(cache.parsedDocumentPromises.has(path));
     assert.isFalse(cache.scannedDocumentPromises.has(path));
     // caller must assert on cache.analyzedDocumentPromises themselves
@@ -54,7 +67,8 @@ suite('AnalysisCache', () => {
   }
 
   async function assertDocumentScannedButNotResolved(
-      cache: AnalysisCache, path: string) {
+      cache: AnalysisCache, p: string) {
+    const path = p as ResolvedUrl;
     assert.equal(
         await cache.parsedDocumentPromises.getOrCompute(
             path, null as any) as any,
@@ -76,7 +90,7 @@ suite('AnalysisCache', () => {
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
 
-    const forkedCache = cache.invalidate(['index.html']);
+    const forkedCache = cache.invalidate(['index.html'] as ResolvedUrl[]);
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');
     assertNotHasDocument(forkedCache, 'index.html');
@@ -86,7 +100,7 @@ suite('AnalysisCache', () => {
     // a Promise.resolve() of its non-promise cache.
     assert.equal(
         await forkedCache.analyzedDocumentPromises.getOrCompute(
-            'unrelated.html', null as any) as any,
+            'unrelated.html' as ResolvedUrl, null as any) as any,
         `analyzed unrelated.html`);
   });
 
@@ -105,7 +119,7 @@ suite('AnalysisCache', () => {
     await assertHasDocument(cache, 'unrelated.html');
 
 
-    const forkedCache = cache.invalidate(['behavior.html']);
+    const forkedCache = cache.invalidate(['behavior.html'] as ResolvedUrl[]);
     // The original cache is untouched.
     await assertHasDocument(cache, 'index.html');
     await assertHasDocument(cache, 'unrelated.html');

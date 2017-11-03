@@ -18,6 +18,7 @@ import {assert} from 'chai';
 
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {ResolvedUrl} from '../../model/url';
 import {PolymerElementScanner} from '../../polymer/polymer-element-scanner';
 import {CodeUnderliner} from '../test-utils';
 
@@ -100,8 +101,8 @@ suite('PolymerElementScanner', () => {
         listeners: []
       });`;
 
-      const document =
-          new JavaScriptParser().parse(contents, 'test-document.html');
+      const document = new JavaScriptParser().parse(
+          contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -237,8 +238,8 @@ suite('PolymerElementScanner', () => {
 
           window.MyElement = Polymer({is: 'my-element'});
       `;
-      const document =
-          new JavaScriptParser().parse(contents, 'test-document.html');
+      const document = new JavaScriptParser().parse(
+          contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -281,8 +282,8 @@ suite('PolymerElementScanner', () => {
 
       const underliner =
           CodeUnderliner.withMapping('test-document.html', contents);
-      const document =
-          new JavaScriptParser().parse(contents, 'test-document.html');
+      const document = new JavaScriptParser().parse(
+          contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -332,8 +333,8 @@ suite('PolymerElementScanner', () => {
         }
       }`;
 
-      const document =
-          new JavaScriptParser().parse(contents, 'test-document.html');
+      const document = new JavaScriptParser().parse(
+          contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: Visitor) => document.visit([visitor]);
 
       // Scanning should not throw

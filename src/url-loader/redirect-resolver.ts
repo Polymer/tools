@@ -12,25 +12,29 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+
 import {UrlResolver} from './url-resolver';
 
 /**
  * Resolves a URL having one prefix to another URL with a different prefix.
  */
-export class RedirectResolver implements UrlResolver {
+export class RedirectResolver extends UrlResolver {
   constructor(private _redirectFrom: string, private _redirectTo: string) {
+    super();
   }
 
-  canResolve(url: string): boolean {
+  canResolve(url: PackageRelativeUrl): boolean {
     return url.startsWith(this._redirectFrom);
   }
 
-  resolve(url: string): string {
+  resolve(url: PackageRelativeUrl): ResolvedUrl {
     if (!this.canResolve(url)) {
       throw new Error(
           `RedirectResolver cannot resolve: "${url}" from:` +
           `"${this._redirectFrom}" to: "${this._redirectTo}"`);
     }
-    return this._redirectTo + url.slice(this._redirectFrom.length);
+    return this.brandAsResolved(
+        this._redirectTo + url.slice(this._redirectFrom.length));
   }
 }

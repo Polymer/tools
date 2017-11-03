@@ -20,6 +20,7 @@ import stripIndent = require('strip-indent');
 import * as esutil from '../../javascript/esutil';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser, JavaScriptModuleParser, JavaScriptScriptParser} from '../../javascript/javascript-parser';
+import {ResolvedUrl} from '../../model/url';
 
 suite('JavaScriptParser', () => {
   let parser: JavaScriptParser;
@@ -41,7 +42,8 @@ suite('JavaScriptParser', () => {
           }
         }
       `;
-      const document = parser.parse(contents, '/static/es6-support.js');
+      const document =
+          parser.parse(contents, '/static/es6-support.js' as ResolvedUrl);
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
@@ -56,7 +58,8 @@ suite('JavaScriptParser', () => {
           await Promise.resolve();
         }
       `;
-      const document = parser.parse(contents, '/static/es6-support.js');
+      const document =
+          parser.parse(contents, '/static/es6-support.js' as ResolvedUrl);
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
@@ -72,13 +75,15 @@ suite('JavaScriptParser', () => {
     test('throws syntax errors', () => {
       const file = fs.readFileSync(
           path.resolve(__dirname, '../static/js-parse-error.js'), 'utf8');
-      assert.throws(() => parser.parse(file, '/static/js-parse-error.js'));
+      assert.throws(
+          () => parser.parse(file, '/static/js-parse-error.js' as ResolvedUrl));
     });
 
     test('attaches comments', () => {
       const file = fs.readFileSync(
           path.resolve(__dirname, '../static/js-elements.js'), 'utf8');
-      const document = parser.parse(file, '/static/js-elements.js');
+      const document =
+          parser.parse(file, '/static/js-elements.js' as ResolvedUrl);
       const ast = document.ast;
       const element1 = ast.body[0];
       const comment = esutil.getAttachedComment(element1)!;
@@ -89,7 +94,8 @@ suite('JavaScriptParser', () => {
       const contents = `
         import foo from 'foo';
       `;
-      const document = parser.parse(contents, '/static/es6-support.js');
+      const document =
+          parser.parse(contents, '/static/es6-support.js' as ResolvedUrl);
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
@@ -109,7 +115,7 @@ suite('JavaScriptParser', () => {
           }
         }`).trim() +
           '\n';
-      const document = parser.parse(contents, 'test-file.js');
+      const document = parser.parse(contents, 'test-file.js' as ResolvedUrl);
       assert.deepEqual(document.stringify({}), contents);
     });
   });
@@ -128,7 +134,8 @@ suite('JavaScriptModuleParser', () => {
       const contents = `
     import foo from 'foo';
   `;
-      const document = parser.parse(contents, '/static/es6-support.js');
+      const document =
+          parser.parse(contents, '/static/es6-support.js' as ResolvedUrl);
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
       assert.equal(document.ast.type, 'Program');
@@ -149,6 +156,7 @@ suite('JavaScriptScriptParser', () => {
     const contents = `
       import foo from 'foo';
     `;
-    assert.throws(() => parser.parse(contents, '/static/es6-support.js'));
+    assert.throws(
+        () => parser.parse(contents, '/static/es6-support.js' as ResolvedUrl));
   });
 });

@@ -18,6 +18,8 @@ import * as ts from 'typescript';
 
 import {AnalysisContext} from '../core/analysis-context';
 import {LanguageAnalyzer} from '../core/language-analyzer';
+import {PackageRelativeUrl} from '../model/url';
+
 import {ParsedTypeScriptDocument} from './typescript-document';
 
 const _compilerOptions: ts.CompilerOptions = {
@@ -80,7 +82,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
   }
 
   getSourceFile(
-      fileName: string, languageVersion: ts.ScriptTarget,
+      fileName: PackageRelativeUrl, languageVersion: ts.ScriptTarget,
       onError?: (message: string) => void): ts.SourceFile {
     if (isLibraryPath(fileName)) {
       const libSource = getLibrarySource(fileName);
@@ -93,7 +95,8 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
       // This method will be called during analysis, but after all files
       // in the dependency graph have been loaded, so it can call a synchronous
       // method to get the source of a file.
-      const scannedDocument = this.context._getScannedDocument(fileName);
+      const scannedDocument =
+          this.context._getScannedDocument(this.context.resolveUrl(fileName));
       if (scannedDocument != null) {
         const typescriptDocument =
             scannedDocument.document as ParsedTypeScriptDocument;
@@ -130,7 +133,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
     return [''];
   }
 
-  getCanonicalFileName(fileName: string) {
+  getCanonicalFileName(fileName: PackageRelativeUrl) {
     return this.context.resolveUrl(fileName);
   }
 
@@ -142,14 +145,14 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
     return true;
   }
 
-  fileExists(fileName: string) {
+  fileExists(fileName: PackageRelativeUrl) {
     const resolvedUrl = this.context.resolveUrl(fileName);
     return isLibraryPath(resolvedUrl) &&
         getLibrarySource(resolvedUrl) != null ||
         this.context._getScannedDocument(resolvedUrl) != null;
   }
 
-  readFile(fileName: string): string {
+  readFile(fileName: PackageRelativeUrl): string {
     const resolvedUrl = this.context.resolveUrl(fileName);
     if (isLibraryPath(resolvedUrl)) {
       const libPath = require.resolve(`typescript/lib/${fileName}`);
@@ -168,7 +171,8 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
         return {resolvedFileName: null as any as string};
       }
       // since we have a path, we can simply resolve it
-      const fileName = path.resolve(path.dirname(containingFile), moduleName);
+      const fileName = path.resolve(
+          path.dirname(containingFile), moduleName) as PackageRelativeUrl;
       const resolvedFileName = this.context.resolveUrl(fileName);
       return {resolvedFileName};
     });

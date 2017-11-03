@@ -12,10 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {resolve as resolveUrl} from 'url';
+
 import {Document} from './document';
 import {Feature} from './feature';
 import {SourceRange} from './model';
 import {Resolvable} from './resolvable';
+import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from './url';
 import {Severity, Warning} from './warning';
 
 
@@ -31,7 +34,7 @@ export class ScannedImport implements Resolvable {
   /**
    * URL of the import, relative to the base directory.
    */
-  url: string;
+  url: PackageRelativeUrl;
 
   sourceRange: SourceRange|undefined;
 
@@ -54,7 +57,7 @@ export class ScannedImport implements Resolvable {
   lazy: boolean;
 
   constructor(
-      type: string, url: string, sourceRange: SourceRange|undefined,
+      type: string, url: PackageRelativeUrl, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined, ast: any|null, lazy: boolean) {
     this.type = type;
     this.url = url;
@@ -68,8 +71,8 @@ export class ScannedImport implements Resolvable {
     if (!document._analysisContext.canResolveUrl(this.url)) {
       return;
     }
-    const importedDocumentOrWarning =
-        document._analysisContext.getDocument(this.url);
+    const importedDocumentOrWarning = document._analysisContext.getDocument(
+        document._analysisContext.resolveUrl(this.url));
     if (!(importedDocumentOrWarning instanceof Document)) {
       const error = this.error ? (this.error.message || this.error) : '';
       document.warnings.push(new Warning({
@@ -82,7 +85,7 @@ export class ScannedImport implements Resolvable {
       return undefined;
     }
     return new Import(
-        this.url,
+        document._analysisContext.resolveUrl(this.url),
         this.type,
         importedDocumentOrWarning,
         this.sourceRange,
@@ -90,6 +93,11 @@ export class ScannedImport implements Resolvable {
         this.astNode,
         this.warnings,
         this.lazy);
+  }
+
+  static resolveUrl(baseUrl: ResolvedUrl, localUrl: FileRelativeUrl):
+      PackageRelativeUrl {
+    return resolveUrl(baseUrl, localUrl) as PackageRelativeUrl;
   }
 }
 
@@ -109,7 +117,7 @@ declare module './queryable' {
 
 export class Import implements Feature {
   readonly type: 'html-import'|'html-script'|'html-style'|string;
-  readonly url: string;
+  readonly url: ResolvedUrl;
   readonly document: Document;
   readonly identifiers = new Set();
   readonly kinds = new Set(['import']);
@@ -120,7 +128,7 @@ export class Import implements Feature {
   readonly lazy: boolean;
 
   constructor(
-      url: string, type: string, document: Document,
+      url: ResolvedUrl, type: string, document: Document,
       sourceRange: SourceRange|undefined, urlSourceRange: SourceRange|undefined,
       ast: any, warnings: Warning[], lazy: boolean) {
     this.url = url;

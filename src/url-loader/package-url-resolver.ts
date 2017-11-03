@@ -16,6 +16,7 @@ import {posix as pathlib} from 'path';
 import {Url} from 'url';
 
 import {parseUrl} from '../core/utils';
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 
 import {UrlResolver} from './url-resolver';
 
@@ -27,11 +28,12 @@ export interface PackageUrlResolverOptions {
 /**
  * Resolves a URL to a canonical URL within a package.
  */
-export class PackageUrlResolver implements UrlResolver {
+export class PackageUrlResolver extends UrlResolver {
   componentDir: string;
   hostname: string|null;
 
   constructor(options?: PackageUrlResolverOptions) {
+    super();
     options = options || {};
     this.componentDir = options.componentDir || 'bower_components/';
     this.hostname = options.hostname || null;
@@ -55,7 +57,7 @@ export class PackageUrlResolver implements UrlResolver {
         !pathname.startsWith('../../');
   }
 
-  resolve(url: string): string {
+  resolve(url: PackageRelativeUrl): ResolvedUrl {
     const urlObject = parseUrl(url);
     let pathname = pathlib.normalize(decodeURI(urlObject.pathname || ''));
 
@@ -75,6 +77,6 @@ export class PackageUrlResolver implements UrlResolver {
     }
 
     // Re-encode URI, since it is expected we are emitting a relative URL.
-    return encodeURI(pathname);
+    return this.brandAsResolved(encodeURI(pathname));
   }
 }

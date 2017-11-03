@@ -16,6 +16,7 @@ import {assert} from 'chai';
 import * as ts from 'typescript';
 
 import {AnalysisContext} from '../../core/analysis-context';
+import {ResolvedUrl} from '../../model/url';
 import {TypeScriptAnalyzer} from '../../typescript/typescript-analyzer';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
@@ -33,7 +34,8 @@ async function getTypeScriptAnalyzer(files: {[url: string]: string}) {
     urlResolver
   });
   // This puts documents into the scanned document cache
-  await Promise.all(Object.keys(files).map((url) => analysisContext.scan(url)));
+  await Promise.all(Object.keys(files).map(
+      (url) => analysisContext.scan(url as ResolvedUrl)));
   return new TypeScriptAnalyzer(analysisContext);
 }
 

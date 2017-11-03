@@ -13,9 +13,11 @@
  */
 
 import {InlineDocInfo} from '../model/model';
+import {ResolvedUrl} from '../model/url';
 
 import {ParsedDocument} from './document';
 
 export interface Parser<D extends ParsedDocument<any, any>> {
-  parse(contents: string, url: string, inlineDocInfo?: InlineDocInfo<any>): D;
+  parse(contents: string, url: ResolvedUrl, inlineDocInfo?: InlineDocInfo<any>):
+      D;
 }
