@@ -465,17 +465,30 @@ export class UnionType {
     // Functions too.
     const deduped = [];
     const names = new Set();
+    let hasNull = false;
+    let hasUndefined = false;
     for (const m of flattened) {
       if (m.kind === 'name') {
-        if (names.has(m.name)) {
-          continue;
+        if (m.name === 'null') {
+          hasNull = true;
+        } else if (m.name === 'undefined') {
+          hasUndefined = true;
+        } else if (!names.has(m.name)) {
+          deduped.push(m);
+          names.add(m.name);
         }
-        names.add(m.name);
+      } else {
+        deduped.push(m);
       }
-      deduped.push(m);
     }
-
-    // TODO Sort null and undefined to the end of the array.
+    // Always put `null` and `undefined` at the end because it's more readable.
+    // Preserve declared order for everything else.
+    if (hasNull) {
+      deduped.push(nullType);
+    }
+    if (hasUndefined) {
+      deduped.push(undefinedType);
+    }
     this.members = deduped;
   }
 

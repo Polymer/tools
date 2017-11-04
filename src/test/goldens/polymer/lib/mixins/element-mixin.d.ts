@@ -71,7 +71,7 @@ declare namespace Polymer {
       _importPath: string;
       rootPath: string;
       importPath: string;
-      root: StampedTemplate|null|HTMLElement|ShadowRoot;
+      root: StampedTemplate|HTMLElement|ShadowRoot|null;
       $: any;
 
       /**
