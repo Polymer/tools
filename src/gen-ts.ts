@@ -87,19 +87,18 @@ function makeDeclarationsFilename(sourceUrl: string): string {
  * items in the given Polymer Analyzer document.
  */
 function handleDocument(doc: analyzer.Document, root: ts.Document) {
-  // TODO Should we traverse and serialize all features in the same order they
-  // were originally declared, instead of grouping by type as we do here?
-  for (const element of doc.getFeatures({kind: 'element'})) {
-    handleElement(element, root);
-  }
-  for (const behavior of doc.getFeatures({kind: 'behavior'})) {
-    handleBehavior(behavior, root);
-  }
-  for (const mixin of doc.getFeatures({kind: 'element-mixin'})) {
-    handleMixin(mixin, root);
-  }
-  for (const fn of doc.getFeatures({kind: 'function'})) {
-    handleFunction(fn, root);
+  for (const feature of doc.getFeatures()) {
+    if (feature.kinds.has('element')) {
+      handleElement(feature as analyzer.Element, root);
+    } else if (feature.kinds.has('behavior')) {
+      handleBehavior(feature as analyzer.PolymerBehavior, root);
+    } else if (feature.kinds.has('element-mixin')) {
+      handleMixin(feature as analyzer.ElementMixin, root);
+    } else if (feature.kinds.has('class')) {
+      handleClass(feature as analyzer.Class, root);
+    } else if (feature.kinds.has('function')) {
+      handleFunction(feature as AnalyzerFunction, root);
+    }
   }
 }
 
@@ -186,7 +185,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
  */
 function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
   if (!feature.className) {
-    console.error('Could not find a name.');
+    console.error('Could not find a name for behavior.');
     return;
   }
   const [namespacePath, className] = splitReference(feature.className);
@@ -208,6 +207,23 @@ function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
   m.methods = handleMethods(feature.methods.values());
   findOrCreateNamespace(root, namespacePath).members.push(m);
 }
+
+/**
+ * Add the given Class to the given TypeScript declarations document.
+ */
+function handleClass(feature: analyzer.Class, root: ts.Document) {
+  if (!feature.className) {
+    console.error('Could not find a name for class.');
+    return;
+  }
+  const [namespacePath, name] = splitReference(feature.className);
+  const m = new ts.Class({name});
+  m.description = feature.description;
+  m.properties = handleProperties(feature.properties.values());
+  m.methods = handleMethods(feature.methods.values());
+  findOrCreateNamespace(root, namespacePath).members.push(m);
+}
+
 
 /**
  * Add the given Function to the given TypeScript declarations document.

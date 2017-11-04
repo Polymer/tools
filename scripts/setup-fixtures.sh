@@ -23,8 +23,9 @@ mkdir fixtures
 cd fixtures
 
 while read -r repo tag dir; do
-  git clone $repo --branch $tag --single-branch --depth 1 $dir
+  git clone $repo $dir
   cd $dir
+  git checkout $tag
   bower install
   cd -
 done < ../../../scripts/fixtures.txt
