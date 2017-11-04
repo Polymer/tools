@@ -46,4 +46,14 @@ class Class {
   customInstanceFunctionWithParamsAndPrivateJSDoc() {
     return 8;
   }
+
+  /**
+   * This is the description for customInstanceFunctionWithRestParam.
+   * @param {Number} a The first argument.
+   * @param {...Number} b The second argument.
+   * @returns {Number} - The number 9, always.
+   */
+  customInstanceFunctionWithRestParam(a, ...b) {
+    return 9;
+  }
 }

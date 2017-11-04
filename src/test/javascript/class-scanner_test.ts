@@ -217,6 +217,27 @@ suite('Class', () => {
               description: 'This is the description for\n' +
                   'customInstanceFunctionWithParamsAndPrivateJSDoc.',
             },
+            {
+              name: 'customInstanceFunctionWithRestParam',
+              description: 'This is the description for ' +
+                  'customInstanceFunctionWithRestParam.',
+              params: [
+                {
+                  name: 'a',
+                  type: 'Number',
+                  description: 'The first argument.',
+                },
+                {
+                  name: 'b',
+                  type: '...Number',
+                  description: 'The second argument.',
+                }
+              ],
+              return: {
+                desc: 'The number 9, always.',
+                type: 'Number',
+              },
+            },
           ]
         },
       ]);
@@ -386,6 +407,27 @@ suite('Class', () => {
               name: 'customInstanceFunctionWithParamsAndPrivateJSDoc',
               description: 'This is the description for\n' +
                   'customInstanceFunctionWithParamsAndPrivateJSDoc.',
+            },
+            {
+              name: 'customInstanceFunctionWithRestParam',
+              description: 'This is the description for ' +
+                  'customInstanceFunctionWithRestParam.',
+              params: [
+                {
+                  name: 'a',
+                  type: 'Number',
+                  description: 'The first argument.',
+                },
+                {
+                  name: 'b',
+                  type: '...Number',
+                  description: 'The second argument.',
+                }
+              ],
+              return: {
+                desc: 'The number 9, always.',
+                type: 'Number',
+              },
             },
           ]
         },

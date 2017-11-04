@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Handle method rest parameters correctly.
 <!-- Add new, unreleased changes here. -->
 
 ## [2.4.1] - 2017-10-31
