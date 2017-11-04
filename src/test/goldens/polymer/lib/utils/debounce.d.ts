@@ -1,3 +1,7 @@
+/// <reference path="boot.d.ts" />
+/// <reference path="mixin.d.ts" />
+/// <reference path="async.d.ts" />
+
 declare namespace Polymer {
 
   class Debouncer {

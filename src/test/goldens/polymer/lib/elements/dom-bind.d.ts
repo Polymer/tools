@@ -1,3 +1,8 @@
+/// <reference path="../utils/boot.d.ts" />
+/// <reference path="../mixins/property-effects.d.ts" />
+/// <reference path="../mixins/mutable-data.d.ts" />
+/// <reference path="../mixins/gesture-event-listeners.d.ts" />
+
 declare namespace Polymer {
 
   /**

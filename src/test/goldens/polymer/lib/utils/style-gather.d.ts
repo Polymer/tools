@@ -1,3 +1,5 @@
+/// <reference path="resolve-url.d.ts" />
+
 declare namespace Polymer {
 
   namespace StyleGather {

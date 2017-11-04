@@ -1,3 +1,7 @@
+/// <reference path="../polymer/polymer.d.ts" />
+/// <reference path="../iron-behaviors/iron-button-state.d.ts" />
+/// <reference path="../paper-ripple/paper-ripple.d.ts" />
+
 declare namespace Polymer {
 
   /**

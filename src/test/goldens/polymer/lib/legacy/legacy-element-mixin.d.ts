@@ -1,3 +1,13 @@
+/// <reference path="../../../shadycss/apply-shim.d.ts" />
+/// <reference path="../mixins/element-mixin.d.ts" />
+/// <reference path="../mixins/gesture-event-listeners.d.ts" />
+/// <reference path="../mixins/dir-mixin.d.ts" />
+/// <reference path="../utils/mixin.d.ts" />
+/// <reference path="../utils/import-href.d.ts" />
+/// <reference path="../utils/render-status.d.ts" />
+/// <reference path="../utils/unresolved.d.ts" />
+/// <reference path="polymer.dom.d.ts" />
+
 declare namespace Polymer {
 
   /**

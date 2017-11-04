@@ -1,3 +1,5 @@
+/// <reference path="../utils/templatize.d.ts" />
+
 declare namespace Polymer {
 
   /**

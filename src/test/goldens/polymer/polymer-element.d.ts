@@ -1,3 +1,5 @@
+/// <reference path="lib/mixins/element-mixin.d.ts" />
+
 declare namespace Polymer {
 
   /**

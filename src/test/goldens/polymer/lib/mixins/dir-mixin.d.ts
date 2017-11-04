@@ -1,3 +1,5 @@
+/// <reference path="property-accessors.d.ts" />
+
 declare namespace Polymer {
 
   /**

@@ -1,3 +1,6 @@
+/// <reference path="boot.d.ts" />
+/// <reference path="resolve-url.d.ts" />
+
 declare namespace Polymer {
 
 

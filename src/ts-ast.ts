@@ -19,13 +19,16 @@ export class Document {
   readonly kind = 'document';
   path: string;
   members: Array<Namespace|Class|Interface|Mixin|Function>;
+  referencePaths: Set<string>;
 
   constructor(data: {
     path: string,
     members?: Array<Namespace|Class|Interface|Mixin|Function>
+    referencePaths?: Iterable<string>,
   }) {
     this.path = data.path;
     this.members = data.members || [];
+    this.referencePaths = new Set(Array.from(data.referencePaths || []));
   }
 
   /**
@@ -51,7 +54,15 @@ export class Document {
   }
 
   serialize(): string {
-    return this.members.map((m) => m.serialize()).join('\n');
+    let out = '';
+    if (this.referencePaths.size > 0) {
+      for (const ref of this.referencePaths) {
+        out += `/// <reference path="${ref}" />\n`;
+      }
+      out += '\n';
+    }
+    out += this.members.map((m) => m.serialize()).join('\n');
+    return out;
   }
 }
 

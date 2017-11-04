@@ -1,3 +1,9 @@
+/// <reference path="../../polymer-element.d.ts" />
+/// <reference path="../utils/templatize.d.ts" />
+/// <reference path="../utils/debounce.d.ts" />
+/// <reference path="../utils/flush.d.ts" />
+/// <reference path="../mixins/mutable-data.d.ts" />
+
 declare namespace Polymer {
 
   /**
