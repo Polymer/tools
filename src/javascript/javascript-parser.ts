@@ -16,6 +16,7 @@ import * as espree from 'espree';
 import * as estree from 'estree';
 
 import {correctSourceRange, InlineDocInfo, LocationOffset, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
+import {ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';
@@ -39,7 +40,7 @@ export const baseParseOptions = {
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   sourceType: SourceType;
 
-  parse(contents: string, url: string, inlineInfo?: InlineDocInfo<any>):
+  parse(contents: string, url: ResolvedUrl, inlineInfo?: InlineDocInfo<any>):
       JavaScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};

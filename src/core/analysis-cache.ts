@@ -13,6 +13,7 @@
  */
 
 import {Document, ScannedDocument, Warning} from '../model/model';
+import {ResolvedUrl} from '../model/url';
 import {ParsedDocument} from '../parser/document';
 
 import {AsyncWorkCache} from './async-work-cache';
@@ -23,18 +24,20 @@ export class AnalysisCache {
    * These are maps from resolved URLs to Promises of various stages of the
    * analysis pipeline.
    */
-  readonly parsedDocumentPromises: AsyncWorkCache<string, ParsedDocument>;
-  readonly scannedDocumentPromises: AsyncWorkCache<string, ScannedDocument>;
-  readonly dependenciesScannedPromises: AsyncWorkCache<string, ScannedDocument>;
-  readonly analyzedDocumentPromises: AsyncWorkCache<string, Document>;
+  readonly parsedDocumentPromises: AsyncWorkCache<ResolvedUrl, ParsedDocument>;
+  readonly scannedDocumentPromises:
+      AsyncWorkCache<ResolvedUrl, ScannedDocument>;
+  readonly dependenciesScannedPromises:
+      AsyncWorkCache<ResolvedUrl, ScannedDocument>;
+  readonly analyzedDocumentPromises: AsyncWorkCache<ResolvedUrl, Document>;
 
   /**
    * TODO(rictic): These synchronous caches need to be kept in sync with their
    *     async work cache analogues above.
    */
-  readonly scannedDocuments: Map<string, ScannedDocument>;
-  readonly analyzedDocuments: Map<string, Document>;
-  readonly failedDocuments: Map<string, Warning>;
+  readonly scannedDocuments: Map<ResolvedUrl, ScannedDocument>;
+  readonly analyzedDocuments: Map<ResolvedUrl, Document>;
+  readonly failedDocuments: Map<ResolvedUrl, Warning>;
 
   readonly dependencyGraph: DependencyGraph;
 
@@ -67,7 +70,7 @@ export class AnalysisCache {
    *
    * Must be called whenever a document changes.
    */
-  invalidate(documentPaths: string[]): AnalysisCache {
+  invalidate(documentPaths: ResolvedUrl[]): AnalysisCache {
     // TODO(rictic): how much of this work can we short circuit in the case
     //     none of these paths are in any of the caches? e.g. when someone calls
     //     filesChanged() for the same files twice without ever calling analyze?

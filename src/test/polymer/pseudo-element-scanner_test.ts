@@ -16,6 +16,7 @@ import {assert} from 'chai';
 
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
+import {ResolvedUrl} from '../../model/url';
 import {PseudoElementScanner} from '../../polymer/pseudo-element-scanner';
 
 suite('PseudoElementScanner', () => {
@@ -37,7 +38,8 @@ suite('PseudoElementScanner', () => {
           -->
         </body>
         </html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);

@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {ResolvedUrl} from '../model/url';
+
 import {UrlLoader} from './url-loader';
 
 /**
@@ -21,11 +23,11 @@ export class MultiUrlLoader implements UrlLoader {
   constructor(private _loaders: UrlLoader[]) {
   }
 
-  canLoad(url: string): boolean {
+  canLoad(url: ResolvedUrl): boolean {
     return this._loaders.some((loader) => loader.canLoad(url));
   }
 
-  async load(url: string): Promise<string> {
+  async load(url: ResolvedUrl): Promise<string> {
     for (const loader of this._loaders) {
       if (loader.canLoad(url)) {
         return loader.load(url);

@@ -12,25 +12,28 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+
 import {UrlResolver} from './url-resolver';
 
 /**
  * Resolves a URL using multiple resolvers.
  */
-export class MultiUrlResolver implements UrlResolver {
+export class MultiUrlResolver extends UrlResolver {
   constructor(private _resolvers: Array<UrlResolver>) {
+    super();
     if (!this._resolvers) {
       this._resolvers = [];
     }
   }
 
-  canResolve(url: string): boolean {
+  canResolve(url: PackageRelativeUrl): boolean {
     return this._resolvers.some((resolver) => {
       return resolver.canResolve(url);
     });
   }
 
-  resolve(url: string): string {
+  resolve(url: PackageRelativeUrl): ResolvedUrl {
     for (let i = 0; i < this._resolvers.length; i++) {
       const resolver = this._resolvers[i];
       if (resolver.canResolve(url)) {

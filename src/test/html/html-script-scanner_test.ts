@@ -22,6 +22,7 @@ import {HtmlScriptScanner} from '../../html/html-script-scanner';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Analysis} from '../../model/analysis';
 import {ScannedImport, ScannedInlineDocument} from '../../model/model';
+import {ResolvedUrl} from '../../model/url';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 const fixturesDir = path.resolve(__dirname, '../static');
@@ -39,7 +40,8 @@ suite('HtmlScriptScanner', () => {
           <script src="foo.js"></script>
           <script>console.log('hi')</script>
         </head></html>`;
-      const document = new HtmlParser().parse(contents, 'test-document.html');
+      const document =
+          new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -59,7 +61,8 @@ suite('HtmlScriptScanner', () => {
       const contents = `<html><head><base href="/aybabtu/">
           <script src="foo.js"></script>
         </head></html>`;
-      const document = new HtmlParser().parse(contents, 'test-document.html');
+      const document =
+          new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);

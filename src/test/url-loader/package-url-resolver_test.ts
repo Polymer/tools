@@ -14,6 +14,7 @@
 
 import {assert} from 'chai';
 
+import {PackageRelativeUrl} from '../../model/url';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 suite('PackageUrlResolver', function() {
@@ -62,25 +63,28 @@ suite('PackageUrlResolver', function() {
 
     test('resolves an in-package URL', () => {
       const r = new PackageUrlResolver();
-      assert.equal('foo.html', r.resolve('foo.html'));
-      assert.equal('foo.html', r.resolve('/foo.html'));
-      assert.equal('foo.html', r.resolve('./foo.html'));
+      assert.equal('foo.html', r.resolve('foo.html' as PackageRelativeUrl));
+      assert.equal('foo.html', r.resolve('/foo.html' as PackageRelativeUrl));
+      assert.equal('foo.html', r.resolve('./foo.html' as PackageRelativeUrl));
     });
 
     test('resolves a sibling URL', () => {
       assert.equal(
           'bower_components/foo/foo.html',
-          new PackageUrlResolver().resolve('../foo/foo.html'));
+          new PackageUrlResolver().resolve(
+              '../foo/foo.html' as PackageRelativeUrl));
     });
 
     test('throws for a cousin URL', () => {
       assert.throws(
-          () => new PackageUrlResolver().resolve('../../foo/foo.html'));
+          () => new PackageUrlResolver().resolve(
+              '../../foo/foo.html' as PackageRelativeUrl));
     });
 
     test('throws for a URL with a hostname', () => {
       assert.throws(
-          () => new PackageUrlResolver().resolve('http://abc.xyz/foo.html'));
+          () => new PackageUrlResolver().resolve(
+              'http://abc.xyz/foo.html' as PackageRelativeUrl));
     });
 
     test('resolves a URL with the right hostname', () => {
@@ -88,26 +92,41 @@ suite('PackageUrlResolver', function() {
         componentDir: 'components',
         hostname: 'abc.xyz',
       });
-      assert.equal('foo.html', r.resolve('http://abc.xyz/foo.html'));
-      assert.equal('foo.html', r.resolve('http://abc.xyz/./foo.html'));
-      assert.equal('foo.html', r.resolve('http://abc.xyz/../foo.html'));
-      assert.equal('foo.html', r.resolve('http://abc.xyz/foo/../foo.html'));
+      assert.equal(
+          'foo.html',
+          r.resolve('http://abc.xyz/foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'foo.html',
+          r.resolve('http://abc.xyz/./foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'foo.html',
+          r.resolve('http://abc.xyz/../foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'foo.html',
+          r.resolve('http://abc.xyz/foo/../foo.html' as PackageRelativeUrl));
 
-      assert.equal('foo.html', r.resolve('foo.html'));
-      assert.equal('foo.html', r.resolve('./foo.html'));
-      assert.equal('components/foo/foo.html', r.resolve('../foo/foo.html'));
-      assert.equal('foo.html', r.resolve('foo/../foo.html'));
+      assert.equal('foo.html', r.resolve('foo.html' as PackageRelativeUrl));
+      assert.equal('foo.html', r.resolve('./foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'components/foo/foo.html',
+          r.resolve('../foo/foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'foo.html', r.resolve('foo/../foo.html' as PackageRelativeUrl));
 
-      assert.equal('foo.html', r.resolve('/foo.html'));
-      assert.equal('foo.html', r.resolve('/./foo.html'));
-      assert.equal('foo/foo.html', r.resolve('/../foo/foo.html'));
-      assert.equal('foo.html', r.resolve('/foo/../foo.html'));
+      assert.equal('foo.html', r.resolve('/foo.html' as PackageRelativeUrl));
+      assert.equal('foo.html', r.resolve('/./foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'foo/foo.html', r.resolve('/../foo/foo.html' as PackageRelativeUrl));
+      assert.equal(
+          'foo.html', r.resolve('/foo/../foo.html' as PackageRelativeUrl));
 
     });
 
     test('resolves a URL with spaces', () => {
       const r = new PackageUrlResolver();
-      assert.equal(r.resolve('spaced name.html'), 'spaced%20name.html');
+      assert.equal(
+          r.resolve('spaced name.html' as PackageRelativeUrl),
+          'spaced%20name.html');
     });
   });
 

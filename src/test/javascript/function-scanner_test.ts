@@ -20,8 +20,8 @@ import {Visitor} from '../../javascript/estree-visitor';
 import {ScannedFunction} from '../../javascript/function';
 import {FunctionScanner} from '../../javascript/function-scanner';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {ResolvedUrl} from '../../model/url';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
-
 import {CodeUnderliner} from '../test-utils';
 
 suite('FunctionScanner', () => {
@@ -32,7 +32,7 @@ suite('FunctionScanner', () => {
   async function getNamespaceFunctions(filename: string): Promise<any[]> {
     const file = await urlLoader.load(filename);
     const parser = new JavaScriptParser();
-    const document = parser.parse(file, filename);
+    const document = parser.parse(file, filename as ResolvedUrl);
     const scanner = new FunctionScanner();
     const visit = (visitor: Visitor) =>
         Promise.resolve(document.visit([visitor]));

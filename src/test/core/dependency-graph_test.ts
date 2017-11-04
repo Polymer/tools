@@ -22,6 +22,7 @@ import {DependencyGraph} from '../../core/dependency-graph';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 import chaiAsPromised = require('chai-as-promised');
+import {ResolvedUrl} from '../../model/url';
 use(chaiAsPromised);
 
 suite('DependencyGraph', () => {
@@ -37,21 +38,27 @@ suite('DependencyGraph', () => {
     // base.html -> a.html -> common.html
     // base.html -> b.html -> common.html
     let graph = new DependencyGraph();
-    assertStringSetsEqual(graph.getAllDependantsOf('common.html'), []);
-    graph.addDocument('a.html', ['common.html']);
-    assertStringSetsEqual(graph.getAllDependantsOf('common.html'), ['a.html']);
-    graph.addDocument('b.html', ['common.html']);
     assertStringSetsEqual(
-        graph.getAllDependantsOf('common.html'), ['a.html', 'b.html']);
-    graph.addDocument('base.html', ['a.html', 'b.html']);
+        graph.getAllDependantsOf('common.html' as ResolvedUrl), []);
+    graph.addDocument('a.html' as ResolvedUrl, ['common.html' as ResolvedUrl]);
     assertStringSetsEqual(
-        graph.getAllDependantsOf('common.html'),
+        graph.getAllDependantsOf('common.html' as ResolvedUrl), ['a.html']);
+    graph.addDocument('b.html' as ResolvedUrl, ['common.html' as ResolvedUrl]);
+    assertStringSetsEqual(
+        graph.getAllDependantsOf('common.html' as ResolvedUrl),
+        ['a.html', 'b.html']);
+    graph.addDocument(
+        'base.html' as ResolvedUrl, ['a.html', 'b.html'] as ResolvedUrl[]);
+    assertStringSetsEqual(
+        graph.getAllDependantsOf('common.html' as ResolvedUrl),
         ['a.html', 'b.html', 'base.html']);
-    graph = graph.invalidatePaths(['a.html']);
+    graph = graph.invalidatePaths(['a.html' as ResolvedUrl]);
     assertStringSetsEqual(
-        graph.getAllDependantsOf('common.html'), ['b.html', 'base.html']);
-    graph = graph.invalidatePaths(['b.html']);
-    assertStringSetsEqual(graph.getAllDependantsOf('common.html'), []);
+        graph.getAllDependantsOf('common.html' as ResolvedUrl),
+        ['b.html', 'base.html']);
+    graph = graph.invalidatePaths(['b.html' as ResolvedUrl]);
+    assertStringSetsEqual(
+        graph.getAllDependantsOf('common.html' as ResolvedUrl), []);
     assertIsValidGraph(graph);
   });
 
@@ -70,7 +77,8 @@ suite('DependencyGraph', () => {
     async function assertImportersOf(
         path: string, expectedDependants: string[]) {
       const graph = await getLatestDependencyGraph(analyzer);
-      assertStringSetsEqual(graph.getAllDependantsOf(path), expectedDependants);
+      assertStringSetsEqual(
+          graph.getAllDependantsOf(path as ResolvedUrl), expectedDependants);
     };
 
     test('works with a basic document with no dependencies', async() => {
@@ -103,8 +111,8 @@ suite('DependencyGraph', () => {
 
     test('resolves for a single added document', async() => {
       const graph = new DependencyGraph();
-      const done = graph.whenReady('a');
-      graph.addDocument('a', []);
+      const done = graph.whenReady('a' as ResolvedUrl);
+      graph.addDocument('a' as ResolvedUrl, []);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
       await done;
@@ -112,8 +120,8 @@ suite('DependencyGraph', () => {
 
     test('resolves for a single rejected document', async() => {
       const graph = new DependencyGraph();
-      const done = graph.whenReady('a');
-      graph.rejectDocument('a', new Error('because'));
+      const done = graph.whenReady('a' as ResolvedUrl);
+      graph.rejectDocument('a' as ResolvedUrl, new Error('because'));
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
       await done;
@@ -121,9 +129,9 @@ suite('DependencyGraph', () => {
 
     test('resolves for a document with an added dependency', async() => {
       const graph = new DependencyGraph();
-      const done = graph.whenReady('a');
-      graph.addDocument('a', ['b']);
-      graph.addDocument('b', []);
+      const done = graph.whenReady('a' as ResolvedUrl);
+      graph.addDocument('a' as ResolvedUrl, ['b' as ResolvedUrl]);
+      graph.addDocument('b' as ResolvedUrl, []);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
       await done;
@@ -131,9 +139,9 @@ suite('DependencyGraph', () => {
 
     test('resolves for a document with a rejected dependency', async() => {
       const graph = new DependencyGraph();
-      const done = graph.whenReady('a');
-      graph.addDocument('a', ['b']);
-      graph.rejectDocument('b', new Error('because'));
+      const done = graph.whenReady('a' as ResolvedUrl);
+      graph.addDocument('a' as ResolvedUrl, ['b' as ResolvedUrl]);
+      graph.rejectDocument('b' as ResolvedUrl, new Error('because'));
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
       await done;
@@ -141,9 +149,12 @@ suite('DependencyGraph', () => {
 
     test('resolves for a simple cycle', async() => {
       const graph = new DependencyGraph();
-      const promises = [graph.whenReady('a'), graph.whenReady('b')];
-      graph.addDocument('a', ['b']);
-      graph.addDocument('b', ['a']);
+      const promises = [
+        graph.whenReady('a' as ResolvedUrl),
+        graph.whenReady('b' as ResolvedUrl)
+      ];
+      graph.addDocument('a' as ResolvedUrl, ['b'] as ResolvedUrl[]);
+      graph.addDocument('b' as ResolvedUrl, ['a'] as ResolvedUrl[]);
       await Promise.all(promises);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
@@ -152,17 +163,17 @@ suite('DependencyGraph', () => {
     test('does not resolve early for a cycle with a leg', async() => {
       const graph = new DependencyGraph();
       let cResolved = false;
-      const aReady = graph.whenReady('a').then(() => {
+      const aReady = graph.whenReady('a' as ResolvedUrl).then(() => {
         assert.isTrue(cResolved);
       });
-      const bReady = graph.whenReady('b').then(() => {
+      const bReady = graph.whenReady('b' as ResolvedUrl).then(() => {
         assert.isTrue(cResolved);
       });
-      graph.addDocument('a', ['b', 'c']);
-      graph.addDocument('b', ['a']);
+      graph.addDocument('a' as ResolvedUrl, ['b', 'c'] as ResolvedUrl[]);
+      graph.addDocument('b' as ResolvedUrl, ['a'] as ResolvedUrl[]);
       await Promise.resolve();
       cResolved = true;
-      graph.addDocument('c', []);
+      graph.addDocument('c' as ResolvedUrl, []);
       await Promise.all([aReady, bReady]);
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);

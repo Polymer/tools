@@ -17,6 +17,7 @@ import {assert} from 'chai';
 
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
+import {ResolvedUrl} from '../../model/url';
 import {CssImportScanner} from '../../polymer/css-import-scanner';
 
 suite('CssImportScanner', () => {
@@ -44,7 +45,8 @@ suite('CssImportScanner', () => {
           </dom-module>
         </body>
         </html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -62,7 +64,8 @@ suite('CssImportScanner', () => {
           </dom-module>
         </body>
         </html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);

@@ -17,6 +17,7 @@ import * as pathlib from 'path';
 import {Url} from 'url';
 
 import {parseUrl} from '../core/utils';
+import {PackageRelativeUrl} from '../model/url';
 
 import {UrlLoader} from './url-loader';
 
@@ -67,7 +68,8 @@ export class FSUrlLoader implements UrlLoader {
     return this.root ? pathlib.join(this.root, pathname) : pathname;
   }
 
-  async readDirectory(pathFromRoot: string, deep?: boolean): Promise<string[]> {
+  async readDirectory(pathFromRoot: string, deep?: boolean):
+      Promise<PackageRelativeUrl[]> {
     const files = await new Promise<string[]>((resolve, reject) => {
       fs.readdir(
           pathlib.join(this.root, pathFromRoot),
@@ -86,13 +88,13 @@ export class FSUrlLoader implements UrlLoader {
           subDirResultPromises.push(this.readDirectory(file, deep));
         }
       } else {
-        results.push(file);
+        results.push(file as PackageRelativeUrl);
       }
     }
     const arraysOfFiles = await Promise.all(subDirResultPromises);
     for (const dirResults of arraysOfFiles) {
       for (const file of dirResults) {
-        results.push(file);
+        results.push(file as PackageRelativeUrl);
       }
     }
     return results;

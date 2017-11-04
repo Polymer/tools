@@ -48,8 +48,8 @@ export class ScannedScriptTagImport extends ScannedImport {
     //
     // See https://github.com/Polymer/polymer-analyzer/issues/615
 
-    const scannedDocument =
-        document._analysisContext._getScannedDocument(this.url);
+    const scannedDocument = document._analysisContext._getScannedDocument(
+        document._analysisContext.resolveUrl(this.url));
     if (scannedDocument) {
       const importedDocument =
           new Document(scannedDocument, document._analysisContext);
@@ -75,7 +75,7 @@ export class ScannedScriptTagImport extends ScannedImport {
       importedDocument.resolve();
 
       return new ScriptTagImport(
-          this.url,
+          document._analysisContext.resolveUrl(this.url),
           this.type,
           importedDocument,
           this.sourceRange,

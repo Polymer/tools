@@ -17,6 +17,7 @@ import {assert} from 'chai';
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlImportScanner} from '../../html/html-import-scanner';
 import {HtmlParser} from '../../html/html-parser';
+import {PackageRelativeUrl, ResolvedUrl} from '../../model/url';
 
 suite('HtmlImportScanner', () => {
 
@@ -34,7 +35,8 @@ suite('HtmlImportScanner', () => {
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -50,7 +52,8 @@ suite('HtmlImportScanner', () => {
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -67,7 +70,8 @@ suite('HtmlImportScanner', () => {
           </dom-module>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
@@ -82,8 +86,10 @@ suite('HtmlImportScanner', () => {
     let scanner: HtmlImportScanner;
 
     setup(() => {
-      const lazyEdges = new Map<string, string[]>();
-      lazyEdges.set('test.html', ['lazy1.html', 'lazy2.html', 'lazy3.html']);
+      const lazyEdges = new Map<ResolvedUrl, PackageRelativeUrl[]>();
+      lazyEdges.set(
+          'test.html' as ResolvedUrl,
+          ['lazy1.html', 'lazy2.html', 'lazy3.html'] as PackageRelativeUrl[]);
       scanner = new HtmlImportScanner(lazyEdges);
     });
 
@@ -94,7 +100,8 @@ suite('HtmlImportScanner', () => {
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);

@@ -20,13 +20,15 @@ import * as path from 'path';
 
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {Severity, Warning} from '../../model/model';
+import {ResolvedUrl} from '../../model/url';
 import {WarningPrinter} from '../../warning/warning-printer';
 
 const parser = new JavaScriptParser();
 const staticTestDir = path.join(__dirname, '../static');
 const vanillaSources =
     fs.readFileSync(path.join(staticTestDir, 'vanilla-elements.js'), 'utf-8');
-const parsedDocument = parser.parse(vanillaSources, 'vanilla-elements.js');
+const parsedDocument =
+    parser.parse(vanillaSources, 'vanilla-elements.js' as ResolvedUrl);
 
 const dumbNameWarning = new Warning({
   message: 'This is a dumb name for an element.',

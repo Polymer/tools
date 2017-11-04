@@ -13,11 +13,11 @@
  */
 
 import * as dom5 from 'dom5';
-import {resolve as resolveUrl} from 'url';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
 import {ScannedImport} from '../model/model';
+import {FileRelativeUrl} from '../model/url';
 
 const p = dom5.predicates;
 
@@ -36,11 +36,10 @@ export class CssImportScanner implements HtmlScanner {
 
     await visit((node) => {
       if (isCssImportNode(node)) {
-        const href = dom5.getAttribute(node, 'href')!;
-        const importUrl = resolveUrl(document.baseUrl, href);
+        const href = dom5.getAttribute(node, 'href')! as FileRelativeUrl;
         imports.push(new ScannedImport(
             'css-import',
-            importUrl,
+            ScannedImport.resolveUrl(document.baseUrl, href),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForAttributeValue(node, 'href')!,
             node,

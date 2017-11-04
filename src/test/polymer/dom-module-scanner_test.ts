@@ -17,6 +17,7 @@ import {assert} from 'chai';
 
 import {HtmlVisitor} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
+import {ResolvedUrl} from '../../model/url';
 import {DomModuleScanner} from '../../polymer/dom-module-scanner';
 import {CodeUnderliner} from '../test-utils';
 
@@ -44,7 +45,8 @@ suite('DomModuleScanner', () => {
           </dom-module>
         </body>
         </html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features: domModules} = await scanner.scan(document, visit);
@@ -65,7 +67,8 @@ suite('DomModuleScanner', () => {
           </dom-module>
         </body>
         </html>`;
-      const document = new HtmlParser().parse(contents, 'test.html');
+      const document =
+          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
       const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
       const underliner = CodeUnderliner.withMapping('test.html', contents);
 

@@ -12,33 +12,35 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {ResolvedUrl} from '../model/url';
+
 import {Deferred} from './utils';
 
 class DocumentRecord {
-  url: string;
-  dependencies: Set<string>;
-  dependants: Set<string>;
+  url: ResolvedUrl;
+  dependencies: Set<ResolvedUrl>;
+  dependants: Set<ResolvedUrl>;
 
   // Represents the Promise that the dependencies are known, but nothing
   // about their state (loaded, scanned, etc)
-  dependenciesDeferred: Deferred<Set<string>>;
+  dependenciesDeferred: Deferred<Set<ResolvedUrl>>;
 
   static from(from: DocumentRecord) {
     return new DocumentRecord(from);
   }
 
-  constructor(urlOrFrom: string|DocumentRecord) {
-    if (typeof urlOrFrom === 'string') {
+  constructor(urlOrFrom: ResolvedUrl|DocumentRecord) {
+    if (!(urlOrFrom instanceof DocumentRecord)) {
       this.url = urlOrFrom;
       this.dependencies = new Set();
       this.dependants = new Set();
-      this.dependenciesDeferred = new Deferred<Set<string>>();
+      this.dependenciesDeferred = new Deferred<Set<ResolvedUrl>>();
     } else {
       const from = urlOrFrom;
       this.url = from.url;
       this.dependencies = from.dependencies;
       this.dependants = from.dependants;
-      this.dependenciesDeferred = new Deferred<Set<string>>();
+      this.dependenciesDeferred = new Deferred<Set<ResolvedUrl>>();
       if (from.dependenciesDeferred.resolved) {
         this.dependenciesDeferred.resolve(this.dependencies);
       } else if (from.dependenciesDeferred.rejected) {
@@ -51,7 +53,7 @@ class DocumentRecord {
         });
   }
 
-  get dependenciesKnown(): Promise<Set<string>> {
+  get dependenciesKnown(): Promise<Set<ResolvedUrl>> {
     return this.dependenciesDeferred.promise;
   }
 
@@ -71,7 +73,7 @@ class DocumentRecord {
  * Maintains bidirectional indexes of the dependency graph, for quick querying.
  */
 export class DependencyGraph {
-  private _documents = new Map<string, DocumentRecord>();
+  private _documents = new Map<ResolvedUrl, DocumentRecord>();
 
   constructor(from?: DependencyGraph) {
     if (!from)
@@ -83,7 +85,7 @@ export class DependencyGraph {
     }
   }
 
-  private _getRecordFor(url: string) {
+  private _getRecordFor(url: ResolvedUrl) {
     let record = this._documents.get(url);
     if (record == null) {
       record = new DocumentRecord(url);
@@ -98,7 +100,7 @@ export class DependencyGraph {
    * @param url The url of a document.
    * @param newDependencies The paths of that document's direct dependencies.
    */
-  addDocument(url: string, dependencies: Iterable<string>) {
+  addDocument(url: ResolvedUrl, dependencies: Iterable<ResolvedUrl>) {
     const record = this._getRecordFor(url);
     for (const dependency of dependencies) {
       record.dependencies.add(dependency);
@@ -108,7 +110,7 @@ export class DependencyGraph {
     record.dependenciesDeferred.resolve(record.dependencies);
   }
 
-  rejectDocument(url: string, error: Error) {
+  rejectDocument(url: ResolvedUrl, error: Error) {
     this._getRecordFor(url).dependenciesDeferred.reject(error);
   }
 
@@ -118,11 +120,11 @@ export class DependencyGraph {
    * Promise never rejects, if the document or any dependencies are rejected,
    * the Promise still resolves.
    */
-  async whenReady(url: string): Promise<void> {
-    await this._whenReady(url, new Set<string>());
+  async whenReady(url: ResolvedUrl): Promise<void> {
+    await this._whenReady(url, new Set<ResolvedUrl>());
   }
 
-  private async _whenReady(key: string, visited: Set<string>) {
+  private async _whenReady(key: ResolvedUrl, visited: Set<ResolvedUrl>) {
     if (visited.has(key)) {
       return;
     }
@@ -138,7 +140,7 @@ export class DependencyGraph {
   /**
    * Returns a fork of this graph without the documents at the given paths.
    */
-  invalidatePaths(paths: string[]): DependencyGraph {
+  invalidatePaths(paths: ResolvedUrl[]): DependencyGraph {
     const fork = new DependencyGraph(this);
     for (const path of paths) {
       const record = fork._documents.get(path);
@@ -172,14 +174,15 @@ export class DependencyGraph {
    * So if A depends on B which depends on C, then getAllDependentsOf(C) will
    * be Set([A,B]), and getAllDependantsOf(B) will be Set([A]).
    */
-  getAllDependantsOf(path: string): Set<string> {
+  getAllDependantsOf(path: ResolvedUrl): Set<ResolvedUrl> {
     const result = new Set();
     this._getAllDependantsOf(path, new Set(), result);
     return result;
   }
 
   private _getAllDependantsOf(
-      path: string, visited: Set<string>, result: Set<string>): void {
+      path: ResolvedUrl, visited: Set<ResolvedUrl>,
+      result: Set<ResolvedUrl>): void {
     if (visited.has(path)) {
       return;
     }

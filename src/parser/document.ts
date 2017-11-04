@@ -13,6 +13,7 @@
  */
 
 import {correctSourceRange, LocationOffset, SourcePosition, SourceRange, uncorrectSourceRange} from '../model/source-range';
+import {ResolvedUrl} from '../model/url';
 
 /**
  * A parsed Document.
@@ -22,8 +23,8 @@ import {correctSourceRange, LocationOffset, SourcePosition, SourceRange, uncorre
  */
 export abstract class ParsedDocument<AstNode = any, Visitor = any> {
   abstract type: string;
-  url: string;
-  baseUrl: string;
+  url: ResolvedUrl;
+  baseUrl: ResolvedUrl;
   contents: string;
   ast: AstNode;
   isInline: boolean;
@@ -153,8 +154,8 @@ export abstract class ParsedDocument<AstNode = any, Visitor = any> {
 }
 
 export interface Options<A> {
-  url: string;
-  baseUrl?: string;
+  url: ResolvedUrl;
+  baseUrl?: ResolvedUrl;
   contents: string;
   ast: A;
   locationOffset: LocationOffset|undefined;

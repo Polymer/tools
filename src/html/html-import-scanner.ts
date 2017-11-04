@@ -13,9 +13,9 @@
  */
 
 import * as dom5 from 'dom5';
-import {resolve as resolveUrl} from 'url';
 
 import {ScannedImport} from '../model/model';
+import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from '../model/url';
 
 import {HtmlVisitor, ParsedHtmlDocument} from './html-document';
 import {HtmlScanner} from './html-scanner';
@@ -45,7 +45,7 @@ const isLazyImportNode = p.AND(
  * Scans for <link rel="import"> and <link rel="lazy-import">
  */
 export class HtmlImportScanner implements HtmlScanner {
-  constructor(private _lazyEdges?: Map<string, string[]>) {
+  constructor(private _lazyEdges?: Map<ResolvedUrl, PackageRelativeUrl[]>) {
   }
 
   async scan(
@@ -63,11 +63,10 @@ export class HtmlImportScanner implements HtmlScanner {
       } else {
         return;
       }
-      const href = dom5.getAttribute(node, 'href')!;
-      const importUrl = resolveUrl(document.baseUrl, href);
+      const href = dom5.getAttribute(node, 'href')! as FileRelativeUrl;
       imports.push(new ScannedImport(
           type,
-          importUrl,
+          ScannedImport.resolveUrl(document.baseUrl, href),
           document.sourceRangeForNode(node)!,
           document.sourceRangeForAttributeValue(node, 'href')!,
           node,
