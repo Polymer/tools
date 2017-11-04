@@ -8,6 +8,9 @@
   "directories": {
     "lib": "lib"
   },
+  "engines": {
+    "node": ">=8"
+  },
   "dependencies": {
     "@types/doctrine": "0.0.3",
     "@types/fs-extra": "^4.0.2",
