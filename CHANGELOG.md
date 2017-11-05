@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [2.5.0] - 2017-11-05
+
 * Use branded subtypes of string to be more careful about how we canonicalize and resolve urls. They're totally normal strings at runtime. TypeScript users that wrote their own UrlLoaders or UrlResolvers may need to make some minor changes to compile green, but since runtime isn't broken this isn't a breaking change. See src/mode/url.ts for more info.
 * Handle method rest parameters correctly.
 
 ## [2.4.1] - 2017-10-31
+
 * Minor fixes for TypeScript 2.6 compatibility.
 
 ## [2.4.0] - 2017-10-26
