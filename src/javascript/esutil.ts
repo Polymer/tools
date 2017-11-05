@@ -255,7 +255,12 @@ export function toScannedMethod(
       let description = undefined;
       // With ES6 we can have a lot of param patterns. Best to leave the
       // formatting to escodegen.
-      const name = escodegen.generate(nodeParam);
+      let name = escodegen.generate(nodeParam);
+      // Rest parameters look like `...foo` in the parameter list, but are
+      // annotated as `@param {...T} foo` in the JSDoc.
+      if (name.startsWith('...')) {
+        name = name.substring(3);
+      }
       const tag = paramTags.get(name);
       if (tag) {
         if (tag.type) {
