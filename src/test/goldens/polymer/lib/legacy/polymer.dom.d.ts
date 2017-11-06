@@ -82,7 +82,7 @@ declare namespace Polymer {
    * in the majority of cases simply facades directly to the standard native
    * API.
    */
-  function dom(obj: Node|Event|null): DomApi|null|EventApi;
+  function dom(obj: Node|Event|null): DomApi|EventApi|null;
 }
 
 /**
