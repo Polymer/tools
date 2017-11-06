@@ -429,9 +429,27 @@ namespaced name.`,
                 name: 'customInstanceFunctionWithParams',
                 description: '',
                 params: [
-                  {name: 'a', type: undefined, description: undefined},
-                  {name: 'b', type: undefined, description: undefined},
-                  {name: 'c', type: undefined, description: undefined}
+                  {
+                    name: 'a',
+                    type: undefined,
+                    defaultValue: undefined,
+                    rest: undefined,
+                    description: undefined
+                  },
+                  {
+                    name: 'b',
+                    type: undefined,
+                    defaultValue: undefined,
+                    rest: undefined,
+                    description: undefined
+                  },
+                  {
+                    name: 'c',
+                    type: undefined,
+                    defaultValue: undefined,
+                    rest: undefined,
+                    description: undefined
+                  }
                 ],
                 return: undefined,
               },
@@ -443,12 +461,22 @@ namespaced name.`,
                   {
                     name: 'a',
                     type: 'Number',
+                    defaultValue: undefined,
+                    rest: undefined,
                     description: 'The first argument',
                   },
-                  {name: 'b', type: 'Number', description: undefined},
+                  {
+                    name: 'b',
+                    type: 'Number',
+                    defaultValue: undefined,
+                    rest: undefined,
+                    description: undefined
+                  },
                   {
                     name: 'c',
                     type: 'Number',
+                    defaultValue: undefined,
+                    rest: undefined,
                     description: 'The third argument',
                   }
                 ],

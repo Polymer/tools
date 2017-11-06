@@ -27,5 +27,7 @@ export interface Method extends Property {
 export interface MethodParam {
   readonly name: string;
   readonly type?: string;
+  readonly defaultValue?: string;
+  readonly rest?: boolean;
   readonly description?: string;
 }

@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Add `defaultValue` and `rest` fields to method parameters.
 <!-- Add new, unreleased changes here. -->
 
 ## [2.5.0] - 2017-11-05
