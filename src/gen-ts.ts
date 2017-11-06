@@ -100,7 +100,15 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
     } else if (feature.kinds.has('function')) {
       handleFunction(feature as AnalyzerFunction, root);
     } else if (feature.kinds.has('import')) {
-      handleImport(feature as analyzer.Import, root);
+      // Sometimes an Analyzer document includes an import feature that is
+      // inbound (things that depend on me) instead of outbound (things I
+      // depend on). For example, if an HTML file has a <script> tag for a JS
+      // file, then the JS file's Analyzer document will include that <script>
+      // tag as an import feature. We only care about outbound dependencies,
+      // hence this check.
+      if (feature.sourceRange && feature.sourceRange.file === doc.url) {
+        handleImport(feature as analyzer.Import, root);
+      }
     }
   }
 }
