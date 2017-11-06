@@ -56,4 +56,14 @@ class Class {
   customInstanceFunctionWithRestParam(a, ...b) {
     return 9;
   }
+
+  /**
+   * This is the description for customInstanceFunctionWithParamDefault.
+   * @param {Number} a The first argument.
+   * @param {Number} b The second argument.
+   * @returns {Number} - The number 10, always.
+   */
+  customInstanceFunctionWithParamDefault(a, b = 0) {
+    return 10;
+  }
 }

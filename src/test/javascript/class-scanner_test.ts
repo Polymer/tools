@@ -88,6 +88,9 @@ suite('Class', () => {
             if (p.type != null) {
               param.type = p.type;
             }
+            if (p.defaultValue != null) {
+              param.defaultValue = p.defaultValue;
+            }
             return param;
           });
         }
@@ -236,6 +239,28 @@ suite('Class', () => {
               ],
               return: {
                 desc: 'The number 9, always.',
+                type: 'Number',
+              },
+            },
+            {
+              name: 'customInstanceFunctionWithParamDefault',
+              description: 'This is the description for ' +
+                  'customInstanceFunctionWithParamDefault.',
+              params: [
+                {
+                  name: 'a',
+                  type: 'Number',
+                  description: 'The first argument.',
+                },
+                {
+                  name: 'b',
+                  type: 'Number',
+                  defaultValue: '0',
+                  description: 'The second argument.',
+                }
+              ],
+              return: {
+                desc: 'The number 10, always.',
                 type: 'Number',
               },
             },
@@ -427,6 +452,28 @@ suite('Class', () => {
               ],
               return: {
                 desc: 'The number 9, always.',
+                type: 'Number',
+              },
+            },
+            {
+              name: 'customInstanceFunctionWithParamDefault',
+              description: 'This is the description for ' +
+                  'customInstanceFunctionWithParamDefault.',
+              params: [
+                {
+                  name: 'a',
+                  type: 'Number',
+                  description: 'The first argument.',
+                },
+                {
+                  name: 'b',
+                  type: 'Number',
+                  defaultValue: '0',
+                  description: 'The second argument.',
+                }
+              ],
+              return: {
+                desc: 'The number 10, always.',
                 type: 'Number',
               },
             },
