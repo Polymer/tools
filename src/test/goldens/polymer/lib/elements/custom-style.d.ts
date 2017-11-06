@@ -1,4 +1,4 @@
-/// <reference path="../../bower_components/shadycss/custom-style-interface.d.ts" />
+/// <reference path="../../../shadycss/custom-style-interface.d.ts" />
 /// <reference path="../utils/style-gather.d.ts" />
 
 declare namespace Polymer {

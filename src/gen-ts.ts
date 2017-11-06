@@ -321,8 +321,19 @@ function handleImport(feature: analyzer.Import, tsDoc: ts.Document) {
   if (!feature.url) {
     return;
   }
-  tsDoc.referencePaths.add(path.relative(
-      path.dirname(tsDoc.path), makeDeclarationsFilename(feature.url)));
+  // When we analyze a package's Git repo, our dependencies are installed to
+  // "<repo>/bower_components". However, when this package is itself installed
+  // as a dependency, our own dependencies will instead be siblings, one
+  // directory up the tree.
+  //
+  // Analyzer (since 2.5.0) will set an import feature's URL to the resolved
+  // dependency path as discovered on disk. An import for "../foo/foo.html"
+  // will be resolved to "bower_components/foo/foo.html". Transform the URL
+  // back to the style that will work when this package is installed as a
+  // dependency.
+  const url = feature.url.replace(/^(bower_components|node_modules)\//, '../');
+  tsDoc.referencePaths.add(
+      path.relative(path.dirname(tsDoc.path), makeDeclarationsFilename(url)));
 }
 
 /**

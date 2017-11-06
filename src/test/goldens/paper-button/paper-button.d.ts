@@ -1,7 +1,7 @@
-/// <reference path="bower_components/polymer/polymer.d.ts" />
-/// <reference path="bower_components/iron-flex-layout/iron-flex-layout.d.ts" />
-/// <reference path="bower_components/paper-behaviors/paper-button-behavior.d.ts" />
-/// <reference path="bower_components/paper-styles/element-styles/paper-material-styles.d.ts" />
+/// <reference path="../polymer/polymer.d.ts" />
+/// <reference path="../iron-flex-layout/iron-flex-layout.d.ts" />
+/// <reference path="../paper-behaviors/paper-button-behavior.d.ts" />
+/// <reference path="../paper-styles/element-styles/paper-material-styles.d.ts" />
 
 /**
  * Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)

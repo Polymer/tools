@@ -1,4 +1,4 @@
-/// <reference path="../../bower_components/shadycss/apply-shim.d.ts" />
+/// <reference path="../../../shadycss/apply-shim.d.ts" />
 /// <reference path="../mixins/element-mixin.d.ts" />
 /// <reference path="../mixins/gesture-event-listeners.d.ts" />
 /// <reference path="../mixins/dir-mixin.d.ts" />
