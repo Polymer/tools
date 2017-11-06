@@ -18,7 +18,7 @@ import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
 
-import {ScannedMethod} from '../index';
+import {ScannedMethod, MethodParam} from '../index';
 import {ImmutableSet} from '../model/immutable';
 import {Privacy} from '../model/model';
 import {ScannedEvent, Severity, SourceRange, Warning} from '../model/model';
@@ -253,6 +253,7 @@ export function toScannedMethod(
     scannedMethod.params = (value.params || []).map((nodeParam) => {
       let name;
       let defaultValue;
+      let rest;
 
       if (nodeParam.type === 'Identifier') {
         // Basic parameter: method(param)
@@ -263,6 +264,7 @@ export function toScannedMethod(
           nodeParam.argument.type === 'Identifier') {
         // Rest parameter: method(...param)
         name = nodeParam.argument.name;
+        rest = true;
 
       } else if (
           nodeParam.type === 'AssignmentPattern' &&
@@ -290,7 +292,8 @@ export function toScannedMethod(
         }
       }
 
-      return {name, type, defaultValue, description};
+      const param: MethodParam = {name, type, defaultValue, rest, description};
+      return param;
     });
   }
 

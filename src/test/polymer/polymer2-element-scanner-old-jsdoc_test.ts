@@ -437,18 +437,21 @@ namespaced name.`,
                     name: 'a',
                     type: undefined,
                     defaultValue: undefined,
+                    rest: undefined,
                     description: undefined
                   },
                   {
                     name: 'b',
                     type: undefined,
                     defaultValue: undefined,
+                    rest: undefined,
                     description: undefined
                   },
                   {
                     name: 'c',
                     type: undefined,
                     defaultValue: undefined,
+                    rest: undefined,
                     description: undefined
                   }
                 ],
@@ -463,18 +466,21 @@ namespaced name.`,
                     name: 'a',
                     type: 'Number',
                     defaultValue: undefined,
+                    rest: undefined,
                     description: 'The first argument',
                   },
                   {
                     name: 'b',
                     type: 'Number',
                     defaultValue: undefined,
+                    rest: undefined,
                     description: undefined
                   },
                   {
                     name: 'c',
                     type: 'Number',
                     defaultValue: undefined,
+                    rest: undefined,
                     description: 'The third argument',
                   }
                 ],

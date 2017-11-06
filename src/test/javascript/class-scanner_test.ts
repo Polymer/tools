@@ -91,6 +91,9 @@ suite('Class', () => {
             if (p.defaultValue != null) {
               param.defaultValue = p.defaultValue;
             }
+            if (p.rest != null) {
+              param.rest = p.rest;
+            }
             return param;
           });
         }
@@ -234,6 +237,7 @@ suite('Class', () => {
                 {
                   name: 'b',
                   type: '...Number',
+                  rest: true,
                   description: 'The second argument.',
                 }
               ],
@@ -447,6 +451,7 @@ suite('Class', () => {
                 {
                   name: 'b',
                   type: '...Number',
+                  rest: true,
                   description: 'The second argument.',
                 }
               ],
