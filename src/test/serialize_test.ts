@@ -26,15 +26,21 @@ suite('serializeTsDeclarations', () => {
     });
     m.description = 'This is my function.\nIt has a multi-line description.';
     m.params = [
-      new ts.Param('param1', new ts.NameType('string')),
-      new ts.Param('param2', new ts.NameType('any'), true),
+      new ts.Param({name: 'param1', type: new ts.NameType('string')}),
+      new ts.Param(
+          {name: 'param2', type: new ts.NameType('any'), optional: true}),
+      new ts.Param({
+        name: 'param3',
+        type: new ts.ArrayType(new ts.NameType('number')),
+        rest: true
+      }),
     ];
     assert.equal(m.serialize(), `
 /**
  * This is my function.
  * It has a multi-line description.
  */
-declare function MyMethod(param1: string, param2?: any): boolean;
+declare function MyMethod(param1: string, param2?: any, ...param3: number[]): boolean;
 `);
   });
 

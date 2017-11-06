@@ -388,11 +388,14 @@ export class Param {
   name: string;
   type: Type;
   optional: boolean;
+  rest: boolean;
 
-  constructor(name: string, type: Type, optional = false) {
-    this.name = name;
-    this.type = type;
-    this.optional = optional;
+  constructor(
+      data: {name: string, type: Type, optional?: boolean, rest?: boolean}) {
+    this.name = data.name;
+    this.type = data.type || anyType;
+    this.optional = data.optional || false;
+    this.rest = data.rest || false;
   }
 
   * traverse(): Iterable<Node> {
@@ -401,7 +404,16 @@ export class Param {
   }
 
   serialize(): string {
-    return `${this.name}${this.optional ? '?' : ''}: ${this.type.serialize()}`;
+    let out = '';
+    if (this.rest) {
+      out += '...';
+    }
+    out += this.name;
+    if (this.optional) {
+      out += '?';
+    }
+    out += ': ' + this.type.serialize();
+    return out;
   }
 }
 

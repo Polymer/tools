@@ -249,8 +249,8 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
   });
 
   for (const param of feature.params || []) {
-    const {type, optional} = closureParamToTypeScript(param.type);
-    f.params.push(new ts.Param(param.name, type, optional));
+    const {type, optional, rest} = closureParamToTypeScript(param.type);
+    f.params.push(new ts.Param({name: param.name, type, optional, rest}));
   }
 
   findOrCreateNamespace(root, namespacePath).members.push(f);
@@ -298,8 +298,8 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     m.description = method.description || '';
 
     for (const param of method.params || []) {
-      const {type, optional} = closureParamToTypeScript(param.type);
-      m.params.push(new ts.Param(param.name, type, optional));
+      const {type, optional, rest} = closureParamToTypeScript(param.type);
+      m.params.push(new ts.Param({name: param.name, type, optional, rest}));
     }
 
     tsMethods.push(m);
@@ -321,8 +321,19 @@ function handleImport(feature: analyzer.Import, tsDoc: ts.Document) {
   if (!feature.url) {
     return;
   }
-  tsDoc.referencePaths.add(path.relative(
-      path.dirname(tsDoc.path), makeDeclarationsFilename(feature.url)));
+  // When we analyze a package's Git repo, our dependencies are installed to
+  // "<repo>/bower_components". However, when this package is itself installed
+  // as a dependency, our own dependencies will instead be siblings, one
+  // directory up the tree.
+  //
+  // Analyzer (since 2.5.0) will set an import feature's URL to the resolved
+  // dependency path as discovered on disk. An import for "../foo/foo.html"
+  // will be resolved to "bower_components/foo/foo.html". Transform the URL
+  // back to the style that will work when this package is installed as a
+  // dependency.
+  const url = feature.url.replace(/^(bower_components|node_modules)\//, '../');
+  tsDoc.referencePaths.add(
+      path.relative(path.dirname(tsDoc.path), makeDeclarationsFilename(url)));
 }
 
 /**
