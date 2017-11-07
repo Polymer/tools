@@ -28,7 +28,7 @@ const {generateDeclarations} = require('../lib/gen-ts');
 const fixturesDir = path.join(__dirname, '..', 'src', 'test', 'fixtures');
 const goldensDir = path.join(__dirname, '..', 'src', 'test', 'goldens');
 
-fsExtra.emptyDir(goldensDir);
+fsExtra.emptyDirSync(goldensDir);
 
 for (const fixture of fs.readdirSync(fixturesDir)) {
   console.log('making goldens for ' + fixture);

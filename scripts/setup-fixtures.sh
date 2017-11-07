@@ -18,11 +18,11 @@
 set -e
 
 cd src/test
-rm -rf fixtures
-mkdir fixtures
+mkdir -p fixtures
 cd fixtures
 
 while read -r repo tag dir; do
+  if [ -d $dir ]; then continue; fi  # Already set up.
   git clone $repo $dir
   cd $dir
   git checkout $tag
