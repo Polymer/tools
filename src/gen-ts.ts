@@ -302,6 +302,7 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     let requiredAhead = false;
     for (const param of reverseIter(method.params || [])) {
       let {type, optional, rest} = closureParamToTypeScript(param.type);
+
       if (param.defaultValue !== undefined) {
         // Parameters with default values generally behave like optional
         // parameters. However, unlike optional parameters, they may be
@@ -315,6 +316,16 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
       } else if (!optional) {
         requiredAhead = true;
       }
+
+      // Analyzer might know this is a rest parameter even if there was no
+      // JSDoc type annotation (or if it was wrong).
+      rest = rest || !!param.rest;
+      if (rest && type.kind !== 'array') {
+        // Closure rest parameter types are written without the Array syntax,
+        // but in TypeScript they must be explicitly arrays.
+        type = new ts.ArrayType(type);
+      }
+
       m.params.unshift(new ts.Param({name: param.name, type, optional, rest}));
     }
 

@@ -22,6 +22,8 @@ class MyClass {
    */
   typed_rest_param(...p1) { }
 
+  undocumented_rest_param(...p1) { }
+
   /**
    * @param {string=} p1
    */

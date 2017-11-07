@@ -5,6 +5,7 @@ declare class MyClass {
   typed_return(): boolean;
   two_typed_params_and_typed_return(p1: string, p2: number): boolean;
   typed_rest_param(...p1: string[]): any;
+  undocumented_rest_param(...p1: any[]): any;
   optional_param(p1?: string): any;
   required_and_optional_param(p1: any, p2?: string): any;
   defaulted_param(p1?: any): any;
