@@ -14,8 +14,8 @@
 
 import * as commandLineArgs from 'command-line-args';
 
-import runPackageCommand from './cli/command-package';
-import runWorkspaceCommand from './cli/command-workspace';
+import runPackageCommand from './command-package';
+import runWorkspaceCommand from './command-workspace';
 
 const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   {
@@ -125,7 +125,7 @@ export interface CliOptions {
   'npm-name'?: string;
   'npm-version'?: string;
   clean: boolean;
-  'workspace-dir'?: string;
+  'workspace-dir': string;
   'github-token'?: string;
   force: boolean;
 }

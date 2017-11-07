@@ -64,6 +64,7 @@ function rework(line: string) {
 
   const options = {
     inDir: sourceDir,
+    outDir: sourceDir,
     packageName: '@polymer/polymer',
     packageVersion: '3.0.0',
   };

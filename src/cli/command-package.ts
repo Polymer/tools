@@ -11,13 +11,13 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
 import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
+import * as path from 'path';
 import * as semver from 'semver';
 
 import {CliOptions} from '../cli';
-import {convertPackage} from '../convert-package';
+import convertPackage from '../convert-package';
 import {readJson} from '../manifest-converter';
 
 export default async function run(options: CliOptions) {
@@ -36,20 +36,22 @@ export default async function run(options: CliOptions) {
   let inBowerJson: {name: string, version: string, main: any}|undefined;
   let inPackageJson: {name: string, version: string}|undefined;
   let outPackageJson: {name: string, version: string}|undefined;
+  const inDir = path.resolve(options.in || process.cwd());
+  const outDir = path.resolve(options.out);
   try {
-    outPackageJson = readJson(options.out, 'package.json');
+    outPackageJson = readJson(outDir, 'package.json');
   } catch (e) {
     // do nothing
   }
   try {
     if (options.in) {
-      inPackageJson = readJson(options.in, 'package.json');
+      inPackageJson = readJson(inDir, 'package.json');
     }
   } catch (e) {
     // do nothing
   }
   try {
-    inBowerJson = readJson('bower.json');
+    inBowerJson = readJson(inDir, 'bower.json');
   } catch (e) {
     // do nothing
   }
@@ -95,14 +97,14 @@ export default async function run(options: CliOptions) {
       chalk.dim('[1/2]') + ' 🌀  ' + chalk.magenta(`Converting Package...`));
 
   await convertPackage({
-    inDir: options.in,
-    outDir: options.out,
+    inDir: inDir,
+    outDir: outDir,
     excludes: options.exclude,
     namespaces: options.namespace,
     packageName: npmPackageName.toLowerCase(),
     packageVersion: npmPackageVersion,
-    cleanOutDir: options.clean,
-    mainFiles
+    cleanOutDir: options.clean!!,
+    mainFiles,
   });
 
   console.log(

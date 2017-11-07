@@ -2380,6 +2380,7 @@ Polymer({
   test('case-map', async () => {
     const options = {
       inDir: fixturesDirPath,
+      outDir: fixturesDirPath,
       packageName: 'case-map',
       packageVersion: '1.0.0',
       mainFiles: ['case-map/case-map.html']
@@ -2398,6 +2399,7 @@ Polymer({
   test('polymer-element', async () => {
     const options = {
       inDir: fixturesDirPath,
+      outDir: fixturesDirPath,
       packageName: 'polymer-element',
       packageVersion: '1.0.0'
     };
