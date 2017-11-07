@@ -9,7 +9,7 @@ declare namespace Polymer {
    * master `items` array and a `selected` array such that path changes to the
    * master array (at the host) element or elsewhere via data-binding) are
    * correctly propagated to items in the selected array and vice-versa.
-   * 
+   *
    * The `items` property accepts an array of user data, and via the
    * `select(item)` and `deselect(item)` API, updates the `selected` property
    * which may be bound to other parts of the application, and any changes to
@@ -62,11 +62,17 @@ declare namespace Polymer {
 
       /**
        * Returns whether the item is currently selected.
+       *
+       * @param item Item from `items` array to test
+       * @returns Whether the item is selected
        */
       isSelected(item: any): boolean;
 
       /**
        * Returns whether the item is currently selected.
+       *
+       * @param idx Index from `items` array to test
+       * @returns Whether the item is selected
        */
       isIndexSelected(idx: number): boolean;
       __deselectChangedIdx(idx: any): any;
@@ -74,23 +80,31 @@ declare namespace Polymer {
 
       /**
        * Deselects the given item if it is already selected.
+       *
+       * @param item Item from `items` array to deselect
        */
       deselect(item: any): any;
 
       /**
        * Deselects the given index if it is already selected.
+       *
+       * @param idx Index from `items` array to deselect
        */
       deselectIndex(idx: number): any;
 
       /**
        * Selects the given item.  When `toggle` is true, this will automatically
        * deselect the item if already selected.
+       *
+       * @param item Item from `items` array to select
        */
       select(item: any): any;
 
       /**
        * Selects the given index.  When `toggle` is true, this will automatically
        * deselect the item if already selected.
+       *
+       * @param idx Index from `items` array to select
        */
       selectIndex(idx: number): any;
     }
@@ -102,7 +116,7 @@ declare namespace Polymer {
    * `selected` array such that path changes to the master array (at the host)
    * element or elsewhere via data-binding) are correctly propagated to items
    * in the selected array and vice-versa.
-   * 
+   *
    * The `items` property accepts an array of user data, and via the
    * `select(item)` and `deselect(item)` API, updates the `selected` property
    * which may be bound to other parts of the application, and any changes to
@@ -110,34 +124,34 @@ declare namespace Polymer {
    * `items` array.  When `multi` is false, `selected` is a property
    * representing the last selected item.  When `multi` is true, `selected`
    * is an array of multiply selected items.
-   * 
+   *
    * Example:
-   * 
+   *
    * ```html
    * <dom-module id="employee-list">
-   * 
+   *
    *   <template>
-   * 
+   *
    *     <div> Employee list: </div>
    *     <template is="dom-repeat" id="employeeList" items="{{employees}}">
    *         <div>First name: <span>{{item.first}}</span></div>
    *         <div>Last name: <span>{{item.last}}</span></div>
    *         <button on-click="toggleSelection">Select</button>
    *     </template>
-   * 
+   *
    *     <array-selector id="selector" items="{{employees}}" selected="{{selected}}" multi toggle></array-selector>
-   * 
+   *
    *     <div> Selected employees: </div>
    *     <template is="dom-repeat" items="{{selected}}">
    *         <div>First name: <span>{{item.first}}</span></div>
    *         <div>Last name: <span>{{item.last}}</span></div>
    *     </template>
-   * 
+   *
    *   </template>
-   * 
+   *
    * </dom-module>
    * ```
-   * 
+   *
    * ```js
    * Polymer({
    *   is: 'employee-list',

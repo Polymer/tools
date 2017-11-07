@@ -17,6 +17,8 @@ declare class TemplateInstanceBase extends
   /**
    * Configure the given `props` by calling `_setPendingProperty`. Also
    * sets any properties stored in `__hostProps`.
+   *
+   * @param props Object of property name-value pairs to set.
    */
   _configureProperties(props: Object|null): any;
 
@@ -24,8 +26,11 @@ declare class TemplateInstanceBase extends
    * Forwards a host property to this instance.  This method should be
    * called on instances from the `options.forwardHostProp` callback
    * to propagate changes of host properties to each instance.
-   * 
+   *
    * Note this method enqueues the change, which are flushed as a batch.
+   *
+   * @param prop Property or path name
+   * @param value Value of the property to forward
    */
   forwardHostProp(prop: string, value: any): any;
 
@@ -33,6 +38,9 @@ declare class TemplateInstanceBase extends
    * Shows or hides the template instance top level child elements. For
    * text nodes, `textContent` is removed while "hidden" and replaced when
    * "shown."
+   *
+   * @param hide Set to true to hide the children;
+   * set to false to show them.
    */
   _showHideChildren(hide: boolean): any;
 }
@@ -56,18 +64,18 @@ declare namespace Polymer {
      * `<template>` provided.  Instancing the class will result in the
      * template being stamped into document fragment stored as the instance's
      * `root` property, after which it can be appended to the DOM.
-     * 
+     *
      * Templates may utilize all Polymer data-binding features as well as
      * declarative event listeners.  Event listeners and inline computing
      * functions in the template will be called on the host of the template.
-     * 
+     *
      * The constructor returned takes a single argument dictionary of initial
      * property values to propagate into template bindings.  Additionally
      * host properties can be forwarded in, and instance properties can be
      * notified out by providing optional callbacks in the `options` dictionary.
-     * 
+     *
      * Valid configuration in `options` are as follows:
-     * 
+     *
      * - `forwardHostProp(property, value)`: Called when a property referenced
      *   in the template changed on the template's host. As this library does
      *   not retain references to templates instanced by the user, it is the
@@ -93,7 +101,7 @@ declare namespace Polymer {
      *   to the template instance that stamped it.  It will also be returned
      *   from `instance.parentModel` in cases where template instance nesting
      *   causes an inner model to shadow an outer model.
-     * 
+     *
      * Note that the class returned from `templatize` is generated only once
      * for a given `<template>` using `options` from the first call for that
      * template, and the cached class is returned for all subsequent calls to
@@ -112,9 +120,9 @@ declare namespace Polymer {
      * contained in. A template model is an instance of
      * `TemplateInstanceBase`, and should be used to manipulate data
      * associated with this template instance.
-     * 
+     *
      * Example:
-     * 
+     *
      *   let model = modelForElement(el);
      *   if (model.index < 10) {
      *     model.set('item.checked', true);

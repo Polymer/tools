@@ -13,12 +13,12 @@ declare namespace Polymer {
    * and the `<slot>` has one `<div>` assigned to it, then the flattened
    * nodes list is `<a></a><div></div><b></b>`. If the `<slot>` has other
    * `<slot>` elements assigned to it, these are flattened as well.
-   * 
+   *
    * The provided `callback` is called whenever any change to this list
    * of flattened nodes occurs, where an addition or removal of a node is
    * considered a change. The `callback` is called with one argument, an object
    * containing an array of any `addedNodes` and `removedNodes`.
-   * 
+   *
    * Note: the callback is called asynchronous to any changes
    * at a microtask checkpoint. This is because observation is performed using
    * `MutationObserver` and the `<slot>` element's `slotchange` event which
@@ -51,6 +51,9 @@ declare namespace Polymer {
      * Flushes the observer causing any pending changes to be immediately
      * delivered the observer callback. By default these changes are delivered
      * asynchronously at the next microtask checkpoint.
+     *
+     * @returns Returns true if any pending changes caused the observer
+     * callback to run.
      */
     flush(): boolean;
     _listenSlots(nodeList: any): any;
