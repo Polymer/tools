@@ -7,4 +7,7 @@ declare class MyClass {
   typed_rest_param(...p1: string[]): any;
   optional_param(p1?: string): any;
   required_and_optional_param(p1: any, p2?: string): any;
+  defaulted_param(p1?: any): any;
+  defaulted_and_optional_param(p1?: any, p2?: string): any;
+  defaulted_and_required_param(p1: any|undefined, p2: any): any;
 }

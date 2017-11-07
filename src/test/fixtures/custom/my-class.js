@@ -31,4 +31,13 @@ class MyClass {
    * @param {string=} p2
    */
   required_and_optional_param(p1, p2) { }
+
+  defaulted_param(p1 = "foo") { }
+
+  /**
+   * @param {string=} p2
+   */
+  defaulted_and_optional_param(p1 = "foo", p2) { }
+
+  defaulted_and_required_param(p1 = "foo", p2) { }
 }
