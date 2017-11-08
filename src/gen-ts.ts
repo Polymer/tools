@@ -249,6 +249,8 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
   });
 
   for (const param of feature.params || []) {
+    // TODO Handle parameter default values. Requires support from Analyzer
+    // which only handles this for class method parameters currently.
     const {type, optional, rest} = closureParamToTypeScript(param.type);
     f.params.push(new ts.Param({name: param.name, type, optional, rest}));
   }
@@ -297,14 +299,48 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     });
     m.description = method.description || '';
 
-    for (const param of method.params || []) {
-      const {type, optional, rest} = closureParamToTypeScript(param.type);
-      m.params.push(new ts.Param({name: param.name, type, optional, rest}));
+    let requiredAhead = false;
+    for (const param of reverseIter(method.params || [])) {
+      let {type, optional, rest} = closureParamToTypeScript(param.type);
+
+      if (param.defaultValue !== undefined) {
+        // Parameters with default values generally behave like optional
+        // parameters. However, unlike optional parameters, they may be
+        // followed by a required parameter, in which case the default value is
+        // set by explicitly passing undefined.
+        if (!requiredAhead) {
+          optional = true;
+        } else {
+          type = new ts.UnionType([type, ts.undefinedType]);
+        }
+      } else if (!optional) {
+        requiredAhead = true;
+      }
+
+      // Analyzer might know this is a rest parameter even if there was no
+      // JSDoc type annotation (or if it was wrong).
+      rest = rest || !!param.rest;
+      if (rest && type.kind !== 'array') {
+        // Closure rest parameter types are written without the Array syntax,
+        // but in TypeScript they must be explicitly arrays.
+        type = new ts.ArrayType(type);
+      }
+
+      m.params.unshift(new ts.Param({name: param.name, type, optional, rest}));
     }
 
     tsMethods.push(m);
   }
   return tsMethods;
+}
+
+/**
+ * Iterate over an array backwards.
+ */
+function* reverseIter<T>(arr: T[]) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    yield arr[i];
+  }
 }
 
 /**

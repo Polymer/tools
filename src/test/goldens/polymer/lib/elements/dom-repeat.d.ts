@@ -201,7 +201,7 @@ declare namespace Polymer {
     __observeChanged(): any;
     __itemsChanged(change: any): any;
     __handleObservedPaths(path: any): any;
-    __debounceRender(fn: () => any, delay = 0: any): any;
+    __debounceRender(fn: () => any, delay?: number): any;
 
     /**
      * Forces the element to render its content. Normally rendering is

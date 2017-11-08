@@ -19,7 +19,7 @@
     "doctrine": "^2.0.0",
     "escodegen": "^1.9.0",
     "fs-extra": "^4.0.2",
-    "polymer-analyzer": "^2.5.0"
+    "polymer-analyzer": "^2.6.0"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -39,10 +39,9 @@
     "format": "find src -name '*.ts' -not -path 'src/test/fixtures/*' -not -path 'src/test/goldens/*' | xargs clang-format --style=file -i",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
-    "test": "npm run test:setup-once && npm run build && mocha",
+    "test": "npm run test:setup && npm run build && mocha",
     "test:watch": "watchy -w src -- npm run test",
     "test:setup": "scripts/setup-fixtures.sh",
-    "test:setup-once": "mkdir src/test/fixtures && npm run test:setup || true",
     "test:make-goldens": "npm run build && scripts/make-goldens.js"
   },
   "repository": {
