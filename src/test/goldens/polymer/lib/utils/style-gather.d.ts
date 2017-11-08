@@ -16,7 +16,7 @@ declare namespace Polymer {
      * can come either from `<style>`s within the first `<template>`, or else
      * from one or more `<link rel="import" type="css">` links outside the
      * template.
-     * 
+     *
      * Any `<styles>` processed are removed from their original location.
      */
     function cssFromModule(moduleId: string): string;
@@ -24,7 +24,7 @@ declare namespace Polymer {
 
     /**
      * Returns CSS text of `<styles>` within a given template.
-     * 
+     *
      * Any `<styles>` processed are removed from their original location.
      */
     function cssFromTemplate(template: HTMLTemplateElement|null, baseURI: string): string;

@@ -295,7 +295,8 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     }
     const m = new ts.Method({
       name: method.name,
-      returns: closureTypeToTypeScript(method.return && method.return.type)
+      returns: closureTypeToTypeScript(method.return && method.return.type),
+      returnsDescription: method.return && method.return.desc
     });
     m.description = method.description || '';
 
@@ -326,7 +327,13 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
         type = new ts.ArrayType(type);
       }
 
-      m.params.unshift(new ts.Param({name: param.name, type, optional, rest}));
+      m.params.unshift(new ts.Param({
+        name: param.name,
+        description: param.description,
+        type,
+        optional,
+        rest
+      }));
     }
 
     tsMethods.push(m);

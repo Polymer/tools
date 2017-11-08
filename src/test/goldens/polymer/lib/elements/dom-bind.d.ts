@@ -9,7 +9,7 @@ declare namespace Polymer {
    * Custom element to allow using Polymer's template features (data binding,
    * declarative event listeners, etc.) in the main document without defining
    * a new custom element.
-   * 
+   *
    * `<template>` tags utilizing bindings may be wrapped with the `<dom-bind>`
    * element, which will immediately stamp the wrapped template into the main
    * document and bind elements to the `dom-bind` element itself as the

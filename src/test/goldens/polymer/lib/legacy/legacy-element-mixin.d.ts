@@ -25,6 +25,10 @@ declare namespace Polymer {
       /**
        * Provides an override implementation of `attributeChangedCallback`
        * which adds the Polymer legacy API's `attributeChanged` method.
+       *
+       * @param name Name of attribute.
+       * @param old Old value of attribute.
+       * @param value Current value of attribute.
        */
       attributeChangedCallback(name: string, old: string|null, value: string|null): any;
 
@@ -74,6 +78,10 @@ declare namespace Polymer {
       /**
        * Legacy callback called during `attributeChangedChallback`, for overriding
        * by the user.
+       *
+       * @param name Name of attribute.
+       * @param old Old value of attribute.
+       * @param value Current value of attribute.
        */
       attributeChanged(name: string, old: string|null, value: string|null): any;
 
@@ -109,103 +117,162 @@ declare namespace Polymer {
 
       /**
        * Converts a typed JavaScript value to a string.
-       * 
+       *
        * Note this method is provided as backward-compatible legacy API
        * only.  It is not directly called by any Polymer features. To customize
        * how properties are serialized to attributes for attribute bindings and
        * `reflectToAttribute: true` properties as well as this method, override
        * the `_serializeValue` method provided by `Polymer.PropertyAccessors`.
+       *
+       * @param value Value to deserialize
+       * @returns Serialized value
        */
       serialize(value: any): string|undefined;
 
       /**
        * Converts a string to a typed JavaScript value.
-       * 
+       *
        * Note this method is provided as backward-compatible legacy API
        * only.  It is not directly called by any Polymer features.  To customize
        * how attributes are deserialized to properties for in
        * `attributeChangedCallback`, override `_deserializeValue` method
        * provided by `Polymer.PropertyAccessors`.
+       *
+       * @param value String to deserialize
+       * @param type Type to deserialize the string to
+       * @returns Returns the deserialized value in the `type` given.
        */
       deserialize(value: string, type: any): any;
 
       /**
        * Serializes a property to its associated attribute.
-       * 
+       *
        * Note this method is provided as backward-compatible legacy API
        * only.  It is not directly called by any Polymer features.
+       *
+       * @param property Property name to reflect.
+       * @param attribute Attribute name to reflect.
+       * @param value Property value to reflect.
        */
       reflectPropertyToAttribute(property: string, attribute?: string, value?: any): any;
 
       /**
        * Sets a typed value to an HTML attribute on a node.
-       * 
+       *
        * Note this method is provided as backward-compatible legacy API
        * only.  It is not directly called by any Polymer features.
+       *
+       * @param value Value to serialize.
+       * @param attribute Attribute name to serialize to.
+       * @param node Element to set attribute to.
        */
       serializeValueToAttribute(value: any, attribute: string, node: Element|null): any;
 
       /**
        * Copies own properties (including accessor descriptors) from a source
        * object to a target object.
+       *
+       * @param prototype Target object to copy properties to.
+       * @param api Source object to copy properties from.
+       * @returns prototype object that was passed as first argument.
        */
       extend(prototype: Object|null, api: Object|null): Object|null;
 
       /**
        * Copies props from a source object to a target object.
-       * 
+       *
        * Note, this method uses a simple `for...in` strategy for enumerating
        * properties.  To ensure only `ownProperties` are copied from source
        * to target and that accessor implementations are copied, use `extend`.
+       *
+       * @param target Target object to copy properties to.
+       * @param source Source object to copy properties from.
+       * @returns Target object that was passed as first argument.
        */
       mixin(target: Object|null, source: Object|null): Object|null;
 
       /**
        * Sets the prototype of an object.
-       * 
+       *
        * Note this method is provided as backward-compatible legacy API
        * only.  It is not directly called by any Polymer features.
+       *
+       * @param object The object on which to set the prototype.
+       * @param prototype The prototype that will be set on the given
+       * `object`.
+       * @returns Returns the given `object` with its prototype set
+       * to the given `prototype` object.
        */
       chainObject(object: Object|null, prototype: Object|null): Object|null;
 
       /**
        * Calls `importNode` on the `content` of the `template` specified and
        * returns a document fragment containing the imported content.
+       *
+       * @param template HTML template element to instance.
+       * @returns Document fragment containing the imported
+       *   template content.
        */
       instanceTemplate(template: HTMLTemplateElement|null): DocumentFragment|null;
 
       /**
        * Dispatches a custom event with an optional detail value.
+       *
+       * @param type Name of event type.
+       * @param detail Detail value containing event-specific
+       *   payload.
+       * @param options Object specifying options.  These may include:
+       *  `bubbles` (boolean, defaults to `true`),
+       *  `cancelable` (boolean, defaults to false), and
+       *  `node` on which to fire the event (HTMLElement, defaults to `this`).
+       * @returns The new event that was fired.
        */
       fire(type: string, detail?: any, options?: any): Event|null;
 
       /**
        * Convenience method to add an event listener on a given element,
        * late bound to a named method on this element.
+       *
+       * @param node Element to add event listener to.
+       * @param eventName Name of event to listen for.
+       * @param methodName Name of handler method on `this` to call.
        */
       listen(node: Element|null, eventName: string, methodName: string): any;
 
       /**
        * Convenience method to remove an event listener from a given element,
        * late bound to a named method on this element.
+       *
+       * @param node Element to remove event listener from.
+       * @param eventName Name of event to stop listening to.
+       * @param methodName Name of handler method on `this` to not call
+       *        anymore.
        */
       unlisten(node: Element|null, eventName: string, methodName: string): any;
 
       /**
        * Override scrolling behavior to all direction, one direction, or none.
-       * 
+       *
        * Valid scroll directions:
        *   - 'all': scroll in any direction
        *   - 'x': scroll only in the 'x' direction
        *   - 'y': scroll only in the 'y' direction
        *   - 'none': disable scrolling for this node
+       *
+       * @param direction Direction to allow scrolling
+       * Defaults to `all`.
+       * @param node Element to apply scroll direction setting.
+       * Defaults to `this`.
        */
       setScrollDirection(direction?: string, node?: Element|null): any;
 
       /**
        * Convenience method to run `querySelector` on this local DOM scope.
-       * 
+       *
        * This function calls `Polymer.dom(this.root).querySelector(slctr)`.
+       *
+       * @param slctr Selector to run on this local DOM scope
+       * @returns Element found by the selector, or null if not found.
        */
       $$(slctr: string): Element|null;
 
@@ -221,6 +288,8 @@ declare namespace Polymer {
        * childNodes list is the same as the element's childNodes except that
        * any `<content>` elements are replaced with the list of nodes distributed
        * to the `<content>`, the result of its `getDistributedNodes` method.
+       *
+       * @returns List of effective child nodes.
        */
       getEffectiveChildNodes(): Array<Node|null>|null;
 
@@ -228,6 +297,9 @@ declare namespace Polymer {
        * Returns a list of nodes distributed within this element that match
        * `selector`. These can be dom children or elements distributed to
        * children that are insertion points.
+       *
+       * @param selector Selector to run.
+       * @returns List of distributed elements that match selector.
        */
       queryDistributedElements(selector: string): Array<Node|null>|null;
 
@@ -236,6 +308,8 @@ declare namespace Polymer {
        * children list is the same as the element's children except that
        * any `<content>` elements are replaced with the list of elements
        * distributed to the `<content>`.
+       *
+       * @returns List of effective children.
        */
       getEffectiveChildren(): Array<Node|null>|null;
 
@@ -243,6 +317,8 @@ declare namespace Polymer {
        * Returns a string of text content that is the concatenation of the
        * text content's of the element's effective childNodes (the elements
        * returned by <a href="#getEffectiveChildNodes>getEffectiveChildNodes</a>.
+       *
+       * @returns List of effective children.
        */
       getEffectiveTextContent(): string;
 
@@ -250,6 +326,9 @@ declare namespace Polymer {
        * Returns the first effective childNode within this element that
        * match `selector`. These can be dom child nodes or elements distributed
        * to children that are insertion points.
+       *
+       * @param selector Selector to run.
+       * @returns First effective child node that matches selector.
        */
       queryEffectiveChildren(selector: string): any;
 
@@ -257,35 +336,53 @@ declare namespace Polymer {
        * Returns a list of effective childNodes within this element that
        * match `selector`. These can be dom child nodes or elements distributed
        * to children that are insertion points.
+       *
+       * @param selector Selector to run.
+       * @returns List of effective child nodes that match selector.
        */
       queryAllEffectiveChildren(selector: string): Array<Node|null>|null;
 
       /**
        * Returns a list of nodes distributed to this element's `<slot>`.
-       * 
+       *
        * If this element contains more than one `<slot>` in its local DOM,
        * an optional selector may be passed to choose the desired content.
+       *
+       * @param slctr CSS selector to choose the desired
+       *   `<slot>`.  Defaults to `content`.
+       * @returns List of distributed nodes for the `<slot>`.
        */
       getContentChildNodes(slctr?: string): Array<Node|null>|null;
 
       /**
        * Returns a list of element children distributed to this element's
        * `<slot>`.
-       * 
+       *
        * If this element contains more than one `<slot>` in its
        * local DOM, an optional selector may be passed to choose the desired
        * content.  This method differs from `getContentChildNodes` in that only
        * elements are returned.
+       *
+       * @param slctr CSS selector to choose the desired
+       *   `<content>`.  Defaults to `content`.
+       * @returns List of distributed nodes for the
+       *   `<slot>`.
        */
       getContentChildren(slctr?: string): Array<HTMLElement|null>|null;
 
       /**
        * Checks whether an element is in this element's light DOM tree.
+       *
+       * @param node The element to be checked.
+       * @returns true if node is in this element's light DOM tree.
        */
       isLightDescendant(node: Node|null): boolean;
 
       /**
        * Checks whether an element is in this element's local DOM tree.
+       *
+       * @param node The element to be checked.
+       * @returns true if node is in this element's local DOM tree.
        */
       isLocalDescendant(node?: Element|null): boolean;
 
@@ -296,6 +393,10 @@ declare namespace Polymer {
 
       /**
        * Returns the computed style value for the given property.
+       *
+       * @param property The css property name.
+       * @returns Returns the computed css property value for the given
+       * `property`.
        */
       getComputedStyleValue(property: string): string;
 
@@ -304,120 +405,204 @@ declare namespace Polymer {
        * one invocation which is made after the wait time has elapsed with
        * no new request.  If no wait time is given, the callback will be called
        * at microtask timing (guaranteed before paint).
-       * 
+       *
        *     debouncedClickAction(e) {
        *       // will not call `processClick` more than once per 100ms
        *       this.debounce('click', function() {
        *        this.processClick();
        *       } 100);
        *     }
+       *
+       * @param jobName String to identify the debounce job.
+       * @param callback Function that is called (with `this`
+       *   context) when the wait time elapses.
+       * @param wait Optional wait time in milliseconds (ms) after the
+       *   last signal that must elapse before invoking `callback`
+       * @returns Returns a debouncer object on which exists the
+       * following methods: `isActive()` returns true if the debouncer is
+       * active; `cancel()` cancels the debouncer if it is active;
+       * `flush()` immediately invokes the debounced callback if the debouncer
+       * is active.
        */
       debounce(jobName: string, callback: () => any, wait: number): Object|null;
 
       /**
        * Returns whether a named debouncer is active.
+       *
+       * @param jobName The name of the debouncer started with `debounce`
+       * @returns Whether the debouncer is active (has not yet fired).
        */
       isDebouncerActive(jobName: string): boolean;
 
       /**
        * Immediately calls the debouncer `callback` and inactivates it.
+       *
+       * @param jobName The name of the debouncer started with `debounce`
        */
       flushDebouncer(jobName: string): any;
 
       /**
        * Cancels an active debouncer.  The `callback` will not be called.
+       *
+       * @param jobName The name of the debouncer started with `debounce`
        */
       cancelDebouncer(jobName: string): any;
 
       /**
        * Runs a callback function asynchronously.
-       * 
+       *
        * By default (if no waitTime is specified), async callbacks are run at
        * microtask timing, which will occur before paint.
+       *
+       * @param callback The callback function to run, bound to `this`.
+       * @param waitTime Time to wait before calling the
+       *   `callback`.  If unspecified or 0, the callback will be run at microtask
+       *   timing (before paint).
+       * @returns Handle that may be used to cancel the async job.
        */
       async(callback: Function|null, waitTime?: number): number;
 
       /**
        * Cancels an async operation started with `async`.
+       *
+       * @param handle Handle returned from original `async` call to
+       *   cancel.
        */
       cancelAsync(handle: number): any;
 
       /**
        * Convenience method for creating an element and configuring it.
+       *
+       * @param tag HTML element tag to create.
+       * @param props Object of properties to configure on the
+       *    instance.
+       * @returns Newly created and configured element.
        */
       create(tag: string, props: Object|null): Element|null;
 
       /**
        * Convenience method for importing an HTML document imperatively.
-       * 
+       *
        * This method creates a new `<link rel="import">` element with
        * the provided URL and appends it to the document to start loading.
        * In the `onload` callback, the `import` property of the `link`
        * element will contain the imported document contents.
+       *
+       * @param href URL to document to load.
+       * @param onload Callback to notify when an import successfully
+       *   loaded.
+       * @param onerror Callback to notify when an import
+       *   unsuccessfully loaded.
+       * @param optAsync True if the import should be loaded `async`.
+       *   Defaults to `false`.
+       * @returns The link element for the URL to be loaded.
        */
       importHref(href: string, onload: Function|null, onerror: Function|null, optAsync: boolean): HTMLLinkElement|null;
 
       /**
        * Polyfill for Element.prototype.matches, which is sometimes still
        * prefixed.
+       *
+       * @param selector Selector to test.
+       * @param node Element to test the selector against.
+       * @returns Whether the element matches the selector.
        */
       elementMatches(selector: string, node?: Element|null): boolean;
 
       /**
        * Toggles an HTML attribute on or off.
+       *
+       * @param name HTML attribute name
+       * @param bool Boolean to force the attribute on or off.
+       *    When unspecified, the state of the attribute will be reversed.
+       * @param node Node to target.  Defaults to `this`.
        */
       toggleAttribute(name: string, bool?: boolean, node?: Element|null): any;
 
       /**
        * Toggles a CSS class on or off.
+       *
+       * @param name CSS class name
+       * @param bool Boolean to force the class on or off.
+       *    When unspecified, the state of the class will be reversed.
+       * @param node Node to target.  Defaults to `this`.
        */
       toggleClass(name: string, bool?: boolean, node?: Element|null): any;
 
       /**
        * Cross-platform helper for setting an element's CSS `transform` property.
+       *
+       * @param transformText Transform setting.
+       * @param node Element to apply the transform to.
+       * Defaults to `this`
        */
       transform(transformText: string, node?: Element|null): any;
 
       /**
        * Cross-platform helper for setting an element's CSS `translate3d`
        * property.
+       *
+       * @param x X offset.
+       * @param y Y offset.
+       * @param z Z offset.
+       * @param node Element to apply the transform to.
+       * Defaults to `this`.
        */
       translate3d(x: number, y: number, z: number, node?: Element|null): any;
 
       /**
        * Removes an item from an array, if it exists.
-       * 
+       *
        * If the array is specified by path, a change notification is
        * generated, so that observers, data bindings and computed
        * properties watching that path can update.
-       * 
+       *
        * If the array is passed directly, **no change
        * notification is generated**.
+       *
+       * @param arrayOrPath Path to array from which to remove the item
+       *   (or the array itself).
+       * @param item Item to remove.
+       * @returns Array containing item removed.
        */
       arrayDelete(arrayOrPath: string|Array<number|string>, item: any): any[]|null;
 
       /**
        * Facades `console.log`/`warn`/`error` as override point.
+       *
+       * @param level One of 'log', 'warn', 'error'
+       * @param args Array of strings or objects to log
        */
       _logger(level: string, args: any[]|null): any;
 
       /**
        * Facades `console.log` as an override point.
+       *
+       * @param args Array of strings or objects to log
        */
       _log(...args: any[]): any;
 
       /**
        * Facades `console.warn` as an override point.
+       *
+       * @param args Array of strings or objects to log
        */
       _warn(...args: any[]): any;
 
       /**
        * Facades `console.error` as an override point.
+       *
+       * @param args Array of strings or objects to log
        */
       _error(...args: any[]): any;
 
       /**
        * Formats a message using the element type an a method name.
+       *
+       * @param methodName Method name to associate with message
+       * @param args Array of strings or objects to log
+       * @returns Array with formatting information for `console`
+       *   logging.
        */
       _logf(methodName: string, ...args: any[]): any[]|null;
     }

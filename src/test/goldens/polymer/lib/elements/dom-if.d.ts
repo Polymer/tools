@@ -10,13 +10,13 @@ declare namespace Polymer {
    * the `if` property becomes truthy, and the template can use Polymer
    * data-binding and declarative event features when used in the context of
    * a Polymer element's template.
-   * 
+   *
    * When `if` becomes falsy, the stamped content is hidden but not
    * removed from dom. When `if` subsequently becomes truthy again, the content
    * is simply re-shown. This approach is used due to its favorable performance
    * characteristics: the expense of creating template content is paid only
    * once and lazily.
-   * 
+   *
    * Set the `restamp` property to true to force the stamped content to be
    * created / destroyed when the `if` condition changes.
    */

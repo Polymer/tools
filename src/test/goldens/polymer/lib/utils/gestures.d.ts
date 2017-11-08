@@ -9,7 +9,7 @@ declare namespace Polymer {
 
     /**
      * Finds the element rendered on the screen at the provided coordinates.
-     * 
+     *
      * Similar to `document.elementFromPoint`, but pierces through
      * shadow roots.
      */
@@ -37,7 +37,7 @@ declare namespace Polymer {
 
     /**
      * Sets scrolling direction on node.
-     * 
+     *
      * This value is checked on first move, thus it should be called prior to
      * adding event listeners.
      */
@@ -52,7 +52,7 @@ declare namespace Polymer {
 
     /**
      * Reset the 2500ms timeout on processing mouse input after detecting touch input.
-     * 
+     *
      * Touch inputs create synthesized mouse inputs anywhere from 0 to 2000ms after the touch.
      * This method should only be called during testing with simulated touch inputs.
      * Calling this method in production may cause duplicate taps or other Gestures.

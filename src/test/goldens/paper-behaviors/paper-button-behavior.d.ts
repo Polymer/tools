@@ -17,12 +17,16 @@ declare namespace Polymer {
     /**
      * In addition to `IronButtonState` behavior, when space key goes down,
      * create a ripple down effect.
+     *
+     * @param event .
      */
     _spaceKeyDownHandler(event: KeyboardEvent): any;
 
     /**
      * In addition to `IronButtonState` behavior, when space key goes up,
      * create a ripple up effect.
+     *
+     * @param event .
      */
     _spaceKeyUpHandler(event: KeyboardEvent): any;
     _calculateElevation(): any;

@@ -5,7 +5,7 @@ declare namespace Polymer {
 
   /**
    * Applies a "legacy" behavior or array of behaviors to the provided class.
-   * 
+   *
    * Note: this method will automatically also apply the `Polymer.LegacyElementMixin`
    * to ensure that any legacy behaviors can rely on legacy Polymer API on
    * the underlying element.
@@ -19,16 +19,16 @@ declare namespace Polymer {
    * (`properties`, `observers`, `listeners`, `behaviors`, `is`) are used
    * for Polymer's meta-programming systems, and any functions are copied
    * to the generated class.
-   * 
+   *
    * Valid "metadata" values are as follows:
-   * 
+   *
    * `is`: String providing the tag name to register the element under. In
    * addition, if a `dom-module` with the same id exists, the first template
    * in that `dom-module` will be stamped into the shadow root of this element,
    * with support for declarative event listeners (`on-...`), Polymer data
    * bindings (`[[...]]` and `{{...}}`), and id-based node finding into
    * `this.$`.
-   * 
+   *
    * `properties`: Object describing property-related metadata used by Polymer
    * features (key: property names, value: object containing property metadata).
    * Valid keys in per-property metadata include:
@@ -48,17 +48,17 @@ declare namespace Polymer {
    *   for computing the value of this property (e.g. `'computeFoo(bar, zot)'`).
    *   Computed properties are read-only by default and can only be changed
    *   via the return value of the computing method.
-   * 
+   *
    * `observers`: Array of strings describing multi-property observer methods
    *  and their dependent properties (e.g. `'observeABC(a, b, c)'`).
-   * 
+   *
    * `listeners`: Object describing event listeners to be added to each
    *  instance of this element (key: event name, value: method name).
-   * 
+   *
    * `behaviors`: Array of additional `info` objects containing metadata
    * and callbacks in the same format as the `info` object here which are
    * merged into this element.
-   * 
+   *
    * `hostAttributes`: Object listing attributes to be applied to the host
    *  once created (key: attribute name, value: attribute value).  Values
    *  are serialized based on the type of the value.  Host attributes should
@@ -66,7 +66,7 @@ declare namespace Polymer {
    *  Attributes in `hostAttributes` are only applied if a user-supplied
    *  attribute is not already present (attributes in markup override
    *  `hostAttributes`).
-   * 
+   *
    * In addition, the following Polymer-specific callbacks may be provided:
    * - `registered`: called after first instance of this element,
    * - `created`: called during `constructor`

@@ -298,25 +298,47 @@ export abstract class FunctionLike {
   description: string;
   params: Param[];
   returns: Type;
+  returnsDescription: string;
 
   constructor(data: {
     name: string,
     description?: string,
     params?: Param[],
-    returns?: Type
+    returns?: Type,
+    returnsDescription?: string
   }) {
     this.name = data.name;
     this.description = data.description || '';
     this.params = data.params || [];
     this.returns = data.returns || anyType;
+    this.returnsDescription = data.returnsDescription || '';
   }
 
   serialize(depth: number = 0): string {
     let out = ''
     const i = indent(depth);
-    if (this.description) {
-      out += '\n' + formatComment(this.description, depth);
+
+    const annotations = [];
+    for (const p of this.params) {
+      if (p.description) {
+        annotations.push(`@param ${p.name} ${p.description}`);
+      }
     }
+    if (this.returnsDescription) {
+      annotations.push(`@returns ${this.returnsDescription}`);
+    }
+
+    let combinedDescription = this.description;
+    if (annotations.length > 0) {
+      if (combinedDescription) {
+        combinedDescription += '\n\n';
+      }
+      combinedDescription += annotations.join('\n');
+    }
+    if (combinedDescription) {
+      out += '\n' + formatComment(combinedDescription, depth);
+    }
+
     if (depth === 0) {
       out += 'declare ';
     }
@@ -389,13 +411,20 @@ export class Param {
   type: Type;
   optional: boolean;
   rest: boolean;
+  description: string;
 
-  constructor(
-      data: {name: string, type: Type, optional?: boolean, rest?: boolean}) {
+  constructor(data: {
+    name: string,
+    type: Type,
+    optional?: boolean,
+    rest?: boolean,
+    description?: string
+  }) {
     this.name = data.name;
     this.type = data.type || anyType;
     this.optional = data.optional || false;
     this.rest = data.rest || false;
+    this.description = data.description || '';
   }
 
   * traverse(): Iterable<Node> {
@@ -608,5 +637,6 @@ function indent(depth: number): string {
 
 function formatComment(comment: string, depth: number): string {
   const i = indent(depth);
-  return `${i}/**\n` + comment.replace(/^/gm, `${i} * `) + `\n${i} */\n`;
+  return `${i}/**\n` +
+      comment.replace(/^(.)/gm, ' $1').replace(/^/gm, `${i} *`) + `\n${i} */\n`;
 }

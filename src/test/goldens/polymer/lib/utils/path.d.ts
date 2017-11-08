@@ -7,9 +7,9 @@ declare namespace Polymer {
 
     /**
      * Returns true if the given string is a structured data path (has dots).
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.isPath('foo.bar.baz') // true
      * Polymer.Path.isPath('foo')         // false
@@ -20,9 +20,9 @@ declare namespace Polymer {
 
     /**
      * Returns the root property name for the given path.
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.root('foo.bar.baz') // 'foo'
      * Polymer.Path.root('foo')         // 'foo'
@@ -34,9 +34,9 @@ declare namespace Polymer {
     /**
      * Given `base` is `foo.bar`, `foo` is an ancestor, `foo.bar` is not
      * Returns true if the given path is an ancestor of the base path.
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.isAncestor('foo.bar', 'foo')         // true
      * Polymer.Path.isAncestor('foo.bar', 'foo.bar')     // false
@@ -48,9 +48,9 @@ declare namespace Polymer {
 
     /**
      * Given `base` is `foo.bar`, `foo.bar.baz` is an descendant
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.isDescendant('foo.bar', 'foo.bar.baz') // true
      * Polymer.Path.isDescendant('foo.bar', 'foo.bar')     // false
@@ -63,11 +63,11 @@ declare namespace Polymer {
     /**
      * Replaces a previous base path with a new base path, preserving the
      * remainder of the path.
-     * 
+     *
      * User must ensure `path` has a prefix of `base`.
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.translate('foo.bar', 'zot' 'foo.bar.baz') // 'zot.baz'
      * ```
@@ -78,9 +78,9 @@ declare namespace Polymer {
     /**
      * Converts array-based paths to flattened path.  String-based paths
      * are returned as-is.
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.normalize(['foo.bar', 0, 'baz'])  // 'foo.bar.0.baz'
      * Polymer.Path.normalize('foo.bar.0.baz')        // 'foo.bar.0.baz'
@@ -92,9 +92,9 @@ declare namespace Polymer {
     /**
      * Splits a path into an array of property names. Accepts either arrays
      * of path parts or strings.
-     * 
+     *
      * Example:
-     * 
+     *
      * ```
      * Polymer.Path.split(['foo.bar', 0, 'baz'])  // ['foo', 'bar', '0', 'baz']
      * Polymer.Path.split('foo.bar.0.baz')        // ['foo', 'bar', '0', 'baz']

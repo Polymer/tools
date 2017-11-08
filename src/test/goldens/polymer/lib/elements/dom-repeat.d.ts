@@ -13,22 +13,22 @@ declare namespace Polymer {
    * is stamped for each item into the DOM at the location of the `dom-repeat`
    * element.  The `item` property will be set on each instance's binding
    * scope, thus templates should bind to sub-properties of `item`.
-   * 
+   *
    * Example:
-   * 
+   *
    * ```html
    * <dom-module id="employee-list">
-   * 
+   *
    *   <template>
-   * 
+   *
    *     <div> Employee list: </div>
    *     <template is="dom-repeat" items="{{employees}}">
    *         <div>First name: <span>{{item.first}}</span></div>
    *         <div>Last name: <span>{{item.last}}</span></div>
    *     </template>
-   * 
+   *
    *   </template>
-   * 
+   *
    *   <script>
    *     Polymer({
    *       is: 'employee-list',
@@ -41,53 +41,53 @@ declare namespace Polymer {
    *       }
    *     });
    *   < /script>
-   * 
+   *
    * </dom-module>
    * ```
-   * 
+   *
    * Notifications for changes to items sub-properties will be forwarded to template
    * instances, which will update via the normal structured data notification system.
-   * 
+   *
    * Mutations to the `items` array itself should be made using the Array
    * mutation API's on `Polymer.Base` (`push`, `pop`, `splice`, `shift`,
    * `unshift`), and template instances will be kept in sync with the data in the
    * array.
-   * 
+   *
    * Events caught by event handlers within the `dom-repeat` template will be
    * decorated with a `model` property, which represents the binding scope for
    * each template instance.  The model is an instance of Polymer.Base, and should
    * be used to manipulate data on the instance, for example
    * `event.model.set('item.checked', true);`.
-   * 
+   *
    * Alternatively, the model for a template instance for an element stamped by
    * a `dom-repeat` can be obtained using the `modelForElement` API on the
    * `dom-repeat` that stamped it, for example
    * `this.$.domRepeat.modelForElement(event.target).set('item.checked', true);`.
    * This may be useful for manipulating instance data of event targets obtained
    * by event handlers on parents of the `dom-repeat` (event delegation).
-   * 
+   *
    * A view-specific filter/sort may be applied to each `dom-repeat` by supplying a
    * `filter` and/or `sort` property.  This may be a string that names a function on
    * the host, or a function may be assigned to the property directly.  The functions
    * should implemented following the standard `Array` filter/sort API.
-   * 
+   *
    * In order to re-run the filter or sort functions based on changes to sub-fields
    * of `items`, the `observe` property may be set as a space-separated list of
    * `item` sub-fields that should cause a re-filter/sort when modified.  If
    * the filter or sort function depends on properties not contained in `items`,
    * the user should observe changes to those properties and call `render` to update
    * the view based on the dependency change.
-   * 
+   *
    * For example, for an `dom-repeat` with a filter of the following:
-   * 
+   *
    * ```js
    * isEngineer: function(item) {
    *     return item.type == 'engineer' || item.manager.type == 'engineer';
    * }
    * ```
-   * 
+   *
    * Then the `observe` property should be configured as follows:
-   * 
+   *
    * ```html
    * <template is="dom-repeat" items="{{employees}}"
    *           filter="isEngineer" observe="type manager.type">
@@ -201,6 +201,11 @@ declare namespace Polymer {
     __observeChanged(): any;
     __itemsChanged(change: any): any;
     __handleObservedPaths(path: any): any;
+
+    /**
+     * @param fn Function to debounce.
+     * @param delay Delay in ms to debounce by.
+     */
     __debounceRender(fn: () => any, delay?: number): any;
 
     /**
@@ -232,10 +237,13 @@ declare namespace Polymer {
     /**
      * Returns the item associated with a given element stamped by
      * this `dom-repeat`.
-     * 
+     *
      * Note, to modify sub-properties of the item,
      * `modelForElement(el).set('item.<sub-prop>', value)`
      * should be used.
+     *
+     * @param el Element for which to return the item.
+     * @returns Item associated with the element.
      */
     itemForElement(el: HTMLElement|null): any;
 
@@ -243,6 +251,10 @@ declare namespace Polymer {
      * Returns the inst index for a given element stamped by this `dom-repeat`.
      * If `sort` is provided, the index will reflect the sorted order (rather
      * than the original array order).
+     *
+     * @param el Element for which to return the index.
+     * @returns Row index associated with the element (note this may
+     *   not correspond to the array index if a user `sort` is applied).
      */
     indexForElement(el: HTMLElement|null): any;
 
@@ -251,13 +263,17 @@ declare namespace Polymer {
      * serves as the binding scope for the template instance the element is
      * contained in. A template model is an instance of `Polymer.Base`, and
      * should be used to manipulate data associated with this template instance.
-     * 
+     *
      * Example:
-     * 
+     *
      *   let model = modelForElement(el);
      *   if (model.index < 10) {
      *     model.set('item.checked', true);
      *   }
+     *
+     * @param el Element for which to return a template model.
+     * @returns Model representing the binding scope for
+     *   the element.
      */
     modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
   }

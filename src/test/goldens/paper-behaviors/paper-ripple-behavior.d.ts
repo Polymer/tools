@@ -7,7 +7,7 @@ declare namespace Polymer {
   /**
    * `Polymer.PaperRippleBehavior` dynamically implements a ripple
    * when the element has focus via pointer or keyboard.
-   * 
+   *
    * NOTE: This behavior is intended to be used in conjunction with and after
    * `Polymer.IronButtonState` and `Polymer.IronControlState`.
    */
@@ -35,6 +35,9 @@ declare namespace Polymer {
     /**
      * Ensures this element contains a ripple effect. For startup efficiency
      * the ripple effect is dynamically on demand when needed.
+     *
+     * @param optTriggeringEvent (optional) event that triggered the
+     * ripple.
      */
     ensureRipple(optTriggeringEvent?: Event): any;
 
@@ -54,6 +57,8 @@ declare namespace Polymer {
     /**
      * Create the element's ripple effect via creating a `<paper-ripple>`.
      * Override this method to customize the ripple element.
+     *
+     * @returns Returns a `<paper-ripple>` element.
      */
     _createRipple(): PaperRippleElement;
     _noinkChanged(noink: any): any;
