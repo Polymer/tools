@@ -11,7 +11,8 @@
 
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
-import {generateDeclarations} from './gen-ts';
+
+import {Config, generateDeclarations} from './gen-ts';
 
 const commandLineArgs = require('command-line-args') as any;
 const commandLineUsage = require('command-line-usage') as any;
@@ -32,6 +33,12 @@ const argDefs = [
     type: String,
     defaultValue: '.',
     description: 'Root directory of the package to analyze (default ".").',
+  },
+  {
+    name: 'config',
+    type: String,
+    description:
+        'JSON configuration file (default "<root>/gen-tsd.json" if exists).',
   },
   {
     name: 'outDir',
@@ -63,7 +70,19 @@ async function run(argv: string[]) {
     return;
   }
 
-  const fileMap = await generateDeclarations(args.root);
+  if (!args.config) {
+    const p = path.join(args.root, 'gen-tsd.json');
+    if (await fsExtra.exists(p)) {
+      args.config = p;
+    }
+  }
+  let config: Config = {};
+  if (args.config) {
+    console.info(`Loading config from "${args.config}".`);
+    config = JSON.parse(await fsExtra.readFile(args.config, 'utf8')) as Config;
+  }
+
+  const fileMap = await generateDeclarations(args.root, config);
 
   if (args.outDir) {
     console.log('Writing type declarations to ' + path.resolve(args.outDir));

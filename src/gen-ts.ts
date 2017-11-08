@@ -17,18 +17,29 @@ import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types
 import * as ts from './ts-ast';
 
 /**
+ * Configuration for declaration generation.
+ */
+export interface Config {
+  /**
+   * Skip source files whose paths match this pattern. If undefined, defaults
+   * to excluding directories ending in "test" or "demo".
+   */
+  exclude?: string[];
+}
+
+/**
  * Analyze all files in the given directory using Polymer Analyzer, and return
  * TypeScript declaration document strings in a map keyed by relative path.
  */
-export async function generateDeclarations(rootDir: string):
-    Promise<Map<string, string>> {
+export async function generateDeclarations(
+    rootDir: string, config: Config): Promise<Map<string, string>> {
   const a = new analyzer.Analyzer({
     urlLoader: new analyzer.FSUrlLoader(rootDir),
     urlResolver: new analyzer.PackageUrlResolver(),
   });
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
-  for (const tsDoc of analyzerToAst(analysis)) {
+  for (const tsDoc of analyzerToAst(analysis, config)) {
     outFiles.set(tsDoc.path, tsDoc.serialize())
   }
   return outFiles;
@@ -38,16 +49,21 @@ export async function generateDeclarations(rootDir: string):
  * Make TypeScript declaration documents from the given Polymer Analyzer
  * result.
  */
-function analyzerToAst(analysis: analyzer.Analysis): ts.Document[] {
-  // Analyzer can produce multiple JS documents with the same URL (e.g. an HTML
-  // file with multiple inline scripts). We also might have multiple files with
-  // the same basename (e.g. `foo.html` with an inline script, and `foo.js`).
-  // We want to produce one declarations file for each basename, so we first
-  // group Analyzer documents by their declarations filename.
+function analyzerToAst(
+    analysis: analyzer.Analysis, config: Config): ts.Document[] {
+  const exclude = config.exclude !== undefined ?
+      config.exclude.map((p) => new RegExp(p)) :
+      [/test\//, /demo\//];
+
+  // Analyzer can produce multiple JS documents with the same URL (e.g. an
+  // HTML file with multiple inline scripts). We also might have multiple
+  // files with the same basename (e.g. `foo.html` with an inline script,
+  // and `foo.js`). We want to produce one declarations file for each
+  // basename, so we first group Analyzer documents by their declarations
+  // filename.
   const declarationDocs = new Map<string, analyzer.Document[]>();
   for (const jsDoc of analysis.getFeatures({kind: 'js-document'})) {
-    // TODO This is a very crude exclusion rule.
-    if (jsDoc.url.match(/(test|demo)\//)) {
+    if (exclude.some((r) => jsDoc.url.match(r) !== null)) {
       continue;
     }
     const filename = makeDeclarationsFilename(jsDoc.url);
