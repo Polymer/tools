@@ -22,7 +22,14 @@ const goldens = path.join(__dirname, '..', '..', 'src', 'test', 'goldens');
 suite('generateDeclarations', () => {
   for (const fixture of fs.readdirSync(goldens)) {
     test(fixture, async () => {
-      const actual = await generateDeclarations(path.join(fixtures, fixture));
+      let config = {};
+      const configPath = path.join(fixtures, fixture, 'gen-tsd.json');
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      }
+
+      const actual =
+          await generateDeclarations(path.join(fixtures, fixture), config);
       const golden = readDirAsMap(path.join(goldens, fixture));
       (assert as any).hasAllKeys(actual, [...golden.keys()]);
       for (const filename of actual.keys()) {

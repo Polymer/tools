@@ -19,6 +19,8 @@
  * *should* be checked in.
  */
 
+// TODO Rewrite in typescript.
+
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 const path = require('path');
@@ -32,11 +34,19 @@ fsExtra.emptyDirSync(goldensDir);
 
 for (const fixture of fs.readdirSync(fixturesDir)) {
   console.log('making goldens for ' + fixture);
-  generateDeclarations(path.join(fixturesDir, fixture)).then((declarations) => {
-    for (const [filename, contents] of declarations) {
-      const outPath = path.join(goldensDir, fixture, filename);
-      fsExtra.mkdirsSync(path.dirname(outPath));
-      fs.writeFileSync(outPath, contents);
-    };
-  });
+
+  let config = {};
+  const configPath = path.join(fixturesDir, fixture, 'gen-tsd.json');
+  if (fs.existsSync(configPath)) {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  }
+
+  generateDeclarations(path.join(fixturesDir, fixture), config)
+      .then((declarations) => {
+        for (const [filename, contents] of declarations) {
+          const outPath = path.join(goldensDir, fixture, filename);
+          fsExtra.mkdirsSync(path.dirname(outPath));
+          fs.writeFileSync(outPath, contents);
+        };
+      });
 }

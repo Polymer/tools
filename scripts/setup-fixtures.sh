@@ -29,3 +29,19 @@ while read -r repo tag dir; do
   bower install
   cd -
 done < ../../../scripts/fixtures.txt
+
+# TODO Remove this hack once the config file is checked into the Polymer repo.
+# We want to test Polymer with a config file, but it's not checked in yet, and
+# we also can't clone into a directory unless it's empty. Just make the config
+# file here for now.
+cat > polymer/gen-tsd.json <<EOF
+{
+  "exclude": [
+    "dist/",
+    "externs/",
+    "gulpfile.js",
+    "test/",
+    "util/"
+  ]
+}
+EOF
