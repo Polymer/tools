@@ -20,15 +20,18 @@ export class Document {
   path: string;
   members: Array<Namespace|Class|Interface|Mixin|Function>;
   referencePaths: Set<string>;
+  header: string;
 
   constructor(data: {
     path: string,
     members?: Array<Namespace|Class|Interface|Mixin|Function>
     referencePaths?: Iterable<string>,
+    header?: string
   }) {
     this.path = data.path;
     this.members = data.members || [];
     this.referencePaths = new Set(Array.from(data.referencePaths || []));
+    this.header = data.header || '';
   }
 
   /**
@@ -55,6 +58,9 @@ export class Document {
 
   serialize(): string {
     let out = '';
+    if (this.header) {
+      out += formatComment(this.header, 0) + '\n';
+    }
     if (this.referencePaths.size > 0) {
       for (const ref of this.referencePaths) {
         out += `/// <reference path="${ref}" />\n`;
