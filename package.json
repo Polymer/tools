@@ -39,6 +39,8 @@
     "format": "find src -name '*.ts' -not -path 'src/test/fixtures/*' -not -path 'src/test/goldens/*' | xargs clang-format --style=file -i",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run test",
     "test": "npm run test:setup && npm run build && mocha",
     "test:watch": "watchy -w src -- npm run test",
     "test:setup": "scripts/setup-fixtures.sh",
