@@ -1,10 +1,10 @@
 {
-  "name": "gen-typescript-declarations",
+  "name": "@polymer/gen-typescript-declarations",
   "version": "0.1.0",
   "description": "Generate TypeScript type declarations for Polymer components.",
   "main": "lib/gen-ts.js",
   "types": "lib/gen-ts.d.ts",
-  "bin": "bin/gen-typescript-declarations",
+  "bin": "bin/gen-tsd",
   "directories": {
     "lib": "lib"
   },
