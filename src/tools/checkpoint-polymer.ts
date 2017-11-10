@@ -18,7 +18,7 @@ require('source-map-support').install();
 import * as path from 'path';
 import {exec} from 'mz/child_process';
 import {exists} from 'mz/fs';
-import {convertPackage} from '../convert-package';
+import convertPackage from '../convert-package';
 
 const repoUrl = 'https://github.com/Polymer/polymer.git';
 const fixturesDirPath =

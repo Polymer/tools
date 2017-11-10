@@ -15,29 +15,64 @@
 import {fs} from 'mz';
 import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {WorkspaceRepo} from 'polymer-workspaces';
 
 import {BaseConverterOptions} from './base-converter';
 import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {polymerFileOverrides} from './special-casing';
+import {mkdirp, writeFileResults} from './util';
 import {WorkspaceConverter} from './workspace-converter';
 
-import mkdirpCallback = require('mkdirp');
-
-
-const mkdirp = (dir: string) =>
-    new Promise((resolve, reject) => mkdirpCallback(dir, (e, made) => {
-                  return e == null ? resolve(made) : reject(e);
-                }));
 
 interface ConvertWorkspaceOptions extends BaseConverterOptions {
   packageVersion: string;
-  inDir: string;
+  workspaceDir: string;
+  reposToConvert: WorkspaceRepo[];
+}
+
+/**
+ * Create a symlink from the repo into the workspace's node_modules directory.
+ */
+async function writeNpmSymlink(
+    options: ConvertWorkspaceOptions, repo: WorkspaceRepo) {
+  const packageJsonPath = path.join(repo.dir, 'package.json');
+  if (!await fs.exists(packageJsonPath)) {
+    return;
+  }
+  const packageJson = readJson(packageJsonPath);
+  let packageName = packageJson['name'] as string;
+  let parentName = path.join(options.workspaceDir, 'node_modules');
+  if (packageName.startsWith('@')) {
+    const slashIndex = packageName.indexOf('/');
+    const scopeName = packageName.substring(0, slashIndex);
+    parentName = path.join(parentName, scopeName);
+    packageName = packageName.substring(slashIndex + 1);
+  }
+  await mkdirp(parentName);
+  const linkName = path.join(parentName, packageName);
+  await fs.symlink(repo.dir, path.resolve(linkName));
+}
+
+/**
+ * For a given repo, generate a new package.json and write it to disk.
+ */
+async function writePackageJson(repo: WorkspaceRepo, packageVersion: string) {
+  const bowerJsonPath = path.join(repo.dir, 'bower.json');
+  const bowerJson = readJson(bowerJsonPath);
+  const bowerName = bowerJson.name;
+  let depMapping: {npm: string}|undefined = dependencyMap[bowerName];
+  if (!depMapping) {
+    console.warn(`"${bowerName}" npm mapping not found`);
+    depMapping = {npm: bowerName};
+  }
+  const packageJson =
+      generatePackageJson(bowerJson, depMapping.npm, packageVersion);
+  writeJson(packageJson, repo.dir, 'package.json');
 }
 
 export function configureAnalyzer(options: ConvertWorkspaceOptions) {
-  const inDir = options.inDir || process.cwd();
-
-  const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(inDir));
+  const workspaceDir = options.workspaceDir;
+  const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
   for (const [url, contents] of polymerFileOverrides) {
     urlLoader.urlContentsMap.set(`polymer/${url}`, contents);
   }
@@ -66,75 +101,33 @@ export function configureConverter(
   });
 }
 
-export async function convertWorkspace(options: ConvertWorkspaceOptions) {
+/**
+ * Convert a set of workspace repos to JavaScript modules & npm.
+ */
+export default async function convert(options: ConvertWorkspaceOptions) {
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
   const results = await converter.convert();
+  await writeFileResults(options.workspaceDir, results);
 
-  for (const [outUrl, newSource] of results) {
-    const outPath = path.join(options.inDir, outUrl);
-    if (newSource === undefined) {
-      await fs.unlink(outPath);
-    } else {
-      await fs.writeFile(outPath, newSource);
+  // For each repo, generate a new package.json:
+  for (const repo of options.reposToConvert) {
+    try {
+      writePackageJson(repo, options.packageVersion);
+    } catch (err) {
+      console.log('Error in bower.json -> package.json conversion:');
+      console.error(err);
     }
   }
 
-  for (const repo of await fs.readdir(options.inDir)) {
-    await writePackageJson(options, repo);
-    await writeNpmSymlink(options, repo);
-  }
-}
-
-async function writeNpmSymlink(options: ConvertWorkspaceOptions, repo: string) {
-  const repoPath = path.join(options.inDir, repo);
-  const packageJsonPath = path.join(repoPath, 'package.json');
-  if (!await fs.exists(packageJsonPath)) {
-    return;
-  }
-  const packageJson = readJson(packageJsonPath);
-  let packageName = packageJson['name'] as string;
-  let parentName = path.join(options.inDir, 'node_modules');
-  if (packageName.startsWith('@')) {
-    const slashIndex = packageName.indexOf('/');
-    const scopeName = packageName.substring(0, slashIndex);
-    parentName = path.join(parentName, scopeName);
-    packageName = packageName.substring(slashIndex + 1);
-  }
-  try {
-    await mkdirp(parentName);
-    const linkName = path.join(parentName, packageName);
-    await fs.symlink(path.resolve(repoPath), path.resolve(linkName));
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function writePackageJson(
-    options: ConvertWorkspaceOptions, repo: string) {
-  const bowerPath = path.join(options.inDir, repo, 'bower.json');
-  const bowerExists = await fs.exists(bowerPath);
-  if (!bowerExists) {
-    return;
-  }
-  try {
-    const bowerJson = readJson(bowerPath);
-    // TODO(https://github.com/Polymer/polymer-modulizer/issues/122):
-    // unhardcode
-    const bowerName = bowerJson.name;
-
-    let depMapping: {npm: string}|undefined = dependencyMap[bowerName];
-    if (!depMapping) {
-      console.warn(`"${bowerName}" npm mapping not found`);
-      depMapping = {npm: bowerName};
+  // For each repo, generate a node_modules/ symlink in the workspace directory:
+  for (const repo of options.reposToConvert) {
+    try {
+      await writeNpmSymlink(options, repo);
+    } catch (err) {
+      console.log(`Error in npm symlink creation:`);
+      console.error(err);
     }
-
-    const packageJson =
-        generatePackageJson(bowerJson, depMapping.npm, options.packageVersion);
-    writeJson(packageJson, options.inDir, repo, 'package.json');
-  } catch (e) {
-    console.log('error in bower.json -> package.json conversion');
-    console.error(e);
   }
 }

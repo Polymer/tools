@@ -18,7 +18,7 @@ import * as path from 'path';
 import {Workspace} from 'polymer-workspaces';
 
 import {CliOptions} from '../cli';
-import {convertWorkspace} from '../convert-workspace';
+import convertWorkspace from '../convert-workspace';
 
 const githubTokenMessage = `
 You need to create a github token and place it in a file named 'github-token'.
@@ -55,7 +55,7 @@ function loadGitHubToken(): string|null {
 
 
 export default async function run(options: CliOptions) {
-  const workspaceDir = options['workspace-dir'];
+  const workspaceDir = path.resolve(options['workspace-dir']);
   console.log(
       chalk.dim('[1/3]') + ' 🚧  ' +
       chalk.magenta(`Setting Up Workspace "${workspaceDir}"...`));
@@ -73,7 +73,7 @@ export default async function run(options: CliOptions) {
 
   const workspace = new Workspace({
     token: githubToken,
-    dir: path.resolve(workspaceDir),
+    dir: workspaceDir,
   });
 
   const reposToConvert = await workspace.init(
@@ -91,7 +91,8 @@ export default async function run(options: CliOptions) {
       chalk.magenta(`Converting ${reposToConvert.length} Package(s)...`));
 
   await convertWorkspace({
-    inDir: options['workspace-dir']!,
+    workspaceDir,
+    reposToConvert,
     packageVersion: npmPackageVersion,
   });
 

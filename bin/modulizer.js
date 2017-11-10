@@ -20,7 +20,7 @@ process.title = 'modulizer';
 
 require('source-map-support').install();
 
-const {run} = require('../lib/cli');
+const {run} = require('../lib/cli/index');
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);

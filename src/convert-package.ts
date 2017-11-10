@@ -12,28 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as fs from 'mz/fs';
-import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
-import * as rimraf from 'rimraf';
 
 import {AnalysisConverter, AnalysisConverterOptions} from './analysis-converter';
 import {generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {polymerFileOverrides} from './special-casing';
+import {mkdirp, rimraf, writeFileResults} from './util';
 
-const mkdirp = require('mkdirp');
 
 
 type ConvertPackageOptions = AnalysisConverterOptions&{
   /**
    * The directory to read HTML files from.
    */
-  readonly inDir?: string;
+  readonly inDir: string;
 
   /**
    * The directory to write converted JavaScript files to.
    */
-  readonly outDir?: string;
+  readonly outDir: string;
 
   /**
    * The npm package name to use in package.json
@@ -50,8 +47,27 @@ type ConvertPackageOptions = AnalysisConverterOptions&{
   cleanOutDir?: boolean;
 };
 
+
+/**
+ * Create and/or clean the "out" directory, setting it up for conversion.
+ */
+async function setupOutDir(outDir: string, clean: boolean) {
+  if (clean) {
+    await rimraf(outDir);
+  }
+  try {
+    await mkdirp(outDir);
+  } catch (e) {
+    if (e.errno === -17) {
+      // directory exists, do nothing
+    } else {
+      throw e;
+    }
+  }
+}
+
 export function configureAnalyzer(options: ConvertPackageOptions) {
-  const inDir = options.inDir || process.cwd();
+  const inDir = options.inDir;
 
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(inDir));
   for (const [url, contents] of polymerFileOverrides) {
@@ -86,51 +102,29 @@ export function configureConverter(
 }
 
 /**
- * Converts an entire package from HTML imports to JS modules
+ * Convert a package-layout project to JavaScript modules & npm.
  */
-export async function convertPackage(options: ConvertPackageOptions) {
-  const outDir = options.outDir || 'js_out';
-  const outDirResolved = path.resolve(process.cwd(), outDir);
-  console.log(`Out directory: ${outDirResolved}`);
-
+export default async function convert(options: ConvertPackageOptions) {
+  const outDir = options.outDir;
   const npmPackageName = options.packageName;
   const npmPackageVersion = options.packageVersion;
+  console.log(`Out directory: ${outDir}`);
 
+  const bowerJson = readJson(options.inDir, 'bower.json');
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);
   const results = await converter.convert();
-  if (options.cleanOutDir) {
-    rimraf.sync(outDirResolved);
-  }
+  await setupOutDir(options.outDir, !!options.cleanOutDir);
+  await writeFileResults(outDir, results);
 
+  // Generate a new package.json, and write it to disk.
   try {
-    await fs.mkdir(outDirResolved);
-  } catch (e) {
-    if (e.errno === -17) {  // directory exists
-      // do nothing
-    } else {
-      throw e;
-    }
-  }
-
-  for (const [newPath, newSource] of results) {
-    const outPath = path.resolve(outDirResolved, newPath);
-    mkdirp.sync(path.dirname(outPath));
-    if (newSource !== undefined) {
-      await fs.writeFile(outPath, newSource);
-    } else if (fs.existsSync(outPath)) {
-      await fs.unlink(outPath);
-    }
-  }
-
-  try {
-    const bowerJson = readJson(path.join(options.inDir || '.', 'bower.json'));
     const packageJson =
         generatePackageJson(bowerJson, npmPackageName, npmPackageVersion);
     writeJson(packageJson, outDir, 'package.json');
-  } catch (e) {
-    console.log('error in bower.json -> package.json conversion');
-    console.error(e);
+  } catch (err) {
+    console.log(
+        `error in bower.json -> package.json conversion (${err.message})`);
   }
 }

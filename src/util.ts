@@ -11,16 +11,32 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
 import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
+import * as fs from 'mz/fs';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Analysis} from 'polymer-analyzer';
+
+import util = require('util');
+import _mkdirp = require('mkdirp');
+import _rimraf = require('rimraf');
+
+import {ConvertedDocumentFilePath} from './url-converter';
+
+/**
+ * Helper promisified "mkdirp" library function.
+ */
+export const mkdirp = util.promisify(_mkdirp);
+
+/**
+ * Helper promisified "rimraf" library function.
+ */
+export const rimraf = util.promisify(_rimraf);
 
 export function serializeNode(node: parse5.ASTNode): string {
   const container = parse5.treeAdapters.default.createDocumentFragment();
@@ -229,4 +245,20 @@ export function getNamespaces(analysis: Analysis) {
         }
         return name;
       });
+}
+
+/**
+ * Write each file to the out-directory.
+ */
+export async function writeFileResults(
+    outDir: string, files: Map<ConvertedDocumentFilePath, string|undefined>) {
+  return Promise.all(IterableX.from(files).map(async ([newPath, newSource]) => {
+    const filePath = path.join(outDir, newPath);
+    await mkdirp(path.dirname(filePath));
+    if (newSource !== undefined) {
+      await fs.writeFile(filePath, newSource);
+    } else if (await fs.exists(filePath)) {
+      await fs.unlink(filePath);
+    }
+  }));
 }
