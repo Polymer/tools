@@ -12,41 +12,36 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ConvertedDocumentUrl} from './url-converter';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './url-converter';
 
-export type ConversionOutput = DeleteFile|HtmlFile|JsModule;
-
-export interface DeleteFile {
-  readonly type: 'delete-file';
-  readonly url: ConvertedDocumentUrl;
-}
 
 export interface HtmlFile {
   readonly type: 'html-file';
-  readonly url: ConvertedDocumentUrl;
-
   readonly source: string;
 }
 
 export interface JsModule {
   readonly type: 'js-module';
-  /**
-   * Package-relative URL of the converted JS module.
-   */
-  readonly url: ConvertedDocumentUrl;
-
-  /**
-   * Converted source of the JS module.
-   */
   readonly source: string;
-
-  /**
-   * Set of exported names.
-   */
-  readonly es6Exports: ReadonlySet<string>;
-
   readonly exportedNamespaceMembers: ReadonlyArray<NamespaceMemberToExport>;
+  /** Set of exported names. */
+  readonly es6Exports: ReadonlySet<string>;
 }
+
+export interface ConversionResult {
+  readonly originalUrl: OriginalDocumentUrl;
+  readonly convertedUrl: ConvertedDocumentUrl;
+  readonly convertedFilePath: ConvertedDocumentFilePath;
+  /**
+   * Explicitly keep or remove the original file from disk. By default, the
+   * original file will be destroyed. If the convertedFilePath matches
+   * originalUrl, the original file will always be overwritten with the
+   * converted output.
+   */
+  readonly keepOriginal?: boolean;
+  readonly output: HtmlFile|JsModule;
+}
+
 
 export class JsExport {
   /**

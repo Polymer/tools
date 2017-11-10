@@ -15,8 +15,8 @@
 import * as estree from 'estree';
 import {Document} from 'polymer-analyzer';
 
-import {ConversionOutput, JsExport} from './js-module';
-import {ConvertedDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConversionResult, JsExport} from './js-module';
+import {OriginalDocumentUrl} from './url-converter';
 
 export interface ConversionMetadata {
   readonly namespaces: ReadonlySet<string>;
@@ -25,12 +25,12 @@ export interface ConversionMetadata {
   readonly includes: ReadonlySet<string>;
   readonly referenceExcludes: ReadonlySet<string>;
 
-  readonly outputs: Map<ConvertedDocumentUrl, ConversionOutput>;
+  readonly results: Map<OriginalDocumentUrl, ConversionResult>;
   readonly namespacedExports: Map<string, JsExport>;
 
   readonly referenceRewrites: ReadonlyMap<string, estree.Node>;
-
   readonly dangerousReferences: ReadonlyMap<string, string>;
 
+  shouldConvertDocument(document: Document): boolean;
   convertDocument(document: Document, visited: Set<OriginalDocumentUrl>): void;
 }

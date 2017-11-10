@@ -19,7 +19,7 @@ import * as fs from 'mz/fs';
 import * as path from 'path';
 
 import {configureAnalyzer, configureConverter} from '../convert-package';
-import {ConvertedDocumentUrl} from '../url-converter';
+import {ConvertedDocumentFilePath} from '../url-converter';
 
 // Install source map support for stack traces, etc.
 require('source-map-support').install();
@@ -75,7 +75,7 @@ function rework(line: string) {
                           .filter(([_, v]) => v !== undefined)
                           .map(([k]) => k);
   const expectedPaths = IterableX.from(walkDir(expectedDir))
-                            .map((f) => `./${f}` as ConvertedDocumentUrl)
+                            .map((f) => f as ConvertedDocumentFilePath)
                             .filter((f) => f !== './package.json');
   const allPathsUnsorted = new Set(resultPaths.concat(expectedPaths));
   const allPaths = [...allPathsUnsorted].sort((a, b) => a.localeCompare(b));

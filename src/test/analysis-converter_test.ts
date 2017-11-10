@@ -20,7 +20,7 @@ import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 
 import {AnalysisConverter, AnalysisConverterOptions} from '../analysis-converter';
 import {configureAnalyzer, configureConverter} from '../convert-package';
-import {ConvertedDocumentUrl} from '../url-converter';
+import {ConvertedDocumentFilePath} from '../url-converter';
 import {getMemberPath} from '../util';
 
 
@@ -134,15 +134,13 @@ suite('AnalysisConverter', () => {
       const expectedWarnings = [
         `WARN: bower->npm mapping for "dep.html" not found`,
         `WARN: bower->npm mapping for "dep.html" not found`,
-        `WARN: bower->npm mapping for "dep.html" not found`,
-        `WARN: bower->npm mapping for "dep.html" not found`,
       ];
       assertSources(await convert({expectedWarnings}), {
-        './test.js': `
+        'test.js': `
 import './dep.js';
 import '../dep.js';
 `,
-        './test.html': undefined
+        'test.html': undefined
       });
     });
 
@@ -161,15 +159,15 @@ import '../dep.js';
         'bower_components/app-route/app-route.html': `<h1>Hi</h1>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import './nested/test.js';
 import '../@polymer/app-storage/app-storage.js';
 `,
-        './nested/test.js': `
+        'nested/test.js': `
 import '../../@polymer/app-route/app-route.js';
 `,
-        './test.html': undefined,
-        './nested/test.html': undefined,
+        'test.html': undefined,
+        'nested/test.html': undefined,
       });
     });
 
@@ -191,11 +189,11 @@ import '../../@polymer/app-route/app-route.js';
           });
           assertSources(
               await convert({packageName: '@some-scope/some-package'}), {
-                './test.js': `
+                'test.js': `
 import './nested/test.js';
 import '../../@polymer/app-storage/app-storage.js';
 `,
-                './nested/test.js': `
+                'nested/test.js': `
 import '../../../@polymer/app-route/app-route.js';
 `
               });
@@ -218,12 +216,12 @@ import '../../../@polymer/app-route/app-route.js';
         'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
       });
       assertSources(await convert({packageType: 'application'}), {
-        './test.js': `
+        'test.js': `
 import './nested/test.js';
 import './node_modules/@polymer/app-storage/app-storage.js';
 import '/node_modules/@polymer/app-route/app-route.js';
 `,
-        './nested/test.js': `
+        'nested/test.js': `
 import '../node_modules/@polymer/app-storage/app-storage.js';
 import '/node_modules/@polymer/app-route/app-route.js';
 `,
@@ -249,12 +247,12 @@ import '/node_modules/@polymer/app-route/app-route.js';
             'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
           });
           assertSources(await convert({packageType: 'application'}), {
-            './test.js': `
+            'test.js': `
 import './nested/test.js';
 import './node_modules/@polymer/app-storage/app-storage.js';
 import '/node_modules/@polymer/app-route/app-route.js';
 `,
-            './nested/test.js': `
+            'nested/test.js': `
 import '../node_modules/@polymer/app-storage/app-storage.js';
 import '/node_modules/@polymer/app-route/app-route.js';
 `,
@@ -269,7 +267,7 @@ import '/node_modules/@polymer/app-route/app-route.js';
         'dep.html': `<h1>Hi</h1>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import './dep.js';
 `
       });
@@ -297,7 +295,7 @@ import './dep.js';
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { foo } from './foo.js';
 import { bar } from './bar.js';
 console.log(foo);
@@ -326,7 +324,7 @@ console.log(bar);
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Polymer, foo } from \'./foo.js\';
 console.log(Polymer());
 console.log(Polymer());
@@ -354,7 +352,7 @@ console.log(Polymer[\'bar\']);
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Polymer } from './foo.js';
 var P = Polymer;
 var Po = Polymer;
@@ -385,18 +383,18 @@ Po();
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import './polymer.js';
 import { Polymer } from './lib/legacy/polymer-fn.js';
 console.log(Polymer());
 console.log(Polymer());
 `,
 
-        './polymer.js': `
+        'polymer.js': `
 import './lib/legacy/polymer-fn.js';
 `,
 
-        './lib/legacy/polymer-fn.js': `
+        'lib/legacy/polymer-fn.js': `
 export const Polymer = function(info) {
   console.log("hey there, i\'m the polymer function!");
 };
@@ -423,7 +421,7 @@ export const Polymer = function(info) {
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 Polymer({
   _template: \`
               <h1>Test</h1>
@@ -447,7 +445,7 @@ Polymer({
           </script>`
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export { ArraySelectorMixin };
 `
       });
@@ -463,7 +461,7 @@ export { ArraySelectorMixin };
           </script>`
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const version = '2.0.0';
 `
       });
@@ -477,7 +475,7 @@ export const version = '2.0.0';
           </script>`
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const LegacyElementMixin = Polymer.dedupingMixin();
 `
       });
@@ -512,7 +510,7 @@ export const LegacyElementMixin = Polymer.dedupingMixin();
           </script>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 /**
  * @memberof Polymer.Namespace
  */
@@ -574,7 +572,7 @@ export { independentFn };
           </script>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export function fn() {
   foobar();
 }
@@ -636,7 +634,7 @@ export function arrowFn() {
           </script>`,
           });
           assertSources(await convert(), {
-            './test.js': `
+            'test.js': `
 export function meth() {}
 
 export function polymerReferenceFn() {
@@ -670,7 +668,7 @@ export function thisReferenceFn() {
           </script>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const immutableLiteral = 42;
 export let mutableLiteral = 0;
 
@@ -705,7 +703,7 @@ export function increment() {
           </script>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const dom = function() {
   return 'Polymer.dom result';
 };
@@ -748,7 +746,7 @@ export const subFn = function() {
           </script>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const dom = function() {
   return 'Polymer.dom result';
 };
@@ -797,7 +795,7 @@ export const subFnDelegate = function() {
           </script>`,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const obj = {
   deepFunc: function() {},
 };
@@ -839,7 +837,7 @@ export function deepReferenceFn() {
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Element } from './dep.js';
 class MyElement extends Element {}
 `
@@ -866,7 +864,7 @@ class MyElement extends Element {}
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Element } from './dep.js';
 class MyElement extends Element {}
 `
@@ -894,7 +892,7 @@ class MyElement extends Element {}
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import * as dep from './dep.js';
 const Foo = dep;
 class MyElement extends Foo.Element {}
@@ -924,7 +922,7 @@ class MyElement extends Foo.Element {}
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import * as dep from './dep.js';
 import { Element as Element$0 } from './dep.js';
 const Foo = dep;
@@ -951,7 +949,7 @@ const Baz = Element$0;
         `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export function isPath() {}
 export const isDeep = isPath;
 `
@@ -982,7 +980,7 @@ export const isDeep = isPath;
             excludes: ['exclude.html'],
           }),
           {
-            './test.js': `
+            'test.js': `
 import { Element } from './dep.js';
 class MyElement extends Element {}
 `
@@ -1003,7 +1001,7 @@ class MyElement extends Element {}
             referenceExcludes: ['Polymer.DomModule']
           }),
           {
-            './test.js': `
+            'test.js': `
 if (undefined) {}
 `
           });
@@ -1023,7 +1021,7 @@ if (undefined) {}
             referenceExcludes: ['Polymer.Settings'],
           }),
           {
-            './test.js': `
+            'test.js': `
 export { settings as Settings };
 `
           });
@@ -1055,7 +1053,7 @@ export { settings as Settings };
             referenceExcludes: ['Polymer.rootPath'],
           }),
           {
-            './test.js': `
+            'test.js': `
 let rootPath;
 export { rootPath };
 export const setRootPath = function(path) {
@@ -1089,7 +1087,7 @@ export const setRootPath = function(path) {
 `,
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 /**
  * @customElement
  * @polymer
@@ -1128,7 +1126,7 @@ class TestElement extends Polymer.Element {
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 Polymer({
   _template: \`
       <h1>Hi!</h1>
@@ -1149,14 +1147,14 @@ Polymer({
         'foo.html': `<div>hello world!</div>`
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import './foo.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<custom-style><style>foo{}</style></custom-style>\`;
 document.head.appendChild($_documentContainer);
 `,
-        './foo.js': `
+        'foo.js': `
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>hello world!</div>\`;
@@ -1177,7 +1175,7 @@ document.head.appendChild($_documentContainer);
         'qux.html': `<script>Foo.qux = 'lol';</script>`
       });
       assertSources(await convert({namespaces: ['Foo', 'Baz']}), {
-        './test.js': `
+        'test.js': `
 import { qux } from './qux.js';
 export const bar = 10;
 export { qux as zug };
@@ -1203,12 +1201,12 @@ export { qux as zug };
       });
       assertSources(
           await convert({namespaces: [/* No explicit namespaces! */]}), {
-            './test.js': `
+            'test.js': `
 import { Element as Element$0 } from './polymer.js';
 class Element extends Element$0 {}
 `,
 
-            './polymer.js': `
+            'polymer.js': `
 export const Element = class Element {};
 `
           });
@@ -1234,12 +1232,12 @@ export const Element = class Element {};
       });
       assertSources(
           await convert({namespaces: [/* No explicit namespaces! */]}), {
-            './test.js': `
+            'test.js': `
 import { Element as Element$0 } from './ns.js';
 class Element extends Element$0 {}
 `,
 
-            './ns.js': `
+            'ns.js': `
 export const Element = class Element {};
 `
           });
@@ -1257,11 +1255,11 @@ export const Element = class Element {};
                 <div>Hello world!</div>`
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const Element = class Element {};
 `,
 
-        './index.html': `
+        'index.html': `
 
                 <script type="module" src="./test.js"></script>
 
@@ -1287,7 +1285,7 @@ export const Element = class Element {};
 `
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Element } from './polymer.js';
 class FooElem extends Element {}
 class BarElem extends Element {}
@@ -1316,7 +1314,7 @@ class BarElem extends Element {}
 `
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Element } from './polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -1357,7 +1355,7 @@ class BarElem extends Element {}
 `
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import { Element } from './polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -1397,11 +1395,11 @@ customElements.define('bar-elem', class BarElem extends Element {
         `
       });
       assertSources(await convert({mainFiles: ['subdir/element.html']}), {
-        './subdir/element.js': `
+        'subdir/element.js': `
 import '../lib.js';
 `,
 
-        './subdir/index.html': `
+        'subdir/index.html': `
 
           <script type="module" src="../lib.js"></script>
           <script type="module" src="./element.js"></script>
@@ -1435,11 +1433,11 @@ import '../lib.js';
         `
       });
       assertSources(await convert(), {
-        './polymer.js': `
+        'polymer.js': `
 export const Element = class Element {};
 `,
 
-        './index.html': `
+        'index.html': `
 
           <div>This is some html.</div>
           <script type="module" src="./polymer.js"></script>
@@ -1473,7 +1471,7 @@ document.registerElement(
         `
       });
       assertSources(await convert(), {
-        './index.html': `
+        'index.html': `
 
           <div>This is some html.</div>
           <script>
@@ -1497,7 +1495,7 @@ document.registerElement(
         `
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 console.log(window.document);
 console.log(
   window.document.querySelectorAll(
@@ -1529,13 +1527,13 @@ console.log(foo.document.currentScript.ownerDocument);
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import '../@webcomponents/shadycss/entrypoints/custom-style-interface.js';
 import '../@webcomponents/shadycss/entrypoints/apply-shim.js';
 console.log(ShadyCSS.flush());
 `,
 
-        './index.html': `
+        'index.html': `
 
           <script type="module" src="../@webcomponents/shadycss/entrypoints/custom-style-interface.js"></script>
           <script type="module" src="../@webcomponents/shadycss/entrypoints/apply-shim.js"></script>
@@ -1572,7 +1570,7 @@ console.log(ShadyCSS.flush());
       });
 
       assertSources(await convert(), {
-        './index.html': `
+        'index.html': `
 
           <script>
             window.ShadyDOM = {force: true};
@@ -1614,7 +1612,7 @@ console.log(ShadyDOM.flush());
         `
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 Polymer({
   _template: \`
 foo
@@ -1652,7 +1650,7 @@ bar
       });
 
       assertSources(await convert(), {
-        './index.html': `
+        'index.html': `
 
           <script type="module" src="./polymer.js"></script>
           <script type="module">
@@ -1661,7 +1659,7 @@ export const foo = class Foo {foo() {}};
 new foo().foo();
 </script>
         `,
-        './polymer.js': `
+        'polymer.js': `
 
 `
       });
@@ -1697,7 +1695,7 @@ new foo().foo();
 
       // Note(rictic): we don't yet get that `baz` can't be `const` here.
       assertSources(await convert(), {
-        './settings.js': `
+        'settings.js': `
 export let foo = 'default';
 
 export const setFoo = function(newFoo) {
@@ -1711,7 +1709,7 @@ export function setBaz(newBaz) {
 }
 `,
 
-        './test.js': `
+        'test.js': `
 import { setFoo, setBaz, foo } from './settings.js';
 setFoo('hello');
 setBaz(foo + 10 * (10 ** 10));
@@ -1731,14 +1729,14 @@ setBaz(foo + 10 * (10 ** 10));
       });
       const expectedWarnings = [`WARN: bower->npm mapping for "foo" not found`];
       assertSources(await convert({packageName: 'polymer', expectedWarnings}), {
-        './index.html': `
+        'index.html': `
 
           <script src="../foo/foo.js"></script>
         `,
       });
       assertSources(
           await convert({packageName: '@polymer/polymer', expectedWarnings}), {
-            './index.html': `
+            'index.html': `
 
           <script src="../../foo/foo.js"></script>
         `,
@@ -1771,7 +1769,7 @@ setBaz(foo + 10 * (10 ** 10));
       });
 
       assertSources(await convert({packageName: 'polymer'}), {
-        './test.js': `
+        'test.js': `
 class XFoo extends HTMLElement {
   connectedCallback() {
     this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
@@ -1802,7 +1800,7 @@ Polymer({
       });
 
       assertSources(await convert({packageName: 'polymer'}), {
-        './test.js': `
+        'test.js': `
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
@@ -1860,7 +1858,7 @@ document.head.appendChild($_documentContainer);
           `,
       });
       assertSources(await convert({namespaces: ['NS1', 'NS2', 'NS3']}), {
-        './test.js': `
+        'test.js': `
 import { foo as foo$0 } from './NS1-foo.js';
 import { foo as foo$3 } from './NS2-foo.js';
 import { foo as foo$4 } from './NS3-foo.js';
@@ -1893,7 +1891,7 @@ console.log(foo$4);
         `
       });
       assertSources(await convert(), {
-        './index.html': `
+        'index.html': `
 
           <style>
             body { color: red; }
@@ -1926,7 +1924,7 @@ console.log(foo$4);
         `
       });
       assertSources(await convert(), {
-        './index.html': `
+        'index.html': `
 
           <!-- FIXME(polymer-modulizer):
         These imperative modules that innerHTML your HTML are
@@ -1994,7 +1992,7 @@ document.body.appendChild($_documentContainer);
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 function IronMeta() {}
 
 export { IronMeta };
@@ -2013,7 +2011,7 @@ var metaDatas = IronMeta.types;
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 import './foo.js';
 `
       });
@@ -2031,7 +2029,7 @@ import './foo.js';
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const IronSelection = function() {};
 IronSelection.prototype = {};
 `
@@ -2056,7 +2054,7 @@ IronSelection.prototype = {};
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 export const foo = 10;
 `
       });
@@ -2083,11 +2081,11 @@ export const foo = 10;
            '    modulizer does not yet support rewriting references among ' +
            'cyclic dependencies.'];
       assertSources(await convert({expectedWarnings}), {
-        './a.js': `
+        'a.js': `
 import './b.js';
 export const foo = 5;
 `,
-        './b.js': `
+        'b.js': `
 import './a.js';
 export const bar = 20;
 `
@@ -2123,7 +2121,7 @@ export const bar = 20;
            '    modulizer does not yet support rewriting references among ' +
            'cyclic dependencies.'];
       assertSources(await convert({expectedWarnings}), {
-        './a.js': `
+        'a.js': `
 import { bar } from './b.js';
 
 export const foo = function() {
@@ -2131,7 +2129,7 @@ export const foo = function() {
 };
 `,
         // TODO(rictic): we should rewrite Polymer.foo here, but that's tricky…
-        './b.js': `
+        'b.js': `
 import './a.js';
 
 export const bar = (function() {
@@ -2167,7 +2165,7 @@ export const bar = (function() {
         `
       });
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
@@ -2219,7 +2217,7 @@ customElements.define(
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 console.log(window);
 function foo() {
   console.log(this);
@@ -2261,7 +2259,7 @@ console.log(this);
       });
 
       assertSources(await convert(), {
-        './index.html': `
+        'index.html': `
 
           <script type="module" src="./polymer.js"></script>
           <demo-snippet>
@@ -2292,7 +2290,7 @@ console.log(foo);
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 console.log('one');
 console.log('two');
 `,
@@ -2316,7 +2314,7 @@ console.log('two');
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 /* First comment */
 ;
 
@@ -2342,7 +2340,7 @@ console.log('second script');
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 /* First comment */
 /* Second comment */
 /* Final trailing comment */
@@ -2362,7 +2360,7 @@ console.log('second script');
       });
 
       assertSources(await convert(), {
-        './test.js': `
+        'test.js': `
 /** @license This is a license */
 /* Second comment */
 /* Final trailing comment */
@@ -2391,7 +2389,7 @@ console.log('second script');
         });
 
         assertSources(await convert(), {
-          './test.js': `
+          'test.js': `
 Polymer({
   _template: \`
             <div>Implementation here</div>
@@ -2464,7 +2462,8 @@ Polymer({
     const converter = configureConverter(analysis, options);
     const converted = await converter.convert();
     const caseMapSource =
-        converted.get('./case-map/case-map.js' as ConvertedDocumentUrl);
+        converted.get('case-map/case-map.js' as ConvertedDocumentFilePath);
+    assert.isString(caseMapSource);
     assert.include(caseMapSource!, 'export function dashToCamelCase');
     assert.include(caseMapSource!, 'export function camelToDashCase');
   });

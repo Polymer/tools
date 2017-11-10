@@ -25,13 +25,13 @@ import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, W
 import * as recast from 'recast';
 
 import {ConversionMetadata} from './conversion-metadata';
-import {ConversionOutput, JsExport, NamespaceMemberToExport} from './js-module';
+import {ConversionResult, JsExport, NamespaceMemberToExport} from './js-module';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
-import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
 import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 /**
@@ -182,12 +182,7 @@ export class DocumentConverter {
         });
   }
 
-  convertToJsModule(): Iterable<ConversionOutput> {
-    for (const exclude of this.conversionMetadata.excludes) {
-      if (this.originalUrl.endsWith(exclude)) {
-        return [];
-      }
-    }
+  convertToJsModule(): ConversionResult {
     const combinedToplevelStatements = [];
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
@@ -246,24 +241,21 @@ export class DocumentConverter {
 
     const outputProgram =
         recast.print(program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
-    const deletedHtmlFileUrl =
-        ('./' + this.originalUrl) as ConvertedDocumentUrl;
-    return [
-      {
+
+    return {
+      originalUrl: this.originalUrl,
+      convertedUrl: this.convertedUrl,
+      convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
+      output: {
         type: 'js-module',
-        url: this.convertedUrl,
         source: outputProgram.code + '\n',
         exportedNamespaceMembers: exportMigrationRecords,
         es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
-      },
-      {
-        type: 'delete-file',
-        url: deletedHtmlFileUrl,
       }
-    ];
+    };
   }
 
-  convertAsToplevelHtmlDocument(): Iterable<ConversionOutput> {
+  convertAsToplevelHtmlDocument(): ConversionResult {
     this.convertDependencies();
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
     const p = dom5.predicates;
@@ -415,11 +407,16 @@ export class DocumentConverter {
       contents =
           contents.slice(0, start) + replacementText + contents.slice(end);
     }
-    return [{
-      type: 'html-file',
-      url: ('./' + this.originalUrl) as ConvertedDocumentUrl,
-      source: contents,
-    }];
+
+    return {
+      originalUrl: this.originalUrl,
+      convertedUrl: this.convertedUrl,
+      convertedFilePath: getHtmlDocumentConvertedFilePath(this.originalUrl),
+      output: {
+        type: 'html-file',
+        source: contents,
+      }
+    };
   }
 
   private rewriteInlineScript(program: estree.Program) {
@@ -734,11 +731,10 @@ export class DocumentConverter {
   private convertDependencies() {
     this.visited.add(this.originalUrl);
     for (const htmlImport of this.getHtmlImports()) {
-      const documentUrl = getDocumentUrl(htmlImport.document);
-      const importedJsDocumentUrl = convertHtmlDocumentUrl(documentUrl);
-      if (this.conversionMetadata.outputs.has(importedJsDocumentUrl)) {
+      if (!this.conversionMetadata.shouldConvertDocument(htmlImport.document)) {
         continue;
       }
+      const documentUrl = getDocumentUrl(htmlImport.document);
       if (this.visited.has(documentUrl)) {
         console.warn(
             `Cycle in dependency graph found where ` +
