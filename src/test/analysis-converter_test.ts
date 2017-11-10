@@ -20,7 +20,7 @@ import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 
 import {AnalysisConverter, AnalysisConverterOptions} from '../analysis-converter';
 import {configureAnalyzer, configureConverter} from '../convert-package';
-import {ConvertedDocumentFilePath} from '../url-converter';
+import {ConvertedDocumentFilePath} from '../urls/types';
 import {getMemberPath} from '../util';
 
 

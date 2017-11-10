@@ -26,7 +26,7 @@ import util = require('util');
 import _mkdirp = require('mkdirp');
 import _rimraf = require('rimraf');
 
-import {ConvertedDocumentFilePath} from './url-converter';
+import {ConvertedDocumentFilePath} from './urls/types';
 
 /**
  * Helper promisified "mkdirp" library function.

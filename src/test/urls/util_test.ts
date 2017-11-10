@@ -14,7 +14,8 @@
 
 import {assert} from 'chai';
 
-import {ConvertedDocumentUrl, convertHtmlDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from '../url-converter';
+import {ConvertedDocumentUrl, OriginalDocumentUrl} from '../../urls/types';
+import {convertHtmlDocumentUrl, getRelativeUrl} from '../../urls/util';
 
 suite('src/url-converter', () => {
 

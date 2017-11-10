@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 
 
 export interface HtmlFile {

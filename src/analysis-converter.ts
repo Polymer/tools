@@ -17,7 +17,7 @@ import {Analysis, Document} from 'polymer-analyzer';
 import {BaseConverter, BaseConverterOptions} from './base-converter';
 import {ConversionMetadata} from './conversion-metadata';
 import {DocumentConverter} from './document-converter';
-import {OriginalDocumentUrl} from './url-converter';
+import {OriginalDocumentUrl} from './urls/types';
 
 const _isInBowerRegex = /(\b|\/|\\)(bower_components)(\/|\\)/;
 const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;

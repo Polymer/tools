@@ -19,7 +19,8 @@ import {Analysis, Document} from 'polymer-analyzer';
 
 import {DocumentConverter} from './document-converter';
 import {ConversionResult, JsExport} from './js-module';
-import {ConvertedDocumentFilePath, getDocumentUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentFilePath, OriginalDocumentUrl} from './urls/types';
+import {getDocumentUrl} from './urls/util';
 import {getNamespaces} from './util';
 
 export interface BaseConverterOptions {

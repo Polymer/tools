@@ -17,7 +17,7 @@ import {Document} from 'polymer-analyzer';
 import {BaseConverter} from './base-converter';
 import {ConversionMetadata} from './conversion-metadata';
 import {DocumentConverter} from './document-converter';
-import {OriginalDocumentUrl} from './url-converter';
+import {OriginalDocumentUrl} from './urls/types';
 
 /**
  * Converts an entire workspace object.

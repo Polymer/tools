@@ -14,30 +14,9 @@
 
 import {posix as path} from 'path';
 import {Document} from 'polymer-analyzer';
+import {dependencyMap} from '../manifest-converter';
 
-import {dependencyMap} from './manifest-converter';
-
-/**
- * A URL path to an document, pre-conversion. Always relative to the current
- * project (package, workspace, etc).
- */
-export type OriginalDocumentUrl = string&{_OriginalDocumentUrl: never};
-
-/**
- * A URL path to a document, post-conversion. Uses npm naming for all urls
- * containing package names. Always relative to the current project (package,
- * workspace, etc).
- */
-export type ConvertedDocumentUrl = string&{_ConvertedDocumentUrl: never};
-/**
- * A file path to where a document will be written, post-conversion. Unlike
- * ConvertedDocumentUrl, this url keeps the original package folder and Bower
- * package name. Useful in workspace projects where converted files should still
- * be written to the original analyzed repo.
- */
-export type ConvertedDocumentFilePath =
-    string&{_ConvertedDocumentFilePath: never};
-
+import {ConvertedDocumentUrl, OriginalDocumentUrl, ConvertedDocumentFilePath} from './types';
 
 /**
  * Given an HTML url relative to the project root, return true if that url
@@ -51,7 +30,7 @@ function isBowerDependencyUrl(htmlUrl: OriginalDocumentUrl): boolean {
 /**
  * Rewrite a url to replace a `.html` file extension with `.js`, if found.
  */
-function fixHtmlExtensionIfFound(url: string): string {
+function replaceHtmlExtensionIfFound(url: string): string {
   if (url.endsWith('.html')) {
     url = url.substring(0, url.length - '.html'.length) + '.js';
   }
@@ -64,7 +43,7 @@ function fixHtmlExtensionIfFound(url: string): string {
  */
 export function getJsModuleConvertedFilePath(originalUrl: OriginalDocumentUrl):
     ConvertedDocumentFilePath {
-  return fixHtmlExtensionIfFound(originalUrl) as ConvertedDocumentFilePath;
+  return replaceHtmlExtensionIfFound(originalUrl) as ConvertedDocumentFilePath;
 }
 
 /**
@@ -120,28 +99,25 @@ export function convertHtmlDocumentUrl(htmlUrl: OriginalDocumentUrl):
         `from the analyzer, but got "${htmlUrl}"`);
   }
   // Start the creation of your converted URL, based on on the original URL
-  let jsUrl = (<ConvertedDocumentUrl>(<string>htmlUrl));
-  // If url points to a bower_components dependency, update it to point to
-  // its equivilent node_modules npm dependency.
+  let jsUrl: string = htmlUrl;
+  // If url points to a bower_components/ dependency, update it to point to
+  // its equivilent node_modules/ npm dependency.
   if (isBowerDependencyUrl(htmlUrl)) {
     jsUrl = convertBowerDependencyUrl(htmlUrl);
   }
-
   // Temporary workaround for imports of some shadycss files that wrapped
   // ES6 modules.
   if (jsUrl.endsWith('shadycss/apply-shim.html')) {
     jsUrl = jsUrl.replace(
-                'shadycss/apply-shim.html',
-                'shadycss/entrypoints/apply-shim.js') as ConvertedDocumentUrl;
+        'shadycss/apply-shim.html', 'shadycss/entrypoints/apply-shim.js');
   }
   if (jsUrl.endsWith('shadycss/custom-style-interface.html')) {
     jsUrl = jsUrl.replace(
-                'shadycss/custom-style-interface.html',
-                'shadycss/entrypoints/custom-style-interface.js') as
-        ConvertedDocumentUrl;
+        'shadycss/custom-style-interface.html',
+        'shadycss/entrypoints/custom-style-interface.js');
   }
   // Convert any ".html" URLs to point to their new ".js" module equivilent
-  jsUrl = fixHtmlExtensionIfFound(jsUrl) as ConvertedDocumentUrl;
+  jsUrl = replaceHtmlExtensionIfFound(jsUrl);
   // TODO(fks): Revisit this format? The analyzer returns URLs without this
   return ('./' + jsUrl) as ConvertedDocumentUrl;
 }

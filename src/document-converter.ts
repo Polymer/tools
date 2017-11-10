@@ -31,7 +31,8 @@ import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
-import {ConvertedDocumentUrl, convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, OriginalDocumentUrl} from './url-converter';
+import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
+import {convertHtmlDocumentUrl, convertJsDocumentUrl, getDocumentUrl, getRelativeUrl, getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath} from './urls/util';
 import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
 
 /**
@@ -245,12 +246,7 @@ export class DocumentConverter {
     return {
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
-<<<<<<< HEAD
       convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
-=======
-      convertedFilePath: this.originalUrl.replace('.html', '.js') as
-          ConvertedDocumentFilePath,
->>>>>>> workspace-converter-refactor-1
       output: {
         type: 'js-module',
         source: outputProgram.code + '\n',
@@ -416,12 +412,7 @@ export class DocumentConverter {
     return {
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
-<<<<<<< HEAD
       convertedFilePath: getHtmlDocumentConvertedFilePath(this.originalUrl),
-=======
-      convertedFilePath: this.originalUrl as string as
-          ConvertedDocumentFilePath,
->>>>>>> workspace-converter-refactor-1
       output: {
         type: 'html-file',
         source: contents,
@@ -741,12 +732,7 @@ export class DocumentConverter {
   private convertDependencies() {
     this.visited.add(this.originalUrl);
     for (const htmlImport of this.getHtmlImports()) {
-<<<<<<< HEAD
       if (!this.conversionMetadata.shouldConvertDocument(htmlImport.document)) {
-=======
-      const documentUrl = getDocumentUrl(htmlImport.document);
-      if (this.conversionMetadata.results.has(documentUrl)) {
->>>>>>> workspace-converter-refactor-1
         continue;
       }
       const documentUrl = getDocumentUrl(htmlImport.document);

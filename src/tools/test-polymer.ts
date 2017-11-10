@@ -19,7 +19,7 @@ import * as fs from 'mz/fs';
 import * as path from 'path';
 
 import {configureAnalyzer, configureConverter} from '../convert-package';
-import {ConvertedDocumentFilePath} from '../url-converter';
+import {ConvertedDocumentFilePath} from '../urls/types';
 
 // Install source map support for stack traces, etc.
 require('source-map-support').install();
