@@ -8,3 +8,5 @@
  *   lib/utils/boot.html
  */
 
+declare namespace Polymer {
+}

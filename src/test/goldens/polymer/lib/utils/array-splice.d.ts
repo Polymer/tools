@@ -10,3 +10,8 @@
 
 /// <reference path="boot.d.ts" />
 
+declare namespace Polymer {
+
+  namespace ArraySplice {
+  }
+}

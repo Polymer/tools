@@ -12,6 +12,10 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module with utilities for collection CSS text from `<templates>`, external
+   * stylesheets, and `dom-module`s.
+   */
   namespace StyleGather {
 
 

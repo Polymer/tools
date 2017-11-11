@@ -12,6 +12,9 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module for scheduling flushable pre-render and post-render tasks.
+   */
   namespace RenderStatus {
 
 

@@ -75,13 +75,16 @@ export class Document {
 export class Namespace {
   readonly kind = 'namespace';
   name: string;
+  description: string;
   members: Array<Namespace|Class|Interface|Mixin|Function>;
 
   constructor(data: {
     name: string,
+    description?: string;
     members?: Array<Namespace|Class|Interface|Mixin|Function>,
   }) {
     this.name = data.name;
+    this.description = data.description || '';
     this.members = data.members || [];
   }
 
@@ -94,6 +97,9 @@ export class Namespace {
 
   serialize(depth: number = 0): string {
     let out = ''
+    if (this.description) {
+      out += formatComment(this.description, depth);
+    }
     const i = indent(depth)
     out += i
     if (depth === 0) {

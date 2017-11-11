@@ -15,6 +15,15 @@
 
 declare namespace Polymer {
 
+  /**
+   * Legacy DOM and Event manipulation API wrapper factory used to abstract
+   * differences between native Shadow DOM and "Shady DOM" when polyfilling on
+   * older browsers.
+   *
+   * Note that in Polymer 2.x use of `Polymer.dom` is no longer required and
+   * in the majority of cases simply facades directly to the standard native
+   * API.
+   */
   namespace dom {
 
 

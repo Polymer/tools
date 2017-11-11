@@ -131,6 +131,8 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
       handleClass(feature as analyzer.Class, root);
     } else if (feature.kinds.has('function')) {
       handleFunction(feature as AnalyzerFunction, root);
+    } else if (feature.kinds.has('namespace')) {
+      handleNamespace(feature as analyzer.Namespace, root);
     } else if (feature.kinds.has('import')) {
       // Sometimes an Analyzer document includes an import feature that is
       // inbound (things that depend on me) instead of outbound (things I
@@ -379,6 +381,16 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
 function* reverseIter<T>(arr: T[]) {
   for (let i = arr.length - 1; i >= 0; i--) {
     yield arr[i];
+  }
+}
+
+/**
+ * Add the given namespace to the given TypeScript declarations document.
+ */
+function handleNamespace(feature: analyzer.Namespace, tsDoc: ts.Document) {
+  const ns = findOrCreateNamespace(tsDoc, feature.name.split('.'));
+  if (ns.kind === 'namespace') {
+    ns.description = feature.description || '';
   }
 }
 

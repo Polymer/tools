@@ -12,8 +12,17 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module that provides a number of strategies for enqueuing asynchronous
+   * tasks.  Each sub-module provides a standard `run(fn)` interface that returns a
+   * handle, and a `cancel(handle)` interface for canceling async tasks before
+   * they run.
+   */
   namespace Async {
 
+    /**
+     * Async interface wrapper around `setTimeout`.
+     */
     namespace timeOut {
 
 
@@ -24,6 +33,16 @@ declare namespace Polymer {
       function after(delay: number): AsyncInterface|null;
     }
 
+    /**
+     * Async interface wrapper around `requestAnimationFrame`.
+     */
+    namespace animationFrame {
+    }
+
+    /**
+     * Async interface wrapper around `requestIdleCallback`.  Falls back to
+     * `setTimeout` on browsers that do not support `requestIdleCallback`.
+     */
     namespace idlePeriod {
 
 
@@ -39,6 +58,15 @@ declare namespace Polymer {
       function cancel(handle: number): any;
     }
 
+    /**
+     * Async interface for enqueuing callbacks that run at microtask timing.
+     *
+     * Note that microtask timing is achieved via a single `MutationObserver`,
+     * and thus callbacks enqueued with this API will all run in a single
+     * batch, and not interleaved with other microtasks such as promises.
+     * Promises are avoided as an implementation choice for the time being
+     * due to Safari bugs that cause Promises to lack microtask guarantees.
+     */
     namespace microTask {
 
 

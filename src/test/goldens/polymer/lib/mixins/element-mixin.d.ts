@@ -182,4 +182,11 @@ declare namespace Polymer {
       resolveUrl(url: string, base?: string): string;
     }
   } & T
+
+  /**
+   * Provides basic tracking of element definitions (registrations) and
+   * instance counts.
+   */
+  namespace telemetry {
+  }
 }

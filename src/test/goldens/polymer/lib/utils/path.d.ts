@@ -12,6 +12,9 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module with utilities for manipulating structured data path strings.
+   */
   namespace Path {
 
 

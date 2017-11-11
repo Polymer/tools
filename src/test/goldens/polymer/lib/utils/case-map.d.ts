@@ -12,6 +12,10 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module with utilities for converting between "dash-case" and "camelCase"
+   * identifiers.
+   */
   namespace CaseMap {
 
 

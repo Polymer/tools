@@ -13,6 +13,12 @@
 
 declare namespace Polymer {
 
+  /**
+   * Legacy settings.
+   */
+  namespace settings {
+  }
+
 
   /**
    * Sets the global rootPath property used by `Polymer.ElementMixin` and

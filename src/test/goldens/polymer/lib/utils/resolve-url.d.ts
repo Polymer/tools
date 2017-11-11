@@ -12,6 +12,9 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module with utilities for resolving relative URL's.
+   */
   namespace ResolveUrl {
 
 

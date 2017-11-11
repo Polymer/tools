@@ -14,6 +14,14 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module for adding listeners to a node for the following normalized
+   * cross-platform "gesture" events:
+   * - `down` - mouse or touch went down
+   * - `up` - mouse or touch went up
+   * - `tap` - mouse click or finger tap
+   * - `track` - mouse drag or touch move
+   */
   namespace Gestures {
 
 
