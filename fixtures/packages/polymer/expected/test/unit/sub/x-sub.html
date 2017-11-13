@@ -1,0 +1,12 @@
+<dom-module id="x-sub">
+  <template>
+    <div id="test">test</div>
+  </template>
+  <script type="module">
+import { Element } from '../../../polymer-element.js';
+class XSub extends Element {
+  static get is() { return 'x-sub' }
+}
+customElements.define(XSub.is, XSub);
+</script>
+</dom-module>
