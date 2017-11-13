@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 so it is not on by default.
   - It automatically adds the `old-content-selector` attribute to migrated `<slot>` elements, so uses can be automatically upgraded as well.
 - Support automatic fixing of the warning where a `<style>` element is a direct child of a dom-module's `<template>`.
+- Support warning about and fixing usage of deprecated `iron-flex-layout/classes/*` files via the new rule `iron-flex-layout-import`
+  - It automatically adds, updates, or deletes the import `iron-flex-layout/iron-flex-layout-classes.html`.
+- Support warning about and fixing usage of iron-flex-layout classes without including the required style modules via the new rule `iron-flex-layout-classes`
+  - It automatically upgrades the element template to include the iron-flex-layout style modules.
 
 ## [2.1.0] - 2017-10-13
 - Warn for old-style @apply without parentheses, and var() with a fallback value of a bare css variable.

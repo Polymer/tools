@@ -15,13 +15,13 @@
 import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Document, ParsedHtmlDocument, Severity, SourceRange} from 'polymer-analyzer';
+import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {FixableWarning, Replacement} from '../warning';
 
 import {HtmlRule} from './rule';
-import {addIndentation, getIndentationInside} from './util';
+import {addIndentation, getIndentationInside, removeTrailingWhitespace} from './util';
 
 import stripIndent = require('strip-indent');
 
@@ -164,27 +164,6 @@ class MoveStyleIntoTemplate extends HtmlRule {
     // styles into the template we preserve their order.
     return warnings.reverse();
   }
-}
-
-function removeTrailingWhitespace(
-    textNode: dom5.Node, parsedDocument: ParsedHtmlDocument) {
-  const prevText = dom5.getTextContent(textNode);
-  const match = prevText.match(/\n?[ \t]+$/);
-  if (!match) {
-    return;
-  }
-  const range = parsedDocument.sourceRangeForNode(textNode)!;
-  const lengthOfPreviousLine =
-      parsedDocument.newlineIndexes[range.end.line - 1] -
-      (parsedDocument.newlineIndexes[range.end.line - 2] || -1) - 1;
-  const newRange: SourceRange = {
-    ...range,
-    start: {
-      column: lengthOfPreviousLine,
-      line: range.end.line - 1,
-    }
-  };
-  return {range: newRange, replacementText: ''};
 }
 
 registry.register(new MoveStyleIntoTemplate());
