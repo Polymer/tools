@@ -110,7 +110,7 @@ suite('Fixtures', () => {
 
   suite('Packages', function() {
 
-    this.timeout(30000);
+    this.timeout(60000);
 
     for (const fixtureBasename of fs.readdirSync(packageFixturesDir)) {
       const fixtureDir = path.join(packageFixturesDir, fixtureBasename);
