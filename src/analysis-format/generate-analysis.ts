@@ -285,6 +285,9 @@ function serializeElement(
     metadata.mixins = element.mixins.map((m) => m.identifier);
   }
   metadata.superclass = 'HTMLElement';
+  if (element.superClass) {
+    metadata.superclass = element.superClass.identifier;
+  }
   return metadata;
 }
 
