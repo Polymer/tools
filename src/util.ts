@@ -23,22 +23,14 @@ import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Analysis} from 'polymer-analyzer';
 
-const {execFile: _execFile} = require('child_process');
+import { ConvertedDocumentFilePath } from './urls/types';
+
 import _mkdirp = require('mkdirp');
 import _rimraf = require('rimraf');
 const {promisify} = require('util');
+const {execFile: _execFile} = require('child_process');
+const execFile = promisify(_execFile);
 
-import {ConvertedDocumentFilePath} from './urls/types';
-
-export interface ExecResult {
-  stdout: string;
-  stderr: string;
-}
-
-/**
- * Helper promisified "execFile" library function.
- */
-export const execFile = promisify(_execFile);
 
 /**
  * Helper promisified "mkdirp" library function.
@@ -273,6 +265,14 @@ export async function writeFileResults(
       await fs.unlink(filePath);
     }
   }));
+}
+
+/**
+ * The exec() helper return type.
+ */
+export interface ExecResult {
+  stdout: string;
+  stderr: string;
 }
 
 /**
