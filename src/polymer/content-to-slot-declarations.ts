@@ -39,26 +39,16 @@ class ContentToSlotDeclarations extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
 
-    this.convertDeclarations(parsedDocument, document, warnings);
-
-    return warnings;
-  }
-
-  convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: FixableWarning[]) {
-    for (const element of document.getFeatures({kind: 'polymer-element'})) {
-      const domModule = element.domModule;
-      if (!domModule) {
-        continue;
-      }
-      const template = dom5.query(domModule, p.hasTagName('template'));
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
       const contentElements = dom5.queryAll(
           treeAdapters.default.getTemplateContent(template),
-          p.hasTagName('content'));
+          p.hasTagName('content'),
+          [],
+          dom5.childNodesIncludeTemplate);
       const slotNames = new Set<string>();
       for (const contentElement of contentElements) {
         const warning = new FixableWarning({
@@ -72,21 +62,24 @@ class ContentToSlotDeclarations extends HtmlRule {
         });
         const slotElementText =
             getSerializedSlotElement(contentElement, slotNames);
-        const slotElementStartTag =
-            slotElementText.slice(0, -7); /* cut </slot> off the end */
-        warning.fix = [
-          {
-            replacementText: slotElementStartTag,
-            range: parsedDocument.sourceRangeForStartTag(contentElement)!
-          },
-          {
-            replacementText: '</slot>',
-            range: parsedDocument.sourceRangeForEndTag(contentElement)!
-          }
-        ];
+        if (slotElementText != null) {
+          const slotElementStartTag =
+              slotElementText.slice(0, -7); /* cut </slot> off the end */
+          warning.fix = [
+            {
+              replacementText: slotElementStartTag,
+              range: parsedDocument.sourceRangeForStartTag(contentElement)!
+            },
+            {
+              replacementText: '</slot>',
+              range: parsedDocument.sourceRangeForEndTag(contentElement)!
+            }
+          ];
+        }
         warnings.push(warning);
       }
     }
+    return warnings;
   }
 }
 
@@ -99,7 +92,11 @@ class ContentToSlotDeclarations extends HtmlRule {
  * end tags.
  */
 function getSerializedSlotElement(
-    contentElement: dom5.Node, slotNames: Set<string>) {
+    contentElement: dom5.Node, slotNames: Set<string>): string|undefined {
+  if (dom5.hasAttribute(contentElement, 'select$')) {
+    // We can't automatically fix a dynamic select statement.
+    return undefined;
+  }
   const attrs = [...contentElement.attrs];
   const selectorAttr = attrs.find((a) => a.name === 'select');
   const selector = selectorAttr && selectorAttr.value;
