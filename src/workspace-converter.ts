@@ -14,8 +14,7 @@
 
 import {Document} from 'polymer-analyzer';
 
-import {BaseConverter} from './base-converter';
-import {ConversionMetadata} from './conversion-metadata';
+import {BaseConverter, ProjectConverterInterface} from './base-converter';
 import {DocumentConverter} from './document-converter';
 import {OriginalDocumentUrl} from './urls/types';
 
@@ -23,13 +22,13 @@ import {OriginalDocumentUrl} from './urls/types';
  * Converts an entire workspace object.
  */
 export class WorkspaceConverter extends BaseConverter implements
-    ConversionMetadata {
+    ProjectConverterInterface {
   protected getDocumentConverter(
       document: Document,
       visited: Set<OriginalDocumentUrl>): DocumentConverter {
     const basePackageName = document.url.split('/')[0];
     const packageName = `@polymer/${basePackageName}`;
     return new DocumentConverter(
-        this, document, packageName, 'element', visited);
+        this, this.settings, document, packageName, 'element', visited);
   }
 }

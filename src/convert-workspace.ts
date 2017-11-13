@@ -17,24 +17,30 @@ import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 import {WorkspaceRepo} from 'polymer-workspaces';
 
-import {BaseConverterOptions} from './base-converter';
+import {PartialConversionSettings} from './conversion-settings';
 import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {polymerFileOverrides} from './special-casing';
 import {mkdirp, writeFileResults} from './util';
 import {WorkspaceConverter} from './workspace-converter';
 
 
-interface ConvertWorkspaceOptions extends BaseConverterOptions {
+/**
+ * Configuration options required for workspace conversions. Contains
+ * information about which repos to convert and what new version to set
+ * each npm package at.
+ */
+interface WorkspaceConversionSettings extends PartialConversionSettings {
   packageVersion: string;
   workspaceDir: string;
   reposToConvert: WorkspaceRepo[];
 }
 
+
 /**
  * Create a symlink from the repo into the workspace's node_modules directory.
  */
 async function writeNpmSymlink(
-    options: ConvertWorkspaceOptions, repo: WorkspaceRepo) {
+    options: WorkspaceConversionSettings, repo: WorkspaceRepo) {
   const packageJsonPath = path.join(repo.dir, 'package.json');
   if (!await fs.exists(packageJsonPath)) {
     return;
@@ -70,7 +76,7 @@ async function writePackageJson(repo: WorkspaceRepo, packageVersion: string) {
   writeJson(packageJson, repo.dir, 'package.json');
 }
 
-export function configureAnalyzer(options: ConvertWorkspaceOptions) {
+export function configureAnalyzer(options: WorkspaceConversionSettings) {
   const workspaceDir = options.workspaceDir;
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
   for (const [url, contents] of polymerFileOverrides) {
@@ -84,27 +90,14 @@ export function configureAnalyzer(options: ConvertWorkspaceOptions) {
 }
 
 export function configureConverter(
-    analysis: Analysis, options: ConvertWorkspaceOptions) {
-  return new WorkspaceConverter(analysis, {
-    namespaces: options.namespaces,
-    excludes:
-        [...(options.excludes || []), 'neon-animation/web-animations.html'],
-    referenceExcludes: options.referenceExcludes ||
-        [
-          'Polymer.DomModule',
-          'Polymer.Settings',
-          'Polymer.log',
-          'Polymer.rootPath',
-          'Polymer.sanitizeDOMValue',
-          'Polymer.Collection',
-        ],
-  });
+    analysis: Analysis, options: WorkspaceConversionSettings) {
+  return new WorkspaceConverter(analysis, options);
 }
 
 /**
  * Convert a set of workspace repos to JavaScript modules & npm.
  */
-export default async function convert(options: ConvertWorkspaceOptions) {
+export default async function convert(options: WorkspaceConversionSettings) {
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const converter = configureConverter(analysis, options);

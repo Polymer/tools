@@ -14,9 +14,10 @@
 
 import {posix as path} from 'path';
 import {Document} from 'polymer-analyzer';
+
 import {dependencyMap} from '../manifest-converter';
 
-import {ConvertedDocumentUrl, OriginalDocumentUrl, ConvertedDocumentFilePath} from './types';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './types';
 
 /**
  * Given an HTML url relative to the project root, return true if that url

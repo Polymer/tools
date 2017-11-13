@@ -12,86 +12,43 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
-import {Iterable as IterableX} from 'ix';
-import * as jsc from 'jscodeshift';
 import {Analysis, Document} from 'polymer-analyzer';
 
+import {ConversionSettings, createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
 import {DocumentConverter} from './document-converter';
 import {ConversionResult, JsExport} from './js-module';
 import {ConvertedDocumentFilePath, OriginalDocumentUrl} from './urls/types';
 import {getDocumentUrl} from './urls/util';
-import {getNamespaces} from './util';
 
-export interface BaseConverterOptions {
-  /**
-   * Namespace names used to detect exports. Namespaces declared in the
-   * code with an @namespace declaration are automatically detected.
-   */
-  readonly namespaces?: Iterable<string>;
-
-  /**
-   * Files to exclude from conversion (ie lib/utils/boot.html). Imports
-   * to these files are also excluded.
-   */
-  readonly excludes?: Iterable<string>;
-
-  /**
-   * Namespace references (ie, Polymer.DomModule) to "exclude"" be replacing
-   * the entire reference with `undefined`.
-   *
-   * These references would normally be rewritten to module imports, but in some
-   * cases they are accessed without importing. The presumption is that access
-   * is guarded by a conditional and replcing with `undefined` will safely
-   * fail the guard.
-   */
-  readonly referenceExcludes?: Iterable<string>;
+// NOTE(fks) 11-06-2017: LEGACY!!!
+// Left over from ConversionMetadata, when the settings were mixed in to the
+// converter and its cache/results. Refactored out in the final PR, but left
+// in for now to keep this PR manageable.
+export interface ProjectConverterInterface {
+  readonly namespacedExports: Map<string, JsExport>;
+  readonly conversionResults: Map<OriginalDocumentUrl, ConversionResult>;
+  convertDocument(document: Document, visited: Set<OriginalDocumentUrl>): void;
+  shouldConvertDocument(document: Document): boolean;
 }
 
-export abstract class BaseConverter {
+export abstract class BaseConverter implements ProjectConverterInterface {
   protected readonly _analysis: Analysis;
-  readonly namespaces: ReadonlySet<string>;
+  protected readonly settings: ConversionSettings;
 
-  readonly excludes: ReadonlySet<string>;
-  readonly includes: ReadonlySet<string>;
+  /**
+   * A cache of all JS Exports by namespace, to map implicit HTML imports to
+   * explicit named JS imports.
+   */
   readonly namespacedExports = new Map<string, JsExport>();
-  readonly referenceRewrites: ReadonlyMap<string, estree.Node>;
-  readonly dangerousReferences: ReadonlyMap<string, string>;
-  readonly referenceExcludes: ReadonlySet<string>;
+  /**
+   * A cache of all converted documents. Document conversions should be
+   * idempotent, so conversion results can be safely cached.
+   */
+  readonly conversionResults = new Map<OriginalDocumentUrl, ConversionResult>();
 
-  /** store conversion results to skip duplicate conversions */
-  readonly results = new Map<OriginalDocumentUrl, ConversionResult>();
-
-  constructor(analysis: Analysis, options: BaseConverterOptions) {
+  constructor(analysis: Analysis, options: PartialConversionSettings) {
     this._analysis = analysis;
-    this.namespaces =
-        new Set(getNamespaces(analysis).concat(options.namespaces || []));
-
-    const referenceRewrites = new Map<string, estree.Node>();
-    const windowDotDocument = jsc.memberExpression(
-        jsc.identifier('window'), jsc.identifier('document'));
-    referenceRewrites.set(
-        'document.currentScript.ownerDocument', windowDotDocument);
-    this.referenceRewrites = referenceRewrites;
-
-    const dangerousReferences = new Map<string, string>();
-    dangerousReferences.set(
-        'document.currentScript',
-        `document.currentScript is always \`null\` in an ES6 module.`);
-    this.dangerousReferences = dangerousReferences;
-
-    this.excludes = new Set(options.excludes!);
-    this.referenceExcludes = new Set(options.referenceExcludes!);
-
-    const importedFiles = IterableX
-                              .from(this._analysis.getFeatures(
-                                  {kind: 'import', externalPackages: false}))
-                              .map((imp) => imp.url)
-                              .filter(
-                                  (url) =>
-                                      !(url.startsWith('bower_components') ||
-                                        url.startsWith('node_modules')));
-    this.includes = new Set(importedFiles);
+    this.settings = createDefaultConversionSettings(analysis, options);
   }
 
   async convert(): Promise<Map<ConvertedDocumentFilePath, string|undefined>> {
@@ -99,14 +56,15 @@ export abstract class BaseConverter {
         [...this._analysis.getFeatures({kind: 'html-document'})]
             // Excludes
             .filter((d) => {
-              return !this.excludes.has(d.url) && d.url && this.filter(d);
+              return !this.settings.excludes.has(d.url) && d.url &&
+                  this.filter(d);
             });
 
     const outputs = new Map<ConvertedDocumentFilePath, string|undefined>();
 
     for (const document of htmlDocuments) {
       try {
-        this.includes.has(document.url) ?
+        this.settings.includes.has(document.url) ?
             this.convertDocument(document, new Set()) :
             this.convertHtmlToHtml(document, new Set());
       } catch (e) {
@@ -114,7 +72,7 @@ export abstract class BaseConverter {
       }
     }
 
-    for (const convertedModule of this.results.values()) {
+    for (const convertedModule of this.conversionResults.values()) {
       if (convertedModule.originalUrl.endsWith(
               'shadycss/entrypoints/apply-shim.js') ||
           convertedModule.originalUrl.endsWith(
@@ -140,10 +98,10 @@ export abstract class BaseConverter {
    */
   shouldConvertDocument(document: Document): boolean {
     const documentUrl = getDocumentUrl(document);
-    if (this.results.has(documentUrl)) {
+    if (this.conversionResults.has(documentUrl)) {
       return false;
     }
-    for (const exclude of this.excludes) {
+    for (const exclude of this.settings.excludes) {
       if (documentUrl.endsWith(exclude)) {
         return false;
       }
@@ -176,7 +134,7 @@ export abstract class BaseConverter {
   }
 
   private handleNewJsModules(newModule: ConversionResult): void {
-    this.results.set(newModule.originalUrl, newModule);
+    this.conversionResults.set(newModule.originalUrl, newModule);
     if (newModule.output.type === 'js-module') {
       for (const expr of newModule.output.exportedNamespaceMembers) {
         this.namespacedExports.set(

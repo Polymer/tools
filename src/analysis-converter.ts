@@ -14,8 +14,8 @@
 
 import {Analysis, Document} from 'polymer-analyzer';
 
-import {BaseConverter, BaseConverterOptions} from './base-converter';
-import {ConversionMetadata} from './conversion-metadata';
+import {BaseConverter, ProjectConverterInterface} from './base-converter';
+import {PartialConversionSettings} from './conversion-settings';
 import {DocumentConverter} from './document-converter';
 import {OriginalDocumentUrl} from './urls/types';
 
@@ -24,7 +24,7 @@ const _isInNpmRegex = /(\b|\/|\\)(node_modules)(\/|\\)/;
 const isNotExternal = (d: Document) =>
     !_isInBowerRegex.test(d.url) && !_isInNpmRegex.test(d.url);
 
-export interface AnalysisConverterOptions extends BaseConverterOptions {
+export interface AnalysisConverterOptions extends PartialConversionSettings {
   readonly packageName: string;
   readonly packageType?: 'element'|'application';
   readonly mainFiles?: Iterable<string>;
@@ -34,7 +34,7 @@ export interface AnalysisConverterOptions extends BaseConverterOptions {
  * Converts an entire Analysis object.
  */
 export class AnalysisConverter extends BaseConverter implements
-    ConversionMetadata {
+    ProjectConverterInterface {
   readonly packageName: string;
   readonly packageType: 'element'|'application';
 
@@ -44,18 +44,22 @@ export class AnalysisConverter extends BaseConverter implements
     this.packageName = options.packageName;
     this.packageType = options.packageType || 'element';
 
-    const includes = this.includes as Set<string>;
+    const includes = this.settings.includes as Set<string>;
     for (const mainfile of options.mainFiles || []) {
       includes.add(mainfile);
     }
   }
 
-
   protected getDocumentConverter(
       document: Document,
       visited: Set<OriginalDocumentUrl>): DocumentConverter {
     return new DocumentConverter(
-        this, document, this.packageName, this.packageType, visited);
+        this,
+        this.settings,
+        document,
+        this.packageName,
+        this.packageType,
+        visited);
   }
 
   protected filter(document: Document) {
