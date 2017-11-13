@@ -18,9 +18,8 @@ import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 import {HtmlRule} from '../../html/rule';
 import {getIndentationInside, insertContentAfter, removeNode} from '../../html/util';
 import {registry} from '../../registry';
+import {stripIndentation} from '../../util';
 import {FixableWarning, Replacement} from '../../warning';
-
-import stripIndent = require('strip-indent');
 
 // Capture any import file in the `classes` folder.
 const deprecatedImports = /iron-flex-layout\/classes\/.*/;
@@ -41,7 +40,7 @@ const usesIronFlexStyleIncludes = p.AND(
 
 class IronFlexLayoutImport extends HtmlRule {
   code = 'iron-flex-layout-import';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when the deprecated iron-flex-layout/classes/*.html files are imported.
 
       This:
@@ -52,7 +51,7 @@ class IronFlexLayoutImport extends HtmlRule {
       Should instead be written as:
 
           <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-  `).trim();
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];

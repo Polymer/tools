@@ -18,17 +18,16 @@ import {treeAdapters} from 'parse5';
 import {Document, Element, ParsedHtmlDocument, Severity, Slot} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
-import {registry} from '../registry';
-import {FixableWarning, Replacement} from '../warning';
-
-import stripIndent = require('strip-indent');
 import {elementSelectorToPredicate} from '../html/util';
+import {registry} from '../registry';
+import {stripIndentation} from '../util';
+import {FixableWarning, Replacement} from '../warning';
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot-usages';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when an element should have a \`slot\` attribute but does not.
-    `).trim();
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];

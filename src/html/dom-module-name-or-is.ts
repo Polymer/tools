@@ -17,17 +17,16 @@ import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {stripWhitespace} from '../util';
+import {stripIndentation} from '../util';
 
 import {HtmlRule} from './rule';
-
-import stripIndent = require('strip-indent');
 
 
 const p = dom5.predicates;
 
 class DomModuleNameOrIs extends HtmlRule {
   code = 'dom-module-invalid-attrs';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns for:
 
           <dom-module name="foo-elem">

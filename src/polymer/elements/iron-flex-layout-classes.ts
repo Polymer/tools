@@ -17,12 +17,10 @@ import {treeAdapters} from 'parse5';
 import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
+import {addAttribute, elementSelectorToPredicate, getIndentationInside, prependContentInto} from '../../html/util';
 import {registry} from '../../registry';
+import {stripIndentation} from '../../util';
 import {FixableWarning} from '../../warning';
-
-import stripIndent = require('strip-indent');
-
-import {elementSelectorToPredicate, getIndentationInside, addAttribute, prependContentInto} from '../../html/util';
 
 const p = dom5.predicates;
 
@@ -73,7 +71,7 @@ const isStyleInclude = p.AND(p.hasTagName('style'), p.hasAttr('include'));
 
 class IronFlexLayoutClasses extends HtmlRule {
   code = 'iron-flex-layout-classes';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when iron-flex-layout classes are used without including the style modules.
 
       This:
@@ -99,7 +97,7 @@ class IronFlexLayoutClasses extends HtmlRule {
               <div class="layout vertical">hello</div>
             </template>
           <dom-module>
-  `).trim();
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];

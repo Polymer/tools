@@ -15,16 +15,16 @@
 import {Document, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
+import {stripIndentation} from '../util';
 
 import {HtmlRule} from './rule';
 
-import stripIndent = require('strip-indent');
 
 class UndefinedElements extends HtmlRule {
   code = 'undefined-elements';
-  description = stripIndent(`
+  description = stripIndentation(`
     Warns when an HTML tag refers to a custom element with no known definition.
-  `).trim();
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document):
       Promise<Warning[]> {

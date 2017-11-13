@@ -18,12 +18,12 @@ import {registry} from '../registry';
 import {Rule} from '../rule';
 import {stripWhitespace} from '../util';
 
-import stripIndent = require('strip-indent');
+import {stripIndentation} from '../util';
 
 
 class BehaviorsSpelling extends Rule {
   code = 'behaviors-spelling';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when the Polymer \`behaviors\` property is spelled \`behaviours\`,
       as Polymer uses the American spelling.
 
@@ -36,7 +36,7 @@ class BehaviorsSpelling extends Rule {
           Polymer({
             behaviors: [...]
           });
-  `).trim();
+  `);
 
   async check(document: Document) {
     const warnings: Warning[] = [];

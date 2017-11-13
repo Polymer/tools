@@ -20,7 +20,7 @@ import {sharedProperties} from '../html/util';
 import {registry} from '../registry';
 import {closestSpelling} from '../util';
 
-import stripIndent = require('strip-indent');
+import {stripIndentation} from '../util';
 
 const p = dom5.predicates;
 const isDomRepeat = p.OR(
@@ -29,9 +29,9 @@ const isDomRepeat = p.OR(
 
 class DatabindWithUnknownProperty extends HtmlRule {
   code = 'databind-with-unknown-property';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when a polymer databinding expression uses an undeclared property.
-  `).trim();
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];

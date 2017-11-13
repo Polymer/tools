@@ -20,7 +20,7 @@ import {registry} from '../registry';
 import {Rule} from '../rule';
 import {stripWhitespace} from '../util';
 
-import stripIndent = require('strip-indent');
+import {stripIndentation} from '../util';
 
 const methodsThatMustCallSuper = new Set([
   'ready',
@@ -31,10 +31,10 @@ const methodsThatMustCallSuper = new Set([
 
 class CallSuperInCallbacks extends Rule {
   code = 'call-super-in-callbacks';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when a Polymer element overrides one of the custom element callbacks
       but does not call super.callbackName().
-  `).trim();
+  `);
 
   async check(document: Document) {
     const warnings: Warning[] = [];

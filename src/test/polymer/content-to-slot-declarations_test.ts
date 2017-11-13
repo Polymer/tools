@@ -47,4 +47,24 @@ suite(ruleId, () => {
         result.editedFiles.get(`${ruleId}/before-fixes.html`),
         (await loader(`${ruleId}/after-fixes.html`)).contents);
   });
+
+  test('applies fixes and edit actions', async() => {
+    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
+    const edits = [];
+    for (const warning of warnings) {
+      if (warning.fix) {
+        edits.push(warning.fix);
+      }
+      for (const action of warning.actions || []) {
+        if (action.kind === 'edit') {
+          edits.push(action.edit);
+        }
+      }
+    }
+    const loader = makeParseLoader(analyzer);
+    const result = await applyEdits(edits, loader);
+    assert.deepEqual(
+        result.editedFiles.get(`${ruleId}/before-fixes.html`),
+        (await loader(`${ruleId}/after-edits.html`)).contents);
+  });
 });

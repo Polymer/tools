@@ -17,16 +17,14 @@ import * as shady from 'shady-css-parser';
 
 import {CssRule} from '../css/rule';
 import {registry} from '../registry';
+import {stripIndentation} from '../util';
 import {FixableWarning} from '../warning';
-
-import stripIndent = require('strip-indent');
-
 
 class DeprecatedCustomPropertySyntax extends CssRule {
   code = 'deprecated-css-custom-property-syntax';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when using deprecated css syntax around CSS Custom Properties.
-  `).trim();
+  `);
 
   async checkDocument(parsedDocument: ParsedCssDocument, _document: Document) {
     const warnings: FixableWarning[] = [];

@@ -18,15 +18,14 @@ import {Attribute, Document, Element, isPositionInsideRange, ParsedHtmlDocument,
 import {HtmlRule} from '../html/rule';
 import {sharedAttributes, sharedProperties} from '../html/util';
 import {registry} from '../registry';
-import {closestSpelling, stripWhitespace} from '../util';
+import {closestSpelling, stripIndentation, stripWhitespace} from '../util';
 
-import stripIndent = require('strip-indent');
 import {isDatabindingTemplate} from './matchers';
 
 
 class SetUnknownAttribute extends HtmlRule {
   code = 'set-unknown-attribute';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when setting undeclared properties or attributes in HTML.
 
       This rule will check use of attributes in HTML on custom elements, as well
@@ -38,7 +37,7 @@ class SetUnknownAttribute extends HtmlRule {
 
       Currently only checks custom elements, as we don't yet have the necessary
       metadata on native elements in a convenient format.
-  `).trim();
+  `);
 
   async checkDocument(parsedDoc: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];

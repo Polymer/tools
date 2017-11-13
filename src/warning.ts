@@ -31,6 +31,36 @@ export class FixableWarning extends Warning {
    * issue completely then it should go in `fix`.
    */
   fix?: Edit;
+
+
+  actions?: Action[];
+}
+
+export type Action = EditAction;
+
+/**
+ * An EditAction is like a fix, only it's not applied automatically when the
+ * user runs `polymer lint --fix`. Often this is because it's less safe to
+ * apply automatically, and there may be caveats, or multiple ways to resolve
+ * the warning.
+ *
+ * For example, a change to an element that updates it to no longer use a
+ * deprecated feature, but that involves a change in the element's API should
+ * not be a fix, but should instead be an EditAction.
+ */
+export interface EditAction {
+  kind: 'edit';
+  /**
+   * A unique string code for the edit action. Useful so that the user can
+   * request that all actions with a given code should be applied.
+   */
+  code: string;
+  /**
+   * A short description of the change, noting caveats and important information
+   * for the user.
+   */
+  description: string;
+  edit: Edit;
 }
 
 /**

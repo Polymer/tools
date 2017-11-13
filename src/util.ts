@@ -14,6 +14,8 @@
 
 import * as levenshtein from 'fast-levenshtein';
 
+import stripIndent = require('strip-indent');
+
 /**
  * A utility for more easily writing long strings inline in code.
  *
@@ -30,6 +32,24 @@ import * as levenshtein from 'fast-levenshtein';
 export function stripWhitespace(str: string) {
   return str.trim().replace(/\s*\n\s*/g, ' ');
 };
+
+/**
+ * A utility for writing long multiline strings inline in code.
+ *
+ * Determines the initial indentation based on the first indented line,
+ * and removes it from all other lines, then trims off leading and trailing
+ * whitespace. Use like:
+ *
+ *     stripIndentation(`
+ *         hello
+ *           world
+ *     `);
+ *
+ * This evaluates to "hello\n  world"
+ */
+export function stripIndentation(str: string) {
+  return stripIndent(str).trim();
+}
 
 export function minBy<T>(it: Iterable<T>, score: (t: T) => number) {
   let min = undefined;

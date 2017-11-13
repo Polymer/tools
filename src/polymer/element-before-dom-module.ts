@@ -15,8 +15,7 @@ import {comparePositionAndRange, Document, DomModule, ParsedHtmlDocument, Severi
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
-
-import stripIndent = require('strip-indent');
+import {stripIndentation} from '../util';
 
 /**
  * Unbalanced binding expression delimiters occurs when a value such as
@@ -25,7 +24,7 @@ import stripIndent = require('strip-indent');
  */
 class ElementBeforeDomModule extends HtmlRule {
   readonly code = 'element-before-dom-module';
-  readonly description = stripIndent(`
+  readonly description = stripIndentation(`
       Warns for an element being declared before its dom-module.
 
       For example, this is invalid:
@@ -35,7 +34,7 @@ class ElementBeforeDomModule extends HtmlRule {
       But this is fine:
         <dom-module id='my-elem'></dom-module>
         <script>Polymer({is: 'my-elem'})</script>
-      `).trim();
+  `);
 
   public async checkDocument(
       parsedHtml: ParsedHtmlDocument, document: Document): Promise<Warning[]> {

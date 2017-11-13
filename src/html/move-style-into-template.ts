@@ -18,12 +18,11 @@ import * as parse5 from 'parse5';
 import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {registry} from '../registry';
+import {stripIndentation} from '../util';
 import {FixableWarning, Replacement} from '../warning';
 
 import {HtmlRule} from './rule';
 import {addIndentation, getIndentationInside, removeTrailingWhitespace} from './util';
-
-import stripIndent = require('strip-indent');
 
 const p = dom5.predicates;
 const styleMustBeInside = p.OR(
@@ -42,7 +41,7 @@ const mustBeOutsideTemplate =
 
 class MoveStyleIntoTemplate extends HtmlRule {
   code = 'style-into-template';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns about \`style\` tags in dom-modules but not in templates.
 
       This:
