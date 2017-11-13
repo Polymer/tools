@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [2.2.0] - 2017-11-13
 - Added a concept of edit actions, which are like fixes with caveats. These need explicit user intent to apply because they may change the code's API, or otherwise be unsafe.
 - Support warning about and automatically fixing some simple uses of some 1.0 elements to their 2.0 usage styles.
   - To add this fixable lint warning for your own elements, simply add the `old-content-selector` attribute to your new `<slot>` element. Set its value to the value that your old `<content>` element had for its `select` attribute.
