@@ -27,7 +27,8 @@ coverage
 .grunt
 
 # Bower dependency directory (https://bower.io/)
-bower_components
+# NOTE(fks) Disabled, Needed for fixtures/
+# bower_components
 
 # node-waf configuration
 .lock-wscript
@@ -61,7 +62,7 @@ typings/
 .env
 
 /lib
-/fixtures/generated
+/fixtures/**/generated
 /modulizer_workspace
 /modularizer_workspace
 /untouched_workspace

@@ -18,12 +18,12 @@ import * as estree from 'estree';
 import * as path from 'path';
 import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
 
-import {createDefaultConversionSettings, PartialConversionSettings} from '../conversion-settings';
-import {getPackageDocuments} from '../convert-package';
-import {ProjectConverter} from '../project-converter';
-import {PackageUrlHandler} from '../urls/package-url-handler';
-import {PackageType} from '../urls/types';
-import {getMemberPath} from '../util';
+import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
+import {getPackageDocuments} from '../../convert-package';
+import {ProjectConverter} from '../../project-converter';
+import {PackageUrlHandler} from '../../urls/package-url-handler';
+import {PackageType} from '../../urls/types';
+import {getMemberPath} from '../../util';
 
 
 /*

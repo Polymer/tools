@@ -56,7 +56,7 @@ export function readJson(...pathPieces: string[]) {
  */
 export function writeJson(json: any, ...pathPieces: string[]) {
   const jsonPath = path.resolve(...pathPieces);
-  const jsonContents = JSON.stringify(json, undefined, 2);
+  const jsonContents = JSON.stringify(json, undefined, 2) + '\n';
   fs.writeFileSync(jsonPath, jsonContents);
 }
 
