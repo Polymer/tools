@@ -15,7 +15,8 @@
 import {posix as path} from 'path';
 import {Document} from 'polymer-analyzer';
 
-import {dependencyMap} from '../manifest-converter';
+import {lookupDependencyMapping} from '../manifest-converter';
+
 
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './types';
 
@@ -69,12 +70,9 @@ function convertBowerDependencyUrl(dependencyUrl: OriginalDocumentUrl):
   // Convert package name
   const jsUrlPieces = jsUrl.split('/');
   const bowerPackageName = jsUrlPieces[1];
-  const mappingInfo = dependencyMap[bowerPackageName];
-  if (mappingInfo) {
-    jsUrlPieces[1] = mappingInfo.npm;
-  } else {
-    console.warn(
-        `WARN: bower->npm mapping for "${bowerPackageName}" not found`);
+  const npmPackageName = lookupDependencyMapping(bowerPackageName);
+  if (npmPackageName) {
+    jsUrlPieces[1] = npmPackageName;
   }
   jsUrl = jsUrlPieces.join('/');
 

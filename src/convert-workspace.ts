@@ -18,7 +18,7 @@ import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 import {WorkspaceRepo} from 'polymer-workspaces';
 
 import {PartialConversionSettings} from './conversion-settings';
-import {dependencyMap, generatePackageJson, readJson, writeJson} from './manifest-converter';
+import {generatePackageJson, lookupDependencyMapping, readJson, writeJson} from './manifest-converter';
 import {polymerFileOverrides} from './special-casing';
 import {mkdirp, writeFileResults} from './util';
 import {WorkspaceConverter} from './workspace-converter';
@@ -65,14 +65,13 @@ async function writeNpmSymlink(
 async function writePackageJson(repo: WorkspaceRepo, packageVersion: string) {
   const bowerJsonPath = path.join(repo.dir, 'bower.json');
   const bowerJson = readJson(bowerJsonPath);
-  const bowerName = bowerJson.name;
-  let depMapping: {npm: string}|undefined = dependencyMap[bowerName];
-  if (!depMapping) {
-    console.warn(`"${bowerName}" npm mapping not found`);
-    depMapping = {npm: bowerName};
+  const bowerName = bowerJson.name as string;
+  let npmPackageName = lookupDependencyMapping(bowerName);
+  if (!npmPackageName) {
+    npmPackageName = bowerName;
   }
   const packageJson =
-      generatePackageJson(bowerJson, depMapping.npm, packageVersion);
+      generatePackageJson(bowerJson, npmPackageName, packageVersion);
   writeJson(packageJson, repo.dir, 'package.json');
 }
 

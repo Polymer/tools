@@ -74,7 +74,7 @@ export interface PartialConversionSettings {
    */
   readonly excludes?: Iterable<string>;
   /**
-   * Namespace references (ie, `Polymer.DomModule`) to "exclude be replacing
+   * Namespace references (ie, `Polymer.DomModule`) to exclude be replacing
    * the entire reference with `undefined`.
    *
    * These references would normally be rewritten to module imports, but in some
