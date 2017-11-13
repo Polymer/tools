@@ -19,16 +19,19 @@ import * as semver from 'semver';
 import {CliOptions} from '../cli';
 import convertPackage from '../convert-package';
 import {readJson} from '../manifest-converter';
+import {exec} from '../util';
 
 export default async function run(options: CliOptions) {
+  const inDir = path.resolve(options.in || process.cwd());
+  const outDir = path.resolve(options.out);
+
   // Ok, we're updating a package in a directory not under our control.
-  // We need to be sure it's safe. In a future PR let's check with git, but
-  // for now, we'll ask the user to pass in a --force flag.
-  if (!options.force) {
+  // We need to be sure it's safe.
+  const {stdout, stderr} = await exec(inDir, 'git', ['status', '-s']);
+  if (!options.force && (stdout || stderr)) {
     console.error(
-        `When running modulizer on an existing directory, ` +
-        `be sure that all changes are checked into source control. ` +
-        `Run with --force once you've verified.`);
+        `Git repo is dirty. Check all changes in to source control and ` +
+        `then try again.`);
     process.exit(1);
   }
 
@@ -36,8 +39,6 @@ export default async function run(options: CliOptions) {
   let inBowerJson: {name: string, version: string, main: any}|undefined;
   let inPackageJson: {name: string, version: string}|undefined;
   let outPackageJson: {name: string, version: string}|undefined;
-  const inDir = path.resolve(options.in || process.cwd());
-  const outDir = path.resolve(options.out);
   try {
     outPackageJson = readJson(outDir, 'package.json');
   } catch (e) {

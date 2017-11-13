@@ -13,6 +13,7 @@
  */
 import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
+import {ExecOptions} from 'child_process';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {Iterable as IterableX} from 'ix';
@@ -22,21 +23,32 @@ import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Analysis} from 'polymer-analyzer';
 
-import util = require('util');
+const {execFile: _execFile} = require('child_process');
 import _mkdirp = require('mkdirp');
 import _rimraf = require('rimraf');
+const {promisify} = require('util');
 
 import {ConvertedDocumentFilePath} from './urls/types';
+
+export interface ExecResult {
+  stdout: string;
+  stderr: string;
+}
+
+/**
+ * Helper promisified "execFile" library function.
+ */
+export const execFile = promisify(_execFile);
 
 /**
  * Helper promisified "mkdirp" library function.
  */
-export const mkdirp = util.promisify(_mkdirp);
+export const mkdirp = promisify(_mkdirp);
 
 /**
  * Helper promisified "rimraf" library function.
  */
-export const rimraf = util.promisify(_rimraf);
+export const rimraf = promisify(_rimraf);
 
 export function serializeNode(node: parse5.ASTNode): string {
   const container = parse5.treeAdapters.default.createDocumentFragment();
@@ -261,4 +273,22 @@ export async function writeFileResults(
       await fs.unlink(filePath);
     }
   }));
+}
+
+/**
+ * A helper function for working with Node's core execFile() method.
+ */
+export async function exec(
+    cwd: string, command: string, args?: string[], options?: ExecOptions):
+    Promise<ExecResult> {
+  const commandOptions = {...options, cwd: cwd} as ExecOptions;
+  try {
+    const {stdout, stderr} = await execFile(command, args, commandOptions);
+    // Trim unneccesary extra newlines/whitespace from exec/execFile output
+    return {stdout: stdout.trim(), stderr: stderr.trim()};
+  } catch (err) {
+    // If an error happens, attach the working directory to the error object
+    err.cwd = cwd;
+    throw err;
+  }
 }
