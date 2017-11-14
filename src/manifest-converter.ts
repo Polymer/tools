@@ -16,6 +16,7 @@
 
 import * as fs from 'mz/fs';
 import * as path from 'path';
+import * as spdxLicenseList from 'spdx-license-list/simple';
 
 interface DependencyMapEntry {
   npm: string;
@@ -79,15 +80,20 @@ export function generatePackageJson(
     license: bowerJson.license,
     homepage: bowerJson.homepage,
     dependencies: <any>{},
-    devDependencies: {}
+    devDependencies: <any>{}
   };
+
+  if (bowerJson.license.includes('polymer.github.io/LICENSE')) {
+    packageJson.license = 'BSD-3-Clause';
+  } else if (!spdxLicenseList.has(bowerJson.license)) {
+    console.warn(`"${bowerJson.license}" is not a valid SPDX license`);
+  }
 
   for (const bowerPackageName in bowerJson.dependencies) {
     const depInfo = lookupDependencyMapping(bowerPackageName);
-    if (!depInfo) {
-      continue;
+    if (depInfo) {
+      packageJson.dependencies[depInfo.npm] = depInfo.semver;
     }
-    packageJson.dependencies[depInfo.npm] = depInfo.semver;
   }
 
   // TODO(fks) 07-18-2017: handle devDependencies. Right now wct creates a too
