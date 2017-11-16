@@ -50,6 +50,7 @@
     "gulp-tslint": "^7.0.1",
     "gulp-typescript": "^2.13.4",
     "jsdoc-to-markdown": "^1.0.3",
+    "knuth-shuffle": "^1.0.8",
     "memory-streams": "^0.1.1",
     "merge-stream": "^1.0.0",
     "mocha": "^3.2.0",
@@ -85,6 +86,7 @@
     "jsonschema": "^1.1.0",
     "parse5": "^2.2.1",
     "shady-css-parser": "^0.1.0",
+    "stable": "^0.1.6",
     "strip-indent": "^2.0.0"
   },
   "engines": {
