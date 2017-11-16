@@ -15,13 +15,12 @@
 
 import * as dom5 from 'dom5';
 import {treeAdapters} from 'parse5';
-import {Document, Element, ParsedHtmlDocument, Severity, Slot} from 'polymer-analyzer';
+import {Document, Element, ParsedHtmlDocument, Replacement, Severity, Slot, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {elementSelectorToPredicate} from '../html/util';
 import {registry} from '../registry';
 import {stripIndentation} from '../util';
-import {FixableWarning, Replacement} from '../warning';
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot-usages';
@@ -30,7 +29,7 @@ class ContentToSlot extends HtmlRule {
   `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
-    const warnings: FixableWarning[] = [];
+    const warnings: Warning[] = [];
 
     const elements = document.getFeatures({kind: 'element'});
     for (const element of elements) {
@@ -38,7 +37,7 @@ class ContentToSlot extends HtmlRule {
       const result = determineMigrationDescriptors(element);
       if (!result.success) {
         for (const error of result.value) {
-          warnings.push(new FixableWarning({
+          warnings.push(new Warning({
             code: 'invalid-old-content-selector',
             parsedDocument,
             severity: Severity.WARNING,
@@ -107,17 +106,17 @@ class ContentToSlot extends HtmlRule {
         }
       }
       if (fix.length > 0) {
-        const warning = new FixableWarning({
+        warnings.push(new Warning({
           code: 'content-to-slot-usage-site',
           message: `Deprecated <content>-based distribution into ` +
               `<${reference.tagName}>. ` +
               `Must use the \`slot\` attribute for named distribution."`,
           parsedDocument,
           severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForStartTag(reference.astNode)!
-        });
-        warning.fix = fix;
-        warnings.push(warning);
+          sourceRange:
+              parsedDocument.sourceRangeForStartTag(reference.astNode)!,
+          fix
+        }));
       }
     }
     return warnings;

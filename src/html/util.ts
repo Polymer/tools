@@ -14,8 +14,7 @@
 
 import * as dom5 from 'dom5';
 import cssWhat = require('css-what');
-import {ParsedHtmlDocument, SourceRange} from 'polymer-analyzer';
-import {Replacement} from '../warning';
+import {ParsedHtmlDocument, SourceRange, Replacement} from 'polymer-analyzer';
 
 // Attributes that are on every HTMLElement.
 export const sharedAttributes = new Set([

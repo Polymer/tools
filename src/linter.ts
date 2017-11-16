@@ -17,7 +17,6 @@ import './collections';
 import {Analyzer, Document, ParsedDocument, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
-import {FixableWarning} from './warning';
 
 export {registry} from './registry';
 export {Rule, RuleCollection} from './rule';
@@ -40,7 +39,7 @@ export class Linter {
    * Given an array of filenames, lint the files and return an array of all
    * warnings produced evaluating the linter rules.
    */
-  public async lint(files: string[]): Promise<FixableWarning[]> {
+  public async lint(files: string[]): Promise<Warning[]> {
     const {documents, warnings} = await this._analyzeAll(files);
     for (const document of documents) {
       warnings.push(...document.getWarnings());
@@ -48,7 +47,7 @@ export class Linter {
     return warnings.concat(...await this._lintDocuments(documents));
   }
 
-  public async lintPackage(): Promise<FixableWarning[]> {
+  public async lintPackage(): Promise<Warning[]> {
     const pckage = await this._analyzer.analyzePackage();
     const warnings = pckage.getWarnings();
     warnings.push(
@@ -57,7 +56,7 @@ export class Linter {
   }
 
   private async _lintDocuments(documents: Iterable<Document>) {
-    const warnings: FixableWarning[] = [];
+    const warnings: Warning[] = [];
     for (const document of documents) {
       if (document.isInline) {
         // We lint the toplevel documents. If a rule wants to check inline

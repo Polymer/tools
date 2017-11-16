@@ -14,13 +14,12 @@
 
 import * as dom5 from 'dom5';
 import {treeAdapters} from 'parse5';
-import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
+import {Document, Edit, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
 import {addAttribute, elementSelectorToPredicate, getIndentationInside, prependContentInto} from '../../html/util';
 import {registry} from '../../registry';
 import {stripIndentation} from '../../util';
-import {FixableWarning} from '../../warning';
 
 const p = dom5.predicates;
 
@@ -100,14 +99,14 @@ class IronFlexLayoutClasses extends HtmlRule {
   `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
-    const warnings: FixableWarning[] = [];
+    const warnings: Warning[] = [];
 
     // Search in the dom-modules.
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const misplacedStyle =
           dom5.query(domModule.astNode, p.hasTagName('style'));
       if (misplacedStyle) {
-        warnings.push(new FixableWarning({
+        warnings.push(new Warning({
           code: 'iron-flex-layout-classes',
           message:
               `Style outside template. Run \`move-style-into-template\` rule.`,
@@ -130,7 +129,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       }
       // Add fix on first warning, we'll add all the missing modules in the same
       // style node.
-      const warning = warnings[fixIndex];
+      // TODO: we should not mutate warning.fix like this.
+      const warning: {fix: Edit | undefined} = warnings[fixIndex];
       // Fallback to style without include attribute.
       const styleNode = getStyleNodeWithInclude(templateContent) ||
           dom5.query(templateContent, p.hasTagName('style'));
@@ -165,7 +165,7 @@ ${indent}<style include="${missingModules}"></style>`)];
     }
     // Add fix on first warning, we'll add all the missing modules in the same
     // style node.
-    const warning = warnings[fixIndex];
+    const warning: {fix: Edit | undefined} = warnings[fixIndex];
     const styleNode = getStyleNodeWithInclude(parsedDocument.ast);
     if (styleNode) {
       const include = dom5.getAttribute(styleNode, 'include')!;
@@ -189,13 +189,13 @@ ${indent}</custom-style>`)];
 function getMissingStyleModules(
     parsedDocument: ParsedHtmlDocument,
     rootNode: dom5.Node,
-    warnings: FixableWarning[]): string {
+    warnings: Warning[]): string {
   const {modules, includes} = searchUsedModulesAndIncludes(rootNode);
   let missingModules = '';
   for (const [module, nodes] of modules) {
     if (includes.indexOf(module) === -1) {
       nodes.forEach((node: dom5.Node) => {
-        warnings.push(new FixableWarning({
+        warnings.push(new Warning({
           code: 'iron-flex-layout-classes',
           message: `"${module}" style module is used but not imported.
 Import it in the template style include.`,

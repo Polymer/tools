@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from 'polymer-analyzer';
-import {FixableWarning} from './warning';
+import {Document, Warning} from 'polymer-analyzer';
 
 /**
  * A lint rule. Can take a package and find Warnings.
@@ -33,7 +32,7 @@ export abstract class Rule {
   /**
    * Finds all warnings in the given document.
    */
-  abstract check(document: Document): Promise<FixableWarning[]>;
+  abstract check(document: Document): Promise<Warning[]>;
 }
 
 /**

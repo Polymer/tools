@@ -15,11 +15,10 @@
 import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
+import {Document, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {stripIndentation} from '../util';
-import {FixableWarning, Replacement} from '../warning';
 
 import {HtmlRule} from './rule';
 import {addIndentation, getIndentationInside, removeTrailingWhitespace} from './util';
@@ -62,7 +61,7 @@ class MoveStyleIntoTemplate extends HtmlRule {
   `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
-    const warnings: FixableWarning[] = [];
+    const warnings: Warning[] = [];
     const domModules = document.getFeatures({kind: 'dom-module'});
     for (const domModule of domModules) {
       const moduleChildren = domModule.astNode.childNodes || [];
@@ -74,15 +73,6 @@ class MoveStyleIntoTemplate extends HtmlRule {
         if (!styleMustBeInside(child)) {
           continue;
         }
-        const warning = new FixableWarning({
-          parsedDocument,
-          code: this.code,
-          message:
-              `Style tags should not be direct children of <dom-module>, they should be moved into the <template>`,
-          severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForStartTag(child)!
-        });
-        warnings.push(warning);
 
         const templateContentStart =
             parsedDocument.sourceRangeForStartTag(template)!.end;
@@ -133,7 +123,15 @@ class MoveStyleIntoTemplate extends HtmlRule {
           replacementText: whitespaceBefore + serializedStyle
         });
 
-        warning.fix = edit;
+        warnings.push(new Warning({
+          parsedDocument,
+          code: this.code,
+          message:
+              `Style tags should not be direct children of <dom-module>, they should be moved into the <template>`,
+          severity: Severity.WARNING,
+          sourceRange: parsedDocument.sourceRangeForStartTag(child)!,
+          fix: edit
+        }));
       }
 
       const linksInShadowDom = dom5.nodeWalkAll(
@@ -150,7 +148,7 @@ class MoveStyleIntoTemplate extends HtmlRule {
           code = 'import-in-shadow';
           message = 'Imports inside shadow roots are ignored.';
         }
-        warnings.push(new FixableWarning({
+        warnings.push(new Warning({
           code,
           message,
           severity: Severity.WARNING, parsedDocument,
