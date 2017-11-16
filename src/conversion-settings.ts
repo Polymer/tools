@@ -28,17 +28,33 @@ export interface ConversionSettings {
   /**
    * Namespace names used to detect exports.
    */
-  readonly namespaces: ReadonlySet<string>;
+  readonly namespaces: Set<string>;
   /**
    * Files to exclude from conversion (ie lib/utils/boot.html).
    */
-  readonly excludes: ReadonlySet<string>;
+  readonly excludes: Set<string>;
   /**
-   * Additional files to include in conversion. By default, all files HTML
-   * imported somewhere in the project (excluding external packages) are
-   * included for conversion.
+   * Files to include in JS conversion. By default this is all local files that
+   * are imported anywhere inside the package. It is up to the conversion setup
+   * to make sure this includes any entrypoints into the package (that would
+   * never be imported themselves).
+   *
+   * Any files marked for conversion but not included in this set will be
+   * converted in-place, remaining HTML. This is preferable for HTML entrypoints
+   * like tests, demos, etc.
+   *
+   * Example: In "paper-input", `includes` by default will include all local
+   * HTML files imported within the package (paper-input-behavior.html,
+   * paper-input-error.html, etc). The package conversion setup is responsible
+   * for adding the main package entrypoint (paper-input.html) as well. Other
+   * entrypoints (test/index.html, demo/index.html, etc) that are not a part of
+   * the module code should not be included in `includes` so that they remain
+   * HTML files after conversion is complete.
+   *
+   * TODO(fks) 11-13-2017: Simplify this relationship and what it means to be
+   * "marked for JS conversion" vs. "marked for HTML in-place conversion".
    */
-  readonly includes: ReadonlySet<string>;
+  readonly includes: Set<string>;
   /**
    * Namespace references (ie, Polymer.DomModule) to "exclude" in the conversion
    * by replacing the entire reference with `undefined`. This assumes that those
@@ -47,14 +63,14 @@ export interface ConversionSettings {
    *
    * ex: `if(Polymer.DomModule) {...` -> `if (undefined) {...`
    */
-  readonly referenceExcludes: ReadonlySet<string>;
+  readonly referenceExcludes: Set<string>;
   /**
    * Namespace references (ie, document.currentScript.ownerDocument) to
    * "rewrite" be replacing the entire reference with the given Node.
    *
    * ex: `document.currentScript.ownerDocument` -> `window.document`
    */
-  readonly referenceRewrites: ReadonlyMap<string, estree.Node>;
+  readonly referenceRewrites: Map<string, estree.Node>;
 }
 
 /**

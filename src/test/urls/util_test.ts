@@ -14,57 +14,10 @@
 
 import {assert} from 'chai';
 
-import {ConvertedDocumentUrl, OriginalDocumentUrl} from '../../urls/types';
-import {convertHtmlDocumentUrl, getRelativeUrl} from '../../urls/util';
+import {ConvertedDocumentUrl} from '../../urls/types';
+import {getRelativeUrl} from '../../urls/util';
 
-suite('src/url-converter', () => {
-
-  suite('convertDocumentUrl()', () => {
-
-    test('converts a local html url to expected js url', () => {
-      assert.equal(
-          convertHtmlDocumentUrl('foo.html' as OriginalDocumentUrl),
-          './foo.js');
-      assert.equal(
-          convertHtmlDocumentUrl('foo/foo.html' as OriginalDocumentUrl),
-          './foo/foo.js');
-    });
-
-    test(
-        'converts a bower_components/ (external) html url to expected js url',
-        () => {
-          assert.equal(
-              convertHtmlDocumentUrl(
-                  'bower_components/polymer/polymer.html' as
-                  OriginalDocumentUrl),
-              './node_modules/@polymer/polymer/polymer.js');
-          assert.equal(
-              convertHtmlDocumentUrl(
-                  'bower_components/paper-item/src/paper-item.html' as
-                  OriginalDocumentUrl),
-              './node_modules/@polymer/paper-item/src/paper-item.js');
-          assert.equal(
-              convertHtmlDocumentUrl(
-                  'bower_components/promise-polyfill/promise-polyfill.html' as
-                  OriginalDocumentUrl),
-              './node_modules/@polymer/promise-polyfill/promise-polyfill.js');
-        });
-
-
-    test('handles special whitelisted url conversions', () => {
-      assert.equal(
-          convertHtmlDocumentUrl(
-              'bower_components/shadycss/apply-shim.html' as
-              OriginalDocumentUrl),
-          './node_modules/@webcomponents/shadycss/entrypoints/apply-shim.js');
-      assert.equal(
-          convertHtmlDocumentUrl(
-              'bower_components/shadycss/custom-style-interface.html' as
-              OriginalDocumentUrl),
-          './node_modules/@webcomponents/shadycss/entrypoints/custom-style-interface.js');
-    });
-
-  });
+suite('src/url-handler', () => {
 
   suite('getRelativeUrl()', () => {
 
@@ -91,7 +44,7 @@ suite('src/url-converter', () => {
         getRelativeUrl(
             '../foo.js' as ConvertedDocumentUrl,
             './bar.js' as ConvertedDocumentUrl);
-      }, 'paths relative to package root expected (actual: from="../foo.js", to="./bar.js")');
+      }, `paths relative to package root expected (actual: from="../foo.js", to="./bar.js")`);
     });
 
   });

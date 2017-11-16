@@ -39,10 +39,7 @@ export function lookupDependencyMapping(bowerPackageName: string, warn = true) {
     console.warn(
         `WARN: bower->npm mapping for "${bowerPackageName}" not found`);
   }
-  if (!result) {
-    return undefined;
-  }
-  return result.npm;
+  return result;
 }
 
 /**
@@ -84,13 +81,12 @@ export function generatePackageJson(
     devDependencies: {}
   };
 
-  for (const bowerDep in bowerJson.dependencies) {
-    const depMapping = dependencyMap[bowerDep];
-    if (!depMapping) {
-      console.warn(`"${bowerDep}" npm mapping not found`);
+  for (const bowerPackageName in bowerJson.dependencies) {
+    const depInfo = lookupDependencyMapping(bowerPackageName);
+    if (!depInfo) {
       continue;
     }
-    packageJson.dependencies[depMapping.npm] = depMapping.semver;
+    packageJson.dependencies[depInfo.npm] = depInfo.semver;
   }
 
   // TODO(fks) 07-18-2017: handle devDependencies. Right now wct creates a too

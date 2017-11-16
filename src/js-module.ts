@@ -38,7 +38,7 @@ export interface ConversionResult {
    * originalUrl, the original file will always be overwritten with the
    * converted output.
    */
-  readonly keepOriginal?: boolean;
+  readonly deleteOriginal?: boolean;
   readonly output: HtmlFile|JsModule;
 }
 

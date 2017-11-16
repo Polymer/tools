@@ -14,14 +14,16 @@
 
 import {fs} from 'mz';
 import * as path from 'path';
-import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 import {WorkspaceRepo} from 'polymer-workspaces';
 
-import {PartialConversionSettings} from './conversion-settings';
-import {generatePackageJson, lookupDependencyMapping, readJson, writeJson} from './manifest-converter';
+import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
+import {generatePackageJson, readJson, writeJson} from './manifest-converter';
+import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
+import {lookupNpmPackageName, WorkspaceUrlHandler} from './urls/workspace-url-handler';
+
 import {mkdirp, writeFileResults} from './util';
-import {WorkspaceConverter} from './workspace-converter';
 
 
 /**
@@ -62,35 +64,30 @@ async function writeNpmSymlink(
 /**
  * For a given repo, generate a new package.json and write it to disk.
  */
-async function writePackageJson(repo: WorkspaceRepo, packageVersion: string) {
+function writePackageJson(repo: WorkspaceRepo, packageVersion: string) {
+  const bowerPackageName = path.basename(repo.dir);
   const bowerJsonPath = path.join(repo.dir, 'bower.json');
   const bowerJson = readJson(bowerJsonPath);
-  const bowerName = bowerJson.name as string;
-  let npmPackageName = lookupDependencyMapping(bowerName);
-  if (!npmPackageName) {
-    npmPackageName = bowerName;
-  }
+  const npmPackageName =
+      lookupNpmPackageName(bowerJsonPath) || bowerPackageName;
   const packageJson =
       generatePackageJson(bowerJson, npmPackageName, packageVersion);
   writeJson(packageJson, repo.dir, 'package.json');
 }
 
-export function configureAnalyzer(options: WorkspaceConversionSettings) {
+/**
+ * Configure a basic analyzer instance for the workspace.
+ */
+function configureAnalyzer(options: WorkspaceConversionSettings) {
   const workspaceDir = options.workspaceDir;
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
   for (const [url, contents] of polymerFileOverrides) {
     urlLoader.urlContentsMap.set(`polymer/${url}`, contents);
   }
-
   return new Analyzer({
     urlLoader,
     urlResolver: new PackageUrlResolver(),
   });
-}
-
-export function configureConverter(
-    analysis: Analysis, options: WorkspaceConversionSettings) {
-  return new WorkspaceConverter(analysis, options);
 }
 
 /**
@@ -99,9 +96,25 @@ export function configureConverter(
 export default async function convert(options: WorkspaceConversionSettings) {
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
-  const converter = configureConverter(analysis, options);
-  const results = await converter.convert();
-  await writeFileResults(options.workspaceDir, results);
+  const htmlDocuments = [...analysis.getFeatures({kind: 'html-document'})];
+  const conversionSettings = createDefaultConversionSettings(analysis, options);
+  const urlHandler = new WorkspaceUrlHandler(options.workspaceDir);
+  const converter = new ProjectConverter(urlHandler, conversionSettings);
+
+  // For each repo, convert the relevant HTML documents:
+  for (const repo of options.reposToConvert) {
+    const repoDirName = repo.dir.split('/').pop()!;
+    const repoDocuments = htmlDocuments.filter((d) => {
+      return d.url.startsWith(repoDirName) &&
+          !conversionSettings.excludes.has(d.url);
+    });
+    for (const document of repoDocuments) {
+      converter.convertDocument(document);
+    }
+  }
+
+  // Process & write each conversion result:
+  await writeFileResults(options.workspaceDir, converter.getResults());
 
   // For each repo, generate a new package.json:
   for (const repo of options.reposToConvert) {

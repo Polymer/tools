@@ -16,15 +16,15 @@ import {assert} from 'chai';
 import * as esprima from 'esprima';
 import * as estree from 'estree';
 import * as path from 'path';
-import {Analyzer, Document, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
 
-import {AnalysisConverter, AnalysisConverterOptions} from '../analysis-converter';
-import {configureAnalyzer, configureConverter} from '../convert-package';
-import {ConvertedDocumentFilePath} from '../urls/types';
+import {createDefaultConversionSettings, PartialConversionSettings} from '../conversion-settings';
+import {getPackageDocuments} from '../convert-package';
+import {ProjectConverter} from '../project-converter';
+import {PackageUrlHandler} from '../urls/package-url-handler';
+import {PackageType} from '../urls/types';
 import {getMemberPath} from '../util';
 
-
-const fixturesDirPath = path.resolve(__dirname, '../../fixtures');
 
 /*
 A few conventions in these tests:
@@ -65,26 +65,47 @@ suite('AnalysisConverter', () => {
       };
     }
 
-    async function convert(partialOptions?: Partial<AnalysisConverterOptions>&
-                           {expectedWarnings?: string[]}) {
-      const options = {
-        namespaces: ['Polymer'],
-        mainFiles: ['test.html'],
-        packageName: 'some-package',
-        ...partialOptions,
+    interface TestConversionOptions extends PartialConversionSettings {
+      packageName: string;
+      packageType: PackageType;
+      expectedWarnings: string[];
+    }
+
+    async function convert(partialOptions?: Partial<TestConversionOptions>) {
+      partialOptions = partialOptions || {};
+      // Extract options & settings /w defaults.
+      const packageName = partialOptions.packageName || 'some-package';
+      const packageType = partialOptions.packageType || 'element';
+      const expectedWarnings = partialOptions.expectedWarnings || [];
+      const partialSettings: PartialConversionSettings = {
+        namespaces: partialOptions.namespaces || ['Polymer'],
+        excludes: partialOptions.excludes,
+        referenceExcludes: partialOptions.referenceExcludes,
       };
+      // Analyze all given files.
+      const allTestUrls = [...urlLoader.urlContentsMap.keys()];
+      const analysis = await analyzer.analyze(allTestUrls);
+      // Setup ConversionSettings, set "test.html" as default entrypoint.
+      const conversionSettings =
+          createDefaultConversionSettings(analysis, partialSettings);
+      conversionSettings.includes.add('test.html');
+      // Setup ProjectConverter, use PackageUrlHandler for easy setup.
+      const urlHandler = new PackageUrlHandler(packageName, packageType);
+      const converter =
+          await new ProjectConverter(urlHandler, conversionSettings);
+      // Gather all relevent package documents, and run the converter!
       const stopIntercepting = interceptWarnings();
-      const analysis =
-          await analyzer.analyze([...urlLoader.urlContentsMap.keys()]);
-      const result = await new AnalysisConverter(analysis, options).convert();
+      for (const doc of getPackageDocuments(analysis, conversionSettings)) {
+        converter.convertDocument(doc);
+      }
+      // Assert warnings matched expected.
       const warnings = stopIntercepting();
-      const expectedWarnings =
-          partialOptions && partialOptions.expectedWarnings || [];
       assert.deepEqual(
           warnings,
           expectedWarnings,
           'console.warn() and console.error() calls differ from expected.');
-      return result;
+      // Return results for assertion.
+      return converter.getResults();
     }
 
     function assertSources(
@@ -125,20 +146,22 @@ suite('AnalysisConverter', () => {
       setSources({
         'test.html': `
           <link rel="import" href="./dep.html">
-          <link rel="import" href="../dep.html">
+          <link rel="import" href="../dep/dep.html">
           <script></script>
         `,
         'dep.html': `<h1>Hi</h1>`,
-        'bower_components/dep.html': `<h1>Hi</h1>`,
+        'bower_components/dep/dep.html': `<h1>Hi</h1>`,
       });
+      // Warnings are non memoized, duplicates are expected
       const expectedWarnings = [
-        `WARN: bower->npm mapping for "dep.html" not found`,
-        `WARN: bower->npm mapping for "dep.html" not found`,
+        `WARN: bower->npm mapping for "dep" not found`,
+        `WARN: bower->npm mapping for "dep" not found`,
+        `WARN: bower->npm mapping for "dep" not found`,
       ];
       assertSources(await convert({expectedWarnings}), {
         'test.js': `
 import './dep.js';
-import '../dep.js';
+import '../dep/dep.js';
 `,
         'test.html': undefined
       });
@@ -1394,7 +1417,7 @@ customElements.define('bar-elem', class BarElem extends Element {
           </script>
         `
       });
-      assertSources(await convert({mainFiles: ['subdir/element.html']}), {
+      assertSources(await convert(), {
         'subdir/element.js': `
 import '../lib.js';
 `,
@@ -2448,43 +2471,6 @@ Polymer({
       assert.deepEqual(memberPath, ['Foo', 'Bar', 'Baz']);
     });
 
-  });
-
-  test('case-map', async () => {
-    const options = {
-      inDir: fixturesDirPath,
-      outDir: fixturesDirPath,
-      packageName: 'case-map',
-      packageVersion: '1.0.0',
-      mainFiles: ['case-map/case-map.html']
-    };
-    const analyzer = configureAnalyzer(options);
-    const analysis = await analyzer.analyze(['case-map/case-map.html']);
-    const converter = configureConverter(analysis, options);
-    const converted = await converter.convert();
-    const caseMapSource =
-        converted.get('case-map/case-map.js' as ConvertedDocumentFilePath);
-    assert.isString(caseMapSource);
-    assert.include(caseMapSource!, 'export function dashToCamelCase');
-    assert.include(caseMapSource!, 'export function camelToDashCase');
-  });
-
-  test('polymer-element', async () => {
-    const options = {
-      inDir: fixturesDirPath,
-      outDir: fixturesDirPath,
-      packageName: 'polymer-element',
-      packageVersion: '1.0.0'
-    };
-    const filename = 'polymer-element/polymer-element.html';
-    const analyzer = configureAnalyzer(options);
-    const analysis = await analyzer.analyze([filename]);
-    const doc = analysis.getDocument(filename) as Document;
-    const converter = configureConverter(analysis, options);
-    converter.convertDocument(doc, new Set());
-    assert(
-        converter.namespacedExports.has('Polymer.Element'),
-        'Can find Polymer.Element');
   });
 
 });
