@@ -92,8 +92,9 @@ export default async function run(options: CliOptions) {
 
   await convertWorkspace({
     workspaceDir,
-    reposToConvert,
+    npmImportStyle: options['import-style'],
     packageVersion: npmPackageVersion,
+    reposToConvert,
   });
 
   console.log(

@@ -26,6 +26,7 @@ export interface UrlHandler {
   getPackageTypeForUrl(url: OriginalDocumentUrl): PackageType;
   isImportInternal(fromUrl: ConvertedDocumentUrl, toUrl: ConvertedDocumentUrl):
       boolean;
+  getNameImportUrl(url: ConvertedDocumentUrl): ConvertedDocumentUrl;
   getPathImportUrl(fromUrl: ConvertedDocumentUrl, toUrl: ConvertedDocumentUrl):
       string;
   convertUrl(url: OriginalDocumentUrl): ConvertedDocumentUrl;

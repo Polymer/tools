@@ -94,6 +94,7 @@ export default async function run(options: CliOptions) {
     outDir: outDir,
     excludes: options.exclude,
     namespaces: options.namespace,
+    npmImportStyle: options['import-style'],
     packageName: npmPackageName.toLowerCase(),
     packageVersion: npmPackageVersion,
     cleanOutDir: options.clean!!,

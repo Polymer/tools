@@ -13,6 +13,7 @@
  */
 
 import * as commandLineArgs from 'command-line-args';
+import {NpmImportStyle} from '../conversion-settings';
 
 import runPackageCommand from './command-package';
 import runWorkspaceCommand from './command-workspace';
@@ -115,6 +116,14 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
         `If given, may overwrite or delete files when converting the given ` +
         `input directory.`,
   },
+  {
+    name: 'import-style',
+    type: String,
+    defaultValue: 'path',
+    description:
+        `[name|path] The desired format for npm package import URLs/specifiers. ` +
+        `Defaults to "path".`,
+  },
 ];
 
 export interface CliOptions {
@@ -132,6 +141,7 @@ export interface CliOptions {
   'workspace-dir': string;
   'github-token'?: string;
   force: boolean;
+  'import-style': NpmImportStyle;
 }
 
 export async function run() {
@@ -167,6 +177,13 @@ installation.
   if (options['repo']) {
     await runWorkspaceCommand(options);
     return;
+  }
+
+  const importStyle = options['import-style'];
+  if (importStyle !== 'name' && importStyle !== 'path') {
+    throw new Error(
+        `import-style "${importStyle}" not supported. ` +
+        `Supported styles: "name", "path".`);
   }
 
   await runPackageCommand(options);

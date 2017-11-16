@@ -1104,8 +1104,17 @@ export class DocumentConverter {
     if (originalHtmlImportUrl && path.posix.isAbsolute(originalHtmlImportUrl)) {
       return '/' + toUrl.slice('./'.length);
     }
-    // Return the external import URL formatted for paths.
-    return this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
+    // If the import is contained within a single package (internal), return
+    // a path-based import.
+    if (this.urlHandler.isImportInternal(this.convertedUrl, toUrl)) {
+      return this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
+    }
+    // Otherwise, return the external import URL formatted for names or paths.
+    if (this.conversionSettings.npmImportStyle === 'name') {
+      return this.urlHandler.getNameImportUrl(toUrl);
+    } else {
+      return this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
+    }
   }
 
   /**
