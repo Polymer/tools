@@ -49,7 +49,6 @@
     "gulp-sourcemaps": "^1.6.0",
     "gulp-tslint": "^7.0.1",
     "gulp-typescript": "^2.13.4",
-    "jsdoc-to-markdown": "^1.0.3",
     "knuth-shuffle": "^1.0.8",
     "memory-streams": "^0.1.1",
     "merge-stream": "^1.0.0",

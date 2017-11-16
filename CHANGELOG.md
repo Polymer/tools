@@ -5,8 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [2.7.0] - 2017-11-16
+
 * Emit more accurate super classes for Elements when generating analysis JSON.
 * Added the concept of automatically safe fixes and less-safe edit actions for Warnings. This is an upstreaming of functionality originally defined in polymer-linter.
 
