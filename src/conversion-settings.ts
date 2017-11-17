@@ -17,8 +17,6 @@ import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
 import {Analysis} from 'polymer-analyzer';
 
-import {getNamespaces} from './util';
-
 export type NpmImportStyle = 'name'|'path';
 
 /**
@@ -27,7 +25,6 @@ export type NpmImportStyle = 'name'|'path';
  * and how each file should be formatted for conversion.
  */
 export interface ConversionSettings {
-
   /**
    * Namespace names used to detect exports.
    */
@@ -96,7 +93,6 @@ export interface ConversionSettings {
  * added.
  */
 export interface PartialConversionSettings {
-
   /**
    * Namespace names used to detect exports. Namespaces declared in the
    * code with an `@namespace` declaration are automatically detected.
@@ -132,6 +128,22 @@ export interface PartialConversionSettings {
 }
 
 /**
+ * Get all namespace names for an analysis object.
+ */
+function getNamespaceNames(analysis: Analysis) {
+  return IterableX
+      .from(analysis.getFeatures(
+          {kind: 'namespace', externalPackages: true, imported: true}))
+      .map((n) => {
+        const name = n.name;
+        if (name.startsWith('window.')) {
+          return name.slice('window.'.length);
+        }
+        return name;
+      });
+}
+
+/**
  * Setup the default conversion settings based on the project analysis and the
  * incomplete user-provided options.
  */
@@ -140,7 +152,7 @@ export function createDefaultConversionSettings(
     options: PartialConversionSettings): ConversionSettings {
   // Configure "namespaces":
   const namespaces =
-      new Set(getNamespaces(analysis).concat(options.namespaces || []));
+      new Set(getNamespaceNames(analysis).concat(options.namespaces || []));
 
   // Configure "excludes":
   const excludes = new Set(

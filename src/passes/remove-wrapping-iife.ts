@@ -13,7 +13,16 @@
  */
 
 import * as estree from 'estree';
-import {isUseStrict, toplevelStatements} from '../util';
+import {getTopLevelStatements} from '../document-util';
+
+/**
+ * Returns true if a statement is the literal "use strict".
+ */
+function isUseStrict(statement: estree.Statement) {
+  return statement.type === 'ExpressionStatement' &&
+      statement.expression.type === 'Literal' &&
+      statement.expression.value === 'use strict';
+}
 
 /**
  * Unwrap toplevel IIFEs.
@@ -21,7 +30,7 @@ import {isUseStrict, toplevelStatements} from '../util';
  * An ES6 module doesn't need IIFEs to contain its local variables.
  */
 export function removeWrappingIIFEs(program: estree.Program) {
-  for (const path of toplevelStatements(program)) {
+  for (const path of getTopLevelStatements(program)) {
     const statement = path.node;
     if (statement.type !== 'ExpressionStatement' ||
         statement.expression.type !== 'CallExpression') {

@@ -14,8 +14,35 @@
 
 import * as astTypes from 'ast-types';
 import * as estree from 'estree';
-import {getMemberOrIdentifierName} from '../util';
+import {getMemberOrIdentifierName} from '../document-util';
 
+/**
+ * Detect certain types of expressions that we deem noops when looking for
+ * namespace initializers. For example, `var namespace = window.namespace`.
+ */
+function isNoopInitializationValue(
+    expression: estree.Expression, assigningTo: string): boolean {
+  // `foo || bar` is a noop if both `foo` and `bar` are.
+  if (expression.type === 'LogicalExpression' && expression.operator === '||') {
+    return isNoopInitializationValue(expression.left, assigningTo) &&
+        isNoopInitializationValue(expression.right, assigningTo);
+  }
+  // `{}` is the default empty value for a namespace.
+  if (expression.type === 'ObjectExpression' &&
+      expression.properties.length === 0) {
+    return true;
+  }
+  // `var namespace = window.namespace` is also a noop initialization
+  if (getMemberOrIdentifierName(expression) === assigningTo) {
+    return true;
+  }
+  // Most expressions are not noop initializations.
+  return false;
+}
+
+/**
+ * Remove initializers for a set of namespaces in a program.
+ */
 export function removeNamespaceInitializers(
     program: estree.Program, namespaces: ReadonlySet<string|undefined>) {
   const handleAssignment =
@@ -49,25 +76,4 @@ export function removeNamespaceInitializers(
       return false;
     }
   });
-}
-
-function isNoopInitializationValue(
-    expression: estree.Expression, assigningTo: string): boolean {
-  // `foo || bar` is a noop if both `foo` and `bar` are.
-  if (expression.type === 'LogicalExpression' && expression.operator === '||') {
-    return isNoopInitializationValue(expression.left, assigningTo) &&
-        isNoopInitializationValue(expression.right, assigningTo);
-  }
-  // `{}` is the default empty value for a namespace.
-  if (expression.type === 'ObjectExpression' &&
-      expression.properties.length === 0) {
-    return true;
-  }
-  // `var namespace = window.namespace` is also a noop initialization
-  if (getMemberOrIdentifierName(expression) === assigningTo) {
-    return true;
-  }
-
-  // Most expressions are not noop initializations.
-  return false;
 }

@@ -59,8 +59,7 @@ export class ProjectConverter {
    */
   readonly conversionResults = new Map<OriginalDocumentUrl, ConversionResult>();
 
-  constructor(
-      urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
+  constructor(urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
     this.urlHandler = urlHandler;
     this.conversionSettings = conversionSettings;
   }
@@ -108,8 +107,8 @@ export class ProjectConverter {
   }
 
   /**
-   * Convert an HTML document without changing the file type (changes imports and
-   * inline scripts to modules as necessary). Useful during conversion for
+   * Convert an HTML document without changing the file type (changes imports
+   * and inline scripts to modules as necessary). Useful during conversion for
    * dependencies where the type of result is explictly expected.
    */
   convertDocumentToHtml(document: Document, visited: Set<OriginalDocumentUrl>) {

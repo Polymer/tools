@@ -20,10 +20,10 @@ import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, Url
 
 import {createDefaultConversionSettings, PartialConversionSettings} from '../conversion-settings';
 import {getPackageDocuments} from '../convert-package';
+import {getMemberPath} from '../document-util';
 import {ProjectConverter} from '../project-converter';
 import {PackageUrlHandler} from '../urls/package-url-handler';
 import {PackageType} from '../urls/types';
-import {getMemberPath} from '../util';
 
 
 /*
@@ -154,7 +154,6 @@ suite('AnalysisConverter', () => {
       });
       // Warnings are non memoized, duplicates are expected
       const expectedWarnings = [
-        `WARN: bower->npm mapping for "dep" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
       ];

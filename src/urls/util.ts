@@ -78,3 +78,19 @@ export function getRelativeUrl(
   }
   return moduleJsUrl;
 }
+
+
+function dashToCamelCase(s: string) {
+  return s.replace(/-[a-z]/g, (m) => m[1].toUpperCase());
+}
+
+/**
+ * Get the import name for an imported module object. Useful when generating an
+ * import statement, or a reference to an imported module object.
+ */
+export function getModuleId(url: string) {
+  const baseName = path.basename(url);
+  const lastDotIndex = baseName.lastIndexOf('.');
+  const mainName = baseName.substring(0, lastDotIndex);
+  return dashToCamelCase(mainName);
+}
