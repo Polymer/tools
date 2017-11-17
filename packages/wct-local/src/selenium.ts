@@ -79,9 +79,8 @@ async function seleniumStart(
   // Bookkeeping once the process starts.
   config.spawnCb = function(server: child_process.ChildProcess) {
     // Make sure that we interrupt the selenium server ASAP.
-    cleankill.onInterrupt(function(done) {
+    cleankill.onInterrupt(async() => {
       server.kill();
-      done();
     });
 
     server.stdout.on('data', onOutput);
