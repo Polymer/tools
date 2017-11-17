@@ -71,6 +71,12 @@ suite(ruleId, () => {
           <div class="layout horizontal">
                      ~~~~~~~~~~~~~~~~~~~`,
       `
+      <div class$="layout horizontal [[flex]]">
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+        <p class="flex" class$="flex [[flex]]">lorem</p>
+                               ~~~~~~~~~~~~~~~`,
+      `
 <body class="fullbleed">
             ~~~~~~~~~~~`,
     ]);
@@ -91,6 +97,10 @@ Import it in the template style include.`,
       `"iron-flex-factors" style module is used but not imported.
 Import it in the template style include.`,
       'Style outside template. Run `move-style-into-template` rule.',
+      `"iron-flex" style module is used but not imported.
+Import it in the template style include.`,
+      `"iron-flex" style module is used but not imported.
+Import it in the template style include.`,
       `"iron-flex" style module is used but not imported.
 Import it in the template style include.`,
       `"iron-positioning" style module is used but not imported.

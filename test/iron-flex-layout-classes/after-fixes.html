@@ -158,6 +158,25 @@
     </script>
   </dom-module>
 
+
+  <dom-module id="with-class-binding">
+    <template>
+      <style include="iron-flex"></style>
+      <div class$="layout horizontal [[flex]]">
+        <p class="flex" class$="flex [[flex]]">lorem</p>
+        <p class$="{{flex}}">ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-class-binding",
+        properties: {
+          flex: String
+        }
+      });
+    </script>
+  </dom-module>
+
 </body>
 
 </html>

@@ -172,27 +172,37 @@ export function getIndentationInside(parentNode: dom5.Node) {
   return match[2];
 }
 
+export interface AttributeAliases { [s: string]: string; }
+
 /**
  * Converts a css selector into a dom5 predicate.
  *
  * This is intended for handling only selectors that match an individual element
  * in isolation, it does throws if the selector talks about relationships
  * between elements like `.foo .bar` or `.foo > .bar`.
+ *
+ * Set `isPolymerTemplate` to true to apply selectors in data-bound attributes,
+ * e.g. `.foo.bar` would return both nodes of the following template:
+ *
+ *     <div class="foo bar"></div>
+ *     <div class$="foo bar"></div>
  */
-export function elementSelectorToPredicate(simpleSelector: string):
-    dom5.Predicate {
+export function elementSelectorToPredicate(
+    simpleSelector: string,
+    isPolymerTemplate: boolean = false): dom5.Predicate {
   const parsed = cssWhat(simpleSelector);
   // The output of cssWhat is two levels of arrays. The outer level are any
   // selectors joined with a comma, so it matches if any of the inner selectors
   // match. The inner array are simple selectors like `.foo` and `#bar` which
   // must all match.
   return dom5.predicates.OR(...parsed.map((simpleSelectors) => {
-    return dom5.predicates.AND(
-        ...simpleSelectors.map(simpleSelectorToPredicate));
+    return dom5.predicates.AND(...simpleSelectors.map(
+        (selector) => simpleSelectorToPredicate(selector, isPolymerTemplate)));
   }));
 }
 
-function simpleSelectorToPredicate(selector: cssWhat.Simple) {
+function simpleSelectorToPredicate(
+    selector: cssWhat.Simple, isPolymerTemplate: boolean) {
   switch (selector.type) {
     case 'adjacent':
     case 'child':
@@ -202,6 +212,12 @@ function simpleSelectorToPredicate(selector: cssWhat.Simple) {
     case 'pseudo':
       throw new Error(`Unsupported CSS operator: ${selector.type}`);
     case 'attribute':
+      if (isPolymerTemplate) {
+        return dom5.predicates.OR(
+            attributeSelectorToPredicate(selector),
+            attributeSelectorToPredicate(
+                {...selector, name: selector.name + '$'}));
+      }
       return attributeSelectorToPredicate(selector);
     case 'tag':
       return dom5.predicates.hasTagName(selector.name);

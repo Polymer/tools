@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- Fixed `iron-flex-layout-classes` to handle `class$` attribute.
 
 ## [2.2.0] - 2017-11-13
 - Added a concept of edit actions, which are like fixes with caveats. These need explicit user intent to apply because they may change the code's API, or otherwise be unsafe.
