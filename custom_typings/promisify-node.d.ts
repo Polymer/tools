@@ -5,6 +5,8 @@ declare module 'promisify-node' {
   function promisify<T>(f: (cb: NodeCallback<T>) => void): () => Promise<T>;
   function promisify<A1, T>(f: (a: A1, cb: NodeCallback<T>) => void): (a: A1) =>
       Promise<T>;
+    function promisify<A1>(f: (a: A1, cb: (err: any)=>void) => void): (a: A1) =>
+      Promise<void>;
   function promisify<A1, A2, T>(
       f: (a: A1, a2: A2, cb: NodeCallback<T>) => void): (a: A1, a2: A2) =>
       Promise<T>;
