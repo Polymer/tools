@@ -37,12 +37,12 @@ suite(code, () => {
 
   test('works in the trivial case', async() => {
     const warnings = await linter.lint([]);
-    assert.deepEqual(warnings, []);
+    assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
     const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
-    assert.deepEqual(warnings, []);
+    assert.deepEqual([...warnings], []);
   });
 
   test('warns for a file with a style outside template', async() => {
@@ -64,7 +64,7 @@ suite(code, () => {
   test('applies automatic-safe fixes', async() => {
     const warnings = await linter.lint([`${code}/before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer, await analyzer.analyze([]));
+    const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(result.incompatibleEdits, []);
     assert.deepEqual(

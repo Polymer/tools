@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+- The array of warnings returned by `Linter#lint()` and `Linter#lintPackage()` now also has a non-enumerable `analysis` property, which refers to the immutable `Analysis` used to generate the lint results.
 - Fixed `iron-flex-layout-classes` to handle `class$` attribute.
 
 ## [2.2.0] - 2017-11-13

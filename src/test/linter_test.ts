@@ -55,14 +55,14 @@ suite('Linter', () => {
     test('works in the trivial case', async() => {
       const linter = new Linter([], analyzer);
       const warnings = await linter.lint([]);
-      assert.deepEqual(warnings, []);
+      assert.deepEqual([...warnings], []);
     });
 
     test('gives no warnings for a perfectly fine file', async() => {
       const linter = new Linter([], analyzer);
       const warnings =
           await linter.lint(['perfectly-fine/polymer-element.html']);
-      assert.deepEqual(warnings, []);
+      assert.deepEqual([...warnings], []);
     });
 
     test('surfaces warnings up from the analyzer', async() => {

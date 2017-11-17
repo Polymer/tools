@@ -171,7 +171,7 @@ const codesOkInTestsAndDemos = new Set([
 ]);
 
 // Filter out known issues in the codebase.
-function filterWarnings(warnings: Warning[]) {
+function filterWarnings(warnings: ReadonlyArray<Warning>) {
   const unfoundCodes = new Set(codesToIgnore);
   const unfoundCodesByFile: typeof fileSpecificIgnoreCodesToIgnore = {};
   for (const key in fileSpecificIgnoreCodesToIgnore) {

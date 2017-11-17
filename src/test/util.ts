@@ -15,7 +15,7 @@
 import {Warning} from 'polymer-analyzer';
 
 export class WarningPrettyPrinter {
-  prettyPrint(warnings: Warning[]): string[] {
+  prettyPrint(warnings: ReadonlyArray<Warning>): string[] {
     return warnings.map(
         (w) => '\n' + w.toString({verbosity: 'code-only', color: false}));
   }

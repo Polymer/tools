@@ -14,7 +14,7 @@
 
 import './collections';
 
-import {Analyzer, Document, ParsedDocument, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {Analysis, Analyzer, Document, ParsedDocument, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
 
@@ -39,20 +39,21 @@ export class Linter {
    * Given an array of filenames, lint the files and return an array of all
    * warnings produced evaluating the linter rules.
    */
-  public async lint(files: string[]): Promise<Warning[]> {
-    const {documents, warnings} = await this._analyzeAll(files);
+  public async lint(files: string[]): Promise<LintResult> {
+    const {documents, warnings, analysis} = await this._analyzeAll(files);
     for (const document of documents) {
       warnings.push(...document.getWarnings());
     }
-    return warnings.concat(...await this._lintDocuments(documents));
+    return makeLintResult(
+        warnings.concat(...await this._lintDocuments(documents)), analysis);
   }
 
-  public async lintPackage(): Promise<Warning[]> {
-    const pckage = await this._analyzer.analyzePackage();
-    const warnings = pckage.getWarnings();
+  public async lintPackage(): Promise<LintResult> {
+    const analysis = await this._analyzer.analyzePackage();
+    const warnings = analysis.getWarnings();
     warnings.push(
-        ...await this._lintDocuments(pckage.getFeatures({kind: 'document'})));
-    return warnings;
+        ...await this._lintDocuments(analysis.getFeatures({kind: 'document'})));
+    return makeLintResult(warnings, analysis);
   }
 
   private async _lintDocuments(documents: Iterable<Document>) {
@@ -84,7 +85,6 @@ export class Linter {
     const documents = [];
     const warnings = [];
 
-
     for (const file of files) {
       const result = analysis.getDocument(this._analyzer.resolveUrl(file));
       if (!result) {
@@ -96,7 +96,7 @@ export class Linter {
       }
     }
 
-    return {documents, warnings};
+    return {documents, warnings, analysis};
   }
 
   private _getWarningFromError(
@@ -114,4 +114,24 @@ export class Linter {
           {file, start: {line: 0, column: 0}, end: {line: 0, column: 0}}
     });
   }
+}
+
+/**
+ * We want to return both the warnings and the immutable analysis we used as
+ * its basis. This is slightly hacky, but it has better back-compat.
+ *
+ * Fix with the next major version.
+ */
+export interface LintResult extends ReadonlyArray<Warning> {
+  readonly analysis: Analysis;
+}
+
+function makeLintResult(
+    warnings: ReadonlyArray<Warning>, analysis: Analysis): LintResult {
+  const result = warnings as LintResult;
+  Object.defineProperty(
+      result,
+      'analysis',
+      {enumerable: false, writable: false, value: analysis});
+  return result;
 }

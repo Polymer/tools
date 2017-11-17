@@ -37,7 +37,7 @@ suite(ruleId, () => {
 
   test('works in the trivial case', async() => {
     const warnings = await linter.lint([]);
-    assert.deepEqual(warnings, []);
+    assert.deepEqual([...warnings], []);
   });
 
   test('warns when deprecated files are used with the right messages', async() => {
@@ -68,7 +68,7 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
         const warnings =
             await linter.lint([`${ruleId}/deprecated-files-before-fixes.html`]);
         const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-        const loader = makeParseLoader(analyzer);
+        const loader = makeParseLoader(analyzer, warnings.analysis);
         const result = await applyEdits(edits, loader);
         assert.deepEqual(
             result.editedFiles.get(
@@ -98,7 +98,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
     const warnings =
         await linter.lint([`${ruleId}/forgot-import-before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer);
+    const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(`${ruleId}/forgot-import-before-fixes.html`),
@@ -109,7 +109,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
     const warnings = await linter.lint(
         [`${ruleId}/forgot-import-no-imports-before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer);
+    const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(
@@ -136,7 +136,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
     const warnings =
         await linter.lint([`${ruleId}/unnecessary-import-before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer);
+    const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(

@@ -38,12 +38,12 @@ suite('unbalanced-polymer-delimiters', () => {
 
   test('works in the trivial case', async() => {
     const warnings = await linter.lint([]);
-    assert.deepEqual(warnings, []);
+    assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
     const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
-    assert.deepEqual(warnings, []);
+    assert.deepEqual([...warnings], []);
   });
 
   test('warns for the proper cases', async() => {
