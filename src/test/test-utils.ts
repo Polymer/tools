@@ -74,9 +74,11 @@ export class CodeUnderliner {
    * writing tests simple and legible.
    */
   async underline(reference: Reference): Promise<string>;
-  async underline(references: Reference[]): Promise<string[]>;
-  async underline(reference: Reference|Reference[]): Promise<string|string[]> {
-    if (Array.isArray(reference)) {
+  async underline(references: ReadonlyArray<Reference>):
+      Promise<ReadonlyArray<string>>;
+  async underline(reference: Reference|ReadonlyArray<Reference>):
+      Promise<string|ReadonlyArray<string>> {
+    if (isReadonlyArray(reference)) {
       return Promise.all(reference.map((ref) => this.underline(ref)));
     }
 
@@ -90,6 +92,10 @@ export class CodeUnderliner {
     const parsedDocument = await this._parsedDocumentGetter(reference.file);
     return '\n' + underlineCode(reference, parsedDocument);
   }
+}
+
+function isReadonlyArray(maybeArr: any): maybeArr is ReadonlyArray<any> {
+  return Array.isArray(maybeArr);
 }
 
 function isWarning(wOrS: Warning|SourceRange): wOrS is Warning {
