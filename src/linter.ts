@@ -65,7 +65,7 @@ export class Linter {
       }
       for (const rule of this._rules) {
         try {
-          warnings.push(...await rule.check(document));
+          warnings.push(...await rule.cachedCheck(document));
         } catch (e) {
           warnings.push(this._getWarningFromError(
               document.parsedDocument,

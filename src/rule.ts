@@ -29,10 +29,29 @@ export abstract class Rule {
    */
   abstract description: string;
 
+  protected cache = new WeakMap<Document, Promise<ReadonlyArray<Warning>>>();
+
+  /**
+   * Finds all warnings in the given document.
+   *
+   * If this rule has checked this document before, just looks up the result
+   * in our cache. Because Documents are immutable and are guaranteed to be
+   * different if any of their contents are different, this caching is safe.
+   */
+  cachedCheck(document: Document): Promise<ReadonlyArray<Warning>> {
+    const cacheResult = this.cache.get(document);
+    if (cacheResult) {
+      return cacheResult;
+    }
+    const result = this.check(document);
+    this.cache.set(document, result);
+    return result;
+  }
+
   /**
    * Finds all warnings in the given document.
    */
-  abstract check(document: Document): Promise<Warning[]>;
+  protected abstract check(document: Document): Promise<Warning[]>;
 }
 
 /**
