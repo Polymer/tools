@@ -60,7 +60,7 @@ suite('Class', () => {
       privacy: string,
       properties?: any[],
       methods?: any[],
-      warnings?: string[],
+      warnings?: ReadonlyArray<string>,
       mixins?: any[],
       superClass?: string,
     };
