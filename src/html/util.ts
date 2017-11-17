@@ -172,8 +172,6 @@ export function getIndentationInside(parentNode: dom5.Node) {
   return match[2];
 }
 
-export interface AttributeAliases { [s: string]: string; }
-
 /**
  * Converts a css selector into a dom5 predicate.
  *
