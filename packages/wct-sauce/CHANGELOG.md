@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0-pre.2 - 2017-11-16
+
+- Update to cleankill@^2.0.0
+
 ## 2.0.0-pre.1
 
 - Updated default browsers list:

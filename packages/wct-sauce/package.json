@@ -1,6 +1,6 @@
 {
   "name": "wct-sauce",
-  "version": "2.0.0-pre.1",
+  "version": "2.0.0-pre.2",
   "description": "WCT plugin that enables support for sauce browsers via Sauce Labs",
   "keywords": [
     "wct",
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "chalk": "^1.1.1",
-    "cleankill": "^1.0.0",
+    "cleankill": "^2.0.0",
     "lodash": "^3.0.1",
     "request": "^2.53.0",
     "sauce-connect-launcher": "^1.0.0",

@@ -57,9 +57,12 @@ function startTunnel(config, emitter, done) {
       }
       done(error, tunnelId);
     });
-    // SauceConnectLauncher only supports one tunnel at a time; this allows us to
-    // kill it before we've gotten our callback.
-    cleankill.onInterrupt(sauceConnect.kill.bind(sauceConnect));
+    // SauceConnectLauncher only supports one tunnel at a time; this allows us
+    // to kill it before we've gotten our callback.
+    cleankill.onInterrupt(function () {
+      sauceConnect.kill();
+      return Promise.resolve();
+    });
   });
 }
 
