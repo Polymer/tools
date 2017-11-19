@@ -28,10 +28,6 @@ function task(name, deps, impl) {
   gulp.task(name, deps, impl);
 }
 
-module.exports.init = function() {
-  task('init', () => {});
-}
-
 module.exports.depcheck = function depcheck(options) {
   const depcheck_lib = require('depcheck');
   const defaultOptions = {stickyDeps: new Set()};
@@ -159,7 +155,7 @@ module.exports.test = function(options) {
   module.exports.buildAll(options);
 
   task('test', ['build'], () =>
-    gulp.src('test/**/*_test.js', {read: false})
+    gulp.src(['test/**/*_test.js', 'src/test/**/*_test.js'], {read: false})
         .pipe(mocha({
           ui: 'tdd',
           reporter: 'spec',
