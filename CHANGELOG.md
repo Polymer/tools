@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- Improve the wording on the content-to-slot-declaration's unsafe edit action.
 
 ## [2.2.1] - 2017-11-16
 - The array of warnings returned by `Linter#lint()` and `Linter#lintPackage()` now also has a non-enumerable `analysis` property, which refers to the immutable `Analysis` used to generate the lint results.

@@ -80,10 +80,11 @@ class ContentToSlotDeclarations extends HtmlRule {
               kind: 'edit',
               code: 'content-with-select',
               description: stripIndentation(`
-                Convert this <content> to a <slot>.
+                Convert to a <slot> element. This is a breaking change!
 
                 This changes the API of this element because the \`select\`
-                attribute will become a slot name. Use the content-to-slot-usages lint pass to convert usages of the
+                attribute will become a slot name. Use the
+                content-to-slot-usages lint pass to convert usages of the
                 element to conform to the new API.
               `),
               edit
