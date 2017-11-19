@@ -11,7 +11,7 @@
     "strictNullChecks": true,
     "removeComments": false,
     "preserveConstEnums": true,
-    "suppressImplicitAnyIndexErrors": true,
+    "strict": true,
     "lib": [
       "es2017"
     ],
