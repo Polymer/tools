@@ -225,12 +225,6 @@ addPredicate('paper-scroll-header-panel', [
   {selector: '*', slot: 'content'}
 ]);
 
-addPredicate('paper-toolbar', [
-  {selector: '.middle', slot: 'middle'},
-  {selector: '.bottom', slot: 'bottom'},
-  {selector: '*', slot: 'top'}
-]);
-
 addPredicate('paper-drawer-panel', [
   {selector: '[drawer]', slot: 'drawer'},
   {selector: '[main]', slot: 'main'}

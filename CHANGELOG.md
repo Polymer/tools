@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Improve the wording on the content-to-slot-declaration's unsafe edit action.
+- Adds the 'paper-toolbar-v1-to-v2' rule, which helps upgrade uses of paper-toolbar from v1 to v2 (hybrid) by adding slots to children where appropriate.
 
 ## [2.2.1] - 2017-11-16
 - The array of warnings returned by `Linter#lint()` and `Linter#lintPackage()` now also has a non-enumerable `analysis` property, which refers to the immutable `Analysis` used to generate the lint results.

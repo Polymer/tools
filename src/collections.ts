@@ -32,6 +32,7 @@ registry.register(
       'unbalanced-polymer-delimiters',
       'undefined-elements',
       'deprecated-css-custom-property-syntax',
+      'paper-toolbar-v1-to-v2',
     ]));
 
 registry.register(new RuleCollection(
@@ -52,6 +53,7 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'unbalanced-polymer-delimiters',
       'undefined-elements',
       'deprecated-css-custom-property-syntax',
+      'paper-toolbar-v1-to-v2',
     ]));
 
 registry.register(new RuleCollection(

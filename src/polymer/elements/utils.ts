@@ -12,6 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import './iron-flex-layout-classes';
-import './iron-flex-layout-import';
-import './paper-toolbar-v1-to-v2';
+import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
+
+const templateExtensionNames =
+  ['dom-bind', 'dom-if', 'dom-repeat', 'dom-template'];
+
+export const nodeIsTemplateExtension = (node: parse5.ASTNode) => {
+  const isAttrValue = dom5.getAttribute(node, 'is');
+  return !!(
+    node.tagName === 'template' &&
+    isAttrValue && templateExtensionNames.includes(isAttrValue)
+  );
+};
