@@ -13,12 +13,12 @@
  */
 
 import * as path from 'path';
-import {FSUrlLoader, PackageUrlResolver, WarningCarryingException} from 'polymer-analyzer';
+import {Edit, FSUrlLoader, isPositionInsideRange, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
 import * as util from 'util';
-import {CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {AttributeCompletion, EditorService, Warning} from '../editor-service';
+import {AttributeCompletion, Warning} from '../editor-service';
 import {hookUpRemoteConsole} from '../intercept-logs';
 import {LocalEditorService} from '../local-editor-service';
 
@@ -46,14 +46,14 @@ interface Settings {
 const defaultSettings: Readonly<Settings> =
     Object.freeze({analyzeWholePackage: false});
 
+const applyEditCommandName: string = 'polymer-ide/applyEdit';
+
 export default class LanguageServer extends AutoDisposable {
   readonly converter: AnalyzerLSPConverter;
   private readonly _connection: IConnection;
-  private readonly _editorService: EditorService;
+  private readonly _editorService: LocalEditorService;
 
   private readonly _documents: TextDocuments;
-
-  private readonly _workspaceUri: Uri;
 
   private _settings: Settings = defaultSettings;
 
@@ -96,7 +96,7 @@ export default class LanguageServer extends AutoDisposable {
         }
         const newServer = makeServer(workspaceUri);
         resolve(newServer);
-        return {capabilities: newServer.capabilities};
+        return {capabilities: newServer.capabilities(params.capabilities)};
       });
     });
 
@@ -111,13 +111,12 @@ export default class LanguageServer extends AutoDisposable {
    * editor service, and a workspace.
    */
   constructor(
-      connection: IConnection, editorService: EditorService,
+      connection: IConnection, editorService: LocalEditorService,
       workspaceUri: Uri) {
     super();
     this._disposables.push(connection);
     this._connection = connection;
     this._editorService = editorService;
-    this._workspaceUri = workspaceUri;
 
     // TODO(rictic): try out implementing an incrementally synced version of
     //     TextDocuments. Should be a performance win for editing large docs.
@@ -128,13 +127,25 @@ export default class LanguageServer extends AutoDisposable {
     this._initEventHandlers();
   }
 
-  get capabilities(): ServerCapabilities {
-    return {
+  capabilities(clientCapabilities: ClientCapabilities): ServerCapabilities {
+    const ourCapabilities: ServerCapabilities = {
       textDocumentSync: this._documents.syncKind,
       completionProvider: {resolveProvider: false},
       hoverProvider: true,
       definitionProvider: true,
+      codeActionProvider: true,
     };
+    // If the client can apply edits, then we can handle the
+    // polymer-ide/applyEdit command, which just delegates to the client's
+    // applyEdit functionality. Otherwise the client plugin can handle the
+    // polymer-ide/applyEdit if it wants that feature.
+    if (clientCapabilities.workspace &&
+        clientCapabilities.workspace.applyEdit) {
+      ourCapabilities.executeCommandProvider = {
+        commands: ['polymer-ide/applyEdit']
+      };
+    }
+    return ourCapabilities;
   }
 
   private _initEventHandlers() {
@@ -148,7 +159,6 @@ export default class LanguageServer extends AutoDisposable {
         this._connection.sendDiagnostics(
             {diagnostics: [], uri: event.document.uri});
       }
-
       // TODO(rictic): unmap event.document.uri from the in-memory map.
     }));
 
@@ -174,6 +184,66 @@ export default class LanguageServer extends AutoDisposable {
       this._settings = Object.assign({}, defaultSettings, settings);
       this._settingsChanged(this._settings, previousSettings);
     });
+
+    this._connection.onCodeAction(async(req) => {
+      return this.handleErrors(this.getCodeActions(req), []);
+    });
+
+    this._connection.onExecuteCommand(async(req) => {
+      if (req.command === applyEditCommandName) {
+        return this.handleErrors(
+            this.executeApplyEditCommand(req.arguments as [WorkspaceEdit]),
+            undefined);
+      }
+    });
+  }
+
+  private async getCodeActions(req: CodeActionParams) {
+    const commands: Command[] = [];
+    if (req.context.diagnostics.length === 0) {
+      // Currently we only support code actions on Warnings,
+      // so we can early-exit in the case where there aren't any.
+      return commands;
+    }
+    const warnings = await this._editorService.getWarningsForFile(
+        this.converter.getWorkspacePathToFile(req.textDocument));
+    const requestedRange =
+        this.converter.convertLRangeToP(req.range, req.textDocument);
+    for (const warning of warnings) {
+      if ((!warning.fix &&
+           (!warning.actions || warning.actions.length === 0)) ||
+          !isRangeInside(warning.sourceRange, requestedRange)) {
+        continue;
+      }
+      if (warning.fix) {
+        commands.push(this.createApplyEditCommand(
+            `Quick fix the '${warning.code}' warning`, warning.fix));
+      }
+      if (warning.actions) {
+        for (const action of warning.actions) {
+          if (action.kind !== 'edit') {
+            continue;
+          }
+          commands.push(this.createApplyEditCommand(
+              // Take up to the first newline.
+              action.description.split('\n')[0], action.edit));
+        }
+      }
+    }
+    return commands;
+  }
+
+  private async executeApplyEditCommand(args: [WorkspaceEdit]) {
+    const params: ApplyWorkspaceEditParams = {edit: args[0]};
+    const result = (await this._connection.sendRequest(
+        ApplyWorkspaceEditRequest.type.method,
+        params)) as ApplyWorkspaceEditResponse;
+    this._connection.console.log(`Applied edits: ${result.applied}`);
+  }
+
+  private createApplyEditCommand(title: string, edit: Edit): Command {
+    return Command.create(
+        title, applyEditCommandName, this.converter.editToWorkspaceEdit(edit));
   }
 
   async autoComplete(textPosition: TextDocumentPositionParams):
@@ -222,7 +292,7 @@ export default class LanguageServer extends AutoDisposable {
     if (location && location.file) {
       let definition: Location = {
         uri: this.converter.getUriForLocalPath(location.file),
-        range: this.converter.convertRange(location)
+        range: this.converter.convertPRangeToL(location)
       };
       return definition;
     }
@@ -292,7 +362,7 @@ export default class LanguageServer extends AutoDisposable {
    * the invariant that there must not be an await between the initial read of
    * _urisReportedWarningsFor and the write of it at the end.
    */
-  private _reportPackageWarnings(warnings: Warning[]) {
+  private _reportPackageWarnings(warnings: Iterable<Warning>) {
     const reportedLastTime = new Set(this._urisReportedWarningsFor);
     this._urisReportedWarningsFor = new Set<string>();
     const diagnosticsByUri = new Map<string, Diagnostic[]>();
@@ -353,4 +423,9 @@ function attributeCompletionToCompletionItem(
     }
   }
   return item;
+}
+
+function isRangeInside(inner: SourceRange, outer: SourceRange) {
+  return isPositionInsideRange(inner.start, outer, true) &&
+      isPositionInsideRange(inner.end, outer, true);
 }

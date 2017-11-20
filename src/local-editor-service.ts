@@ -273,7 +273,7 @@ export class LocalEditorService extends EditorService {
     }
   }
 
-  _createSortPrefixes(element: Element): Map<string|undefined, string> {
+  private _createSortPrefixes(element: Element): Map<string|undefined, string> {
     // A map from the inheritedFrom to a sort prefix. Note that
     // `undefined` is a legal value for inheritedFrom.
     const sortPrefixes = new Map<string|undefined, string>();
@@ -288,7 +288,7 @@ export class LocalEditorService extends EditorService {
     return sortPrefixes;
   }
 
-  _generateAutoCompletionForElement(e: Element): string {
+  private _generateAutoCompletionForElement(e: Element): string {
     let autocompletion = `<${e.tagName}`;
     let tabindex = 1;
     if (e.attributes.size > 0) {
@@ -330,11 +330,11 @@ export class LocalEditorService extends EditorService {
     }
   }
 
-  async getWarningsForFile(localPath: string): Promise<Warning[]> {
+  async getWarningsForFile(localPath: string): Promise<ReadonlyArray<Warning>> {
     return this._linter.lint([localPath]);
   }
 
-  async getWarningsForPackage(): Promise<Warning[]> {
+  async getWarningsForPackage(): Promise<ReadonlyArray<Warning>> {
     return this._linter.lintPackage();
   }
 

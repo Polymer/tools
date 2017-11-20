@@ -267,7 +267,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
       let references = (await editorService.getReferencesForFeatureAtPosition(
           contentsPath, {line: 7, column: 3}))!;
-      let ranges = await underliner.underline(references);
+      let ranges = await underliner.underline([...references]);
       deepEqual(ranges, [
         `
   <anonymous-class one></anonymous-class>
@@ -279,7 +279,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
       references = (await editorService.getReferencesForFeatureAtPosition(
           contentsPath, {line: 8, column: 3}))!;
-      ranges = await underliner.underline(references);
+      ranges = await underliner.underline([...references]);
 
       deepEqual(ranges, [
         `
@@ -664,7 +664,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           warnings, <Warning[]>[{
             code: 'parse-error',
             severity: Severity.ERROR,
-            message: 'Unexpected token var',
+            message: `Unexpected keyword 'var'`,
             sourceRange: {file: 'editor-service/index.html'}
           }]);
       const underliner =
@@ -873,6 +873,7 @@ suite('RemoteEditorService', function() {
     }
   });
 });
+
 
 
 function expectJsonDeepEqual(actual: any, expected: any, message?: string) {

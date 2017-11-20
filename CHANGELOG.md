@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
+## Unreleased
+- Generate Code Actions for fixable warnings and warnings with edit actions.
+- Update to the latest version of the linter, with many new Polymer 2.0 and hybrid lint passes.
+<img src="https://user-images.githubusercontent.com/1659/32974665-cc51d1e2-cbb4-11e7-9a20-9162323cdab8.gif" alt="Code Actions" width="658" height="474">
+
 ## 1.5.0 - 2017-08-01
 
 - [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.

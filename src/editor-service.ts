@@ -120,7 +120,7 @@ export abstract class EditorService {
    */
   abstract async getReferencesForFeatureAtPosition(
       localPath: string,
-      position: SourcePosition): Promise<undefined|Array<SourceRange>>;
+      position: SourcePosition): Promise<undefined|ReadonlyArray<SourceRange>>;
 
   /**
    * Gives the location for the definition for a feature. For example, for a
@@ -141,12 +141,13 @@ export abstract class EditorService {
   /**
    * Gives all warnings, errors, info notices, etc for the given file.
    */
-  abstract async getWarningsForFile(localPath: string): Promise<Warning[]>;
+  abstract async getWarningsForFile(localPath: string):
+      Promise<ReadonlyArray<Warning>>;
 
   /**
    * Gives all warnings, errors, info notices, etc for the package as a whole.
    */
-  abstract async getWarningsForPackage(): Promise<Warning[]>;
+  abstract async getWarningsForPackage(): Promise<ReadonlyArray<Warning>>;
 
   /**
    * Internal method, do not call. May be removed in a future release.

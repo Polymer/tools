@@ -12,9 +12,10 @@
  */
 
 import * as path from 'path';
-import {Severity, SourcePosition, SourceRange} from 'polymer-analyzer';
-import {Diagnostic, DiagnosticSeverity, Position as LSPosition, Range as LSRange} from 'vscode-languageserver';
+import {Edit, Severity, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Diagnostic, DiagnosticSeverity, Position as LSPosition, Range as LSRange, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
+
 import {Warning} from '../editor-service';
 
 /**
@@ -41,7 +42,7 @@ export default class AnalyzerLSPConverter {
     return {
       code: warning.code,
       message: warning.message,
-      range: this.convertRange(warning.sourceRange),
+      range: this.convertPRangeToL(warning.sourceRange),
       source: 'polymer-ide',
       severity: this.convertSeverity(warning.severity),
     };
@@ -51,10 +52,19 @@ export default class AnalyzerLSPConverter {
     return {line, column};
   }
 
-  convertRange({start, end}: SourceRange): LSRange {
+  convertPRangeToL({start, end}: SourceRange): LSRange {
     return {
       start: {line: start.line, character: start.column},
       end: {line: end.line, character: end.column}
+    };
+  }
+
+  convertLRangeToP({start, end}: LSRange, document: {uri: string}):
+      SourceRange {
+    return {
+      start: {line: start.line, column: start.character},
+      end: {line: end.line, column: end.character},
+      file: this.getWorkspacePathToFile(document),
     };
   }
 
@@ -70,5 +80,20 @@ export default class AnalyzerLSPConverter {
         throw new Error(
             `This should never happen. Got a severity of ${severity}`);
     }
+  }
+
+  editToWorkspaceEdit(fix: Edit): WorkspaceEdit {
+    const edit: WorkspaceEdit = {changes: {}};
+    const changes = edit.changes!;
+    for (const replacement of fix) {
+      const uri = this.getUriForLocalPath(replacement.range.file);
+      if (!changes[uri]) {
+        changes[uri] = [];
+      }
+      changes[uri]!.push(TextEdit.replace(
+          this.convertPRangeToL(replacement.range),
+          replacement.replacementText));
+    }
+    return edit;
   }
 }
