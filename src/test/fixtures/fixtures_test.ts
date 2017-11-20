@@ -18,13 +18,13 @@ import * as diff from 'diff';
 import * as fs from 'mz/fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
+import {exec} from '../../util';
 
-import exec from '../util/exec';
+// TODO(fks): Add 'dir-compare' typings.
+const dircompare = require('dir-compare');
 
 // Install source map support for stack traces, etc.
 require('source-map-support').install();
-// TODO(fks): Add 'dir-compare' typings.
-const dircompare = require('dir-compare');
 
 const modulizerBinPath = path.resolve(__dirname, '../../../bin/modulizer.js');
 const packageFixturesDir =

@@ -16,6 +16,10 @@ import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
 import * as estree from 'estree';
 
+/**
+ * Replace all "this" identifiers to "window" identifiers. Detects and handles
+ * for strict vs. sloppy mode.
+ */
 export function rewriteToplevelThis(program: estree.Program) {
   let isStrictMode = false;
   astTypes.visit(program, {

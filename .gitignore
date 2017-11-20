@@ -26,10 +26,6 @@ coverage
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 
-# Bower dependency directory (https://bower.io/)
-# NOTE(fks) Disabled, Needed for fixtures/
-# bower_components
-
 # node-waf configuration
 .lock-wscript
 

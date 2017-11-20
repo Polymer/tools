@@ -15,16 +15,14 @@
 import {assert} from 'chai';
 import * as esprima from 'esprima';
 import * as estree from 'estree';
-import * as path from 'path';
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, UrlLoader, UrlResolver} from 'polymer-analyzer';
+import {Analyzer, InMemoryOverlayUrlLoader} from 'polymer-analyzer';
 
 import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
 import {getPackageDocuments} from '../../convert-package';
 import {ProjectConverter} from '../../project-converter';
 import {PackageUrlHandler} from '../../urls/package-url-handler';
 import {PackageType} from '../../urls/types';
-import {getMemberPath} from '../../util';
-
+import {getMemberPath} from '../../document-util';
 
 /*
 A few conventions in these tests:
@@ -154,7 +152,6 @@ suite('AnalysisConverter', () => {
       });
       // Warnings are non memoized, duplicates are expected
       const expectedWarnings = [
-        `WARN: bower->npm mapping for "dep" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
       ];
@@ -2422,23 +2419,6 @@ Polymer({
 })
 `,
         });
-      });
-    });
-
-  });
-
-  suite('fixtures', () => {
-
-    let urlResolver: UrlResolver;
-    let urlLoader: UrlLoader;
-    let analyzer: Analyzer;
-
-    setup(() => {
-      urlLoader = new FSUrlLoader(path.resolve(__dirname, '../../fixtures'));
-      urlResolver = new PackageUrlResolver();
-      analyzer = new Analyzer({
-        urlResolver,
-        urlLoader,
       });
     });
 

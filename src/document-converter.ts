@@ -16,7 +16,7 @@ import * as astTypes from 'ast-types';
 import {NodePath} from 'ast-types';
 import * as dom5 from 'dom5';
 import * as estree from 'estree';
-import {BlockStatement, Identifier, ImportDeclaration, MemberExpression, Node, Program} from 'estree';
+import {Identifier, Program} from 'estree';
 import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
 import * as parse5 from 'parse5';
@@ -25,17 +25,22 @@ import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, W
 import * as recast from 'recast';
 
 import {ConversionSettings} from './conversion-settings';
-import {ConversionResult, JsExport, NamespaceMemberToExport} from './js-module';
+import {attachCommentsToFirstStatement, canDomModuleBeInlined, collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, filterClone, findAvailableIdentifier, getCommentsBetween, getMemberPath, getNodePathInProgram, getPathOfAssignmentTo, getSetterName, insertStatementsIntoProgramBody, serializeNode, serializeNodeToTemplateLiteral} from './document-util';
+import {ConversionResult, JsExport} from './js-module';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
+import {rewriteExcludedReferences} from './passes/rewrite-excluded-references';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
+import {rewriteNamespacesThisReferences} from './passes/rewrite-namespace-this-references';
+import {rewriteReferencesToLocalExports} from './passes/rewrite-references-to-local-exports';
+import {rewriteReferencesToNamespaceMembers} from './passes/rewrite-references-to-namespace-members';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
 import {ProjectConverter} from './project-converter';
-import {ConvertedDocumentUrl, OriginalDocumentUrl, PackageType} from './urls/types';
+import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
-import {getDocumentUrl, getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, isOriginalDocumentUrlFormat, replaceHtmlExtensionIfFound} from './urls/util';
-import {findAvailableIdentifier, getMemberName, getMemberPath, getModuleId, getNodeGivenAnalyzerAstNode, nodeToTemplateLiteral, serializeNode} from './util';
+import {isOriginalDocumentUrlFormat} from './urls/util';
+import {getDocumentUrl, getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId, replaceHtmlExtensionIfFound} from './urls/util';
 
 /**
  * Keep a map of dangerous references to check for. Output the related warning
@@ -58,6 +63,39 @@ const generatedElementBlacklist = new Set<string|undefined>([
   'meta',
   'script',
 ]);
+
+const legacyJavascriptTypes: ReadonlySet<string|null> = new Set([
+  // lol
+  // https://dev.w3.org/html5/spec-preview/the-script-element.html#scriptingLanguages
+  null,
+  '',
+  'application/ecmascript',
+  'application/javascript',
+  'application/x-ecmascript',
+  'application/x-javascript',
+  'text/ecmascript',
+  'text/javascript',
+  'text/javascript1.0',
+  'text/javascript1.1',
+  'text/javascript1.2',
+  'text/javascript1.3',
+  'text/javascript1.4',
+  'text/javascript1.5',
+  'text/jscript',
+  'text/livescript',
+  'text/x-ecmascript',
+  'text/x-javascript',
+]);
+
+/**
+ * Detect legacy JavaScript "type" attributes.
+ */
+function isLegacyJavaScriptTag(scriptNode: parse5.ASTNode) {
+  if (scriptNode.tagName !== 'script') {
+    return false;
+  }
+  return legacyJavascriptTypes.has(dom5.getAttribute(scriptNode, 'type'));
+}
 
 /**
  * Pairs a subtree of an AST (`path` as a `NodePath`) to be replaced with a
@@ -83,7 +121,7 @@ function getImportDeclarations(
     specifierUrl: string,
     namedImports: Iterable<JsExport>,
     importReferences: ReadonlySet<ImportReference> = new Set(),
-    usedIdentifiers: Set<string> = new Set()): ImportDeclaration[] {
+    usedIdentifiers: Set<string> = new Set()): estree.ImportDeclaration[] {
   // A map from imports (as `JsExport`s) to their assigned specifier names.
   const assignedNames = new Map<JsExport, string>();
   // Find an unused identifier and mark it as used.
@@ -109,7 +147,7 @@ function getImportDeclarations(
             }
           });
 
-  const importDeclarations: ImportDeclaration[] = [];
+  const importDeclarations: estree.ImportDeclaration[] = [];
 
   // If a module namespace was referenced, create a new namespace import
   const namespaceImports =
@@ -163,8 +201,6 @@ export class DocumentConverter {
   private readonly urlHandler: UrlHandler;
   private readonly conversionSettings: ConversionSettings;
   private readonly document: Document;
-  private readonly packageName: string;
-  private readonly packageType: PackageType;
 
   // Dependencies not to convert, because they already have been / are currently
   // being converted.
@@ -179,8 +215,6 @@ export class DocumentConverter {
     this.urlHandler = projectConverter.urlHandler;
     this.document = document;
     this.originalUrl = getDocumentUrl(document);
-    this.packageName = this.urlHandler.getPackageNameForUrl(this.originalUrl);
-    this.packageType = this.urlHandler.getPackageTypeForUrl(this.originalUrl);
     this.convertedUrl = this.convertDocumentUrl(this.originalUrl);
     this.visited = visited;
   }
@@ -241,18 +275,12 @@ export class DocumentConverter {
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
             program, this.document, this.conversionSettings.namespaces);
-
-    for (const namespaceName of namespaceNames) {
-      this.rewriteNamespaceThisReferences(program, namespaceName);
-    }
-    this.rewriteExcludedReferences(program);
-    this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
-    this.rewriteReferencesToNamespaceMembers(
-        program,
-        new Set(IterableX.from(localNamespaceNames)
-                    .concat(
-                        namespaceNames,
-                        )));
+    const allNamespaceNames =
+        new Set([...localNamespaceNames, ...namespaceNames]);
+    rewriteNamespacesThisReferences(program, namespaceNames);
+    rewriteExcludedReferences(program, this.conversionSettings);
+    rewriteReferencesToLocalExports(program, exportMigrationRecords);
+    rewriteReferencesToNamespaceMembers(program, allNamespaceNames);
 
     this.warnOnDangerousReferences(program);
 
@@ -282,7 +310,7 @@ export class DocumentConverter {
     const edits: Array<Edit> = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
       const astNode = script.astNode;
-      if (!astNode || !isLegacyJavascriptTag(astNode)) {
+      if (!astNode || !isLegacyJavaScriptTag(astNode)) {
         continue;  // ignore unknown script tags and preexisting modules
       }
       const sourceRange = script.astNode ?
@@ -329,7 +357,7 @@ export class DocumentConverter {
           dom5.childNodesIncludeTemplate));
     }
     for (const astNode of scriptsToConvert) {
-      if (!isLegacyJavascriptTag(astNode)) {
+      if (!isLegacyJavaScriptTag(astNode)) {
         continue;
       }
       const sourceRange =
@@ -438,8 +466,15 @@ export class DocumentConverter {
     };
   }
 
-  private rewriteInlineScript(program: estree.Program) {
-    if (this.containsWriteToGlobalSettingsObject(program)) {
+  /**
+   * Rewrite an inline script that will exist inlined inside an HTML document.
+   * Should not be called on top-level JS Modules.
+   */
+  private rewriteInlineScript(program: Program) {
+    // Any code that sets the global settings object cannot be inlined (and
+    // deferred) because the settings object must be created/configured
+    // before other imports evaluate in following module scripts.
+    if (containsWriteToGlobalSettingsObject(program)) {
       return undefined;
     }
 
@@ -454,14 +489,13 @@ export class DocumentConverter {
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
             program, this.document, this.conversionSettings.namespaces);
-    for (const namespaceName of namespaceNames) {
-      this.rewriteNamespaceThisReferences(program, namespaceName);
-    }
-    this.rewriteExcludedReferences(program);
-    this.rewriteReferencesToLocalExports(program, exportMigrationRecords);
-    this.rewriteReferencesToNamespaceMembers(
-        program,
-        new Set(IterableX.from(localNamespaceNames).concat(namespaceNames)));
+    const allNamespaceNames =
+        new Set([...localNamespaceNames, ...namespaceNames]);
+    rewriteNamespacesThisReferences(program, namespaceNames);
+    rewriteExcludedReferences(program, this.conversionSettings);
+    rewriteReferencesToLocalExports(program, exportMigrationRecords);
+    rewriteReferencesToNamespaceMembers(program, allNamespaceNames);
+
     this.warnOnDangerousReferences(program);
 
     if (!wereImportsAdded) {
@@ -506,7 +540,7 @@ export class DocumentConverter {
           htmlDocument.sourceRangeForNode(tag)!);
       const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
                             .childNodes![0];
-      const program = jsc.program(this.getCodeToInsertDomNodes([tag]));
+      const program = jsc.program(createDomNodeInsertStatements([tag]));
       dom5.setTextContent(
           scriptTag,
           '\n' +
@@ -532,7 +566,7 @@ export class DocumentConverter {
       const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
                             .childNodes![0];
       const program =
-          jsc.program(this.getCodeToInsertDomNodes([bodyNode], true));
+          jsc.program(createDomNodeInsertStatements([bodyNode], true));
       dom5.setTextContent(
           scriptTag,
           '\n' +
@@ -548,36 +582,6 @@ export class DocumentConverter {
       }
       yield {offsets, replacementText};
     }
-  }
-
-  private containsWriteToGlobalSettingsObject(program: Program) {
-    let containsWriteToGlobalSettingsObject = false;
-    // Note that we look for writes to these objects exactly, not to writes to
-    // members of these objects.
-    const globalSettingsObjects =
-        new Set<string>(['Polymer', 'Polymer.Settings', 'ShadyDOM']);
-
-    function getNamespacedName(node: Node) {
-      if (node.type === 'Identifier') {
-        return node.name;
-      }
-      const memberPath = getMemberPath(node);
-      if (memberPath) {
-        return memberPath.join('.');
-      }
-      return undefined;
-    }
-    astTypes.visit(program, {
-      visitAssignmentExpression(path: NodePath<estree.AssignmentExpression>) {
-        const name = getNamespacedName(path.node.left);
-        if (globalSettingsObjects.has(name!)) {
-          containsWriteToGlobalSettingsObject = true;
-        }
-        return false;
-      },
-    });
-
-    return containsWriteToGlobalSettingsObject;
   }
 
   /**
@@ -608,71 +612,8 @@ export class DocumentConverter {
     if (genericElements.length === 0) {
       return;
     }
-    const statements = this.getCodeToInsertDomNodes(genericElements);
-    let insertionPoint = 0;
-    for (const [idx, statement] of enumerate(program.body)) {
-      insertionPoint = idx;
-      if (statement.type === 'ImportDeclaration') {
-        insertionPoint++;  // cover the case where the import is at the end
-        continue;
-      }
-      break;
-    }
-    program.body.splice(insertionPoint, 0, ...statements);
-  }
-
-  private getCodeToInsertDomNodes(
-      nodes: parse5.ASTNode[], activeInBody = false): estree.Statement[] {
-    const varName = `$_documentContainer`;
-    const fragment = {
-      nodeName: '#document-fragment',
-      attrs: [],
-      childNodes: nodes,
-    };
-    const templateValue = nodeToTemplateLiteral(fragment as any, false);
-
-    const createDiv = jsc.variableDeclaration('const', [
-      jsc.variableDeclarator(
-          jsc.identifier(varName),
-          jsc.callExpression(
-              jsc.memberExpression(
-                  jsc.identifier('document'), jsc.identifier('createElement')),
-              [jsc.literal('div')]))
-    ]);
-    if (activeInBody) {
-      return [
-        createDiv,
-        jsc.expressionStatement(jsc.assignmentExpression(
-            '=',
-            jsc.memberExpression(
-                jsc.identifier(varName), jsc.identifier('innerHTML')),
-            templateValue)),
-        jsc.expressionStatement(jsc.callExpression(
-            jsc.memberExpression(
-                jsc.memberExpression(
-                    jsc.identifier('document'), jsc.identifier('body')),
-                jsc.identifier('appendChild')),
-            [jsc.identifier(varName)]))
-      ];
-    }
-    return [
-      createDiv,
-      jsc.expressionStatement(jsc.callExpression(
-          jsc.memberExpression(
-              jsc.identifier(varName), jsc.identifier('setAttribute')),
-          [jsc.literal('style'), jsc.literal('display: none;')])),
-      jsc.expressionStatement(jsc.assignmentExpression(
-          '=',
-          jsc.memberExpression(
-              jsc.identifier(varName), jsc.identifier('innerHTML')),
-          templateValue)),
-      jsc.expressionStatement(jsc.callExpression(
-          jsc.memberExpression(
-              jsc.memberExpression(
-                  jsc.identifier('document'), jsc.identifier('head')),
-              jsc.identifier('appendChild')),
-          [jsc.identifier(varName)]))
-    ];
+    const statements = createDomNodeInsertStatements(genericElements);
+    insertStatementsIntoProgramBody(statements, program);
   }
 
   /**
@@ -695,7 +636,7 @@ export class DocumentConverter {
       if (domModule === undefined) {
         continue;
       }
-      if (!domModuleCanBeInlined(domModule)) {
+      if (!canDomModuleBeInlined(domModule)) {
         continue;
       }
       this._claimedDomModules.add(domModule);
@@ -704,11 +645,11 @@ export class DocumentConverter {
         continue;
       }
 
-      const templateLiteral = nodeToTemplateLiteral(
+      const templateLiteral = serializeNodeToTemplateLiteral(
           parse5.treeAdapters.default.getTemplateContent(template));
-      const node = getNodeGivenAnalyzerAstNode(program, element.astNode);
+      const nodePath = getNodePathInProgram(program, element.astNode);
 
-      if (node === undefined) {
+      if (nodePath === undefined) {
         console.warn(
             new Warning({
               code: 'not-found',
@@ -720,6 +661,7 @@ export class DocumentConverter {
         continue;
       }
 
+      const node = nodePath.node;
       if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
         // A Polymer 2.0 class-based element
         node.body.body.splice(
@@ -812,7 +754,7 @@ export class DocumentConverter {
         addToImportedReferences(exportOfMember, path);
         return false;
       },
-      visitMemberExpression(path: NodePath<MemberExpression>) {
+      visitMemberExpression(path: NodePath<estree.MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (!memberPath) {
           this.traverse(path);
@@ -852,51 +794,10 @@ export class DocumentConverter {
     return importedReferences;
   }
 
-  /**
-   * Rewrite references in _referenceExcludes and well known properties that
-   * don't work well in modular code.
-   */
-  private rewriteExcludedReferences(program: Program) {
-    const mapOfRewrites = new Map(this.conversionSettings.referenceRewrites);
-    for (const reference of this.conversionSettings.referenceExcludes) {
-      mapOfRewrites.set(reference, jsc.identifier('undefined'));
-    }
-
-    /**
-     * Rewrite the given path of the given member by `mapOfRewrites`.
-     *
-     * Never rewrite an assignment to assign to `undefined`.
-     */
-    const rewrite = (path: NodePath, memberName: string) => {
-      const replacement = mapOfRewrites.get(memberName);
-      if (replacement) {
-        if (replacement.type === 'Identifier' &&
-            replacement.name === 'undefined' && isAssigningTo(path)) {
-          /**
-           * If `path` is a name / pattern that's being written to, we don't
-           * want to rewrite it to `undefined`.
-           */
-          return;
-        }
-        path.replace(replacement);
-      }
-    };
-
-    astTypes.visit(program, {
-      visitMemberExpression(path: NodePath<MemberExpression>) {
-        const memberPath = getMemberPath(path.node);
-        if (memberPath !== undefined) {
-          rewrite(path, memberPath.join('.'));
-        }
-        this.traverse(path);
-      },
-    });
-  }
-
   private warnOnDangerousReferences(program: Program) {
     const originalUrl = this.originalUrl;
     astTypes.visit(program, {
-      visitMemberExpression(path: NodePath<MemberExpression>) {
+      visitMemberExpression(path: NodePath<estree.MemberExpression>) {
         const memberPath = getMemberPath(path.node);
         if (memberPath !== undefined) {
           const memberName = memberPath.join('.');
@@ -916,128 +817,6 @@ export class DocumentConverter {
         }
         this.traverse(path);
       }
-    });
-  }
-
-  /**
-   * Rewrites local references to a namespace member, ie:
-   *
-   * const NS = {
-   *   foo() {}
-   * }
-   * NS.foo();
-   *
-   * to:
-   *
-   * export foo() {}
-   * foo();
-   */
-  private rewriteReferencesToNamespaceMembers(
-      program: Program, namespaceNames: ReadonlySet<string>) {
-    astTypes.visit(program, {
-      visitMemberExpression(path: NodePath<MemberExpression>) {
-        const memberPath = getMemberPath(path.node);
-        if (memberPath) {
-          const namespace = memberPath.slice(0, -1).join('.');
-          if (namespaceNames.has(namespace)) {
-            path.replace(path.node.property);
-            return false;
-          }
-        }
-        // Keep looking, this MemberExpression could still contain the
-        // MemberExpression that we are looking for.
-        this.traverse(path);
-        return;
-      }
-    });
-  }
-
-  private rewriteReferencesToLocalExports(
-      program: estree.Program,
-      exportMigrationRecords: Iterable<NamespaceMemberToExport>) {
-    const rewriteMap = new Map<string|undefined, string>(
-        IterableX.from(exportMigrationRecords)
-            .filter((m) => m.es6ExportName !== '*')
-            .map(
-                (m) => [m.oldNamespacedName,
-                        m.es6ExportName] as [string, string]));
-    astTypes.visit(program, {
-      visitMemberExpression(path: NodePath<MemberExpression>) {
-        const memberName = getMemberName(path.node);
-        const newLocalName = rewriteMap.get(memberName);
-        if (newLocalName) {
-          path.replace(jsc.identifier(newLocalName));
-          return false;
-        }
-        this.traverse(path);
-        return;
-      }
-    });
-  }
-
-  /**
-   * Rewrite `this` references that refer to the namespace object. Replace
-   * with an explicit reference to the namespace. This simplifies the rest of
-   * our transform pipeline by letting it assume that all namespace references
-   * are explicit.
-   *
-   * NOTE(fks): References to the namespace object still need to be corrected
-   * after this step, so timing is important: Only run after exports have
-   * been created, but before all namespace references are corrected.
-   */
-  private rewriteNamespaceThisReferences(
-      program: Program, namespaceName?: string) {
-    if (namespaceName === undefined) {
-      return;
-    }
-    astTypes.visit(program, {
-      visitExportNamedDeclaration:
-          (path: NodePath<estree.ExportNamedDeclaration>) => {
-            if (path.node.declaration &&
-                path.node.declaration.type === 'FunctionDeclaration') {
-              this.rewriteSingleScopeThisReferences(
-                  path.node.declaration.body, namespaceName);
-            }
-            return false;
-          },
-      visitExportDefaultDeclaration:
-          (path: NodePath<estree.ExportDefaultDeclaration>) => {
-            if (path.node.declaration &&
-                path.node.declaration.type === 'FunctionDeclaration') {
-              this.rewriteSingleScopeThisReferences(
-                  path.node.declaration.body, namespaceName);
-            }
-            return false;
-          },
-    });
-  }
-
-  /**
-   * Rewrite `this` references to the explicit namespaceReference identifier
-   * within a single BlockStatement. Don't traverse deeper into new scopes.
-   */
-  private rewriteSingleScopeThisReferences(
-      blockStatement: BlockStatement, namespaceReference: string) {
-    astTypes.visit(blockStatement, {
-      visitThisExpression(path: NodePath<estree.ThisExpression>) {
-        path.replace(jsc.identifier(namespaceReference));
-        return false;
-      },
-
-      visitFunctionExpression(_path: NodePath<estree.FunctionExpression>) {
-        // Don't visit into new scopes
-        return false;
-      },
-      visitFunctionDeclaration(_path: NodePath<estree.FunctionDeclaration>) {
-        // Don't visit into new scopes
-        return false;
-      },
-      visitMethodDefinition(_path: NodePath) {
-        // Don't visit into new scopes
-        return false;
-      },
-      // Note: we do visit into ArrowFunctionExpressions because they
-      //     inherit the containing `this` context.
     });
   }
 
@@ -1177,276 +956,4 @@ export class DocumentConverter {
     // Return true if any imports were added, false otherwise
     return jsImportDeclarations.length > 0;
   }
-}
-
-function* enumerate<V>(iter: Iterable<V>): Iterable<[number, V]> {
-  let i = 0;
-  for (const val of iter) {
-    yield [i, val];
-    i++;
-  }
-}
-
-const legacyJavascriptTypes: ReadonlySet<string|null> = new Set([
-  // lol
-  // https://dev.w3.org/html5/spec-preview/the-script-element.html#scriptingLanguages
-  null,
-  '',
-  'application/ecmascript',
-  'application/javascript',
-  'application/x-ecmascript',
-  'application/x-javascript',
-  'text/ecmascript',
-  'text/javascript',
-  'text/javascript1.0',
-  'text/javascript1.1',
-  'text/javascript1.2',
-  'text/javascript1.3',
-  'text/javascript1.4',
-  'text/javascript1.5',
-  'text/jscript',
-  'text/livescript',
-  'text/x-ecmascript',
-  'text/x-javascript',
-]);
-function isLegacyJavascriptTag(scriptNode: parse5.ASTNode) {
-  if (scriptNode.tagName !== 'script') {
-    return false;
-  }
-  return legacyJavascriptTypes.has(dom5.getAttribute(scriptNode, 'type'));
-}
-
-/**
- * Returns true iff the given NodePath is assigned to in an assignment
- * expression in the following examples, `foo` is an Identifier that's assigned
- * to:
- *
- *    foo = 10;
- *    window.foo = 10;
- *
- * And in these examples `foo` is not:
- *
- *     bar = foo;
- *     foo();
- *     const foo = 10;
- *     this.foo = 10;
- */
-function isAssigningTo(path: NodePath): boolean {
-  return getPathOfAssignmentTo(path) !== undefined;
-}
-
-/**
- * Like isAssigningTo, but returns the NodePath of the assignment rather than
- * true, and undefined rather than false.
- */
-function getPathOfAssignmentTo(path: NodePath):
-    NodePath<estree.AssignmentExpression>|undefined {
-  if (!path.parent) {
-    return undefined;
-  }
-  const parentNode = path.parent.node;
-  if (parentNode.type === 'AssignmentExpression') {
-    if (parentNode.left === path.node) {
-      return path.parent as NodePath<estree.AssignmentExpression>;
-    }
-    return undefined;
-  }
-  if (parentNode.type === 'MemberExpression' &&
-      parentNode.property === path.node &&
-      parentNode.object.type === 'Identifier' &&
-      parentNode.object.name === 'window') {
-    return getPathOfAssignmentTo(path.parent);
-  }
-  return undefined;
-}
-
-/**
- * Give the name of the setter we should use to set the given memberPath. Does
- * not check to see if the setter exists, just returns the name it would have.
- * e.g.
- *
- *     ['Polymer', 'foo', 'bar']    =>    'Polymer.foo.setBar'
- */
-function getSetterName(memberPath: string[]): string {
-  const lastSegment = memberPath[memberPath.length - 1];
-  memberPath[memberPath.length - 1] =
-      `set${lastSegment.charAt(0).toUpperCase()}${lastSegment.slice(1)}`;
-  return memberPath.join('.');
-}
-
-function filterClone(
-    nodes: parse5.ASTNode[], filter: dom5.Predicate): parse5.ASTNode[] {
-  const clones = [];
-  for (const node of nodes) {
-    if (!filter(node)) {
-      continue;
-    }
-    const clone = dom5.cloneNode(node);
-    clones.push(clone);
-    if (node.childNodes) {
-      clone.childNodes = filterClone(node.childNodes, filter);
-    }
-  }
-  return clones;
-}
-
-/**
- * Finds all identifiers within the given program and creates a set of their
- * names (strings). Identifiers in the `ignored` argument set will not
- * contribute to the output set.
- */
-function collectIdentifierNames(
-    program: estree.Program, ignored: ReadonlySet<Identifier>): Set<string> {
-  const identifiers = new Set();
-  astTypes.visit(program, {
-    visitIdentifier(path: NodePath<Identifier>): (boolean | void) {
-      const node = path.node;
-
-      if (!ignored.has(node)) {
-        identifiers.add(path.node.name);
-      }
-
-      this.traverse(path);
-    },
-  });
-  return identifiers;
-}
-
-function domModuleCanBeInlined(domModule: parse5.ASTNode) {
-  if (domModule.attrs.some((a) => a.name !== 'id')) {
-    return false;  // attributes other than 'id' on dom-module
-  }
-  let templateTagsSeen = 0;
-  for (const node of domModule.childNodes || []) {
-    if (node.tagName === 'template') {
-      if (node.attrs.length > 0) {
-        return false;  // attributes on template
-      }
-      templateTagsSeen++;
-    } else if (node.tagName === 'script') {
-      // this is fine, scripts are handled elsewhere
-    } else if (
-        dom5.isTextNode(node) && dom5.getTextContent(node).trim() === '') {
-      // empty text nodes are fine
-    } else {
-      return false;  // anything else, we can't convert it
-    }
-  }
-  if (templateTagsSeen > 1) {
-    return false;  // more than one template tag, can't convert
-  }
-
-  return true;
-}
-
-/**
- * Yields all nodes inside the given node in top-down, first-to-last order.
- */
-function* nodesInside(node: parse5.ASTNode): Iterable<parse5.ASTNode> {
-  const childNodes = parse5.treeAdapters.default.getChildNodes(node);
-  if (childNodes === undefined) {
-    return;
-  }
-  for (const child of childNodes) {
-    yield child;
-    yield* nodesInside(child);
-  }
-}
-
-/**
- * Yields all nodes that come after the given node, including later siblings
- * of ancestors.
- */
-function* nodesAfter(node: parse5.ASTNode): Iterable<parse5.ASTNode> {
-  const parentNode = node.parentNode;
-  if (!parentNode) {
-    return;
-  }
-  const siblings = parse5.treeAdapters.default.getChildNodes(parentNode);
-  for (let i = siblings.indexOf(node) + 1; i < siblings.length; i++) {
-    const laterSibling = siblings[i];
-    yield laterSibling;
-    yield* nodesInside(laterSibling);
-  }
-  yield* nodesAfter(parentNode);
-}
-
-/**
- * Returns the text of all comments in the document between the two optional
- * points.
- *
- * If `from` is given, returns all comments after `from` in the document.
- * If `until` is given, returns all comments up to `until` in the document.
- */
-function getCommentsBetween(
-    document: parse5.ASTNode,
-    from: parse5.ASTNode|undefined,
-    until: parse5.ASTNode|undefined): string[] {
-  const nodesStart =
-      from === undefined ? nodesInside(document) : nodesAfter(from);
-  const nodesBetween =
-      IterableX.from(nodesStart).takeWhile((node) => node !== until);
-  const commentNodesBetween =
-      nodesBetween.filter((node) => dom5.isCommentNode(node));
-  const commentStringsBetween =
-      commentNodesBetween.map((node) => dom5.getTextContent(node));
-  const formattedCommentStringsBetween =
-      commentStringsBetween.map((commentText) => {
-        // If it looks like there might be jsdoc in the comment, start the
-        // comment with an extra * so that the js comment looks like a jsdoc
-        // comment.
-        if (/@\w+/.test(commentText)) {
-          return '*' + commentText;
-        }
-        return commentText;
-      });
-  return Array.from(formattedCommentStringsBetween);
-}
-
-/**
- * Given some comments, attach them to the first statement, if any, in the
- * given array of statements.
- *
- * If there is no first statement, one will be created.
- */
-function attachCommentsToFirstStatement(
-    comments: string[],
-    statements: Array<estree.Statement|estree.ModuleDeclaration>) {
-  if (comments.length === 0) {
-    return statements;
-  }
-  if (statements.length === 0) {
-    // Create the emptiest statement we can. This is serialized as just ';'
-    statements = [jsc.expressionStatement(jsc.identifier(''))];
-  }
-
-  // Ok, definitely is a first statement, and definitely are comments.
-  // Do the attach.
-
-  /** Recast represents comments differently than espree. */
-  interface RecastNode {
-    comments?: null|undefined|Array<RecastComment>;
-  }
-
-  interface RecastComment {
-    type: 'Line'|'Block';
-    leading: boolean;
-    trailing: boolean;
-    value: string;
-  }
-  const firstStatement: (estree.Statement|estree.ModuleDeclaration)&RecastNode =
-      statements[0]!;
-
-  const recastComments: RecastComment[] = comments.map((c) => {
-    return {
-      type: 'Block' as 'Block',
-      leading: true,
-      trailing: false,
-      value: c,
-    };
-  });
-  firstStatement.comments =
-      (firstStatement.comments || []).concat(recastComments);
-
-  return statements;
 }
