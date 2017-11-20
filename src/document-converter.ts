@@ -471,7 +471,6 @@ export class DocumentConverter {
    * Should not be called on top-level JS Modules.
    */
   private rewriteInlineScript(program: Program) {
-
     // Any code that sets the global settings object cannot be inlined (and
     // deferred) because the settings object must be created/configured
     // before other imports evaluate in following module scripts.
