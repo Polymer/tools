@@ -1,6 +1,6 @@
 {
   "name": "polymer-editor-service",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Static analysis for the web in your text editor!",
   "homepage": "https://github.com/Polymer/polymer-editor-service",
   "bugs": "https://github.com/Polymer/polymer-editor-service/issues",
