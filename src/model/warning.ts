@@ -102,7 +102,9 @@ export class Warning {
 
     result +=
         (`${this.sourceRange.file}` +
-         `(${this.sourceRange.start.line},${this.sourceRange.start.column}) ` +
+         `(${
+             this.sourceRange.start.line + 1
+           },${this.sourceRange.start.column + 1}) ` +
          `${severity} [${this.code}] - ${this.message}\n`);
 
     return result;
