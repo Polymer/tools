@@ -113,11 +113,23 @@ export class AnalysisCache {
   }
 
   toString() {
-    return `<AnalysisCache
-        scannedDocuments:
-            ${Array.from(this.scannedDocuments.keys()).join('\n            ')}
-        analyzedDocuments:
-            ${Array.from(this.analyzedDocuments.keys()).join('\n            ')}
-      >`;
+    let result = `<AnalysisCache`;
+    if (this.scannedDocuments.size > 0) {
+      result += `
+  scannedDocuments:
+    ${Array.from(this.scannedDocuments.keys()).join('\n    ')}`;
+    }
+    if (this.analyzedDocuments.size > 0) {
+      result += `
+  analyzedDocuments:
+    ${Array.from(this.analyzedDocuments.keys()).join('\n    ')}`;
+    }
+    if (this.failedDocuments.size > 0) {
+      result += `
+  failedDocuments:
+    ${Array.from(this.failedDocuments.keys()).join('\n    ')}`;
+    }
+    result += '>';
+    return result;
   }
 }
