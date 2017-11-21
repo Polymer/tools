@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <img src="https://user-images.githubusercontent.com/1659/32983803-946aabaa-cc4f-11e7-90ca-a63e8c437037.gif" width="821" height="588">
 
 - Added support for the command `polymer-ide/applyAllFixes`. This is a zero argument command that calls `workspace/applyEdit` with a `WorkspaceEdit` that applies all non-overlapping fixes for all fixable warnings in the package.
+- Warnings should now immediately be updated in response to any change, whether it happens in the editor or from external tools, like `bower install`.
+- Added `polymer-editor-service` as an npm binary, which speaks the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol) over stdin/stdout. This makes it easier to get started integrated the editor service into a new editor.
 
 - Warnings should now immediately be updated in response to any change, whether it happens in the editor or from external tools, like `bower install`.
 

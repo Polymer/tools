@@ -5,6 +5,9 @@
   "homepage": "https://github.com/Polymer/polymer-editor-service",
   "bugs": "https://github.com/Polymer/polymer-editor-service/issues",
   "license": "BSD-3-Clause",
+  "bin": {
+    "polymer-editor-service": "bin/polymer-editor-service.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Polymer/polymer-editor-service.git"
@@ -43,6 +46,7 @@
     "polymer-analyzer": "^2.7.0",
     "polymer-linter": "^2.2.1",
     "polymer-project-config": "^3.0.0",
+    "semver": "^5.4.1",
     "split": "^1.0.0",
     "vscode-languageserver": "^3.0.5",
     "vscode-uri": "^1.0.0",
