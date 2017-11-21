@@ -161,7 +161,8 @@ export class ProjectConfig {
    * read that file. If no file exists, null is returned. If the file exists
    * but there is a problem reading or parsing it, throw an exception.
    *
-   * TODO: make this method and the one below async.
+   * TODO: in the next major version we should make this method and the one
+   *     below async.
    */
   static loadOptionsFromFile(filepath: string): ProjectOptions|null {
     try {
@@ -211,6 +212,10 @@ export class ProjectConfig {
 
   /**
    * Returns a new ProjectConfig from the given JSON object if it's valid.
+   *
+   * TODO(rictic): For the next major version we should mark the constructor
+   * private, or perhaps make it validating. Also, we should standardize the
+   * naming scheme across the static methods on this class.
    *
    * Throws if the given JSON object is an invalid ProjectOptions.
    */
