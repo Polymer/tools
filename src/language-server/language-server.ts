@@ -12,20 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {applyEdits, Edit, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {applyEdits, Edit, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
 import AnalyzerLSPConverter from './converter';
+import DiagnosticGenerator from './diagnostics';
 import FileSynchronizer from './file-synchronizer';
-import Settings, {SettingsJson} from './settings';
-import {AutoDisposable, Change} from './util';
+import Settings from './settings';
+import {AutoDisposable} from './util';
 
 
 const applyEditCommandName = 'polymer-ide/applyEdit';
@@ -117,16 +118,15 @@ export default class LanguageServer extends AutoDisposable {
     });
 
     this._disposables.push(
-        this._settings.projectConfigChangeStream.listen(() => {
-          // Our lint rules may have changed. Report updated warnings.
-          this._reportWarnings();
-        }));
-
-    this._disposables.push(
         synchronizer.fileChanges.listen((filesChangeEvents) => {
           this.handleFilesChanged(filesChangeEvents);
         }));
     this.fileSynchronizer = synchronizer;
+
+    const diagnosticGenerator = new DiagnosticGenerator(
+        this._editorService.analyzer, this.converter, connection,
+        this._settings, synchronizer, this._documents);
+    this._disposables.push(diagnosticGenerator);
 
     this._initEventHandlers();
   }
@@ -158,16 +158,6 @@ export default class LanguageServer extends AutoDisposable {
   }
 
   private _initEventHandlers() {
-    this._disposables.push(this._documents.onDidClose(async(event) => {
-      if (!this._settings.analyzeWholePackage) {
-        // If the user hasn't asked for whole-package analysis then it's
-        // annoying to see warnings for files that aren't open, and in any
-        // case, we'll never update those diagnostics while the file is closed.
-        this._connection.sendDiagnostics(
-            {diagnostics: [], uri: event.document.uri});
-      }
-    }));
-
     this._connection.onHover(async(textPosition) => {
       return this.handleErrors(
           this.getDocsForHover(textPosition), undefined) as Promise<Hover>;
@@ -204,9 +194,6 @@ export default class LanguageServer extends AutoDisposable {
       }
       return [];
     });
-
-    this._disposables.push(this._settings.changeStream.listen(
-        (change) => this._handleSettingsChange(change)));
   }
 
   private async getCodeActions(req: CodeActionParams) {
@@ -377,7 +364,6 @@ export default class LanguageServer extends AutoDisposable {
     }
     // Clear the files from any caches and recalculate warnings as needed.
     await this._editorService.analyzer.filesChanged(paths);
-    await this._reportWarnings();
   }
 
   private async handleErrors<Result, Fallback>(
@@ -394,62 +380,6 @@ export default class LanguageServer extends AutoDisposable {
       }
       return fallbackValue;
     }
-  }
-
-  /**
-   * Used so that if we don't have any warnings to report for a file on the
-   * next go around we can remember to send an empty array.
-   */
-  private _urisReportedWarningsFor = new Set<string>();
-  private async _reportWarnings(): Promise<void> {
-    if (this._settings.analyzeWholePackage) {
-      const {warnings} = await this._editorService.getWarningsForPackage();
-      this._reportPackageWarnings(warnings);
-    } else {
-      for (const document of this._documents.all()) {
-        const localPath = this.converter.getWorkspacePathToFile(document);
-        const {warnings} =
-            await this._editorService.getWarningsForFile(localPath);
-        this._connection.sendDiagnostics({
-          diagnostics: warnings.map(
-              this.converter.convertWarningToDiagnostic, this.converter),
-          uri: document.uri
-        });
-      }
-    }
-  }
-
-  /**
-   * Report the given warnings for the package implicitly defined by the
-   * workspace.
-   *
-   * This is pulled out into its own non-async function to document and maintain
-   * the invariant that there must not be an await between the initial read of
-   * _urisReportedWarningsFor and the write of it at the end.
-   */
-  private _reportPackageWarnings(warnings: Iterable<Warning>) {
-    const reportedLastTime = new Set(this._urisReportedWarningsFor);
-    this._urisReportedWarningsFor = new Set<string>();
-    const diagnosticsByUri = new Map<string, Diagnostic[]>();
-    for (const warning of warnings) {
-      const uri = this.converter.getUriForLocalPath(warning.sourceRange.file);
-      reportedLastTime.delete(uri);
-      this._urisReportedWarningsFor.add(uri);
-      let diagnostics = diagnosticsByUri.get(uri);
-      if (!diagnostics) {
-        diagnostics = [];
-        diagnosticsByUri.set(uri, diagnostics);
-      }
-      diagnostics.push(this.converter.convertWarningToDiagnostic(warning));
-    }
-    for (const [uri, diagnostics] of diagnosticsByUri) {
-      this._connection.sendDiagnostics({uri, diagnostics});
-    }
-    for (const uriWithNoWarnings of reportedLastTime) {
-      this._connection.sendDiagnostics(
-          {uri: uriWithNoWarnings, diagnostics: []});
-    }
-    this._urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
   }
 
   private async fixOnSave(req: WillSaveTextDocumentParams):
@@ -480,23 +410,6 @@ export default class LanguageServer extends AutoDisposable {
       }
     }
     return textEdits;
-  }
-
-  private async _handleSettingsChange(change: Change<SettingsJson>) {
-    const {newer, older} = change;
-    if (newer.analyzeWholePackage !== older.analyzeWholePackage) {
-      // When we switch this setting we want to be sure that we'll clear out
-      // warnings that were reported with the old setting but not the new
-      // one.
-      if (newer.analyzeWholePackage) {
-        this._urisReportedWarningsFor = new Set(this._documents.keys());
-      } else {
-        for (const uri of this._urisReportedWarningsFor) {
-          this._connection.sendDiagnostics({uri, diagnostics: []});
-        }
-      }
-      this._reportWarnings();
-    }
   }
 }
 
