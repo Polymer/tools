@@ -202,11 +202,6 @@ export class ProjectConfig {
     if (result.errors.length > 0) {
       throw result.errors[0];
     }
-    if (result.throwError) {
-      throw new Error(
-          `An error was encountered while validating the ` +
-          `Polymer Project Config.`);
-    }
     return configJsonObject;
   }
 
