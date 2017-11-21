@@ -167,15 +167,7 @@ export class ProjectConfig {
     try {
       const configContent = fs.readFileSync(filepath, 'utf-8');
       const contents = JSON.parse(configContent);
-      const validator = new jsonschema.Validator();
-      const result = validator.validate(contents, getSchema());
-      if (result.throwError) {
-        throw result.throwError;
-      }
-      if (result.errors.length > 0) {
-        throw result.errors[0];
-      }
-      return contents;
+      return this.validateOptions(contents);
     } catch (error) {
       // swallow "not found" errors because they are so common / expected
       if (error && error.code === 'ENOENT') {
@@ -192,11 +184,39 @@ export class ProjectConfig {
    * return a new ProjectConfig instance created with those options.
    */
   static loadConfigFromFile(filepath: string): ProjectConfig|null {
-    let configParsed = ProjectConfig.loadOptionsFromFile(filepath);
+    const configParsed = ProjectConfig.loadOptionsFromFile(filepath);
     if (!configParsed) {
       return null;
     }
     return new ProjectConfig(configParsed);
+  }
+
+  /**
+   * Returns the given configJsonObject if it is a valid ProjectOptions object,
+   * otherwise throws an informative error message.
+   */
+  static validateOptions(configJsonObject: {}): ProjectOptions {
+    const validator = new jsonschema.Validator();
+    const result = validator.validate(configJsonObject, getSchema());
+    if (result.errors.length > 0) {
+      throw result.errors[0];
+    }
+    if (result.throwError) {
+      throw new Error(
+          `An error was encountered while validating the ` +
+          `Polymer Project Config.`);
+    }
+    return configJsonObject;
+  }
+
+  /**
+   * Returns a new ProjectConfig from the given JSON object if it's valid.
+   *
+   * Throws if the given JSON object is an invalid ProjectOptions.
+   */
+  static validateAndCreate(configJsonObject: {}) {
+    const options = this.validateOptions(configJsonObject);
+    return new this(options);
   }
 
   /**
