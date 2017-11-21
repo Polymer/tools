@@ -14,8 +14,11 @@
 
 import * as path from 'path';
 import {applyEdits, Edit, FSUrlLoader, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
+import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
+import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
+import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, DidChangeWatchedFilesParams, Disposable, FileChangeType, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, Warning} from '../editor-service';
@@ -84,8 +87,8 @@ export default class LanguageServer extends AutoDisposable {
       return new LanguageServer(connection, editorService, workspaceUri);
     }
 
-    // When we get an initialization request we want to construct a server from
-    // the given URI and return its capabilities.
+    // When we get an initialization request we want to construct a server and
+    // tell the client about its capabilities.
     const server = await new Promise<LanguageServer>((resolve, reject) => {
       connection.onInitialize((params): InitializeResult => {
         // Normalize across the two ways that the workspace may be
@@ -161,13 +164,24 @@ export default class LanguageServer extends AutoDisposable {
           this.handleChangedDocument(change.document), undefined);
     }));
 
-    this._disposables.push(this._documents.onDidClose((event) => {
+    this._disposables.push(this._documents.onDidClose(async(event) => {
       if (!this._settings.analyzeWholePackage) {
+        // If the user hasn't asked for whole-package analysis then it's
+        // annoying to see warnings for files that aren't open, and in any
+        // case, we'll never update those diagnostics while the file is closed.
         this._connection.sendDiagnostics(
             {diagnostics: [], uri: event.document.uri});
       }
-      // TODO(rictic): unmap event.document.uri from the in-memory map.
+
+      // Let the editor service know that the file on disk is now the canonical
+      // version.
+      await this._editorService.fileChanged(
+          this.converter.getWorkspacePathToFile(event.document), undefined);
     }));
+
+    this._connection.onDidChangeWatchedFiles(async(req) => {
+      this.handleWatchedFilesChanged(req);
+    });
 
     this._connection.onHover(async(textPosition) => {
       return this.handleErrors(
@@ -347,6 +361,53 @@ export default class LanguageServer extends AutoDisposable {
   async handleChangedDocument(document: TextDocument) {
     const localPath = this.converter.getWorkspacePathToFile(document);
     await this._editorService.fileChanged(localPath, document.getText());
+    await this._reportWarnings();
+  }
+
+  async handleWatchedFilesChanged(req: DidChangeWatchedFilesParams) {
+    // We handle open file changes in `handleChangedDocument`, so we
+    // can filter them out here.
+    const openedFileUris = new Set(this._documents.keys());
+    const changesToUnopenedFiles =
+        req.changes.filter((change) => !openedFileUris.has(change.uri));
+    const paths = changesToUnopenedFiles.map(
+        change => this.converter.getWorkspacePathToFile(change));
+    if (paths.length === 0) {
+      return;  // no new information in this notification
+    }
+    const deletions =
+        changesToUnopenedFiles
+            .filter((change) => change.type === FileChangeType.Deleted)
+            .map((change) => this.converter.getWorkspacePathToFile(change));
+    if (deletions.length > 0) {
+      // When a directory is deleted we may not be told about individual
+      // files, we'll have to determine the tracked files ourselves.
+      // This involves mucking around in private implementation details of
+      // the analyzer, so we wrap this in a try/catch.
+      // Analyzer issue for a supported API:
+      // https://github.com/Polymer/polymer-analyzer/issues/761
+      try {
+        const context: AnalysisContext =
+            await this._editorService.analyzer['_analysisComplete'];
+        const cache: AnalysisCache = context['_cache'];
+        const cachedPaths = new Set<ResolvedUrl>([
+          ...cache.failedDocuments.keys(),
+          ...cache.parsedDocumentPromises['_keyToResultMap'].keys()
+        ]);
+        for (const deletedPath of deletions) {
+          const deletedDir = deletedPath + '/';
+          for (const cachedPath of cachedPaths) {
+            if (cachedPath.startsWith(deletedDir)) {
+              paths.push(cachedPath);
+            }
+          }
+        }
+      } catch {
+        // Mucking about in analyzer internals on a best effort basis here.
+      }
+    }
+    // Clear the files from any caches and recalculate warnings as needed.
+    await this._editorService.analyzer.filesChanged(paths);
     await this._reportWarnings();
   }
 
