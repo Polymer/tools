@@ -13,9 +13,9 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, AnalyzerOptions, Attribute, Document, Element, InMemoryOverlayUrlLoader, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Analyzer, AnalyzerOptions, Attribute, Document, Element, InMemoryOverlayUrlLoader, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
-import {Linter, registry, Rule} from 'polymer-linter';
+import {Linter, LintResult, registry, Rule} from 'polymer-linter';
 import {ProjectConfig} from 'polymer-project-config';
 
 import {AstLocation, getAstLocationForPosition} from './ast-from-source-position';
@@ -32,13 +32,13 @@ export interface Options extends AnalyzerOptions { polymerJsonPath?: string; }
  * another process.
  */
 export class LocalEditorService extends EditorService {
-  private readonly _analyzer: Analyzer;
-  private readonly _linter: Linter;
+  readonly analyzer: Analyzer;
+  readonly linter: Linter;
   private readonly overlay: InMemoryOverlayUrlLoader;
   constructor(options: Options) {
     super();
     this.overlay = new InMemoryOverlayUrlLoader(options.urlLoader);
-    this._analyzer =
+    this.analyzer =
         new Analyzer(Object.assign({}, options, {urlLoader: this.overlay}));
     // TODO(rictic): watch for changes of polymer.json
     let rules: Set<Rule> = new Set();
@@ -57,7 +57,7 @@ export class LocalEditorService extends EditorService {
         }
       }
     }
-    this._linter = new Linter(rules, this._analyzer);
+    this.linter = new Linter(rules, this.analyzer);
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<void> {
@@ -66,7 +66,7 @@ export class LocalEditorService extends EditorService {
     } else {
       this.overlay.urlContentsMap.set(localPath, contents);
     }
-    await this._analyzer.filesChanged([localPath]);
+    await this.analyzer.filesChanged([localPath]);
   }
 
   async getDocumentationAtPosition(localPath: string, position: SourcePosition):
@@ -102,7 +102,7 @@ export class LocalEditorService extends EditorService {
   async getReferencesForFeatureAtPosition(
       localPath: string,
       position: SourcePosition): Promise<SourceRange[]|undefined> {
-    const analysis = await this._analyzer.analyze([localPath]);
+    const analysis = await this.analyzer.analyze([localPath]);
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return;
@@ -126,7 +126,7 @@ export class LocalEditorService extends EditorService {
   async getTypeaheadCompletionsAtPosition(
       localPath: string,
       position: SourcePosition): Promise<TypeaheadCompletion|undefined> {
-    const analysis = await this._analyzer.analyze([localPath]);
+    const analysis = await this.analyzer.analyze([localPath]);
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return;
@@ -330,16 +330,16 @@ export class LocalEditorService extends EditorService {
     }
   }
 
-  async getWarningsForFile(localPath: string): Promise<ReadonlyArray<Warning>> {
-    return this._linter.lint([localPath]);
+  async getWarningsForFile(localPath: string): Promise<LintResult> {
+    return this.linter.lint([localPath]);
   }
 
-  async getWarningsForPackage(): Promise<ReadonlyArray<Warning>> {
-    return this._linter.lintPackage();
+  async getWarningsForPackage(): Promise<LintResult> {
+    return this.linter.lintPackage();
   }
 
   async _clearCaches() {
-    this._analyzer.clearCaches();
+    this.analyzer.clearCaches();
   }
 
   /**
@@ -348,7 +348,7 @@ export class LocalEditorService extends EditorService {
    */
   private async _getFeatureAt(localPath: string, position: SourcePosition):
       Promise<Element|Property|Attribute|DatabindingFeature|undefined> {
-    const analysis = await this._analyzer.analyze([localPath]);
+    const analysis = await this.analyzer.analyze([localPath]);
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return;

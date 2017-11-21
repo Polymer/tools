@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update to the latest version of the linter, with many new Polymer 2.0 and hybrid lint passes.
 <img src="https://user-images.githubusercontent.com/1659/32974665-cc51d1e2-cbb4-11e7-9a20-9162323cdab8.gif" alt="Code Actions" width="658" height="474">
 
+- Added a setting `polymer-ide.fixOnSave` that, when true, causes all warnings in the current file to be fixed whenever that file is saved.
+<img src="https://user-images.githubusercontent.com/1659/32983803-946aabaa-cc4f-11e7-90ca-a63e8c437037.gif" width="821" height="588">
+
+- Added support for the command `polymer-ide/applyAllFixes`. This is a zero argument command that calls `workspace/applyEdit` with a `WorkspaceEdit` that applies all non-overlapping fixes for all fixable warnings in the package.
+
 ## 1.5.0 - 2017-08-01
 
 - [BREAKING] Dropped support for node v4, added support for node v8. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for details.

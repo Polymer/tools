@@ -83,16 +83,22 @@ export default class AnalyzerLSPConverter {
   }
 
   editToWorkspaceEdit(fix: Edit): WorkspaceEdit {
+    return this.editsToWorkspaceEdit([fix]);
+  }
+
+  editsToWorkspaceEdit(edits: Iterable<Edit>): WorkspaceEdit {
     const edit: WorkspaceEdit = {changes: {}};
     const changes = edit.changes!;
-    for (const replacement of fix) {
-      const uri = this.getUriForLocalPath(replacement.range.file);
-      if (!changes[uri]) {
-        changes[uri] = [];
+    for (const polymerEdit of edits) {
+      for (const replacement of polymerEdit) {
+        const uri = this.getUriForLocalPath(replacement.range.file);
+        if (!changes[uri]) {
+          changes[uri] = [];
+        }
+        changes[uri]!.push(TextEdit.replace(
+            this.convertPRangeToL(replacement.range),
+            replacement.replacementText));
       }
-      changes[uri]!.push(TextEdit.replace(
-          this.convertPRangeToL(replacement.range),
-          replacement.replacementText));
     }
     return edit;
   }

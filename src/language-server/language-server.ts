@@ -13,9 +13,9 @@
  */
 
 import * as path from 'path';
-import {Edit, FSUrlLoader, isPositionInsideRange, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
+import {applyEdits, Edit, FSUrlLoader, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, WorkspaceEdit} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, Disposable, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, Warning} from '../editor-service';
@@ -42,11 +42,14 @@ interface SettingsWrapper {
 
 interface Settings {
   analyzeWholePackage: boolean;
+  fixOnSave: boolean;
 }
 const defaultSettings: Readonly<Settings> =
-    Object.freeze({analyzeWholePackage: false});
+    Object.freeze({analyzeWholePackage: false, fixOnSave: false});
 
-const applyEditCommandName: string = 'polymer-ide/applyEdit';
+const applyEditCommandName = 'polymer-ide/applyEdit';
+
+const applyAllFixesCommandName: string = 'polymer-ide/applyAllFixes';
 
 export default class LanguageServer extends AutoDisposable {
   readonly converter: AnalyzerLSPConverter;
@@ -129,7 +132,11 @@ export default class LanguageServer extends AutoDisposable {
 
   capabilities(clientCapabilities: ClientCapabilities): ServerCapabilities {
     const ourCapabilities: ServerCapabilities = {
-      textDocumentSync: this._documents.syncKind,
+      textDocumentSync: {
+        change: this._documents.syncKind,
+        openClose: true,
+        willSaveWaitUntil: true
+      },
       completionProvider: {resolveProvider: false},
       hoverProvider: true,
       definitionProvider: true,
@@ -142,7 +149,7 @@ export default class LanguageServer extends AutoDisposable {
     if (clientCapabilities.workspace &&
         clientCapabilities.workspace.applyEdit) {
       ourCapabilities.executeCommandProvider = {
-        commands: ['polymer-ide/applyEdit']
+        commands: [applyEditCommandName, applyAllFixesCommandName]
       };
     }
     return ourCapabilities;
@@ -181,7 +188,7 @@ export default class LanguageServer extends AutoDisposable {
       const settingsWrapper = <SettingsWrapper|undefined>change.settings;
       const settings = settingsWrapper && settingsWrapper['polymer-ide'] || {};
       const previousSettings = this._settings;
-      this._settings = Object.assign({}, defaultSettings, settings);
+      this._settings = {...defaultSettings, ...settings};
       this._settingsChanged(this._settings, previousSettings);
     });
 
@@ -195,6 +202,16 @@ export default class LanguageServer extends AutoDisposable {
             this.executeApplyEditCommand(req.arguments as [WorkspaceEdit]),
             undefined);
       }
+      if (req.command === applyAllFixesCommandName) {
+        return this.handleErrors(this.executeApplyAllFixesCommand(), undefined);
+      }
+    });
+
+    this._connection.onWillSaveTextDocumentWaitUntil((req) => {
+      if (this._settings.fixOnSave) {
+        return this.handleErrors(this.fixOnSave(req), []);
+      }
+      return [];
     });
   }
 
@@ -234,11 +251,29 @@ export default class LanguageServer extends AutoDisposable {
   }
 
   private async executeApplyEditCommand(args: [WorkspaceEdit]) {
-    const params: ApplyWorkspaceEditParams = {edit: args[0]};
-    const result = (await this._connection.sendRequest(
+    await this.applyEdits(args[0]);
+  }
+
+  private async executeApplyAllFixesCommand() {
+    const warnings = await this._editorService.getWarningsForPackage();
+    const fixes = [];
+    for (const warning of warnings) {
+      if (warning.fix) {
+        fixes.push(warning.fix);
+      }
+    }
+    // Don't apply conflicting edits to the workspace.
+    const parseLoader =
+        makeParseLoader(this._editorService.analyzer, warnings.analysis);
+    const {appliedEdits} = await applyEdits(fixes, parseLoader);
+    await this.applyEdits(this.converter.editsToWorkspaceEdit(appliedEdits));
+  }
+
+  private async applyEdits(workspaceEdit: WorkspaceEdit) {
+    const params: ApplyWorkspaceEditParams = {edit: workspaceEdit};
+    return (await this._connection.sendRequest(
         ApplyWorkspaceEditRequest.type.method,
         params)) as ApplyWorkspaceEditResponse;
-    this._connection.console.log(`Applied edits: ${result.applied}`);
   }
 
   private createApplyEditCommand(title: string, edit: Edit): Command {
@@ -385,6 +420,36 @@ export default class LanguageServer extends AutoDisposable {
           {uri: uriWithNoWarnings, diagnostics: []});
     }
     this._urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
+  }
+
+  private async fixOnSave(req: WillSaveTextDocumentParams):
+      Promise<TextEdit[]> {
+    const path = this.converter.getWorkspacePathToFile(req.textDocument);
+    const warnings = await this._editorService.getWarningsForFile(path);
+    const edits: Edit[] = [];
+    for (const warning of warnings) {
+      if (!warning.fix) {
+        continue;
+      }
+      // A fix can touch multiple files. We can only update this document
+      // though, so skip any fixes that touch others.
+      if (warning.fix.some(repl => repl.range.file !== path)) {
+        continue;
+      }
+      edits.push(warning.fix);
+    }
+    const {appliedEdits} = await applyEdits(
+        edits,
+        makeParseLoader(this._editorService.analyzer, warnings.analysis));
+    const textEdits: TextEdit[] = [];
+    for (const appliedEdit of appliedEdits) {
+      for (const replacement of appliedEdit) {
+        textEdits.push(TextEdit.replace(
+            this.converter.convertPRangeToL(replacement.range),
+            replacement.replacementText));
+      }
+    }
+    return textEdits;
   }
 
   private _settingsChanged(newer: Settings, older: Settings) {
