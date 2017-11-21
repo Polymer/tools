@@ -15,6 +15,7 @@
     "fast-levenshtein": "^2.0.6",
     "parse5": "^2.2.1",
     "polymer-analyzer": "^2.7.0",
+    "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",
     "strip-indent": "^2.0.0"
   },

@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- Add an explicit dependency on shady-css-parser. This fixes a bug where it is not always found, despite being a dependency of polymer-analyzer.
 
 ## [2.3.0] - 2017-11-20
 - Adds the `paper-toolbar-v1-to-v2` rule, which helps upgrade uses of paper-toolbar from v1 to v2 (hybrid) by adding slots to children where appropriate.
