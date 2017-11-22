@@ -18,36 +18,16 @@ import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, DidChangeWatchedFilesParams, Disposable, FileChangeType, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, DidChangeWatchedFilesParams, FileChangeType, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {hookUpRemoteConsole} from '../intercept-logs';
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
 import AnalyzerLSPConverter from './converter';
+import Settings, {SettingsJson} from './settings';
+import {AutoDisposable, Change} from './util';
 
-
-export class AutoDisposable implements Disposable {
-  dispose(): void {
-    for (const disposable of this._disposables) {
-      disposable.dispose();
-    }
-  }
-
-  protected readonly _disposables: Disposable[] = [];
-}
-
-
-interface SettingsWrapper {
-  'polymer-ide'?: Partial<Settings>;
-}
-
-interface Settings {
-  analyzeWholePackage: boolean;
-  fixOnSave: boolean;
-}
-const defaultSettings: Readonly<Settings> =
-    Object.freeze({analyzeWholePackage: false, fixOnSave: false});
 
 const applyEditCommandName = 'polymer-ide/applyEdit';
 
@@ -60,7 +40,7 @@ export default class LanguageServer extends AutoDisposable {
 
   private readonly _documents: TextDocuments;
 
-  private _settings: Settings = defaultSettings;
+  private _settings: Settings;
 
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(connection: IConnection):
@@ -121,6 +101,8 @@ export default class LanguageServer extends AutoDisposable {
     super();
     this._disposables.push(connection);
     this._connection = connection;
+    this._settings = new Settings(connection);
+    this._disposables.push(this._settings);
     this._editorService = editorService;
 
     // TODO(rictic): try out implementing an incrementally synced version of
@@ -197,14 +179,6 @@ export default class LanguageServer extends AutoDisposable {
           this.autoComplete(textPosition), {isIncomplete: true, items: []});
     });
 
-    this._connection.onDidChangeConfiguration((change) => {
-      const settingsWrapper = <SettingsWrapper|undefined>change.settings;
-      const settings = settingsWrapper && settingsWrapper['polymer-ide'] || {};
-      const previousSettings = this._settings;
-      this._settings = {...defaultSettings, ...settings};
-      this._settingsChanged(this._settings, previousSettings);
-    });
-
     this._connection.onCodeAction(async(req) => {
       return this.handleErrors(this.getCodeActions(req), []);
     });
@@ -226,6 +200,9 @@ export default class LanguageServer extends AutoDisposable {
       }
       return [];
     });
+
+    this._disposables.push(this._settings.changeStream.listen(
+        (change) => this._handleSettingsChange(change)));
   }
 
   private async getCodeActions(req: CodeActionParams) {
@@ -512,10 +489,12 @@ export default class LanguageServer extends AutoDisposable {
     return textEdits;
   }
 
-  private _settingsChanged(newer: Settings, older: Settings) {
+  private async _handleSettingsChange(change: Change<SettingsJson>) {
+    const {newer, older} = change;
     if (newer.analyzeWholePackage !== older.analyzeWholePackage) {
       // When we switch this setting we want to be sure that we'll clear out
-      // warnings that were reported with the old setting but not the new one.
+      // warnings that were reported with the old setting but not the new
+      // one.
       if (newer.analyzeWholePackage) {
         this._urisReportedWarningsFor = new Set(this._documents.keys());
       } else {
@@ -527,7 +506,6 @@ export default class LanguageServer extends AutoDisposable {
     }
   }
 }
-
 
 function attributeCompletionToCompletionItem(
     attrCompletion: AttributeCompletion) {
