@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+- Removes our proprietary protocol in favor of unifying on the Language Server Protocol. Using the standard protocol lets us support more editors with less code.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.
@@ -24,8 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for the command `polymer-ide/applyAllFixes`. This is a zero argument command that calls `workspace/applyEdit` with a `WorkspaceEdit` that applies all non-overlapping fixes for all fixable warnings in the package.
 - Warnings should now immediately be updated in response to any change, whether it happens in the editor or from external tools, like `bower install`.
 - Added `polymer-editor-service` as an npm binary, which speaks the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol) over stdin/stdout. This makes it easier to get started integrated the editor service into a new editor.
-
-- Warnings should now immediately be updated in response to any change, whether it happens in the editor or from external tools, like `bower install`.
 
 ## 1.5.0 - 2017-08-01
 

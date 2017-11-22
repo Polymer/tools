@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {applyEdits, Edit, FSUrlLoader, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
+import {applyEdits, Edit, FSUrlLoader, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, Warning, WarningCarryingException} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
@@ -21,9 +21,8 @@ import * as util from 'util';
 import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, DidChangeWatchedFilesParams, Disposable, FileChangeType, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {AttributeCompletion, Warning} from '../editor-service';
 import {hookUpRemoteConsole} from '../intercept-logs';
-import {LocalEditorService} from '../local-editor-service';
+import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
 import AnalyzerLSPConverter from './converter';
 
@@ -236,7 +235,7 @@ export default class LanguageServer extends AutoDisposable {
       // so we can early-exit in the case where there aren't any.
       return commands;
     }
-    const warnings = await this._editorService.getWarningsForFile(
+    const {warnings} = await this._editorService.getWarningsForFile(
         this.converter.getWorkspacePathToFile(req.textDocument));
     const requestedRange =
         this.converter.convertLRangeToP(req.range, req.textDocument);
@@ -269,7 +268,8 @@ export default class LanguageServer extends AutoDisposable {
   }
 
   private async executeApplyAllFixesCommand() {
-    const warnings = await this._editorService.getWarningsForPackage();
+    const {warnings, analysis} =
+        await this._editorService.getWarningsForPackage();
     const fixes = [];
     for (const warning of warnings) {
       if (warning.fix) {
@@ -277,8 +277,7 @@ export default class LanguageServer extends AutoDisposable {
       }
     }
     // Don't apply conflicting edits to the workspace.
-    const parseLoader =
-        makeParseLoader(this._editorService.analyzer, warnings.analysis);
+    const parseLoader = makeParseLoader(this._editorService.analyzer, analysis);
     const {appliedEdits} = await applyEdits(fixes, parseLoader);
     await this.applyEdits(this.converter.editsToWorkspaceEdit(appliedEdits));
   }
@@ -434,12 +433,12 @@ export default class LanguageServer extends AutoDisposable {
   private _urisReportedWarningsFor = new Set<string>();
   private async _reportWarnings(): Promise<void> {
     if (this._settings.analyzeWholePackage) {
-      this._reportPackageWarnings(
-          await this._editorService.getWarningsForPackage());
+      const {warnings} = await this._editorService.getWarningsForPackage();
+      this._reportPackageWarnings(warnings);
     } else {
       for (const document of this._documents.all()) {
         const localPath = this.converter.getWorkspacePathToFile(document);
-        const warnings =
+        const {warnings} =
             await this._editorService.getWarningsForFile(localPath);
         this._connection.sendDiagnostics({
           diagnostics: warnings.map(
@@ -486,7 +485,8 @@ export default class LanguageServer extends AutoDisposable {
   private async fixOnSave(req: WillSaveTextDocumentParams):
       Promise<TextEdit[]> {
     const path = this.converter.getWorkspacePathToFile(req.textDocument);
-    const warnings = await this._editorService.getWarningsForFile(path);
+    const {warnings, analysis} =
+        await this._editorService.getWarningsForFile(path);
     const edits: Edit[] = [];
     for (const warning of warnings) {
       if (!warning.fix) {
@@ -500,8 +500,7 @@ export default class LanguageServer extends AutoDisposable {
       edits.push(warning.fix);
     }
     const {appliedEdits} = await applyEdits(
-        edits,
-        makeParseLoader(this._editorService.analyzer, warnings.analysis));
+        edits, makeParseLoader(this._editorService.analyzer, analysis));
     const textEdits: TextEdit[] = [];
     for (const appliedEdit of appliedEdits) {
       for (const replacement of appliedEdit) {

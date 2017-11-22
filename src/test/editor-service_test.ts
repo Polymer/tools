@@ -19,9 +19,7 @@ import * as path from 'path';
 import {FSUrlLoader, PackageUrlResolver, Severity, UrlLoader, Warning} from 'polymer-analyzer';
 import {CodeUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 
-import {AttributesCompletion, EditorService, ElementCompletion} from '../editor-service';
-import {LocalEditorService} from '../local-editor-service';
-import {RemoteEditorService} from '../remote-editor-service';
+import {AttributesCompletion, ElementCompletion, LocalEditorService} from '../local-editor-service';
 
 chai.use(require('chai-subset'));
 
@@ -40,7 +38,7 @@ function singleFileLoader(
   };
 }
 
-function editorTests(editorFactory: (basedir: string) => EditorService) {
+suite('editorService', () => {
   const basedir = path.join(__dirname, 'static');
   const indexFile = path.join('editor-service', 'index.html');
 
@@ -189,9 +187,12 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
   };
   const indexContents = fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
 
-  let editorService: EditorService;
+  let editorService: LocalEditorService;
   setup(async() => {
-    editorService = editorFactory(basedir);
+    editorService = new LocalEditorService({
+      urlLoader: new FSUrlLoader(basedir),
+      urlResolver: new PackageUrlResolver()
+    });
   });
 
   suite('getDocumentationAtPosition', function() {
@@ -268,7 +269,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       let references = (await editorService.getReferencesForFeatureAtPosition(
           contentsPath, {line: 7, column: 3}))!;
       let ranges = await underliner.underline([...references]);
-      deepEqual(ranges, [
+      assert.deepEqual(ranges, [
         `
   <anonymous-class one></anonymous-class>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
@@ -281,7 +282,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           contentsPath, {line: 8, column: 3}))!;
       ranges = await underliner.underline([...references]);
 
-      deepEqual(ranges, [
+      assert.deepEqual(ranges, [
         `
   <simple-element one></simple-element>
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
@@ -299,7 +300,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             `an element from its tag`,
         async() => {
           await editorService.fileChanged(indexFile, indexContents);
-          deepEqual(
+          assert.deepEqual(
               await editorService.getDefinitionForFeatureAtPosition(
                   indexFile, tagPosition),
               {
@@ -311,7 +312,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test('it supports getting the definition of a local attribute', async() => {
       await editorService.fileChanged(indexFile, indexContents);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getDefinitionForFeatureAtPosition(
               indexFile, localAttributePosition),
           {
@@ -326,7 +327,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             'defined in a behavior',
         async() => {
           await editorService.fileChanged(indexFile, indexContents);
-          deepEqual(
+          assert.deepEqual(
               await editorService.getDefinitionForFeatureAtPosition(
                   indexFile, deepAttributePosition),
               {
@@ -342,7 +343,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test('Get element completions for an empty text region.', async() => {
       await editorService.fileChanged(indexFile, `\n${indexContents}`);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, {line: 0, column: 0}),
           emptyStartElementTypeahead);
@@ -350,7 +351,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test('Get element completions for a start tag.', async() => {
       await editorService.fileChanged(indexFile, indexContents);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, tagPosition),
           elementTypeahead);
@@ -361,7 +362,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const incompleteText = `<behav>`;
       editorService.fileChanged(
           indexFile, `${incompleteText}\n${indexContents}`);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, {line: 0, column: incompleteText.length - 2}),
           elementTypeahead);
@@ -369,7 +370,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test('Get element completions for the end of a tag', async() => {
       await editorService.fileChanged(indexFile, indexContents);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, tagPositionEnd),
           elementTypeahead);
@@ -379,7 +380,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         'Get attribute completions when editing an existing attribute';
     test(testName, async() => {
       await editorService.fileChanged(indexFile, indexContents);
-      deepEqual(
+      assert.deepEqual(
           (await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition)),
           attributeTypeahead);
@@ -395,7 +396,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       for (const partial of partialContents) {
         await editorService.fileChanged(
             indexFile, `${partial}\n${indexContents}`);
-        deepEqual(
+        assert.deepEqual(
             await editorService.getTypeaheadCompletionsAtPosition(indexFile, {
               line: 0,
               column: 20 /* after the space after the element name */
@@ -410,7 +411,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const testContents =
           fs.readFileSync(path.join(basedir, testFile), 'utf-8');
       await editorService.fileChanged(testFile, testContents);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(testFile, {
             line: 4,
             column: 49 /* after the space after the element name */
@@ -443,7 +444,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const testContents =
           fs.readFileSync(path.join(basedir, testFile), 'utf-8');
       await editorService.fileChanged(testFile, testContents);
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(testFile, {
             line: 4,
             column: 71 /* after the space after the element name */
@@ -478,7 +479,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           const testContents =
               fs.readFileSync(path.join(basedir, testFile), 'utf-8');
           await editorService.fileChanged(testFile, testContents);
-          deepEqual(
+          assert.deepEqual(
               await editorService.getTypeaheadCompletionsAtPosition(testFile, {
                 line: 4,
                 column: 91 /* after the space after the element name */
@@ -511,7 +512,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       await editorService.fileChanged(
           slotFile, fs.readFileSync(path.join(basedir, slotFile), 'utf-8'));
 
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(slotFile, {
             line: 1,
             column: 0 /* after the space after the element name */
@@ -550,7 +551,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       // We recover after getting a good version of the file.
       await editorService.fileChanged(indexFile, indexContents);
 
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
@@ -564,7 +565,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
            <script src="nonexistant.js"></script>`);
 
       // Harder: can we give typeahead completion when there's errors?'
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
@@ -581,7 +582,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       await editorService.fileChanged(indexFile, `${goodContents}
           <script src="./syntax-error.js"></script>`);
       // Even with a reference to the bad file we can still get completions!
-      deepEqual(
+      assert.deepEqual(
           await editorService.getTypeaheadCompletionsAtPosition(
               indexFile, localAttributePosition),
           attributeTypeahead);
@@ -604,14 +605,15 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
 
     test('For a good document we get no warnings', async() => {
       await editorService.fileChanged(indexFile, indexContents);
-      deepEqual(await editorService.getWarningsForFile(indexFile), []);
+      assert.deepEqual(
+          (await editorService.getWarningsForFile(indexFile)).warnings, []);
     });
 
     test(`Warn on imports of files that aren't found.`, async() => {
       const badImport = `<link rel="import" href="./does-not-exist.html">`;
       fileContents = `${badImport}\n\n${indexContents}`;
       await editorService.fileChanged(indexFile, fileContents);
-      const warnings = await editorService.getWarningsForFile(indexFile);
+      const {warnings} = await editorService.getWarningsForFile(indexFile);
       assert.equal(
           warnings.filter((warning) => warning.code === 'could-not-load')
               .length,
@@ -630,7 +632,7 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       const badImport = `<script src="../js-parse-error.js"></script>`;
       const fileContents = `${badImport}\n\n${indexContents}`;
       await editorService.fileChanged(indexFile, fileContents);
-      const warnings = await editorService.getWarningsForFile(indexFile);
+      const {warnings} = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
           warnings, <Warning[]>[{
             code: 'could-not-load',
@@ -647,19 +649,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             ~~~~~~~~~~~~~~~~~~~~~~`);
     });
 
-    test(`Don't warn on imports of files with no known parser`, async() => {
-      const badImport = `<script src="./foo.unknown_extension"></script>`;
-      await editorService.fileChanged(
-          indexFile, `${badImport}\n\n${indexContents}`);
-      assert.containSubset(
-          await editorService.getWarningsForFile(indexFile), []);
-    });
-
     test(`Warn on syntax errors in inline javascript documents`, async() => {
       const badScript = `\n<script>var var var var var let const;</script>`;
       const fileContents = badScript;
       await editorService.fileChanged(indexFile, fileContents);
-      const warnings = await editorService.getWarningsForFile(indexFile);
+      const {warnings} = await editorService.getWarningsForFile(indexFile);
       assert.containSubset(
           warnings, <Warning[]>[{
             code: 'parse-error',
@@ -678,27 +672,30 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
         `if configured with a package url resolver`;
     test(testName, async() => {
       const testBaseDir = path.join(basedir, 'package-url-resolver');
-      editorService = editorFactory(testBaseDir);
-      const warnings =
+      editorService = new LocalEditorService({
+        urlLoader: new FSUrlLoader(testBaseDir),
+        urlResolver: new PackageUrlResolver()
+      });
+      const {warnings} =
           await editorService.getWarningsForFile('simple-elem.html');
-      deepEqual(warnings, []);
+      assert.deepEqual(warnings, []);
     });
 
     testName = `Warn about parse errors in the file ` +
         `we're requesting errors for.`;
     test(testName, async() => {
-      const warnings =
+      const {warnings} =
           await editorService.getWarningsForFile('js-parse-error.js');
-      deepEqual(JSON.parse(JSON.stringify(warnings)), [{
-                  code: 'parse-error',
-                  message: 'Unexpected token ,',
-                  severity: Severity.ERROR,
-                  sourceRange: {
-                    file: 'js-parse-error.js',
-                    start: {line: 17, column: 8},
-                    end: {line: 17, column: 8}
-                  }
-                }]);
+      assert.deepEqual(JSON.parse(JSON.stringify(warnings)), [{
+                         code: 'parse-error',
+                         message: 'Unexpected token ,',
+                         severity: Severity.ERROR,
+                         sourceRange: {
+                           file: 'js-parse-error.js',
+                           start: {line: 17, column: 8},
+                           end: {line: 17, column: 8}
+                         }
+                       }]);
     });
 
     {
@@ -707,11 +704,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       test(`Give documentation for properties in databindings.`, async() => {
         let docs = await editorService.getDocumentationAtPosition(
             'polymer/element-with-databinding.html', fooPropUsePosition);
-        deepEqual(docs, 'This is the foo property.');
+        assert.deepEqual(docs, 'This is the foo property.');
 
         docs = await editorService.getDocumentationAtPosition(
             'polymer/element-with-databinding.html', internalPropUsePosition);
-        deepEqual(docs, 'A private internal prop.');
+        assert.deepEqual(docs, 'A private internal prop.');
       });
 
       test('Jump to definition for properties in databindings.', async() => {
@@ -719,18 +716,19 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             'polymer/element-with-databinding.html', fooPropUsePosition);
         const underliner = new CodeUnderliner(new FSUrlLoader(basedir));
 
-        deepEqual(await underliner.underline(location), `
+        assert.deepEqual(await underliner.underline(location), `
         foo: String,
         ~~~~~~~~~~~`);
         location = await editorService.getDefinitionForFeatureAtPosition(
             'polymer/element-with-databinding.html', internalPropUsePosition);
-        deepEqual(await underliner.underline(location), `
+        assert.deepEqual(await underliner.underline(location), `
         _internal: String,
         ~~~~~~~~~~~~~~~~~`);
       });
 
       const databindingCompletions = {
-        kind: 'properties-in-polymer-databinding',
+        kind: 'properties-in-polymer-databinding' as
+              'properties-in-polymer-databinding',
         properties: [
           {
             description: 'A private internal prop.',
@@ -751,11 +749,11 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
       test('Give autocompletions for positions in databindings.', async() => {
         let completions = await editorService.getTypeaheadCompletionsAtPosition(
             'polymer/element-with-databinding.html', fooPropUsePosition);
-        deepEqual(completions, databindingCompletions);
+        assert.deepEqual(completions, databindingCompletions);
 
         completions = await editorService.getTypeaheadCompletionsAtPosition(
             'polymer/element-with-databinding.html', internalPropUsePosition);
-        deepEqual(completions, databindingCompletions);
+        assert.deepEqual(completions, databindingCompletions);
       });
     }
   });
@@ -769,7 +767,8 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
           class BaseElement extends HTMLElement {}
           customElements.define('vanilla-elem', BaseElement);
         `);
-      deepEqual(await editorService.getWarningsForFile('base.js'), []);
+      let {warnings} = await editorService.getWarningsForFile('base.js');
+      assert.deepEqual(warnings, []);
       await editorService.fileChanged('child.html', `
           <script src="./base.js"></script>
 
@@ -778,106 +777,30 @@ function editorTests(editorFactory: (basedir: string) => EditorService) {
             customElements.define('child-elem', Child);
           </script>
         `);
-      deepEqual(await editorService.getWarningsForFile('child.html'), []);
+      assert.deepEqual(
+          (await editorService.getWarningsForFile('child.html')).warnings, []);
 
       await editorService.fileChanged('base.js', `
           class VanEl extends HTMLElement {}
           customElements.define('vanilla-elem', VanEl);
         `);
-      deepEqual(await editorService.getWarningsForFile('base.js'), []);
-      const warnings = await editorService.getWarningsForFile('child.html');
-      deepEqual(warnings.length, 1);
-      deepEqual(
+      assert.deepEqual(
+          (await editorService.getWarningsForFile('base.js')).warnings, []);
+      warnings =
+          (await editorService.getWarningsForFile('child.html')).warnings;
+      assert.deepEqual(warnings.length, 1);
+      assert.deepEqual(
           warnings[0].message, 'Unable to resolve superclass BaseElement');
 
       await editorService.fileChanged('base.js', `
           class BaseElement extends HTMLElement {}
           customElements.define('vanilla-elem', BaseElement);
         `);
-      deepEqual(await editorService.getWarningsForFile('base.js'), []);
-      deepEqual(
-          await editorService.getWarningsForFile('child.html'), [],
+      assert.deepEqual(
+          (await editorService.getWarningsForFile('base.js')).warnings, []);
+      assert.deepEqual(
+          (await editorService.getWarningsForFile('child.html')).warnings, [],
           'after fixing error in base, the error is fixed in child which uses it');
     });
   });
-}
-
-/**
- * We need to use different deep equality functions when testing
- * LocalEditorService and RemoteEditorService because RemoteEditorService has
- * gone through a JSON stringify/parse pass.
- */
-let deepEqual: (actual: any, expected: any, message?: string) => void;
-
-suite('LocalEditorService', function() {
-  suiteSetup(() => {
-    deepEqual = assert.deepEqual;
-  });
-
-  editorTests((basedir) => new LocalEditorService({
-                urlLoader: new FSUrlLoader(basedir),
-                urlResolver: new PackageUrlResolver()
-              }));
 });
-
-// It takes ~300ms to wake up a new RemoteEditorService, so when running tests
-// in fast mode we cache them by basedir.
-const sloppyTest = !!process.env.QUICK_TESTS;
-suite('RemoteEditorService', function() {
-
-  suiteSetup(() => {
-    deepEqual = expectJsonDeepEqual;
-  });
-
-  const remoteEditorsByBasedir = new Map<string, RemoteEditorService>();
-  const editors: RemoteEditorService[] = [];
-
-  editorTests((basedir) => {
-    if (sloppyTest) {
-      const cachedServer = remoteEditorsByBasedir.get(basedir);
-      if (cachedServer) {
-        return cachedServer;
-      }
-    }
-    const server = new RemoteEditorService(basedir);
-    if (sloppyTest) {
-      remoteEditorsByBasedir.set(basedir, server);
-    }
-    editors.push(server);
-    return server;
-  });
-
-  teardown(async() => {
-    if (sloppyTest) {
-      // clear the caches to minimize inter-test interaction.
-      for (const server of editors) {
-        await server._clearCaches();
-      }
-      return;
-    }
-
-    // tear them all down
-    for (const server of editors) {
-      server.dispose();
-    }
-    editors.length = 0;
-  });
-
-  suiteTeardown(() => {
-    // Final cleanup for sloppy mode.
-    if (sloppyTest) {
-      for (const server of remoteEditorsByBasedir.values()) {
-        server.dispose();
-      }
-      remoteEditorsByBasedir.clear();
-    }
-  });
-});
-
-
-
-function expectJsonDeepEqual(actual: any, expected: any, message?: string) {
-  // Primarily useful because it strips out `undefined`, which
-  // RemoteEditorService does because it uses JSON for IPC.
-  assert.deepEqual(actual, JSON.parse(JSON.stringify(expected)), message);
-}

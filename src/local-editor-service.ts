@@ -13,30 +13,26 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, AnalyzerOptions, Attribute, Document, Element, InMemoryOverlayUrlLoader, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Analysis, Analyzer, AnalyzerOptions, Attribute, Document, Element, InMemoryOverlayUrlLoader, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
-import {Linter, LintResult, registry, Rule} from 'polymer-linter';
+import {Linter, registry, Rule} from 'polymer-linter';
 import {ProjectConfig} from 'polymer-project-config';
 
 import {AstLocation, getAstLocationForPosition} from './ast-from-source-position';
-import {AttributeCompletion, EditorService, TypeaheadCompletion} from './editor-service';
 
 export interface Options extends AnalyzerOptions { polymerJsonPath?: string; }
 
 /**
- * An in-process implementation of EditorService.
+ * This class provides much of the core functionality of the language server.
  *
- * This should be run out-of-process of any user interface work. See
- * RemoteEditorService if you're running in-process with an editor, as it
- * has the same interface but is actually running a LocalEditorService in
- * another process.
+ * It's got a slightly weird name and API due to historical reasons. It will
+ * soon be carved up into smaller, more focused classes.
  */
-export class LocalEditorService extends EditorService {
+export class LocalEditorService {
   readonly analyzer: Analyzer;
   readonly linter: Linter;
   private readonly overlay: InMemoryOverlayUrlLoader;
   constructor(options: Options) {
-    super();
     this.overlay = new InMemoryOverlayUrlLoader(options.urlLoader);
     this.analyzer =
         new Analyzer(Object.assign({}, options, {urlLoader: this.overlay}));
@@ -330,12 +326,19 @@ export class LocalEditorService extends EditorService {
     }
   }
 
-  async getWarningsForFile(localPath: string): Promise<LintResult> {
-    return this.linter.lint([localPath]);
+  async getWarningsForFile(localPath: string):
+      Promise<{analysis: Analysis, warnings: ReadonlyArray<Warning>}> {
+    const result = await this.linter.lint([localPath]);
+    return {analysis: result.analysis, warnings: result};
   }
 
-  async getWarningsForPackage(): Promise<LintResult> {
-    return this.linter.lintPackage();
+  async getWarningsForPackage():
+      Promise<{analysis: Analysis, warnings: ReadonlyArray<Warning>}> {
+    const result = await this.linter.lintPackage();
+    return {
+      analysis: result.analysis,
+      warnings: result,
+    };
   }
 
   async _clearCaches() {
@@ -488,4 +491,66 @@ function compareAttributeResults<
     return comparison;
   }
   return a1.name.localeCompare(a2.name);
+}
+
+export type TypeaheadCompletion = ElementCompletion | AttributesCompletion |
+    AttributeValuesCompletion | DatabindingPropertiesCompletion;
+
+/**
+* When autocompleting somewhere that a new element tag could be added.
+*/
+export interface ElementCompletion {
+  kind: 'element-tags';
+  elements: IndividualElementCompletion[];
+}
+
+export interface IndividualElementCompletion {
+  tagname: string;
+  description: string;
+  expandTo?: string;
+  expandToSnippet?: string;
+}
+
+/**
+* When autocompleting in the attributes section of an element, these are
+* the attributes available.
+*/
+export interface AttributesCompletion {
+  kind: 'attributes';
+  attributes: AttributeCompletion[];
+}
+
+/**
+* Describes an attribute.
+*/
+export interface AttributeCompletion {
+  name: string;
+  description: string;
+  type: string|undefined;
+  sortKey: string;
+  inheritedFrom?: string;
+}
+
+/**
+* When autocompleting inside of the value section of an attribute. i.e.
+*   <div id="|"></div>
+*/
+export interface AttributeValuesCompletion {
+  kind: 'attribute-values';
+  attributes: AttributeValueCompletion[];
+}
+
+export interface AttributeValueCompletion extends AttributeCompletion {
+  /**
+  * The text to insert in the value section.
+  */
+  autocompletion: string;
+}
+
+/**
+* When autocompleting inside of a polymer databinding expression.
+*/
+export interface DatabindingPropertiesCompletion {
+  kind: 'properties-in-polymer-databinding';
+  properties: AttributeCompletion[];
 }
