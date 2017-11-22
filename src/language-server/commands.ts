@@ -11,10 +11,48 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// TODO(rictic): move command execution to this file.
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, IConnection, WorkspaceEdit} from 'vscode-languageserver';
+
+import DiagnosticGenerator from './diagnostics';
+import {Handler} from './util';
+
 export const applyEditCommandName = 'polymer-ide/applyEdit';
 
 export const applyAllFixesCommandName = 'polymer-ide/applyAllFixes';
 
 export const allSupportedCommands =
     [applyEditCommandName, applyAllFixesCommandName];
+
+export default class CommandExecutor extends Handler {
+  constructor(
+      protected connection: IConnection,
+      private diagnosticGenerator: DiagnosticGenerator) {
+    super();
+    connection.onExecuteCommand(async(req) => {
+      if (req.command === applyEditCommandName) {
+        return this.handleErrors(
+            this.executeApplyEditCommand(req.arguments as [WorkspaceEdit]),
+            undefined);
+      }
+      if (req.command === applyAllFixesCommandName) {
+        return this.handleErrors(this.executeApplyAllFixesCommand(), undefined);
+      }
+    });
+  }
+
+  private async executeApplyEditCommand(args: [WorkspaceEdit]) {
+    await this.applyEdits(args[0]);
+  }
+
+  private async executeApplyAllFixesCommand() {
+    const workspaceEdit = await this.diagnosticGenerator.getAllFixes();
+    await this.applyEdits(workspaceEdit);
+  }
+
+  private async applyEdits(workspaceEdit: WorkspaceEdit) {
+    const params: ApplyWorkspaceEditParams = {edit: workspaceEdit};
+    return (await this.connection.sendRequest(
+        ApplyWorkspaceEditRequest.type.method,
+        params)) as ApplyWorkspaceEditResponse;
+  }
+}

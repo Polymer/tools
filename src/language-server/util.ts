@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Disposable} from 'vscode-languageserver';
+import {WarningCarryingException} from 'polymer-analyzer';
+import {Disposable, IConnection} from 'vscode-languageserver';
 
 export class EventStream<T> {
   static create<T>() {
@@ -60,6 +61,25 @@ export class AutoDisposable implements Disposable {
   }
 
   protected readonly _disposables: Disposable[] = [];
+}
+
+export abstract class Handler extends AutoDisposable {
+  protected abstract connection: IConnection;
+  protected async handleErrors<Result, Fallback>(
+      promise: Promise<Result>,
+      fallbackValue: Fallback): Promise<Result|Fallback> {
+    try {
+      return await promise;
+    } catch (err) {
+      // Ignore WarningCarryingExceptions, they're expected, and made visible
+      //   to the user in a useful way. All other exceptions should be logged
+      //   if possible.
+      if (!(err instanceof WarningCarryingException)) {
+        this.connection.console.warn(err.stack || err.message || err);
+      }
+      return fallbackValue;
+    }
+  }
 }
 
 export interface Change<T> {

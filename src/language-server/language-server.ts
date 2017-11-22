@@ -12,26 +12,26 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {applyEdits, Edit, makeParseLoader, PackageUrlResolver, WarningCarryingException} from 'polymer-analyzer';
+import {applyEdits, Edit, makeParseLoader, PackageUrlResolver} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
+import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
-import {allSupportedCommands, applyAllFixesCommandName, applyEditCommandName} from './commands';
+import CommandExecutor, {allSupportedCommands} from './commands';
 import AnalyzerLSPConverter from './converter';
 import DiagnosticGenerator from './diagnostics';
 import FileSynchronizer from './file-synchronizer';
 import Settings from './settings';
-import {AutoDisposable} from './util';
+import {Handler} from './util';
 
-export default class LanguageServer extends AutoDisposable {
+export default class LanguageServer extends Handler {
   readonly converter: AnalyzerLSPConverter;
-  private readonly _connection: IConnection;
+  protected readonly connection: IConnection;
   private readonly _editorService: LocalEditorService;
   readonly fileSynchronizer: FileSynchronizer;
   private readonly _documents: TextDocuments;
@@ -91,7 +91,7 @@ export default class LanguageServer extends AutoDisposable {
   constructor(connection: IConnection, workspaceUri: Uri) {
     super();
     this._disposables.push(connection);
-    this._connection = connection;
+    this.connection = connection;
 
     const workspacePath = workspaceUri.fsPath;
 
@@ -124,6 +124,10 @@ export default class LanguageServer extends AutoDisposable {
         this._settings, synchronizer, this._documents);
     this._disposables.push(diagnosticGenerator);
 
+    const commandExecutor =
+        new CommandExecutor(this.connection, diagnosticGenerator);
+    this._disposables.push(commandExecutor);
+
     this._initEventHandlers();
   }
 
@@ -152,66 +156,28 @@ export default class LanguageServer extends AutoDisposable {
   }
 
   private _initEventHandlers() {
-    this._connection.onHover(async(textPosition) => {
+    this.connection.onHover(async(textPosition) => {
       return this.handleErrors(
           this.getDocsForHover(textPosition), undefined) as Promise<Hover>;
     });
 
-    this._connection.onDefinition(async(textPosition) => {
+    this.connection.onDefinition(async(textPosition) => {
       return this.handleErrors(
           this.getDefinition(textPosition), undefined) as Promise<Definition>;
     });
 
-    this._connection.onCompletion(async(textPosition) => {
+    this.connection.onCompletion(async(textPosition) => {
       return this.handleErrors(
           this.autoComplete(textPosition), {isIncomplete: true, items: []});
     });
 
-    this._connection.onExecuteCommand(async(req) => {
-      if (req.command === applyEditCommandName) {
-        return this.handleErrors(
-            this.executeApplyEditCommand(req.arguments as [WorkspaceEdit]),
-            undefined);
-      }
-      if (req.command === applyAllFixesCommandName) {
-        return this.handleErrors(this.executeApplyAllFixesCommand(), undefined);
-      }
-    });
-
-    this._connection.onWillSaveTextDocumentWaitUntil((req) => {
+    this.connection.onWillSaveTextDocumentWaitUntil((req) => {
       if (this._settings.fixOnSave) {
         return this.handleErrors(this.fixOnSave(req), []);
       }
       return [];
     });
   }
-
-  private async executeApplyEditCommand(args: [WorkspaceEdit]) {
-    await this.applyEdits(args[0]);
-  }
-
-  private async executeApplyAllFixesCommand() {
-    const {warnings, analysis} =
-        await this._editorService.getWarningsForPackage();
-    const fixes = [];
-    for (const warning of warnings) {
-      if (warning.fix) {
-        fixes.push(warning.fix);
-      }
-    }
-    // Don't apply conflicting edits to the workspace.
-    const parseLoader = makeParseLoader(this._editorService.analyzer, analysis);
-    const {appliedEdits} = await applyEdits(fixes, parseLoader);
-    await this.applyEdits(this.converter.editsToWorkspaceEdit(appliedEdits));
-  }
-
-  private async applyEdits(workspaceEdit: WorkspaceEdit) {
-    const params: ApplyWorkspaceEditParams = {edit: workspaceEdit};
-    return (await this._connection.sendRequest(
-        ApplyWorkspaceEditRequest.type.method,
-        params)) as ApplyWorkspaceEditResponse;
-  }
-
 
   private async autoComplete(textPosition: TextDocumentPositionParams):
       Promise<CompletionList> {
@@ -315,22 +281,6 @@ export default class LanguageServer extends AutoDisposable {
     }
     // Clear the files from any caches and recalculate warnings as needed.
     await this._editorService.analyzer.filesChanged(paths);
-  }
-
-  private async handleErrors<Result, Fallback>(
-      promise: Promise<Result>,
-      fallbackValue: Fallback): Promise<Result|Fallback> {
-    try {
-      return await promise;
-    } catch (err) {
-      // Ignore WarningCarryingExceptions, they're expected, and made visible
-      //   to the user in a useful way. All other exceptions should be logged
-      //   if possible.
-      if (!(err instanceof WarningCarryingException)) {
-        this._connection.console.warn(err.stack || err.message || err);
-      }
-      return fallbackValue;
-    }
   }
 
   private async fixOnSave(req: WillSaveTextDocumentParams):

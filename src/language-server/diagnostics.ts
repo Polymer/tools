@@ -11,24 +11,24 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Edit, isPositionInsideRange, SourceRange, Warning} from 'polymer-analyzer';
+import {Analyzer, applyEdits, Edit, isPositionInsideRange, makeParseLoader, SourceRange, Warning} from 'polymer-analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
-import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments} from 'vscode-languageserver';
+import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments, WorkspaceEdit} from 'vscode-languageserver';
 
 import {applyEditCommandName} from './commands';
 import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
 import Settings from './settings';
-import {AutoDisposable} from './util';
+import {Handler} from './util';
 
 /**
  * Handles publishing diagnostics and code actions on those diagnostics.
  */
-export default class DiagnosticGenerator extends AutoDisposable {
+export default class DiagnosticGenerator extends Handler {
   private linter: Linter;
   constructor(
       private analyzer: Analyzer, private converter: AnalyzerLSPConverter,
-      private connection: IConnection, private settings: Settings,
+      protected connection: IConnection, private settings: Settings,
       fileSynchronizer: FileSynchronizer, private documents: TextDocuments) {
     super();
 
@@ -65,11 +65,24 @@ export default class DiagnosticGenerator extends AutoDisposable {
     });
 
     this.connection.onCodeAction(async(req) => {
-      return this.getCodeActions(req);
+      return this.handleErrors(this.getCodeActions(req), []);
     });
 
-
     this.updateLinter();
+  }
+
+  async getAllFixes(): Promise<WorkspaceEdit> {
+    const warnings = await this.linter.lintPackage();
+    const fixes = [];
+    for (const warning of warnings) {
+      if (warning.fix) {
+        fixes.push(warning.fix);
+      }
+    }
+    // Don't apply conflicting edits to the workspace.
+    const parseLoader = makeParseLoader(this.analyzer, warnings.analysis);
+    const {appliedEdits} = await applyEdits(fixes, parseLoader);
+    return this.converter.editsToWorkspaceEdit(appliedEdits);
   }
 
   private updateLinter() {
