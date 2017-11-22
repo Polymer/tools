@@ -13,7 +13,7 @@
 
 import {Analyzer, applyEdits, Edit, isPositionInsideRange, makeParseLoader, SourceRange, Warning} from 'polymer-analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
-import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments, WorkspaceEdit} from 'vscode-languageserver';
+import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 
 import {applyEditCommandName} from './commands';
 import AnalyzerLSPConverter from './converter';
@@ -83,6 +83,34 @@ export default class DiagnosticGenerator extends Handler {
     const parseLoader = makeParseLoader(this.analyzer, warnings.analysis);
     const {appliedEdits} = await applyEdits(fixes, parseLoader);
     return this.converter.editsToWorkspaceEdit(appliedEdits);
+  }
+
+  async getFixesForFile(uri: string): Promise<TextEdit[]> {
+    const path = this.converter.getWorkspacePathToFile({uri});
+    const warnings = await this.linter.lint([path]);
+    const edits: Edit[] = [];
+    for (const warning of warnings) {
+      if (!warning.fix) {
+        continue;
+      }
+      // A fix can touch multiple files. We can only update this document
+      // though, so skip any fixes that touch others.
+      if (warning.fix.some(repl => repl.range.file !== path)) {
+        continue;
+      }
+      edits.push(warning.fix);
+    }
+    const {appliedEdits} = await applyEdits(
+        edits, makeParseLoader(this.analyzer, warnings.analysis));
+    const textEdits: TextEdit[] = [];
+    for (const appliedEdit of appliedEdits) {
+      for (const replacement of appliedEdit) {
+        textEdits.push(TextEdit.replace(
+            this.converter.convertPRangeToL(replacement.range),
+            replacement.replacementText));
+      }
+    }
+    return textEdits;
   }
 
   private updateLinter() {

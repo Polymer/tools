@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {applyEdits, Edit, makeParseLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {PackageUrlResolver} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams} from 'vscode-languageserver';
+import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
@@ -35,8 +35,8 @@ export default class LanguageServer extends Handler {
   private readonly _editorService: LocalEditorService;
   readonly fileSynchronizer: FileSynchronizer;
   private readonly _documents: TextDocuments;
-
-  private _settings: Settings;
+  private readonly diagnosticGenerator: DiagnosticGenerator;
+  private readonly _settings: Settings;
 
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(
@@ -119,13 +119,13 @@ export default class LanguageServer extends Handler {
         }));
     this.fileSynchronizer = synchronizer;
 
-    const diagnosticGenerator = new DiagnosticGenerator(
+    this.diagnosticGenerator = new DiagnosticGenerator(
         this._editorService.analyzer, this.converter, connection,
         this._settings, synchronizer, this._documents);
-    this._disposables.push(diagnosticGenerator);
+    this._disposables.push(this.diagnosticGenerator);
 
     const commandExecutor =
-        new CommandExecutor(this.connection, diagnosticGenerator);
+        new CommandExecutor(this.connection, this.diagnosticGenerator);
     this._disposables.push(commandExecutor);
 
     this._initEventHandlers();
@@ -173,7 +173,8 @@ export default class LanguageServer extends Handler {
 
     this.connection.onWillSaveTextDocumentWaitUntil((req) => {
       if (this._settings.fixOnSave) {
-        return this.handleErrors(this.fixOnSave(req), []);
+        return this.handleErrors(
+            this.diagnosticGenerator.getFixesForFile(req.textDocument.uri), []);
       }
       return [];
     });
@@ -281,36 +282,6 @@ export default class LanguageServer extends Handler {
     }
     // Clear the files from any caches and recalculate warnings as needed.
     await this._editorService.analyzer.filesChanged(paths);
-  }
-
-  private async fixOnSave(req: WillSaveTextDocumentParams):
-      Promise<TextEdit[]> {
-    const path = this.converter.getWorkspacePathToFile(req.textDocument);
-    const {warnings, analysis} =
-        await this._editorService.getWarningsForFile(path);
-    const edits: Edit[] = [];
-    for (const warning of warnings) {
-      if (!warning.fix) {
-        continue;
-      }
-      // A fix can touch multiple files. We can only update this document
-      // though, so skip any fixes that touch others.
-      if (warning.fix.some(repl => repl.range.file !== path)) {
-        continue;
-      }
-      edits.push(warning.fix);
-    }
-    const {appliedEdits} = await applyEdits(
-        edits, makeParseLoader(this._editorService.analyzer, analysis));
-    const textEdits: TextEdit[] = [];
-    for (const appliedEdit of appliedEdits) {
-      for (const replacement of appliedEdit) {
-        textEdits.push(TextEdit.replace(
-            this.converter.convertPRangeToL(replacement.range),
-            replacement.replacementText));
-      }
-    }
-    return textEdits;
   }
 }
 
