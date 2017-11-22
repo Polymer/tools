@@ -12,26 +12,22 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {applyEdits, Edit, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, WarningCarryingException} from 'polymer-analyzer';
+import {applyEdits, Edit, makeParseLoader, PackageUrlResolver, WarningCarryingException} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
+import {allSupportedCommands, applyAllFixesCommandName, applyEditCommandName} from './commands';
 import AnalyzerLSPConverter from './converter';
 import DiagnosticGenerator from './diagnostics';
 import FileSynchronizer from './file-synchronizer';
 import Settings from './settings';
 import {AutoDisposable} from './util';
-
-
-const applyEditCommandName = 'polymer-ide/applyEdit';
-
-const applyAllFixesCommandName: string = 'polymer-ide/applyAllFixes';
 
 export default class LanguageServer extends AutoDisposable {
   readonly converter: AnalyzerLSPConverter;
@@ -150,9 +146,7 @@ export default class LanguageServer extends AutoDisposable {
     // polymer-ide/applyEdit if it wants that feature.
     if (clientCapabilities.workspace &&
         clientCapabilities.workspace.applyEdit) {
-      ourCapabilities.executeCommandProvider = {
-        commands: [applyEditCommandName, applyAllFixesCommandName]
-      };
+      ourCapabilities.executeCommandProvider = {commands: allSupportedCommands};
     }
     return ourCapabilities;
   }
@@ -173,10 +167,6 @@ export default class LanguageServer extends AutoDisposable {
           this.autoComplete(textPosition), {isIncomplete: true, items: []});
     });
 
-    this._connection.onCodeAction(async(req) => {
-      return this.handleErrors(this.getCodeActions(req), []);
-    });
-
     this._connection.onExecuteCommand(async(req) => {
       if (req.command === applyEditCommandName) {
         return this.handleErrors(
@@ -194,41 +184,6 @@ export default class LanguageServer extends AutoDisposable {
       }
       return [];
     });
-  }
-
-  private async getCodeActions(req: CodeActionParams) {
-    const commands: Command[] = [];
-    if (req.context.diagnostics.length === 0) {
-      // Currently we only support code actions on Warnings,
-      // so we can early-exit in the case where there aren't any.
-      return commands;
-    }
-    const {warnings} = await this._editorService.getWarningsForFile(
-        this.converter.getWorkspacePathToFile(req.textDocument));
-    const requestedRange =
-        this.converter.convertLRangeToP(req.range, req.textDocument);
-    for (const warning of warnings) {
-      if ((!warning.fix &&
-           (!warning.actions || warning.actions.length === 0)) ||
-          !isRangeInside(warning.sourceRange, requestedRange)) {
-        continue;
-      }
-      if (warning.fix) {
-        commands.push(this.createApplyEditCommand(
-            `Quick fix the '${warning.code}' warning`, warning.fix));
-      }
-      if (warning.actions) {
-        for (const action of warning.actions) {
-          if (action.kind !== 'edit') {
-            continue;
-          }
-          commands.push(this.createApplyEditCommand(
-              // Take up to the first newline.
-              action.description.split('\n')[0], action.edit));
-        }
-      }
-    }
-    return commands;
   }
 
   private async executeApplyEditCommand(args: [WorkspaceEdit]) {
@@ -257,10 +212,6 @@ export default class LanguageServer extends AutoDisposable {
         params)) as ApplyWorkspaceEditResponse;
   }
 
-  private createApplyEditCommand(title: string, edit: Edit): Command {
-    return Command.create(
-        title, applyEditCommandName, this.converter.editToWorkspaceEdit(edit));
-  }
 
   private async autoComplete(textPosition: TextDocumentPositionParams):
       Promise<CompletionList> {
@@ -432,9 +383,4 @@ function attributeCompletionToCompletionItem(
     }
   }
   return item;
-}
-
-function isRangeInside(inner: SourceRange, outer: SourceRange) {
-  return isPositionInsideRange(inner.start, outer, true) &&
-      isPositionInsideRange(inner.end, outer, true);
 }

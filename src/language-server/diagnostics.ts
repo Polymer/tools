@@ -11,17 +11,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Warning} from 'polymer-analyzer';
+import {Analyzer, Edit, isPositionInsideRange, SourceRange, Warning} from 'polymer-analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
-import {Diagnostic, IConnection, TextDocuments} from 'vscode-languageserver';
+import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments} from 'vscode-languageserver';
 
+import {applyEditCommandName} from './commands';
 import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
 import Settings from './settings';
 import {AutoDisposable} from './util';
 
 /**
- * Publishes diagnostics as files change.
+ * Handles publishing diagnostics and code actions on those diagnostics.
  */
 export default class DiagnosticGenerator extends AutoDisposable {
   private linter: Linter;
@@ -62,6 +63,11 @@ export default class DiagnosticGenerator extends AutoDisposable {
         this._reportWarnings();
       }
     });
+
+    this.connection.onCodeAction(async(req) => {
+      return this.getCodeActions(req);
+    });
+
 
     this.updateLinter();
   }
@@ -146,4 +152,49 @@ export default class DiagnosticGenerator extends AutoDisposable {
     }
     this._urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
   }
+
+  private async getCodeActions(req: CodeActionParams) {
+    const commands: Command[] = [];
+    if (req.context.diagnostics.length === 0) {
+      // Currently we only support code actions on Warnings,
+      // so we can early-exit in the case where there aren't any.
+      return commands;
+    }
+    const warnings = await this.linter.lint(
+        [this.converter.getWorkspacePathToFile(req.textDocument)]);
+    const requestedRange =
+        this.converter.convertLRangeToP(req.range, req.textDocument);
+    for (const warning of warnings) {
+      if ((!warning.fix &&
+           (!warning.actions || warning.actions.length === 0)) ||
+          !isRangeInside(warning.sourceRange, requestedRange)) {
+        continue;
+      }
+      if (warning.fix) {
+        commands.push(this.createApplyEditCommand(
+            `Quick fix the '${warning.code}' warning`, warning.fix));
+      }
+      if (warning.actions) {
+        for (const action of warning.actions) {
+          if (action.kind !== 'edit') {
+            continue;
+          }
+          commands.push(this.createApplyEditCommand(
+              // Take up to the first newline.
+              action.description.split('\n')[0], action.edit));
+        }
+      }
+    }
+    return commands;
+  }
+
+  private createApplyEditCommand(title: string, edit: Edit): Command {
+    return Command.create(
+        title, applyEditCommandName, this.converter.editToWorkspaceEdit(edit));
+  }
+}
+
+function isRangeInside(inner: SourceRange, outer: SourceRange) {
+  return isPositionInsideRange(inner.start, outer, true) &&
+      isPositionInsideRange(inner.end, outer, true);
 }
