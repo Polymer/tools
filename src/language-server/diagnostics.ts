@@ -142,7 +142,8 @@ export default class DiagnosticGenerator extends Handler {
     } else {
       const warnings = await this.linter.lint(this.documents.keys().map(
           uri => this.converter.getWorkspacePathToFile({uri})));
-      const diagnosticsByUri = new Map<string, Diagnostic[]>();
+      const diagnosticsByUri = new Map(
+          this.documents.keys().map((k): [string, Diagnostic[]] => [k, []]));
       for (const warning of warnings) {
         const diagnostic = this.converter.convertWarningToDiagnostic(warning);
         let diagnostics =
@@ -154,7 +155,6 @@ export default class DiagnosticGenerator extends Handler {
             this.converter.getUriForLocalPath(warning.sourceRange.file),
             diagnostics);
       }
-
       for (const [uri, diagnostics] of diagnosticsByUri) {
         this.connection.sendDiagnostics({uri, diagnostics});
       }

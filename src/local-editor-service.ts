@@ -13,10 +13,9 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analysis, Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 import {InMemoryOverlayUrlLoader} from 'polymer-analyzer/lib/url-loader/overlay-loader';
-import {Linter, registry, Rule} from 'polymer-linter';
 
 import {AstLocation, getAstLocationForPosition} from './ast-from-source-position';
 import Settings from './language-server/settings';
@@ -35,8 +34,6 @@ export interface Options extends AnalyzerOptions {
 export class LocalEditorService {
   readonly analyzer: Analyzer;
   private urlLoader: InMemoryOverlayUrlLoader;
-  linter: Linter;
-  private readonly settings: Settings;
   constructor(options: Options) {
     let urlLoader = options.urlLoader;
     if (!(urlLoader instanceof InMemoryOverlayUrlLoader)) {
@@ -46,32 +43,6 @@ export class LocalEditorService {
     }
     this.analyzer =
         new Analyzer(Object.assign({}, options, {urlLoader: this.urlLoader}));
-    // TODO(rictic): watch for changes of polymer.json
-    let rules: Set<Rule> = new Set();
-    if (options.settings) {
-      this.settings = options.settings;
-      this.linter = this.makeLinter();
-      this.settings.projectConfigChangeStream.listen(() => {
-        // Update the linter when the project config changes.
-        this.linter = this.makeLinter();
-      });
-    }
-    this.linter = new Linter(rules, this.analyzer);
-  }
-
-  private makeLinter(): Linter {
-    let rules: Iterable<Rule> = new Set();
-    const projectConfig = this.settings.projectConfig;
-    if (projectConfig.lint && projectConfig.lint.rules) {
-      try {
-        rules = registry.getRules(projectConfig.lint.rules);
-      } catch (e) {
-        // TODO(rictic): let the user know about this error, and about
-        //   this.settings.projectConfigDiagnostic if it exists.
-      }
-    }
-
-    return new Linter(rules, this.analyzer);
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<void> {
@@ -341,21 +312,6 @@ export class LocalEditorService {
         return domModule;
       }
     }
-  }
-
-  async getWarningsForFile(localPath: string):
-      Promise<{analysis: Analysis, warnings: ReadonlyArray<Warning>}> {
-    const result = await this.linter.lint([localPath]);
-    return {analysis: result.analysis, warnings: result};
-  }
-
-  async getWarningsForPackage():
-      Promise<{analysis: Analysis, warnings: ReadonlyArray<Warning>}> {
-    const result = await this.linter.lintPackage();
-    return {
-      analysis: result.analysis,
-      warnings: result,
-    };
   }
 
   /**

@@ -16,7 +16,7 @@ import * as chai from 'chai';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {FSUrlLoader, PackageUrlResolver, Severity, UrlLoader, Warning} from 'polymer-analyzer';
+import {FSUrlLoader, PackageUrlResolver, UrlLoader} from 'polymer-analyzer';
 import {CodeUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 
 import {AttributesCompletion, ElementCompletion, LocalEditorService} from '../local-editor-service';
@@ -598,104 +598,38 @@ suite('editorService', () => {
 
   });
 
-  suite('getWarningsForFile', function() {
-    let fileContents = '';
-    const underliner =
-        new CodeUnderliner(singleFileLoader(indexFile, () => fileContents));
+  {
+    const fooPropUsePosition = {line: 2, column: 16};
+    const internalPropUsePosition = {line: 3, column: 12};
 
-    test('For a good document we get no warnings', async() => {
-      await editorService.fileChanged(indexFile, indexContents);
-      assert.deepEqual(
-          (await editorService.getWarningsForFile(indexFile)).warnings, []);
-    });
+    const databindingCompletions = {
+      kind: 'properties-in-polymer-databinding' as
+            'properties-in-polymer-databinding',
+      properties: [
+        {
+          description: 'A private internal prop.',
+          name: '_internal',
+          sortKey: 'aaa-_internal',
+          type: 'string',
+          inheritedFrom: undefined,
+        },
+        {
+          description: 'This is the foo property.',
+          name: 'foo',
+          sortKey: 'aaa-foo',
+          type: 'string',
+          inheritedFrom: undefined,
+        },
+      ]
+    };
+    test('Give autocompletions for positions in databindings.', async() => {
+      let completions = await editorService.getTypeaheadCompletionsAtPosition(
+          'polymer/element-with-databinding.html', fooPropUsePosition);
+      assert.deepEqual(completions, databindingCompletions);
 
-    test(`Warn on imports of files that aren't found.`, async() => {
-      const badImport = `<link rel="import" href="./does-not-exist.html">`;
-      fileContents = `${badImport}\n\n${indexContents}`;
-      await editorService.fileChanged(indexFile, fileContents);
-      const {warnings} = await editorService.getWarningsForFile(indexFile);
-      assert.equal(
-          warnings.filter((warning) => warning.code === 'could-not-load')
-              .length,
-          1);
-      assert.containSubset(
-          warnings, [{code: 'could-not-load', severity: Severity.ERROR}]);
-      assert.deepEqual(await underliner.underline(warnings[0].sourceRange), `
-<link rel="import" href="./does-not-exist.html">
-                        ~~~~~~~~~~~~~~~~~~~~~~~`);
-      assert.match(
-          warnings[0].message,
-          /Unable to load import:.*no such file or directory/);
-    });
-
-    test(`Warn on imports of files that don't parse.`, async() => {
-      const badImport = `<script src="../js-parse-error.js"></script>`;
-      const fileContents = `${badImport}\n\n${indexContents}`;
-      await editorService.fileChanged(indexFile, fileContents);
-      const {warnings} = await editorService.getWarningsForFile(indexFile);
-      assert.containSubset(
-          warnings, <Warning[]>[{
-            code: 'could-not-load',
-            message: 'Unable to load import: Unexpected token ,',
-            severity: Severity.ERROR,
-            sourceRange: {
-              file: 'editor-service/index.html',
-            }
-          }]);
-      const underliner =
-          new CodeUnderliner(singleFileLoader(indexFile, () => fileContents));
-      assert.deepEqual(await underliner.underline(warnings[0].sourceRange), `
-<script src="../js-parse-error.js"></script>
-            ~~~~~~~~~~~~~~~~~~~~~~`);
-    });
-
-    test(`Warn on syntax errors in inline javascript documents`, async() => {
-      const badScript = `\n<script>var var var var var let const;</script>`;
-      const fileContents = badScript;
-      await editorService.fileChanged(indexFile, fileContents);
-      const {warnings} = await editorService.getWarningsForFile(indexFile);
-      assert.containSubset(
-          warnings, <Warning[]>[{
-            code: 'parse-error',
-            severity: Severity.ERROR,
-            message: `Unexpected keyword 'var'`,
-            sourceRange: {file: 'editor-service/index.html'}
-          }]);
-      const underliner =
-          new CodeUnderliner(singleFileLoader(indexFile, () => fileContents));
-      assert.deepEqual(await underliner.underline(warnings[0].sourceRange), `
-<script>var var var var var let const;</script>
-            ~`);
-    });
-
-    let testName = `Do not warn on a sibling import ` +
-        `if configured with a package url resolver`;
-    test(testName, async() => {
-      const testBaseDir = path.join(basedir, 'package-url-resolver');
-      editorService = new LocalEditorService({
-        urlLoader: new FSUrlLoader(testBaseDir),
-        urlResolver: new PackageUrlResolver()
-      });
-      const {warnings} =
-          await editorService.getWarningsForFile('simple-elem.html');
-      assert.deepEqual(warnings, []);
-    });
-
-    testName = `Warn about parse errors in the file ` +
-        `we're requesting errors for.`;
-    test(testName, async() => {
-      const {warnings} =
-          await editorService.getWarningsForFile('js-parse-error.js');
-      assert.deepEqual(JSON.parse(JSON.stringify(warnings)), [{
-                         code: 'parse-error',
-                         message: 'Unexpected token ,',
-                         severity: Severity.ERROR,
-                         sourceRange: {
-                           file: 'js-parse-error.js',
-                           start: {line: 17, column: 8},
-                           end: {line: 17, column: 8}
-                         }
-                       }]);
+      completions = await editorService.getTypeaheadCompletionsAtPosition(
+          'polymer/element-with-databinding.html', internalPropUsePosition);
+      assert.deepEqual(completions, databindingCompletions);
     });
 
     {
@@ -756,51 +690,5 @@ suite('editorService', () => {
         assert.deepEqual(completions, databindingCompletions);
       });
     }
-  });
-
-  suite('regression tests', () => {
-
-    test('changes in dependencies update cross-file warnings', async() => {
-      // This is a regression test of a tricky bug that turned out to be in
-      // the analyzer, but this is useful to assert that it still works.
-      await editorService.fileChanged('base.js', `
-          class BaseElement extends HTMLElement {}
-          customElements.define('vanilla-elem', BaseElement);
-        `);
-      let {warnings} = await editorService.getWarningsForFile('base.js');
-      assert.deepEqual(warnings, []);
-      await editorService.fileChanged('child.html', `
-          <script src="./base.js"></script>
-
-          <script>
-            class Child extends BaseElement {}
-            customElements.define('child-elem', Child);
-          </script>
-        `);
-      assert.deepEqual(
-          (await editorService.getWarningsForFile('child.html')).warnings, []);
-
-      await editorService.fileChanged('base.js', `
-          class VanEl extends HTMLElement {}
-          customElements.define('vanilla-elem', VanEl);
-        `);
-      assert.deepEqual(
-          (await editorService.getWarningsForFile('base.js')).warnings, []);
-      warnings =
-          (await editorService.getWarningsForFile('child.html')).warnings;
-      assert.deepEqual(warnings.length, 1);
-      assert.deepEqual(
-          warnings[0].message, 'Unable to resolve superclass BaseElement');
-
-      await editorService.fileChanged('base.js', `
-          class BaseElement extends HTMLElement {}
-          customElements.define('vanilla-elem', BaseElement);
-        `);
-      assert.deepEqual(
-          (await editorService.getWarningsForFile('base.js')).warnings, []);
-      assert.deepEqual(
-          (await editorService.getWarningsForFile('child.html')).warnings, [],
-          'after fixing error in base, the error is fixed in child which uses it');
-    });
-  });
+  }
 });
