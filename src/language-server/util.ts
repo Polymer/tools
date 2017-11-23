@@ -55,12 +55,12 @@ export class EventStream<T> {
 
 export class AutoDisposable implements Disposable {
   dispose(): void {
-    for (const disposable of this._disposables) {
+    for (const disposable of this.disposables) {
       disposable.dispose();
     }
   }
 
-  protected readonly _disposables: Disposable[] = [];
+  protected readonly disposables: Disposable[] = [];
 }
 
 export abstract class Handler extends AutoDisposable {

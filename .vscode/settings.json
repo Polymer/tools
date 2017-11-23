@@ -4,7 +4,8 @@
   "editor.formatOnSave": true,
   "search.exclude": {
     "node_modules/": true,
-    "lib/": true
+    "lib/": true,
+    "src/test/static/**": true
   },
   "editor.detectIndentation": false,
   "editor.tabSize": 2,

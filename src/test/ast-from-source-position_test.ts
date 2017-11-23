@@ -180,7 +180,6 @@ function getEveryPosition(source: string): SourcePosition[] {
   for (const line of source.split('\n')) {
     let columnNum = 0;
     for (const _ of line) {
-      _.big;  // TODO(rictic): tsc complains about unused _
       results.push({line: lineNum, column: columnNum});
       columnNum++;
     }

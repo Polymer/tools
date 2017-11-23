@@ -82,7 +82,8 @@ export interface Comment {
  */
 export function getAstLocationForPosition(
     document: ParsedHtmlDocument, position: SourcePosition): AstLocation {
-  const location = _getAstLocationForPosition(document.ast, position, document);
+  const location =
+      internalgetAstLocationForPosition(document.ast, position, document);
   if (!location) {
     /** Eh, we're probably in a text node. */
     return {kind: 'text'};
@@ -90,7 +91,7 @@ export function getAstLocationForPosition(
   return location;
 }
 
-function _getAstLocationForPosition(
+function internalgetAstLocationForPosition(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument): undefined|AstLocation {
   const sourceRange = document.sourceRangeForNode(node);
@@ -103,7 +104,7 @@ function _getAstLocationForPosition(
    * but they do have children that do. So we should check those children.
    */
   if (!(sourceRange && location)) {
-    return _findLocationInChildren(node, position, document);
+    return findLocationInChildren(node, position, document);
   }
 
   if (!isPositionInsideRange(position, sourceRange)) {
@@ -111,7 +112,7 @@ function _getAstLocationForPosition(
     return;
   }
 
-  const locationInChildren = _findLocationInChildren(node, position, document);
+  const locationInChildren = findLocationInChildren(node, position, document);
   if (locationInChildren) {
     return locationInChildren;
   }
@@ -200,18 +201,19 @@ function _getAstLocationForPosition(
   }
 }
 
-function _findLocationInChildren(
+function findLocationInChildren(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument) {
   for (const child of node.childNodes || []) {
-    const result = _getAstLocationForPosition(child, position, document);
+    const result = internalgetAstLocationForPosition(child, position, document);
     if (result) {
       return result;
     }
   }
   if (node.tagName === 'template') {
     const content = parse5.treeAdapters.default.getTemplateContent(node);
-    const result = _getAstLocationForPosition(content, position, document);
+    const result =
+        internalgetAstLocationForPosition(content, position, document);
     if (result) {
       return result;
     }

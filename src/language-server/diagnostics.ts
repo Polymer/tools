@@ -45,8 +45,8 @@ export default class DiagnosticGenerator extends Handler {
     settings.projectConfigChangeStream.listen(() => {
       this.updateLinter();
     });
-    this._disposables.push(fileSynchronizer.fileChanges.listen(() => {
-      this._reportWarnings();
+    this.disposables.push(fileSynchronizer.fileChanges.listen(() => {
+      this.reportWarnings();
     }));
     settings.changeStream.listen(({newer, older}) => {
       if (newer.analyzeWholePackage !== older.analyzeWholePackage) {
@@ -54,13 +54,13 @@ export default class DiagnosticGenerator extends Handler {
         // warnings that were reported with the old setting but not the new
         // one.
         if (newer.analyzeWholePackage) {
-          this._urisReportedWarningsFor = new Set(this.documents.keys());
+          this.urisReportedWarningsFor = new Set(this.documents.keys());
         } else {
-          for (const uri of this._urisReportedWarningsFor) {
+          for (const uri of this.urisReportedWarningsFor) {
             this.connection.sendDiagnostics({uri, diagnostics: []});
           }
         }
-        this._reportWarnings();
+        this.reportWarnings();
       }
     });
 
@@ -127,18 +127,18 @@ export default class DiagnosticGenerator extends Handler {
 
     const linter = new Linter(rules, this.analyzer);
     this.linter = linter;
-    this._reportWarnings();
+    this.reportWarnings();
   }
 
   /**
    * Used so that if we don't have any warnings to report for a file on the
    * next go around we can remember to send an empty array.
    */
-  private _urisReportedWarningsFor = new Set<string>();
-  private async _reportWarnings(): Promise<void> {
+  private urisReportedWarningsFor = new Set<string>();
+  private async reportWarnings(): Promise<void> {
     if (this.settings.analyzeWholePackage) {
       const warnings = await this.linter.lintPackage();
-      this._reportPackageWarnings(warnings);
+      this.reportPackageWarnings(warnings);
     } else {
       const warnings = await this.linter.lint(this.documents.keys().map(
           uri => this.converter.getWorkspacePathToFile({uri})));
@@ -167,16 +167,16 @@ export default class DiagnosticGenerator extends Handler {
    *
    * This is pulled out into its own non-async function to document and maintain
    * the invariant that there must not be an await between the initial read of
-   * _urisReportedWarningsFor and the write of it at the end.
+   * urisReportedWarningsFor and the write of it at the end.
    */
-  private _reportPackageWarnings(warnings: Iterable<Warning>) {
-    const reportedLastTime = new Set(this._urisReportedWarningsFor);
-    this._urisReportedWarningsFor = new Set<string>();
+  private reportPackageWarnings(warnings: Iterable<Warning>) {
+    const reportedLastTime = new Set(this.urisReportedWarningsFor);
+    this.urisReportedWarningsFor = new Set<string>();
     const diagnosticsByUri = new Map<string, Diagnostic[]>();
     for (const warning of warnings) {
       const uri = this.converter.getUriForLocalPath(warning.sourceRange.file);
       reportedLastTime.delete(uri);
-      this._urisReportedWarningsFor.add(uri);
+      this.urisReportedWarningsFor.add(uri);
       let diagnostics = diagnosticsByUri.get(uri);
       if (!diagnostics) {
         diagnostics = [];
@@ -191,7 +191,7 @@ export default class DiagnosticGenerator extends Handler {
       this.connection.sendDiagnostics(
           {uri: uriWithNoWarnings, diagnostics: []});
     }
-    this._urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
+    this.urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
   }
 
   private async getCodeActions(req: CodeActionParams) {

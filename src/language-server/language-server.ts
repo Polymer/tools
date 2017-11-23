@@ -32,11 +32,11 @@ import {Handler} from './util';
 export default class LanguageServer extends Handler {
   readonly converter: AnalyzerLSPConverter;
   protected readonly connection: IConnection;
-  private readonly _editorService: LocalEditorService;
+  private readonly editorService: LocalEditorService;
+  private readonly documents: TextDocuments;
   readonly fileSynchronizer: FileSynchronizer;
-  private readonly _documents: TextDocuments;
   private readonly diagnosticGenerator: DiagnosticGenerator;
-  private readonly _settings: Settings;
+  private readonly settings: Settings;
 
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(
@@ -90,52 +90,52 @@ export default class LanguageServer extends Handler {
    */
   constructor(connection: IConnection, workspaceUri: Uri) {
     super();
-    this._disposables.push(connection);
+    this.disposables.push(connection);
     this.connection = connection;
 
     const workspacePath = workspaceUri.fsPath;
 
     // TODO(rictic): try out implementing an incrementally synced version of
     //     TextDocuments. Should be a performance win for editing large docs.
-    this._documents = new TextDocuments();
-    this._documents.listen(connection);
+    this.documents = new TextDocuments();
+    this.documents.listen(connection);
     this.converter = new AnalyzerLSPConverter(workspaceUri);
 
     const synchronizer = new FileSynchronizer(
-        connection, this._documents, workspacePath, this.converter);
+        connection, this.documents, workspacePath, this.converter);
 
-    this._settings = new Settings(connection, synchronizer, this.converter);
-    this._disposables.push(this._settings);
+    this.settings = new Settings(connection, synchronizer, this.converter);
+    this.disposables.push(this.settings);
 
-    this._editorService = new LocalEditorService({
+    this.editorService = new LocalEditorService({
       urlLoader: synchronizer.urlLoader,
       urlResolver: new PackageUrlResolver(),
-      settings: this._settings
+      settings: this.settings
     });
 
-    this._disposables.push(
+    this.disposables.push(
         synchronizer.fileChanges.listen((filesChangeEvents) => {
           this.handleFilesChanged(filesChangeEvents);
         }));
     this.fileSynchronizer = synchronizer;
 
     this.diagnosticGenerator = new DiagnosticGenerator(
-        this._editorService.analyzer, this.converter, connection,
-        this._settings, synchronizer, this._documents);
-    this._disposables.push(this.diagnosticGenerator);
+        this.editorService.analyzer, this.converter, connection, this.settings,
+        synchronizer, this.documents);
+    this.disposables.push(this.diagnosticGenerator);
 
     const commandExecutor =
         new CommandExecutor(this.connection, this.diagnosticGenerator);
-    this._disposables.push(commandExecutor);
+    this.disposables.push(commandExecutor);
 
-    this._initEventHandlers();
+    this.initEventHandlers();
   }
 
   private capabilities(clientCapabilities: ClientCapabilities):
       ServerCapabilities {
     const ourCapabilities: ServerCapabilities = {
       textDocumentSync: {
-        change: this._documents.syncKind,
+        change: this.documents.syncKind,
         openClose: true,
         willSaveWaitUntil: true
       },
@@ -155,7 +155,7 @@ export default class LanguageServer extends Handler {
     return ourCapabilities;
   }
 
-  private _initEventHandlers() {
+  private initEventHandlers() {
     this.connection.onHover(async(textPosition) => {
       return this.handleErrors(
           this.getDocsForHover(textPosition), undefined) as Promise<Hover>;
@@ -172,7 +172,7 @@ export default class LanguageServer extends Handler {
     });
 
     this.connection.onWillSaveTextDocumentWaitUntil((req) => {
-      if (this._settings.fixOnSave) {
+      if (this.settings.fixOnSave) {
         return this.handleErrors(
             this.diagnosticGenerator.getFixesForFile(req.textDocument.uri), []);
       }
@@ -185,7 +185,7 @@ export default class LanguageServer extends Handler {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
     const completions =
-        await this._editorService.getTypeaheadCompletionsAtPosition(
+        await this.editorService.getTypeaheadCompletionsAtPosition(
             localPath, this.converter.convertPosition(textPosition.position));
     if (!completions) {
       return {isIncomplete: false, items: []};
@@ -220,9 +220,8 @@ export default class LanguageServer extends Handler {
       Promise<Definition|undefined> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const location =
-        await this._editorService.getDefinitionForFeatureAtPosition(
-            localPath, this.converter.convertPosition(textPosition.position));
+    const location = await this.editorService.getDefinitionForFeatureAtPosition(
+        localPath, this.converter.convertPosition(textPosition.position));
     if (location && location.file) {
       let definition: Location = {
         uri: this.converter.getUriForLocalPath(location.file),
@@ -236,7 +235,7 @@ export default class LanguageServer extends Handler {
       Promise<Hover|undefined> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const documentation = await this._editorService.getDocumentationAtPosition(
+    const documentation = await this.editorService.getDocumentationAtPosition(
         localPath, this.converter.convertPosition(textPosition.position));
     if (documentation) {
       return {contents: documentation};
@@ -262,7 +261,7 @@ export default class LanguageServer extends Handler {
       // https://github.com/Polymer/polymer-analyzer/issues/761
       try {
         const context: AnalysisContext =
-            await this._editorService.analyzer['_analysisComplete'];
+            await this.editorService.analyzer['_analysisComplete'];
         const cache: AnalysisCache = context['_cache'];
         const cachedPaths = new Set<ResolvedUrl>([
           ...cache.failedDocuments.keys(),
@@ -281,7 +280,7 @@ export default class LanguageServer extends Handler {
       }
     }
     // Clear the files from any caches and recalculate warnings as needed.
-    await this._editorService.analyzer.filesChanged(paths);
+    await this.editorService.analyzer.filesChanged(paths);
   }
 }
 

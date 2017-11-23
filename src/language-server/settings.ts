@@ -65,7 +65,7 @@ export default class Settings extends AutoDisposable {
     });
     this.fileSynchronizer = fileSynchronizer;
 
-    this._disposables.push(
+    this.disposables.push(
         this.fileSynchronizer.fileChanges.listen((changes) => {
           for (const change of changes) {
             const workspacePath = converter.getWorkspacePathToFile(change);

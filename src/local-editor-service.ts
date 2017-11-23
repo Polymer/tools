@@ -84,7 +84,7 @@ export class LocalEditorService {
 
   async getDocumentationAtPosition(localPath: string, position: SourcePosition):
       Promise<string|undefined> {
-    const feature = await this._getFeatureAt(localPath, position);
+    const feature = await this.getFeatureAt(localPath, position);
     if (!feature) {
       return;
     }
@@ -102,7 +102,7 @@ export class LocalEditorService {
   async getDefinitionForFeatureAtPosition(
       localPath: string,
       position: SourcePosition): Promise<SourceRange|undefined> {
-    const feature = await this._getFeatureAt(localPath, position);
+    const feature = await this.getFeatureAt(localPath, position);
     if (!feature) {
       return;
     }
@@ -120,7 +120,7 @@ export class LocalEditorService {
     if (!(document instanceof Document)) {
       return;
     }
-    const location = await this._getAstAtPosition(document, position);
+    const location = await this.getAstAtPosition(document, position);
     if (!location) {
       return;
     }
@@ -144,12 +144,12 @@ export class LocalEditorService {
     if (!(document instanceof Document)) {
       return;
     }
-    const location = await this._getAstAtPosition(document, position);
+    const location = await this.getAstAtPosition(document, position);
     if (!location) {
       return;
     }
     const feature =
-        await this._getFeatureForAstLocation(document, location, position);
+        await this.getFeatureForAstLocation(document, location, position);
     if (feature && (feature instanceof DatabindingFeature)) {
       const element = feature.element;
       return {
@@ -186,7 +186,7 @@ export class LocalEditorService {
                 undefined,
             expandToSnippet:
                 location.kind === 'text' || location.kind === 'tagName' ?
-                this._generateAutoCompletionForElement(e) :
+                this.generateAutoCompletionForElement(e) :
                 undefined
           };
         })
@@ -206,7 +206,7 @@ export class LocalEditorService {
       });
       if (!outerElement)
         return;
-      const sortPrefixes = this._createSortPrefixes(outerElement);
+      const sortPrefixes = this.createSortPrefixes(outerElement);
       const [innerElement] = document.getFeatures({
         kind: 'element',
         id: location.element.nodeName,
@@ -256,7 +256,7 @@ export class LocalEditorService {
       });
       let attributes: AttributeCompletion[] = [];
       if (element) {
-        const sortPrefixes = this._createSortPrefixes(element);
+        const sortPrefixes = this.createSortPrefixes(element);
         attributes.push(...[...element.attributes.values()].map(p => {
           const sortKey =
               (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
@@ -286,7 +286,7 @@ export class LocalEditorService {
     }
   }
 
-  private _createSortPrefixes(element: Element): Map<string|undefined, string> {
+  private createSortPrefixes(element: Element): Map<string|undefined, string> {
     // A map from the inheritedFrom to a sort prefix. Note that
     // `undefined` is a legal value for inheritedFrom.
     const sortPrefixes = new Map<string|undefined, string>();
@@ -301,7 +301,7 @@ export class LocalEditorService {
     return sortPrefixes;
   }
 
-  private _generateAutoCompletionForElement(e: Element): string {
+  private generateAutoCompletionForElement(e: Element): string {
     let autocompletion = `<${e.tagName}`;
     let tabindex = 1;
     if (e.attributes.size > 0) {
@@ -358,32 +358,28 @@ export class LocalEditorService {
     };
   }
 
-  async _clearCaches() {
-    this.analyzer.clearCaches();
-  }
-
   /**
    * Given a point in a file, return a high level feature that describes what
    * is going on there, like an Element for an HTML tag.
    */
-  private async _getFeatureAt(localPath: string, position: SourcePosition):
+  private async getFeatureAt(localPath: string, position: SourcePosition):
       Promise<Element|Property|Attribute|DatabindingFeature|undefined> {
     const analysis = await this.analyzer.analyze([localPath]);
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return;
     }
-    const location = await this._getAstAtPosition(document, position);
+    const location = await this.getAstAtPosition(document, position);
     if (!location) {
       return;
     }
-    return this._getFeatureForAstLocation(document, location, position);
+    return this.getFeatureForAstLocation(document, location, position);
   }
 
   /**
    * Given an AstLocation, return a high level feature.
    */
-  private async _getFeatureForAstLocation(
+  private async getFeatureForAstLocation(
       document: Document, astLocation: AstLocation, position: SourcePosition):
       Promise<Element|Attribute|DatabindingFeature|undefined> {
     if (astLocation.kind === 'tagName') {
@@ -441,8 +437,7 @@ export class LocalEditorService {
     }
   }
 
-  private async _getAstAtPosition(
-      document: Document, position: SourcePosition) {
+  private async getAstAtPosition(document: Document, position: SourcePosition) {
     const parsedDocument = document.parsedDocument;
     if (!(parsedDocument instanceof ParsedHtmlDocument)) {
       return;

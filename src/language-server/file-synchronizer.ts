@@ -43,7 +43,7 @@ export default class FileSynchronizer extends AutoDisposable {
 
     const {fire, stream} = EventStream.create<FileEvent[]>();
     this.fileChanges = stream;
-    this._disposables.push(documents.onDidChangeContent((change) => {
+    this.disposables.push(documents.onDidChangeContent((change) => {
       // A document has changed in memory!
       const workspacePath = converter.getWorkspacePathToFile(change.document);
       this.inMemoryDocuments.set(workspacePath, change.document.getText());
@@ -52,7 +52,7 @@ export default class FileSynchronizer extends AutoDisposable {
       fire([{type: FileChangeType.Changed, uri: change.document.uri}]);
     }));
 
-    this._disposables.push(documents.onDidClose((event) => {
+    this.disposables.push(documents.onDidClose((event) => {
       // The file is no longer managed in memory, so we should delete it from
       // the in-memory map.
       this.inMemoryDocuments.delete(
