@@ -590,6 +590,19 @@ suite('Project Config', () => {
 
   });
 
+  suite('json validation', () => {
+    test('throws good error messages', () => {
+      try {
+        ProjectConfig.validateAndCreate({ lint: [] });
+      } catch (e) {
+        assert.deepEqual(
+            e.message, `Property 'lint' is not of a type(s) object`);
+        return;
+      }
+      throw new Error('Expected validateAndCreate to throw for invalid config');
+    });
+  });
+
   suite('toJSON()', () => {
     test('with minimal config', () => {
       const config = ProjectConfig.loadConfigFromFile(
