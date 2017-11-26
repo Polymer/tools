@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Added a new lint option: `filesToIgnore`. We'll never report warnings for any
+  file that matches any of these globs.
+  * `ignoreWarnings` is a confusing phrasing. Added the `warningsToIgnore`
+    spelling which will be used preferentially. This was better than making the
+    options inconsistent, or spelling the new option `ignoreFiles`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.5.0] - 2017-11-21

@@ -79,6 +79,14 @@ function fixDeprecatedOptions(options: any): ProjectOptions {
     options.extraDependencies =
         options.extraDependencies || options.includeDependencies;
   }
+  // TODO(rictic): two releases after v3.5.0, start warning about
+  //     options.lint.ignoreWarnings. For now we'll start by just
+  //     making them always point to the same object.
+  if (options.lint && options.lint.warningsToIgnore) {
+    options.lint.ignoreWarnings = options.lint.warningsToIgnore;
+  } else if (options.lint && options.lint.ignoreWarnings) {
+    options.lint.warningsToIgnore = options.lint.ignoreWarnings;
+  }
   return options;
 }
 
@@ -93,7 +101,26 @@ export interface LintOptions {
    * Warnings to ignore. After the rules are run, any warning that matches
    * one of these codes is ignored, project-wide.
    */
+  warningsToIgnore?: string[];
+
+  /**
+   * Awkward way of spelling the `warningsToIgnore` lint option.
+   *
+   * Used only if `warningsToIgnore` is not specified.
+   */
   ignoreWarnings?: string[];
+
+  /**
+   * An array of file globs to never report warnings for.
+   *
+   * The globs follow [minimatch] syntax, and any file that matches any
+   * of the listed globs will never show any linter warnings. This will
+   * typically not have a performance benefit, as the file will usually
+   * still need to be analyzed.
+   *
+   * [minimatch]: https://github.com/isaacs/minimatch
+   */
+  filesToIgnore?: string[];
 }
 
 export interface ProjectOptions {
@@ -398,6 +425,11 @@ export class ProjectConfig {
    * will be relative to root.
    */
   toJSON(): string {
+    let lintObj = undefined;
+    if (this.lint) {
+      lintObj = {...this.lint};
+      delete lintObj.ignoreWarnings;
+    }
     const obj = {
       entrypoint: globRelative(this.root, this.entrypoint),
       shell: this.shell ? globRelative(this.root, this.shell) : undefined,
@@ -411,7 +443,7 @@ export class ProjectConfig {
         return globRelative(this.root, absolutePath);
       }),
       builds: this.builds,
-      lint: this.lint,
+      lint: lintObj,
     };
     return JSON.stringify(obj, null, 2);
   }

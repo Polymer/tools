@@ -19,12 +19,24 @@
     {
       "name": "my-build",
       "swPrecacheConfig": "sw.conf",
-      "browserCapabilities": ["es2015"],
+      "browserCapabilities": [
+        "es2015"
+      ],
       "basePath": true
     }
   ],
   "lint": {
-    "rules": ["some-rule"],
-    "ignoreWarnings": ["some-warning"]
+    "rules": [
+      "some-rule"
+    ],
+    "warningsToIgnore": [
+      "some-warning"
+    ],
+    "ignoreWarnings": [
+      "this will be overridden by warningsToIgnore"
+    ],
+    "filesToIgnore": [
+      "some .* glob"
+    ]
   }
 }

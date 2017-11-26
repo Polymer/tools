@@ -641,7 +641,8 @@ suite('Project Config', () => {
         ],
         lint: {
           rules: ['some-rule'],
-          ignoreWarnings: ['some-warning'],
+          warningsToIgnore: ['some-warning'],
+          filesToIgnore: ["some .* glob"]
         }
       });
     });
