@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `lint.ignoreWarnings` which takes an array of warning codes that we should
   not report. This brings the IDE in line with `polymer lint` on the command
   line.
+- Supports specifying files to ignore all warnings for with the polymer.json
+  field `lint.filesToIgnore` which takes an array of `minimatch` globs. If a
+  file matches any of those globs then we will never report a warning for it.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.

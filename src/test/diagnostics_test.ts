@@ -183,6 +183,27 @@ suite('DiagnosticGenerator', function() {
         ['unknown-superclass']);
   });
 
+  test('can be configured to filter out some files', async() => {
+    const {client} = await createTestEnvironment();
+    await client.openFile('index.html', `
+      <link rel="import" href="nonexistant.html">
+      <script>
+        class Foo extends What {};
+      </script>
+    `);
+
+    assert.deepEqual(
+        (await client.getNextDiagnostics('index.html')).map(d => d.code),
+        ['could-not-load', 'unknown-superclass']);
+
+    await client.openFile(
+        'polymer.json',
+        JSON.stringify({lint: {filesToIgnore: ['*dex*.html']}}));
+
+    assert.deepEqual(
+        (await client.getNextDiagnostics('index.html')).map(d => d.code), []);
+  });
+
   // TODO(rictic): add tests for analyzeWholePackage here
   // TODO(rictic): add tests for code actions here
   // TODO(rictic): add tests for fix on save here

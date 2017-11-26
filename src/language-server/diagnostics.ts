@@ -21,12 +21,16 @@ import FileSynchronizer from './file-synchronizer';
 import Settings from './settings';
 import {Handler} from './util';
 
+import minimatch = require('minimatch');
+import {IMinimatch} from 'minimatch';
+
 /**
  * Handles publishing diagnostics and code actions on those diagnostics.
  */
 export default class DiagnosticGenerator extends Handler {
   private linter: Linter;
   private warningCodesToFilterOut: ReadonlySet<string> = new Set<string>();
+  private fileGlobsToFilterOut: ReadonlyArray<IMinimatch> = [];
   constructor(
       private analyzer: Analyzer, private converter: AnalyzerLSPConverter,
       protected connection: IConnection, private settings: Settings,
@@ -117,18 +121,28 @@ export default class DiagnosticGenerator extends Handler {
   private updateLinter() {
     let rules: Iterable<Rule> = new Set();
     const projectConfig = this.settings.projectConfig;
-    if (projectConfig.lint && projectConfig.lint.rules) {
-      try {
-        rules = registry.getRules(projectConfig.lint.rules);
-      } catch (e) {
-        // TODO(rictic): let the user know about this error, and about
-        //   this.settings.projectConfigDiagnostic if it exists.
+    if (projectConfig.lint) {
+      const lintConfig = projectConfig.lint;
+      if (lintConfig.rules) {
+        try {
+          rules = registry.getRules(projectConfig.lint.rules);
+        } catch (e) {
+          // TODO(rictic): let the user know about this error, and about
+          //   this.settings.projectConfigDiagnostic if it exists.
+        }
       }
-    }
-    if (projectConfig.lint && projectConfig.lint.ignoreWarnings) {
-      this.warningCodesToFilterOut = new Set(projectConfig.lint.ignoreWarnings);
-    } else {
-      this.warningCodesToFilterOut = new Set();
+      if (lintConfig.ignoreWarnings) {
+        this.warningCodesToFilterOut =
+            new Set(projectConfig.lint.ignoreWarnings);
+      } else {
+        this.warningCodesToFilterOut = new Set();
+      }
+      if (lintConfig.filesToIgnore) {
+        this.fileGlobsToFilterOut = lintConfig.filesToIgnore.map(
+            glob => new minimatch.Minimatch(glob, {}));
+      } else {
+        this.fileGlobsToFilterOut = [];
+      }
     }
 
     const linter = new Linter(rules, this.analyzer);
@@ -146,14 +160,16 @@ export default class DiagnosticGenerator extends Handler {
       const warnings = await this.linter.lintPackage();
       this.reportPackageWarnings(warnings);
     } else {
-      const warnings = await this.linter.lint(this.documents.keys().map(
-          uri => this.converter.getWorkspacePathToFile({uri})));
+      const paths =
+          this.documents.keys()
+              .map(uri => this.converter.getWorkspacePathToFile({uri}))
+              .filter(
+                  path => !this.fileGlobsToFilterOut.some(
+                      glob => glob.match(path)));
+      const warnings = await this.linter.lint(paths);
       const diagnosticsByUri = new Map(
           this.documents.keys().map((k): [string, Diagnostic[]] => [k, []]));
-      for (const warning of warnings) {
-        if (this.warningCodesToFilterOut.has(warning.code)) {
-          continue;
-        }
+      for (const warning of this.filterWarnings(warnings)) {
         const diagnostic = this.converter.convertWarningToDiagnostic(warning);
         let diagnostics =
             diagnosticsByUri.get(
@@ -170,6 +186,16 @@ export default class DiagnosticGenerator extends Handler {
     }
   }
 
+  private filterWarnings(warnings: ReadonlyArray<Warning>):
+      ReadonlyArray<Warning> {
+    return warnings.filter(w => {
+      return !(
+          this.warningCodesToFilterOut.has(w.code) ||
+          this.fileGlobsToFilterOut.some(
+              glob => glob.match(w.sourceRange.file)));
+    });
+  }
+
   /**
    * Report the given warnings for the package implicitly defined by the
    * workspace.
@@ -178,14 +204,11 @@ export default class DiagnosticGenerator extends Handler {
    * the invariant that there must not be an await between the initial read of
    * urisReportedWarningsFor and the write of it at the end.
    */
-  private reportPackageWarnings(warnings: Iterable<Warning>) {
+  private reportPackageWarnings(warnings: ReadonlyArray<Warning>) {
     const reportedLastTime = new Set(this.urisReportedWarningsFor);
     this.urisReportedWarningsFor = new Set<string>();
     const diagnosticsByUri = new Map<string, Diagnostic[]>();
-    for (const warning of warnings) {
-      if (this.warningCodesToFilterOut.has(warning.code)) {
-        continue;
-      }
+    for (const warning of this.filterWarnings(warnings)) {
       const uri = this.converter.getUriForLocalPath(warning.sourceRange.file);
       reportedLastTime.delete(uri);
       this.urisReportedWarningsFor.add(uri);
