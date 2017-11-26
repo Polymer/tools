@@ -26,6 +26,7 @@ import {Handler} from './util';
  */
 export default class DiagnosticGenerator extends Handler {
   private linter: Linter;
+  private warningCodesToFilterOut: ReadonlySet<string> = new Set<string>();
   constructor(
       private analyzer: Analyzer, private converter: AnalyzerLSPConverter,
       protected connection: IConnection, private settings: Settings,
@@ -124,6 +125,11 @@ export default class DiagnosticGenerator extends Handler {
         //   this.settings.projectConfigDiagnostic if it exists.
       }
     }
+    if (projectConfig.lint && projectConfig.lint.ignoreWarnings) {
+      this.warningCodesToFilterOut = new Set(projectConfig.lint.ignoreWarnings);
+    } else {
+      this.warningCodesToFilterOut = new Set();
+    }
 
     const linter = new Linter(rules, this.analyzer);
     this.linter = linter;
@@ -145,6 +151,9 @@ export default class DiagnosticGenerator extends Handler {
       const diagnosticsByUri = new Map(
           this.documents.keys().map((k): [string, Diagnostic[]] => [k, []]));
       for (const warning of warnings) {
+        if (this.warningCodesToFilterOut.has(warning.code)) {
+          continue;
+        }
         const diagnostic = this.converter.convertWarningToDiagnostic(warning);
         let diagnostics =
             diagnosticsByUri.get(
@@ -174,6 +183,9 @@ export default class DiagnosticGenerator extends Handler {
     this.urisReportedWarningsFor = new Set<string>();
     const diagnosticsByUri = new Map<string, Diagnostic[]>();
     for (const warning of warnings) {
+      if (this.warningCodesToFilterOut.has(warning.code)) {
+        continue;
+      }
       const uri = this.converter.getUriForLocalPath(warning.sourceRange.file);
       reportedLastTime.delete(uri);
       this.urisReportedWarningsFor.add(uri);
