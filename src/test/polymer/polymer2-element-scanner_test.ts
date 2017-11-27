@@ -110,7 +110,7 @@ suite('Polymer2ElementScanner', () => {
         properties: [{
           name: 'foo',
           description: 'The foo prop.',
-          type: '(m-test|function)',
+          type: '(m-test | function)',
         }],
         attributes: [{
           name: 'foo',
