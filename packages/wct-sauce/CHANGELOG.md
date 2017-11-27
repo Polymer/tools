@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.0-pre.3 - 2017-11-27
+
+- Added Edge 15 to Travis browser list.
+- Added Safari 11 to default and Travis browser lists.
+
 ## 2.0.0-pre.2 - 2017-11-16
 
 - Update to cleankill@^2.0.0
