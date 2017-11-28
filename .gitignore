@@ -1,6 +1,3 @@
-# npm lockfile (we use yarn)
-package-lock.json
-
 # Logs
 logs
 *.log

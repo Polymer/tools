@@ -13,7 +13,7 @@
  */
 
 import {assert} from 'chai';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as diff from 'diff';
 import * as fs from 'mz/fs';
 import * as path from 'path';

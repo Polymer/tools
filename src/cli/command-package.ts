@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import * as path from 'path';
 import * as semver from 'semver';
