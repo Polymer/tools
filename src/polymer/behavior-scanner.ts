@@ -104,7 +104,7 @@ class BehaviorVisitor implements Visitor {
       }
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
-      } else if (babel.isFunction(prop.value)) {
+      } else if (babel.isMethod(prop) || babel.isFunction(prop.value)) {
         const method = esutil.toScannedMethod(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
         this.currentBehavior.addMethod(method);
