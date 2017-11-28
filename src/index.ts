@@ -228,17 +228,14 @@ export class ProjectConfig {
     const result = validator.validate(configJsonObject, getSchema());
     if (result.errors.length > 0) {
       const error = result.errors[0]!;
-      let message;
-      if (error.property && error.message) {
-        let propertyName = error.property;
-        if (propertyName.startsWith('instance.')) {
-          propertyName = propertyName.slice(9);
-        }
-        message = `Property '${propertyName}' ${error.message}`;
-      } else {
-        message = error.toString()
+      if (!error.property && !error.message) {
+        throw error;
       }
-      throw new Error(message);
+      let propertyName = error.property;
+      if (propertyName.startsWith('instance.')) {
+        propertyName = propertyName.slice(9);
+      }
+      throw new Error(`Property '${propertyName}' ${error.message}`);
     }
     return configJsonObject;
   }
