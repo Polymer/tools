@@ -36,7 +36,6 @@ import {rewriteNamespacesThisReferences} from './passes/rewrite-namespace-this-r
 import {rewriteReferencesToLocalExports} from './passes/rewrite-references-to-local-exports';
 import {rewriteReferencesToNamespaceMembers} from './passes/rewrite-references-to-namespace-members';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
-import {ProjectConverter} from './project-converter';
 import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
 import {isOriginalDocumentUrlFormat} from './urls/util';
@@ -197,26 +196,30 @@ function getImportDeclarations(
 export class DocumentConverter {
   private readonly originalUrl: OriginalDocumentUrl;
   private readonly convertedUrl: ConvertedDocumentUrl;
-  private readonly projectConverter: ProjectConverter;
   private readonly urlHandler: UrlHandler;
+  private readonly namespacedExports: Map<string, JsExport>;
   private readonly conversionSettings: ConversionSettings;
   private readonly document: Document;
 
-  // Dependencies not to convert, because they already have been / are currently
-  // being converted.
-  private readonly visited: Set<OriginalDocumentUrl>;
-
   private readonly _claimedDomModules = new Set<parse5.ASTNode>();
   constructor(
-      projectConverter: ProjectConverter, document: Document,
-      visited: Set<OriginalDocumentUrl>) {
-    this.projectConverter = projectConverter;
-    this.conversionSettings = projectConverter.conversionSettings;
-    this.urlHandler = projectConverter.urlHandler;
+      document: Document, namespacedExports: Map<string, JsExport>,
+      urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
+    this.namespacedExports = namespacedExports;
+    this.conversionSettings = conversionSettings;
+    this.urlHandler = urlHandler;
     this.document = document;
     this.originalUrl = getDocumentUrl(document);
     this.convertedUrl = this.convertDocumentUrl(this.originalUrl);
-    this.visited = visited;
+  }
+
+  /**
+   * Returns ALL HTML Imports from a document. Note that this may return imports
+   * to documents that are meant to be ignored/excluded during conversion. It
+   * it is up to the caller to filter out any unneccesary/excluded documents.
+   */
+  static getAllHtmlImports(document: Document): Import[] {
+    return [...document.getFeatures({kind: 'html-import'})];
   }
 
   /**
@@ -226,7 +229,7 @@ export class DocumentConverter {
    * Note: Imports that are not found are not returned by the analyzer.
    */
   private getHtmlImports() {
-    return IterableX.from(this.document.getFeatures({kind: 'html-import'}))
+    return DocumentConverter.getAllHtmlImports(this.document)
         .filter(
             (f: Import) =>
                 !this.conversionSettings.excludes.has(f.document.url));
@@ -255,8 +258,6 @@ export class DocumentConverter {
         attachCommentsToFirstStatement(trailingComments, []);
     combinedToplevelStatements.push(...maybeCommentStatement);
     const program = jsc.program(combinedToplevelStatements);
-    // Convert dependencies first, so we know what exports they have.
-    this.convertDependencies();
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
     const importedReferences = this.collectNamespacedReferences(program);
@@ -302,8 +303,6 @@ export class DocumentConverter {
   }
 
   convertAsToplevelHtmlDocument(): ConversionResult {
-    // Convert dependencies first, so we know what exports they have.
-    this.convertDependencies();
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
     const p = dom5.predicates;
 
@@ -686,30 +685,6 @@ export class DocumentConverter {
   }
 
   /**
-   * Convert document dependencies. Should be called early in the conversion
-   * process so that it can read this document's dependencies' exports.
-   */
-  private convertDependencies() {
-    this.visited.add(this.originalUrl);
-    for (const htmlImport of this.getHtmlImports()) {
-      if (!this.projectConverter.shouldConvertDocument(htmlImport.document)) {
-        continue;
-      }
-      const documentUrl = getDocumentUrl(htmlImport.document);
-      if (this.visited.has(documentUrl)) {
-        console.warn(
-            `Cycle in dependency graph found where ` +
-            `${this.originalUrl} imports ${documentUrl}.\n` +
-            `    modulizer does not yet support rewriting references among ` +
-            `cyclic dependencies.`);
-        continue;
-      }
-      this.projectConverter.convertDocumentToJs(
-          htmlImport.document, this.visited);
-    }
-  }
-
-  /**
    * Rewrite namespaced references to the imported name. e.g. changes
    * Polymer.Element -> $Element
    *
@@ -718,7 +693,7 @@ export class DocumentConverter {
    */
   private collectNamespacedReferences(program: Program):
       Map<ConvertedDocumentUrl, Set<ImportReference>> {
-    const projectConverter = this.projectConverter;
+    const namespacedExports = this.namespacedExports;
     const conversionSettings = this.conversionSettings;
     const importedReferences =
         new Map<ConvertedDocumentUrl, Set<ImportReference>>();
@@ -745,8 +720,7 @@ export class DocumentConverter {
         if (!isNamespace || parentIsMemberExpression) {
           return false;
         }
-        const exportOfMember =
-            projectConverter.namespacedExports.get(memberName);
+        const exportOfMember = namespacedExports.get(memberName);
         if (!exportOfMember) {
           return false;
         }
@@ -764,8 +738,7 @@ export class DocumentConverter {
         const assignmentPath = getPathOfAssignmentTo(path);
         if (assignmentPath) {
           const setterName = getSetterName(memberPath);
-          const exportOfMember =
-              projectConverter.namespacedExports.get(setterName);
+          const exportOfMember = namespacedExports.get(setterName);
           if (!exportOfMember) {
             // warn about writing to an exported value without a setter?
             this.traverse(path);
@@ -780,8 +753,7 @@ export class DocumentConverter {
           addToImportedReferences(exportOfMember, callPath.get('callee')!);
           return false;
         }
-        const exportOfMember =
-            projectConverter.namespacedExports.get(memberName);
+        const exportOfMember = namespacedExports.get(memberName);
         if (!exportOfMember) {
           this.traverse(path);
           return;

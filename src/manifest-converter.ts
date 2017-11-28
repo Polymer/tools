@@ -24,7 +24,6 @@ interface DependencyMapEntry {
 interface DependencyMap {
   [bower: string]: DependencyMapEntry|undefined;
 }
-
 const dependencyMap: DependencyMap =
     readJson(__dirname, '../dependency-map.json');
 
