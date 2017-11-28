@@ -33,7 +33,7 @@
       "some-warning"
     ],
     "ignoreWarnings": [
-      "this will be overridden by warningsToIgnore"
+      "this should be overridden by warningsToIgnore"
     ],
     "filesToIgnore": [
       "some .* glob"

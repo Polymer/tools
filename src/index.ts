@@ -104,7 +104,7 @@ export interface LintOptions {
   warningsToIgnore?: string[];
 
   /**
-   * Awkward way of spelling the `warningsToIgnore` lint option.
+   * Deprecated way of spelling the `warningsToIgnore` lint option.
    *
    * Used only if `warningsToIgnore` is not specified.
    */
