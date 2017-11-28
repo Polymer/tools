@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
+
 import stripIndent = require('strip-indent');
 
 import * as esutil from '../../javascript/esutil';
@@ -33,12 +35,14 @@ suite('JavaScriptParser', () => {
   suite('parse()', () => {
 
     test('parses classes', () => {
+      // TODO(usergenic): I had to modify this test fixture because Babylon
+      // doesn't appreciate the keyword abuse of `const let = ...`.
       const contents = `
         class Foo extends HTMLElement {
           constructor() {
             super();
             this.bar = () => {};
-            const let = 'let const';
+            const let_ = 'let const';
           }
         }
       `;
@@ -66,7 +70,7 @@ suite('JavaScriptParser', () => {
       assert.equal(document.parsedAsSourceType, 'script');
       // First statement is an async function declaration
       const functionDecl = document.ast.body[0];
-      if (functionDecl.type !== 'FunctionDeclaration') {
+      if (!babel.isFunctionDeclaration(functionDecl)) {
         throw new Error('Expected a function declaration.');
       }
       assert.equal(functionDecl.async, true);
@@ -109,10 +113,12 @@ suite('JavaScriptParser', () => {
         class Foo extends HTMLElement {
           constructor() {
             super();
-            this.bar = () => {
-            };
-            const let = 'let const';
+
+            this.bar = () => {};
+
+            const leet = 'let const';
           }
+
         }`).trim() +
           '\n';
       const document = parser.parse(contents, 'test-file.js' as ResolvedUrl);

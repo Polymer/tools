@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {extractPropertiesFromConstructor} from '../javascript/class-scanner';
@@ -31,8 +31,8 @@ export class MixinVisitor implements Visitor {
   private _document: JavaScriptDocument;
 
   private _currentMixin: ScannedPolymerElementMixin|null = null;
-  private _currentMixinNode: estree.Node|null = null;
-  private _currentMixinFunction: estree.BaseFunction|null = null;
+  private _currentMixinNode: babel.Node|null = null;
+  private _currentMixinFunction: babel.Function|null = null;
   readonly warnings: Warning[] = [];
 
   constructor(document: JavaScriptDocument) {
@@ -40,8 +40,8 @@ export class MixinVisitor implements Visitor {
   }
 
   enterAssignmentExpression(
-      node: estree.AssignmentExpression, parent: estree.Node) {
-    if (parent.type !== 'ExpressionStatement') {
+      node: babel.AssignmentExpression, parent: babel.Node) {
+    if (!babel.isExpressionStatement(parent)) {
       return;
     }
     const parentComments = esutil.getAttachedComment(parent) || '';
@@ -75,7 +75,7 @@ export class MixinVisitor implements Visitor {
   }
 
   enterFunctionDeclaration(
-      node: estree.FunctionDeclaration, _parent: estree.Node) {
+      node: babel.FunctionDeclaration, _parent: babel.Node) {
     const nodeComments = esutil.getAttachedComment(node) || '';
     const nodeJsDocs = jsdoc.parseJsdoc(nodeComments);
     if (hasMixinFunctionDocTag(nodeJsDocs)) {
@@ -108,7 +108,7 @@ export class MixinVisitor implements Visitor {
   }
 
   leaveFunctionDeclaration(
-      node: estree.FunctionDeclaration, _parent: estree.Node) {
+      node: babel.FunctionDeclaration, _parent: babel.Node) {
     if (this._currentMixinNode === node) {
       this._currentMixin = null;
       this._currentMixinNode = null;
@@ -117,7 +117,7 @@ export class MixinVisitor implements Visitor {
   }
 
   enterVariableDeclaration(
-      node: estree.VariableDeclaration, _parent: estree.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const isMixin = hasMixinFunctionDocTag(docs);
@@ -154,7 +154,7 @@ export class MixinVisitor implements Visitor {
   }
 
   leaveVariableDeclaration(
-      node: estree.VariableDeclaration, _parent: estree.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node) {
     if (this._currentMixinNode === node) {
       this._currentMixin = null;
       this._currentMixinNode = null;
@@ -162,29 +162,28 @@ export class MixinVisitor implements Visitor {
     }
   }
 
-  enterFunctionExpression(
-      node: estree.FunctionExpression, _parent: estree.Node) {
+  enterFunctionExpression(node: babel.FunctionExpression, _parent: babel.Node) {
     if (this._currentMixin != null && this._currentMixinFunction == null) {
       this._currentMixinFunction = node;
     }
   }
 
   enterArrowFunctionExpression(
-      node: estree.ArrowFunctionExpression, _parent: estree.Node) {
+      node: babel.ArrowFunctionExpression, _parent: babel.Node) {
     if (this._currentMixin != null && this._currentMixinFunction == null) {
       this._currentMixinFunction = node;
     }
   }
 
-  enterClassExpression(node: estree.ClassExpression, parent: estree.Node) {
-    if (parent.type !== 'ReturnStatement' &&
-        parent.type !== 'ArrowFunctionExpression') {
+  enterClassExpression(node: babel.ClassExpression, parent: babel.Node) {
+    if (!babel.isReturnStatement(parent) &&
+        !babel.isArrowFunctionExpression(parent)) {
       return;
     }
     this._handleClass(node);
   }
 
-  enterClassDeclaration(node: estree.ClassDeclaration, _parent: estree.Node) {
+  enterClassDeclaration(node: babel.ClassDeclaration, _parent: babel.Node) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const isMixinClass = hasMixinClassDocTag(docs);
@@ -193,7 +192,7 @@ export class MixinVisitor implements Visitor {
     }
   }
 
-  private _handleClass(node: estree.ClassDeclaration|estree.ClassExpression) {
+  private _handleClass(node: babel.ClassDeclaration|babel.ClassExpression) {
     const mixin = this._currentMixin;
     if (mixin == null) {
       return;

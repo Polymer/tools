@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import * as jsdocLib from '../javascript/jsdoc';
 import {Document, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
@@ -37,7 +37,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly name: string|undefined;
   /** The name of the class in the local scope where it is defined. */
   readonly localName: string|undefined;
-  readonly astNode: estree.Node;
+  readonly astNode: babel.Node;
   readonly jsdoc: jsdocLib.Annotation;
   readonly description: string;
   readonly summary: string;
@@ -53,7 +53,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly demos: {desc?: string; path: string}[];
   constructor(
       className: string|undefined, localClassName: string|undefined,
-      astNode: estree.Node, jsdoc: jsdocLib.Annotation, description: string,
+      astNode: babel.Node, jsdoc: jsdocLib.Annotation, description: string,
       sourceRange: SourceRange, properties: Map<string, ScannedProperty>,
       methods: Map<string, ScannedMethod>,
       staticMethods: Map<string, ScannedMethod>,

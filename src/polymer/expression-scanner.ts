@@ -12,16 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
 import * as dom5 from 'dom5';
-import * as estree from 'estree';
 import * as parse5 from 'parse5';
 
 import {ParsedHtmlDocument} from '../html/html-document';
+import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {parseJs} from '../javascript/javascript-parser';
 import {correctSourceRange, LocationOffset, Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
-
 
 const p = dom5.predicates;
 const isTemplate = p.hasTagName('template');
@@ -71,7 +71,7 @@ export abstract class DatabindingExpression {
   readonly warnings: Warning[] = [];
   readonly expressionText: string;
 
-  private readonly _expressionAst: estree.Program;
+  private readonly _expressionAst: babel.Program;
   private readonly locationOffset: LocationOffset;
   private readonly _document: ParsedDocument;
 
@@ -84,7 +84,7 @@ export abstract class DatabindingExpression {
   properties: Array<{name: string, sourceRange: SourceRange}> = [];
 
   constructor(
-      sourceRange: SourceRange, expressionText: string, ast: estree.Program,
+      sourceRange: SourceRange, expressionText: string, ast: babel.Program,
       limitation: ExpressionLimitation, document: ParsedDocument) {
     this.sourceRange = sourceRange;
     this.expressionText = expressionText;
@@ -100,7 +100,7 @@ export abstract class DatabindingExpression {
   /**
    * Given an estree node in this databinding expression, give its source range.
    */
-  sourceRangeForNode(node: estree.Node) {
+  sourceRangeForNode(node: babel.Node) {
     if (!node || !node.loc) {
       return;
     }
@@ -122,7 +122,7 @@ export abstract class DatabindingExpression {
       return;
     }
     const expressionStatement = this._expressionAst.body[0]!;
-    if (expressionStatement.type !== 'ExpressionStatement') {
+    if (!babel.isExpressionStatement(expressionStatement)) {
       this.warnings.push(this._validationWarning(
           `Expect an expression, not a ${expressionStatement.type}`,
           expressionStatement));
@@ -131,23 +131,23 @@ export abstract class DatabindingExpression {
     let expression = expressionStatement.expression;
 
     this._validateLimitation(expression, limitation);
-    if (expression.type === 'UnaryExpression' && expression.operator === '!') {
+    if (babel.isUnaryExpression(expression) && expression.operator === '!') {
       expression = expression.argument;
     }
     this._extractAndValidateSubExpression(expression, true);
   }
 
   private _validateLimitation(
-      expression: estree.Expression, limitation: ExpressionLimitation) {
+      expression: babel.Expression, limitation: ExpressionLimitation) {
     switch (limitation) {
       case 'identifierOnly':
-        if (expression.type !== 'Identifier') {
+        if (!babel.isIdentifier(expression)) {
           this.warnings.push(this._validationWarning(
               `Expected just a name here, not an expression`, expression));
         }
         break;
       case 'callExpression':
-        if (expression.type !== 'CallExpression') {
+        if (!babel.isCallExpression(expression)) {
           this.warnings.push(this._validationWarning(
               `Expected a function call here.`, expression));
         }
@@ -161,10 +161,9 @@ export abstract class DatabindingExpression {
   }
 
   private _extractAndValidateSubExpression(
-      expression: estree.Node, callAllowed: boolean): void {
-    if (expression.type === 'UnaryExpression' && expression.operator === '-') {
-      if (expression.argument.type !== 'Literal' ||
-          typeof expression.argument.value !== 'number') {
+      expression: babel.Node, callAllowed: boolean): void {
+    if (babel.isUnaryExpression(expression) && expression.operator === '-') {
+      if (!babel.isNumericLiteral(expression.argument)) {
         this.warnings.push(this._validationWarning(
             'The - operator is only supported for writing negative numbers.',
             expression));
@@ -173,21 +172,21 @@ export abstract class DatabindingExpression {
       this._extractAndValidateSubExpression(expression.argument, false);
       return;
     }
-    if (expression.type === 'Literal') {
+    if (babel.isLiteral(expression)) {
       return;
     }
-    if (expression.type === 'Identifier') {
+    if (babel.isIdentifier(expression)) {
       this.properties.push({
         name: expression.name,
         sourceRange: this.sourceRangeForNode(expression)!
       });
       return;
     }
-    if (expression.type === 'MemberExpression') {
+    if (babel.isMemberExpression(expression)) {
       this._extractAndValidateSubExpression(expression.object, false);
       return;
     }
-    if (callAllowed && expression.type === 'CallExpression') {
+    if (callAllowed && babel.isCallExpression(expression)) {
       this._extractAndValidateSubExpression(expression.callee, false);
       for (const arg of expression.arguments) {
         this._extractAndValidateSubExpression(arg, false);
@@ -200,7 +199,7 @@ export abstract class DatabindingExpression {
         expression));
   }
 
-  private _validationWarning(message: string, node: estree.Node): Warning {
+  private _validationWarning(message: string, node: babel.Node): Warning {
     return new Warning({
       code: 'invalid-polymer-expression',
       message,
@@ -247,7 +246,7 @@ export class AttributeDatabindingExpression extends DatabindingExpression {
   constructor(
       astNode: parse5.ASTNode, isCompleteBinding: boolean, direction: '{'|'[',
       eventName: string|undefined, attribute: parse5.ASTAttribute,
-      sourceRange: SourceRange, expressionText: string, ast: estree.Program,
+      sourceRange: SourceRange, expressionText: string, ast: babel.Program,
       document: ParsedHtmlDocument) {
     super(sourceRange, expressionText, ast, 'full', document);
     this.astNode = astNode;
@@ -271,7 +270,7 @@ export class TextNodeDatabindingExpression extends DatabindingExpression {
 
   constructor(
       direction: '{'|'[', astNode: parse5.ASTNode, sourceRange: SourceRange,
-      expressionText: string, ast: estree.Program,
+      expressionText: string, ast: babel.Program,
       document: ParsedHtmlDocument) {
     super(sourceRange, expressionText, ast, 'full', document);
     this.direction = direction;
@@ -280,13 +279,13 @@ export class TextNodeDatabindingExpression extends DatabindingExpression {
 }
 
 export class JavascriptDatabindingExpression extends DatabindingExpression {
-  readonly astNode: estree.Node;
+  readonly astNode: babel.Node;
 
   readonly databindingInto = 'javascript';
 
   constructor(
-      astNode: estree.Node, sourceRange: SourceRange, expressionText: string,
-      ast: estree.Program, kind: ExpressionLimitation,
+      astNode: babel.Node, sourceRange: SourceRange, expressionText: string,
+      ast: babel.Program, kind: ExpressionLimitation,
       document: JavaScriptDocument) {
     super(sourceRange, expressionText, ast, kind, document);
     this.astNode = astNode;
@@ -487,7 +486,7 @@ function parseExpression(content: string, expressionSourceRange: SourceRange) {
 
 export function parseExpressionInJsStringLiteral(
     document: JavaScriptDocument,
-    stringLiteral: estree.Node,
+    stringLiteral: babel.Node,
     kind: 'identifierOnly'|'callExpression'|'full') {
   const warnings: Warning[] = [];
   const result = {
@@ -496,7 +495,7 @@ export function parseExpressionInJsStringLiteral(
   };
   const sourceRangeForLiteral = document.sourceRangeForNode(stringLiteral)!;
 
-  if (stringLiteral.type !== 'Literal') {
+  if (!babel.isLiteral(stringLiteral)) {
     // Should we warn here? It's potentially valid, just unanalyzable. Maybe
     // just an info that someone could escalate to a warning/error?
     warnings.push(new Warning({
@@ -508,7 +507,7 @@ export function parseExpressionInJsStringLiteral(
     }));
     return result;
   }
-  const expressionText = stringLiteral.value;
+  const expressionText = astValue.expressionToValue(stringLiteral);
   if (typeof expressionText !== 'string') {
     warnings.push(new Warning({
       code: 'invalid-polymer-expression',

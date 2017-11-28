@@ -12,14 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
-import * as estree from 'estree';
 
 import {Warning} from '../model/model';
+import {comparePosition} from '../model/source-range';
 
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
-import {getAttachedComment, getOrInferPrivacy, isFunctionType, objectKeyToString} from './esutil';
+import {getAttachedComment, getOrInferPrivacy, objectKeyToString} from './esutil';
 import {ScannedFunction} from './function';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
@@ -31,7 +32,12 @@ export class FunctionScanner implements JavaScriptScanner {
       visit: (visitor: Visitor) => Promise<void>) {
     const visitor = new FunctionVisitor(document);
     await visit(visitor);
-    return {features: Array.from(visitor.functions)};
+    return {
+      features: Array.from(visitor.functions)
+                    .sort(
+                        (a, b) => comparePosition(
+                            a.sourceRange.start, b.sourceRange.start)),
+    };
   }
 }
 
@@ -48,8 +54,16 @@ class FunctionVisitor implements Visitor {
    * Scan standalone function declarations.
    */
   enterFunctionDeclaration(
-      node: estree.FunctionDeclaration, _parent: estree.Node) {
+      node: babel.FunctionDeclaration, _parent: babel.Node) {
     this._initFunction(node, getIdentifierName(node.id), node);
+    return;
+  }
+
+  /**
+   * Scan object method declarations.
+   */
+  enterObjectMethod(node: babel.ObjectMethod, _parent: babel.Node) {
+    this._initFunction(node, getIdentifierName(node.key), node);
     return;
   }
 
@@ -57,14 +71,14 @@ class FunctionVisitor implements Visitor {
    * Scan functions assigned to newly declared variables.
    */
   enterVariableDeclaration(
-      node: estree.VariableDeclaration, _parent: estree.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
     const declaration = node.declarations[0];
     const declarationId = declaration.id;
     const declarationValue = declaration.init;
-    if (declarationValue && isFunctionType(declarationValue)) {
+    if (declarationValue && babel.isFunction(declarationValue)) {
       return this._initFunction(
           node, objectKeyToString(declarationId), declarationValue);
     }
@@ -74,8 +88,8 @@ class FunctionVisitor implements Visitor {
    * Scan functions assigned to variables and object properties.
    */
   enterAssignmentExpression(
-      node: estree.AssignmentExpression, parent: estree.Node) {
-    if (isFunctionType(node.right)) {
+      node: babel.AssignmentExpression, parent: babel.Node) {
+    if (babel.isFunction(node.right)) {
       this._initFunction(parent, objectKeyToString(node.left), node.right);
     }
   }
@@ -83,12 +97,15 @@ class FunctionVisitor implements Visitor {
   /**
    * Scan functions defined inside of object literals.
    */
-  enterObjectExpression(node: estree.ObjectExpression, _parent: estree.Node) {
+  enterObjectExpression(node: babel.ObjectExpression, _parent: babel.Node) {
     for (let i = 0; i < node.properties.length; i++) {
       const prop = node.properties[i];
+      if (babel.isSpreadProperty(prop)) {
+        continue;
+      }
       const propValue = prop.value;
       const name = objectKeyToString(prop.key);
-      if (isFunctionType(propValue)) {
+      if (babel.isFunction(propValue)) {
         this._initFunction(prop, name, propValue);
         continue;
       }
@@ -102,7 +119,7 @@ class FunctionVisitor implements Visitor {
   }
 
   private _initFunction(
-      node: estree.Node, analyzedName?: string, _fn?: estree.Function) {
+      node: babel.Node, analyzedName?: string, _fn?: babel.Function) {
     const comment = getAttachedComment(node);
 
     // Quickly filter down to potential candidates.

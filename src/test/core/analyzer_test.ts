@@ -14,9 +14,9 @@
 
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 
+import * as babel from 'babel-types';
 import {assert, use} from 'chai';
 import * as clone from 'clone';
-import * as estree from 'estree';
 import * as path from 'path';
 import * as shady from 'shady-css-parser';
 
@@ -31,7 +31,6 @@ import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-
 import {CodeUnderliner, invertPromise} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
@@ -650,9 +649,9 @@ suite('Analyzer', () => {
       assert.equal(1, jsDocs.size);
       const jsDoc = getOnly(jsDocs);
       (jsDoc.parsedDocument as JavaScriptDocument).visit([{
-        enterCallExpression(node: estree.CallExpression) {
+        enterCallExpression(node: babel.CallExpression) {
           node.arguments =
-              [{type: 'Literal', value: 'bar', raw: 'bar'}] as estree.Literal[];
+              [{type: 'StringLiteral', value: 'bar'}] as babel.StringLiteral[];
         }
       }]);
 

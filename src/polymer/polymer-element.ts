@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
 import * as dom5 from 'dom5';
-import * as estree from 'estree';
 
 import {getOrInferPrivacy} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
@@ -30,7 +30,7 @@ export interface BasePolymerProperty {
   published?: boolean;
   notify?: boolean;
   observer?: string;
-  observerNode?: estree.Expression|estree.Pattern;
+  observerNode?: babel.Expression|babel.Pattern;
   observerExpression?: JavascriptDatabindingExpression;
   reflectToAttribute?: boolean;
   computedExpression?: JavascriptDatabindingExpression;
@@ -121,7 +121,7 @@ export class LocalId {
 }
 
 export interface Observer {
-  javascriptNode: estree.Expression|estree.SpreadElement;
+  javascriptNode: babel.Expression|babel.SpreadElement;
   expression: LiteralValue;
   parsedExpression: JavascriptDatabindingExpression|undefined;
 }
@@ -265,7 +265,7 @@ export interface PolymerExtension extends ElementBase {
   properties: Map<string, PolymerProperty>;
 
   observers: ImmutableArray < {
-    javascriptNode: estree.Expression|estree.SpreadElement,
+    javascriptNode: babel.Expression|babel.SpreadElement,
         expression: LiteralValue,
         parsedExpression: JavascriptDatabindingExpression|undefined;
   }

@@ -12,19 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as escodegen from 'escodegen';
-import {traverse, VisitorOption} from 'estraverse';
-import {Node, Program} from 'estree';
+import generate from 'babel-generator';
+import {Node, Program} from 'babel-types';
+import indent = require('indent');
 
 import {SourceRange} from '../model/model';
 import {Options as ParsedDocumentOptions, ParsedDocument, StringifyOptions} from '../parser/document';
 
+import {traverse, VisitorOption} from './estraverse-shim';
 import {Visitor, VisitResult} from './estree-visitor';
 
 export {Visitor} from './estree-visitor';
 
 /**
- * estree.Node#type is one of around a hundred string literals. We don't have
+ * babel.Node#type is one of around a hundred string literals. We don't have
  * a direct reference to the type that represents any of those string literals
  * though. We can get a reference by taking a Node and using the `typeof`
  * operator, and it doesn't need to be a real Node as all of this happens at
@@ -64,7 +65,7 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
      * Applies all visiting callbacks from `visitors`.
      */
     const applyScanners =
-        (callbackName: string, node: Node, parent: Node|null) => {
+        (callbackName: string, node: Node, parent: Node | null) => {
           for (const visitor of visitors) {
             if (_shouldSkip(visitor, callbackName, node.type)) {
               continue;
@@ -135,10 +136,10 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
         };
 
     traverse(this.ast, {
-      enter(node, parent) {
+      enter(node: Node, parent: Node) {
         applyScanners(`enter${node.type}`, node, parent);
       },
-      leave(node, parent) {
+      leave(node: Node, parent: Node) {
         applyScanners(`leave${node.type}`, node, parent);
       },
       fallback: 'iteration',
@@ -159,13 +160,12 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
   stringify(options: StringifyOptions) {
     options = options || {};
     const formatOptions = {
-      comment: true,
-      format: {indent: {style: '  ', adjustMultilineComment: true, base: 0}}
+      comments: true,
+      retainLines: false,
+      quotes: 'single' as 'single',
     };
-    if (options.indent != null) {
-      formatOptions.format.indent.base = options.indent;
-    }
 
-    return escodegen.generate(this.ast, formatOptions) + '\n';
+    const code = generate(this.ast, formatOptions).code + '\n';
+    return options.indent != null ? indent(code, options.indent * 2) : code;
   }
 }

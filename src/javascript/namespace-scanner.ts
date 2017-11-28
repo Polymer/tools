@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import {Warning} from '../model/model';
 
@@ -50,7 +50,7 @@ class NamespaceVisitor implements Visitor {
    * Look for object declarations with @namespace in the docs.
    */
   enterVariableDeclaration(
-      node: estree.VariableDeclaration, _parent: estree.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
@@ -61,22 +61,21 @@ class NamespaceVisitor implements Visitor {
    * Look for object assignments with @namespace in the docs.
    */
   enterAssignmentExpression(
-      node: estree.AssignmentExpression, parent: estree.Node) {
+      node: babel.AssignmentExpression, parent: babel.Node) {
     this._initNamespace(parent, node.left);
   }
 
-  enterProperty(node: estree.Property, _parent: estree.Node) {
+  enterObjectProperty(node: babel.ObjectProperty, _parent: babel.Node) {
     this._initNamespace(node, node.key);
   }
 
-  private _initNamespace(node: estree.Node, nameNode: estree.Node) {
+  private _initNamespace(node: babel.Node, nameNode: babel.Node) {
     const comment = esutil.getAttachedComment(node);
     // Quickly filter down to potential candidates.
     if (!comment || comment.indexOf('@namespace') === -1) {
       return;
     }
     const analyzedName = getIdentifierName(nameNode);
-
     const docs = jsdoc.parseJsdoc(comment);
     const namespaceTag = jsdoc.getTag(docs, 'namespace');
     const explicitName = namespaceTag && namespaceTag.name;

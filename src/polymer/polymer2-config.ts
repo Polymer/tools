@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
+import * as astValue from '../javascript/ast-value';
 import {getIdentifierName} from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 
@@ -21,23 +22,28 @@ import {analyzeProperties} from './analyze-properties';
 import {ScannedPolymerProperty} from './polymer-element';
 
 export function getStaticGetterValue(
-    node: estree.ClassDeclaration|estree.ClassExpression,
-    name: string): estree.Expression|undefined|null {
-  const getter = node.body.body.find(
-      (n) => n.type === 'MethodDefinition' && n.static === true &&
-          n.kind === 'get' && getIdentifierName(n.key) === name);
+    node: babel.ClassDeclaration|babel.ClassExpression,
+    name: string): babel.Expression|undefined|null {
+  const getter =
+      node.body.body
+          .find(
+              (n) => babel.isClassMethod(n) && n.static === true &&
+                  n.kind === 'get' &&
+                  getIdentifierName(n.key) === name) as babel.ClassMethod;
   if (!getter) {
     return undefined;
   }
 
   // TODO(justinfagnani): consider generating warnings for these checks
-  const getterBody = getter.value.body;
+  // TODO(usergenic): I'm not sure this conversion below here makes sense...  Do
+  // we semantically want this `getter.body` to replace `getter.value.body`?
+  const getterBody = getter.body;
   if (getterBody.body.length !== 1) {
     // not a single statement function
     return undefined;
   }
   const statement = getterBody.body[0]!;
-  if (statement.type !== 'ReturnStatement') {
+  if (!babel.isReturnStatement(statement)) {
     // we only support a return statement
     return undefined;
   }
@@ -45,25 +51,26 @@ export function getStaticGetterValue(
   return statement.argument;
 }
 
-export function getIsValue(node: estree.ClassDeclaration|
-                           estree.ClassExpression): string|undefined {
+export function getIsValue(node: babel.ClassDeclaration|
+                           babel.ClassExpression): string|undefined {
   const getterValue = getStaticGetterValue(node, 'is');
-  if (!getterValue || getterValue.type !== 'Literal') {
+  if (!getterValue || !babel.isLiteral(getterValue)) {
     // we only support literals
     return undefined;
   }
-  if (typeof getterValue.value !== 'string') {
+  const value = astValue.expressionToValue(getterValue);
+  if (typeof value !== 'string') {
     return undefined;
   }
-  return getterValue.value;
+  return value;
 }
 
 /**
  * Returns the properties defined in a Polymer config object literal.
  */
 export function getPolymerProperties(
-    node: estree.Node, document: JavaScriptDocument): ScannedPolymerProperty[] {
-  if (node.type !== 'ClassDeclaration' && node.type !== 'ClassExpression') {
+    node: babel.Node, document: JavaScriptDocument): ScannedPolymerProperty[] {
+  if (!babel.isClassDeclaration(node) && !babel.isClassExpression(node)) {
     return [];
   }
   const propertiesNode = getStaticGetterValue(node, 'properties');

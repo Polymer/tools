@@ -12,22 +12,30 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import {LiteralObj, LiteralValue} from '../model/model';
 import * as jsdoc from './jsdoc';
 
 /**
- * Converts an ast literal to its underlying valie.
+ * Converts an ast literal to its underlying value.
  */
-function literalToValue(literal: estree.Literal): LiteralValue {
-  return literal.value;
+function literalToValue(literal: babel.Literal): LiteralValue {
+  if (babel.isBooleanLiteral(literal) || babel.isNumericLiteral(literal) ||
+      babel.isStringLiteral(literal)) {
+    return literal.value;
+  }
+  if (babel.isNullLiteral(literal)) {
+    return null;
+  }
+  // Any other literal value is treated as undefined.
+  return undefined;
 }
 
 /**
  * Early evaluates a unary expression.
  */
-function unaryToValue(unary: estree.UnaryExpression): LiteralValue {
+function unaryToValue(unary: babel.UnaryExpression): LiteralValue {
   const operand = expressionToValue(unary.argument);
   switch (unary.operator) {
     case '!':
@@ -53,23 +61,22 @@ function unaryToValue(unary: estree.UnaryExpression): LiteralValue {
 /**
  * Try to evaluate function bodies.
  */
-function functionDeclarationToValue(fn: estree.FunctionDeclaration):
+function functionDeclarationToValue(fn: babel.FunctionDeclaration):
     LiteralValue {
-  if (fn.body.type === 'BlockStatement') {
+  if (babel.isBlockStatement(fn.body)) {
     return blockStatementToValue(fn.body);
   }
 }
 
-function functionExpressionToValue(fn: estree.FunctionExpression):
-    LiteralValue {
-  if (fn.body.type === 'BlockStatement') {
+function functionExpressionToValue(fn: babel.FunctionExpression): LiteralValue {
+  if (babel.isBlockStatement(fn.body)) {
     return blockStatementToValue(fn.body);
   }
 }
 
-function arrowFunctionExpressionToValue(fn: estree.ArrowFunctionExpression):
+function arrowFunctionExpressionToValue(fn: babel.ArrowFunctionExpression):
     LiteralValue {
-  if (fn.body.type === 'BlockStatement') {
+  if (babel.isBlockStatement(fn.body)) {
     return blockStatementToValue(fn.body);
   } else {
     return expressionToValue(fn.body);
@@ -79,10 +86,10 @@ function arrowFunctionExpressionToValue(fn: estree.ArrowFunctionExpression):
 /**
  * Block statement: find last return statement, and return its value
  */
-function blockStatementToValue(block: estree.BlockStatement): LiteralValue {
+function blockStatementToValue(block: babel.BlockStatement): LiteralValue {
   for (let i = block.body.length - 1; i >= 0; i--) {
     const body = block.body[i];
-    if (body.type === 'ReturnStatement') {
+    if (babel.isReturnStatement(body)) {
       return returnStatementToValue(body);
     }
   }
@@ -91,7 +98,7 @@ function blockStatementToValue(block: estree.BlockStatement): LiteralValue {
 /**
  * Evaluates return's argument
  */
-function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
+function returnStatementToValue(ret: babel.ReturnStatement): LiteralValue {
   return expressionToValue(
       ret.argument || {type: 'Literal', value: null, raw: 'null'});
 }
@@ -99,7 +106,7 @@ function returnStatementToValue(ret: estree.ReturnStatement): LiteralValue {
 /**
  * Evaluate array expression
  */
-function arrayExpressionToValue(arry: estree.ArrayExpression): LiteralValue {
+function arrayExpressionToValue(arry: babel.ArrayExpression): LiteralValue {
   const value: LiteralValue[] = [];
   for (let i = 0; i < arry.elements.length; i++) {
     const v = expressionToValue(arry.elements[i]);
@@ -114,10 +121,10 @@ function arrayExpressionToValue(arry: estree.ArrayExpression): LiteralValue {
 /**
  * Evaluate object expression
  */
-function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
+function objectExpressionToValue(obj: babel.ObjectExpression): LiteralValue {
   const evaluatedObjectExpression: LiteralObj = {};
   for (const prop of obj.properties) {
-    if (prop.key.type !== 'Literal') {
+    if (babel.isSpreadProperty(prop) || !babel.isLiteral(prop.key)) {
       return;
     }
     const evaluatedKey = '' + literalToValue(prop.key);
@@ -133,7 +140,7 @@ function objectExpressionToValue(obj: estree.ObjectExpression): LiteralValue {
 /**
  * Binary expressions, like 5 + 5
  */
-function binaryExpressionToValue(member: estree.BinaryExpression):
+function binaryExpressionToValue(member: babel.BinaryExpression):
     (number|string|undefined) {
   const left = expressionToValue(member.left);
   const right = expressionToValue(member.right);
@@ -152,26 +159,30 @@ function binaryExpressionToValue(member: estree.BinaryExpression):
 /**
  * Tries to get the value of an expression. Returns undefined on failure.
  */
-export function expressionToValue(valueExpression: estree.Node): LiteralValue {
-  switch (valueExpression.type) {
-    case 'Literal':
-      return literalToValue(valueExpression);
-    case 'UnaryExpression':
-      return unaryToValue(valueExpression);
-    case 'FunctionDeclaration':
-      return functionDeclarationToValue(valueExpression);
-    case 'FunctionExpression':
-      return functionExpressionToValue(valueExpression);
-    case 'ArrowFunctionExpression':
-      return arrowFunctionExpressionToValue(valueExpression);
-    case 'ArrayExpression':
-      return arrayExpressionToValue(valueExpression);
-    case 'ObjectExpression':
-      return objectExpressionToValue(valueExpression);
-    case 'BinaryExpression':
-      return binaryExpressionToValue(valueExpression);
-    default:
-      return;
+export function expressionToValue(valueExpression: babel.Node): LiteralValue {
+  if (babel.isLiteral(valueExpression)) {
+    return literalToValue(valueExpression);
+  }
+  if (babel.isUnaryExpression(valueExpression)) {
+    return unaryToValue(valueExpression);
+  }
+  if (babel.isFunctionDeclaration(valueExpression)) {
+    return functionDeclarationToValue(valueExpression);
+  }
+  if (babel.isFunctionExpression(valueExpression)) {
+    return functionExpressionToValue(valueExpression);
+  }
+  if (babel.isArrowFunctionExpression(valueExpression)) {
+    return arrowFunctionExpressionToValue(valueExpression);
+  }
+  if (babel.isArrayExpression(valueExpression)) {
+    return arrayExpressionToValue(valueExpression);
+  }
+  if (babel.isObjectExpression(valueExpression)) {
+    return objectExpressionToValue(valueExpression);
+  }
+  if (babel.isBinaryExpression(valueExpression)) {
+    return binaryExpressionToValue(valueExpression);
   }
 }
 
@@ -181,11 +192,11 @@ export function expressionToValue(valueExpression: estree.Node): LiteralValue {
  * Returns undefined if the given node isn't a simple identifier or chain of
  * simple identifiers.
  */
-export function getIdentifierName(node: estree.Node): string|undefined {
-  if (node.type === 'Identifier') {
+export function getIdentifierName(node: babel.Node): string|undefined {
+  if (babel.isIdentifier(node)) {
     return node.name;
   }
-  if (node.type === 'MemberExpression') {
+  if (babel.isMemberExpression(node)) {
     const object = getIdentifierName(node.object);
     let property;
     if (node.computed) {
@@ -217,6 +228,5 @@ export function getNamespacedIdentifier(
     return name;
   }
 }
-
 
 export const CANT_CONVERT = 'UNKNOWN';
