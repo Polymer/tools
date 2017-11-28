@@ -13,18 +13,19 @@
  */
 
 import * as path from 'path';
-import {applyEdits, Edit, FSUrlLoader, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {applyEdits, Edit, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, Warning, WarningCarryingException} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, DidChangeWatchedFilesParams, FileChangeType, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocument, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
+import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {hookUpRemoteConsole} from '../intercept-logs';
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
 import AnalyzerLSPConverter from './converter';
+import FileSynchronizer from './file-synchronizer';
 import Settings, {SettingsJson} from './settings';
 import {AutoDisposable, Change} from './util';
 
@@ -57,13 +58,7 @@ export default class LanguageServer extends AutoDisposable {
     }
 
     function makeServer(workspaceUri: Uri) {
-      const workspacePath = workspaceUri.fsPath;
-      const polymerJsonPath = path.join(workspacePath, 'polymer.json');
-      const editorService = new LocalEditorService({
-        urlLoader: new FSUrlLoader(workspacePath),
-        urlResolver: new PackageUrlResolver(), polymerJsonPath
-      });
-      return new LanguageServer(connection, editorService, workspaceUri);
+      return new LanguageServer(connection, workspaceUri);
     }
 
     // When we get an initialization request we want to construct a server and
@@ -95,15 +90,16 @@ export default class LanguageServer extends AutoDisposable {
    * Called once we've got an initialized connection, a working polymer
    * editor service, and a workspace.
    */
-  constructor(
-      connection: IConnection, editorService: LocalEditorService,
-      workspaceUri: Uri) {
+  constructor(connection: IConnection, workspaceUri: Uri) {
     super();
     this._disposables.push(connection);
     this._connection = connection;
+
     this._settings = new Settings(connection);
     this._disposables.push(this._settings);
-    this._editorService = editorService;
+
+    const workspacePath = workspaceUri.fsPath;
+    const polymerJsonPath = path.join(workspacePath, 'polymer.json');
 
     // TODO(rictic): try out implementing an incrementally synced version of
     //     TextDocuments. Should be a performance win for editing large docs.
@@ -111,10 +107,24 @@ export default class LanguageServer extends AutoDisposable {
     this._documents.listen(connection);
     this.converter = new AnalyzerLSPConverter(workspaceUri);
 
+    const synchronizer = new FileSynchronizer(
+        connection, this._documents, workspacePath, this.converter);
+
+    this._editorService = new LocalEditorService({
+      urlLoader: synchronizer.urlLoader,
+      urlResolver: new PackageUrlResolver(), polymerJsonPath
+    });
+
+    this._disposables.push(
+        synchronizer.fileChanges.listen((filesChangeEvents) => {
+          this.handleFilesChanged(filesChangeEvents);
+        }));
+
     this._initEventHandlers();
   }
 
-  capabilities(clientCapabilities: ClientCapabilities): ServerCapabilities {
+  private capabilities(clientCapabilities: ClientCapabilities):
+      ServerCapabilities {
     const ourCapabilities: ServerCapabilities = {
       textDocumentSync: {
         change: this._documents.syncKind,
@@ -140,11 +150,6 @@ export default class LanguageServer extends AutoDisposable {
   }
 
   private _initEventHandlers() {
-    this._disposables.push(this._documents.onDidChangeContent((change) => {
-      return this.handleErrors(
-          this.handleChangedDocument(change.document), undefined);
-    }));
-
     this._disposables.push(this._documents.onDidClose(async(event) => {
       if (!this._settings.analyzeWholePackage) {
         // If the user hasn't asked for whole-package analysis then it's
@@ -153,16 +158,7 @@ export default class LanguageServer extends AutoDisposable {
         this._connection.sendDiagnostics(
             {diagnostics: [], uri: event.document.uri});
       }
-
-      // Let the editor service know that the file on disk is now the canonical
-      // version.
-      await this._editorService.fileChanged(
-          this.converter.getWorkspacePathToFile(event.document), undefined);
     }));
-
-    this._connection.onDidChangeWatchedFiles(async(req) => {
-      this.handleWatchedFilesChanged(req);
-    });
 
     this._connection.onHover(async(textPosition) => {
       return this.handleErrors(
@@ -271,7 +267,7 @@ export default class LanguageServer extends AutoDisposable {
         title, applyEditCommandName, this.converter.editToWorkspaceEdit(edit));
   }
 
-  async autoComplete(textPosition: TextDocumentPositionParams):
+  private async autoComplete(textPosition: TextDocumentPositionParams):
       Promise<CompletionList> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
@@ -307,7 +303,7 @@ export default class LanguageServer extends AutoDisposable {
     return {isIncomplete: false, items: []};
   }
 
-  async getDefinition(textPosition: TextDocumentPositionParams):
+  private async getDefinition(textPosition: TextDocumentPositionParams):
       Promise<Definition|undefined> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
@@ -323,7 +319,7 @@ export default class LanguageServer extends AutoDisposable {
     }
   }
 
-  async getDocsForHover(textPosition: TextDocumentPositionParams):
+  private async getDocsForHover(textPosition: TextDocumentPositionParams):
       Promise<Hover|undefined> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
@@ -334,18 +330,12 @@ export default class LanguageServer extends AutoDisposable {
     }
   }
 
-  async handleChangedDocument(document: TextDocument) {
-    const localPath = this.converter.getWorkspacePathToFile(document);
-    await this._editorService.fileChanged(localPath, document.getText());
-    await this._reportWarnings();
-  }
-
-  async handleWatchedFilesChanged(req: DidChangeWatchedFilesParams) {
+  private async handleFilesChanged(fileChangeEvents: FileEvent[]) {
     // We handle open file changes in `handleChangedDocument`, so we
     // can filter them out here.
     const openedFileUris = new Set(this._documents.keys());
     const changesToUnopenedFiles =
-        req.changes.filter((change) => !openedFileUris.has(change.uri));
+        fileChangeEvents.filter((change) => !openedFileUris.has(change.uri));
     const paths = changesToUnopenedFiles.map(
         change => this.converter.getWorkspacePathToFile(change));
     if (paths.length === 0) {
@@ -387,7 +377,7 @@ export default class LanguageServer extends AutoDisposable {
     await this._reportWarnings();
   }
 
-  async handleErrors<Result, Fallback>(
+  private async handleErrors<Result, Fallback>(
       promise: Promise<Result>,
       fallbackValue: Fallback): Promise<Result|Fallback> {
     try {

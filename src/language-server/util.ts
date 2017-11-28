@@ -17,7 +17,7 @@ import {Disposable} from 'vscode-languageserver';
 export class EventStream<T> {
   static create<T>() {
     const stream = new EventStream<T>();
-    const fire = stream.fire.bind(stream);
+    const fire: typeof stream.fire = stream.fire.bind(stream);
     return {fire, stream};
   }
 
