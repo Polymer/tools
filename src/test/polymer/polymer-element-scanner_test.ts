@@ -95,6 +95,7 @@ suite('PolymerElementScanner', () => {
          */
         customPublicMethodWithJsDoc: (foo, bar) => { return foo + bar; },
         customPublicMethodWithClassicFunction: function(foo, bar) { return foo + bar; },
+        shorthandMethod(foo, bar) { return foo + bar; },
       });
       Polymer({
         is: 'x-bar',
@@ -155,6 +156,7 @@ suite('PolymerElementScanner', () => {
         '_customPrivateMethod',
         'customPublicMethodWithJsDoc',
         'customPublicMethodWithClassicFunction',
+        'shorthandMethod',
       ]);
 
       const jsDocMethod =
