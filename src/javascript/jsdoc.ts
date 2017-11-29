@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
-import * as estree from 'estree';
 
 import {Privacy} from '../model/model';
 import {ScannedReference, Severity, Warning} from '../model/model';
@@ -140,7 +140,7 @@ export function getPrivacy(jsdoc: Annotation|undefined): Privacy|undefined {
  */
 export function getMixinApplications(
     document: JavaScriptDocument,
-    node: estree.Node,
+    node: babel.Node,
     docs: Annotation,
     warnings: Warning[]): ScannedReference[] {
   // TODO(justinfagnani): remove @mixes support

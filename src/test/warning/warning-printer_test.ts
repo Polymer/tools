@@ -83,7 +83,7 @@ suite('WarningPrinter', () => {
 class ClassDeclaration extends HTMLElement {}
       ~~~~~~~~~~~~~~~~
 
-vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for an element.
+vanilla-elements.js(1,7) warning [dumb-element-name] - This is a dumb name for an element.
 `;
     assert.deepEqual(actual, expected);
   });
@@ -93,7 +93,7 @@ vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for a
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
     const expected =
-        `vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for an element.\n`;
+        `vanilla-elements.js(1,7) warning [dumb-element-name] - This is a dumb name for an element.\n`;
     assert.deepEqual(actual, expected);
   });
 
@@ -106,7 +106,7 @@ vanilla-elements.js(0,6) warning [dumb-element-name] - This is a dumb name for a
 class ClassDeclaration extends HTMLElement {}
 \u001b[33m      ~~~~~~~~~~~~~~~~\u001b[39m
 
-vanilla-elements.js(0,6) \u001b[33mwarning\u001b[39m [dumb-element-name] - This is a dumb name for an element.
+vanilla-elements.js(1,7) \u001b[33mwarning\u001b[39m [dumb-element-name] - This is a dumb name for an element.
 `;
     assert.deepEqual(actual, expected);
   });
@@ -133,7 +133,7 @@ vanilla-elements.js(0,6) \u001b[33mwarning\u001b[39m [dumb-element-name] - This 
   }
 ~~~
 
-vanilla-elements.js(22,2) info [cool-observed-attributes] - Good job with this observedAttributes getter.
+vanilla-elements.js(23,3) info [cool-observed-attributes] - Good job with this observedAttributes getter.
 `;
     assert.deepEqual(actual, expected);
   });

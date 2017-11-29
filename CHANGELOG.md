@@ -5,8 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.1] - 2017-11-29
+
+* [BREAKING] Switched the underlying parser/AST for JavaScript from `espree/estree` to `babylon/babel-types`.  This was needed to support parsing of important platform features such as dynamic imports and moves us closer to supporting TypeScript.
+* When printing Warnings, use one-based indexes for lines and columns, as most text editors and other tools do.
 
 ## [2.7.0] - 2017-11-16
 

@@ -11,8 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import * as babel from 'babel-types';
 import * as dom5 from 'dom5';
-import * as estree from 'estree';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
@@ -28,8 +28,8 @@ export interface Options {
   privacy: Privacy;
   sourceRange: SourceRange;
   mixins: ScannedReference[];
-  astNode: estree.Node;
-  classAstNode?: estree.Node;
+  astNode: babel.Node;
+  classAstNode?: babel.Node;
 }
 
 export class ScannedPolymerElementMixin extends ScannedElementMixin implements
@@ -47,7 +47,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   pseudo: boolean = false;
   readonly abstract: boolean = false;
   readonly sourceRange: SourceRange;
-  classAstNode?: estree.Node;
+  classAstNode?: babel.Node;
 
   constructor({
     name,

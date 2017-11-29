@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
@@ -29,7 +29,7 @@ export type BehaviorAssignmentOrWarning = {
 } | {kind: 'behaviorAssignment', assignment: ScannedBehaviorAssignment};
 
 export function getBehaviorAssignmentOrWarning(
-    argNode: estree.Node,
+    argNode: babel.Node,
     document: JavaScriptDocument): BehaviorAssignmentOrWarning {
   const behaviorName = astValue.getIdentifierName(argNode);
   if (!behaviorName) {
@@ -55,7 +55,7 @@ export function getBehaviorAssignmentOrWarning(
 }
 
 export type PropertyHandlers = {
-  [key: string]: (node: estree.Node) => void
+  [key: string]: (node: babel.Node) => void
 };
 
 
@@ -67,18 +67,18 @@ export function declarationPropertyHandlers(
     declaration: ScannedPolymerElement,
     document: JavaScriptDocument): PropertyHandlers {
   return {
-    is(node: estree.Node) {
-      if (node.type === 'Literal') {
-        declaration.tagName = '' + node.value;
+    is(node: babel.Node) {
+      if (babel.isLiteral(node)) {
+        declaration.tagName = '' + astValue.expressionToValue(node);
       }
     },
-    properties(node: estree.Node) {
+    properties(node: babel.Node) {
       for (const prop of analyzeProperties(node, document)) {
         declaration.addProperty(prop);
       }
     },
-    behaviors(node: estree.Node) {
-      if (node.type !== 'ArrayExpression') {
+    behaviors(node: babel.Node) {
+      if (!babel.isArrayExpression(node)) {
         return;
       }
       for (const element of node.elements) {
@@ -90,7 +90,7 @@ export function declarationPropertyHandlers(
         }
       }
     },
-    observers(node: estree.Node) {
+    observers(node: babel.Node) {
       const observers = extractObservers(node, document);
       if (!observers) {
         return;
@@ -98,9 +98,9 @@ export function declarationPropertyHandlers(
       declaration.warnings = declaration.warnings.concat(observers.warnings);
       declaration.observers = declaration.observers.concat(observers.observers);
     },
-    listeners(node: estree.Node) {
+    listeners(node: babel.Node) {
 
-      if (node.type !== 'ObjectExpression') {
+      if (!babel.isObjectExpression(node)) {
         declaration.warnings.push(new Warning({
           code: 'invalid-listeners-declaration',
           message: '`listeners` property should be an object expression',
@@ -112,9 +112,14 @@ export function declarationPropertyHandlers(
       }
 
       for (const p of node.properties) {
-        const evtName = p.key.type === 'Literal' && p.key.value ||
-            p.key.type === 'Identifier' && p.key.name;
-        const handler = p.value.type !== 'Literal' || p.value.value;
+        if (babel.isSpreadProperty(p)) {
+          continue;
+        }
+        const evtName =
+            babel.isLiteral(p.key) && astValue.expressionToValue(p.key) ||
+            babel.isIdentifier(p.key) && p.key.name;
+        const handler =
+            !babel.isLiteral(p.value) || astValue.expressionToValue(p.value);
 
         if (typeof evtName !== 'string' || typeof handler !== 'string') {
           // TODO (maklesoft): Notifiy the user somehow that a listener entry
@@ -133,9 +138,9 @@ export function declarationPropertyHandlers(
 
 
 export function extractObservers(
-    observersArray: estree.Node, document: JavaScriptDocument): undefined|
+    observersArray: babel.Node, document: JavaScriptDocument): undefined|
     {observers: Observer[], warnings: Warning[]} {
-  if (observersArray.type !== 'ArrayExpression') {
+  if (!babel.isArrayExpression(observersArray)) {
     return;
   }
   let warnings: Warning[] = [];

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 import {ScannedFeature} from './feature';
 
 export interface ScannedEvent extends ScannedFeature {
@@ -20,7 +20,7 @@ export interface ScannedEvent extends ScannedFeature {
   readonly type?: string;
   readonly description?: string;
   readonly params: {type: string, desc: string, name: string}[];
-  readonly astNode: estree.Node|null;
+  readonly astNode: babel.Node|null;
 }
 
 export interface Event {
@@ -28,6 +28,6 @@ export interface Event {
   readonly type?: string;
   // TODO: represent detail object properly
   readonly description?: string;
-  readonly astNode: estree.Node|null;
+  readonly astNode: babel.Node|null;
   readonly inheritedFrom?: string;
 }

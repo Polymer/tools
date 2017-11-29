@@ -1,344 +1,350 @@
-import {VisitorOption} from 'estraverse';
-import * as estree from 'estree';
+import * as babel from 'babel-types';
+import {VisitorOption} from './estraverse-shim';
 
 export type VisitResult = VisitorOption | void | null | undefined;
 
 export interface Visitor {
-  enterIdentifier?:
-      (node: estree.Identifier, parent: estree.Node) => VisitResult;
-  leaveIdentifier?:
-      (node: estree.Identifier, parent: estree.Node) => VisitResult;
+  enter?: (node: babel.Node, parent: babel.Node) => VisitResult;
+  leave?: (node: babel.Node, parent: babel.Node) => VisitResult;
+  // TODO(usergenic): What is this fallback?  Look it up.  It's used in
+  // javascript-document.ts for example.
+  fallback?: 'iteration';
+  enterIdentifier?: (node: babel.Identifier, parent: babel.Node) => VisitResult;
+  leaveIdentifier?: (node: babel.Identifier, parent: babel.Node) => VisitResult;
 
-  enterLiteral?: (node: estree.Literal, parent: estree.Node) => VisitResult;
-  leaveLiteral?: (node: estree.Literal, parent: estree.Node) => VisitResult;
+  enterLiteral?: (node: babel.Literal, parent: babel.Node) => VisitResult;
+  leaveLiteral?: (node: babel.Literal, parent: babel.Node) => VisitResult;
 
-  enterProgram?: (node: estree.Program, parent: estree.Node) => VisitResult;
-  leaveProgram?: (node: estree.Program, parent: estree.Node) => VisitResult;
+  enterProgram?: (node: babel.Program, parent: babel.Node) => VisitResult;
+  leaveProgram?: (node: babel.Program, parent: babel.Node) => VisitResult;
 
   enterExpressionStatement?:
-      (node: estree.ExpressionStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ExpressionStatement, parent: babel.Node) => VisitResult;
   leaveExpressionStatement?:
-      (node: estree.ExpressionStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ExpressionStatement, parent: babel.Node) => VisitResult;
 
   enterBlockStatement?:
-      (node: estree.BlockStatement, parent: estree.Node) => VisitResult;
+      (node: babel.BlockStatement, parent: babel.Node) => VisitResult;
   leaveBlockStatement?:
-      (node: estree.BlockStatement, parent: estree.Node) => VisitResult;
+      (node: babel.BlockStatement, parent: babel.Node) => VisitResult;
 
   enterEmptyStatement?:
-      (node: estree.EmptyStatement, parent: estree.Node) => VisitResult;
+      (node: babel.EmptyStatement, parent: babel.Node) => VisitResult;
   leaveEmptyStatement?:
-      (node: estree.EmptyStatement, parent: estree.Node) => VisitResult;
+      (node: babel.EmptyStatement, parent: babel.Node) => VisitResult;
 
   enterDebuggerStatement?:
-      (node: estree.DebuggerStatement, parent: estree.Node) => VisitResult;
+      (node: babel.DebuggerStatement, parent: babel.Node) => VisitResult;
   leaveDebuggerStatement?:
-      (node: estree.DebuggerStatement, parent: estree.Node) => VisitResult;
+      (node: babel.DebuggerStatement, parent: babel.Node) => VisitResult;
 
   enterWithStatement?:
-      (node: estree.WithStatement, parent: estree.Node) => VisitResult;
+      (node: babel.WithStatement, parent: babel.Node) => VisitResult;
   leaveWithStatement?:
-      (node: estree.WithStatement, parent: estree.Node) => VisitResult;
+      (node: babel.WithStatement, parent: babel.Node) => VisitResult;
 
   enterReturnStatement?:
-      (node: estree.ReturnStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ReturnStatement, parent: babel.Node) => VisitResult;
   leaveReturnStatement?:
-      (node: estree.ReturnStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ReturnStatement, parent: babel.Node) => VisitResult;
 
   enterLabeledStatement?:
-      (node: estree.LabeledStatement, parent: estree.Node) => VisitResult;
+      (node: babel.LabeledStatement, parent: babel.Node) => VisitResult;
   leaveLabeledStatement?:
-      (node: estree.LabeledStatement, parent: estree.Node) => VisitResult;
+      (node: babel.LabeledStatement, parent: babel.Node) => VisitResult;
 
   enterBreakStatement?:
-      (node: estree.BreakStatement, parent: estree.Node) => VisitResult;
+      (node: babel.BreakStatement, parent: babel.Node) => VisitResult;
   leaveBreakStatement?:
-      (node: estree.BreakStatement, parent: estree.Node) => VisitResult;
+      (node: babel.BreakStatement, parent: babel.Node) => VisitResult;
 
   enterContinueStatement?:
-      (node: estree.ContinueStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ContinueStatement, parent: babel.Node) => VisitResult;
   leaveContinueStatement?:
-      (node: estree.ContinueStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ContinueStatement, parent: babel.Node) => VisitResult;
 
   enterIfStatement?:
-      (node: estree.IfStatement, parent: estree.Node) => VisitResult;
+      (node: babel.IfStatement, parent: babel.Node) => VisitResult;
   leaveIfStatement?:
-      (node: estree.IfStatement, parent: estree.Node) => VisitResult;
+      (node: babel.IfStatement, parent: babel.Node) => VisitResult;
 
   enterSwitchStatement?:
-      (node: estree.SwitchStatement, parent: estree.Node) => VisitResult;
+      (node: babel.SwitchStatement, parent: babel.Node) => VisitResult;
   leaveSwitchStatement?:
-      (node: estree.SwitchStatement, parent: estree.Node) => VisitResult;
+      (node: babel.SwitchStatement, parent: babel.Node) => VisitResult;
 
-  enterSwitchCase?:
-      (node: estree.SwitchCase, parent: estree.Node) => VisitResult;
-  leaveSwitchCase?:
-      (node: estree.SwitchCase, parent: estree.Node) => VisitResult;
+  enterSwitchCase?: (node: babel.SwitchCase, parent: babel.Node) => VisitResult;
+  leaveSwitchCase?: (node: babel.SwitchCase, parent: babel.Node) => VisitResult;
 
   enterThrowStatement?:
-      (node: estree.ThrowStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ThrowStatement, parent: babel.Node) => VisitResult;
   leaveThrowStatement?:
-      (node: estree.ThrowStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ThrowStatement, parent: babel.Node) => VisitResult;
 
   enterTryStatement?:
-      (node: estree.TryStatement, parent: estree.Node) => VisitResult;
+      (node: babel.TryStatement, parent: babel.Node) => VisitResult;
   leaveTryStatement?:
-      (node: estree.TryStatement, parent: estree.Node) => VisitResult;
+      (node: babel.TryStatement, parent: babel.Node) => VisitResult;
 
   enterCatchClause?:
-      (node: estree.CatchClause, parent: estree.Node) => VisitResult;
+      (node: babel.CatchClause, parent: babel.Node) => VisitResult;
   leaveCatchClause?:
-      (node: estree.CatchClause, parent: estree.Node) => VisitResult;
+      (node: babel.CatchClause, parent: babel.Node) => VisitResult;
 
   enterWhileStatement?:
-      (node: estree.WhileStatement, parent: estree.Node) => VisitResult;
+      (node: babel.WhileStatement, parent: babel.Node) => VisitResult;
   leaveWhileStatement?:
-      (node: estree.WhileStatement, parent: estree.Node) => VisitResult;
+      (node: babel.WhileStatement, parent: babel.Node) => VisitResult;
 
   enterDoWhileStatement?:
-      (node: estree.DoWhileStatement, parent: estree.Node) => VisitResult;
+      (node: babel.DoWhileStatement, parent: babel.Node) => VisitResult;
   leaveDoWhileStatement?:
-      (node: estree.DoWhileStatement, parent: estree.Node) => VisitResult;
+      (node: babel.DoWhileStatement, parent: babel.Node) => VisitResult;
 
   enterForStatement?:
-      (node: estree.ForStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ForStatement, parent: babel.Node) => VisitResult;
   leaveForStatement?:
-      (node: estree.ForStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ForStatement, parent: babel.Node) => VisitResult;
 
   enterForInStatement?:
-      (node: estree.ForInStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ForInStatement, parent: babel.Node) => VisitResult;
   leaveForInStatement?:
-      (node: estree.ForInStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ForInStatement, parent: babel.Node) => VisitResult;
 
   enterForOfStatement?:
-      (node: estree.ForOfStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ForOfStatement, parent: babel.Node) => VisitResult;
   leaveForOfStatement?:
-      (node: estree.ForOfStatement, parent: estree.Node) => VisitResult;
+      (node: babel.ForOfStatement, parent: babel.Node) => VisitResult;
 
   enterFunctionDeclaration?:
-      (node: estree.FunctionDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.FunctionDeclaration, parent: babel.Node) => VisitResult;
   leaveFunctionDeclaration?:
-      (node: estree.FunctionDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.FunctionDeclaration, parent: babel.Node) => VisitResult;
 
   enterVariableDeclaration?:
-      (node: estree.VariableDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.VariableDeclaration, parent: babel.Node) => VisitResult;
   leaveVariableDeclaration?:
-      (node: estree.VariableDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.VariableDeclaration, parent: babel.Node) => VisitResult;
 
   enterVariableDeclarator?:
-      (node: estree.VariableDeclarator, parent: estree.Node) => VisitResult;
+      (node: babel.VariableDeclarator, parent: babel.Node) => VisitResult;
   leaveVariableDeclarator?:
-      (node: estree.VariableDeclarator, parent: estree.Node) => VisitResult;
+      (node: babel.VariableDeclarator, parent: babel.Node) => VisitResult;
 
   enterThisExpression?:
-      (node: estree.ThisExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ThisExpression, parent: babel.Node) => VisitResult;
   leaveThisExpression?:
-      (node: estree.ThisExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ThisExpression, parent: babel.Node) => VisitResult;
 
   enterArrayExpression?:
-      (node: estree.ArrayExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ArrayExpression, parent: babel.Node) => VisitResult;
   leaveArrayExpression?:
-      (node: estree.ArrayExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ArrayExpression, parent: babel.Node) => VisitResult;
 
   enterObjectExpression?:
-      (node: estree.ObjectExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ObjectExpression, parent: babel.Node) => VisitResult;
   leaveObjectExpression?:
-      (node: estree.ObjectExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ObjectExpression, parent: babel.Node) => VisitResult;
 
-  enterProperty?: (node: estree.Property, parent: estree.Node) => VisitResult;
-  leaveProperty?: (node: estree.Property, parent: estree.Node) => VisitResult;
+  enterProperty?: (node: babel.Property, parent: babel.Node) => VisitResult;
+  leaveProperty?: (node: babel.Property, parent: babel.Node) => VisitResult;
 
   enterFunctionExpression?:
-      (node: estree.FunctionExpression, parent: estree.Node) => VisitResult;
+      (node: babel.FunctionExpression, parent: babel.Node) => VisitResult;
   leaveFunctionExpression?:
-      (node: estree.FunctionExpression, parent: estree.Node) => VisitResult;
+      (node: babel.FunctionExpression, parent: babel.Node) => VisitResult;
 
   enterArrowFunctionExpression?:
-      (node: estree.ArrowFunctionExpression,
-       parent: estree.Node) => VisitResult;
+      (node: babel.ArrowFunctionExpression, parent: babel.Node) => VisitResult;
   leaveArrowFunctionExpression?:
-      (node: estree.ArrowFunctionExpression,
-       parent: estree.Node) => VisitResult;
+      (node: babel.ArrowFunctionExpression, parent: babel.Node) => VisitResult;
 
   enterYieldExpression?:
-      (node: estree.YieldExpression, parent: estree.Node) => VisitResult;
+      (node: babel.YieldExpression, parent: babel.Node) => VisitResult;
   leaveYieldExpression?:
-      (node: estree.YieldExpression, parent: estree.Node) => VisitResult;
+      (node: babel.YieldExpression, parent: babel.Node) => VisitResult;
 
-  enterSuper?: (node: estree.Super, parent: estree.Node) => VisitResult;
-  leaveSuper?: (node: estree.Super, parent: estree.Node) => VisitResult;
+  enterSuper?: (node: babel.Super, parent: babel.Node) => VisitResult;
+  leaveSuper?: (node: babel.Super, parent: babel.Node) => VisitResult;
 
   enterUnaryExpression?:
-      (node: estree.UnaryExpression, parent: estree.Node) => VisitResult;
+      (node: babel.UnaryExpression, parent: babel.Node) => VisitResult;
   leaveUnaryExpression?:
-      (node: estree.UnaryExpression, parent: estree.Node) => VisitResult;
+      (node: babel.UnaryExpression, parent: babel.Node) => VisitResult;
 
   enterUpdateExpression?:
-      (node: estree.UpdateExpression, parent: estree.Node) => VisitResult;
+      (node: babel.UpdateExpression, parent: babel.Node) => VisitResult;
   leaveUpdateExpression?:
-      (node: estree.UpdateExpression, parent: estree.Node) => VisitResult;
+      (node: babel.UpdateExpression, parent: babel.Node) => VisitResult;
 
   enterBinaryExpression?:
-      (node: estree.BinaryExpression, parent: estree.Node) => VisitResult;
+      (node: babel.BinaryExpression, parent: babel.Node) => VisitResult;
   leaveBinaryExpression?:
-      (node: estree.BinaryExpression, parent: estree.Node) => VisitResult;
+      (node: babel.BinaryExpression, parent: babel.Node) => VisitResult;
 
   enterAssignmentExpression?:
-      (node: estree.AssignmentExpression, parent: estree.Node) => VisitResult;
+      (node: babel.AssignmentExpression, parent: babel.Node) => VisitResult;
   leaveAssignmentExpression?:
-      (node: estree.AssignmentExpression, parent: estree.Node) => VisitResult;
+      (node: babel.AssignmentExpression, parent: babel.Node) => VisitResult;
 
   enterLogicalExpression?:
-      (node: estree.LogicalExpression, parent: estree.Node) => VisitResult;
+      (node: babel.LogicalExpression, parent: babel.Node) => VisitResult;
   leaveLogicalExpression?:
-      (node: estree.LogicalExpression, parent: estree.Node) => VisitResult;
+      (node: babel.LogicalExpression, parent: babel.Node) => VisitResult;
 
   enterMemberExpression?:
-      (node: estree.MemberExpression, parent: estree.Node) => VisitResult;
+      (node: babel.MemberExpression, parent: babel.Node) => VisitResult;
   leaveMemberExpression?:
-      (node: estree.MemberExpression, parent: estree.Node) => VisitResult;
+      (node: babel.MemberExpression, parent: babel.Node) => VisitResult;
 
   enterConditionalExpression?:
-      (node: estree.ConditionalExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ConditionalExpression, parent: babel.Node) => VisitResult;
   leaveConditionalExpression?:
-      (node: estree.ConditionalExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ConditionalExpression, parent: babel.Node) => VisitResult;
 
   enterCallExpression?:
-      (node: estree.CallExpression, parent: estree.Node) => VisitResult;
+      (node: babel.CallExpression, parent: babel.Node) => VisitResult;
   leaveCallExpression?:
-      (node: estree.CallExpression, parent: estree.Node) => VisitResult;
+      (node: babel.CallExpression, parent: babel.Node) => VisitResult;
 
   enterNewExpression?:
-      (node: estree.NewExpression, parent: estree.Node) => VisitResult;
+      (node: babel.NewExpression, parent: babel.Node) => VisitResult;
   leaveNewExpression?:
-      (node: estree.NewExpression, parent: estree.Node) => VisitResult;
+      (node: babel.NewExpression, parent: babel.Node) => VisitResult;
 
   enterSequenceExpression?:
-      (node: estree.SequenceExpression, parent: estree.Node) => VisitResult;
+      (node: babel.SequenceExpression, parent: babel.Node) => VisitResult;
   leaveSequenceExpression?:
-      (node: estree.SequenceExpression, parent: estree.Node) => VisitResult;
+      (node: babel.SequenceExpression, parent: babel.Node) => VisitResult;
 
   enterTemplateLiteral?:
-      (node: estree.TemplateLiteral, parent: estree.Node) => VisitResult;
+      (node: babel.TemplateLiteral, parent: babel.Node) => VisitResult;
   leaveTemplateLiteral?:
-      (node: estree.TemplateLiteral, parent: estree.Node) => VisitResult;
+      (node: babel.TemplateLiteral, parent: babel.Node) => VisitResult;
 
   enterTaggedTemplateExpression?:
-      (node: estree.TaggedTemplateExpression,
-       parent: estree.Node) => VisitResult;
+      (node: babel.TaggedTemplateExpression, parent: babel.Node) => VisitResult;
   leaveTaggedTemplateExpression?:
-      (node: estree.TaggedTemplateExpression,
-       parent: estree.Node) => VisitResult;
+      (node: babel.TaggedTemplateExpression, parent: babel.Node) => VisitResult;
 
   enterTemplateElement?:
-      (node: estree.TemplateElement, parent: estree.Node) => VisitResult;
+      (node: babel.TemplateElement, parent: babel.Node) => VisitResult;
   leaveTemplateElement?:
-      (node: estree.TemplateElement, parent: estree.Node) => VisitResult;
+      (node: babel.TemplateElement, parent: babel.Node) => VisitResult;
 
   enterSpreadElement?:
-      (node: estree.SpreadElement, parent: estree.Node) => VisitResult;
+      (node: babel.SpreadElement, parent: babel.Node) => VisitResult;
   leaveSpreadElement?:
-      (node: estree.SpreadElement, parent: estree.Node) => VisitResult;
+      (node: babel.SpreadElement, parent: babel.Node) => VisitResult;
 
-  enterPattern?: (node: estree.Pattern, parent: estree.Node) => VisitResult;
-  leavePattern?: (node: estree.Pattern, parent: estree.Node) => VisitResult;
+  enterPattern?: (node: babel.Pattern, parent: babel.Node) => VisitResult;
+  leavePattern?: (node: babel.Pattern, parent: babel.Node) => VisitResult;
 
   enterAssignmentProperty?:
-      (node: estree.AssignmentProperty, parent: estree.Node) => VisitResult;
+      (node: babel.AssignmentProperty, parent: babel.Node) => VisitResult;
   leaveAssignmentProperty?:
-      (node: estree.AssignmentProperty, parent: estree.Node) => VisitResult;
+      (node: babel.AssignmentProperty, parent: babel.Node) => VisitResult;
 
   enterObjectPattern?:
-      (node: estree.ObjectPattern, parent: estree.Node) => VisitResult;
+      (node: babel.ObjectPattern, parent: babel.Node) => VisitResult;
   leaveObjectPattern?:
-      (node: estree.ObjectPattern, parent: estree.Node) => VisitResult;
+      (node: babel.ObjectPattern, parent: babel.Node) => VisitResult;
+
+  enterObjectMethod?:
+      (node: babel.ObjectMethod, parent: babel.Node) => VisitResult;
+  leaveObjectMethod?:
+      (node: babel.ObjectMethod, parent: babel.Node) => VisitResult;
+
+  enterObjectProperty?:
+      (node: babel.ObjectProperty, parent: babel.Node) => VisitResult;
+  leaveObjectProperty?:
+      (node: babel.ObjectProperty, parent: babel.Node) => VisitResult;
 
   enterArrayPattern?:
-      (node: estree.ArrayPattern, parent: estree.Node) => VisitResult;
+      (node: babel.ArrayPattern, parent: babel.Node) => VisitResult;
   leaveArrayPattern?:
-      (node: estree.ArrayPattern, parent: estree.Node) => VisitResult;
+      (node: babel.ArrayPattern, parent: babel.Node) => VisitResult;
 
   enterRestElement?:
-      (node: estree.RestElement, parent: estree.Node) => VisitResult;
+      (node: babel.RestElement, parent: babel.Node) => VisitResult;
   leaveRestElement?:
-      (node: estree.RestElement, parent: estree.Node) => VisitResult;
+      (node: babel.RestElement, parent: babel.Node) => VisitResult;
 
   enterAssignmentPattern?:
-      (node: estree.AssignmentPattern, parent: estree.Node) => VisitResult;
+      (node: babel.AssignmentPattern, parent: babel.Node) => VisitResult;
   leaveAssignmentPattern?:
-      (node: estree.AssignmentPattern, parent: estree.Node) => VisitResult;
+      (node: babel.AssignmentPattern, parent: babel.Node) => VisitResult;
 
-  enterMethodDefinition?:
-      (node: estree.MethodDefinition, parent: estree.Node) => VisitResult;
-  leaveMethodDefinition?:
-      (node: estree.MethodDefinition, parent: estree.Node) => VisitResult;
+  enterMethod?: (node: babel.Method, parent: babel.Node) => VisitResult;
+  leaveMethod?: (node: babel.Method, parent: babel.Node) => VisitResult;
+
+  enterClassMethod?:
+      (node: babel.ClassMethod, parent: babel.Node) => VisitResult;
+  leaveClassMethod?:
+      (node: babel.ClassMethod, parent: babel.Node) => VisitResult;
 
   enterClassDeclaration?:
-      (node: estree.ClassDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ClassDeclaration, parent: babel.Node) => VisitResult;
   leaveClassDeclaration?:
-      (node: estree.ClassDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ClassDeclaration, parent: babel.Node) => VisitResult;
 
   enterClassExpression?:
-      (node: estree.ClassExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ClassExpression, parent: babel.Node) => VisitResult;
   leaveClassExpression?:
-      (node: estree.ClassExpression, parent: estree.Node) => VisitResult;
+      (node: babel.ClassExpression, parent: babel.Node) => VisitResult;
 
   enterMetaProperty?:
-      (node: estree.MetaProperty, parent: estree.Node) => VisitResult;
+      (node: babel.MetaProperty, parent: babel.Node) => VisitResult;
   leaveMetaProperty?:
-      (node: estree.MetaProperty, parent: estree.Node) => VisitResult;
+      (node: babel.MetaProperty, parent: babel.Node) => VisitResult;
 
   enterModuleDeclaration?:
-      (node: estree.ModuleDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ModuleDeclaration, parent: babel.Node) => VisitResult;
   leaveModuleDeclaration?:
-      (node: estree.ModuleDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ModuleDeclaration, parent: babel.Node) => VisitResult;
 
   enterModuleSpecifier?:
-      (node: estree.ModuleSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ModuleSpecifier, parent: babel.Node) => VisitResult;
   leaveModuleSpecifier?:
-      (node: estree.ModuleSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ModuleSpecifier, parent: babel.Node) => VisitResult;
 
   enterImportDeclaration?:
-      (node: estree.ImportDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ImportDeclaration, parent: babel.Node) => VisitResult;
   leaveImportDeclaration?:
-      (node: estree.ImportDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ImportDeclaration, parent: babel.Node) => VisitResult;
 
   enterImportSpecifier?:
-      (node: estree.ImportSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ImportSpecifier, parent: babel.Node) => VisitResult;
   leaveImportSpecifier?:
-      (node: estree.ImportSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ImportSpecifier, parent: babel.Node) => VisitResult;
 
   enterImportDefaultSpecifier?:
-      (node: estree.ImportDefaultSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ImportDefaultSpecifier, parent: babel.Node) => VisitResult;
   leaveImportDefaultSpecifier?:
-      (node: estree.ImportDefaultSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ImportDefaultSpecifier, parent: babel.Node) => VisitResult;
 
   enterImportNamespaceSpecifier?:
-      (node: estree.ImportNamespaceSpecifier,
-       parent: estree.Node) => VisitResult;
+      (node: babel.ImportNamespaceSpecifier, parent: babel.Node) => VisitResult;
   leaveImportNamespaceSpecifier?:
-      (node: estree.ImportNamespaceSpecifier,
-       parent: estree.Node) => VisitResult;
+      (node: babel.ImportNamespaceSpecifier, parent: babel.Node) => VisitResult;
 
   enterExportNamedDeclaration?:
-      (node: estree.ExportNamedDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ExportNamedDeclaration, parent: babel.Node) => VisitResult;
   leaveExportNamedDeclaration?:
-      (node: estree.ExportNamedDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ExportNamedDeclaration, parent: babel.Node) => VisitResult;
 
   enterExportSpecifier?:
-      (node: estree.ExportSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ExportSpecifier, parent: babel.Node) => VisitResult;
   leaveExportSpecifier?:
-      (node: estree.ExportSpecifier, parent: estree.Node) => VisitResult;
+      (node: babel.ExportSpecifier, parent: babel.Node) => VisitResult;
 
   enterExportDefaultDeclaration?:
-      (node: estree.ExportDefaultDeclaration,
-       parent: estree.Node) => VisitResult;
+      (node: babel.ExportDefaultDeclaration, parent: babel.Node) => VisitResult;
   leaveExportDefaultDeclaration?:
-      (node: estree.ExportDefaultDeclaration,
-       parent: estree.Node) => VisitResult;
+      (node: babel.ExportDefaultDeclaration, parent: babel.Node) => VisitResult;
 
   enterExportAllDeclaration?:
-      (node: estree.ExportAllDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ExportAllDeclaration, parent: babel.Node) => VisitResult;
   leaveExportAllDeclaration?:
-      (node: estree.ExportAllDeclaration, parent: estree.Node) => VisitResult;
+      (node: babel.ExportAllDeclaration, parent: babel.Node) => VisitResult;
 }

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -58,7 +58,7 @@ class BehaviorVisitor implements Visitor {
    * Look for object declarations with @polymerBehavior in the docs.
    */
   enterVariableDeclaration(
-      node: estree.VariableDeclaration, _parent: estree.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
@@ -72,7 +72,7 @@ class BehaviorVisitor implements Visitor {
    * Look for object assignments with @polymerBehavior in the docs.
    */
   enterAssignmentExpression(
-      node: estree.AssignmentExpression, parent: estree.Node) {
+      node: babel.AssignmentExpression, parent: babel.Node) {
     this._initBehavior(parent, () => esutil.objectKeyToString(node.left)!);
   }
 
@@ -80,12 +80,15 @@ class BehaviorVisitor implements Visitor {
    * We assume that the object expression after such an assignment is the
    * behavior's declaration. Seems to be a decent assumption for now.
    */
-  enterObjectExpression(node: estree.ObjectExpression, _parent: estree.Node) {
+  enterObjectExpression(node: babel.ObjectExpression, _parent: babel.Node) {
     if (!this.currentBehavior || !this.propertyHandlers) {
       return;
     }
 
     for (const prop of node.properties) {
+      if (babel.isSpreadProperty(prop)) {
+        continue;
+      }
       const name = esutil.objectKeyToString(prop.key);
       if (!name) {
         this.currentBehavior.warnings.push(new Warning({
@@ -101,7 +104,7 @@ class BehaviorVisitor implements Visitor {
       }
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
-      } else if (esutil.isFunctionType(prop.value)) {
+      } else if (babel.isMethod(prop) || babel.isFunction(prop.value)) {
         const method = esutil.toScannedMethod(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
         this.currentBehavior.addMethod(method);
@@ -125,7 +128,7 @@ class BehaviorVisitor implements Visitor {
     this.currentBehavior = null;
   }
 
-  private _initBehavior(node: estree.Node, getName: () => string) {
+  private _initBehavior(node: babel.Node, getName: () => string) {
     const comment = esutil.getAttachedComment(node);
     const symbol = getName();
     // Quickly filter down to potential candidates.
@@ -233,7 +236,7 @@ class BehaviorVisitor implements Visitor {
     return newBehavior;
   }
 
-  _parseChainedBehaviors(node: estree.Node) {
+  _parseChainedBehaviors(node: babel.Node) {
     if (this.currentBehavior == null) {
       throw new Error(
           `_parsedChainedBehaviors was called without a current behavior.`);
@@ -246,7 +249,7 @@ class BehaviorVisitor implements Visitor {
     // We add these to behaviors array
     const expression = behaviorExpression(node);
     const chained: Array<ScannedBehaviorAssignment> = [];
-    if (expression && expression.type === 'ArrayExpression') {
+    if (expression && babel.isArrayExpression(expression)) {
       for (const arrElement of expression.elements) {
         const behaviorName = getIdentifierName(arrElement);
         if (behaviorName) {
@@ -266,15 +269,14 @@ class BehaviorVisitor implements Visitor {
 /**
  * gets the expression representing a behavior from a node.
  */
-function behaviorExpression(node: estree.Node): estree.Node|null|undefined {
-  switch (node.type) {
-    case 'ExpressionStatement':
-      // need to cast to `any` here because ExpressionStatement is super
-      // super general. this code is suspicious.
-      return (<any>node).expression.right;
-    case 'VariableDeclaration':
-      return node.declarations.length > 0 ? node.declarations[0].init :
-                                            undefined;
+function behaviorExpression(node: babel.Node): babel.Node|null|undefined {
+  if (babel.isExpressionStatement(node)) {
+    // need to cast to `any` here because ExpressionStatement is super
+    // super general. this code is suspicious.
+    return (node as any).expression.right;
+  }
+  if (babel.isVariableDeclaration(node)) {
+    return node.declarations.length > 0 ? node.declarations[0].init : undefined;
   }
 }
 
@@ -282,13 +284,12 @@ function behaviorExpression(node: estree.Node): estree.Node|null|undefined {
  * checks whether an expression is a simple array containing only member
  * expressions or identifiers.
  */
-function isSimpleBehaviorArray(expression: estree.Node|undefined|
-                               null): boolean {
-  if (!expression || expression.type !== 'ArrayExpression') {
+function isSimpleBehaviorArray(expression: babel.Node|undefined|null): boolean {
+  if (!expression || !babel.isArrayExpression(expression)) {
     return false;
   }
   for (const element of expression.elements) {
-    if (element.type !== 'MemberExpression' && element.type !== 'Identifier') {
+    if (!babel.isMemberExpression(element) && !babel.isIdentifier(element)) {
       return false;
     }
   }

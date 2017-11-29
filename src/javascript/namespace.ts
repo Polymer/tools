@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estree from 'estree';
+import * as babel from 'babel-types';
 
 import {Document, Feature, Resolvable, SourceRange, Warning} from '../model/model';
 
@@ -27,11 +27,11 @@ export class ScannedNamespace implements Resolvable {
   summary?: string;
   jsdoc?: JsDocAnnotation;
   sourceRange: SourceRange;
-  astNode: estree.Node;
+  astNode: babel.Node;
   warnings: Warning[];
 
   constructor(
-      name: string, description: string, summary: string, astNode: estree.Node,
+      name: string, description: string, summary: string, astNode: babel.Node,
       jsdoc: JsDocAnnotation, sourceRange: SourceRange) {
     this.name = name;
     this.description = description;

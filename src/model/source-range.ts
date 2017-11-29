@@ -107,6 +107,20 @@ export function uncorrectPosition(
 }
 
 /**
+ * Returns -1 if source position `a` comes before source position `b`, returns 0
+ * if they are the same, returns 1 if `a` comes after `b`.
+ */
+export function comparePosition(a: SourcePosition, b: SourcePosition): number {
+  if (a.line !== b.line) {
+    return a.line < b.line ? -1 : 1;
+  }
+  if (a.column !== b.column) {
+    return a.column < b.column ? -1 : 1;
+  }
+  return 0;
+}
+
+/**
  * If the position is inside the range, returns 0. If it comes before the range,
  * it returns -1. If it comes after the range, it returns 1.
  *

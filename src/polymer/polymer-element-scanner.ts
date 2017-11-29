@@ -12,12 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
-import * as estree from 'estree';
-
+import * as babel from 'babel-types';
 import {getIdentifierName} from '../javascript/ast-value';
+import {VisitorOption} from '../javascript/estraverse-shim';
 import {Visitor} from '../javascript/estree-visitor';
-import {getAttachedComment, getEventComments, getOrInferPrivacy, isFunctionType, objectKeyToString, toScannedMethod} from '../javascript/esutil';
+import {getAttachedComment, getEventComments, getOrInferPrivacy, objectKeyToString, toScannedMethod} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
@@ -56,7 +55,7 @@ class ElementVisitor implements Visitor {
     this.document = document;
   }
 
-  enterClassDeclaration(node: estree.ClassDeclaration, _: estree.Node) {
+  enterClassDeclaration(node: babel.ClassDeclaration, _: babel.Node) {
     this.classDetected = true;
     const className = node.id.name;
     const docs = jsdoc.parseJsdoc(getAttachedComment(node) || '');
@@ -64,8 +63,7 @@ class ElementVisitor implements Visitor {
       astNode: node,
       description: docs.description,
       events: getEventComments(node),
-      sourceRange: this.document.sourceRangeForNode(node),
-      className,
+      sourceRange: this.document.sourceRangeForNode(node), className,
       privacy: getOrInferPrivacy(className, docs),
       abstract: jsdoc.hasTag(docs, 'abstract'),
       attributes: new Map(),
@@ -85,7 +83,7 @@ class ElementVisitor implements Visitor {
         declarationPropertyHandlers(this.element, this.document);
   }
 
-  leaveClassDeclaration(_: estree.ClassDeclaration, _parent: estree.Node) {
+  leaveClassDeclaration(_: babel.ClassDeclaration, _parent: babel.Node) {
     for (const property of this.element!.properties.values()) {
       docs.annotate(property);
     }
@@ -98,15 +96,15 @@ class ElementVisitor implements Visitor {
     this.classDetected = false;
   }
 
-  enterAssignmentExpression(node: estree.AssignmentExpression, _: estree.Node) {
+  enterAssignmentExpression(node: babel.AssignmentExpression, _: babel.Node) {
     if (!this.element) {
       return;
     }
-    const left = <estree.MemberExpression>node.left;
-    if (left && left.object && left.object.type !== 'ThisExpression') {
+    const left = <babel.MemberExpression>node.left;
+    if (left && left.object && !babel.isThisExpression(left.object)) {
       return;
     }
-    const prop = <estree.Identifier>left.property;
+    const prop = <babel.Identifier>left.property;
     if (prop && prop.name && this.propertyHandlers) {
       const name = prop.name;
       if (name in this.propertyHandlers) {
@@ -115,7 +113,7 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterMethodDefinition(node: estree.MethodDefinition, _parent: estree.Node) {
+  enterClassMethod(node: babel.ClassMethod, _parent: babel.Node) {
     const element = this.element;
     if (!element) {
       return;
@@ -128,8 +126,10 @@ class ElementVisitor implements Visitor {
     });
 
     if (node.kind === 'get') {
-      const returnStatement = <estree.ReturnStatement>node.value.body.body[0];
-      const argument = <estree.ArrayExpression>returnStatement.argument;
+      // TODO(usergenic): Not sure what node.value.body means or why it should
+      // have a body and why that is a return statement.  Please review this.
+      const returnStatement = <babel.ReturnStatement>node.body.body[0];
+      const argument = <babel.ArrayExpression>returnStatement.argument;
       const propDesc = toScannedPolymerProperty(
           prop, this.document.sourceRangeForNode(node)!, this.document);
       docs.annotate(propDesc);
@@ -159,8 +159,9 @@ class ElementVisitor implements Visitor {
               this.document, elementObject, 'callExpression');
           element.warnings = element.warnings.concat(parseResult.warnings);
           let expressionText = undefined;
-          if (elementObject.type === 'Literal') {
-            expressionText = elementObject.raw;
+          if (babel.isLiteral(elementObject)) {
+            expressionText = this.document.contents.slice(
+                elementObject.start, elementObject.end);
           }
           element.observers.push({
             javascriptNode: elementObject,
@@ -183,21 +184,21 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterCallExpression(node: estree.CallExpression, parent: estree.Node) {
+  enterCallExpression(node: babel.CallExpression, parent: babel.Node) {
     // When dealing with a class, enterCallExpression is called after the
     // parsing actually starts
     if (this.classDetected) {
-      return estraverse.VisitorOption.Skip;
+      return VisitorOption.Skip;
     }
 
     const callee = node.callee;
-    if (callee.type === 'Identifier') {
+    if (babel.isIdentifier(callee)) {
       if (callee.name === 'Polymer') {
         const rawDescription = getAttachedComment(parent);
         let className: undefined|string = undefined;
-        if (parent.type === 'AssignmentExpression') {
+        if (babel.isAssignmentExpression(parent)) {
           className = getIdentifierName(parent.left);
-        } else if (parent.type === 'VariableDeclarator') {
+        } else if (babel.isVariableDeclarator(parent)) {
           className = getIdentifierName(parent.id);
         }
         const jsDoc = jsdoc.parseJsdoc(rawDescription || '');
@@ -229,11 +230,11 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  leaveCallExpression(node: estree.CallExpression, _: estree.Node) {
+  leaveCallExpression(node: babel.CallExpression, _: babel.Node) {
     const callee = node.callee;
     const args = node.arguments;
-    if (callee.type === 'Identifier' && args.length === 1 &&
-        args[0].type === 'ObjectExpression') {
+    if (babel.isIdentifier(callee) && args.length === 1 &&
+        babel.isObjectExpression(args[0])) {
       if (callee.name === 'Polymer') {
         if (this.element) {
           this.features.push(this.element);
@@ -244,11 +245,11 @@ class ElementVisitor implements Visitor {
     }
   }
 
-  enterObjectExpression(node: estree.ObjectExpression, _: estree.Node) {
+  enterObjectExpression(node: babel.ObjectExpression, _: babel.Node) {
     // When dealing with a class, there is no single object that we can
     // parse to retrieve all properties.
     if (this.classDetected) {
-      return estraverse.VisitorOption.Skip;
+      return VisitorOption.Skip;
     }
 
     const element = this.element;
@@ -257,14 +258,14 @@ class ElementVisitor implements Visitor {
       const setters: {[name: string]: ScannedPolymerProperty} = {};
       const definedProperties: {[name: string]: ScannedPolymerProperty} = {};
       for (const prop of node.properties) {
+        if (babel.isSpreadProperty(prop)) {
+          continue;
+        }
         const name = objectKeyToString(prop.key);
         if (!name) {
           element.warnings.push(new Warning({
-            message:
-                `Can't determine name for property key from expression with type ${
-                                                                                   prop.key
-                                                                                       .type
-                                                                                 }.`,
+            message: `Can't determine name for property key from expression ` +
+                `with type ${prop.key.type}.`,
             code: 'cant-determine-property-name',
             severity: Severity.WARNING,
             sourceRange: this.document.sourceRangeForNode(prop.key)!,
@@ -285,11 +286,12 @@ class ElementVisitor implements Visitor {
         try {
           const scannedPolymerProperty = toScannedPolymerProperty(
               prop, this.document.sourceRangeForNode(prop)!, this.document);
-          if (prop.kind === 'get') {
+          if (babel.isObjectMethod(prop) && prop.kind === 'get') {
             getters[scannedPolymerProperty.name] = scannedPolymerProperty;
-          } else if (prop.kind === 'set') {
+          } else if (babel.isObjectMethod(prop) && prop.kind === 'set') {
             setters[scannedPolymerProperty.name] = scannedPolymerProperty;
-          } else if (prop.method === true || isFunctionType(prop.value)) {
+          } else if (
+              babel.isObjectMethod(prop) || babel.isFunction(prop.value)) {
             const scannedPolymerMethod = toScannedMethod(
                 prop, this.document.sourceRangeForNode(prop)!, this.document);
             element.addMethod(scannedPolymerMethod);
@@ -319,7 +321,7 @@ class ElementVisitor implements Visitor {
         const prop = definedProperties[name];
         element.addProperty(prop);
       });
-      return estraverse.VisitorOption.Skip;
+      return VisitorOption.Skip;
     }
   }
 }

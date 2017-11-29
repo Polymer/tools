@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
 import * as dom5 from 'dom5';
-import * as estree from 'estree';
 
 import * as jsdoc from '../javascript/jsdoc';
 import {ParsedDocument} from '../parser/document';
@@ -40,7 +40,7 @@ export abstract class ScannedElementBase implements Resolvable {
   sourceRange: SourceRange|undefined;
   staticMethods: Map<string, ScannedMethod>;
   methods: Map<string, ScannedMethod>;
-  astNode: estree.Node|null;
+  astNode: babel.Node|null;
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
   'slots': Slot[] = [];
