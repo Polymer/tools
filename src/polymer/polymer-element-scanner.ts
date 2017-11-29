@@ -13,7 +13,6 @@
  */
 
 import * as babel from 'babel-types';
-import * as astValue from '../javascript/ast-value';
 import {getIdentifierName} from '../javascript/ast-value';
 import {VisitorOption} from '../javascript/estraverse-shim';
 import {Visitor} from '../javascript/estree-visitor';
