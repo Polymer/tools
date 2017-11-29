@@ -148,7 +148,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
       if (!sourceRange) {
         continue;
       }
-      if (babel.isFunction(prop.value)) {
+      if (babel.isMethod(prop) || babel.isFunction(prop.value)) {
         const method = toScannedMethod(prop, sourceRange, this.document);
         feature.methods.set(method.name, method);
       } else {
