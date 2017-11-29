@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Removes our proprietary protocol in favor of unifying on the Language Server Protocol. Using the standard protocol lets us support more editors with less code.
-- Notices changes to polymer.json immediately. Currently this is useful for changing lint rules without reloading your editor.
-- Supports filtering out warning codes with the polymer.json field
+- Notices changes to `polymer.json` immediately. Currently this is useful for changing lint rules without reloading your editor.
+- Supports filtering out warning codes with the `polymer.json` field
   `lint.ignoreWarnings` which takes an array of warning codes that we should
   not report. This brings the IDE in line with `polymer lint` on the command
   line.
