@@ -114,7 +114,7 @@ suite('Polymer2ElementScanner with old jsdoc annotations', () => {
         properties: [{
           name: 'foo',
           description: 'The foo prop.',
-          type: '(m-test|function)',
+          type: '(m-test | function)',
         }],
         attributes: [{
           name: 'foo',
