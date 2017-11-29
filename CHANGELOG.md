@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
 
-## [3.0.0-pre.1] - 2017-11-28
+## [3.0.0-pre.1] - 2017-11-29
 
 * [BREAKING] Switched the underlying parser/AST for JavaScript from `espree/estree` to `babylon/babel-types`.  This was needed to support parsing of important platform features such as dynamic imports and moves us closer to supporting TypeScript.
 * When printing Warnings, use one-based indexes for lines and columns, as most text editors and other tools do.
