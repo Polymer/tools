@@ -12,10 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import File = require('vinyl');
 import {UrlLoader} from 'polymer-analyzer';
 import {parseUrl} from 'polymer-analyzer/lib/core/utils';
+import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
+
 import {getFileContents} from './streams';
+
+import File = require('vinyl');
 
 /**
  * This is a `UrlLoader` for use with a `polymer-analyzer` that reads files
@@ -31,14 +34,14 @@ export class FileMapUrlLoader implements UrlLoader {
   }
 
   // Return true if we can return load the given url.
-  canLoad(url: string): boolean {
+  canLoad(url: ResolvedUrl): boolean {
     return this.files.has(url) ||
         this.fallbackLoader && this.fallbackLoader.canLoad(url);
   }
 
   // Try to load the file from the map.  If not in the map, try to load
   // from the fallback loader.
-  async load(url: string): Promise<string> {
+  async load(url: ResolvedUrl): Promise<string> {
     const file = this.files.get(parseUrl(url).pathname)!;
 
     if (file == null) {

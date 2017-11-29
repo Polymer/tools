@@ -49,7 +49,7 @@ import {AsyncTransformStream} from './streams';
  * When support is added, we can add automatic weighting and support multiple
  * numbers.
  */
-export type ResourceType = 'document' | 'script' | 'style' | 'image' | 'font';
+export type ResourceType = 'document'|'script'|'style'|'image'|'font';
 export interface PushManifestEntry {
   type?: ResourceType;
   weight?: 1;
@@ -132,16 +132,18 @@ async function generatePushManifestEntryForUrl(
     throw new Error(`Unable to get document ${url}: ${message}`);
   }
 
-  const analyzedImports =
-      [...analyzedDocument.getFeatures({
-        kind: 'import',
-        externalPackages: true,
-        imported: true,
-        noLazyImports: true,
-      })].filter((i) => !(i.type === 'html-import' && i.lazy));
+  const rawImports = [...analyzedDocument.getFeatures({
+    kind: 'import',
+    externalPackages: true,
+    imported: true,
+    noLazyImports: true,
+  })];
+  const importsToPush = rawImports.filter(
+      (i) => !(i.type === 'html-import' && i.lazy) &&
+          !(i.kinds.has('html-script-back-reference')));
   const pushManifestEntries: PushManifestEntryCollection = {};
 
-  for (const analyzedImport of analyzedImports) {
+  for (const analyzedImport of importsToPush) {
     // TODO This import URL does not respect the document's base tag.
     // Probably an issue more generally with all URLs analyzed out of
     // documents, but base tags are somewhat rare.
