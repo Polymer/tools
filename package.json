@@ -1,7 +1,7 @@
 {
   "name": "polymer-modulizer",
   "description": "Converts Bower + HTML Imports packages to npm + JS modules",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "The Polymer Project Authors",
   "repository": {
     "type": "git",
