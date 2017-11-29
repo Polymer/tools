@@ -235,7 +235,7 @@ export class TestClient {
         CompletionRequest.type, params) as Promise<CompletionList>;
   }
 
-  latestVersionMap = new Map<string, number>();
+  private latestVersionMap = new Map<string, number>();
   private getNextVersionFor(path: string) {
     let version = this.latestVersionMap.get(path);
     if (version == null) {

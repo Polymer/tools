@@ -63,8 +63,17 @@ export class AutoDisposable implements Disposable {
   protected readonly disposables: Disposable[] = [];
 }
 
+/**
+ * Declares a method that ensures that we don't throw uncaught errors, as
+ * that can result in intrusive stack trace popups for users.
+ */
 export abstract class Handler extends AutoDisposable {
   protected abstract connection: IConnection;
+
+  /**
+   * If the given promise rejects, unobtrusively log the error and return the
+   * fallback value instead.
+   */
   protected async handleErrors<Result, Fallback>(
       promise: Promise<Result>,
       fallbackValue: Fallback): Promise<Result|Fallback> {

@@ -23,6 +23,20 @@ export const applyAllFixesCommandName = 'polymer-ide/applyAllFixes';
 export const allSupportedCommands =
     [applyEditCommandName, applyAllFixesCommandName];
 
+/**
+ * Execute Commands sent from the client.
+ *
+ * Commands are honestly one of the most confusing parts of the language server
+ * protocol. In short, they are an open namespace of actions. Commands are a key
+ * part of a few LSP features, including Code Actions.
+ *
+ * In the initial version of the spec they were something that the server asked
+ * the client to do, but that's unsatisfying because it requires special code
+ * for every client. So as of v3 of the protocol, the server can declare
+ * commands that it can handle.
+ *
+ * This class is responsible for executing those commands.
+ */
 export default class CommandExecutor extends Handler {
   constructor(
       protected connection: IConnection,
@@ -40,6 +54,19 @@ export default class CommandExecutor extends Handler {
     });
   }
 
+  /**
+   * Used to edit code as a Code Action. The protocol conversation is unusually
+   * complicated, so it's worth spelling out:
+   *
+   *   < Server publishes diagnostics
+   *   - User moves cursor over diagnostic
+   *   > Client asks for code actions
+   *   < Server sends back code actions with commands that have the
+   *     our applyEditCommandName
+   *   - User chooses to run a code action.
+   *   > Client asks server to execute the command.
+   *   < This method sends an request to the client to apply these edits.
+   */
   private async executeApplyEditCommand(args: [WorkspaceEdit]) {
     await this.applyEdits(args[0]);
   }

@@ -83,7 +83,7 @@ export interface Comment {
 export function getAstLocationForPosition(
     document: ParsedHtmlDocument, position: SourcePosition): AstLocation {
   const location =
-      internalgetAstLocationForPosition(document.ast, position, document);
+      internalGetAstLocationForPosition(document.ast, position, document);
   if (!location) {
     /** Eh, we're probably in a text node. */
     return {kind: 'text'};
@@ -91,7 +91,7 @@ export function getAstLocationForPosition(
   return location;
 }
 
-function internalgetAstLocationForPosition(
+function internalGetAstLocationForPosition(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument): undefined|AstLocation {
   const sourceRange = document.sourceRangeForNode(node);
@@ -205,7 +205,7 @@ function findLocationInChildren(
     node: parse5.ASTNode, position: SourcePosition,
     document: ParsedHtmlDocument) {
   for (const child of node.childNodes || []) {
-    const result = internalgetAstLocationForPosition(child, position, document);
+    const result = internalGetAstLocationForPosition(child, position, document);
     if (result) {
       return result;
     }
@@ -213,7 +213,7 @@ function findLocationInChildren(
   if (node.tagName === 'template') {
     const content = parse5.treeAdapters.default.getTemplateContent(node);
     const result =
-        internalgetAstLocationForPosition(content, position, document);
+        internalGetAstLocationForPosition(content, position, document);
     if (result) {
       return result;
     }
