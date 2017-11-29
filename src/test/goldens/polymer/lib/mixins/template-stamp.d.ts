@@ -71,7 +71,7 @@ declare namespace Polymer {
        * @param eventName Name of event
        * @param handler Listener function to add
        */
-      _addEventListenerToNode(node: Node|null, eventName: string, handler: Function|null): any;
+      _addEventListenerToNode(node: Node|null, eventName: string, handler: Function|null): void|null;
 
       /**
        * Override point for adding custom or simulated event handling.
@@ -80,7 +80,7 @@ declare namespace Polymer {
        * @param eventName Name of event
        * @param handler Listener function to remove
        */
-      _removeEventListenerFromNode(node: Node|null, eventName: string, handler: Function|null): any;
+      _removeEventListenerFromNode(node: Node|null, eventName: string, handler: Function|null): void|null;
     }
   } & T
 }

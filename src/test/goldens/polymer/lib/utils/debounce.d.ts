@@ -24,17 +24,17 @@ declare namespace Polymer {
      * @param asyncModule Object with Async interface.
      * @param callback Callback to run.
      */
-    setConfig(asyncModule: AsyncModule, callback: () => any): any;
+    setConfig(asyncModule: AsyncModule, callback: () => any): void|null;
 
     /**
      * Cancels an active debouncer and returns a reference to itself.
      */
-    cancel(): any;
+    cancel(): void|null;
 
     /**
      * Flushes an active debouncer and returns a reference to itself.
      */
-    flush(): any;
+    flush(): void|null;
 
     /**
      * Returns true if the debouncer is active.

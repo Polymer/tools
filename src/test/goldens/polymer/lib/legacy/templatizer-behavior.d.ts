@@ -83,7 +83,7 @@ declare namespace Polymer {
      *   strict dirty-checking for objects and arrays (always consider them to
      *   be "dirty"). Defaults to false.
      */
-    templatize(template: HTMLTemplateElement|null, mutableData?: boolean): any;
+    templatize(template: HTMLTemplateElement|null, mutableData?: boolean): void|null;
 
     /**
      * Creates an instance of the template prepared by `templatize`.  The object

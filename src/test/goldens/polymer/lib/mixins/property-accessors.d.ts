@@ -61,7 +61,7 @@ declare namespace Polymer {
        * Provided as an override point for performing any setup work prior
        * to initializing the property accessor system.
        */
-      _initializeProperties(): any;
+      _initializeProperties(): void|null;
 
       /**
        * Called at instance time with bag of properties that were overwritten
@@ -74,7 +74,7 @@ declare namespace Polymer {
        * @param props Bag of property values that were overwritten
        *   when creating property accessors.
        */
-      _initializeProtoProperties(props: Object|null): any;
+      _initializeProtoProperties(props: Object|null): void|null;
 
       /**
        * Called at ready time with bag of instance properties that overwrote
@@ -87,7 +87,7 @@ declare namespace Polymer {
        * @param props Bag of property values that were overwritten
        *   when creating property accessors.
        */
-      _initializeInstanceProperties(props: Object|null): any;
+      _initializeInstanceProperties(props: Object|null): void|null;
 
       /**
        * Ensures the element has the given attribute. If it does not,
@@ -96,7 +96,7 @@ declare namespace Polymer {
        * @param attribute Name of attribute to ensure is set.
        * @param value of the attribute.
        */
-      _ensureAttribute(attribute: string, value: string): any;
+      _ensureAttribute(attribute: string, value: string): void|null;
 
       /**
        * Deserializes an attribute to its associated property.
@@ -108,7 +108,7 @@ declare namespace Polymer {
        * @param value of the attribute.
        * @param type type to deserialize to.
        */
-      _attributeToProperty(attribute: string, value: string|null, type?: any): any;
+      _attributeToProperty(attribute: string, value: string|null, type?: any): void|null;
 
       /**
        * Serializes a property to its associated attribute.
@@ -117,7 +117,7 @@ declare namespace Polymer {
        * @param attribute Attribute name to reflect.
        * @param value Property value to refect.
        */
-      _propertyToAttribute(property: string, attribute?: string, value?: any): any;
+      _propertyToAttribute(property: string, attribute?: string, value?: any): void|null;
 
       /**
        * Sets a typed value to an HTML attribute on a node.
@@ -131,7 +131,7 @@ declare namespace Polymer {
        * @param value Value to serialize.
        * @param attribute Attribute name to serialize to.
        */
-      _valueToNodeAttribute(node: Element|null, value: any, attribute: string): any;
+      _valueToNodeAttribute(node: Element|null, value: any, attribute: string): void|null;
 
       /**
        * Converts a typed JavaScript value to a string.
@@ -184,7 +184,7 @@ declare namespace Polymer {
        * @param readOnly When true, no setter is created; the
        *   protected `_setProperty` function must be used to set the property
        */
-      _createPropertyAccessor(property: string, readOnly?: boolean): any;
+      _createPropertyAccessor(property: string, readOnly?: boolean): void|null;
 
       /**
        * Returns true if this library created an accessor for the given property.
@@ -201,7 +201,7 @@ declare namespace Polymer {
        * @param property Name of the property
        * @param value Value to set
        */
-      _setProperty(property: string, value: any): any;
+      _setProperty(property: string, value: any): void|null;
 
       /**
        * Updates the local storage for a property, records the previous value,
@@ -227,7 +227,7 @@ declare namespace Polymer {
        * Marks the properties as invalid, and enqueues an async
        * `_propertiesChanged` callback.
        */
-      _invalidateProperties(): any;
+      _invalidateProperties(): void|null;
 
       /**
        * Call to enable property accessor processing. Before this method is
@@ -237,7 +237,7 @@ declare namespace Polymer {
        * It is safe to call this method multiple times as it only turns on
        * property accessors once.
        */
-      _enableProperties(): any;
+      _enableProperties(): void|null;
 
       /**
        * Calls the `_propertiesChanged` callback with the current set of
@@ -245,7 +245,7 @@ declare namespace Polymer {
        * set), and resets the pending set of changes. Generally, this method
        * should not be called in user code.
        */
-      _flushProperties(): any;
+      _flushProperties(): void|null;
 
       /**
        * Lifecycle callback called the first time properties are being flushed.

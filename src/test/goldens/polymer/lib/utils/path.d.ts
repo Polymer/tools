@@ -82,7 +82,7 @@ declare namespace Polymer {
      * Example:
      *
      * ```
-     * Polymer.Path.translate('foo.bar', 'zot' 'foo.bar.baz') // 'zot.baz'
+     * Polymer.Path.translate('foo.bar', 'zot', 'foo.bar.baz') // 'zot.baz'
      * ```
      */
     function translate(base: string, newBase: string, path: string): string;

@@ -31,12 +31,36 @@ declare namespace Polymer {
        * delay.
        */
       function after(delay: number): AsyncInterface|null;
+
+
+      /**
+       * Enqueues a function called in the next task.
+       */
+      function run(fn: Function|null): number;
+
+
+      /**
+       * Cancels a previously enqueued `timeOut` callback.
+       */
+      function cancel(handle: number): void|null;
+
+
+      /**
+       * Cancels a previously enqueued `animationFrame` callback.
+       */
+      function cancel(handle: number): void|null;
     }
 
     /**
      * Async interface wrapper around `requestAnimationFrame`.
      */
     namespace animationFrame {
+
+
+      /**
+       * Enqueues a function called at `requestAnimationFrame` timing.
+       */
+      function run(fn: Function|null): number;
     }
 
     /**
@@ -55,7 +79,7 @@ declare namespace Polymer {
       /**
        * Cancels a previously enqueued `idlePeriod` callback.
        */
-      function cancel(handle: number): any;
+      function cancel(handle: number): void|null;
     }
 
     /**
@@ -79,7 +103,7 @@ declare namespace Polymer {
       /**
        * Cancels a previously enqueued `microTask` callback.
        */
-      function cancel(handle: number): any;
+      function cancel(handle: number): void|null;
     }
   }
 }

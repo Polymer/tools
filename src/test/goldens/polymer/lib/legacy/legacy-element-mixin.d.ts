@@ -164,7 +164,7 @@ declare namespace Polymer {
        * @param attribute Attribute name to reflect.
        * @param value Property value to reflect.
        */
-      reflectPropertyToAttribute(property: string, attribute?: string, value?: any): any;
+      reflectPropertyToAttribute(property: string, attribute?: string, value?: any): void|null;
 
       /**
        * Sets a typed value to an HTML attribute on a node.
@@ -176,7 +176,7 @@ declare namespace Polymer {
        * @param attribute Attribute name to serialize to.
        * @param node Element to set attribute to.
        */
-      serializeValueToAttribute(value: any, attribute: string, node: Element|null): any;
+      serializeValueToAttribute(value: any, attribute: string, node: Element|null): void|null;
 
       /**
        * Copies own properties (including accessor descriptors) from a source
@@ -247,7 +247,7 @@ declare namespace Polymer {
        * @param eventName Name of event to listen for.
        * @param methodName Name of handler method on `this` to call.
        */
-      listen(node: Element|null, eventName: string, methodName: string): any;
+      listen(node: Element|null, eventName: string, methodName: string): void|null;
 
       /**
        * Convenience method to remove an event listener from a given element,
@@ -258,7 +258,7 @@ declare namespace Polymer {
        * @param methodName Name of handler method on `this` to not call
        *        anymore.
        */
-      unlisten(node: Element|null, eventName: string, methodName: string): any;
+      unlisten(node: Element|null, eventName: string, methodName: string): void|null;
 
       /**
        * Override scrolling behavior to all direction, one direction, or none.
@@ -274,7 +274,7 @@ declare namespace Polymer {
        * @param node Element to apply scroll direction setting.
        * Defaults to `this`.
        */
-      setScrollDirection(direction?: string, node?: Element|null): any;
+      setScrollDirection(direction?: string, node?: Element|null): void|null;
 
       /**
        * Convenience method to run `querySelector` on this local DOM scope.
@@ -291,7 +291,7 @@ declare namespace Polymer {
        * This should not be necessary as of Polymer 2.0.2 and is provided only
        * for backwards compatibility.
        */
-      distributeContent(): any;
+      distributeContent(): void|null;
 
       /**
        * Returns a list of nodes that are the effective childNodes. The effective
@@ -449,14 +449,14 @@ declare namespace Polymer {
        *
        * @param jobName The name of the debouncer started with `debounce`
        */
-      flushDebouncer(jobName: string): any;
+      flushDebouncer(jobName: string): void|null;
 
       /**
        * Cancels an active debouncer.  The `callback` will not be called.
        *
        * @param jobName The name of the debouncer started with `debounce`
        */
-      cancelDebouncer(jobName: string): any;
+      cancelDebouncer(jobName: string): void|null;
 
       /**
        * Runs a callback function asynchronously.
@@ -478,7 +478,7 @@ declare namespace Polymer {
        * @param handle Handle returned from original `async` call to
        *   cancel.
        */
-      cancelAsync(handle: number): any;
+      cancelAsync(handle: number): void|null;
 
       /**
        * Convenience method for creating an element and configuring it.
@@ -546,7 +546,7 @@ declare namespace Polymer {
        * @param node Element to apply the transform to.
        * Defaults to `this`
        */
-      transform(transformText: string, node?: Element|null): any;
+      transform(transformText: string, node?: Element|null): void|null;
 
       /**
        * Cross-platform helper for setting an element's CSS `translate3d`
@@ -558,7 +558,7 @@ declare namespace Polymer {
        * @param node Element to apply the transform to.
        * Defaults to `this`.
        */
-      translate3d(x: number, y: number, z: number, node?: Element|null): any;
+      translate3d(x: number, y: number, z: number, node?: Element|null): void|null;
 
       /**
        * Removes an item from an array, if it exists.
