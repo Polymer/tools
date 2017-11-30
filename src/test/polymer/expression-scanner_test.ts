@@ -22,9 +22,8 @@ import {AttributeDatabindingExpression, parseExpressionInJsStringLiteral, scanDo
 import {CodeUnderliner} from '../test-utils';
 
 suite('ExpressionScanner', () => {
-
   suite('scanning html for expressions', () => {
-    test('finds whole-attribute expressions', async() => {
+    test('finds whole-attribute expressions', async () => {
       const contents = `
         <dom-module id="foo-elem">
           <template>
@@ -103,7 +102,7 @@ suite('ExpressionScanner', () => {
           [true, true, true, true, true]);
     });
 
-    test('finds interpolated attribute expressions', async() => {
+    test('finds interpolated attribute expressions', async () => {
       const contents = `
         <template is="dom-bind">
           <div id=" {{foo}}"></div>
@@ -166,7 +165,7 @@ suite('ExpressionScanner', () => {
           ['attribute', 'attribute', 'attribute', 'attribute']);
     });
 
-    test('finds expressions in text nodes', async() => {
+    test('finds expressions in text nodes', async () => {
       const contents = `
         <template is="dom-bind">
           <div>{{foo}}</div>
@@ -244,7 +243,7 @@ suite('ExpressionScanner', () => {
           expressions.map((e) => e.warnings), [[], [], [], [], []]);
     });
 
-    test('gives accurate locations for parse errors', async() => {
+    test('gives accurate locations for parse errors', async () => {
       const contents = `
         <template is="dom-bind">
           <div id="{{foo(}}"></div>
@@ -295,7 +294,7 @@ suite('ExpressionScanner', () => {
   });
 
   suite('parsing expressions from javascript string literals', () => {
-    test('it succeeds and fails properly', async() => {
+    test('it succeeds and fails properly', async () => {
       const contents = `
         const observers = [
           'foo(bar, baz)',

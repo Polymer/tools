@@ -73,4 +73,4 @@ export abstract class ScannedFeature {
   }
 }
 
-export type Privacy = 'public' | 'private' | 'protected';
+export type Privacy = 'public'|'private'|'protected';

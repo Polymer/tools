@@ -15,7 +15,7 @@
 import {SourceRange} from '../model/model';
 import {Options, ParsedDocument} from '../parser/document';
 
-export type Json = JsonObject | JsonArray | number | string | boolean | null;
+export type Json = JsonObject|JsonArray|number|string|boolean|null;
 export interface JsonObject { [key: string]: Json; }
 export interface JsonArray extends Array<Json> {}
 

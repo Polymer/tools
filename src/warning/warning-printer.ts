@@ -16,7 +16,7 @@ import * as chalk from 'chalk';
 
 import {Warning} from '../model/model';
 
-export type Verbosity = 'one-line' | 'full';
+export type Verbosity = 'one-line'|'full';
 
 export interface Options {
   verbosity?: Verbosity;

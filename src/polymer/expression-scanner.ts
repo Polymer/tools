@@ -51,21 +51,19 @@ export interface Template extends parse5.ASTNode { content: parse5.ASTNode; }
  */
 export function getAllDataBindingTemplates(node: parse5.ASTNode) {
   return dom5.queryAll(
-      node,
-      isDataBindingTemplate,
-      [],
-      dom5.childNodesIncludeTemplate) as Template[];
+             node, isDataBindingTemplate, [], dom5.childNodesIncludeTemplate) as
+      Template[];
 }
 
 export type HtmlDatabindingExpression =
-    TextNodeDatabindingExpression | AttributeDatabindingExpression;
+    TextNodeDatabindingExpression|AttributeDatabindingExpression;
 
 /**
  * Some expressions are limited. For example, in a property declaration,
  * `observer` must be the identifier of a method, and `computed` must be a
  * function call expression.
  */
-export type ExpressionLimitation = 'full' | 'identifierOnly' | 'callExpression';
+export type ExpressionLimitation = 'full'|'identifierOnly'|'callExpression';
 export abstract class DatabindingExpression {
   readonly sourceRange: SourceRange;
   readonly warnings: Warning[] = [];

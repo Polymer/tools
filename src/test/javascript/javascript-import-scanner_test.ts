@@ -23,11 +23,10 @@ import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {ResolvedUrl} from '../../model/url';
 
 suite('JavaScriptImportScanner', () => {
-
   const parser = new JavaScriptParser();
   const scanner = new JavaScriptImportScanner();
 
-  test('finds imports', async() => {
+  test('finds imports', async () => {
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/javascript/module.js'), 'utf8');
     const document =
@@ -46,7 +45,7 @@ suite('JavaScriptImportScanner', () => {
     ]);
   });
 
-  test('finds dynamic imports', async() => {
+  test('finds dynamic imports', async () => {
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/javascript/dynamic-import.js'),
         'utf8');
@@ -66,7 +65,7 @@ suite('JavaScriptImportScanner', () => {
     ]);
   });
 
-  test('skips non-path imports', async() => {
+  test('skips non-path imports', async () => {
     const file = fs.readFileSync(
         path.resolve(
             __dirname, '../static/javascript/module-with-named-import.js'),
@@ -80,5 +79,4 @@ suite('JavaScriptImportScanner', () => {
     const {features} = await scanner.scan(document, visit);
     assert.equal(features.length, 0);
   });
-
 });

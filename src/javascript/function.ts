@@ -31,10 +31,16 @@ export class ScannedFunction implements Resolvable {
   privacy: Privacy;
 
   constructor(
-      name: string, description: string, summary: string, privacy: Privacy,
-      astNode: babel.Node, jsdoc: JsDocAnnotation, sourceRange: SourceRange,
+      name: string,
+      description: string,
+      summary: string,
+      privacy: Privacy,
+      astNode: babel.Node,
+      jsdoc: JsDocAnnotation,
+      sourceRange: SourceRange,
       params?: {name: string, type?: string}[],
-      returnData?: {type?: string, desc: string}, ) {
+      returnData?: {type?: string, desc: string},
+  ) {
     this.name = name;
     this.description = description;
     this.summary = summary;

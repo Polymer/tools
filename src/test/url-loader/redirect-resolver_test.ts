@@ -19,9 +19,7 @@ import {RedirectResolver} from '../../url-loader/redirect-resolver';
 
 
 suite('RedirectResolver', function() {
-
   suite('canResolve', () => {
-
     test('canResolve is true if the prefix matches with protocol', () => {
       const resolver = new RedirectResolver('proto://site/', 'some/path');
       assert.isTrue(resolver.canResolve(
@@ -41,7 +39,6 @@ suite('RedirectResolver', function() {
       assert.isFalse(resolver.canResolve(
           'protzo://site/something.html' as PackageRelativeUrl));
     });
-
   });
 
   suite('resolve', () => {

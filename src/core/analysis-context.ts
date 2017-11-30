@@ -173,10 +173,10 @@ export class AnalysisContext {
    */
   private async _analyze(resolvedUrls: ResolvedUrl[]):
       Promise<AnalysisContext> {
-    const analysisComplete = (async() => {
+    const analysisComplete = (async () => {
       // 1. Load and scan all root documents
       const scannedDocumentsOrWarnings =
-          await Promise.all(resolvedUrls.map(async(url) => {
+          await Promise.all(resolvedUrls.map(async (url) => {
             try {
               const scannedResult = await this.scan(url);
               this._cache.failedDocuments.delete(url);
@@ -190,7 +190,7 @@ export class AnalysisContext {
             }
           }));
       const scannedDocuments = scannedDocumentsOrWarnings.filter(
-          (d) => d != null) as ScannedDocument[];
+                                   (d) => d != null) as ScannedDocument[];
       // 2. Run per-document resolution
       const documents = scannedDocuments.map((d) => this.getDocument(d.url));
       // TODO(justinfagnani): instead of the above steps, do:
@@ -247,7 +247,7 @@ export class AnalysisContext {
     const document = new Document(scannedDocument, this, analysisResult);
     this._cache.analyzedDocuments.set(resolvedUrl, document);
     this._cache.analyzedDocumentPromises.getOrCompute(
-        resolvedUrl, async() => document);
+        resolvedUrl, async () => document);
 
     document.resolve();
     return document;
@@ -310,13 +310,14 @@ export class AnalysisContext {
    */
   private async _scanLocal(resolvedUrl: ResolvedUrl): Promise<ScannedDocument> {
     return this._cache.scannedDocumentPromises.getOrCompute(
-        resolvedUrl, async() => {
+        resolvedUrl, async () => {
           try {
             const parsedDoc = await this._parse(resolvedUrl);
             const scannedDocument = await this._scanDocument(parsedDoc);
 
-            const imports = scannedDocument.getNestedFeatures().filter(
-                (e) => e instanceof ScannedImport) as ScannedImport[];
+            const imports =
+                scannedDocument.getNestedFeatures().filter(
+                    (e) => e instanceof ScannedImport) as ScannedImport[];
 
             // Update dependency graph
             const importUrls = imports.map((i) => this.resolveUrl(i.url));
@@ -335,10 +336,11 @@ export class AnalysisContext {
    */
   async scan(resolvedUrl: ResolvedUrl): Promise<ScannedDocument> {
     return this._cache.dependenciesScannedPromises.getOrCompute(
-        resolvedUrl, async() => {
+        resolvedUrl, async () => {
           const scannedDocument = await this._scanLocal(resolvedUrl);
-          const imports = scannedDocument.getNestedFeatures().filter(
-              (e) => e instanceof ScannedImport) as ScannedImport[];
+          const imports =
+              scannedDocument.getNestedFeatures().filter(
+                  (e) => e instanceof ScannedImport) as ScannedImport[];
 
           // Scan imports
           for (const scannedImport of imports) {
@@ -453,7 +455,7 @@ export class AnalysisContext {
    */
   private async _parse(resolvedUrl: ResolvedUrl): Promise<ParsedDocument> {
     return this._cache.parsedDocumentPromises.getOrCompute(
-        resolvedUrl, async() => {
+        resolvedUrl, async () => {
           const content = await this.load(resolvedUrl);
           const extension = path.extname(resolvedUrl).substring(1);
           return this._parseContents(extension, content, resolvedUrl);

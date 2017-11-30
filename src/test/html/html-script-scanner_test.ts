@@ -27,7 +27,6 @@ import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 const fixturesDir = path.resolve(__dirname, '../static');
 suite('HtmlScriptScanner', () => {
-
   suite('scan()', () => {
     let scanner: HtmlScriptScanner;
 
@@ -35,14 +34,14 @@ suite('HtmlScriptScanner', () => {
       scanner = new HtmlScriptScanner();
     });
 
-    test('finds external and inline scripts', async() => {
+    test('finds external and inline scripts', async () => {
       const contents = `<html><head>
           <script src="foo.js"></script>
           <script>console.log('hi')</script>
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 2);
@@ -57,13 +56,13 @@ suite('HtmlScriptScanner', () => {
       assert.deepEqual(feature1.locationOffset, {line: 2, col: 18});
     });
 
-    test('finds external scripts relative to baseUrl', async() => {
+    test('finds external scripts relative to baseUrl', async () => {
       const contents = `<html><head><base href="/aybabtu/">
           <script src="foo.js"></script>
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
@@ -78,7 +77,7 @@ suite('HtmlScriptScanner', () => {
       const analyzer = new Analyzer({urlLoader});
       let analysis: Analysis;
 
-      before(async() => {
+      before(async () => {
         analysis = await analyzer.analyze(['js-modules.html']);
       });
 
@@ -104,7 +103,7 @@ suite('HtmlScriptScanner', () => {
             `import * as something from './javascript/module-with-export.js';`);
       });
 
-      test('follows import statements in modules', async() => {
+      test('follows import statements in modules', async () => {
         const jsImports = [...analysis.getFeatures({kind: 'js-import'})];
         assert.equal(jsImports.length, 2);
 

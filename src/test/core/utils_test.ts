@@ -24,7 +24,6 @@ import {invertPromise} from '../test-utils';
 use(chaiAsPromised);
 
 suite('parseUrl', () => {
-
   function testUrl(url: string, properties: Partial<Url>) {
     const urlObject = parseUrl(url);
     for (const strKey of Object.keys(properties)) {
@@ -69,20 +68,19 @@ suite('parseUrl', () => {
 });
 
 suite('Deferred', () => {
-
-  test('resolves', async() => {
+  test('resolves', async () => {
     const deferred = new Deferred<string>();
     deferred.resolve('foo');
     assert.deepEqual(await deferred.promise, 'foo');
   });
 
-  test('rejects', async() => {
+  test('rejects', async () => {
     const deferred = new Deferred<string>();
     deferred.reject(new Error('foo'));
     assert.deepEqual((await invertPromise(deferred.promise)).message, 'foo');
   });
 
-  test('resolves only once', async() => {
+  test('resolves only once', async () => {
     const deferred = new Deferred<string>();
     deferred.resolve('foo');
     try {
@@ -99,7 +97,7 @@ suite('Deferred', () => {
     }
   });
 
-  test('rejects', async() => {
+  test('rejects', async () => {
     const deferred = new Deferred<string>();
     deferred.reject(new Error('foo'));
     deferred.promise.catch((_) => {});
@@ -116,5 +114,4 @@ suite('Deferred', () => {
       // pass
     }
   });
-
 });

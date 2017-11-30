@@ -40,7 +40,7 @@ export class AsyncWorkCache<K, V> {
     if (cachedResult) {
       return cachedResult;
     }
-    const promise = (async() => {
+    const promise = (async () => {
       // Make sure we wait and return a Promise before doing any work, so that
       // the Promise is cached before control flow enters compute().
       await Promise.resolve();

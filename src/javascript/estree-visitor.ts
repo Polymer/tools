@@ -1,7 +1,7 @@
 import * as babel from 'babel-types';
 import {VisitorOption} from './estraverse-shim';
 
-export type VisitResult = VisitorOption | void | null | undefined;
+export type VisitResult = VisitorOption|void|null|undefined;
 
 export interface Visitor {
   enter?: (node: babel.Node, parent: babel.Node) => VisitResult;

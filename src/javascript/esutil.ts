@@ -123,7 +123,8 @@ export function closureType(
     code: 'no-closure-type',
     message: `Unable to determine closure type for expression of type ` +
         `${node.type}`,
-    severity: Severity.WARNING, sourceRange,
+    severity: Severity.WARNING,
+    sourceRange,
     parsedDocument: document,
   });
 }

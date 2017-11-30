@@ -83,21 +83,21 @@ export class Analyzer {
    */
   async analyze(urls: string[]): Promise<Analysis> {
     const previousAnalysisComplete = this._analysisComplete;
-    this._analysisComplete = (async() => {
+    this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
       return await previousContext.analyze(this.brandUserInputUrls(urls));
     })();
     const context = await this._analysisComplete;
     const results = new Map(this.brandUserInputUrls(urls).map(
         (url) => [url, context.getDocument(context.resolveUrl(url))] as
-            [string, Document | Warning]));
+                     [string, Document | Warning]));
     return new Analysis(results);
   }
 
   async analyzePackage(): Promise<Analysis> {
     const previousAnalysisComplete = this._analysisComplete;
     let _package: Analysis|null = null;
-    this._analysisComplete = (async() => {
+    this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
       if (!previousContext.loader.readDirectory) {
         throw new Error(
@@ -117,7 +117,7 @@ export class Analyzer {
 
       const documentsOrWarnings = new Map(filesWithParsers.map(
           (url) => [url, newContext.getDocument(newContext.resolveUrl(url))] as
-              [string, Document | Warning]));
+                       [string, Document | Warning]));
       _package = new Analysis(documentsOrWarnings);
       return newContext;
     })();
@@ -136,7 +136,7 @@ export class Analyzer {
    */
   async filesChanged(urls: string[]): Promise<void> {
     const previousAnalysisComplete = this._analysisComplete;
-    this._analysisComplete = (async() => {
+    this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
       return await previousContext.filesChanged(this.brandUserInputUrls(urls));
     })();
@@ -152,7 +152,7 @@ export class Analyzer {
    */
   async clearCaches(): Promise<void> {
     const previousAnalysisComplete = this._analysisComplete;
-    this._analysisComplete = (async() => {
+    this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
       return await previousContext.clearCaches();
     })();
@@ -173,7 +173,7 @@ export class Analyzer {
    *     it.
    */
   _fork(options?: ForkOptions): Analyzer {
-    const contextPromise = (async() => {
+    const contextPromise = (async () => {
       return options ?
           (await this._analysisComplete)._fork(undefined, options) :
           (await this._analysisComplete);

@@ -17,9 +17,7 @@ import {assert} from 'chai';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('FSUrlLoader', function() {
-
   suite('canLoad', () => {
-
     test('canLoad is true an in-package URL', () => {
       assert.isTrue(new FSUrlLoader('').canLoad('foo.html'));
     });
@@ -35,11 +33,9 @@ suite('FSUrlLoader', function() {
     test('canLoad is false for URL with a hostname', () => {
       assert.isFalse(new FSUrlLoader('').canLoad('http://abc.xyz/foo.html'));
     });
-
   });
 
   suite('getFilePath', () => {
-
     test('resolves an in-package URL', () => {
       assert.equal(new FSUrlLoader('').getFilePath('foo.html'), 'foo.html');
     });
@@ -62,8 +58,5 @@ suite('FSUrlLoader', function() {
       assert.throws(
           () => new FSUrlLoader('').getFilePath('http://abc.xyz/foo.html'));
     });
-
   });
-
-
 });

@@ -38,12 +38,11 @@ import {ScannedPolymerElement} from '../../polymer/polymer-element';
 chai.use(require('chai-subset'));
 
 suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
-
   const elements = new Map<string|undefined, ScannedPolymerElement>();
   let document: JavaScriptDocument;
   let elementsList: ScannedPolymerElement[];
 
-  suiteSetup(async() => {
+  suiteSetup(async () => {
     const parser = new JavaScriptParser();
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
@@ -54,8 +53,8 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
 
     const {features} = await scanner.scan(document, visit);
 
-    elementsList = features.filter(
-        (e) => e instanceof ScannedPolymerElement) as ScannedPolymerElement[];
+    elementsList = features.filter((e) => e instanceof ScannedPolymerElement) as
+        ScannedPolymerElement[];
     for (const element of elementsList) {
       elements.set(element.tagName, element);
     }

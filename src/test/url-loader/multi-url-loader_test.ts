@@ -49,9 +49,7 @@ const mockLoaderArray = (loads: Array<string|null>) =>
     loads.map((load): MockLoader => new MockLoader(load));
 
 suite('MultiUrlLoader', () => {
-
   suite('canLoad', () => {
-
     test('canLoad is true if the first loader is true', () => {
       const loaders = mockLoaderArray(['loader 1', null, null]);
       const loader = new MultiUrlLoader(loaders);
@@ -91,11 +89,10 @@ suite('MultiUrlLoader', () => {
       assert.equal(loaders[1].canLoadCount, 1);
       assert.equal(loaders[2].canLoadCount, 1);
     });
-
   });
 
   suite('load', () => {
-    test('returns only the first loaded file', async() => {
+    test('returns only the first loaded file', async () => {
       const loaders = mockLoaderArray(['loader 1', 'loader 2', 'loader 3']);
       const loader = new MultiUrlLoader(loaders);
       assert.equal(await loader.load('test.html' as ResolvedUrl), 'loader 1');
@@ -105,7 +102,7 @@ suite('MultiUrlLoader', () => {
       assert.equal(loaders[2].canLoadCount, 0);
     });
 
-    test('returns the file from first loader that can load', async() => {
+    test('returns the file from first loader that can load', async () => {
       const loaders = mockLoaderArray([null, null, 'loader 3']);
       const loader = new MultiUrlLoader(loaders);
       assert.equal(await loader.load('test.html' as ResolvedUrl), 'loader 3');
@@ -115,7 +112,7 @@ suite('MultiUrlLoader', () => {
       assert.equal(loaders[2].loadCount, 1);
     });
 
-    test('throws an error if no loader can be found to load', async() => {
+    test('throws an error if no loader can be found to load', async () => {
       const loaders = mockLoaderArray([null, null, null]);
       const loader = new MultiUrlLoader(loaders);
       const error =

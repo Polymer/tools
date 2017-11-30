@@ -23,7 +23,6 @@ import {PolymerElementScanner} from '../../polymer/polymer-element-scanner';
 import {CodeUnderliner} from '../test-utils';
 
 suite('PolymerElementScanner', () => {
-
   suite('scan()', () => {
     let scanner: PolymerElementScanner;
 
@@ -31,7 +30,7 @@ suite('PolymerElementScanner', () => {
       scanner = new PolymerElementScanner();
     });
 
-    test('finds polymer elements', async() => {
+    test('finds polymer elements', async () => {
       const contents = `Polymer({
         is: 'x-foo',
         properties: {
@@ -104,7 +103,7 @@ suite('PolymerElementScanner', () => {
 
       const document = new JavaScriptParser().parse(
           contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async (visitor: Visitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
 
@@ -232,7 +231,7 @@ suite('PolymerElementScanner', () => {
           1);
     });
 
-    test('finds declared and assigned call expressions', async() => {
+    test('finds declared and assigned call expressions', async () => {
       const contents = `
           const MyOtherElement = Polymer({
             is: 'my-other-element'
@@ -242,7 +241,7 @@ suite('PolymerElementScanner', () => {
       `;
       const document = new JavaScriptParser().parse(
           contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async (visitor: Visitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.deepEqual(
@@ -254,7 +253,7 @@ suite('PolymerElementScanner', () => {
 
     const testName =
         'Produces correct warnings for bad observers and computed properties';
-    test(testName, async() => {
+    test(testName, async () => {
       const contents = `
       Polymer({
         is: 'x-foo',
@@ -286,7 +285,7 @@ suite('PolymerElementScanner', () => {
           CodeUnderliner.withMapping('test-document.html', contents);
       const document = new JavaScriptParser().parse(
           contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async (visitor: Visitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.deepEqual(features.length, 1);
@@ -326,7 +325,7 @@ suite('PolymerElementScanner', () => {
       ]);
     });
 
-    test('Polymer 2 class observers crash', async() => {
+    test('Polymer 2 class observers crash', async () => {
       // When Polymer 2 adopted a static getter for observers, it crashed
       // the Polymer 1 element scanner.
       const contents = `class TestElement extends Polymer.Element {
@@ -337,12 +336,10 @@ suite('PolymerElementScanner', () => {
 
       const document = new JavaScriptParser().parse(
           contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async (visitor: Visitor) => document.visit([visitor]);
 
       // Scanning should not throw
       await scanner.scan(document, visit);
     });
-
   });
-
 });

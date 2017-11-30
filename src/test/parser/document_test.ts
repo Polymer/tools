@@ -33,7 +33,8 @@ class TestDocument extends ParsedDocument<null, null> {
     super({
       ast: null,
       astNode: null,
-      baseUrl: 'test-document' as ResolvedUrl, contents,
+      baseUrl: 'test-document' as ResolvedUrl,
+      contents,
       isInline: false,
       locationOffset: undefined,
       url: 'test-document' as ResolvedUrl
@@ -42,7 +43,6 @@ class TestDocument extends ParsedDocument<null, null> {
 }
 
 suite('ParsedDocument', () => {
-
   /**
    * We have pretty great tests of offsetsToSourceRange just because it's used
    * so much in ParsedHtmlDocument, which has tons of tests. So we can get good
@@ -52,7 +52,7 @@ suite('ParsedDocument', () => {
   const testName =
       'offsetsToSourceRange is the inverse of sourceRangeToOffsets for ' +
       'in-bounds ranges';
-  test(testName, async() => {
+  test(testName, async () => {
     const contents = [``, `asdf`, `a\na`, `asdf\n\nasdf`, `\nasdf\n`];
     for (const content of contents) {
       const document = new TestDocument(content);
@@ -66,7 +66,7 @@ suite('ParsedDocument', () => {
     }
   });
 
-  test('sourcePositionToOffsets clamps out of bounds values', async() => {
+  test('sourcePositionToOffsets clamps out of bounds values', async () => {
     const document = new TestDocument(`abc\ndef`);
     assert.deepEqual(document.sourcePositionToOffset({line: 0, column: -1}), 0);
     assert.deepEqual(
@@ -75,7 +75,7 @@ suite('ParsedDocument', () => {
     assert.deepEqual(document.sourcePositionToOffset({line: 1, column: 12}), 7);
   });
 
-  test('sourceRangeToOffsets works for simple cases', async() => {
+  test('sourceRangeToOffsets works for simple cases', async () => {
     let document = new TestDocument('ab');
     assert.deepEqual(document.offsetToSourcePosition(0), {line: 0, column: 0});
     assert.deepEqual(document.offsetToSourcePosition(1), {line: 0, column: 1});
@@ -93,7 +93,7 @@ suite('ParsedDocument', () => {
     assert.deepEqual(document.offsetToSourcePosition(5), {line: 2, column: 1});
   });
 
-  test('sourceRangeToOffsets fails gracefully', async() => {
+  test('sourceRangeToOffsets fails gracefully', async () => {
     let document = new TestDocument('ab');
     assert.deepEqual(
         document.offsetToSourcePosition(-1), {line: 0, column: -1});

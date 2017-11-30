@@ -25,12 +25,11 @@ import {ScannedBehavior, ScannedBehaviorAssignment} from '../../polymer/behavior
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
 
 suite('BehaviorScanner', () => {
-
   let document: JavaScriptDocument;
   let behaviors: Map<string, ScannedBehavior>;
   let behaviorsList: ScannedBehavior[];
 
-  suiteSetup(async() => {
+  suiteSetup(async () => {
     const parser = new JavaScriptParser();
     const file = fs.readFileSync(
         path.resolve(__dirname, '../static/js-behaviors.js'), 'utf8');
@@ -74,8 +73,8 @@ suite('BehaviorScanner', () => {
   test('Supports behaviors On.Property.Paths', () => {
     assert(behaviors.has('Really.Really.Deep.Behavior'));
     assert.equal(
-        behaviors.get('Really.Really.Deep.Behavior')!.properties
-            .get('deep')!.name,
+        behaviors.get('Really.Really.Deep.Behavior')!.properties.get('deep')!
+            .name,
         'deep');
   });
 

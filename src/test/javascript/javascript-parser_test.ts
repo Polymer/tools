@@ -33,7 +33,6 @@ suite('JavaScriptParser', () => {
 
 
   suite('parse()', () => {
-
     test('parses classes', () => {
       // TODO(usergenic): I had to modify this test fixture because Babylon
       // doesn't appreciate the keyword abuse of `const let = ...`.
@@ -128,7 +127,6 @@ suite('JavaScriptParser', () => {
 });
 
 suite('JavaScriptModuleParser', () => {
-
   let parser: JavaScriptModuleParser;
 
   setup(() => {
@@ -151,7 +149,6 @@ suite('JavaScriptModuleParser', () => {
 });
 
 suite('JavaScriptScriptParser', () => {
-
   let parser: JavaScriptScriptParser;
 
   setup(() => {

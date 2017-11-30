@@ -38,7 +38,7 @@ export async function invertPromise(promise: Promise<any>): Promise<any> {
   throw new UnexpectedResolutionError('Inverted Promise resolved', value);
 }
 
-export type Reference = Warning | SourceRange | undefined;
+export type Reference = Warning|SourceRange|undefined;
 
 /**
  * Used for asserting that warnings or source ranges correspond to the right
@@ -50,7 +50,7 @@ export class CodeUnderliner {
   private _parsedDocumentGetter: (url: string) => Promise<ParsedDocument>;
   constructor(urlLoader: UrlLoader) {
     const analyzer = new Analyzer({urlLoader});
-    this._parsedDocumentGetter = async(url: string) => {
+    this._parsedDocumentGetter = async (url: string) => {
       const analysis = await analyzer.analyze([url]);
       const result = analysis.getDocument(url);
       if (!(result instanceof Document)) {

@@ -23,9 +23,9 @@ import {Behavior as ResolvedPolymerBehavior} from '../polymer/behavior';
 
 import {Analysis, Attribute, Class, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Property, SourceRange} from './analysis-format';
 
-export type ElementOrMixin = ResolvedElement | ResolvedMixin;
+export type ElementOrMixin = ResolvedElement|ResolvedMixin;
 
-export type Filter = (feature: Feature | ResolvedFunction) => boolean;
+export type Filter = (feature: Feature|ResolvedFunction) => boolean;
 
 interface Members {
   elements: Set<ResolvedElement>;
@@ -148,11 +148,12 @@ const schema = JSON.parse(fs.readFileSync(
 export class ValidationError extends Error {
   errors: jsonschema.ValidationError[];
   constructor(result: jsonschema.ValidatorResult) {
-    const message = `Unable to validate serialized Polymer analysis. ` +
+    const message =
+        `Unable to validate serialized Polymer analysis. ` +
         `Got ${result.errors.length} errors: ` +
         `${
-           result.errors.map((err) => '    ' + (err.message || err)).join('\n')
-         }`;
+            result.errors.map((err) => '    ' + (err.message || err))
+                .join('\n')}`;
     super(message);
     this.errors = result.errors;
   }

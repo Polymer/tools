@@ -52,7 +52,8 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
       contents,
       ast: sourceFile,
       locationOffset: inlineInfo.locationOffset,
-      astNode: inlineInfo.astNode, isInline,
+      astNode: inlineInfo.astNode,
+      isInline,
     });
     if (parseError) {
       if (parseError.start && parseError.length) {

@@ -40,7 +40,8 @@ suite('correctSourceRange', function() {
       function() {
         assert.deepEqual(
             correctPosition({line: 1, column: 1}, {line: 1, col: 1}),
-            {line: 2, column: 1}, );
+            {line: 2, column: 1},
+        );
       });
 
   test('does not modify its input', function() {

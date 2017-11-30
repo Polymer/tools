@@ -31,7 +31,6 @@ suite('TypeScriptParser', () => {
   });
 
   suite('parse()', () => {
-
     test('parses classes', () => {
       const contents = `
         import * as b from './b';
@@ -52,7 +51,7 @@ suite('TypeScriptParser', () => {
           sourceFile.statements[0].kind, ts.SyntaxKind.ImportDeclaration);
     });
 
-    test('throws a WarningCarryingException for parse errors', async() => {
+    test('throws a WarningCarryingException for parse errors', async () => {
       const contents = 'const const const const const #!@(~~)!();';
       const url = 'ts-parse-error.ts';
       let error: WarningCarryingException|undefined = undefined;

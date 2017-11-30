@@ -29,13 +29,22 @@ suite('objectKeyToString', function() {
       type: 'MemberExpression',
       object: {
         type: 'Identifier',
-        name: 'foo', loc, start, end,
+        name: 'foo',
+        loc,
+        start,
+        end,
       },
       property: {
         type: 'Identifier',
-        name: 'bar', loc, start, end,
+        name: 'bar',
+        loc,
+        start,
+        end,
       },
-      computed: false, loc, start, end,
+      computed: false,
+      loc,
+      start,
+      end,
     };
     const afe: babel.ArrowFunctionExpression = {
       id: {type: 'Identifier', name: 'foo', loc, start, end},
@@ -46,7 +55,10 @@ suite('objectKeyToString', function() {
       params: [],
       body: {
         type: 'Identifier',
-        name: 'foo', loc, start, end,
+        name: 'foo',
+        loc,
+        start,
+        end,
       },
       loc,
       start,
@@ -54,16 +66,19 @@ suite('objectKeyToString', function() {
     };
     const inputToOutput:
         [
-          babel.Identifier | babel.StringLiteral | babel.NumericLiteral |
-              babel.MemberExpression | babel.ArrowFunctionExpression,
-          string | undefined
+          babel.Identifier|babel.StringLiteral|babel.NumericLiteral|
+          babel.MemberExpression|babel.ArrowFunctionExpression,
+          string|undefined
         ][] =
             [
               [{type: 'Identifier', name: 'foo', loc, start, end}, 'foo'],
               [
                 {
                   type: 'StringLiteral',
-                  value: 'foo', loc, start, end,
+                  value: 'foo',
+                  loc,
+                  start,
+                  end,
                   /* raw: '"foo"' */
                 },
                 'foo'
@@ -71,7 +86,10 @@ suite('objectKeyToString', function() {
               [
                 {
                   type: 'NumericLiteral',
-                  value: 10, loc, start, end,
+                  value: 10,
+                  loc,
+                  start,
+                  end,
                   /* raw: '10' */
                 },
                 '10'

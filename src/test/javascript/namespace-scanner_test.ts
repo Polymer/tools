@@ -41,7 +41,7 @@ suite('NamespaceScanner', () => {
         (e) => e instanceof ScannedNamespace);
   };
 
-  test('scans named namespaces', async() => {
+  test('scans named namespaces', async () => {
     const namespaces = await getNamespaces('namespace-named.js');
     assert.equal(namespaces.length, 2);
 
@@ -65,7 +65,7 @@ ExplicitlyNamedNamespace.NestedNamespace = {
 ~~`);
   });
 
-  test('scans unnamed namespaces', async() => {
+  test('scans unnamed namespaces', async () => {
     const namespaces = await getNamespaces('namespace-unnamed.js');
     assert.equal(namespaces.length, 4);
 
@@ -112,7 +112,7 @@ ParentNamespace.BarNamespace = {
 ~~`);
   });
 
-  test('scans named, dynamic namespaces', async() => {
+  test('scans named, dynamic namespaces', async () => {
     const namespaces = await getNamespaces('namespace-dynamic-named.js');
     assert.equal(namespaces.length, 3);
 
@@ -151,7 +151,7 @@ aliasToNamespace = {
 ~~`);
   });
 
-  test('scans unnamed, dynamic namespaces', async() => {
+  test('scans unnamed, dynamic namespaces', async () => {
     const namespaces = await getNamespaces('namespace-dynamic-unnamed.js');
     assert.equal(namespaces.length, 1);
 
@@ -166,7 +166,5 @@ DynamicNamespace['InferredComputedProperty'] = {
 ~~~~~~~~~~~~
 };
 ~~`);
-
   });
-
 });

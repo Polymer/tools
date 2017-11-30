@@ -21,7 +21,6 @@ import {ScannedImport, ScannedInlineDocument} from '../../model/model';
 import {ResolvedUrl} from '../../model/url';
 
 suite('HtmlStyleScanner', () => {
-
   suite('scan()', () => {
     let scanner: HtmlStyleScanner;
 
@@ -29,14 +28,14 @@ suite('HtmlStyleScanner', () => {
       scanner = new HtmlStyleScanner();
     });
 
-    test('finds external and inline styles', async() => {
+    test('finds external and inline styles', async () => {
       const contents = `<html><head>
           <link rel="stylesheet" type="text/css" href="foo.css">
           <style>h1 { color: green; }</style>
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 2);
@@ -51,13 +50,13 @@ suite('HtmlStyleScanner', () => {
       assert.deepEqual(feature1.locationOffset, {line: 2, col: 17});
     });
 
-    test('finds external styles relative to baseUrl', async() => {
+    test('finds external styles relative to baseUrl', async () => {
       const contents = `<html><head><base href="/aybabtu/">
           <link rel="stylesheet" type="text/css" href="foo.css">
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test-document.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);

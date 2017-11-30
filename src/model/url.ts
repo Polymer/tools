@@ -27,7 +27,7 @@
  * directly out of documents. For example, in `import * as foo from "./foo.js"`
  * `./foo.js` is relative to the containing document.
  */
-export type FileRelativeUrl = string & FileRelativeUrlBrand;
+export type FileRelativeUrl = string&FileRelativeUrlBrand;
 
 /**
  * A URL that is either absolute, or relative to the base of the package.
@@ -37,7 +37,7 @@ export type FileRelativeUrl = string & FileRelativeUrlBrand;
  * Use ScannedImport.resolveUrl to transform a FileRelativeUrl to a
  * PackageRelativeUrl.
  */
-export type PackageRelativeUrl = string & PackageRelativeUrlBrand;
+export type PackageRelativeUrl = string&PackageRelativeUrlBrand;
 
 /**
  * A URL that has been resolved to its canonical and loadable form, by passing
@@ -46,7 +46,7 @@ export type PackageRelativeUrl = string & PackageRelativeUrlBrand;
  * Use AnalysisContext#resolveUrl to transform a PackageRelativeUrl to a
  * ResolvedUrl.
  */
-export type ResolvedUrl = string & ResolvedUrlBrand;
+export type ResolvedUrl = string&ResolvedUrlBrand;
 
 
 // Declare these as classes rather than interfaces so that the properties

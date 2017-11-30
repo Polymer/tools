@@ -32,21 +32,19 @@ async function main() {
   }
 };
 
-async function getWarnings(analyzer: Analyzer, localPath: string):
-    Promise<Warning[]> {
-      const result =
-          (await analyzer.analyze([localPath])).getDocument(localPath);
-      if (result instanceof Document) {
-        return result.getWarnings({imported: false});
-      } else if (result !== undefined) {
-        return [result];
-      } else {
-        return [];
-      }
-    }
+async function getWarnings(
+    analyzer: Analyzer, localPath: string): Promise<Warning[]> {
+  const result = (await analyzer.analyze([localPath])).getDocument(localPath);
+  if (result instanceof Document) {
+    return result.getWarnings({imported: false});
+  } else if (result !== undefined) {
+    return [result];
+  } else {
+    return [];
+  }
+}
 
-main()
-    .catch((err) => {
-      console.error(err.stack || err.message || err);
-      process.exit(1);
-    });
+main().catch((err) => {
+  console.error(err.stack || err.message || err);
+  process.exit(1);
+});

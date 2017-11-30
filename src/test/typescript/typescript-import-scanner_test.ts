@@ -20,25 +20,23 @@ import {TypeScriptImportScanner} from '../../typescript/typescript-import-scanne
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 
 suite('TypeScriptImportScanner', () => {
-
   suite('scan()', () => {
-
     let scanner: TypeScriptImportScanner;
 
     setup(() => {
       scanner = new TypeScriptImportScanner();
     });
 
-    test('finds no imports', async() => {
+    test('finds no imports', async () => {
       const source = ``;
       const parser = new TypeScriptPreparser();
       const document = parser.parse(source, 'test.ts' as ResolvedUrl);
-      const visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async (visitor: Visitor) => document.visit([visitor]);
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 0);
     });
 
-    test('finds multiple import', async() => {
+    test('finds multiple import', async () => {
       const source = `
         import * as x from './x.ts';
         import * as y from '/y.ts';
@@ -46,7 +44,7 @@ suite('TypeScriptImportScanner', () => {
       `;
       const parser = new TypeScriptPreparser();
       const document = parser.parse(source, 'test.ts' as ResolvedUrl);
-      const visit = async(visitor: Visitor) => document.visit([visitor]);
+      const visit = async (visitor: Visitor) => document.visit([visitor]);
       const {features} = await scanner.scan(document, visit);
       assert.deepEqual(features.map((f) => [f.type, f.url]), [
         ['js-import', 'x.ts'],
@@ -54,7 +52,5 @@ suite('TypeScriptImportScanner', () => {
         ['js-import', '../z.ts'],
       ]);
     });
-
   });
-
 });

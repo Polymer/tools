@@ -26,7 +26,7 @@ import {Observer, ScannedPolymerElement} from './polymer-element';
 export type BehaviorAssignmentOrWarning = {
   kind: 'warning',
   warning: Warning
-} | {kind: 'behaviorAssignment', assignment: ScannedBehaviorAssignment};
+}|{kind: 'behaviorAssignment', assignment: ScannedBehaviorAssignment};
 
 export function getBehaviorAssignmentOrWarning(
     argNode: babel.Node,
@@ -99,7 +99,6 @@ export function declarationPropertyHandlers(
       declaration.observers = declaration.observers.concat(observers.observers);
     },
     listeners(node: babel.Node) {
-
       if (!babel.isObjectExpression(node)) {
         declaration.warnings.push(new Warning({
           code: 'invalid-listeners-declaration',

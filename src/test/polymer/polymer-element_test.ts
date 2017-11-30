@@ -58,16 +58,17 @@ suite('PolymerElement', () => {
       attributes: Array.from(element.attributes.values()).map((a) => ({
                                                                 name: a.name,
                                                               })),
-      methods: Array.from(element.methods.values())
-                   .map((m) => ({
-                          name: m.name,
-                          params: m.params, return: m.return,
-                          inheritedFrom: m.inheritedFrom
-                        })),
+      methods: Array.from(element.methods.values()).map((m) => ({
+                                                          name: m.name,
+                                                          params: m.params,
+                                                          return: m.return,
+                                                          inheritedFrom:
+                                                              m.inheritedFrom
+                                                        })),
     };
   }
 
-  test('Scans and resolves base and sub-class', async() => {
+  test('Scans and resolves base and sub-class', async () => {
     const elements = await getElements('test-element-3.js');
     const elementData = Array.from(elements).map(getTestProps);
     assert.deepEqual(elementData, [
@@ -131,7 +132,7 @@ suite('PolymerElement', () => {
     ]);
   });
 
-  test('Computes correct property information', async() => {
+  test('Computes correct property information', async () => {
     const elements = await getElements('test-element-17.js');
     const elementData = Array.from(elements).map(getTestProps);
     assert.deepEqual(elementData, [
@@ -155,7 +156,7 @@ suite('PolymerElement', () => {
     ]);
   });
 
-  test('Elements inherit from mixins and base classes', async() => {
+  test('Elements inherit from mixins and base classes', async () => {
     const elements = await getElements('test-element-7.js');
     const elementData = Array.from(elements).map(getTestProps);
     assert.deepEqual(elementData, [
@@ -184,7 +185,8 @@ suite('PolymerElement', () => {
         ],
         methods: [{
           name: 'customMethodOnBaseElement',
-          params: [], return: undefined,
+          params: [],
+          return: undefined,
           inheritedFrom: undefined
         }],
       },
@@ -235,17 +237,20 @@ suite('PolymerElement', () => {
         methods: [
           {
             name: 'customMethodOnBaseElement',
-            params: [], return: undefined,
+            params: [],
+            return: undefined,
             inheritedFrom: 'BaseElement'
           },
           {
             name: 'customMethodOnMixin',
-            params: [], return: undefined,
+            params: [],
+            return: undefined,
             inheritedFrom: 'Mixin'
           },
           {
             name: 'customMethodOnSubElement',
-            params: [], return: undefined,
+            params: [],
+            return: undefined,
             inheritedFrom: undefined
           },
         ],
@@ -254,7 +259,6 @@ suite('PolymerElement', () => {
   });
 
   suite('multiple-doc-comments', () => {
-
     async function getElement(filename: string) {
       const elements = await getElements(filename);
       assert.equal(
@@ -262,14 +266,14 @@ suite('PolymerElement', () => {
       return [...elements][0]!;
     }
 
-    test('Elements with only one doc comment have no warning', async() => {
+    test('Elements with only one doc comment have no warning', async () => {
       const element = await getElement('test-element-14.html');
       const warning = element.warnings.find(
           (w: Warning) => w.code === 'multiple-doc-comments');
       assert.isUndefined(warning);
     });
 
-    test('Elements with more than one doc comment have warning', async() => {
+    test('Elements with more than one doc comment have warning', async () => {
       const element = await getElement('test-element-15.html');
       const warning = element.warnings.find(
           (w: Warning) => w.code === 'multiple-doc-comments')!;

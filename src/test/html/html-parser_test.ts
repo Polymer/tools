@@ -20,9 +20,7 @@ import {HtmlParser} from '../../html/html-parser';
 import {ResolvedUrl} from '../../model/url';
 
 suite('HtmlParser', () => {
-
   suite('parse()', () => {
-
     let parser: HtmlParser;
 
     setup(() => {

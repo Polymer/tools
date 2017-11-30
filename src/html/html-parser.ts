@@ -57,7 +57,8 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
       contents,
       ast,
       locationOffset: inlineInfo.locationOffset,
-      astNode: inlineInfo.astNode, isInline,
+      astNode: inlineInfo.astNode,
+      isInline,
     });
   }
 }

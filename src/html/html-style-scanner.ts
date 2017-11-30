@@ -40,7 +40,7 @@ export class HtmlStyleScanner implements HtmlScanner {
       visit: (visitor: HtmlVisitor) => Promise<void>) {
     const features: (ScannedImport|ScannedInlineDocument)[] = [];
 
-    const visitor = async(node: ASTNode) => {
+    const visitor = async (node: ASTNode) => {
       if (isStyleNode(node)) {
         const tagName = node.nodeName;
         if (tagName === 'link') {

@@ -19,9 +19,7 @@ import * as jsdoc from '../../javascript/jsdoc.js';
 import {Privacy} from '../../model/model';
 
 suite('jsdoc', () => {
-
   suite('parseJsdoc', () => {
-
     test('parses single-line', () => {
       const parsed = jsdoc.parseJsdoc('* Just some text');
       assert.deepEqual(parsed, {
@@ -75,8 +73,8 @@ suite('jsdoc', () => {
         tags: [
           {
             title: 'param',
-            type: {type: 'NameExpression',
-                   name: 'Type'} as doctrine.type.NameExpression,
+            type: {type: 'NameExpression', name: 'Type'} as
+                doctrine.type.NameExpression,
             name: 'name',
             description: 'desc desc',
           },
@@ -93,11 +91,9 @@ suite('jsdoc', () => {
       const parsed = jsdoc.parseJsdoc('*\n *\n * Foo\n   *\n * Bar');
       assert.deepEqual(parsed.description, 'Foo\n\nBar');
     });
-
   });
 
   suite('getPrivacy', () => {
-
     test('returns undefined for undefined annotation', () => {
       assert.isUndefined(jsdoc.getPrivacy(undefined));
     });
@@ -142,11 +138,9 @@ suite('jsdoc', () => {
           // NOTE: This cast is necessary because of a crashing bug in tsc
           'private' as Privacy);
     });
-
   });
 
   suite('isAnnotationEmpty', () => {
-
     test('returns true for undefined', () => {
       assert.isTrue(jsdoc.isAnnotationEmpty(undefined));
     });
@@ -158,7 +152,5 @@ suite('jsdoc', () => {
     test('returns false for a description', () => {
       assert.isFalse(jsdoc.isAnnotationEmpty({description: 'foo', tags: []}));
     });
-
   });
-
 });

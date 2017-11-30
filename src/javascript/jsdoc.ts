@@ -147,23 +147,25 @@ export function getMixinApplications(
   const appliesMixinAnnotations = docs.tags!.filter(
       (tag) => tag.title === 'appliesMixin' || tag.title === 'mixes');
   return appliesMixinAnnotations
-      .map((annotation) => {
-        const mixinId = annotation.name;
-        // TODO(justinfagnani): we need source ranges for jsdoc annotations
-        const sourceRange = document.sourceRangeForNode(node)!;
-        if (mixinId === undefined) {
-          warnings.push(new Warning({
-            code: 'class-mixes-annotation-no-id',
-            message:
-                '@appliesMixin annotation with no identifier. Usage `@appliesMixin MixinName`',
-            severity: Severity.WARNING, sourceRange,
-            parsedDocument: document
-          }));
-          return;
-        }
-        return new ScannedReference(mixinId, sourceRange);
-      })
-      .filter((m) => m !== undefined) as ScannedReference[];
+             .map((annotation) => {
+               const mixinId = annotation.name;
+               // TODO(justinfagnani): we need source ranges for jsdoc
+               // annotations
+               const sourceRange = document.sourceRangeForNode(node)!;
+               if (mixinId === undefined) {
+                 warnings.push(new Warning({
+                   code: 'class-mixes-annotation-no-id',
+                   message:
+                       '@appliesMixin annotation with no identifier. Usage `@appliesMixin MixinName`',
+                   severity: Severity.WARNING,
+                   sourceRange,
+                   parsedDocument: document
+                 }));
+                 return;
+               }
+               return new ScannedReference(mixinId, sourceRange);
+             })
+             .filter((m) => m !== undefined) as ScannedReference[];
 }
 
 export function extractDemos(jsdoc: Annotation|undefined):

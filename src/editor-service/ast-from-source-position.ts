@@ -17,8 +17,8 @@ import {ParsedHtmlDocument} from '../html/html-document';
 import {comparePositionAndRange, isPositionInsideRange, SourcePosition} from '../model/model';
 
 
-export type LocationResult = AttributesSection | AttributeValue | TagName |
-    EndTag | TextNode | ScriptContents | StyleContents | Comment;
+export type LocationResult = AttributesSection|AttributeValue|TagName|EndTag|
+    TextNode|ScriptContents|StyleContents|Comment;
 
 /** In the tagname of a start tag. */
 export interface TagName {

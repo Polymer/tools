@@ -18,9 +18,7 @@ import {PackageRelativeUrl} from '../../model/url';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 suite('PackageUrlResolver', function() {
-
   suite('canResolve', () => {
-
     test('is true an in-package URL', () => {
       const r = new PackageUrlResolver();
       assert.isTrue(r.canResolve('foo.html'));
@@ -60,7 +58,6 @@ suite('PackageUrlResolver', function() {
   });
 
   suite('resolve', () => {
-
     test('resolves an in-package URL', () => {
       const r = new PackageUrlResolver();
       assert.equal('foo.html', r.resolve('foo.html' as PackageRelativeUrl));
@@ -119,7 +116,6 @@ suite('PackageUrlResolver', function() {
           'foo/foo.html', r.resolve('/../foo/foo.html' as PackageRelativeUrl));
       assert.equal(
           'foo.html', r.resolve('/foo/../foo.html' as PackageRelativeUrl));
-
     });
 
     test('resolves a URL with spaces', () => {
@@ -129,5 +125,4 @@ suite('PackageUrlResolver', function() {
           'spaced%20name.html');
     });
   });
-
 });

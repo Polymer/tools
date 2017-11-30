@@ -31,8 +31,9 @@ export class TypeScriptImportScanner implements
         // If getText() throws it's because it requires parent references
         const moduleSpecifier = node.moduleSpecifier.getText();
         // The specifier includes the quote characters, remove them
-        const specifierUrl = moduleSpecifier.substring(
-            1, moduleSpecifier.length - 1) as FileRelativeUrl;
+        const specifierUrl =
+            moduleSpecifier.substring(1, moduleSpecifier.length - 1) as
+            FileRelativeUrl;
         imports.push(new ScannedImport(
             'js-import',
             ScannedImport.resolveUrl(document.baseUrl, specifierUrl),

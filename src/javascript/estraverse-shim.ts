@@ -66,7 +66,7 @@ export function traverse(ast: babel.Node, visitor: Visitor): void {
 function dispatchVisitMethods(
     methods: string[], path: NodePath<babel.Node>, visitor: Visitor): void {
   for (const method of methods) {
-    if (typeof(<any>visitor)[method] === 'function') {
+    if (typeof (<any>visitor)[method] === 'function') {
       const result =
           (<any>visitor)[method](path.node, path.parent) as VisitResult;
       switch (result) {

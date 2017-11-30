@@ -26,7 +26,6 @@ import {ResolvedUrl} from '../../model/url';
 use(chaiAsPromised);
 
 suite('DependencyGraph', () => {
-
   function assertStringSetsEqual(
       actual: Set<string>, expected: Iterable<string>, message?: string) {
     assert.deepEqual(
@@ -81,7 +80,7 @@ suite('DependencyGraph', () => {
           graph.getAllDependantsOf(path as ResolvedUrl), expectedDependants);
     };
 
-    test('works with a basic document with no dependencies', async() => {
+    test('works with a basic document with no dependencies', async () => {
       await analyzer.analyze(['dependencies/leaf.html']);
       await assertImportersOf('dependencies/leaf.html', []);
       const graph = await getLatestDependencyGraph(analyzer);
@@ -89,7 +88,7 @@ suite('DependencyGraph', () => {
       assertIsValidGraph(graph);
     });
 
-    test('works with a simple tree of dependencies', async() => {
+    test('works with a simple tree of dependencies', async () => {
       await analyzer.analyze(['dependencies/root.html']);
       await assertImportersOf('dependencies/root.html', []);
 
@@ -104,12 +103,10 @@ suite('DependencyGraph', () => {
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
     });
-
   });
 
   suite('whenReady', () => {
-
-    test('resolves for a single added document', async() => {
+    test('resolves for a single added document', async () => {
       const graph = new DependencyGraph();
       const done = graph.whenReady('a' as ResolvedUrl);
       graph.addDocument('a' as ResolvedUrl, []);
@@ -118,7 +115,7 @@ suite('DependencyGraph', () => {
       await done;
     });
 
-    test('resolves for a single rejected document', async() => {
+    test('resolves for a single rejected document', async () => {
       const graph = new DependencyGraph();
       const done = graph.whenReady('a' as ResolvedUrl);
       graph.rejectDocument('a' as ResolvedUrl, new Error('because'));
@@ -127,7 +124,7 @@ suite('DependencyGraph', () => {
       await done;
     });
 
-    test('resolves for a document with an added dependency', async() => {
+    test('resolves for a document with an added dependency', async () => {
       const graph = new DependencyGraph();
       const done = graph.whenReady('a' as ResolvedUrl);
       graph.addDocument('a' as ResolvedUrl, ['b' as ResolvedUrl]);
@@ -137,7 +134,7 @@ suite('DependencyGraph', () => {
       await done;
     });
 
-    test('resolves for a document with a rejected dependency', async() => {
+    test('resolves for a document with a rejected dependency', async () => {
       const graph = new DependencyGraph();
       const done = graph.whenReady('a' as ResolvedUrl);
       graph.addDocument('a' as ResolvedUrl, ['b' as ResolvedUrl]);
@@ -147,7 +144,7 @@ suite('DependencyGraph', () => {
       await done;
     });
 
-    test('resolves for a simple cycle', async() => {
+    test('resolves for a simple cycle', async () => {
       const graph = new DependencyGraph();
       const promises = [
         graph.whenReady('a' as ResolvedUrl),
@@ -160,7 +157,7 @@ suite('DependencyGraph', () => {
       assertIsValidGraph(graph);
     });
 
-    test('does not resolve early for a cycle with a leg', async() => {
+    test('does not resolve early for a cycle with a leg', async () => {
       const graph = new DependencyGraph();
       let cResolved = false;
       const aReady = graph.whenReady('a' as ResolvedUrl).then(() => {
@@ -178,9 +175,7 @@ suite('DependencyGraph', () => {
       assertGraphIsSettled(graph);
       assertIsValidGraph(graph);
     });
-
   });
-
 });
 
 /**
@@ -195,8 +190,7 @@ function assertGraphIsSettled(graph: DependencyGraph) {
           false,
           true,
           `found unsettled record for url '${
-                                             record.url
-                                           }' in graph that should be settled`);
+              record.url}' in graph that should be settled`);
     }
   }
 }

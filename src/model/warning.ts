@@ -102,9 +102,8 @@ export class Warning {
 
     result +=
         (`${this.sourceRange.file}` +
-         `(${
-             this.sourceRange.start.line + 1
-           },${this.sourceRange.start.column + 1}) ` +
+         `(${this.sourceRange.start.line + 1},${
+             this.sourceRange.start.column + 1}) ` +
          `${severity} [${this.code}] - ${this.message}\n`);
 
     return result;
@@ -167,7 +166,7 @@ export class WarningCarryingException extends Error {
   }
 }
 
-export type Verbosity = 'one-line' | 'full' | 'code-only';
+export type Verbosity = 'one-line'|'full'|'code-only';
 
 export interface WarningStringifyOptions {
   readonly verbosity: Verbosity;
@@ -179,7 +178,7 @@ const defaultPrinterOptions = {
 };
 
 
-export type Action = EditAction | {
+export type Action = EditAction|{
   /** To ensure that type safe code actually checks for the action kind. */
   kind: 'never';
 };
@@ -356,7 +355,7 @@ function areRangesEqual(a: SourceRange, b: SourceRange) {
 }
 
 export function makeParseLoader(analyzer: Analyzer, analysis?: Analysis) {
-  return async(url: string) => {
+  return async (url: string) => {
     if (analysis) {
       const cachedResult = analysis.getDocument(url);
       if (cachedResult instanceof Document) {

@@ -21,8 +21,7 @@ import {Scanner} from '../../scanning/scanner';
 import {invertPromise} from '../test-utils';
 
 suite('scan()', () => {
-
-  test('calls Scanner.scan', async() => {
+  test('calls Scanner.scan', async () => {
     const feature = Symbol('feature') as any;
     const scanner = new ScannerStub(<any>[feature]);
     const document = makeTestDocument({});
@@ -33,7 +32,7 @@ suite('scan()', () => {
     assert.deepEqual(features, [feature]);
   });
 
-  test('supports multiple and async calls to visit()', async() => {
+  test('supports multiple and async calls to visit()', async () => {
     const visitor1 = Symbol('visitor1');
     const visitor2 = Symbol('visitor2');
     const visitor3 = Symbol('visitor3');
@@ -82,7 +81,6 @@ suite('scan()', () => {
     });
     return invertPromise(scan(document, [makeTestScanner({})]));
   });
-
 });
 
 interface TestDocumentMakerOptions {
@@ -119,7 +117,7 @@ interface TestScannerMakerOptions {
 }
 function makeTestScanner(options: TestScannerMakerOptions):
     Scanner<ParsedDocument<string, any>, any, any> {
-  const simpleScan = (async(_doc: any, visit: () => Promise<any>) => {
+  const simpleScan = (async (_doc: any, visit: () => Promise<any>) => {
     await visit();
     return {features: ['test-feature'], warnings: []};
   });

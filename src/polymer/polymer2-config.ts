@@ -25,11 +25,10 @@ export function getStaticGetterValue(
     node: babel.ClassDeclaration|babel.ClassExpression,
     name: string): babel.Expression|undefined|null {
   const getter =
-      node.body.body
-          .find(
-              (n) => babel.isClassMethod(n) && n.static === true &&
-                  n.kind === 'get' &&
-                  getIdentifierName(n.key) === name) as babel.ClassMethod;
+      node.body.body.find(
+          (n) => babel.isClassMethod(n) && n.static === true &&
+              n.kind === 'get' && getIdentifierName(n.key) === name) as
+      babel.ClassMethod;
   if (!getter) {
     return undefined;
   }

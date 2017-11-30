@@ -57,16 +57,17 @@ suite('PolymerElement with old jsdoc annotations', () => {
       attributes: Array.from(element.attributes.values()).map((a) => ({
                                                                 name: a.name,
                                                               })),
-      methods: Array.from(element.methods.values())
-                   .map((m) => ({
-                          name: m.name,
-                          params: m.params, return: m.return,
-                          inheritedFrom: m.inheritedFrom
-                        })),
+      methods: Array.from(element.methods.values()).map((m) => ({
+                                                          name: m.name,
+                                                          params: m.params,
+                                                          return: m.return,
+                                                          inheritedFrom:
+                                                              m.inheritedFrom
+                                                        })),
     };
   }
 
-  test('Scans and resolves base and sub-class', async() => {
+  test('Scans and resolves base and sub-class', async () => {
     const elements = await getElements('test-element-3.js');
     const elementData = Array.from(elements).map(getTestProps);
     assert.deepEqual(elementData, [
@@ -112,7 +113,7 @@ suite('PolymerElement with old jsdoc annotations', () => {
     ]);
   });
 
-  test('Elements inherit from mixins and base classes', async() => {
+  test('Elements inherit from mixins and base classes', async () => {
     const elements = await getElements('test-element-7.js');
     const elementData = Array.from(elements).map(getTestProps);
     assert.deepEqual(elementData, [
@@ -141,7 +142,8 @@ suite('PolymerElement with old jsdoc annotations', () => {
         ],
         methods: [{
           name: 'customMethodOnBaseElement',
-          params: [], return: undefined,
+          params: [],
+          return: undefined,
           inheritedFrom: undefined
         }],
       },
@@ -192,17 +194,20 @@ suite('PolymerElement with old jsdoc annotations', () => {
         methods: [
           {
             name: 'customMethodOnBaseElement',
-            params: [], return: undefined,
+            params: [],
+            return: undefined,
             inheritedFrom: 'BaseElement'
           },
           {
             name: 'customMethodOnMixin',
-            params: [], return: undefined,
+            params: [],
+            return: undefined,
             inheritedFrom: 'Mixin'
           },
           {
             name: 'customMethodOnSubElement',
-            params: [], return: undefined,
+            params: [],
+            return: undefined,
             inheritedFrom: undefined
           },
         ],

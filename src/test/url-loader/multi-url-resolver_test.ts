@@ -51,9 +51,7 @@ const mockResolverArray = (resolutions: Array<string|null>) => {
 
 
 suite('MultiUrlResolver', function() {
-
   suite('canResolve', () => {
-
     test('canResolve is true if the first resolver is true', () => {
       const resolvers = mockResolverArray(['resolved.html', null, null]);
       const resolver = new MultiUrlResolver(resolvers);
@@ -94,7 +92,6 @@ suite('MultiUrlResolver', function() {
       assert.equal(resolvers[1].canResolveCount, 1);
       assert.equal(resolvers[2].canResolveCount, 1);
     });
-
   });
 
   suite('resolve', () => {

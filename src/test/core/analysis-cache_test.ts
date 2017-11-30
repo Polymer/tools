@@ -70,20 +70,20 @@ suite('AnalysisCache', () => {
       cache: AnalysisCache, p: string) {
     const path = p as ResolvedUrl;
     assert.equal(
-        await cache.parsedDocumentPromises.getOrCompute(
-            path, null as any) as any,
+        await cache.parsedDocumentPromises.getOrCompute(path, null as any) as
+            any,
         `parsed ${path} promise`);
 
     assert.equal(
-        await cache.scannedDocumentPromises.getOrCompute(
-            path, null as any) as any,
+        await cache.scannedDocumentPromises.getOrCompute(path, null as any) as
+            any,
         `scanned ${path} promise`);
     assert.equal(cache.scannedDocuments.get(path) as any, `scanned ${path}`);
     assert.isFalse(cache.analyzedDocuments.has(path));
     assert.isFalse(cache.analyzedDocumentPromises.has(path));
   }
 
-  test('it invalidates a path when asked to', async() => {
+  test('it invalidates a path when asked to', async () => {
     const cache = new AnalysisCache();
     addFakeDocumentToCache(cache, 'index.html', []);
     addFakeDocumentToCache(cache, 'unrelated.html', []);
@@ -104,7 +104,7 @@ suite('AnalysisCache', () => {
         `analyzed unrelated.html`);
   });
 
-  test('it invalidates the dependants of a path when asked to', async() => {
+  test('it invalidates the dependants of a path when asked to', async () => {
     const cache = new AnalysisCache();
     // Picture a graph where
     addFakeDocumentToCache(cache, 'index.html', ['element.html']);

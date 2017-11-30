@@ -21,7 +21,7 @@ import {Parser} from '../parser/parser';
 
 import {JavaScriptDocument} from './javascript-document';
 
-export type SourceType = 'script' | 'module';
+export type SourceType = 'script'|'module';
 
 declare class SyntaxError {
   message: string;
@@ -59,7 +59,8 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
         contents,
         ast: null as any,
         locationOffset: inlineInfo.locationOffset,
-        astNode: inlineInfo.astNode, isInline,
+        astNode: inlineInfo.astNode,
+        isInline,
         parsedAsSourceType: 'script',
       });
       throw new WarningCarryingException(
@@ -71,7 +72,8 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       contents,
       ast: result.program,
       locationOffset: inlineInfo.locationOffset,
-      astNode: inlineInfo.astNode, isInline,
+      astNode: inlineInfo.astNode,
+      isInline,
       parsedAsSourceType: result.sourceType,
     });
   }
@@ -89,7 +91,7 @@ export type ParseResult = {
   type: 'success',
   sourceType: SourceType,
   program: babel.Program,
-} | {
+}|{
   type: 'failure',
   warning: {
     sourceRange: SourceRange,

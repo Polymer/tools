@@ -118,8 +118,9 @@ export class DomModuleScanner implements HtmlScanner {
     await visit((node) => {
       if (isDomModule(node)) {
         const children = dom5.defaultChildNodes(node) || [];
-        const template = children.find(
-            dom5.predicates.hasTagName('template')) as (Template | undefined);
+        const template =
+            children.find(dom5.predicates.hasTagName('template')) as
+            (Template | undefined);
         let slots: Slot[] = [];
         let localIds: LocalId[] = [];
         let databindings: HtmlDatabindingExpression[] = [];

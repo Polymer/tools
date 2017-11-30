@@ -28,7 +28,8 @@ export class JsonParser implements Parser<ParsedJsonDocument> {
       contents,
       ast: JSON.parse(contents),
       locationOffset: inlineDocInfo.locationOffset,
-      astNode: inlineDocInfo.astNode, isInline
+      astNode: inlineDocInfo.astNode,
+      isInline
     });
   }
 }

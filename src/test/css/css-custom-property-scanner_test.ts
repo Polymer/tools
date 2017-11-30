@@ -32,7 +32,7 @@ suite('CssCustomPropertyScanner', () => {
     underliner = new CodeUnderliner(urlLoader);
   });
 
-  test('finds custom property assignments', async() => {
+  test('finds custom property assignments', async () => {
     const result = await analyzer.analyze(['some-styles.html']);
     const assignments =
         [...result.getFeatures({kind: 'css-custom-property-assignment'})];
@@ -58,7 +58,7 @@ suite('CssCustomPropertyScanner', () => {
     ]);
   });
 
-  test('finds custom property uses', async() => {
+  test('finds custom property uses', async () => {
     const result = await analyzer.analyze(['some-styles.html']);
     const assignments =
         [...result.getFeatures({kind: 'css-custom-property-use'})];

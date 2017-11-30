@@ -33,9 +33,7 @@ const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 const fixturesDir = path.join(__dirname, '..', 'static');
 
 suite('generate-analysis', () => {
-
   suite('generateAnalysisMetadata', () => {
-
     suite('generates for Document array from fixtures', () => {
       const basedir = path.join(fixturesDir, 'analysis');
       const analysisFixtureDirs =
@@ -53,7 +51,7 @@ suite('generate-analysis', () => {
         const testName = `produces a correct analysis.json ` +
             `for fixture dir \`${testBaseName}\``;
 
-        testDefiner(testName, async() => {
+        testDefiner(testName, async () => {
           // Test body here:
           const documents = await analyzeDir(analysisFixtureDir);
 
@@ -98,8 +96,7 @@ suite('generate-analysis', () => {
     });
 
     suite('generates from package', () => {
-
-      test('does not include external features', async() => {
+      test('does not include external features', async () => {
         const basedir = path.resolve(fixturesDir, 'analysis/bower_packages');
         const analyzer = new Analyzer({
           urlLoader: new FSUrlLoader(basedir),
@@ -111,7 +108,7 @@ suite('generate-analysis', () => {
         assert.isUndefined(metadata.elements);
       });
 
-      test('includes package features', async() => {
+      test('includes package features', async () => {
         const basedir = path.resolve(fixturesDir, 'analysis/simple');
         const analyzer = new Analyzer({
           urlLoader: new FSUrlLoader(basedir),
@@ -123,13 +120,10 @@ suite('generate-analysis', () => {
         assert.equal(metadata.elements![0].tagname, 'simple-element');
         assert.equal(metadata.elements![0].path, 'simple-element.html');
       });
-
     });
-
   });
 
   suite('validateAnalysis', () => {
-
     test('throws when validating valid analysis.json', () => {
       try {
         validateAnalysis({} as any);
@@ -169,7 +163,6 @@ suite('generate-analysis', () => {
       throw new Error('expected Analysis validation to fail!');
     });
   });
-
 });
 
 function* filterI<T>(it: Iterable<T>, pred: (t: T) => boolean): Iterable<T> {

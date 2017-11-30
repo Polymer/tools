@@ -20,7 +20,6 @@ import {HtmlParser} from '../../html/html-parser';
 import {PackageRelativeUrl, ResolvedUrl} from '../../model/url';
 
 suite('HtmlImportScanner', () => {
-
   suite('scan()', () => {
     let scanner: HtmlImportScanner;
 
@@ -28,7 +27,7 @@ suite('HtmlImportScanner', () => {
       scanner = new HtmlImportScanner();
     });
 
-    test('finds HTML Imports', async() => {
+    test('finds HTML Imports', async () => {
       const contents = `<html><head>
           <link rel="import" href="polymer.html">
           <link rel="import" type="css" href="polymer.css">
@@ -37,7 +36,7 @@ suite('HtmlImportScanner', () => {
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
@@ -45,7 +44,7 @@ suite('HtmlImportScanner', () => {
       assert.equal(features[0].url, 'polymer.html');
     });
 
-    test('resolves HTML Import URLs relative to baseUrl', async() => {
+    test('resolves HTML Import URLs relative to baseUrl', async () => {
       const contents = `<html><head><base href="/aybabtu/">
           <link rel="import" href="polymer.html">
           <link rel="import" type="css" href="polymer.css">
@@ -54,7 +53,7 @@ suite('HtmlImportScanner', () => {
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 1);
@@ -62,7 +61,7 @@ suite('HtmlImportScanner', () => {
       assert.equal(features[0].url, '/aybabtu/polymer.html');
     });
 
-    test('finds lazy HTML Imports', async() => {
+    test('finds lazy HTML Imports', async () => {
       const contents = `<html><head>
           <link rel="import" href="polymer.html">
           <dom-module>
@@ -72,7 +71,7 @@ suite('HtmlImportScanner', () => {
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.equal(features.length, 2);
@@ -93,7 +92,7 @@ suite('HtmlImportScanner', () => {
       scanner = new HtmlImportScanner(lazyEdges);
     });
 
-    test('injects synthetic lazy html imports', async() => {
+    test('injects synthetic lazy html imports', async () => {
       const contents = `<html><head>
           <link rel="import" href="polymer.html">
           <link rel="import" type="css" href="polymer.css">
@@ -102,7 +101,7 @@ suite('HtmlImportScanner', () => {
         </head></html>`;
       const document =
           new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features} = await scanner.scan(document, visit);
       assert.deepEqual(
@@ -113,7 +112,5 @@ suite('HtmlImportScanner', () => {
           features.map((f) => f.url),
           ['polymer.html', 'lazy1.html', 'lazy2.html', 'lazy3.html']);
     });
-
   });
-
 });

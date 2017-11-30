@@ -21,7 +21,6 @@ import {CssParser} from '../../css/css-parser';
 import {ResolvedUrl} from '../../model/url';
 
 suite('CssParser', () => {
-
   suite('parse()', () => {
     const fileContents = fs.readFileSync(
         path.resolve(__dirname, '../static/stylesheet.css'), 'utf8');
@@ -46,5 +45,4 @@ suite('CssParser', () => {
       assert.deepEqual(document.stringify(), fileContents);
     });
   });
-
 });

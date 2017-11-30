@@ -41,9 +41,9 @@ export type BaseQueryOptions = {
    * identified by their tag and class names.
    */
   id?: string;
-} & object;
+}&object;
 
-export type BaseAnalysisQuery = BaseQueryOptions & {
+export type BaseAnalysisQuery = BaseQueryOptions&{
   /**
    * When querying over an Analysis, the results would not be defined if
    * imports are not considered, so it is legal to specify this parameter,
@@ -52,7 +52,7 @@ export type BaseAnalysisQuery = BaseQueryOptions & {
   imported?: true;
 };
 
-export type BaseDocumentQuery = BaseQueryOptions & {
+export type BaseDocumentQuery = BaseQueryOptions&{
   /**
    * If true, the query will return results from the document and its
    * dependencies. Otherwise it will only include results from the document.
@@ -61,15 +61,15 @@ export type BaseDocumentQuery = BaseQueryOptions & {
 };
 
 
-export type BaseQuery = BaseQueryOptions & {kind?: string};
+export type BaseQuery = BaseQueryOptions&{kind?: string};
 export type BaseQueryWithKind<K extends FeatureKind> =
-    BaseQueryOptions & {kind: K};
-export type DocumentQuery = BaseDocumentQuery & {kind?: string};
+    BaseQueryOptions&{kind: K};
+export type DocumentQuery = BaseDocumentQuery&{kind?: string};
 export type DocumentQueryWithKind<K extends FeatureKind> =
-    BaseDocumentQuery & {kind: K};
-export type AnalysisQuery = BaseAnalysisQuery & {kind?: string};
+    BaseDocumentQuery&{kind: K};
+export type AnalysisQuery = BaseAnalysisQuery&{kind?: string};
 export type AnalysisQueryWithKind<K extends FeatureKind> =
-    BaseAnalysisQuery & {kind: K};
+    BaseAnalysisQuery&{kind: K};
 
 
 /**

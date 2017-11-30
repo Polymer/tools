@@ -41,8 +41,7 @@ async function getTypeScriptAnalyzer(files: {[url: string]: string}) {
 
 suite('TypeScriptParser', () => {
   suite('parse()', () => {
-
-    test('parses classes', async() => {
+    test('parses classes', async () => {
       const fileName = '/typescript/test.ts';
       const typescriptAnalyzer = await getTypeScriptAnalyzer({
         [fileName]: `
@@ -86,5 +85,4 @@ suite('TypeScriptParser', () => {
       });
     });
   });
-
 });

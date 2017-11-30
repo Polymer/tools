@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export type LiteralValue = string | number | boolean | RegExp | undefined |
-    LiteralArray | LiteralObj | null;
+export type LiteralValue =
+    string|number|boolean|RegExp|undefined|LiteralArray|LiteralObj|null;
 export interface LiteralArray extends Array<LiteralValue> {}
 export interface LiteralObj { [key: string]: LiteralValue; }

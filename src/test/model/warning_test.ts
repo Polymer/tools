@@ -29,7 +29,7 @@ suite('applyEdits', () => {
     memoryMap = new InMemoryOverlayUrlLoader();
     memoryMap.urlContentsMap.set('test.html', 'abc');
     const analyzer = new Analyzer({urlLoader: memoryMap});
-    loader = async(url: string) => {
+    loader = async (url: string) => {
       const analysis = await analyzer.analyze([url]);
       const document = analysis.getDocument(url) as Document;
       return document.parsedDocument;
@@ -52,7 +52,7 @@ suite('applyEdits', () => {
     };
   };
 
-  test('works in the trivial case', async() => {
+  test('works in the trivial case', async () => {
     const contents = 'abc';
     memoryMap.urlContentsMap.set('test.html', contents);
 
@@ -62,7 +62,7 @@ suite('applyEdits', () => {
     assert.deepEqual(Array.from(result.editedFiles.entries()), []);
   });
 
-  test('can apply a simple single edit', async() => {
+  test('can apply a simple single edit', async () => {
     const edit = [makeTestReplacement(0, 1, 0, 2, 'd')];
     const result = await applyEdits([edit], loader);
     assert.deepEqual(result.appliedEdits, [edit]);
@@ -71,7 +71,7 @@ suite('applyEdits', () => {
         Array.from(result.editedFiles.entries()), [['test.html', 'adc']]);
   });
 
-  test('can apply two compatible edits', async() => {
+  test('can apply two compatible edits', async () => {
     const edit1 = [makeTestReplacement(0, 1, 0, 2, 'd')];
     const edit2 = [makeTestReplacement(0, 2, 0, 3, 'g')];
     const result = await applyEdits([edit1, edit2], loader);
@@ -81,7 +81,7 @@ suite('applyEdits', () => {
         Array.from(result.editedFiles.entries()), [['test.html', 'adg']]);
   });
 
-  test('does not apply an internally inconsistent edit', async() => {
+  test('does not apply an internally inconsistent edit', async () => {
     const edit = [
       makeTestReplacement(0, 0, 0, 3, 'def'),
       makeTestReplacement(0, 0, 0, 3, 'ghi'),
@@ -94,7 +94,7 @@ suite('applyEdits', () => {
 
   let testName = 'takes edits in order, rejecting those incompatible ' +
       'with the accepted ones so far';
-  test(testName, async() => {
+  test(testName, async () => {
     const edits = [
       [makeTestReplacement(0, 0, 0, 1, '1')],
       [makeTestReplacement(0, 0, 0, 3, '!!!')],
@@ -108,7 +108,7 @@ suite('applyEdits', () => {
   });
 
   testName = 'can deal with inserting, replacing and removing characters';
-  test(testName, async() => {
+  test(testName, async () => {
     const edits = [
       [makeTestReplacement(0, 0, 0, 0, '0000')],
       [makeTestReplacement(0, 0, 0, 1, '111')],
@@ -130,7 +130,7 @@ suite('applyEdits', () => {
   });
 
   testName = 'can do two inserts into the same location without conflict';
-  test(testName, async() => {
+  test(testName, async () => {
     const edits = [
       [makeTestReplacement(0, 0, 0, 0, 'xxxx')],
       [makeTestReplacement(0, 0, 0, 0, 'yyyy')],

@@ -23,8 +23,7 @@ import {PolymerCoreFeatureScanner} from '../../polymer/polymer-core-feature-scan
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('PolymerCoreFeatureScanner', () => {
-
-  test('scans _addFeature calls and the Polymer.Base assignment', async() => {
+  test('scans _addFeature calls and the Polymer.Base assignment', async () => {
     const js = `
       /** Feature A */
       Polymer.Base._addFeature({
@@ -116,7 +115,7 @@ suite('PolymerCoreFeatureScanner', () => {
     assert.lengthOf(invalid.warnings, 1);
   });
 
-  test('resolves the Polymer.Base class', async() => {
+  test('resolves the Polymer.Base class', async () => {
     const analyzer = new Analyzer({
       urlLoader: new FSUrlLoader(
           // This directory contains files copied from Polymer 1.x core.

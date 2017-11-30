@@ -70,12 +70,12 @@ suite('WarningPrinter', () => {
     (chalk as any).enabled = originalChalkEnabled;
   });
 
-  test('can handle printing no warnings', async() => {
+  test('can handle printing no warnings', async () => {
     await printer.printWarnings([]);
     assert.deepEqual(output.toString(), '');
   });
 
-  test('can format and print a basic warning', async() => {
+  test('can format and print a basic warning', async () => {
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
     const expected = `
@@ -88,7 +88,7 @@ vanilla-elements.js(1,7) warning [dumb-element-name] - This is a dumb name for a
     assert.deepEqual(actual, expected);
   });
 
-  test('can format and print one-line warnings', async() => {
+  test('can format and print one-line warnings', async () => {
     printer = new WarningPrinter(output, {verbosity: 'one-line', color: false});
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
@@ -97,7 +97,7 @@ vanilla-elements.js(1,7) warning [dumb-element-name] - This is a dumb name for a
     assert.deepEqual(actual, expected);
   });
 
-  test('it adds color if configured to do so', async() => {
+  test('it adds color if configured to do so', async () => {
     printer = new WarningPrinter(output, {color: true});
     await printer.printWarnings([dumbNameWarning]);
     const actual = output.toString();
@@ -111,7 +111,7 @@ vanilla-elements.js(1,7) \u001b[33mwarning\u001b[39m [dumb-element-name] - This 
     assert.deepEqual(actual, expected);
   });
 
-  test('it can print a multiline range', async() => {
+  test('it can print a multiline range', async () => {
     await printer.printWarnings([goodJobWarning]);
     const actual = output.toString();
     const expected = `

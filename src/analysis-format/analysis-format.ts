@@ -94,7 +94,7 @@ export interface Position {
   column: number;
 }
 
-export type Privacy = 'public' | 'private' | 'protected';
+export type Privacy = 'public'|'private'|'protected';
 
 export interface Function extends Feature {
   /**

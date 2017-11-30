@@ -22,7 +22,6 @@ import {DomModuleScanner} from '../../polymer/dom-module-scanner';
 import {CodeUnderliner} from '../test-utils';
 
 suite('DomModuleScanner', () => {
-
   suite('scan()', () => {
     let scanner: DomModuleScanner;
 
@@ -30,7 +29,7 @@ suite('DomModuleScanner', () => {
       scanner = new DomModuleScanner();
     });
 
-    test('finds local IDs', async() => {
+    test('finds local IDs', async () => {
       const contents = `<html><head></head>
         <body>
           <dom-module>
@@ -47,7 +46,7 @@ suite('DomModuleScanner', () => {
         </html>`;
       const document =
           new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
       const {features: domModules} = await scanner.scan(document, visit);
       assert.equal(domModules.length, 1);
@@ -55,7 +54,7 @@ suite('DomModuleScanner', () => {
           domModules[0].localIds.map((lid) => lid.name), ['foo', 'bar']);
     });
 
-    test('finds databinding expressions IDs', async() => {
+    test('finds databinding expressions IDs', async () => {
       const contents = `<html><head></head>
         <body>
           <dom-module>
@@ -69,7 +68,7 @@ suite('DomModuleScanner', () => {
         </html>`;
       const document =
           new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async(visitor: HtmlVisitor) => document.visit([visitor]);
+      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
       const underliner = CodeUnderliner.withMapping('test.html', contents);
 
       const {features: domModules} = await scanner.scan(document, visit);
@@ -90,5 +89,4 @@ suite('DomModuleScanner', () => {
                                       ~`]);
     });
   });
-
 });
