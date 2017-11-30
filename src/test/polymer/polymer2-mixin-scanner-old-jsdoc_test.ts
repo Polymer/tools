@@ -20,11 +20,10 @@ import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Visitor} from '../../javascript/estree-visitor';
 import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {ResolvedUrl} from '../../model/url';
 import {PolymerElementMixin, ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
-
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
-import { ResolvedUrl } from '../../model/url';
 
 suite('Polymer2MixinScanner with old jsdoc annotations', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2-old-jsdoc/');
