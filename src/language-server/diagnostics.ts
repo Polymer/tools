@@ -125,24 +125,16 @@ export default class DiagnosticGenerator extends Handler {
       const lintConfig = projectConfig.lint;
       if (lintConfig.rules) {
         try {
-          rules = registry.getRules(projectConfig.lint.rules);
+          rules = registry.getRules(lintConfig.rules);
         } catch (e) {
           // TODO(rictic): let the user know about this error, and about
           //   this.settings.projectConfigDiagnostic if it exists.
         }
       }
-      if (lintConfig.ignoreWarnings) {
-        this.warningCodesToFilterOut =
-            new Set(projectConfig.lint.ignoreWarnings);
-      } else {
-        this.warningCodesToFilterOut = new Set();
-      }
-      if (lintConfig.filesToIgnore) {
-        this.fileGlobsToFilterOut = lintConfig.filesToIgnore.map(
-            glob => new minimatch.Minimatch(glob, {}));
-      } else {
-        this.fileGlobsToFilterOut = [];
-      }
+      this.warningCodesToFilterOut = new Set(lintConfig.ignoreWarnings);
+      this.fileGlobsToFilterOut =
+          (lintConfig.filesToIgnore ||
+           []).map(glob => new minimatch.Minimatch(glob, {}));
     }
 
     const linter = new Linter(rules, this.analyzer);
@@ -160,15 +152,15 @@ export default class DiagnosticGenerator extends Handler {
       const warnings = await this.linter.lintPackage();
       this.reportPackageWarnings(warnings);
     } else {
+      const openURIs = this.documents.keys();
       const paths =
-          this.documents.keys()
-              .map(uri => this.converter.getWorkspacePathToFile({uri}))
+          openURIs.map(uri => this.converter.getWorkspacePathToFile({uri}))
               .filter(
                   path => !this.fileGlobsToFilterOut.some(
                       glob => glob.match(path)));
       const warnings = await this.linter.lint(paths);
-      const diagnosticsByUri = new Map(
-          this.documents.keys().map((k): [string, Diagnostic[]] => [k, []]));
+      const diagnosticsByUri =
+          new Map(openURIs.map((k): [string, Diagnostic[]] => [k, []]));
       for (const warning of this.filterWarnings(warnings)) {
         const diagnostic = this.converter.convertWarningToDiagnostic(warning);
         let diagnostics =
@@ -188,12 +180,11 @@ export default class DiagnosticGenerator extends Handler {
 
   private filterWarnings(warnings: ReadonlyArray<Warning>):
       ReadonlyArray<Warning> {
-    return warnings.filter(w => {
-      return !(
-          this.warningCodesToFilterOut.has(w.code) ||
-          this.fileGlobsToFilterOut.some(
-              glob => glob.match(w.sourceRange.file)));
-    });
+    return warnings.filter(
+        w =>
+            !(this.warningCodesToFilterOut.has(w.code) ||
+              this.fileGlobsToFilterOut.some(
+                  glob => glob.match(w.sourceRange.file))));
   }
 
   /**
