@@ -28,6 +28,33 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
     const imports: ScannedImport[] = [];
 
     await visit({
+      enterCallExpression(node: babel.CallExpression, _: babel.Node) {
+        // TODO(usergenic): There's no babel.Import type or babel.isImport()
+        // function right now, we have to just check the type property
+        // here until there is; please change to use babel.isImport(node.callee)
+        // once it is a thing.
+        if (node.callee.type as string !== 'Import') {
+          return;
+        }
+        const arg = node.arguments[0]! as any;
+        if (!arg) {
+          // TODO(usergenic): push a warning
+          return;
+        }
+        const source = arg.value as string;
+        if (!isPathImport(source)) {
+          // TODO(usergenic): push a warning
+          return;
+        }
+        imports.push(new ScannedImport(
+            'js-import',
+            ScannedImport.resolveUrl(document.url, source as FileRelativeUrl),
+            document.sourceRangeForNode(node)!,
+            document.sourceRangeForNode(node.callee)!,
+            node,
+            true));
+      },
+
       enterImportDeclaration(node: babel.ImportDeclaration, _: babel.Node) {
         const source = node.source.value as FileRelativeUrl;
         if (!isPathImport(source)) {

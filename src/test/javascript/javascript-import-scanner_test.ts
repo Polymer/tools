@@ -37,9 +37,33 @@ suite('JavaScriptImportScanner', () => {
         Promise.resolve(document.visit([visitor]));
 
     const {features} = await scanner.scan(document, visit);
-    assert.equal(features.length, 1);
-    assert.equal(features[0].type, 'js-import');
-    assert.equal(features[0].url, '/static/javascript/submodule.js');
+    assert.containSubset(features, [
+      {
+        type: 'js-import',
+        url: '/static/javascript/submodule.js',
+        lazy: false,
+      },
+    ]);
+  });
+
+  test('finds dynamic imports', async() => {
+    const file = fs.readFileSync(
+        path.resolve(__dirname, '../static/javascript/dynamic-import.js'),
+        'utf8');
+    const document = parser.parse(
+        file, '/static/javascript/dynamic-import.js' as ResolvedUrl);
+
+    const visit = (visitor: Visitor) =>
+        Promise.resolve(document.visit([visitor]));
+
+    const {features} = await scanner.scan(document, visit);
+    assert.containSubset(features, [
+      {
+        type: 'js-import',
+        url: '/static/javascript/submodule.js',
+        lazy: true,
+      },
+    ]);
   });
 
   test('skips non-path imports', async() => {

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
+* Added `js-import` feature with `lazy: true` for dynamic imports call expressions of the form `import()`.
 
 ## [3.0.0-pre.1] - 2017-11-29
 
