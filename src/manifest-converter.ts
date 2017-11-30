@@ -86,7 +86,8 @@ export function generatePackageJson(
   if (bowerJson.license.includes('polymer.github.io/LICENSE')) {
     packageJson.license = 'BSD-3-Clause';
   } else if (!spdxLicenseList.has(bowerJson.license)) {
-    console.warn(`"${bowerJson.license}" is not a valid SPDX license`);
+    console.warn(`"${bowerJson.license}" is not a valid SPDX license. ` +
+      `You can find a list of valid licenses at https://spdx.org/licenses/`);
   }
 
   for (const bowerPackageName in bowerJson.dependencies) {
