@@ -109,8 +109,7 @@ suite('BehaviorScanner', () => {
       throw new Error('Could not find Polymer.SimpleNamespacedBehavior');
     }
     assert.deepEqual(
-        [...behavior.methods.keys()],
-        ['method', 'shorthandMethod']);
+        [...behavior.methods.keys()], ['method', 'shorthandMethod']);
     assert.deepEqual(
         [...behavior.properties.keys()],
         ['simple', 'object', 'array', 'attached', 'templateLiteral']);

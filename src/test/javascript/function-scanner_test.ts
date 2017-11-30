@@ -29,7 +29,8 @@ suite('FunctionScanner', () => {
   const urlLoader = new FSUrlLoader(testFilesDir);
   const underliner = new CodeUnderliner(urlLoader);
 
-  async function getNamespaceFunctions(filename: string): Promise<any[]> {
+  async function getNamespaceFunctions(filename: string):
+      Promise<ScannedFunction[]> {
     const file = await urlLoader.load(filename);
     const parser = new JavaScriptParser();
     const document = parser.parse(file, filename as ResolvedUrl);
@@ -42,20 +43,20 @@ suite('FunctionScanner', () => {
   };
 
 
-  async function getTestProps(fn: ScannedFunction):
-      Promise<any> {
-        return {
-          name: fn.name,
-          description: fn.description,
-          summary: fn.summary,
-          warnings: fn.warnings,
-          params: fn.params, return: fn.return,
-          codeSnippet: await underliner.underline(fn.sourceRange),
-          privacy: fn.privacy
-        };
-      }
+  async function getTestProps(fn: ScannedFunction): Promise<any> {
+    return {
+      name: fn.name,
+      description: fn.description,
+      summary: fn.summary,
+      warnings: fn.warnings,
+      params: fn.params,
+      return: fn.return,
+      codeSnippet: await underliner.underline(fn.sourceRange),
+      privacy: fn.privacy
+    };
+  }
 
-  test('scans', async() => {
+  test('handles @memberof annotation', async () => {
     const namespaceFunctions =
         await getNamespaceFunctions('memberof-functions.js');
     const functionData =
@@ -71,7 +72,8 @@ suite('FunctionScanner', () => {
           name: 'a',
           type: 'Number',
         }],
-        privacy: 'public', return: undefined,
+        privacy: 'public',
+        return: undefined,
         codeSnippet: `
 function aaa(a) {
 ~~~~~~~~~~~~~~~~~
@@ -85,7 +87,8 @@ function aaa(a) {
         description: 'bbb',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'public',
         codeSnippet: `
 Polymer.bbb = function bbb() {
@@ -100,7 +103,8 @@ Polymer.bbb = function bbb() {
         description: 'ccc',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'protected',
         codeSnippet: `
   function ccc() {
@@ -114,7 +118,8 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         privacy: 'protected',
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         codeSnippet: `
   _ddd: function() {
   ~~~~~~~~~~~~~~~~~~
@@ -128,7 +133,8 @@ Polymer.bbb = function bbb() {
         description: 'eee',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'private',
         codeSnippet: `
   eee: () => {},
@@ -139,7 +145,8 @@ Polymer.bbb = function bbb() {
         description: 'fff',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'public',
         codeSnippet: `
   fff() {
@@ -154,7 +161,8 @@ Polymer.bbb = function bbb() {
         description: 'ggg',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'public',
         codeSnippet: `
   ggg: someFunction,
@@ -165,7 +173,8 @@ Polymer.bbb = function bbb() {
         description: 'hhh_ should be private',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'private',
         codeSnippet: `
   hhh_: someOtherFunc,
@@ -176,7 +185,8 @@ Polymer.bbb = function bbb() {
         description: '__iii should be private too',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'private',
         codeSnippet: `
   __iii() { },
@@ -187,7 +197,8 @@ Polymer.bbb = function bbb() {
         description: 'jjj',
         summary: '',
         warnings: [],
-        params: [], return: undefined,
+        params: [],
+        return: undefined,
         privacy: 'public',
         codeSnippet: `
 var jjj = function() {
@@ -197,6 +208,15 @@ var jjj = function() {
 };
 ~~`,
       },
+    ]);
+  });
+
+  test('handles @global, @memberof, @function annotations', async () => {
+    const functions = await getNamespaceFunctions('annotated-functions.js');
+    assert.deepEqual(functions.map((fn) => fn.name), [
+      'globalFn',
+      'SomeNamespace.memberofFn',
+      'overrideNameFn',
     ]);
   });
 });

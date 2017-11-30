@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- Add new, unreleased changes here. -->
 * Added `js-import` feature with `lazy: true` for dynamic imports call expressions of the form `import()`.
 
+* Functions will now be scanned if they have a `@global` annotation. Previously they would only be scanned if they had a `@memberof` annotation. One of these annotations is required because otherwise a lot of functions that aren't really public are included in the analysis (e.g. because they are hidden due to their scoping).
+* Function names can now be overridden with e.g. `@function MyNewName`.
+
 ## [3.0.0-pre.1] - 2017-11-29
 
 * [BREAKING] Switched the underlying parser/AST for JavaScript from `espree/estree` to `babylon/babel-types`.  This was needed to support parsing of important platform features such as dynamic imports and moves us closer to supporting TypeScript.

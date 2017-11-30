@@ -121,10 +121,15 @@ class FunctionVisitor implements Visitor {
   private _initFunction(
       node: babel.Node, analyzedName?: string, _fn?: babel.Function) {
     const comment = getAttachedComment(node);
-
-    // Quickly filter down to potential candidates.
-    if (!comment || comment.indexOf('@memberof') === -1) {
+    if (!comment) {
       return;
+    }
+    const docs = jsdoc.parseJsdoc(comment);
+
+    // The @function annotation can override the name.
+    const functionTag = jsdoc.getTag(docs, 'function');
+    if (functionTag && functionTag.name) {
+      analyzedName = functionTag.name;
     }
 
     if (!analyzedName) {
@@ -132,13 +137,22 @@ class FunctionVisitor implements Visitor {
       return;
     }
 
-    const docs = jsdoc.parseJsdoc(comment);
+    if (!jsdoc.hasTag(docs, 'global') && !jsdoc.hasTag(docs, 'memberof')) {
+      // Without this check we would emit a lot of functions not worthy of
+      // inclusion. Since we don't do scope analysis, we can't tell when a
+      // function is actually part of an exposed API. Only include functions
+      // that are explicitly @global, or declared as part of some namespace
+      // with @memberof.
+      return;
+    }
+
     // TODO(justinfagnani): remove polymerMixin support
     if (jsdoc.hasTag(docs, 'mixinFunction') ||
         jsdoc.hasTag(docs, 'polymerMixin')) {
       // This is a mixin, not a normal function.
       return;
     }
+
     const functionName = getNamespacedIdentifier(analyzedName, docs);
     const sourceRange = this.document.sourceRangeForNode(node)!;
     const returnTag = jsdoc.getTag(docs, 'return');
