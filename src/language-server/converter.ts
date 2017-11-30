@@ -20,18 +20,18 @@ import Uri from 'vscode-uri';
  * Converts between Analyzer and Editor Service types and LSP types.
  */
 export default class AnalyzerLSPConverter {
-  private readonly _workspaceUri: Uri;
+  private readonly workspaceUri: Uri;
   constructor(workspaceUri: Uri) {
-    this._workspaceUri = workspaceUri;
+    this.workspaceUri = workspaceUri;
   }
 
   getWorkspacePathToFile(document: {uri: string}): string {
     return path.relative(
-        this._workspaceUri.fsPath, Uri.parse(document.uri).fsPath);
+        this.workspaceUri.fsPath, Uri.parse(document.uri).fsPath);
   }
 
   getUriForLocalPath(localPath: string): string {
-    const workspacePath = this._workspaceUri.fsPath;
+    const workspacePath = this.workspaceUri.fsPath;
     const absolutePath = path.join(workspacePath, localPath);
     return Uri.file(absolutePath).toString();
   }
@@ -48,6 +48,10 @@ export default class AnalyzerLSPConverter {
 
   convertPosition({line, character: column}: LSPosition): SourcePosition {
     return {line, column};
+  }
+
+  convertSourcePosition({line, column: character}: SourcePosition): LSPosition {
+    return {line, character};
   }
 
   convertPRangeToL({start, end}: SourceRange): LSRange {

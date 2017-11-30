@@ -20,7 +20,6 @@ import * as util from 'util';
 import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, ClientCapabilities, CodeActionParams, Command, CompletionItem, CompletionItemKind, CompletionList, Definition, Diagnostic, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments, TextEdit, WillSaveTextDocumentParams, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {hookUpRemoteConsole} from '../intercept-logs';
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
 import AnalyzerLSPConverter from './converter';
@@ -37,14 +36,14 @@ export default class LanguageServer extends AutoDisposable {
   readonly converter: AnalyzerLSPConverter;
   private readonly _connection: IConnection;
   private readonly _editorService: LocalEditorService;
-
+  readonly fileSynchronizer: FileSynchronizer;
   private readonly _documents: TextDocuments;
 
   private _settings: Settings;
 
   /** Get an initialized and ready language server. */
-  static async initializeWithConnection(connection: IConnection):
-      Promise<LanguageServer> {
+  static async initializeWithConnection(
+      connection: IConnection, interceptLogs = true): Promise<LanguageServer> {
     function getWorkspaceUri(
         rootUri: string|null, rootPath: string|null|undefined): Uri|null {
       if (rootUri) {
@@ -81,7 +80,10 @@ export default class LanguageServer extends AutoDisposable {
 
     // The console will be valid immediately after the connection has
     // initialized. So hook it up then.
-    hookUpRemoteConsole(connection.console);
+    if (interceptLogs) {
+      const {hookUpRemoteConsole} = await import('../intercept-logs');
+      hookUpRemoteConsole(connection.console);
+    }
     return server;
   }
 
@@ -124,6 +126,7 @@ export default class LanguageServer extends AutoDisposable {
         synchronizer.fileChanges.listen((filesChangeEvents) => {
           this.handleFilesChanged(filesChangeEvents);
         }));
+    this.fileSynchronizer = synchronizer;
 
     this._initEventHandlers();
   }
