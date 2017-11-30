@@ -26,15 +26,17 @@ interface DependencyMap {
 }
 const dependencyMap: DependencyMap =
     readJson(__dirname, '../dependency-map.json');
+const warningCache: Set<String> = new Set();
 
 /**
  * Lookup the corresponding npm package name in our local map. By default, this
  * method will log a standard warning message to the user if no mapping was
  * found.
  */
-export function lookupDependencyMapping(bowerPackageName: string, warn = true) {
+export function lookupDependencyMapping(bowerPackageName: string) {
   const result = dependencyMap[bowerPackageName];
-  if (!result && warn) {
+  if (!result && !warningCache.has(bowerPackageName)) {
+    warningCache.add(bowerPackageName);
     console.warn(
         `WARN: bower->npm mapping for "${bowerPackageName}" not found`);
   }

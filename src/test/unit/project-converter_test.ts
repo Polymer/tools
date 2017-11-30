@@ -19,10 +19,10 @@ import {Analyzer, InMemoryOverlayUrlLoader} from 'polymer-analyzer';
 
 import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
 import {getPackageDocuments} from '../../convert-package';
+import {getMemberPath} from '../../document-util';
 import {ProjectConverter} from '../../project-converter';
 import {PackageUrlHandler} from '../../urls/package-url-handler';
 import {PackageType} from '../../urls/types';
-import {getMemberPath} from '../../document-util';
 
 /*
 A few conventions in these tests:
@@ -150,9 +150,7 @@ suite('AnalysisConverter', () => {
         'dep.html': `<h1>Hi</h1>`,
         'bower_components/dep/dep.html': `<h1>Hi</h1>`,
       });
-      // Warnings are non memoized, duplicates are expected
       const expectedWarnings = [
-        `WARN: bower->npm mapping for "dep" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
       ];
       assertSources(await convert({expectedWarnings}), {
@@ -1747,13 +1745,15 @@ setBaz(foo + 10 * (10 ** 10));
           console.log('hello world');
         `
       });
-      const expectedWarnings = [`WARN: bower->npm mapping for "foo" not found`];
+      let expectedWarnings = [`WARN: bower->npm mapping for "foo" not found`];
       assertSources(await convert({packageName: 'polymer', expectedWarnings}), {
         'index.html': `
 
           <script src="../foo/foo.js"></script>
         `,
       });
+      // Warnings are memoized, duplicates are not expected
+      expectedWarnings = [];
       assertSources(
           await convert({packageName: '@polymer/polymer', expectedWarnings}), {
             'index.html': `
