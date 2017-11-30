@@ -12,17 +12,20 @@
  */
 
 import {assert} from 'chai';
-import {DidChangeConfigurationNotification} from 'vscode-languageserver';
+import * as path from 'path';
+import {DidChangeConfigurationNotification, DidOpenTextDocumentNotification, DidOpenTextDocumentParams} from 'vscode-languageserver';
+import URI from 'vscode-uri/lib';
 
 import Settings from '../language-server/settings';
-import {createTestConnections} from './util';
+
+import {createFileSynchronizer} from './util';
 
 suite('Settings', () => {
   function createSettings(debugging?: boolean) {
-    const {serverConnection, clientConnection} =
-        createTestConnections(debugging);
-    const settings = new Settings(serverConnection);
-    return {settings, serverConnection, clientConnection};
+    const {serverConnection, clientConnection, synchronizer, converter,
+           baseDir} = createFileSynchronizer(undefined, debugging);
+    const settings = new Settings(serverConnection, synchronizer, converter);
+    return {settings, serverConnection, clientConnection, baseDir};
   }
 
   test('starts with default values', () => {
@@ -80,5 +83,42 @@ suite('Settings', () => {
           fixOnSave: settings.fixOnSave
         },
         {analyzeWholePackage: false, fixOnSave: true});
+  });
+
+  test('keeps ProjectConfig synchronized', async() => {
+    const {settings, clientConnection, baseDir} = createSettings();
+    assert.equal(settings.projectConfig.lint, undefined);
+    assert.equal(settings.projectConfigDiagnostic, null);
+    await settings.projectConfigChangeStream.next;
+    let openedParams: DidOpenTextDocumentParams = {
+      textDocument: {
+        languageId: 'json',
+        text: JSON.stringify({lint: {rules: ['polymer-2']}}),
+        version: 1,
+        uri: URI.file(path.join(baseDir, 'polymer.json')).toString()
+      }
+    };
+    clientConnection.sendNotification(
+        DidOpenTextDocumentNotification.type, openedParams);
+    await settings.projectConfigChangeStream.next;
+    assert.equal(settings.projectConfigDiagnostic, null);
+    assert.deepEqual(settings.projectConfig.lint, {rules: ['polymer-2']});
+
+    openedParams = {
+      textDocument: {
+        languageId: 'json',
+        text: JSON.stringify({lint: {rules: {foo: 'polymer-2'}}}),
+        version: 1,
+        uri: URI.file(path.join(baseDir, 'polymer.json')).toString()
+      }
+    };
+    clientConnection.sendNotification(
+        DidOpenTextDocumentNotification.type, openedParams);
+    await settings.projectConfigChangeStream.next;
+    assert.deepEqual(settings.projectConfig.lint, undefined);
+    assert.equal(
+        settings.projectConfigDiagnostic!.message,
+        `Invalid polymer.json file: ` +
+            `Property 'lint.rules' is not of a type(s) array`);
   });
 });

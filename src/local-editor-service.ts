@@ -13,17 +13,17 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analysis, Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, UrlLoader, Warning} from 'polymer-analyzer';
+import {Analysis, Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 import {InMemoryOverlayUrlLoader} from 'polymer-analyzer/lib/url-loader/overlay-loader';
 import {Linter, registry, Rule} from 'polymer-linter';
-import {ProjectConfig} from 'polymer-project-config';
 
 import {AstLocation, getAstLocationForPosition} from './ast-from-source-position';
+import Settings from './language-server/settings';
 
 export interface Options extends AnalyzerOptions {
-  polymerJsonPath?: string;
-  urlLoader: UrlLoader;
+  // TODO(rictic): update tests, make this required.
+  settings?: Settings;
 }
 
 /**
@@ -34,8 +34,9 @@ export interface Options extends AnalyzerOptions {
  */
 export class LocalEditorService {
   readonly analyzer: Analyzer;
-  readonly linter: Linter;
   private urlLoader: InMemoryOverlayUrlLoader;
+  linter: Linter;
+  private readonly settings: Settings;
   constructor(options: Options) {
     let urlLoader = options.urlLoader;
     if (!(urlLoader instanceof InMemoryOverlayUrlLoader)) {
@@ -47,22 +48,30 @@ export class LocalEditorService {
         new Analyzer(Object.assign({}, options, {urlLoader: this.urlLoader}));
     // TODO(rictic): watch for changes of polymer.json
     let rules: Set<Rule> = new Set();
-    if (options.polymerJsonPath) {
-      let config = null;
-      try {
-        config = ProjectConfig.loadConfigFromFile(options.polymerJsonPath);
-      } catch (_) {
-        // TODO(rictic): warn about the error
-      }
-      if (config && config.lint && config.lint.rules) {
-        try {
-          rules = registry.getRules(config.lint.rules);
-        } catch (_) {
-          // TODO(rictic): warn about the bad rule
-        }
-      }
+    if (options.settings) {
+      this.settings = options.settings;
+      this.linter = this.makeLinter();
+      this.settings.projectConfigChangeStream.listen(() => {
+        // Update the linter when the project config changes.
+        this.linter = this.makeLinter();
+      });
     }
     this.linter = new Linter(rules, this.analyzer);
+  }
+
+  private makeLinter(): Linter {
+    let rules: Iterable<Rule> = new Set();
+    const projectConfig = this.settings.projectConfig;
+    if (projectConfig.lint && projectConfig.lint.rules) {
+      try {
+        rules = registry.getRules(projectConfig.lint.rules);
+      } catch (e) {
+        // TODO(rictic): let the user know about this error, and about
+        //   this.settings.projectConfigDiagnostic if it exists.
+      }
+    }
+
+    return new Linter(rules, this.analyzer);
   }
 
   async fileChanged(localPath: string, contents?: string): Promise<void> {

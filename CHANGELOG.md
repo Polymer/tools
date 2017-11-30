@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Removes our proprietary protocol in favor of unifying on the Language Server Protocol. Using the standard protocol lets us support more editors with less code.
+- Notices changes to polymer.json immediately. Currently this is useful for changing lint rules without reloading your editor.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.

@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as path from 'path';
 import {applyEdits, Edit, isPositionInsideRange, makeParseLoader, PackageUrlResolver, SourceRange, Warning, WarningCarryingException} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
@@ -95,11 +94,7 @@ export default class LanguageServer extends AutoDisposable {
     this._disposables.push(connection);
     this._connection = connection;
 
-    this._settings = new Settings(connection);
-    this._disposables.push(this._settings);
-
     const workspacePath = workspaceUri.fsPath;
-    const polymerJsonPath = path.join(workspacePath, 'polymer.json');
 
     // TODO(rictic): try out implementing an incrementally synced version of
     //     TextDocuments. Should be a performance win for editing large docs.
@@ -110,10 +105,20 @@ export default class LanguageServer extends AutoDisposable {
     const synchronizer = new FileSynchronizer(
         connection, this._documents, workspacePath, this.converter);
 
+    this._settings = new Settings(connection, synchronizer, this.converter);
+    this._disposables.push(this._settings);
+
     this._editorService = new LocalEditorService({
       urlLoader: synchronizer.urlLoader,
-      urlResolver: new PackageUrlResolver(), polymerJsonPath
+      urlResolver: new PackageUrlResolver(),
+      settings: this._settings
     });
+
+    this._disposables.push(
+        this._settings.projectConfigChangeStream.listen(() => {
+          // Our lint rules may have changed. Report updated warnings.
+          this._reportWarnings();
+        }));
 
     this._disposables.push(
         synchronizer.fileChanges.listen((filesChangeEvents) => {
@@ -331,18 +336,13 @@ export default class LanguageServer extends AutoDisposable {
   }
 
   private async handleFilesChanged(fileChangeEvents: FileEvent[]) {
-    // We handle open file changes in `handleChangedDocument`, so we
-    // can filter them out here.
-    const openedFileUris = new Set(this._documents.keys());
-    const changesToUnopenedFiles =
-        fileChangeEvents.filter((change) => !openedFileUris.has(change.uri));
-    const paths = changesToUnopenedFiles.map(
+    const paths = fileChangeEvents.map(
         change => this.converter.getWorkspacePathToFile(change));
     if (paths.length === 0) {
       return;  // no new information in this notification
     }
     const deletions =
-        changesToUnopenedFiles
+        fileChangeEvents
             .filter((change) => change.type === FileChangeType.Deleted)
             .map((change) => this.converter.getWorkspacePathToFile(change));
     if (deletions.length > 0) {

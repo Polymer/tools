@@ -13,35 +13,15 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
-import {DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, FileChangeType, TextDocuments} from 'vscode-languageserver';
+import {DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, FileChangeType} from 'vscode-languageserver';
 import URI from 'vscode-uri/lib';
 
-import AnalyzerLSPConverter from '../language-server/converter';
-import FileSynchronizer from '../language-server/file-synchronizer';
 
-import {createTestConnections} from './util';
+import {createFileSynchronizer} from './util';
 
 suite('FileSynchronizer', () => {
-  function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
-    if (baseDir) {
-      baseDir = getTempCopy(baseDir);
-    } else {
-      baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'editor-service-tests'));
-    }
-
-    const {serverConnection, clientConnection} =
-        createTestConnections(debugging);
-    const textDocuments = new TextDocuments();
-    textDocuments.listen(serverConnection);
-    const converter = new AnalyzerLSPConverter(URI.file(baseDir));
-    const synchronizer = new FileSynchronizer(
-        serverConnection, textDocuments, baseDir, converter);
-    return {synchronizer, serverConnection, clientConnection, baseDir};
-  }
-
   test('reads from the filesystem by default', async() => {
     const {synchronizer, baseDir} = createFileSynchronizer();
     fs.writeFileSync(path.join(baseDir, 'index.html'), 'Hello world.\n');
@@ -131,23 +111,3 @@ suite('FileSynchronizer', () => {
     assert.deepEqual(receivedChanges, changes);
   });
 });
-
-function getTempCopy(fromDir: string) {
-  const toDir = fs.mkdtempSync(path.join(os.tmpdir(), path.basename(fromDir)));
-  copyDir(fromDir, toDir);
-  return toDir;
-}
-
-function copyDir(fromDir: string, toDir: string) {
-  for (const inner of fs.readdirSync(fromDir)) {
-    const fromInner = path.join(fromDir, inner);
-    const toInner = path.join(toDir, inner);
-    const stat = fs.statSync(fromInner);
-    if (stat.isDirectory()) {
-      fs.mkdirSync(toInner);
-      copyDir(fromInner, toInner);
-    } else {
-      fs.writeFileSync(toInner, fs.readFileSync(fromInner));
-    }
-  }
-}
