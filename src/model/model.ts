@@ -34,13 +34,14 @@
 
 // TODO(rictic): export document and package query options...
 
+export {Analysis} from './analysis';
 export * from './attribute';
 export * from './class';
 export {Document, ScannedDocument} from './document';
 export * from './element';
 export * from './element-base';
-export {ElementReference, ScannedElementReference} from './element-reference';
 export * from './element-mixin';
+export {ElementReference, ScannedElementReference} from './element-reference';
 export * from './event';
 export * from './feature';
 export * from './import';
@@ -48,9 +49,9 @@ export * from './inline-document';
 export * from './literal';
 export * from './property';
 export * from './method';
-export {Analysis} from './analysis';
+export {Queryable, FeatureKindMap, DocumentQuery, AnalysisQuery} from './queryable';
 export * from './reference';
 export * from './resolvable';
 export * from './source-range';
+export * from './url';
 export * from './warning';
-export {Queryable, FeatureKindMap, DocumentQuery, AnalysisQuery} from './queryable';
