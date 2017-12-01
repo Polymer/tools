@@ -13,7 +13,7 @@
  */
 
 import {batchProcess, BatchProcessFn, BatchProcessResponse, concurrencyPresets} from './util/batch-process';
-import {WorkspaceRepo} from './workspace-creator';
+import {WorkspaceRepo} from './workspace';
 
 /**
  * Run some function of work over each workspace repo, returning a collection

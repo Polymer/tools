@@ -9,10 +9,10 @@ yarn add polymer-workspaces
 ## Example: Creating a New Workspace
 
 ```js
-const {WorkspaceCreator} = require('polymer-workspace');
+const {Workspace} = require('polymer-workspace');
 const path = require('path');
 
-const workspace = new WorkspaceCreator({
+const workspace = new Workspace({
   // Get a GitHub API token: https://github.com/blog/1509-personal-api-tokens
   token: 'GITHUB_API_TOKEN',
   // Choose a "workspace" directory

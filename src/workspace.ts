@@ -101,15 +101,15 @@ export interface WorkspaceInitOptions {
 }
 
 /**
- * WorkspaceCreator - An instance for creating new workspaces. The `init()`
+ * Workspace - An instance for creating new workspaces. The `init()`
  * method drives the loading, creation, and configuration of each workspace
  * repo. Repos are loaded from GitHub, and a GitHub API Token is required to
  * use.
  *
- * A WorkspaceCreator instance returns WorkspaceRepo objects, which the user
+ * A Workspace instance returns WorkspaceRepo objects, which the user
  * can use to interact with each repo in the workspace.
  */
-export class WorkspaceCreator {
+export class Workspace {
   dir: string;
   private _github: GitHubConnection;
 

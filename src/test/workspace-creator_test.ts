@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// NOTE(fks) 09-22-2017: The WorkspaceCreator object is meant to wrap a lot of
-// complex functionality together, including repo fetching, cloning, and running
-// logic across multiple directories.
+// NOTE(fks) 09-22-2017: The Workspace object is meant to wrap a lot of complex
+// functionality together related to setup, including repo fetching, cloning,
+// and resetting.
 //
 // While the smaller pieces this object relies on are tested individually,
-// there is no way to unit test the WorkspaceCreator object without making
+// there is no way to unit test the Workspace object without making
 // private implementation-detail methods public, which is exactly what we're
 // trying to avoid.
 //
@@ -25,19 +25,19 @@
 
 import {assert} from 'chai';
 import path = require('path');
-import {WorkspaceCreator} from '../workspace-creator';
+import {Workspace} from '../workspace';
 
 const testGitHubToken = 'TEST_GITHUB_TOKEN';
 const testWorkspaceDir = path.join(__dirname, 'TEST_WORKSPACE_DIR');
 
-suite('src/workspace-creator', function() {
+suite('src/workspace', function() {
 
-  suite('WorkspaceCreator', () => {
+  suite('Workspace', () => {
 
     suite('workspace.init()', () => {
 
       test('can be initialized with an empty set of patterns', async () => {
-        const workspace = new WorkspaceCreator(
+        const workspace = new Workspace(
             {token: testGitHubToken, dir: testWorkspaceDir});
         const {workspaceRepos, failures} = await workspace.init({include: []});
         assert.deepEqual(workspaceRepos, []);
