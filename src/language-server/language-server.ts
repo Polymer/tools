@@ -17,13 +17,14 @@ import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, FileChangeType, FileEvent, IConnection, InitializeResult, ServerCapabilities, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 
 import CommandExecutor, {allSupportedCommands} from './commands';
 import AnalyzerLSPConverter from './converter';
+import DefinitionFinder from './definition-finder';
 import DiagnosticGenerator from './diagnostics';
 import FeatureFinder from './feature-finder';
 import FileSynchronizer from './file-synchronizer';
@@ -137,6 +138,10 @@ export default class LanguageServer extends Handler {
 
 
 
+    const definitionFinder =
+        new DefinitionFinder(this.connection, this.converter, featureFinder);
+    this.disposables.push(definitionFinder);
+
     this.initEventHandlers();
   }
 
@@ -165,11 +170,6 @@ export default class LanguageServer extends Handler {
   }
 
   private initEventHandlers() {
-    this.connection.onDefinition(async(textPosition) => {
-      return this.handleErrors(
-          this.getDefinition(textPosition), undefined) as Promise<Definition>;
-    });
-
     this.connection.onCompletion(async(textPosition) => {
       return this.handleErrors(
           this.autoComplete(textPosition), {isIncomplete: true, items: []});
@@ -218,21 +218,6 @@ export default class LanguageServer extends Handler {
       };
     }
     return {isIncomplete: false, items: []};
-  }
-
-  private async getDefinition(textPosition: TextDocumentPositionParams):
-      Promise<Definition|undefined> {
-    const localPath =
-        this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const location = await this.editorService.getDefinitionForFeatureAtPosition(
-        localPath, this.converter.convertPosition(textPosition.position));
-    if (location && location.file) {
-      let definition: Location = {
-        uri: this.converter.getUriForLocalPath(location.file),
-        range: this.converter.convertPRangeToL(location)
-      };
-      return definition;
-    }
   }
 
   private async handleFilesChanged(fileChangeEvents: FileEvent[]) {

@@ -45,7 +45,6 @@ suite('editorService', () => {
   const tagPosition = {line: 7, column: 9};
   const tagPositionEnd = {line: 7, column: 21};
   const localAttributePosition = {line: 7, column: 31};
-  const deepAttributePosition = {line: 7, column: 49};
 
   const elementTypeahead: ElementCompletion = {
     kind: 'element-tags',
@@ -232,52 +231,6 @@ suite('editorService', () => {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
       ]);
     });
-  });
-
-  suite('getDefinitionForFeatureAtPosition', function() {
-
-    test(
-        `it supports getting the definition of ` +
-            `an element from its tag`,
-        async() => {
-          await editorService.fileChanged(indexFile, indexContents);
-          assert.deepEqual(
-              await editorService.getDefinitionForFeatureAtPosition(
-                  indexFile, tagPosition),
-              {
-                file: 'analysis/behaviors/elementdir/element.html',
-                start: {line: 4, column: 10},
-                end: {line: 31, column: 3}
-              });
-        });
-
-    test('it supports getting the definition of a local attribute', async() => {
-      await editorService.fileChanged(indexFile, indexContents);
-      assert.deepEqual(
-          await editorService.getDefinitionForFeatureAtPosition(
-              indexFile, localAttributePosition),
-          {
-            file: 'analysis/behaviors/elementdir/element.html',
-            start: {line: 9, column: 6},
-            end: {line: 13, column: 7}
-          });
-    });
-
-    test(
-        'it supports getting the definition of an attribute ' +
-            'defined in a behavior',
-        async() => {
-          await editorService.fileChanged(indexFile, indexContents);
-          assert.deepEqual(
-              await editorService.getDefinitionForFeatureAtPosition(
-                  indexFile, deepAttributePosition),
-              {
-                file: 'analysis/behaviors/subdir/subbehavior.html',
-                start: {line: 5, column: 6},
-                end: {line: 11, column: 7}
-              });
-        });
-
   });
 
   suite('getTypeaheadCompletionsAtPosition', function() {
@@ -576,21 +529,6 @@ suite('editorService', () => {
     {
       const fooPropUsePosition = {line: 2, column: 16};
       const internalPropUsePosition = {line: 3, column: 12};
-
-      test('Jump to definition for properties in databindings.', async() => {
-        let location = await editorService.getDefinitionForFeatureAtPosition(
-            'polymer/element-with-databinding.html', fooPropUsePosition);
-        const underliner = new CodeUnderliner(new FSUrlLoader(basedir));
-
-        assert.deepEqual(await underliner.underline(location), `
-        foo: String,
-        ~~~~~~~~~~~`);
-        location = await editorService.getDefinitionForFeatureAtPosition(
-            'polymer/element-with-databinding.html', internalPropUsePosition);
-        assert.deepEqual(await underliner.underline(location), `
-        _internal: String,
-        ~~~~~~~~~~~~~~~~~`);
-      });
 
       const databindingCompletions = {
         kind: 'properties-in-polymer-databinding' as

@@ -53,19 +53,6 @@ export class LocalEditorService {
     await this.analyzer.filesChanged([localPath]);
   }
 
-  async getDefinitionForFeatureAtPosition(
-      localPath: string,
-      position: SourcePosition): Promise<SourceRange|undefined> {
-    const feature = await this.getFeatureAt(localPath, position);
-    if (!feature) {
-      return;
-    }
-    if (feature instanceof DatabindingFeature) {
-      return feature.property && feature.property.sourceRange;
-    }
-    return feature.sourceRange;
-  }
-
   async getReferencesForFeatureAtPosition(
       localPath: string,
       position: SourcePosition): Promise<SourceRange[]|undefined> {
@@ -295,24 +282,6 @@ export class LocalEditorService {
         return domModule;
       }
     }
-  }
-
-  /**
-   * Given a point in a file, return a high level feature that describes what
-   * is going on there, like an Element for an HTML tag.
-   */
-  private async getFeatureAt(localPath: string, position: SourcePosition):
-      Promise<Element|Property|Attribute|DatabindingFeature|undefined> {
-    const analysis = await this.analyzer.analyze([localPath]);
-    const document = analysis.getDocument(localPath);
-    if (!(document instanceof Document)) {
-      return;
-    }
-    const location = await this.getAstAtPosition(document, position);
-    if (!location) {
-      return;
-    }
-    return this.getFeatureForAstLocation(document, location, position);
   }
 
   /**
