@@ -42,7 +42,7 @@ declare namespace Polymer {
      *
      * @param id The id at which to register the dom-module.
      */
-    register(id?: string): any;
+    register(id?: string): void|null;
   }
 }
 

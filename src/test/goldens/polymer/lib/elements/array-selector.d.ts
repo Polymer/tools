@@ -29,96 +29,98 @@ declare namespace Polymer {
    * is an array of multiply selected items.
    */
   function ArraySelectorMixin<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): {
-
-      /**
-       * An array containing items from which selection will be made.
-       */
-      items: any[]|null;
-
-      /**
-       * When `true`, multiple items may be selected at once (in this case,
-       * `selected` is an array of currently selected items).  When `false`,
-       * only one item may be selected at a time.
-       */
-      multi: boolean;
-
-      /**
-       * When `multi` is true, this is an array that contains any selected.
-       * When `multi` is false, this is the currently selected item, or `null`
-       * if no item is selected.
-       */
-      selected: Object|Object[]|null;
-
-      /**
-       * When `multi` is false, this is the currently selected item, or `null`
-       * if no item is selected.
-       */
-      selectedItem: Object|null;
-
-      /**
-       * When `true`, calling `select` on an item that is already selected
-       * will deselect the item.
-       */
-      toggle: boolean;
-      __updateSelection(multi: any, itemsInfo: any): any;
-      __applySplices(splices: any): any;
-      __updateLinks(): any;
-
-      /**
-       * Clears the selection state.
-       */
-      clearSelection(): any;
-
-      /**
-       * Returns whether the item is currently selected.
-       *
-       * @param item Item from `items` array to test
-       * @returns Whether the item is selected
-       */
-      isSelected(item: any): boolean;
-
-      /**
-       * Returns whether the item is currently selected.
-       *
-       * @param idx Index from `items` array to test
-       * @returns Whether the item is selected
-       */
-      isIndexSelected(idx: number): boolean;
-      __deselectChangedIdx(idx: any): any;
-      __selectedIndexForItemIndex(idx: any): any;
-
-      /**
-       * Deselects the given item if it is already selected.
-       *
-       * @param item Item from `items` array to deselect
-       */
-      deselect(item: any): any;
-
-      /**
-       * Deselects the given index if it is already selected.
-       *
-       * @param idx Index from `items` array to deselect
-       */
-      deselectIndex(idx: number): any;
-
-      /**
-       * Selects the given item.  When `toggle` is true, this will automatically
-       * deselect the item if already selected.
-       *
-       * @param item Item from `items` array to select
-       */
-      select(item: any): any;
-
-      /**
-       * Selects the given index.  When `toggle` is true, this will automatically
-       * deselect the item if already selected.
-       *
-       * @param idx Index from `items` array to select
-       */
-      selectIndex(idx: number): any;
-    }
+    new(...args: any[]): ArraySelectorMixin & Polymer.ElementMixin
   } & T
+
+  interface ArraySelectorMixin {
+
+    /**
+     * An array containing items from which selection will be made.
+     */
+    items: any[]|null;
+
+    /**
+     * When `true`, multiple items may be selected at once (in this case,
+     * `selected` is an array of currently selected items).  When `false`,
+     * only one item may be selected at a time.
+     */
+    multi: boolean;
+
+    /**
+     * When `multi` is true, this is an array that contains any selected.
+     * When `multi` is false, this is the currently selected item, or `null`
+     * if no item is selected.
+     */
+    selected: Object|Object[]|null;
+
+    /**
+     * When `multi` is false, this is the currently selected item, or `null`
+     * if no item is selected.
+     */
+    selectedItem: Object|null;
+
+    /**
+     * When `true`, calling `select` on an item that is already selected
+     * will deselect the item.
+     */
+    toggle: boolean;
+    __updateSelection(multi: any, itemsInfo: any): any;
+    __applySplices(splices: any): any;
+    __updateLinks(): any;
+
+    /**
+     * Clears the selection state.
+     */
+    clearSelection(): any;
+
+    /**
+     * Returns whether the item is currently selected.
+     *
+     * @param item Item from `items` array to test
+     * @returns Whether the item is selected
+     */
+    isSelected(item: any): boolean;
+
+    /**
+     * Returns whether the item is currently selected.
+     *
+     * @param idx Index from `items` array to test
+     * @returns Whether the item is selected
+     */
+    isIndexSelected(idx: number): boolean;
+    __deselectChangedIdx(idx: any): any;
+    __selectedIndexForItemIndex(idx: any): any;
+
+    /**
+     * Deselects the given item if it is already selected.
+     *
+     * @param item Item from `items` array to deselect
+     */
+    deselect(item: any): void|null;
+
+    /**
+     * Deselects the given index if it is already selected.
+     *
+     * @param idx Index from `items` array to deselect
+     */
+    deselectIndex(idx: number): void|null;
+
+    /**
+     * Selects the given item.  When `toggle` is true, this will automatically
+     * deselect the item if already selected.
+     *
+     * @param item Item from `items` array to select
+     */
+    select(item: any): void|null;
+
+    /**
+     * Selects the given index.  When `toggle` is true, this will automatically
+     * deselect the item if already selected.
+     *
+     * @param idx Index from `items` array to select
+     */
+    selectIndex(idx: number): void|null;
+  }
 
   /**
    * Element implementing the `Polymer.ArraySelector` mixin, which records

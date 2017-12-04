@@ -29,11 +29,13 @@ declare namespace Polymer {
    * - Opting out of the global direction styling is permanent
    */
   function DirMixin<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): {
-      __autoDirOptOut: boolean;
-      ready(): any;
-      connectedCallback(): any;
-      disconnectedCallback(): any;
-    }
+    new(...args: any[]): DirMixin & Polymer.PropertyAccessors
   } & T
+
+  interface DirMixin {
+    __autoDirOptOut: boolean;
+    ready(): any;
+    connectedCallback(): any;
+    disconnectedCallback(): any;
+  }
 }

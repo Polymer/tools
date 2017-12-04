@@ -76,112 +76,114 @@ declare namespace Polymer {
    *   of dash-cased attributes based on `properties`)
    */
   function ElementMixin<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): {
-      _template: HTMLTemplateElement|null;
-      _importPath: string;
-      rootPath: string;
-      importPath: string;
-      root: StampedTemplate|HTMLElement|ShadowRoot|null;
-      $: any;
-
-      /**
-       * Provides a default implementation of the standard Custom Elements
-       * `attributeChangedCallback`.
-       *
-       * By default, attributes declared in `properties` metadata are
-       * deserialized using their `type` information to properties of the
-       * same name.  "Dash-cased" attributes are deserialized to "camelCase"
-       * properties.
-       *
-       * @param name Name of attribute.
-       * @param old Old value of attribute.
-       * @param value Current value of attribute.
-       */
-      attributeChangedCallback(name: string, old: string|null, value: string|null): any;
-
-      /**
-       * Overrides the default `Polymer.PropertyAccessors` to ensure class
-       * metaprogramming related to property accessors and effects has
-       * completed (calls `finalize`).
-       *
-       * It also initializes any property defaults provided via `value` in
-       * `properties` metadata.
-       */
-      _initializeProperties(): any;
-
-      /**
-       * Stamps the element template.
-       */
-      ready(): any;
-
-      /**
-       * Implements `PropertyEffects`'s `_readyClients` call. Attaches
-       * element dom by calling `_attachDom` with the dom stamped from the
-       * element's template via `_stampTemplate`. Note that this allows
-       * client dom to be attached to the element prior to any observers
-       * running.
-       */
-      _readyClients(): any;
-
-      /**
-       * Provides a default implementation of the standard Custom Elements
-       * `connectedCallback`.
-       *
-       * The default implementation enables the property effects system and
-       * flushes any pending properties, and updates shimmed CSS properties
-       * when using the ShadyCSS scoping/custom properties polyfill.
-       */
-      connectedCallback(): any;
-
-      /**
-       * Provides a default implementation of the standard Custom Elements
-       * `disconnectedCallback`.
-       */
-      disconnectedCallback(): any;
-
-      /**
-       * Attaches an element's stamped dom to itself. By default,
-       * this method creates a `shadowRoot` and adds the dom to it.
-       * However, this method may be overridden to allow an element
-       * to put its dom in another location.
-       *
-       * @param dom to attach to the element.
-       * @returns node to which the dom has been attached.
-       */
-      _attachDom(dom: StampedTemplate|null): ShadowRoot|null;
-
-      /**
-       * When using the ShadyCSS scoping and custom property shim, causes all
-       * shimmed styles in this element (and its subtree) to be updated
-       * based on current custom property values.
-       *
-       * The optional parameter overrides inline custom property styles with an
-       * object of properties where the keys are CSS properties, and the values
-       * are strings.
-       *
-       * Example: `this.updateStyles({'--color': 'blue'})`
-       *
-       * These properties are retained unless a value of `null` is set.
-       *
-       * @param properties Bag of custom property key/values to
-       *   apply to this element.
-       */
-      updateStyles(properties?: Object|null): any;
-
-      /**
-       * Rewrites a given URL relative to a base URL. The base URL defaults to
-       * the original location of the document containing the `dom-module` for
-       * this element. This method will return the same URL before and after
-       * bundling.
-       *
-       * @param url URL to resolve.
-       * @param base Optional base URL to resolve against, defaults
-       * to the element's `importPath`
-       * @returns Rewritten URL relative to base
-       */
-      resolveUrl(url: string, base?: string): string;
-    }
+    new(...args: any[]): ElementMixin & Polymer.PropertyEffects
   } & T
+
+  interface ElementMixin {
+    _template: HTMLTemplateElement|null;
+    _importPath: string;
+    rootPath: string;
+    importPath: string;
+    root: StampedTemplate|HTMLElement|ShadowRoot|null;
+    $: any;
+
+    /**
+     * Provides a default implementation of the standard Custom Elements
+     * `attributeChangedCallback`.
+     *
+     * By default, attributes declared in `properties` metadata are
+     * deserialized using their `type` information to properties of the
+     * same name.  "Dash-cased" attributes are deserialized to "camelCase"
+     * properties.
+     *
+     * @param name Name of attribute.
+     * @param old Old value of attribute.
+     * @param value Current value of attribute.
+     */
+    attributeChangedCallback(name: string, old: string|null, value: string|null): any;
+
+    /**
+     * Overrides the default `Polymer.PropertyAccessors` to ensure class
+     * metaprogramming related to property accessors and effects has
+     * completed (calls `finalize`).
+     *
+     * It also initializes any property defaults provided via `value` in
+     * `properties` metadata.
+     */
+    _initializeProperties(): any;
+
+    /**
+     * Stamps the element template.
+     */
+    ready(): any;
+
+    /**
+     * Implements `PropertyEffects`'s `_readyClients` call. Attaches
+     * element dom by calling `_attachDom` with the dom stamped from the
+     * element's template via `_stampTemplate`. Note that this allows
+     * client dom to be attached to the element prior to any observers
+     * running.
+     */
+    _readyClients(): any;
+
+    /**
+     * Provides a default implementation of the standard Custom Elements
+     * `connectedCallback`.
+     *
+     * The default implementation enables the property effects system and
+     * flushes any pending properties, and updates shimmed CSS properties
+     * when using the ShadyCSS scoping/custom properties polyfill.
+     */
+    connectedCallback(): any;
+
+    /**
+     * Provides a default implementation of the standard Custom Elements
+     * `disconnectedCallback`.
+     */
+    disconnectedCallback(): any;
+
+    /**
+     * Attaches an element's stamped dom to itself. By default,
+     * this method creates a `shadowRoot` and adds the dom to it.
+     * However, this method may be overridden to allow an element
+     * to put its dom in another location.
+     *
+     * @param dom to attach to the element.
+     * @returns node to which the dom has been attached.
+     */
+    _attachDom(dom: StampedTemplate|null): ShadowRoot|null;
+
+    /**
+     * When using the ShadyCSS scoping and custom property shim, causes all
+     * shimmed styles in this element (and its subtree) to be updated
+     * based on current custom property values.
+     *
+     * The optional parameter overrides inline custom property styles with an
+     * object of properties where the keys are CSS properties, and the values
+     * are strings.
+     *
+     * Example: `this.updateStyles({'--color': 'blue'})`
+     *
+     * These properties are retained unless a value of `null` is set.
+     *
+     * @param properties Bag of custom property key/values to
+     *   apply to this element.
+     */
+    updateStyles(properties?: Object|null): void|null;
+
+    /**
+     * Rewrites a given URL relative to a base URL. The base URL defaults to
+     * the original location of the document containing the `dom-module` for
+     * this element. This method will return the same URL before and after
+     * bundling.
+     *
+     * @param url URL to resolve.
+     * @param base Optional base URL to resolve against, defaults
+     * to the element's `importPath`
+     * @returns Rewritten URL relative to base
+     */
+    resolveUrl(url: string, base?: string): string;
+  }
 
   /**
    * Provides basic tracking of element definitions (registrations) and

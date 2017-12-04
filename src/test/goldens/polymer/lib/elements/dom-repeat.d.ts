@@ -164,7 +164,7 @@ declare namespace Polymer {
 
     /**
      * When using a `filter` or `sort` function, the `delay` property
-     * determines a debounce time after a change to observed item
+     * determines a debounce time in ms after a change to observed item
      * properties that must pass before the filter or sort is re-run.
      * This is useful in rate-limiting shuffling of the view when
      * item changes may be frequent.
@@ -188,12 +188,16 @@ declare namespace Polymer {
     initialCount: number;
 
     /**
-     * When `initialCount` is used, this property defines a frame rate to
-     * target by throttling the number of instances rendered each frame to
-     * not exceed the budget for the target frame rate.  Setting this to a
-     * higher number will allow lower latency and higher throughput for
-     * things like event handlers, but will result in a longer time for the
-     * remaining items to complete rendering.
+     * When `initialCount` is used, this property defines a frame rate (in
+     * fps) to target by throttling the number of instances rendered each
+     * frame to not exceed the budget for the target frame rate.  The
+     * framerate is effectively the number of `requestAnimationFrame`s that
+     * it tries to allow to actually fire in a given second. It does this
+     * by measuring the time between `rAF`s and continuously adjusting the
+     * number of items created each `rAF` to maintain the target framerate.
+     * Setting this to a higher number allows lower latency and higher
+     * throughput for event handlers and other tasks, but results in a
+     * longer time for the remaining items to complete rendering.
      */
     targetFramerate: number;
     _targetFrameTime: number;
@@ -225,7 +229,7 @@ declare namespace Polymer {
      * should be called if, for example, template rendering is required to
      * validate application state.
      */
-    render(): any;
+    render(): void|null;
     __render(): any;
     __applyFullRefresh(): any;
     __detachInstance(idx: any): any;

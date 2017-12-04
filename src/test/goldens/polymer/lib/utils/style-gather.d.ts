@@ -20,7 +20,37 @@ declare namespace Polymer {
 
 
     /**
+     * Returns a list of <style> elements in a space-separated list of `dom-module`s.
+     */
+    function stylesFromModules(moduleIds: string): any[]|null;
+
+
+    /**
+     * Returns a list of <style> elements in a given `dom-module`.
+     * Styles in a `dom-module` can come either from `<style>`s within the
+     * first `<template>`, or else from one or more
+     * `<link rel="import" type="css">` links outside the template.
+     */
+    function stylesFromModule(moduleId: string): any[]|null;
+
+
+    /**
+     * Returns the `<style>` elements within a given template.
+     */
+    function stylesFromTemplate(template: HTMLTemplateElement|null, baseURI: string): any[]|null;
+
+
+    /**
+     * Returns a list of <style> elements  from stylesheets loaded via `<link rel="import" type="css">` links within the specified `dom-module`.
+     */
+    function stylesFromModuleImports(moduleId: string): any[]|null;
+
+    function _stylesFromModuleImports(module: HTMLElement): any[]|null;
+
+
+    /**
      * Returns CSS text of styles in a space-separated list of `dom-module`s.
+     * Note: This method is deprecated, use `stylesFromModules` instead.
      */
     function cssFromModules(moduleIds: string): string;
 
@@ -32,6 +62,7 @@ declare namespace Polymer {
      * template.
      *
      * Any `<styles>` processed are removed from their original location.
+     * Note: This method is deprecated, use `styleFromModule` instead.
      */
     function cssFromModule(moduleId: string): string;
 
@@ -40,6 +71,7 @@ declare namespace Polymer {
      * Returns CSS text of `<styles>` within a given template.
      *
      * Any `<styles>` processed are removed from their original location.
+     * Note: This method is deprecated, use `styleFromTemplate` instead.
      */
     function cssFromTemplate(template: HTMLTemplateElement|null, baseURI: string): string;
 
@@ -47,6 +79,8 @@ declare namespace Polymer {
     /**
      * Returns CSS text from stylesheets loaded via `<link rel="import" type="css">`
      * links within the specified `dom-module`.
+     *
+     * Note: This method is deprecated, use `stylesFromModuleImports` instead.
      */
     function cssFromModuleImports(moduleId: string): string;
 

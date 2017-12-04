@@ -44,7 +44,7 @@ declare namespace Polymer {
      * Forces the element to render its content. This is typically only
      * necessary to call if HTMLImports with the async attribute are used.
      */
-    render(): any;
+    render(): void|null;
   }
 }
 

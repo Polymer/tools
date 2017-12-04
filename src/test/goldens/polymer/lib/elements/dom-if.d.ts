@@ -56,7 +56,7 @@ declare namespace Polymer {
      * should be called if, for example, template rendering is required to
      * validate application state.
      */
-    render(): any;
+    render(): void|null;
     __render(): any;
     __ensureInstance(): any;
     __syncHostProperties(): any;
