@@ -170,7 +170,12 @@ export class TestClient {
     return this.connection.sendRequest(DefinitionRequest.type, params);
   }
 
+  private openFiles = new Set<string>();
   async openFile(filePath: string, initialContents?: string) {
+    if (this.openFiles.has(filePath)) {
+      throw new Error(`${filePath} is already open`);
+    }
+    this.openFiles.add(filePath);
     if (initialContents === undefined) {
       initialContents =
           fs.readFileSync(path.join(this.baseDir, filePath), 'utf-8');
@@ -188,6 +193,9 @@ export class TestClient {
   }
 
   async changeFile(path: string, updatedContents: string) {
+    if (!this.openFiles.has(path)) {
+      throw new Error(`Tried to change ${path} before opening it`);
+    }
     const params: DidChangeTextDocumentParams = {
       textDocument: {
         uri: this.converter.getUriForLocalPath(path),
@@ -207,6 +215,10 @@ export class TestClient {
   }
 
   async closeFile(path: string) {
+    if (!this.openFiles.has(path)) {
+      throw new Error(`Tried to close ${path} when it was not open.`);
+    }
+    this.openFiles.delete(path);
     const params: DidCloseTextDocumentParams = {
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };

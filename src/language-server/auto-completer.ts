@@ -1,0 +1,363 @@
+/**
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+import * as dom5 from 'dom5';
+import {Analyzer, Document, Element, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
+import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, IConnection, InsertTextFormat} from 'vscode-languageserver';
+import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
+
+import {AttributesSection, AttributeValue, TagName, TextNode} from '../ast-from-source-position';
+
+import AnalyzerLSPConverter from './converter';
+import FeatureFinder, {DatabindingFeature} from './feature-finder';
+import {Handler} from './util';
+
+
+/**
+ * Handles as-you-type autocompletion.
+ *
+ * It registers on construction so that the client knows it can be called to
+ * give suggested completions at a given position.
+ */
+export default class AutoCompleter extends Handler {
+  private clientSupportsSnippets: boolean;
+  constructor(
+      protected connection: IConnection,
+      private converter: AnalyzerLSPConverter,
+      private featureFinder: FeatureFinder, private analyzer: Analyzer,
+      private capabilities: ClientCapabilities) {
+    super();
+
+    this.clientSupportsSnippets =
+        !!(this.capabilities.textDocument &&
+           this.capabilities.textDocument.completion &&
+           this.capabilities.textDocument.completion.completionItem &&
+           this.capabilities.textDocument.completion.completionItem
+               .snippetSupport);
+
+    this.connection.onCompletion(async(request) => {
+      const result = await this.handleErrors(
+          this.autoComplete(request), {isIncomplete: true, items: []});
+      return result;
+    });
+  }
+
+  private async autoComplete(textPosition: TextDocumentPositionParams):
+      Promise<CompletionList> {
+    const localPath =
+        this.converter.getWorkspacePathToFile(textPosition.textDocument);
+    const completions = await this.getTypeaheadCompletionsAtPosition(
+        localPath, this.converter.convertPosition(textPosition.position));
+    if (!completions) {
+      return {isIncomplete: false, items: []};
+    }
+    return completions;
+  }
+
+  private async getTypeaheadCompletionsAtPosition(
+      localPath: string,
+      position: SourcePosition): Promise<CompletionList|undefined> {
+    const analysis = await this.analyzer.analyze([localPath]);
+    const document = analysis.getDocument(localPath);
+    if (!(document instanceof Document)) {
+      return;
+    }
+    const location =
+        await this.featureFinder.getAstAtPosition(document, position);
+    if (!location) {
+      return;
+    }
+    const feature = await this.featureFinder.getFeatureForAstLocation(
+        document, location, position);
+    if (feature && (feature instanceof DatabindingFeature)) {
+      return this.getDatabindingCompletions(feature);
+    }
+    if (location.kind === 'tagName' || location.kind === 'text') {
+      return this.getElementTagCompletions(document, location);
+    }
+    if (location.kind === 'attributeValue') {
+      return this.getAttributeValueCompletions(document, location);
+    }
+    if (location.kind === 'attribute') {
+      return this.getAttributeCompletions(document, location);
+    }
+  }
+
+  private getDatabindingCompletions(feature: DatabindingFeature) {
+    const element = feature.element;
+    return {
+      isIncomplete: false,
+      items: [...element.properties.values(), ...element.methods.values()]
+                 .map((p) => {
+                   const sortPrefix = p.inheritedFrom ? 'ddd-' : 'aaa-';
+                   return {
+                     label: p.name,
+                     documentation: p.description || '',
+                     type: p.type,
+                     sortText: sortPrefix + p.name,
+                     inheritedFrom: p.inheritedFrom
+                   };
+                 })
+                 .sort(compareAttributeResults)
+                 .map((c) => this.attributeCompletionToCompletionItem(c))
+    };
+  }
+
+  private getElementTagCompletions(
+      document: Document, location: TagName|TextNode) {
+    const elements = [
+      ...document.getFeatures(
+          {kind: 'element', externalPackages: true, imported: true})
+    ].filter(e => e.tagName);
+    const prefix = location.kind === 'tagName' ? '' : '<';
+    const items = elements.map(e => {
+      const tagName = e.tagName!;
+      let item: CompletionItem = {
+        label: `<${tagName}>`,
+        documentation: e.description,
+        filterText: tagName.replace(/-/g, ''),
+        kind: CompletionItemKind.Class,
+        insertText: `${prefix}${e.tagName}></${e.tagName}>`
+      };
+      if (this.clientSupportsSnippets) {
+        item.insertText =
+            `${prefix}${this.generateAutoCompletionForElement(e)}`;
+        item.insertTextFormat = InsertTextFormat.Snippet;
+      }
+      return item;
+    });
+    return {isIncomplete: false, items};
+  }
+
+  private generateAutoCompletionForElement(e: Element): string {
+    let autocompletion = `${e.tagName}`;
+    let tabindex = 1;
+    if (e.attributes.size > 0) {
+      autocompletion += ` $${tabindex++}`;
+    }
+    autocompletion += `>`;
+    if (e.slots.length === 1 && !e.slots[0]!.name) {
+      autocompletion += `$${tabindex++}`;
+    } else {
+      for (const slot of e.slots) {
+        const tagTabIndex = tabindex++;
+        const slotAttribute = slot.name ? ` slot="${slot.name}"` : '';
+        autocompletion += '\n\t<${' + tagTabIndex + ':div}' + slotAttribute +
+            '>$' + tabindex++ + '</${' + tagTabIndex + ':div}>';
+      }
+      if (e.slots.length) {
+        autocompletion += '\n';
+      }
+    }
+    return autocompletion + `</${e.tagName}>$0`;
+  }
+
+  private getAttributeValueCompletions(
+      document: Document, location: AttributeValue): CompletionList|undefined {
+    const domModule =
+        this.getAncestorDomModuleForElement(document, location.element);
+    if (!domModule || !domModule.id) {
+      return;
+    }
+    const [outerElement] = document.getFeatures({
+      kind: 'element',
+      id: domModule.id,
+      imported: true,
+      externalPackages: true
+    });
+    if (!outerElement) {
+      return;
+    }
+    const sortPrefixes = this.createSortPrefixes(outerElement);
+    const [innerElement] = document.getFeatures({
+      kind: 'element',
+      id: location.element.nodeName,
+      imported: true,
+      externalPackages: true
+    });
+    if (!innerElement) {
+      return;
+    }
+    const innerAttribute = innerElement.attributes.get(location.attribute);
+    if (!innerAttribute) {
+      return;
+    }
+    const attributeValue =
+        dom5.getAttribute(location.element, innerAttribute.name)!;
+    const hasDelimeters = /^\s*(\{\{|\[\[)/.test(attributeValue);
+    const attributes = [...outerElement.properties.values()].map(p => {
+      const sortText = (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
+      let autocompletion;
+      let autocompletionSnippet;
+      if (attributeValue && hasDelimeters) {
+        autocompletion = p.name;
+      } else {
+        if (innerAttribute.changeEvent) {
+          autocompletion = `{{${p.name}}}`;
+        } else {
+          autocompletion = `[[${p.name}]]`;
+        }
+      }
+      return {
+        label: p.name,
+        documentation: p.description || '',
+        type: p.type,
+        inheritedFrom: p.inheritedFrom,
+        sortText,
+        autocompletion,
+        autocompletionSnippet,
+      };
+    });
+    return {
+      isIncomplete: false,
+      items: attributes.sort(compareAttributeResults)
+                 .map((c) => this.attributeCompletionToCompletionItem(c))
+    };
+  }
+
+  private getAncestorDomModuleForElement(
+      document: Document, element: dom5.Node) {
+    const parsedDocument = document.parsedDocument;
+    if (!(parsedDocument instanceof ParsedHtmlDocument)) {
+      return;
+    }
+    const elementSourcePosition =
+        parsedDocument.sourceRangeForNode(element)!.start;
+    const domModules =
+        document.getFeatures({kind: 'dom-module', imported: false});
+    for (const domModule of domModules) {
+      if (isPositionInsideRange(
+              elementSourcePosition,
+              parsedDocument.sourceRangeForNode(domModule.node))) {
+        return domModule;
+      }
+    }
+  }
+
+  private getAttributeCompletions(
+      document: Document, location: AttributesSection) {
+    const [element] = document.getFeatures({
+      kind: 'element',
+      id: location.element.nodeName,
+      externalPackages: true,
+      imported: true
+    });
+    let attributes: AttributeCompletion[] = [];
+    if (element) {
+      const sortPrefixes = this.createSortPrefixes(element);
+      attributes.push(...[...element.attributes.values()].map(p => {
+        const sortText = (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
+        return {
+          label: p.name,
+          documentation: p.description || '',
+          type: p.type,
+          inheritedFrom: p.inheritedFrom, sortText
+        };
+      }));
+      attributes.push(...[...element.events.values()].map((e) => {
+        const postfix = sortPrefixes.get(e.inheritedFrom) || 'ddd-';
+        const sortText = `eee-${postfix}on-${e.name}`;
+        return {
+          label: `on-${e.name}`,
+          documentation: e.description || '',
+          type: e.type || 'CustomEvent',
+          inheritedFrom: e.inheritedFrom, sortText
+        };
+      }));
+    }
+    return {
+      isIncomplete: false,
+      items: attributes.sort(compareAttributeResults)
+                 .map((c) => this.attributeCompletionToCompletionItem(c)),
+    };
+  }
+
+  private createSortPrefixes(element: Element): Map<string|undefined, string> {
+    // A map from the inheritedFrom to a sort prefix. Note that
+    // `undefined` is a legal value for inheritedFrom.
+    const sortPrefixes = new Map<string|undefined, string>();
+    // Not inherited, that means local! Sort it early.
+    sortPrefixes.set(undefined, 'aaa-');
+    if (element.superClass) {
+      sortPrefixes.set(element.superClass.identifier, 'bbb-');
+    }
+    if (element.extends) {
+      sortPrefixes.set(element.extends, 'ccc-');
+    }
+    return sortPrefixes;
+  }
+
+  private attributeCompletionToCompletionItem(attrCompletion:
+                                                  AttributeCompletion) {
+    const item: CompletionItem = {
+      label: attrCompletion.label,
+      kind: CompletionItemKind.Field,
+      documentation: attrCompletion.documentation,
+      sortText: attrCompletion.sortText
+    };
+    if (attrCompletion.type) {
+      item.detail = `{${attrCompletion.type}}`;
+    }
+    if (attrCompletion.inheritedFrom) {
+      if (item.detail) {
+        item.detail = `${item.detail} ⊃ ${attrCompletion.inheritedFrom}`;
+      } else {
+        item.detail = `⊃ ${attrCompletion.inheritedFrom}`;
+      }
+    }
+    if (this.clientSupportsSnippets && attrCompletion.autocompletionSnippet) {
+      item.insertText = attrCompletion.autocompletionSnippet;
+      item.insertTextFormat = InsertTextFormat.Snippet;
+    } else if (attrCompletion.autocompletion) {
+      item.insertText = attrCompletion.autocompletion;
+    }
+    return item;
+  }
+}
+
+/**
+ * Compare the two attributes, for sorting.
+ *
+ * These comparisons need to fit two constraints:
+ *   - more useful attributes at the top
+ *   - ordering is consistent, so that results don't jump around.
+ *
+ * Returns a comparison number for `Array#sort`.
+ *     -1 means <    0 means ==     1 means >
+ */
+function compareAttributeResults<
+    A extends{sortText: string, label: string, inheritedFrom?: string}>(
+    a1: A, a2: A): number {
+  let comparison = a1.sortText.localeCompare(a2.sortText);
+  if (comparison !== 0) {
+    return comparison;
+  }
+  comparison = (a1.inheritedFrom || '').localeCompare(a2.inheritedFrom || '');
+  if (comparison !== 0) {
+    return comparison;
+  }
+  return a1.label.localeCompare(a2.label);
+}
+
+/**
+* Describes an attribute.
+*/
+interface AttributeCompletion {
+  label: string;
+  documentation: string;
+  type: string|undefined;
+  sortText: string;
+  inheritedFrom?: string;
+  autocompletion?: string;
+  autocompletionSnippet?: string;
+}

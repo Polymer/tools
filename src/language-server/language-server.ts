@@ -17,11 +17,10 @@ import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, FileChangeType, FileEvent, IConnection, InitializeResult, ServerCapabilities, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {ClientCapabilities, FileChangeType, FileEvent, IConnection, InitializeResult, ServerCapabilities, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
-import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
-
+import AutoCompleter from './auto-completer';
 import CommandExecutor, {allSupportedCommands} from './commands';
 import AnalyzerLSPConverter from './converter';
 import DefinitionFinder from './definition-finder';
@@ -33,7 +32,6 @@ import Settings from './settings';
 import {Handler} from './util';
 
 export default class LanguageServer extends Handler {
-  private readonly editorService: LocalEditorService;
   readonly analyzer: Analyzer;
   readonly converter: AnalyzerLSPConverter;
   protected readonly connection: IConnection;
@@ -71,7 +69,8 @@ export default class LanguageServer extends Handler {
           reject(error);
           throw error;
         }
-        const newServer = new LanguageServer(connection, workspaceUri);
+        const newServer =
+            new LanguageServer(connection, workspaceUri, params.capabilities);
         resolve(newServer);
         return {capabilities: newServer.capabilities(params.capabilities)};
       });
@@ -90,7 +89,9 @@ export default class LanguageServer extends Handler {
    * Called once we've got an initialized connection, a working polymer
    * editor service, and a workspace.
    */
-  constructor(connection: IConnection, workspaceUri: Uri) {
+  constructor(
+      connection: IConnection, workspaceUri: Uri,
+      clientCapabilities: ClientCapabilities) {
     super();
     this.disposables.push(connection);
     this.connection = connection;
@@ -110,11 +111,10 @@ export default class LanguageServer extends Handler {
         new Settings(connection, this.fileSynchronizer, this.converter);
     this.disposables.push(this.settings);
 
-    this.editorService = new LocalEditorService({
+    this.analyzer = new Analyzer({
       urlLoader: this.fileSynchronizer.urlLoader,
       urlResolver: new PackageUrlResolver(),
     });
-    this.analyzer = this.editorService.analyzer;
 
     // Keep the analyzer up to date.
     this.disposables.push(
@@ -136,7 +136,10 @@ export default class LanguageServer extends Handler {
         new HoverDocumenter(this.connection, this.converter, featureFinder);
     this.disposables.push(hoverDocumenter);
 
-
+    const autoCompleter = new AutoCompleter(
+        this.connection, this.converter, featureFinder, this.analyzer,
+        clientCapabilities);
+    this.disposables.push(autoCompleter);
 
     const definitionFinder =
         new DefinitionFinder(this.connection, this.converter, featureFinder);
@@ -170,11 +173,6 @@ export default class LanguageServer extends Handler {
   }
 
   private initEventHandlers() {
-    this.connection.onCompletion(async(textPosition) => {
-      return this.handleErrors(
-          this.autoComplete(textPosition), {isIncomplete: true, items: []});
-    });
-
     this.connection.onWillSaveTextDocumentWaitUntil((req) => {
       if (this.settings.fixOnSave) {
         return this.handleErrors(
@@ -182,42 +180,6 @@ export default class LanguageServer extends Handler {
       }
       return [];
     });
-  }
-
-  private async autoComplete(textPosition: TextDocumentPositionParams):
-      Promise<CompletionList> {
-    const localPath =
-        this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const completions =
-        await this.editorService.getTypeaheadCompletionsAtPosition(
-            localPath, this.converter.convertPosition(textPosition.position));
-    if (!completions) {
-      return {isIncomplete: false, items: []};
-    }
-    if (completions.kind === 'element-tags') {
-      return {
-        isIncomplete: false,
-        items: completions.elements.map(c => {
-          return {
-            label: `<${c.tagname}>`,
-            kind: CompletionItemKind.Class,
-            documentation: c.description,
-            insertText: c.expandTo
-          };
-        }),
-      };
-    } else if (completions.kind === 'attributes') {
-      return {
-        isIncomplete: false,
-        items: completions.attributes.map(attributeCompletionToCompletionItem),
-      };
-    } else if (completions.kind === 'properties-in-polymer-databinding') {
-      return {
-        isIncomplete: false,
-        items: completions.properties.map(attributeCompletionToCompletionItem)
-      };
-    }
-    return {isIncomplete: false, items: []};
   }
 
   private async handleFilesChanged(fileChangeEvents: FileEvent[]) {
@@ -260,25 +222,4 @@ export default class LanguageServer extends Handler {
     // Clear the files from any caches and recalculate warnings as needed.
     await this.analyzer.filesChanged(paths);
   }
-}
-
-function attributeCompletionToCompletionItem(
-    attrCompletion: AttributeCompletion) {
-  const item: CompletionItem = {
-    label: attrCompletion.name,
-    kind: CompletionItemKind.Field,
-    documentation: attrCompletion.description,
-    sortText: attrCompletion.sortKey
-  };
-  if (attrCompletion.type) {
-    item.detail = `{${attrCompletion.type}}`;
-  }
-  if (attrCompletion.inheritedFrom) {
-    if (item.detail) {
-      item.detail = `${item.detail} ⊃ ${attrCompletion.inheritedFrom}`;
-    } else {
-      item.detail = `⊃ ${attrCompletion.inheritedFrom}`;
-    }
-  }
-  return item;
 }
