@@ -13,7 +13,7 @@
  */
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
-import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, ScannedProperty, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Analyzer, AnalyzerOptions, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 import {InMemoryOverlayUrlLoader} from 'polymer-analyzer/lib/url-loader/overlay-loader';
 
@@ -51,23 +51,6 @@ export class LocalEditorService {
       this.urlLoader.urlContentsMap.set(localPath, contents);
     }
     await this.analyzer.filesChanged([localPath]);
-  }
-
-  async getDocumentationAtPosition(localPath: string, position: SourcePosition):
-      Promise<string|undefined> {
-    const feature = await this.getFeatureAt(localPath, position);
-    if (!feature) {
-      return;
-    }
-    if (feature instanceof DatabindingFeature) {
-      return feature.property && feature.property.description;
-    }
-    if (isProperty(feature)) {
-      if (feature.type) {
-        return `{${feature.type}} ${feature.description}`;
-      }
-    }
-    return feature.description;
   }
 
   async getDefinitionForFeatureAtPosition(
@@ -427,10 +410,6 @@ class DatabindingFeature {
   }
 }
 
-
-function isProperty(d: any): d is(ScannedProperty | Property) {
-  return 'type' in d;
-}
 
 function concatMap<I, O>(inputs: Iterable<I>, f: (i: I) => Iterable<O>): O[] {
   let results: O[] = [];

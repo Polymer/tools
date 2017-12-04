@@ -195,65 +195,6 @@ suite('editorService', () => {
     });
   });
 
-  suite('getDocumentationAtPosition', function() {
-    const tagDescription = 'An element to test out behavior inheritance.';
-    const localAttributeDescription =
-        '{boolean} A property defined directly on behavior-test-elem.';
-    const deepAttributeDescription =
-        '{Array} This is a deeply inherited property.';
-
-    test(
-        'it supports getting the element description ' +
-            'when asking for docs at its tag name',
-        async() => {
-          await editorService.fileChanged(indexFile, indexContents);
-          assert.equal(
-              await editorService.getDocumentationAtPosition(
-                  indexFile, tagPosition),
-              tagDescription);
-        });
-
-    test(
-        'it can still get element info after changing a file in memory',
-        async() => {
-          await editorService.fileChanged(indexFile, indexContents);
-          const contents =
-              fs.readFileSync(path.join(basedir, indexFile), 'utf-8');
-          // Add a newline at the beginning of the file, shifting the lines
-          // down.
-          await editorService.fileChanged(indexFile, `\n${contents}`);
-
-          assert.equal(
-              await editorService.getDocumentationAtPosition(
-                  indexFile, tagPosition),
-              undefined);
-          assert.equal(
-              await editorService.getDocumentationAtPosition(
-                  indexFile,
-                  {line: tagPosition.line + 1, column: tagPosition.column}),
-              tagDescription, );
-        });
-
-    test('it supports getting an attribute description', async() => {
-      await editorService.fileChanged(indexFile, indexContents);
-      assert.equal(
-          await editorService.getDocumentationAtPosition(
-              indexFile, localAttributePosition),
-          localAttributeDescription);
-    });
-
-    test(
-        'it supports getting a description of an attribute ' +
-            'defined in a behavior',
-        async() => {
-          await editorService.fileChanged(indexFile, indexContents);
-          assert.equal(
-              await editorService.getDocumentationAtPosition(
-                  indexFile, deepAttributePosition),
-              deepAttributeDescription);
-        });
-  });
-
   suite('getReferencesForFeatureAtPosition', function() {
 
     const contentsPath = path.join('editor-service', 'references.html');
@@ -635,15 +576,6 @@ suite('editorService', () => {
     {
       const fooPropUsePosition = {line: 2, column: 16};
       const internalPropUsePosition = {line: 3, column: 12};
-      test(`Give documentation for properties in databindings.`, async() => {
-        let docs = await editorService.getDocumentationAtPosition(
-            'polymer/element-with-databinding.html', fooPropUsePosition);
-        assert.deepEqual(docs, 'This is the foo property.');
-
-        docs = await editorService.getDocumentationAtPosition(
-            'polymer/element-with-databinding.html', internalPropUsePosition);
-        assert.deepEqual(docs, 'A private internal prop.');
-      });
 
       test('Jump to definition for properties in databindings.', async() => {
         let location = await editorService.getDefinitionForFeatureAtPosition(

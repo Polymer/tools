@@ -12,13 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {assert} from 'chai';
+import {assert, use} from 'chai';
 import * as path from 'path';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import {Diagnostic} from 'vscode-languageserver-types/lib/main';
 import {DiagnosticSeverity} from 'vscode-languageserver/lib/main';
 
 import {assertDoesNotSettle, createTestEnvironment} from './util';
+
+use(require('chai-subset'));
 
 const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 

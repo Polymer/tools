@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PackageUrlResolver} from 'polymer-analyzer';
+import {Analyzer, PackageUrlResolver} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, Hover, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, Definition, FileChangeType, FileEvent, IConnection, InitializeResult, Location, ServerCapabilities, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
@@ -25,14 +25,17 @@ import {AttributeCompletion, LocalEditorService} from '../local-editor-service';
 import CommandExecutor, {allSupportedCommands} from './commands';
 import AnalyzerLSPConverter from './converter';
 import DiagnosticGenerator from './diagnostics';
+import FeatureFinder from './feature-finder';
 import FileSynchronizer from './file-synchronizer';
+import HoverDocumenter from './hover-documenter';
 import Settings from './settings';
 import {Handler} from './util';
 
 export default class LanguageServer extends Handler {
+  private readonly editorService: LocalEditorService;
+  readonly analyzer: Analyzer;
   readonly converter: AnalyzerLSPConverter;
   protected readonly connection: IConnection;
-  private readonly editorService: LocalEditorService;
   private readonly documents: TextDocuments;
   readonly fileSynchronizer: FileSynchronizer;
   private readonly diagnosticGenerator: DiagnosticGenerator;
@@ -40,7 +43,8 @@ export default class LanguageServer extends Handler {
 
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(
-      connection: IConnection, interceptLogs = true): Promise<LanguageServer> {
+      connection: IConnection,
+      interceptLogging = true): Promise<LanguageServer> {
     function getWorkspaceUri(
         rootUri: string|null, rootPath: string|null|undefined): Uri|null {
       if (rootUri) {
@@ -52,10 +56,6 @@ export default class LanguageServer extends Handler {
       return null;
     }
 
-    function makeServer(workspaceUri: Uri) {
-      return new LanguageServer(connection, workspaceUri);
-    }
-
     // When we get an initialization request we want to construct a server and
     // tell the client about its capabilities.
     const server = await new Promise<LanguageServer>((resolve, reject) => {
@@ -64,20 +64,21 @@ export default class LanguageServer extends Handler {
         // communicated to us.
         const workspaceUri = getWorkspaceUri(params.rootUri, params.rootPath);
         if (!workspaceUri || workspaceUri.scheme !== 'file') {
-          reject(
+          const error = new Error(
               `Got invalid workspaceUri from client: ` +
               `${util.inspect(workspaceUri)}`);
-          return {capabilities: {}};
+          reject(error);
+          throw error;
         }
-        const newServer = makeServer(workspaceUri);
+        const newServer = new LanguageServer(connection, workspaceUri);
         resolve(newServer);
         return {capabilities: newServer.capabilities(params.capabilities)};
       });
     });
 
     // The console will be valid immediately after the connection has
-    // initialized. So hook it up then.
-    if (interceptLogs) {
+    // initialized. So hook it up then (if requested).
+    if (interceptLogging) {
       const {hookUpRemoteConsole} = await import('../intercept-logs');
       hookUpRemoteConsole(connection.console);
     }
@@ -101,32 +102,40 @@ export default class LanguageServer extends Handler {
     this.documents.listen(connection);
     this.converter = new AnalyzerLSPConverter(workspaceUri);
 
-    const synchronizer = new FileSynchronizer(
+    this.fileSynchronizer = new FileSynchronizer(
         connection, this.documents, workspacePath, this.converter);
 
-    this.settings = new Settings(connection, synchronizer, this.converter);
+    this.settings =
+        new Settings(connection, this.fileSynchronizer, this.converter);
     this.disposables.push(this.settings);
 
     this.editorService = new LocalEditorService({
-      urlLoader: synchronizer.urlLoader,
+      urlLoader: this.fileSynchronizer.urlLoader,
       urlResolver: new PackageUrlResolver(),
-      settings: this.settings
     });
+    this.analyzer = this.editorService.analyzer;
 
+    // Keep the analyzer up to date.
     this.disposables.push(
-        synchronizer.fileChanges.listen((filesChangeEvents) => {
+        this.fileSynchronizer.fileChanges.listen((filesChangeEvents) => {
           this.handleFilesChanged(filesChangeEvents);
         }));
-    this.fileSynchronizer = synchronizer;
 
     this.diagnosticGenerator = new DiagnosticGenerator(
-        this.editorService.analyzer, this.converter, connection, this.settings,
-        synchronizer, this.documents);
+        this.analyzer, this.converter, connection, this.settings,
+        this.fileSynchronizer, this.documents);
     this.disposables.push(this.diagnosticGenerator);
 
     const commandExecutor =
         new CommandExecutor(this.connection, this.diagnosticGenerator);
     this.disposables.push(commandExecutor);
+
+    const featureFinder = new FeatureFinder(this.analyzer);
+    const hoverDocumenter =
+        new HoverDocumenter(this.connection, this.converter, featureFinder);
+    this.disposables.push(hoverDocumenter);
+
+
 
     this.initEventHandlers();
   }
@@ -156,11 +165,6 @@ export default class LanguageServer extends Handler {
   }
 
   private initEventHandlers() {
-    this.connection.onHover(async(textPosition) => {
-      return this.handleErrors(
-          this.getDocsForHover(textPosition), undefined) as Promise<Hover>;
-    });
-
     this.connection.onDefinition(async(textPosition) => {
       return this.handleErrors(
           this.getDefinition(textPosition), undefined) as Promise<Definition>;
@@ -231,17 +235,6 @@ export default class LanguageServer extends Handler {
     }
   }
 
-  private async getDocsForHover(textPosition: TextDocumentPositionParams):
-      Promise<Hover|undefined> {
-    const localPath =
-        this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const documentation = await this.editorService.getDocumentationAtPosition(
-        localPath, this.converter.convertPosition(textPosition.position));
-    if (documentation) {
-      return {contents: documentation};
-    }
-  }
-
   private async handleFilesChanged(fileChangeEvents: FileEvent[]) {
     const paths = fileChangeEvents.map(
         change => this.converter.getWorkspacePathToFile(change));
@@ -261,7 +254,7 @@ export default class LanguageServer extends Handler {
       // https://github.com/Polymer/polymer-analyzer/issues/761
       try {
         const context: AnalysisContext =
-            await this.editorService.analyzer['_analysisComplete'];
+            await this.analyzer['_analysisComplete'];
         const cache: AnalysisCache = context['_cache'];
         const cachedPaths = new Set<ResolvedUrl>([
           ...cache.failedDocuments.keys(),
@@ -280,7 +273,7 @@ export default class LanguageServer extends Handler {
       }
     }
     // Clear the files from any caches and recalculate warnings as needed.
-    await this.editorService.analyzer.filesChanged(paths);
+    await this.analyzer.filesChanged(paths);
   }
 }
 
