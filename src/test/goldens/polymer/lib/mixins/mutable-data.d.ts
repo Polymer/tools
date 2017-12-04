@@ -47,27 +47,29 @@ declare namespace Polymer {
    * patterns or Polymer's path notification API.
    */
   function MutableData<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): {
-
-      /**
-       * Overrides `Polymer.PropertyEffects` to provide option for skipping
-       * strict equality checking for Objects and Arrays.
-       *
-       * This method pulls the value to dirty check against from the `__dataTemp`
-       * cache (rather than the normal `__data` cache) for Objects.  Since the temp
-       * cache is cleared at the end of a turn, this implementation allows
-       * side-effects of deep object changes to be processed by re-setting the
-       * same object (using the temp cache as an in-turn backstop to prevent
-       * cycles due to 2-way notification).
-       *
-       * @param property Property name
-       * @param value New property value
-       * @param old Previous property value
-       * @returns Whether the property should be considered a change
-       */
-      _shouldPropertyChange(property: string, value: any, old: any): boolean;
-    }
+    new(...args: any[]): MutableData
   } & T
+
+  interface MutableData {
+
+    /**
+     * Overrides `Polymer.PropertyEffects` to provide option for skipping
+     * strict equality checking for Objects and Arrays.
+     *
+     * This method pulls the value to dirty check against from the `__dataTemp`
+     * cache (rather than the normal `__data` cache) for Objects.  Since the temp
+     * cache is cleared at the end of a turn, this implementation allows
+     * side-effects of deep object changes to be processed by re-setting the
+     * same object (using the temp cache as an in-turn backstop to prevent
+     * cycles due to 2-way notification).
+     *
+     * @param property Property name
+     * @param value New property value
+     * @param old Previous property value
+     * @returns Whether the property should be considered a change
+     */
+    _shouldPropertyChange(property: string, value: any, old: any): boolean;
+  }
 
   /**
    * Element class mixin to add the optional ability to skip strict
@@ -105,33 +107,35 @@ declare namespace Polymer {
    * API.
    */
   function OptionalMutableData<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): {
-
-      /**
-       * Instance-level flag for configuring the dirty-checking strategy
-       * for this element.  When true, Objects and Arrays will skip dirty
-       * checking, otherwise strict equality checking will be used.
-       */
-      mutableData: boolean;
-
-      /**
-       * Overrides `Polymer.PropertyEffects` to provide option for skipping
-       * strict equality checking for Objects and Arrays.
-       *
-       * When `this.mutableData` is true on this instance, this method
-       * pulls the value to dirty check against from the `__dataTemp` cache
-       * (rather than the normal `__data` cache) for Objects.  Since the temp
-       * cache is cleared at the end of a turn, this implementation allows
-       * side-effects of deep object changes to be processed by re-setting the
-       * same object (using the temp cache as an in-turn backstop to prevent
-       * cycles due to 2-way notification).
-       *
-       * @param property Property name
-       * @param value New property value
-       * @param old Previous property value
-       * @returns Whether the property should be considered a change
-       */
-      _shouldPropertyChange(property: string, value: any, old: any): boolean;
-    }
+    new(...args: any[]): OptionalMutableData
   } & T
+
+  interface OptionalMutableData {
+
+    /**
+     * Instance-level flag for configuring the dirty-checking strategy
+     * for this element.  When true, Objects and Arrays will skip dirty
+     * checking, otherwise strict equality checking will be used.
+     */
+    mutableData: boolean;
+
+    /**
+     * Overrides `Polymer.PropertyEffects` to provide option for skipping
+     * strict equality checking for Objects and Arrays.
+     *
+     * When `this.mutableData` is true on this instance, this method
+     * pulls the value to dirty check against from the `__dataTemp` cache
+     * (rather than the normal `__data` cache) for Objects.  Since the temp
+     * cache is cleared at the end of a turn, this implementation allows
+     * side-effects of deep object changes to be processed by re-setting the
+     * same object (using the temp cache as an in-turn backstop to prevent
+     * cycles due to 2-way notification).
+     *
+     * @param property Property name
+     * @param value New property value
+     * @param old Previous property value
+     * @returns Whether the property should be considered a change
+     */
+    _shouldPropertyChange(property: string, value: any, old: any): boolean;
+  }
 }

@@ -247,34 +247,25 @@ export class Interface {
   }
 }
 
-// A class mixin using the pattern described at:
+// A class mixin function using the pattern described at:
 // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html
 export class Mixin {
   readonly kind = 'mixin';
   name: string;
   description: string;
-  properties: Property[];
-  methods: Method[];
+  interfaces: string[];
 
   constructor(data: {
     name: string,
     description?: string,
-    properties?: Property[],
-    methods?: Method[]
+    interfaces?: string[],
   }) {
     this.name = data.name;
     this.description = data.description || '';
-    this.properties = data.properties || [];
-    this.methods = data.methods || [];
+    this.interfaces = data.interfaces || [];
   }
 
   * traverse(): Iterable<Node> {
-    for (const p of this.properties) {
-      yield* p.traverse();
-    }
-    for (const m of this.methods) {
-      yield* m.traverse();
-    }
     yield this;
   }
 
@@ -291,14 +282,7 @@ export class Mixin {
     }
     out += `function ${this.name}`;
     out += `<T extends new(...args: any[]) => {}>(base: T): {\n`;
-    out += `${i2}new(...args: any[]): {\n`;
-    for (const property of this.properties) {
-      out += property.serialize(depth + 2);
-    }
-    for (const method of this.methods) {
-      out += method.serialize(depth + 2);
-    }
-    out += `${i2}}\n`;
+    out += `${i2}new(...args: any[]): ${this.interfaces.join(' & ')}\n`;
     out += `${i}} & T\n`;
     return out;
   }

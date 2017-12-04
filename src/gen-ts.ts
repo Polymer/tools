@@ -246,11 +246,23 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
  */
 function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
   const [namespacePath, name] = splitReference(feature.name);
-  const m = new ts.Mixin({name});
-  m.description = feature.description;
-  m.properties = handleProperties(feature.properties.values());
-  m.methods = handleMethods(feature.methods.values());
-  findOrCreateNamespace(root, namespacePath).members.push(m);
+  const namespace_ = findOrCreateNamespace(root, namespacePath);
+
+  // We represent mixins in two parts: a mixin function that is called to
+  // augment a given class with this mixin, and an interface with the
+  // properties and methods that are added by this mixin. We can use the same
+  // name for both parts because one is in value space, and the other is in
+  // type space.
+
+  const function_ = new ts.Mixin({name});
+  function_.description = feature.description;
+  function_.interfaces = [name, ...feature.mixins.map((m) => m.identifier)];
+  namespace_.members.push(function_);
+
+  const interface_ = new ts.Interface({name});
+  interface_.properties = handleProperties(feature.properties.values());
+  interface_.methods = handleMethods(feature.methods.values());
+  namespace_.members.push(interface_);
 }
 
 /**

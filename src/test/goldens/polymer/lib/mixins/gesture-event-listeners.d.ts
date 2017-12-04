@@ -24,9 +24,11 @@ declare namespace Polymer {
    * `Polymer.TemplateStamp`.
    */
   function GestureEventListeners<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): {
-      _addEventListenerToNode(node: any, eventName: any, handler: any): any;
-      _removeEventListenerFromNode(node: any, eventName: any, handler: any): any;
-    }
+    new(...args: any[]): GestureEventListeners
   } & T
+
+  interface GestureEventListeners {
+    _addEventListenerToNode(node: any, eventName: any, handler: any): any;
+    _removeEventListenerFromNode(node: any, eventName: any, handler: any): any;
+  }
 }
