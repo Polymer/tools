@@ -12,11 +12,23 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Attribute, Document, Element, isPositionInsideRange, Method, ParsedHtmlDocument, Property, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Analyzer, Attribute, Document, Element, isPositionInsideRange, Method, ParsedCssDocument, ParsedHtmlDocument, Property, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
+import {Analysis} from 'polymer-analyzer/lib/model/analysis';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 
-import {AstLocation, getAstLocationForPosition} from '../ast-from-source-position';
+import {AstLocation, getCssAstLocationForPosition, getHtmlAstLocationForPosition} from '../ast-from-source-position';
 
+
+export interface FoundFeature {
+  /**
+   * The containing document, which in the case of inline documents, may not be
+   * the document you started with!
+   */
+  document: Document;
+  feature: Element|Property|Attribute|DatabindingFeature|
+      CssCustomPropertyAssignment|CssCustomPropertyUse;
+}
 
 /**
  * Class responsible for describing the object at a given location in a
@@ -30,33 +42,58 @@ export default class FeatureFinder {
    * Given a point in a file, return a high level feature that describes what
    * is going on there, like an Element for an HTML tag.
    */
-  async getFeatureAt(localPath: string, position: SourcePosition):
-      Promise<Element|Property|Attribute|DatabindingFeature|undefined> {
-    const result = await this.getAstAtPositionAndPath(localPath, position);
-    if (!result) {
+  async getFeatureAt(
+      localPath: string, position: SourcePosition,
+      analysis?: Analysis): Promise<FoundFeature|undefined> {
+    const location = await this.getAstLocationAtPositionAndPath(
+        localPath, position, analysis);
+    if (!location) {
       return;
     }
-    const {location, document} = result;
-    return this.getFeatureForAstLocation(document, location, position);
+    return this.getFeatureForAstLocation(location, position);
   }
 
   /**
    * Given an AstLocation, return a high level feature.
    */
   getFeatureForAstLocation(
-      document: Document, astLocation: AstLocation, position: SourcePosition):
-      Element|Attribute|DatabindingFeature|undefined {
-    if (astLocation.kind === 'tagName') {
-      return getOnly(document.getFeatures({
+      astWrapperLocation: AstLocation, position: SourcePosition): FoundFeature
+      |undefined {
+    if (astWrapperLocation.language === 'css') {
+      const {document, node} = astWrapperLocation;
+      const cssFeatures =
+          new Set<CssCustomPropertyAssignment|CssCustomPropertyUse>([
+            ...document.getFeatures({kind: 'css-custom-property-assignment'}),
+            ...document.getFeatures({kind: 'css-custom-property-use'})
+          ]);
+      const nodeRange = document.parsedDocument.sourceRangeForNode(node);
+      if (!nodeRange) {
+        return;
+      }
+      for (const feature of cssFeatures) {
+        if (isContained(feature.sourceRange, nodeRange)) {
+          return {document, feature};
+        }
+      }
+      return;
+    }
+    const document = astWrapperLocation.document;
+    const htmlLocation = astWrapperLocation.node;
+    if (htmlLocation.kind === 'tagName') {
+      const feature = getOnly(document.getFeatures({
         kind: 'element',
-        id: astLocation.element.nodeName,
+        id: htmlLocation.element.nodeName,
         imported: true,
         externalPackages: true
       }));
-    } else if (astLocation.kind === 'attribute') {
+      if (feature) {
+        return {document, feature};
+      }
+      return;
+    } else if (htmlLocation.kind === 'attribute') {
       const elements = document.getFeatures({
         kind: 'element',
-        id: astLocation.element.nodeName,
+        id: htmlLocation.element.nodeName,
         imported: true,
         externalPackages: true
       });
@@ -64,10 +101,15 @@ export default class FeatureFinder {
         return;
       }
 
-      return concatMap(elements, (el) => el.attributes.values())
-          .find(at => at.name === astLocation.attribute);
+      const feature = concatMap(elements, (el) => el.attributes.values())
+                          .find(at => at.name === htmlLocation.attribute);
+      if (feature) {
+        return {document, feature};
+      }
+      return;
     } else if (
-        astLocation.kind === 'attributeValue' || astLocation.kind === 'text') {
+        htmlLocation.kind === 'attributeValue' ||
+        htmlLocation.kind === 'text') {
       const domModules = document.getFeatures({kind: 'dom-module'});
       for (const domModule of domModules) {
         if (!domModule.id) {
@@ -89,12 +131,18 @@ export default class FeatureFinder {
                     position, databinding.sourceRange, true)) {
               for (const prop of databinding.properties) {
                 if (isPositionInsideRange(position, prop.sourceRange, true)) {
-                  return new DatabindingFeature(
-                      element, databinding, prop.name, prop.sourceRange);
+                  return {
+                    feature: new DatabindingFeature(
+                        element, databinding, prop.name, prop.sourceRange),
+                    document
+                  };
                 }
               }
-              return new DatabindingFeature(
-                  element, databinding, undefined, undefined);
+              return {
+                feature: new DatabindingFeature(
+                    element, databinding, undefined, undefined),
+                document
+              };
             }
           }
         }
@@ -105,24 +153,38 @@ export default class FeatureFinder {
   async getAstAtPosition(document: Document, position: SourcePosition):
       Promise<AstLocation|undefined> {
     const parsedDocument = document.parsedDocument;
-    if (!(parsedDocument instanceof ParsedHtmlDocument)) {
-      return;
+    if (parsedDocument instanceof ParsedHtmlDocument) {
+      const node = getHtmlAstLocationForPosition(parsedDocument, position);
+      // The position is in an inline style tag, so we need to get its
+      // Document and recurse through into it to find the best match.
+      if (node && node.kind === 'styleTagContents' && node.textNode) {
+        const cssDocuments = document.getFeatures({kind: 'css-document'});
+        const styleElement = node.textNode.parentNode;
+        for (const cssDocument of cssDocuments) {
+          if (cssDocument.astNode === styleElement) {
+            return this.getAstAtPosition(cssDocument, position);
+          }
+        }
+      }
+      return {language: 'html', document, node};
+    } else if (parsedDocument instanceof ParsedCssDocument) {
+      return {
+        language: 'css',
+        document,
+        node: getCssAstLocationForPosition(parsedDocument, position)
+      };
     }
-    return getAstLocationForPosition(parsedDocument, position);
   }
 
-  async getAstAtPositionAndPath(localPath: string, position: SourcePosition):
-      Promise<{document: Document, location: AstLocation}|undefined> {
-    const analysis = await this.analyzer.analyze([localPath]);
+  async getAstLocationAtPositionAndPath(
+      localPath: string, position: SourcePosition,
+      analysis?: Analysis): Promise<AstLocation|undefined> {
+    analysis = analysis || await this.analyzer.analyze([localPath]);
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return;
     }
-    const location = await this.getAstAtPosition(document, position);
-    if (!location) {
-      return;
-    }
-    return {document, location};
+    return this.getAstAtPosition(document, position);
   }
 }
 
@@ -167,4 +229,9 @@ function getOnly<V>(set: Set<V>) {
     return undefined;
   }
   return set.values().next().value!;
+}
+
+function isContained(inner: SourceRange, outer: SourceRange) {
+  return isPositionInsideRange(inner.start, outer, true) &&
+      isPositionInsideRange(inner.end, outer, true);
 }

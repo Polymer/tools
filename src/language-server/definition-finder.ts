@@ -13,7 +13,8 @@
  */
 
 import * as fuzzaldrin from 'fuzzaldrin';
-import {Analyzer, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Analysis, Analyzer, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Queryable} from 'polymer-analyzer/lib/model/queryable';
 import {Definition, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
@@ -66,32 +67,52 @@ export default class DefinitionFinder extends Handler {
    * Implements:
    * https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#textDocument_definition
    */
-  private async getDefinition(textPosition: TextDocumentPositionParams):
-      Promise<Definition|undefined> {
+  private async getDefinition(
+      textPosition: TextDocumentPositionParams,
+      analysis?: Analysis): Promise<Location[]> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const location = await this.getDefinitionForFeatureAtPosition(
-        localPath, this.converter.convertPosition(textPosition.position));
-    if (location && location.file) {
+    const sourceRanges = await this.getDefinitionsForFeatureAtPosition(
+        localPath, this.converter.convertPosition(textPosition.position),
+        analysis);
+    return sourceRanges.map(sr => {
       let definition: Location = {
-        uri: this.converter.getUriForLocalPath(location.file),
-        range: this.converter.convertPRangeToL(location)
+        uri: this.converter.getUriForLocalPath(sr.file),
+        range: this.converter.convertPRangeToL(sr)
       };
       return definition;
-    }
+    });
   }
 
-  private async getDefinitionForFeatureAtPosition(
-      localPath: string,
-      position: SourcePosition): Promise<SourceRange|undefined> {
-    const feature = await this.featureFinder.getFeatureAt(localPath, position);
-    if (!feature) {
-      return;
+  private async getDefinitionsForFeatureAtPosition(
+      localPath: string, position: SourcePosition,
+      analysis?: Analysis): Promise<SourceRange[]> {
+    const featureResult =
+        await this.featureFinder.getFeatureAt(localPath, position, analysis);
+    if (!featureResult) {
+      return [];
+    }
+    const {feature} = featureResult;
+    if (feature instanceof CssCustomPropertyUse ||
+        feature instanceof CssCustomPropertyAssignment) {
+      const analysis = await this.analyzer.analyzePackage();
+      const assignments = analysis.getFeatures({
+        kind: 'css-custom-property-assignment',
+        id: feature.name,
+        externalPackages: true
+      });
+      return [...assignments].map(a => a.sourceRange);
     }
     if (feature instanceof DatabindingFeature) {
-      return feature.property && feature.property.sourceRange;
+      if (feature.property && feature.property.sourceRange) {
+        return [feature.property.sourceRange];
+      }
+      return [];
     }
-    return feature.sourceRange;
+    if (feature.sourceRange) {
+      return [feature.sourceRange];
+    }
+    return [];
   }
 
   /**
@@ -103,33 +124,45 @@ export default class DefinitionFinder extends Handler {
    */
   private async getReferences(params: ReferenceParams): Promise<Location[]> {
     const locations: Location[] = [];
-    if (params.context.includeDeclaration) {
-      const definition = await this.getDefinition(params);
-      if (definition) {
-        if (Array.isArray(definition)) {
-          locations.push(...definition);
-        } else {
-          locations.push(definition);
-        }
-      }
-    }
     const localPath =
         this.converter.getWorkspacePathToFile(params.textDocument);
     const position = this.converter.convertPosition(params.position);
     const analysis = await this.analyzer.analyzePackage();
+    if (params.context.includeDeclaration) {
+      locations.push(...await this.getDefinition(params, analysis));
+    }
+
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return locations;
     }
-    const location =
+    const astResult =
         await this.featureFinder.getAstAtPosition(document, position);
-    if (!location) {
+    if (!astResult) {
       return locations;
     }
-    if (location.kind === 'tagName') {
+    if (astResult.language === 'css') {
+      const featureResult =
+          this.featureFinder.getFeatureForAstLocation(astResult, position);
+      if (featureResult) {
+        if (featureResult.feature instanceof CssCustomPropertyAssignment ||
+            featureResult.feature instanceof CssCustomPropertyUse) {
+          const propertyUses = [...analysis.getFeatures({
+            kind: 'css-custom-property-use',
+            id: featureResult.feature.name
+          })];
+          locations.push(...propertyUses.map(f => {
+            return {
+              uri: this.converter.getUriForLocalPath(f.sourceRange.file),
+              range: this.converter.convertPRangeToL(f.sourceRange)
+            };
+          }));
+        }
+      }
+    } else if (astResult.node.kind === 'tagName') {
       const ranges = [...analysis.getFeatures({
                        kind: 'element-reference',
-                       id: location.element.tagName!,
+                       id: astResult.node.element.tagName!,
                        externalPackages: true,
                      })].map(e => e.sourceRange);
       locations.push(...ranges.map(r => {

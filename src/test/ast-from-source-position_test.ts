@@ -16,7 +16,7 @@ import {SourcePosition} from 'polymer-analyzer';
 import {HtmlParser} from 'polymer-analyzer/lib/html/html-parser';
 import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 
-import {getAstLocationForPosition} from '../ast-from-source-position';
+import {getHtmlAstLocationForPosition} from '../ast-from-source-position';
 
 suite('getLocationInfoForPosition', () => {
   const parser = new HtmlParser();
@@ -169,7 +169,7 @@ suite('getLocationInfoForPosition', () => {
     const doc =
         parser.parse(text, 'uninteresting file name.html' as ResolvedUrl);
     return getEveryPosition(text)
-        .map(pos => getAstLocationForPosition(doc, pos).kind)
+        .map(pos => getHtmlAstLocationForPosition(doc, pos).kind)
         .join(' ');
   }
 });

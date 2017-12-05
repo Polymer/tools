@@ -13,6 +13,7 @@
  */
 
 import {Property, ScannedProperty, SourcePosition} from 'polymer-analyzer';
+import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Hover, IConnection} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
@@ -57,15 +58,19 @@ export default class HoverDocumenter extends Handler {
 
   private async getDocumentationAndRangeAtPosition(
       localPath: string, position: SourcePosition) {
-    const astInfo =
-        await this.featureFinder.getAstAtPositionAndPath(localPath, position);
-    if (!astInfo) {
+    const location = await this.featureFinder.getAstLocationAtPositionAndPath(
+        localPath, position);
+    if (!location) {
       return;
     }
-    const {document, location} = astInfo;
-    const feature = this.featureFinder.getFeatureForAstLocation(
-        document, location, position);
-    if (!feature) {
+    const featureResult =
+        this.featureFinder.getFeatureForAstLocation(location, position);
+    if (!featureResult) {
+      return;
+    }
+    const {feature} = featureResult;
+    if (feature instanceof CssCustomPropertyAssignment ||
+        feature instanceof CssCustomPropertyUse) {
       return;
     }
     if (feature instanceof DatabindingFeature) {

@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Supports getting all symbols in the workspace and in the document. At the
   moment we just expose elements by tagname and Polymer 1.0 core features, as
   other symbols should be well handled by other language services.
+- Supports finding definitions and all references of CSS Custom Properties.
+  - When finding definitions of the property it will return all places where
+    the property is assigned to.
+  - When finding all references it will find all places where the property
+    is read with `var(--foo)` or `@apply --bar` syntax.
 - Supports filtering autocompletions on the server side if the client does not.
   Clients without autocompletion filtering support should send over
   `capabilities.experimental['polymer-ide'].doesNotFilterCompletions` as `true`

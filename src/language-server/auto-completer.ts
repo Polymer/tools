@@ -85,24 +85,27 @@ export default class AutoCompleter extends Handler {
   private async getTypeaheadCompletionsAtPosition(
       document: Document,
       position: SourcePosition): Promise<CompletionList|undefined> {
-    const location =
+    const locResult =
         await this.featureFinder.getAstAtPosition(document, position);
-    if (!location) {
+    if (!locResult) {
       return;
     }
-    const feature = await this.featureFinder.getFeatureForAstLocation(
-        document, location, position);
-    if (feature && (feature instanceof DatabindingFeature)) {
-      return this.getDatabindingCompletions(feature);
+    const result =
+        await this.featureFinder.getFeatureForAstLocation(locResult, position);
+    if (result && (result.feature instanceof DatabindingFeature)) {
+      return this.getDatabindingCompletions(result.feature);
     }
-    if (location.kind === 'tagName' || location.kind === 'text') {
-      return this.getElementTagCompletions(document, location);
-    }
-    if (location.kind === 'attributeValue') {
-      return this.getAttributeValueCompletions(document, location);
-    }
-    if (location.kind === 'attribute') {
-      return this.getAttributeCompletions(document, location);
+    if (locResult.language === 'html') {
+      const location = locResult.node;
+      if (location.kind === 'tagName' || location.kind === 'text') {
+        return this.getElementTagCompletions(document, location);
+      }
+      if (location.kind === 'attributeValue') {
+        return this.getAttributeValueCompletions(document, location);
+      }
+      if (location.kind === 'attribute') {
+        return this.getAttributeCompletions(document, location);
+      }
     }
   }
 

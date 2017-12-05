@@ -13,6 +13,7 @@
  */
 
 import {assert} from 'chai';
+import {writeFileSync} from 'fs';
 import * as path from 'path';
 
 import {createTestEnvironment} from './util';
@@ -32,7 +33,7 @@ suite('DefinitionFinder', function() {
     assert.deepEqual(
         await underliner.underline(
             await client.getDefinition(indexFile, tagPosition)),
-        `
+        [`
   Polymer({
           ~
     is: 'behavior-test-elem',
@@ -88,7 +89,7 @@ suite('DefinitionFinder', function() {
     }
 ~~~~~
   });
-~~~`);
+~~~`]);
   });
 
 
@@ -97,7 +98,7 @@ suite('DefinitionFinder', function() {
     assert.deepEqual(
         await underliner.underline(
             await client.getDefinition(indexFile, localAttributePosition)),
-        `
+        [`
       localProperty: {
       ~~~~~~~~~~~~~~~~
         type: Boolean,
@@ -107,7 +108,7 @@ suite('DefinitionFinder', function() {
         notify: true
 ~~~~~~~~~~~~~~~~~~~~
       },
-~~~~~~~`);
+~~~~~~~`]);
   });
 
   testName = 'it supports getting the definition of an attribute ' +
@@ -118,7 +119,7 @@ suite('DefinitionFinder', function() {
     assert.deepEqual(
         await underliner.underline(
             await client.getDefinition(indexFile, deepAttributePosition)),
-        `
+        [`
       deeplyInheritedProperty: {
       ~~~~~~~~~~~~~~~~~~~~~~~~~~
         type: Array,
@@ -132,7 +133,7 @@ suite('DefinitionFinder', function() {
         notify: true
 ~~~~~~~~~~~~~~~~~~~~
       }
-~~~~~~~`);
+~~~~~~~`]);
   });
 
   test('it supports properties in databindings.', async() => {
@@ -143,14 +144,14 @@ suite('DefinitionFinder', function() {
     let location = (await client.getDefinition(
         'polymer/element-with-databinding.html', fooPropUsePosition))!;
 
-    assert.deepEqual(await underliner.underline(location), `
+    assert.deepEqual(await underliner.underline(location), [`
         foo: String,
-        ~~~~~~~~~~~`);
+        ~~~~~~~~~~~`]);
     location = (await client.getDefinition(
         'polymer/element-with-databinding.html', internalPropUsePosition))!;
-    assert.deepEqual(await underliner.underline(location), `
+    assert.deepEqual(await underliner.underline(location), [`
         _internal: String,
-        ~~~~~~~~~~~~~~~~~`);
+        ~~~~~~~~~~~~~~~~~`]);
   });
 
 
@@ -227,5 +228,67 @@ customElements.define('anonymous-class', class extends HTMLElement{});
         ]);
     assert.deepEqual(
         (await client.getWorkspaceSymbols('slot.html')).map((s) => s.name), []);
+  });
+
+  testName =
+      `it supports finding definitions and references of a css custom property`;
+  test(testName, async() => {
+    const {client, underliner, baseDir} = await createTestEnvironment();
+    // TODO(rictic): this test should work with entirely in-memory contents,
+    //     but we need to mess with InMemoryOverlayUrlLoader's listDirectory
+    //     method to be sure it includes entirely in-memory files.
+    writeFileSync(path.join(baseDir, 'lib.html'), `
+      <style>
+        html {
+          --shiny: green;
+          --unrelated: red;
+        }
+      </style>
+
+      <style>
+        body.tasteful {
+          --shiny: gold;
+        }
+      </style>
+    `);
+    writeFileSync(path.join(baseDir, 'main.html'), `
+      <link rel="import" href="./lib.html">
+
+      <style>
+        .foo {
+          color: var(--shiny);
+        }
+      </style>
+
+      <style>
+        .bar {
+          @apply(--shiny);
+          @apply(--ignoreMe);
+        }
+      </style>
+    `);
+
+    const locations =
+        await client.getDefinition('main.html', {line: 5, column: 20});
+    assert.deepEqual(await underliner.underline(locations), [
+      `
+          --shiny: green;
+          ~~~~~~~~~~~~~~~`,
+      `
+          --shiny: gold;
+          ~~~~~~~~~~~~~~`
+    ]);
+
+    assert.deepEqual(
+        await underliner.underline(
+            await client.getReferences('main.html', {line: 5, column: 20})),
+        [
+          `
+          color: var(--shiny);
+                     ~~~~~~~`,
+          `
+          @apply(--shiny);
+                 ~~~~~~~`
+        ]);
   });
 });

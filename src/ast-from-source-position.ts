@@ -12,14 +12,29 @@
  */
 
 import * as parse5 from 'parse5';
-import {comparePositionAndRange, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
+import {comparePositionAndRange, Document, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
+import {ParsedCssDocument} from 'polymer-analyzer/lib/css/css-document';
+import * as shadyCssParser from 'shady-css-parser';
 
 
 /**
  * Represents the most specific AST node at a point in a file.
  */
-export type AstLocation = AttributesSection | AttributeValue | TagName |
+export type AstLocation = {
+  language: 'html',
+  document: Document,
+  node: HtmlAstLocation,
+} |
+{
+  language: 'css';
+  document: Document;
+  node: CssAstLocation;
+};
+
+export type HtmlAstLocation = AttributesSection | AttributeValue | TagName |
     EndTag | TextNode | ScriptContents | StyleContents | Comment;
+
+export type CssAstLocation = shadyCssParser.Node;
 
 /** In the tagname of a start tag. */
 export interface TagName {
@@ -80,8 +95,8 @@ export interface Comment {
  * string should be interpreted as a text node, but there is no text node in
  * an empty document, but there would be after the first character was typed).
  */
-export function getAstLocationForPosition(
-    document: ParsedHtmlDocument, position: SourcePosition): AstLocation {
+export function getHtmlAstLocationForPosition(
+    document: ParsedHtmlDocument, position: SourcePosition): HtmlAstLocation {
   const location =
       internalGetAstLocationForPosition(document.ast, position, document);
   if (!location) {
@@ -91,9 +106,66 @@ export function getAstLocationForPosition(
   return location;
 }
 
+export function getCssAstLocationForPosition(
+    document: ParsedCssDocument,
+    position: SourcePosition): shadyCssParser.Node {
+  let closest = document.ast;
+  while (true) {
+    let containingChild = undefined;
+    for (const child of getChildren(closest)) {
+      const sourceRange = document.sourceRangeForNode(child);
+      if (!sourceRange) {
+        continue;
+      }
+      if (isPositionInsideRange(position, sourceRange)) {
+        containingChild = child;
+        break;
+      }
+    }
+    if (containingChild === undefined) {
+      break;
+    }
+    closest = containingChild;
+  }
+  return closest;
+}
+
+const emptyArray: ReadonlyArray<any> = [];
+function getChildren(node: shadyCssParser.Node):
+    ReadonlyArray<shadyCssParser.Node> {
+  const nodeType = shadyCssParser.nodeType;
+  switch (node.type) {
+    case nodeType.stylesheet:
+      return node.rules;
+    case nodeType.ruleset:
+      return [node.rulelist];
+    case nodeType.rulelist:
+      return node.rules;
+    case nodeType.atRule:
+      if (node.rulelist) {
+        return [node.rulelist];
+      }
+    case nodeType.comment:
+      return emptyArray;
+    case nodeType.declaration:
+      if (node.value) {
+        return [node.value];
+      }
+      return emptyArray;
+    case nodeType.discarded:
+      return emptyArray;
+    case nodeType.expression:
+      return emptyArray;
+    default:
+      const never: never = node;
+      !!never;  // avoids an unused value error.
+      return emptyArray;
+  }
+}
+
 function internalGetAstLocationForPosition(
     node: parse5.ASTNode, position: SourcePosition,
-    document: ParsedHtmlDocument): undefined|AstLocation {
+    document: ParsedHtmlDocument): undefined|HtmlAstLocation {
   const sourceRange = document.sourceRangeForNode(node);
   const location = node.__location;
 
