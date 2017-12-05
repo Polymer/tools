@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Clients without autocompletion filtering support should send over
   `capabilities.experimental['polymer-ide'].doesNotFilterCompletions` as `true`
   in their client capabilities.
+- Reports errors in `polymer.json` files, including invalid data, and unknown
+  lint rules.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.

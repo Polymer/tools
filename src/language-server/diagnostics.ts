@@ -13,7 +13,7 @@
 
 import {Analyzer, applyEdits, Edit, isPositionInsideRange, makeParseLoader, SourceRange, Warning} from 'polymer-analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
-import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
+import {CodeActionParams, Command, Diagnostic, DiagnosticSeverity, IConnection, TextDocuments, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 
 import AnalyzerSynchronizer from './analyzer-synchronizer';
 import {applyEditCommandName} from './commands';
@@ -129,14 +129,21 @@ export default class DiagnosticGenerator extends Handler {
   private updateLinter() {
     let rules: Iterable<Rule> = new Set();
     const projectConfig = this.settings.projectConfig;
+    let configDiagnostic = this.settings.projectConfigDiagnostic;
     if (projectConfig.lint) {
       const lintConfig = projectConfig.lint;
       if (lintConfig.rules) {
         try {
           rules = registry.getRules(lintConfig.rules);
         } catch (e) {
-          // TODO(rictic): let the user know about this error, and about
-          //   this.settings.projectConfigDiagnostic if it exists.
+          configDiagnostic = {
+            code: 'linter-registry-error',
+            message: e && e.message || '' + e,
+            severity: DiagnosticSeverity.Error,
+            source: 'polymer-ide',
+            range:
+                {start: {line: 0, character: 0}, end: {line: 0, character: 0}}
+          };
         }
       }
       this.warningCodesToFilterOut = new Set(lintConfig.ignoreWarnings);
@@ -145,6 +152,14 @@ export default class DiagnosticGenerator extends Handler {
            []).map(glob => new minimatch.Minimatch(glob, {}));
     }
 
+    const polymerJsonDiagnostics = [];
+    if (configDiagnostic) {
+      polymerJsonDiagnostics.push(configDiagnostic);
+    }
+    this.connection.sendDiagnostics({
+      uri: this.converter.getUriForLocalPath('polymer.json'),
+      diagnostics: polymerJsonDiagnostics
+    });
     const linter = new Linter(rules, this.analyzer);
     this.linter = linter;
     this.reportWarnings();
@@ -180,6 +195,9 @@ export default class DiagnosticGenerator extends Handler {
             this.converter.getUriForLocalPath(warning.sourceRange.file),
             diagnostics);
       }
+      // These diagnostics are reported elsewhere.
+      diagnosticsByUri.delete(
+          this.converter.getUriForLocalPath('polymer.json'));
       for (const [uri, diagnostics] of diagnosticsByUri) {
         this.connection.sendDiagnostics({uri, diagnostics});
       }
@@ -218,6 +236,7 @@ export default class DiagnosticGenerator extends Handler {
       }
       diagnostics.push(this.converter.convertWarningToDiagnostic(warning));
     }
+    diagnosticsByUri.delete(this.converter.getUriForLocalPath('polymer.json'));
     for (const [uri, diagnostics] of diagnosticsByUri) {
       this.connection.sendDiagnostics({uri, diagnostics});
     }
