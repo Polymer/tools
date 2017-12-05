@@ -11,8 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-## Unreleased
-- Removes our proprietary protocol in favor of unifying on the Language Server
+<!-- ## Unreleased -->
+
+## 2.0.0 - 2017-11-21
+
+- [BREAKING] Removes our proprietary protocol in favor of the Language Server
   Protocol. Using the standard protocol lets us support more editors with less
   code.
 - Notices changes to `polymer.json` immediately. Currently this is useful for
