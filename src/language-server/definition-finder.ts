@@ -16,7 +16,7 @@ import * as fuzzaldrin from 'fuzzaldrin';
 import {Analysis, Analyzer, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Queryable} from 'polymer-analyzer/lib/model/queryable';
-import {Definition, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
+import {CodeLens, CodeLensParams, Definition, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
 import AnalyzerLSPConverter from './converter';
@@ -57,6 +57,10 @@ export default class DefinitionFinder extends Handler {
         return [];
       }
       return this.findSymbols(maybeDocument);
+    });
+
+    this.connection.onCodeLens(async(params) => {
+      return this.handleErrors(this.getCodeLenses(params), []);
     });
   }
 
@@ -210,4 +214,47 @@ export default class DefinitionFinder extends Handler {
     }
     return symbols;
   }
+  private async getCodeLenses(params: CodeLensParams) {
+    const analysis = await this.analyzer.analyzePackage();
+    const path = this.converter.getWorkspacePathToFile(params.textDocument);
+    const document = analysis.getDocument(path);
+    if (!(document instanceof Document)) {
+      return [];
+    }
+    const lenses: CodeLens[] = [];
+    for (const element of document.getFeatures({kind: 'element'})) {
+      if (!element.sourceRange || !element.tagName) {
+        continue;
+      }
+      const refs = analysis.getFeatures(
+          {kind: 'element-reference', id: element.tagName});
+      lenses.push(this.makeLens(
+          element.sourceRange,
+          `Referenced ${refs.size} place${plural(refs.size)} in HTML.`));
+    }
+    for (const cssProperty of document.getFeatures(
+             {kind: 'css-custom-property-assignment'})) {
+      const refs = analysis.getFeatures(
+          {kind: 'css-custom-property-use', id: cssProperty.name});
+      lenses.push(this.makeLens(
+          cssProperty.sourceRange,
+          `Read ${refs.size} place${plural(refs.size)}.`));
+    }
+    return lenses;
+  }
+
+  makeLens(sourceRange: SourceRange, message: string): CodeLens {
+    const rangeStart = this.converter.convertSourcePosition(sourceRange.start);
+    return {
+      range: {
+        start: rangeStart,
+        end: {line: rangeStart.line + 1, character: 0},
+      },
+      command: {title: message, command: ''}
+    };
+  }
+}
+
+function plural(count: number) {
+  return count === 1 ? '' : 's';
 }

@@ -17,7 +17,7 @@ import * as path from 'path';
 import {SourcePosition, SourceRange, UrlLoader} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
+import {CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri/lib';
 
@@ -282,6 +282,13 @@ export class TestClient {
       textDocument: {uri: this.converter.getUriForLocalPath(filePath)}
     };
     return this.connection.sendRequest(DocumentSymbolRequest.type, params);
+  }
+
+  async getCodeLenses(path: string): Promise<CodeLens[]> {
+    const params: CodeLensParams = {
+      textDocument: {uri: this.converter.getUriForLocalPath(path)}
+    };
+    return this.connection.sendRequest(CodeLensRequest.type, params);
   }
 
   private latestVersionMap = new Map<string, number>();

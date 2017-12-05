@@ -233,50 +233,17 @@ customElements.define('anonymous-class', class extends HTMLElement{});
   testName =
       `it supports finding definitions and references of a css custom property`;
   test(testName, async() => {
-    const {client, underliner, baseDir} = await createTestEnvironment();
-    // TODO(rictic): this test should work with entirely in-memory contents,
-    //     but we need to mess with InMemoryOverlayUrlLoader's listDirectory
-    //     method to be sure it includes entirely in-memory files.
-    writeFileSync(path.join(baseDir, 'lib.html'), `
-      <style>
-        html {
-          --shiny: green;
-          --unrelated: red;
-        }
-      </style>
-
-      <style>
-        body.tasteful {
-          --shiny: gold;
-        }
-      </style>
-    `);
-    writeFileSync(path.join(baseDir, 'main.html'), `
-      <link rel="import" href="./lib.html">
-
-      <style>
-        .foo {
-          color: var(--shiny);
-        }
-      </style>
-
-      <style>
-        .bar {
-          @apply(--shiny);
-          @apply(--ignoreMe);
-        }
-      </style>
-    `);
-
+    const {client, underliner} = await createTestEnvironment(
+        path.join(fixtureDir, 'css-custom-properties'));
     const locations =
         await client.getDefinition('main.html', {line: 5, column: 20});
     assert.deepEqual(await underliner.underline(locations), [
       `
-          --shiny: green;
-          ~~~~~~~~~~~~~~~`,
+    --shiny: green;
+    ~~~~~~~~~~~~~~~`,
       `
-          --shiny: gold;
-          ~~~~~~~~~~~~~~`
+    --shiny: gold;
+    ~~~~~~~~~~~~~~`
     ]);
 
     assert.deepEqual(
@@ -284,11 +251,44 @@ customElements.define('anonymous-class', class extends HTMLElement{});
             await client.getReferences('main.html', {line: 5, column: 20})),
         [
           `
-          color: var(--shiny);
-                     ~~~~~~~`,
+    color: var(--shiny);
+               ~~~~~~~`,
           `
-          @apply(--shiny);
-                 ~~~~~~~`
+    @apply --shiny;
+           ~~~~~~~`
         ]);
+  });
+
+  testName = `it supports getting code lenses of custom property declarations`;
+  test(testName, async() => {
+    const {client} = await createTestEnvironment(
+        path.join(fixtureDir, 'css-custom-properties'));
+
+    assert.deepEqual(
+        (await client.getCodeLenses('lib.html')).map(c => c.command!.title),
+        [`Read 2 places.`, `Read 1 place.`, `Read 2 places.`]);
+  });
+
+  test(`it supports getting code lenses of elements`, async() => {
+    const {client, baseDir} = await createTestEnvironment();
+    // TODO(rictic): this test should work with entirely in-memory contents,
+    //     but we need to mess with InMemoryOverlayUrlLoader's listDirectory
+    //     method to be sure it includes entirely in-memory files.
+
+    writeFileSync(path.join(baseDir, 'index.html'), `
+      <script>
+        customElements.define('foo-bar', class extends HTMLElement{});
+      </script>
+      <foo-bar><foo-bar></foo-bar></foo-bar>
+
+      <foo-bar><baz-bonk></baz-bonk></foo-bar>
+      <script>
+        customElements.define('baz-bonk', class extends HTMLElement{});
+      </script>
+    `);
+
+    assert.deepEqual(
+        (await client.getCodeLenses('index.html')).map(c => c.command!.title),
+        [`Referenced 3 places in HTML.`, `Referenced 1 place in HTML.`]);
   });
 });

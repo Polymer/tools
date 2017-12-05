@@ -40,6 +40,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   in their client capabilities.
 - Reports errors in `polymer.json` files, including invalid data, and unknown
   lint rules.
+- Supports code lenses to display information inline with your code.
+  - At a custom element declaration, displays how many places it's referenced
+    in HTML.
+  - At CSS Custom Property assignments, displays how many places it's read.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.
