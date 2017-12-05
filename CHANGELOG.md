@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
-## 2.0.0 - 2017-11-21
+## 2.0.0 - 2017-12-05
 
 - [BREAKING] Removes our proprietary protocol in favor of the Language Server
   Protocol. Using the standard protocol lets us support more editors with less
