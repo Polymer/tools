@@ -152,4 +152,51 @@ suite('DefinitionFinder', function() {
         _internal: String,
         ~~~~~~~~~~~~~~~~~`);
   });
+
+
+  testName = `it supports getting references to an element from its tag`;
+  test(testName, async() => {
+    const contentsPath = path.join('editor-service', 'references.html');
+    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    await client.openFile(contentsPath);
+
+    let references =
+        await client.getReferences(contentsPath, {line: 7, column: 3});
+    let ranges = await underliner.underline(references);
+    assert.deepEqual(ranges, [
+      `
+  <anonymous-class one></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+  <anonymous-class two></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+    ]);
+
+    references =
+        await client.getReferences(contentsPath, {line: 7, column: 3}, true);
+    ranges = await underliner.underline(references);
+    assert.deepEqual(ranges, [
+      `
+customElements.define('anonymous-class', class extends HTMLElement{});
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+  <anonymous-class one></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+  <anonymous-class two></anonymous-class>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+    ]);
+
+    references = await client.getReferences(contentsPath, {line: 8, column: 3});
+    ranges = await underliner.underline(references);
+
+    assert.deepEqual(ranges, [
+      `
+  <simple-element one></simple-element>
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+    <simple-element two></simple-element>
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+    ]);
+  });
 });

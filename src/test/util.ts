@@ -17,7 +17,7 @@ import * as path from 'path';
 import {SourcePosition, SourceRange, UrlLoader} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri/lib';
 
@@ -245,6 +245,17 @@ export class TestClient {
     };
     return this.connection.sendRequest(
         CompletionRequest.type, params) as Promise<CompletionList>;
+  }
+
+  async getReferences(
+      path: string, position: SourcePosition,
+      includeDefinition = false): Promise<Location[]> {
+    const params: ReferenceParams = {
+      position: this.converter.convertSourcePosition(position),
+      textDocument: {uri: this.converter.getUriForLocalPath(path)},
+      context: {includeDeclaration: includeDefinition}
+    };
+    return this.connection.sendRequest(ReferencesRequest.type, params);
   }
 
   private latestVersionMap = new Map<string, number>();

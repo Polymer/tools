@@ -141,8 +141,8 @@ export default class LanguageServer extends Handler {
         clientCapabilities);
     this.disposables.push(autoCompleter);
 
-    const definitionFinder =
-        new DefinitionFinder(this.connection, this.converter, featureFinder);
+    const definitionFinder = new DefinitionFinder(
+        this.connection, this.converter, featureFinder, this.analyzer);
     this.disposables.push(definitionFinder);
 
     this.initEventHandlers();
@@ -160,6 +160,7 @@ export default class LanguageServer extends Handler {
       hoverProvider: true,
       definitionProvider: true,
       codeActionProvider: true,
+      referencesProvider: true,
     };
     // If the client can apply edits, then we can handle the
     // polymer-ide/applyEdit command, which just delegates to the client's

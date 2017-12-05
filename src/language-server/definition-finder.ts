@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {SourcePosition, SourceRange} from 'polymer-analyzer';
-import {Definition, IConnection, Location} from 'vscode-languageserver';
+import {Analyzer, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Definition, IConnection, Location, ReferenceParams} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
 import AnalyzerLSPConverter from './converter';
@@ -27,15 +27,26 @@ export default class DefinitionFinder extends Handler {
   constructor(
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
-      private featureFinder: FeatureFinder) {
+      private featureFinder: FeatureFinder, private analyzer: Analyzer) {
     super();
 
     this.connection.onDefinition(async(textPosition) => {
       return this.handleErrors(
           this.getDefinition(textPosition), undefined) as Promise<Definition>;
     });
+
+    this.connection.onReferences(async(params) => {
+      return this.handleErrors(this.getReferences(params), []);
+    });
   }
 
+  /**
+   * Return the location or locations where the symbol referenced at the given
+   * location is defined.
+   *
+   * Implements:
+   * https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#textDocument_definition
+   */
   private async getDefinition(textPosition: TextDocumentPositionParams):
       Promise<Definition|undefined> {
     const localPath =
@@ -51,7 +62,7 @@ export default class DefinitionFinder extends Handler {
     }
   }
 
-  async getDefinitionForFeatureAtPosition(
+  private async getDefinitionForFeatureAtPosition(
       localPath: string,
       position: SourcePosition): Promise<SourceRange|undefined> {
     const feature = await this.featureFinder.getFeatureAt(localPath, position);
@@ -62,5 +73,54 @@ export default class DefinitionFinder extends Handler {
       return feature.property && feature.property.sourceRange;
     }
     return feature.sourceRange;
+  }
+
+  /**
+   * Get all places that the symbol being referenced at the given place is
+   * referenced in the package.
+   *
+   * Implements:
+   * https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#textDocument_references
+   */
+  private async getReferences(params: ReferenceParams): Promise<Location[]> {
+    const locations: Location[] = [];
+    if (params.context.includeDeclaration) {
+      const definition = await this.getDefinition(params);
+      if (definition) {
+        if (Array.isArray(definition)) {
+          locations.push(...definition);
+        } else {
+          locations.push(definition);
+        }
+      }
+    }
+    const localPath =
+        this.converter.getWorkspacePathToFile(params.textDocument);
+    const position = this.converter.convertPosition(params.position);
+    const analysis = await this.analyzer.analyzePackage();
+    const document = analysis.getDocument(localPath);
+    if (!(document instanceof Document)) {
+      return locations;
+    }
+    const location =
+        await this.featureFinder.getAstAtPosition(document, position);
+    if (!location) {
+      return locations;
+    }
+    if (location.kind === 'tagName') {
+      const ranges = [...analysis.getFeatures({
+                       kind: 'element-reference',
+                       id: location.element.tagName!,
+                       externalPackages: true,
+                     })].map(e => e.sourceRange);
+      locations.push(...ranges.map(r => {
+        return {
+          uri: this.converter.getUriForLocalPath(r.file),
+          range: this.converter.convertPRangeToL(r)
+        };
+      }));
+    }
+
+    return locations;
   }
 }

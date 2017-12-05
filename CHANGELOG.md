@@ -12,8 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ## Unreleased
-- Removes our proprietary protocol in favor of unifying on the Language Server Protocol. Using the standard protocol lets us support more editors with less code.
-- Notices changes to `polymer.json` immediately. Currently this is useful for changing lint rules without reloading your editor.
+- Removes our proprietary protocol in favor of unifying on the Language Server
+  Protocol. Using the standard protocol lets us support more editors with less
+  code.
+- Notices changes to `polymer.json` immediately. Currently this is useful for
+  changing lint rules without reloading your editor.
 - Supports filtering out warning codes with the `polymer.json` field
   `lint.ignoreWarnings` which takes an array of warning codes that we should
   not report. This brings the IDE in line with `polymer lint` on the command
@@ -21,6 +24,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Supports specifying files to ignore all warnings for with the `polymer.json`
   field `lint.filesToIgnore` which takes an array of `minimatch` globs. If a
   file matches any of those globs then we will never report a warning for it.
+- Supports finding all references for elements. Finds references to the element
+  in HTML tags.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.
