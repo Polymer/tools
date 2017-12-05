@@ -199,4 +199,33 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
     ]);
   });
+
+  test(`supports getting workspace symbols`, async() => {
+    const {client} =
+        await createTestEnvironment(path.join(fixtureDir, 'editor-service'));
+    assert.deepEqual(
+        (await client.getWorkspaceSymbols('')).map((s) => s.name), [
+          'slot-test-elem',
+          'slot-one-test-elem',
+          'behavior-user',
+        ]);
+    assert.deepEqual(
+        (await client.getWorkspaceSymbols('one')).map((s) => s.name), [
+          'slot-one-test-elem',
+        ]);
+  });
+
+  test(`supports getting document symbols`, async() => {
+    const {client} =
+        await createTestEnvironment(path.join(fixtureDir, 'editor-service'));
+    assert.deepEqual(
+        (await client.getDocumentSymbols('slot-test-elem.html'))
+            .map((s) => s.name),
+        [
+          'slot-test-elem',
+          'slot-one-test-elem',
+        ]);
+    assert.deepEqual(
+        (await client.getWorkspaceSymbols('slot.html')).map((s) => s.name), []);
+  });
 });

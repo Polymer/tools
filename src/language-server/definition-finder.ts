@@ -12,13 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as fuzzaldrin from 'fuzzaldrin';
 import {Analyzer, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
-import {Definition, IConnection, Location, ReferenceParams} from 'vscode-languageserver';
+import {Queryable} from 'polymer-analyzer/lib/model/queryable';
+import {Definition, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
 import {Handler} from './util';
+
 
 /**
  * Gets the definition of a feature at a position.
@@ -37,6 +40,22 @@ export default class DefinitionFinder extends Handler {
 
     this.connection.onReferences(async(params) => {
       return this.handleErrors(this.getReferences(params), []);
+    });
+
+    this.connection.onWorkspaceSymbol(async(params) => {
+      const analysis = await this.analyzer.analyzePackage();
+      const symbols = this.findSymbols(analysis);
+      return fuzzaldrin.filter(symbols, params.query, {key: 'name'});
+    });
+
+    this.connection.onDocumentSymbol(async(params) => {
+      const localPath = converter.getWorkspacePathToFile(params.textDocument);
+      const analysis = await this.analyzer.analyze([localPath]);
+      const maybeDocument = analysis.getDocument(localPath);
+      if (!(maybeDocument instanceof Document)) {
+        return [];
+      }
+      return this.findSymbols(maybeDocument);
     });
   }
 
@@ -122,5 +141,40 @@ export default class DefinitionFinder extends Handler {
     }
 
     return locations;
+  }
+
+  private findSymbols(queryable: Queryable): SymbolInformation[] {
+    // Most kinds of symbols are covered by JS and TS analyzers. We can
+    // help track down custom elements by tag name though.
+    const symbols: SymbolInformation[] = [];
+    const elements =
+        queryable.getFeatures({kind: 'element', externalPackages: true});
+    for (const element of elements) {
+      if (!element.sourceRange) {
+        continue;
+      }
+      if (element.tagName) {
+        symbols.push({
+          kind: SymbolKind.Class,
+          location: this.converter.getLocation(element.sourceRange),
+          name: element.tagName
+        });
+      }
+    }
+    const polymerCoreFeatures = queryable.getFeatures(
+        {kind: 'polymer-core-feature', externalPackages: true});
+    for (const coreFeature of polymerCoreFeatures) {
+      if (!coreFeature.sourceRange) {
+        continue;
+      }
+      for (const identifier of coreFeature.identifiers) {
+        symbols.push({
+          kind: SymbolKind.Method,
+          location: this.converter.getLocation(coreFeature.sourceRange),
+          name: identifier
+        });
+      }
+    }
+    return symbols;
   }
 }

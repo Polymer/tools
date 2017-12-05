@@ -13,7 +13,7 @@
 
 import * as path from 'path';
 import {Edit, Severity, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
-import {Diagnostic, DiagnosticSeverity, Position as LSPosition, Range as LSRange, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
+import {Diagnostic, DiagnosticSeverity, Location, Position as LSPosition, Range as LSRange, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 /**
@@ -103,5 +103,12 @@ export default class AnalyzerLSPConverter {
       }
     }
     return edit;
+  }
+
+  getLocation(sourceRange: SourceRange): Location {
+    return {
+      uri: this.getUriForLocalPath(sourceRange.file),
+      range: this.convertPRangeToL(sourceRange)
+    };
   }
 }

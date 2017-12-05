@@ -148,6 +148,8 @@ export default class LanguageServer extends Handler {
       definitionProvider: true,
       codeActionProvider: true,
       referencesProvider: true,
+      documentSymbolProvider: true,
+      workspaceSymbolProvider: true,
     };
     // If the client can apply edits, then we can handle the
     // polymer-ide/applyEdit command, which just delegates to the client's

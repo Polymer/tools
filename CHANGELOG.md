@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   file matches any of those globs then we will never report a warning for it.
 - Supports finding all references for elements. Finds references to the element
   in HTML tags.
+- Supports getting all symbols in the workspace and in the document. At the
+  moment we just expose elements by tagname and Polymer 1.0 core features, as
+  other symbols should be well handled by other language services.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.

@@ -17,7 +17,7 @@ import * as path from 'path';
 import {SourcePosition, SourceRange, UrlLoader} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri/lib';
 
@@ -270,6 +270,18 @@ export class TestClient {
       context: {includeDeclaration: includeDefinition}
     };
     return this.connection.sendRequest(ReferencesRequest.type, params);
+  }
+
+  async getWorkspaceSymbols(query: string): Promise<SymbolInformation[]> {
+    const params: WorkspaceSymbolParams = {query};
+    return this.connection.sendRequest(WorkspaceSymbolRequest.type, params);
+  }
+
+  async getDocumentSymbols(filePath: string): Promise<SymbolInformation[]> {
+    const params: DocumentSymbolParams = {
+      textDocument: {uri: this.converter.getUriForLocalPath(filePath)}
+    };
+    return this.connection.sendRequest(DocumentSymbolRequest.type, params);
   }
 
   private latestVersionMap = new Map<string, number>();
