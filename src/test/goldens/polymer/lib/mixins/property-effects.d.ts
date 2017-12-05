@@ -539,11 +539,11 @@ declare namespace Polymer {
      * full API docs.
      *
      * @param property Property name
-     * @param methodName Name of observer method to call
+     * @param method Function or name of observer method to call
      * @param dynamicFn Whether the method name should be included as
      *   a dependency to the effect.
      */
-    _createPropertyObserver(property: string, methodName: string, dynamicFn?: boolean): void|null;
+    _createPropertyObserver(property: string, method: string|((p0: any, p1: any) => any), dynamicFn?: boolean): void|null;
 
     /**
      * Equivalent to static `createMethodObserver` API but can be called on

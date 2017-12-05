@@ -8,5 +8,7 @@
  *   lib/utils/boot.html
  */
 
+/// <reference path="../../augment-types.d.ts" />
+
 declare namespace Polymer {
 }

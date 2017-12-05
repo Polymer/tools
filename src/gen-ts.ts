@@ -25,6 +25,13 @@ export interface Config {
    * to excluding directories ending in "test" or "demo".
    */
   exclude?: string[];
+
+  /**
+   * Additional files to insert as triple-slash reference statements. Given the
+   * map `a: b[]`, a will get an additional reference statement for each file
+   * path in b.
+   */
+  augment?: {[filepath: string]: string[]};
 }
 
 /**
@@ -54,6 +61,7 @@ function analyzerToAst(
   const exclude = config.exclude !== undefined ?
       config.exclude.map((p) => new RegExp(p)) :
       [/test\//, /demo\//];
+  const augment = config.augment || {};
 
   // Analyzer can produce multiple JS documents with the same URL (e.g. an
   // HTML file with multiple inline scripts). We also might have multiple
@@ -83,6 +91,9 @@ function analyzerToAst(
     });
     for (const analyzerDoc of analyzerDocs) {
       handleDocument(analyzerDoc, tsDoc);
+    }
+    for (const a of augment[tsDoc.path] || []) {
+      tsDoc.referencePaths.add(path.relative(path.dirname(tsDoc.path), a));
     }
     tsDoc.simplify();
     // Include even documents with no members. They might be dependencies of
