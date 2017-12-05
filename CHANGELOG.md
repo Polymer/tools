@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Supports getting all symbols in the workspace and in the document. At the
   moment we just expose elements by tagname and Polymer 1.0 core features, as
   other symbols should be well handled by other language services.
+- Supports filtering autocompletions on the server side if the client does not.
+  Clients without autocompletion filtering support should send over
+  `capabilities.experimental['polymer-ide'].doesNotFilterCompletions` as `true`
+  in their client capabilities.
 
 ## 1.6.0 - 2017-11-21
 - Generate Code Actions for fixable warnings and warnings with edit actions.

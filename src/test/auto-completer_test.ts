@@ -437,7 +437,7 @@ suite('AutoCompleter', () => {
     await client.openFile(indexFile, '<script>\n\n</script>\n' + indexContents);
     const completions =
         await client.getCompletions(indexFile, {line: 1, column: 0});
-    assert.deepEqual(completions, {isIncomplete: false, items: []});
+    assert.deepEqual(completions, {isIncomplete: true, items: []});
   });
 
   {

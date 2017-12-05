@@ -12,6 +12,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as fuzzaldrin from 'fuzzaldrin';
 import {Analyzer, Document, Element, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
 import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, IConnection, InsertTextFormat} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
@@ -30,7 +31,8 @@ import {Handler} from './util';
  * give suggested completions at a given position.
  */
 export default class AutoCompleter extends Handler {
-  private clientSupportsSnippets: boolean;
+  private readonly clientCannotFilter: boolean;
+  private readonly clientSupportsSnippets: boolean;
   constructor(
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
@@ -45,6 +47,13 @@ export default class AutoCompleter extends Handler {
            this.capabilities.textDocument.completion.completionItem
                .snippetSupport);
 
+    // Work around https://github.com/atom/atom-languageclient/issues/150
+    const ourExperimentalCapabilities = this.capabilities.experimental &&
+        this.capabilities.experimental['polymer-ide'];
+    this.clientCannotFilter = ourExperimentalCapabilities ?
+        !!ourExperimentalCapabilities.doesNotFilterCompletions :
+        false;
+
     this.connection.onCompletion(async(request) => {
       const result = await this.handleErrors(
           this.autoComplete(request), {isIncomplete: true, items: []});
@@ -56,22 +65,26 @@ export default class AutoCompleter extends Handler {
       Promise<CompletionList> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const completions = await this.getTypeaheadCompletionsAtPosition(
-        localPath, this.converter.convertPosition(textPosition.position));
+    const document =
+        (await this.analyzer.analyze([localPath])).getDocument(localPath);
+    if (!(document instanceof Document)) {
+      return {isIncomplete: true, items: []};
+    }
+    const position = this.converter.convertPosition(textPosition.position);
+    const completions =
+        await this.getTypeaheadCompletionsAtPosition(document, position);
     if (!completions) {
-      return {isIncomplete: false, items: []};
+      return {isIncomplete: true, items: []};
+    }
+    if (this.clientCannotFilter) {
+      return this.filterCompletions(completions, position, document);
     }
     return completions;
   }
 
   private async getTypeaheadCompletionsAtPosition(
-      localPath: string,
+      document: Document,
       position: SourcePosition): Promise<CompletionList|undefined> {
-    const analysis = await this.analyzer.analyze([localPath]);
-    const document = analysis.getDocument(localPath);
-    if (!(document instanceof Document)) {
-      return;
-    }
     const location =
         await this.featureFinder.getAstAtPosition(document, position);
     if (!location) {
@@ -322,6 +335,44 @@ export default class AutoCompleter extends Handler {
       item.insertText = attrCompletion.autocompletion;
     }
     return item;
+  }
+
+  private filterCompletions(
+      completions: CompletionList, position: SourcePosition,
+      document: Document): CompletionList {
+    const leadingText = this.getLeadingIdentifier(position, document);
+    const filterableCompletions = completions.items.map(completion => {
+      return {
+        filterText: completion.filterText || completion.label,
+        completion
+      };
+    });
+    const items =
+        fuzzaldrin
+            .filter(filterableCompletions, leadingText, {key: 'filterText'})
+            .map(i => i.completion);
+    return {isIncomplete: true, items};
+  }
+
+  /**
+   * Gets the identifier that comes right before the given source position.
+   *
+   * So e.g. calling it at the end of "hello world" should return "world", but
+   * calling it with the line 0, character 4 should return "hell".
+   */
+  private getLeadingIdentifier(position: SourcePosition, document: Document):
+      string {
+    const contents = document.parsedDocument.contents;
+    const endOfSpan = document.parsedDocument.sourcePositionToOffset(position);
+    let startOfSpan = endOfSpan;
+    while (true) {
+      const candidateChar = contents[startOfSpan - 1];
+      if (candidateChar === undefined || !candidateChar.match(/[a-zA-Z\-]/)) {
+        break;
+      }
+      startOfSpan--;
+    }
+    return contents.slice(startOfSpan, endOfSpan);
   }
 }
 
