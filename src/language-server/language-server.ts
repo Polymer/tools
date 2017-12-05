@@ -12,14 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, PackageUrlResolver} from 'polymer-analyzer';
-import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
-import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import * as util from 'util';
-import {ClientCapabilities, FileChangeType, FileEvent, IConnection, InitializeResult, ServerCapabilities, TextDocuments} from 'vscode-languageserver';
+import {ClientCapabilities, IConnection, InitializeResult, ServerCapabilities, TextDocuments} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
+import AnalyzerSynchronizer from './analyzer-synchronizer';
 import AutoCompleter from './auto-completer';
 import CommandExecutor, {allSupportedCommands} from './commands';
 import AnalyzerLSPConverter from './converter';
@@ -32,8 +29,7 @@ import Settings from './settings';
 import {Handler} from './util';
 
 export default class LanguageServer extends Handler {
-  readonly analyzer: Analyzer;
-  readonly converter: AnalyzerLSPConverter;
+  private readonly converter: AnalyzerLSPConverter;
   protected readonly connection: IConnection;
   private readonly documents: TextDocuments;
   readonly fileSynchronizer: FileSynchronizer;
@@ -111,41 +107,32 @@ export default class LanguageServer extends Handler {
         new Settings(connection, this.fileSynchronizer, this.converter);
     this.disposables.push(this.settings);
 
-    this.analyzer = new Analyzer({
-      urlLoader: this.fileSynchronizer.urlLoader,
-      urlResolver: new PackageUrlResolver(),
-    });
-
-    // Keep the analyzer up to date.
-    this.disposables.push(
-        this.fileSynchronizer.fileChanges.listen((filesChangeEvents) => {
-          this.handleFilesChanged(filesChangeEvents);
-        }));
+    const analyzerSynchronizer = new AnalyzerSynchronizer(
+        this.documents, this.fileSynchronizer, this.converter);
 
     this.diagnosticGenerator = new DiagnosticGenerator(
-        this.analyzer, this.converter, connection, this.settings,
-        this.fileSynchronizer, this.documents);
+        analyzerSynchronizer.analyzer, this.converter, connection,
+        this.settings, analyzerSynchronizer, this.documents);
     this.disposables.push(this.diagnosticGenerator);
 
     const commandExecutor =
         new CommandExecutor(this.connection, this.diagnosticGenerator);
     this.disposables.push(commandExecutor);
 
-    const featureFinder = new FeatureFinder(this.analyzer);
+    const featureFinder = new FeatureFinder(analyzerSynchronizer.analyzer);
     const hoverDocumenter =
         new HoverDocumenter(this.connection, this.converter, featureFinder);
     this.disposables.push(hoverDocumenter);
 
     const autoCompleter = new AutoCompleter(
-        this.connection, this.converter, featureFinder, this.analyzer,
-        clientCapabilities);
+        this.connection, this.converter, featureFinder,
+        analyzerSynchronizer.analyzer, clientCapabilities);
     this.disposables.push(autoCompleter);
 
     const definitionFinder = new DefinitionFinder(
-        this.connection, this.converter, featureFinder, this.analyzer);
+        this.connection, this.converter, featureFinder,
+        analyzerSynchronizer.analyzer);
     this.disposables.push(definitionFinder);
-
-    this.initEventHandlers();
   }
 
   private capabilities(clientCapabilities: ClientCapabilities):
@@ -171,56 +158,5 @@ export default class LanguageServer extends Handler {
       ourCapabilities.executeCommandProvider = {commands: allSupportedCommands};
     }
     return ourCapabilities;
-  }
-
-  private initEventHandlers() {
-    this.connection.onWillSaveTextDocumentWaitUntil((req) => {
-      if (this.settings.fixOnSave) {
-        return this.handleErrors(
-            this.diagnosticGenerator.getFixesForFile(req.textDocument.uri), []);
-      }
-      return [];
-    });
-  }
-
-  private async handleFilesChanged(fileChangeEvents: FileEvent[]) {
-    const paths = fileChangeEvents.map(
-        change => this.converter.getWorkspacePathToFile(change));
-    if (paths.length === 0) {
-      return;  // no new information in this notification
-    }
-    const deletions =
-        fileChangeEvents
-            .filter((change) => change.type === FileChangeType.Deleted)
-            .map((change) => this.converter.getWorkspacePathToFile(change));
-    if (deletions.length > 0) {
-      // When a directory is deleted we may not be told about individual
-      // files, we'll have to determine the tracked files ourselves.
-      // This involves mucking around in private implementation details of
-      // the analyzer, so we wrap this in a try/catch.
-      // Analyzer issue for a supported API:
-      // https://github.com/Polymer/polymer-analyzer/issues/761
-      try {
-        const context: AnalysisContext =
-            await this.analyzer['_analysisComplete'];
-        const cache: AnalysisCache = context['_cache'];
-        const cachedPaths = new Set<ResolvedUrl>([
-          ...cache.failedDocuments.keys(),
-          ...cache.parsedDocumentPromises['_keyToResultMap'].keys()
-        ]);
-        for (const deletedPath of deletions) {
-          const deletedDir = deletedPath + '/';
-          for (const cachedPath of cachedPaths) {
-            if (cachedPath.startsWith(deletedDir)) {
-              paths.push(cachedPath);
-            }
-          }
-        }
-      } catch {
-        // Mucking about in analyzer internals on a best effort basis here.
-      }
-    }
-    // Clear the files from any caches and recalculate warnings as needed.
-    await this.analyzer.filesChanged(paths);
   }
 }

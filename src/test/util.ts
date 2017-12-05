@@ -17,7 +17,7 @@ import * as path from 'path';
 import {SourcePosition, SourceRange, UrlLoader} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
+import {CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, TextDocumentPositionParams, TextDocuments} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri/lib';
 
@@ -225,6 +225,20 @@ export class TestClient {
     return this.connection.sendNotification(
         DidCloseTextDocumentNotification.type, params);
   }
+
+  async watchedFilesChanged(changes: {path: string, type: FileChangeType}[]) {
+    const params: DidChangeWatchedFilesParams = {
+      changes: changes.map((change) => {
+        return {
+          uri: this.converter.getUriForLocalPath(change.path),
+          type: change.type
+        };
+      })
+    };
+    return this.connection.sendNotification(
+        DidChangeWatchedFilesNotification.type, params);
+  }
+
   private diagnosticsForPath =
       new MapSetDefault<string, StreamWithNext<Diagnostic[]>>(
           (key) => new StreamWithNext(key));

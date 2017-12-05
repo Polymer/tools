@@ -15,9 +15,9 @@ import {Analyzer, applyEdits, Edit, isPositionInsideRange, makeParseLoader, Sour
 import {Linter, registry, Rule} from 'polymer-linter';
 import {CodeActionParams, Command, Diagnostic, IConnection, TextDocuments, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 
+import AnalyzerSynchronizer from './analyzer-synchronizer';
 import {applyEditCommandName} from './commands';
 import AnalyzerLSPConverter from './converter';
-import FileSynchronizer from './file-synchronizer';
 import Settings from './settings';
 import {Handler} from './util';
 
@@ -34,8 +34,10 @@ export default class DiagnosticGenerator extends Handler {
   constructor(
       private analyzer: Analyzer, private converter: AnalyzerLSPConverter,
       protected connection: IConnection, private settings: Settings,
-      fileSynchronizer: FileSynchronizer, private documents: TextDocuments) {
+      analyzerSynchronizer: AnalyzerSynchronizer,
+      private documents: TextDocuments) {
     super();
+    this.updateLinter();
 
     connection.onDidCloseTextDocument((event) => {
       if (!settings.analyzeWholePackage) {
@@ -50,7 +52,7 @@ export default class DiagnosticGenerator extends Handler {
     settings.projectConfigChangeStream.listen(() => {
       this.updateLinter();
     });
-    this.disposables.push(fileSynchronizer.fileChanges.listen(() => {
+    this.disposables.push(analyzerSynchronizer.analysisChanges.listen(() => {
       this.reportWarnings();
     }));
     settings.changeStream.listen(({newer, older}) => {
@@ -73,7 +75,13 @@ export default class DiagnosticGenerator extends Handler {
       return this.handleErrors(this.getCodeActions(req), []);
     });
 
-    this.updateLinter();
+    this.connection.onWillSaveTextDocumentWaitUntil(async(req) => {
+      if (this.settings.fixOnSave) {
+        return this.handleErrors(
+            this.getFixesForFile(req.textDocument.uri), []);
+      }
+      return [];
+    });
   }
 
   async getAllFixes(): Promise<WorkspaceEdit> {
@@ -90,7 +98,7 @@ export default class DiagnosticGenerator extends Handler {
     return this.converter.editsToWorkspaceEdit(appliedEdits);
   }
 
-  async getFixesForFile(uri: string): Promise<TextEdit[]> {
+  private async getFixesForFile(uri: string): Promise<TextEdit[]> {
     const path = this.converter.getWorkspacePathToFile({uri});
     const warnings = await this.linter.lint([path]);
     const edits: Edit[] = [];
