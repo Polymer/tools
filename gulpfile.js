@@ -43,7 +43,8 @@ task('depcheck', function() {
   return new Promise((resolve, reject) => {
            depcheck_lib(
                __dirname,
-               {ignoreDirs: [], ignoreMatches: ['@types/*']},
+               {ignoreDirs: [], ignoreMatches: [
+                   '@types/*', 'polymer-project-config']},
                resolve);
          })
       .then((result) => {

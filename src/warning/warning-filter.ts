@@ -12,31 +12,58 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {ProjectConfig} from 'polymer-project-config';
+
 import {Severity, Warning} from '../model/model';
 
+import minimatch = require('minimatch');
+import {IMinimatch} from 'minimatch';
 
 export interface Options {
   /**
    * Warning codes like 'parse-error' or 'behavior-not-found' to filter out.
    */
-  warningCodesToIgnore?: Set<string>;
+  warningCodesToIgnore?: ReadonlySet<string>;
   /**
    * All warnings below this level of severity will be filtered out.
    */
   minimumSeverity: Severity;
+
+  /**
+   * Any file whose URL matches one of these minimatch globs will be ignored.
+   */
+  filesToIgnore?: ReadonlyArray<string>;
 }
 
 export class WarningFilter {
-  warningCodesToIgnore = new Set<string>();
+  warningCodesToIgnore: ReadonlySet<string> = new Set<string>();
   minimumSeverity = Severity.INFO;
+  fileGlobsToFilterOut: ReadonlyArray<IMinimatch> = [];
 
-  constructor(_options: Options) {
-    if (_options.warningCodesToIgnore) {
-      this.warningCodesToIgnore = _options.warningCodesToIgnore;
+  constructor(options: Options) {
+    if (options.warningCodesToIgnore) {
+      this.warningCodesToIgnore = options.warningCodesToIgnore;
     }
-    if (_options.minimumSeverity != null) {
-      this.minimumSeverity = _options.minimumSeverity;
+    if (options.minimumSeverity != null) {
+      this.minimumSeverity = options.minimumSeverity;
     }
+    if (options.filesToIgnore) {
+      this.fileGlobsToFilterOut =
+          (options.filesToIgnore ||
+           []).map((glob) => new minimatch.Minimatch(glob, {}));
+    }
+  }
+
+  static fromProjectConfig(config: ProjectConfig) {
+    const lintConfig: Partial<typeof config.lint> = config.lint || {};
+    const minimumSeverity = Severity.INFO;
+    const warningCodesToIgnore = new Set(lintConfig.warningsToIgnore);
+
+    return new WarningFilter({
+      warningCodesToIgnore,
+      minimumSeverity,
+      filesToIgnore: lintConfig.filesToIgnore
+    });
   }
 
   shouldIgnore(warning: Warning) {
@@ -45,6 +72,11 @@ export class WarningFilter {
     }
     if (warning.severity > this.minimumSeverity) {
       return true;
+    }
+    for (const glob of this.fileGlobsToFilterOut) {
+      if (glob.match(warning.sourceRange.file)) {
+        return true;
+      }
     }
     return false;
   }

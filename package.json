@@ -73,6 +73,7 @@
     "@types/clone": "^0.1.30",
     "@types/cssbeautify": "^0.3.1",
     "@types/doctrine": "^0.0.1",
+    "@types/minimatch": "^3.0.1",
     "@types/node": "^6.0.0",
     "@types/parse5": "^2.2.34",
     "babel-generator": "^6.26.0",
@@ -86,7 +87,9 @@
     "dom5": "^2.1.0",
     "indent": "0.0.2",
     "jsonschema": "^1.1.0",
+    "minimatch": "^3.0.4",
     "parse5": "^2.2.1",
+    "polymer-project-config": "^3.6.0",
     "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",
     "strip-indent": "^2.0.0"
