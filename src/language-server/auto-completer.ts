@@ -14,6 +14,7 @@
 import * as dom5 from 'dom5';
 import * as fuzzaldrin from 'fuzzaldrin';
 import {Analyzer, Document, Element, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
+import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, IConnection, InsertTextFormat} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
@@ -95,6 +96,13 @@ export default class AutoCompleter extends Handler {
     if (result && (result.feature instanceof DatabindingFeature)) {
       return this.getDatabindingCompletions(result.feature);
     }
+    if (result && (result.feature instanceof CssCustomPropertyAssignment)) {
+      return this.getCustomPropertyAssignmentCompletions(
+          document, result.feature);
+    }
+    if (result && (result.feature instanceof CssCustomPropertyUse)) {
+      return this.getCustomPropertyUseCompletions(document);
+    }
     if (locResult.language === 'html') {
       const location = locResult.node;
       if (location.kind === 'tagName' || location.kind === 'text') {
@@ -107,6 +115,45 @@ export default class AutoCompleter extends Handler {
         return this.getAttributeCompletions(document, location);
       }
     }
+  }
+
+  private getCustomPropertyAssignmentCompletions(
+      document: Document, assignment: CssCustomPropertyAssignment) {
+    const propertyAssignments = document.getFeatures({
+      kind: 'css-custom-property-assignment',
+      imported: true,
+      externalPackages: true
+    });
+    const propertyUses = document.getFeatures({
+      kind: 'css-custom-property-use',
+      imported: true,
+      externalPackages: true
+    });
+    const names = new Set<string>();
+    for (const assignment of propertyAssignments) {
+      names.add(assignment.name);
+    }
+    for (const use of propertyUses) {
+      names.add(use.name);
+    }
+    names.delete(assignment.name);
+    const items = [...names].sort().map((name): CompletionItem => {
+      return {label: name, kind: CompletionItemKind.Variable};
+    });
+    return {isIncomplete: false, items};
+  }
+
+  private getCustomPropertyUseCompletions(document: Document) {
+    const propertyAssignments = document.getFeatures({
+      kind: 'css-custom-property-assignment',
+      imported: true,
+      externalPackages: true
+    });
+    const names = new Set<string>([...propertyAssignments].map(a => a.name));
+    const items = [...names].sort().map((name): CompletionItem => {
+      return {label: name, kind: CompletionItemKind.Variable};
+    });
+    return {isIncomplete: false, items};
   }
 
   private getDatabindingCompletions(feature: DatabindingFeature) {

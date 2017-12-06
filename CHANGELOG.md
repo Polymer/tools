@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 - Autocomplete slot names inside `slot=""` attributes based on the declared
   slots of the parent element.
+- Autocomplete css custom property names. In use sites, complete to any
+  declaration, in declaration sites complete to any declaration or usage.
 
 ## 2.0.0 - 2017-12-05
 

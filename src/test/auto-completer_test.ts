@@ -474,6 +474,49 @@ suite('AutoCompleter', () => {
               'polymer/element-with-databinding.html', internalPropUsePosition),
           databindingCompletions);
     });
+
+
+    const customPropertyExample = `
+      <style>
+        div {
+          --foo: red;
+          --bar: var(--baz);
+          --fizz: {--floo: var(--flub);};
+        }
+      </style>
+    `;
+    const declaractionPosition = {line: 3, column: 16};
+    const usePosition = {line: 4, column: 27};
+
+    test(`autocomplete css custom property declarations`, async() => {
+      const {client} = await createTestEnvironment();
+      await client.openFile('index.html', customPropertyExample);
+      assert.deepEqual(
+          await client.getCompletions('index.html', declaractionPosition), {
+            isIncomplete: false,
+            items: [
+              {label: '--bar', kind: CompletionItemKind.Variable},
+              {label: '--baz', kind: CompletionItemKind.Variable},
+              {label: '--fizz', kind: CompletionItemKind.Variable},
+              {label: '--floo', kind: CompletionItemKind.Variable},
+              {label: '--flub', kind: CompletionItemKind.Variable},
+            ]
+          });
+    });
+
+    test(`autocomplete css custom property uses`, async() => {
+      const {client} = await createTestEnvironment();
+      await client.openFile('index.html', customPropertyExample);
+      assert.deepEqual(await client.getCompletions('index.html', usePosition), {
+        isIncomplete: false,
+        items: [
+          {label: '--bar', kind: CompletionItemKind.Variable},
+          {label: '--fizz', kind: CompletionItemKind.Variable},
+          {label: '--floo', kind: CompletionItemKind.Variable},
+          {label: '--foo', kind: CompletionItemKind.Variable},
+        ]
+      });
+    });
   }
 
   test(`Complete slot names`, async() => {
