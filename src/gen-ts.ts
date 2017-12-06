@@ -27,11 +27,17 @@ export interface Config {
   exclude?: string[];
 
   /**
+   * Remove any triple-slash references to these files, specified as paths
+   * relative to the analysis root directory.
+   */
+  removeReferences?: string[];
+
+  /**
    * Additional files to insert as triple-slash reference statements. Given the
    * map `a: b[]`, a will get an additional reference statement for each file
-   * path in b.
+   * path in b. All paths are relative to the analysis root directory.
    */
-  augment?: {[filepath: string]: string[]};
+  addReferences?: {[filepath: string]: string[]};
 }
 
 /**
@@ -46,7 +52,7 @@ export async function generateDeclarations(
   });
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
-  for (const tsDoc of analyzerToAst(analysis, config)) {
+  for (const tsDoc of analyzerToAst(analysis, config, rootDir)) {
     outFiles.set(tsDoc.path, tsDoc.serialize())
   }
   return outFiles;
@@ -57,11 +63,14 @@ export async function generateDeclarations(
  * result.
  */
 function analyzerToAst(
-    analysis: analyzer.Analysis, config: Config): ts.Document[] {
+    analysis: analyzer.Analysis, config: Config, rootDir: string):
+    ts.Document[] {
   const exclude = config.exclude !== undefined ?
       config.exclude.map((p) => new RegExp(p)) :
       [/test\//, /demo\//];
-  const augment = config.augment || {};
+  const addReferences = config.addReferences || {};
+  const removeReferencesResolved = new Set(
+      (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
 
   // Analyzer can produce multiple JS documents with the same URL (e.g. an
   // HTML file with multiple inline scripts). We also might have multiple
@@ -92,8 +101,14 @@ function analyzerToAst(
     for (const analyzerDoc of analyzerDocs) {
       handleDocument(analyzerDoc, tsDoc);
     }
-    for (const a of augment[tsDoc.path] || []) {
-      tsDoc.referencePaths.add(path.relative(path.dirname(tsDoc.path), a));
+    for (const ref of tsDoc.referencePaths) {
+      const resolvedRef = path.resolve(rootDir, path.dirname(tsDoc.path), ref);
+      if (removeReferencesResolved.has(resolvedRef)) {
+        tsDoc.referencePaths.delete(ref);
+      }
+    }
+    for (const ref of addReferences[tsDoc.path] || []) {
+      tsDoc.referencePaths.add(path.relative(path.dirname(tsDoc.path), ref));
     }
     tsDoc.simplify();
     // Include even documents with no members. They might be dependencies of
