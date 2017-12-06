@@ -475,4 +475,32 @@ suite('AutoCompleter', () => {
           databindingCompletions);
     });
   }
+
+  test(`Complete slot names`, async() => {
+    const {client} = await createTestEnvironment();
+    await client.openFile('index.html', `
+      <my-elem>
+        <div slot=""></div>
+      </my-elem>
+
+      <dom-module id="my-elem">
+        <template>
+          <slot name="foo"></slot>
+          <slot name="bar"></slot>
+          <slot></slot>
+        </template>
+        <script>customElements.define('my-elem', class extends HTMLElement{});
+        </script>
+      </dom-module>
+    `);
+    `2,19`;
+    assert.deepEqual(
+        await client.getCompletions('index.html', {column: 19, line: 2}), {
+          isIncomplete: false,
+          items: [
+            {kind: CompletionItemKind.Variable, label: 'foo'},
+            {kind: CompletionItemKind.Variable, label: 'bar'}
+          ]
+        });
+  });
 });

@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+- Autocomplete slot names inside `slot=""` attributes based on the declared
+  slots of the parent element.
 
 ## 2.0.0 - 2017-12-05
 

@@ -180,6 +180,10 @@ export default class AutoCompleter extends Handler {
 
   private getAttributeValueCompletions(
       document: Document, location: AttributeValue): CompletionList|undefined {
+    if (location.attribute === 'slot') {
+      return this.getSlotNameCompletions(document, location);
+    }
+
     const domModule =
         this.getAncestorDomModuleForElement(document, location.element);
     if (!domModule || !domModule.id) {
@@ -239,6 +243,34 @@ export default class AutoCompleter extends Handler {
       items: attributes.sort(compareAttributeResults)
                  .map((c) => this.attributeCompletionToCompletionItem(c))
     };
+  }
+
+  private getSlotNameCompletions(document: Document, location: AttributeValue) {
+    const parent = location.element.parentNode;
+    if (!parent || !parent.tagName) {
+      return {isIncomplete: false, items: []};
+    }
+    const parentDefinitions = document.getFeatures({
+      kind: 'element',
+      id: parent.tagName,
+      imported: true,
+      externalPackages: true
+    });
+    const slotNames = new Set();
+    for (const parentDefn of parentDefinitions) {
+      for (const slot of parentDefn.slots) {
+        if (slot.name) {
+          slotNames.add(slot.name);
+        }
+      }
+    }
+    const items = [...slotNames].map((name): CompletionItem => {
+      return {
+        label: name,
+        kind: CompletionItemKind.Variable,
+      };
+    });
+    return {isIncomplete: false, items};
   }
 
   private getAncestorDomModuleForElement(
