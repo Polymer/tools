@@ -37,8 +37,6 @@ declare namespace Polymer {
     attributeChangedCallback(): any;
     connectedCallback(): any;
     disconnectedCallback(): any;
-    __insertChildren(): any;
-    __removeChildren(): any;
 
     /**
      * Forces the element to render its content. This is typically only

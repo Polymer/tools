@@ -47,7 +47,6 @@ declare namespace Polymer {
     restamp: boolean;
     connectedCallback(): any;
     disconnectedCallback(): any;
-    __debounceRender(): any;
 
     /**
      * Forces the element to render its content. Normally rendering is
@@ -57,10 +56,6 @@ declare namespace Polymer {
      * validate application state.
      */
     render(): void|null;
-    __render(): any;
-    __ensureInstance(): any;
-    __syncHostProperties(): any;
-    __teardownInstance(): any;
     _showHideChildren(): any;
   }
 }

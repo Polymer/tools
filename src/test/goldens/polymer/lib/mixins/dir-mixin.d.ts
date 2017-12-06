@@ -33,7 +33,6 @@ declare namespace Polymer {
   } & T
 
   interface DirMixin {
-    __autoDirOptOut: boolean;
     ready(): any;
     connectedCallback(): any;
     disconnectedCallback(): any;

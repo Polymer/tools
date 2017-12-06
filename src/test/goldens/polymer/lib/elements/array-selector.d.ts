@@ -64,9 +64,6 @@ declare namespace Polymer {
      * will deselect the item.
      */
     toggle: boolean;
-    __updateSelection(multi: any, itemsInfo: any): any;
-    __applySplices(splices: any): any;
-    __updateLinks(): any;
 
     /**
      * Clears the selection state.
@@ -88,8 +85,6 @@ declare namespace Polymer {
      * @returns Whether the item is selected
      */
     isIndexSelected(idx: number): boolean;
-    __deselectChangedIdx(idx: any): any;
-    __selectedIndexForItemIndex(idx: any): any;
 
     /**
      * Deselects the given item if it is already selected.

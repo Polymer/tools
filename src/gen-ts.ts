@@ -126,12 +126,19 @@ To modify these typings, edit the source file(s):
 ${sourceUrls.map((url) => '  ' + url).join('\n')}`;
 }
 
+interface MaybePrivate {
+  privacy?: 'public'|'private'|'protected'
+}
+
 /**
  * Extend the given TypeScript declarations document with all of the relevant
  * items in the given Polymer Analyzer document.
  */
 function handleDocument(doc: analyzer.Document, root: ts.Document) {
   for (const feature of doc.getFeatures()) {
+    if ((feature as MaybePrivate).privacy === 'private') {
+      continue;
+    }
     if (feature.kinds.has('element')) {
       handleElement(feature as analyzer.Element, root);
     } else if (feature.kinds.has('behavior')) {
@@ -323,7 +330,7 @@ function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
     ts.Property[] {
   const tsProperties = <ts.Property[]>[];
   for (const property of analyzerProperties) {
-    if (property.inheritedFrom) {
+    if (property.inheritedFrom || property.privacy === 'private') {
       continue;
     }
     const p = new ts.Property({
@@ -347,7 +354,7 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     ts.Method[] {
   const tsMethods = <ts.Method[]>[];
   for (const method of analyzerMethods) {
-    if (method.inheritedFrom) {
+    if (method.inheritedFrom || method.privacy === 'private') {
       continue;
     }
     const m = new ts.Method({

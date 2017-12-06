@@ -25,14 +25,6 @@ declare class TemplateInstanceBase extends
   _setUnmanagedPropertyToNode(node: any, prop: any, value: any): any;
 
   /**
-   * Configure the given `props` by calling `_setPendingProperty`. Also
-   * sets any properties stored in `__hostProps`.
-   *
-   * @param props Object of property name-value pairs to set.
-   */
-  _configureProperties(props: Object|null): void|null;
-
-  /**
    * Forwards a host property to this instance.  This method should be
    * called on instances from the `options.forwardHostProp` callback
    * to propagate changes of host properties to each instance.
@@ -53,9 +45,6 @@ declare class TemplateInstanceBase extends
    * set to false to show them.
    */
   _showHideChildren(hide: boolean): void|null;
-}
-
-declare class klass {
 }
 
 declare namespace templateInfo {
@@ -140,10 +129,4 @@ declare namespace Polymer {
      */
     function modelForElement(template: HTMLTemplateElement|null, node: Node|null): TemplateInstanceBase|null;
   }
-}
-
-/**
- * Subclass base class and add reference for this specific template
- */
-declare class klass {
 }

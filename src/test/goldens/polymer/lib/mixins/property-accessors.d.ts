@@ -36,17 +36,6 @@ declare namespace Polymer {
   } & T
 
   interface PropertyAccessors {
-    __serializing: boolean;
-    __dataCounter: number;
-    __dataEnabled: boolean;
-    __dataReady: boolean;
-    __dataInvalid: boolean;
-    __data: Object;
-    __dataPending: Object|null;
-    __dataOld: Object|null;
-    __dataProto: Object|null;
-    __dataHasAccessor: Object|null;
-    __dataInstanceProps: Object|null;
 
     /**
      * Implements native Custom Elements `attributeChangedCallback` to

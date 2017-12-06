@@ -32,7 +32,6 @@ declare namespace Polymer {
 
   interface LegacyElementMixin {
     isAttached: boolean;
-    __boundListeners: any;
     _debouncers: any;
 
     /**

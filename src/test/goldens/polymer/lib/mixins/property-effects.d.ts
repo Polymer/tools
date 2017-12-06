@@ -50,26 +50,6 @@ declare namespace Polymer {
   } & T
 
   interface PropertyEffects {
-    __dataCounter: number;
-    __data: Object;
-    __dataPending: Object;
-    __dataOld: Object;
-    __dataClientsReady: boolean;
-    __dataPendingClients: any[]|null;
-    __dataToNotify: Object|null;
-    __dataLinkedPaths: Object|null;
-    __dataHasPaths: boolean;
-    __dataCompoundStorage: Object|null;
-    __dataHost: Polymer_PropertyEffects|null;
-    __dataTemp: Object;
-    __dataClientsInitialized: boolean;
-    __computeEffects: Object|null;
-    __reflectEffects: Object|null;
-    __notifyEffects: Object|null;
-    __propagateEffects: Object|null;
-    __observeEffects: Object|null;
-    __readOnly: Object|null;
-    __templateInfo: TemplateInfo;
 
     /**
      * Stamps the provided template and performs instance-time setup for
@@ -305,11 +285,6 @@ declare namespace Polymer {
      * their `_flushProperties` method to run.
      */
     _flushClients(): void|null;
-
-    /**
-     * (c) the stamped dom enables.
-     */
-    __enableOrFlushClients(): any;
 
     /**
      * Perform any initial setup on client dom. Called before the first

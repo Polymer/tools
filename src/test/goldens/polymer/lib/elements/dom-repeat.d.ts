@@ -203,24 +203,6 @@ declare namespace Polymer {
     _targetFrameTime: number;
     disconnectedCallback(): any;
     connectedCallback(): any;
-    __ensureTemplatized(): any;
-    __getMethodHost(): any;
-    __sortChanged(sort: any): any;
-    __filterChanged(filter: any): any;
-    __computeFrameTime(rate: any): any;
-    __initializeChunking(): any;
-    __tryRenderChunk(): any;
-    __requestRenderChunk(): any;
-    __renderChunk(): any;
-    __observeChanged(): any;
-    __itemsChanged(change: any): any;
-    __handleObservedPaths(path: any): any;
-
-    /**
-     * @param fn Function to debounce.
-     * @param delay Delay in ms to debounce by.
-     */
-    __debounceRender(fn: () => any, delay?: number): any;
 
     /**
      * Forces the element to render its content. Normally rendering is
@@ -230,23 +212,11 @@ declare namespace Polymer {
      * validate application state.
      */
     render(): void|null;
-    __render(): any;
-    __applyFullRefresh(): any;
-    __detachInstance(idx: any): any;
-    __attachInstance(idx: any, parent: any): any;
-    __detachAndRemoveInstance(idx: any): any;
-    __stampInstance(item: any, instIdx: any, itemIdx: any): any;
-    __insertInstance(item: any, instIdx: any, itemIdx: any): any;
 
     /**
      * Implements extension point from Templatize mixin
      */
     _showHideChildren(hidden: any): any;
-
-    /**
-     * responsible for notifying item.<path> changes to inst for key
-     */
-    __handleItemPath(path: any, value: any): any;
 
     /**
      * Returns the item associated with a given element stamped by
