@@ -15,7 +15,6 @@ const gulp = require('gulp');
 const mocha = require('gulp-mocha');
 const tslint_lib = require('gulp-tslint');
 const typescript = require('gulp-typescript');
-const typings = require('gulp-typings');
 const mergeStream = require('merge-stream');
 const path = require('path');
 const runSequence = require('run-sequence');
@@ -27,14 +26,6 @@ function task(name, deps, impl) {
         `A task with the name ${JSON.stringify(name)} already exists!`);
   }
   gulp.task(name, deps, impl);
-}
-
-module.exports.init = function() {
-  task('init', () => {
-    if (fs.existsSync('./typings.json')) {
-      gulp.src('./typings.json').pipe(typings())
-    }
-  });
 }
 
 module.exports.depcheck = function depcheck(options) {
@@ -138,7 +129,7 @@ module.exports.build = function(options) {
 }
 
 module.exports.clean = function(options) {
-  const defaultOptions = {buildArtifacts: ['lib/', 'typings/']};
+  const defaultOptions = {buildArtifacts: ['lib/']};
   options = Object.assign({}, defaultOptions, options);
 
   task('clean', () => {
@@ -164,7 +155,7 @@ module.exports.test = function(options) {
   module.exports.buildAll(options);
 
   task('test', ['build'], () =>
-    gulp.src('test/**/*_test.js', {read: false})
+    gulp.src(['test/**/*_test.js', 'src/test/**/*_test.js'], {read: false})
         .pipe(mocha({
           ui: 'tdd',
           reporter: 'spec',
