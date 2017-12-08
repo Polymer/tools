@@ -27,14 +27,18 @@ import {BatchProcessResponse, batchProcess, fsConcurrencyPreset, githubConcurren
 import _rimraf = require('rimraf');
 const rimraf: (dir: string) => void = util.promisify(_rimraf);
 
-async function collectFailures(
-    collection: Map<WorkspaceRepo, Error>,
-    failures: Map<WorkspaceRepo, Error>) {
-  for (const [repo, error] of failures) {
-    collection.set(repo, error);
+/**
+ * Like Object.assign(), copy the values from one Map to the target Map.
+ */
+async function mapAssign<T, V>(target: Map<T, V>, source: Map<T, V>) {
+  for (const [repo, error] of source) {
+    target.set(repo, error);
   }
 }
 
+/**
+ * An object containing info about an error and the repo that it occurred in.
+ */
 interface GitHubRepoError {
   error: Error;
   repoReference: GitHubRepoReference;
@@ -271,13 +275,13 @@ export class Workspace {
     // Update in-place and/or clone repositories from GitHub.
     const repoUpdateResults =
         await this._cloneOrUpdateWorkspaceRepos(workspaceRepos);
-    collectFailures(failedWorkspaceRepos, repoUpdateResults.failures);
+    mapAssign(failedWorkspaceRepos, repoUpdateResults.failures);
     workspaceRepos = [...repoUpdateResults.successes.keys()];
 
     // Setup Bower for the entire workspace.
     const bowerConfigureResults =
         await this._configureBowerWorkspace(workspaceRepos);
-    collectFailures(failedWorkspaceRepos, bowerConfigureResults.failures);
+    mapAssign(failedWorkspaceRepos, bowerConfigureResults.failures);
     workspaceRepos = [...bowerConfigureResults.successes.keys()];
 
     // Install bower dependencies.
