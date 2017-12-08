@@ -13,7 +13,6 @@
  */
 
 suite('src/util/bower', () => {
-
   suite.skip(
       'mergedBowerConfigsFromRepos()',
       () => {
@@ -21,5 +20,4 @@ suite('src/util/bower', () => {
           // from
           // original naive implementation.
       });
-
 });

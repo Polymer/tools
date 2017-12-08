@@ -15,19 +15,17 @@
 import Bottleneck from 'bottleneck';
 
 /** Concurrency presets based on some basic benchmarking & common-sense. */
-export const concurrencyPresets = {
-  npmPublish: 6,
-  fs: 10,
-  github: 16,
-};
+export const npmPublishConcurrencyPreset = 6;
+export const fsConcurrencyPreset = 6;
+export const githubConcurrencyPreset = 16;
 
 /**
  * When running a batch process, return two collections: one of successful runs
  * that completed without throwing an exception, and one where an exception
  * occurred.
  */
-export interface BatchProcessResponse<T> {
-  successes: Map<T, any>;
+export interface BatchProcessResponse<T, V> {
+  successes: Map<T, V>;
   failures: Map<T, Error>;
 }
 
@@ -36,9 +34,9 @@ export interface BatchProcessResponse<T> {
  * called with each item as an argument). Group the results by successes an
  * failures based on whether an exception was thrown by that function.
  */
-export async function batchProcess<T>(
-    items: T[], fn: (repo: T) => Promise<any>, options?: {concurrency: number}):
-    Promise<BatchProcessResponse<T>> {
+export async function batchProcess<T, V>(
+    items: T[], fn: (repo: T) => Promise<V>, options?: {concurrency: number}):
+    Promise<BatchProcessResponse<T, V>> {
   const concurrency = (options && options.concurrency) || 0;
   const rateLimitter = new Bottleneck(concurrency);
   const successRuns = new Map<T, any>();

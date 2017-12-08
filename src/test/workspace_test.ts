@@ -31,11 +31,8 @@ const testGitHubToken = 'TEST_GITHUB_TOKEN';
 const testWorkspaceDir = path.join(__dirname, 'TEST_WORKSPACE_DIR');
 
 suite('src/workspace', function() {
-
   suite('Workspace', () => {
-
     suite('workspace.init()', () => {
-
       test('can be initialized with an empty set of patterns', async () => {
         const workspace =
             new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
@@ -43,11 +40,9 @@ suite('src/workspace', function() {
         assert.deepEqual(workspaceRepos, []);
         assert.deepEqual([...failures], []);
       });
-
     });
 
     suite('workspace.isInitialized', () => {
-
       test('returns false before init has been run', async () => {
         const workspace =
             new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
@@ -60,9 +55,6 @@ suite('src/workspace', function() {
         await workspace.init({include: []});
         assert.isTrue(workspace.isInitialized);
       });
-
     });
-
   });
-
 });

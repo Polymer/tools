@@ -20,9 +20,9 @@ import {GitRepo} from './git';
 import {NpmPackage} from './npm';
 import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
-import exec, {checkCommand} from './util/exec';
+import exec, {checkCommand, ExecResult} from './util/exec';
 import {existsSync} from './util/fs';
-import {BatchProcessResponse, batchProcess, concurrencyPresets} from './util/batch-process';
+import {BatchProcessResponse, batchProcess, fsConcurrencyPreset, githubConcurrencyPreset, npmPublishConcurrencyPreset} from './util/batch-process';
 
 import _rimraf = require('rimraf');
 const rimraf: (dir: string) => void = util.promisify(_rimraf);
@@ -166,14 +166,14 @@ export class Workspace {
     // If a folder exists for a workspace repo and it can't be opened,
     // we need to remove it.  This happens when there's not a --fresh
     // invocation and bower installed the dependency instead of git.
-    await Promise.all(repos.map(async (repo) => {
+    return batchProcess(repos, async (repo: WorkspaceRepo) => {
       if (existsSync(repo.dir) && !repo.git.isGit()) {
         if (options.verbose) {
           console.log(`Removing existing folder: ${repo.dir}...`);
         }
         await rimraf(repo.dir);
       }
-    }));
+    }, {concurrency: fsConcurrencyPreset});
   }
 
   /**
@@ -190,7 +190,7 @@ export class Workspace {
         await repo.git.clone(repo.github.cloneUrl);
       }
       await repo.git.checkout(repo.github.ref || repo.github.defaultBranch);
-    }, {concurrency: concurrencyPresets.fs});
+    }, {concurrency: fsConcurrencyPreset});
   }
 
   /**
@@ -208,7 +208,7 @@ export class Workspace {
       const sha = await repo.git.getHeadSha();
       bowerConfig.dependencies[repo.github.name] =
           `./${repo.github.name}#${sha}`;
-    }, {concurrency: concurrencyPresets.fs});
+    }, {concurrency: fsConcurrencyPreset});
 
     fs.writeFileSync(
         path.join(this.dir, 'bower.json'), JSON.stringify(bowerConfig));
@@ -295,7 +295,7 @@ export class Workspace {
   async run(
       workspaceRepos: WorkspaceRepo[],
       fn: (repo: WorkspaceRepo) => Promise<void>,
-      concurrency = 1): Promise<BatchProcessResponse<WorkspaceRepo>> {
+      concurrency = 1): Promise<BatchProcessResponse<WorkspaceRepo, void>> {
     this.assertInitialized();
     return batchProcess(workspaceRepos, fn, {concurrency});
   }
@@ -304,22 +304,22 @@ export class Workspace {
    * Create a new branch on each repo.
    */
   async startNewBranch(workspaceRepos: WorkspaceRepo[], newBranch: string):
-      Promise<BatchProcessResponse<WorkspaceRepo>> {
+      Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
     this.assertInitialized();
     return batchProcess(workspaceRepos, (repo) => {
       return repo.git.createBranch(newBranch);
-    }, {concurrency: concurrencyPresets.fs});
+    }, {concurrency: fsConcurrencyPreset});
   }
 
   /**
    * Commit changes on each repo with the given commit message.
    */
   async commitChanges(workspaceRepos: WorkspaceRepo[], message: string):
-      Promise<BatchProcessResponse<WorkspaceRepo>> {
+      Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
     this.assertInitialized();
     return batchProcess(workspaceRepos, (repo) => {
       return repo.git.commit(message);
-    }, {concurrency: concurrencyPresets.fs});
+    }, {concurrency: fsConcurrencyPreset});
   }
 
   /**
@@ -327,22 +327,23 @@ export class Workspace {
    */
   async pushChangesToGithub(
       workspaceRepos: WorkspaceRepo[], pushToBranch?: string,
-      forcePush = false): Promise<BatchProcessResponse<WorkspaceRepo>> {
+      forcePush = false):
+      Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
     this.assertInitialized();
     return batchProcess(workspaceRepos, (repo) => {
       return repo.git.pushCurrentBranchToOrigin(pushToBranch, forcePush);
-    }, {concurrency: concurrencyPresets.github});
+    }, {concurrency: githubConcurrencyPreset});
   }
 
   /**
    * (Not Yet Implemented) Publish a new version to NPM.
    */
   async publishPackagesToNpm(
-      workspaceRepos: WorkspaceRepo[],
-      distTag = 'latest'): Promise<BatchProcessResponse<WorkspaceRepo>> {
+      workspaceRepos: WorkspaceRepo[], distTag = 'latest'):
+      Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
     this.assertInitialized();
     return batchProcess(workspaceRepos, (repo) => {
       return repo.npm.publishToNpm(distTag);
-    }, {concurrency: concurrencyPresets.npmPublish});
+    }, {concurrency: npmPublishConcurrencyPreset});
   }
 }
