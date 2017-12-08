@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as GitHub from 'github';
+import * as GitHubApi from 'github';
+import {batchProcess, githubConcurrencyPreset} from './util/batch-process';
 
 /**
  * A reference to a GitHub repo, with an optional reference to a specific ref
@@ -134,11 +135,11 @@ function createGithubRepoReferenceFromPattern(pattern: string):
  */
 export class GitHubConnection {
   private _cache: Map<string, GitHubRepoData>;
-  private _github: GitHub;
+  private _github: GitHubApi;
 
   constructor(token: string) {
     this.resetCache();
-    this._github = new GitHub({protocol: 'https'});
+    this._github = new GitHubApi({protocol: 'https'});
     this._github.authenticate({type: 'oauth', token: token});
   }
 
@@ -262,47 +263,41 @@ export class GitHubConnection {
       return allGitHubRepos;
     }
 
-    await Promise.all([...ownersToLookup].map((pattern): Promise<void> => {
-      return (async () => {
-        const owner = pattern.substring(0, pattern.indexOf('/')).toLowerCase();
-        const namePattern =
-            pattern.substring(0, pattern.indexOf('*')).toLowerCase();
-        const ref = pattern.includes('#') &&
-            pattern.substring(pattern.indexOf('#') + 1);
-        const allOwnerRepos = await this.getOwnerRepos(owner);
-        // Filter all of this owner's repos for possible matches:
-        for (const possibleMatch of allOwnerRepos) {
-          // If the repo's fullName doesn't match the pattern prefix, ignore it.
-          if (!possibleMatch.fullName.toLowerCase().startsWith(namePattern)) {
-            continue;
-          }
-          // If a branch was defined after the wildcard but this repo doesn't
-          // have a ref with that name, ignore it.
-          if (ref && ref !== possibleMatch.defaultBranch) {
-            try {
-              const response = await this._github.gitdata.getReference({
-                owner: possibleMatch.owner,
-                repo: possibleMatch.name,
-                ref: 'heads/' + ref,
-              });
-              // GitHub API peculiarity: if ref isn't an exact match, GitHub
-              // switches behavior and returns all references that have `ref` as
-              // a prefix. Since we only want exact matches, add an extra check
-              // that the API did not return an array.
-              if (!isSuccessResponse(response) ||
-                  Array.isArray(response.data)) {
-                continue;
-              }
-            } catch (err) {
-              continue;
-            }
-          }
-          // Otherwise, it's a match! Add it to allGitHubRepos to be returned.
-          allGitHubRepos.push(createGitHubRepoReferenceFromDataAndReference(
-              possibleMatch, ref || possibleMatch.defaultBranch));
+    for (const pattern of ownersToLookup) {
+      const namePattern =
+          pattern.substring(0, pattern.indexOf('*')).toLowerCase();
+      const ref =
+          pattern.includes('#') && pattern.substring(pattern.indexOf('#') + 1);
+      const owner = pattern.substring(0, pattern.indexOf('/')).toLowerCase();
+      const allOwnerRepos = await this.getOwnerRepos(owner);
+      // Filter all of this owner's repos for possible matches:
+      await batchProcess(allOwnerRepos, async (possibleMatch) => {
+        // If the repo's fullName doesn't match the pattern prefix, ignore it.
+        if (!possibleMatch.fullName.toLowerCase().startsWith(namePattern)) {
+          return;
         }
-      })();
-    }));
+        // If a branch was defined after the wildcard but this repo doesn't
+        // have a ref with that name, ignore it.
+        // TODO(fks) 10-16-2017: Report reference match failures?
+        if (ref && ref !== possibleMatch.defaultBranch) {
+          const response = await this._github.gitdata.getReference({
+            owner: possibleMatch.owner,
+            repo: possibleMatch.name,
+            ref: 'heads/' + ref,
+          });
+          // GitHub API peculiarity: if ref isn't an exact match, GitHub
+          // switches behavior and returns all references that have `ref` as
+          // a prefix. Since we only want exact matches, add an extra check
+          // that the API did not return an array.
+          if (!isSuccessResponse(response) || Array.isArray(response.data)) {
+            return;
+          }
+        }
+        // Otherwise, it's a match! Add it to allGitHubRepos to be returned.
+        allGitHubRepos.push(createGitHubRepoReferenceFromDataAndReference(
+            possibleMatch, ref || possibleMatch.defaultBranch));
+      }, {concurrency: githubConcurrencyPreset});
+    }
 
     return allGitHubRepos;
   }

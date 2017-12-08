@@ -19,7 +19,6 @@ import {testApiToken} from './_util/mock-api';
 
 
 suite('src/github', () => {
-
   suiteSetup(() => {
     mockApi.setup();
   });
@@ -29,9 +28,7 @@ suite('src/github', () => {
   });
 
   suite('GitHubConnection', () => {
-
     suite('githubConnection.expandRepoPatterns()', () => {
-
       let githubConnection: GitHubConnection;
 
       setup(() => {
@@ -144,11 +141,9 @@ suite('src/github', () => {
                 ['polymerelements/iron-*#ABCDEFGH']),
             []);
       });
-
     });
 
     suite('githubConnection.getRepoInfo()', () => {
-
       test('returns full GitHubRepo object from a reference', async () => {
         const githubConnection = new GitHubConnection(testApiToken);
         const repo = await githubConnection.getRepoInfo(
@@ -193,8 +188,6 @@ suite('src/github', () => {
         const repoCached = githubConnection.getCached('polymer/polymer');
         assert.isDefined(repoCached);
       });
-
     });
-
   });
 });

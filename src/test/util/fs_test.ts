@@ -21,9 +21,7 @@ const knownFilePath = __filename;
 const knownDoesNotExistPath = path.join(__dirname, 'AI92J53002GKGNFIAWNF');
 
 suite('src/util/fs', () => {
-
   suite('existsSync()', () => {
-
     test('returns true if something exists at path', async () => {
       assert.isTrue(fsUtil.existsSync(knownDirectoryPath));
       assert.isTrue(fsUtil.existsSync(knownFilePath));
@@ -32,11 +30,9 @@ suite('src/util/fs', () => {
     test('returns false if directory does not exist', async () => {
       assert.isFalse(fsUtil.existsSync(knownDoesNotExistPath));
     });
-
   });
 
   suite('isDirSync()', () => {
-
     test('returns true if path is a directory', async () => {
       assert.isTrue(fsUtil.isDirSync(knownDirectoryPath));
     });
@@ -46,7 +42,5 @@ suite('src/util/fs', () => {
     test('returns false if nothing exists at path', async () => {
       assert.isFalse(fsUtil.isDirSync(knownDoesNotExistPath));
     });
-
   });
-
 });
