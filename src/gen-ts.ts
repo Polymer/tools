@@ -215,7 +215,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
     // TODO How do we handle behaviors with classes?
     const c = new ts.Class({
       name: shortName,
-      description: feature.description,
+      description: feature.description || feature.summary,
       extends: (feature.extends) ||
           (isPolymerElement(feature) ? 'Polymer.Element' : 'HTMLElement'),
       mixins: feature.mixins.map((mixin) => mixin.identifier),
@@ -230,7 +230,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
     // extends.
     const i = new ts.Interface({
       name: shortName,
-      description: feature.description,
+      description: feature.description || feature.summary,
       properties: handleProperties(feature.properties.values()),
       methods: handleMethods(feature.methods.values()),
     });
@@ -268,7 +268,7 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
   }
   const [namespacePath, className] = splitReference(feature.className);
   const i = new ts.Interface({name: className});
-  i.description = feature.description;
+  i.description = feature.description || feature.summary;
   i.properties = handleProperties(feature.properties.values());
   i.methods = handleMethods(feature.methods.values());
   findOrCreateNamespace(root, namespacePath).members.push(i);
@@ -323,7 +323,7 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
 
   const f = new ts.Function({
     name,
-    description: feature.description,
+    description: feature.description || feature.summary,
     templateTypes: feature.templateTypes,
     returns: closureTypeToTypeScript(
         feature.return && feature.return.type, feature.templateTypes)
@@ -438,7 +438,7 @@ function* reverseIter<T>(arr: T[]) {
 function handleNamespace(feature: analyzer.Namespace, tsDoc: ts.Document) {
   const ns = findOrCreateNamespace(tsDoc, feature.name.split('.'));
   if (ns.kind === 'namespace') {
-    ns.description = feature.description || '';
+    ns.description = feature.description || feature.summary || '';
   }
 }
 

@@ -12,6 +12,9 @@
 
 declare namespace Polymer {
 
+  /**
+   * Module that provides utilities for diffing arrays.
+   */
   namespace ArraySplice {
 
 
