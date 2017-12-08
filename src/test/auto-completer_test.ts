@@ -19,6 +19,7 @@ import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import {CompletionItem, CompletionItemKind, CompletionList, InsertTextFormat} from 'vscode-languageserver/lib/main';
 
 import {createTestEnvironment} from './util';
+import {standardJavaScriptSnippets} from '../standard-snippets';
 
 const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 
@@ -432,12 +433,12 @@ suite('AutoCompleter', () => {
         {isIncomplete: false, items: attributeCompletions});
   });
 
-  test(`Don't give HTML completions inside of script tags.`, async() => {
+  test(`Return JavaScript standard completions inside of script tags.`, async() => {
     const {client} = await createTestEnvironment(fixtureDir);
     await client.openFile(indexFile, '<script>\n\n</script>\n' + indexContents);
     const completions =
         await client.getCompletions(indexFile, {line: 1, column: 0});
-    assert.deepEqual(completions, {isIncomplete: true, items: []});
+    assert.deepEqual(completions, {isIncomplete: false, items: standardJavaScriptSnippets});
   });
 
   {

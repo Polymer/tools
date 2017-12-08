@@ -24,6 +24,7 @@ import {LsAnalyzer} from './analyzer-synchronizer';
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
 import {Handler} from './util';
+import {standardJavaScriptSnippets} from '../standard-snippets';
 
 
 /**
@@ -114,6 +115,11 @@ export default class AutoCompleter extends Handler {
       }
       if (location.kind === 'attribute') {
         return this.getAttributeCompletions(document, location);
+      }
+      // TODO(timvdlippe): Also return these snippets if the user is in a
+      // javascript file (locResult.language === 'js')
+      if (location.kind === 'scriptTagContents') {
+        return this.getStandardJavaScriptSnippetCompletions();
       }
     }
   }
@@ -375,6 +381,13 @@ export default class AutoCompleter extends Handler {
       isIncomplete: false,
       items: attributes.sort(compareAttributeResults)
                  .map((c) => this.attributeCompletionToCompletionItem(c)),
+    };
+  }
+
+  private getStandardJavaScriptSnippetCompletions(): CompletionList {
+    return {
+      isIncomplete: false,
+      items: standardJavaScriptSnippets
     };
   }
 

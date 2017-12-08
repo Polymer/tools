@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - New setting `polymer-ide.logToFile`, a string path to a file. When given,
     logs are appended to this file (in addition to possibly going to the
     client).
+- Add autocompletion for standard custom element definition.
 
 ## 2.0.0 - 2017-12-05
 
