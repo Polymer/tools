@@ -22,16 +22,17 @@ import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
 import exec, {checkCommand, ExecResult} from './util/exec';
 import {existsSync} from './util/fs';
-import {BatchProcessResponse, batchProcess, concurrencyPresets} from './util/batch-process';
+import {BatchProcessResponse, batchProcess, fsConcurrencyPreset} from './util/batch-process';
 
 import _rimraf = require('rimraf');
 const rimraf: (dir: string) => void = util.promisify(_rimraf);
 
-async function collectFailures(
-    collection: Map<WorkspaceRepo, Error>,
-    failures: Map<WorkspaceRepo, Error>) {
-  for (const [repo, error] of failures) {
-    collection.set(repo, error);
+/**
+ * Like Object.assign(), copy the values from one Map to the target Map.
+ */
+async function mapAssign<T, V>(target: Map<T, V>, source: Map<T, V>) {
+  for (const [repo, error] of source) {
+    target.set(repo, error);
   }
 }
 
@@ -71,6 +72,9 @@ async function validateEnvironment() {
   }
 }
 
+/**
+ * An object containing info about an error and the repo that it occurred in.
+ */
 interface GitHubRepoError {
   error: Error;
   repoReference: GitHubRepoReference;
@@ -143,13 +147,13 @@ export class Workspace {
     // Update in-place and/or clone repositories from GitHub.
     const repoUpdateResults =
         await this._cloneOrUpdateWorkspaceRepos(workspaceRepos);
-    collectFailures(failedWorkspaceRepos, repoUpdateResults.failures);
+    mapAssign(failedWorkspaceRepos, repoUpdateResults.failures);
     workspaceRepos = [...repoUpdateResults.successes.keys()];
 
     // Setup Bower for the entire workspace.
     const bowerConfigureResults =
         await this._configureBowerWorkspace(workspaceRepos);
-    collectFailures(failedWorkspaceRepos, bowerConfigureResults.failures);
+    mapAssign(failedWorkspaceRepos, bowerConfigureResults.failures);
     workspaceRepos = [...bowerConfigureResults.successes.keys()];
 
     // All done!
@@ -238,14 +242,14 @@ export class Workspace {
     // If a folder exists for a workspace repo and it can't be opened,
     // we need to remove it.  This happens when there's not a --fresh
     // invocation and bower installed the dependency instead of git.
-    await Promise.all(repos.map(async (repo) => {
+    return batchProcess(repos, async (repo: WorkspaceRepo) => {
       if (existsSync(repo.dir) && !repo.git.isGit()) {
         if (options.verbose) {
           console.log(`Removing existing folder: ${repo.dir}...`);
         }
         await rimraf(repo.dir);
       }
-    }));
+    }, {concurrency: fsConcurrencyPreset});
   }
 
   /**
@@ -254,9 +258,8 @@ export class Workspace {
    * refs.
    */
   private async _cloneOrUpdateWorkspaceRepos(repos: WorkspaceRepo[]) {
-    return batchProcess(repos, cloneOrUpdateWorkspaceRepo, {
-      concurrency: concurrencyPresets.fs
-    });
+    return batchProcess(
+        repos, cloneOrUpdateWorkspaceRepo, {concurrency: fsConcurrencyPreset});
   }
 
   /**
@@ -274,7 +277,7 @@ export class Workspace {
       const sha = await repo.git.getHeadSha();
       bowerConfig.dependencies[repo.github.name] =
           `./${repo.github.name}#${sha}`;
-    }, {concurrency: concurrencyPresets.fs});
+    }, {concurrency: fsConcurrencyPreset});
 
     fs.writeFileSync(
         path.join(this.dir, 'bower.json'), JSON.stringify(bowerConfig));

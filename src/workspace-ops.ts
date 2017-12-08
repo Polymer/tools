@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {batchProcess, BatchProcessFn, BatchProcessResponse, concurrencyPresets} from './util/batch-process';
+import {batchProcess, BatchProcessFn, BatchProcessResponse, fsConcurrencyPreset, githubConcurrencyPreset, npmPublishConcurrencyPreset} from './util/batch-process';
+import {ExecResult} from './util/exec';
 import {WorkspaceRepo} from './workspace';
 
 /**
@@ -25,11 +26,11 @@ export const run: BatchProcessFn<WorkspaceRepo> = batchProcess;
  * Create a new branch on each repo.
  */
 export async function startNewBranch(
-    workspaceRepos: WorkspaceRepo[],
-    newBranch: string): Promise<BatchProcessResponse<WorkspaceRepo>> {
+    workspaceRepos: WorkspaceRepo[], newBranch: string):
+    Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
   return batchProcess(workspaceRepos, (repo) => {
     return repo.git.createBranch(newBranch);
-  }, {concurrency: concurrencyPresets.fs});
+  }, {concurrency: fsConcurrencyPreset});
 }
 
 /**
@@ -37,10 +38,10 @@ export async function startNewBranch(
  */
 export async function commitChanges(
     workspaceRepos: WorkspaceRepo[],
-    message: string): Promise<BatchProcessResponse<WorkspaceRepo>> {
+    message: string): Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
   return batchProcess(workspaceRepos, (repo) => {
     return repo.git.commit(message);
-  }, {concurrency: concurrencyPresets.fs});
+  }, {concurrency: fsConcurrencyPreset});
 }
 
 /**
@@ -49,10 +50,10 @@ export async function commitChanges(
  */
 export async function pushChangesToGithub(
     workspaceRepos: WorkspaceRepo[], pushToBranch?: string, forcePush = false):
-    Promise<BatchProcessResponse<WorkspaceRepo>> {
+    Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
   return batchProcess(workspaceRepos, (repo) => {
     return repo.git.pushCurrentBranchToOrigin(pushToBranch, forcePush);
-  }, {concurrency: concurrencyPresets.github});
+  }, {concurrency: githubConcurrencyPreset});
 }
 
 /**
@@ -60,9 +61,9 @@ export async function pushChangesToGithub(
  * will need to be set in each package before running.
  */
 export async function publishPackagesToNpm(
-    workspaceRepos: WorkspaceRepo[],
-    distTag = 'latest'): Promise<BatchProcessResponse<WorkspaceRepo>> {
+    workspaceRepos: WorkspaceRepo[], distTag = 'latest'):
+    Promise<BatchProcessResponse<WorkspaceRepo, ExecResult>> {
   return batchProcess(workspaceRepos, (repo) => {
     return repo.npm.publishToNpm(distTag);
-  }, {concurrency: concurrencyPresets.npmPublish});
+  }, {concurrency: npmPublishConcurrencyPreset});
 }

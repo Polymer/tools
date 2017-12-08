@@ -25,11 +25,9 @@ const rimraf: (dir: string) => void = promisify(_rimraf);
 
 
 suite('src/npm', function() {
-
   this.timeout(20 * 1000);
 
   suite('NpmPackage', () => {
-
     const npmDir = path.join(__dirname, 'POLYMER_WORKSPACES_NPM_DIR');
     const emptyDir = path.join(__dirname, 'POLYMER_WORKSPACES_EMPTY_NPM_DIR');
 
@@ -52,7 +50,6 @@ suite('src/npm', function() {
         });
 
     suite('gitRepo.getPackageManifest()', () => {
-
       test('returns the parsed package.json for the package', async () => {
         const npmPackage = new NpmPackage(npmDir);
         const packageManifest = await npmPackage.getPackageManifest();
@@ -73,7 +70,6 @@ suite('src/npm', function() {
           assert.equal(packageManifestError.code, 'ENOENT');
         }
       });
-
     });
 
     suite.skip(
@@ -82,6 +78,5 @@ suite('src/npm', function() {
             // TODO(fks) 10-12-2017: Add tests. Tests skipped due to the
             // complexity of the underlying npm command.
         });
-
   });
 });

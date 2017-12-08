@@ -13,7 +13,7 @@
  */
 
 import * as GitHubApi from 'github';
-import {batchProcess, concurrencyPresets} from './util/batch-process';
+import {batchProcess, githubConcurrencyPreset} from './util/batch-process';
 
 /**
  * A reference to a GitHub repo, with an optional reference to a specific ref
@@ -296,7 +296,7 @@ export class GitHubConnection {
         // Otherwise, it's a match! Add it to allGitHubRepos to be returned.
         allGitHubRepos.push(createGitHubRepoReferenceFromDataAndReference(
             possibleMatch, ref || possibleMatch.defaultBranch));
-      }, {concurrency: concurrencyPresets.github});
+      }, {concurrency: githubConcurrencyPreset});
     }
 
     return allGitHubRepos;

@@ -16,9 +16,7 @@ import {assert} from 'chai';
 import exec, {checkCommand} from '../../util/exec';
 
 suite('src/util/exec', () => {
-
   suite('exec()', () => {
-
     test('returns false if current directory does not exist', async () => {
       const testCwd = process.cwd();
       const result = await exec(testCwd, 'pwd');
@@ -30,11 +28,9 @@ suite('src/util/exec', () => {
       const result = await exec('', 'echo', [testOutput]);
       assert.deepEqual(result, {stdout: testOutput, stderr: ''});
     });
-
   });
 
   suite('checkCommand()', () => {
-
     test('returns true if command exists in shell path', async () => {
       assert.isTrue(
           await checkCommand('node'));  // must be true to be running this test
@@ -44,7 +40,5 @@ suite('src/util/exec', () => {
       assert.isFalse(
           await checkCommand('there-is-no-way-this-exists-ia23t4niaq23n'));
     });
-
   });
-
 });
