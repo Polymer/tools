@@ -219,4 +219,12 @@ var jjj = function() {
       'overrideNameFn',
     ]);
   });
+
+  test('handles @template annotation', async () => {
+    const functions = await getNamespaceFunctions('templated-functions.js');
+    assert.deepEqual(functions.map((fn) => [fn.name, fn.templateTypes]), [
+      ['templateFn', ['T']],
+      ['multiTemplateFn', ['A', 'B', 'C']],
+    ]);
+  });
 });

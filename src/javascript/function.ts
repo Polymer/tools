@@ -29,6 +29,7 @@ export class ScannedFunction implements Resolvable {
   params?: {name: string, type?: string}[];
   return?: {type?: string, desc: string};
   privacy: Privacy;
+  templateTypes?: string[];
 
   constructor(
       name: string,
@@ -40,6 +41,7 @@ export class ScannedFunction implements Resolvable {
       sourceRange: SourceRange,
       params?: {name: string, type?: string}[],
       returnData?: {type?: string, desc: string},
+      templateTypes?: string[],
   ) {
     this.name = name;
     this.description = description;
@@ -51,6 +53,7 @@ export class ScannedFunction implements Resolvable {
     this.params = params;
     this.return = returnData;
     this.privacy = privacy;
+    this.templateTypes = templateTypes;
   }
 
   resolve(_document: Document) {
@@ -75,6 +78,7 @@ export class Function implements Feature {
   warnings: Warning[];
   params?: {name: string, type?: string}[];
   return?: {type?: string, desc: string};
+  templateTypes?: string[];
 
   constructor(scannedFunction: ScannedFunction) {
     this.name = scannedFunction.name;
@@ -88,6 +92,7 @@ export class Function implements Feature {
     this.params = scannedFunction.params;
     this.return = scannedFunction.return;
     this.privacy = scannedFunction.privacy;
+    this.templateTypes = scannedFunction.templateTypes;
   }
 
   toString() {

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- Add new, unreleased changes here. -->
 
 * Added missing model typings for branded `url` types to top-level package exports.
+* Added `templateTypes` property to functions, extracted from `@template` annotations.
 
 ## [3.0.0-pre.2] - 2017-11-30
 

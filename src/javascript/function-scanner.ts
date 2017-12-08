@@ -172,17 +172,22 @@ class FunctionVisitor implements Visitor {
     // TODO(justinfagnani): consolidate with similar param processing code in
     // docs.ts
     const functionParams: {type: string, desc: string, name: string}[] = [];
-    if (docs.tags) {
-      docs.tags.forEach((tag) => {
-        if (tag.title !== 'param') {
-          return;
-        }
+    const templateTypes: string[] = [];
+    for (const tag of docs.tags) {
+      if (tag.title === 'param') {
         functionParams.push({
           type: tag.type ? doctrine.type.stringify(tag.type) : 'N/A',
           desc: tag.description || '',
           name: tag.name || 'N/A'
         });
-      });
+      } else if (tag.title === 'template') {
+        for (let t of (tag.description || '').split(',')) {
+          t = t.trim();
+          if (t.length > 0) {
+            templateTypes.push(t);
+          }
+        }
+      }
     }
     // TODO(fks): parse params directly from `fn`, merge with docs.tags data
 
@@ -196,6 +201,7 @@ class FunctionVisitor implements Visitor {
         docs,
         sourceRange,
         functionParams,
-        functionReturn));
+        functionReturn,
+        templateTypes));
   }
 }
