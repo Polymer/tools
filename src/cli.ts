@@ -72,7 +72,7 @@ async function run(argv: string[]) {
 
   if (!args.config) {
     const p = path.join(args.root, 'gen-tsd.json');
-    if (await fsExtra.exists(p)) {
+    if (await fsExtra.pathExists(p)) {
       args.config = p;
     }
   }
