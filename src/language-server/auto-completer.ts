@@ -13,13 +13,14 @@
 
 import * as dom5 from 'dom5';
 import * as fuzzaldrin from 'fuzzaldrin';
-import {Analyzer, Document, Element, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
+import {Document, Element, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {ClientCapabilities, CompletionItem, CompletionItemKind, CompletionList, IConnection, InsertTextFormat} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
 import {AttributesSection, AttributeValue, TagName, TextNode} from '../ast-from-source-position';
 
+import {LsAnalyzer} from './analyzer-synchronizer';
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
 import {Handler} from './util';
@@ -37,7 +38,7 @@ export default class AutoCompleter extends Handler {
   constructor(
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
-      private featureFinder: FeatureFinder, private analyzer: Analyzer,
+      private featureFinder: FeatureFinder, private analyzer: LsAnalyzer,
       private capabilities: ClientCapabilities) {
     super();
 
@@ -66,8 +67,8 @@ export default class AutoCompleter extends Handler {
       Promise<CompletionList> {
     const localPath =
         this.converter.getWorkspacePathToFile(textPosition.textDocument);
-    const document =
-        (await this.analyzer.analyze([localPath])).getDocument(localPath);
+    const document = (await this.analyzer.analyze([localPath], 'autocomplete'))
+                         .getDocument(localPath);
     if (!(document instanceof Document)) {
       return {isIncomplete: true, items: []};
     }

@@ -47,15 +47,36 @@ suite('Settings', () => {
     });
     const settingsChange = await settings.changeStream.next;
     assert.deepEqual(settingsChange, {
-      newer: {fixOnSave: true, analyzeWholePackage: true},
-      older: {fixOnSave: false, analyzeWholePackage: false}
+      newer: {
+        fixOnSave: true,
+        analyzeWholePackage: true,
+        referencesCodeLens: false,
+        logToClient: false,
+        logToFile: undefined
+      },
+      older: {
+        fixOnSave: false,
+        analyzeWholePackage: false,
+        referencesCodeLens: false,
+        logToClient: false,
+        logToFile: undefined
+      }
     });
     assert.deepEqual(
         {
           analyzeWholePackage: settings.analyzeWholePackage,
-          fixOnSave: settings.fixOnSave
+          fixOnSave: settings.fixOnSave,
+          referencesCodeLens: false,
+          logToClient: false,
+          logToFile: undefined
         },
-        {analyzeWholePackage: true, fixOnSave: true});
+        {
+          analyzeWholePackage: true,
+          fixOnSave: true,
+          referencesCodeLens: false,
+          logToClient: false,
+          logToFile: undefined
+        });
   });
 
   test('missing settings are filled in with defaults.', async() => {

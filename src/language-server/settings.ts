@@ -23,6 +23,9 @@ import {AutoDisposable, Change, EventStream} from './util';
 export interface SettingsJson {
   readonly analyzeWholePackage: boolean;
   readonly fixOnSave: boolean;
+  readonly referencesCodeLens: boolean;
+  readonly logToClient: boolean;
+  readonly logToFile: string|undefined;
 }
 
 // The type we expect from DidChangeConfigurationParams#settings
@@ -40,8 +43,13 @@ export interface ProjectConfigInfo {
 }
 
 export default class Settings extends AutoDisposable {
-  static readonly defaults:
-      SettingsJson = {analyzeWholePackage: false, fixOnSave: false};
+  static readonly defaults: SettingsJson = {
+    analyzeWholePackage: false,
+    fixOnSave: false,
+    referencesCodeLens: false,
+    logToClient: false,
+    logToFile: undefined,
+  };
   private latest = {...Settings.defaults};
   private readonly fileSynchronizer: FileSynchronizer;
   readonly changeStream: EventStream<Change<SettingsJson>>;
@@ -50,13 +58,25 @@ export default class Settings extends AutoDisposable {
   readonly projectConfigChangeStream: EventStream<Change<ProjectConfigInfo>>;
   private readonly fireProjectConfigChange:
       (change: Change<ProjectConfigInfo>) => void;
+  /**
+   * A promise that resolves once the initial configuration has probably been
+   * received from the client.
+   *
+   * There's no way to know for certain though, because it's asynchronous, so
+   * after a timeout this will resolve either way.
+   */
+  readonly ready: Promise<void>;
   constructor(
       connection: IConnection, fileSynchronizer: FileSynchronizer,
       converter: AnalyzerLSPConverter) {
     super();
     const {fire, stream} = EventStream.create<Change<SettingsJson>>();
     this.changeStream = stream;
+    let resolveReady: () => void;
+    this.ready = new Promise((resolve) => resolveReady = resolve);
+    setTimeout(resolveReady!, 1000);
     connection.onDidChangeConfiguration((change) => {
+      resolveReady();
       const settingsWrapper = <SettingsWrapper|undefined>change.settings;
       const settings = settingsWrapper ? settingsWrapper['polymer-ide'] : {};
       const previous = this.latest;
@@ -81,7 +101,6 @@ export default class Settings extends AutoDisposable {
     this.projectConfigChangeStream = pccStream;
     this.fireProjectConfigChange = firePcc;
   }
-
 
   private async updateProjectConfig() {
     let jsonContent;
@@ -127,5 +146,17 @@ export default class Settings extends AutoDisposable {
 
   get fixOnSave() {
     return this.latest.fixOnSave;
+  }
+
+  get referencesCodeLens() {
+    return this.latest.referencesCodeLens;
+  }
+
+  get logToClient() {
+    return this.latest.logToClient;
+  }
+
+  get logToFile() {
+    return this.latest.logToFile;
   }
 }

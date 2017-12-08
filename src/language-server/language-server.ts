@@ -25,6 +25,7 @@ import DiagnosticGenerator from './diagnostics';
 import FeatureFinder from './feature-finder';
 import FileSynchronizer from './file-synchronizer';
 import HoverDocumenter from './hover-documenter';
+import {Logger} from './logger';
 import Settings from './settings';
 import {Handler} from './util';
 
@@ -92,6 +93,9 @@ export default class LanguageServer extends Handler {
     this.disposables.push(connection);
     this.connection = connection;
 
+    const logger = new Logger(connection);
+    this.disposables.push(logger);
+
     const workspacePath = workspaceUri.fsPath;
 
     // TODO(rictic): try out implementing an incrementally synced version of
@@ -101,14 +105,18 @@ export default class LanguageServer extends Handler {
     this.converter = new AnalyzerLSPConverter(workspaceUri);
 
     this.fileSynchronizer = new FileSynchronizer(
-        connection, this.documents, workspacePath, this.converter);
+        connection, this.documents, workspacePath, this.converter, logger);
 
     this.settings =
         new Settings(connection, this.fileSynchronizer, this.converter);
     this.disposables.push(this.settings);
 
+    logger.hookupSettings(this.settings);
+
+    logger.log(`\n\n\n\n\nInitialized with workspace path: ${workspacePath}`);
+
     const analyzerSynchronizer = new AnalyzerSynchronizer(
-        this.documents, this.fileSynchronizer, this.converter);
+        this.documents, this.fileSynchronizer, this.converter, logger);
 
     this.diagnosticGenerator = new DiagnosticGenerator(
         analyzerSynchronizer.analyzer, this.converter, connection,
@@ -120,8 +128,8 @@ export default class LanguageServer extends Handler {
     this.disposables.push(commandExecutor);
 
     const featureFinder = new FeatureFinder(analyzerSynchronizer.analyzer);
-    const hoverDocumenter =
-        new HoverDocumenter(this.connection, this.converter, featureFinder);
+    const hoverDocumenter = new HoverDocumenter(
+        this.connection, this.converter, featureFinder, logger);
     this.disposables.push(hoverDocumenter);
 
     const autoCompleter = new AutoCompleter(
@@ -131,7 +139,7 @@ export default class LanguageServer extends Handler {
 
     const definitionFinder = new DefinitionFinder(
         this.connection, this.converter, featureFinder,
-        analyzerSynchronizer.analyzer);
+        analyzerSynchronizer.analyzer, this.settings);
     this.disposables.push(definitionFinder);
   }
 

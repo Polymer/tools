@@ -21,6 +21,7 @@ import {FileChangeType, FileEvent, TextDocuments} from 'vscode-languageserver';
 
 import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
+import {Logger} from './logger';
 import {AutoDisposable, EventStream} from './util';
 
 /**
@@ -43,13 +44,13 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
   constructor(
       private readonly documents: TextDocuments,
       fileSynchronizer: FileSynchronizer,
-      private readonly converter: AnalyzerLSPConverter) {
+      private readonly converter: AnalyzerLSPConverter, logger: Logger) {
     super();
 
     const {fire, stream} = EventStream.create<void>();
     this.analysisChanges = stream;
     const analysisVersionMap = new WeakMap<Analysis, Map<string, number>>();
-    this.analyzer = new LsAnalyzer(this.documents, analysisVersionMap, {
+    this.analyzer = new LsAnalyzer(this.documents, logger, analysisVersionMap, {
       urlLoader: fileSynchronizer.urlLoader,
       urlResolver: new PackageUrlResolver(),
     });
@@ -114,19 +115,38 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
  */
 export class LsAnalyzer extends Analyzer {
   constructor(
-      private documents: TextDocuments,
+      private documents: TextDocuments, private logger: Logger,
       private analysisVersionMap:
           WeakMap<Analysis, ReadonlyMap<string, number>>,
       options: AnalyzerOptions) {
     super(options);
   }
 
-  analyze(files: string[]): Promise<Analysis> {
-    return this.annotateWithVersionMap(super.analyze(files));
+  analyze(files: string[], reason?: string): Promise<Analysis> {
+    const prefix = reason ? `${reason}: ` : '';
+    this.logger.log(`${prefix}Analyzing files: ${files.join(', ')}`);
+    const start = (new Date().getTime());
+    const result = this.annotateWithVersionMap(super.analyze(files));
+    result.then(() => {
+      const end = (new Date().getTime());
+      const elapsed = ((end - start) / 1000).toFixed(2);
+      this.logger.log(
+          `${prefix}Took ${elapsed}s to analyze files: ${files.join(', ')}`);
+    });
+    return result;
   }
 
-  analyzePackage(): Promise<Analysis> {
-    return this.annotateWithVersionMap(super.analyzePackage());
+  analyzePackage(reason?: string): Promise<Analysis> {
+    const prefix = reason ? `${reason}: ` : '';
+    this.logger.log(`${prefix}Analyzing package...`);
+    const start = (new Date().getTime());
+    const result = this.annotateWithVersionMap(super.analyzePackage());
+    result.then(() => {
+      const end = (new Date().getTime());
+      const elapsed = ((end - start) / 1000).toFixed(2);
+      this.logger.log(`${prefix}:Took ${elapsed}s to analyze package.`);
+    });
+    return result;
   }
 
   private async annotateWithVersionMap(promise: Promise<Analysis>) {

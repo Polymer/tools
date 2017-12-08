@@ -17,6 +17,7 @@ import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {FileChangeType, FileEvent, IConnection, TextDocuments} from 'vscode-languageserver';
 
 import AnalyzerLSPConverter from './converter';
+import {Logger} from './logger';
 import {AutoDisposable, EventStream} from './util';
 
 /**
@@ -34,7 +35,7 @@ export default class FileSynchronizer extends AutoDisposable {
   fileChanges: EventStream<FileEvent[]>;
   constructor(
       connection: IConnection, documents: TextDocuments, baseDir: string,
-      converter: AnalyzerLSPConverter) {
+      converter: AnalyzerLSPConverter, logger: Logger) {
     super();
     const fileLoader = new FSUrlLoader(baseDir);
     const inMemoryOverlayLoader = new InMemoryOverlayUrlLoader(fileLoader);
@@ -43,7 +44,11 @@ export default class FileSynchronizer extends AutoDisposable {
 
     const {fire, stream} = EventStream.create<FileEvent[]>();
     this.fileChanges = stream;
+    documents.onDidOpen((change) => {
+      logger.log(`Opened: ${change.document.uri}`);
+    });
     this.disposables.push(documents.onDidChangeContent((change) => {
+      logger.log(`Changed in memory: ${change.document.uri}`);
       // A document has changed in memory!
       const workspacePath = converter.getWorkspacePathToFile(change.document);
       this.inMemoryDocuments.set(workspacePath, change.document.getText());
@@ -53,6 +58,7 @@ export default class FileSynchronizer extends AutoDisposable {
     }));
 
     this.disposables.push(documents.onDidClose((event) => {
+      logger.log(`Closed: ${event.document.uri}`);
       // The file is no longer managed in memory, so we should delete it from
       // the in-memory map.
       this.inMemoryDocuments.delete(
@@ -61,6 +67,9 @@ export default class FileSynchronizer extends AutoDisposable {
     }));
 
     connection.onDidChangeWatchedFiles((req) => {
+      for (const change of req.changes) {
+        logger.log(`Changed on disk: ${change.uri}`);
+      }
       const inMemoryURIs = new Set(documents.keys());
       // We will get documents.onDidChangeContent events for changes of
       // in-memory buffers, so we filter them out to avoid sending duplicate

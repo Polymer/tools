@@ -11,11 +11,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, applyEdits, Edit, isPositionInsideRange, makeParseLoader, SourceRange, Warning} from 'polymer-analyzer';
+import {applyEdits, Edit, isPositionInsideRange, makeParseLoader, SourceRange, Warning} from 'polymer-analyzer';
 import {Linter, registry, Rule} from 'polymer-linter';
 import {CodeActionParams, Command, Diagnostic, DiagnosticSeverity, IConnection, TextDocuments, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 
-import AnalyzerSynchronizer from './analyzer-synchronizer';
+import AnalyzerSynchronizer, {LsAnalyzer} from './analyzer-synchronizer';
 import {applyEditCommandName} from './commands';
 import AnalyzerLSPConverter from './converter';
 import Settings from './settings';
@@ -32,7 +32,7 @@ export default class DiagnosticGenerator extends Handler {
   private warningCodesToFilterOut: ReadonlySet<string> = new Set<string>();
   private fileGlobsToFilterOut: ReadonlyArray<IMinimatch> = [];
   constructor(
-      private analyzer: Analyzer, private converter: AnalyzerLSPConverter,
+      private analyzer: LsAnalyzer, private converter: AnalyzerLSPConverter,
       protected connection: IConnection, private settings: Settings,
       analyzerSynchronizer: AnalyzerSynchronizer,
       private documents: TextDocuments) {

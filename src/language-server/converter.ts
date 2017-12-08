@@ -26,6 +26,7 @@ export default class AnalyzerLSPConverter {
   }
 
   getWorkspacePathToFile(document: {uri: string}): string {
+    // TODO(rictic): if this isn't a file uri we should return undefined here.
     return path.relative(
         this.workspaceUri.fsPath, Uri.parse(document.uri).fsPath);
   }

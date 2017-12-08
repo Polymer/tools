@@ -13,14 +13,16 @@
  */
 
 import * as fuzzaldrin from 'fuzzaldrin';
-import {Analysis, Analyzer, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Analysis, Document, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Queryable} from 'polymer-analyzer/lib/model/queryable';
 import {CodeLens, CodeLensParams, Definition, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
+import {LsAnalyzer} from './analyzer-synchronizer';
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
+import Settings from './settings';
 import {Handler} from './util';
 
 
@@ -31,7 +33,8 @@ export default class DefinitionFinder extends Handler {
   constructor(
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
-      private featureFinder: FeatureFinder, private analyzer: Analyzer) {
+      private featureFinder: FeatureFinder, private analyzer: LsAnalyzer,
+      settings: Settings) {
     super();
 
     this.connection.onDefinition(async(textPosition) => {
@@ -44,14 +47,16 @@ export default class DefinitionFinder extends Handler {
     });
 
     this.connection.onWorkspaceSymbol(async(params) => {
-      const analysis = await this.analyzer.analyzePackage();
+      const analysis =
+          await this.analyzer.analyzePackage('get workspace symbols');
       const symbols = this.findSymbols(analysis);
       return fuzzaldrin.filter(symbols, params.query, {key: 'name'});
     });
 
     this.connection.onDocumentSymbol(async(params) => {
       const localPath = converter.getWorkspacePathToFile(params.textDocument);
-      const analysis = await this.analyzer.analyze([localPath]);
+      const analysis =
+          await this.analyzer.analyze([localPath], 'get document symbols');
       const maybeDocument = analysis.getDocument(localPath);
       if (!(maybeDocument instanceof Document)) {
         return [];
@@ -60,7 +65,11 @@ export default class DefinitionFinder extends Handler {
     });
 
     this.connection.onCodeLens(async(params) => {
-      return this.handleErrors(this.getCodeLenses(params), []);
+      const lenses = [];
+      if (settings.referencesCodeLens) {
+        lenses.push(...await this.handleErrors(this.getCodeLenses(params), []));
+      }
+      return lenses;
     });
   }
 
@@ -79,18 +88,19 @@ export default class DefinitionFinder extends Handler {
     const sourceRanges = await this.getDefinitionsForFeatureAtPosition(
         localPath, this.converter.convertPosition(textPosition.position),
         analysis);
-    return sourceRanges.map(sr => {
-      let definition: Location = {
+    return sourceRanges.map((sr): Location => {
+      return {
         uri: this.converter.getUriForLocalPath(sr.file),
         range: this.converter.convertPRangeToL(sr)
       };
-      return definition;
     });
   }
 
   private async getDefinitionsForFeatureAtPosition(
       localPath: string, position: SourcePosition,
       analysis?: Analysis): Promise<SourceRange[]> {
+    analysis =
+        analysis || await this.analyzer.analyze([localPath], 'get definitions');
     const featureResult =
         await this.featureFinder.getFeatureAt(localPath, position, analysis);
     if (!featureResult) {
@@ -99,7 +109,6 @@ export default class DefinitionFinder extends Handler {
     const {feature} = featureResult;
     if (feature instanceof CssCustomPropertyUse ||
         feature instanceof CssCustomPropertyAssignment) {
-      const analysis = await this.analyzer.analyzePackage();
       const assignments = analysis.getFeatures({
         kind: 'css-custom-property-assignment',
         id: feature.name,
@@ -131,7 +140,7 @@ export default class DefinitionFinder extends Handler {
     const localPath =
         this.converter.getWorkspacePathToFile(params.textDocument);
     const position = this.converter.convertPosition(params.position);
-    const analysis = await this.analyzer.analyzePackage();
+    const analysis = await this.analyzer.analyzePackage('get references');
     if (params.context.includeDeclaration) {
       locations.push(...await this.getDefinition(params, analysis));
     }
@@ -215,7 +224,7 @@ export default class DefinitionFinder extends Handler {
     return symbols;
   }
   private async getCodeLenses(params: CodeLensParams) {
-    const analysis = await this.analyzer.analyzePackage();
+    const analysis = await this.analyzer.analyzePackage('get code lenses');
     const path = this.converter.getWorkspacePathToFile(params.textDocument);
     const document = analysis.getDocument(path);
     if (!(document instanceof Document)) {

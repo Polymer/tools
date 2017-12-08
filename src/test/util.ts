@@ -17,13 +17,15 @@ import * as path from 'path';
 import {SourcePosition, SourceRange, UrlLoader} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
+import {CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri/lib';
 
 import AnalyzerLSPConverter from '../language-server/converter';
 import FileSynchronizer from '../language-server/file-synchronizer';
 import LanguageServer from '../language-server/language-server';
+import {Logger} from '../language-server/logger';
+import {SettingsJson} from '../language-server/settings';
 
 export function createTestConnections(debugging?: boolean) {
   const up = new TestStream('up', debugging);
@@ -46,8 +48,9 @@ export function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
   const textDocuments = new TextDocuments();
   textDocuments.listen(serverConnection);
   const converter = new AnalyzerLSPConverter(URI.file(baseDir));
-  const synchronizer =
-      new FileSynchronizer(serverConnection, textDocuments, baseDir, converter);
+  const synchronizer = new FileSynchronizer(
+      serverConnection, textDocuments, baseDir, converter,
+      new Logger(serverConnection));
   return {synchronizer, serverConnection, clientConnection, baseDir, converter};
 }
 
@@ -150,6 +153,14 @@ export class TestClient {
       }
     };
     return this.connection.sendRequest(InitializeRequest.type, init);
+  }
+
+
+  async changeConfiguration(settings: Partial<SettingsJson>) {
+    const params:
+        DidChangeConfigurationParams = {settings: {'polymer-ide': settings}};
+    return this.connection.sendNotification(
+        DidChangeConfigurationNotification.type, params);
   }
 
   async getHover(path: string, position: SourcePosition):
@@ -415,4 +426,8 @@ export async function assertDoesNotSettle(
             reject(new Error('Promise rejected, was not expected to settle.')));
     setTimeout(resolve, timeoutMs);
   });
+}
+
+export async function delay(millis: number) {
+  await new Promise((resolve) => setTimeout(resolve, millis));
 }

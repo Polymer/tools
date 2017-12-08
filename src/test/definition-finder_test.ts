@@ -264,6 +264,14 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     const {client} = await createTestEnvironment(
         path.join(fixtureDir, 'css-custom-properties'));
 
+    await client.changeConfiguration({referencesCodeLens: false});
+
+    assert.deepEqual(
+        (await client.getCodeLenses('lib.html')).map(c => c.command!.title),
+        []);
+
+    await client.changeConfiguration({referencesCodeLens: true});
+
     assert.deepEqual(
         (await client.getCodeLenses('lib.html')).map(c => c.command!.title),
         [`Read 2 places.`, `Read 1 place.`, `Read 2 places.`]);
@@ -286,6 +294,14 @@ customElements.define('anonymous-class', class extends HTMLElement{});
         customElements.define('baz-bonk', class extends HTMLElement{});
       </script>
     `);
+
+    await client.changeConfiguration({referencesCodeLens: false});
+
+    assert.deepEqual(
+        (await client.getCodeLenses('index.html')).map(c => c.command!.title),
+        []);
+
+    await client.changeConfiguration({referencesCodeLens: true});
 
     assert.deepEqual(
         (await client.getCodeLenses('index.html')).map(c => c.command!.title),

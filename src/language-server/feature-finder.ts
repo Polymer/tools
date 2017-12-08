@@ -12,12 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Attribute, Document, Element, isPositionInsideRange, Method, ParsedCssDocument, ParsedHtmlDocument, Property, SourcePosition, SourceRange} from 'polymer-analyzer';
+import {Attribute, Document, Element, isPositionInsideRange, Method, ParsedCssDocument, ParsedHtmlDocument, Property, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Analysis} from 'polymer-analyzer/lib/model/analysis';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 
 import {AstLocation, getCssAstLocationForPosition, getHtmlAstLocationForPosition} from '../ast-from-source-position';
+import {LsAnalyzer} from './analyzer-synchronizer';
 
 
 export interface FoundFeature {
@@ -35,7 +36,7 @@ export interface FoundFeature {
  * document.
  */
 export default class FeatureFinder {
-  constructor(private analyzer: Analyzer) {
+  constructor(private analyzer: LsAnalyzer) {
   }
 
   /**
@@ -179,7 +180,8 @@ export default class FeatureFinder {
   async getAstLocationAtPositionAndPath(
       localPath: string, position: SourcePosition,
       analysis?: Analysis): Promise<AstLocation|undefined> {
-    analysis = analysis || await this.analyzer.analyze([localPath]);
+    analysis = analysis ||
+        await this.analyzer.analyze([localPath], 'get AST location');
     const document = analysis.getDocument(localPath);
     if (!(document instanceof Document)) {
       return;

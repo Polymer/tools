@@ -16,6 +16,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   slots of the parent element.
 - Autocomplete css custom property names. In use sites, complete to any
   declaration, in declaration sites complete to any declaration or usage.
+- Make reference count code lenses opt-in, as it currently does not perform
+  well for large projects, because of:
+  https://github.com/Polymer/polymer-analyzer/issues/782
+  - New setting `polymer-ide.referencesCodeLens`, which is false by default.
+    When true, we will send down references code lenses.
+- Added configurable logging for common issues:
+  - Analysis performance, which can cause editors to seem unresponsive or
+    broken.
+  - File synchronization messages, as editors often need a bit of
+    configuration for these to go through right.
+  - New setting `polymer-ide.logToClient`, false by default. When true, it
+    sends logs to the editor for it to log.
+  - New setting `polymer-ide.logToFile`, a string path to a file. When given,
+    logs are appended to this file (in addition to possibly going to the
+    client).
 
 ## 2.0.0 - 2017-12-05
 

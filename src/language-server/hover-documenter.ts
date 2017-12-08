@@ -19,6 +19,7 @@ import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
+import {Logger} from './logger';
 import {Handler} from './util';
 
 /**
@@ -28,10 +29,12 @@ export default class HoverDocumenter extends Handler {
   constructor(
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
-      private featureFinder: FeatureFinder) {
+      private featureFinder: FeatureFinder, private readonly logger: Logger) {
     super();
 
     this.connection.onHover(async(textPosition) => {
+      logger.log(`Hover request: ${textPosition.position.line}:${textPosition
+                     .position.character} in ${textPosition.textDocument}`);
       const hoverOrUndefined = await this.handleErrors(
           this.getDocsForHover(textPosition), undefined);
       // it is actually ok to return undefined here, but the type system
@@ -61,11 +64,13 @@ export default class HoverDocumenter extends Handler {
     const location = await this.featureFinder.getAstLocationAtPositionAndPath(
         localPath, position);
     if (!location) {
+      this.logger.log(`No location`);
       return;
     }
     const featureResult =
         this.featureFinder.getFeatureForAstLocation(location, position);
     if (!featureResult) {
+      this.logger.log(`No feature`);
       return;
     }
     const {feature} = featureResult;
@@ -89,6 +94,7 @@ export default class HoverDocumenter extends Handler {
     if (!description) {
       return;
     }
+    this.logger.log(`Found hover description: ${description}`);
     // TODO(rictic): we can get ranges more often here. The tricky thing is
     // that we want the location of the area we're mousing over, which usually
     // isn't `feature`. We want the range of the referencer, not the referent.
