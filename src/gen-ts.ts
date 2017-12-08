@@ -324,13 +324,16 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
   const f = new ts.Function({
     name,
     description: feature.description,
-    returns: closureTypeToTypeScript(feature.return && feature.return.type)
+    templateTypes: feature.templateTypes,
+    returns: closureTypeToTypeScript(
+        feature.return && feature.return.type, feature.templateTypes)
   });
 
   for (const param of feature.params || []) {
     // TODO Handle parameter default values. Requires support from Analyzer
     // which only handles this for class method parameters currently.
-    const {type, optional, rest} = closureParamToTypeScript(param.type);
+    const {type, optional, rest} =
+        closureParamToTypeScript(param.type, feature.templateTypes);
     f.params.push(new ts.Param({name: param.name, type, optional, rest}));
   }
 

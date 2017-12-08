@@ -18,5 +18,5 @@ declare namespace Polymer {
    * if it has not already been applied its base argument. Also memoizes mixin
    * applications.
    */
-  function dedupingMixin(mixin: T|null): any;
+  function dedupingMixin<T>(mixin: T): T;
 }

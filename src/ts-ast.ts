@@ -293,6 +293,7 @@ export abstract class FunctionLike {
   name: string;
   description: string;
   params: Param[];
+  templateTypes: string[];
   returns: Type;
   returnsDescription: string;
 
@@ -300,6 +301,7 @@ export abstract class FunctionLike {
     name: string,
     description?: string,
     params?: Param[],
+    templateTypes?: string[],
     returns?: Type,
     returnsDescription?: string
   }) {
@@ -307,6 +309,7 @@ export abstract class FunctionLike {
     this.description = data.description || '';
     this.params = data.params || [];
     this.returns = data.returns || anyType;
+    this.templateTypes = data.templateTypes || [];
     this.returnsDescription = data.returnsDescription || '';
   }
 
@@ -342,7 +345,11 @@ export abstract class FunctionLike {
     if (this.kind === 'function') {
       out += 'function ';
     }
-    out += `${this.name}(`;
+    out += this.name;
+    if (this.templateTypes.length > 0) {
+      out += `<${this.templateTypes.join(', ')}>`;
+    }
+    out += '(';
     out += this.params.map((p) => p.serialize()).join(', ');
     out += `): ${this.returns.serialize()};\n`;
     return out;

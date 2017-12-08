@@ -26,8 +26,9 @@ const {parseType, parseParamType} = require('doctrine/lib/typed.js');
  * Convert from a type annotation in Closure syntax to a TypeScript type
  * expression AST (e.g `Array` => `Array<any>|null`).
  */
-export function closureTypeToTypeScript(closureType: (string|null|undefined)):
-    ts.Type {
+export function closureTypeToTypeScript(
+    closureType: (string|null|undefined),
+    templateTypes: string[] = []): ts.Type {
   if (!closureType) {
     return ts.anyType;
   }
@@ -37,7 +38,7 @@ export function closureTypeToTypeScript(closureType: (string|null|undefined)):
   } catch {
     return ts.anyType;
   }
-  return convert(ast);
+  return convert(ast, templateTypes);
 }
 
 /**
@@ -45,8 +46,10 @@ export function closureTypeToTypeScript(closureType: (string|null|undefined)):
  * type expression AST
  * (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
  */
-export function closureParamToTypeScript(closureType: (string|null|undefined)):
-    {type: ts.Type, optional: boolean, rest: boolean} {
+export function closureParamToTypeScript(
+    closureType: (string|null|undefined),
+    templateTypes: string[] = [],
+    ): {type: ts.Type, optional: boolean, rest: boolean} {
   if (!closureType) {
     return {type: ts.anyType, optional: false, rest: false};
   }
@@ -69,7 +72,7 @@ export function closureParamToTypeScript(closureType: (string|null|undefined)):
   switch (ast.type) {
     case 'OptionalType':
       return {
-        type: convert(ast.expression),
+        type: convert(ast.expression, templateTypes),
         optional: true,
         rest: false,
       };
@@ -78,13 +81,13 @@ export function closureParamToTypeScript(closureType: (string|null|undefined)):
         // The Closure type annotation for a rest parameter looks like
         // `...foo`, where `foo` is implicitly an array. The TypeScript
         // equivalent is explicitly an array, so we wrap it in one here.
-        type: new ts.ArrayType(convert(ast.expression)),
+        type: new ts.ArrayType(convert(ast.expression, templateTypes)),
         optional: false,
         rest: true,
       };
     default:
       return {
-        type: convert(ast),
+        type: convert(ast, templateTypes),
         optional: false,
         rest: false,
       };
@@ -95,7 +98,7 @@ export function closureParamToTypeScript(closureType: (string|null|undefined)):
  * Format the given Closure type expression AST node as a TypeScript type
  * annotation string.
  */
-function convert(node: doctrine.Type): ts.Type {
+function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
   let nullable;
   if (isNullable(node)) {  // ?foo
     nullable = true;
@@ -103,6 +106,11 @@ function convert(node: doctrine.Type): ts.Type {
   } else if (isNonNullable(node)) {  // !foo
     nullable = false;
     node = node.expression;
+  } else if (isName(node) && templateTypes.includes(node.name)) {
+    // A template type "T" looks naively like a regular name type to doctrine
+    // (e.g. a class called "T"), which would be nullable by default. However,
+    // template types are not nullable by default.
+    nullable = false;
   } else {
     nullable = nullableByDefault(node);
   }
@@ -110,11 +118,11 @@ function convert(node: doctrine.Type): ts.Type {
   let t: ts.Type;
 
   if (isParameterizedArray(node)) {  // Array<foo>
-    t = convertArray(node);
+    t = convertArray(node, templateTypes);
   } else if (isUnion(node)) {  // foo|bar
-    t = convertUnion(node);
+    t = convertUnion(node, templateTypes);
   } else if (isFunction(node)) {  // function(foo): bar
-    t = convertFunction(node);
+    t = convertFunction(node, templateTypes);
   } else if (isBareArray(node)) {  // Array
     t = new ts.ArrayType(ts.anyType);
   } else if (isAllLiteral(node)) {  // *
@@ -156,25 +164,31 @@ function nullableByDefault(node: doctrine.Type): boolean {
   return isParameterizedArray(node);
 }
 
-function convertArray(node: doctrine.type.TypeApplication): ts.Type {
+function convertArray(
+    node: doctrine.type.TypeApplication, templateTypes: string[]): ts.Type {
   const applications = node.applications;
   return new ts.ArrayType(
-      applications.length === 1 ? convert(applications[0]) : ts.anyType);
+      applications.length === 1 ? convert(applications[0], templateTypes) :
+                                  ts.anyType);
 }
 
-function convertUnion(node: doctrine.type.UnionType): ts.Type {
-  return new ts.UnionType(node.elements.map(convert));
+function convertUnion(
+    node: doctrine.type.UnionType, templateTypes: string[]): ts.Type {
+  return new ts.UnionType(
+      node.elements.map((element) => convert(element, templateTypes)));
 }
 
-function convertFunction(node: doctrine.type.FunctionType): ts.FunctionType {
+function convertFunction(
+    node: doctrine.type.FunctionType,
+    templateTypes: string[]): ts.FunctionType {
   return new ts.FunctionType(
       node.params.map(
           (param, idx) => new ts.ParamType(
               // TypeScript wants named parameters, but we don't have names.
               'p' + idx,
-              convert(param))),
+              convert(param, templateTypes))),
       // Cast because typings are wrong: `FunctionType.result` is not an array.
-      node.result ? convert(node.result as any) : ts.anyType);
+      node.result ? convert(node.result as any, templateTypes) : ts.anyType);
 }
 
 function isParameterizedArray(node: doctrine.Type):

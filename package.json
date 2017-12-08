@@ -19,7 +19,7 @@
     "doctrine": "^2.0.0",
     "escodegen": "^1.9.0",
     "fs-extra": "^4.0.2",
-    "polymer-analyzer": "^3.0.0-pre.2"
+    "polymer-analyzer": "^3.0.0-pre.3"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
