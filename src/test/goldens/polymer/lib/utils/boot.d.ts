@@ -8,7 +8,7 @@
  *   lib/utils/boot.html
  */
 
-/// <reference path="../../augment-types.d.ts" />
+/// <reference path="../../extra-types.d.ts" />
 
 /**
  * Polymer is a lightweight library built on top of the web

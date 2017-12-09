@@ -33,6 +33,24 @@ declare namespace Polymer {
    * at a microtask checkpoint. This is because observation is performed using
    * `MutationObserver` and the `<slot>` element's `slotchange` event which
    * are asynchronous.
+   *
+   * An example:
+   * ```js
+   * class TestSelfObserve extends Polymer.Element {
+   *   static get is() { return 'test-self-observe';}
+   *   connectedCallback() {
+   *     super.connectedCallback();
+   *     this._observer = new Polymer.FlattenedNodesObserver(this, (info) => {
+   *       this.info = info;
+   *     });
+   *   }
+   *   disconnectedCallback() {
+   *     super.disconnectedCallback();
+   *     this._observer.disconnect();
+   *   }
+   * }
+   * customElements.define(TestSelfObserve.is, TestSelfObserve);
+   * ```
    */
   class FlattenedNodesObserver {
     _shadyChildrenObserver: MutationObserver|null;
