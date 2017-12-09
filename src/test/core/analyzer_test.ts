@@ -637,7 +637,8 @@ suite('Analyzer', () => {
           </style>
         </div>
       `).trim();
-      inMemoryOverlay.urlContentsMap.set('test-doc.html', contents);
+      inMemoryOverlay.urlContentsMap.set(
+          analyzer.resolveUrl('test-doc.html'), contents);
       const origDocument = await analyzeDocument('test-doc.html');
       const document = clone(origDocument);
 
@@ -830,18 +831,21 @@ var DuplicateNamespace = {};
 
   suite('_fork', () => {
     test('returns an independent copy of Analyzer', async () => {
-      inMemoryOverlay.urlContentsMap.set('a.html', 'a is shared');
+      inMemoryOverlay.urlContentsMap.set(
+          analyzer.resolveUrl('a.html'), 'a is shared');
       await analyzer.analyze(['a.html']);
       // Unmap a.html so that future reads of it will fail, thus testing the
       // cache.
-      inMemoryOverlay.urlContentsMap.delete('a.html');
+      inMemoryOverlay.urlContentsMap.delete(analyzer.resolveUrl('a.html'));
 
       const analyzer2 = await analyzer._fork();
-      inMemoryOverlay.urlContentsMap.set('b.html', 'b for analyzer');
+      inMemoryOverlay.urlContentsMap.set(
+          analyzer.resolveUrl('b.html'), 'b for analyzer');
       await analyzer.analyze(['b.html']);
-      inMemoryOverlay.urlContentsMap.set('b.html', 'b for analyzer2');
+      inMemoryOverlay.urlContentsMap.set(
+          analyzer.resolveUrl('b.html'), 'b for analyzer2');
       await analyzer2.analyze(['b.html']);
-      inMemoryOverlay.urlContentsMap.delete('b.html');
+      inMemoryOverlay.urlContentsMap.delete(analyzer.resolveUrl('b.html'));
 
       const a1 = await analyzeDocument('a.html', analyzer);
       const a2 = await analyzeDocument('a.html', analyzer2);
@@ -885,11 +889,11 @@ var DuplicateNamespace = {};
       // keep around.
       // The specific warning is renaming a superclass without updating the
       // class which extends it.
-      inMemoryOverlay.urlContentsMap.set('base.js', `
+      inMemoryOverlay.urlContentsMap.set(analyzer.resolveUrl('base.js'), `
         class BaseElement extends HTMLElement {}
         customElements.define('base-elem', BaseElement);
       `);
-      inMemoryOverlay.urlContentsMap.set('user.html', `
+      inMemoryOverlay.urlContentsMap.set(analyzer.resolveUrl('user.html'), `
         <script src="./base.js"></script>
         <script>
           class UserElem extends BaseElement {}
@@ -901,7 +905,7 @@ var DuplicateNamespace = {};
       const u1Doc = await analyzer.analyze(['user.html']);
       assert.deepEqual(u1Doc.getWarnings(), []);
 
-      inMemoryOverlay.urlContentsMap.set('base.js', `
+      inMemoryOverlay.urlContentsMap.set(analyzer.resolveUrl('base.js'), `
         class NewSpelling extends HTMLElement {}
         customElements.define('base-elem', NewSpelling);
       `);
@@ -914,7 +918,7 @@ var DuplicateNamespace = {};
           u2Doc.getWarnings()[0].message,
           'Unable to resolve superclass BaseElement');
 
-      inMemoryOverlay.urlContentsMap.set('base.js', `
+      inMemoryOverlay.urlContentsMap.set(analyzer.resolveUrl('base.js'), `
         class BaseElement extends HTMLElement {}
         customElements.define('base-elem', BaseElement);
       `);
@@ -1179,9 +1183,9 @@ var DuplicateNamespace = {};
         const overlay = new InMemoryOverlayUrlLoader(new NoopUrlLoader);
         const analyzer = new Analyzer({urlLoader: overlay});
 
-        overlay.urlContentsMap.set('leaf.html', 'Hello');
+        overlay.urlContentsMap.set(analyzer.resolveUrl('leaf.html'), 'Hello');
         const p1 = analyzer.analyze(['leaf.html']);
-        overlay.urlContentsMap.set('leaf.html', 'World');
+        overlay.urlContentsMap.set(analyzer.resolveUrl('leaf.html'), 'World');
         analyzer.filesChanged(['leaf.html']);
         const p2 = analyzer.analyze(['leaf.html']);
         await Promise.all([p1, p2]);
@@ -1194,7 +1198,8 @@ var DuplicateNamespace = {};
 
         const documentA = result.getDocument(initialPaths[0]) as Document;
         inMemoryOverlay.urlContentsMap.set(
-            'static/diamond/a.html', documentA.parsedDocument.contents);
+            analyzer.resolveUrl('static/diamond/a.html'),
+            documentA.parsedDocument.contents);
         await analyzer.filesChanged(['static/diamond/a.html']);
         result = await analyzer.analyze(initialPaths);
 

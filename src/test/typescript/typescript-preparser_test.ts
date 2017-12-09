@@ -53,10 +53,10 @@ suite('TypeScriptParser', () => {
 
     test('throws a WarningCarryingException for parse errors', async () => {
       const contents = 'const const const const const #!@(~~)!();';
-      const url = 'ts-parse-error.ts';
+      const url = 'ts-parse-error.ts' as ResolvedUrl;
       let error: WarningCarryingException|undefined = undefined;
       try {
-        parser.parse(contents, url as ResolvedUrl);
+        parser.parse(contents, url);
       } catch (e) {
         if (!(e instanceof WarningCarryingException)) {
           console.log(e);

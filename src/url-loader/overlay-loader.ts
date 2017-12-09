@@ -40,7 +40,7 @@ class FailUrlLoader implements UrlLoader {
  */
 export class InMemoryOverlayUrlLoader implements UrlLoader {
   private readonly _fallbackLoader: UrlLoader;
-  urlContentsMap = new Map<string, string>();
+  urlContentsMap = new Map<ResolvedUrl, string>();
 
   constructor(fallbackLoader?: UrlLoader) {
     this._fallbackLoader = fallbackLoader || new FailUrlLoader();

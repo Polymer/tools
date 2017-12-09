@@ -13,7 +13,7 @@
  */
 
 import {Analyzer} from '../core/analyzer';
-import {Document, ParsedDocument, ScannedFeature} from '../index';
+import {Document, FileRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature} from '../index';
 import {SourceRange, Warning} from '../model/model';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
@@ -62,7 +62,7 @@ export class CodeUnderliner {
     };
   }
 
-  static withMapping(url: string, contents: string) {
+  static withMapping(url: ResolvedUrl, contents: string) {
     const urlLoader = new InMemoryOverlayUrlLoader();
     urlLoader.urlContentsMap.set(url, contents);
     return new CodeUnderliner(urlLoader);
@@ -132,4 +132,12 @@ export async function runScannerOnContents(
   overlayLoader.urlContentsMap.set(analyzer.resolveUrl(url), contents);
   const {features, warnings} = await runScanner(analyzer, scanner, url);
   return {features, warnings, analyzer};
+}
+
+export function fUrl([text]: TemplateStringsArray): FileRelativeUrl {
+  return text as FileRelativeUrl;
+}
+
+export function rUrl([text]: TemplateStringsArray): ResolvedUrl {
+  return text as ResolvedUrl;
 }

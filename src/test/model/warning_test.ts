@@ -24,11 +24,11 @@ import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 suite('applyEdits', () => {
   let memoryMap: InMemoryOverlayUrlLoader;
   let loader: (url: string) => Promise<ParsedDocument<any, any>>;
-
+  let analyzer: Analyzer;
   setup(() => {
     memoryMap = new InMemoryOverlayUrlLoader();
-    memoryMap.urlContentsMap.set('test.html', 'abc');
-    const analyzer = new Analyzer({urlLoader: memoryMap});
+    analyzer = new Analyzer({urlLoader: memoryMap});
+    memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html'), 'abc');
     loader = async (url: string) => {
       const analysis = await analyzer.analyze([url]);
       const document = analysis.getDocument(url) as Document;
@@ -54,7 +54,7 @@ suite('applyEdits', () => {
 
   test('works in the trivial case', async () => {
     const contents = 'abc';
-    memoryMap.urlContentsMap.set('test.html', contents);
+    memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html'), contents);
 
     const result = await applyEdits([], loader);
     assert.deepEqual(result.appliedEdits, []);
