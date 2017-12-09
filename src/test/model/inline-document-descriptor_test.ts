@@ -15,13 +15,14 @@
 import {assert} from 'chai';
 
 import {correctPosition, correctSourceRange, LocationOffset, SourcePosition, SourceRange} from '../../model/model';
+import {rUrl} from '../test-utils';
 
 
 suite('correctSourceRange', function() {
   test('handles undefined gracefully', function() {
     const zeroPosition = {line: 0, column: 0};
     const zeroSourceRange:
-        SourceRange = {file: 'foo', start: zeroPosition, end: zeroPosition};
+        SourceRange = {file: rUrl`foo`, start: zeroPosition, end: zeroPosition};
     const zeroLocationOffset: LocationOffset = {line: 0, col: 0};
 
     assert.equal(correctSourceRange(undefined, undefined), undefined);

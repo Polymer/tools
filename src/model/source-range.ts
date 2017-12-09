@@ -1,3 +1,5 @@
+import {ResolvedUrl} from '../index';
+
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
@@ -21,7 +23,7 @@
  */
 export interface SourceRange {
   /* The resolved path to the file. */
-  readonly file: string;
+  readonly file: ResolvedUrl;
   readonly start: SourcePosition;
   readonly end: SourcePosition;
 }
@@ -41,7 +43,7 @@ export interface LocationOffset {
   /**
    * The url of the source file.
    */
-  readonly filename?: string;
+  readonly filename?: ResolvedUrl;
 }
 
 /**
