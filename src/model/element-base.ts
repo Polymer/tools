@@ -23,6 +23,7 @@ import {Privacy} from './feature';
 import {ImmutableArray} from './immutable';
 import {ScannedMethod} from './method';
 import {Attribute, Document, Event, Feature, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
+import {FileRelativeUrl} from './url';
 import {Severity} from './warning';
 
 export {Visitor} from '../javascript/estree-visitor';
@@ -95,7 +96,7 @@ export class Slot {
 
 export interface Demo {
   desc?: string;
-  path: string;
+  path: FileRelativeUrl;
 }
 
 export interface ElementBaseInit extends ClassInit {

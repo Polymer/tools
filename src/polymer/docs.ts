@@ -13,6 +13,8 @@
  */
 
 import * as doctrine from 'doctrine';
+
+import {FileRelativeUrl} from '../index';
 import * as jsdoc from '../javascript/jsdoc';
 import {ScannedEvent} from '../model/model';
 
@@ -62,8 +64,10 @@ export function annotateElementHeader(scannedElement: ScannedPolymerElement) {
     scannedElement.jsdoc.tags.forEach((tag) => {
       switch (tag.title) {
         case 'demo':
-          scannedElement.demos.push(
-              {desc: 'demo', path: tag.description || 'demo/index.html'});
+          scannedElement.demos.push({
+            desc: 'demo',
+            path: (tag.description || 'demo/index.html') as FileRelativeUrl
+          });
           break;
       }
     });
