@@ -16,6 +16,7 @@ import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
 
+import {Demo} from '../index';
 import {Privacy} from '../model/model';
 import {ScannedReference, Severity, Warning} from '../model/model';
 
@@ -168,12 +169,11 @@ export function getMixinApplications(
              .filter((m) => m !== undefined) as ScannedReference[];
 }
 
-export function extractDemos(jsdoc: Annotation|undefined):
-    Array<{desc: string | undefined, path: string}> {
+export function extractDemos(jsdoc: Annotation|undefined): Demo[] {
   if (!jsdoc || !jsdoc.tags) {
     return [];
   }
-  const demos: Array<{desc: string | undefined, path: string}> = [];
+  const demos: Demo[] = [];
   const demoUrls = new Set<string>();
   for (const tag of jsdoc.tags.filter(
            (tag) => tag.title === 'demo' && tag.name)) {

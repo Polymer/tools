@@ -50,7 +50,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly abstract: boolean;
   readonly privacy: Privacy;
   readonly warnings: Warning[];
-  readonly demos: {desc?: string; path: string}[];
+  readonly demos: Demo[];
   constructor(
       className: string|undefined, localClassName: string|undefined,
       astNode: babel.Node, jsdoc: jsdocLib.Annotation, description: string,
