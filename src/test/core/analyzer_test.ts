@@ -92,25 +92,23 @@ suite('Analyzer', () => {
   });
 
   suite('analyze()', () => {
-    test(
-        'analyzes a document with an inline Polymer element feature',
-        async () => {
-          const document = await analyzeDocument(
-              'static/analysis/simple/simple-element.html');
-          const elements = Array.from(
-              document.getFeatures({kind: 'element', imported: false}));
-          assert.deepEqual(elements.map((e) => e.tagName), ['simple-element']);
-        });
+    let testName = 'analyzes a document with an inline Polymer element feature';
+    test(testName, async () => {
+      const document =
+          await analyzeDocument('static/analysis/simple/simple-element.html');
+      const elements =
+          Array.from(document.getFeatures({kind: 'element', imported: false}));
+      assert.deepEqual(elements.map((e) => e.tagName), ['simple-element']);
+    });
 
-    test(
-        'analyzes a document with an external Polymer element feature',
-        async () => {
-          const document =
-              await analyzeDocument('static/analysis/separate-js/element.html');
-          const elements = Array.from(
-              document.getFeatures({kind: 'element', imported: true}));
-          assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
-        });
+    testName = 'analyzes a document with an external Polymer element feature';
+    test(testName, async () => {
+      const document =
+          await analyzeDocument('static/analysis/separate-js/element.html');
+      const elements =
+          Array.from(document.getFeatures({kind: 'element', imported: true}));
+      assert.deepEqual(elements.map((e) => e.tagName), ['my-element']);
+    });
 
     test('gets source ranges of documents correct', async () => {
       const document = await analyzeDocument('static/dependencies/root.html');
@@ -176,106 +174,99 @@ suite('Analyzer', () => {
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
     });
 
-    test(
-        'creates "missing behavior" warnings on imported documents without elements',
-        async () => {
-          const document = await analyzeDocument(
-              'static/chained-missing-behavior/index.html');
-          const chainedDocument = getOnly(document.getFeatures({
-            kind: 'document',
-            id: 'static/chained-missing-behavior/chained.html',
-            imported: true
-          }));
-          const expectedWarning = {
-            code: 'unknown-polymer-behavior',
-            message:
-                'Unable to resolve behavior `NotFoundBehavior`. Did you import it? Is it annotated with @polymerBehavior?',
-            severity: 1,
-            sourceRange: {
-              end: {column: 55, line: 2},
-              start: {column: 39, line: 2},
-              file: 'static/chained-missing-behavior/chained.html'
-            },
-          };
-          assert.deepEqual(document.getWarnings({imported: false}), []);
-          assert.deepEqual(
-              document.getWarnings({imported: true}).map((w) => w.toJSON()),
-              [expectedWarning]);
-          assert.deepEqual(
-              chainedDocument.getWarnings({imported: false})
-                  .map((w) => w.toJSON()),
-              [expectedWarning]);
-        });
+    testName = `creates "missing behavior" warnings on imported ` +
+        `documents without elements`;
+    test(testName, async () => {
+      const document =
+          await analyzeDocument('static/chained-missing-behavior/index.html');
+      const chainedDocument = getOnly(document.getFeatures({
+        kind: 'document',
+        id: 'static/chained-missing-behavior/chained.html',
+        imported: true
+      }));
+      const expectedWarning = {
+        code: 'unknown-polymer-behavior',
+        message:
+            'Unable to resolve behavior `NotFoundBehavior`. Did you import it? Is it annotated with @polymerBehavior?',
+        severity: 1,
+        sourceRange: {
+          end: {column: 55, line: 2},
+          start: {column: 39, line: 2},
+          file: 'static/chained-missing-behavior/chained.html'
+        },
+      };
+      assert.deepEqual(document.getWarnings({imported: false}), []);
+      assert.deepEqual(
+          document.getWarnings({imported: true}).map((w) => w.toJSON()),
+          [expectedWarning]);
+      assert.deepEqual(
+          chainedDocument.getWarnings({imported: false}).map((w) => w.toJSON()),
+          [expectedWarning]);
+    });
 
-    test(
-        'an inline document can find features from its container document',
-        async () => {
-          const document =
-              await analyzeDocument('static/analysis/behaviors/behavior.html');
-          const localDocuments =
-              document.getFeatures({kind: 'document', imported: false});
-          assert.equal(localDocuments.size, 2);  // behavior.html and its inline
+    testName =
+        'an inline document can find features from its container document';
+    test(testName, async () => {
+      const document =
+          await analyzeDocument('static/analysis/behaviors/behavior.html');
+      const localDocuments =
+          document.getFeatures({kind: 'document', imported: false});
+      assert.equal(localDocuments.size, 2);  // behavior.html and its inline
 
-          const allDocuments =
-              document.getFeatures({kind: 'document', imported: true});
-          assert.equal(allDocuments.size, 4);
+      const allDocuments =
+          document.getFeatures({kind: 'document', imported: true});
+      assert.equal(allDocuments.size, 4);
 
-          const inlineDocuments =
-              Array.from(document.getFeatures({imported: false}))
-                  .filter((d) => d instanceof Document && d.isInline) as
-              Document[];
-          assert.equal(inlineDocuments.length, 1);
+      const inlineDocuments =
+          Array.from(document.getFeatures({imported: false}))
+              .filter((d) => d instanceof Document && d.isInline) as Document[];
+      assert.equal(inlineDocuments.length, 1);
 
-          // This is the main purpose of the test: get a feature from
-          // the inline
-          // document that's imported by the container document
-          const behaviorJsDocument = inlineDocuments[0];
-          const subBehavior = getOnly(behaviorJsDocument.getFeatures({
-            kind: 'behavior',
-            id: 'MyNamespace.SubBehavior',
-            imported: true
-          }));
-          assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
-        });
+      // This is the main purpose of the test: get a feature from
+      // the inline
+      // document that's imported by the container document
+      const behaviorJsDocument = inlineDocuments[0];
+      const subBehavior = getOnly(behaviorJsDocument.getFeatures(
+          {kind: 'behavior', id: 'MyNamespace.SubBehavior', imported: true}));
+      assert.equal(subBehavior!.className, 'MyNamespace.SubBehavior');
+    });
 
-    test(
-        'an inline script can find features from its container document',
-        async () => {
-          const document = await analyzeDocument(
-              'static/script-tags/inline/test-element.html');
-          const inlineDocuments = Array
-                                      .from(document.getFeatures(
-                                          {kind: 'document', imported: false}))
-                                      .filter((d) => d.isInline);
-          assert.equal(inlineDocuments.length, 1);
-          const inlineJsDocument = inlineDocuments[0];
+    testName = 'an inline script can find features from its container document';
+    test(testName, async () => {
+      const document =
+          await analyzeDocument('static/script-tags/inline/test-element.html');
+      const inlineDocuments =
+          Array.from(document.getFeatures({kind: 'document', imported: false}))
+              .filter((d) => d.isInline);
+      assert.equal(inlineDocuments.length, 1);
+      const inlineJsDocument = inlineDocuments[0];
 
-          // The inline document can find the container's imported
-          // features
-          const subBehavior = getOnly(inlineJsDocument.getFeatures(
-              {kind: 'behavior', id: 'TestBehavior', imported: true}));
-          assert.equal(subBehavior!.className, 'TestBehavior');
-        });
+      // The inline document can find the container's imported
+      // features
+      const subBehavior = getOnly(inlineJsDocument.getFeatures(
+          {kind: 'behavior', id: 'TestBehavior', imported: true}));
+      assert.equal(subBehavior!.className, 'TestBehavior');
+    });
 
-    test(
-        'an external script can find features from its container document',
-        async () => {
-          const document = await analyzeDocument(
-              'static/script-tags/external/test-element.html');
+    testName =
+        'an external script can find features from its container document';
+    test(testName, async () => {
+      const document = await analyzeDocument(
+          'static/script-tags/external/test-element.html');
 
-          const htmlScriptTags = Array.from(
-              document.getFeatures({kind: 'html-script', imported: false}));
-          assert.equal(htmlScriptTags.length, 1);
+      const htmlScriptTags = Array.from(
+          document.getFeatures({kind: 'html-script', imported: false}));
+      assert.equal(htmlScriptTags.length, 1);
 
-          const htmlScriptTag = htmlScriptTags[0] as ScriptTagImport;
-          const scriptDocument = htmlScriptTag.document;
+      const htmlScriptTag = htmlScriptTags[0] as ScriptTagImport;
+      const scriptDocument = htmlScriptTag.document;
 
-          // The inline document can find the container's imported
-          // features
-          const subBehavior = getOnly(scriptDocument.getFeatures(
-              {kind: 'behavior', id: 'TestBehavior', imported: true}))!;
-          assert.equal(subBehavior.className, 'TestBehavior');
-        });
+      // The inline document can find the container's imported
+      // features
+      const subBehavior = getOnly(scriptDocument.getFeatures(
+          {kind: 'behavior', id: 'TestBehavior', imported: true}))!;
+      assert.equal(subBehavior.className, 'TestBehavior');
+    });
 
 
     // This test is nearly identical to the previous, but covers a different
@@ -283,32 +274,29 @@ suite('Analyzer', () => {
     // PolymerElement must find behaviors while resolving, and if inline
     // documents don't add a document feature for their container until after
     // resolution, then the element can't find them and throws.
-    test(
-        'an inline document can find behaviors from its container document',
-        async () => {
-          const document = await analyzeDocument(
-              'static/analysis/behaviors/elementdir/element.html');
+    testName =
+        'an inline document can find behaviors from its container document';
+    test(testName, async () => {
+      const document = await analyzeDocument(
+          'static/analysis/behaviors/elementdir/element.html');
 
-          const documents =
-              document.getFeatures({kind: 'document', imported: false});
-          assert.equal(documents.size, 2);
+      const documents =
+          document.getFeatures({kind: 'document', imported: false});
+      assert.equal(documents.size, 2);
 
-          const inlineDocuments =
-              Array.from(documents).filter(
-                  (d) => d instanceof Document && d.isInline) as Document[];
-          assert.equal(inlineDocuments.length, 1);
+      const inlineDocuments =
+          Array.from(documents).filter(
+              (d) => d instanceof Document && d.isInline) as Document[];
+      assert.equal(inlineDocuments.length, 1);
 
-          // This is the main purpose of the test: get a feature
-          // from the inline
-          // document that's imported by the container document
-          const behaviorJsDocument = inlineDocuments[0];
-          const subBehavior = getOnly(behaviorJsDocument.getFeatures({
-            kind: 'behavior',
-            id: 'MyNamespace.SubBehavior',
-            imported: true
-          }));
-          assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
-        });
+      // This is the main purpose of the test: get a feature
+      // from the inline
+      // document that's imported by the container document
+      const behaviorJsDocument = inlineDocuments[0];
+      const subBehavior = getOnly(behaviorJsDocument.getFeatures(
+          {kind: 'behavior', id: 'MyNamespace.SubBehavior', imported: true}));
+      assert.equal(subBehavior.className, 'MyNamespace.SubBehavior');
+    });
 
     test('returns a Document with warnings for malformed files', async () => {
       const document = await analyzeDocument('static/malformed.html');
@@ -713,29 +701,27 @@ suite('Analyzer', () => {
 
   // TODO(rictic): move duplicate checks into scopes/analysis results.
   //     No where else has reliable knowledge of the clash.
-  test.skip(
-      'creates warnings when duplicate namespaces are analyzed', async () => {
-        const document = await analyzer.analyze(
-            ['static/namespaces/import-duplicates.html']);
-        const namespaces =
-            Array.from(document.getFeatures({kind: 'namespace'}));
-        assert.deepEqual(namespaces.map((b) => b.name), [
-          'ExplicitlyNamedNamespace',
-          'ExplicitlyNamedNamespace.NestedNamespace',
-        ]);
-        const warnings = document.getWarnings();
-        assert.containSubset(warnings, [
-          {
-            message:
-                'Found more than one namespace named ExplicitlyNamedNamespace.',
-            severity: Severity.WARNING,
-            code: 'multiple-javascript-namespaces',
-          }
-        ]);
-        assert.deepEqual(await underliner.underline(warnings), [`
+  const testName = 'creates warnings when duplicate namespaces are analyzed';
+  test.skip(testName, async () => {
+    const document =
+        await analyzer.analyze(['static/namespaces/import-duplicates.html']);
+    const namespaces = Array.from(document.getFeatures({kind: 'namespace'}));
+    assert.deepEqual(namespaces.map((b) => b.name), [
+      'ExplicitlyNamedNamespace',
+      'ExplicitlyNamedNamespace.NestedNamespace',
+    ]);
+    const warnings = document.getWarnings();
+    assert.containSubset(
+        warnings, [{
+          message:
+              'Found more than one namespace named ExplicitlyNamedNamespace.',
+          severity: Severity.WARNING,
+          code: 'multiple-javascript-namespaces',
+        }]);
+    assert.deepEqual(await underliner.underline(warnings), [`
 var DuplicateNamespace = {};
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`]);
-      });
+  });
 
   suite('analyzePackage', () => {
     test('produces a package with the right documents', async () => {
@@ -1249,20 +1235,18 @@ var DuplicateNamespace = {};
         assert.deepEqual(documentB.getWarnings({imported: true}), []);
       });
 
-      test(
-          'analyzes multiple imports of the same behavior simultaneously',
-          async () => {
-            const result = await Promise.all([
-              analyzer.analyze(
-                  ['static/multiple-behavior-imports/element-a.html']),
-              analyzer.analyze(
-                  ['static/multiple-behavior-imports/element-b.html'])
-            ]);
-            const documentA = result[0];
-            const documentB = result[1];
-            assert.deepEqual(documentA.getWarnings({imported: true}), []);
-            assert.deepEqual(documentB.getWarnings({imported: true}), []);
-          });
+      const testName =
+          'analyzes multiple imports of the same behavior simultaneously';
+      test(testName, async () => {
+        const result = await Promise.all([
+          analyzer.analyze(['static/multiple-behavior-imports/element-a.html']),
+          analyzer.analyze(['static/multiple-behavior-imports/element-b.html'])
+        ]);
+        const documentA = result[0];
+        const documentB = result[1];
+        assert.deepEqual(documentA.getWarnings({imported: true}), []);
+        assert.deepEqual(documentB.getWarnings({imported: true}), []);
+      });
     });
   });
 });
