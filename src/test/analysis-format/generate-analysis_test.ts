@@ -19,7 +19,7 @@ import * as path from 'path';
 import {Analysis} from '../../analysis-format/analysis-format';
 import {generateAnalysis, validateAnalysis, ValidationError} from '../../analysis-format/generate-analysis';
 import {Analyzer} from '../../core/analyzer';
-import {Analysis as AnalysisResult} from '../../model/analysis';
+import {fUrl} from '../test-utils';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 
@@ -110,7 +110,7 @@ suite('generate-analysis', () => {
         const metadata = generateAnalysis(_package, '');
         assert.equal(metadata.elements && metadata.elements.length, 1);
         assert.equal(metadata.elements![0].tagname, 'simple-element');
-        assert.equal(metadata.elements![0].path, 'simple-element.html');
+        assert.equal(metadata.elements![0].path, fUrl`simple-element.html`);
       });
     });
   });
@@ -130,7 +130,10 @@ suite('generate-analysis', () => {
     });
 
     test(`doesn't throw when validating a valid analysis.json`, () => {
-      validateAnalysis({elements: [], schema_version: '1.0.0'});
+      validateAnalysis({
+        elements: [],
+        schema_version: '1.0.0',
+      });
     });
 
     test(`doesn't throw when validating a version from the future`, () => {
@@ -184,7 +187,7 @@ function* walkRecursively(dir: string): Iterable<string> {
   }
 }
 
-async function analyzeDir(baseDir: string): Promise<AnalysisResult> {
+async function analyzeDir(baseDir: string) {
   const analyzer = Analyzer.createForDirectory(baseDir);
   const allFilenames = Array.from(walkRecursively(baseDir));
   const htmlOrJsFilenames =

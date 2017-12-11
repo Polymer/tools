@@ -174,7 +174,7 @@ export function extractDemos(jsdoc: Annotation|undefined): Demo[] {
     return [];
   }
   const demos: Demo[] = [];
-  const demoUrls = new Set<string>();
+  const demoUrls = new Set<FileRelativeUrl>();
   for (const tag of jsdoc.tags.filter(
            (tag) => tag.title === 'demo' && tag.name)) {
     const demoUrl = tag.name! as FileRelativeUrl;

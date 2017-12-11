@@ -1,5 +1,3 @@
-import {ResolvedUrl} from '../index';
-
 /**
  * @license
  * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
@@ -13,6 +11,8 @@ import {ResolvedUrl} from '../index';
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
+import {ResolvedUrl} from './url';
 
 /**
  * Describes a range of text within a source file.

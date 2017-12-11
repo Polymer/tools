@@ -12,10 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {AnalysisContext} from '../core/analysis-context';
+import {PackageRelativeUrl} from '../index';
+
 import {Document} from './document';
 import {Feature} from './feature';
 import {ImmutableMap, ImmutableSet} from './immutable';
 import {AnalysisQuery as Query, AnalysisQueryWithKind as QueryWithKind, DocumentQuery, FeatureKind, FeatureKindMap, Queryable} from './queryable';
+import {ResolvedUrl} from './url';
 import {Warning} from './warning';
 
 
@@ -34,14 +38,16 @@ const MATCHES_EXTERNAL = /(^|\/)(bower_components|node_modules|build($|\/))/;
  * documents in the package.
  */
 export class Analysis implements Queryable {
-  private readonly _results: ImmutableMap<string, Document|Warning>;
+  private readonly _results: ImmutableMap<ResolvedUrl, Document|Warning>;
   private readonly _searchRoots: ImmutableSet<Document>;
 
   static isExternal(path: string) {
     return MATCHES_EXTERNAL.test(path);
   }
 
-  constructor(results: Map<string, Document|Warning>) {
+  constructor(
+      results: Map<ResolvedUrl, Document|Warning>,
+      private readonly context: AnalysisContext) {
     workAroundDuplicateJsScriptsBecauseOfHtmlScriptTags(results);
 
     this._results = results;
@@ -66,7 +72,12 @@ export class Analysis implements Queryable {
     this._searchRoots = potentialRoots;
   }
 
-  getDocument(url: string): Document|Warning|undefined {
+  getDocument(packageRelativeUrl: string): Document|Warning|undefined {
+    const url =
+        this.context.resolveUrl(packageRelativeUrl as PackageRelativeUrl);
+    if (url === undefined) {
+      return undefined;
+    }
     const result = this._results.get(url);
     if (result != null) {
       return result;

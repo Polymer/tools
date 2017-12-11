@@ -16,6 +16,7 @@ import {assert} from 'chai';
 
 import {AnalysisCache} from '../../core/analysis-cache';
 import {ResolvedUrl} from '../../model/url';
+import {rUrl} from '../test-utils';
 
 suite('AnalysisCache', () => {
   test('it can be constructed', () => {
@@ -100,7 +101,7 @@ suite('AnalysisCache', () => {
     // a Promise.resolve() of its non-promise cache.
     assert.equal(
         await forkedCache.analyzedDocumentPromises.getOrCompute(
-            'unrelated.html' as ResolvedUrl, null as any) as any,
+            rUrl`unrelated.html`, null as any) as any,
         `analyzed unrelated.html`);
   });
 

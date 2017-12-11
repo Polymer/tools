@@ -62,17 +62,17 @@ export type LazyEdgeMap = Map<ResolvedUrl, PackageRelativeUrl[]>;
  */
 export class Analyzer {
   private _analysisComplete: Promise<AnalysisContext>;
-  private readonly _urlResolver: UrlResolver;
+  readonly urlResolver: UrlResolver;
   private readonly _urlLoader: UrlLoader;
 
   constructor(options: Options) {
     if (options.__contextPromise) {
       this._urlLoader = options.urlLoader;
-      this._urlResolver = options.urlResolver!;
+      this.urlResolver = options.urlResolver!;
       this._analysisComplete = options.__contextPromise;
     } else {
       const context = new AnalysisContext(options);
-      this._urlResolver = context.resolver;
+      this.urlResolver = context.resolver;
       this._urlLoader = context.loader;
       this._analysisComplete = Promise.resolve(context);
     }
@@ -95,15 +95,18 @@ export class Analyzer {
    */
   async analyze(urls: string[]): Promise<Analysis> {
     const previousAnalysisComplete = this._analysisComplete;
+    const uiUrls = this.brandUserInputUrls(urls);
     this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
-      return await previousContext.analyze(this.brandUserInputUrls(urls));
+      return await previousContext.analyze(uiUrls);
     })();
     const context = await this._analysisComplete;
-    const results = new Map(this.brandUserInputUrls(urls).map(
-        (url) => [url, context.getDocument(context.resolveUrl(url))] as
-                     [string, Document | Warning]));
-    return new Analysis(results);
+    const resolvedUrls = uiUrls.map((url) => context.resolveUrl(url));
+    const results = new Map(resolvedUrls.map((url): [
+      ResolvedUrl,
+      Document|Warning
+    ] => [url, context.getDocument(url)]));
+    return new Analysis(results, context);
   }
 
   async analyzePackage(): Promise<Analysis> {
@@ -126,11 +129,13 @@ export class Analyzer {
           (fn) => extensions.has(path.extname(fn).substring(1)));
 
       const newContext = await previousContext.analyze(filesWithParsers);
-
-      const documentsOrWarnings = new Map(filesWithParsers.map(
-          (url) => [url, newContext.getDocument(newContext.resolveUrl(url))] as
-                       [string, Document | Warning]));
-      _package = new Analysis(documentsOrWarnings);
+      const resolvedFilesWithParsers =
+          filesWithParsers.map((url) => newContext.resolveUrl(url));
+      const documentsOrWarnings = new Map(resolvedFilesWithParsers.map((url): [
+        ResolvedUrl,
+        Document|Warning
+      ] => [url, newContext.getDocument(url)]));
+      _package = new Analysis(documentsOrWarnings, newContext);
       return newContext;
     })();
     await this._analysisComplete;
@@ -192,7 +197,7 @@ export class Analyzer {
     })();
     return new Analyzer({
       urlLoader: this._urlLoader,
-      urlResolver: this._urlResolver,
+      urlResolver: this.urlResolver,
       __contextPromise: contextPromise
     });
   }
@@ -219,14 +224,14 @@ export class Analyzer {
    * Returns `true` if the given `url` can be resolved.
    */
   canResolveUrl(url: string): boolean {
-    return this._urlResolver.canResolve(this.brandUserInputUrl(url));
+    return this.urlResolver.canResolve(this.brandUserInputUrl(url));
   }
 
   /**
    * Resoves `url` to a new location.
    */
   resolveUrl(url: string): ResolvedUrl {
-    return this._urlResolver.resolve(this.brandUserInputUrl(url));
+    return this.urlResolver.resolve(this.brandUserInputUrl(url));
   }
 
   // Urls from the user are assumed to be package relative.

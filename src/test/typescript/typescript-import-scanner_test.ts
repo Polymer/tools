@@ -26,7 +26,7 @@ suite('TypeScriptImportScanner', () => {
     const urlLoader = new InMemoryOverlayUrlLoader();
     const analyzer = new Analyzer(
         {parsers: new Map([['ts', new TypeScriptPreparser()]]), urlLoader});
-    urlLoader.urlContentsMap.set(analyzer.resolveUrl('test.ts'), '');
+    urlLoader.urlContentsMap.set(analyzer.resolveUrl('test.ts')!, '');
     const {features} =
         await runScanner(analyzer, new TypeScriptImportScanner(), 'test.ts');
     assert.equal(features.length, 0);

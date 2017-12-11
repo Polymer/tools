@@ -48,7 +48,7 @@ const fakeFileContents =
     filesToAnalyze.map((fn) => `<link rel="import" href="${fn}">`).join('\n');
 
 inMemoryOverlay.urlContentsMap.set(
-    analyzer.resolveUrl('ephemeral.html'), fakeFileContents);
+    analyzer.resolveUrl('ephemeral.html')!, fakeFileContents);
 
 
 function existsSync(fn: string): boolean {

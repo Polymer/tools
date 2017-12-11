@@ -198,6 +198,6 @@ const paperButton: Analysis = {
 // We want to keep these local values as is, because they serve as
 // documentation and compilation tests.
 // So there's this hack to prevent a warning about unused code.
-if (Math.random() > 1000) {
+if (false as true) {
   console.log(JSON.stringify(paperButton, null, 2));
 }

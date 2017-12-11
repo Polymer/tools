@@ -14,8 +14,8 @@
 import {assert} from 'chai';
 
 import {SourceRange} from '../../model/model';
-import {ResolvedUrl} from '../../model/url';
 import {ParsedDocument, StringifyOptions} from '../../parser/document';
+import { rUrl } from '../test-utils';
 
 class TestDocument extends ParsedDocument<null, null> {
   type: string;
@@ -33,11 +33,11 @@ class TestDocument extends ParsedDocument<null, null> {
     super({
       ast: null,
       astNode: null,
-      baseUrl: 'test-document' as ResolvedUrl,
+      baseUrl: rUrl`test-document`,
       contents,
       isInline: false,
       locationOffset: undefined,
-      url: 'test-document' as ResolvedUrl
+      url: rUrl`test-document`
     });
   }
 }

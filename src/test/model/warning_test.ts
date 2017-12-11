@@ -17,9 +17,9 @@ import {knuthShuffle} from 'knuth-shuffle';
 
 import {Analyzer} from '../../core/analyzer';
 import {applyEdits, Document, Replacement} from '../../model/model';
-import {ResolvedUrl} from '../../model/url';
 import {ParsedDocument} from '../../parser/document';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
+import { rUrl } from '../test-utils';
 
 suite('applyEdits', () => {
   let memoryMap: InMemoryOverlayUrlLoader;
@@ -28,7 +28,7 @@ suite('applyEdits', () => {
   setup(() => {
     memoryMap = new InMemoryOverlayUrlLoader();
     analyzer = new Analyzer({urlLoader: memoryMap});
-    memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html'), 'abc');
+    memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html')!, 'abc');
     loader = async (url: string) => {
       const analysis = await analyzer.analyze([url]);
       const document = analysis.getDocument(url) as Document;
@@ -44,7 +44,7 @@ suite('applyEdits', () => {
       replacementText: string): Replacement {
     return {
       range: {
-        file: 'test.html' as ResolvedUrl,
+        file: rUrl`test.html`,
         start: {line: startLine, column: startColumn},
         end: {line: endLine, column: endColumn}
       },
@@ -54,7 +54,7 @@ suite('applyEdits', () => {
 
   test('works in the trivial case', async () => {
     const contents = 'abc';
-    memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html'), contents);
+    memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html')!, contents);
 
     const result = await applyEdits([], loader);
     assert.deepEqual(result.appliedEdits, []);
