@@ -19,19 +19,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.0.0-pre.2] - 2017-11-30
 
-* Added `js-import` feature with `lazy: true` for dynamic imports call expressions of the form `import()`.
-* Functions will now be scanned if they have a `@global` annotation. Previously they would only be scanned if they had a `@memberof` annotation. One of these annotations is required because otherwise a lot of functions that aren't really public are included in the analysis (e.g. because they are hidden due to their scoping).
+* Added `js-import` feature with `lazy: true` for dynamic imports call
+  expressions of the form `import()`.
+* Functions will now be scanned if they have a `@global` annotation. Previously
+  they would only be scanned if they had a `@memberof` annotation. One of these
+  annotations is required because otherwise a lot of functions that aren't
+  really public are included in the analysis (e.g. because they are hidden due
+  to their scoping).
 * Function names can now be overridden with e.g. `@function MyNewName`.
 
 ## [3.0.0-pre.1] - 2017-11-29
 
-* [BREAKING] Switched the underlying parser/AST for JavaScript from `espree/estree` to `babylon/babel-types`.  This was needed to support parsing of important platform features such as dynamic imports and moves us closer to supporting TypeScript.
-* When printing Warnings, use one-based indexes for lines and columns, as most text editors and other tools do.
+* [BREAKING] Switched the underlying parser/AST for JavaScript from
+  `espree/estree` to `babylon/babel-types`.  This was needed to support parsing
+  of important platform features such as dynamic imports and moves us closer to
+  supporting TypeScript.
+* When printing Warnings, use one-based indexes for lines and columns, as most
+  text editors and other tools do.
 
 ## [2.7.0] - 2017-11-16
 
 * Emit more accurate super classes for Elements when generating analysis JSON.
-* Added the concept of automatically safe fixes and less-safe edit actions for Warnings. This is an upstreaming of functionality originally defined in polymer-linter.
+* Added the concept of automatically safe fixes and less-safe edit actions for
+  Warnings. This is an upstreaming of functionality originally defined in
+  polymer-linter.
 
 ## [2.6.0] - 2017-11-06
 
