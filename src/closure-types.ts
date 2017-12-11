@@ -157,6 +157,7 @@ function nullableByDefault(node: doctrine.Type): boolean {
       case 'string':
       case 'number':
       case 'boolean':
+      case 'void':
         return false
     }
     return true;

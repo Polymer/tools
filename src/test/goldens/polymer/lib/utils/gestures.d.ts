@@ -50,7 +50,7 @@ declare namespace Polymer {
      * Registers a new gesture event recognizer for adding new custom
      * gesture event types.
      */
-    function register(recog: GestureRecognizer|null): void|null;
+    function register(recog: GestureRecognizer|null): void;
 
 
     /**
@@ -59,13 +59,13 @@ declare namespace Polymer {
      * This value is checked on first move, thus it should be called prior to
      * adding event listeners.
      */
-    function setTouchAction(node: Element|null, value: string): void|null;
+    function setTouchAction(node: Element|null, value: string): void;
 
 
     /**
      * Prevents the dispatch and default action of the given event name.
      */
-    function prevent(evName: string): void|null;
+    function prevent(evName: string): void;
 
 
     /**
@@ -75,6 +75,6 @@ declare namespace Polymer {
      * This method should only be called during testing with simulated touch inputs.
      * Calling this method in production may cause duplicate taps or other Gestures.
      */
-    function resetMouseCanceller(): void|null;
+    function resetMouseCanceller(): void;
   }
 }

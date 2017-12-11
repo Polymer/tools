@@ -42,13 +42,13 @@ declare namespace Polymer {
       /**
        * Cancels a previously enqueued `timeOut` callback.
        */
-      function cancel(handle: number): void|null;
+      function cancel(handle: number): void;
 
 
       /**
        * Cancels a previously enqueued `animationFrame` callback.
        */
-      function cancel(handle: number): void|null;
+      function cancel(handle: number): void;
     }
 
     /**
@@ -79,7 +79,7 @@ declare namespace Polymer {
       /**
        * Cancels a previously enqueued `idlePeriod` callback.
        */
-      function cancel(handle: number): void|null;
+      function cancel(handle: number): void;
     }
 
     /**
@@ -103,7 +103,7 @@ declare namespace Polymer {
       /**
        * Cancels a previously enqueued `microTask` callback.
        */
-      function cancel(handle: number): void|null;
+      function cancel(handle: number): void;
     }
   }
 }

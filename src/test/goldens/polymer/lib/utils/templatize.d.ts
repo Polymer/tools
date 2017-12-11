@@ -34,7 +34,7 @@ declare class TemplateInstanceBase extends
    * @param prop Property or path name
    * @param value Value of the property to forward
    */
-  forwardHostProp(prop: string, value: any): void|null;
+  forwardHostProp(prop: string, value: any): void;
 
   /**
    * Shows or hides the template instance top level child elements. For
@@ -44,7 +44,7 @@ declare class TemplateInstanceBase extends
    * @param hide Set to true to hide the children;
    * set to false to show them.
    */
-  _showHideChildren(hide: boolean): void|null;
+  _showHideChildren(hide: boolean): void;
 }
 
 declare namespace templateInfo {

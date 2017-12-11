@@ -55,12 +55,12 @@ declare namespace Polymer {
      * @param observerHandle Observer instance
      *   to disconnect.
      */
-    unobserveNodes(observerHandle: Polymer.FlattenedNodesObserver|null): void|null;
+    unobserveNodes(observerHandle: Polymer.FlattenedNodesObserver|null): void;
 
     /**
      * Provided as a backwards-compatible API only.  This method does nothing.
      */
-    notifyObserver(): void|null;
+    notifyObserver(): void;
 
     /**
      * Returns true if the provided node is contained with this element's
