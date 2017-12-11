@@ -20,7 +20,7 @@ declare namespace Polymer {
    * to ensure that any legacy behaviors can rely on legacy Polymer API on
    * the underlying element.
    */
-  function mixinBehaviors(behaviors: Object|any[]|null, klass: HTMLElement|(() => any)): () => any;
+  function mixinBehaviors(behaviors: Object|any[]|null, klass: HTMLElement|{new(): HTMLElement}): {new(): HTMLElement};
 
 
   /**
@@ -86,7 +86,7 @@ declare namespace Polymer {
    *   this element have been propagated to its template and all observers
    *   have run
    */
-  function Class(info: PolymerInit): () => any;
+  function Class(info: PolymerInit): {new(): HTMLElement};
 }
 
 declare class PolymerGenerated {

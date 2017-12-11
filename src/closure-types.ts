@@ -183,15 +183,25 @@ function convertUnion(
 
 function convertFunction(
     node: doctrine.type.FunctionType,
-    templateTypes: string[]): ts.FunctionType {
-  return new ts.FunctionType(
-      node.params.map(
-          (param, idx) => new ts.ParamType(
-              // TypeScript wants named parameters, but we don't have names.
-              'p' + idx,
-              convert(param, templateTypes))),
-      // Cast because typings are wrong: `FunctionType.result` is not an array.
-      node.result ? convert(node.result as any, templateTypes) : ts.anyType);
+    templateTypes: string[]): ts.FunctionType|ts.ConstructorType {
+  const params = node.params.map(
+      (param, idx) => new ts.ParamType(
+          // TypeScript wants named parameters, but we don't have names.
+          'p' + idx,
+          convert(param, templateTypes)));
+  if (node.new) {
+    return new ts.ConstructorType(
+        params,
+        // It doesn't make sense for a constructor to return something other
+        // than a named type. Also, in this context the name type is not
+        // nullable by default, so it's simpler to just directly convert here.
+        isName(node.this) ? new ts.NameType(node.this.name) : ts.anyType);
+  } else {
+    return new ts.FunctionType(
+        params,
+        // Cast because type is wrong: `FunctionType.result` is not an array.
+        node.result ? convert(node.result as any, templateTypes) : ts.anyType);
+  }
 }
 
 function isParameterizedArray(node: doctrine.Type):

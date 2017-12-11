@@ -450,7 +450,7 @@ export class Param {
 }
 
 // A TypeScript type expression.
-export type Type = NameType|UnionType|ArrayType|FunctionType;
+export type Type = NameType|UnionType|ArrayType|FunctionType|ConstructorType;
 
 // string, MyClass, null, undefined, any
 export class NameType {
@@ -600,6 +600,32 @@ export class FunctionType {
     const params =
         this.params.map((param) => `${param.name}: ${param.type.serialize()}`);
     return `(${params.join(', ')}) => ${this.returns.serialize()}`;
+  }
+}
+
+// {new(foo): bar}
+export class ConstructorType {
+  readonly kind = 'constructor';
+  params: ParamType[];
+  returns: NameType;
+
+  constructor(params: ParamType[], returns: NameType) {
+    this.params = params;
+    this.returns = returns;
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const p of this.params) {
+      yield* p.traverse();
+    }
+    yield* this.returns.traverse();
+    yield this;
+  }
+
+  serialize(): string {
+    const params =
+        this.params.map((param) => `${param.name}: ${param.type.serialize()}`);
+    return `{new(${params.join(', ')}): ${this.returns.serialize()}}`;
   }
 }
 

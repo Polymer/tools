@@ -110,7 +110,7 @@ declare namespace Polymer {
      * needed from the callbacks (such as references to `instances` stamped)
      * should be stored on the `owner` such that they can be retrieved via `this`.
      */
-    function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options?: Object|null): () => any;
+    function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options?: Object|null): {new(): TemplateInstanceBase};
 
 
     /**

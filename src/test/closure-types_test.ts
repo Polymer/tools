@@ -113,6 +113,12 @@ suite('closureTypeToTypeScript', () => {
     check('!Function', 'Function');
   });
 
+  test('constructor', () => {
+    check('function(new:HTMLElement)', '{new(): HTMLElement}');
+    check(
+        'function(new:HTMLElement, string)', '{new(p0: string): HTMLElement}');
+  });
+
   test('returns any when invalid', () => {
     check('><', 'any');
   });
