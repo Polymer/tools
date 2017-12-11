@@ -109,6 +109,9 @@ declare namespace Polymer {
      * used; rather, callbacks are called bound to the `owner`, and so context
      * needed from the callbacks (such as references to `instances` stamped)
      * should be stored on the `owner` such that they can be retrieved via `this`.
+     *
+     * @returns Generated class bound to the template
+     *   provided
      */
     function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options?: Object|null): {new(): TemplateInstanceBase};
 
@@ -126,6 +129,9 @@ declare namespace Polymer {
      *   if (model.index < 10) {
      *     model.set('item.checked', true);
      *   }
+     *
+     * @returns Template instance representing the
+     *   binding scope for the element
      */
     function modelForElement(template: HTMLTemplateElement|null, node: Node|null): TemplateInstanceBase|null;
   }

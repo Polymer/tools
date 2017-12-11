@@ -29,6 +29,8 @@ declare namespace Polymer {
 
     /**
      * Cross-platform `element.matches` shim.
+     *
+     * @returns True if node matched selector
      */
     function matchesSelector(node: Element, selector: string): boolean;
   }
@@ -133,6 +135,8 @@ declare namespace Polymer {
    * Note that in Polymer 2.x use of `Polymer.dom` is no longer required and
    * in the majority of cases simply facades directly to the standard native
    * API.
+   *
+   * @returns Wrapper providing either node API or event API
    */
   function dom(obj: Node|Event|null): DomApi|EventApi|null;
 }
