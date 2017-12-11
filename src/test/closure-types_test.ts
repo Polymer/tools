@@ -103,6 +103,8 @@ suite('closureTypeToTypeScript', () => {
     check(
         'function(string, number): boolean',
         '(p0: string, p1: number) => boolean');
+
+    check('function(): void', '() => void');
   });
 
   test('function object', () => {

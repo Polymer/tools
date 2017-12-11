@@ -133,6 +133,8 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
     t = ts.nullType;
   } else if (isUndefinedLiteral(node)) {  // undefined
     t = ts.undefinedType;
+  } else if (isVoidLiteral(node)) {  // void
+    t = new ts.NameType('void');
   } else if (isName(node)) {  // string, Object, MyClass, etc.
     t = new ts.NameType(node.name);
   } else {
@@ -237,6 +239,10 @@ function isNullableLiteral(node: doctrine.Type):
 function isUndefinedLiteral(node: doctrine.Type):
     node is doctrine.type.UndefinedLiteral {
   return node.type === 'UndefinedLiteral';
+}
+
+function isVoidLiteral(node: doctrine.Type): node is doctrine.type.VoidLiteral {
+  return node.type === 'VoidLiteral';
 }
 
 function isName(node: doctrine.Type): node is doctrine.type.NameExpression {
