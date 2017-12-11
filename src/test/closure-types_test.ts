@@ -119,6 +119,13 @@ suite('closureTypeToTypeScript', () => {
         'function(new:HTMLElement, string)', '{new(p0: string): HTMLElement}');
   });
 
+  test('record', () => {
+    check('{foo:string}', '{foo: string}');
+    check('{foo:string, bar:number}', '{foo: string, bar: number}');
+    check('{foo, bar}', '{foo: any, bar: any}');
+    check('{foo:(string|undefined)}', '{foo: string|undefined}');
+  });
+
   test('returns any when invalid', () => {
     check('><', 'any');
   });

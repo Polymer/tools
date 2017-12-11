@@ -10,7 +10,6 @@
  */
 
 // TODO Object<foo>, Object<foo, bar>
-// TODO Record types
 //
 // Useful resources for working on this package:
 // https://eslint.org/doctrine/demo/
@@ -125,6 +124,8 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
     t = convertFunction(node, templateTypes);
   } else if (isBareArray(node)) {  // Array
     t = new ts.ArrayType(ts.anyType);
+  } else if (isRecordType(node)) {  // {foo:bar}
+    t = convertRecord(node, templateTypes);
   } else if (isAllLiteral(node)) {  // *
     t = ts.anyType;
   } else if (isNullableLiteral(node)) {  // ?
@@ -204,6 +205,20 @@ function convertFunction(
   }
 }
 
+function convertRecord(node: doctrine.type.RecordType, templateTypes: string[]):
+    ts.RecordType|ts.NameType {
+  const fields = [];
+  for (const field of node.fields) {
+    if (field.type !== 'FieldType') {
+      return ts.anyType;
+    }
+    fields.push(new ts.ParamType(
+        field.key,
+        field.value ? convert(field.value, templateTypes) : ts.anyType));
+  }
+  return new ts.RecordType(fields);
+}
+
 function isParameterizedArray(node: doctrine.Type):
     node is doctrine.type.TypeApplication {
   return node.type === 'TypeApplication' &&
@@ -222,6 +237,10 @@ function isUnion(node: doctrine.Type): node is doctrine.type.UnionType {
 
 function isFunction(node: doctrine.Type): node is doctrine.type.FunctionType {
   return node.type === 'FunctionType';
+}
+
+function isRecordType(node: doctrine.Type): node is doctrine.type.RecordType {
+  return node.type === 'RecordType';
 }
 
 function isNullable(node: doctrine.Type): node is doctrine.type.NullableType {

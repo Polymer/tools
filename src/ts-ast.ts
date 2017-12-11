@@ -450,7 +450,8 @@ export class Param {
 }
 
 // A TypeScript type expression.
-export type Type = NameType|UnionType|ArrayType|FunctionType|ConstructorType;
+export type Type =
+    NameType|UnionType|ArrayType|FunctionType|ConstructorType|RecordType;
 
 // string, MyClass, null, undefined, any
 export class NameType {
@@ -597,8 +598,7 @@ export class FunctionType {
   }
 
   serialize(): string {
-    const params =
-        this.params.map((param) => `${param.name}: ${param.type.serialize()}`);
+    const params = this.params.map((param) => param.serialize());
     return `(${params.join(', ')}) => ${this.returns.serialize()}`;
   }
 }
@@ -623,8 +623,7 @@ export class ConstructorType {
   }
 
   serialize(): string {
-    const params =
-        this.params.map((param) => `${param.name}: ${param.type.serialize()}`);
+    const params = this.params.map((param) => param.serialize());
     return `{new(${params.join(', ')}): ${this.returns.serialize()}}`;
   }
 }
@@ -643,6 +642,31 @@ export class ParamType {
   constructor(name: string, type: Type) {
     this.name = name;
     this.type = type;
+  }
+
+  serialize() {
+    return `${this.name}: ${this.type.serialize()}`;
+  }
+}
+
+export class RecordType {
+  readonly kind = 'record';
+  fields: ParamType[];
+
+  constructor(fields: ParamType[]) {
+    this.fields = fields;
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const m of this.fields) {
+      yield* m.traverse();
+    }
+    yield this;
+  }
+
+  serialize(): string {
+    const fields = this.fields.map((field) => field.serialize());
+    return `{${fields.join(', ')}}`;
   }
 }
 
