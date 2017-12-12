@@ -29,12 +29,16 @@ declare namespace Polymer {
       /**
        * Returns a sub-module with the async interface providing the provided
        * delay.
+       *
+       * @returns An async timeout interface
        */
       function after(delay: number): AsyncInterface|null;
 
 
       /**
        * Enqueues a function called in the next task.
+       *
+       * @returns Handle used for canceling task
        */
       function run(fn: Function|null): number;
 
@@ -59,6 +63,8 @@ declare namespace Polymer {
 
       /**
        * Enqueues a function called at `requestAnimationFrame` timing.
+       *
+       * @returns Handle used for canceling task
        */
       function run(fn: Function|null): number;
     }
@@ -72,6 +78,8 @@ declare namespace Polymer {
 
       /**
        * Enqueues a function called at `requestIdleCallback` timing.
+       *
+       * @returns Handle used for canceling task
        */
       function run(fn: (p0: IdleDeadline|null) => any): number;
 
@@ -96,6 +104,8 @@ declare namespace Polymer {
 
       /**
        * Enqueues a function called at microtask timing.
+       *
+       * @returns Handle used for canceling task
        */
       function run(callback: Function|null): number;
 

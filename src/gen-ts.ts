@@ -326,7 +326,8 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
     description: feature.description || feature.summary,
     templateTypes: feature.templateTypes,
     returns: closureTypeToTypeScript(
-        feature.return && feature.return.type, feature.templateTypes)
+        feature.return && feature.return.type, feature.templateTypes),
+    returnsDescription: feature.return && feature.return.desc
   });
 
   for (const param of feature.params || []) {

@@ -103,12 +103,27 @@ suite('closureTypeToTypeScript', () => {
     check(
         'function(string, number): boolean',
         '(p0: string, p1: number) => boolean');
+
+    check('function(): void', '() => void');
   });
 
   test('function object', () => {
     check('Function', 'Function|null');
     check('?Function', 'Function|null');
     check('!Function', 'Function');
+  });
+
+  test('constructor', () => {
+    check('function(new:HTMLElement)', '{new(): HTMLElement}');
+    check(
+        'function(new:HTMLElement, string)', '{new(p0: string): HTMLElement}');
+  });
+
+  test('record', () => {
+    check('{foo:string}', '{foo: string}');
+    check('{foo:string, bar:number}', '{foo: string, bar: number}');
+    check('{foo, bar}', '{foo: any, bar: any}');
+    check('{foo:(string|undefined)}', '{foo?: string}');
   });
 
   test('returns any when invalid', () => {

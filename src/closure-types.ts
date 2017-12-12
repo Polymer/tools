@@ -10,7 +10,6 @@
  */
 
 // TODO Object<foo>, Object<foo, bar>
-// TODO Record types
 //
 // Useful resources for working on this package:
 // https://eslint.org/doctrine/demo/
@@ -125,6 +124,8 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
     t = convertFunction(node, templateTypes);
   } else if (isBareArray(node)) {  // Array
     t = new ts.ArrayType(ts.anyType);
+  } else if (isRecordType(node)) {  // {foo:bar}
+    t = convertRecord(node, templateTypes);
   } else if (isAllLiteral(node)) {  // *
     t = ts.anyType;
   } else if (isNullableLiteral(node)) {  // ?
@@ -133,6 +134,8 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
     t = ts.nullType;
   } else if (isUndefinedLiteral(node)) {  // undefined
     t = ts.undefinedType;
+  } else if (isVoidLiteral(node)) {  // void
+    t = new ts.NameType('void');
   } else if (isName(node)) {  // string, Object, MyClass, etc.
     t = new ts.NameType(node.name);
   } else {
@@ -181,15 +184,59 @@ function convertUnion(
 
 function convertFunction(
     node: doctrine.type.FunctionType,
-    templateTypes: string[]): ts.FunctionType {
-  return new ts.FunctionType(
-      node.params.map(
-          (param, idx) => new ts.ParamType(
-              // TypeScript wants named parameters, but we don't have names.
-              'p' + idx,
-              convert(param, templateTypes))),
-      // Cast because typings are wrong: `FunctionType.result` is not an array.
-      node.result ? convert(node.result as any, templateTypes) : ts.anyType);
+    templateTypes: string[]): ts.FunctionType|ts.ConstructorType {
+  const params = node.params.map(
+      (param, idx) => new ts.ParamType(
+          // TypeScript wants named parameters, but we don't have names.
+          'p' + idx,
+          convert(param, templateTypes)));
+  if (node.new) {
+    return new ts.ConstructorType(
+        params,
+        // It doesn't make sense for a constructor to return something other
+        // than a named type. Also, in this context the name type is not
+        // nullable by default, so it's simpler to just directly convert here.
+        isName(node.this) ? new ts.NameType(node.this.name) : ts.anyType);
+  } else {
+    return new ts.FunctionType(
+        params,
+        // Cast because type is wrong: `FunctionType.result` is not an array.
+        node.result ? convert(node.result as any, templateTypes) : ts.anyType);
+  }
+}
+
+function convertRecord(node: doctrine.type.RecordType, templateTypes: string[]):
+    ts.RecordType|ts.NameType {
+  const fields = [];
+  for (const field of node.fields) {
+    if (field.type !== 'FieldType') {
+      return ts.anyType;
+    }
+    let fieldType =
+        field.value ? convert(field.value, templateTypes) : ts.anyType;
+
+    // In Closure you can't declare a record field optional, instead you
+    // declare `foo: bar|undefined`. In TypeScript we can represent this as
+    // `foo?: bar`. This also matches the semantics better, since Closure would
+    // allow the field to be omitted when it is `|undefined`, but TypeScript
+    // would require it to be explicitly set to `undefined`.
+    let optional = false;
+    if (fieldType.kind === 'union') {
+      fieldType.members = fieldType.members.filter((member) => {
+        if (member.kind === 'name' && member.name === 'undefined') {
+          optional = true;
+          return false;
+        }
+        return true;
+      });
+
+      // No need for a union if we collapsed it to one member.
+      fieldType.simplify();
+    }
+
+    fields.push(new ts.ParamType(field.key, fieldType, optional));
+  }
+  return new ts.RecordType(fields);
 }
 
 function isParameterizedArray(node: doctrine.Type):
@@ -210,6 +257,10 @@ function isUnion(node: doctrine.Type): node is doctrine.type.UnionType {
 
 function isFunction(node: doctrine.Type): node is doctrine.type.FunctionType {
   return node.type === 'FunctionType';
+}
+
+function isRecordType(node: doctrine.Type): node is doctrine.type.RecordType {
+  return node.type === 'RecordType';
 }
 
 function isNullable(node: doctrine.Type): node is doctrine.type.NullableType {
@@ -237,6 +288,10 @@ function isNullableLiteral(node: doctrine.Type):
 function isUndefinedLiteral(node: doctrine.Type):
     node is doctrine.type.UndefinedLiteral {
   return node.type === 'UndefinedLiteral';
+}
+
+function isVoidLiteral(node: doctrine.Type): node is doctrine.type.VoidLiteral {
+  return node.type === 'VoidLiteral';
 }
 
 function isName(node: doctrine.Type): node is doctrine.type.NameExpression {

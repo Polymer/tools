@@ -30,18 +30,25 @@ declare namespace Polymer {
      *
      * Similar to `document.elementFromPoint`, but pierces through
      * shadow roots.
+     *
+     * @returns Returns the deepest shadowRoot inclusive element
+     * found at the screen position given.
      */
     function deepTargetFind(x: number, y: number): Element|null;
 
 
     /**
      * Adds an event listener to a node for the given gesture type.
+     *
+     * @returns Returns true if a gesture event listener was added.
      */
     function addListener(node: Node|null, evType: string, handler: Function|null): boolean;
 
 
     /**
      * Removes an event listener from a node for the given gesture type.
+     *
+     * @returns Returns true if a gesture event listener was removed.
      */
     function removeListener(node: Node|null, evType: string, handler: Function|null): boolean;
 
