@@ -16,7 +16,7 @@ import {assert} from 'chai';
 
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
 import {PseudoElementScanner} from '../../polymer/pseudo-element-scanner';
-import {fUrl, runScannerOnContents} from '../test-utils';
+import {fileRelativeUrl, runScannerOnContents} from '../test-utils';
 
 suite('PseudoElementScanner', () => {
   test('finds pseudo elements in html comments ', async () => {
@@ -35,6 +35,6 @@ suite('PseudoElementScanner', () => {
         features.map(
             (f: ScannedPolymerElement) =>
                 [f.tagName, f.pseudo, f.description.trim(), f.demos]),
-        [['x-foo', true, desc, [{desc: 'demo', path: fUrl`demo/index.html`}]]]);
+        [['x-foo', true, desc, [{desc: 'demo', path: fileRelativeUrl`demo/index.html`}]]]);
   });
 });

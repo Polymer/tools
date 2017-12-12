@@ -17,7 +17,7 @@ import {assert} from 'chai';
 import {HtmlImportScanner} from '../../html/html-import-scanner';
 import {ScannedImport} from '../../index';
 import {PackageRelativeUrl, ResolvedUrl} from '../../model/url';
-import {runScannerOnContents} from '../test-utils';
+import {resolvedUrl, runScannerOnContents} from '../test-utils';
 
 suite('HtmlImportScanner', () => {
   test('finds HTML Imports', async () => {
@@ -78,7 +78,7 @@ suite('scan() with lazy import map', () => {
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
     const lazyEdges = new Map<ResolvedUrl, PackageRelativeUrl[]>([[
-      'test.html' as ResolvedUrl,
+      resolvedUrl`test.html`,
       ['lazy1.html', 'lazy2.html', 'lazy3.html'] as PackageRelativeUrl[]
     ]]);
 

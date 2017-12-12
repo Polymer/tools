@@ -19,7 +19,7 @@ import {Analyzer} from '../../core/analyzer';
 import {applyEdits, Document, Replacement} from '../../model/model';
 import {ParsedDocument} from '../../parser/document';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
-import { rUrl } from '../test-utils';
+import { resolvedUrl } from '../test-utils';
 
 suite('applyEdits', () => {
   let memoryMap: InMemoryOverlayUrlLoader;
@@ -44,7 +44,7 @@ suite('applyEdits', () => {
       replacementText: string): Replacement {
     return {
       range: {
-        file: rUrl`test.html`,
+        file: resolvedUrl`test.html`,
         start: {line: startLine, column: startColumn},
         end: {line: endLine, column: endColumn}
       },

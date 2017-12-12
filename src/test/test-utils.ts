@@ -134,10 +134,10 @@ export async function runScannerOnContents(
   return {features, warnings, analyzer, urlLoader: overlayLoader};
 }
 
-export function fUrl([text]: TemplateStringsArray): FileRelativeUrl {
+export function fileRelativeUrl([text]: TemplateStringsArray): FileRelativeUrl {
   return text as FileRelativeUrl;
 }
 
-export function rUrl([text]: TemplateStringsArray): ResolvedUrl {
+export function resolvedUrl([text]: TemplateStringsArray): ResolvedUrl {
   return text as ResolvedUrl;
 }

@@ -19,7 +19,7 @@ import * as path from 'path';
 import {Analysis} from '../../analysis-format/analysis-format';
 import {generateAnalysis, validateAnalysis, ValidationError} from '../../analysis-format/generate-analysis';
 import {Analyzer} from '../../core/analyzer';
-import {fUrl} from '../test-utils';
+import {fileRelativeUrl} from '../test-utils';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 
@@ -110,7 +110,7 @@ suite('generate-analysis', () => {
         const metadata = generateAnalysis(_package, '');
         assert.equal(metadata.elements && metadata.elements.length, 1);
         assert.equal(metadata.elements![0].tagname, 'simple-element');
-        assert.equal(metadata.elements![0].path, fUrl`simple-element.html`);
+        assert.equal(metadata.elements![0].path, fileRelativeUrl`simple-element.html`);
       });
     });
   });

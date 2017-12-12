@@ -18,7 +18,7 @@ import * as path from 'path';
 
 import {ParsedCssDocument} from '../../css/css-document';
 import {CssParser} from '../../css/css-parser';
-import {ResolvedUrl} from '../../model/url';
+import {resolvedUrl} from '../test-utils';
 
 suite('CssParser', () => {
   suite('parse()', () => {
@@ -33,7 +33,7 @@ suite('CssParser', () => {
 
     test('parses css', () => {
       const document =
-          parser.parse(fileContents, '/static/stylesheet.css' as ResolvedUrl);
+          parser.parse(fileContents, resolvedUrl`/static/stylesheet.css`);
       assert.instanceOf(document, ParsedCssDocument);
       assert.equal(document.url, '/static/stylesheet.css');
       assert(document.ast != null);
@@ -41,7 +41,7 @@ suite('CssParser', () => {
 
     test('stringifies css', () => {
       const document =
-          parser.parse(fileContents, '/static/stylesheet.css' as ResolvedUrl);
+          parser.parse(fileContents, resolvedUrl`/static/stylesheet.css`);
       assert.deepEqual(document.stringify(), fileContents);
     });
   });

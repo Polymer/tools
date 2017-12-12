@@ -20,8 +20,7 @@ import stripIndent = require('strip-indent');
 import {ParsedTypeScriptDocument} from '../../typescript/typescript-document';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
 import {WarningCarryingException} from '../../model/model';
-import {CodeUnderliner} from '../test-utils';
-import {ResolvedUrl} from '../../model/url';
+import {CodeUnderliner, resolvedUrl} from '../test-utils';
 
 suite('TypeScriptParser', () => {
   let parser: TypeScriptPreparser;
@@ -39,8 +38,7 @@ suite('TypeScriptParser', () => {
           bar: string = 'baz';
         }
       `;
-      const document =
-          parser.parse(contents, '/typescript/test.ts' as ResolvedUrl);
+      const document = parser.parse(contents, resolvedUrl`/typescript/test.ts`);
       assert.instanceOf(document, ParsedTypeScriptDocument);
       assert.equal(document.url, '/typescript/test.ts');
       const sourceFile = document.ast as ts.SourceFile;
@@ -53,7 +51,7 @@ suite('TypeScriptParser', () => {
 
     test('throws a WarningCarryingException for parse errors', async () => {
       const contents = 'const const const const const #!@(~~)!();';
-      const url = 'ts-parse-error.ts' as ResolvedUrl;
+      const url = resolvedUrl`ts-parse-error.ts`;
       let error: WarningCarryingException|undefined = undefined;
       try {
         parser.parse(contents, url);
@@ -86,7 +84,7 @@ const const const const const #!@(~~)!();
           }
         }`).trim() +
             '\n';
-        const document = parser.parse(contents, 'test-file.js' as ResolvedUrl);
+        const document = parser.parse(contents, resolvedUrl`test-file.js`);
         assert.deepEqual(document.stringify({}), contents);
       });
     });
