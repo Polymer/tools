@@ -36,7 +36,7 @@ class DeprecatedCustomPropertySyntax extends CssRule {
     return warnings;
   }
 
-  // Convert `@apply(--foo);` to `@apply foo;`
+  // Convert `@apply(--foo);` to `@apply --foo;`
   private addAtApplyWarnings(
       node: shady.Node, parsedDocument: ParsedCssDocument,
       warnings: Warning[]) {
