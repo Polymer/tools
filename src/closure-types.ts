@@ -212,9 +212,29 @@ function convertRecord(node: doctrine.type.RecordType, templateTypes: string[]):
     if (field.type !== 'FieldType') {
       return ts.anyType;
     }
-    fields.push(new ts.ParamType(
-        field.key,
-        field.value ? convert(field.value, templateTypes) : ts.anyType));
+    let fieldType =
+        field.value ? convert(field.value, templateTypes) : ts.anyType;
+
+    // In Closure you can't declare a record field optional, instead you
+    // declare `foo: bar|undefined`. In TypeScript we can represent this as
+    // `foo?: bar`. This also matches the semantics better, since Closure would
+    // allow the field to be omitted when it is `|undefined`, but TypeScript
+    // would require it to be explicitly set to `undefined`.
+    let optional = false;
+    if (fieldType.kind === 'union') {
+      fieldType.members = fieldType.members.filter((member) => {
+        if (member.kind === 'name' && member.name === 'undefined') {
+          optional = true;
+          return false;
+        }
+        return true;
+      });
+
+      // No need for a union if we collapsed it to one member.
+      fieldType.simplify();
+    }
+
+    fields.push(new ts.ParamType(field.key, fieldType, optional));
   }
   return new ts.RecordType(fields);
 }

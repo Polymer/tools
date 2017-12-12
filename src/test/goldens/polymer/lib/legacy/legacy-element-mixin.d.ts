@@ -238,7 +238,7 @@ declare namespace Polymer {
      *  `node` on which to fire the event (HTMLElement, defaults to `this`).
      * @returns The new event that was fired.
      */
-    fire(type: string, detail?: any, options?: {bubbles: boolean|undefined, cancelable: boolean|undefined, composed: boolean|undefined}): Event|null;
+    fire(type: string, detail?: any, options?: {bubbles?: boolean, cancelable?: boolean, composed?: boolean}): Event|null;
 
     /**
      * Convenience method to add an event listener on a given element,

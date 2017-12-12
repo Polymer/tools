@@ -633,19 +633,21 @@ export class ParamType {
   readonly kind = 'param';
   name: string;
   type: Type;
+  optional: boolean;
 
   * traverse(): Iterable<Node> {
     yield* this.type.traverse();
     yield this;
   }
 
-  constructor(name: string, type: Type) {
+  constructor(name: string, type: Type, optional: boolean = false) {
     this.name = name;
     this.type = type;
+    this.optional = optional;
   }
 
   serialize() {
-    return `${this.name}: ${this.type.serialize()}`;
+    return `${this.name}${this.optional ? '?' : ''}: ${this.type.serialize()}`;
   }
 }
 
