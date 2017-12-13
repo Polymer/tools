@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `undefined` when `resolve` is called to indicate that it can't resolve a URL.
 * Analyzer#urlResolver is a property that exposes the analyzer's url resolver,
   for cases where more direct access to url resolution is desired.
+* Fix a situation where a warning would be reported as `[Object object]`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.3] - 2017-12-08

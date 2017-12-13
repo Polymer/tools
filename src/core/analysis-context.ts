@@ -30,7 +30,7 @@ import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
 import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedImport, ScannedInlineDocument, Severity, Warning, WarningCarryingException} from '../model/model';
 import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
-import {ParsedDocument} from '../parser/document';
+import {ParsedDocument, UnparsableParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {BehaviorScanner} from '../polymer/behavior-scanner';
 import {CssImportScanner} from '../polymer/css-import-scanner';
@@ -224,16 +224,7 @@ export class AnalysisContext {
     }
     const scannedDocument = this._cache.scannedDocuments.get(resolvedUrl);
     if (!scannedDocument) {
-      return {
-        sourceRange: {
-          file: resolvedUrl,
-          start: {line: 0, column: 0},
-          end: {line: 0, column: 0}
-        },
-        code: 'unable-to-analyze',
-        message: `Document not found: ${resolvedUrl}`,
-        severity: Severity.ERROR
-      } as any;
+      return makeRequestedWithoutLoadingWarning(resolvedUrl);
     }
 
     const extension = path.extname(resolvedUrl).substring(1);
@@ -503,4 +494,31 @@ export class AnalysisContext {
 
 function filterOutUndefineds<T>(arr: ReadonlyArray<T|undefined>): T[] {
   return arr.filter((t) => t !== undefined) as T[];
+}
+
+/**
+ * A warning for a weird situation that should never happen.
+ *
+ * Before calling getDocument(), which is synchronous, a caller must first
+ * have finished loading and scanning, as those phases are asynchronous.
+ *
+ * So we need to construct a warning, but we don't have a parsed document,
+ * so we construct this weird fake one. This is such a rare case that it's
+ * worth going out of our way here so that warnings can uniformly expect to
+ * have documents.
+ */
+function makeRequestedWithoutLoadingWarning(resolvedUrl: ResolvedUrl) {
+  const parsedDocument = new UnparsableParsedDocument(resolvedUrl, '');
+  return new Warning({
+    sourceRange: {
+      file: resolvedUrl,
+      start: {line: 0, column: 0},
+      end: {line: 0, column: 0}
+    },
+    code: 'unable-to-analyze',
+    message: `[Internal Error] Document was requested ` +
+        ` before loading and scanning finished. This should never happen.`,
+    severity: Severity.ERROR,
+    parsedDocument
+  });
 }

@@ -64,7 +64,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
         parsedAsSourceType: 'script',
       });
       throw new WarningCarryingException(
-          new Warning({parsedDocument: minimalDocument, ...result.warning}));
+          new Warning({parsedDocument: minimalDocument, ...result.warningish}));
     }
 
     return new JavaScriptDocument({
@@ -93,7 +93,7 @@ export type ParseResult = {
   program: babel.Program,
 }|{
   type: 'failure',
-  warning: {
+  warningish: {
     sourceRange: SourceRange,
     severity: Severity,
     code: string,
@@ -146,7 +146,7 @@ export function parseJs(
       updateLineNumberAndColumnForError(err);
       return {
         type: 'failure',
-        warning: {
+        warningish: {
           message: err.message.split('\n')[0],
           severity: Severity.ERROR,
           code: warningCode,
@@ -156,7 +156,7 @@ export function parseJs(
                 start: {line: err.lineNumber - 1, column: err.column - 1},
                 end: {line: err.lineNumber - 1, column: err.column - 1}
               },
-              locationOffset)!
+              locationOffset)!,
         }
       };
     }

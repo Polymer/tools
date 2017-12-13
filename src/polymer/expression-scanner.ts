@@ -355,7 +355,7 @@ function extractDataBindingsFromTextNode(
     }
     if (parseResult.type === 'failure') {
       warnings.push(
-          new Warning({parsedDocument: document, ...parseResult.warning}));
+          new Warning({parsedDocument: document, ...parseResult.warningish}));
     } else {
       const expression = new TextNodeDatabindingExpression(
           dataBinding.direction,
@@ -411,7 +411,7 @@ function extractDataBindingsFromAttr(
     }
     if (parseResult.type === 'failure') {
       warnings.push(
-          new Warning({parsedDocument: document, ...parseResult.warning}));
+          new Warning({parsedDocument: document, ...parseResult.warningish}));
     } else {
       const expression = new AttributeDatabindingExpression(
           node,
@@ -529,7 +529,8 @@ export function parseExpressionInJsStringLiteral(
   };
   const parsed = parseExpression(expressionText, sourceRange);
   if (parsed && parsed.type === 'failure') {
-    warnings.push(new Warning({parsedDocument: document, ...parsed.warning}));
+    warnings.push(
+        new Warning({parsedDocument: document, ...parsed.warningish}));
   } else if (parsed && parsed.type === 'success') {
     result.databinding = new JavascriptDatabindingExpression(
         stringLiteral,

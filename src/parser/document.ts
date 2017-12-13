@@ -175,6 +175,34 @@ export interface StringifyOptions {
 }
 
 /**
+ * Used solely for constructing warnings about unparsable or unloadable
+ * documents.
+ */
+export class UnparsableParsedDocument extends ParsedDocument {
+  type: string = 'unparsable';
+  constructor(url: ResolvedUrl, contents: string) {
+    super({
+      ast: null,
+      url,
+      baseUrl: url,
+      astNode: null,
+      contents: contents,
+      isInline: false,
+      locationOffset: undefined
+    });
+  }
+  visit(_visitors: any[]): void {
+    return;
+  }
+  protected _sourceRangeForNode(_node: any): undefined {
+    return undefined;
+  }
+  stringify(): string {
+    return `<FakeParsedDocument url="${this.url}">`;
+  }
+}
+
+/**
  * The variant of binary search that returns the number of elements in the
  * array that is strictly less than the target.
  */
