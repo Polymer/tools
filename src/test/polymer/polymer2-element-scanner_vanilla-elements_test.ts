@@ -15,19 +15,16 @@
 
 import * as chai from 'chai';
 import {assert} from 'chai';
-import * as fs from 'fs';
 import * as path from 'path';
 
+import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
-import {Visitor} from '../../javascript/estree-visitor';
-import {JavaScriptDocument} from '../../javascript/javascript-document';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ResolvedUrl} from '../../model/url';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
+import {runScanner} from '../test-utils';
 
 
 //
-// NOTE: THis test was copied from
+// NOTE: This test was copied from
 // /src/test/vanilla-custom-elements/element-scanner_test.js
 // to ensure that Polymer2ElementScanner can scan vanilla elements while we
 // disable the vanilla element scanner for a short time.
@@ -39,19 +36,12 @@ chai.use(require('chai-subset'));
 
 suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
   const elements = new Map<string|undefined, ScannedPolymerElement>();
-  let document: JavaScriptDocument;
   let elementsList: ScannedPolymerElement[];
 
   suiteSetup(async () => {
-    const parser = new JavaScriptParser();
-    const file = fs.readFileSync(
-        path.resolve(__dirname, '../static/vanilla-elements.js'), 'utf8');
-    document = parser.parse(file, '/static/vanilla-elements.js' as ResolvedUrl);
-    const scanner = new ClassScanner();
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
-
-    const {features} = await scanner.scan(document, visit);
+    const analyzer = Analyzer.createForDirectory(path.resolve(__dirname, '../'));
+    const {features} = await runScanner(
+        analyzer, new ClassScanner(), 'static/vanilla-elements.js');
 
     elementsList = features.filter((e) => e instanceof ScannedPolymerElement) as
         ScannedPolymerElement[];
@@ -97,7 +87,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
         name: 'disabled',
         type: 'boolean',
         sourceRange: {
-          file: '/static/vanilla-elements.js',
+          file: 'static/vanilla-elements.js',
           start: {column: 6, line: 25},
           end: {column: 16, line: 25}
         }
@@ -107,7 +97,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
         name: 'open',
         type: 'boolean',
         sourceRange: {
-          file: '/static/vanilla-elements.js',
+          file: 'static/vanilla-elements.js',
           start: {column: 6, line: 27},
           end: {column: 12, line: 27}
         }
@@ -116,7 +106,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
         description: '',
         name: 'foo',
         sourceRange: {
-          file: '/static/vanilla-elements.js',
+          file: 'static/vanilla-elements.js',
           start: {column: 14, line: 27},
           end: {column: 19, line: 27}
         },
@@ -125,7 +115,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
         description: '',
         name: 'bar',
         sourceRange: {
-          file: '/static/vanilla-elements.js',
+          file: 'static/vanilla-elements.js',
           start: {column: 21, line: 27},
           end: {column: 26, line: 27}
         },

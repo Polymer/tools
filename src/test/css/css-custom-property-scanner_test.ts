@@ -16,7 +16,6 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 import {CodeUnderliner} from '../test-utils';
 
@@ -27,9 +26,8 @@ suite('CssCustomPropertyScanner', () => {
   let underliner: CodeUnderliner;
 
   setup(() => {
-    const urlLoader = new FSUrlLoader(testDir);
-    analyzer = new Analyzer({urlLoader});
-    underliner = new CodeUnderliner(urlLoader);
+    analyzer = Analyzer.createForDirectory(testDir);
+    underliner = new CodeUnderliner(analyzer);
   });
 
   test('finds custom property assignments', async () => {

@@ -14,22 +14,14 @@
 
 import {assert} from 'chai';
 
-import {HtmlVisitor} from '../../html/html-document';
-import {HtmlParser} from '../../html/html-parser';
-import {ResolvedUrl} from '../../model/url';
+import {ScannedPolymerElement} from '../../polymer/polymer-element';
 import {PseudoElementScanner} from '../../polymer/pseudo-element-scanner';
+import {runScannerOnContents} from '../test-utils';
 
 suite('PseudoElementScanner', () => {
-  suite('scan()', () => {
-    let scanner: PseudoElementScanner;
-
-    setup(() => {
-      scanner = new PseudoElementScanner();
-    });
-
-    test('finds pseudo elements in html comments ', async () => {
-      const desc = `This is a pseudo element`;
-      const contents = `<html><head></head><body>
+  test('finds pseudo elements in html comments ', async () => {
+    const desc = `This is a pseudo element`;
+    const contents = `<html><head></head><body>
           <!--
           ${desc}
           @pseudoElement x-foo
@@ -37,17 +29,12 @@ suite('PseudoElementScanner', () => {
           -->
         </body>
         </html>`;
-      const document =
-          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
-
-      const {features} = await scanner.scan(document, visit);
-      assert.equal(features.length, 1);
-      assert.equal(features[0].tagName, 'x-foo');
-      assert(features[0].pseudo);
-      assert.equal(features[0].description.trim(), desc);
-      assert.deepEqual(
-          features[0].demos, [{desc: 'demo', path: 'demo/index.html'}]);
-    });
+    const {features} = await runScannerOnContents(
+        new PseudoElementScanner(), 'test-doc.html', contents);
+    assert.deepEqual(
+        features.map(
+            (f: ScannedPolymerElement) =>
+                [f.tagName, f.pseudo, f.description.trim(), f.demos]),
+        [['x-foo', true, desc, [{desc: 'demo', path: 'demo/index.html'}]]]);
   });
 });

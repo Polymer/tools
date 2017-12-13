@@ -13,8 +13,10 @@
  */
 
 import {Analyzer} from '../core/analyzer';
-import {Document, ParsedDocument} from '../index';
+import {Document, ParsedDocument, ScannedFeature} from '../index';
 import {SourceRange, Warning} from '../model/model';
+import {scan} from '../scanning/scan';
+import {Scanner} from '../scanning/scanner';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 import {UrlLoader} from '../url-loader/url-loader';
 import {underlineCode} from '../warning/code-printer';
@@ -100,4 +102,34 @@ function isReadonlyArray(maybeArr: any): maybeArr is ReadonlyArray<any> {
 
 function isWarning(wOrS: Warning|SourceRange): wOrS is Warning {
   return 'code' in wOrS;
+}
+
+/**
+ * Run the given scanner on the given package relative url.
+ *
+ * The url must be loadable with the given analyzer.
+ */
+export async function runScanner(
+    analyzer: Analyzer,
+    scanner: Scanner<ParsedDocument, any, any>,
+    url: string): Promise<{features: ScannedFeature[], warnings: Warning[]}> {
+  const context = await analyzer['_analysisComplete'];
+  const resolvedUrl = analyzer.resolveUrl(url);
+  const parsedDocument = await context['_parse'](resolvedUrl);
+  return scan(parsedDocument, [scanner]);
+}
+
+/**
+ * Run the given scanner on some file contents as a string.
+ *
+ * Note that the url's file extension is relevant, because it will affect how
+ * the file is parsed.
+ */
+export async function runScannerOnContents(
+    scanner: Scanner<ParsedDocument, any, any>, url: string, contents: string) {
+  const overlayLoader = new InMemoryOverlayUrlLoader();
+  const analyzer = new Analyzer({urlLoader: overlayLoader});
+  overlayLoader.urlContentsMap.set(analyzer.resolveUrl(url), contents);
+  const {features, warnings} = await runScanner(analyzer, scanner, url);
+  return {features, warnings, analyzer};
 }

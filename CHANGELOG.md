@@ -10,8 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.0.0-pre.3] - 2017-12-08
 
-* Added missing model typings for branded `url` types to top-level package exports.
-* Added `templateTypes` property to functions, extracted from `@template` annotations.
+* Added missing model typings for branded `url` types to top-level package
+  exports.
+* Added `templateTypes` property to functions, extracted from `@template`
+  annotations.
+* Add `Analyzer.createForDirectory()` for easily getting a well configured
+  analyzer for a given directory.
 
 ## [3.0.0-pre.2] - 2017-11-30
 

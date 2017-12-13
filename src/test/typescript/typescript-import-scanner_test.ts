@@ -14,43 +14,40 @@
 
 import {assert} from 'chai';
 
-import {ResolvedUrl} from '../../model/url';
-import {Visitor} from '../../typescript/typescript-document';
+import {Analyzer} from '../../core/analyzer';
+import {ScannedImport} from '../../index';
 import {TypeScriptImportScanner} from '../../typescript/typescript-import-scanner';
 import {TypeScriptPreparser} from '../../typescript/typescript-preparser';
+import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
+import {runScanner} from '../test-utils';
 
 suite('TypeScriptImportScanner', () => {
-  suite('scan()', () => {
-    let scanner: TypeScriptImportScanner;
+  test('finds no imports', async () => {
+    const urlLoader = new InMemoryOverlayUrlLoader();
+    const analyzer = new Analyzer(
+        {parsers: new Map([['ts', new TypeScriptPreparser()]]), urlLoader});
+    urlLoader.urlContentsMap.set(analyzer.resolveUrl('test.ts'), '');
+    const {features} =
+        await runScanner(analyzer, new TypeScriptImportScanner(), 'test.ts');
+    assert.equal(features.length, 0);
+  });
 
-    setup(() => {
-      scanner = new TypeScriptImportScanner();
-    });
-
-    test('finds no imports', async () => {
-      const source = ``;
-      const parser = new TypeScriptPreparser();
-      const document = parser.parse(source, 'test.ts' as ResolvedUrl);
-      const visit = async (visitor: Visitor) => document.visit([visitor]);
-      const {features} = await scanner.scan(document, visit);
-      assert.equal(features.length, 0);
-    });
-
-    test('finds multiple import', async () => {
-      const source = `
+  test('finds multiple import', async () => {
+    const source = `
         import * as x from './x.ts';
         import * as y from '/y.ts';
         import * as z from '../z.ts';
       `;
-      const parser = new TypeScriptPreparser();
-      const document = parser.parse(source, 'test.ts' as ResolvedUrl);
-      const visit = async (visitor: Visitor) => document.visit([visitor]);
-      const {features} = await scanner.scan(document, visit);
-      assert.deepEqual(features.map((f) => [f.type, f.url]), [
-        ['js-import', 'x.ts'],
-        ['js-import', '/y.ts'],
-        ['js-import', '../z.ts'],
-      ]);
-    });
+    const urlLoader = new InMemoryOverlayUrlLoader();
+    const analyzer = new Analyzer(
+        {parsers: new Map([['ts', new TypeScriptPreparser()]]), urlLoader});
+    urlLoader.urlContentsMap.set(analyzer.resolveUrl('test.ts'), source);
+    const {features} =
+        await runScanner(analyzer, new TypeScriptImportScanner(), 'test.ts');
+    assert.deepEqual(features.map((f: ScannedImport) => [f.type, f.url]), [
+      ['js-import', 'x.ts'],
+      ['js-import', '/y.ts'],
+      ['js-import', '../z.ts'],
+    ]);
   });
 });

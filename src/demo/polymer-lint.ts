@@ -12,17 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Document, FSUrlLoader, PackageUrlResolver, Severity, Warning, WarningPrinter} from '../index';
+import {Analyzer, Document, Severity, Warning, WarningPrinter} from '../index';
 
 /**
  * A basic demo of a linter CLI using the Analyzer API.
  */
 async function main() {
   const basedir = process.cwd();
-  const analyzer = new Analyzer({
-    urlLoader: new FSUrlLoader(basedir),
-    urlResolver: new PackageUrlResolver()
-  });
+  const analyzer = Analyzer.createForDirectory(basedir);
   const warnings = await getWarnings(analyzer, process.argv[2]);
   const warningPrinter = new WarningPrinter(process.stderr);
   await warningPrinter.printWarnings(warnings);

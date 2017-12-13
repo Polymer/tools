@@ -16,29 +16,26 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Visitor} from '../../javascript/estree-visitor';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
+import {Analyzer} from '../../core/analyzer';
 import {ScannedNamespace} from '../../javascript/namespace';
 import {NamespaceScanner} from '../../javascript/namespace-scanner';
-import {ResolvedUrl} from '../../model/url';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
-import {CodeUnderliner} from '../test-utils';
+import {CodeUnderliner, runScanner} from '../test-utils';
 
 suite('NamespaceScanner', () => {
   const testFilesDir = path.resolve(__dirname, '../static/namespaces/');
-  const urlLoader = new FSUrlLoader(testFilesDir);
-  const underliner = new CodeUnderliner(urlLoader);
+  const analyzer = Analyzer.createForDirectory(testFilesDir);
+  const underliner = new CodeUnderliner(analyzer);
 
-  async function getNamespaces(filename: string): Promise<any[]> {
-    const file = await urlLoader.load(filename);
-    const parser = new JavaScriptParser();
-    const document = parser.parse(file, filename as ResolvedUrl);
-    const scanner = new NamespaceScanner();
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
-    const {features} = await scanner.scan(document, visit);
-    return <ScannedNamespace[]>features.filter(
-        (e) => e instanceof ScannedNamespace);
+  async function getNamespaces(filename: string) {
+    const {features} =
+        await runScanner(analyzer, new NamespaceScanner(), filename);
+    const scannedNamespaces = [];
+    for (const feature of features) {
+      if (feature instanceof ScannedNamespace) {
+        scannedNamespaces.push(feature);
+      }
+    }
+    return scannedNamespaces;
   };
 
   test('scans named namespaces', async () => {

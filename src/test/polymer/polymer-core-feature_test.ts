@@ -16,11 +16,9 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
-import {Visitor} from '../../javascript/estree-visitor';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ResolvedUrl} from '../../model/url';
+import {ScannedPolymerCoreFeature} from '../../polymer/polymer-core-feature';
 import {PolymerCoreFeatureScanner} from '../../polymer/polymer-core-feature-scanner';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {runScannerOnContents} from '../test-utils';
 
 suite('PolymerCoreFeatureScanner', () => {
   test('scans _addFeature calls and the Polymer.Base assignment', async () => {
@@ -53,11 +51,9 @@ suite('PolymerCoreFeatureScanner', () => {
       });
     `;
 
-    const parser = new JavaScriptParser();
-    const scanner = new PolymerCoreFeatureScanner();
-    const doc = parser.parse(js, 'features.js' as ResolvedUrl);
-    const visit = (visitor: Visitor) => Promise.resolve(doc.visit([visitor]));
-    const {features} = await scanner.scan(doc, visit);
+    const {features: untypedFeatures} = await runScannerOnContents(
+        new PolymerCoreFeatureScanner(), 'features.js', js);
+    const features = untypedFeatures as ScannedPolymerCoreFeature[];
 
     assert.lengthOf(features, 4);
     const [a, b, base, invalid] = features;
@@ -116,11 +112,9 @@ suite('PolymerCoreFeatureScanner', () => {
   });
 
   test('resolves the Polymer.Base class', async () => {
-    const analyzer = new Analyzer({
-      urlLoader: new FSUrlLoader(
-          // This directory contains files copied from Polymer 1.x core.
-          path.resolve(__dirname, '../static/polymer-core-feature/')),
-    });
+    // This directory contains files copied from Polymer 1.x core.
+    const analyzer = Analyzer.createForDirectory(
+        path.resolve(__dirname, '../static/polymer-core-feature/'));
 
     const analysis = await analyzer.analyzePackage();
     const features = analysis.getFeatures({id: 'Polymer.Base', kind: 'class'});

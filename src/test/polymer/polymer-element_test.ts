@@ -19,14 +19,10 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {Document, Severity, Warning} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 suite('PolymerElement', () => {
-  const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
-  const urlLoader = new FSUrlLoader(testFilesDir);
-  const analyzer = new Analyzer({
-    urlLoader: urlLoader,
-  });
+  const analyzer =
+      Analyzer.createForDirectory(path.resolve(__dirname, '../static/polymer2/'));
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
     const document =

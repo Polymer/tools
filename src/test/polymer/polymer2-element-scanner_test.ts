@@ -16,31 +16,22 @@
 import {assert, use as chaiUse} from 'chai';
 import * as path from 'path';
 
+import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
-import {Visitor} from '../../javascript/estree-visitor';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ResolvedUrl} from '../../model/url';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
-import {CodeUnderliner} from '../test-utils';
+import {CodeUnderliner, runScanner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
 suite('Polymer2ElementScanner', () => {
-  const testFilesDir = path.resolve(__dirname, '../static/polymer2/');
-  const urlLoader = new FSUrlLoader(testFilesDir);
-  const underliner = new CodeUnderliner(urlLoader);
+  const analyzer =
+      Analyzer.createForDirectory(path.resolve(__dirname, '../static/polymer2/'));
+  const underliner = new CodeUnderliner(analyzer);
 
   async function getElements(filename: string):
       Promise<ScannedPolymerElement[]> {
-    const file = await urlLoader.load(filename);
-    const parser = new JavaScriptParser();
-    const document = parser.parse(file, filename as ResolvedUrl);
-    const scanner = new ClassScanner();
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
+    const {features} = await runScanner(analyzer, new ClassScanner(), filename);
 
-    const {features} = await scanner.scan(document, visit);
     return features.filter((e) => e instanceof ScannedPolymerElement) as
         ScannedPolymerElement[];
   };

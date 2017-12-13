@@ -14,31 +14,22 @@
 
 
 import {assert} from 'chai';
-import * as fs from 'fs';
 import * as path from 'path';
 
-import {Visitor} from '../../javascript/estree-visitor';
-import {JavaScriptDocument} from '../../javascript/javascript-document';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ResolvedUrl} from '../../model/url';
+import {Analyzer} from '../../core/analyzer';
 import {ScannedBehavior, ScannedBehaviorAssignment} from '../../polymer/behavior';
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
+import {runScanner} from '../test-utils';
 
 suite('BehaviorScanner', () => {
-  let document: JavaScriptDocument;
   let behaviors: Map<string, ScannedBehavior>;
   let behaviorsList: ScannedBehavior[];
 
   suiteSetup(async () => {
-    const parser = new JavaScriptParser();
-    const file = fs.readFileSync(
-        path.resolve(__dirname, '../static/js-behaviors.js'), 'utf8');
-    document = parser.parse(file, '/static/js-behaviors.js' as ResolvedUrl);
-    const scanner = new BehaviorScanner();
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
-
-    const {features} = await scanner.scan(document, visit);
+    const {features} = await runScanner(
+        Analyzer.createForDirectory(path.resolve(__dirname, '../static')),
+        new BehaviorScanner(),
+        'js-behaviors.js');
     behaviors = new Map();
     behaviorsList =
         <ScannedBehavior[]>features.filter((e) => e instanceof ScannedBehavior);

@@ -15,22 +15,12 @@
 
 import {assert} from 'chai';
 
-import {HtmlVisitor} from '../../html/html-document';
-import {HtmlParser} from '../../html/html-parser';
-import {ResolvedUrl} from '../../model/url';
-import {DomModuleScanner} from '../../polymer/dom-module-scanner';
-import {CodeUnderliner} from '../test-utils';
+import {DomModuleScanner, ScannedDomModule} from '../../polymer/dom-module-scanner';
+import {CodeUnderliner, runScannerOnContents} from '../test-utils';
 
 suite('DomModuleScanner', () => {
-  suite('scan()', () => {
-    let scanner: DomModuleScanner;
-
-    setup(() => {
-      scanner = new DomModuleScanner();
-    });
-
-    test('finds local IDs', async () => {
-      const contents = `<html><head></head>
+  test('finds local IDs', async () => {
+    const contents = `<html><head></head>
         <body>
           <dom-module>
             <template>
@@ -44,18 +34,16 @@ suite('DomModuleScanner', () => {
           </dom-module>
         </body>
         </html>`;
-      const document =
-          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
 
-      const {features: domModules} = await scanner.scan(document, visit);
-      assert.equal(domModules.length, 1);
-      assert.deepEqual(
-          domModules[0].localIds.map((lid) => lid.name), ['foo', 'bar']);
-    });
+    const {features} = await runScannerOnContents(
+        new DomModuleScanner(), 'test.html', contents);
+    assert.deepEqual(
+        features.map((f: ScannedDomModule) => f.localIds.map((l) => l.name)),
+        [['foo', 'bar']]);
+  });
 
-    test('finds databinding expressions IDs', async () => {
-      const contents = `<html><head></head>
+  test('finds databinding expressions IDs', async () => {
+    const contents = `<html><head></head>
         <body>
           <dom-module>
             <template>
@@ -66,27 +54,25 @@ suite('DomModuleScanner', () => {
           </dom-module>
         </body>
         </html>`;
-      const document =
-          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
-      const visit = async (visitor: HtmlVisitor) => document.visit([visitor]);
-      const underliner = CodeUnderliner.withMapping('test.html', contents);
+    const {features, analyzer} = await runScannerOnContents(
+        new DomModuleScanner(), 'test.html', contents);
+    const underliner = new CodeUnderliner(analyzer);
+    const domModules = features as ScannedDomModule[];
+    assert.equal(domModules.length, 1);
 
-      const {features: domModules} = await scanner.scan(document, visit);
-      assert.equal(domModules.length, 1);
-      assert.deepEqual(
-          await underliner.underline(
-              domModules[0].databindings.map((db) => db.sourceRange)),
-          [
-            `
+    assert.deepEqual(
+        await underliner.underline(
+            domModules[0].databindings.map((db) => db.sourceRange)),
+        [
+          `
               <div id="{{foo}}"></div>
                          ~~~`,
-            `
+          `
               <span id="{{bar(baz, boop)}}"></div>
                           ~~~~~~~~~~~~~~`
-          ]);
-      assert.deepEqual(await underliner.underline(domModules[0].warnings), [`
+        ]);
+    assert.deepEqual(await underliner.underline(domModules[0].warnings), [`
               <other-elem prop="{{foo bar}}"></other-elem>
                                       ~`]);
-    });
   });
 });

@@ -22,7 +22,6 @@ import {Analyzer} from '../../core/analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {ResolvedUrl} from '../../model/url';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {CodeUnderliner} from '../test-utils';
 
 suite('ParsedHtmlDocument', () => {
@@ -31,9 +30,8 @@ suite('ParsedHtmlDocument', () => {
   const basedir = path.join(__dirname, '../static/');
   const file = fs.readFileSync(path.join(basedir, `${url}`), 'utf8');
   const document: ParsedHtmlDocument = parser.parse(file, url);
-  const urlLoader = new FSUrlLoader(basedir);
-  const analyzer = new Analyzer({urlLoader});
-  const underliner = new CodeUnderliner(urlLoader);
+  const analyzer = Analyzer.createForDirectory(basedir);
+  const underliner = new CodeUnderliner(analyzer);
 
   suite('sourceRangeForNode()', () => {
     test('works for comments', async () => {

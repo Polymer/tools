@@ -19,7 +19,6 @@ import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 import {DependencyGraph} from '../../core/dependency-graph';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 
 import chaiAsPromised = require('chai-as-promised');
 import {ResolvedUrl} from '../../model/url';
@@ -69,8 +68,7 @@ suite('DependencyGraph', () => {
   suite('as used in the Analyzer', () => {
     let analyzer: Analyzer;
     setup(() => {
-      analyzer = new Analyzer(
-          {urlLoader: new FSUrlLoader(path.join(__dirname, '..', 'static'))});
+      analyzer = Analyzer.createForDirectory(path.join(__dirname, '..', 'static'));
     });
 
     async function assertImportersOf(

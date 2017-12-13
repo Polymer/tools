@@ -14,69 +14,48 @@
 
 
 import {assert} from 'chai';
-import * as fs from 'fs';
 import * as path from 'path';
 
-import {Visitor} from '../../javascript/estree-visitor';
+import {Analyzer} from '../../core/analyzer';
 import {JavaScriptImportScanner} from '../../javascript/javascript-import-scanner';
-import {JavaScriptParser} from '../../javascript/javascript-parser';
-import {ResolvedUrl} from '../../model/url';
+import {runScanner} from '../test-utils';
 
 suite('JavaScriptImportScanner', () => {
-  const parser = new JavaScriptParser();
-  const scanner = new JavaScriptImportScanner();
+  const analyzer = Analyzer.createForDirectory(path.resolve(__dirname, '../static'));
 
   test('finds imports', async () => {
-    const file = fs.readFileSync(
-        path.resolve(__dirname, '../static/javascript/module.js'), 'utf8');
-    const document =
-        parser.parse(file, '/static/javascript/module.js' as ResolvedUrl);
-
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
-
-    const {features} = await scanner.scan(document, visit);
+    const {features} = await runScanner(
+        analyzer, new JavaScriptImportScanner(), 'javascript/module.js');
     assert.containSubset(features, [
       {
         type: 'js-import',
-        url: '/static/javascript/submodule.js',
+        url: 'javascript/submodule.js',
         lazy: false,
       },
     ]);
   });
 
   test('finds dynamic imports', async () => {
-    const file = fs.readFileSync(
-        path.resolve(__dirname, '../static/javascript/dynamic-import.js'),
-        'utf8');
-    const document = parser.parse(
-        file, '/static/javascript/dynamic-import.js' as ResolvedUrl);
+    const {features} = await runScanner(
+        analyzer,
+        new JavaScriptImportScanner(),
+        'javascript/dynamic-import.js');
 
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
-
-    const {features} = await scanner.scan(document, visit);
     assert.containSubset(features, [
       {
         type: 'js-import',
-        url: '/static/javascript/submodule.js',
+        url: 'javascript/submodule.js',
         lazy: true,
       },
     ]);
   });
 
   test('skips non-path imports', async () => {
-    const file = fs.readFileSync(
-        path.resolve(
-            __dirname, '../static/javascript/module-with-named-import.js'),
-        'utf8');
-    const document = parser.parse(
-        file, '/static/javascript/module-with-named-import.js' as ResolvedUrl);
+    const {features} = await runScanner(
+        analyzer,
+        new JavaScriptImportScanner(),
+        'javascript/module-with-named-import.js');
 
-    const visit = (visitor: Visitor) =>
-        Promise.resolve(document.visit([visitor]));
-
-    const {features} = await scanner.scan(document, visit);
     assert.equal(features.length, 0);
   });
 });
