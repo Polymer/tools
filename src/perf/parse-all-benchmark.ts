@@ -47,7 +47,8 @@ for (const baseDir of fs.readdirSync(bowerDir)) {
 const fakeFileContents =
     filesToAnalyze.map((fn) => `<link rel="import" href="${fn}">`).join('\n');
 
-inMemoryOverlay.urlContentsMap.set('ephemeral.html', fakeFileContents);
+inMemoryOverlay.urlContentsMap.set(
+    analyzer.resolveUrl('ephemeral.html')!, fakeFileContents);
 
 
 function existsSync(fn: string): boolean {

@@ -108,7 +108,7 @@ export type ParseResult = {
  */
 export function parseJs(
     contents: string,
-    file: string,
+    file: ResolvedUrl,
     locationOffset?: LocationOffset,
     warningCode?: string,
     sourceType?: SourceType): ParseResult {

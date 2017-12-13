@@ -13,7 +13,7 @@
  */
 
 import {Analyzer} from '../core/analyzer';
-import {Document, ParsedDocument, ScannedFeature} from '../index';
+import {Document, FileRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
 import {SourceRange, Warning} from '../model/model';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
@@ -50,8 +50,8 @@ export type Reference = Warning|SourceRange|undefined;
  */
 export class CodeUnderliner {
   private _parsedDocumentGetter: (url: string) => Promise<ParsedDocument>;
-  constructor(urlLoader: UrlLoader) {
-    const analyzer = new Analyzer({urlLoader});
+  constructor(urlLoader: UrlLoader, urlResolver?: UrlResolver) {
+    const analyzer = new Analyzer({urlLoader, urlResolver});
     this._parsedDocumentGetter = async (url: string) => {
       const analysis = await analyzer.analyze([url]);
       const result = analysis.getDocument(url);
@@ -62,7 +62,7 @@ export class CodeUnderliner {
     };
   }
 
-  static withMapping(url: string, contents: string) {
+  static withMapping(url: ResolvedUrl, contents: string) {
     const urlLoader = new InMemoryOverlayUrlLoader();
     urlLoader.urlContentsMap.set(url, contents);
     return new CodeUnderliner(urlLoader);
@@ -114,7 +114,7 @@ export async function runScanner(
     scanner: Scanner<ParsedDocument, any, any>,
     url: string): Promise<{features: ScannedFeature[], warnings: Warning[]}> {
   const context = await analyzer['_analysisComplete'];
-  const resolvedUrl = analyzer.resolveUrl(url);
+  const resolvedUrl = analyzer.resolveUrl(url)!;
   const parsedDocument = await context['_parse'](resolvedUrl);
   return scan(parsedDocument, [scanner]);
 }
@@ -129,7 +129,21 @@ export async function runScannerOnContents(
     scanner: Scanner<ParsedDocument, any, any>, url: string, contents: string) {
   const overlayLoader = new InMemoryOverlayUrlLoader();
   const analyzer = new Analyzer({urlLoader: overlayLoader});
-  overlayLoader.urlContentsMap.set(analyzer.resolveUrl(url), contents);
+  overlayLoader.urlContentsMap.set(analyzer.resolveUrl(url)!, contents);
   const {features, warnings} = await runScanner(analyzer, scanner, url);
-  return {features, warnings, analyzer};
+  return {features, warnings, analyzer, urlLoader: overlayLoader};
+}
+
+const noOpTag = (strings: TemplateStringsArray, ...values: any[]): string =>
+    values.reduce(
+        (r: string, v: any, i) => r + String(v) + strings[i + 1], strings[0]);
+
+export function fileRelativeUrl(
+    strings: TemplateStringsArray, ...values: any[]): FileRelativeUrl {
+  return noOpTag(strings, ...values) as FileRelativeUrl;
+}
+
+export function resolvedUrl(
+    strings: TemplateStringsArray, ...values: any[]): ResolvedUrl {
+  return noOpTag(strings, ...values) as ResolvedUrl;
 }

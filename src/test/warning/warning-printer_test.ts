@@ -20,25 +20,22 @@ import * as path from 'path';
 
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {Severity, Warning} from '../../model/model';
-import {ResolvedUrl} from '../../model/url';
 import {WarningPrinter} from '../../warning/warning-printer';
+import {resolvedUrl} from '../test-utils';
 
 const parser = new JavaScriptParser();
 const staticTestDir = path.join(__dirname, '../static');
+const url = resolvedUrl`vanilla-elements.js`;
 const vanillaSources =
     fs.readFileSync(path.join(staticTestDir, 'vanilla-elements.js'), 'utf-8');
-const parsedDocument =
-    parser.parse(vanillaSources, 'vanilla-elements.js' as ResolvedUrl);
+const parsedDocument = parser.parse(vanillaSources, url);
 
 const dumbNameWarning = new Warning({
   message: 'This is a dumb name for an element.',
   code: 'dumb-element-name',
   severity: Severity.WARNING,
-  sourceRange: {
-    file: 'vanilla-elements.js',
-    start: {column: 6, line: 0},
-    end: {column: 22, line: 0}
-  },
+  sourceRange:
+      {file: url, start: {column: 6, line: 0}, end: {column: 22, line: 0}},
   parsedDocument
 });
 
@@ -46,11 +43,8 @@ const goodJobWarning = new Warning({
   message: 'Good job with this observedAttributes getter.',
   code: 'cool-observed-attributes',
   severity: Severity.INFO,
-  sourceRange: {
-    file: 'vanilla-elements.js',
-    start: {line: 22, column: 2},
-    end: {line: 29, column: 3}
-  },
+  sourceRange:
+      {file: url, start: {line: 22, column: 2}, end: {line: 29, column: 3}},
   parsedDocument
 });
 

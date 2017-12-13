@@ -23,6 +23,7 @@ import {Privacy} from './feature';
 import {ImmutableArray} from './immutable';
 import {ScannedMethod} from './method';
 import {Attribute, Document, Event, Feature, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
+import {FileRelativeUrl} from './url';
 import {Severity} from './warning';
 
 export {Visitor} from '../javascript/estree-visitor';
@@ -35,7 +36,7 @@ export abstract class ScannedElementBase implements Resolvable {
   attributes = new Map<string, ScannedAttribute>();
   description = '';
   summary = '';
-  demos: {desc?: string; path: string}[] = [];
+  demos: Demo[] = [];
   events: Map<string, ScannedEvent> = new Map();
   sourceRange: SourceRange|undefined;
   staticMethods: Map<string, ScannedMethod>;
@@ -95,7 +96,7 @@ export class Slot {
 
 export interface Demo {
   desc?: string;
-  path: string;
+  path: FileRelativeUrl;
 }
 
 export interface ElementBaseInit extends ClassInit {

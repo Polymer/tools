@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {ResolvedUrl} from './url';
+
 /**
  * Describes a range of text within a source file.
  *
@@ -21,7 +23,7 @@
  */
 export interface SourceRange {
   /* The resolved path to the file. */
-  readonly file: string;
+  readonly file: ResolvedUrl;
   readonly start: SourcePosition;
   readonly end: SourcePosition;
 }
@@ -41,7 +43,7 @@ export interface LocationOffset {
   /**
    * The url of the source file.
    */
-  readonly filename?: string;
+  readonly filename?: ResolvedUrl;
 }
 
 /**

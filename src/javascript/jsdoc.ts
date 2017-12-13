@@ -16,6 +16,7 @@ import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
 
+import {Demo, FileRelativeUrl} from '../index';
 import {Privacy} from '../model/model';
 import {ScannedReference, Severity, Warning} from '../model/model';
 
@@ -168,16 +169,15 @@ export function getMixinApplications(
              .filter((m) => m !== undefined) as ScannedReference[];
 }
 
-export function extractDemos(jsdoc: Annotation|undefined):
-    Array<{desc: string | undefined, path: string}> {
+export function extractDemos(jsdoc: Annotation|undefined): Demo[] {
   if (!jsdoc || !jsdoc.tags) {
     return [];
   }
-  const demos: Array<{desc: string | undefined, path: string}> = [];
-  const demoUrls = new Set<string>();
+  const demos: Demo[] = [];
+  const demoUrls = new Set<FileRelativeUrl>();
   for (const tag of jsdoc.tags.filter(
            (tag) => tag.title === 'demo' && tag.name)) {
-    const demoUrl = tag.name!;
+    const demoUrl = tag.name! as FileRelativeUrl;
     if (demoUrls.has(demoUrl)) {
       continue;
     }
