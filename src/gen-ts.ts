@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import * as minimatch from 'minimatch';
 import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
 import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/function';
@@ -21,8 +22,8 @@ import * as ts from './ts-ast';
  */
 export interface Config {
   /**
-   * Skip source files whose paths match this pattern. If undefined, defaults
-   * to excluding directories ending in "test" or "demo".
+   * Skip source files whose paths match any of these glob patterns. If
+   * undefined, defaults to excluding directories ending in "test" or "demo".
    */
   exclude?: string[];
 
@@ -65,9 +66,8 @@ export async function generateDeclarations(
 function analyzerToAst(
     analysis: analyzer.Analysis, config: Config, rootDir: string):
     ts.Document[] {
-  const exclude = config.exclude !== undefined ?
-      config.exclude.map((p) => new RegExp(p)) :
-      [/test\//, /demo\//];
+  const exclude = (config.exclude || ['test/**', 'demo/**'])
+                      .map((p) => new minimatch.Minimatch(p));
   const addReferences = config.addReferences || {};
   const removeReferencesResolved = new Set(
       (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
@@ -80,7 +80,7 @@ function analyzerToAst(
   // filename.
   const declarationDocs = new Map<string, analyzer.Document[]>();
   for (const jsDoc of analysis.getFeatures({kind: 'js-document'})) {
-    if (exclude.some((r) => jsDoc.url.match(r) !== null)) {
+    if (exclude.some((r) => r.match(jsDoc.url))) {
       continue;
     }
     const filename = makeDeclarationsFilename(jsDoc.url);
