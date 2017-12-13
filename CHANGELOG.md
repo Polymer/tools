@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Convert Closure `Object` to TypeScript `object`.
+- Use glob patterns instead of RegExps to exclude files.
 
 ## [0.3.0] - 2017-12-12
 - `void` is not nullable.
