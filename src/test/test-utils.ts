@@ -134,10 +134,16 @@ export async function runScannerOnContents(
   return {features, warnings, analyzer, urlLoader: overlayLoader};
 }
 
-export function fileRelativeUrl([text]: TemplateStringsArray): FileRelativeUrl {
-  return text as FileRelativeUrl;
+const noOpTag = (strings: TemplateStringsArray, ...values: any[]): string =>
+    values.reduce(
+        (r: string, v: any, i) => r + String(v) + strings[i + 1], strings[0]);
+
+export function fileRelativeUrl(
+    strings: TemplateStringsArray, ...values: any[]): FileRelativeUrl {
+  return noOpTag(strings, ...values) as FileRelativeUrl;
 }
 
-export function resolvedUrl([text]: TemplateStringsArray): ResolvedUrl {
-  return text as ResolvedUrl;
+export function resolvedUrl(
+    strings: TemplateStringsArray, ...values: any[]): ResolvedUrl {
+  return noOpTag(strings, ...values) as ResolvedUrl;
 }
