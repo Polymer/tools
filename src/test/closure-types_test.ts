@@ -49,12 +49,12 @@ suite('closureTypeToTypeScript', () => {
   });
 
   test('nullable object', () => {
-    check('Object', 'Object|null');
-    check('?Object', 'Object|null');
+    check('Object', 'object|null');
+    check('?Object', 'object|null');
   });
 
   test('non-nullable object', () => {
-    check('!Object', 'Object');
+    check('!object', 'object');
   });
 
   test('nullable array', () => {

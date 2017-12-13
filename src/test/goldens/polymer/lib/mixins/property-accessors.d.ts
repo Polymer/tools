@@ -66,7 +66,7 @@ declare namespace Polymer {
      * @param props Bag of property values that were overwritten
      *   when creating property accessors.
      */
-    _initializeProtoProperties(props: Object|null): void;
+    _initializeProtoProperties(props: object|null): void;
 
     /**
      * Called at ready time with bag of instance properties that overwrote
@@ -79,7 +79,7 @@ declare namespace Polymer {
      * @param props Bag of property values that were overwritten
      *   when creating property accessors.
      */
-    _initializeInstanceProperties(props: Object|null): void;
+    _initializeInstanceProperties(props: object|null): void;
 
     /**
      * Ensures the element has the given attribute. If it does not,
@@ -263,7 +263,7 @@ declare namespace Polymer {
      * @param oldProps Bag of previous values for each property
      *   in `changedProps`
      */
-    _propertiesChanged(currentProps: Object, changedProps: Object, oldProps: Object): any;
+    _propertiesChanged(currentProps: object, changedProps: object, oldProps: object): any;
 
     /**
      * Method called to determine whether a property value should be

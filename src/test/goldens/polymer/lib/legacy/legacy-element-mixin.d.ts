@@ -187,7 +187,7 @@ declare namespace Polymer {
      * @param api Source object to copy properties from.
      * @returns prototype object that was passed as first argument.
      */
-    extend(prototype: Object|null, api: Object|null): Object|null;
+    extend(prototype: object|null, api: object|null): object|null;
 
     /**
      * Copies props from a source object to a target object.
@@ -200,7 +200,7 @@ declare namespace Polymer {
      * @param source Source object to copy properties from.
      * @returns Target object that was passed as first argument.
      */
-    mixin(target: Object|null, source: Object|null): Object|null;
+    mixin(target: object|null, source: object|null): object|null;
 
     /**
      * Sets the prototype of an object.
@@ -214,7 +214,7 @@ declare namespace Polymer {
      * @returns Returns the given `object` with its prototype set
      * to the given `prototype` object.
      */
-    chainObject(object: Object|null, prototype: Object|null): Object|null;
+    chainObject(object: object|null, prototype: object|null): object|null;
 
     /**
      * Calls `importNode` on the `content` of the `template` specified and
@@ -435,7 +435,7 @@ declare namespace Polymer {
      * `flush()` immediately invokes the debounced callback if the debouncer
      * is active.
      */
-    debounce(jobName: string, callback: () => void, wait: number): Object|null;
+    debounce(jobName: string, callback: () => void, wait: number): object|null;
 
     /**
      * Returns whether a named debouncer is active.
@@ -489,7 +489,7 @@ declare namespace Polymer {
      *    instance.
      * @returns Newly created and configured element.
      */
-    create(tag: string, props: Object|null): Element|null;
+    create(tag: string, props: object|null): Element|null;
 
     /**
      * Convenience method for importing an HTML document imperatively.

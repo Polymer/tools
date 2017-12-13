@@ -22,7 +22,7 @@ declare namespace Polymer {
      * than the last.
      */
     elevation: number;
-    hostAttributes: Object|null;
+    hostAttributes: object|null;
 
     /**
      * In addition to `IronButtonState` behavior, when space key goes down,
