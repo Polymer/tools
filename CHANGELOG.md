@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Analyzer#urlResolver is a property that exposes the analyzer's url resolver,
+  for cases where more direct access to url resolution is desired.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.3] - 2017-12-08
