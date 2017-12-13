@@ -102,16 +102,12 @@ export class Analyzer {
     })();
     const context = await this._analysisComplete;
     const resolvedUrls = uiUrls.map((url) => context.resolveUrl(url));
-    const results = new Map(resolvedUrls.map((url): [
-      ResolvedUrl,
-      Document|Warning
-    ] => [url, context.getDocument(url)]));
-    return new Analysis(results, context);
+    return this._constructAnalysis(context, resolvedUrls);
   }
 
   async analyzePackage(): Promise<Analysis> {
     const previousAnalysisComplete = this._analysisComplete;
-    let _package: Analysis|null = null;
+    let analysis: Analysis;
     this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
       if (!previousContext.loader.readDirectory) {
@@ -131,15 +127,20 @@ export class Analyzer {
       const newContext = await previousContext.analyze(filesWithParsers);
       const resolvedFilesWithParsers =
           filesWithParsers.map((url) => newContext.resolveUrl(url));
-      const documentsOrWarnings = new Map(resolvedFilesWithParsers.map((url): [
-        ResolvedUrl,
-        Document|Warning
-      ] => [url, newContext.getDocument(url)]));
-      _package = new Analysis(documentsOrWarnings, newContext);
+
+      analysis = this._constructAnalysis(newContext, resolvedFilesWithParsers);
       return newContext;
     })();
     await this._analysisComplete;
-    return _package!;
+    return analysis!;
+  }
+
+  private _constructAnalysis(
+      context: AnalysisContext, urls: ReadonlyArray<ResolvedUrl>) {
+    const getUrlResultPair:
+        (url: ResolvedUrl) => [ResolvedUrl, Document | Warning] =
+            (url) => [url, context.getDocument(url)];
+    return new Analysis(new Map(urls.map(getUrlResultPair)), context);
   }
 
   /**
