@@ -82,16 +82,6 @@ suite('Analyzer', () => {
         'http://host/path');
   });
 
-  suite('canResolveUrl()', () => {
-    test('canResolveUrl defaults to not resolving external urls', () => {
-      assert.isTrue(analyzer.canResolveUrl('/path'), '/path');
-      assert.isTrue(analyzer.canResolveUrl('../path'), '../path');
-      assert.isFalse(analyzer.canResolveUrl('http://host'), 'http://host');
-      assert.isFalse(
-          analyzer.canResolveUrl('http://host/path'), 'http://host/path');
-    });
-  });
-
   suite('analyze()', () => {
     let testName = 'analyzes a document with an inline Polymer element feature';
     test(testName, async () => {

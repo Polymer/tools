@@ -18,7 +18,7 @@ import * as ts from 'typescript';
 
 import {AnalysisContext} from '../core/analysis-context';
 import {LanguageAnalyzer} from '../core/language-analyzer';
-import {PackageRelativeUrl} from '../model/url';
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 
 import {ParsedTypeScriptDocument} from './typescript-document';
 
@@ -96,7 +96,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
       // in the dependency graph have been loaded, so it can call a synchronous
       // method to get the source of a file.
       const scannedDocument =
-          this.context._getScannedDocument(this.context.resolveUrl(fileName));
+          this.context._getScannedDocument(this._failSafeResolveUrl(fileName));
       if (scannedDocument != null) {
         const typescriptDocument =
             scannedDocument.document as ParsedTypeScriptDocument;
@@ -134,7 +134,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
   }
 
   getCanonicalFileName(fileName: PackageRelativeUrl) {
-    return this.context.resolveUrl(fileName);
+    return this._failSafeResolveUrl(fileName);
   }
 
   getNewLine() {
@@ -146,14 +146,14 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
   }
 
   fileExists(fileName: PackageRelativeUrl) {
-    const resolvedUrl = this.context.resolveUrl(fileName);
+    const resolvedUrl = this._failSafeResolveUrl(fileName);
     return isLibraryPath(resolvedUrl) &&
         getLibrarySource(resolvedUrl) != null ||
         this.context._getScannedDocument(resolvedUrl) != null;
   }
 
   readFile(fileName: PackageRelativeUrl): string {
-    const resolvedUrl = this.context.resolveUrl(fileName);
+    const resolvedUrl = this._failSafeResolveUrl(fileName);
     if (isLibraryPath(resolvedUrl)) {
       const libPath = require.resolve(`typescript/lib/${fileName}`);
       return fs.readFileSync(libPath, {encoding: 'utf-8'});
@@ -173,8 +173,19 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
       // since we have a path, we can simply resolve it
       const fileName = path.resolve(path.dirname(containingFile), moduleName) as
           PackageRelativeUrl;
-      const resolvedFileName = this.context.resolveUrl(fileName);
+      const resolvedFileName = this._failSafeResolveUrl(fileName);
       return {resolvedFileName};
     });
+  }
+
+  /**
+   * Resolves the given url.
+   *
+   * If the url is unresolvable, the given unresolved URL is returned as a
+   * resolved URL.
+   */
+  private _failSafeResolveUrl(url: string): ResolvedUrl {
+    const resolved = this.context.resolveUrl(url as PackageRelativeUrl);
+    return resolved === undefined ? url as any as ResolvedUrl : resolved;
   }
 }

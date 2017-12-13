@@ -19,26 +19,15 @@ import {MultiUrlResolver} from '../../url-loader/multi-url-resolver';
 import {UrlResolver} from '../../url-loader/url-resolver';
 
 class MockResolver extends UrlResolver {
-  canResolveCount: number;
-  resolveCount: number;
+  resolveCount: number = 0;
   constructor(private _resolution: string|null) {
     super();
-    this.resetCounts();
   }
-
-  resetCounts() {
-    this.canResolveCount = 0;
-    this.resolveCount = 0;
-  }
-  canResolve(): boolean {
-    this.canResolveCount++;
-    return this._resolution != null;
-  }
-  resolve(): ResolvedUrl {
-    if (this._resolution == null) {
-      throw new Error('tried to resolve to a null resolution!');
-    }
+  resolve(): ResolvedUrl|undefined {
     this.resolveCount++;
+    if (this._resolution == null) {
+      return undefined;
+    }
     return this._resolution as ResolvedUrl;
   }
 }
@@ -51,60 +40,54 @@ const mockResolverArray = (resolutions: Array<string|null>) => {
 
 
 suite('MultiUrlResolver', function() {
-  suite('canResolve', () => {
-    test('canResolve is true if the first resolver is true', () => {
-      const resolvers = mockResolverArray(['resolved.html', null, null]);
-      const resolver = new MultiUrlResolver(resolvers);
-      assert.isTrue(resolver.canResolve('test.html' as PackageRelativeUrl));
-      // Verify only the first resolver is called
-      assert.equal(resolvers[0].canResolveCount, 1);
-      assert.equal(resolvers[1].canResolveCount, 0);
-      assert.equal(resolvers[2].canResolveCount, 0);
-    });
-
-    test('canResolve is true if the last resolver is true', () => {
-      const resolvers = mockResolverArray([null, null, 'resolved.html']);
-      const resolver = new MultiUrlResolver(resolvers);
-      assert.isTrue(resolver.canResolve('test.html' as PackageRelativeUrl));
-      // Verify all resolvers are called
-      assert.equal(resolvers[0].canResolveCount, 1);
-      assert.equal(resolvers[1].canResolveCount, 1);
-      assert.equal(resolvers[2].canResolveCount, 1);
-    });
-
-    test('canResolve is true if all resolvers are true', () => {
-      const resolvers = mockResolverArray(
-          ['resolved.html', 'resolved2.html', 'resolved3.html']);
-      const resolver = new MultiUrlResolver(resolvers);
-      assert.isTrue(resolver.canResolve('test.html' as PackageRelativeUrl));
-      // Verify only the first resolver is called
-      assert.equal(resolvers[0].canResolveCount, 1);
-      assert.equal(resolvers[1].canResolveCount, 0);
-      assert.equal(resolvers[2].canResolveCount, 0);
-    });
-
-    test('canResolve is false if all resolvers are false', () => {
-      const resolvers = mockResolverArray([null, null, null]);
-      const resolver = new MultiUrlResolver(resolvers);
-      assert.isFalse(resolver.canResolve('test.html' as PackageRelativeUrl));
-      // Verify only the first resolver is called
-      assert.equal(resolvers[0].canResolveCount, 1);
-      assert.equal(resolvers[1].canResolveCount, 1);
-      assert.equal(resolvers[2].canResolveCount, 1);
-    });
-  });
-
   suite('resolve', () => {
     test('only the first resolution is returned', () => {
       const resolvers = mockResolverArray(
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve('test.html' as PackageRelativeUrl), 'resolved.html');
+          resolver.resolve('test.html' as PackageRelativeUrl),
+          'resolved.html' as ResolvedUrl);
       // Verify only the first resolver is called
-      assert.equal(resolvers[0].canResolveCount, 1);
-      assert.equal(resolvers[1].canResolveCount, 0);
-      assert.equal(resolvers[2].canResolveCount, 0);
+      assert.equal(resolvers[0].resolveCount, 1);
+      assert.equal(resolvers[1].resolveCount, 0);
+      assert.equal(resolvers[2].resolveCount, 0);
+    });
+
+    test('keeps trying until it finds a good resolver', () => {
+      const resolvers = mockResolverArray([null, null, 'resolved.html']);
+      const resolver = new MultiUrlResolver(resolvers);
+      assert.equal(
+          resolver.resolve('test.html' as PackageRelativeUrl),
+          'resolved.html' as ResolvedUrl);
+      // Verify all resolvers are called
+      assert.equal(resolvers[0].resolveCount, 1);
+      assert.equal(resolvers[1].resolveCount, 1);
+      assert.equal(resolvers[2].resolveCount, 1);
+    });
+
+    test('only calls the first successful resolver', () => {
+      const resolvers = mockResolverArray(
+          ['resolved.html', 'resolved2.html', 'resolved3.html']);
+      const resolver = new MultiUrlResolver(resolvers);
+      assert.equal(
+          resolver.resolve('test.html' as PackageRelativeUrl),
+          'resolved.html' as ResolvedUrl);
+      // Verify only the first resolver is called
+      assert.equal(resolvers[0].resolveCount, 1);
+      assert.equal(resolvers[1].resolveCount, 0);
+      assert.equal(resolvers[2].resolveCount, 0);
+    });
+
+    test(`returns undefined if no resolver works`, () => {
+      const resolvers = mockResolverArray([null, null, null]);
+      const resolver = new MultiUrlResolver(resolvers);
+      assert.equal(
+          resolver.resolve('test.html' as PackageRelativeUrl), undefined);
+      // Verify only the first resolver is called
+      assert.equal(resolvers[0].resolveCount, 1);
+      assert.equal(resolvers[1].resolveCount, 1);
+      assert.equal(resolvers[2].resolveCount, 1);
     });
   });
 });

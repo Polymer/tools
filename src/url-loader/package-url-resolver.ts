@@ -39,30 +39,21 @@ export class PackageUrlResolver extends UrlResolver {
     this.hostname = options.hostname || null;
   }
 
-  canResolve(url: string): boolean {
-    const urlObject = parseUrl(url);
-    let decodedUrl;
-    try {
-      decodedUrl = decodeURI(urlObject.pathname || '');
-    } catch (e) {
-      return false;
-    }
-
-    const pathname = pathlib.normalize(decodedUrl);
-    return this._isValid(urlObject, pathname);
-  }
-
-  _isValid(urlObject: Url, pathname: string) {
+  private _isValid(urlObject: Url, pathname: string) {
     return (urlObject.hostname === this.hostname || !urlObject.hostname) &&
         !pathname.startsWith('../../');
   }
 
-  resolve(url: PackageRelativeUrl): ResolvedUrl {
+  resolve(url: PackageRelativeUrl): ResolvedUrl|undefined {
     const urlObject = parseUrl(url);
-    let pathname = pathlib.normalize(decodeURI(urlObject.pathname || ''));
-
+    let pathname;
+    try {
+      pathname = pathlib.normalize(decodeURI(urlObject.pathname || ''));
+    } catch (e) {
+      return undefined;  // undecodable url
+    }
     if (!this._isValid(urlObject, pathname)) {
-      throw new Error(`Invalid URL ${url}`);
+      return undefined;
     }
 
     // If the path points to a sibling directory, resolve it to the

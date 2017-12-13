@@ -24,14 +24,11 @@ import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
  */
 export abstract class UrlResolver {
   /**
-   * Returns `true` if this resolver can resolve the given `url`.
-   */
-  abstract canResolve(url: PackageRelativeUrl): boolean;
-
-  /**
    * Resoves `url` to a new location.
+   *
+   * Returns `undefined` if the given url cannot be resolved.
    */
-  abstract resolve(url: PackageRelativeUrl): ResolvedUrl;
+  abstract resolve(url: PackageRelativeUrl): ResolvedUrl|undefined;
 
   protected brandAsResolved(url: string): ResolvedUrl {
     return url as ResolvedUrl;

@@ -68,11 +68,12 @@ export class ScannedImport implements Resolvable {
   }
 
   resolve(document: Document): Import|undefined {
-    if (!document._analysisContext.canResolveUrl(this.url)) {
+    const resolvedUrl = document._analysisContext.resolver.resolve(this.url);
+    if (resolvedUrl === undefined) {
       return;
     }
-    const importedDocumentOrWarning = document._analysisContext.getDocument(
-        document._analysisContext.resolveUrl(this.url));
+    const importedDocumentOrWarning =
+        document._analysisContext.getDocument(resolvedUrl);
     if (!(importedDocumentOrWarning instanceof Document)) {
       const error = this.error ? (this.error.message || this.error) : '';
       document.warnings.push(new Warning({
@@ -85,7 +86,7 @@ export class ScannedImport implements Resolvable {
       return undefined;
     }
     return new Import(
-        document._analysisContext.resolveUrl(this.url),
+        resolvedUrl,
         this.type,
         importedDocumentOrWarning,
         this.sourceRange,

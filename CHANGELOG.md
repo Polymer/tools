@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Add Analyzer.forDirectory() for easily getting a well configured analyzer
+  for a given directory.
+* Removed the `UrlResolver#canResolve` method. A UrlResolver should return
+  `undefined` when `resolve` is called to indicate that it can't resolve a URL.
 * Analyzer#urlResolver is a property that exposes the analyzer's url resolver,
   for cases where more direct access to url resolution is desired.
 <!-- Add new, unreleased changes here. -->

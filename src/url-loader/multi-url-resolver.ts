@@ -20,26 +20,17 @@ import {UrlResolver} from './url-resolver';
  * Resolves a URL using multiple resolvers.
  */
 export class MultiUrlResolver extends UrlResolver {
-  constructor(private _resolvers: Array<UrlResolver>) {
+  constructor(private _resolvers: ReadonlyArray<UrlResolver>) {
     super();
-    if (!this._resolvers) {
-      this._resolvers = [];
-    }
   }
 
-  canResolve(url: PackageRelativeUrl): boolean {
-    return this._resolvers.some((resolver) => {
-      return resolver.canResolve(url);
-    });
-  }
-
-  resolve(url: PackageRelativeUrl): ResolvedUrl {
-    for (let i = 0; i < this._resolvers.length; i++) {
-      const resolver = this._resolvers[i];
-      if (resolver.canResolve(url)) {
-        return resolver.resolve(url);
+  resolve(url: PackageRelativeUrl): ResolvedUrl|undefined {
+    for (const resolver of this._resolvers) {
+      const resolved = resolver.resolve(url);
+      if (resolved !== undefined) {
+        return resolved;
       }
     }
-    throw new Error('No resolver can resolve: ' + url);
+    return undefined;
   }
 }

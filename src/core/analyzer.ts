@@ -101,7 +101,7 @@ export class Analyzer {
       return await previousContext.analyze(uiUrls);
     })();
     const context = await this._analysisComplete;
-    const resolvedUrls = uiUrls.map((url) => context.resolveUrl(url));
+    const resolvedUrls = context.resolveUrls(this.brandUserInputUrls(urls));
     return this._constructAnalysis(context, resolvedUrls);
   }
 
@@ -125,9 +125,7 @@ export class Analyzer {
           (fn) => extensions.has(path.extname(fn).substring(1)));
 
       const newContext = await previousContext.analyze(filesWithParsers);
-      const resolvedFilesWithParsers =
-          filesWithParsers.map((url) => newContext.resolveUrl(url));
-
+      const resolvedFilesWithParsers = newContext.resolveUrls(filesWithParsers);
       analysis = this._constructAnalysis(newContext, resolvedFilesWithParsers);
       return newContext;
     })();
@@ -222,16 +220,9 @@ export class Analyzer {
   }
 
   /**
-   * Returns `true` if the given `url` can be resolved.
-   */
-  canResolveUrl(url: string): boolean {
-    return this.urlResolver.canResolve(this.brandUserInputUrl(url));
-  }
-
-  /**
    * Resoves `url` to a new location.
    */
-  resolveUrl(url: string): ResolvedUrl {
+  resolveUrl(url: string): ResolvedUrl|undefined {
     return this.urlResolver.resolve(this.brandUserInputUrl(url));
   }
 

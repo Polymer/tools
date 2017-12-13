@@ -41,7 +41,7 @@ suite('TypeScriptImportScanner', () => {
     const urlLoader = new InMemoryOverlayUrlLoader();
     const analyzer = new Analyzer(
         {parsers: new Map([['ts', new TypeScriptPreparser()]]), urlLoader});
-    urlLoader.urlContentsMap.set(analyzer.resolveUrl('test.ts'), source);
+    urlLoader.urlContentsMap.set(analyzer.resolveUrl('test.ts')!, source);
     const {features} =
         await runScanner(analyzer, new TypeScriptImportScanner(), 'test.ts');
     assert.deepEqual(features.map((f: ScannedImport) => [f.type, f.url]), [

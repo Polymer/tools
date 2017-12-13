@@ -24,15 +24,9 @@ export class RedirectResolver extends UrlResolver {
     super();
   }
 
-  canResolve(url: PackageRelativeUrl): boolean {
-    return url.startsWith(this._redirectFrom);
-  }
-
-  resolve(url: PackageRelativeUrl): ResolvedUrl {
-    if (!this.canResolve(url)) {
-      throw new Error(
-          `RedirectResolver cannot resolve: "${url}" from:` +
-          `"${this._redirectFrom}" to: "${this._redirectTo}"`);
+  resolve(url: PackageRelativeUrl): ResolvedUrl|undefined {
+    if (!url.startsWith(this._redirectFrom)) {
+      return undefined;
     }
     return this.brandAsResolved(
         this._redirectTo + url.slice(this._redirectFrom.length));

@@ -14,49 +14,10 @@
 
 import {assert} from 'chai';
 
-import {PackageRelativeUrl} from '../../model/url';
+import {PackageRelativeUrl, ResolvedUrl} from '../../model/url';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 suite('PackageUrlResolver', function() {
-  suite('canResolve', () => {
-    test('is true an in-package URL', () => {
-      const r = new PackageUrlResolver();
-      assert.isTrue(r.canResolve('foo.html'));
-      assert.isTrue(r.canResolve('/foo.html'));
-      assert.isTrue(r.canResolve('./foo.html'));
-    });
-
-    test('is true for a sibling URL', () => {
-      assert.isTrue(new PackageUrlResolver().canResolve('../foo/foo.html'));
-    });
-
-    test('is false for a cousin URL', () => {
-      assert.isFalse(new PackageUrlResolver().canResolve('../../foo/foo.html'));
-    });
-
-    test('is false for URL with a hostname', () => {
-      const r = new PackageUrlResolver();
-      assert.isFalse(r.canResolve('http://abc.xyz/foo.html'));
-      assert.isFalse(r.canResolve('//abc.xyz/foo.html'));
-    });
-
-    test('is true for a URL with the right hostname', () => {
-      const r = new PackageUrlResolver({
-        hostname: 'abc.xyz',
-      });
-      assert.isTrue(r.canResolve('http://abc.xyz/foo.html'));
-      assert.isTrue(r.canResolve('http://abc.xyz/./foo.html'));
-      assert.isTrue(r.canResolve('http://abc.xyz/../foo.html'));
-      assert.isTrue(r.canResolve('http://abc.xyz/foo/../foo.html'));
-      assert.isTrue(r.canResolve('//abc.xyz/foo.html'));
-    });
-
-    test('is false for an undecodable URL', () => {
-      const r = new PackageUrlResolver();
-      assert.isFalse(r.canResolve('%><><%='));
-    });
-  });
-
   suite('resolve', () => {
     test('resolves an in-package URL', () => {
       const r = new PackageUrlResolver();
@@ -72,16 +33,20 @@ suite('PackageUrlResolver', function() {
               '../foo/foo.html' as PackageRelativeUrl));
     });
 
-    test('throws for a cousin URL', () => {
-      assert.throws(
-          () => new PackageUrlResolver().resolve(
-              '../../foo/foo.html' as PackageRelativeUrl));
+    test('returns undefined for a cousin URL', () => {
+      assert.equal(
+          new PackageUrlResolver().resolve(
+              '../../foo/foo.html' as PackageRelativeUrl),
+          undefined);
     });
 
-    test('throws for a URL with a hostname', () => {
-      assert.throws(
-          () => new PackageUrlResolver().resolve(
-              'http://abc.xyz/foo.html' as PackageRelativeUrl));
+    test('returns undefined for a URL with a hostname', () => {
+      const r = new PackageUrlResolver();
+      assert.equal(
+          r.resolve('http://abc.xyz/foo.html' as PackageRelativeUrl),
+          undefined);
+      assert.equal(
+          r.resolve('//abc.xyz/foo.html' as PackageRelativeUrl), undefined);
     });
 
     test('resolves a URL with the right hostname', () => {
@@ -122,7 +87,12 @@ suite('PackageUrlResolver', function() {
       const r = new PackageUrlResolver();
       assert.equal(
           r.resolve('spaced name.html' as PackageRelativeUrl),
-          'spaced%20name.html');
+          'spaced%20name.html' as ResolvedUrl);
+    });
+
+    test('resolves an undecodable URL to undefined', () => {
+      const r = new PackageUrlResolver();
+      assert.equal(r.resolve('%><><%=' as PackageRelativeUrl), undefined);
     });
   });
 });
