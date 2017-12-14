@@ -19,6 +19,7 @@ import {Analyzer} from '../../core/analyzer';
 import {HtmlScriptScanner} from '../../html/html-script-scanner';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Analysis} from '../../model/analysis';
+import {Document} from '../../model/document';
 import {ScannedImport, ScannedInlineDocument} from '../../model/model';
 import {runScannerOnContents} from '../test-utils';
 
@@ -63,11 +64,14 @@ suite('HtmlScriptScanner', () => {
     let analysis: Analysis;
 
     before(async () => {
-      analysis = await analyzer.analyze(['js-modules.html']);
+      analysis = await analyzer.analyze(
+          ['js-modules.html', 'base-href/imports-js-module-with-base.html']);
     });
 
     test('finds external module scripts', () => {
-      const htmlScripts = [...analysis.getFeatures({kind: 'html-script'})];
+      const htmlScripts =
+          [...(analysis.getDocument('js-modules.html') as Document)
+               .getFeatures({kind: 'html-script'})];
       assert.equal(htmlScripts.length, 1);
       const js = htmlScripts[0].document.parsedDocument as JavaScriptDocument;
       assert.equal(js.url, 'javascript/module.js');
@@ -78,7 +82,8 @@ suite('HtmlScriptScanner', () => {
 
     test('finds inline module scripts', () => {
       const inlineDocuments =
-          [...analysis.getFeatures({kind: 'inline-document'})];
+          [...(analysis.getDocument('js-modules.html') as Document)
+               .getFeatures({kind: 'inline-document'})];
       assert.equal(inlineDocuments.length, 1);
       const js = inlineDocuments[0].parsedDocument as JavaScriptDocument;
       assert.equal(js.url, 'js-modules.html');
@@ -89,7 +94,12 @@ suite('HtmlScriptScanner', () => {
     });
 
     test('follows import statements in modules', async () => {
-      const jsImports = [...analysis.getFeatures({kind: 'js-import'})];
+      const jsImports = [
+        ...(analysis.getDocument('js-modules.html') as Document).getFeatures({
+          kind: 'js-import',
+          imported: true,
+        }),
+      ];
       assert.equal(jsImports.length, 2);
 
       // import statement in inline module script in 'js-modules.html'
@@ -104,6 +114,22 @@ suite('HtmlScriptScanner', () => {
       assert.equal(js1.url, 'javascript/submodule.js');
       assert.equal(js1.parsedAsSourceType, 'module');
       assert.equal(js1.contents.trim(), `export const subThing = 'sub-thing';`);
+    });
+
+    test('finds imports, honoring base href', async () => {
+      const jsImports =
+          [...(analysis.getDocument(
+                   'base-href/imports-js-module-with-base.html') as Document)
+               .getFeatures({kind: 'js-import'})];
+      assert.equal(jsImports.length, 1);
+
+      // import statement in inline module script in
+      // 'imports-js-module-with-base.html'
+      const js0 = jsImports[0].document.parsedDocument as JavaScriptDocument;
+      assert.equal(js0.url, 'javascript/module-with-export.js');
+      assert.equal(js0.parsedAsSourceType, 'module');
+      assert.equal(
+          js0.contents.trim(), `export const someValue = 'value goes here';`);
     });
   });
 });

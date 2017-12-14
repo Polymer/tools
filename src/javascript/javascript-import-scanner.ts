@@ -48,7 +48,8 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
         }
         imports.push(new ScannedImport(
             'js-import',
-            ScannedImport.resolveUrl(document.url, source as FileRelativeUrl),
+            ScannedImport.resolveUrl(
+                document.baseUrl, source as FileRelativeUrl),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.callee)!,
             node,
@@ -63,7 +64,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
         }
         imports.push(new ScannedImport(
             'js-import',
-            ScannedImport.resolveUrl(document.url, source),
+            ScannedImport.resolveUrl(document.baseUrl, source),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             node,

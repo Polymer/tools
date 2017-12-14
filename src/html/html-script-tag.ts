@@ -16,7 +16,7 @@ import {Document, Import, ScannedImport, Severity, Warning} from '../model/model
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
- * or as imports, dependeng on whether the tag has a `src` attribute. This class
+ * or as imports, depending on whether the tag has a `src` attribute. This class
  * represents a script tag with a `src` attribute as an import, so that the
  * analyzer loads and parses the referenced document.
  */

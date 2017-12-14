@@ -404,6 +404,8 @@ export class AnalysisContext {
             feature.contents,
             containingDocument.url,
             {locationOffset, astNode: feature.astNode});
+        // Inline documents inherit the base url of their containers.
+        parsedDoc.baseUrl = containingDocument.document.baseUrl;
         const scannedDoc = await this._scanDocument(
             parsedDoc, feature.attachedComment, containingDocument.document);
 
