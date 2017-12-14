@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.4] - 2017-12-14
+
 * Add Analyzer.forDirectory() for easily getting a well configured analyzer
   for a given directory.
 * Removed the `UrlResolver#canResolve` method. A UrlResolver should return
@@ -16,7 +20,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Fix issue where inline JavaScript module import statements did not honor
   their containing document's baseUrl; inline documents now inherit baseUrl
   from their containing documents.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.3] - 2017-12-08
 
