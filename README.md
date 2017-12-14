@@ -1,9 +1,9 @@
 # polymer-workspaces
 
-Perform work across multiple GitHub repos. Useful for simple batch updates & batch publishing across all Polymer elements, tools, and/or libraries.
+Perform work across multiple GitHub repos. Useful for both simple and complex changes across multiple Polymer elements, tools, and/or libraries.
 
 ```
-yarn add polymer-workspaces
+npm install --save polymer-workspaces
 ```
 
 ## Example: Creating a New Workspace
@@ -13,20 +13,21 @@ const {Workspace} = require('polymer-workspace');
 const path = require('path');
 
 const workspace = new Workspace({
-  // Get a GitHub API token: https://github.com/blog/1509-personal-api-tokens
-  token: 'GITHUB_API_TOKEN',
   // Choose a "workspace" directory
-  dir: path.resolve(process.cwd(), '.workspace');
+  dir: path.resolve(process.cwd(), 'my-workspace'),
+  // Choose your repos (glob-matching supported)
+  include: [
+    'Polymer/polymer',
+    'PolymerElements/*#2.0-preview',
+  ],
+  // (Optional) Exclude some repos (glob-matching supported)
+  excludes: ['PolymerElements/iron-ajax'],
+  // Include a valid GitHub API token: https://github.com/blog/1509-personal-api-tokens
+  token: 'GITHUB_API_TOKEN',
 });
 
 // Check out & set up the given repos from GitHub.
-const workspaceRepos = await workspace.init({
-    include: [
-      'Polymer/polymer',
-      'PolymerElements/*#2.0-preview',
-    ],
-    excludes: ['PolymerElements/iron-ajax']
-  }, {verbose: true});
+const workspaceRepos = await workspace.init();
 
 // Optional: Install all required bower dependencies alongside the requested repos.
 await workspace.installBowerDependencies();

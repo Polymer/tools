@@ -35,8 +35,8 @@ suite('src/workspace', function() {
     suite('workspace.init()', () => {
       test('can be initialized with an empty set of patterns', async () => {
         const workspace =
-            new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
-        const {workspaceRepos, failures} = await workspace.init({include: []});
+            new Workspace({token: testGitHubToken, dir: testWorkspaceDir, match: []});
+        const {workspaceRepos, failures} = await workspace.init();
         assert.deepEqual(workspaceRepos, []);
         assert.deepEqual([...failures], []);
       });

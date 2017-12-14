@@ -18,11 +18,11 @@ import util = require('util');
 
 import {GitRepo} from './git';
 import {NpmPackage} from './npm';
-import {GitHubConnection, GitHubRepo, GitHubRepoReference} from './github';
+import {GitHubConnection, GitHubRepo} from './github';
 import {mergedBowerConfigsFromRepos} from './util/bower';
 import exec, {checkCommand, ExecResult} from './util/exec';
 import {existsSync} from './util/fs';
-import {BatchProcessResponse, batchProcess, fsConcurrencyPreset} from './util/batch-process';
+import {BatchProcessResponse, batchProcess, fsConcurrencyPreset, githubConcurrencyPreset} from './util/batch-process';
 
 import _rimraf = require('rimraf');
 const rimraf: (dir: string) => void = util.promisify(_rimraf);
@@ -73,14 +73,6 @@ async function validateEnvironment() {
 }
 
 /**
- * An object containing info about an error and the repo that it occurred in.
- */
-interface GitHubRepoError {
-  error: Error;
-  repoReference: GitHubRepoReference;
-}
-
-/**
  * When running a batch process, return an array of two items: the
  * WorkspaceRepos where the until of work completed successfully, and a Map of
  * all WorkspaceRepos where the work failed (pointing to the thrown Error in
@@ -99,7 +91,11 @@ export interface WorkspaceRepo {
   github: GitHubRepo;
 }
 
-export interface WorkspaceInitOptions {
+export interface WorkspaceOptions {
+  token: string;
+  dir: string;
+  match: string[];
+  exclude?: string[];
   fresh?: boolean;
   verbose?: boolean;
 }
@@ -114,11 +110,13 @@ export interface WorkspaceInitOptions {
  * can use to interact with each repo in the workspace.
  */
 export class Workspace {
-  dir: string;
-  private _github: GitHubConnection;
+  readonly dir: string;
+  private readonly options: WorkspaceOptions;
+  private readonly _github: GitHubConnection;
 
-  constructor(options: {token: string, dir: string}) {
+  constructor(options: WorkspaceOptions) {
     this.dir = options.dir;
+    this.options = options;
     this._github = new GitHubConnection(options.token);
   }
 
@@ -126,23 +124,18 @@ export class Workspace {
    * Initialize the workspace. This is the driver of all initialization and
    * setup logic.
    */
-  async init(
-      patterns: {include: string[], exclude?: string[]},
-      options?: WorkspaceInitOptions): Promise<{
-    workspaceRepos: WorkspaceRepo[],
-    failures: Map<WorkspaceRepo, Error>
-  }> {
+  async init(): Promise<
+      {workspaceRepos: WorkspaceRepo[], failures: Map<WorkspaceRepo, Error>}> {
     // Validate the current environment is polymer-workspace-ready.
     await validateEnvironment();
 
     // Fetch our repos from the given patterns.
-    const githubRepos =
-        await this._determineGitHubRepos(patterns.include, patterns.exclude);
+    const githubRepos = await this._determineGitHubRepos();
     let workspaceRepos = githubRepos.map((r) => this._openWorkspaceRepo(r));
     const failedWorkspaceRepos = new Map<WorkspaceRepo, Error>();
 
     // Clean up the workspace folder and prepare it for repo clones.
-    await this._prepareWorkspaceFolders(workspaceRepos, options);
+    await this._prepareWorkspaceFolders(workspaceRepos);
 
     // Update in-place and/or clone repositories from GitHub.
     const repoUpdateResults =
@@ -168,37 +161,28 @@ export class Workspace {
   }
 
   /**
-   * Given the arrays of repos patterns, expand the set (where wildcards are
-   * employed) and then reduce the set with excludes, and set the workspace
-   * repos appropriately.
+   * Lookup & resolve the set of given "match"/"exclude" patterns (expanding
+   * wildcard-containing patterns as needed) to return full GitHub repo
+   * information for all matched repos.
    */
-  private async _determineGitHubRepos(
-      repoPatterns: string[], excludes: string[] = []): Promise<GitHubRepo[]> {
-    excludes = excludes.map(String.prototype.toLowerCase);
-
-    let repoRefs: GitHubRepoReference[] =
-        await this._github.expandRepoPatterns(repoPatterns);
-    repoRefs = repoRefs.filter(
-        (repoRef) => !excludes.includes(repoRef.fullName.toLowerCase()));
-
-    const githubReposMaybe: Array<GitHubRepo|GitHubRepoError> =
-        await Promise.all(repoRefs.map(async (repoRef) => {
-          try {
-            return await this._github.getRepoInfo(repoRef);
-          } catch (err) {
-            return {error: err, repoReference: repoRef};
-          }
-        }));
-
-    return githubReposMaybe.filter((repoResponse) => {
-      if ((repoResponse as GitHubRepoError).error) {
-        const {fullName} = (repoResponse as GitHubRepoError).repoReference;
-        const {message} = (repoResponse as GitHubRepoError).error;
-        console.log(`Repo not found: ${fullName} (${message})`);
-        return null;
-      }
-      return true;
-    }) as GitHubRepo[];
+  private async _determineGitHubRepos(): Promise<GitHubRepo[]> {
+    const matchPatterns = this.options.match;
+    const excludePatterns =
+        (this.options.exclude || []).map(String.prototype.toLowerCase);
+    const allMatchedReferences =
+        await this._github.expandRepoPatterns(matchPatterns);
+    const matchedReferences = allMatchedReferences.filter((ref) => {
+      return !excludePatterns.includes(ref.fullName.toLowerCase());
+    });
+    // Fetch the full repo information for each matched reference
+    const matchedRepos =
+        await batchProcess(matchedReferences, async (ref) => {
+          return this._github.getRepoInfo(ref);
+        }, {concurrency: githubConcurrencyPreset});
+    matchedRepos.failures.forEach((err, ref) => {
+      console.log(`Repo not found: ${ref.fullName} (${err.message})`);
+    });
+    return [...matchedRepos.successes.values()];
   }
 
   /**
@@ -219,13 +203,12 @@ export class Workspace {
    * Cleans up the workspace folder and fixes repos which may be in
    * incomplete or bad state due to previous abandoned runs.
    */
-  private async _prepareWorkspaceFolders(
-      repos: WorkspaceRepo[], options: WorkspaceInitOptions = {}) {
+  private async _prepareWorkspaceFolders(repos: WorkspaceRepo[]) {
     const workspaceDir = this.dir;
 
     // Clean up repos when 'fresh' option is true.
-    if (options.fresh) {
-      if (options.verbose) {
+    if (this.options.fresh) {
+      if (this.options.verbose) {
         console.log(`Removing workspace folder ${workspaceDir}...`);
       }
       await rimraf(workspaceDir);
@@ -233,7 +216,7 @@ export class Workspace {
 
     // Ensure repos folder exists.
     if (!existsSync(workspaceDir)) {
-      if (options.verbose) {
+      if (this.options.verbose) {
         console.log(`Creating workspace folder ${workspaceDir}...`);
       }
       fs.mkdirSync(workspaceDir);
@@ -244,7 +227,7 @@ export class Workspace {
     // invocation and bower installed the dependency instead of git.
     return batchProcess(repos, async (repo: WorkspaceRepo) => {
       if (existsSync(repo.dir) && !repo.git.isGit()) {
-        if (options.verbose) {
+        if (this.options.verbose) {
           console.log(`Removing existing folder: ${repo.dir}...`);
         }
         await rimraf(repo.dir);
