@@ -40,13 +40,13 @@ suite('CssCustomPropertyScanner', () => {
         [
           `
       --primary-text-color: var(--light-theme-text-color);
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      ~~~~~~~~~~~~~~~~~~~~`,
           `
       --primary-background-color: var(--light-theme-background-color, --orange);
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~`,
           `
       --light-theme-background-color: #ffffff;
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 
         ]);
     assert.deepEqual(assignments.map((a) => a.name), [

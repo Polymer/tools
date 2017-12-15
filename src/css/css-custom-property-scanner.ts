@@ -90,7 +90,7 @@ class CssCustomPropertyVisitor implements Visitor {
     if (node.type === shady.nodeType.declaration &&
         node.name.startsWith('--')) {
       this.features.push(new CssCustomPropertyAssignment(
-          node.name, this.document.sourceRangeForNode(node)));
+          node.name, this.document.sourceRangeForShadyRange(node.nameRange)));
     } else if (node.type === shady.nodeType.expression) {
       this.getCustomPropertiesIn(node.text, node.range);
     } else if (node.type === shady.nodeType.atRule && node.parametersRange) {

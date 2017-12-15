@@ -40,6 +40,10 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     return this.sourceRangeForShadyRange(node.range);
   }
 
+  /**
+   * Takes a range from a shadycss node directly, rather than a shadycss node.
+   * Useful when there are multiple ranges for a given node.
+   */
   sourceRangeForShadyRange(range: shady.Range): SourceRange {
     return this.offsetsToSourceRange(range.start, range.end);
   }
