@@ -34,14 +34,10 @@ declare namespace Polymer {
     _debouncers: any;
 
     /**
-     * Provides an override implementation of `attributeChangedCallback`
-     * which adds the Polymer legacy API's `attributeChanged` method.
-     *
-     * @param name Name of attribute.
-     * @param old Old value of attribute.
-     * @param value Current value of attribute.
+     * Overrides the default `Polymer.PropertyEffects` implementation to
+     * add support for installing `hostAttributes` and `listeners`.
      */
-    attributeChangedCallback(name: string, old: string|null, value: string|null): void;
+    ready(): any;
 
     /**
      * Overrides the default `Polymer.PropertyEffects` implementation to
@@ -51,10 +47,14 @@ declare namespace Polymer {
     _initializeProperties(): any;
 
     /**
-     * Overrides the default `Polymer.PropertyEffects` implementation to
-     * add support for installing `hostAttributes` and `listeners`.
+     * Provides an override implementation of `attributeChangedCallback`
+     * which adds the Polymer legacy API's `attributeChanged` method.
+     *
+     * @param name Name of attribute.
+     * @param old Old value of attribute.
+     * @param value Current value of attribute.
      */
-    ready(): any;
+    attributeChangedCallback(name: string, old: string|null, value: string|null): void;
 
     /**
      * Provides an implementation of `connectedCallback`
