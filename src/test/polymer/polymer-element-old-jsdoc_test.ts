@@ -18,7 +18,6 @@ import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
-import {Document} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
@@ -33,9 +32,11 @@ suite('PolymerElement with old jsdoc annotations', () => {
   });
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
-    const document =
-        (await analyzer.analyze([filename])).getDocument(filename) as Document;
-    const elements = document.getFeatures({kind: 'polymer-element'});
+    const result = (await analyzer.analyze([filename])).getDocument(filename);
+    if (!result.successful) {
+      throw new Error(`failed to get document with filename ${filename}`);
+    }
+    const elements = result.value.getFeatures({kind: 'polymer-element'});
     return elements;
   };
 

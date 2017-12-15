@@ -27,7 +27,7 @@ import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {ScriptTagImport} from '../../html/html-script-tag';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
-import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '../../model/model';
+import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from '../../model/model';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
@@ -58,10 +58,11 @@ suite('Analyzer', () => {
   async function analyzeDocument(
       url: string, localAnalyzer?: Analyzer): Promise<Document> {
     localAnalyzer = localAnalyzer || analyzer;
-    const document =
-        (await localAnalyzer.analyze([url])).getDocument(url) as Document;
-    assert.instanceOf(document, Document);
-    return document;
+    const result = (await localAnalyzer.analyze([url])).getDocument(url);
+    if (!result.successful) {
+      throw new Error(`Could not get document for url: ${url}`);
+    }
+    return result.value;
   };
 
   setup(() => {
@@ -208,8 +209,8 @@ suite('Analyzer', () => {
       assert.equal(allDocuments.size, 4);
 
       const inlineDocuments =
-          Array.from(document.getFeatures({imported: false}))
-              .filter((d) => d instanceof Document && d.isInline) as Document[];
+          Array.from(document.getFeatures({kind: 'document', imported: false}))
+              .filter((d) => d instanceof Document && d.isInline);
       assert.equal(inlineDocuments.length, 1);
 
       // This is the main purpose of the test: get a feature from
@@ -274,9 +275,8 @@ suite('Analyzer', () => {
           document.getFeatures({kind: 'document', imported: false});
       assert.equal(documents.size, 2);
 
-      const inlineDocuments =
-          Array.from(documents).filter(
-              (d) => d instanceof Document && d.isInline) as Document[];
+      const inlineDocuments = Array.from(documents).filter(
+          (d) => d instanceof Document && d.isInline);
       assert.equal(inlineDocuments.length, 1);
 
       // This is the main purpose of the test: get a feature
@@ -402,9 +402,12 @@ suite('Analyzer', () => {
 
     test(`warns for files that don't exist`, async () => {
       const url = '/static/does_not_exist';
-      const result = await analyzer.analyze([url]);
-      const warning = result.getDocument(url);
-      assert.isFalse(warning instanceof Document);
+      const analysis = await analyzer.analyze([url]);
+      const result = analysis.getDocument(url);
+      if (result.successful) {
+        throw new Error('Expected a failed result from getDocument');
+      }
+      assert.isTrue(result.error instanceof Warning);
     });
 
     test('handles documents from multiple calls to analyze()', async () => {
@@ -414,29 +417,21 @@ suite('Analyzer', () => {
 
     test('handles mutually recursive documents', async () => {
       const document = await analyzeDocument('static/circular/mutual-a.html');
-      const shallowFeatures = document.getFeatures({imported: false});
       assert.deepEqual(
-          Array.from(shallowFeatures)
-              .filter((f) => f.kinds.has('document'))
-              .map((f) => (f as Document).url),
+          [...document.getFeatures({kind: 'document'})].map((f) => f.url),
           [analyzer.resolveUrl('static/circular/mutual-a.html')]);
       assert.deepEqual(
-          Array.from(shallowFeatures)
-              .filter((f) => f.kinds.has('import'))
-              .map((f) => (f as Import).url),
+          [...document.getFeatures({kind: 'import'})].map((f) => f.url),
           [analyzer.resolveUrl('static/circular/mutual-b.html')]);
 
-      const deepFeatures = document.getFeatures({imported: true});
       assert.deepEqual(
-          Array.from(deepFeatures)
-              .filter((f) => f.kinds.has('document'))
-              .map((f) => (f as Document).url),
+          [...document.getFeatures({kind: 'document', imported: true})].map(
+              (f) => f.url),
           ['static/circular/mutual-a.html', 'static/circular/mutual-b.html']
               .map((u) => analyzer.resolveUrl(u)));
       assert.deepEqual(
-          Array.from(deepFeatures)
-              .filter((f) => f.kinds.has('import'))
-              .map((f) => (f as Import).url),
+          [...document.getFeatures({kind: 'import', imported: true})].map(
+              (f) => f.url),
           ['static/circular/mutual-b.html', 'static/circular/mutual-a.html']
               .map((u) => analyzer.resolveUrl(u)));
     });
@@ -454,17 +449,14 @@ suite('Analyzer', () => {
     test('handles a document importing itself', async () => {
       const document =
           await analyzeDocument('static/circular/self-import.html');
-      const features = document.getFeatures({imported: true});
       assert.deepEqual(
-          Array.from(features)
-              .filter((f) => f.kinds.has('document'))
-              .map((f) => (f as Document).url),
+          [...document.getFeatures({kind: 'document', imported: true})].map(
+              (f) => f.url),
           ['static/circular/self-import.html'].map(
               (u) => analyzer.resolveUrl(u)));
       assert.deepEqual(
-          Array.from(features)
-              .filter((f) => f.kinds.has('import'))
-              .map((f) => (f as Import).url),
+          [...document.getFeatures({kind: 'import', imported: true})].map(
+              (f) => f.url),
           [
             'static/circular/self-import.html',
             'static/circular/self-import.html'
@@ -474,19 +466,16 @@ suite('Analyzer', () => {
     suite('handles documents with spaces in filename', () => {
       test('given a url with unencoded spaces to analyze', async () => {
         const document = await analyzeDocument('static/spaces in file.html');
-        const features = document.getFeatures({imported: true});
         assert.deepEqual(
-            Array.from(features)
-                .filter((f) => f.kinds.has('document'))
-                .map((f) => (f as Document).url),
+            [...document.getFeatures({kind: 'document', imported: true})].map(
+                (f) => f.url),
             [
               'static/spaces in file.html',
               'static/dependencies/spaces in import.html'
             ].map((u) => analyzer.resolveUrl(u)));
         assert.deepEqual(
-            Array.from(features)
-                .filter((f) => f.kinds.has('import'))
-                .map((f) => (f as Import).url),
+            [...document.getFeatures({kind: 'import', imported: true})].map(
+                (f) => f.url),
             ['static/dependencies/spaces in import.html'].map(
                 (u) => analyzer.resolveUrl(u)));
       });
@@ -494,19 +483,16 @@ suite('Analyzer', () => {
       test('given a url with encoded spaces to analyze', async () => {
         const document =
             await analyzeDocument('static/spaces%20in%20file.html');
-        const features = document.getFeatures({imported: true});
         assert.deepEqual(
-            Array.from(features)
-                .filter((f) => f.kinds.has('document'))
-                .map((f) => (f as Document).url),
+            [...document.getFeatures({kind: 'document', imported: true})].map(
+                (f) => f.url),
             [
               'static/spaces in file.html',
               'static/dependencies/spaces in import.html'
             ].map((u) => analyzer.resolveUrl(u)));
         assert.deepEqual(
-            Array.from(features)
-                .filter((f) => f.kinds.has('import'))
-                .map((f) => (f as Import).url),
+            [...document.getFeatures({kind: 'import', imported: true})].map(
+                (f) => f.url),
             ['static/dependencies/spaces in import.html'].map(
                 (u) => analyzer.resolveUrl(u)));
       });
@@ -1198,16 +1184,21 @@ var DuplicateNamespace = {};
             ['static/diamond/a.html', 'static/diamond/root.html'];
         let result = await analyzer.analyze(initialPaths);
 
-        const documentA = result.getDocument(initialPaths[0]) as Document;
+        const resultA = result.getDocument(initialPaths[0]);
+        if (!resultA.successful) {
+          throw new Error(`Could not get document a`);
+        }
         inMemoryOverlay.urlContentsMap.set(
             analyzer.resolveUrl('static/diamond/a.html')!,
-            documentA.parsedDocument.contents);
+            resultA.value.parsedDocument.contents);
         await analyzer.filesChanged(['static/diamond/a.html']);
         result = await analyzer.analyze(initialPaths);
 
-        const root = result.getDocument(initialPaths[1]) as Document;
-
-        const localFeatures = root.getFeatures({imported: false});
+        const rootResult = result.getDocument(initialPaths[1]);
+        if (!rootResult.successful) {
+          throw new Error(`Could not get root document`);
+        }
+        const localFeatures = rootResult.value.getFeatures({imported: false});
         const kinds = Array.from(localFeatures).map((f) => Array.from(f.kinds));
         assert.deepEqual(kinds, [
           ['document', 'html-document'],

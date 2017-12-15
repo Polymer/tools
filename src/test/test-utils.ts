@@ -13,8 +13,8 @@
  */
 
 import {Analyzer} from '../core/analyzer';
-import {Document, FileRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
-import {SourceRange, Warning} from '../model/model';
+import {FileRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
+import {makeParseLoader, SourceRange, Warning} from '../model/model';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
@@ -52,14 +52,7 @@ export class CodeUnderliner {
   private _parsedDocumentGetter: (url: string) => Promise<ParsedDocument>;
   constructor(urlLoader: UrlLoader, urlResolver?: UrlResolver) {
     const analyzer = new Analyzer({urlLoader, urlResolver});
-    this._parsedDocumentGetter = async (url: string) => {
-      const analysis = await analyzer.analyze([url]);
-      const result = analysis.getDocument(url);
-      if (!(result instanceof Document)) {
-        throw new Error(`Unable to parse ${url}`);
-      }
-      return result.parsedDocument;
-    };
+    this._parsedDocumentGetter = makeParseLoader(analyzer);
   }
 
   static withMapping(url: ResolvedUrl, contents: string) {

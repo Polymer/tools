@@ -19,7 +19,6 @@ import {Analyzer} from '../../core/analyzer';
 import {HtmlScriptScanner} from '../../html/html-script-scanner';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Analysis} from '../../model/analysis';
-import {Document} from '../../model/document';
 import {ScannedImport, ScannedInlineDocument} from '../../model/model';
 import {runScannerOnContents} from '../test-utils';
 
@@ -67,9 +66,11 @@ suite('HtmlScriptScanner', () => {
     });
 
     test('finds external module scripts', () => {
-      const htmlScripts =
-          [...(analysis.getDocument('js-modules.html') as Document)
-               .getFeatures({kind: 'html-script'})];
+      const result = analysis.getDocument('js-modules.html');
+      if (!result.successful) {
+        throw new Error(`could not get document js-modules.html`);
+      }
+      const htmlScripts = [...result.value.getFeatures({kind: 'html-script'})];
       assert.equal(htmlScripts.length, 1);
       const js = htmlScripts[0].document.parsedDocument as JavaScriptDocument;
       assert.equal(js.url, analyzer.resolveUrl('javascript/module.js')!);
@@ -79,9 +80,12 @@ suite('HtmlScriptScanner', () => {
     });
 
     test('finds inline module scripts', () => {
+      const result = analysis.getDocument('js-modules.html');
+      if (!result.successful) {
+        throw new Error(`could not get document js-modules.html`);
+      }
       const inlineDocuments =
-          [...(analysis.getDocument('js-modules.html') as Document)
-               .getFeatures({kind: 'inline-document'})];
+          [...result.value.getFeatures({kind: 'inline-document'})];
       assert.equal(inlineDocuments.length, 1);
       const js = inlineDocuments[0].parsedDocument as JavaScriptDocument;
       assert.equal(js.url, analyzer.resolveUrl('js-modules.html'));
@@ -92,12 +96,12 @@ suite('HtmlScriptScanner', () => {
     });
 
     test('follows import statements in modules', async () => {
-      const jsImports = [
-        ...(analysis.getDocument('js-modules.html') as Document).getFeatures({
-          kind: 'js-import',
-          imported: true,
-        }),
-      ];
+      const result = analysis.getDocument('js-modules.html');
+      if (!result.successful) {
+        throw new Error(`could not get document js-modules.html`);
+      }
+      const jsImports =
+          [...result.value.getFeatures({kind: 'js-import', imported: true})];
       assert.equal(jsImports.length, 2);
 
       // import statement in inline module script in 'js-modules.html'
@@ -116,10 +120,14 @@ suite('HtmlScriptScanner', () => {
     });
 
     test('finds imports, honoring base href', async () => {
-      const jsImports =
-          [...(analysis.getDocument(
-                   'base-href/imports-js-module-with-base.html') as Document)
-               .getFeatures({kind: 'js-import'})];
+      const result =
+          analysis.getDocument('base-href/imports-js-module-with-base.html');
+      if (!result.successful) {
+        throw new Error(
+            `could not get document` +
+            ` base-href/imports-js-module-with-base.html`);
+      }
+      const jsImports = [...result.value.getFeatures({kind: 'js-import'})];
       assert.equal(jsImports.length, 1);
 
       // import statement in inline module script in

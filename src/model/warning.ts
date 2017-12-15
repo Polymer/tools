@@ -19,7 +19,6 @@ import {ParsedDocument} from '../parser/document';
 import {underlineCode} from '../warning/code-printer';
 
 import {Analysis} from './analysis';
-import {Document} from './document';
 import {comparePositionAndRange, isPositionInsideRange, SourceRange} from './source-range';
 
 import stable = require('stable');
@@ -358,13 +357,13 @@ export function makeParseLoader(analyzer: Analyzer, analysis?: Analysis) {
   return async (url: string) => {
     if (analysis) {
       const cachedResult = analysis.getDocument(url);
-      if (cachedResult instanceof Document) {
-        return cachedResult.parsedDocument;
+      if (cachedResult.successful) {
+        return cachedResult.value.parsedDocument;
       }
     }
     const result = (await analyzer.analyze([url])).getDocument(url);
-    if (result instanceof Document) {
-      return result.parsedDocument;
+    if (result.successful) {
+      return result.value.parsedDocument;
     }
     throw new Error(`Cannot load file at:  ${url}`);
   };

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analyzer, Document, Severity, Warning, WarningPrinter} from '../index';
+import {Analyzer, Severity, Warning, WarningPrinter} from '../index';
 
 /**
  * A basic demo of a linter CLI using the Analyzer API.
@@ -32,10 +32,10 @@ async function main() {
 async function getWarnings(
     analyzer: Analyzer, localPath: string): Promise<Warning[]> {
   const result = (await analyzer.analyze([localPath])).getDocument(localPath);
-  if (result instanceof Document) {
-    return result.getWarnings({imported: false});
-  } else if (result !== undefined) {
-    return [result];
+  if (result.successful) {
+    return result.value.getWarnings({imported: false});
+  } else if (result.error !== undefined) {
+    return [result.error];
   } else {
     return [];
   }

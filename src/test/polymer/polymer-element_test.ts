@@ -17,16 +17,19 @@ import {assert} from 'chai';
 import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
-import {Document, Severity, Warning} from '../../model/model';
+import {Severity, Warning} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
 
 suite('PolymerElement', () => {
-  const analyzer =
-      Analyzer.createForDirectory(path.resolve(__dirname, '../static/polymer2/'));
+  const analyzer = Analyzer.createForDirectory(
+      path.resolve(__dirname, '../static/polymer2/'));
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
-    const document =
-        (await analyzer.analyze([filename])).getDocument(filename) as Document;
+    const result = (await analyzer.analyze([filename])).getDocument(filename);
+    if (!result.successful) {
+      throw new Error(`Could not get filename: ${filename}`);
+    }
+    const document = result.value;
     const elements = document.getFeatures({kind: 'polymer-element'});
     return elements;
   };

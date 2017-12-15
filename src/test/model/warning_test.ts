@@ -16,10 +16,10 @@ import {assert} from 'chai';
 import {knuthShuffle} from 'knuth-shuffle';
 
 import {Analyzer} from '../../core/analyzer';
-import {applyEdits, Document, Replacement} from '../../model/model';
+import {applyEdits, makeParseLoader, Replacement} from '../../model/model';
 import {ParsedDocument} from '../../parser/document';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
-import { resolvedUrl } from '../test-utils';
+import {resolvedUrl} from '../test-utils';
 
 suite('applyEdits', () => {
   let memoryMap: InMemoryOverlayUrlLoader;
@@ -29,11 +29,7 @@ suite('applyEdits', () => {
     memoryMap = new InMemoryOverlayUrlLoader();
     analyzer = new Analyzer({urlLoader: memoryMap});
     memoryMap.urlContentsMap.set(analyzer.resolveUrl('test.html')!, 'abc');
-    loader = async (url: string) => {
-      const analysis = await analyzer.analyze([url]);
-      const document = analysis.getDocument(url) as Document;
-      return document.parsedDocument;
-    };
+    loader = makeParseLoader(analyzer);
   });
 
   function makeTestReplacement(
