@@ -70,16 +70,15 @@ declare namespace Polymer {
      * @returns Cloned template content
      */
     _stampTemplate(template: HTMLTemplateElement): StampedTemplate;
-    _initializeProperties(): any;
 
     /**
-     * Overrides `Polymer.PropertyAccessors` implementation to provide a
-     * more efficient implementation of initializing properties from
-     * the prototype on the instance.
-     *
-     * @param props Properties to initialize on the prototype
+     * Overrides `PropertyAccessors` so that property accessor
+     * side effects are not enabled until after client dom is fully ready.
+     * Also calls `_flushClients` callback to ensure client dom is enabled
+     * that was not enabled as a result of flushing properties.
      */
-    _initializeProtoProperties(props: object|null): any;
+    ready(): any;
+    _initializeProperties(): any;
 
     /**
      * Overrides `Polymer.PropertyAccessors` implementation to avoid setting
@@ -96,7 +95,7 @@ declare namespace Polymer {
     _setProperty(property: any, value: any): any;
 
     /**
-     * Overrides the `PropertyAccessors` implementation to introduce special
+     * Overrides the `PropertiesChanged` implementation to introduce special
      * dirty check logic depending on the property & value being set:
      *
      * 1. Any value set to a path (e.g. 'obj.prop': 42 or 'obj.prop': {...})
@@ -140,12 +139,9 @@ declare namespace Polymer {
     _invalidateProperties(): any;
 
     /**
-     * Overrides `PropertyAccessors` so that property accessor
-     * side effects are not enabled until after client dom is fully ready.
-     * Also calls `_flushClients` callback to ensure client dom is enabled
-     * that was not enabled as a result of flushing properties.
+     * Overrides superclass implementation.
      */
-    ready(): any;
+    _flushProperties(): any;
 
     /**
      * Implements `PropertyAccessors`'s properties changed callback.
@@ -154,6 +150,15 @@ declare namespace Polymer {
      * a specific order (compute, propagate, reflect, observe, notify).
      */
     _propertiesChanged(currentProps: any, changedProps: any, oldProps: any): any;
+
+    /**
+     * Overrides `Polymer.PropertyAccessors` implementation to provide a
+     * more efficient implementation of initializing properties from
+     * the prototype on the instance.
+     *
+     * @param props Properties to initialize on the prototype
+     */
+    _initializeProtoProperties(props: object|null): any;
 
     /**
      * Equivalent to static `addPropertyEffect` API but can be called on

@@ -27,7 +27,7 @@ declare namespace Polymer {
      * If true, the element will not produce a ripple effect when interacted
      * with via the pointer.
      */
-    noink: boolean;
+    noink: boolean|null|undefined;
     _rippleContainer: Element|null|undefined;
 
     /**

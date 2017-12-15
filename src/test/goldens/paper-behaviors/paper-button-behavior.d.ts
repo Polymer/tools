@@ -21,7 +21,7 @@ declare namespace Polymer {
      * shadow, and each increasing number greater than 0 will be "deeper"
      * than the last.
      */
-    elevation: number;
+    elevation: number|null|undefined;
     hostAttributes: object|null;
 
     /**

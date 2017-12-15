@@ -83,7 +83,7 @@ interface PaperButton extends Polymer.Element, Polymer.PaperButtonBehavior {
   /**
    * If true, the button should be styled with a shadow.
    */
-  raised: boolean;
+  raised: boolean|null|undefined;
   _calculateElevation(): any;
 }
 
