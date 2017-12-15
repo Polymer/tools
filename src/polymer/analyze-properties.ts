@@ -64,12 +64,13 @@ export function analyzeProperties(
 
     const value = property.value;
     if (babel.isIdentifier(value)) {
-      // If we've already got a type it's from jsdoc and thus canonical.
-      if (!prop.type) {
-        prop.type = value.name;
-      }
+      // Polymer supports this simple syntax, where only the attribute
+      // deserializer is specified.
+      prop.attributeType = value.name;
+
     } else if (!babel.isObjectExpression(value)) {
       continue;
+
     } else {
       /**
        * Parse the expression inside a property object block. e.g.
@@ -91,19 +92,15 @@ export function analyzeProperties(
 
         switch (propertyKey) {
           case 'type':
-            // If we've already got a type, then it was found in the jsdocs,
-            // and is canonical.
-            if (!prop.type) {
-              prop.type = esutil.objectKeyToString(propertyArg.value);
-              if (prop.type === undefined) {
-                prop.warnings.push(new Warning({
-                  code: 'invalid-property-type',
-                  message: 'Invalid type in property object.',
-                  severity: Severity.WARNING,
-                  sourceRange: document.sourceRangeForNode(propertyArg)!,
-                  parsedDocument: document
-                }));
-              }
+            prop.attributeType = esutil.objectKeyToString(propertyArg.value);
+            if (prop.attributeType === undefined && prop.type === undefined) {
+              prop.warnings.push(new Warning({
+                code: 'invalid-property-type',
+                message: 'Invalid type in property object.',
+                severity: Severity.WARNING,
+                sourceRange: document.sourceRangeForNode(propertyArg)!,
+                parsedDocument: document
+              }));
             }
             break;
           case 'notify':
@@ -150,9 +147,20 @@ export function analyzeProperties(
       prop.readOnly = true;
     }
 
-    prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP.get(prop.type!) || prop.type;
+    // If we've already got a type, then it was found in the jsdocs, and is
+    // canonical. Otherwise we can infer it now from the attribute
+    // deserializer.
+    if (prop.type === undefined && prop.attributeType !== undefined) {
+      prop.type = prop.attributeType;
+      // Map primitive constructors to their primitive value types (e.g. String
+      // => string).
+      prop.type = esutil.CLOSURE_CONSTRUCTOR_MAP.get(prop.type) || prop.type;
+      // Assume this type is possibly null or undefined. Users should add a
+      // @type annotation if they want to tighten this type.
+      prop.type += ' | null | undefined';
+    }
 
-    if (!prop.type) {
+    if (prop.type === undefined) {
       prop.warnings.push(new Warning({
         code: 'no-type-for-property',
         message: 'Unable to determine type for property.',

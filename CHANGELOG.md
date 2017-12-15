@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Add `Import#originalUrl` which has the original url of the import as it was
   encountered in the document, before it was resolved relative to the base url
   of its containing document.
+* [BREAKING] Polymer property types are now assumed to be possibly
+  `null|undefined` unless an explicit `@type` annotation says otherwise.
+* Added `attributeType` field to Polymer property, which contains the name
+  of the Polymer property declaration `type` field Constructor.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.4] - 2017-12-14

@@ -2,34 +2,13 @@
   "schema_version": "1.0.0",
   "elements": [
     {
-      "tagname": "simple-element",
       "description": "This is a description of the element.",
       "summary": "",
-      "superclass": "HTMLElement",
       "path": "simple-element.html",
-      "privacy": "public",
-      "attributes": [
-        {
-          "name": "the-value",
-          "description": "This is a simple test property named theValue.",
-          "sourceRange": {
-            "start": {
-              "line": 9,
-              "column": 6
-            },
-            "end": {
-              "line": 12,
-              "column": 7
-            }
-          },
-          "type": "string",
-          "metadata": {}
-        }
-      ],
       "properties": [
         {
           "name": "theValue",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "This is a simple test property named theValue.",
           "privacy": "public",
           "sourceRange": {
@@ -44,13 +23,14 @@
           },
           "metadata": {
             "polymer": {
-              "notify": true
+              "notify": true,
+              "attributeType": "String"
             }
           }
         },
         {
           "name": "_protectedValue",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "protected",
           "sourceRange": {
@@ -64,12 +44,14 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           }
         },
         {
           "name": "__privateValue",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "private",
           "sourceRange": {
@@ -83,12 +65,14 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           }
         },
         {
           "name": "closureStyleTrailingUnderscoresArePrivate_",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "private",
           "sourceRange": {
@@ -102,12 +86,14 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           }
         },
         {
           "name": "_looksProtectedButActuallyPublic",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "public",
           "sourceRange": {
@@ -121,12 +107,14 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           }
         },
         {
           "name": "looksPublicButActuallyProtected",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "protected",
           "sourceRange": {
@@ -140,12 +128,14 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           }
         },
         {
           "name": "looksPublicButActuallyPrivate",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "private",
           "sourceRange": {
@@ -159,7 +149,9 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           }
         }
       ],
@@ -178,6 +170,7 @@
               "column": 39
             }
           },
+          "metadata": {},
           "params": [
             {
               "name": "a"
@@ -185,8 +178,7 @@
             {
               "name": "b"
             }
-          ],
-          "metadata": {}
+          ]
         },
         {
           "name": "_customProtectedFunction",
@@ -202,6 +194,7 @@
               "column": 49
             }
           },
+          "metadata": {},
           "params": [
             {
               "name": "a"
@@ -209,8 +202,7 @@
             {
               "name": "b"
             }
-          ],
-          "metadata": {}
+          ]
         },
         {
           "name": "__customPrivateFunction",
@@ -226,6 +218,7 @@
               "column": 48
             }
           },
+          "metadata": {},
           "params": [
             {
               "name": "a"
@@ -233,8 +226,7 @@
             {
               "name": "b"
             }
-          ],
-          "metadata": {}
+          ]
         },
         {
           "name": "customFunctionWithJsDoc",
@@ -250,6 +242,7 @@
               "column": 61
             }
           },
+          "metadata": {},
           "params": [
             {
               "name": "a",
@@ -262,8 +255,7 @@
           ],
           "return": {
             "type": "boolean"
-          },
-          "metadata": {}
+          }
         },
         {
           "name": "_customProtectedFunctionWithJsDoc",
@@ -279,6 +271,7 @@
               "column": 71
             }
           },
+          "metadata": {},
           "params": [
             {
               "name": "a",
@@ -291,8 +284,7 @@
           ],
           "return": {
             "type": "boolean"
-          },
-          "metadata": {}
+          }
         },
         {
           "name": "__customPrivateFunctionWithJsDoc",
@@ -308,6 +300,7 @@
               "column": 70
             }
           },
+          "metadata": {},
           "params": [
             {
               "name": "a",
@@ -320,25 +313,11 @@
           ],
           "return": {
             "type": "boolean"
-          },
-          "metadata": {}
+          }
         }
       ],
       "staticMethods": [],
-      "styling": {
-        "cssVariables": [],
-        "selectors": []
-      },
       "demos": [],
-      "slots": [],
-      "events": [
-        {
-          "name": "the-value-changed",
-          "description": "Fired when the `theValue` property changes.",
-          "type": "CustomEvent",
-          "metadata": {}
-        }
-      ],
       "metadata": {},
       "sourceRange": {
         "start": {
@@ -349,7 +328,41 @@
           "line": 51,
           "column": 3
         }
-      }
+      },
+      "privacy": "public",
+      "superclass": "HTMLElement",
+      "attributes": [
+        {
+          "name": "the-value",
+          "description": "This is a simple test property named theValue.",
+          "sourceRange": {
+            "start": {
+              "line": 9,
+              "column": 6
+            },
+            "end": {
+              "line": 12,
+              "column": 7
+            }
+          },
+          "metadata": {},
+          "type": "string | null | undefined"
+        }
+      ],
+      "events": [
+        {
+          "type": "CustomEvent",
+          "name": "the-value-changed",
+          "description": "Fired when the `theValue` property changes.",
+          "metadata": {}
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "tagname": "simple-element"
     }
   ]
 }

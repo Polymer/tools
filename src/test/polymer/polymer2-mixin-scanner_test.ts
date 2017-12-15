@@ -22,8 +22,8 @@ import {PolymerElementMixin, ScannedPolymerElementMixin} from '../../polymer/pol
 import {CodeUnderliner, runScanner} from '../test-utils';
 
 suite('Polymer2MixinScanner', () => {
-  const analyzer =
-      Analyzer.createForDirectory(path.resolve(__dirname, '../static/polymer2/'));
+  const analyzer = Analyzer.createForDirectory(
+      path.resolve(__dirname, '../static/polymer2/'));
   const underliner = new CodeUnderliner(analyzer);
 
   async function getScannedMixins(filename: string) {
@@ -451,7 +451,7 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
         name: 'foo',
         privacy: 'public',
         description: 'This description is in the constructor.',
-        type: 'string',
+        type: 'string | null | undefined',
         published: true,
         notify: true,
         warnings: [],

@@ -20,13 +20,13 @@
             }
           },
           "metadata": {},
-          "type": "string"
+          "type": "string | null | undefined"
         }
       ],
       "properties": [
         {
           "name": "foo",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "public",
           "sourceRange": {
@@ -41,7 +41,8 @@
           },
           "metadata": {
             "polymer": {
-              "notify": true
+              "notify": true,
+              "attributeType": "String"
             }
           }
         }
@@ -88,13 +89,13 @@
             }
           },
           "metadata": {},
-          "type": "string"
+          "type": "string | null | undefined"
         }
       ],
       "properties": [
         {
           "name": "foo",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "",
           "privacy": "public",
           "sourceRange": {
@@ -109,7 +110,8 @@
           },
           "metadata": {
             "polymer": {
-              "notify": true
+              "notify": true,
+              "attributeType": "String"
             }
           }
         }
@@ -228,13 +230,13 @@
             }
           },
           "metadata": {},
-          "type": "boolean"
+          "type": "boolean | null | undefined"
         }
       ],
       "properties": [
         {
           "name": "meta",
-          "type": "boolean",
+          "type": "boolean | null | undefined",
           "description": "",
           "privacy": "public",
           "sourceRange": {
@@ -248,7 +250,9 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "Boolean"
+            }
           }
         }
       ],

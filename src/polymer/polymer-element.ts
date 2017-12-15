@@ -34,12 +34,18 @@ export interface BasePolymerProperty {
   observerExpression?: JavascriptDatabindingExpression;
   reflectToAttribute?: boolean;
   computedExpression?: JavascriptDatabindingExpression;
+
   /**
    * True if the property is part of Polymer's element configuration syntax.
    *
    * e.g. 'properties', 'is', 'extends', etc
    */
   isConfiguration?: boolean;
+
+  /**
+   * Constructor used when deserializing this property from an attribute.
+   */
+  attributeType?: string;
 }
 
 export interface ScannedPolymerProperty extends ScannedProperty,
@@ -336,16 +342,14 @@ export class PolymerElement extends Element implements PolymerExtension {
   }
 
   emitPropertyMetadata(property: PolymerProperty) {
-    const polymerMetadata:
-        {notify?: boolean, observer?: string, readOnly?: boolean} = {};
-    const polymerMetadataFields: Array<keyof typeof polymerMetadata> =
-        ['notify', 'observer', 'readOnly'];
-    for (const field of polymerMetadataFields) {
-      if (field in property) {
-        polymerMetadata[field] = property[field];
+    return {
+      polymer: {
+        notify: property.notify,
+        observer: property.observer,
+        readOnly: property.readOnly,
+        attributeType: property.attributeType,
       }
-    }
-    return {polymer: polymerMetadata};
+    };
   }
 
   protected _getSuperclassAndMixins(

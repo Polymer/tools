@@ -21,7 +21,7 @@
             }
           },
           "metadata": {},
-          "type": "Array",
+          "type": "Array | null | undefined",
           "inheritedFrom": "MyNamespace.SubBehavior"
         },
         {
@@ -39,7 +39,7 @@
             }
           },
           "metadata": {},
-          "type": "number",
+          "type": "number | null | undefined",
           "inheritedFrom": "MyNamespace.SimpleBehavior"
         },
         {
@@ -56,13 +56,13 @@
             }
           },
           "metadata": {},
-          "type": "boolean"
+          "type": "boolean | null | undefined"
         }
       ],
       "properties": [
         {
           "name": "deeplyInheritedProperty",
-          "type": "Array",
+          "type": "Array | null | undefined",
           "description": "This is a deeply inherited property.",
           "privacy": "public",
           "sourceRange": {
@@ -78,7 +78,8 @@
           },
           "metadata": {
             "polymer": {
-              "notify": true
+              "notify": true,
+              "attributeType": "Array"
             }
           },
           "defaultValue": "[]",
@@ -86,7 +87,7 @@
         },
         {
           "name": "inheritPlease",
-          "type": "number",
+          "type": "number | null | undefined",
           "description": "A property provided by SimpleBehavior.",
           "privacy": "public",
           "sourceRange": {
@@ -102,7 +103,8 @@
           },
           "metadata": {
             "polymer": {
-              "notify": true
+              "notify": true,
+              "attributeType": "Number"
             }
           },
           "defaultValue": "10",
@@ -110,7 +112,7 @@
         },
         {
           "name": "localProperty",
-          "type": "boolean",
+          "type": "boolean | null | undefined",
           "description": "A property defined directly on behavior-test-elem.",
           "privacy": "public",
           "sourceRange": {
@@ -125,14 +127,15 @@
           },
           "metadata": {
             "polymer": {
-              "notify": true
+              "notify": true,
+              "attributeType": "Boolean"
             }
           },
           "defaultValue": "true"
         },
         {
           "name": "_protectedProperty",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "This can only be used directly by code that mixes in this behavior.",
           "privacy": "protected",
           "sourceRange": {
@@ -146,13 +149,15 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           },
           "defaultValue": "\"do cool stuff with me!\""
         },
         {
           "name": "__privateProperty",
-          "type": "string",
+          "type": "string | null | undefined",
           "description": "This is used entirely for internal purposes ok.",
           "privacy": "private",
           "sourceRange": {
@@ -166,7 +171,9 @@
             }
           },
           "metadata": {
-            "polymer": {}
+            "polymer": {
+              "attributeType": "String"
+            }
           },
           "defaultValue": "\"don't look!\""
         }
@@ -257,13 +264,13 @@
                 }
               },
               "metadata": {},
-              "type": "Array"
+              "type": "Array | null | undefined"
             }
           ],
           "properties": [
             {
               "name": "deeplyInheritedProperty",
-              "type": "Array",
+              "type": "Array | null | undefined",
               "description": "This is a deeply inherited property.",
               "privacy": "public",
               "sourceRange": {
@@ -278,7 +285,8 @@
               },
               "metadata": {
                 "polymer": {
-                  "notify": true
+                  "notify": true,
+                  "attributeType": "Array"
                 }
               },
               "defaultValue": "[]"
@@ -334,7 +342,7 @@
                 }
               },
               "metadata": {},
-              "type": "Array",
+              "type": "Array | null | undefined",
               "inheritedFrom": "MyNamespace.SubBehavior"
             },
             {
@@ -351,13 +359,13 @@
                 }
               },
               "metadata": {},
-              "type": "number"
+              "type": "number | null | undefined"
             }
           ],
           "properties": [
             {
               "name": "deeplyInheritedProperty",
-              "type": "Array",
+              "type": "Array | null | undefined",
               "description": "This is a deeply inherited property.",
               "privacy": "public",
               "sourceRange": {
@@ -373,7 +381,8 @@
               },
               "metadata": {
                 "polymer": {
-                  "notify": true
+                  "notify": true,
+                  "attributeType": "Array"
                 }
               },
               "defaultValue": "[]",
@@ -381,7 +390,7 @@
             },
             {
               "name": "inheritPlease",
-              "type": "number",
+              "type": "number | null | undefined",
               "description": "A property provided by SimpleBehavior.",
               "privacy": "public",
               "sourceRange": {
@@ -396,7 +405,8 @@
               },
               "metadata": {
                 "polymer": {
-                  "notify": true
+                  "notify": true,
+                  "attributeType": "Number"
                 }
               },
               "defaultValue": "10"

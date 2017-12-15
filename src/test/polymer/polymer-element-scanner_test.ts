@@ -161,15 +161,15 @@ suite('PolymerElementScanner', () => {
         ]);
 
     assert.deepEqual(properties.map((p) => [p.name, p.type]), [
-      ['a', 'boolean'],
-      ['b', 'string'],
-      ['c', 'number'],
-      ['d', 'number'],
-      ['e', 'string'],
-      ['f', 'Object'],
+      ['a', 'boolean | null | undefined'],
+      ['b', 'string | null | undefined'],
+      ['c', 'number | null | undefined'],
+      ['d', 'number | null | undefined'],
+      ['e', 'string | null | undefined'],
+      ['f', 'Object | null | undefined'],
       ['g', undefined],
-      ['h', 'string'],
-      ['all', 'Object']
+      ['h', 'string | null | undefined'],
+      ['all', 'Object | null | undefined']
     ]);
 
     assert.deepEqual(

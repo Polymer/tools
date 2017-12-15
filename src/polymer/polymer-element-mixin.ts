@@ -112,16 +112,14 @@ export class PolymerElementMixin extends ElementMixin implements
   }
 
   emitPropertyMetadata(property: PolymerProperty) {
-    const polymerMetadata:
-        {notify?: boolean, observer?: string, readOnly?: boolean} = {};
-    const polymerMetadataFields: Array<keyof typeof polymerMetadata> =
-        ['notify', 'observer', 'readOnly'];
-    for (const field of polymerMetadataFields) {
-      if (field in property) {
-        polymerMetadata[field] = property[field];
+    return {
+      polymer: {
+        notify: property.notify,
+        observer: property.observer,
+        readOnly: property.readOnly,
+        attributeType: property.attributeType,
       }
-    }
-    return {polymer: polymerMetadata};
+    };
   }
 
   protected _getSuperclassAndMixins(

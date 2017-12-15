@@ -114,8 +114,11 @@ suite('Polymer2ElementScanner with old jsdoc annotations', () => {
         superClass: 'Polymer.Element',
         description: 'A very basic element',
         summary: 'A basic element',
-        properties:
-            [{name: 'foo', description: 'A base foo element.', type: 'string'}],
+        properties: [{
+          name: 'foo',
+          description: 'A base foo element.',
+          type: 'string | null | undefined',
+        }],
         attributes: [{
           name: 'foo',
         }],
@@ -242,7 +245,7 @@ class BaseElement extends Polymer.Element {
         properties: [{
           name: 'foo',
           description: '',
-          type: 'string',
+          type: 'string | null | undefined',
         }],
         attributes: [
           {
@@ -273,7 +276,7 @@ namespaced name.`,
         properties: [{
           name: 'foo',
           description: '',
-          type: 'string',
+          type: 'string | null | undefined',
         }],
         attributes: [{
           name: 'foo',
@@ -292,7 +295,7 @@ namespaced name.`,
         properties: [{
           name: 'foo',
           description: '',
-          type: 'string',
+          type: 'string | null | undefined',
         }],
         attributes: [{
           name: 'foo',
@@ -393,7 +396,7 @@ namespaced name.`,
             properties: [{
               name: 'foo',
               description: '',
-              type: 'string',
+              type: 'string | null | undefined',
             }],
             attributes: [{
               name: 'foo',
@@ -500,7 +503,7 @@ namespaced name.`,
           properties: [
             {
               name: 'parseError',
-              type: 'string',
+              type: 'string | null | undefined',
               description: '',
               warningUnderlines: [
                 `
@@ -513,7 +516,7 @@ namespaced name.`,
             },
             {
               name: 'badKindOfExpression',
-              type: 'string',
+              type: 'string | null | undefined',
               description: '',
               propertiesInComputed: ['foo'],
               propertiesInObserver: ['foo', 'bar', 'baz'],
@@ -556,7 +559,8 @@ namespaced name.`,
           className: 'MyElement',
           description: '',
           methods: [],
-          properties: [{name: 'prop1', description: '', type: 'string'}],
+          properties:
+              [{name: 'prop1', description: '', type: 'string | null | undefined'}],
           summary: '',
           superClass: 'Polymer.Element',
           tagName: 'my-app',

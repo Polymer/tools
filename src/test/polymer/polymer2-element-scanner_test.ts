@@ -24,8 +24,8 @@ import {CodeUnderliner, runScanner} from '../test-utils';
 chaiUse(require('chai-subset'));
 
 suite('Polymer2ElementScanner', () => {
-  const analyzer =
-      Analyzer.createForDirectory(path.resolve(__dirname, '../static/polymer2/'));
+  const analyzer = Analyzer.createForDirectory(
+      path.resolve(__dirname, '../static/polymer2/'));
   const underliner = new CodeUnderliner(analyzer);
 
   async function getElements(filename: string):
@@ -115,8 +115,11 @@ suite('Polymer2ElementScanner', () => {
         superClass: 'Polymer.Element',
         description: 'A very basic element',
         summary: 'A basic element',
-        properties:
-            [{name: 'foo', description: 'A base foo element.', type: 'string'}],
+        properties: [{
+          name: 'foo',
+          description: 'A base foo element.',
+          type: 'string | null | undefined'
+        }],
         attributes: [{
           name: 'foo',
         }],
@@ -243,7 +246,7 @@ class BaseElement extends Polymer.Element {
         properties: [{
           name: 'foo',
           description: '',
-          type: 'string',
+          type: 'string | null | undefined',
         }],
         attributes: [
           {
@@ -274,7 +277,7 @@ namespaced name.`,
         properties: [{
           name: 'foo',
           description: '',
-          type: 'string',
+          type: 'string | null | undefined',
         }],
         attributes: [{
           name: 'foo',
@@ -293,7 +296,7 @@ namespaced name.`,
         properties: [{
           name: 'foo',
           description: '',
-          type: 'string',
+          type: 'string | null | undefined',
         }],
         attributes: [{
           name: 'foo',
@@ -394,7 +397,7 @@ namespaced name.`,
             properties: [{
               name: 'foo',
               description: '',
-              type: 'string',
+              type: 'string | null | undefined',
             }],
             attributes: [{
               name: 'foo',
@@ -501,7 +504,7 @@ namespaced name.`,
           properties: [
             {
               name: 'parseError',
-              type: 'string',
+              type: 'string | null | undefined',
               description: '',
               warningUnderlines: [
                 `
@@ -514,7 +517,7 @@ namespaced name.`,
             },
             {
               name: 'badKindOfExpression',
-              type: 'string',
+              type: 'string | null | undefined',
               description: '',
               propertiesInComputed: ['foo'],
               propertiesInObserver: ['foo', 'bar', 'baz'],
@@ -557,7 +560,8 @@ namespaced name.`,
           className: 'MyElement',
           description: '',
           methods: [],
-          properties: [{name: 'prop1', description: '', type: 'string'}],
+          properties:
+              [{name: 'prop1', description: '', type: 'string | null | undefined'}],
           summary: '',
           superClass: 'Polymer.Element',
           tagName: 'my-app',
@@ -581,7 +585,7 @@ namespaced name.`,
           {
             name: 'foo',
             description: 'This description lives in the constructor.',
-            type: 'string'
+            type: 'string | null | undefined'
           },
           {
             name: 'constructorOnly_',
@@ -599,7 +603,7 @@ namespaced name.`,
         name: 'foo',
         privacy: 'protected',
         description: 'This description lives in the constructor.',
-        type: 'string',
+        type: 'string | null | undefined',
         default: `'bar'`,
         published: true,
         notify: true,
