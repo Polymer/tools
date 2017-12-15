@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.5] - 2017-12-15
 * [BREAKING] Removed `Analyzer#resolveUrl` in favor of just exposing the
   `UrlResolver` at `Analyzer#urlResolver.resolve`
 * Add `Analyzer.createForDirectory()` for easily getting a well configured
@@ -17,7 +20,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `null|undefined` unless an explicit `@type` annotation says otherwise.
 * Added `attributeType` field to Polymer property, which contains the name
   of the Polymer property declaration `type` field Constructor.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.4] - 2017-12-14
 
