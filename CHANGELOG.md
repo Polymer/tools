@@ -6,10 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* [BREAKING] Removed `Analyzer#resolveUrl` in favor of just exposing the
+  `UrlResolver` at `Analyzer#urlResolver.resolve`
+* Add `Analyzer.createForDirectory()` for easily getting a well configured
+  analyzer for a given directory.
+* Add `Import#originalUrl` which has the original url of the import as it was
+  encountered in the document, before it was resolved relative to the base url
+  of its containing document.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.4] - 2017-12-14
 
+* [BREAKING] Removed the `UrlResolver#canResolve` method. A UrlResolver should
+  return `undefined` when `resolve` is called to indicate that it can't resolve
+  a URL.
 * Add Analyzer.forDirectory() for easily getting a well configured analyzer
   for a given directory.
 * Removed the `UrlResolver#canResolve` method. A UrlResolver should return

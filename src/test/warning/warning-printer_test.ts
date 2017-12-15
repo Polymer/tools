@@ -20,6 +20,7 @@ import * as path from 'path';
 
 import {JavaScriptParser} from '../../javascript/javascript-parser';
 import {Severity, Warning} from '../../model/model';
+import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {WarningPrinter} from '../../warning/warning-printer';
 import {resolvedUrl} from '../test-utils';
 
@@ -28,7 +29,8 @@ const staticTestDir = path.join(__dirname, '../static');
 const url = resolvedUrl`vanilla-elements.js`;
 const vanillaSources =
     fs.readFileSync(path.join(staticTestDir, 'vanilla-elements.js'), 'utf-8');
-const parsedDocument = parser.parse(vanillaSources, url);
+const parsedDocument =
+    parser.parse(vanillaSources, url, new PackageUrlResolver());
 
 const dumbNameWarning = new Warning({
   message: 'This is a dumb name for an element.',

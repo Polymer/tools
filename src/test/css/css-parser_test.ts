@@ -18,6 +18,7 @@ import * as path from 'path';
 
 import {ParsedCssDocument} from '../../css/css-document';
 import {CssParser} from '../../css/css-parser';
+import {PackageUrlResolver} from '../../index';
 import {resolvedUrl} from '../test-utils';
 
 suite('CssParser', () => {
@@ -32,16 +33,20 @@ suite('CssParser', () => {
     });
 
     test('parses css', () => {
-      const document =
-          parser.parse(fileContents, resolvedUrl`/static/stylesheet.css`);
+      const document = parser.parse(
+          fileContents,
+          resolvedUrl`/static/stylesheet.css`,
+          new PackageUrlResolver());
       assert.instanceOf(document, ParsedCssDocument);
       assert.equal(document.url, '/static/stylesheet.css');
       assert(document.ast != null);
     });
 
     test('stringifies css', () => {
-      const document =
-          parser.parse(fileContents, resolvedUrl`/static/stylesheet.css`);
+      const document = parser.parse(
+          fileContents,
+          resolvedUrl`/static/stylesheet.css`,
+          new PackageUrlResolver());
       assert.deepEqual(document.stringify(), fileContents);
     });
   });

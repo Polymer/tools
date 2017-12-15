@@ -23,7 +23,7 @@ import {Node, ParsedTypeScriptDocument, Visitor} from './typescript-document';
 export class TypeScriptImportScanner implements
     Scanner<ParsedTypeScriptDocument, Node, Visitor> {
   async scan(
-      document: ParsedTypeScriptDocument,
+      _document: ParsedTypeScriptDocument,
       visit: (visitor: Visitor) => Promise<void>) {
     const imports: ScannedImport[] = [];
     class ImportVisitor extends Visitor {
@@ -36,7 +36,7 @@ export class TypeScriptImportScanner implements
             FileRelativeUrl;
         imports.push(new ScannedImport(
             'js-import',
-            ScannedImport.resolveUrl(document.baseUrl, specifierUrl),
+            specifierUrl,
             // TODO(justinfagnani): make SourceRanges work
             null as any as SourceRange,
             null as any as SourceRange,

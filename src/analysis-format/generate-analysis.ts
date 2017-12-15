@@ -16,10 +16,12 @@ import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as pathLib from 'path';
 
+import {ResolvedUrl} from '../index';
 import {Function as ResolvedFunction} from '../javascript/function';
 import {Namespace as ResolvedNamespace} from '../javascript/namespace';
 import {Analysis as AnalysisResult, Attribute as ResolvedAttribute, Class as ResolvedClass, Element as ResolvedElement, ElementMixin as ResolvedMixin, Event as ResolvedEvent, Feature, Method as ResolvedMethod, Property as ResolvedProperty, SourceRange as ResolvedSourceRange} from '../model/model';
 import {Behavior as ResolvedPolymerBehavior} from '../polymer/behavior';
+import {UrlResolver} from '../url-loader/url-resolver';
 
 import {Analysis, Attribute, Class, Element, ElementLike, ElementMixin, Event, Function, Method, Namespace, Property, SourceRange} from './analysis-format';
 
@@ -40,7 +42,8 @@ interface Members {
 }
 
 export function generateAnalysis(
-    input: AnalysisResult, packagePath: string, filter?: Filter): Analysis {
+    input: AnalysisResult, urlResolver: UrlResolver, filter?: Filter):
+    Analysis {
   const _filter = filter || ((_: Feature) => true);
 
   const members: Members = {
@@ -65,14 +68,14 @@ export function generateAnalysis(
     members.classes.add(class_);
   }
 
-  return buildAnalysis(members, packagePath);
+  return buildAnalysis(members, urlResolver);
 }
 
-function buildAnalysis(members: Members, packagePath: string): Analysis {
+function buildAnalysis(members: Members, urlResolver: UrlResolver): Analysis {
   // Build mapping of namespaces
   const namespaces = new Map<string|undefined, Namespace>();
   for (const namespace of members.namespaces) {
-    namespaces.set(namespace.name, serializeNamespace(namespace, packagePath));
+    namespaces.set(namespace.name, serializeNamespace(namespace, urlResolver));
   }
 
   const analysis: Analysis = {
@@ -90,21 +93,21 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
     const namespaceName = getNamespaceName(element.className);
     const namespace = namespaces.get(namespaceName) || analysis;
     namespace.elements = namespace.elements || [];
-    namespace.elements.push(serializeElement(element, packagePath));
+    namespace.elements.push(serializeElement(element, urlResolver));
   }
 
   for (const mixin of members.mixins) {
     const namespaceName = getNamespaceName(mixin.name);
     const namespace = namespaces.get(namespaceName) || analysis;
     namespace.mixins = namespace.mixins || [];
-    namespace.mixins.push(serializeElementMixin(mixin, packagePath));
+    namespace.mixins.push(serializeElementMixin(mixin, urlResolver));
   }
 
   for (const function_ of members.functions) {
     const namespaceName = getNamespaceName(function_.name);
     const namespace = namespaces.get(namespaceName) || analysis;
     namespace.functions = namespace.functions || [];
-    namespace.functions.push(serializeFunction(function_, packagePath));
+    namespace.functions.push(serializeFunction(function_, urlResolver));
   }
 
   // TODO(usergenic): Consider moving framework-specific code to separate file.
@@ -116,7 +119,7 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
     namespace.metadata.polymer.behaviors =
         namespace.metadata.polymer.behaviors || [];
     namespace.metadata.polymer.behaviors.push(
-        serializePolymerBehaviorAsElementMixin(behavior, packagePath));
+        serializePolymerBehaviorAsElementMixin(behavior, urlResolver));
   }
 
 
@@ -124,7 +127,7 @@ function buildAnalysis(members: Members, packagePath: string): Analysis {
     const namespaceName = getNamespaceName(class_.name);
     const namespace = namespaces.get(namespaceName) || analysis;
     namespace.classes = namespace.classes || [];
-    namespace.classes.push(serializeClass(class_, packagePath));
+    namespace.classes.push(serializeClass(class_, urlResolver));
   }
 
   return analysis;
@@ -179,35 +182,24 @@ export function validateAnalysis(analyzedPackage: Analysis|null|undefined) {
 }
 
 function serializeNamespace(
-    namespace: ResolvedNamespace, packagePath: string): Namespace {
-  const packageRelativePath =
-      pathLib.relative(packagePath, namespace.sourceRange.file);
+    namespace: ResolvedNamespace, urlResolver: UrlResolver): Namespace {
   const metadata = {
     name: namespace.name,
     description: namespace.description,
     summary: namespace.summary,
-    sourceRange: {
-      file: packageRelativePath,
-      start: namespace.sourceRange.start,
-      end: namespace.sourceRange.end
-    }
+    sourceRange:
+        sourceRangeRelativeTo(namespace.sourceRange, undefined, urlResolver)
   };
   return metadata;
 }
 
 function serializeFunction(
-    fn: ResolvedFunction, packagePath: string): Function {
-  const packageRelativePath =
-      pathLib.relative(packagePath, fn.sourceRange.file);
+    fn: ResolvedFunction, urlResolver: UrlResolver): Function {
   const metadata: Function = {
     name: fn.name,
     description: fn.description,
     summary: fn.summary,
-    sourceRange: {
-      file: packageRelativePath,
-      start: fn.sourceRange.start,
-      end: fn.sourceRange.end
-    },
+    sourceRange: sourceRangeRelativeTo(fn.sourceRange, undefined, urlResolver),
     privacy: fn.privacy,
   };
   if (fn.params) {
@@ -219,29 +211,33 @@ function serializeFunction(
   return metadata;
 }
 
-function serializeClass(class_: ResolvedClass, packagePath: string): Class {
-  const path = class_.sourceRange!.file;
-  const packageRelativePath =
-      pathLib.relative(packagePath, class_.sourceRange!.file);
+function serializeClass(
+    class_: ResolvedClass, urlResolver: UrlResolver): Class {
+  let path: undefined|ResolvedUrl;
+  let relativeUrl;
+  if (class_.sourceRange) {
+    path = class_.sourceRange!.file;
+    relativeUrl = urlResolver.relative(class_.sourceRange.file);
+  }
 
   const properties = [...class_.properties.values()].map(
-      (p) => serializeProperty(class_, path, p));
-  const methods =
-      [...class_.methods.values()].map((m) => serializeMethod(class_, path, m));
+      (p) => serializeProperty(class_, path, urlResolver, p));
+  const methods = [...class_.methods.values()].map(
+      (m) => serializeMethod(class_, path, urlResolver, m));
   const staticMethods = [...class_.staticMethods.values()].map(
-      (m) => serializeMethod(class_, path, m));
+      (m) => serializeMethod(class_, path, urlResolver, m));
 
   const serialized: Class = {
     description: class_.description || '',
     summary: class_.summary || '',
-    path: packageRelativePath,
+    path: relativeUrl,
     properties: properties,
     methods: methods,
     staticMethods: staticMethods,
     demos: (class_.demos ||
             []).map(({path, desc}) => ({url: path, description: desc || ''})),
     metadata: class_.emitMetadata(),
-    sourceRange: resolveSourceRangePath(path, class_.sourceRange),
+    sourceRange: sourceRangeRelativeTo(class_.sourceRange, path, urlResolver),
     privacy: class_.privacy,
     superclass: class_.superClass ? class_.superClass.identifier : undefined,
   };
@@ -252,13 +248,16 @@ function serializeClass(class_: ResolvedClass, packagePath: string): Class {
 }
 
 function serializeElementLike(
-    elementOrMixin: ElementOrMixin, packagePath: string): ElementLike {
-  const class_ = serializeClass(elementOrMixin, packagePath) as ElementLike;
-  const path = elementOrMixin.sourceRange!.file;
+    elementOrMixin: ElementOrMixin, urlResolver: UrlResolver): ElementLike {
+  const class_ = serializeClass(elementOrMixin, urlResolver) as ElementLike;
+  let path: undefined|ResolvedUrl;
+  if (elementOrMixin.sourceRange) {
+    path = elementOrMixin.sourceRange.file;
+  }
 
   class_.attributes =
       Array.from(elementOrMixin.attributes.values())
-          .map((a) => serializeAttribute(elementOrMixin, path, a));
+          .map((a) => serializeAttribute(elementOrMixin, path, urlResolver, a));
   class_.events = Array.from(elementOrMixin.events.values())
                       .map((e) => serializeEvent(elementOrMixin, path, e));
 
@@ -268,7 +267,11 @@ function serializeElementLike(
       selectors: [],
     },
     slots: elementOrMixin.slots.map((s) => {
-      return {description: '', name: s.name, range: s.range};
+      return {
+        description: '',
+        name: s.name,
+        range: sourceRangeRelativeTo(s.range, path, urlResolver)
+      };
     }),
   });
 
@@ -276,9 +279,9 @@ function serializeElementLike(
 }
 
 function serializeElement(
-    element: ResolvedElement, packagePath: string): Element {
+    element: ResolvedElement, urlResolver: UrlResolver): Element {
   const metadata: Element =
-      serializeElementLike(element, packagePath) as Element;
+      serializeElementLike(element, urlResolver) as Element;
   metadata.tagname = element.tagName;
 
   // TODO(justinfagnani): Mixins should be able to have mixins too
@@ -293,8 +296,8 @@ function serializeElement(
 }
 
 function serializeElementMixin(
-    mixin: ResolvedMixin, packagePath: string): ElementMixin {
-  const metadata = serializeElementLike(mixin, packagePath) as ElementMixin;
+    mixin: ResolvedMixin, urlResolver: UrlResolver): ElementMixin {
+  const metadata = serializeElementLike(mixin, urlResolver) as ElementMixin;
   metadata.name = mixin.name;
   metadata.privacy = mixin.privacy;
   if (mixin.mixins.length > 0) {
@@ -304,8 +307,8 @@ function serializeElementMixin(
 }
 
 function serializePolymerBehaviorAsElementMixin(
-    behavior: ResolvedPolymerBehavior, packagePath: string): ElementMixin {
-  const metadata = serializeElementLike(behavior, packagePath) as ElementMixin;
+    behavior: ResolvedPolymerBehavior, urlResolver: UrlResolver): ElementMixin {
+  const metadata = serializeElementLike(behavior, urlResolver) as ElementMixin;
   metadata.name = behavior.className;
   metadata.privacy = behavior.privacy;
   if (behavior.mixins.length > 0) {
@@ -316,15 +319,16 @@ function serializePolymerBehaviorAsElementMixin(
 
 function serializeProperty(
     class_: ResolvedClass,
-    elementPath: string,
+    elementPath: ResolvedUrl|undefined,
+    urlResolver: UrlResolver,
     resolvedProperty: ResolvedProperty): Property {
   const property: Property = {
     name: resolvedProperty.name,
     type: resolvedProperty.type || '?',
     description: resolvedProperty.description || '',
     privacy: resolvedProperty.privacy,
-    sourceRange:
-        resolveSourceRangePath(elementPath, resolvedProperty.sourceRange),
+    sourceRange: sourceRangeRelativeTo(
+        resolvedProperty.sourceRange, elementPath, urlResolver),
     metadata: class_.emitPropertyMetadata(resolvedProperty),
   };
   if (resolvedProperty.default) {
@@ -338,13 +342,14 @@ function serializeProperty(
 
 function serializeAttribute(
     resolvedElement: ElementOrMixin,
-    elementPath: string,
+    elementPath: ResolvedUrl|undefined,
+    urlResolver: UrlResolver,
     resolvedAttribute: ResolvedAttribute): Attribute {
   const attribute: Attribute = {
     name: resolvedAttribute.name,
     description: resolvedAttribute.description || '',
-    sourceRange:
-        resolveSourceRangePath(elementPath, resolvedAttribute.sourceRange),
+    sourceRange: sourceRangeRelativeTo(
+        resolvedAttribute.sourceRange, elementPath, urlResolver),
     metadata: resolvedElement.emitAttributeMetadata(resolvedAttribute),
   };
   if (resolvedAttribute.type) {
@@ -357,14 +362,16 @@ function serializeAttribute(
 }
 
 function serializeMethod(
-    class_: ResolvedClass, elementPath: string, resolvedMethod: ResolvedMethod):
-    Method {
+    class_: ResolvedClass,
+    elementPath: ResolvedUrl|undefined,
+    urlResolver: UrlResolver,
+    resolvedMethod: ResolvedMethod): Method {
   const method: Method = {
     name: resolvedMethod.name,
     description: resolvedMethod.description || '',
     privacy: resolvedMethod.privacy,
-    sourceRange:
-        resolveSourceRangePath(elementPath, resolvedMethod.sourceRange),
+    sourceRange: sourceRangeRelativeTo(
+        resolvedMethod.sourceRange, elementPath, urlResolver),
     metadata: class_.emitMethodMetadata(resolvedMethod),
   };
   if (resolvedMethod.params) {
@@ -381,7 +388,7 @@ function serializeMethod(
 
 function serializeEvent(
     resolvedElement: ElementOrMixin,
-    _elementPath: string,
+    _elementPath: ResolvedUrl|undefined,
     resolvedEvent: ResolvedEvent): Event {
   const event: Event = {
     type: 'CustomEvent',
@@ -395,23 +402,23 @@ function serializeEvent(
   return event;
 }
 
-function resolveSourceRangePath(
-    elementPath: string,
-    sourceRange?: ResolvedSourceRange): (SourceRange|undefined) {
-  if (!sourceRange) {
+function sourceRangeRelativeTo(
+    sourceRange: ResolvedSourceRange|undefined,
+    from: ResolvedUrl|undefined,
+    urlResolver: UrlResolver): (SourceRange|undefined) {
+  if (sourceRange === undefined) {
     return;
   }
-  if (!sourceRange.file) {
-    return sourceRange;
-  }
-  if (elementPath === sourceRange.file) {
+  if (from === sourceRange.file) {
     return {start: sourceRange.start, end: sourceRange.end};
   }
-  // The source location's path is relative to file resolver's base, so first
-  // we need to make it relative to the element.
-  const filePath =
-      pathLib.relative(pathLib.dirname(elementPath), sourceRange.file);
-  return {file: filePath, start: sourceRange.start, end: sourceRange.end};
+  let file;
+  if (from === undefined) {
+    file = urlResolver.relative(sourceRange.file);
+  } else {
+    file = urlResolver.relative(from, sourceRange.file);
+  }
+  return {file, start: sourceRange.start, end: sourceRange.end};
 }
 
 // TODO(rictic): figure out why type inference goes wrong with more general

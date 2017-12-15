@@ -17,6 +17,7 @@ import * as shadyCss from 'shady-css-parser';
 import {InlineDocInfo} from '../model/model';
 import {ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
+import {UrlResolver} from '../url-loader/url-resolver';
 
 import {ParsedCssDocument} from './css-document';
 
@@ -27,8 +28,9 @@ export class CssParser implements Parser<ParsedCssDocument> {
     this._parser = new shadyCss.Parser();
   }
 
-  parse(contents: string, url: ResolvedUrl, inlineInfo?: InlineDocInfo<any>):
-      ParsedCssDocument {
+  parse(
+      contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
+      inlineInfo?: InlineDocInfo<any>): ParsedCssDocument {
     const ast = this._parser.parse(contents);
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};

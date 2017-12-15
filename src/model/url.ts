@@ -26,6 +26,8 @@
  * This is mostly used to type urls extracted from import statements taken
  * directly out of documents. For example, in `import * as foo from "./foo.js"`
  * `./foo.js` is relative to the containing document.
+ *
+ * Use UrlResolver#resolve to transform a FileRelativeUrl to a ResolvedUrl.
  */
 export type FileRelativeUrl = string&FileRelativeUrlBrand;
 
@@ -33,9 +35,6 @@ export type FileRelativeUrl = string&FileRelativeUrlBrand;
  * A URL that is either absolute, or relative to the base of the package.
  *
  * This is the assumed format of user input to Analyzer methods.
- *
- * Use ScannedImport.resolveUrl to transform a FileRelativeUrl to a
- * PackageRelativeUrl.
  */
 export type PackageRelativeUrl = string&PackageRelativeUrlBrand;
 

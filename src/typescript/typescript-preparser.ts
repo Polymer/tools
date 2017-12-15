@@ -17,6 +17,7 @@ import * as ts from 'typescript';
 import {correctSourceRange, InlineDocInfo, Severity, Warning, WarningCarryingException} from '../model/model';
 import {ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
+import {UrlResolver} from '../url-loader/url-resolver';
 
 import {ParsedTypeScriptDocument} from './typescript-document';
 
@@ -34,8 +35,9 @@ import {ParsedTypeScriptDocument} from './typescript-document';
  * function, it could be that a full parse is needed anyway.
  */
 export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
-  parse(contents: string, url: ResolvedUrl, inlineInfo?: InlineDocInfo<any>):
-      ParsedTypeScriptDocument {
+  parse(
+      contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
+      inlineInfo?: InlineDocInfo<any>): ParsedTypeScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     const sourceFile =

@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+import {resolve as urlLibResolver} from 'url';
+import {FileRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
 
 import {UrlResolver} from './url-resolver';
 
@@ -20,15 +21,36 @@ import {UrlResolver} from './url-resolver';
  * Resolves a URL having one prefix to another URL with a different prefix.
  */
 export class RedirectResolver extends UrlResolver {
-  constructor(private _redirectFrom: string, private _redirectTo: string) {
+  constructor(
+      private readonly packageUrl: ResolvedUrl,
+      private readonly _redirectFrom: string,
+      private readonly _redirectTo: string) {
     super();
   }
 
-  resolve(url: PackageRelativeUrl): ResolvedUrl|undefined {
-    if (!url.startsWith(this._redirectFrom)) {
+  resolve(
+      fileRelativeUrl: FileRelativeUrl, baseUrl: ResolvedUrl = this.packageUrl,
+      _import?: ScannedImport): ResolvedUrl|undefined {
+    const packageRelativeUrl =
+        this.brandAsResolved(urlLibResolver(baseUrl, fileRelativeUrl));
+    if (packageRelativeUrl === undefined ||
+        !packageRelativeUrl.startsWith(this._redirectFrom)) {
       return undefined;
     }
     return this.brandAsResolved(
-        this._redirectTo + url.slice(this._redirectFrom.length));
+        this._redirectTo + packageRelativeUrl.slice(this._redirectFrom.length));
+  }
+
+  relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
+      FileRelativeUrl {
+    let from, to;
+    if (maybeTo !== undefined) {
+      from = fromOrTo;
+      to = maybeTo;
+    } else {
+      from = this.packageUrl;
+      to = fromOrTo;
+    }
+    return this.simpleUrlRelative(from, to);
   }
 }

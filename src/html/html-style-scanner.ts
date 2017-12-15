@@ -47,7 +47,7 @@ export class HtmlStyleScanner implements HtmlScanner {
           const href = dom5.getAttribute(node, 'href')! as FileRelativeUrl;
           features.push(new ScannedImport(
               'html-style',
-              ScannedImport.resolveUrl(document.baseUrl, href),
+              href,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'href')!,
               node,

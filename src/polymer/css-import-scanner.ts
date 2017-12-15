@@ -39,7 +39,7 @@ export class CssImportScanner implements HtmlScanner {
         const href = dom5.getAttribute(node, 'href')! as FileRelativeUrl;
         imports.push(new ScannedImport(
             'css-import',
-            ScannedImport.resolveUrl(document.baseUrl, href),
+            href,
             document.sourceRangeForNode(node)!,
             document.sourceRangeForAttributeValue(node, 'href')!,
             node,

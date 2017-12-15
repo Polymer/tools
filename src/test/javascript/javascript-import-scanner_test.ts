@@ -29,7 +29,7 @@ suite('JavaScriptImportScanner', () => {
     assert.containSubset(features, [
       {
         type: 'js-import',
-        url: 'javascript/submodule.js',
+        url: './submodule.js',
         lazy: false,
       },
     ]);
@@ -44,7 +44,7 @@ suite('JavaScriptImportScanner', () => {
     assert.containSubset(features, [
       {
         type: 'js-import',
-        url: 'javascript/submodule.js',
+        url: './submodule.js',
         lazy: true,
       },
     ]);

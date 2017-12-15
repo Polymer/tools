@@ -52,10 +52,17 @@ suite('CssImportScanner', () => {
           </dom-module>
         </body>
         </html>`;
-    const {features} = await runScannerOnContents(
+    const {features, analyzer, urlLoader} = await runScannerOnContents(
         new CssImportScanner(), 'test.html', contents);
     assert.deepEqual(
         features.map((f: ScannedImport) => [f.type, f.url]),
-        [['css-import', '/aybabtu/polymer.css']]);
+        [['css-import', 'polymer.css']]);
+
+    urlLoader.urlContentsMap.set(
+        analyzer.resolveUrl('aybabtu/polymer.css')!, '');
+    const [import_] =
+        (await analyzer.analyze(['test.html'])).getFeatures({kind: 'import'});
+    assert.equal(import_.originalUrl, 'polymer.css');
+    assert.equal(import_.url, analyzer.resolveUrl('aybabtu/polymer.css'));
   });
 });

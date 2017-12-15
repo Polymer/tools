@@ -14,21 +14,27 @@
 
 import {assert} from 'chai';
 
-import {PackageRelativeUrl, ResolvedUrl} from '../../model/url';
+import {FileRelativeUrl} from '../../model/url';
 import {MultiUrlResolver} from '../../url-loader/multi-url-resolver';
 import {UrlResolver} from '../../url-loader/url-resolver';
+import {fileRelativeUrl, resolvedUrl} from '../test-utils';
 
 class MockResolver extends UrlResolver {
+  packageUrl = resolvedUrl``;
   resolveCount: number = 0;
   constructor(private _resolution: string|null) {
     super();
   }
-  resolve(): ResolvedUrl|undefined {
+  resolve() {
     this.resolveCount++;
     if (this._resolution == null) {
       return undefined;
     }
-    return this._resolution as ResolvedUrl;
+    return this.brandAsResolved(this._resolution);
+  }
+
+  relative(): FileRelativeUrl {
+    throw new Error('Not supported');
   }
 }
 
@@ -46,8 +52,8 @@ suite('MultiUrlResolver', function() {
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve('test.html' as PackageRelativeUrl),
-          'resolved.html' as ResolvedUrl);
+          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolvedUrl`resolved.html`);
       // Verify only the first resolver is called
       assert.equal(resolvers[0].resolveCount, 1);
       assert.equal(resolvers[1].resolveCount, 0);
@@ -58,8 +64,8 @@ suite('MultiUrlResolver', function() {
       const resolvers = mockResolverArray([null, null, 'resolved.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve('test.html' as PackageRelativeUrl),
-          'resolved.html' as ResolvedUrl);
+          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolvedUrl`resolved.html`);
       // Verify all resolvers are called
       assert.equal(resolvers[0].resolveCount, 1);
       assert.equal(resolvers[1].resolveCount, 1);
@@ -71,8 +77,8 @@ suite('MultiUrlResolver', function() {
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve('test.html' as PackageRelativeUrl),
-          'resolved.html' as ResolvedUrl);
+          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolvedUrl`resolved.html`);
       // Verify only the first resolver is called
       assert.equal(resolvers[0].resolveCount, 1);
       assert.equal(resolvers[1].resolveCount, 0);
@@ -83,7 +89,8 @@ suite('MultiUrlResolver', function() {
       const resolvers = mockResolverArray([null, null, null]);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve('test.html' as PackageRelativeUrl), undefined);
+          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          undefined);
       // Verify only the first resolver is called
       assert.equal(resolvers[0].resolveCount, 1);
       assert.equal(resolvers[1].resolveCount, 1);

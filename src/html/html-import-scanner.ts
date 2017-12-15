@@ -66,7 +66,7 @@ export class HtmlImportScanner implements HtmlScanner {
       const href = dom5.getAttribute(node, 'href')! as FileRelativeUrl;
       imports.push(new ScannedImport(
           type,
-          ScannedImport.resolveUrl(document.baseUrl, href),
+          href,
           document.sourceRangeForNode(node)!,
           document.sourceRangeForAttributeValue(node, 'href')!,
           node,
@@ -76,8 +76,8 @@ export class HtmlImportScanner implements HtmlScanner {
       const edges = this._lazyEdges.get(document.url);
       if (edges) {
         for (const edge of edges) {
-          imports.push(
-              new ScannedImport(type, edge, undefined, undefined, null, true));
+          imports.push(new ScannedImport(
+              type, edge as any, undefined, undefined, null, true));
         }
       }
     }

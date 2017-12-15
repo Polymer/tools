@@ -185,7 +185,8 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
    * resolved URL.
    */
   private _failSafeResolveUrl(url: string): ResolvedUrl {
-    const resolved = this.context.resolveUrl(url as PackageRelativeUrl);
+    const resolved =
+        this.context.resolveUserInputUrl(url as PackageRelativeUrl);
     return resolved === undefined ? url as any as ResolvedUrl : resolved;
   }
 }

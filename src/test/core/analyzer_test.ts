@@ -31,7 +31,7 @@ import {Document, Import, ScannedImport, ScannedInlineDocument, Severity} from '
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {CodeUnderliner, invertPromise} from '../test-utils';
+import {CodeUnderliner, invertPromise, resolvedUrl} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
@@ -72,14 +72,12 @@ suite('Analyzer', () => {
   });
 
   test('canLoad delegates to the urlLoader canLoad method', () => {
-    assert.isTrue(analyzer.canLoad('/' as ResolvedUrl), '/');
-    assert.isTrue(analyzer.canLoad('/path' as ResolvedUrl), '/path');
-    assert.isFalse(analyzer.canLoad('../path' as ResolvedUrl), '../path');
+    assert.isTrue(analyzer.canLoad(resolvedUrl`/`), '/');
+    assert.isTrue(analyzer.canLoad(resolvedUrl`/path`), '/path');
+    assert.isFalse(analyzer.canLoad(resolvedUrl`../path`), '../path');
+    assert.isFalse(analyzer.canLoad(resolvedUrl`http://host/`), 'http://host/');
     assert.isFalse(
-        analyzer.canLoad('http://host/' as ResolvedUrl), 'http://host/');
-    assert.isFalse(
-        analyzer.canLoad('http://host/path' as ResolvedUrl),
-        'http://host/path');
+        analyzer.canLoad(resolvedUrl`http://host/path`), 'http://host/path');
   });
 
   suite('analyze()', () => {
@@ -548,8 +546,8 @@ suite('Analyzer', () => {
           <script src="foo.js"></script>
           <link rel="stylesheet" href="foo.css"></link>
         </head></html>`;
-      const document =
-          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
+      const document = new HtmlParser().parse(
+          contents, resolvedUrl`test.html`, new PackageUrlResolver());
       const context = await getContext(analyzer);
       const features =
           ((await context['_getScannedFeatures'](document)).features as
@@ -571,8 +569,8 @@ suite('Analyzer', () => {
             <link rel="import" type="css" href="bar.css">
           </dom-module>
         </body></html>`;
-      const document =
-          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
+      const document = new HtmlParser().parse(
+          contents, resolvedUrl`test.html`, new PackageUrlResolver());
       const context = await getContext(analyzer);
       const features =
           (await context['_getScannedFeatures'](document))
@@ -589,8 +587,8 @@ suite('Analyzer', () => {
           <style>body { color: red; }</style>
         </head></html>`;
       const context = await getContext(analyzer);
-      const document =
-          new HtmlParser().parse(contents, 'test.html' as ResolvedUrl);
+      const document = new HtmlParser().parse(
+          contents, resolvedUrl`test.html`, new PackageUrlResolver());
       const features =
           ((await context['_getScannedFeatures'](document)).features) as
           ScannedInlineDocument[];

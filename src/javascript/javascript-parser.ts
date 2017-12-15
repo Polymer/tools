@@ -18,6 +18,7 @@ import * as babylon from 'babylon';
 import {correctSourceRange, InlineDocInfo, LocationOffset, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
 import {ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
+import {UrlResolver} from '../url-loader/url-resolver';
 
 import {JavaScriptDocument} from './javascript-document';
 
@@ -46,8 +47,9 @@ export const baseParseOptions: babylon.BabylonOptions = {
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
   sourceType: SourceType;
 
-  parse(contents: string, url: ResolvedUrl, inlineInfo?: InlineDocInfo<any>):
-      JavaScriptDocument {
+  parse(
+      contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
+      inlineInfo?: InlineDocInfo<any>): JavaScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     const result = parseJs(

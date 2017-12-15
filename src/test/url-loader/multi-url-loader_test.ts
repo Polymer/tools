@@ -14,10 +14,9 @@
 
 import {assert} from 'chai';
 
-import {ResolvedUrl} from '../../model/url';
 import {MultiUrlLoader} from '../../url-loader/multi-url-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {invertPromise} from '../test-utils';
+import {invertPromise, resolvedUrl} from '../test-utils';
 
 class MockLoader implements UrlLoader {
   canLoadCount: number;
@@ -53,7 +52,7 @@ suite('MultiUrlLoader', () => {
     test('canLoad is true if the first loader is true', () => {
       const loaders = mockLoaderArray(['loader 1', null, null]);
       const loader = new MultiUrlLoader(loaders);
-      assert.isTrue(loader.canLoad('test.html' as ResolvedUrl));
+      assert.isTrue(loader.canLoad(resolvedUrl`test.html`));
       // Verify only the first loader is called
       assert.equal(loaders[0].canLoadCount, 1);
       assert.equal(loaders[1].canLoadCount, 0);
@@ -63,7 +62,7 @@ suite('MultiUrlLoader', () => {
     test('canLoad is true if the last loader is true', () => {
       const loaders = mockLoaderArray([null, null, 'loader 3']);
       const loader = new MultiUrlLoader(loaders);
-      assert.isTrue(loader.canLoad('test.html' as ResolvedUrl));
+      assert.isTrue(loader.canLoad(resolvedUrl`test.html`));
       // Verify all loaders are called
       assert.equal(loaders[0].canLoadCount, 1);
       assert.equal(loaders[1].canLoadCount, 1);
@@ -73,7 +72,7 @@ suite('MultiUrlLoader', () => {
     test('canLoad is true if all loaders are true', () => {
       const loaders = mockLoaderArray(['loader 1', 'loader 2', 'loader 3']);
       const loader = new MultiUrlLoader(loaders);
-      assert.isTrue(loader.canLoad('test.html' as ResolvedUrl));
+      assert.isTrue(loader.canLoad(resolvedUrl`test.html`));
       // Verify only the first loader is called
       assert.equal(loaders[0].canLoadCount, 1);
       assert.equal(loaders[1].canLoadCount, 0);
@@ -83,7 +82,7 @@ suite('MultiUrlLoader', () => {
     test('canLoad is false if all loaders are false', () => {
       const loaders = mockLoaderArray([null, null, null]);
       const loader = new MultiUrlLoader(loaders);
-      assert.isFalse(loader.canLoad('test.html' as ResolvedUrl));
+      assert.isFalse(loader.canLoad(resolvedUrl`test.html`));
       // Verify only the first loader is called
       assert.equal(loaders[0].canLoadCount, 1);
       assert.equal(loaders[1].canLoadCount, 1);
@@ -95,7 +94,7 @@ suite('MultiUrlLoader', () => {
     test('returns only the first loaded file', async () => {
       const loaders = mockLoaderArray(['loader 1', 'loader 2', 'loader 3']);
       const loader = new MultiUrlLoader(loaders);
-      assert.equal(await loader.load('test.html' as ResolvedUrl), 'loader 1');
+      assert.equal(await loader.load(resolvedUrl`test.html`), 'loader 1');
       // Verify only the first loader is called
       assert.equal(loaders[0].canLoadCount, 1);
       assert.equal(loaders[1].canLoadCount, 0);
@@ -105,7 +104,7 @@ suite('MultiUrlLoader', () => {
     test('returns the file from first loader that can load', async () => {
       const loaders = mockLoaderArray([null, null, 'loader 3']);
       const loader = new MultiUrlLoader(loaders);
-      assert.equal(await loader.load('test.html' as ResolvedUrl), 'loader 3');
+      assert.equal(await loader.load(resolvedUrl`test.html`), 'loader 3');
       // Verify only the last load is called
       assert.equal(loaders[0].loadCount, 0);
       assert.equal(loaders[1].loadCount, 0);
@@ -115,8 +114,7 @@ suite('MultiUrlLoader', () => {
     test('throws an error if no loader can be found to load', async () => {
       const loaders = mockLoaderArray([null, null, null]);
       const loader = new MultiUrlLoader(loaders);
-      const error =
-          await invertPromise(loader.load('test.html' as ResolvedUrl));
+      const error = await invertPromise(loader.load(resolvedUrl`test.html`));
       assert.instanceOf(error, Error);
       assert.include(error.message, 'Unable to load test.html');
       // Verify load is not called on any loader

@@ -45,7 +45,7 @@ suite('TypeScriptImportScanner', () => {
     const {features} =
         await runScanner(analyzer, new TypeScriptImportScanner(), 'test.ts');
     assert.deepEqual(features.map((f: ScannedImport) => [f.type, f.url]), [
-      ['js-import', 'x.ts'],
+      ['js-import', './x.ts'],
       ['js-import', '/y.ts'],
       ['js-import', '../z.ts'],
     ]);

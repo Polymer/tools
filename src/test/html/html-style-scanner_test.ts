@@ -46,10 +46,8 @@ suite('HtmlStyleScanner', () => {
 
     const {features} = await runScannerOnContents(
         new HtmlStyleScanner(), 'test-document.html', contents);
-    assert.equal(features.length, 1);
-    assert.instanceOf(features[0], ScannedImport);
-    const feature0 = <ScannedImport>features[0];
-    assert.equal(feature0.type, 'html-style');
-    assert.equal(feature0.url, '/aybabtu/foo.css');
+    assert.deepEqual(
+        features.map((f: ScannedImport) => [f.type, f.url]),
+        [['html-style', 'foo.css']]);
   });
 });

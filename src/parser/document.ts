@@ -48,7 +48,7 @@ export abstract class ParsedDocument<AstNode = any, Visitor = any> {
 
   constructor(from: Options<AstNode>) {
     this.url = from.url;
-    this.baseUrl = from.baseUrl || this.url;
+    this.baseUrl = from.baseUrl === undefined ? this.url : from.baseUrl;
     this.contents = from.contents;
     this.ast = from.ast;
     this._locationOffset = from.locationOffset;

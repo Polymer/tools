@@ -41,15 +41,14 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
           // TODO(usergenic): push a warning
           return;
         }
-        const source = arg.value as string;
+        const source = arg.value as FileRelativeUrl;
         if (!isPathImport(source)) {
           // TODO(usergenic): push a warning
           return;
         }
         imports.push(new ScannedImport(
             'js-import',
-            ScannedImport.resolveUrl(
-                document.baseUrl, source as FileRelativeUrl),
+            source,
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.callee)!,
             node,
@@ -64,7 +63,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
         }
         imports.push(new ScannedImport(
             'js-import',
-            ScannedImport.resolveUrl(document.baseUrl, source),
+            source,
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             node,

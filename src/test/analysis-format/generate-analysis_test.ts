@@ -51,7 +51,8 @@ suite('generate-analysis', () => {
 
         testDefiner(testName, async () => {
           // Test body here:
-          const documents = await analyzeDir(analysisFixtureDir);
+          const {analysis: documents, analyzer} =
+              await analyzeDir(analysisFixtureDir);
 
           const packages = new Set<string>(mapI(
               filterI(
@@ -64,11 +65,8 @@ suite('generate-analysis', () => {
           }
           for (const packagePath of packages) {
             const pathToGolden = path.join(packagePath || '', 'analysis.json');
-            const renormedPackagePath = packagePath ?
-                packagePath.substring(analysisFixtureDir.length + 1) :
-                packagePath;
             const analysisWithUndefineds =
-                generateAnalysis(documents, renormedPackagePath);
+                generateAnalysis(documents, analyzer.urlResolver);
             validateAnalysis(analysisWithUndefineds);
             const analysis = JSON.parse(JSON.stringify(analysisWithUndefineds));
 
@@ -98,7 +96,7 @@ suite('generate-analysis', () => {
         const basedir = path.resolve(fixturesDir, 'analysis/bower_packages');
         const analyzer = Analyzer.createForDirectory(basedir);
         const _package = await analyzer.analyzePackage();
-        const metadata = generateAnalysis(_package, '');
+        const metadata = generateAnalysis(_package, analyzer.urlResolver);
         // The fixture only contains external elements
         assert.isUndefined(metadata.elements);
       });
@@ -107,10 +105,11 @@ suite('generate-analysis', () => {
         const basedir = path.resolve(fixturesDir, 'analysis/simple');
         const analyzer = Analyzer.createForDirectory(basedir);
         const _package = await analyzer.analyzePackage();
-        const metadata = generateAnalysis(_package, '');
+        const metadata = generateAnalysis(_package, analyzer.urlResolver);
         assert.equal(metadata.elements && metadata.elements.length, 1);
         assert.equal(metadata.elements![0].tagname, 'simple-element');
-        assert.equal(metadata.elements![0].path, fileRelativeUrl`simple-element.html`);
+        assert.equal(
+            metadata.elements![0].path, fileRelativeUrl`simple-element.html`);
       });
     });
   });
@@ -194,5 +193,6 @@ async function analyzeDir(baseDir: string) {
       allFilenames.filter((f) => f.endsWith('.html') || f.endsWith('.js'));
   const filePaths =
       htmlOrJsFilenames.map((filename) => path.relative(baseDir, filename));
-  return analyzer.analyze(filePaths);
+  const analysis = await analyzer.analyze(filePaths);
+  return {analysis, analyzer};
 }

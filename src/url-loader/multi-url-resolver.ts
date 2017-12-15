@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+import {FileRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
 
 import {UrlResolver} from './url-resolver';
 
@@ -24,13 +24,23 @@ export class MultiUrlResolver extends UrlResolver {
     super();
   }
 
-  resolve(url: PackageRelativeUrl): ResolvedUrl|undefined {
+  resolve(url: FileRelativeUrl, baseUrl: ResolvedUrl, import_?: ScannedImport):
+      ResolvedUrl|undefined {
     for (const resolver of this._resolvers) {
-      const resolved = resolver.resolve(url);
+      const resolved = resolver.resolve(url, baseUrl, import_);
       if (resolved !== undefined) {
         return resolved;
       }
     }
     return undefined;
+  }
+
+  relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, kind?: string):
+      FileRelativeUrl {
+    for (const resolver of this._resolvers) {
+      return resolver.relative(fromOrTo, maybeTo, kind);
+    }
+    throw new Error(
+        `Could not get relative url, with no configured url resolvers`);
   }
 }

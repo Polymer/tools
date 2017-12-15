@@ -13,6 +13,7 @@
  */
 
 import {Document, Import, ScannedImport, Severity, Warning} from '../model/model';
+import {FileRelativeUrl} from '../model/url';
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
@@ -32,7 +33,8 @@ export class ScriptTagBackReferenceImport extends Import {
 
 export class ScannedScriptTagImport extends ScannedImport {
   resolve(document: Document): ScriptTagImport|undefined {
-    const resolvedUrl = document._analysisContext.resolver.resolve(this.url);
+    const resolvedUrl = document._analysisContext.resolver.resolve(
+        this.url, document.parsedDocument.baseUrl, this);
     if (resolvedUrl === undefined) {
       return;
     }
@@ -65,6 +67,7 @@ export class ScannedScriptTagImport extends ScannedImport {
       // to the JavaScript document.
       const backReference = new ScriptTagBackReferenceImport(
           document.url,
+          'fake url' as FileRelativeUrl,
           'html-script-back-reference',
           document,
           this.sourceRange,
@@ -77,6 +80,7 @@ export class ScannedScriptTagImport extends ScannedImport {
 
       return new ScriptTagImport(
           resolvedUrl,
+          this.url,
           this.type,
           importedDocument,
           this.sourceRange,

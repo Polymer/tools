@@ -14,10 +14,9 @@
 
 import {assert} from 'chai';
 
-import {ResolvedUrl} from '../../model/url';
 import {PrefixedUrlLoader} from '../../url-loader/prefixed-url-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {invertPromise} from '../test-utils';
+import {invertPromise, resolvedUrl} from '../test-utils';
 
 class MockLoader implements UrlLoader {
   canLoadUrls: string[];
@@ -50,7 +49,7 @@ suite('PrefixedUrlLoader', () => {
     test('canLoad is true if the url starts with prefix', () => {
       const delegate = new MockLoader('stuff');
       const loader = new PrefixedUrlLoader('path/to/stuff/', delegate);
-      assert.isTrue(loader.canLoad('path/to/stuff/file.html' as ResolvedUrl));
+      assert.isTrue(loader.canLoad(resolvedUrl`path/to/stuff/file.html`));
       // Delegate receives an unprefixed url to check.
       assert.deepEqual(delegate.canLoadUrls, ['file.html']);
     });
@@ -58,7 +57,7 @@ suite('PrefixedUrlLoader', () => {
     test('canLoad is false if the url does not start with prefix', () => {
       const delegate = new MockLoader('stuff');
       const loader = new PrefixedUrlLoader('path/to/stuff/', delegate);
-      assert.isFalse(loader.canLoad('path/to/other/file.html' as ResolvedUrl));
+      assert.isFalse(loader.canLoad(resolvedUrl`path/to/other/file.html`));
       // Delegate is not consulted.
       assert.deepEqual(delegate.canLoadUrls, []);
     });
@@ -66,7 +65,7 @@ suite('PrefixedUrlLoader', () => {
     test('canLoad is false if the delgate loader says it is', () => {
       const delegate = new MockLoader(null);
       const loader = new PrefixedUrlLoader('path/to/stuff/', delegate);
-      assert.isFalse(loader.canLoad('path/to/stuff/file.html' as ResolvedUrl));
+      assert.isFalse(loader.canLoad(resolvedUrl`path/to/stuff/file.html`));
       // Delegate receives an unprefixed url to check.
       assert.deepEqual(delegate.canLoadUrls, ['file.html']);
     });
@@ -77,7 +76,7 @@ suite('PrefixedUrlLoader', () => {
       const delegate = new MockLoader('stuff');
       const loader = new PrefixedUrlLoader('path/to/stuff/', delegate);
       assert.deepEqual(
-          await loader.load('path/to/stuff/file.html' as ResolvedUrl), 'stuff');
+          await loader.load(resolvedUrl`path/to/stuff/file.html`), 'stuff');
       // Delegate receives an unprefixed url to load.
       assert.deepEqual(delegate.loadUrls, ['file.html']);
     });
@@ -86,7 +85,7 @@ suite('PrefixedUrlLoader', () => {
       const delegate = new MockLoader('stuff');
       const loader = new PrefixedUrlLoader('path/to/stuff/', delegate);
       const error = await invertPromise(
-          loader.load('path/to/other/file.html' as ResolvedUrl));
+          loader.load(resolvedUrl`path/to/other/file.html`));
       assert.instanceOf(error, Error);
       assert.deepEqual(
           error.message,
@@ -100,7 +99,7 @@ suite('PrefixedUrlLoader', () => {
           const delegate = new MockLoader(null);
           const loader = new PrefixedUrlLoader('path/to/stuff/', delegate);
           const error = await invertPromise(
-              loader.load('path/to/stuff/file.html' as ResolvedUrl));
+              loader.load(resolvedUrl`path/to/stuff/file.html`));
           assert.instanceOf(error, Error);
           assert.deepEqual(
               error.message,

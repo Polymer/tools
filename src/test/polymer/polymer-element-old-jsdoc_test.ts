@@ -21,18 +21,15 @@ import {ClassScanner} from '../../javascript/class-scanner';
 import {Document} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
 suite('PolymerElement with old jsdoc annotations', () => {
   const testFilesDir = path.resolve(__dirname, '../static/polymer2-old-jsdoc/');
   const urlLoader = new FSUrlLoader(testFilesDir);
   const analyzer = new Analyzer({
     urlLoader: urlLoader,
-    scanners: new Map([[
-      'js',
-      [
-        new ClassScanner(),
-      ]
-    ]])
+    urlResolver: new PackageUrlResolver({}),
+    scanners: new Map([['js', [new ClassScanner()]]])
   });
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {

@@ -13,10 +13,11 @@
  */
 
 import {posix as pathlib} from 'path';
-import {Url} from 'url';
+import {resolve as urlLibResolver, Url} from 'url';
 
 import {parseUrl} from '../core/utils';
-import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+import {FileRelativeUrl, ScannedImport} from '../index';
+import {ResolvedUrl} from '../model/url';
 
 import {UrlResolver} from './url-resolver';
 
@@ -29,6 +30,7 @@ export interface PackageUrlResolverOptions {
  * Resolves a URL to a canonical URL within a package.
  */
 export class PackageUrlResolver extends UrlResolver {
+  private packageUrl = `` as ResolvedUrl;
   componentDir: string;
   hostname: string|null;
 
@@ -44,14 +46,22 @@ export class PackageUrlResolver extends UrlResolver {
         !pathname.startsWith('../../');
   }
 
-  resolve(url: PackageRelativeUrl): ResolvedUrl|undefined {
-    const urlObject = parseUrl(url);
+  resolve(
+      url: FileRelativeUrl, baseUrl: ResolvedUrl = this.packageUrl,
+      _import?: ScannedImport): ResolvedUrl|undefined {
+    const packageRelativeUrl =
+        this.brandAsResolved(urlLibResolver(baseUrl, url));
+    if (packageRelativeUrl === undefined) {
+      return undefined;
+    }
+    const urlObject = parseUrl(packageRelativeUrl);
     let pathname;
     try {
       pathname = pathlib.normalize(decodeURI(urlObject.pathname || ''));
     } catch (e) {
       return undefined;  // undecodable url
     }
+
     if (!this._isValid(urlObject, pathname)) {
       return undefined;
     }
@@ -69,5 +79,18 @@ export class PackageUrlResolver extends UrlResolver {
 
     // Re-encode URI, since it is expected we are emitting a relative URL.
     return this.brandAsResolved(encodeURI(pathname));
+  }
+
+  relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
+      FileRelativeUrl {
+    let from, to;
+    if (maybeTo !== undefined) {
+      from = fromOrTo;
+      to = maybeTo;
+    } else {
+      from = this.packageUrl;
+      to = fromOrTo;
+    }
+    return this.simpleUrlRelative(from, to);
   }
 }

@@ -12,7 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
+import {posix} from 'path';
+
+import {ScannedImport} from '../index';
+import {FileRelativeUrl, ResolvedUrl} from '../model/url';
 
 /**
  * Resolves the given URL to the concrete URL that a resource can
@@ -28,7 +31,29 @@ export abstract class UrlResolver {
    *
    * Returns `undefined` if the given url cannot be resolved.
    */
-  abstract resolve(url: PackageRelativeUrl): ResolvedUrl|undefined;
+  abstract resolve(
+      url: FileRelativeUrl, baseUrl?: ResolvedUrl,
+      scannedImport?: ScannedImport): ResolvedUrl|undefined;
+
+  abstract relative(to: ResolvedUrl): FileRelativeUrl;
+  abstract relative(from: ResolvedUrl, to?: ResolvedUrl, kind?: string):
+      FileRelativeUrl;
+
+  protected simpleUrlRelative(from: ResolvedUrl, to: ResolvedUrl):
+      FileRelativeUrl {
+    if (!from.endsWith('/')) {
+      from = this.brandAsResolved(posix.dirname(from));
+    }
+    let result = posix.relative(from, to);
+    if (to.endsWith('/')) {
+      result += '/';
+    }
+    return this.brandAsRelative(result);
+  }
+
+  protected brandAsRelative(url: string): FileRelativeUrl {
+    return url as FileRelativeUrl;
+  }
 
   protected brandAsResolved(url: string): ResolvedUrl {
     return url as ResolvedUrl;

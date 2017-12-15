@@ -44,7 +44,7 @@ export class HtmlScriptScanner implements HtmlScanner {
         if (src) {
           features.push(new ScannedScriptTagImport(
               'html-script',
-              ScannedScriptTagImport.resolveUrl(document.baseUrl, src),
+              src,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'src')!,
               node,
