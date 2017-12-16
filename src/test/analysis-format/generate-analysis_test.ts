@@ -19,7 +19,7 @@ import * as path from 'path';
 import {Analysis} from '../../analysis-format/analysis-format';
 import {generateAnalysis, validateAnalysis, ValidationError} from '../../analysis-format/generate-analysis';
 import {Analyzer} from '../../core/analyzer';
-import {fileRelativeUrl} from '../test-utils';
+import {fileRelativeUrl, fixtureDir} from '../test-utils';
 
 const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 
@@ -28,12 +28,10 @@ const onlyTests = new Set<string>([]);  // Should be empty when not debugging.
 const skipTests = new Set<string>(['bower_packages', 'nested-packages']);
 
 
-const fixturesDir = path.join(__dirname, '..', 'static');
-
 suite('generate-analysis', () => {
   suite('generateAnalysisMetadata', () => {
     suite('generates for Document array from fixtures', () => {
-      const basedir = path.join(fixturesDir, 'analysis');
+      const basedir = path.join(fixtureDir, 'analysis');
       const analysisFixtureDirs =
           fs.readdirSync(basedir)
               .map((p) => path.join(basedir, p))
@@ -74,7 +72,7 @@ suite('generate-analysis', () => {
                 JSON.parse(fs.readFileSync(pathToGolden, 'utf-8'));
 
             try {
-              const shortPath = path.relative(fixturesDir, pathToGolden);
+              const shortPath = path.relative(fixtureDir, pathToGolden);
               assert.deepEqual(
                   analysis,
                   golden,
@@ -93,7 +91,7 @@ suite('generate-analysis', () => {
 
     suite('generates from package', () => {
       test('does not include external features', async () => {
-        const basedir = path.resolve(fixturesDir, 'analysis/bower_packages');
+        const basedir = path.resolve(fixtureDir, 'analysis/bower_packages');
         const analyzer = Analyzer.createForDirectory(basedir);
         const _package = await analyzer.analyzePackage();
         const metadata = generateAnalysis(_package, analyzer.urlResolver);
@@ -102,7 +100,7 @@ suite('generate-analysis', () => {
       });
 
       test('includes package features', async () => {
-        const basedir = path.resolve(fixturesDir, 'analysis/simple');
+        const basedir = path.resolve(fixtureDir, 'analysis/simple');
         const analyzer = Analyzer.createForDirectory(basedir);
         const _package = await analyzer.analyzePackage();
         const metadata = generateAnalysis(_package, analyzer.urlResolver);

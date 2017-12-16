@@ -22,14 +22,13 @@ import {Analyzer} from '../../core/analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {CodeUnderliner} from '../test-utils';
+import {CodeUnderliner, fixtureDir} from '../test-utils';
 
 suite('ParsedHtmlDocument', () => {
   const parser: HtmlParser = new HtmlParser();
   const url = `./source-ranges/html-complicated.html`;
-  const basedir = path.join(__dirname, '../static/');
-  const file = fs.readFileSync(path.join(basedir, url), 'utf8');
-  const analyzer = Analyzer.createForDirectory(basedir);
+  const file = fs.readFileSync(path.join(fixtureDir, url), 'utf8');
+  const analyzer = Analyzer.createForDirectory(fixtureDir);
   const document: ParsedHtmlDocument =
       parser.parse(file, analyzer.resolveUrl(url)!, new PackageUrlResolver({}));
   const underliner = new CodeUnderliner(analyzer);

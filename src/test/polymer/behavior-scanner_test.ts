@@ -14,12 +14,11 @@
 
 
 import {assert} from 'chai';
-import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 import {ScannedBehavior, ScannedBehaviorAssignment} from '../../polymer/behavior';
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
-import {runScanner} from '../test-utils';
+import {fixtureDir, runScanner} from '../test-utils';
 
 suite('BehaviorScanner', () => {
   let behaviors: Map<string, ScannedBehavior>;
@@ -27,7 +26,7 @@ suite('BehaviorScanner', () => {
 
   suiteSetup(async () => {
     const {features} = await runScanner(
-        Analyzer.createForDirectory(path.resolve(__dirname, '../static')),
+        Analyzer.createForDirectory(fixtureDir),
         new BehaviorScanner(),
         'js-behaviors.js');
     behaviors = new Map();

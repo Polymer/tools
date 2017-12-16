@@ -86,8 +86,7 @@ task('compile', function() {
   // const srcs = tsProject.src();
   return mergeStream(
              tsResult.js.pipe(sourcemaps.write('../lib')),
-             tsResult.dts,
-             gulp.src(['src/**/*', '!src/**/*.ts']))
+             tsResult.dts)
       .pipe(gulp.dest('lib'));
 });
 

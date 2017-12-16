@@ -19,10 +19,10 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {ScannedNamespace} from '../../javascript/namespace';
 import {NamespaceScanner} from '../../javascript/namespace-scanner';
-import {CodeUnderliner, runScanner} from '../test-utils';
+import {CodeUnderliner, fixtureDir, runScanner} from '../test-utils';
 
 suite('NamespaceScanner', () => {
-  const testFilesDir = path.resolve(__dirname, '../static/namespaces/');
+  const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
   const analyzer = Analyzer.createForDirectory(testFilesDir);
   const underliner = new CodeUnderliner(analyzer);
 

@@ -13,16 +13,14 @@
  */
 
 import {assert} from 'chai';
-import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 import {HtmlScriptScanner} from '../../html/html-script-scanner';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Analysis} from '../../model/analysis';
 import {ScannedImport, ScannedInlineDocument} from '../../model/model';
-import {runScannerOnContents} from '../test-utils';
+import {fixtureDir, runScannerOnContents} from '../test-utils';
 
-const fixturesDir = path.resolve(__dirname, '../static');
 suite('HtmlScriptScanner', () => {
   test('finds external and inline scripts', async () => {
     const contents = `<html><head>
@@ -57,7 +55,7 @@ suite('HtmlScriptScanner', () => {
   });
 
   suite('modules', () => {
-    const analyzer = Analyzer.createForDirectory(fixturesDir);
+    const analyzer = Analyzer.createForDirectory(fixtureDir);
     let analysis: Analysis;
 
     before(async () => {

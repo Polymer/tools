@@ -19,7 +19,7 @@ import * as path from 'path';
 import {HtmlParser} from '../../html/html-parser';
 import {Analyzer} from '../../index';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {resolvedUrl} from '../test-utils';
+import {fixtureDir, resolvedUrl} from '../test-utils';
 
 suite('HtmlParser', () => {
   suite('parse()', () => {
@@ -31,7 +31,7 @@ suite('HtmlParser', () => {
 
     suite('on a well-formed document', () => {
       const file = fs.readFileSync(
-          path.resolve(__dirname, '../static/html-parse-target.html'), 'utf8');
+          path.resolve(fixtureDir, 'html-parse-target.html'), 'utf8');
 
       test('parses a well-formed document', () => {
         const document = parser.parse(
@@ -52,7 +52,7 @@ suite('HtmlParser', () => {
 
     test('can properly determine the base url of a document', async () => {
       const analyzer =
-          Analyzer.createForDirectory(path.resolve(__dirname, '../'));
+          Analyzer.createForDirectory(path.resolve(fixtureDir, '../'));
       const resolvedPath =
           analyzer.resolveUrl(`static/base-href/doc-with-base.html`)!;
       const file = await analyzer.load(resolvedPath);

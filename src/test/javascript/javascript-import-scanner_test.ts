@@ -14,14 +14,13 @@
 
 
 import {assert} from 'chai';
-import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 import {JavaScriptImportScanner} from '../../javascript/javascript-import-scanner';
-import {runScanner} from '../test-utils';
+import {fixtureDir, runScanner} from '../test-utils';
 
 suite('JavaScriptImportScanner', () => {
-  const analyzer = Analyzer.createForDirectory(path.resolve(__dirname, '../static'));
+  const analyzer = Analyzer.createForDirectory(fixtureDir);
 
   test('finds imports', async () => {
     const {features} = await runScanner(

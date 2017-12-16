@@ -18,7 +18,7 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {ScannedPolymerCoreFeature} from '../../polymer/polymer-core-feature';
 import {PolymerCoreFeatureScanner} from '../../polymer/polymer-core-feature-scanner';
-import {runScannerOnContents} from '../test-utils';
+import {fixtureDir, runScannerOnContents} from '../test-utils';
 
 suite('PolymerCoreFeatureScanner', () => {
   test('scans _addFeature calls and the Polymer.Base assignment', async () => {
@@ -114,7 +114,7 @@ suite('PolymerCoreFeatureScanner', () => {
   test('resolves the Polymer.Base class', async () => {
     // This directory contains files copied from Polymer 1.x core.
     const analyzer = Analyzer.createForDirectory(
-        path.resolve(__dirname, '../static/polymer-core-feature/'));
+        path.resolve(fixtureDir, 'polymer-core-feature/'));
 
     const analysis = await analyzer.analyzePackage();
     const features = analysis.getFeatures({id: 'Polymer.Base', kind: 'class'});

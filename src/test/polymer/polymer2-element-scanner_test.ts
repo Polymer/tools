@@ -19,13 +19,13 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {CodeUnderliner, runScanner} from '../test-utils';
+import {CodeUnderliner, fixtureDir, runScanner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
 suite('Polymer2ElementScanner', () => {
-  const analyzer = Analyzer.createForDirectory(
-      path.resolve(__dirname, '../static/polymer2/'));
+  const analyzer =
+      Analyzer.createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
   const underliner = new CodeUnderliner(analyzer);
 
   async function getElements(filename: string):
@@ -554,19 +554,21 @@ namespaced name.`,
   test('can identify elements registered with ClassName.is', async () => {
     const elements = await getElements('test-element-11.js');
     const elementData = await Promise.all(elements.map(getTestProps));
-    assert.deepEqual(
-        elementData, [{
-          attributes: [{name: 'prop1'}],
-          className: 'MyElement',
-          description: '',
-          methods: [],
-          properties:
-              [{name: 'prop1', description: '', type: 'string | null | undefined'}],
-          summary: '',
-          superClass: 'Polymer.Element',
-          tagName: 'my-app',
-          warningUnderlines: [],
-        }]);
+    assert.deepEqual(elementData, [
+      {
+        attributes: [{name: 'prop1'}],
+        className: 'MyElement',
+        description: '',
+        methods: [],
+        properties: [
+          {name: 'prop1', description: '', type: 'string | null | undefined'}
+        ],
+        summary: '',
+        superClass: 'Polymer.Element',
+        tagName: 'my-app',
+        warningUnderlines: [],
+      }
+    ]);
   });
 
   test('can infer properties assigned to in the constructor', async () => {

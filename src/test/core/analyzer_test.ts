@@ -31,7 +31,7 @@ import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from 
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {CodeUnderliner, invertPromise, resolvedUrl} from '../test-utils';
+import {CodeUnderliner, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
@@ -48,7 +48,7 @@ function getOnly<V>(iter: Iterable<V>): V {
   return arr[0]!;
 }
 
-const testDir = path.join(__dirname, '..');
+const testDir = path.join(fixtureDir, '..');
 
 suite('Analyzer', () => {
   let analyzer: Analyzer;
@@ -712,7 +712,7 @@ var DuplicateNamespace = {};
   suite('analyzePackage', () => {
     test('produces a package with the right documents', async () => {
       const analyzer =
-          Analyzer.createForDirectory(path.join(testDir, 'static', 'project'));
+          Analyzer.createForDirectory(path.join(fixtureDir, 'project'));
       const pckage = await analyzer.analyzePackage();
 
       // The root documents of the package are a minimal set of documents whose
@@ -789,7 +789,7 @@ var DuplicateNamespace = {};
 
     test('can get warnings from within and without the package', async () => {
       const analyzer = Analyzer.createForDirectory(
-          path.join(testDir, 'static', 'project-with-errors'));
+          path.join(fixtureDir, 'project-with-errors'));
       const pckage = await analyzer.analyzePackage();
       assert.deepEqual(
           Array.from(pckage['_searchRoots']).map((d) => d.url),

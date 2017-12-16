@@ -14,15 +14,14 @@
 
 
 import {assert} from 'chai';
-import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Class, Element, ElementMixin, Method, ScannedClass} from '../../model/model';
-import {CodeUnderliner, runScanner} from '../test-utils';
+import {CodeUnderliner, fixtureDir, runScanner} from '../test-utils';
 
 suite('Class', () => {
-  const analyzer = Analyzer.createForDirectory(path.resolve(__dirname, '../static'));
+  const analyzer = Analyzer.createForDirectory(fixtureDir);
   const underliner = new CodeUnderliner(analyzer);
 
   async function getScannedFeatures(filename: string) {

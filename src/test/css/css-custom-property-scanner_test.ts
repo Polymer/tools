@@ -13,20 +13,17 @@
  */
 
 import {assert} from 'chai';
-import * as path from 'path';
 
 import {Analyzer} from '../../core/analyzer';
 
-import {CodeUnderliner} from '../test-utils';
-
-const testDir = path.join(__dirname, '..', 'static');
+import {CodeUnderliner, fixtureDir} from '../test-utils';
 
 suite('CssCustomPropertyScanner', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
 
   setup(() => {
-    analyzer = Analyzer.createForDirectory(testDir);
+    analyzer = Analyzer.createForDirectory(fixtureDir);
     underliner = new CodeUnderliner(analyzer);
   });
 

@@ -19,12 +19,12 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {CodeUnderliner, runScanner} from '../test-utils';
+import {CodeUnderliner, fixtureDir, runScanner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
 suite('Polymer2ElementScanner with old jsdoc annotations', () => {
-  const testFilesDir = path.resolve(__dirname, '../static/polymer2-old-jsdoc/');
+  const testFilesDir = path.resolve(fixtureDir, 'polymer2-old-jsdoc/');
   const analyzer = Analyzer.createForDirectory(testFilesDir);
   const underliner = new CodeUnderliner(analyzer);
 

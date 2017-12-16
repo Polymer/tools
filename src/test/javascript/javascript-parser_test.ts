@@ -23,7 +23,7 @@ import * as esutil from '../../javascript/esutil';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {JavaScriptParser, JavaScriptModuleParser, JavaScriptScriptParser} from '../../javascript/javascript-parser';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {resolvedUrl} from '../test-utils';
+import {resolvedUrl, fixtureDir} from '../test-utils';
 
 suite('JavaScriptParser', () => {
   let parser: JavaScriptParser;
@@ -82,7 +82,7 @@ suite('JavaScriptParser', () => {
 
     test('throws syntax errors', () => {
       const file = fs.readFileSync(
-          path.resolve(__dirname, '../static/js-parse-error.js'), 'utf8');
+          path.resolve(fixtureDir, 'js-parse-error.js'), 'utf8');
       assert.throws(
           () => parser.parse(
               file,
@@ -91,8 +91,8 @@ suite('JavaScriptParser', () => {
     });
 
     test('attaches comments', () => {
-      const file = fs.readFileSync(
-          path.resolve(__dirname, '../static/js-elements.js'), 'utf8');
+      const file =
+          fs.readFileSync(path.resolve(fixtureDir, 'js-elements.js'), 'utf8');
       const document = parser.parse(
           file, resolvedUrl`/static/js-elements.js`, new PackageUrlResolver());
       const ast = document.ast;

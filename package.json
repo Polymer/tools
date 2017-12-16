@@ -18,7 +18,7 @@
     "bin/"
   ],
   "scripts": {
-    "clean": "mkdir -p lib/ && rm -rf lib/",
+    "clean": "touch lib && rm -rf lib && mkdir lib",
     "build": "gulp build --silent",
     "release": "npm run compile",
     "lint": "gulp lint",
@@ -26,7 +26,7 @@
     "quicktest": "export QUICK_TESTS=true; npm run build && mocha",
     "initBench": "if [ ! -d bower_components ]; then bower install -s -f PolymerElements/app-elements PolymerElements/iron-elements PolymerElements/gold-elements PolymerElements/paper-elements PolymerElements/neon-elements GoogleWebComponents/google-web-components ; fi",
     "benchmark": "npm run build && npm run initBench && node --expose-gc lib/perf/parse-all-benchmark.js",
-    "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
+    "test:watch": "tsc-then -- mocha",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "prepublishOnly": "tsc && npm test"
   },
