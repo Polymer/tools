@@ -12,13 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {SourceRange} from '../analysis-format/analysis-format';
 import {AnalysisContext} from '../core/analysis-context';
+import {addAll} from '../core/utils';
 import {PackageRelativeUrl} from '../index';
 
 import {Document} from './document';
 import {Feature} from './feature';
 import {ImmutableMap, ImmutableSet} from './immutable';
 import {AnalysisQuery as Query, AnalysisQueryWithKind as QueryWithKind, DocumentQuery, FeatureKind, FeatureKindMap, Queryable} from './queryable';
+import {isPositionInsideRange} from './source-range';
 import {ResolvedUrl} from './url';
 import {Warning} from './warning';
 
@@ -141,6 +144,34 @@ export class Analysis implements Queryable {
     return Array.from(result);
   }
 
+  /**
+   * Potentially narrow down the document that contains the sourceRange.
+   * For example, if a source range is inside a inlineDocument, this function
+   * will narrow down the document to the most specific inline document.
+   *
+   * @param sourceRange Source range to search for in a document
+   */
+   getDocumentContaining(sourceRange: SourceRange|undefined) {
+     if (!sourceRange) {
+       return undefined;
+     }
+     let mostSpecificDocument: undefined|Document = undefined;
+     const [outerDocument] = this.getFeatures({kind: 'document', id: sourceRange.file});
+     if (!outerDocument) {
+       return undefined;
+     }
+     for (const doc of outerDocument.getFeatures({kind: 'document'})) {
+       if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
+         if (!mostSpecificDocument ||
+             isPositionInsideRange(
+                 doc.sourceRange!.start, mostSpecificDocument.sourceRange)) {
+           mostSpecificDocument = doc;
+         }
+       }
+     }
+     return mostSpecificDocument;
+   }
+
   private _getDocumentQuery(query: Query = {}): DocumentQuery {
     return {
       kind: query.kind,
@@ -150,14 +181,6 @@ export class Analysis implements Queryable {
       noLazyImports: query.noLazyImports
     };
   }
-}
-
-// TODO(justinfagnani): move to utils
-function addAll<T>(set1: Set<T>, set2: Set<T>): Set<T> {
-  for (const val of set2) {
-    set1.add(val);
-  }
-  return set1;
 }
 
 /**

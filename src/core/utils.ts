@@ -77,3 +77,10 @@ export class Deferred<T> {
     };
   }
 }
+
+export function addAll<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  for (const val of set2) {
+    set1.add(val);
+  }
+  return set1;
+}

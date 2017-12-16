@@ -187,8 +187,16 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     const selfClone = mutableDocuments.shift()!;
 
     for (const doc of mutableDocuments) {
-      // TODO(rictic): infer this from doc.astNode's indentation.
-      const expectedIndentation = 2;
+      let expectedIndentation;
+      if (doc.astNode.__location) {
+        expectedIndentation = doc.astNode.__location.col;
+
+        if (doc.astNode.parentNode && doc.astNode.parentNode.__location) {
+          expectedIndentation -= doc.astNode.parentNode.__location.col;
+        }
+      } else {
+        expectedIndentation = 2;
+      }
 
       dom5.setTextContent(doc.astNode, '\n' + doc.stringify({
         indent: expectedIndentation

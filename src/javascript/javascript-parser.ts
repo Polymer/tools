@@ -30,8 +30,7 @@ declare class SyntaxError {
   column: number;
 }
 
-// TODO(rictic): stop exporting this.
-export const baseParseOptions: babylon.BabylonOptions = {
+const baseParseOptions: babylon.BabylonOptions = {
   plugins: [
     'asyncGenerators',
     'dynamicImport',
