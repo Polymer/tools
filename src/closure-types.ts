@@ -137,14 +137,7 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
   } else if (isVoidLiteral(node)) {  // void
     t = new ts.NameType('void');
   } else if (isName(node)) {  // string, Object, MyClass, etc.
-    if (node.name === 'Object') {
-      // Closure's `Object` type excludes primitives, so it is closest to
-      // TypeScript's `object`. (Technically this should be `object|Symbol`,
-      // but we will concede that technicality.)
-      t = new ts.NameType('object');
-    } else {
-      t = new ts.NameType(node.name);
-    }
+    t = new ts.NameType(renameMap.get(node.name) || node.name);
   } else {
     console.error('Unknown syntax.');
     return ts.anyType;
@@ -156,6 +149,19 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
 
   return t;
 }
+
+/**
+ * Special cases where a named type in Closure maps to something different in
+ * TypeScript.
+ */
+const renameMap = new Map<string, string>([
+  // Closure's `Object` type excludes primitives, so it is closest to
+  // TypeScript's `object`. (Technically this should be `object|Symbol`, but we
+  // will concede that technicality.)
+  ['Object', 'object'],
+  // The tagged template literal function argument.
+  ['ITemplateArray', 'TemplateStringsArray'],
+]);
 
 /**
  * Return whether the given AST node is an expression that is nullable by

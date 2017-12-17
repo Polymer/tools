@@ -37,5 +37,5 @@ declare namespace Polymer {
    *
    * @returns Constructed HTMLTemplateElement
    */
-  function html(strings: ITemplateArray|null, ...values: any[]): HTMLTemplateElement;
+  function html(strings: TemplateStringsArray|null, ...values: any[]): HTMLTemplateElement;
 }
