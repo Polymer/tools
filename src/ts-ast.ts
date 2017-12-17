@@ -12,19 +12,19 @@
 // TODO Document classes better.
 // TODO Try to make serialization methods easier to read.
 
-export type Node = Document|Namespace|Class|Interface|Mixin|Function|Method|
-    Type|ParamType|Property;
+export type Node =
+    Document|Namespace|Class|Interface|Function|Method|Type|ParamType|Property;
 
 export class Document {
   readonly kind = 'document';
   path: string;
-  members: Array<Namespace|Class|Interface|Mixin|Function>;
+  members: Array<Namespace|Class|Interface|Function>;
   referencePaths: Set<string>;
   header: string;
 
   constructor(data: {
     path: string,
-    members?: Array<Namespace|Class|Interface|Mixin|Function>
+    members?: Array<Namespace|Class|Interface|Function>
     referencePaths?: Iterable<string>,
     header?: string
   }) {
@@ -76,12 +76,12 @@ export class Namespace {
   readonly kind = 'namespace';
   name: string;
   description: string;
-  members: Array<Namespace|Class|Interface|Mixin|Function>;
+  members: Array<Namespace|Class|Interface|Function>;
 
   constructor(data: {
     name: string,
     description?: string;
-    members?: Array<Namespace|Class|Interface|Mixin|Function>,
+    members?: Array<Namespace|Class|Interface|Function>,
   }) {
     this.name = data.name;
     this.description = data.description || '';
@@ -243,47 +243,6 @@ export class Interface {
       out += '\n';
     }
     out += `${i}}\n`;
-    return out;
-  }
-}
-
-// A class mixin function using the pattern described at:
-// https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html
-export class Mixin {
-  readonly kind = 'mixin';
-  name: string;
-  description: string;
-  interfaces: string[];
-
-  constructor(data: {
-    name: string,
-    description?: string,
-    interfaces?: string[],
-  }) {
-    this.name = data.name;
-    this.description = data.description || '';
-    this.interfaces = data.interfaces || [];
-  }
-
-  * traverse(): Iterable<Node> {
-    yield this;
-  }
-
-  serialize(depth: number = 0): string {
-    let out = '';
-    const i = indent(depth);
-    const i2 = indent(depth + 1);
-    if (this.description) {
-      out += formatComment(this.description, depth);
-    }
-    out += i;
-    if (depth === 0) {
-      out += 'declare ';
-    }
-    out += `function ${this.name}`;
-    out += `<T extends new(...args: any[]) => {}>(base: T): {\n`;
-    out += `${i2}new(...args: any[]): ${this.interfaces.join(' & ')}\n`;
-    out += `${i}} & T\n`;
     return out;
   }
 }
@@ -450,8 +409,8 @@ export class Param {
 }
 
 // A TypeScript type expression.
-export type Type =
-    NameType|UnionType|ArrayType|FunctionType|ConstructorType|RecordType;
+export type Type = NameType|UnionType|ArrayType|FunctionType|ConstructorType|
+    RecordType|IntersectionType;
 
 // string, MyClass, null, undefined, any
 export class NameType {
@@ -669,6 +628,26 @@ export class RecordType {
   serialize(): string {
     const fields = this.fields.map((field) => field.serialize());
     return `{${fields.join(', ')}}`;
+  }
+}
+
+export class IntersectionType {
+  readonly kind = 'intersection';
+  types: Type[];
+
+  constructor(types: Type[]) {
+    this.types = types;
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const t of this.types) {
+      yield* t.traverse();
+    }
+    yield this;
+  }
+
+  serialize(): string {
+    return this.types.map((t) => t.serialize()).join(' & ');
   }
 }
 
