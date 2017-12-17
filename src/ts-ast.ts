@@ -255,6 +255,7 @@ export abstract class FunctionLike {
   templateTypes: string[];
   returns: Type;
   returnsDescription: string;
+  isStatic: boolean;
 
   constructor(data: {
     name: string,
@@ -262,7 +263,8 @@ export abstract class FunctionLike {
     params?: Param[],
     templateTypes?: string[],
     returns?: Type,
-    returnsDescription?: string
+    returnsDescription?: string,
+    isStatic?: boolean,
   }) {
     this.name = data.name;
     this.description = data.description || '';
@@ -270,6 +272,7 @@ export abstract class FunctionLike {
     this.returns = data.returns || anyType;
     this.templateTypes = data.templateTypes || [];
     this.returnsDescription = data.returnsDescription || '';
+    this.isStatic = data.isStatic || false;
   }
 
   serialize(depth: number = 0): string {
@@ -297,10 +300,13 @@ export abstract class FunctionLike {
       out += '\n' + formatComment(combinedDescription, depth);
     }
 
+    out += i;
     if (depth === 0) {
       out += 'declare ';
     }
-    out += i;
+    if (this.kind === 'method' && this.isStatic) {
+      out += 'static ';
+    }
     if (this.kind === 'function') {
       out += 'function ';
     }

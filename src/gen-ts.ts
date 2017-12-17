@@ -220,7 +220,10 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
           (isPolymerElement(feature) ? 'Polymer.Element' : 'HTMLElement'),
       mixins: feature.mixins.map((mixin) => mixin.identifier),
       properties: handleProperties(feature.properties.values()),
-      methods: handleMethods(feature.methods.values()),
+      methods: [
+        ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
+        ...handleMethods(feature.methods.values()),
+      ]
     });
     parent.members.push(c);
 
@@ -232,6 +235,9 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
       name: shortName,
       description: feature.description || feature.summary,
       properties: handleProperties(feature.properties.values()),
+      // Don't worry about about static methods when we're not constructable.
+      // Since there's no handle to the constructor, they could never be
+      // called.
       methods: handleMethods(feature.methods.values()),
     });
 
@@ -343,7 +349,10 @@ function handleClass(feature: analyzer.Class, root: ts.Document) {
   const m = new ts.Class({name});
   m.description = feature.description;
   m.properties = handleProperties(feature.properties.values());
-  m.methods = handleMethods(feature.methods.values());
+  m.methods = [
+    ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
+    ...handleMethods(feature.methods.values())
+  ];
   findOrCreateNamespace(root, namespacePath).members.push(m);
 }
 
@@ -402,8 +411,9 @@ function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
  * Convert the given Analyzer methods to their TypeScript declaration
  * equivalent.
  */
-function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
-    ts.Method[] {
+function handleMethods(
+    analyzerMethods: Iterable<analyzer.Method>,
+    opts?: {isStatic?: boolean}): ts.Method[] {
   const tsMethods = <ts.Method[]>[];
   for (const method of analyzerMethods) {
     if (method.inheritedFrom || method.privacy === 'private') {
@@ -412,7 +422,8 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     const m = new ts.Method({
       name: method.name,
       returns: closureTypeToTypeScript(method.return && method.return.type),
-      returnsDescription: method.return && method.return.desc
+      returnsDescription: method.return && method.return.desc,
+      isStatic: opts && opts.isStatic,
     });
     m.description = method.description || '';
 
