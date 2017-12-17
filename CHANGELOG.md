@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Static methods are now supported on classes, elements, and mixins.
+- Add `renameTypes` config option, a map of renames to apply to named types that can be configured per-project.
 
 ## [0.3.1] - 2017-12-15
 - Convert Closure `Object` to TypeScript `object`.

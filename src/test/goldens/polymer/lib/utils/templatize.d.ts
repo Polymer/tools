@@ -125,7 +125,7 @@ declare namespace Polymer {
      * @returns Generated class bound to the template
      *   provided
      */
-    function templatize(template: HTMLTemplateElement, owner: Polymer_PropertyEffects, options?: object|null): {new(): TemplateInstanceBase};
+    function templatize(template: HTMLTemplateElement, owner: Polymer.PropertyEffects, options?: object|null): {new(): TemplateInstanceBase};
 
 
     /**
