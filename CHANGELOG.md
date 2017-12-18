@@ -3,6 +3,17 @@
 ## Unreleased
 <!-- Add new, unreleased items here. -->
 
+## v2.0.0 [12-18-2017]
+- [BREAKING] `Workspace.init()` options have been moved to the constructor.
+- [BREAKING] `Workspace` dependency installation must be called manually via
+`Workspace.installBowerDependencies()`.
+- [BREAKING] `Workspace` Class is now responsible for setup & initialization only. All
+post-setup operations (`pushChangesToGithub`, `commitChanges`, etc.) have been
+pulled off as seperate operations.
+- `run()`: New batch-running support for running commands across multiple repos.
+- Updated README.
+
+
 ## v1.1.0 [10-16-2017]
 - Add npm logic
 
