@@ -134,7 +134,7 @@ export default async function run(options: CliOptions) {
           type: 'list',
           name: 'post-conversion-step',
           message: 'What do you want to do now?',
-          choices: Object.keys(PostConversionStep),
+          choices: Object.values(PostConversionStep),
         }]))['post-conversion-step'] as string;
     switch (stepSelection) {
       case PostConversionStep.Test:
