@@ -11,7 +11,6 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -19,7 +18,7 @@ import * as semver from 'semver';
 import {CliOptions} from '../cli';
 import convertPackage from '../convert-package';
 import {readJson} from '../manifest-converter';
-import {exec} from '../util';
+import {exec, logStep} from '../util';
 
 export default async function run(options: CliOptions) {
   const inDir = path.resolve(options.in || process.cwd());
@@ -85,10 +84,8 @@ export default async function run(options: CliOptions) {
         }]))['npm-version'] as string;
   }
 
-  console.log(
-      chalk.dim('[1/2]') + ' 🌀  ' + chalk.magenta(`Converting Package...`));
+  logStep(1, 2, '🌀', `Converting Package...`);
   console.log(`Out directory: ${outDir}`);
-
   await convertPackage({
     inDir: inDir,
     outDir: outDir,
@@ -100,6 +97,5 @@ export default async function run(options: CliOptions) {
     cleanOutDir: options.clean!!,
   });
 
-  console.log(
-      chalk.dim('[2/2]') + ' 🎉  ' + chalk.magenta(`Conversion Complete!`));
+  logStep(2, 2, '🎉', `Conversion Complete!`);
 }

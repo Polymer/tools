@@ -11,10 +11,12 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import chalk from 'chalk';
 import {ExecOptions} from 'child_process';
 import {Iterable as IterableX} from 'ix';
 import * as fs from 'mz/fs';
 import * as path from 'path';
+import {WorkspaceRepo} from 'polymer-workspaces';
 
 import {ConvertedDocumentFilePath} from './urls/types';
 
@@ -76,4 +78,21 @@ export async function exec(
     err.cwd = cwd;
     throw err;
   }
+}
+
+/**
+ * Log an error that occurred when performing some task on a workspace repo.
+ */
+export function logRepoError(err: Error, repo: WorkspaceRepo) {
+  const repoDirName = path.basename(repo.dir);
+  console.error(`${repoDirName}: ${err.message}`);
+}
+
+/**
+ * Log a user-facing message about progress through some set of steps.
+ */
+export function logStep(
+    stepNum: number, totalNum: number, emoji: string, msg: string) {
+  const stepInfo = `[${stepNum}/${totalNum}]`;
+  console.log(`${chalk.dim(stepInfo)} ${emoji}  ${chalk.magenta(msg)}`);
 }

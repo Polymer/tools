@@ -30,6 +30,20 @@ const dependencyMap: DependencyMap =
 const warningCache: Set<String> = new Set();
 
 /**
+ * The name of the git branch for local git dependencies to point to. Without
+ * a branch name, npm would just install from master.
+ */
+export const localDependenciesBranch = 'polymer-modulizer-testing';
+
+/**
+ * For a given dependency at path, return the value that will point to it in a
+ * package.json "dependencies" or "devDependencies" object.
+ */
+function getLocalDependencyValue(path: string) {
+  return `git+file:${path}#${localDependenciesBranch}`;
+}
+
+/**
  * Lookup the corresponding npm package name in our local map. By default, this
  * method will log a standard warning message to the user if no mapping was
  * found.
@@ -42,6 +56,19 @@ export function lookupDependencyMapping(bowerPackageName: string) {
         `WARN: bower->npm mapping for "${bowerPackageName}" not found`);
   }
   return result;
+}
+
+function setNpmDependencyFromBower(
+    obj: any, bowerPackageName: string, useLocal?: Map<string, string>) {
+  const depInfo = lookupDependencyMapping(bowerPackageName);
+  if (!depInfo) {
+    return;
+  }
+  if (useLocal && useLocal.has(depInfo.npm)) {
+    obj[depInfo.npm] = getLocalDependencyValue(useLocal.get(depInfo.npm)!);
+  } else {
+    obj[depInfo.npm] = depInfo.semver;
+  }
 }
 
 /**
@@ -64,9 +91,17 @@ export function writeJson(json: any, ...pathPieces: string[]) {
 
 /**
  * Given a bower.json manifest, generate a package.json manifest for npm.
+ *
+ * Function takes an optional `useLocal` argument containing a map of any
+ * npm dependencies (name -> local file path) that should be referenced via
+ * local file path and not public package name in the package.json. This is
+ * useful for testing against other, converted repos.
  */
 export function generatePackageJson(
-    bowerJson: any, npmName: string, npmVersion: string) {
+    bowerJson: any,
+    npmName: string,
+    npmVersion: string,
+    useLocal?: Map<string, string>) {
   const packageJson = {
     name: npmName,
     flat: true,
@@ -80,25 +115,33 @@ export function generatePackageJson(
     license: bowerJson.license,
     homepage: bowerJson.homepage,
     dependencies: <any>{},
-    devDependencies: <any>{}
+    devDependencies: <any>{},
+    // TODO (fks): Remove these resolutions needed by wct-browser-legacy
+    // https://github.com/Polymer/polymer-modulizer/issues/251
+    resolutions: {
+      'inherits': '2.0.3',
+      'samsam': '1.1.3',
+      'supports-color': '3.1.2',
+      'type-detect': '1.0.0',
+    }
   };
 
   if (bowerJson.license.includes('polymer.github.io/LICENSE')) {
     packageJson.license = 'BSD-3-Clause';
   } else if (!spdxLicenseList.has(bowerJson.license)) {
-    console.warn(`"${bowerJson.license}" is not a valid SPDX license. ` +
-      `You can find a list of valid licenses at https://spdx.org/licenses/`);
+    console.warn(
+        `"${bowerJson.license}" is not a valid SPDX license. ` +
+        `You can find a list of valid licenses at https://spdx.org/licenses/`);
   }
 
   for (const bowerPackageName in bowerJson.dependencies) {
-    const depInfo = lookupDependencyMapping(bowerPackageName);
-    if (depInfo) {
-      packageJson.dependencies[depInfo.npm] = depInfo.semver;
-    }
+    setNpmDependencyFromBower(
+        packageJson.dependencies, bowerPackageName, useLocal);
   }
-
-  // TODO(fks) 07-18-2017: handle devDependencies. Right now wct creates a too
-  // complicated flat dependency install.
+  for (const bowerPackageName in bowerJson.devDependencies) {
+    setNpmDependencyFromBower(
+        packageJson.devDependencies, bowerPackageName, useLocal);
+  }
 
   return packageJson;
 }
