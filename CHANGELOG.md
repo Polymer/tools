@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.3] - 2017-12-18
+- Pin Analyzer version for upcoming major refactor.
+
 ## [0.3.2] - 2017-12-18
 - Static methods are now supported on classes, elements, and mixins.
 - Add `renameTypes` config option, a map of renames to apply to named types that can be configured per-project.
