@@ -220,7 +220,10 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
           (isPolymerElement(feature) ? 'Polymer.Element' : 'HTMLElement'),
       mixins: feature.mixins.map((mixin) => mixin.identifier),
       properties: handleProperties(feature.properties.values()),
-      methods: handleMethods(feature.methods.values()),
+      methods: [
+        ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
+        ...handleMethods(feature.methods.values()),
+      ]
     });
     parent.members.push(c);
 
@@ -232,6 +235,9 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
       name: shortName,
       description: feature.description || feature.summary,
       properties: handleProperties(feature.properties.values()),
+      // Don't worry about about static methods when we're not constructable.
+      // Since there's no handle to the constructor, they could never be
+      // called.
       methods: handleMethods(feature.methods.values()),
     });
 
@@ -278,25 +284,58 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
  * Add the given Mixin to the given TypeScript declarations document.
  */
 function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
-  const [namespacePath, name] = splitReference(feature.name);
-  const namespace_ = findOrCreateNamespace(root, namespacePath);
+  const [namespacePath, mixinName] = splitReference(feature.name);
+  const parentNamespace = findOrCreateNamespace(root, namespacePath);
 
-  // We represent mixins in two parts: a mixin function that is called to
-  // augment a given class with this mixin, and an interface with the
-  // properties and methods that are added by this mixin. We can use the same
-  // name for both parts because one is in value space, and the other is in
-  // type space.
+  // The mixin function. It takes a constructor, and returns an intersection of
+  // 1) the given constructor, 2) the constructor for this mixin, 3) the
+  // constructors for any other mixins that this mixin also applies.
+  parentNamespace.members.push(new ts.Function({
+    name: mixinName,
+    description: feature.description,
+    templateTypes: ['T extends new (...args: any[]) => {}'],
+    params: [
+      new ts.Param({name: 'base', type: new ts.NameType('T')}),
+    ],
+    returns: new ts.IntersectionType([
+      new ts.NameType('T'),
+      new ts.NameType(mixinName + 'Constructor'),
+      ...feature.mixins.map(
+          (m) => new ts.NameType(m.identifier + 'Constructor'))
+    ]),
+  }));
 
-  const function_ = new ts.Mixin({name});
-  function_.description = feature.description;
-  function_.interfaces = [name, ...feature.mixins.map((m) => m.identifier)];
-  namespace_.members.push(function_);
+  // The interface for a constructor of this mixin. Returns the instance
+  // interface (see below) when instantiated, and may also have methods of its
+  // own (static methods from the mixin class).
+  parentNamespace.members.push(new ts.Interface({
+    name: mixinName + 'Constructor',
+    methods: [
+      new ts.Method({
+        name: 'new',
+        params: [
+          new ts.Param({
+            name: 'args',
+            type: new ts.ArrayType(ts.anyType),
+            rest: true,
+          }),
+        ],
+        returns: new ts.NameType(mixinName),
+      }),
+      ...handleMethods(feature.staticMethods.values()),
+    ],
+  }));
 
-  const interface_ = new ts.Interface({name});
-  interface_.properties = handleProperties(feature.properties.values());
-  interface_.methods = handleMethods(feature.methods.values());
-  namespace_.members.push(interface_);
-}
+  // The interface for instances of this mixin. Has the same name as the
+  // function.
+  parentNamespace.members.push(
+      new ts.Interface({
+        name: mixinName,
+        properties: handleProperties(feature.properties.values()),
+        methods: handleMethods(feature.methods.values()),
+      }),
+  );
+};
 
 /**
  * Add the given Class to the given TypeScript declarations document.
@@ -310,7 +349,10 @@ function handleClass(feature: analyzer.Class, root: ts.Document) {
   const m = new ts.Class({name});
   m.description = feature.description;
   m.properties = handleProperties(feature.properties.values());
-  m.methods = handleMethods(feature.methods.values());
+  m.methods = [
+    ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
+    ...handleMethods(feature.methods.values())
+  ];
   findOrCreateNamespace(root, namespacePath).members.push(m);
 }
 
@@ -369,8 +411,9 @@ function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
  * Convert the given Analyzer methods to their TypeScript declaration
  * equivalent.
  */
-function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
-    ts.Method[] {
+function handleMethods(
+    analyzerMethods: Iterable<analyzer.Method>,
+    opts?: {isStatic?: boolean}): ts.Method[] {
   const tsMethods = <ts.Method[]>[];
   for (const method of analyzerMethods) {
     if (method.inheritedFrom || method.privacy === 'private') {
@@ -379,7 +422,8 @@ function handleMethods(analyzerMethods: Iterable<analyzer.Method>):
     const m = new ts.Method({
       name: method.name,
       returns: closureTypeToTypeScript(method.return && method.return.type),
-      returnsDescription: method.return && method.return.desc
+      returnsDescription: method.return && method.return.desc,
+      isStatic: opts && opts.isStatic,
     });
     m.description = method.description || '';
 

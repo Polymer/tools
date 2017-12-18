@@ -19,15 +19,18 @@
 
 declare namespace Polymer {
 
+
   /**
    * Element class mixin that provides Polymer's "legacy" API intended to be
    * backward-compatible to the greatest extent possible with the API
    * found on the Polymer 1.x `Polymer.Base` prototype applied to all elements
    * defined using the `Polymer({...})` function.
    */
-  function LegacyElementMixin<T extends new(...args: any[]) => {}>(base: T): {
-    new(...args: any[]): LegacyElementMixin & Polymer.ElementMixin & Polymer.GestureEventListeners
-  } & T
+  function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor & Polymer.ElementMixinConstructor & Polymer.GestureEventListenersConstructor;
+
+  interface LegacyElementMixinConstructor {
+    new(...args: any[]): LegacyElementMixin;
+  }
 
   interface LegacyElementMixin {
     isAttached: boolean;
