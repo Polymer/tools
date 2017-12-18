@@ -18,10 +18,23 @@ import {IConnection} from 'vscode-languageserver/lib/main';
 import Settings from './settings';
 
 export class Logger {
+  private readonly connection: IConnection;
   private logFile: WriteStream|undefined = undefined;
+  private readonly logFileFromFlag: WriteStream|undefined;
   private settings: Settings|undefined;
   private queue: string[] = [];
-  constructor(private readonly connection: IConnection) {
+  constructor(options:
+                  {connection: IConnection, logToFileFlag: string|undefined}) {
+    this.connection = options.connection;
+    if (options.logToFileFlag !== undefined) {
+      this.logFileFromFlag = undefined;
+      try {
+        this.logFileFromFlag =
+            createWriteStream(options.logToFileFlag, {flags: 'a'});
+      } catch {
+        // don't care
+      }
+    }
   }
 
   async hookupSettings(settings: Settings) {
@@ -67,9 +80,16 @@ export class Logger {
       if (this.settings.logToClient) {
         this.connection.console.log(message);
       }
-      if (this.logFile) {
+      if (this.logFile !== undefined) {
         try {
           this.logFile.write(message + '\n');
+        } catch {
+          // don't care
+        }
+      }
+      if (this.logFileFromFlag !== undefined) {
+        try {
+          this.logFileFromFlag.write(message + '\n');
         } catch {
           // don't care
         }

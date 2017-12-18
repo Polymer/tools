@@ -50,7 +50,7 @@ export function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
   const converter = new AnalyzerLSPConverter(URI.file(baseDir));
   const synchronizer = new FileSynchronizer(
       serverConnection, textDocuments, baseDir, converter,
-      new Logger(serverConnection));
+      new Logger({connection: serverConnection, logToFileFlag: undefined}));
   return {synchronizer, serverConnection, clientConnection, baseDir, converter};
 }
 
@@ -83,8 +83,8 @@ export async function createTestEnvironment(
   const {serverConnection, clientConnection} = createTestConnections(debugging);
   const converter = new AnalyzerLSPConverter(URI.file(baseDir));
   const client = new TestClient(clientConnection, converter, baseDir);
-  const serverPromise =
-      LanguageServer.initializeWithConnection(serverConnection, false);
+  const serverPromise = LanguageServer.initializeWithConnection(
+      serverConnection, {interceptConsole: false});
   const initResult = await client.initialize(baseDir);
   const server = await serverPromise;
   const underliner =

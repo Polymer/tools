@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/chai": "=4.0.5",
+    "@types/command-line-args": "^4.0.2",
     "@types/fuzzaldrin": "^2.1.0",
     "@types/mocha": "^2.2.28",
     "chai": "^4",
@@ -41,6 +42,7 @@
     "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
     "@types/winston": "^2.2.0",
+    "command-line-args": "^4.0.7",
     "dom5": "^2.0.1",
     "fuzzaldrin": "^2.1.0",
     "minimatch": "^3.0.4",

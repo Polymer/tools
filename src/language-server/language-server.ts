@@ -29,6 +29,11 @@ import {Logger} from './logger';
 import Settings from './settings';
 import {Handler} from './util';
 
+export interface LoggingOptions {
+  interceptConsole: boolean;
+  logToFile?: string;
+}
+
 export default class LanguageServer extends Handler {
   private readonly converter: AnalyzerLSPConverter;
   protected readonly connection: IConnection;
@@ -40,7 +45,7 @@ export default class LanguageServer extends Handler {
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(
       connection: IConnection,
-      interceptLogging = true): Promise<LanguageServer> {
+      loggingOptions: LoggingOptions): Promise<LanguageServer> {
     function getWorkspaceUri(
         rootUri: string|null, rootPath: string|null|undefined): Uri|null {
       if (rootUri) {
@@ -66,8 +71,9 @@ export default class LanguageServer extends Handler {
           reject(error);
           throw error;
         }
-        const newServer =
-            new LanguageServer(connection, workspaceUri, params.capabilities);
+        const newServer = new LanguageServer(
+            connection, workspaceUri, params.capabilities,
+            loggingOptions.logToFile);
         resolve(newServer);
         return {capabilities: newServer.capabilities(params.capabilities)};
       });
@@ -75,7 +81,7 @@ export default class LanguageServer extends Handler {
 
     // The console will be valid immediately after the connection has
     // initialized. So hook it up then (if requested).
-    if (interceptLogging) {
+    if (loggingOptions.interceptConsole) {
       const {hookUpRemoteConsole} = await import('../intercept-logs');
       hookUpRemoteConsole(connection.console);
     }
@@ -88,12 +94,12 @@ export default class LanguageServer extends Handler {
    */
   constructor(
       connection: IConnection, workspaceUri: Uri,
-      clientCapabilities: ClientCapabilities) {
+      clientCapabilities: ClientCapabilities, logToFile: string|undefined) {
     super();
     this.disposables.push(connection);
     this.connection = connection;
 
-    const logger = new Logger(connection);
+    const logger = new Logger({connection, logToFileFlag: logToFile});
     this.disposables.push(logger);
 
     const workspacePath = workspaceUri.fsPath;

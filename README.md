@@ -26,3 +26,49 @@ If you have an editor that supports LSP, or a plugin that adds LSP support, you 
 - A list of file types that that the service supports (in this case, HTML, CSS, JavaScript and JSON files).
 
 See the wiki page for sublime text support for an example: https://github.com/Polymer/polymer-editor-service/wiki/Sublime-Text
+
+There are also several ways to configure logging, which is very helpful when hooking up an editor for the first time. The simplest is to pass in `--logToFile PES.txt` when starting the editor service, but it also supports configuring logging at runtime. Logging can also be configured at runtime, see below for more info.
+
+### Configuration options
+
+The editor service supports the following configuration options, via the `workspace/didChangeConfiguration` notification. These configuration options should be exposed to the user through the client's configuration interface.
+
+All options are optional, and they're within the `polymer-ide` namespace. So an example of valid params to `workspace/didChangeConfiguration` would be:
+
+```json
+{
+  "settings": {
+    "polymer-ide": {
+      "analyzeWholePackage": true,
+      "fixOnSave": true
+    }
+  }
+}
+```
+
+#### analyzeWholePackage
+> default: `false`
+
+When true, warnings will be reported for all files in the package, not just those that are open. Not recommended for larger projects until https://github.com/Polymer/polymer-analyzer/issues/782 is resolved.
+
+#### enableReferencesCodeLens
+> default: `false`
+
+When true, we will report the number of references at the definitions of symbols as [Code Lenses](https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#textDocument_codeLens). Note that this will have a performance impact similar to analyzeWholePackage.
+
+#### fixOnSave
+> default: `false`
+
+When true, all warnings that can be safely and automatically fixed will be fixed on save.
+
+This requires the client to support the `textDocument/synchronization/willSaveWaitUntil` and `workspace/applyEdit` capabilities.
+
+#### logToClient
+> default: `false`
+
+When true, will send debug logs to the client via [`window/logMessage`](https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#window_logMessage) notifications. The debug logs have information on performance and file synchronization, among other info.
+
+#### logToFile
+> default value: `null`
+
+When set, will write debug logs to the file at this path. The debug logs have information on performance and file synchronization, among other info.
