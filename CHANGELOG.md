@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.3.2] - 2017-12-18
 - Static methods are now supported on classes, elements, and mixins.
 - Add `renameTypes` config option, a map of renames to apply to named types that can be configured per-project.
 - Convert Closure `ITemplateArray` type to TypeScript `TemplateStringsArray`.
