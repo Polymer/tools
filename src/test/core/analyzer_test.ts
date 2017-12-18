@@ -68,17 +68,19 @@ suite('Analyzer', () => {
   setup(() => {
     const underlyingUrlLoader = new FSUrlLoader(testDir);
     inMemoryOverlay = new InMemoryOverlayUrlLoader(underlyingUrlLoader);
-    analyzer = new Analyzer({urlLoader: inMemoryOverlay});
+    analyzer = new Analyzer({
+      urlLoader: inMemoryOverlay,
+      urlResolver: new PackageUrlResolver({packageDir: testDir})
+    });
     underliner = new CodeUnderliner(inMemoryOverlay);
   });
 
   test('canLoad delegates to the urlLoader canLoad method', () => {
-    assert.isTrue(analyzer.canLoad(resolvedUrl`/`), '/');
-    assert.isTrue(analyzer.canLoad(resolvedUrl`/path`), '/path');
-    assert.isFalse(analyzer.canLoad(resolvedUrl`../path`), '../path');
-    assert.isFalse(analyzer.canLoad(resolvedUrl`http://host/`), 'http://host/');
-    assert.isFalse(
-        analyzer.canLoad(resolvedUrl`http://host/path`), 'http://host/path');
+    assert.isTrue(analyzer.canLoad(resolvedUrl`file:///`));
+    assert.isTrue(analyzer.canLoad(resolvedUrl`file:////path`));
+    assert.isFalse(analyzer.canLoad(resolvedUrl`file://hostname/path`));
+    assert.isFalse(analyzer.canLoad(resolvedUrl`http://host/`));
+    assert.isFalse(analyzer.canLoad(resolvedUrl`http://host/path`));
   });
 
   suite('analyze()', () => {
@@ -707,9 +709,6 @@ suite('Analyzer', () => {
 
   test('analyzes a document with a namespace', async () => {
     const document = await analyzeDocument('static/namespaces/import-all.html');
-    if (!(document instanceof Document)) {
-      throw new Error(`Expected Document, got ${document}`);
-    }
 
     const namespaces =
         Array.from(document.getFeatures({kind: 'namespace', imported: true}));
@@ -761,6 +760,7 @@ var DuplicateNamespace = {};
       // imports touch every document in the package.
       assert.deepEqual(
           Array.from(pckage['_searchRoots']).map((d) => d.url).sort(), [
+            'build/output.html',
             'cyclic-a.html',
             'root.html',
             'subdir/root-in-subdir.html'
@@ -773,6 +773,7 @@ var DuplicateNamespace = {};
               .map((d) => d.url)
               .sort(),
           [
+            'build/output.html',
             'cyclic-a.html',
             'cyclic-b.html',
             'root.html',
@@ -791,6 +792,7 @@ var DuplicateNamespace = {};
               .map((d) => d.url)
               .sort(),
           [
+            'build/output.html',
             'cyclic-a.html',
             'cyclic-b.html',
             'root.html',
@@ -802,6 +804,7 @@ var DuplicateNamespace = {};
               .sort());
 
       const packageElements = [
+        'build-output',
         'root-root',
         'leaf-leaf',
         'cyclic-a',
@@ -835,16 +838,21 @@ var DuplicateNamespace = {};
       const pckage = await analyzer.analyzePackage();
       assert.deepEqual(
           Array.from(pckage['_searchRoots']).map((d) => d.url),
-          ['index.html'].map((u) => analyzer.resolveUrl(u)));
-      assert.deepEqual(
-          pckage.getWarnings().map((w) => w.sourceRange.file),
-          [analyzer.resolveUrl('index.html')]);
+          ['index.html', 'build/output.html'].map(
+              (u) => analyzer.resolveUrl(u)));
+      assert.deepEqual(pckage.getWarnings().map((w) => w.sourceRange.file), [
+        analyzer.resolveUrl('index.html'),
+        analyzer.resolveUrl('build/output.html')
+      ]);
       assert.deepEqual(
           pckage.getWarnings({externalPackages: true})
               .map((w) => w.sourceRange.file)
               .sort(),
-          ['bower_components/external-with-warnings.html', 'index.html'].map(
-              (u) => analyzer.resolveUrl(u)));
+          [
+            'bower_components/external-with-warnings.html',
+            'build/output.html',
+            'index.html',
+          ].map((u) => analyzer.resolveUrl(u)));
     });
   });
 

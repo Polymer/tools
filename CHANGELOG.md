@@ -10,19 +10,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `result.successful` is true, `result.value` is a Document. When
   `result.successful` is false, then `result.value` is
   either a Warning or undefined.
-* Introduce getDocumentContaining to find containing inline document for a feature
+* [BREAKING] UrlResolvers must now return complete URLs, like
+  file:///path/to/paper-button/paper-button.html or
+  https://example.com/components/paper-button/paper-button.html
+* Introduce getDocumentContaining to find containing inline document for a
+  feature
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.5] - 2017-12-15
 * [BREAKING] Removed `Analyzer#resolveUrl` in favor of just exposing the
   `UrlResolver` at `Analyzer#urlResolver.resolve`
+* [BREAKING] Polymer property types are now assumed to be possibly
+  `null|undefined` unless an explicit `@type` annotation says otherwise.
 * Add `Analyzer.createForDirectory()` for easily getting a well configured
   analyzer for a given directory.
 * Add `Import#originalUrl` which has the original url of the import as it was
   encountered in the document, before it was resolved relative to the base url
   of its containing document.
-* [BREAKING] Polymer property types are now assumed to be possibly
-  `null|undefined` unless an explicit `@type` annotation says otherwise.
 * Added `attributeType` field to Polymer property, which contains the name
   of the Polymer property declaration `type` field Constructor.
 

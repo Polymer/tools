@@ -13,7 +13,9 @@
  */
 
 import {posix} from 'path';
+import {resolve as urlLibResolver} from 'url';
 
+import {parseUrl} from '../core/utils';
 import {ScannedImport} from '../index';
 import {FileRelativeUrl, ResolvedUrl} from '../model/url';
 
@@ -39,16 +41,35 @@ export abstract class UrlResolver {
   abstract relative(from: ResolvedUrl, to?: ResolvedUrl, kind?: string):
       FileRelativeUrl;
 
+  protected simpleUrlResolve(url: FileRelativeUrl, baseUrl: ResolvedUrl):
+      ResolvedUrl {
+    let resolved = urlLibResolver(baseUrl, url);
+    if (url.endsWith('/') && !resolved.endsWith('/')) {
+      resolved += '/';
+    }
+    return this.brandAsResolved(resolved);
+  }
+
   protected simpleUrlRelative(from: ResolvedUrl, to: ResolvedUrl):
       FileRelativeUrl {
-    if (!from.endsWith('/')) {
-      from = this.brandAsResolved(posix.dirname(from));
+    const fromUrl = parseUrl(from);
+    const toUrl = parseUrl(to);
+    if (toUrl.protocol && toUrl.protocol !== fromUrl.protocol) {
+      return this.brandAsRelative(to);
     }
-    let result = posix.relative(from, to);
-    if (to.endsWith('/')) {
-      result += '/';
+    if (toUrl.host && toUrl.host !== fromUrl.host) {
+      return this.brandAsRelative(to);
     }
-    return this.brandAsRelative(result);
+    let fromPath = decodeURIComponent(fromUrl.pathname || '');
+    const toPath = decodeURIComponent(toUrl.pathname || '');
+    if (!fromPath.endsWith('/')) {
+      fromPath = posix.dirname(fromPath);
+    }
+    let relativized = encodeURI(posix.relative(fromPath, toPath));
+    if (toPath.endsWith('/') && !relativized.endsWith('/')) {
+      relativized += '/';
+    }
+    return this.brandAsRelative(relativized);
   }
 
   protected brandAsRelative(url: string): FileRelativeUrl {

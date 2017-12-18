@@ -131,7 +131,8 @@ suite('HtmlScriptScanner', () => {
       // import statement in inline module script in
       // 'imports-js-module-with-base.html'
       const js0 = jsImports[0].document.parsedDocument as JavaScriptDocument;
-      assert.equal(js0.url, 'javascript/module-with-export.js');
+      assert.equal(
+          js0.url, analyzer.resolveUrl('javascript/module-with-export.js'));
       assert.equal(js0.parsedAsSourceType, 'module');
       assert.equal(
           js0.contents.trim(), `export const someValue = 'value goes here';`);

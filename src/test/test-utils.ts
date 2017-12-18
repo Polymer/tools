@@ -136,8 +136,8 @@ export async function runScannerOnContents(
   return {features, warnings, analyzer, urlLoader: overlayLoader};
 }
 
-const noOpTag = (strings: TemplateStringsArray, ...values: any[]): string =>
-    values.reduce(
+export const noOpTag =
+    (strings: TemplateStringsArray, ...values: any[]): string => values.reduce(
         (r: string, v: any, i) => r + String(v) + strings[i + 1], strings[0]);
 
 export function fileRelativeUrl(

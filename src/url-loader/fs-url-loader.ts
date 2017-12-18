@@ -14,14 +14,12 @@
 
 import * as fs from 'fs';
 import * as pathlib from 'path';
-import {Url} from 'url';
+import Uri from 'vscode-uri';
 
-import {parseUrl} from '../core/utils';
+import {ResolvedUrl} from '../index';
 import {PackageRelativeUrl} from '../model/url';
 
 import {UrlLoader} from './url-loader';
-
-
 
 /**
  * Resolves requests via the file system.
@@ -33,19 +31,11 @@ export class FSUrlLoader implements UrlLoader {
     this.root = root || '';
   }
 
-  canLoad(url: string): boolean {
-    const urlObject = parseUrl(url);
-    const pathname =
-        pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
-    return this._isValid(urlObject, pathname);
+  canLoad(url: ResolvedUrl): boolean {
+    return url.startsWith('file:///');
   }
 
-  private _isValid(urlObject: Url, pathname: string) {
-    return (urlObject.protocol === 'file' || !urlObject.hostname) &&
-        !pathname.startsWith('../');
-  }
-
-  load(url: string): Promise<string> {
+  load(url: ResolvedUrl): Promise<string> {
     return new Promise((resolve, reject) => {
       const filepath = this.getFilePath(url);
       fs.readFile(filepath, 'utf8', (error: Error, contents: string) => {
@@ -58,14 +48,11 @@ export class FSUrlLoader implements UrlLoader {
     });
   }
 
-  getFilePath(url: string): string {
-    const urlObject = parseUrl(url);
-    const pathname =
-        pathlib.normalize(decodeURIComponent(urlObject.pathname || ''));
-    if (!this._isValid(urlObject, pathname)) {
-      throw new Error(`Invalid URL ${url}`);
+  private getFilePath(url: ResolvedUrl): string {
+    if (!this.canLoad(url)) {
+      throw new Error(`FsUrlLoader can not load url: ${url}`);
     }
-    return this.root ? pathlib.join(this.root, pathname) : pathname;
+    return Uri.parse(url).fsPath;
   }
 
   async readDirectory(pathFromRoot: string, deep?: boolean):

@@ -26,7 +26,7 @@
     "quicktest": "export QUICK_TESTS=true; npm run build && mocha",
     "initBench": "if [ ! -d bower_components ]; then bower install -s -f PolymerElements/app-elements PolymerElements/iron-elements PolymerElements/gold-elements PolymerElements/paper-elements PolymerElements/neon-elements GoogleWebComponents/google-web-components ; fi",
     "benchmark": "npm run build && npm run initBench && node --expose-gc lib/perf/parse-all-benchmark.js",
-    "test:watch": "tsc-then -- mocha",
+    "test:watch": "tsc-then -- mocha -c",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "prepublishOnly": "tsc && npm test"
   },
@@ -60,8 +60,7 @@
     "temp": "^0.8.3",
     "tslint": "^4.1.1",
     "typescript": "^2.6.1",
-    "typescript-json-schema": "^0.19.0",
-    "watchy": "^0.6.6"
+    "typescript-json-schema": "^0.19.0"
   },
   "dependencies": {
     "@types/babel-generator": "^6.25.1",
@@ -92,7 +91,8 @@
     "polymer-project-config": "^3.6.0",
     "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",
-    "strip-indent": "^2.0.0"
+    "strip-indent": "^2.0.0",
+    "vscode-uri": "^1.0.1"
   },
   "engines": {
     "node": ">=6"

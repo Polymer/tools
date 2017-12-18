@@ -4,19 +4,16 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
-      "cwd": "${workspaceRoot}",
-      "outFiles": [],
-      "sourceMaps": true
-    },
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to Process",
-      "port": 5858,
-      "outFiles": [],
-      "sourceMaps": true
+      "name": "Mocha Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-u",
+        "tdd",
+        "--timeout",
+        "999999",
+        "--colors"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }

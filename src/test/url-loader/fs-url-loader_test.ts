@@ -15,48 +15,27 @@
 import {assert} from 'chai';
 
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {resolvedUrl} from '../test-utils';
 
 suite('FSUrlLoader', function() {
   suite('canLoad', () => {
-    test('canLoad is true an in-package URL', () => {
-      assert.isTrue(new FSUrlLoader('').canLoad('foo.html'));
+    test('canLoad is true a local file URL', () => {
+      assert.isTrue(new FSUrlLoader().canLoad(resolvedUrl`file:///foo.html`));
     });
 
-    test('canLoad is false for a sibling URL', () => {
-      assert.isFalse(new FSUrlLoader('').canLoad('../foo/foo.html'));
+    test('canLoad is false for a file url with a host', () => {
+      assert.isFalse(
+          new FSUrlLoader().canLoad(resolvedUrl`file://foo/foo/foo.html`));
     });
 
-    test('canLoad is false for a cousin URL', () => {
-      assert.isFalse(new FSUrlLoader('').canLoad('../../foo/foo.html'));
+    test('canLoad is false for a relative path URL', () => {
+      assert.isFalse(
+          new FSUrlLoader().canLoad(resolvedUrl`../../foo/foo.html`));
     });
 
-    test('canLoad is false for URL with a hostname', () => {
-      assert.isFalse(new FSUrlLoader('').canLoad('http://abc.xyz/foo.html'));
-    });
-  });
-
-  suite('getFilePath', () => {
-    test('resolves an in-package URL', () => {
-      assert.equal(new FSUrlLoader('').getFilePath('foo.html'), 'foo.html');
-    });
-
-    test('resolves an in-package URL', () => {
-      assert.equal(
-          new FSUrlLoader('root').getFilePath('foo.html'), 'root/foo.html');
-    });
-
-    test('throws for a sibling URL', () => {
-      assert.throws(() => new FSUrlLoader('').getFilePath('../foo/foo.html'));
-    });
-
-    test('throws for a cousin URL', () => {
-      assert.throws(
-          () => new FSUrlLoader('').getFilePath('../../foo/foo.html'));
-    });
-
-    test('throws for a URL with a hostname', () => {
-      assert.throws(
-          () => new FSUrlLoader('').getFilePath('http://abc.xyz/foo.html'));
+    test('canLoad is false for an http URL', () => {
+      assert.isFalse(
+          new FSUrlLoader().canLoad(resolvedUrl`http://abc.xyz/foo.html`));
     });
   });
 });

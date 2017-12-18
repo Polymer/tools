@@ -28,59 +28,63 @@ const mergeStream = require('merge-stream');
 const path = require('path');
 const runSeq = require('run-sequence');
 const typescript_lib = require('typescript');
+const child_process = require('child_process');
+
 
 function task(name, deps, impl) {
   if (gulp.hasTask(name)) {
     throw new Error(
-        `A task with the name ${JSON.stringify(name)} already exists!`);
+      `A task with the name ${JSON.stringify(name)} already exists!`);
   }
   gulp.task(name, deps, impl);
 }
 
 task('init');
 
-task('depcheck', function() {
+task('depcheck', function () {
   return new Promise((resolve, reject) => {
-           depcheck_lib(
-               __dirname,
-               {ignoreDirs: [], ignoreMatches: [
-                   '@types/*', 'polymer-project-config']},
-               resolve);
-         })
-      .then((result) => {
-        const invalidFiles = Object.keys(result.invalidFiles) || [];
-        const invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
+    depcheck_lib(
+      __dirname,
+      {
+        ignoreDirs: [], ignoreMatches: [
+          '@types/*', 'polymer-project-config']
+      },
+      resolve);
+  })
+    .then((result) => {
+      const invalidFiles = Object.keys(result.invalidFiles) || [];
+      const invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
 
-        const unused = new Set(result.dependencies);
-        if (unused.size > 0) {
-          console.log('Unused dependencies:', unused);
-          throw new Error('Unused dependencies');
-        }
-      });
+      const unused = new Set(result.dependencies);
+      if (unused.size > 0) {
+        console.log('Unused dependencies:', unused);
+        throw new Error('Unused dependencies');
+      }
+    });
 });
 
 task('lint', ['tslint', 'depcheck']);
 
-task('tslint', function() {
+task('tslint', function () {
   return gulp.src('src/**/*.ts')
-      .pipe(tslint_lib({
-        configuration: 'tslint.json',
-        formatter: 'verbose',
-      }))
-      .pipe(tslint_lib.report());
+    .pipe(tslint_lib({
+      configuration: 'tslint.json',
+      formatter: 'verbose',
+    }))
+    .pipe(tslint_lib.report());
 });
 
 const tsProject =
-    typescript.createProject('tsconfig.json', {typescript: typescript_lib});
+  typescript.createProject('tsconfig.json', { typescript: typescript_lib });
 
 task('build', ['compile', 'json-schema']);
 
-task('compile', function() {
+task('compile', function () {
   const srcs =
-      gulp.src('src/**/*.ts');  //.pipe(newer({dest: 'lib', ext: '.js'}));
+    gulp.src('src/**/*.ts');  //.pipe(newer({dest: 'lib', ext: '.js'}));
   const tsResult =
-      srcs.pipe(sourcemaps.init())
-          .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
+    srcs.pipe(sourcemaps.init())
+      .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
 
   // Use this once typescript-gulp supports `include` in tsconfig:
   // const srcs = tsProject.src();
@@ -107,12 +111,29 @@ task('test', ['build'], () => {
   }));
 });
 
-task('json-schema', function() {
+task('json-schema', function () {
   const inPath = 'src/analysis-format/analysis-format.ts';
   const outPath = 'lib/analysis.schema.json';
-  return gulp.src(inPath).pipe(newer(outPath)).pipe(shell([
-    `./node_modules/.bin/typescript-json-schema --required ${inPath
-    } Analysis > ${outPath}.temp`,
-    `mv ${outPath}.temp ${outPath}`
-  ]));
+  const command = path.normalize(`node_modules/.bin/typescript-json-schema`);
+  const child = child_process.spawn(command, [`--required`, `${inPath}`, `Analysis`], { shell: true, cwd: process.cwd(), hideWindows: true });
+  let buffer = '';
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => {
+    buffer += chunk;
+  });
+  child.stderr.on('data', (chunk) => {
+    process.stderr.write(chunk);
+  });
+  const childFinished = new Promise((resolve, reject) => {
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+  });
+  return childFinished.then(() => {
+    fs.writeFileSync(outPath, buffer, 'utf8');
+  });
 });

@@ -90,7 +90,7 @@ export class Analyzer {
   static createForDirectory(dirname: string): Analyzer {
     return new Analyzer({
       urlLoader: new FSUrlLoader(dirname),
-      urlResolver: new PackageUrlResolver({})
+      urlResolver: new PackageUrlResolver({packageDir: dirname})
     });
   }
 

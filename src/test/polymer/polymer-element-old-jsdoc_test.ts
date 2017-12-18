@@ -28,7 +28,7 @@ suite('PolymerElement with old jsdoc annotations', () => {
   const urlLoader = new FSUrlLoader(testFilesDir);
   const analyzer = new Analyzer({
     urlLoader: urlLoader,
-    urlResolver: new PackageUrlResolver({}),
+    urlResolver: new PackageUrlResolver({packageDir: testFilesDir}),
     scanners: new Map([['js', [new ClassScanner()]]])
   });
 
