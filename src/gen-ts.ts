@@ -39,6 +39,14 @@ export interface Config {
    * path in b. All paths are relative to the analysis root directory.
    */
   addReferences?: {[filepath: string]: string[]};
+
+  /**
+   * Whenever a type with a name in this map is encountered, replace it with
+   * the given name. Note this only applies to named types found in places like
+   * function/method parameters and return types. It does not currently rename
+   * e.g. entire generated classes.
+   */
+  renameTypes?: {[name: string]: string};
 }
 
 /**
@@ -71,6 +79,7 @@ function analyzerToAst(
   const addReferences = config.addReferences || {};
   const removeReferencesResolved = new Set(
       (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
+  const renameTypes = new Map(Object.entries(config.renameTypes || {}));
 
   // Analyzer can produce multiple JS documents with the same URL (e.g. an
   // HTML file with multiple inline scripts). We also might have multiple
@@ -109,6 +118,14 @@ function analyzerToAst(
     }
     for (const ref of addReferences[tsDoc.path] || []) {
       tsDoc.referencePaths.add(path.relative(path.dirname(tsDoc.path), ref));
+    }
+    for (const node of tsDoc.traverse()) {
+      if (node.kind === 'name') {
+        const renamed = renameTypes.get(node.name);
+        if (renamed !== undefined) {
+          node.name = renamed;
+        }
+      }
     }
     tsDoc.simplify();
     // Include even documents with no members. They might be dependencies of
