@@ -9,8 +9,6 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-// TODO Object<foo>, Object<foo, bar>
-//
 // Useful resources for working on this package:
 // https://eslint.org/doctrine/demo/
 // https://github.com/google/closure-compiler/wiki/Types-in-the-Closure-Type-System
@@ -118,6 +116,8 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
 
   if (isParameterizedArray(node)) {  // Array<foo>
     t = convertArray(node, templateTypes);
+  } else if (isParameterizedObject(node)) {  // Object<foo, bar>
+    t = convertIndexableObject(node, templateTypes);
   } else if (isUnion(node)) {  // foo|bar
     t = convertUnion(node, templateTypes);
   } else if (isFunction(node)) {  // function(foo): bar
@@ -187,6 +187,18 @@ function convertArray(
   return new ts.ArrayType(
       applications.length === 1 ? convert(applications[0], templateTypes) :
                                   ts.anyType);
+}
+
+function convertIndexableObject(
+    node: doctrine.type.TypeApplication,
+    templateTypes: string[]): ts.IndexableObjectType|ts.NameType {
+  if (node.applications.length !== 2) {
+    console.error('Parameterized Object must have two parameters.');
+    return ts.anyType;
+  }
+  return new ts.IndexableObjectType(
+      convert(node.applications[0], templateTypes),
+      convert(node.applications[1], templateTypes));
 }
 
 function convertUnion(
@@ -262,6 +274,16 @@ function isParameterizedArray(node: doctrine.Type):
 function isBareArray(node: doctrine.Type):
     node is doctrine.type.TypeApplication {
   return node.type === 'NameExpression' && node.name === 'Array';
+}
+
+/**
+ * Matches `Object<foo, bar>` but not `Object` (which is a NameExpression).
+ */
+function isParameterizedObject(node: doctrine.Type):
+    node is doctrine.type.TypeApplication {
+  return node.type === 'TypeApplication' &&
+      node.expression.type === 'NameExpression' &&
+      node.expression.name === 'Object';
 }
 
 function isUnion(node: doctrine.Type): node is doctrine.type.UnionType {

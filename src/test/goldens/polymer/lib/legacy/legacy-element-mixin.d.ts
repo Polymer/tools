@@ -34,7 +34,7 @@ declare namespace Polymer {
 
   interface LegacyElementMixin {
     isAttached: boolean;
-    _debouncers: any;
+    _debouncers: {[key: string]: Function|null};
 
     /**
      * Overrides the default `Polymer.PropertyEffects` implementation to

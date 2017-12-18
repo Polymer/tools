@@ -416,7 +416,7 @@ export class Param {
 
 // A TypeScript type expression.
 export type Type = NameType|UnionType|ArrayType|FunctionType|ConstructorType|
-    RecordType|IntersectionType;
+    RecordType|IntersectionType|IndexableObjectType;
 
 // string, MyClass, null, undefined, any
 export class NameType {
@@ -654,6 +654,27 @@ export class IntersectionType {
 
   serialize(): string {
     return this.types.map((t) => t.serialize()).join(' & ');
+  }
+}
+
+export class IndexableObjectType {
+  readonly kind = 'indexableObject';
+  keyType: Type;
+  valueType: Type;
+
+  constructor(keyType: Type, valueType: Type) {
+    this.keyType = keyType;
+    this.valueType = valueType;
+  }
+
+  * traverse(): Iterable<Node> {
+    yield this.keyType;
+    yield this.valueType;
+    yield this;
+  }
+
+  serialize(): string {
+    return `{[key: ${this.keyType.serialize()}]: ${this.valueType.serialize()}}`
   }
 }
 
