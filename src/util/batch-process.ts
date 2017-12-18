@@ -39,7 +39,7 @@ export async function batchProcess<T, V>(
     Promise<BatchProcessResponse<T, V>> {
   const concurrency = (options && options.concurrency) || 0;
   const rateLimitter = new Bottleneck(concurrency);
-  const successRuns = new Map<T, any>();
+  const successRuns = new Map<T, V>();
   const failRuns = new Map<T, Error>();
 
   await Promise.all(items.map((item) => {
@@ -52,4 +52,14 @@ export async function batchProcess<T, V>(
         });
   }));
   return {successes: successRuns, failures: failRuns};
+}
+
+/**
+ * A generic function interface, useful for extending the batchProcess generic
+ * function signature.
+ * See: https://www.typescriptlang.org/docs/handbook/generics.html
+ */
+export interface BatchProcessFn<T, V = any> {
+  (items: T[], fn: (repo: T) => Promise<V>,
+   options?: {concurrency: number}): Promise<BatchProcessResponse<T, V>>;
 }

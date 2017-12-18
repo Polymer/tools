@@ -13,13 +13,13 @@
  */
 
 // NOTE(fks) 09-22-2017: The Workspace object is meant to wrap a lot of complex
-// functionality together, including repo fetching, cloning, and running
-// logic across multiple directories.
+// functionality together related to setup, including repo fetching, cloning,
+// and resetting.
 //
 // While the smaller pieces this object relies on are tested individually,
-// there is no way to unit test the Workspace object without making private
-// implementation-detail methods public, which is exactly what we're trying to
-// avoid.
+// there is no way to unit test the Workspace object without making
+// private implementation-detail methods public, which is exactly what we're
+// trying to avoid.
 //
 // TODO(fks) 09-22-2017: Write some good integration tests instead.
 
@@ -35,25 +35,10 @@ suite('src/workspace', function() {
     suite('workspace.init()', () => {
       test('can be initialized with an empty set of patterns', async () => {
         const workspace =
-            new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
-        const {workspaceRepos, failures} = await workspace.init({include: []});
+            new Workspace({token: testGitHubToken, dir: testWorkspaceDir, match: []});
+        const {workspaceRepos, failures} = await workspace.init();
         assert.deepEqual(workspaceRepos, []);
         assert.deepEqual([...failures], []);
-      });
-    });
-
-    suite('workspace.isInitialized', () => {
-      test('returns false before init has been run', async () => {
-        const workspace =
-            new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
-        assert.isFalse(workspace.isInitialized);
-      });
-
-      test('returns true after init has been run', async () => {
-        const workspace =
-            new Workspace({token: testGitHubToken, dir: testWorkspaceDir});
-        await workspace.init({include: []});
-        assert.isTrue(workspace.isInitialized);
       });
     });
   });
