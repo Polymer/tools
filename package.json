@@ -1,6 +1,6 @@
 {
   "name": "@polymer/gen-typescript-declarations",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Generate TypeScript type declarations for Polymer components.",
   "main": "lib/gen-ts.js",
   "types": "lib/gen-ts.d.ts",
