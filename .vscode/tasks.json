@@ -9,12 +9,21 @@
   "tasks": [
     {
       "taskName": "test",
-      "args": ["run", "test:watch"],
+      "args": [
+        "run",
+        "test:watch"
+      ],
       "isTestCommand": true,
+      "isBackground": true,
       "problemMatcher": {
-        "fileLocation": ["relative", "${workspaceRoot}/src"],
-        "watchedTaskBeginsRegExp": "\\[npm\\] INFO Spawning\\.\\.\\.",
-        "watchedTaskEndsRegExp": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)",
+        "fileLocation": [
+          "relative",
+          "${workspaceRoot}/src"
+        ],
+        "background": {
+          "beginsPattern": "tsc-then: Running",
+          "endsPattern": "tsc-then: command finished"
+        },
         "pattern": [
           {
             "regexp": "^  (\\d+)\\) ((\\w+).*)",
@@ -24,8 +33,7 @@
             "column": 1
           }
         ]
-      },
-      "isWatching": true
+      }
     }
   ]
 }

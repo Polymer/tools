@@ -13,13 +13,12 @@
     "url": "https://github.com/Polymer/polymer-editor-service.git"
   },
   "scripts": {
-    "clean": "mkdir -p lib/ && rm -rf lib/ && mkdir -p lib/test && cp -r src/test/static lib/test/",
+    "clean": "touch lib && rm -rf lib",
     "build": "tsc",
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "tslint --project ./tsconfig.json",
     "test": "npm run clean && npm run build && mocha && npm run lint",
-    "quicktest": "export QUICK_TESTS=true; npm run build || true && mocha",
-    "test:watch": "watchy -w src/ -- npm run quicktest --loglevel=silent",
+    "test:watch": "tsc-then -- mocha",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
@@ -32,9 +31,9 @@
     "memory-streams": "^0.1.0",
     "mocha": "^3",
     "source-map-support": "^0.4.2",
+    "tsc-then": "^1.0.1",
     "tslint": "^5",
-    "typescript": "^2.4.2",
-    "watchy": "^0.7"
+    "typescript": "^2.4.2"
   },
   "dependencies": {
     "@types/minimatch": "^3.0.1",
@@ -43,8 +42,8 @@
     "@types/split": "^0.3.28",
     "@types/winston": "^2.2.0",
     "dom5": "^2.0.1",
-    "minimatch": "^3.0.4",
     "fuzzaldrin": "^2.1.0",
+    "minimatch": "^3.0.4",
     "parse5": "^2.2.3",
     "plylog": "^0.5.0",
     "polymer-analyzer": "^2.7.0",
