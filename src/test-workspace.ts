@@ -35,13 +35,6 @@ async function setupRepos(
     reposUnderTest: WorkspaceRepo[],
     localConversionMap: ConversionResultsMap,
     options: WorkspaceTestSettings) {
-  // Yarn sometimes has some issues with bad packages entering the cache from
-  // modulizer. Clear the cache before starting.
-  const {stderr} = await exec(options.workspaceDir, 'yarn', ['cache', 'clean']);
-  if (stderr.length > 0) {
-    console.log(chalk.dim(`yarn cache clean: ${stderr}`));
-  }
-
   return run(reposUnderTest, async (repo) => {
     await exec(repo.dir, 'git', ['checkout', '-B', localDependenciesBranch]);
     writeTestingPackageJson(repo, localConversionMap, options.packageVersion);
@@ -54,13 +47,11 @@ async function setupRepos(
  * Run `yarn install` to install dependencies in a repo. Note that this creates
  * a node_modules/ folder & an associated yarn.lock file as side effects.
  */
-async function installYarnDependencies(reposUnderTest: WorkspaceRepo[]) {
+async function installNpmDependencies(reposUnderTest: WorkspaceRepo[]) {
   return run(reposUnderTest, async (repo) => {
-    const repoDirName = path.basename(repo.dir);
-    const {stderr} = await exec(repo.dir, 'yarn', ['install']);
-    if (stderr.length > 0) {
-      console.log(chalk.dim(`${repoDirName}: ${stderr}`));
-    }
+    // TODO(fks): Get `yarn install --flat` working to test flat install
+    // See: https://github.com/Polymer/polymer-modulizer/issues/254
+    return exec(repo.dir, 'npm', ['install']);
   }, {concurrency: 1});
 }
 
@@ -121,7 +112,7 @@ export async function testWorkspace(
 
   logStep(2, 5, '🔧', `Installing Dependencies...`);
   const installResults =
-      await installYarnDependencies([...setupRepoResults.successes.keys()]);
+      await installNpmDependencies([...setupRepoResults.successes.keys()]);
   installResults.failures.forEach(logRepoError);
 
   logStep(3, 5, '🔧', `Running Tests...`);
@@ -147,7 +138,7 @@ export async function testWorkspaceInstallOnly(
 
   logStep(2, 4, '🔧', `Installing Dependencies...`);
   const installResults =
-      await installYarnDependencies([...setupRepoResults.successes.keys()]);
+      await installNpmDependencies([...setupRepoResults.successes.keys()]);
   installResults.failures.forEach(logRepoError);
 
   logStep(3, 4, '🔧', `Restoring Repos...`);
