@@ -644,8 +644,11 @@ export class DocumentConverter {
         continue;
       }
 
-      const templateLiteral = serializeNodeToTemplateLiteral(
-          parse5.treeAdapters.default.getTemplateContent(template));
+      const templateLiteral = jsc.taggedTemplateExpression(
+          jsc.memberExpression(
+              jsc.identifier('Polymer'), jsc.identifier('html')),
+          serializeNodeToTemplateLiteral(
+              parse5.treeAdapters.default.getTemplateContent(template)));
       const nodePath = getNodePathInProgram(program, element.astNode);
 
       if (nodePath === undefined) {

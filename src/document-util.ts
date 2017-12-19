@@ -64,7 +64,7 @@ export function isSourceLocationEqual(a: estree.Node, b: estree.Node): boolean {
  * Serialize a Node to string, wrapped as an estree template literal.
  */
 export function serializeNodeToTemplateLiteral(
-    node: parse5.ASTNode, addNewlines = true): estree.TemplateLiteral {
+    node: parse5.ASTNode, addNewLines = true) {
   const lines = parse5.serialize(node).split('\n');
 
   // Remove empty / whitespace-only leading lines.
@@ -77,16 +77,26 @@ export function serializeNodeToTemplateLiteral(
   }
 
   let cooked = lines.join('\n');
-  if (addNewlines) {
+  if (addNewLines) {
     cooked = `\n${cooked}\n`;
   }
 
   // The `\` -> `\\` replacement must occur first so that the backslashes
   // introduced by later replacements are not replaced.
-  const raw = cooked.replace(/<\/script/g, '&lt;/script')
-                  .replace(/\\/g, '\\\\')
-                  .replace(/`/g, '\\`')
-                  .replace(/\$/g, '\\$');
+  const raw = cooked.replace(/(<\/script|\\|`|\$)/g, (_match, group) => {
+    switch (group) {
+      case `<\/script`:
+        return '&lt;/script';
+      case '\\':
+        return '\\\\';
+      case '`':
+        return '\\`';
+      case '$':
+        return '\\$';
+      default:
+        throw new Error(`oops!: ${group}`);
+    }
+  });
 
   return jsc.templateLiteral([jsc.templateElement({cooked, raw}, true)], []);
 }

@@ -108,7 +108,7 @@ suite('AnalysisConverter', () => {
 
     function assertSources(
         results: Map<string, string|undefined>,
-        expected: {[path: string]: string|undefined}) {
+        expected: {[path: string]: string | undefined}) {
       for (const [expectedPath, expectedContents] of Object.entries(expected)) {
         assert.isTrue(
             results.has(expectedPath),
@@ -441,7 +441,7 @@ export const Polymer = function(info) {
       assertSources(await convert(), {
         'test.js': `
 Polymer({
-  _template: \`
+  _template: Polymer.html\`
               <h1>Test</h1>
 \`,
 
@@ -1112,7 +1112,7 @@ export const setRootPath = function(path) {
  */
 class TestElement extends Polymer.Element {
   static get template() {
-    return \`
+    return Polymer.html\`
     <h1>Hi!</h1>
     <div>
       This template has multiple lines.<br>
@@ -1146,7 +1146,7 @@ class TestElement extends Polymer.Element {
       assertSources(await convert(), {
         'test.js': `
 Polymer({
-  _template: \`
+  _template: Polymer.html\`
       <h1>Hi!</h1>
 \`,
 
@@ -1381,14 +1381,14 @@ $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
 document.head.appendChild($_documentContainer);
 customElements.define('foo-elem', class FooElem extends Element {
   static get template() {
-    return \`
+    return Polymer.html\`
     <div>foo-element body</div>
 \`;
   }
 });
 customElements.define('bar-elem', class BarElem extends Element {
   static get template() {
-    return \`
+    return Polymer.html\`
     <div>bar body</div>
 \`;
   }
@@ -1632,14 +1632,14 @@ console.log(ShadyDOM.flush());
       assertSources(await convert(), {
         'test.js': `
 Polymer({
-  _template: \`
+  _template: Polymer.html\`
 foo
 \`,
 
   is: 'foo'
 });
 Polymer({
-  _template: \`
+  _template: Polymer.html\`
 bar
 \`,
 
@@ -2200,7 +2200,7 @@ customElements.define(
 customElements.define(
     'just-fine', class extends HTMLElement{
   static get template() {
-    return \`
+    return Polymer.html\`
 Hello world
 \`;
   }
@@ -2411,7 +2411,7 @@ console.log('second script');
         assertSources(await convert(), {
           'test.js': `
 Polymer({
-  _template: \`
+  _template: Polymer.html\`
             <div>Implementation here</div>
 \`,
 
