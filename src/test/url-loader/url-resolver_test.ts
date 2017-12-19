@@ -15,11 +15,11 @@
 import {assert} from 'chai';
 import {posix} from 'path';
 
-import {FileRelativeUrl, ResolvedUrl} from '../../index';
+import {FileRelativeUrl, ResolvedUrl, PackageRelativeUrl} from '../../index';
 import {UrlResolver} from '../../url-loader/url-resolver';
 
 class SimplestUrlResolver extends UrlResolver {
-  resolve(url: FileRelativeUrl) {
+  resolve(url: FileRelativeUrl|PackageRelativeUrl) {
     return this.simpleUrlResolve(
         url, posix.normalize(process.cwd()) as ResolvedUrl);
   }
