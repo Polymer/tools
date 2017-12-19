@@ -14,7 +14,7 @@
 
 import * as path from 'path';
 import {Analyzer} from '../core/analyzer';
-import {FileRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
+import {FileRelativeUrl, PackageRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
 import {makeParseLoader, SourceRange, Warning} from '../model/model';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
@@ -60,7 +60,7 @@ export class CodeUnderliner {
     const urlLoader = new InMemoryOverlayUrlLoader();
     urlLoader.urlContentsMap.set(url, contents);
     return new CodeUnderliner(urlLoader, new class extends UrlResolver {
-      resolve(url: FileRelativeUrl) {
+      resolve(url: FileRelativeUrl|PackageRelativeUrl) {
         return this.brandAsResolved(url);
       }
 

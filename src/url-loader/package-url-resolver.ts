@@ -17,7 +17,7 @@ import {Url} from 'url';
 import Uri from 'vscode-uri';
 
 import {parseUrl} from '../core/utils';
-import {FileRelativeUrl, ScannedImport} from '../index';
+import {FileRelativeUrl, PackageRelativeUrl, ScannedImport} from '../index';
 import {ResolvedUrl} from '../model/url';
 
 import {UrlResolver} from './url-resolver';
@@ -57,7 +57,8 @@ export class PackageUrlResolver extends UrlResolver {
   }
 
   resolve(
-      unresolvedHref: FileRelativeUrl, baseUrl: ResolvedUrl = this.packageUrl,
+      unresolvedHref: FileRelativeUrl|PackageRelativeUrl,
+      baseUrl: ResolvedUrl = this.packageUrl,
       _import?: ScannedImport): ResolvedUrl|undefined {
     const resolvedHref = this.simpleUrlResolve(unresolvedHref, baseUrl);
     if (resolvedHref === undefined) {

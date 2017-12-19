@@ -30,7 +30,7 @@ import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
 import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedImport, ScannedInlineDocument, Severity, Warning, WarningCarryingException} from '../model/model';
-import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from '../model/url';
+import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 import {ParsedDocument, UnparsableParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {BehaviorScanner} from '../polymer/behavior-scanner';
@@ -487,11 +487,7 @@ export class AnalysisContext {
    * Resolves all resolvable URLs in the list, removes unresolvable ones.
    */
   resolveUserInputUrls(urls: PackageRelativeUrl[]): ResolvedUrl[] {
-    return filterOutUndefineds(urls.map((u) => this.resolveUserInputUrl(u)));
-  }
-
-  resolveUserInputUrl(url: PackageRelativeUrl): ResolvedUrl|undefined {
-    return this.resolver.resolve(url as any as FileRelativeUrl);
+    return filterOutUndefineds(urls.map((u) => this.resolver.resolve(u)));
   }
 }
 

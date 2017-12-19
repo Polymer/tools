@@ -85,8 +85,8 @@ export class Analysis implements Queryable {
   }
 
   getDocument(packageRelativeUrl: string): Result<Document, Warning|undefined> {
-    const url = this.context.resolveUserInputUrl(
-        packageRelativeUrl as PackageRelativeUrl);
+    const url =
+        this.context.resolver.resolve(packageRelativeUrl as PackageRelativeUrl);
     if (url === undefined) {
       return {successful: false, error: undefined};
     }

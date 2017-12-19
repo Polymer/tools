@@ -13,6 +13,8 @@
  */
 
 import {resolve as urlLibResolver} from 'url';
+
+import {PackageRelativeUrl} from '../index';
 import {FileRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
 
 import {UrlResolver} from './url-resolver';
@@ -29,7 +31,8 @@ export class RedirectResolver extends UrlResolver {
   }
 
   resolve(
-      fileRelativeUrl: FileRelativeUrl, baseUrl: ResolvedUrl = this.packageUrl,
+      fileRelativeUrl: FileRelativeUrl|PackageRelativeUrl,
+      baseUrl: ResolvedUrl = this.packageUrl,
       _import?: ScannedImport): ResolvedUrl|undefined {
     const packageRelativeUrl =
         this.brandAsResolved(urlLibResolver(baseUrl, fileRelativeUrl));

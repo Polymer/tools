@@ -16,7 +16,7 @@ import {posix} from 'path';
 import {resolve as urlLibResolver} from 'url';
 
 import {parseUrl} from '../core/utils';
-import {ScannedImport} from '../index';
+import {PackageRelativeUrl, ScannedImport} from '../index';
 import {FileRelativeUrl, ResolvedUrl} from '../model/url';
 
 /**
@@ -33,16 +33,18 @@ export abstract class UrlResolver {
    *
    * Returns `undefined` if the given url cannot be resolved.
    */
+  abstract resolve(url: PackageRelativeUrl): ResolvedUrl|undefined;
   abstract resolve(
-      url: FileRelativeUrl, baseUrl?: ResolvedUrl,
+      url: FileRelativeUrl, baseUrl: ResolvedUrl,
       scannedImport?: ScannedImport): ResolvedUrl|undefined;
 
   abstract relative(to: ResolvedUrl): FileRelativeUrl;
   abstract relative(from: ResolvedUrl, to?: ResolvedUrl, kind?: string):
       FileRelativeUrl;
 
-  protected simpleUrlResolve(url: FileRelativeUrl, baseUrl: ResolvedUrl):
-      ResolvedUrl {
+  protected simpleUrlResolve(
+      url: FileRelativeUrl|PackageRelativeUrl,
+      baseUrl: ResolvedUrl): ResolvedUrl {
     let resolved = urlLibResolver(baseUrl, url);
     if (url.endsWith('/') && !resolved.endsWith('/')) {
       resolved += '/';

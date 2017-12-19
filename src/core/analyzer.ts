@@ -16,7 +16,6 @@
 
 import * as path from 'path';
 
-import {FileRelativeUrl} from '../index';
 import {Analysis, Document, Warning} from '../model/model';
 import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
@@ -229,7 +228,7 @@ export class Analyzer {
    * Resoves `url` to a new location.
    */
   resolveUrl(url: string): ResolvedUrl|undefined {
-    return this.urlResolver.resolve(url as FileRelativeUrl);
+    return this.urlResolver.resolve(url as PackageRelativeUrl);
   }
 
   // Urls from the user are assumed to be package relative

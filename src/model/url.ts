@@ -21,20 +21,29 @@
  */
 
 /**
- * A URL that is either absolute, or relative to a certain file.
+ * A URL that must be resolved relative to a specific base url.
+ *
+ * Note that it might still be an absolute URL, or even a url with a full
+ * protocol and host.
  *
  * This is mostly used to type urls extracted from import statements taken
  * directly out of documents. For example, in `import * as foo from "./foo.js"`
  * `./foo.js` is relative to the containing document.
  *
- * Use UrlResolver#resolve to transform a FileRelativeUrl to a ResolvedUrl.
+ * Use UrlResolver#resolve to transform it to a ResolvedUrl.
+ * Use UrlResolver#relative to transform ResolvedUrls to FileRelativeUrls.
  */
 export type FileRelativeUrl = string&FileRelativeUrlBrand;
 
 /**
- * A URL that is either absolute, or relative to the base of the package.
+ * A URL that must be resolved relative to the package itself.
+ *
+ * Note it might still be an absolute URL, or even a url with a full protocol
+ * and host.
  *
  * This is the assumed format of user input to Analyzer methods.
+ *
+ * Use UrlResolver#resolve to transform it to a ResolvedUrl.
  */
 export type PackageRelativeUrl = string&PackageRelativeUrlBrand;
 
@@ -42,8 +51,7 @@ export type PackageRelativeUrl = string&PackageRelativeUrlBrand;
  * A URL that has been resolved to its canonical and loadable form, by passing
  * through the project's URL Resolver.
  *
- * Use AnalysisContext#resolveUrl to transform a PackageRelativeUrl to a
- * ResolvedUrl.
+ * Use AnalysisContext#resolve to get a ResolvedUrl.
  */
 export type ResolvedUrl = string&ResolvedUrlBrand;
 
