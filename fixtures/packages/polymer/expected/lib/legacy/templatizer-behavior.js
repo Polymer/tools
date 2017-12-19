@@ -26,6 +26,7 @@ export const Templatizer = {
    * @param {boolean=} mutableData When `true`, the generated class will skip
    *   strict dirty-checking for objects and arrays (always consider them to
    *   be "dirty"). Defaults to false.
+   * @return {void}
    * @this {TemplatizerUser}
    */
   templatize(template, mutableData) {

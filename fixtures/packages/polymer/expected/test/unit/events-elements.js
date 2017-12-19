@@ -15,6 +15,8 @@ var EventLoggerImpl = {
     this._removed = [];
   },
   handle: function(e) {
+    const order = e._handleOrder = e._handleOrder || [];
+    order.push(this.localName);
     this._handled[e.currentTarget.localName] = e.type;
   },
   unlisten: function(node, eventName, handler) {
@@ -36,6 +38,14 @@ Polymer({
 `,
 
   is: 'x-on',
+  behaviors: [EventLoggerImpl]
+});
+Polymer({
+  _template: `
+      <x-listeners id="inner" on-foo="handle"></x-listeners>
+`,
+
+  is: 'x-order',
   behaviors: [EventLoggerImpl]
 });
 Polymer({

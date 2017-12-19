@@ -85,8 +85,8 @@ iron-request can be used to perform XMLHttpRequests.
        * if there is an error before the `xhr` completes.
        * The resolve callback is called with the original request as an argument.
        * By default, the reject callback is called with an `Error` as an argument.
-       * If `rejectWithRequest` is true, the reject callback is called with an 
-       * object with two keys: `request`, the original request, and `error`, the 
+       * If `rejectWithRequest` is true, the reject callback is called with an
+       * object with two keys: `request`, the original request, and `error`, the
        * error object.
        *
        * @type {Promise}
@@ -267,10 +267,11 @@ iron-request can be used to perform XMLHttpRequests.
       }.bind(this));
 
       this.url = options.url;
+      var isXHRAsync = options.async !== false;
       xhr.open(
         options.method || 'GET',
         options.url,
-        options.async !== false
+        isXHRAsync
       );
 
       var acceptType = {
@@ -300,10 +301,8 @@ iron-request can be used to perform XMLHttpRequests.
         );
       }, this);
 
-      if (options.async !== false) {
-        if (options.async) {
-          xhr.timeout = options.timeout;
-        }
+      if (isXHRAsync) {
+        xhr.timeout = options.timeout;
 
         var handleAs = options.handleAs;
 

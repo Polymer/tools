@@ -78,6 +78,7 @@ class TemplateInstanceBase extends base {
    * sets any properties stored in `__hostProps`.
    * @private
    * @param {Object} props Object of property name-value pairs to set.
+   * @return {void}
    */
   _configureProperties(props) {
     let options = this.__templatizeOptions;
@@ -101,6 +102,7 @@ class TemplateInstanceBase extends base {
    *
    * @param {string} prop Property or path name
    * @param {*} value Value of the property to forward
+   * @return {void}
    */
   forwardHostProp(prop, value) {
     if (this._setPendingPropertyOrPath(prop, value, false, true)) {
@@ -133,6 +135,7 @@ class TemplateInstanceBase extends base {
    * "shown."
    * @param {boolean} hide Set to true to hide the children;
    * set to false to show them.
+   * @return {void}
    * @protected
    */
   _showHideChildren(hide) {
@@ -240,6 +243,7 @@ function createTemplatizerClass(template, templateInfo, options) {
   /**
    * @constructor
    * @extends {base}
+   * @private
    */
   let klass = class extends base { };
   klass.prototype.__templatizeOptions = options;
@@ -447,6 +451,7 @@ const Templatize = {
     // Host property forwarding must be installed onto template instance
     addPropagateEffects(template, templateInfo, options);
     // Subclass base class and add reference for this specific template
+    /** @private */
     let klass = class TemplateInstance extends baseClass {};
     klass.prototype._methodHost = findMethodHost(template);
     klass.prototype.__dataHost = template;

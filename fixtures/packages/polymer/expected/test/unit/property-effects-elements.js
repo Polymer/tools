@@ -487,7 +487,7 @@ Polymer({
     },
     prop2: {
       value: 'default',
-      observer: 'prop2Changed'
+      observer: function(newProp, oldProp) { return this.prop2Changed(newProp, oldProp); }
     }
   },
   created: function() {

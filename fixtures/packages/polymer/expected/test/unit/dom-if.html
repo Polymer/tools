@@ -96,7 +96,6 @@ import './dom-if-elements.js';
   <script type="module">
 import '../../polymer.js';
 import './dom-if-elements.js';
-import { Settings } from '../../lib/utils/settings.js';
 import { flush } from '../../lib/utils/flush.js';
 /* global configured individual unconfigured1 unconfigured2 inDocumentContainer inDocumentIf structuredContainer structuredDomIf structuredDomBind outerContainer innerContainer shouldBeRemoved toBeRemoved removalContainer nonUpgrade*/
 suite('nested pre-configured dom-if', function() {
@@ -557,27 +556,6 @@ suite('text node handling', function() {
 
 suite('attach/detach tests', function() {
 
-  test('remove, append domif', function(done) {
-    var domif = document.querySelector('#simple');
-    domif.if = true;
-    outerContainer.removeChild(domif);
-    setTimeout(function() {
-      var clients = outerContainer.querySelectorAll('x-client');
-      assert.equal(clients.length, 0);
-      outerContainer.appendChild(domif);
-      setTimeout(function() {
-        var clients = outerContainer.querySelectorAll('x-client');
-        assert.equal(clients[0].uid, 0);
-        assert.equal(clients[1].uid, 1);
-        assert.equal(clients[2].uid, 2);
-        assert.equal(clients[1].previousElementSibling, clients[0]);
-        assert.equal(clients[2].previousElementSibling, clients[1]);
-        assert.equal(domif.previousElementSibling, clients[2]);
-        done();
-      });
-    });
-  });
-
   test('move domif (clients persist)', function(done) {
     var domif = document.querySelector('#simple');
     domif.if = true;
@@ -681,6 +659,28 @@ suite('attach/detach tests', function() {
     });
   });
 
+  test('remove, append domif', function(done) {
+    var domif = document.querySelector('#simple');
+    var parent = domif.parentNode;
+    domif.if = true;
+    parent.removeChild(domif);
+    setTimeout(function() {
+      var clients = parent.querySelectorAll('x-client');
+      assert.equal(clients.length, 0);
+      parent.appendChild(domif);
+      setTimeout(function() {
+        var clients = parent.querySelectorAll('x-client');
+        assert.equal(clients[0].uid, 12);
+        assert.equal(clients[1].uid, 13);
+        assert.equal(clients[2].uid, 14);
+        assert.equal(clients[1].previousElementSibling, clients[0]);
+        assert.equal(clients[2].previousElementSibling, clients[1]);
+        assert.equal(domif.previousElementSibling, clients[2]);
+        done();
+      });
+    });
+  });
+
   test('move into doc fragment', function(done) {
     var el = shouldBeRemoved;
     assert.equal(el.parentNode, removalContainer);
@@ -697,7 +697,7 @@ suite('attach/detach tests', function() {
   });
 
   test('move into shadow root', function(done) {
-    if (Settings.hasShadow) {
+    if (undefined.hasShadow) {
       var el = shouldBeRemoved;
       assert.equal(el.parentNode, removalContainer);
       var div = document.createElement('div');

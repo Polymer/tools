@@ -225,6 +225,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
      * @param {Node} root Root node whose `childNodes` will be parsed
      * @param {!TemplateInfo} templateInfo Template metadata for current template
      * @param {!NodeInfo} nodeInfo Node metadata for current template.
+     * @return {void}
      */
     static _parseTemplateChildNodes(root, templateInfo, nodeInfo) {
       if (root.localName === 'script' || root.localName === 'style') {
@@ -433,6 +434,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
      * @param {Node} node Node to add event listener to
      * @param {string} eventName Name of event
      * @param {Function} handler Listener function to add
+     * @return {void}
      */
     _addEventListenerToNode(node, eventName, handler) {
       node.addEventListener(eventName, handler);
@@ -444,6 +446,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
      * @param {Node} node Node to remove event listener from
      * @param {string} eventName Name of event
      * @param {Function} handler Listener function to remove
+     * @return {void}
      */
     _removeEventListenerFromNode(node, eventName, handler) {
       node.removeEventListener(eventName, handler);

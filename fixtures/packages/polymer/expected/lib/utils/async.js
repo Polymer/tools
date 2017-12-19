@@ -1,8 +1,5 @@
 import './boot.js';
 
-/** @typedef {{run: function(function(), number=):number, cancel: function(number)}} */
-let AsyncInterface; // eslint-disable-line no-unused-vars
-
 // Microtask implemented using Mutation Observer
 let microtaskCurrHandle = 0;
 let microtaskLastHandle = 0;
@@ -33,48 +30,65 @@ export const timeOut = {
    * delay.
    *
    * @memberof Polymer.Async.timeOut
-   * @param {number} delay Time to wait before calling callbacks in ms
-   * @return {AsyncInterface} An async timeout interface
+   * @param {number=} delay Time to wait before calling callbacks in ms
+   * @return {!AsyncInterface} An async timeout interface
    */
   after(delay) {
-    return  {
-      run(fn) { return setTimeout(fn, delay); },
-      cancel: window.clearTimeout.bind(window)
+    return {
+      run(fn) { return window.setTimeout(fn, delay); },
+      cancel(handle) {
+        window.clearTimeout(handle);
+      }
     };
   },
   /**
    * Enqueues a function called in the next task.
    *
+   * @function
    * @memberof Polymer.Async.timeOut
-   * @param {Function} fn Callback to run
+   * @param {!Function} fn Callback to run
+   * @param {number=} delay Delay in milliseconds
    * @return {number} Handle used for canceling task
    */
-  run: window.setTimeout.bind(window),
+  run(fn, delay) {
+    return window.setTimeout(fn, delay);
+  },
   /**
    * Cancels a previously enqueued `timeOut` callback.
    *
+   * @function
    * @memberof Polymer.Async.timeOut
    * @param {number} handle Handle returned from `run` of callback to cancel
+   * @return {void}
    */
-  cancel: window.clearTimeout.bind(window)
+  cancel(handle) {
+    window.clearTimeout(handle);
+  }
 };
 
 export const animationFrame = {
   /**
    * Enqueues a function called at `requestAnimationFrame` timing.
    *
+   * @function
    * @memberof Polymer.Async.animationFrame
-   * @param {Function} fn Callback to run
+   * @param {function(number)} fn Callback to run
    * @return {number} Handle used for canceling task
    */
-  run: window.requestAnimationFrame.bind(window),
+  run(fn) {
+    return window.requestAnimationFrame(fn);
+  },
   /**
    * Cancels a previously enqueued `animationFrame` callback.
    *
-   * @memberof Polymer.Async.timeOut
+   * @function
+   * @memberof Polymer.Async.animationFrame
    * @param {number} handle Handle returned from `run` of callback to cancel
+   * @return {void}
    */
-  cancel: window.cancelAnimationFrame.bind(window)
+  cancel(handle) {
+    window.cancelAnimationFrame(handle);
+  }
 };
 
 export const idlePeriod = {
@@ -82,7 +96,7 @@ export const idlePeriod = {
    * Enqueues a function called at `requestIdleCallback` timing.
    *
    * @memberof Polymer.Async.idlePeriod
-   * @param {function(IdleDeadline)} fn Callback to run
+   * @param {function(!IdleDeadline):void} fn Callback to run
    * @return {number} Handle used for canceling task
    */
   run(fn) {
@@ -95,6 +109,7 @@ export const idlePeriod = {
    *
    * @memberof Polymer.Async.idlePeriod
    * @param {number} handle Handle returned from `run` of callback to cancel
+   * @return {void}
    */
   cancel(handle) {
     window.cancelIdleCallback ?
@@ -109,7 +124,7 @@ export const microTask = {
    * Enqueues a function called at microtask timing.
    *
    * @memberof Polymer.Async.microTask
-   * @param {Function} callback Callback to run
+   * @param {!Function=} callback Callback to run
    * @return {number} Handle used for canceling task
    */
   run(callback) {
@@ -123,6 +138,7 @@ export const microTask = {
    *
    * @memberof Polymer.Async.microTask
    * @param {number} handle Handle returned from `run` of callback to cancel
+   * @return {void}
    */
   cancel(handle) {
     const idx = handle - microtaskLastHandle;

@@ -127,6 +127,7 @@ class DomIf extends Element {
    * that multiple changes trigger only a single render. The render method
    * should be called if, for example, template rendering is required to
    * validate application state.
+   * @return {void}
    */
   render() {
     flush();

@@ -1,4 +1,5 @@
 import { ElementMixin } from './lib/mixins/element-mixin.js';
+import { html as html$0 } from './lib/utils/html-tag.js';
 
 /**
  * Base class that provides the core API for Polymer's meta-programming
@@ -18,3 +19,4 @@ import { ElementMixin } from './lib/mixins/element-mixin.js';
  */
 const Element = ElementMixin(HTMLElement);
 export { Element };
+export { html$0 as html };

@@ -32,6 +32,24 @@ function isSlot(node) {
  * `MutationObserver` and the `<slot>` element's `slotchange` event which
  * are asynchronous.
  *
+ * An example:
+ * ```js
+ * class TestSelfObserve extends Polymer.Element {
+ *   static get is() { return 'test-self-observe';}
+ *   connectedCallback() {
+ *     super.connectedCallback();
+ *     this._observer = new Polymer.FlattenedNodesObserver(this, (info) => {
+ *       this.info = info;
+ *     });
+ *   }
+ *   disconnectedCallback() {
+ *     super.disconnectedCallback();
+ *     this._observer.disconnect();
+ *   }
+ * }
+ * customElements.define(TestSelfObserve.is, TestSelfObserve);
+ * ```
+ *
  * @memberof Polymer
  * @summary Class that listens for changes (additions or removals) to
  * "flattened nodes" on a given `node`.
@@ -72,9 +90,15 @@ class FlattenedNodesObserver {
    * or removals from the target's list of flattened nodes.
   */
   constructor(target, callback) {
-    /** @type {MutationObserver} */
+    /**
+     * @type {MutationObserver}
+     * @private
+     */
     this._shadyChildrenObserver = null;
-    /** @type {MutationObserver} */
+    /**
+     * @type {MutationObserver}
+     * @private
+     */
     this._nativeChildrenObserver = null;
     this._connected = false;
     this._target = target;
@@ -82,7 +106,10 @@ class FlattenedNodesObserver {
     this._effectiveNodes = [];
     this._observer = null;
     this._scheduled = false;
-    /** @type {function()} */
+    /**
+     * @type {function()}
+     * @private
+     */
     this._boundSchedule = () => {
       this._schedule();
     };
@@ -94,6 +121,8 @@ class FlattenedNodesObserver {
    * Activates an observer. This method is automatically called when
    * a `FlattenedNodesObserver` is created. It should only be called to
    * re-activate an observer that has been deactivated via the `disconnect` method.
+   *
+   * @return {void}
    */
   connect() {
     if (isSlot(this._target)) {
@@ -121,6 +150,8 @@ class FlattenedNodesObserver {
    * the observer callback will not be called when changes to flattened nodes
    * occur. The `connect` method may be subsequently called to reactivate
    * the observer.
+   *
+   * @return {void}
    */
   disconnect() {
     if (isSlot(this._target)) {

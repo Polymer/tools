@@ -137,6 +137,56 @@ Polymer({is: 'x-dir-legacy'});
   <script type="module">
 import '../../polymer.js';
 import '../../lib/mixins/dir-mixin.js';
+import { Element } from '../../polymer-element.js';
+class OtherElement extends Element {}
+customElements.define('other-element', OtherElement);
+</script>
+
+  <dom-module id="x-complicated">
+    <template>
+      <style>
+        #direct:dir(rtl) {
+          border: 10px solid black;
+        }
+        :dir(rtl) #indirect {
+          border: 9px solid black;
+        }
+        other-element:dir(rtl) {
+          border: 8px solid black;
+        }
+        #container:dir(rtl) ::slotted(*) {
+          border: 7px solid black;
+        }
+      </style>
+      <div id="direct"></div>
+      <div id="indirect"></div>
+      <other-element id="other"></other-element>
+      <div id="container">
+        <slot></slot>
+      </div>
+    </template>
+    <script type="module">
+import '../../polymer.js';
+import { DirMixin } from '../../lib/mixins/dir-mixin.js';
+import { Element } from '../../polymer-element.js';
+class XComplicated extends DirMixin(Element) {
+  static get is() {return 'x-complicated';}
+}
+customElements.define(XComplicated.is, XComplicated);
+</script>
+  </dom-module>
+
+  <test-fixture id="complicated">
+    <template>
+      <x-complicated>
+        <div></div>
+      </x-complicated>
+    </template>
+  </test-fixture>
+
+  <script type="module">
+import '../../polymer.js';
+import '../../lib/mixins/dir-mixin.js';
 function assertComputed(node, expected, property = 'border-top-width') {
   let actual = getComputedStyle(node).getPropertyValue(property).trim();
   assert.equal(expected, actual);
@@ -199,6 +249,14 @@ suite(':dir', function() {
   test('legacy elements worth with DirMixin', function() {
     let el = fixture('legacy');
     assertComputed(el, '2px');
+  });
+
+  test('complicated setup', function() {
+    let el = fixture('complicated');
+    assertComputed(el.$.direct, '10px');
+    assertComputed(el.$.indirect, '9px');
+    assertComputed(el.$.other, '8px');
+    assertComputed(el.firstElementChild, '7px');
   });
 });
 </script>

@@ -89,7 +89,11 @@ Polymer({
       observer: 'attr1Changed'
     },
     shorthandNumber: Number,
-    shorthandBool: Boolean
+    shorthandBool: Boolean,
+    foreignTypeObjectProp: {
+      type: Object,
+      value: 'none'
+    }
   },
 
   propChangedCount: 0,
@@ -162,7 +166,12 @@ Polymer({
       readOnly: true
     },
     shorthandNumber: Number,
-    shorthandBool: Boolean
+    shorthandBool: Boolean,
+    foreignTypeObjectProp: {
+      type: Object,
+      reflectToAttribute: true,
+      value: 'none'
+    }
   },
   _warn: function() {
     var search = Array.prototype.join.call(arguments, '');

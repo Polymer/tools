@@ -5,7 +5,7 @@ import { flush as flush$0, enqueueDebouncer } from '../utils/flush.js';
 
 const p = Element.prototype;
 /**
- * @const {function(this:Element, string): boolean}
+ * @const {function(this:Node, string): boolean}
  */
 const normalizedMatchesSelector = p.matches || p.matchesSelector ||
   p.mozMatchesSelector || p.msMatchesSelector ||
@@ -16,7 +16,7 @@ const normalizedMatchesSelector = p.matches || p.matchesSelector ||
  *
  * @function matchesSelector
  * @memberof Polymer.dom
- * @param {!Element} node Node to check selector against
+ * @param {!Node} node Node to check selector against
  * @param {string} selector Selector to match
  * @return {boolean} True if node matched selector
  */
@@ -56,6 +56,7 @@ class DomApi {
    *
    * @param {Polymer.FlattenedNodesObserver} observerHandle Observer instance
    *   to disconnect.
+   * @return {void}
    */
   unobserveNodes(observerHandle) {
     observerHandle.disconnect();
@@ -63,6 +64,7 @@ class DomApi {
 
   /**
    * Provided as a backwards-compatible API only.  This method does nothing.
+   * @return {void}
    */
   notifyObserver() {}
 
@@ -143,8 +145,8 @@ class DomApi {
   }
 
   /**
-   * @return {Array} Returns a flattened list of all child nodes and nodes assigned
-   * to child slots.
+   * @return {!Array<!Node>} Returns a flattened list of all child nodes and
+   * nodes assigned to child slots.
    */
   getEffectiveChildNodes() {
     return FlattenedNodesObserver.getFlattenedNodes(this.node);
@@ -184,9 +186,11 @@ class DomApi {
 function forwardMethods(proto, methods) {
   for (let i=0; i < methods.length; i++) {
     let method = methods[i];
+    /* eslint-disable valid-jsdoc */
     proto[method] = /** @this {DomApi} */ function() {
       return this.node[method].apply(this.node, arguments);
     };
+    /* eslint-enable */
   }
 }
 

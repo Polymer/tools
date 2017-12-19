@@ -46,16 +46,19 @@ class DomBind extends domBindBase {
     this.__children = null;
   }
 
-  // assumes only one observed attribute
+  /** @return {void} */
   attributeChangedCallback() {
+    // assumes only one observed attribute
     this.mutableData = true;
   }
 
+  /** @return {void} */
   connectedCallback() {
     this.style.display = 'none';
     this.render();
   }
 
+  /** @return {void} */
   disconnectedCallback() {
     this.__removeChildren();
   }
@@ -75,6 +78,7 @@ class DomBind extends domBindBase {
   /**
    * Forces the element to render its content. This is typically only
    * necessary to call if HTMLImports with the async attribute are used.
+   * @return {void}
    */
   render() {
     let template;

@@ -21,14 +21,14 @@
   "devDependencies": {
     "web-component-tester": "^v6.0.0"
   },
-  "version": "1.0.17",
-  "_release": "1.0.17",
+  "version": "1.0.21",
+  "_release": "1.0.21",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.17",
-    "commit": "c1552890773e259721ece1ed0d66b84f6028506c"
+    "tag": "v1.0.21",
+    "commit": "e9ee55680f3cf1a3dbf3dfa19b14b8be1140557c"
   },
   "_source": "https://github.com/webcomponents/webcomponentsjs.git",
-  "_target": "^v1.0.2",
+  "_target": "^v1.0.19",
   "_originalSource": "webcomponents/webcomponentsjs"
 }

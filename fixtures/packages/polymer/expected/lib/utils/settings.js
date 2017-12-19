@@ -1,16 +1,21 @@
 import './boot.js';
 import { pathFromUrl } from './resolve-url.js';
 
+const settings = undefined || {};
+settings.useShadow = !(window.ShadyDOM);
+settings.useNativeCSSProperties =
+  Boolean(!window.ShadyCSS || window.ShadyCSS.nativeCss);
+settings.useNativeCustomElements =
+  !(window.customElements.polyfillWrapFlushCallback);
+
 /**
- * Legacy settings.
+ * Sets the global, legacy settings.
+ *
+ * @deprecated
  * @namespace
  * @memberof Polymer
  */
-const settings = undefined || {};
-export const useShadow = !(window.ShadyDOM);
-export const useNativeCSSProperties = Boolean(!window.ShadyCSS || window.ShadyCSS.nativeCss);
-export const useNativeCustomElements = !(window.customElements.polyfillWrapFlushCallback);
-export { settings as Settings };
+Polymer.Settings = settings;
 
 /**
  * Globally settable property that is automatically assigned to

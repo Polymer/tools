@@ -55,6 +55,11 @@ export const LegacyElementMixin = dedupingMixin((base) => {
       /** @type {Object<string, Function>} */
       this._debouncers;
       this.created();
+      // Ensure listeners are applied immediately so that they are
+      // added before declarative event listeners. This allows an element to
+      // decorate itself via an event prior to any declarative listeners
+      // seeing the event. Note, this ensures compatibility with 1.x ordering.
+      this._applyListeners();
     }
 
     /**
@@ -103,6 +108,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {string} name Name of attribute.
      * @param {?string} old Old value of attribute.
      * @param {?string} value Current value of attribute.
+     * @return {void}
      * @override
      */
     attributeChangedCallback(name, old, value) {
@@ -154,7 +160,6 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      */
     ready() {
       this._ensureAttributes();
-      this._applyListeners();
       super.ready();
     }
 
@@ -224,6 +229,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {string} property Property name to reflect.
      * @param {string=} attribute Attribute name to reflect.
      * @param {*=} value Property value to reflect.
+     * @return {void}
      */
     reflectPropertyToAttribute(property, attribute, value) {
       this._propertyToAttribute(property, attribute, value);
@@ -238,6 +244,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {*} value Value to serialize.
      * @param {string} attribute Attribute name to serialize to.
      * @param {Element} node Element to set attribute to.
+     * @return {void}
      */
     serializeValueToAttribute(value, attribute, node) {
       this._valueToNodeAttribute(/** @type {Element} */ (node || this), value, attribute);
@@ -356,6 +363,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {Element} node Element to add event listener to.
      * @param {string} eventName Name of event to listen for.
      * @param {string} methodName Name of handler method on `this` to call.
+     * @return {void}
      */
     listen(node, eventName, methodName) {
       node = /** @type {!Element} */ (node || this);
@@ -381,6 +389,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {string} eventName Name of event to stop listening to.
      * @param {string} methodName Name of handler method on `this` to not call
      anymore.
+     * @return {void}
      */
     unlisten(node, eventName, methodName) {
       node = /** @type {!Element} */ (node || this);
@@ -406,6 +415,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Defaults to `all`.
      * @param {Element=} node Element to apply scroll direction setting.
      * Defaults to `this`.
+     * @return {void}
      */
     setScrollDirection(direction, node) {
       setTouchAction( (node || this), DIRECTION_MAP[direction] || 'auto');
@@ -439,6 +449,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Force this element to distribute its children to its local dom.
      * This should not be necessary as of Polymer 2.0.2 and is provided only
      * for backwards compatibility.
+     * @return {void}
      */
     distributeContent() {
       if (window.ShadyDOM && this.shadowRoot) {
@@ -451,11 +462,12 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * childNodes list is the same as the element's childNodes except that
      * any `<content>` elements are replaced with the list of nodes distributed
      * to the `<content>`, the result of its `getDistributedNodes` method.
-     * @this {Element}
-     * @return {Array<Node>} List of effective child nodes.
+     * @return {!Array<!Node>} List of effective child nodes.
+     * @suppress {invalidCasts} LegacyElementMixin must be applied to an HTMLElement
      */
     getEffectiveChildNodes() {
-      const domApi = /** @type {Polymer.DomApi} */(dom$0(this));
+      const thisEl = /** @type {Element} */ (this);
+      const domApi = /** @type {Polymer.DomApi} */(dom$0(thisEl));
       return domApi.getEffectiveChildNodes();
     }
 
@@ -464,11 +476,12 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * `selector`. These can be dom children or elements distributed to
      * children that are insertion points.
      * @param {string} selector Selector to run.
-     * @this {Element}
-     * @return {Array<Node>} List of distributed elements that match selector.
+     * @return {!Array<!Node>} List of distributed elements that match selector.
+     * @suppress {invalidCasts} LegacyElementMixin must be applied to an HTMLElement
      */
     queryDistributedElements(selector) {
-      const domApi = /** @type {Polymer.DomApi} */(dom$0(this));
+      const thisEl = /** @type {Element} */ (this);
+      const domApi = /** @type {Polymer.DomApi} */(dom$0(thisEl));
       return domApi.queryDistributedElements(selector);
     }
 
@@ -478,11 +491,11 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * any `<content>` elements are replaced with the list of elements
      * distributed to the `<content>`.
      *
-     * @return {Array<Node>} List of effective children.
+     * @return {!Array<!Node>} List of effective children.
      */
     getEffectiveChildren() {
       let list = this.getEffectiveChildNodes();
-      return list.filter(function(/** @type {Node} */ n) {
+      return list.filter(function(/** @type {!Node} */ n) {
         return (n.nodeType === Node.ELEMENT_NODE);
       });
     }
@@ -522,7 +535,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * match `selector`. These can be dom child nodes or elements distributed
      * to children that are insertion points.
      * @param {string} selector Selector to run.
-     * @return {Array<Node>} List of effective child nodes that match selector.
+     * @return {!Array<!Node>} List of effective child nodes that match selector.
      */
     queryAllEffectiveChildren(selector) {
       return this.queryDistributedElements(selector);
@@ -536,7 +549,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *
      * @param {string=} slctr CSS selector to choose the desired
      *   `<slot>`.  Defaults to `content`.
-     * @return {Array<Node>} List of distributed nodes for the `<slot>`.
+     * @return {!Array<!Node>} List of distributed nodes for the `<slot>`.
      */
     getContentChildNodes(slctr) {
       let content = this.root.querySelector(slctr || 'slot');
@@ -554,12 +567,12 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *
      * @param {string=} slctr CSS selector to choose the desired
      *   `<content>`.  Defaults to `content`.
-     * @return {Array<HTMLElement>} List of distributed nodes for the
+     * @return {!Array<!HTMLElement>} List of distributed nodes for the
      *   `<slot>`.
      * @suppress {invalidCasts}
      */
     getContentChildren(slctr) {
-      let children = /** @type {Array<HTMLElement>} */(this.getContentChildNodes(slctr).filter(function(n) {
+      let children = /** @type {!Array<!HTMLElement>} */(this.getContentChildNodes(slctr).filter(function(n) {
         return (n.nodeType === Node.ELEMENT_NODE);
       }));
       return children;
@@ -569,12 +582,13 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Checks whether an element is in this element's light DOM tree.
      *
      * @param {?Node} node The element to be checked.
-     * @this {Element}
      * @return {boolean} true if node is in this element's light DOM tree.
+     * @suppress {invalidCasts} LegacyElementMixin must be applied to an HTMLElement
      */
     isLightDescendant(node) {
-      return this !== node && this.contains(node) &&
-          this.getRootNode() === node.getRootNode();
+      const thisNode = /** @type {Node} */ (this);
+      return thisNode !== node && thisNode.contains(node) &&
+        thisNode.getRootNode() === node.getRootNode();
     }
 
     /**
@@ -596,9 +610,10 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {string} property The css property name.
      * @return {string} Returns the computed css property value for the given
      * `property`.
+     * @suppress {invalidCasts} LegacyElementMixin must be applied to an HTMLElement
      */
     getComputedStyleValue(property) {
-      return styleInterface.getComputedStyleValue(this, property);
+      return styleInterface.getComputedStyleValue(/** @type {!Element} */(this), property);
     }
 
     // debounce
@@ -617,7 +632,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *     }
      *
      * @param {string} jobName String to identify the debounce job.
-     * @param {function()} callback Function that is called (with `this`
+     * @param {function():void} callback Function that is called (with `this`
      *   context) when the wait time elapses.
      * @param {number} wait Optional wait time in milliseconds (ms) after the
      *   last signal that must elapse before invoking `callback`
@@ -651,6 +666,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Immediately calls the debouncer `callback` and inactivates it.
      *
      * @param {string} jobName The name of the debouncer started with `debounce`
+     * @return {void}
      */
     flushDebouncer(jobName) {
       this._debouncers = this._debouncers || {};
@@ -664,6 +680,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Cancels an active debouncer.  The `callback` will not be called.
      *
      * @param {string} jobName The name of the debouncer started with `debounce`
+     * @return {void}
      */
     cancelDebouncer(jobName) {
       this._debouncers = this._debouncers || {};
@@ -679,7 +696,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * By default (if no waitTime is specified), async callbacks are run at
      * microtask timing, which will occur before paint.
      *
-     * @param {Function} callback The callback function to run, bound to `this`.
+     * @param {!Function} callback The callback function to run, bound to `this`.
      * @param {number=} waitTime Time to wait before calling the
      *   `callback`.  If unspecified or 0, the callback will be run at microtask
      *   timing (before paint).
@@ -695,6 +712,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *
      * @param {number} handle Handle returned from original `async` call to
      *   cancel.
+     * @return {void}
      */
     cancelAsync(handle) {
       handle < 0 ? microTask.cancel(~handle) :
@@ -734,13 +752,13 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * element will contain the imported document contents.
      *
      * @param {string} href URL to document to load.
-     * @param {Function} onload Callback to notify when an import successfully
+     * @param {!Function=} onload Callback to notify when an import successfully
      *   loaded.
-     * @param {Function} onerror Callback to notify when an import
+     * @param {!Function=} onerror Callback to notify when an import
      *   unsuccessfully loaded.
-     * @param {boolean} optAsync True if the import should be loaded `async`.
+     * @param {boolean=} optAsync True if the import should be loaded `async`.
      *   Defaults to `false`.
-     * @return {HTMLLinkElement} The link element for the URL to be loaded.
+     * @return {!HTMLLinkElement} The link element for the URL to be loaded.
      */
     importHref(href, onload, onerror, optAsync) { // eslint-disable-line no-unused-vars
       let loadFn = onload ? onload.bind(this) : null;
@@ -753,7 +771,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * prefixed.
      *
      * @param {string} selector Selector to test.
-     * @param {Element=} node Element to test the selector against.
+     * @param {!Element=} node Element to test the selector against.
      * @return {boolean} Whether the element matches the selector.
      */
     elementMatches(selector, node) {
@@ -807,6 +825,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {string} transformText Transform setting.
      * @param {Element=} node Element to apply the transform to.
      * Defaults to `this`
+     * @return {void}
      */
     transform(transformText, node) {
       node = /** @type {Element} */ (node || this);
@@ -823,6 +842,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {number} z Z offset.
      * @param {Element=} node Element to apply the transform to.
      * Defaults to `this`.
+     * @return {void}
      */
     translate3d(x, y, z, node) {
       node = /** @type {Element} */ (node || this);

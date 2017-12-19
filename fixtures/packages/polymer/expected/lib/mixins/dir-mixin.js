@@ -4,7 +4,7 @@ import { dedupingMixin } from '../utils/mixin.js';
 const HOST_DIR = /:host\(:dir\((ltr|rtl)\)\)/g;
 const HOST_DIR_REPLACMENT = ':host([dir="$1"])';
 
-const EL_DIR = /([\s\w#\.\[\]\*]*):dir\((ltr|rtl)\)/g;
+const EL_DIR = /([\s\w-#\.\[\]\*]*):dir\((ltr|rtl)\)/g;
 const EL_DIR_REPLACMENT = ':host([dir="$2"]) $1';
 
 /**
@@ -71,8 +71,8 @@ export const DirMixin = dedupingMixin((base) => {
      * @override
      * @suppress {missingProperties} Interfaces in closure do not inherit statics, but classes do
      */
-    static _processStyleText(is, template, baseURI) {
-      let cssText = super._processStyleText(is, template, baseURI);
+    static _processStyleText(cssText, baseURI) {
+      cssText = super._processStyleText(cssText, baseURI);
       cssText = this._replaceDirInCssText(cssText);
       return cssText;
     }

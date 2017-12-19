@@ -309,6 +309,14 @@ as you would a regular DOM element:
       this.fire('marked-render-complete', {}, {composed: true});
     },
 
+    /**
+     * Fired when the content is being processed and before it is rendered.
+     * Provides an opportunity to highlight code blocks based on the programming language used. This
+     * is also known as syntax highlighting. One example would be to use a prebuilt syntax
+     * highlighting library, e.g with [highlightjs](https://highlightjs.org/).
+     *
+     * @event syntax-highlight
+     */
     _highlight: function(code, lang) {
       var event = this.fire('syntax-highlight', {code: code, lang: lang}, {composed: true});
       return event.detail.code || code;

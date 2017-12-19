@@ -62,6 +62,12 @@ class DomModule extends HTMLElement {
     return null;
   }
 
+  /**
+   * @param {string} name Name of attribute.
+   * @param {?string} old Old value of attribute.
+   * @param {?string} value Current value of attribute.
+   * @return {void}
+   */
   attributeChangedCallback(name, old, value) {
     if (old !== value) {
       this.register();
@@ -98,6 +104,7 @@ class DomModule extends HTMLElement {
    * when a dom-module is imperatively created. For
    * example, `document.createElement('dom-module').register('foo')`.
    * @param {string=} id The id at which to register the dom-module.
+   * @return {void}
    */
   register(id) {
     id = id || this.id;

@@ -1,5 +1,5 @@
 import './boot.js';
-import { timeOut } from './async.js';
+import { timeOut, microTask } from './async.js';
 import { Debouncer } from './debounce.js';
 import { passiveTouchGestures } from './settings.js';
 
@@ -49,9 +49,13 @@ let SUPPORTS_PASSIVE = false;
 /**
  * Generate settings for event listeners, dependant on `Polymer.passiveTouchGestures`
  *
+ * @param {string} eventName Event name to determine if `{passive}` option is needed
  * @return {{passive: boolean} | undefined} Options to use for addEventListener and removeEventListener
  */
-function PASSIVE_TOUCH() {
+function PASSIVE_TOUCH(eventName) {
+  if (isMouseEvent(eventName) || eventName === 'touchend') {
+    return;
+  }
   if (HAS_NATIVE_TA && SUPPORTS_PASSIVE && passiveTouchGestures) {
     return {passive: true};
   } else {
@@ -113,6 +117,7 @@ let mouseCanceller = function(mouseEvent) {
 
 /**
  * @param {boolean=} setup True to add, false to remove.
+ * @return {void}
  */
 function setupTeardownMouseCanceller(setup) {
   let events = IS_TOUCH_ONLY ? ['click'] : MOUSE_EVENTS;
@@ -399,8 +404,7 @@ export function _add(node, evType, handler) {
       gobj[dep] = gd = {_count: 0};
     }
     if (gd._count === 0) {
-      let options = !isMouseEvent(dep) && PASSIVE_TOUCH();
-      node.addEventListener(dep, _handleNative, options);
+      node.addEventListener(dep, _handleNative, PASSIVE_TOUCH(dep));
     }
     gd[name] = (gd[name] || 0) + 1;
     gd._count = (gd._count || 0) + 1;
@@ -424,8 +428,7 @@ export function _remove(node, evType, handler) {
         gd[name] = (gd[name] || 1) - 1;
         gd._count = (gd._count || 1) - 1;
         if (gd._count === 0) {
-          let options = !isMouseEvent(dep) && PASSIVE_TOUCH();
-          node.removeEventListener(dep, _handleNative, options);
+          node.removeEventListener(dep, _handleNative, PASSIVE_TOUCH(dep));
         }
       }
     }
@@ -455,7 +458,13 @@ export function _findRecognizerByEvent(evName) {
 
 export function setTouchAction(node, value) {
   if (HAS_NATIVE_TA) {
-    node.style.touchAction = value;
+    // NOTE: add touchAction async so that events can be added in
+    // custom element constructors. Otherwise we run afoul of custom
+    // elements restriction against settings attributes (style) in the
+    // constructor.
+    microTask.run(() => {
+      node.style.touchAction = value;
+    });
   }
   node[TOUCH_ACTION] = value;
 }
@@ -502,7 +511,10 @@ register({
     upfn: null
   },
 
-  /** @this {GestureRecognizer} */
+  /**
+   * @this {GestureRecognizer}
+   * @return {void}
+   */
   reset: function() {
     untrackDocument(this.info);
   },
@@ -510,6 +522,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {MouseEvent} e
+   * @return {void}
    */
   mousedown: function(e) {
     if (!hasLeftMouseButton(e)) {
@@ -535,6 +548,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchstart: function(e) {
     this._fire('down', _findOriginalTarget(e), e.changedTouches[0], e);
@@ -542,15 +556,17 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchend: function(e) {
     this._fire('up', _findOriginalTarget(e), e.changedTouches[0], e);
   },
   /**
    * @param {string} type
-   * @param {EventTarget} target
+   * @param {!EventTarget} target
    * @param {Event} event
    * @param {Function} preventer
+   * @return {void}
    */
   _fire: function(type, target, event, preventer) {
     _fire(target, type, {
@@ -593,7 +609,10 @@ register({
     prevent: false
   },
 
-  /** @this {GestureRecognizer} */
+  /**
+   * @this {GestureRecognizer}
+   * @return {void}
+   */
   reset: function() {
     this.info.state = 'start';
     this.info.started = false;
@@ -624,6 +643,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {MouseEvent} e
+   * @return {void}
    */
   mousedown: function(e) {
     if (!hasLeftMouseButton(e)) {
@@ -666,6 +686,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchstart: function(e) {
     let ct = e.changedTouches[0];
@@ -675,6 +696,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchmove: function(e) {
     let t = _findOriginalTarget(e);
@@ -694,6 +716,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchend: function(e) {
     let t = _findOriginalTarget(e);
@@ -709,8 +732,9 @@ register({
 
   /**
    * @this {GestureRecognizer}
-   * @param {EventTarget} target
+   * @param {!EventTarget} target
    * @param {Touch} touch
+   * @return {void}
    */
   _fire: function(target, touch) {
     let secondlast = this.info.moves[this.info.moves.length - 2];
@@ -752,13 +776,20 @@ register({
     y: NaN,
     prevent: false
   },
-  /** @this {GestureRecognizer} */
+  /**
+   * @this {GestureRecognizer}
+   * @return {void}
+   */
   reset: function() {
     this.info.x = NaN;
     this.info.y = NaN;
     this.info.prevent = false;
   },
-  /** @this {GestureRecognizer} */
+  /**
+   * @this {GestureRecognizer}
+   * @param {MouseEvent} e
+   * @return {void}
+   */
   save: function(e) {
     this.info.x = e.clientX;
     this.info.y = e.clientY;
@@ -766,6 +797,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {MouseEvent} e
+   * @return {void}
    */
   mousedown: function(e) {
     if (hasLeftMouseButton(e)) {
@@ -775,6 +807,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {MouseEvent} e
+   * @return {void}
    */
   click: function(e) {
     if (hasLeftMouseButton(e)) {
@@ -784,6 +817,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchstart: function(e) {
     this.save(e.changedTouches[0], e);
@@ -791,6 +825,7 @@ register({
   /**
    * @this {GestureRecognizer}
    * @param {TouchEvent} e
+   * @return {void}
    */
   touchend: function(e) {
     this.forward(e.changedTouches[0], e);
@@ -799,12 +834,16 @@ register({
    * @this {GestureRecognizer}
    * @param {Event | Touch} e
    * @param {Event=} preventer
+   * @return {void}
    */
   forward: function(e, preventer) {
     let dx = Math.abs(e.clientX - this.info.x);
     let dy = Math.abs(e.clientY - this.info.y);
     // find original target from `preventer` for TouchEvents, or `e` for MouseEvents
     let t = _findOriginalTarget((preventer || e));
+    if (!t) {
+      return;
+    }
     // dx,dy can be NaN if `click` has been simulated and there was no `down` for `start`
     if (isNaN(dx) || isNaN(dy) || (dx <= TAP_DISTANCE && dy <= TAP_DISTANCE) || isSyntheticClick(e)) {
       // prevent taps from being generated if an event has canceled them

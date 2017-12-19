@@ -99,13 +99,13 @@ var components = {
 			"require": "markup",
 			"owner": "nauzilus"
 		},
-		"autoit": {
-			"title": "AutoIt",
-			"owner": "Golmote"
-		},
 		"autohotkey": {
 			"title": "AutoHotkey",
 			"owner": "aviaryan"
+		},
+		"autoit": {
+			"title": "AutoIt",
+			"owner": "Golmote"
 		},
 		"bash": {
 			"title": "Bash",
@@ -201,6 +201,11 @@ var components = {
 			"title": "F#",
 			"require": "clike",
 			"owner": "simonreynolds7"
+		},
+		"flow": {
+			"title": "Flow",
+			"require": "javascript",
+			"owner": "Golmote"
 		},
 		"fortran": {
 			"title": "Fortran",

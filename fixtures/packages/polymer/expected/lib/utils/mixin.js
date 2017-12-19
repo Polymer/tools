@@ -41,5 +41,5 @@ export const dedupingMixin = function(mixin) {
     return extended;
   }
 
-  return dedupingMixin;
+  return /** @type {T} */ (dedupingMixin);
 };

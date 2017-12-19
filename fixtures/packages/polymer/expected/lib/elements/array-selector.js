@@ -198,7 +198,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
 
     /**
      * Clears the selection state.
-     *
+     * @return {void}
      */
     clearSelection() {
       // Unbind previous selection
@@ -256,6 +256,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
      * Deselects the given item if it is already selected.
      *
      * @param {*} item Item from `items` array to deselect
+     * @return {void}
      */
     deselect(item) {
       let idx = this.__selectedMap.get(item);
@@ -278,6 +279,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
      * Deselects the given index if it is already selected.
      *
      * @param {number} idx Index from `items` array to deselect
+     * @return {void}
      */
     deselectIndex(idx) {
       this.deselect(this.items[idx]);
@@ -288,6 +290,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
      * deselect the item if already selected.
      *
      * @param {*} item Item from `items` array to select
+     * @return {void}
      */
     select(item) {
       this.selectIndex(this.items.indexOf(item));
@@ -298,6 +301,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
      * deselect the item if already selected.
      *
      * @param {number} idx Index from `items` array to select
+     * @return {void}
      */
     selectIndex(idx) {
       let item = this.items[idx];

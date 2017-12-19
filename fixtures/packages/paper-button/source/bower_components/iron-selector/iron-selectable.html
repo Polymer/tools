@@ -186,7 +186,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @returns Returns the index of the item
      */
     indexOf: function(item) {
-      return this.items.indexOf(item);
+      return this.items ? this.items.indexOf(item) : -1;
     },
 
     /**
@@ -346,7 +346,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if (!item) {
         return null;
       }
-
+      if (!this.attrForSelected) {
+        var i = this.indexOf(item);
+        return i === -1 ? null : i;
+      }
       var propValue = item[Polymer.CaseMap.dashToCamelCase(this.attrForSelected)];
       return propValue != undefined ? propValue : item.getAttribute(this.attrForSelected);
     },

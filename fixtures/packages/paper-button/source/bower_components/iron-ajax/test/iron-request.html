@@ -84,6 +84,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           async: true,
           timeout: 100
         };
+
+        asynchronousUndefSuccessfulRequestOptions = {
+          url: '/responds_to_get_with_json',
+          async: undefined,
+          timeout: 100
+        };
       });
 
       teardown(function() {
@@ -106,8 +112,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           expect(request.xhr.timeout).to.be.eql(undefined);
         });
 
-        test('timeout set if asynchronous', function() {
-          request.send(asynchronousSuccessfulRequestOptions);
+        test('timeout set if asynchronous is undefined', function() {
+          request.send(asynchronousUndefSuccessfulRequestOptions);
 
           expect(request.xhr.async).to.be.eql(true);
           expect(request.xhr.timeout).to.be.eql(100);
