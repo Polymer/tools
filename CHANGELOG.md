@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
+* Fixed issue where the build silently fails when several source dependencies are missing
 
 ## [2.1.1] - 2017-10-23
 * Updated `polymer-bundler` to 3.1.1, to fix an issue with deprecated CSS imports being inlined into the wrong templates.

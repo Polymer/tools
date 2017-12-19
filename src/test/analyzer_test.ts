@@ -182,7 +182,7 @@ suite('Analyzer', () => {
 
         let errorCounter = 0;
         const errorListener = (err: Error) => {
-          assert.equal(err.message, '1 error(s) occurred during build.');
+          assert.equal(err.message, '3 error(s) occurred during build.');
           errorCounter++;
           if (errorCounter >= 2) {
             done();

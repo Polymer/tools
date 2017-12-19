@@ -249,7 +249,6 @@ export class BuildAnalyzer {
       if (this.config.isSource(filePath)) {
         const err = new Error(`Not found: ${filePath}`);
         this.loader.rejectDeferredFile(filePath, err);
-        return;
       }
     }
 
