@@ -424,29 +424,18 @@ export const Polymer = function(info) {
     test('unwraps top-level IIFE', async () => {
       setSources({
         'test.html': `
-          <dom-module id="foo-elem">
-            <template>
-              <h1>Test</h1>
-            </template>
-            <script>
-              (function() {
-                'use strict';
+          <script>
+            (function() {
+              'use strict';
 
-                Polymer({is: 'foo-elem'});
-              })();
-            </script>
-          </dom-module>
+              console.log('a statement');
+            })();
+          </script>
         `,
       });
       assertSources(await convert(), {
         'test.js': `
-Polymer({
-  _template: Polymer.html\`
-              <h1>Test</h1>
-\`,
-
-  is: 'foo-elem'
-});
+console.log('a statement');
 `
       });
     });
@@ -1083,7 +1072,24 @@ export const setRootPath = function(path) {
 
     test('inlines templates into class-based Polymer elements', async () => {
       setSources({
+        'html-tag.html': `
+            <script>
+              /**
+               * @memberof Polymer
+               */
+              Polymer.html = function() {};
+            </script>`,
+        'polymer.html': `
+            <link rel="import" href="./html-tag.html">
+            <script>
+              /** @namespace */
+              const Polymer = {};
+              /** @memberof Polymer */
+              Polymer.Element = class Element {}
+              Polymer.html = Polymer.html;
+            </script>`,
         'test.html': `
+<link rel="import" href="./polymer.html">
 <dom-module id="test-element">
   <template>
     <h1>Hi!</h1>
@@ -1106,13 +1112,14 @@ export const setRootPath = function(path) {
       });
       assertSources(await convert(), {
         'test.js': `
+import { html, Element } from './polymer.js';
 /**
  * @customElement
  * @polymer
  */
-class TestElement extends Polymer.Element {
+class TestElement extends Element {
   static get template() {
-    return Polymer.html\`
+    return html\`
     <h1>Hi!</h1>
     <div>
       This template has multiple lines.<br>
@@ -1129,7 +1136,22 @@ class TestElement extends Polymer.Element {
 
     test('inlines templates into factory-based Polymer elements', async () => {
       setSources({
+        'html-tag.html': `
+            <script>
+              /**
+               * @memberof Polymer
+               */
+              Polymer.html = function() {};
+            </script>`,
+        'polymer.html': `
+            <link rel="import" href="./html-tag.html">
+            <script>
+              /** @global */
+              window.Polymer = function() {}
+              Polymer.html = Polymer.html;
+            </script>`,
         'test.html': `
+  <link rel="import" href="./polymer.html">
   <dom-module id="test-element">
     <template>
       <h1>Hi!</h1>
@@ -1145,8 +1167,9 @@ class TestElement extends Polymer.Element {
 
       assertSources(await convert(), {
         'test.js': `
+import { Polymer, html } from './polymer.js';
 Polymer({
-  _template: Polymer.html\`
+  _template: html\`
       <h1>Hi!</h1>
 \`,
 

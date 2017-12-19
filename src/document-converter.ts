@@ -644,6 +644,10 @@ export class DocumentConverter {
         continue;
       }
 
+      // It's ok to tag templates with the expression `Polymer.html` without
+      // adding an import because `Polymer.html` is re-exported by both
+      // polymer.html and polymer-element.html and, crucially, template
+      // inlining happens before rewriting references.
       const templateLiteral = jsc.taggedTemplateExpression(
           jsc.memberExpression(
               jsc.identifier('Polymer'), jsc.identifier('html')),
