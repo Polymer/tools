@@ -114,7 +114,7 @@ const config = {
     ]
   },
   "renameTypes": {
-    "Polymer_PropertyEffects": "Polymer.PropertyEffects.Interface"
+    "Polymer_PropertyEffects": "Polymer.PropertyEffects"
   }
 }
 
