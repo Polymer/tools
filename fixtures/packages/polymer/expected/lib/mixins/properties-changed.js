@@ -66,6 +66,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * @param {string} property Name of the property
      * @param {boolean=} readOnly When true, no setter is created; the
      *   protected `_setProperty` function must be used to set the property
+     * @return {void}
      * @protected
      */
     _createPropertyAccessor(property, readOnly) {
@@ -87,6 +88,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * Defines a property accessor for the given property.
      * @param {string} property Name of the property
      * @param {boolean=} readOnly When true, no setter is created
+     * @return {void}
      */
      _definePropertyAccessor(property, readOnly) {
       Object.defineProperty(this, property, {
@@ -127,6 +129,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * bindings.  `super.ready()` must be called to ensure the data system
      * becomes enabled.
      *
+     * @return {void}
      * @public
      */
     ready() {
@@ -140,6 +143,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * Provided as an override point for performing any setup work prior
      * to initializing the property accessor system.
      *
+     * @return {void}
      * @protected
      */
     _initializeProperties() {
@@ -165,6 +169,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      *
      * @param {Object} props Bag of property values that were overwritten
      *   when creating property accessors.
+     * @return {void}
      * @protected
      */
     _initializeInstanceProperties(props) {
@@ -177,6 +182,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      *
      * @param {string} property Name of the property
      * @param {*} value Value to set
+     * @return {void}
      * @protected
      */
     _setProperty(property, value) {
@@ -231,6 +237,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * Marks the properties as invalid, and enqueues an async
      * `_propertiesChanged` callback.
      *
+     * @return {void}
      * @protected
      */
     _invalidateProperties() {
@@ -253,6 +260,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * It is safe to call this method multiple times as it only turns on
      * property accessors once.
      *
+     * @return {void}
      * @protected
      */
     _enableProperties() {
@@ -272,7 +280,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * set), and resets the pending set of changes. Generally, this method
      * should not be called in user code.
      *
-     *
+     * @return {void}
      * @protected
      */
     _flushProperties() {
@@ -292,6 +300,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      *   call to `_propertiesChanged`
      * @param {!Object} oldProps Bag of previous values for each property
      *   in `changedProps`
+     * @return {void}
      * @protected
      */
     _propertiesChanged(currentProps, changedProps, oldProps) { // eslint-disable-line no-unused-vars
@@ -332,6 +341,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * @param {string} name Name of attribute that changed
      * @param {?string} old Old attribute value
      * @param {?string} value New attribute value
+     * @return {void}
      * @suppress {missingProperties} Super may or may not implement the callback
      */
     attributeChangedCallback(name, old, value) {
@@ -353,6 +363,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * @param {?string} value of the attribute.
      * @param {*=} type type to deserialize to, defaults to the value
      * returned from `typeForProperty`
+     * @return {void}
      */
     _attributeToProperty(attribute, value, type) {
       if (!this.__serializing) {
@@ -371,6 +382,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * @param {string} property Property name to reflect.
      * @param {string=} attribute Attribute name to reflect to.
      * @param {*=} value Property value to refect.
+     * @return {void}
      */
     _propertyToAttribute(property, attribute, value) {
       this.__serializing = true;
@@ -391,6 +403,7 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * @param {Element} node Element to set attribute to.
      * @param {*} value Value to serialize.
      * @param {string} attribute Attribute name to serialize to.
+     * @return {void}
      */
     _valueToNodeAttribute(node, value, attribute) {
       const str = this._serializeValue(value);

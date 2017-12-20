@@ -104,6 +104,9 @@ class DomIf extends Element {
     enqueueDebouncer(this.__renderDebouncer);
   }
 
+  /**
+   * @return {void}
+   */
   disconnectedCallback() {
     super.disconnectedCallback();
     if (!this.parentNode ||
@@ -113,6 +116,9 @@ class DomIf extends Element {
     }
   }
 
+  /**
+   * @return {void}
+   */
   connectedCallback() {
     super.connectedCallback();
     this.style.display = 'none';
@@ -245,6 +251,13 @@ class DomIf extends Element {
     }
   }
 
+  /**
+   * Shows or hides the template instance top level child elements. For
+   * text nodes, `textContent` is removed while "hidden" and replaced when
+   * "shown."
+   * @return {void}
+   * @protected
+   */
   _showHideChildren() {
     let hidden = this.__hideTemplateChildren__ || !this.if;
     if (this.__instance) {

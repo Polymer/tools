@@ -1128,6 +1128,9 @@ export const PropertyEffects = dedupingMixin(superClass => {
       return TYPES;
     }
 
+    /**
+     * @return {void}
+     */
     _initializeProperties() {
       super._initializeProperties();
       hostStack.registerHost(this);
@@ -1150,6 +1153,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
      *
      * @override
      * @param {Object} props Properties to initialize on the prototype
+     * @return {void}
      */
     _initializeProtoProperties(props) {
       this.__data = Object.create(props);
@@ -1163,6 +1167,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
      *
      * @override
      * @param {Object} props Properties to initialize on the instance
+     * @return {void}
      */
     _initializeInstanceProperties(props) {
       let readOnly = this[TYPES.READ_ONLY];
@@ -1442,6 +1447,9 @@ export const PropertyEffects = dedupingMixin(superClass => {
      * to true, for per-property notification tracking.
      *
      * @override
+     * @param {string} property Name of the property
+     * @param {*} value Value to set
+     * @return {void}
      */
     _setProperty(property, value) {
       if (this._setPendingProperty(property, value, true)) {
@@ -1456,6 +1464,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
      * `_propertiesChanged` synchronously.
      *
      * @override
+     * @return {void}
      */
     _invalidateProperties() {
       if (this.__dataReady) {
@@ -1482,6 +1491,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
     /**
      * Overrides superclass implementation.
      *
+     * @return {void}
      * @protected
      */
     _flushProperties() {
@@ -1584,6 +1594,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
      * that was not enabled as a result of flushing properties.
      *
      * @override
+     * @return {void}
      */
     ready() {
       // It is important that `super.ready()` is not called here as it
@@ -1609,7 +1620,12 @@ export const PropertyEffects = dedupingMixin(superClass => {
      * Runs each class of effects for the batch of changed properties in
      * a specific order (compute, propagate, reflect, observe, notify).
      *
-     * @override
+     * @param {!Object} currentProps Bag of all current accessor values
+     * @param {!Object} changedProps Bag of properties changed since the last
+     *   call to `_propertiesChanged`
+     * @param {!Object} oldProps Bag of previous values for each property
+     *   in `changedProps`
+     * @return {void}
      */
     _propertiesChanged(currentProps, changedProps, oldProps) {
       // ----------------------------

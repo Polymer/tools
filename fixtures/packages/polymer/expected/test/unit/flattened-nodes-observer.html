@@ -1040,6 +1040,16 @@ suite('observeNodes', function() {
     document.body.removeChild(host);
   });
 
+  test('should not fail on node without children', function() {
+    var recorded;
+    var el = document;
+    var observer = new FlattenedNodesObserver(el, function(info) {
+      recorded = info;
+    });
+    assert.equal(recorded, null);
+    observer.disconnect();
+  });
+
 });
 </script>
 

@@ -21,7 +21,7 @@
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/PolymerElements/paper-button",
   "dependencies": {
-    "polymer": "Polymer/polymer#1.9 - 2",
+    "polymer": "Polymer/polymer#master",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1 - 2",
     "paper-behaviors": "PolymerElements/paper-behaviors#1 - 2",
     "paper-styles": "PolymerElements/paper-styles#1 - 2"
@@ -61,6 +61,7 @@
   },
   "ignore": [],
   "resolutions": {
-    "webcomponentsjs": "^1.0.0"
+    "webcomponentsjs": "^1.0.0",
+    "polymer": "master"
   }
 }

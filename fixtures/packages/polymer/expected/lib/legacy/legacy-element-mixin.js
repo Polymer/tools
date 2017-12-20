@@ -65,12 +65,14 @@ export const LegacyElementMixin = dedupingMixin((base) => {
     /**
      * Legacy callback called during the `constructor`, for overriding
      * by the user.
+     * @return {void}
      */
     created() {}
 
     /**
      * Provides an implementation of `connectedCallback`
      * which adds Polymer legacy API's `attached` method.
+     * @return {void}
      * @override
      */
     connectedCallback() {
@@ -82,12 +84,14 @@ export const LegacyElementMixin = dedupingMixin((base) => {
     /**
      * Legacy callback called during `connectedCallback`, for overriding
      * by the user.
+     * @return {void}
      */
     attached() {}
 
     /**
      * Provides an implementation of `disconnectedCallback`
      * which adds Polymer legacy API's `detached` method.
+     * @return {void}
      * @override
      */
     disconnectedCallback() {
@@ -99,6 +103,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
     /**
      * Legacy callback called during `disconnectedCallback`, for overriding
      * by the user.
+     * @return {void}
      */
     detached() {}
 
@@ -124,6 +129,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {string} name Name of attribute.
      * @param {?string} old Old value of attribute.
      * @param {?string} value Current value of attribute.
+     * @return {void}
      */
     attributeChanged(name, old, value) {} // eslint-disable-line no-unused-vars
 
@@ -132,6 +138,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * add support for class initialization via the `_registered` callback.
      * This is called only when the first instance of the element is created.
      *
+     * @return {void}
      * @override
      */
     _initializeProperties() {
@@ -149,6 +156,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * work. The implementation should ensure the work is performed
      * only once for the class.
      * @protected
+     * @return {void}
      */
     _registered() {}
 
@@ -156,6 +164,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Overrides the default `Polymer.PropertyEffects` implementation to
      * add support for installing `hostAttributes` and `listeners`.
      *
+     * @return {void}
      * @override
      */
     ready() {
@@ -172,6 +181,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * to the element user and not done here; reasonable exceptions include
      * setting aria roles and focusability.
      * @protected
+     * @return {void}
      */
     _ensureAttributes() {}
 
@@ -184,6 +194,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * these elements, consider adding listeners asynchronously so as not to
      * block render.
      * @protected
+     * @return {void}
      */
     _applyListeners() {}
 
@@ -523,7 +534,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * match `selector`. These can be dom child nodes or elements distributed
      * to children that are insertion points.
      * @param {string} selector Selector to run.
-     * @return {Object<Node>} First effective child node that matches selector.
+     * @return {Node} First effective child node that matches selector.
      */
     queryEffectiveChildren(selector) {
       let e$ = this.queryDistributedElements(selector);
@@ -601,7 +612,13 @@ export const LegacyElementMixin = dedupingMixin((base) => {
       return this.root === node.getRootNode();
     }
 
-    // NOTE: should now be handled by ShadyCss library.
+    /**
+     * No-op for backwards compatibility. This should now be handled by
+     * ShadyCss library.
+     * @param  {*} container Unused
+     * @param  {*} shouldObserve Unused
+     * @return {void}
+     */
     scopeSubtree(container, shouldObserve) { // eslint-disable-line no-unused-vars
     }
 
@@ -785,6 +802,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {boolean=} bool Boolean to force the attribute on or off.
      *    When unspecified, the state of the attribute will be reversed.
      * @param {Element=} node Node to target.  Defaults to `this`.
+     * @return {void}
      */
     toggleAttribute(name, bool, node) {
       node = /** @type {Element} */ (node || this);
@@ -806,6 +824,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * @param {boolean=} bool Boolean to force the class on or off.
      *    When unspecified, the state of the class will be reversed.
      * @param {Element=} node Node to target.  Defaults to `this`.
+     * @return {void}
      */
     toggleClass(name, bool, node) {
       node = /** @type {Element} */ (node || this);
@@ -888,6 +907,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *
      * @param {string} level One of 'log', 'warn', 'error'
      * @param {Array} args Array of strings or objects to log
+     * @return {void}
      */
     _logger(level, args) {
       // accept ['foo', 'bar'] and [['foo', 'bar']]
@@ -906,6 +926,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Facades `console.log` as an override point.
      *
      * @param {...*} args Array of strings or objects to log
+     * @return {void}
      */
     _log(...args) {
       this._logger('log', args);
@@ -915,6 +936,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Facades `console.warn` as an override point.
      *
      * @param {...*} args Array of strings or objects to log
+     * @return {void}
      */
     _warn(...args) {
       this._logger('warn', args);
@@ -924,6 +946,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Facades `console.error` as an override point.
      *
      * @param {...*} args Array of strings or objects to log
+     * @return {void}
      */
     _error(...args) {
       this._logger('error', args);

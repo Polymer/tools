@@ -284,6 +284,9 @@ class DomRepeat extends domRepeatBase {
     this.template = null;
   }
 
+  /**
+   * @return {void}
+   */
   disconnectedCallback() {
     super.disconnectedCallback();
     this.__isDetached = true;
@@ -292,6 +295,9 @@ class DomRepeat extends domRepeatBase {
     }
   }
 
+  /**
+   * @return {void}
+   */
   connectedCallback() {
     super.connectedCallback();
     this.style.display = 'none';
@@ -605,6 +611,15 @@ class DomRepeat extends domRepeatBase {
   }
 
   // Implements extension point from Templatize mixin
+  /**
+   * Shows or hides the template instance top level child elements. For
+   * text nodes, `textContent` is removed while "hidden" and replaced when
+   * "shown."
+   * @param {boolean} hidden Set to true to hide the children;
+   * set to false to show them.
+   * @return {void}
+   * @protected
+   */
   _showHideChildren(hidden) {
     for (let i=0; i<this.__instances.length; i++) {
       this.__instances[i]._showHideChildren(hidden);

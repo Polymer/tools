@@ -414,7 +414,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
      * This method generates a handler function that looks up the method
      * name at handling time.
      *
-     * @param {Node} node Node to add listener on
+     * @param {!Node} node Node to add listener on
      * @param {string} eventName Name of event
      * @param {string} methodName Name of method
      * @param {*=} context Context the method will be called on (defaults
@@ -431,7 +431,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
     /**
      * Override point for adding custom or simulated event handling.
      *
-     * @param {Node} node Node to add event listener to
+     * @param {!Node} node Node to add event listener to
      * @param {string} eventName Name of event
      * @param {Function} handler Listener function to add
      * @return {void}

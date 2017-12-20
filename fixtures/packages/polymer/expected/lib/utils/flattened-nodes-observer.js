@@ -4,7 +4,7 @@ import { microTask } from './async.js';
 
 /**
  * Returns true if `node` is a slot element
- * @param {HTMLElement} node Node to test.
+ * @param {Node} node Node to test.
  * @return {boolean} Returns true if the given `node` is a slot
  * @private
  */
@@ -85,7 +85,7 @@ class FlattenedNodesObserver {
   }
 
   /**
-   * @param {Node} target Node on which to listen for changes.
+   * @param {Element} target Node on which to listen for changes.
    * @param {Function} callback Function called when there are additions
    * or removals from the target's list of flattened nodes.
   */
@@ -101,6 +101,10 @@ class FlattenedNodesObserver {
      */
     this._nativeChildrenObserver = null;
     this._connected = false;
+    /**
+     * @type {Element}
+     * @private
+     */
     this._target = target;
     this.callback = callback;
     this._effectiveNodes = [];
@@ -127,7 +131,7 @@ class FlattenedNodesObserver {
   connect() {
     if (isSlot(this._target)) {
       this._listenSlots([this._target]);
-    } else {
+    } else if (this._target.children) {
       this._listenSlots(this._target.children);
       if (window.ShadyDOM) {
         this._shadyChildrenObserver =
@@ -156,7 +160,7 @@ class FlattenedNodesObserver {
   disconnect() {
     if (isSlot(this._target)) {
       this._unlistenSlots([this._target]);
-    } else {
+    } else if (this._target.children) {
       this._unlistenSlots(this._target.children);
       if (window.ShadyDOM && this._shadyChildrenObserver) {
         ShadyDOM.unobserveChildren(this._shadyChildrenObserver);
@@ -169,6 +173,10 @@ class FlattenedNodesObserver {
     this._connected = false;
   }
 
+  /**
+   * @return {void}
+   * @private
+   */
   _schedule() {
     if (!this._scheduled) {
       this._scheduled = true;
@@ -176,11 +184,21 @@ class FlattenedNodesObserver {
     }
   }
 
+  /**
+   * @param {Array<MutationRecord>} mutations Mutations signaled by the mutation observer
+   * @return {void}
+   * @private
+   */
   _processMutations(mutations) {
     this._processSlotMutations(mutations);
     this.flush();
   }
 
+  /**
+   * @param {Array<MutationRecord>} mutations Mutations signaled by the mutation observer
+   * @return {void}
+   * @private
+   */
   _processSlotMutations(mutations) {
     if (mutations) {
       for (let i=0; i < mutations.length; i++) {
@@ -246,6 +264,11 @@ class FlattenedNodesObserver {
     return didFlush;
   }
 
+  /**
+   * @param {!Array<Element|Node>|!NodeList<Node>} nodeList Nodes that could change
+   * @return {void}
+   * @private
+   */
   _listenSlots(nodeList) {
     for (let i=0; i < nodeList.length; i++) {
       let n = nodeList[i];
@@ -255,6 +278,11 @@ class FlattenedNodesObserver {
     }
   }
 
+  /**
+   * @param {!Array<Element|Node>|!NodeList<Node>} nodeList Nodes that could change
+   * @return {void}
+   * @private
+   */
   _unlistenSlots(nodeList) {
     for (let i=0; i < nodeList.length; i++) {
       let n = nodeList[i];

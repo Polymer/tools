@@ -2,9 +2,6 @@ import './boot.js';
 import './mixin.js';
 import './async.js';
 
-/** @typedef {{run: function(function(), number=):number, cancel: function(number)}} */
-let AsyncModule; // eslint-disable-line no-unused-vars
-
 /**
  * @summary Collapse multiple callbacks into one invocation after a timer.
  * @memberof Polymer
@@ -20,7 +17,7 @@ class Debouncer {
    * a callback and optional arguments to be passed to the run function
    * from the async module.
    *
-   * @param {!AsyncModule} asyncModule Object with Async interface.
+   * @param {!AsyncInterface} asyncModule Object with Async interface.
    * @param {function()} callback Callback to run.
    * @return {void}
    */
@@ -88,7 +85,7 @@ class Debouncer {
    * the debouncer has completed.
    *
    * @param {Debouncer?} debouncer Debouncer object.
-   * @param {!AsyncModule} asyncModule Object with Async interface
+   * @param {!AsyncInterface} asyncModule Object with Async interface
    * @param {function()} callback Callback to run.
    * @return {!Debouncer} Returns a debouncer object.
    */

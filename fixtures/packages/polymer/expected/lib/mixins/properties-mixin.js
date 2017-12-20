@@ -149,6 +149,7 @@ export const PropertiesMixin = dedupingMixin(superClass => {
     * Overrides `PropertiesChanged` method and adds a call to
     * `finalize` which lazily configures the element's property accessors.
     * @override
+    * @return {void}
     */
    _initializeProperties() {
      this.constructor.finalize();
@@ -160,6 +161,7 @@ export const PropertiesMixin = dedupingMixin(superClass => {
     * Calls `_enableProperties` to turn on property system from
     * `PropertiesChanged`.
     * @suppress {missingProperties} Super may or may not implement the callback
+    * @return {void}
     */
    connectedCallback() {
      if (super.connectedCallback) {
@@ -171,6 +173,7 @@ export const PropertiesMixin = dedupingMixin(superClass => {
    /**
     * Called when the element is removed from a document
     * @suppress {missingProperties} Super may or may not implement the callback
+    * @return {void}
     */
    disconnectedCallback() {
      if (super.disconnectedCallback) {

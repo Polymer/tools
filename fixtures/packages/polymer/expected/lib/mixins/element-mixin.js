@@ -359,6 +359,7 @@ export const ElementMixin = dedupingMixin(base => {
      * It also initializes any property defaults provided via `value` in
      * `properties` metadata.
      *
+     * @return {void}
      * @override
      * @suppress {invalidCasts}
      */
@@ -441,6 +442,7 @@ export const ElementMixin = dedupingMixin(base => {
      * when using the ShadyCSS scoping/custom properties polyfill.
      *
      * @suppress {missingProperties, invalidCasts} Super may or may not implement the callback
+     * @return {void}
      */
     connectedCallback() {
       if (window.ShadyCSS && this._template) {
@@ -452,6 +454,7 @@ export const ElementMixin = dedupingMixin(base => {
     /**
      * Stamps the element template.
      *
+     * @return {void}
      * @override
      */
     ready() {
@@ -469,6 +472,7 @@ export const ElementMixin = dedupingMixin(base => {
      * client dom to be attached to the element prior to any observers
      * running.
      *
+     * @return {void}
      * @override
      */
     _readyClients() {

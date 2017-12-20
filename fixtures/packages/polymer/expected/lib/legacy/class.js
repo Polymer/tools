@@ -154,6 +154,9 @@ function GenerateClassFromInfo(info, Base) {
         null;
     }
 
+    /**
+     * @return {void}
+     */
     created() {
       super.created();
       if (info.created) {
@@ -161,6 +164,9 @@ function GenerateClassFromInfo(info, Base) {
       }
     }
 
+    /**
+     * @return {void}
+     */
     _registered() {
       super._registered();
       /* NOTE: `beforeRegister` is called here for bc, but the behavior
@@ -178,6 +184,9 @@ function GenerateClassFromInfo(info, Base) {
       }
     }
 
+    /**
+     * @return {void}
+     */
     _applyListeners() {
       super._applyListeners();
       if (info.listeners) {
@@ -190,6 +199,9 @@ function GenerateClassFromInfo(info, Base) {
     // note: exception to "super then me" rule;
     // do work before calling super so that super attributes
     // only apply if not already set.
+    /**
+     * @return {void}
+     */
     _ensureAttributes() {
       if (info.hostAttributes) {
         for (let a in info.hostAttributes) {
@@ -199,6 +211,9 @@ function GenerateClassFromInfo(info, Base) {
       super._ensureAttributes();
     }
 
+    /**
+     * @return {void}
+     */
     ready() {
       super.ready();
       if (info.ready) {
@@ -206,6 +221,9 @@ function GenerateClassFromInfo(info, Base) {
       }
     }
 
+    /**
+     * @return {void}
+     */
     attached() {
       super.attached();
       if (info.attached) {
@@ -213,6 +231,9 @@ function GenerateClassFromInfo(info, Base) {
       }
     }
 
+    /**
+     * @return {void}
+     */
     detached() {
       super.detached();
       if (info.detached) {
@@ -220,6 +241,15 @@ function GenerateClassFromInfo(info, Base) {
       }
     }
 
+    /**
+     * Implements native Custom Elements `attributeChangedCallback` to
+     * set an attribute value to a property via `_attributeToProperty`.
+     *
+     * @param {string} name Name of attribute that changed
+     * @param {?string} old Old attribute value
+     * @param {?string} value New attribute value
+     * @return {void}
+     */
     attributeChanged(name, old, value) {
       super.attributeChanged(name, old, value);
       if (info.attributeChanged) {

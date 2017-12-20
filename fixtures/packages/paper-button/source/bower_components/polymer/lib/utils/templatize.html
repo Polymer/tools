@@ -123,8 +123,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.__dataHost._enqueueClient(this);
         }
       }
+
       /**
-       * @override
+       * Override point for adding custom or simulated event handling.
+       *
+       * @param {!Node} node Node to add event listener to
+       * @param {string} eventName Name of event
+       * @param {Function} handler Listener function to add
+       * @return {void}
        */
       _addEventListenerToNode(node, eventName, handler) {
         if (this._methodHost && this.__templatizeOptions.parentModel) {
@@ -185,7 +191,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * textContent bindings while children are "hidden" and cache in
        * private storage for later retrieval.
        *
-       * @override
+       * @param {Node} node The node to set a property on
+       * @param {string} prop The property to set
+       * @param {*} value The value to set
+       * @return {void}
+       * @protected
        */
       _setUnmanagedPropertyToNode(node, prop, value) {
         if (node.__hideTemplateChildren__ &&
@@ -257,6 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /**
        * @constructor
        * @extends {base}
+       * @private
        */
       let klass = class extends base { };
       klass.prototype.__templatizeOptions = options;
@@ -464,6 +475,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Host property forwarding must be installed onto template instance
         addPropagateEffects(template, templateInfo, options);
         // Subclass base class and add reference for this specific template
+        /** @private */
         let klass = class TemplateInstance extends baseClass {};
         klass.prototype._methodHost = findMethodHost(template);
         klass.prototype.__dataHost = template;

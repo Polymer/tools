@@ -101,13 +101,17 @@ export const DirMixin = dedupingMixin((base) => {
 
     /**
      * @suppress {invalidCasts} Closure doesn't understand that `this` is an HTMLElement
+     * @return {void}
      */
     ready() {
       super.ready();
       this.__autoDirOptOut = /** @type {!HTMLElement} */(this).hasAttribute('dir');
     }
 
-    /** @suppress {missingProperties} If it exists on elementBase, it can be super'd */
+    /**
+     * @suppress {missingProperties} If it exists on elementBase, it can be super'd
+     * @return {void}
+     */
     connectedCallback() {
       if (elementBase.prototype.connectedCallback) {
         super.connectedCallback();
@@ -119,7 +123,10 @@ export const DirMixin = dedupingMixin((base) => {
       }
     }
 
-    /** @suppress {missingProperties} If it exists on elementBase, it can be super'd */
+    /**
+     * @suppress {missingProperties} If it exists on elementBase, it can be super'd
+     * @return {void}
+     */
     disconnectedCallback() {
       if (elementBase.prototype.disconnectedCallback) {
         super.disconnectedCallback();

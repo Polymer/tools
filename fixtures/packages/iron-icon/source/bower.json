@@ -21,7 +21,7 @@
   "dependencies": {
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1 - 2",
     "iron-meta": "PolymerElements/iron-meta#1 - 2",
-    "polymer": "Polymer/polymer#1.9 - 2"
+    "polymer": "Polymer/polymer#master"
   },
   "devDependencies": {
     "promise-polyfill": "polymerlabs/promise-polyfill#1 - 2",
@@ -54,6 +54,7 @@
     }
   },
   "resolutions": {
-    "webcomponentsjs": "^1.0.0"
+    "webcomponentsjs": "^1.0.0",
+    "polymer": "master"
   }
 }
