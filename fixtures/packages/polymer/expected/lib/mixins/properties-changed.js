@@ -311,9 +311,8 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      * considered as a change and cause the `_propertiesChanged` callback
      * to be enqueued.
      *
-     * The default implementation returns `true` for primitive types if a
-     * strict equality check fails, and returns `true` for all Object/Arrays.
-     * The method always returns false for `NaN`.
+     * The default implementation returns `true` if a strict equality
+     * check fails. The method always returns false for `NaN`.
      *
      * Override this method to e.g. provide stricter checking for
      * Objects/Arrays when using immutable patterns.
@@ -417,9 +416,9 @@ export const PropertiesChanged = dedupingMixin(superClass => {
     /**
      * Converts a typed JavaScript value to a string.
      *
-     * This method is called by Polymer when setting JS property values to
-     * HTML attributes.  Users may override this method on Polymer element
-     * prototypes to provide serialization for custom types.
+     * This method is called when setting JS property values to
+     * HTML attributes.  Users may override this method to provide
+     * serialization for custom types.
      *
      * @param {*} value Property value to serialize.
      * @return {string | undefined} String serialized from the provided
@@ -439,9 +438,8 @@ export const PropertiesChanged = dedupingMixin(superClass => {
      *
      * This method is called when reading HTML attribute values to
      * JS properties.  Users may override this method to provide
-     * deserialization for custom `type`s. The given `type` is executed
-     * as a function with the value as an argument. The `Boolean` `type`
-     * is specially handled such that an empty string returns true.
+     * deserialization for custom `type`s. Types for `Boolean`, `String`,
+     * and `Number` convert attributes to the expected types.
      *
      * @param {?string} value Value to deserialize.
      * @param {*=} type Type to deserialize the string to.
@@ -451,10 +449,10 @@ export const PropertiesChanged = dedupingMixin(superClass => {
       switch (type) {
         case Boolean:
           return (value !== null);
-        case String:
-          return value;
+        case Number:
+          return Number(value);
         default:
-          return typeof type == 'function' ? type(value) : value;
+          return value;
       }
     }
 

@@ -1,4 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../polymer.js';
 import { MutableData } from '../../lib/mixins/mutable-data.js';
 /**
 @license
@@ -100,7 +101,7 @@ window.getData = () => [
 ];
 
 Polymer({
-  _template: `
+  _template: html`
     <style>
       :host {
         display: block;
@@ -267,7 +268,7 @@ class XNestedRepeatMutable extends MutableData(XNestedRepeat) {
 }
 customElements.define('x-nested-repeat-mutable', XNestedRepeatMutable);
 Polymer({
-  _template: `
+  _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}" as="itema" index-as="indexa" observe="prop">
       <x-foo innera-prop="{{innera.prop}}" itema-prop="{{itema.prop}}" outer-prop="{{prop}}" outer-item-prop="{{item.prop}}" indexa="{{indexa}}" computeda="{{concat(itema.prop, itemForComputedA.prop)}}">
       </x-foo>
@@ -323,7 +324,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template id="repeat" is="dom-repeat" items="{{items}}">
       <x-foo itema-prop="{{item.prop}}"></x-foo>
     </template>
@@ -338,7 +339,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <div id="container1">
       <template is="dom-repeat" items="{{items}}" id="repeater1">
         <x-foo itema-prop="{{item}}"></x-foo>
@@ -362,7 +363,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}">
       <div>{{item}}</div>
     </template>
@@ -383,7 +384,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}">
       <div prop="{{outerProp.prop}}">{{item.prop}}</div>
     </template>
@@ -409,7 +410,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}" initial-count="10">
       <x-wait>{{item.prop}}</x-wait>
     </template>
@@ -438,7 +439,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-repeat" items="{{items}}" id="outer">
       <template is="dom-if" if="">
         <template is="dom-repeat" items="{{item.items}}" id="inner">

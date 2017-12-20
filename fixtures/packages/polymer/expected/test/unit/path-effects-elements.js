@@ -1,4 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../polymer.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -24,7 +25,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-basic id="basic1" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}" othervalue="{{obj.value2}}"></x-basic>
     <x-basic id="basic2" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}"></x-basic>
 `,
@@ -60,7 +61,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-compose id="compose" obj="{{obj}}"></x-compose>
 `,
 
@@ -98,7 +99,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-basic id="basic" notifying-value="{{nested.obj.value}}" attrvalue\$="{{nested.obj.value}}"></x-basic>
     <x-compose id="compose" obj="{{nested.obj}}"></x-compose>
     <x-forward id="forward" obj="{{nested.obj}}"></x-forward>
@@ -197,7 +198,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-reentry-client obj="{{obj}}" prop="{{prop}}"></x-reentry-client>
 `,
 
@@ -226,7 +227,7 @@ Polymer({
   objChanged: function() {}
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-path-client id="client" obj="{{obj}}"></x-path-client>
 `,
 

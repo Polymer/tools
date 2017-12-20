@@ -1,6 +1,7 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { Templatize } from '../../lib/utils/templatize.js';
 import { Templatizer } from '../../lib/legacy/templatizer-behavior.js';
+import { html } from '../../polymer.js';
 
 /**
 @license
@@ -155,7 +156,7 @@ Polymer({
 });
 
 Polymer({
-  _template: `
+  _template: html`
     <x-templatize obj="{{objA}}" prop="{{propA}}" id="templatizeA">
       <template>
         <x-child on-tap="handleTap" id="childA" outer-prop="{{outerProp}}" outer-obj="{{outerObj}}" outer-obj-prop="{{outerObj.prop}}" prop="{{prop}}" obj="{{obj}}" obj-prop="{{obj.prop}}" conflict="{{outerInnerConflict.prop}}" computed-from-literal="{{computeFromLiteral(33, prop)}}"></x-child>

@@ -20,6 +20,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script type="module">
 import { PropertiesMixin } from '../../lib/mixins/properties-mixin.js';
 
+class Glar {}
+class Blar {}
+
 class MyElement extends PropertiesMixin(HTMLElement) {
 
   static get properties() {
@@ -27,7 +30,11 @@ class MyElement extends PropertiesMixin(HTMLElement) {
       prop: String,
       noStomp: String,
       id: String,
-      camelCase: String
+      camelCase: String,
+      boo: Boolean,
+      num: Number,
+      glar: Glar,
+      blar: Blar
     };
   }
 
@@ -38,6 +45,13 @@ class MyElement extends PropertiesMixin(HTMLElement) {
     this._calledConstructor++;
     this.prop = 'prop';
     this.noStomp = 'stomped';
+  }
+
+  _deserializeValue(value, type) {
+    if (type == Glar) {
+      return 'glar';
+    }
+    return super._deserializeValue(value, type);
   }
 
   get noStomp() {
@@ -273,6 +287,29 @@ suite('class extends Polymer.PropertiesMixin', function() {
     assert.equal(fixtureEl._callAttributeChangedCallback, 2);
     fixtureEl.removeAttribute('prop');
     assert.equal(fixtureEl.prop, null);
+  });
+
+  test('deserialize standard types', function() {
+    el.setAttribute('boo', '');
+    assert.equal(el.boo, true);
+    el.removeAttribute('boo');
+    assert.equal(el.boo, false);
+    el.setAttribute('prop', '1');
+    assert.equal(el.prop, '1');
+    el.setAttribute('num', '1');
+    assert.equal(el.num, 1);
+    el.setAttribute('num', '0');
+    assert.equal(el.num, 0);
+  });
+
+  test('deserialize class constructor type', function() {
+    el.setAttribute('blar', 'a');
+    assert.equal(el.blar, 'a');
+  });
+
+  test('deserialize custom type via `_deserializeValue`', function() {
+    el.setAttribute('glar', 'b');
+    assert.equal(el.glar, 'glar');
   });
 
   test('reflecting attributes', function() {

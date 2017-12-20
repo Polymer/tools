@@ -1,4 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../polymer.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -9,7 +10,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
-  _template: `
+  _template: html`
     <x-bar id="bar" prop="{{prop}}" item-prop="{{item.prop}}">
     </x-bar>
 `,
@@ -37,7 +38,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp}}" on-dom-change="domUpdateHandler">
       <!-- Comments should be good -->
       <x-foo on-test1="testHandler1" prop="{{prop}}" item-prop="{{item.prop}}">
@@ -82,7 +83,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp}}">
       <!-- Comments should be good -->
       <x-foo prop="{{prop}}" item-prop="{{item.prop}}">
@@ -119,7 +120,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp1}}">
       <x-foo prop="{{prop1}}"></x-foo>
       <template is="dom-if" id="if-2" if="{{shouldStamp2}}">
@@ -153,7 +154,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template id="domIf" is="dom-if" if="">
       <div>1</div>
       <div>2</div>
@@ -172,7 +173,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template id="domif" is="dom-if" if="">
       <x-client></x-client>
       <x-client></x-client>
@@ -192,7 +193,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{bool}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
 `,
 
@@ -205,7 +206,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{isTrue(bool)}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
 `,
 
@@ -222,7 +223,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{switch}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
 `,
 
@@ -245,7 +246,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{obj.bool}}" restamp="{{restamp}}">{{guarded(obj.bool)}}</template>
 `,
 
@@ -258,7 +259,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{switch}}" restamp="{{restamp}}">{{guarded(obj.bool)}}</template>
 `,
 
@@ -281,7 +282,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{b}}" restamp="{{restamp}}">{{guarded(a)}}</template>
 `,
 
@@ -294,7 +295,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="{{obj.b}}" restamp="{{restamp}}">{{guarded(obj.a)}}</template>
 `,
 

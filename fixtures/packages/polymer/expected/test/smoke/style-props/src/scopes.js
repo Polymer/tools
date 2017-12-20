@@ -1,10 +1,11 @@
 import './settings.js';
 import './elements.js';
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
+import { html } from '../../../../polymer.js';
 import { dom } from '../../../../lib/legacy/polymer.dom.js';
 
 Polymer({
-  _template: `
+  _template: html`
     <style>
 
       :host {
@@ -43,7 +44,7 @@ Polymer({
 });
 
 Polymer({
-  _template: `
+  _template: html`
     <style include="simple-layout-styles">
 
       :host {
@@ -85,7 +86,7 @@ Polymer({
 });
 
 Polymer({
-  _template: `
+  _template: html`
     <style include="simple-layout-styles">
 
       :host {

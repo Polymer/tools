@@ -1,4 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../polymer.js';
 import { Element } from '../../polymer-element.js';
 import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
 import { MutableData } from '../../lib/mixins/mutable-data.js';
@@ -20,7 +21,7 @@ let ComputingBehavior = {
   }
 };
 Polymer({
-  _template: `
+  _template: html`
     <div id="boundChild" value="{{ value }}" negvalue="{{!bool}}" attrvalue\$="{{attrvalue}}" sanitize-value="{{sanitizeValue}}" computedvalue="{{computedvalue}}" computedvaluetwo="{{computedvaluetwo}}" camel-case="{{value}}" computed-inline="{{computeInline(value,add, divide)}}" computed-inline2="{{computeInline(value, add,divide)}}" computed-inline3="{{computeInline(value, add,
                                         divide )}}" computedattribute\$="{{computeInline(value, add,divide)}}" computedattribute2\$="{{computeInline(
                                value, add, divide)}}" neg-computed-inline="{{!computeInline(value,add,divide)}}" computed-negative-number="{{computeNegativeNumber(-1)}}" computed-negative-literal="{{computeNegativeNumber(-A)}}" computed-wildcard="{{computeWildcard(a, b.*)}}" style\$="{{boundStyle}}" data-id\$="{{dataSetId}}" custom-event-value="{{customEventValue::custom}}" custom-event-object-value="{{customEventObject.value::change}}" computed-from-mixed-literals="{{computeFromLiterals(3, &quot;foo&quot;, bool)}}" computed-from-pure-literals="{{computeFromLiterals( 3, &quot;foo&quot;)}}" computed-from-tricky-function="{{\$computeTrickyFunctionFromLiterals( 3, &quot;foo&quot;)}}" computed-from-tricky-literals="{{computeFromTrickyLiterals(3, 'tricky\\,\\'zot\\'')}}" computed-from-tricky-literals2="{{computeFromTrickyLiterals(3,&quot;tricky\\,'zot'&quot; )}}" computed-from-tricky-literals3="{{computeFromTrickyLiterals(3,
@@ -316,7 +317,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-basic id="basic1" value="{{boundvalue}}" notifyingvalue="{{boundnotifyingvalue}}" notifyingvalue-with-default="{{boundnotifyingvalueWithDefault}}" camel-notifying-value="{{boundnotifyingvalue}}" computedvalue="{{boundcomputedvalue}}" computednotifyingvalue="{{boundcomputednotifyingvalue}}" readonlyvalue="{{boundreadonlyvalue}}" custom-notifying-value="{{boundCustomNotifyingValue}}">
     </x-basic>
     <x-basic id="basic2" value="[[boundvalue]]" notifyingvalue="[[boundnotifyingvalue]]" computedvalue="[[boundcomputedvalue]]" computednotifyingvalue="[[boundcomputednotifyingvalue]]">
@@ -419,7 +420,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <slot name="drawer"></slot>
     <div id="before"></div>
     <x-basic id="basic1" on-notifyingvalue-with-default-changed="handleNotify">
@@ -507,7 +508,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-notifies1 id="notifies1" notifies="{{shouldChange}}"></x-notifies1>
 `,
 
@@ -520,7 +521,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-notifies2 id="notifies2" notifies="{{shouldNotChange}}"></x-notifies2>
 `,
 
@@ -535,7 +536,7 @@ Polymer({
   shouldNotChangeChanged: function() { }
 });
 Polymer({
-  _template: `
+  _template: html`
     <p>©</p>
     <p id="binding">{{myText}}</p>
 `,
@@ -550,14 +551,14 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <input id="input" value\$="{{inputValue}}">
 `,
 
   is: 'x-input-value'
 });
 Polymer({
-  _template: `
+  _template: html`
     <div id="check">{{isAttached}}</div>
 `,
 
@@ -573,7 +574,7 @@ Polymer({
 });
 var invocations = [];
 Polymer({
-  _template: `
+  _template: html`
     <x-order-of-effects id="child" base="{{base}}"></x-order-of-effects>
 `,
 
@@ -591,7 +592,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-order-of-effects-child prop1="[[base]]" prop2="[[_computedAnnotation(base)]]"></x-order-of-effects-child>
 `,
 
@@ -658,7 +659,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <div id="check">[[translateMessage('Hello World.')]]</div>
 `,
 
@@ -691,7 +692,7 @@ var TranslateBehavior = {
   }
 };
 Polymer({
-  _template: `
+  _template: html`
     <div id="check">[[translateMessage(message)]]</div>
 `,
 
@@ -718,7 +719,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <div -u-p-c-a-s-e\$="[[UPCASE]]"></div>
 `,
 
@@ -732,7 +733,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <template is="dom-if" if="[[visible]]">
       <p>[[translateMessage('text')]]</p>
     </template>
@@ -833,7 +834,7 @@ Polymer({
 });
 
 Polymer({
-  _template: `
+  _template: html`
     <x-polymer id="polymer" array="{{array}}" compound="**{{array}}**">{{array}}</x-polymer>
     <x-raw id="raw" array="{{array}}" value="{{value}}" compound="**{{array}}**"></x-raw>
 `,
@@ -887,7 +888,7 @@ Polymer({
 });
 
 Polymer({
-  _template: `
+  _template: html`
     <x-immutable-b b="[[a.b]]" x="[[a.x]]" id="b"></x-immutable-b>
 `,
 
@@ -901,7 +902,7 @@ Polymer({
 });
 class XImmutableB extends Element {
   static get template() {
-    return `
+    return html`
     <x-immutable-c c="[[b.c]]" x="[[b.x]]" id="c">
   </x-immutable-c>
 `;
@@ -925,7 +926,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-mutable-b b="[[a.b]]" x="[[a.x]]" id="b"></x-mutable-b>
 `,
 
@@ -940,7 +941,7 @@ Polymer({
 });
 class XMutableB extends MutableData(Element) {
   static get template() {
-    return `
+    return html`
     <x-mutable-c c="[[b.c]]" x="[[b.x]]" id="c">
   </x-mutable-c>
 `;

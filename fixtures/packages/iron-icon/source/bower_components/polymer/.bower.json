@@ -32,11 +32,11 @@
     "test-fixture": "3.0.0-rc.1"
   },
   "homepage": "https://github.com/Polymer/polymer",
-  "_release": "b7bd545368",
+  "_release": "2719a9d6d3",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "b7bd5453681d0c6c527d83d39f95adfed27bd808"
+    "commit": "2719a9d6d3e9eea0ac68c376cbc51b3f10a57abf"
   },
   "_source": "https://github.com/Polymer/polymer.git",
   "_target": "master",

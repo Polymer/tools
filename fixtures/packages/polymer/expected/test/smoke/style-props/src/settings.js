@@ -1,4 +1,5 @@
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
+import { html } from '../../../../polymer.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
@@ -31,7 +32,7 @@ $_documentContainer.innerHTML = `<dom-module id="simple-layout-styles">
 
 document.head.appendChild($_documentContainer);
 Polymer({
-  _template: `
+  _template: html`
     <style include="simple-layout-styles">
     :host {
       margin: 4px;

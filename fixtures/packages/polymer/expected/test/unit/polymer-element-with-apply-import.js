@@ -1,6 +1,7 @@
 import { Element } from '../../polymer-element.js';
 import '../../../../@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '../../lib/elements/custom-style.js';
+import { html } from '../../polymer.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -12,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 class ApplyElement extends Element {
   static get template() {
-    return `
+    return html`
     <style>
     :host {
       display: block;
@@ -27,7 +28,7 @@ class ApplyElement extends Element {
 customElements.define('apply-element', ApplyElement);
 class XOuter extends Element {
   static get template() {
-    return `
+    return html`
     <style>
     :host {
       display: block;

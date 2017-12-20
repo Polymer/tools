@@ -1,4 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../polymer.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -181,7 +182,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-basic id="basic" prop="{{attr1}}" attr1\$="{{attr1}}" class="should-not-override"></x-basic>
 `,
 

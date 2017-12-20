@@ -1,4 +1,4 @@
-import '../../polymer.js';
+import { html } from '../../polymer.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 /**
 @license
@@ -10,7 +10,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
-  _template: `
+  _template: html`
   <style>
     #div {
       height: 40px;
@@ -33,7 +33,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <x-foo id="foo"></x-foo>
 `,
 
@@ -49,7 +49,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <div id="inner" on-tap="handler" on-track="handler" on-down="handler" on-up="handler"></div>
 `,
 
@@ -132,7 +132,7 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  _template: `
+  _template: html`
     <style>
       :host {
         position: absolute;

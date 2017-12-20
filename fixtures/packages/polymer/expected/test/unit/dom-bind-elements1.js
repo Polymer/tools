@@ -1,4 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../polymer.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -17,14 +18,14 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
 <div id="container"><slot id="slot"></slot></div>
 `,
 
   is: 'x-content'
 });
 Polymer({
-  _template: `
+  _template: html`
 <x-content id="local"></x-content>
 `,
 
@@ -46,7 +47,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
 <x-content id="local"></x-content>
 `,
 

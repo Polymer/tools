@@ -1,4 +1,4 @@
-import { Base } from '../../polymer.js';
+import { Base, html } from '../../polymer.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 /**
 @license
@@ -33,7 +33,7 @@ Polymer({
   }
 });
 Polymer({
-  _template: `
+  _template: html`
     <div id="inner" on-foo="handle" on-bar="missing"></div>
 `,
 
@@ -41,7 +41,7 @@ Polymer({
   behaviors: [EventLoggerImpl]
 });
 Polymer({
-  _template: `
+  _template: html`
       <x-listeners id="inner" on-foo="handle"></x-listeners>
 `,
 
@@ -49,7 +49,7 @@ Polymer({
   behaviors: [EventLoggerImpl]
 });
 Polymer({
-  _template: `
+  _template: html`
     <div id="inner"></div>
 `,
 

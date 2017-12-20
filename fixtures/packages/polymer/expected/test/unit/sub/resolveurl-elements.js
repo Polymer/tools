@@ -1,3 +1,4 @@
+import { html } from '../../../polymer.js';
 import { Element } from '../../../polymer-element.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -14,7 +15,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 class PR extends Element {
   static get template() {
-    return `
+    return html`
     <style>
       .logo {
         background-image: url(foo.z);

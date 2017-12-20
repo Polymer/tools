@@ -1,7 +1,8 @@
 import './elements-defaults.js';
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
+import { html } from '../../../../polymer.js';
 Polymer({
-  _template: `
+  _template: html`
     <style include="simple-layout-styles">
       :host {
         transform: rotate(-45deg);
@@ -56,7 +57,7 @@ Polymer({
   is: 'x-s'
 });
 Polymer({
-  _template: `
+  _template: html`
     <style include="simple-layout-styles">
       :host {
         background-color: goldenrod;
