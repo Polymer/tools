@@ -22,6 +22,7 @@ import {Analysis} from './analysis';
 import {comparePositionAndRange, isPositionInsideRange, SourceRange} from './source-range';
 
 import stable = require('stable');
+import {ResolvedUrl} from './url';
 
 export interface WarningInit {
   readonly message: string;
@@ -233,7 +234,7 @@ export interface EditResult {
   incompatibleEdits: Edit[];
 
   /** A map from urls to their new contents. */
-  editedFiles: Map<string, string>;
+  editedFiles: Map<ResolvedUrl, string>;
 }
 
 /**
@@ -244,15 +245,16 @@ export interface EditResult {
  * over later ones.
  */
 export async function applyEdits(
-    edits: Edit[], loader: (url: string) => Promise<ParsedDocument<any, any>>):
-    Promise<EditResult> {
+    edits: Edit[],
+    loader: (url: ResolvedUrl) =>
+        Promise<ParsedDocument<any, any>>): Promise<EditResult> {
   const result: EditResult = {
     appliedEdits: [],
     incompatibleEdits: [],
     editedFiles: new Map()
   };
 
-  const replacementsByFile = new Map<string, Replacement[]>();
+  const replacementsByFile = new Map<ResolvedUrl, Replacement[]>();
   for (const edit of edits) {
     if (canApply(edit, replacementsByFile)) {
       result.appliedEdits.push(edit);
@@ -297,7 +299,7 @@ export async function applyEdits(
  * replacement.
  */
 function canApply(
-    edit: Edit, replacements: Map<string, Replacement[]>): boolean {
+    edit: Edit, replacements: Map<ResolvedUrl, Replacement[]>): boolean {
   for (let i = 0; i < edit.length; i++) {
     const replacement = edit[i];
     const fileLocalReplacements =
@@ -354,7 +356,7 @@ function areRangesEqual(a: SourceRange, b: SourceRange) {
 }
 
 export function makeParseLoader(analyzer: Analyzer, analysis?: Analysis) {
-  return async (url: string) => {
+  return async (url: ResolvedUrl) => {
     if (analysis) {
       const cachedResult = analysis.getDocument(url);
       if (cachedResult.successful) {
