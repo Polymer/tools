@@ -10,11 +10,13 @@ elements.
 
 ### Polymer
 
-Typings for the Polymer 2.0 library will be included in future releases on
-Bower in the `types/` directory ([pending
-PR](https://github.com/Polymer/polymer/pull/4928)).
+Typings for Polymer 2 are planned for regular release starting with version
+2.4, and are available in the
+[`types/`](https://github.com/Polymer/polymer/tree/master/types) directory on
+the `master` branch now.
 
-Install Polymer normally from Bower, and add a [triple-slash
+Once Polymer 2.4 is released, to use the typings, install Polymer normally from
+Bower, and add a [triple-slash
 directive](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html)
 anywhere in your TypeScript project for the typings you require. Each HTML
 import from Polymer has a corresponding typings file. For example, if you
@@ -27,6 +29,9 @@ class MyElement extends Polymer.Element {
   ...
 }
 ```
+
+Typings for Polymer 3 are planned but not yet available (see
+[#18](https://github.com/Polymer/gen-typescript-declarations/issues/18)).
 
 You may also be interested in the [Polymer
 decorators](https://github.com/Polymer/polymer-decorators).
@@ -82,6 +87,13 @@ your root directory. It has the following options:
   map `a: b[]`, a will get an additional reference statement for each file
   path in b. All paths are relative to the analysis root directory.
 
+* **`renameTypes`**`: {[name: string]: string}`
+
+  Whenever a type with a name in this map is encountered, replace it with
+  the given name. Note this only applies to named types found in places like
+  function/method parameters and return types. It does not currently rename
+  e.g. entire generated classes.
+
 ## Using as a module
 
 You can also use this package as a module:
@@ -91,7 +103,7 @@ import {generateDeclarations} from 'gen-typescript-declarations';
 
 const config = {
   "exclude": [
-    "test/",
+    "test/**",
   ],
   "removeReferences": [
     "../shadycss/apply-shim.d.ts",
@@ -100,6 +112,9 @@ const config = {
     "lib/utils/boot.d.ts": [
       "extra-types.d.ts"
     ]
+  },
+  "renameTypes": {
+    "Polymer_PropertyEffects": "Polymer.PropertyEffects.Interface"
   }
 }
 
