@@ -13,7 +13,7 @@
 // TODO Try to make serialization methods easier to read.
 
 export type Node =
-    Document|Namespace|Class|Interface|Function|Method|Type|ParamType|Property;
+    Document|Namespace|Class|Interface|Function|Method|Type|Property;
 
 export class Document {
   readonly kind = 'document';
@@ -251,7 +251,7 @@ export abstract class FunctionLike {
   kind: string;
   name: string;
   description: string;
-  params: Param[];
+  params: ParamType[];
   templateTypes: string[];
   returns: Type;
   returnsDescription: string;
@@ -260,7 +260,7 @@ export abstract class FunctionLike {
   constructor(data: {
     name: string,
     description?: string,
-    params?: Param[],
+    params?: ParamType[],
     templateTypes?: string[],
     returns?: Type,
     returnsDescription?: string,
@@ -373,50 +373,9 @@ export class Property {
   }
 }
 
-export class Param {
-  readonly kind = 'param';
-  name: string;
-  type: Type;
-  optional: boolean;
-  rest: boolean;
-  description: string;
-
-  constructor(data: {
-    name: string,
-    type: Type,
-    optional?: boolean,
-    rest?: boolean,
-    description?: string
-  }) {
-    this.name = data.name;
-    this.type = data.type || anyType;
-    this.optional = data.optional || false;
-    this.rest = data.rest || false;
-    this.description = data.description || '';
-  }
-
-  * traverse(): Iterable<Node> {
-    yield* this.type.traverse();
-    yield this;
-  }
-
-  serialize(): string {
-    let out = '';
-    if (this.rest) {
-      out += '...';
-    }
-    out += this.name;
-    if (this.optional) {
-      out += '?';
-    }
-    out += ': ' + this.type.serialize();
-    return out;
-  }
-}
-
 // A TypeScript type expression.
 export type Type = NameType|UnionType|ArrayType|FunctionType|ConstructorType|
-    RecordType|IntersectionType|IndexableObjectType;
+    RecordType|IntersectionType|IndexableObjectType|ParamType;
 
 // string, MyClass, null, undefined, any
 export class NameType {
@@ -599,20 +558,39 @@ export class ParamType {
   name: string;
   type: Type;
   optional: boolean;
+  rest: boolean;
+  description: string;
+
+  constructor(data: {
+    name: string,
+    type: Type,
+    optional?: boolean,
+    rest?: boolean,
+    description?: string
+  }) {
+    this.name = data.name;
+    this.type = data.type || anyType;
+    this.optional = data.optional || false;
+    this.rest = data.rest || false;
+    this.description = data.description || '';
+  }
 
   * traverse(): Iterable<Node> {
     yield* this.type.traverse();
     yield this;
   }
 
-  constructor(name: string, type: Type, optional: boolean = false) {
-    this.name = name;
-    this.type = type;
-    this.optional = optional;
-  }
-
-  serialize() {
-    return `${this.name}${this.optional ? '?' : ''}: ${this.type.serialize()}`;
+  serialize(): string {
+    let out = '';
+    if (this.rest) {
+      out += '...';
+    }
+    out += this.name;
+    if (this.optional) {
+      out += '?';
+    }
+    out += ': ' + this.type.serialize();
+    return out;
   }
 }
 

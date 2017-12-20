@@ -312,7 +312,7 @@ function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
     description: feature.description,
     templateTypes: ['T extends new (...args: any[]) => {}'],
     params: [
-      new ts.Param({name: 'base', type: new ts.NameType('T')}),
+      new ts.ParamType({name: 'base', type: new ts.NameType('T')}),
     ],
     returns: new ts.IntersectionType([
       new ts.NameType('T'),
@@ -331,7 +331,7 @@ function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
       new ts.Method({
         name: 'new',
         params: [
-          new ts.Param({
+          new ts.ParamType({
             name: 'args',
             type: new ts.ArrayType(ts.anyType),
             rest: true,
@@ -392,9 +392,8 @@ function handleFunction(feature: AnalyzerFunction, root: ts.Document) {
   for (const param of feature.params || []) {
     // TODO Handle parameter default values. Requires support from Analyzer
     // which only handles this for class method parameters currently.
-    const {type, optional, rest} =
-        closureParamToTypeScript(param.type, feature.templateTypes);
-    f.params.push(new ts.Param({name: param.name, type, optional, rest}));
+    f.params.push(closureParamToTypeScript(
+        param.name, param.type, feature.templateTypes));
   }
 
   findOrCreateNamespace(root, namespacePath).members.push(f);
@@ -446,7 +445,8 @@ function handleMethods(
 
     let requiredAhead = false;
     for (const param of reverseIter(method.params || [])) {
-      let {type, optional, rest} = closureParamToTypeScript(param.type);
+      const tsParam = closureParamToTypeScript(param.name, param.type);
+      tsParam.description = param.description || '';
 
       if (param.defaultValue !== undefined) {
         // Parameters with default values generally behave like optional
@@ -454,30 +454,24 @@ function handleMethods(
         // followed by a required parameter, in which case the default value is
         // set by explicitly passing undefined.
         if (!requiredAhead) {
-          optional = true;
+          tsParam.optional = true;
         } else {
-          type = new ts.UnionType([type, ts.undefinedType]);
+          tsParam.type = new ts.UnionType([tsParam.type, ts.undefinedType]);
         }
-      } else if (!optional) {
+      } else if (!tsParam.optional) {
         requiredAhead = true;
       }
 
       // Analyzer might know this is a rest parameter even if there was no
       // JSDoc type annotation (or if it was wrong).
-      rest = rest || !!param.rest;
-      if (rest && type.kind !== 'array') {
+      tsParam.rest = tsParam.rest || !!param.rest;
+      if (tsParam.rest && tsParam.type.kind !== 'array') {
         // Closure rest parameter types are written without the Array syntax,
         // but in TypeScript they must be explicitly arrays.
-        type = new ts.ArrayType(type);
+        tsParam.type = new ts.ArrayType(tsParam.type);
       }
 
-      m.params.unshift(new ts.Param({
-        name: param.name,
-        description: param.description,
-        type,
-        optional,
-        rest
-      }));
+      m.params.unshift(tsParam);
     }
 
     tsMethods.push(m);

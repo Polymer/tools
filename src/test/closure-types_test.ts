@@ -95,16 +95,25 @@ suite('closureTypeToTypeScript', () => {
     check('!Array<string|number>', 'Array<string|number>');
   });
 
-  test('function', () => {
+  test('function with no params', () => {
     check('function()', '() => any');
     check('!function()', '() => any');
     check('?function()', '(() => any)|null');
+    check('function(): void', '() => void');
+  });
 
+  test('function with simple params and return', () => {
     check(
         'function(string, number): boolean',
         '(p0: string, p1: number) => boolean');
+  });
 
-    check('function(): void', '() => void');
+  test('function with optional param', () => {
+    check('function(string=): void', '(p0?: string) => void');
+  });
+
+  test('function with rest param', () => {
+    check('function(...string): void', '(...p0: string[]) => void');
   });
 
   test('function object', () => {
@@ -138,7 +147,7 @@ suite('closureParamToTypeScript', () => {
       expectedType: string,
       expectedOptional: boolean,
       expectedRest: boolean) {
-    const actual = closureParamToTypeScript(closureType);
+    const actual = closureParamToTypeScript('dummyName', closureType);
     assert.equal(actual.type.serialize(), expectedType);
     assert.equal(actual.optional, expectedOptional);
     assert.equal(actual.rest, expectedRest);

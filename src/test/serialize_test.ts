@@ -26,10 +26,10 @@ suite('serializeTsDeclarations', () => {
     });
     m.description = 'This is my function.\nIt has a multi-line description.';
     m.params = [
-      new ts.Param({name: 'param1', type: new ts.NameType('string')}),
-      new ts.Param(
+      new ts.ParamType({name: 'param1', type: new ts.NameType('string')}),
+      new ts.ParamType(
           {name: 'param2', type: new ts.NameType('any'), optional: true}),
-      new ts.Param({
+      new ts.ParamType({
         name: 'param3',
         type: new ts.ArrayType(new ts.NameType('number')),
         rest: true

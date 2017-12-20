@@ -20,12 +20,14 @@ import * as ts from './ts-ast';
 const {parseType, parseParamType} = require('doctrine/lib/typed.js');
 
 /**
- * Convert from a type annotation in Closure syntax to a TypeScript type
- * expression AST (e.g `Array` => `Array<any>|null`).
+ * Convert a Closure type expression string to its equivalent TypeScript AST
+ * node.
+ *
+ * Note that function and method parameters should instead use
+ * `closureParamToTypeScript`.
  */
 export function closureTypeToTypeScript(
-    closureType: (string|null|undefined),
-    templateTypes: string[] = []): ts.Type {
+    closureType: string|null|undefined, templateTypes: string[] = []): ts.Type {
   if (!closureType) {
     return ts.anyType;
   }
@@ -39,61 +41,87 @@ export function closureTypeToTypeScript(
 }
 
 /**
- * Convert from a parameter type annotation in Closure syntax to a TypeScript
- * type expression AST
- * (e.g `Array=` => `{type: 'Array<any>|null', optional: true}`).
+ * Convert a Closure function or method parameter type expression string to its
+ * equivalent TypeScript AST node.
+ *
+ * This differs from `closureTypeToTypeScript` in that it always returns a
+ * `ParamType`, and can parse the optional (`foo=`) and rest (`...foo`)
+ * syntaxes, which only apply when parsing an expression in the context of a
+ * parameter.
  */
 export function closureParamToTypeScript(
-    closureType: (string|null|undefined),
+    name: string,
+    closureType: string|null|undefined,
     templateTypes: string[] = [],
-    ): {type: ts.Type, optional: boolean, rest: boolean} {
+    ): ts.ParamType {
   if (!closureType) {
-    return {type: ts.anyType, optional: false, rest: false};
+    return new ts.ParamType({
+      name,
+      type: ts.anyType,
+      optional: false,
+      rest: false,
+    });
   }
 
   let ast;
   try {
     ast = parseParamType(closureType);
   } catch {
-    return {
+    return new ts.ParamType({
+      name,
       type: ts.anyType,
       // It's important we try to get optional right even if we can't parse
       // the annotation, because non-optional arguments can't follow optional
       // ones.
       optional: closureType.endsWith('='),
       rest: false,
-    };
+    });
   }
 
-  // Optional and Rest types are always the top-level node.
-  switch (ast.type) {
+  return convertParam(name, ast, templateTypes);
+}
+
+/**
+ * Convert a doctrine function or method parameter AST node to its equivalent
+ * TypeScript parameter AST node.
+ */
+function convertParam(
+    name: string, node: doctrine.Type, templateTypes: string[]): ts.ParamType {
+  switch (node.type) {
     case 'OptionalType':
-      return {
-        type: convert(ast.expression, templateTypes),
+      return new ts.ParamType({
+        name,
+        type: convert(node.expression, templateTypes),
         optional: true,
         rest: false,
-      };
+      });
+
     case 'RestType':
-      return {
+      return new ts.ParamType({
+        name,
         // The Closure type annotation for a rest parameter looks like
         // `...foo`, where `foo` is implicitly an array. The TypeScript
         // equivalent is explicitly an array, so we wrap it in one here.
-        type: new ts.ArrayType(convert(ast.expression, templateTypes)),
+        type: new ts.ArrayType(
+            node.expression !== undefined ?
+                convert(node.expression, templateTypes) :
+                ts.anyType),
         optional: false,
         rest: true,
-      };
+      });
+
     default:
-      return {
-        type: convert(ast, templateTypes),
+      return new ts.ParamType({
+        name,
+        type: convert(node, templateTypes),
         optional: false,
         rest: false,
-      };
+      });
   }
 }
 
 /**
- * Format the given Closure type expression AST node as a TypeScript type
- * annotation string.
+ * Convert a doctrine AST node to its equivalent TypeScript AST node.
  */
 function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
   let nullable;
@@ -211,10 +239,11 @@ function convertFunction(
     node: doctrine.type.FunctionType,
     templateTypes: string[]): ts.FunctionType|ts.ConstructorType {
   const params = node.params.map(
-      (param, idx) => new ts.ParamType(
+      (param, idx) => convertParam(
           // TypeScript wants named parameters, but we don't have names.
           'p' + idx,
-          convert(param, templateTypes)));
+          param,
+          templateTypes));
   if (node.new) {
     return new ts.ConstructorType(
         params,
@@ -259,7 +288,7 @@ function convertRecord(node: doctrine.type.RecordType, templateTypes: string[]):
       fieldType.simplify();
     }
 
-    fields.push(new ts.ParamType(field.key, fieldType, optional));
+    fields.push(new ts.ParamType({name: field.key, type: fieldType, optional}));
   }
   return new ts.RecordType(fields);
 }
