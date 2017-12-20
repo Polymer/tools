@@ -17,6 +17,7 @@ require('source-map-support').install();
 
 import * as path from 'path';
 import {exec} from 'mz/child_process';
+import * as fs from 'mz/fs';
 import * as rimraf from 'rimraf';
 import util = require('util');
 import _mkdirp = require('mkdirp');
@@ -30,6 +31,7 @@ interface UpdateFixtureOptions {
   packageName: string;
   packageVersion: string;
 }
+
 async function updateFixture(options: UpdateFixtureOptions) {
   const fixturesDir =
       path.resolve(__dirname, '../../fixtures/packages/', options.folder);
@@ -46,6 +48,9 @@ async function updateFixture(options: UpdateFixtureOptions) {
   rimraf.sync(path.join(sourceDir, '.git'));
   rimraf.sync(path.join(sourceDir, '.github'));
   rimraf.sync(path.join(sourceDir, '.gitignore'));
+
+  await overridePolymer(sourceDir);
+
   await exec('bower install', {cwd: sourceDir});
 
   console.log(`Converting...`);
@@ -57,6 +62,25 @@ async function updateFixture(options: UpdateFixtureOptions) {
     packageVersion: options.packageVersion,
   });
   console.log(`Done.`);
+}
+
+/**
+ * Overrides the polymer dependency to Polymer/polymer#master and adds a
+ * resolution to bower.json.
+ */
+async function overridePolymer(sourceDir: string) {
+  const bowerJsonFilename = path.join(sourceDir, 'bower.json');
+  const bowerJson = JSON.parse(await fs.readFile(bowerJsonFilename, 'utf-8'));
+
+  if (bowerJson.name !== 'polymer') {
+    bowerJson.dependencies = bowerJson.dependencies || {};
+    bowerJson.dependencies.polymer = 'Polymer/polymer#master';
+
+    bowerJson.resolutions = bowerJson.resolutions || {};
+    bowerJson.resolutions.polymer = 'master';
+    await fs.writeFile(
+        bowerJsonFilename, JSON.stringify(bowerJson, null, 2), 'utf-8');
+  }
 }
 
 (async () => {
