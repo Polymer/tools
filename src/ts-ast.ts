@@ -603,8 +603,8 @@ export class RecordType {
   }
 
   * traverse(): Iterable<Node> {
-    for (const m of this.fields) {
-      yield* m.traverse();
+    for (const f of this.fields) {
+      yield* f.traverse();
     }
     yield this;
   }
@@ -646,8 +646,8 @@ export class IndexableObjectType {
   }
 
   * traverse(): Iterable<Node> {
-    yield this.keyType;
-    yield this.valueType;
+    yield* this.keyType.traverse();
+    yield* this.valueType.traverse();
     yield this;
   }
 
