@@ -98,13 +98,13 @@ class UnbalancedDelimiters extends HtmlRule {
 
   private _getMessageForBadBindingExpression(text: string): string {
     const delimitersOnly = text.replace(/[^\[\]{}]/g, '');
-    const suggestion: string = {
+    const suggestions: {[delimitors: string]: string} = {
       '{{}': ' are you missing a closing \'}\'?',
       '[[]': ' are you missing a closing \']\'?',
       '{}}': ' are you missing an opening \'{\'?',
       '[]]': ' are you missing an opening \'[\'?'
-    }[delimitersOnly] ||
-        '';
+    };
+    const suggestion: string = suggestions[delimitersOnly] || '';
     return 'Invalid polymer expression delimiters.  You put \'' +
         delimitersOnly + '\'' + suggestion;
   }
