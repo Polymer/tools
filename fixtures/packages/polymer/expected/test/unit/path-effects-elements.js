@@ -10,7 +10,9 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
+  importPath: import.meta.url,
   is: 'x-basic',
+
   properties: {
     notifyingValue: {
       type: Number,
@@ -20,11 +22,14 @@ Polymer({
       computed: 'compute(notifyingValue)'
     }
   },
+
   compute: function(val) {
     return '[' + val + ']';
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-basic id="basic1" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}" othervalue="{{obj.value2}}"></x-basic>
     <x-basic id="basic2" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}"></x-basic>
@@ -61,6 +66,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-compose id="compose" obj="{{obj}}"></x-compose>
 `,
@@ -99,6 +106,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-basic id="basic" notifying-value="{{nested.obj.value}}" attrvalue\$="{{nested.obj.value}}"></x-basic>
     <x-compose id="compose" obj="{{nested.obj}}"></x-compose>
@@ -181,16 +190,21 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-reentry-client',
+
   properties: {
     prop: {
       notify: true
     }
   },
+
   observers: ['objChanged(obj.*)'],
+
   created: function() {
     this.objChanged = sinon.spy(this.objChanged);
   },
+
   objChanged: function(info) {
     if (info.path !== 'obj') {
       this.prop++;
@@ -198,6 +212,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-reentry-client obj="{{obj}}" prop="{{prop}}"></x-reentry-client>
 `,
@@ -222,11 +238,14 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-path-client',
   observers: ['objChanged(obj.*)'],
   objChanged: function() {}
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-path-client id="client" obj="{{obj}}"></x-path-client>
 `,

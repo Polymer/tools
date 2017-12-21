@@ -53,6 +53,10 @@ const base = PropertyEffects(class {});
  * @unrestricted
  */
 class TemplateInstanceBase extends base {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   constructor(props) {
     super();
     this._configureProperties(props);

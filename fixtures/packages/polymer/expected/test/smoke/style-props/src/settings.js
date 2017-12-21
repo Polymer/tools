@@ -32,6 +32,8 @@ $_documentContainer.innerHTML = `<dom-module id="simple-layout-styles">
 
 document.head.appendChild($_documentContainer);
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <style include="simple-layout-styles">
     :host {

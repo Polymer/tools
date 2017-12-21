@@ -172,6 +172,7 @@ Custom property | Description | Default
 @demo demo/index.html
 */
 Polymer({
+  importPath: import.meta.url,
   is: 'paper-button',
 
   behaviors: [

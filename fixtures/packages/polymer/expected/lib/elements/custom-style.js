@@ -53,6 +53,10 @@ const CustomStyleInterface = window.ShadyCSS.CustomStyleInterface;
  *   take advantage of Polymer's style scoping and custom properties shims.
  */
 class CustomStyle extends HTMLElement {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   constructor() {
     super();
     this._style = null;

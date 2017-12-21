@@ -9,7 +9,9 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
+  importPath: import.meta.url,
   is: 'x-needs-host',
+
   attached: function() {
     if (!this.__dataHost) {
       throw "No dataHost at ready time";

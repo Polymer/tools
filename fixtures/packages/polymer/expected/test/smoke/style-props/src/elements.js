@@ -2,6 +2,8 @@ import './elements-defaults.js';
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
 import { html } from '../../../../polymer.js';
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <style include="simple-layout-styles">
       :host {
@@ -57,6 +59,8 @@ Polymer({
   is: 'x-s'
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <style include="simple-layout-styles">
       :host {

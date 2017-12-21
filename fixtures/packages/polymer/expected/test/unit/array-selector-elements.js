@@ -9,11 +9,14 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
+  importPath: import.meta.url,
   is: 'observe-el',
+
   observers: [
     'singleChanged(singleSelected.*)',
     'multiChanged(multiSelected.*)'
   ],
+
   singleChanged: function() {},
   multiChanged: function() {}
 });

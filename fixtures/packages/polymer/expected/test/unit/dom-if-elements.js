@@ -10,6 +10,8 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-bar id="bar" prop="{{prop}}" item-prop="{{item.prop}}">
     </x-bar>
@@ -27,7 +29,9 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-bar',
+
   properties: {
     prop: {
       notify: true
@@ -38,6 +42,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp}}" on-dom-change="domUpdateHandler">
       <!-- Comments should be good -->
@@ -83,6 +89,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp}}">
       <!-- Comments should be good -->
@@ -120,6 +128,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp1}}">
       <x-foo prop="{{prop1}}"></x-foo>
@@ -154,6 +164,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="domIf" is="dom-if" if="">
       <div>1</div>
@@ -173,6 +185,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="domif" is="dom-if" if="">
       <x-client></x-client>
@@ -184,15 +198,20 @@ Polymer({
   is: 'x-host'
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-client',
+
   statics: {
     uid: 0
   },
+
   ready: function() {
     this.uid = this.statics.uid++;
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{bool}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
 `,
@@ -206,6 +225,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{isTrue(bool)}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
 `,
@@ -223,6 +244,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{switch}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
 `,
@@ -246,6 +269,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{obj.bool}}" restamp="{{restamp}}">{{guarded(obj.bool)}}</template>
 `,
@@ -259,6 +284,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{switch}}" restamp="{{restamp}}">{{guarded(obj.bool)}}</template>
 `,
@@ -282,6 +309,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{b}}" restamp="{{restamp}}">{{guarded(a)}}</template>
 `,
@@ -295,6 +324,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-if" if="{{obj.b}}" restamp="{{restamp}}">{{guarded(obj.a)}}</template>
 `,

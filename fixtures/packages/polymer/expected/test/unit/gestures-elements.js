@@ -10,6 +10,8 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
   <style>
     #div {
@@ -33,6 +35,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <x-foo id="foo"></x-foo>
 `,
@@ -49,6 +53,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <div id="inner" on-tap="handler" on-track="handler" on-down="handler" on-up="handler"></div>
 `,
@@ -66,11 +72,14 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-dynamic',
   handler: function(){},
+
   setup: function() {
     this.listen(this, 'tap', 'handler');
   },
+
   teardown: function() {
     this.unlisten(this, 'tap', 'handler');
   }
@@ -89,14 +98,18 @@ var EventCaptureBehavior = {
   }
 };
 Polymer({
+  importPath: import.meta.url,
+
   listeners: {
     'down': 'prevent',
     'up': 'handle',
     'tap': 'handle',
     'track': 'handle'
   },
+
   behaviors: [EventCaptureBehavior],
   is: 'x-prevent',
+
   prevent: function(e, detail) {
     detail.prevent('tap');
     detail.prevent('track');
@@ -105,33 +118,45 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-buttons',
+
   listeners: {
     'down': 'handle',
     'up': 'handle',
     'tap': 'handle',
     'track': 'handle'
   },
+
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-document-listener',
+
   setup: function() {
     this.listen(document, 'down', 'handle');
   },
+
   teardown: function() {
     this.unlisten(document, 'down', 'handle');
   },
+
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-nested-child-prevent',
+
   listeners: {
     tap: 'handle'
   },
+
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <style>
       :host {
@@ -163,6 +188,7 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-imperative',
   behaviors: [EventCaptureBehavior]
 });

@@ -40,6 +40,9 @@ function styleOutsideTemplateCheck(inst) {
  * @unrestricted
  */
 class DomModule extends HTMLElement {
+  static get importPath() {
+    return import.meta.url;
+  }
 
   static get observedAttributes() { return ['id']; }
 

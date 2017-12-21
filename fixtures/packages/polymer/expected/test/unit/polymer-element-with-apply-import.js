@@ -12,6 +12,10 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 class ApplyElement extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   static get template() {
     return html`
     <style>
@@ -27,6 +31,10 @@ class ApplyElement extends Element {
 }
 customElements.define('apply-element', ApplyElement);
 class XOuter extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   static get template() {
     return html`
     <style>

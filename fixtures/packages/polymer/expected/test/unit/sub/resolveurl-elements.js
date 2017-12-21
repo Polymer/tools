@@ -14,6 +14,10 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 class PR extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   static get template() {
     return html`
     <style>
@@ -40,6 +44,10 @@ class PR extends Element {
 }
 customElements.define(PR.is, PR);
 class PRAp extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   static get is() { return 'p-r-ap'; }
 }
 customElements.define(PRAp.is, PRAp);

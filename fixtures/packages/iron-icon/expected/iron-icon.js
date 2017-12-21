@@ -83,6 +83,8 @@ Custom property | Description | Default
 @homepage polymer.github.io
 */
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <style>
       :host {

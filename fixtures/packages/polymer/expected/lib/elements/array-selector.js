@@ -404,6 +404,10 @@ let baseArraySelector = ArraySelectorMixin(Element);
  *   an output `selected` item or array based on calls to its selection API.
  */
 class ArraySelector extends baseArraySelector {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
   static get is() { return 'array-selector'; }

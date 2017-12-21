@@ -60,6 +60,7 @@ async function updateFixture(options: UpdateFixtureOptions) {
     cleanOutDir: true,
     packageName: options.packageName,
     packageVersion: options.packageVersion,
+    addImportPath: true,
   });
   console.log(`Done.`);
 }

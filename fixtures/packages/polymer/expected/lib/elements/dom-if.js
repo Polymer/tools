@@ -28,6 +28,9 @@ import { root as root$0 } from '../utils/path.js';
  *   template content based on a boolean flag.
  */
 class DomIf extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
 
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
@@ -264,7 +267,6 @@ class DomIf extends Element {
       this.__instance._showHideChildren(hidden);
     }
   }
-
 }
 
 customElements.define(DomIf.is, DomIf);

@@ -10,7 +10,9 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 Polymer({
+  importPath: import.meta.url,
   is: 'x-basic',
+
   properties: {
     notifyingvalue: {
       notify: true
@@ -18,6 +20,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
 <div id="container"><slot id="slot"></slot></div>
 `,
@@ -25,6 +29,8 @@ Polymer({
   is: 'x-content'
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
 <x-content id="local"></x-content>
 `,
@@ -47,6 +53,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
 <x-content id="local"></x-content>
 `,
@@ -54,7 +62,9 @@ Polymer({
   is: 'x-compose'
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-produce-a',
+
   properties: {
     bindToText: {
       notify: true,

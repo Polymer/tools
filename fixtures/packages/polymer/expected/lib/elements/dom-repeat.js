@@ -111,6 +111,9 @@ const domRepeatBase = OptionalMutableData(Element);
  *   items in an array.
  */
 class DomRepeat extends domRepeatBase {
+  static get importPath() {
+    return import.meta.url;
+  }
 
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
@@ -704,7 +707,6 @@ class DomRepeat extends domRepeatBase {
   modelForElement(el) {
     return Templatize.modelForElement(this.template, el);
   }
-
 }
 
 customElements.define(DomRepeat.is, DomRepeat);

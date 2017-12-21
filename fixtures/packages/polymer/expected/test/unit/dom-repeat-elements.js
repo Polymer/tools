@@ -101,6 +101,8 @@ window.getData = () => [
 ];
 
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <style>
       :host {
@@ -156,7 +158,9 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-bar',
+
   properties: {
     outerProp: {
       notify: true
@@ -194,17 +198,32 @@ Polymer({
   }
 });
 let XNestedRepeat = Polymer({
-    _template: `
-  <template id="repeater" is="dom-repeat" items="{{items}}" as="itema" index-as="indexa" on-dom-change="domUpdateHandler">
-    <x-foo on-test1="testHandler1"
+  importPath: import.meta.url,
+
+  _template: `
+<template id="repeater" is="dom-repeat" items="{{items}}" as="itema" index-as="indexa" on-dom-change="domUpdateHandler">
+  <x-foo on-test1="testHandler1"
+         innera-prop="{{innera.prop}}"
+         itema-prop="{{itema.prop}}"
+         outer-prop="{{prop}}"
+         outer-item-prop="{{item.prop}}"
+         indexa="{{indexa}}">
+  </x-foo>
+  <template is="dom-repeat" items="{{itema.items}}" as="itemb" index-as="indexb">
+    <x-foo on-test2="testHandler2"
+           innerb-prop="{{innerb.prop}}"
+           itemb-prop="{{itemb.prop}}"
            innera-prop="{{innera.prop}}"
            itema-prop="{{itema.prop}}"
            outer-prop="{{prop}}"
            outer-item-prop="{{item.prop}}"
-           indexa="{{indexa}}">
+           indexa="{{indexa}}"
+           indexb="{{indexb}}">
     </x-foo>
-    <template is="dom-repeat" items="{{itema.items}}" as="itemb" index-as="indexb">
-      <x-foo on-test2="testHandler2"
+    <template is="dom-repeat" items="{{itemb.items}}" as="itemc" index-as="indexc">
+      <x-foo on-test3="testHandler3"
+             innerc-prop="{{innerc.prop}}"
+             itemc-prop="{{itemc.prop}}"
              innerb-prop="{{innerb.prop}}"
              itemb-prop="{{itemb.prop}}"
              innera-prop="{{innera.prop}}"
@@ -212,45 +231,41 @@ let XNestedRepeat = Polymer({
              outer-prop="{{prop}}"
              outer-item-prop="{{item.prop}}"
              indexa="{{indexa}}"
-             indexb="{{indexb}}">
-      </x-foo>
-      <template is="dom-repeat" items="{{itemb.items}}" as="itemc" index-as="indexc">
-        <x-foo on-test3="testHandler3"
-               innerc-prop="{{innerc.prop}}"
-               itemc-prop="{{itemc.prop}}"
-               innerb-prop="{{innerb.prop}}"
-               itemb-prop="{{itemb.prop}}"
-               innera-prop="{{innera.prop}}"
-               itema-prop="{{itema.prop}}"
-               outer-prop="{{prop}}"
-               outer-item-prop="{{item.prop}}"
-               indexa="{{indexa}}"
-               indexb="{{indexb}}"
-               indexc="{{indexc}}">
-       </x-foo>
-      </template>
+             indexb="{{indexb}}"
+             indexc="{{indexc}}">
+     </x-foo>
     </template>
   </template>
+</template>
 `,
+
   is: 'x-nested-repeat',
   testHandler1Count: 0,
   testHandler2Count: 0,
   testHandler3Count: 0,
   domUpdateHandlerCount: 0,
+
   testHandler1: function() {
     this.testHandler1Count++;
   },
+
   testHandler2: function() {
     this.testHandler2Count++;
   },
+
   testHandler3: function() {
     this.testHandler3Count++;
   },
+
   domUpdateHandler: function() {
     this.domUpdateHandlerCount++;
   }
 });
 class XNestedRepeatMutable extends MutableData(XNestedRepeat) {
+  static get importPath() {
+    return import.meta.url;
+  }
+
   static get template() {
     if (!this._templateEl) {
       this._templateEl = document.createElement('template');
@@ -268,6 +283,8 @@ class XNestedRepeatMutable extends MutableData(XNestedRepeat) {
 }
 customElements.define('x-nested-repeat-mutable', XNestedRepeatMutable);
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}" as="itema" index-as="indexa" observe="prop">
       <x-foo innera-prop="{{innera.prop}}" itema-prop="{{itema.prop}}" outer-prop="{{prop}}" outer-item-prop="{{item.prop}}" indexa="{{indexa}}" computeda="{{concat(itema.prop, itemForComputedA.prop)}}">
@@ -324,6 +341,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="repeat" is="dom-repeat" items="{{items}}">
       <x-foo itema-prop="{{item.prop}}"></x-foo>
@@ -339,6 +358,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <div id="container1">
       <template is="dom-repeat" items="{{items}}" id="repeater1">
@@ -363,6 +384,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}">
       <div>{{item}}</div>
@@ -384,6 +407,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}">
       <div prop="{{outerProp.prop}}">{{item.prop}}</div>
@@ -410,6 +435,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}" initial-count="10">
       <x-wait>{{item.prop}}</x-wait>
@@ -431,7 +458,9 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
   is: 'x-wait',
+
   created: function() {
     var time = performance.now();
     time += 4;
@@ -439,6 +468,8 @@ Polymer({
   }
 });
 Polymer({
+  importPath: import.meta.url,
+
   _template: html`
     <template is="dom-repeat" items="{{items}}" id="outer">
       <template is="dom-if" if="">
