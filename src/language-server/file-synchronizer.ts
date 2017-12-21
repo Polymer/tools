@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {InMemoryOverlayUrlLoader, UrlLoader} from 'polymer-analyzer';
+import {InMemoryOverlayUrlLoader, ResolvedUrl, UrlLoader} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {FileChangeType, FileEvent, IConnection, TextDocuments} from 'vscode-languageserver';
 
@@ -30,7 +30,7 @@ import {AutoDisposable, EventStream} from './util';
  */
 export default class FileSynchronizer extends AutoDisposable {
   /** This maps workspace path to content of our in-memory documents. */
-  private inMemoryDocuments: Map<string, string>;
+  private inMemoryDocuments: Map<ResolvedUrl, string>;
   readonly urlLoader: UrlLoader;
   fileChanges: EventStream<FileEvent[]>;
   constructor(
@@ -50,8 +50,11 @@ export default class FileSynchronizer extends AutoDisposable {
     this.disposables.push(documents.onDidChangeContent((change) => {
       logger.log(`Changed in memory: ${change.document.uri}`);
       // A document has changed in memory!
-      const workspacePath = converter.getWorkspacePathToFile(change.document);
-      this.inMemoryDocuments.set(workspacePath, change.document.getText());
+      const url = converter.getAnalyzerUrl(change.document);
+      if (!url) {
+        return;  // don't care
+      }
+      this.inMemoryDocuments.set(url, change.document.getText());
 
       // Publish document change so other parts of the system can react.
       fire([{type: FileChangeType.Changed, uri: change.document.uri}]);
@@ -61,8 +64,11 @@ export default class FileSynchronizer extends AutoDisposable {
       logger.log(`Closed: ${event.document.uri}`);
       // The file is no longer managed in memory, so we should delete it from
       // the in-memory map.
-      this.inMemoryDocuments.delete(
-          converter.getWorkspacePathToFile(event.document));
+      const url = converter.getAnalyzerUrl(event.document);
+      if (url === undefined) {
+        return;  // don't care
+      }
+      this.inMemoryDocuments.delete(url);
       fire([{type: FileChangeType.Changed, uri: event.document.uri}]);
     }));
 

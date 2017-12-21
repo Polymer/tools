@@ -18,6 +18,7 @@ import {Analysis} from 'polymer-analyzer/lib/model/analysis';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 
 import {AstLocation, getCssAstLocationForPosition, getHtmlAstLocationForPosition} from '../ast-from-source-position';
+
 import {LsAnalyzer} from './analyzer-synchronizer';
 
 
@@ -44,10 +45,10 @@ export default class FeatureFinder {
    * is going on there, like an Element for an HTML tag.
    */
   async getFeatureAt(
-      localPath: string, position: SourcePosition,
+      url: string, position: SourcePosition,
       analysis?: Analysis): Promise<FoundFeature|undefined> {
-    const location = await this.getAstLocationAtPositionAndPath(
-        localPath, position, analysis);
+    const location =
+        await this.getAstLocationAtPositionAndPath(url, position, analysis);
     if (!location) {
       return;
     }
@@ -178,15 +179,15 @@ export default class FeatureFinder {
   }
 
   async getAstLocationAtPositionAndPath(
-      localPath: string, position: SourcePosition,
+      url: string, position: SourcePosition,
       analysis?: Analysis): Promise<AstLocation|undefined> {
-    analysis = analysis ||
-        await this.analyzer.analyze([localPath], 'get AST location');
-    const document = analysis.getDocument(localPath);
-    if (!(document instanceof Document)) {
+    analysis =
+        analysis || await this.analyzer.analyze([url], 'get AST location');
+    const result = analysis.getDocument(url);
+    if (!result.successful) {
       return;
     }
-    return this.getAstAtPosition(document, position);
+    return this.getAstAtPosition(result.value, position);
   }
 }
 

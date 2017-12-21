@@ -240,10 +240,10 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     assert.deepEqual(await underliner.underline(locations), [
       `
     --shiny: green;
-    ~~~~~~~~~~~~~~~`,
+    ~~~~~~~`,
       `
     --shiny: gold;
-    ~~~~~~~~~~~~~~`
+    ~~~~~~~`
     ]);
 
     assert.deepEqual(

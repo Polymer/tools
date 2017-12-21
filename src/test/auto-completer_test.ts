@@ -15,11 +15,11 @@
 import {assert} from 'chai';
 import {readFileSync} from 'fs';
 import * as path from 'path';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import {CompletionItem, CompletionItemKind, CompletionList, InsertTextFormat} from 'vscode-languageserver/lib/main';
 
-import {createTestEnvironment} from './util';
 import {standardJavaScriptSnippets} from '../standard-snippets';
+
+import {createTestEnvironment} from './util';
 
 const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 
@@ -93,21 +93,21 @@ const attributeCompletions: CompletionItem[] = [
     label: 'local-property',
     documentation: 'A property defined directly on behavior-test-elem.',
     kind: CompletionItemKind.Field,
-    detail: '{boolean}',
+    detail: '{boolean | null | undefined}',
     sortText: 'aaa-local-property',
   },
   {
     label: 'non-notifying-property',
     documentation: '',
     kind: CompletionItemKind.Field,
-    detail: '{string}',
+    detail: '{string | null | undefined}',
     sortText: 'aaa-non-notifying-property',
   },
   {
     label: 'notifying-property',
     documentation: '',
     kind: CompletionItemKind.Field,
-    detail: '{string}',
+    detail: '{string | null | undefined}',
     sortText: 'aaa-notifying-property',
 
   },
@@ -115,14 +115,14 @@ const attributeCompletions: CompletionItem[] = [
     label: 'deeply-inherited-property',
     documentation: 'This is a deeply inherited property.',
     kind: CompletionItemKind.Field,
-    detail: '{Array} ⊃ MyNamespace.SubBehavior',
+    detail: '{Array | null | undefined} ⊃ MyNamespace.SubBehavior',
     sortText: 'ddd-deeply-inherited-property',
   },
   {
     label: 'inherit-please',
     documentation: 'A property provided by SimpleBehavior.',
     kind: CompletionItemKind.Field,
-    detail: '{number} ⊃ MyNamespace.SimpleBehavior',
+    detail: '{number | null | undefined} ⊃ MyNamespace.SimpleBehavior',
     sortText: 'ddd-inherit-please',
   },
   {
@@ -156,7 +156,7 @@ const attributeCompletions: CompletionItem[] = [
 ];
 
 suite('AutoCompleter', () => {
-  const indexFile = path.join('editor-service', 'index.html') as ResolvedUrl;
+  const indexFile = path.join('editor-service', 'index.html');
   const indexContents = readFileSync(path.join(fixtureDir, indexFile), 'utf-8');
   const tagPosition = {line: 7, column: 9};
   const tagPositionEnd = {line: 7, column: 21};
@@ -265,7 +265,7 @@ suite('AutoCompleter', () => {
               insertText: '[[bar]]',
               documentation: '',
               sortText: 'aaa-bar',
-              detail: '{string}',
+              detail: '{string | null | undefined}',
               kind: CompletionItemKind.Field,
             },
             {
@@ -273,7 +273,7 @@ suite('AutoCompleter', () => {
               insertText: '[[foo]]',
               documentation: '',
               sortText: 'aaa-foo',
-              detail: '{string}',
+              detail: '{string | null | undefined}',
               kind: CompletionItemKind.Field,
             },
           ],
@@ -298,7 +298,7 @@ suite('AutoCompleter', () => {
               documentation: '',
               label: 'bar',
               sortText: 'aaa-bar',
-              detail: '{string}',
+              detail: '{string | null | undefined}',
               kind: CompletionItemKind.Field,
             },
             {
@@ -306,7 +306,7 @@ suite('AutoCompleter', () => {
               documentation: '',
               label: 'foo',
               sortText: 'aaa-foo',
-              detail: '{string}',
+              detail: '{string | null | undefined}',
               kind: CompletionItemKind.Field,
             },
           ],
@@ -333,7 +333,7 @@ suite('AutoCompleter', () => {
               documentation: '',
               label: 'bar',
               sortText: 'aaa-bar',
-              detail: '{string}',
+              detail: '{string | null | undefined}',
               kind: CompletionItemKind.Field,
             },
             {
@@ -341,7 +341,7 @@ suite('AutoCompleter', () => {
               documentation: '',
               label: 'foo',
               sortText: 'aaa-foo',
-              detail: '{string}',
+              detail: '{string | null | undefined}',
               kind: CompletionItemKind.Field,
             },
           ],
@@ -433,12 +433,14 @@ suite('AutoCompleter', () => {
         {isIncomplete: false, items: attributeCompletions});
   });
 
-  test(`Return JavaScript standard completions inside of script tags.`, async() => {
+  testName = `Return JavaScript standard completions inside of script tags.`;
+  test(testName, async() => {
     const {client} = await createTestEnvironment(fixtureDir);
     await client.openFile(indexFile, '<script>\n\n</script>\n' + indexContents);
     const completions =
         await client.getCompletions(indexFile, {line: 1, column: 0});
-    assert.deepEqual(completions, {isIncomplete: false, items: standardJavaScriptSnippets});
+    assert.deepEqual(
+        completions, {isIncomplete: false, items: standardJavaScriptSnippets});
   });
 
   {
@@ -452,19 +454,19 @@ suite('AutoCompleter', () => {
           documentation: 'A private internal prop.',
           label: '_internal',
           sortText: 'aaa-_internal',
-          detail: '{string}',
+          detail: '{string | null | undefined}',
           kind: CompletionItemKind.Field
         },
         {
           documentation: 'This is the foo property.',
           label: 'foo',
           sortText: 'aaa-foo',
-          detail: '{string}',
+          detail: '{string | null | undefined}',
           kind: CompletionItemKind.Field
         },
       ]
     };
-    test('Give autocompletions for positions in databindings.', async() => {
+    test('Give autocompletions for positions in databindings', async() => {
       const {client} = await createTestEnvironment(fixtureDir);
       assert.deepEqual(
           await client.getCompletions(

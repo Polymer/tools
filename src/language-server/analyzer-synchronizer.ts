@@ -12,14 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analysis, AnalyzerOptions, PackageUrlResolver} from 'polymer-analyzer';
+import {Analysis, Analyzer, AnalyzerOptions, ResolvedUrl, UrlResolver} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
-import {Analyzer} from 'polymer-analyzer/lib/core/analyzer';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import {FileChangeType, FileEvent, TextDocuments} from 'vscode-languageserver';
 
-import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
 import {Logger} from './logger';
 import {AutoDisposable, EventStream} from './util';
@@ -43,8 +40,8 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
   public readonly analysisChanges: EventStream<void>;
   constructor(
       private readonly documents: TextDocuments,
-      fileSynchronizer: FileSynchronizer,
-      private readonly converter: AnalyzerLSPConverter, logger: Logger) {
+      fileSynchronizer: FileSynchronizer, logger: Logger,
+      urlResolver: UrlResolver) {
     super();
 
     const {fire, stream} = EventStream.create<void>();
@@ -52,7 +49,7 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
     const analysisVersionMap = new WeakMap<Analysis, Map<string, number>>();
     this.analyzer = new LsAnalyzer(this.documents, logger, analysisVersionMap, {
       urlLoader: fileSynchronizer.urlLoader,
-      urlResolver: new PackageUrlResolver(),
+      urlResolver,
     });
 
     this.disposables.push(
@@ -63,16 +60,15 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
 
   private async handleFilesChanged(
       fileChangeEvents: FileEvent[], onComplete: (value: void) => void) {
-    const paths = fileChangeEvents.map(
-        change => this.converter.getWorkspacePathToFile(change));
-    if (paths.length === 0) {
+    const uris = fileChangeEvents.map((f) => f.uri);
+    if (fileChangeEvents.length === 0) {
       return;  // no new information in this notification
     }
-    const deletions =
+    const deletedUris =
         fileChangeEvents
             .filter((change) => change.type === FileChangeType.Deleted)
-            .map((change) => this.converter.getWorkspacePathToFile(change));
-    if (deletions.length > 0) {
+            .map((change) => change.uri);
+    if (deletedUris.length > 0) {
       // When a directory is deleted we may not be told about individual
       // files, we'll have to determine the tracked files ourselves.
       // This involves mucking around in private implementation details of
@@ -83,15 +79,15 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
         const context: AnalysisContext =
             await this.analyzer['_analysisComplete'];
         const cache: AnalysisCache = context['_cache'];
-        const cachedPaths = new Set<ResolvedUrl>([
+        const cachedUris = new Set<ResolvedUrl>([
           ...cache.failedDocuments.keys(),
           ...cache.parsedDocumentPromises['_keyToResultMap'].keys()
         ]);
-        for (const deletedPath of deletions) {
-          const deletedDir = deletedPath + '/';
-          for (const cachedPath of cachedPaths) {
-            if (cachedPath.startsWith(deletedDir)) {
-              paths.push(cachedPath);
+        for (const deletedUri of deletedUris) {
+          const deletedDir = deletedUri + '/';
+          for (const cachedUri of cachedUris) {
+            if (cachedUri.startsWith(deletedDir)) {
+              uris.push(cachedUri);
             }
           }
         }
@@ -100,7 +96,7 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
       }
     }
     // Clear the files from any caches and recalculate warnings as needed.
-    const filesChangedPromise = this.analyzer.filesChanged(paths);
+    const filesChangedPromise = this.analyzer.filesChanged(uris);
     // After we've called filesChanged, future calls to analyze will get
     // the updated results, we don't need to wait on the filesChangedPromise
     // to actually resolve.

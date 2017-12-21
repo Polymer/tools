@@ -14,7 +14,6 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 
 import {createTestEnvironment} from './util';
 
@@ -28,9 +27,9 @@ suite('HoverDocumenter', function() {
 
   const tagDescription = 'An element to test out behavior inheritance.';
   const localAttributeDescription =
-      '{boolean} A property defined directly on behavior-test-elem.';
+      '{boolean | null | undefined} A property defined directly on behavior-test-elem.';
   const deepAttributeDescription =
-      '{Array} This is a deeply inherited property.';
+      '{Array | null | undefined} This is a deeply inherited property.';
 
   let testName = 'it supports getting the element description ' +
       'when asking for docs at its tag name';
@@ -47,8 +46,8 @@ suite('HoverDocumenter', function() {
   test(testName, async() => {
     const {client, server} = await createTestEnvironment(fixtureDir);
 
-    const contents =
-        await server.fileSynchronizer.urlLoader.load(indexFile as ResolvedUrl);
+    const contents = await server.fileSynchronizer.urlLoader.load(
+        client.converter.getAnalyzerUrl({uri: indexFile})!);
 
     // Add a newline at the beginning of the file, shifting the lines
     // down.

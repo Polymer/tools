@@ -15,7 +15,6 @@
 import {assert, use} from 'chai';
 import {writeFileSync} from 'fs';
 import * as path from 'path';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import {Diagnostic} from 'vscode-languageserver-types/lib/main';
 import {DiagnosticSeverity, FileChangeType} from 'vscode-languageserver/lib/main';
 
@@ -26,7 +25,7 @@ use(require('chai-subset'));
 const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 
 suite('DiagnosticGenerator', function() {
-  const indexPath = path.join('editor-service', 'index.html') as ResolvedUrl;
+  const indexPath = path.join('editor-service', 'index.html');
 
   test('For a good document we get no warnings', async() => {
     const {client} = await createTestEnvironment(fixtureDir);
@@ -38,8 +37,8 @@ suite('DiagnosticGenerator', function() {
     const {client, server, underliner} =
         await createTestEnvironment(fixtureDir);
 
-    const indexContents =
-        await server.fileSynchronizer.urlLoader.load(indexPath);
+    const indexContents = await server.fileSynchronizer.urlLoader.load(
+        client.converter.getAnalyzerUrl({uri: indexPath})!);
     const badImport = `<link rel="import" href="./does-not-exist.html">`;
     const badContents = `${badImport}\n\n${indexContents}`;
     await client.openFile(indexPath, badContents);
@@ -67,17 +66,18 @@ suite('DiagnosticGenerator', function() {
     const {client, server, underliner} =
         await createTestEnvironment(fixtureDir);
 
-    const indexContents =
-        await server.fileSynchronizer.urlLoader.load(indexPath);
+    const indexContents = await server.fileSynchronizer.urlLoader.load(
+        client.converter.getAnalyzerUrl({uri: indexPath})!);
     const badImport = `<script src="../js-parse-error.js"></script>`;
     const fileContents = `${badImport}\n\n${indexContents}`;
     await client.openFile(indexPath, fileContents);
     const diagnostics = await client.getNextDiagnostics(indexPath);
-    assert.containSubset(diagnostics, <Diagnostic[]>[{
-                           code: 'could-not-load',
-                           message: 'Unable to load import: Unexpected token ,',
-                           severity: DiagnosticSeverity.Error,
-                         }]);
+    assert.containSubset(
+        diagnostics, <Diagnostic[]>[{
+          code: 'could-not-load',
+          message: 'Unable to load import: Unexpected token (18:8)',
+          severity: DiagnosticSeverity.Error,
+        }]);
 
     assert.deepEqual(
         await underliner.underlineDiagnostics(diagnostics, indexPath), [`
@@ -94,7 +94,7 @@ suite('DiagnosticGenerator', function() {
     assert.containSubset(diagnostics, <Diagnostic[]>[{
                            code: 'parse-error',
                            severity: DiagnosticSeverity.Error,
-                           message: `Unexpected keyword 'var'`,
+                           message: `Unexpected token (1:4)`,
                          }]);
     assert.deepEqual(
         await underliner.underlineDiagnostics(diagnostics, indexPath), [`
@@ -121,7 +121,7 @@ suite('DiagnosticGenerator', function() {
     const diagnostics = await client.getNextDiagnostics(path);
     assert.containSubset(diagnostics, [{
                            code: 'parse-error',
-                           message: 'Unexpected token ,',
+                           message: 'Unexpected token (18:8)',
                            severity: DiagnosticSeverity.Error,
                          }]);
   });

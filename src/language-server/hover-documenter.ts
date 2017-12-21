@@ -45,10 +45,9 @@ export default class HoverDocumenter extends Handler {
 
   private async getDocsForHover(textPosition: TextDocumentPositionParams):
       Promise<Hover|undefined> {
-    const localPath =
-        this.converter.getWorkspacePathToFile(textPosition.textDocument);
     const documentation = await this.getDocumentationAndRangeAtPosition(
-        localPath, this.converter.convertPosition(textPosition.position));
+        textPosition.textDocument.uri,
+        this.converter.convertPosition(textPosition.position));
     if (!documentation) {
       return;
     }
@@ -60,9 +59,9 @@ export default class HoverDocumenter extends Handler {
   }
 
   private async getDocumentationAndRangeAtPosition(
-      localPath: string, position: SourcePosition) {
-    const location = await this.featureFinder.getAstLocationAtPositionAndPath(
-        localPath, position);
+      url: string, position: SourcePosition) {
+    const location =
+        await this.featureFinder.getAstLocationAtPositionAndPath(url, position);
     if (!location) {
       this.logger.log(`No location`);
       return;

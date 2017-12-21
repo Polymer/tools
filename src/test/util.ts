@@ -14,7 +14,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import {SourcePosition, SourceRange, UrlLoader} from 'polymer-analyzer';
+import {PackageUrlResolver, SourcePosition, SourceRange, UrlLoader, UrlResolver} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
 import {CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
@@ -47,7 +47,8 @@ export function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
   const {serverConnection, clientConnection} = createTestConnections(debugging);
   const textDocuments = new TextDocuments();
   textDocuments.listen(serverConnection);
-  const converter = new AnalyzerLSPConverter(URI.file(baseDir));
+  const converter = new AnalyzerLSPConverter(
+      URI.file(baseDir), new PackageUrlResolver({packageDir: baseDir}));
   const synchronizer = new FileSynchronizer(
       serverConnection, textDocuments, baseDir, converter,
       new Logger({connection: serverConnection, logToFileFlag: undefined}));
@@ -81,25 +82,28 @@ export async function createTestEnvironment(
   }
 
   const {serverConnection, clientConnection} = createTestConnections(debugging);
-  const converter = new AnalyzerLSPConverter(URI.file(baseDir));
+  const urlResolver = new PackageUrlResolver({packageDir: baseDir});
+  const converter = new AnalyzerLSPConverter(URI.file(baseDir), urlResolver);
   const client = new TestClient(clientConnection, converter, baseDir);
   const serverPromise = LanguageServer.initializeWithConnection(
       serverConnection, {interceptConsole: false});
   const initResult = await client.initialize(baseDir);
   const server = await serverPromise;
   const underliner =
-      new Underliner(server.fileSynchronizer.urlLoader, converter);
+      new Underliner(server.fileSynchronizer.urlLoader, urlResolver, converter);
   return {client, server, baseDir, initResult, underliner};
 }
 
 export class Underliner extends BaseUnderliner {
-  constructor(urlLoader: UrlLoader, private converter: AnalyzerLSPConverter) {
-    super(urlLoader);
+  constructor(
+      urlLoader: UrlLoader, urlResolver: UrlResolver,
+      private converter: AnalyzerLSPConverter) {
+    super(urlLoader, urlResolver);
   }
-  underline(reference: SourceRange): Promise<string>;
-  underline(references: SourceRange[]): Promise<string[]>;
-  underline(location: Location): Promise<string>;
-  underline(location: Location[]): Promise<string[]>;
+  underline(reference: SourceRange|undefined): Promise<string>;
+  underline(references: Array<SourceRange|undefined>): Promise<string[]>;
+  underline(location: Location|undefined): Promise<string>;
+  underline(location: Array<Location|undefined>): Promise<string[]>;
   underline(location: Location|Array<Location>|undefined|
             null): Promise<string|Array<string>>;
   underline(location: undefined|null): Promise<string>;
@@ -111,8 +115,11 @@ export class Underliner extends BaseUnderliner {
       return Promise.all<string>(location.map((l) => this.underline(l)));
     }
     if (Location.is(location)) {
-      return this.underline(
-          this.converter.convertLRangeToP(location.range, location));
+      const range = this.converter.convertLRangeToP(location.range, location);
+      if (!range) {
+        return `Could not resolve LSP URL: ${location.uri}`;
+      }
+      return this.underline(range);
     }
     return super.underline(location);
   }
@@ -138,7 +145,10 @@ export class TestClient {
     const init: InitializeParams = {
       rootPath: baseDir,
       rootUri: URI.file(baseDir).toString(),
-      processId: -1,
+      // If we specify a process id the server will call
+      // process.exit after a timeout if the given process id
+      // does not exist!! It handles `null` just fine though.
+      processId: null as any as number,
       initializationOptions: {},
       capabilities: {
         textDocument: {

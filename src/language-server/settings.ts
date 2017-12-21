@@ -12,11 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
+import {Analyzer} from 'polymer-analyzer';
 import {ProjectConfig} from 'polymer-project-config';
 import {Diagnostic, DiagnosticSeverity, IConnection} from 'vscode-languageserver';
 
-import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
 import {AutoDisposable, Change, EventStream} from './util';
 
@@ -68,7 +67,7 @@ export default class Settings extends AutoDisposable {
   readonly ready: Promise<void>;
   constructor(
       connection: IConnection, fileSynchronizer: FileSynchronizer,
-      converter: AnalyzerLSPConverter) {
+      private readonly analyzer: Analyzer) {
     super();
     const {fire, stream} = EventStream.create<Change<SettingsJson>>();
     this.changeStream = stream;
@@ -87,9 +86,9 @@ export default class Settings extends AutoDisposable {
 
     this.disposables.push(
         this.fileSynchronizer.fileChanges.listen((changes) => {
+          const polymerJsonUri = analyzer.resolveUrl('polymer.json');
           for (const change of changes) {
-            const workspacePath = converter.getWorkspacePathToFile(change);
-            if (workspacePath === 'polymer.json') {
+            if (change.uri === polymerJsonUri) {
               this.updateProjectConfig();
             }
           }
@@ -103,14 +102,16 @@ export default class Settings extends AutoDisposable {
   }
 
   private async updateProjectConfig() {
-    let jsonContent;
+    // If the file isn't there or isn't readable or whatever, just use an
+    // empty object, it's fine.
+    let jsonContent = '{}';
     try {
-      jsonContent = await this.fileSynchronizer.urlLoader.load(
-          'polymer.json' as ResolvedUrl);
-    } catch (e) {
-      // If the file isn't there or isn't readable or whatever, just use an
-      // empty object, it's fine.
-      jsonContent = '{}';
+      const url = this.analyzer.resolveUrl('polymer.json');
+      if (url !== undefined) {
+        jsonContent = await this.fileSynchronizer.urlLoader.load(url);
+      }
+    } catch {
+      // Fall back to empty object.
     }
 
     let projectConfig;

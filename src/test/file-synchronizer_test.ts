@@ -14,7 +14,6 @@
 import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 import {DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, FileChangeType} from 'vscode-languageserver';
 import URI from 'vscode-uri/lib';
 
@@ -23,23 +22,26 @@ import {createFileSynchronizer} from './util';
 
 suite('FileSynchronizer', () => {
   test('reads from the filesystem by default', async() => {
-    const {synchronizer, baseDir} = createFileSynchronizer();
+    const {synchronizer, baseDir, converter} = createFileSynchronizer();
     fs.writeFileSync(path.join(baseDir, 'index.html'), 'Hello world.\n');
     assert.deepEqual(
-        await synchronizer.urlLoader.load('index.html' as ResolvedUrl),
+        await synchronizer.urlLoader.load(
+            converter.getAnalyzerUrl({uri: 'index.html'})!),
         'Hello world.\n');
   });
 
   let testName = 'uses the in-memory version while a file is open';
   test(testName, async() => {
-    const {synchronizer, baseDir, clientConnection} = createFileSynchronizer();
+    const {synchronizer, baseDir, clientConnection, converter} =
+        createFileSynchronizer();
     const indexPath = path.join(baseDir, 'index.html');
     const indexUri = URI.file(indexPath).toString();
 
     // We read the file from disk before it is opened.
     fs.writeFileSync(indexPath, 'Filesystem content');
     assert.deepEqual(
-        await synchronizer.urlLoader.load('index.html' as ResolvedUrl),
+        await synchronizer.urlLoader.load(
+            converter.getAnalyzerUrl({uri: 'index.html'})!),
         'Filesystem content');
 
     // Open the document
@@ -56,7 +58,8 @@ suite('FileSynchronizer', () => {
     let change = await synchronizer.fileChanges.next;
     assert.deepEqual(change, [{type: FileChangeType.Changed, uri: indexUri}]);
     assert.deepEqual(
-        await synchronizer.urlLoader.load('index.html' as ResolvedUrl),
+        await synchronizer.urlLoader.load(
+            converter.getAnalyzerUrl({uri: 'index.html'})!),
         'Initial text document content');
 
     // Change the file in memory
@@ -72,7 +75,8 @@ suite('FileSynchronizer', () => {
     change = await synchronizer.fileChanges.next;
     assert.deepEqual(change, [{type: FileChangeType.Changed, uri: indexUri}]);
     assert.deepEqual(
-        await synchronizer.urlLoader.load('index.html' as ResolvedUrl),
+        await synchronizer.urlLoader.load(
+            converter.getAnalyzerUrl({uri: 'index.html'})!),
         'Changed text document content');
 
     // Close without saving
@@ -83,7 +87,8 @@ suite('FileSynchronizer', () => {
     change = await synchronizer.fileChanges.next;
     assert.deepEqual(change, [{type: FileChangeType.Changed, uri: indexUri}]);
     assert.deepEqual(
-        await synchronizer.urlLoader.load('index.html' as ResolvedUrl),
+        await synchronizer.urlLoader.load(
+            converter.getAnalyzerUrl({uri: 'index.html'})!),
         'Filesystem content');
   });
 

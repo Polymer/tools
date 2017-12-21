@@ -13,6 +13,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
+import {Analyzer} from 'polymer-analyzer';
 import {DidChangeConfigurationNotification, DidOpenTextDocumentNotification, DidOpenTextDocumentParams} from 'vscode-languageserver';
 import URI from 'vscode-uri/lib';
 
@@ -21,21 +22,23 @@ import Settings from '../language-server/settings';
 import {createFileSynchronizer} from './util';
 
 suite('Settings', () => {
-  function createSettings(debugging?: boolean) {
-    const {serverConnection, clientConnection, synchronizer, converter,
-           baseDir} = createFileSynchronizer(undefined, debugging);
-    const settings = new Settings(serverConnection, synchronizer, converter);
+  async function createSettings(debugging?: boolean) {
+    const {serverConnection, clientConnection, synchronizer, baseDir} =
+        createFileSynchronizer(undefined, debugging);
+    const settings = new Settings(
+        serverConnection, synchronizer,
+        await Analyzer.createForDirectory(baseDir));
     return {settings, serverConnection, clientConnection, baseDir};
   }
 
-  test('starts with default values', () => {
-    const {settings} = createSettings();
+  test('starts with default values', async() => {
+    const {settings} = await createSettings();
     assert.deepEqual(settings.analyzeWholePackage, false);
     assert.deepEqual(settings.fixOnSave, false);
   });
 
   test('updates when an update comes in', async() => {
-    const {settings, clientConnection} = createSettings();
+    const {settings, clientConnection} = await createSettings();
     assert.deepEqual(
         {
           analyzeWholePackage: settings.analyzeWholePackage,
@@ -80,7 +83,7 @@ suite('Settings', () => {
   });
 
   test('missing settings are filled in with defaults.', async() => {
-    const {settings, clientConnection} = createSettings();
+    const {settings, clientConnection} = await createSettings();
     clientConnection.sendNotification(DidChangeConfigurationNotification.type, {
       settings: {'polymer-ide': {fixOnSave: true, analyzeWholePackage: true}}
     });
@@ -107,7 +110,7 @@ suite('Settings', () => {
   });
 
   test('keeps ProjectConfig synchronized', async() => {
-    const {settings, clientConnection, baseDir} = createSettings();
+    const {settings, clientConnection, baseDir} = await createSettings();
     assert.equal(settings.projectConfig.lint, undefined);
     assert.equal(settings.projectConfigDiagnostic, null);
     await settings.projectConfigChangeStream.next;

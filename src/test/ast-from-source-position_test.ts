@@ -12,9 +12,8 @@
  */
 
 import {assert} from 'chai';
-import {SourcePosition} from 'polymer-analyzer';
+import {PackageUrlResolver, ResolvedUrl, SourcePosition} from 'polymer-analyzer';
 import {HtmlParser} from 'polymer-analyzer/lib/html/html-parser';
-import {ResolvedUrl} from 'polymer-analyzer/lib/model/url';
 
 import {getHtmlAstLocationForPosition} from '../ast-from-source-position';
 
@@ -166,8 +165,9 @@ suite('getLocationInfoForPosition', () => {
    * documents you can write a regexp to express your assertion.
    */
   function getAllKindsSpaceSeparated(text: string) {
-    const doc =
-        parser.parse(text, 'uninteresting file name.html' as ResolvedUrl);
+    const doc = parser.parse(
+        text, 'uninteresting file name.html' as ResolvedUrl,
+        new PackageUrlResolver());
     return getEveryPosition(text)
         .map(pos => getHtmlAstLocationForPosition(doc, pos).kind)
         .join(' ');

@@ -85,7 +85,7 @@ export default class DiagnosticGenerator extends Handler {
   }
 
   async getAllFixes(): Promise<WorkspaceEdit> {
-    const warnings = await this.linter.lintPackage();
+    const {warnings, analysis} = await this.linter.lintPackage();
     const fixes = [];
     for (const warning of warnings) {
       if (warning.fix) {
@@ -93,14 +93,13 @@ export default class DiagnosticGenerator extends Handler {
       }
     }
     // Don't apply conflicting edits to the workspace.
-    const parseLoader = makeParseLoader(this.analyzer, warnings.analysis);
+    const parseLoader = makeParseLoader(this.analyzer, analysis);
     const {appliedEdits} = await applyEdits(fixes, parseLoader);
     return this.converter.editsToWorkspaceEdit(appliedEdits);
   }
 
   private async getFixesForFile(uri: string): Promise<TextEdit[]> {
-    const path = this.converter.getWorkspacePathToFile({uri});
-    const warnings = await this.linter.lint([path]);
+    const {warnings, analysis} = await this.linter.lint([uri]);
     const edits: Edit[] = [];
     for (const warning of warnings) {
       if (!warning.fix) {
@@ -108,13 +107,13 @@ export default class DiagnosticGenerator extends Handler {
       }
       // A fix can touch multiple files. We can only update this document
       // though, so skip any fixes that touch others.
-      if (warning.fix.some(repl => repl.range.file !== path)) {
+      if (warning.fix.some(repl => repl.range.file !== uri)) {
         continue;
       }
       edits.push(warning.fix);
     }
-    const {appliedEdits} = await applyEdits(
-        edits, makeParseLoader(this.analyzer, warnings.analysis));
+    const {appliedEdits} =
+        await applyEdits(edits, makeParseLoader(this.analyzer, analysis));
     const textEdits: TextEdit[] = [];
     for (const appliedEdit of appliedEdits) {
       for (const replacement of appliedEdit) {
@@ -172,35 +171,33 @@ export default class DiagnosticGenerator extends Handler {
   private urisReportedWarningsFor = new Set<string>();
   private async reportWarnings(): Promise<void> {
     if (this.settings.analyzeWholePackage) {
-      const warnings = await this.linter.lintPackage();
-      this.reportPackageWarnings(warnings);
+      return this.reportPackageWarnings(
+          (await this.linter.lintPackage()).warnings);
     } else {
-      const openURIs = this.documents.keys();
-      const paths =
-          openURIs.map(uri => this.converter.getWorkspacePathToFile({uri}))
-              .filter(
-                  path => !this.fileGlobsToFilterOut.some(
-                      glob => glob.match(path)));
-      const warnings = await this.linter.lint(paths);
-      const diagnosticsByUri =
-          new Map(openURIs.map((k): [string, Diagnostic[]] => [k, []]));
-      for (const warning of this.filterWarnings(warnings)) {
-        const diagnostic = this.converter.convertWarningToDiagnostic(warning);
-        let diagnostics =
-            diagnosticsByUri.get(
-                this.converter.getUriForLocalPath(warning.sourceRange.file)) ||
-            [];
-        diagnostics.push(diagnostic);
-        diagnosticsByUri.set(
-            this.converter.getUriForLocalPath(warning.sourceRange.file),
-            diagnostics);
-      }
-      // These diagnostics are reported elsewhere.
-      diagnosticsByUri.delete(
-          this.converter.getUriForLocalPath('polymer.json'));
-      for (const [uri, diagnostics] of diagnosticsByUri) {
-        this.connection.sendDiagnostics({uri, diagnostics});
-      }
+      return this.reportWarningsForOpenFiles();
+    }
+  }
+
+  private async reportWarningsForOpenFiles() {
+    const openURIs = this.documents.keys();
+    const paths =
+        openURIs.map(uri => this.converter.getWorkspacePathToFile({uri}))
+            .filter(
+                path =>
+                    !this.fileGlobsToFilterOut.some(glob => glob.match(path)));
+    const {warnings} = await this.linter.lint(paths);
+    const diagnosticsByUri =
+        new Map(openURIs.map((k): [string, Diagnostic[]] => [k, []]));
+    for (const warning of this.filterWarnings(warnings)) {
+      const diagnostic = this.converter.convertWarningToDiagnostic(warning);
+      let diagnostics = diagnosticsByUri.get(warning.sourceRange.file) || [];
+      diagnostics.push(diagnostic);
+      diagnosticsByUri.set(warning.sourceRange.file, diagnostics);
+    }
+    // These diagnostics are reported elsewhere.
+    diagnosticsByUri.delete(this.converter.getUriForLocalPath('polymer.json'));
+    for (const [uri, diagnostics] of diagnosticsByUri) {
+      this.connection.sendDiagnostics({uri, diagnostics});
     }
   }
 
@@ -210,7 +207,8 @@ export default class DiagnosticGenerator extends Handler {
         w =>
             !(this.warningCodesToFilterOut.has(w.code) ||
               this.fileGlobsToFilterOut.some(
-                  glob => glob.match(w.sourceRange.file))));
+                  glob => glob.match(this.converter.getWorkspacePathToFile(
+                      {uri: w.sourceRange.file})))));
   }
 
   /**
@@ -226,7 +224,7 @@ export default class DiagnosticGenerator extends Handler {
     this.urisReportedWarningsFor = new Set<string>();
     const diagnosticsByUri = new Map<string, Diagnostic[]>();
     for (const warning of this.filterWarnings(warnings)) {
-      const uri = this.converter.getUriForLocalPath(warning.sourceRange.file);
+      const uri = warning.sourceRange.file;
       reportedLastTime.delete(uri);
       this.urisReportedWarningsFor.add(uri);
       let diagnostics = diagnosticsByUri.get(uri);
@@ -254,10 +252,12 @@ export default class DiagnosticGenerator extends Handler {
       // so we can early-exit in the case where there aren't any.
       return commands;
     }
-    const warnings = await this.linter.lint(
-        [this.converter.getWorkspacePathToFile(req.textDocument)]);
+    const {warnings} = await this.linter.lint([req.textDocument.uri]);
     const requestedRange =
         this.converter.convertLRangeToP(req.range, req.textDocument);
+    if (requestedRange === undefined) {
+      return commands;
+    }
     for (const warning of warnings) {
       if ((!warning.fix &&
            (!warning.actions || warning.actions.length === 0)) ||
