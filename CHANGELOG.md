@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [3.0.0-pre.1] - 2017-12-21
 - [BREAKING] Return an object with `warnings` and `analysis` properties
   rather than an array or warnings with an unenumerable `analysis`
   property.
@@ -13,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   it is not always found, despite being a dependency of polymer-analyzer.
 - Add a test for the `content-to-slot-usages` rule's updates to children
   of `<paper-icon-item>`.
+- Improved compatibility with Windows. Added Windows CI with appveyor.
 
 ## [2.3.0] - 2017-11-20
 - Adds the `paper-toolbar-v1-to-v2` rule, which helps upgrade uses of paper-toolbar from v1 to v2 (hybrid) by adding slots to children where appropriate.
