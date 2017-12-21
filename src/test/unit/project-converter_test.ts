@@ -69,8 +69,8 @@ suite('AnalysisConverter', () => {
       expectedWarnings: string[];
     }
 
-    async function convert(partialOptions?: Partial<TestConversionOptions>) {
-      partialOptions = partialOptions || {};
+    async function convert(
+        partialOptions: Partial<TestConversionOptions> = {}) {
       // Extract options & settings /w defaults.
       const packageName = partialOptions.packageName || 'some-package';
       const packageType = partialOptions.packageType || 'element';
@@ -79,6 +79,7 @@ suite('AnalysisConverter', () => {
         namespaces: partialOptions.namespaces || ['Polymer'],
         excludes: partialOptions.excludes,
         referenceExcludes: partialOptions.referenceExcludes,
+        addImportPath: partialOptions.addImportPath,
       };
       // Analyze all given files.
       const allTestUrls = [...urlLoader.urlContentsMap.keys()];
@@ -1177,6 +1178,61 @@ Polymer({
 });
 `
       });
+    });
+
+    test('adds importPath to class-based Polymer elements', async () => {
+      setSources({
+        'test.html': `
+<script>
+  /**
+   * @customElement
+   * @polymer
+   */
+  class TestElement extends Polymer.Element {
+  }
+</script>
+`,
+      });
+      assertSources(
+          await convert({
+            addImportPath: true,
+          }),
+          {
+            'test.js': `
+/**
+ * @customElement
+ * @polymer
+ */
+class TestElement extends Polymer.Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+}
+`
+          });
+    });
+
+    test('adds importPath to class-based Polymer elements', async () => {
+      setSources({
+        'test.html': `
+<script>
+  Polymer({
+  });
+</script>
+`,
+      });
+
+      assertSources(
+          await convert({
+            addImportPath: true,
+          }),
+          {
+            'test.js': `
+Polymer({
+  importPath: import.meta.url
+});
+`
+          });
     });
 
     test('converts arbitrary elements', async () => {

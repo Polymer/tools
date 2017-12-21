@@ -85,6 +85,12 @@ export interface ConversionSettings {
    *   (example) '../../../@polymer/polymer/polymer-element.js'
    */
   readonly npmImportStyle: NpmImportStyle;
+
+  /**
+   * Whether to add the static importPath property (set to import.meta.url)
+   * to elements.
+   */
+  readonly addImportPath: boolean;
 }
 
 /**
@@ -125,6 +131,12 @@ export interface PartialConversionSettings {
    *   (example) '../../../@polymer/polymer/polymer-element.js'
    */
   readonly npmImportStyle?: NpmImportStyle;
+
+  /**
+   * Whether to add the static importPath property (set to import.meta.url)
+   * to elements.
+   */
+  readonly addImportPath?: boolean;
 }
 
 /**
@@ -190,6 +202,9 @@ export function createDefaultConversionSettings(
   // Configure "npmImportStyle":
   const npmImportStyle = options.npmImportStyle || 'path';
 
+  // Configure "npmImportStyle", defaults to false
+  const addImportPath = options.addImportPath === true;
+
   // Return configured settings.
   return {
     namespaces,
@@ -198,5 +213,6 @@ export function createDefaultConversionSettings(
     referenceExcludes,
     referenceRewrites,
     npmImportStyle,
+    addImportPath,
   };
 }

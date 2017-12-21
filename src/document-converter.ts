@@ -245,6 +245,9 @@ export class DocumentConverter {
       // We need to inline templates on a per-script basis, otherwise we run
       // into trouble matching up analyzer AST nodes with our own.
       this.inlineTemplates(scriptProgram, script);
+      if (this.conversionSettings.addImportPath) {
+        this.addImportPathsToElements(scriptProgram, script);
+      }
       const comments: string[] = getCommentsBetween(
           this.document.parsedDocument.ast, prevScriptNode, script.astNode);
       const statements =
@@ -659,7 +662,7 @@ export class DocumentConverter {
         console.warn(
             new Warning({
               code: 'not-found',
-              message: `Can't find recat node for element ${element.tagName}`,
+              message: `Can't find recast node for element ${element.tagName}`,
               parsedDocument: this.document.parsedDocument,
               severity: Severity.WARNING,
               sourceRange: element.sourceRange!
@@ -687,6 +690,74 @@ export class DocumentConverter {
           arg.properties.unshift(jsc.property(
               'init', jsc.identifier('_template'), templateLiteral));
         }
+      } else {
+        console.error(
+            `Internal Error, Class or CallExpression expected, got ${
+                                                                     node.type
+                                                                   }`);
+      }
+    }
+  }
+
+  /**
+   * Adds a static importPath property to Polymer elements.
+   */
+  private addImportPathsToElements(program: Program, scriptDocument: Document) {
+    const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
+
+    for (const element of elements) {
+      // This is an analyzer wart. There's no way to avoid getting features
+      // from the containing document when querying an inline document. Filed
+      // as https://github.com/Polymer/polymer-analyzer/issues/712
+      if (element.sourceRange === undefined ||
+          !isPositionInsideRange(
+              element.sourceRange.start, scriptDocument.sourceRange)) {
+        continue;
+      }
+
+      const nodePath = getNodePathInProgram(program, element.astNode);
+
+      if (nodePath === undefined) {
+        console.warn(
+            new Warning({
+              code: 'not-found',
+              message: `Can't find recast node for element ${element.tagName}`,
+              parsedDocument: this.document.parsedDocument,
+              severity: Severity.WARNING,
+              sourceRange: element.sourceRange!
+            }).toString());
+        continue;
+      }
+
+      const importMetaUrl = jsc.memberExpression(
+          jsc.memberExpression(
+              jsc.identifier('import'), jsc.identifier('meta')),
+          jsc.identifier('url'));
+
+      const node = nodePath.node;
+      if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+        // A Polymer 2.0 class-based element
+        const getter = jsc.methodDefinition(
+            'get',
+            jsc.identifier('importPath'),
+            jsc.functionExpression(
+                null,
+                [],
+                jsc.blockStatement([jsc.returnStatement(importMetaUrl)])),
+            true);
+        node.body.body.splice(0, 0, getter);
+      } else if (node.type === 'CallExpression') {
+        // A Polymer hybrid/legacy factory function element
+        const arg = node.arguments[0];
+        if (arg && arg.type === 'ObjectExpression') {
+          arg.properties.unshift(jsc.property(
+              'init', jsc.identifier('importPath'), importMetaUrl));
+        }
+      } else {
+        console.error(
+            `Internal Error, Class or CallExpression expected, got ${
+                                                                     node.type
+                                                                   }`);
       }
     }
   }
