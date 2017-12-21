@@ -86,11 +86,10 @@ class PaperToolbarV1ToV2 extends HtmlRule {
     const warnings: Warning[] = [];
 
     const paperToolbars = dom5.nodeWalkAll(
-      parsedDocument.ast,
-      dom5.predicates.hasTagName('paper-toolbar'),
-      undefined,
-      dom5.childNodesIncludeTemplate
-    );
+        parsedDocument.ast,
+        dom5.predicates.hasTagName('paper-toolbar'),
+        undefined,
+        dom5.childNodesIncludeTemplate);
 
     const checkNode = (node: dom5.Node) => {
       // Add the appropriate slot for the element: `slot="middle"` or
@@ -106,35 +105,34 @@ class PaperToolbarV1ToV2 extends HtmlRule {
         }
 
         const startTagSourceRange =
-          parsedDocument.sourceRangeForStartTag(node)!;
-        const [startOffset, endOffset]
-          = parsedDocument.sourceRangeToOffsets(startTagSourceRange);
+            parsedDocument.sourceRangeForStartTag(node)!;
+        const [startOffset, endOffset] =
+            parsedDocument.sourceRangeToOffsets(startTagSourceRange);
         const startTagText =
-          parsedDocument.contents.slice(startOffset, endOffset);
+            parsedDocument.contents.slice(startOffset, endOffset);
         const isSelfClosing = startTagText.endsWith('/>');
 
         warnings.push(new Warning({
           parsedDocument,
           code: this.code,
           message: '<paper-toolbar> no longer has a default slot: this ' +
-            'element will not appear in the composed tree. Add `slot="top"` ' +
-            'to distribute to the same position as the previous default ' +
-            'content or `slot="middle"` / `slot="bottom"` to distribute to ' +
-            'the middle or bottom bar.',
+              'element will not appear in the composed tree. Add `slot="top"` ' +
+              'to distribute to the same position as the previous default ' +
+              'content or `slot="middle"` / `slot="bottom"` to distribute to ' +
+              'the middle or bottom bar.',
           severity: Severity.WARNING,
           sourceRange: startTagSourceRange,
           fix: [{
             range: startTagSourceRange,
-            replacementText:
-              startTagText.slice(0, isSelfClosing ? -2 : -1) +
-              ` slot="${desiredSlot}"` +
-              (isSelfClosing ? '/' : '') + '>',
+            replacementText: startTagText.slice(0, isSelfClosing ? -2 : -1) +
+                ` slot="${desiredSlot}"` + (isSelfClosing ? '/' : '') + '>',
           }],
         }));
       }
 
       // Non-whitespace-only text nodes, which were previously distributed into
-      // a default slot, now need to be wrapped in `<span slot="top">...</span>`.
+      // a default slot, now need to be wrapped in `<span
+      // slot="top">...</span>`.
       if (node.nodeName === '#text' && node.value!.trim() !== '') {
         const textNodeSourceRange = parsedDocument.sourceRangeForNode(node)!;
 
@@ -170,9 +168,9 @@ class PaperToolbarV1ToV2 extends HtmlRule {
           parsedDocument,
           code: this.code,
           message: '<paper-toolbar> no longer has a default slot: this ' +
-            'text node will not appear in the composed tree. Wrap with ' +
-            '`<span slot="top">...</span>` to distribute to the same ' +
-            'position as the previous default content.',
+              'text node will not appear in the composed tree. Wrap with ' +
+              '`<span slot="top">...</span>` to distribute to the same ' +
+              'position as the previous default content.',
           severity: Severity.WARNING,
           sourceRange: textNodeSourceRange,
           fix: [{
@@ -187,15 +185,16 @@ class PaperToolbarV1ToV2 extends HtmlRule {
       let suspectNodes = Array.from(paperToolbar.childNodes!);
 
       while (suspectNodes.some(nodeIsTemplateExtension)) {
-        suspectNodes = suspectNodes
-          .map(node => {
-            if (nodeIsTemplateExtension(node)) {
-              return Array.from(dom5.childNodesIncludeTemplate(node)!);
-            }
+        suspectNodes =
+            suspectNodes
+                .map((node) => {
+                  if (nodeIsTemplateExtension(node)) {
+                    return Array.from(dom5.childNodesIncludeTemplate(node)!);
+                  }
 
-            return [node];
-          })
-          .reduce((a, b) => a.concat(b), []);
+                  return [node];
+                })
+                .reduce((a, b) => a.concat(b), []);
       }
 
       for (const node of suspectNodes) {

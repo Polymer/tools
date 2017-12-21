@@ -32,46 +32,44 @@ suite(ruleId, () => {
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
-  test(
-      'adds `slot="top"` to child elements without slots or special classes',
-      async() => {
-        await assertExpectedFixes(
-            linter,
-            analyzer,
-            `${ruleId}/child-default-slot_before.html`,
-            `${ruleId}/child-default-slot_after.html`);
-      });
+  let testName =
+      'adds `slot="top"` to child elements without slots or special classes';
+  test(testName, async() => {
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/child-default-slot_before.html`,
+        `${ruleId}/child-default-slot_after.html`);
+  });
 
-  test(
-      'adds `slot="middle"` to child elements with `class="middle"`',
-      async() => {
-        await assertExpectedFixes(
-            linter,
-            analyzer,
-            `${ruleId}/child-middle-slot_before.html`,
-            `${ruleId}/child-middle-slot_after.html`);
-      });
+  testName = 'adds `slot="middle"` to child elements with `class="middle"`';
+  test(testName, async() => {
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/child-middle-slot_before.html`,
+        `${ruleId}/child-middle-slot_after.html`);
+  });
 
-  test(
-      'adds `slot="bottom"` to child elements with `class="bottom"`',
-      async() => {
-        await assertExpectedFixes(
-            linter,
-            analyzer,
-            `${ruleId}/child-bottom-slot_before.html`,
-            `${ruleId}/child-bottom-slot_after.html`);
-      });
+  testName = 'adds `slot="bottom"` to child elements with `class="bottom"`';
+  test(testName, async() => {
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/child-bottom-slot_before.html`,
+        `${ruleId}/child-bottom-slot_after.html`);
+  });
 
-  test(
+  testName =
       'wraps non-whitespace child text nodes with `<span slot="top">`...' +
-          '`</span>`',
-      async() => {
-        await assertExpectedFixes(
-            linter,
-            analyzer,
-            `${ruleId}/child-non-whitespace-text_before.html`,
-            `${ruleId}/child-non-whitespace-text_after.html`);
-      });
+      '`</span>`';
+  test(testName, async() => {
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/child-non-whitespace-text_before.html`,
+        `${ruleId}/child-non-whitespace-text_after.html`);
+  });
 
   test('many children requiring different fixes are all fixed', async() => {
     await assertExpectedFixes(

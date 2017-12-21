@@ -14,7 +14,7 @@
     "dom5": "^2.0.0",
     "fast-levenshtein": "^2.0.6",
     "parse5": "^2.2.1",
-    "polymer-analyzer": "=3.0.0-pre.6",
+    "polymer-analyzer": "^3.0.0-pre.6",
     "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",
     "strip-indent": "^2.0.0"
@@ -38,7 +38,7 @@
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "npm run clean && tsc",
-    "clean": "rm -rf lib; mkdir -p lib",
+    "clean": "touch lib && rm -rf lib && mkdir lib",
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
     "test": "npm run build && mocha && npm run lint",
