@@ -1,7 +1,7 @@
 {
   "name": "@polymer/tools-common",
   "repository": "https://github.com/Polymer/tools-common",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "engines": {
     "node": ">=6.0"
   },
