@@ -42,6 +42,7 @@ suite('AnalyzerSynchronizer', function() {
     assert.deepEqual(
         (await client.getNextDiagnostics('foo.html')).map(d => d.code),
         ['could-not-load']);
+    await client.cleanup();
   });
 
   test('When directories are created and deleted we notice', async() => {
@@ -66,5 +67,6 @@ suite('AnalyzerSynchronizer', function() {
     assert.deepEqual(
         (await client.getNextDiagnostics('foo.html')).map(d => d.code),
         ['could-not-load']);
+    await client.cleanup();
   });
 });

@@ -40,6 +40,7 @@ suite('HoverDocumenter', function() {
     assert.deepEqual(
         await client.getHover('editor-service/index.html', tagPosition),
         {contents: tagDescription});
+    await client.cleanup();
   });
 
   testName = 'it can still get element info after changing a file in memory';
@@ -60,6 +61,7 @@ suite('HoverDocumenter', function() {
             indexFile,
             {line: tagPosition.line + 1, column: tagPosition.column}),
         {contents: tagDescription});
+    await client.cleanup();
   });
 
   test('it supports getting an attribute description', async() => {
@@ -67,6 +69,7 @@ suite('HoverDocumenter', function() {
     assert.deepEqual(
         await client.getHover(indexFile, localAttributePosition),
         {contents: localAttributeDescription});
+    await client.cleanup();
   });
 
   testName = 'it supports getting a description of an attribute ' +
@@ -76,6 +79,7 @@ suite('HoverDocumenter', function() {
     assert.deepEqual(
         await client.getHover(indexFile, deepAttributePosition),
         {contents: deepAttributeDescription});
+    await client.cleanup();
   });
 
   const fooPropUsePosition = {line: 2, column: 16};
@@ -97,5 +101,6 @@ suite('HoverDocumenter', function() {
     assert.deepEqual(await underliner.underline({range: hover.range!, uri}), `
     {{_internal}}
       ~~~~~~~~~`);
+    await client.cleanup();
   });
 });

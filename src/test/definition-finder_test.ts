@@ -90,6 +90,7 @@ suite('DefinitionFinder', function() {
 ~~~~~
   });
 ~~~`]);
+    await client.cleanup();
   });
 
 
@@ -109,6 +110,7 @@ suite('DefinitionFinder', function() {
 ~~~~~~~~~~~~~~~~~~~~
       },
 ~~~~~~~`]);
+    await client.cleanup();
   });
 
   testName = 'it supports getting the definition of an attribute ' +
@@ -134,6 +136,7 @@ suite('DefinitionFinder', function() {
 ~~~~~~~~~~~~~~~~~~~~
       }
 ~~~~~~~`]);
+    await client.cleanup();
   });
 
   test('it supports properties in databindings.', async() => {
@@ -152,6 +155,7 @@ suite('DefinitionFinder', function() {
     assert.deepEqual(await underliner.underline(location), [`
         _internal: String,
         ~~~~~~~~~~~~~~~~~`]);
+    await client.cleanup();
   });
 
 
@@ -199,6 +203,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     <simple-element two></simple-element>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
     ]);
+    await client.cleanup();
   });
 
   test(`supports getting workspace symbols`, async() => {
@@ -214,6 +219,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
         (await client.getWorkspaceSymbols('one')).map((s) => s.name), [
           'slot-one-test-elem',
         ]);
+    await client.cleanup();
   });
 
   test(`supports getting document symbols`, async() => {
@@ -228,6 +234,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
         ]);
     assert.deepEqual(
         (await client.getWorkspaceSymbols('slot.html')).map((s) => s.name), []);
+    await client.cleanup();
   });
 
   testName =
@@ -257,6 +264,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     @apply --shiny;
            ~~~~~~~`
         ]);
+    await client.cleanup();
   });
 
   testName = `it supports getting code lenses of custom property declarations`;
@@ -275,6 +283,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     assert.deepEqual(
         (await client.getCodeLenses('lib.html')).map(c => c.command!.title),
         [`Read 2 places.`, `Read 1 place.`, `Read 2 places.`]);
+    await client.cleanup();
   });
 
   test(`it supports getting code lenses of elements`, async() => {
@@ -306,5 +315,6 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     assert.deepEqual(
         (await client.getCodeLenses('index.html')).map(c => c.command!.title),
         [`Referenced 3 places in HTML.`, `Referenced 1 place in HTML.`]);
+    await client.cleanup();
   });
 });

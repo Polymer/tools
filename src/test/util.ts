@@ -11,6 +11,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {assert} from 'chai';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -91,6 +92,14 @@ export async function createTestEnvironment(
   const server = await serverPromise;
   const underliner =
       new Underliner(server.fileSynchronizer.urlLoader, urlResolver, converter);
+
+  // First we create a linter with no config. Then we finish trying to load
+  // polymer.json and create another linter. Both times we report empty
+  // set of diagnostics for polymer.json
+  // If we don't wait for this to happen, we can get flaky tests.
+  assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
+  assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
+
   return {client, server, baseDir, initResult, underliner};
 }
 
@@ -139,6 +148,30 @@ export class TestClient {
     connection.onNotification(PublishDiagnosticsNotification.type, (params) => {
       this.handleDiagnostics(params);
     });
+  }
+
+  /**
+   * Disposes of the client and its resources.
+   *
+   * Asserts that there are no unconsumed diagnostics, which might
+   * indicate an unexpected error.
+   */
+  async cleanup() {
+    // Wait for a moment longer to see if any more diagnostics are
+    // reported.
+    await new Promise((resolve) => setTimeout(resolve, 1));
+    this.connection.dispose();
+    for (const [path, stream] of this.diagnosticsForPath) {
+      const diagnosticBatches = stream.consumeQueue();
+      for (const batch of diagnosticBatches) {
+        if (batch.length > 0) {
+          throw new Error(
+              `Found unconsumed diagnostics while cleaning up client. Path: ${path
+              } [${batch.map(d => d.code)
+                  .join(', ')}]`);
+        }
+      }
+    }
   }
 
   async initialize(baseDir: string): Promise<InitializeResult> {
@@ -368,6 +401,12 @@ class StreamWithNext<V> {
       this.log(`${this.key}: waiting for a value`);
       await this.wakeupPromise;
     }
+  }
+
+  consumeQueue(): V[] {
+    const queue = this.queue;
+    this.queue = [];
+    return queue;
   }
 }
 

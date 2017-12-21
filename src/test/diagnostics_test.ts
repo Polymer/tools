@@ -31,6 +31,7 @@ suite('DiagnosticGenerator', function() {
     const {client} = await createTestEnvironment(fixtureDir);
     await client.openFile(indexPath);
     assert.deepEqual(await client.getNextDiagnostics(indexPath), []);
+    await client.cleanup();
   });
 
   test(`Warn on imports of files that aren't found.`, async() => {
@@ -60,6 +61,7 @@ suite('DiagnosticGenerator', function() {
 
     // No more diagnostics
     await assertDoesNotSettle(client.getNextDiagnostics(indexPath));
+    await client.cleanup();
   });
 
   test(`Warn on imports of files that don't parse.`, async() => {
@@ -83,6 +85,7 @@ suite('DiagnosticGenerator', function() {
         await underliner.underlineDiagnostics(diagnostics, indexPath), [`
 <script src="../js-parse-error.js"></script>
             ~~~~~~~~~~~~~~~~~~~~~~`]);
+    await client.cleanup();
   });
 
   test(`Warn on syntax errors in inline javascript documents`, async() => {
@@ -100,6 +103,7 @@ suite('DiagnosticGenerator', function() {
         await underliner.underlineDiagnostics(diagnostics, indexPath), [`
 <script>var var var var var let const;</script>
             ~`]);
+    await client.cleanup();
   });
 
   let testName = `Do not warn on a sibling import ` +
@@ -110,6 +114,7 @@ suite('DiagnosticGenerator', function() {
     await client.openFile('simple-elem.html');
     // No warnings:
     assert.deepEqual(await client.getNextDiagnostics('simple-elem.html'), []);
+    await client.cleanup();
   });
 
   testName = `Warn about parse errors in the file ` +
@@ -124,6 +129,8 @@ suite('DiagnosticGenerator', function() {
                            message: 'Unexpected token (18:8)',
                            severity: DiagnosticSeverity.Error,
                          }]);
+
+    await client.cleanup();
   });
 
   test('changes in dependencies update cross-file warnings', async() => {
@@ -162,10 +169,13 @@ suite('DiagnosticGenerator', function() {
       `);
     assert.deepEqual(await client.getNextDiagnostics(basePath), []);
     assert.deepEqual(await client.getNextDiagnostics(childPath), []);
+
+    await client.cleanup();
   });
 
   test('can be configured to filter out some warning codes', async() => {
     const {client} = await createTestEnvironment();
+
     await client.openFile('index.html', `
       <link rel="import" href="nonexistant.html">
       <script>
@@ -184,26 +194,22 @@ suite('DiagnosticGenerator', function() {
     assert.deepEqual(
         (await client.getNextDiagnostics('index.html')).map(d => d.code),
         ['unknown-superclass']);
+
+    await client.cleanup();
   });
 
   test('can be configured to filter out some files', async function() {
     const {client} = await createTestEnvironment();
 
-    // First we create a linter with no config. Then we finish trying to load
-    // polymer.json and create another linter. Both times we report empty
-    // set of diagnostics for polymer.json
-    assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
-    assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
-
     // Now we can be confident we won't be getting unexpected additional
     // diagnostics from recreating the linter.
 
     await client.openFile('index.html', `
-      <link rel="import" href="nonexistant.html">
-      <script>
-        class Foo extends What {};
-      </script>
-    `);
+        <link rel="import" href="nonexistant.html">
+        <script>
+          class Foo extends What {};
+        </script>
+      `);
 
     assert.deepEqual(
         (await client.getNextDiagnostics('index.html')).map(d => d.code),
@@ -215,14 +221,13 @@ suite('DiagnosticGenerator', function() {
 
     assert.deepEqual(
         (await client.getNextDiagnostics('index.html')).map(d => d.code), []);
+
+    await client.cleanup();
   });
 
   test('sends diagnostics around polymer.json validation', async() => {
     const {client, baseDir} = await createTestEnvironment();
-    // once on boot up
-    assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
-    // once after we try to read polymer.json
-    assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
+
     writeFileSync(
         path.join(baseDir, 'polymer.json'),
         JSON.stringify({lint: {rules: ['bad']}}), 'utf-8');
@@ -244,6 +249,7 @@ suite('DiagnosticGenerator', function() {
         (await client.getNextDiagnostics('polymer.json')).map(d => d.message);
     assert.match(
         messages[0], /Invalid polymer\.json file.*not of.*type.*array/);
+    await client.cleanup();
   });
 
   // TODO(rictic): add tests for analyzeWholePackage here

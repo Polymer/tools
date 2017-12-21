@@ -17,6 +17,7 @@ import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {FileChangeType, FileEvent, TextDocuments} from 'vscode-languageserver';
 
+import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
 import {Logger} from './logger';
 import {AutoDisposable, EventStream} from './util';
@@ -41,7 +42,8 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
   constructor(
       private readonly documents: TextDocuments,
       fileSynchronizer: FileSynchronizer, logger: Logger,
-      urlResolver: UrlResolver) {
+      urlResolver: UrlResolver,
+      private readonly converter: AnalyzerLSPConverter) {
     super();
 
     const {fire, stream} = EventStream.create<void>();
@@ -61,6 +63,13 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
   private async handleFilesChanged(
       fileChangeEvents: FileEvent[], onComplete: (value: void) => void) {
     const uris = fileChangeEvents.map((f) => f.uri);
+    // Changes to polymer.json are handled through the Settings object.
+    // If the analyzer ever starts to care about that file we should listen to
+    // the Settings change stream here for it, in order to avoid doing duplicate
+    // work.
+    fileChangeEvents = fileChangeEvents.filter(
+        change =>
+            this.converter.getWorkspacePathToFile(change) !== 'polymer.json');
     if (fileChangeEvents.length === 0) {
       return;  // no new information in this notification
     }

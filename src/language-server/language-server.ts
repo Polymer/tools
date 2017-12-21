@@ -119,7 +119,7 @@ export default class LanguageServer extends Handler {
     logger.log(`\n\n\n\n\nInitialized with workspace path: ${workspacePath}`);
 
     const analyzerSynchronizer = new AnalyzerSynchronizer(
-        documents, this.fileSynchronizer, logger, urlResolver);
+        documents, this.fileSynchronizer, logger, urlResolver, converter);
 
     const settings = new Settings(
         connection, this.fileSynchronizer, analyzerSynchronizer.analyzer);

@@ -9,6 +9,10 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--timeout",
+        "1000000000"
+      ],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js"
       ]

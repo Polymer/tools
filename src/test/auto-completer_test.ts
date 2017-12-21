@@ -162,22 +162,24 @@ suite('AutoCompleter', () => {
   const tagPositionEnd = {line: 7, column: 21};
   const localAttributePosition = {line: 7, column: 31};
 
-  test('Get element completions for an empty text region.', async() => {
+  test('Get element completions for an empty text region', async() => {
     const {client} = await createTestEnvironment(fixtureDir);
     await client.openFile(indexFile);
     const completions =
         await client.getCompletions(indexFile, {line: 0, column: 0});
     assert.deepEqual(
         completions, {isIncomplete: false, items: elementCompletions});
+    await client.cleanup();
   });
 
-  test('Get element completions for a start tag.', async() => {
+  test('Get element completions for a start tag', async() => {
     const {client} = await createTestEnvironment(fixtureDir);
 
     await client.openFile(indexFile);
     const completions = await client.getCompletions(indexFile, tagPosition);
     assert.deepEqual(
         completions, {isIncomplete: false, items: elementTagnameCompletions});
+    await client.cleanup();
   });
 
   test('Gets element completions with an incomplete tag', async() => {
@@ -189,6 +191,7 @@ suite('AutoCompleter', () => {
         await client.getCompletions(
             indexFile, {line: 0, column: incompleteText.length - 2}),
         {isIncomplete: false, items: elementCompletions});
+    await client.cleanup();
   });
 
   test('Get element completions for the end of a tag', async() => {
@@ -197,6 +200,7 @@ suite('AutoCompleter', () => {
     assert.deepEqual(
         await client.getCompletions(indexFile, tagPositionEnd),
         {isIncomplete: false, items: elementTagnameCompletions});
+    await client.cleanup();
   });
 
   let testName = 'Get attribute completions when editing an existing attribute';
@@ -206,6 +210,7 @@ suite('AutoCompleter', () => {
     assert.deepEqual(
         await client.getCompletions(indexFile, localAttributePosition),
         {isIncomplete: false, items: attributeCompletions});
+    await client.cleanup();
   });
 
   test('Get attribute completions when adding a new attribute', async() => {
@@ -225,6 +230,7 @@ suite('AutoCompleter', () => {
           }),
           {isIncomplete: false, items: attributeCompletions});
     }
+    await client.cleanup();
   });
 
   test('Get attribute completions when adding a new attribute', async() => {
@@ -244,6 +250,7 @@ suite('AutoCompleter', () => {
           }),
           {isIncomplete: false, items: attributeCompletions});
     }
+    await client.cleanup();
   });
 
   testName = 'Get attribute value completions for non-notifying property';
@@ -278,6 +285,11 @@ suite('AutoCompleter', () => {
             },
           ],
         });
+    // There's an invalid expression in this source file, but that's ok.
+    assert.deepEqual(
+        (await client.getNextDiagnostics(testFile)).map(d => d.code),
+        ['invalid-polymer-expression']);
+    await client.cleanup();
   });
 
   test('Get attribute value completions for notifying property', async() => {
@@ -311,6 +323,11 @@ suite('AutoCompleter', () => {
             },
           ],
         });
+    // There's an invalid expression in this source file, but that's ok.
+    assert.deepEqual(
+        (await client.getNextDiagnostics(testFile)).map(d => d.code),
+        ['invalid-polymer-expression']);
+    await client.cleanup();
   });
 
   testName =
@@ -346,6 +363,11 @@ suite('AutoCompleter', () => {
             },
           ],
         });
+    // There's an invalid expression in this source file, but that's ok.
+    assert.deepEqual(
+        (await client.getNextDiagnostics(testFile)).map(d => d.code),
+        ['invalid-polymer-expression']);
+    await client.cleanup();
   });
 
   test('Inserts slots in autocompletion snippet', async() => {
@@ -384,9 +406,10 @@ suite('AutoCompleter', () => {
             }
           ],
         });
+    await client.cleanup();
   });
 
-  test('Recover from references to undefined files.', async() => {
+  test('Recover from references to undefined files', async() => {
     const {client} = await createTestEnvironment(fixtureDir);
     await client.openFile(indexFile);
 
@@ -400,11 +423,14 @@ suite('AutoCompleter', () => {
     assert.deepEqual(
         await client.getCompletions(indexFile, localAttributePosition),
         {isIncomplete: false, items: attributeCompletions});
+    await client.cleanup();
   });
 
-  test('Remain useful in the face of unloadable files.', async() => {
+  test('Remain useful in the face of unloadable files', async() => {
     const {client} = await createTestEnvironment(fixtureDir);
     await client.openFile(indexFile);
+    assert.deepEqual(
+        (await client.getNextDiagnostics(indexFile)).map(d => d.code), []);
 
     // We load a file that contains a reference error.
     await client.changeFile(indexFile, `${indexContents}
@@ -414,16 +440,20 @@ suite('AutoCompleter', () => {
     assert.deepEqual(
         await client.getCompletions(indexFile, localAttributePosition),
         {isIncomplete: false, items: attributeCompletions});
+
+    assert.deepEqual(
+        (await client.getNextDiagnostics(indexFile)).map(d => d.code),
+        ['could-not-load']);
+    await client.cleanup();
   });
 
-  test('Remain useful in the face of syntax errors.', async() => {
+  test('Remain useful in the face of syntax errors', async() => {
     const {client} = await createTestEnvironment(fixtureDir);
     const goodContents =
         readFileSync(path.join(fixtureDir, indexFile), 'utf-8');
     // Load a file with a syntax error
     await client.openFile(
-        path.join(fixtureDir, 'syntax-error.js'),
-        'var var var var var var var var “hello”');
+        'syntax-error.js', 'var var var var var var var var “hello”');
 
     await client.openFile(indexFile, `${goodContents}
                                     <script src="./syntax-error.js"></script>`);
@@ -431,6 +461,20 @@ suite('AutoCompleter', () => {
     assert.deepEqual(
         await client.getCompletions(indexFile, localAttributePosition),
         {isIncomplete: false, items: attributeCompletions});
+
+    // Consume diagnostics that are reported.
+    assert.deepEqual(
+        (await client.getNextDiagnostics(indexFile)).map(d => d.code),
+        ['could-not-load']);
+    // We get this one twice, once when the file is opened, and again when
+    // indexFile is modified.
+    assert.deepEqual(
+        (await client.getNextDiagnostics('syntax-error.js')).map(d => d.code),
+        ['parse-error']);
+    assert.deepEqual(
+        (await client.getNextDiagnostics('syntax-error.js')).map(d => d.code),
+        ['parse-error']);
+    await client.cleanup();
   });
 
   testName = `Return JavaScript standard completions inside of script tags.`;
@@ -441,6 +485,7 @@ suite('AutoCompleter', () => {
         await client.getCompletions(indexFile, {line: 1, column: 0});
     assert.deepEqual(
         completions, {isIncomplete: false, items: standardJavaScriptSnippets});
+    await client.cleanup();
   });
 
   {
@@ -476,6 +521,7 @@ suite('AutoCompleter', () => {
           await client.getCompletions(
               'polymer/element-with-databinding.html', internalPropUsePosition),
           databindingCompletions);
+      await client.cleanup();
     });
 
 
@@ -505,6 +551,7 @@ suite('AutoCompleter', () => {
               {label: '--flub', kind: CompletionItemKind.Variable},
             ]
           });
+      await client.cleanup();
     });
 
     test(`autocomplete css custom property uses`, async() => {
@@ -519,6 +566,7 @@ suite('AutoCompleter', () => {
           {label: '--foo', kind: CompletionItemKind.Variable},
         ]
       });
+      await client.cleanup();
     });
   }
 
@@ -548,5 +596,6 @@ suite('AutoCompleter', () => {
             {kind: CompletionItemKind.Variable, label: 'bar'}
           ]
         });
+    await client.cleanup();
   });
 });

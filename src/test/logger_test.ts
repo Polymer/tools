@@ -27,6 +27,7 @@ suite('Logger', () => {
     assert.match(
         readFileSync(logFile, 'utf-8'),
         /^\n\n\n\n\nInitialized with workspace path:/);
+    await client.cleanup();
   });
 
 });
