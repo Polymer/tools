@@ -34,17 +34,18 @@ suite('behaviors-spelling', () => {
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
-    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    const {warnings} =
+        await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
   test('finds polymer elements with wrong behaviors spelling', async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint(['behaviors-spelling/behaviors-spelling.html']);
 
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [`

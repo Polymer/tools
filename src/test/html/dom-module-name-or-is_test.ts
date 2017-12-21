@@ -35,17 +35,18 @@ suite('dom-module-invalid-attrs', () => {
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
-    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    const {warnings} =
+        await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
   test('warns for a file "is" and "name" dom-modules', async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint(['dom-module-name-or-is/dom-module-name-or-is.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `

@@ -36,12 +36,12 @@ suite(ruleId, () => {
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('warns for the proper cases and with the right messages', async() => {
-    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
+    const {warnings} = await linter.lint([`${ruleId}/before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
       <div class="layout horizontal">

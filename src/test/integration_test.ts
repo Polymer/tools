@@ -35,7 +35,7 @@ if (process.env['INTEGRATION_TEST']) {
       const analyzer = Analyzer.createForDirectory(fixtures_dir);
       const linter =
           new Linter(registry.getRules(['polymer-2-hybrid']), analyzer);
-      const warnings = filterWarnings(await linter.lintPackage());
+      const warnings = filterWarnings((await linter.lintPackage()).warnings);
 
       const warningPrinter =
           new WarningPrinter(process.stdout, {color: true, verbosity: 'full'});

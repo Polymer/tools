@@ -36,12 +36,12 @@ suite(ruleId, () => {
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('warns when deprecated files are used with the right messages', async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint([`${ruleId}/deprecated-files-before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
@@ -73,7 +73,7 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
 
   testName = 'warns when iron-flex-layout modules are used but not imported';
   test(testName, async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint([`${ruleId}/forgot-import-before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
@@ -104,7 +104,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
   });
 
   test('warns when iron-flex-layout modules are imported but not used', async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint([`${ruleId}/unnecessary-import-before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `

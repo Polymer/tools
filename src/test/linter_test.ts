@@ -54,13 +54,13 @@ suite('Linter', () => {
 
     test('works in the trivial case', async() => {
       const linter = new Linter([], analyzer);
-      const warnings = await linter.lint([]);
+      const {warnings} = await linter.lint([]);
       assert.deepEqual([...warnings], []);
     });
 
     test('gives no warnings for a perfectly fine file', async() => {
       const linter = new Linter([], analyzer);
-      const warnings =
+      const {warnings} =
           await linter.lint(['perfectly-fine/polymer-element.html']);
       assert.deepEqual([...warnings], []);
     });
@@ -68,7 +68,7 @@ suite('Linter', () => {
     test('surfaces warnings up from the analyzer', async() => {
       // Even without any rules we still get the warnings from the analyzer.
       const linter = new Linter([], analyzer);
-      const warnings =
+      const {warnings} =
           await linter.lint(['missing-imports/missing-imports.html']);
       assert.deepEqual(warningPrinter.prettyPrint(warnings), [
         `
@@ -86,17 +86,17 @@ suite('Linter', () => {
       const dir = path.join(fixtures_dir, 'package-external');
       const analyzer = Analyzer.createForDirectory(dir);
       const linter = new Linter([new AlwaysWarnsRule()], analyzer);
-      const warnings = await linter.lintPackage();
+      const {warnings} = await linter.lintPackage();
       // One warning from the analyzer, one from the AlwaysWarns, both in
       // index, none from bower_components/external.html
       assert.deepEqual(
           warnings.map((w) => w.sourceRange.file),
           ['index.html', 'index.html'].map((u) => analyzer.resolveUrl(u)));
 
-      const alsoWarnings = await linter.lint(['index.html']);
+      const {warnings: alsoWarnings} = await linter.lint(['index.html']);
       assert.deepEqual(alsoWarnings, warnings);
 
-      const allWarnings =
+      const {warnings: allWarnings} =
           await linter.lint(['index.html', 'bower_components/external.html']);
       assert.deepEqual(allWarnings.map((w) => w.sourceRange.file).sort(), [
         'index.html',

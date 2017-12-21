@@ -34,7 +34,7 @@ suite(ruleId, () => {
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
@@ -47,7 +47,8 @@ suite(ruleId, () => {
   });
 
   test('applies fixes and edit actions', async() => {
-    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
+    const {warnings, analysis} =
+        await linter.lint([`${ruleId}/before-fixes.html`]);
     const edits = [];
     for (const warning of warnings) {
       if (warning.fix) {
@@ -59,7 +60,7 @@ suite(ruleId, () => {
         }
       }
     }
-    const loader = makeParseLoader(analyzer, warnings.analysis);
+    const loader = makeParseLoader(analyzer, analysis);
     const result = await applyEdits(edits, loader);
     await assertFileEdited(
         analyzer,

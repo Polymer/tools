@@ -120,16 +120,12 @@ export class Linter {
  *
  * Fix with the next major version.
  */
-export interface LintResult extends ReadonlyArray<Warning> {
+export interface LintResult {
+  readonly warnings: ReadonlyArray<Warning>;
   readonly analysis: Analysis;
 }
 
 function makeLintResult(
     warnings: ReadonlyArray<Warning>, analysis: Analysis): LintResult {
-  const result = warnings as LintResult;
-  Object.defineProperty(
-      result,
-      'analysis',
-      {enumerable: false, writable: false, value: analysis});
-  return result;
+  return {warnings, analysis};
 }

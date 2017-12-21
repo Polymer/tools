@@ -36,17 +36,18 @@ suite(ruleId, () => {
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
-    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    const {warnings} =
+        await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
   test('warns for a file with a style outside template', async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint([`${ruleId}/style-child-of-dom-module.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
