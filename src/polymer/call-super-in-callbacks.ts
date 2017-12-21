@@ -12,14 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as estraverse from 'estraverse';
-import * as estree from 'estree';
+import babelTraverse from 'babel-traverse';
+import * as babel from 'babel-types';
 import {Document, Element, ElementMixin, isPositionInsideRange, ParsedDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
 import {stripWhitespace} from '../util';
-
 import {stripIndentation} from '../util';
 
 const methodsThatMustCallSuper = new Set([
@@ -54,7 +53,7 @@ class CallSuperInCallbacks extends Rule {
 
       for (const method of classBody.body) {
         let methodName: undefined|string = undefined;
-        if (method.type !== 'MethodDefinition') {
+        if (method.type !== 'ClassMethod') {
           // Guard against ES2018+ additions to class bodies.
           continue;
         }
@@ -72,7 +71,6 @@ class CallSuperInCallbacks extends Rule {
         if (!methodName) {
           continue;
         }
-
         // Ok, so now just check that the method does call super.methodName()
         if (!doesCallSuper(method, methodName)) {
           // Construct a nice legible warning.
@@ -142,17 +140,24 @@ function getParsedDocumentContaining(
   return mostSpecificDocument.parsedDocument;
 }
 
-function getClassBody(astNode?: estree.Node|null): undefined|estree.ClassBody {
+function getClassBody(astNode?: babel.Node|null): undefined|babel.ClassBody {
   if (!astNode || !astNode.type) {
     return undefined;
   }
-  let classBody: undefined|estree.ClassBody = undefined;
-  estraverse.traverse(astNode, {
-    enter(node: estree.Node) {
-      if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
-        classBody = node.body;
-        return estraverse.VisitorOption.Break;
-      }
+  let classBody: undefined|babel.ClassBody = undefined;
+
+  function findClassBody(node: babel.Node) {
+    if (babel.isClassDeclaration(node) || babel.isClassExpression(node)) {
+      classBody = node.body;
+    }
+  }
+
+  // Check the node itself too!
+  findClassBody(astNode);
+  babelTraverse(astNode, {
+    noScope: true,
+    enter(path) {
+      findClassBody(path.node);
     }
   });
   return classBody;
@@ -186,13 +191,15 @@ function mustCallSuper(
   return getMethodDefinerFromMixins(elementLike, methodName, document, true);
 }
 
-function doesCallSuper(
-    method: estree.MethodDefinition, methodName: string): boolean {
+function doesCallSuper(method: babel.ClassMethod, methodName: string): boolean {
   const superCallTargets: string[] = [];
-  estraverse.traverse(method.value.body, {
-    enter(node: estree.Node) {
-      if (node.type === 'ExpressionStatement' &&
-          node.expression.type === 'CallExpression') {
+  const body = method.value ? method.value.body : method.body;
+  babelTraverse(body, {
+    noScope: true,
+    enter(path) {
+      const node = path.node;
+      if (babel.isExpressionStatement(node) &&
+          babel.isCallExpression(node.expression)) {
         const callee = node.expression.callee;
         // Just super()
         if (callee.type === 'Super') {

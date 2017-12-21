@@ -14,7 +14,7 @@
 
 import './collections';
 
-import {Analysis, Analyzer, Document, ParsedDocument, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {Analysis, Analyzer, Document, ParsedDocument, ResolvedUrl, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
 
@@ -86,13 +86,11 @@ export class Linter {
     const warnings = [];
 
     for (const file of files) {
-      const result = analysis.getDocument(this._analyzer.resolveUrl(file));
-      if (!result) {
-        continue;
-      } else if (result instanceof Document) {
-        documents.push(result);
-      } else {
-        warnings.push(result);
+      const result = analysis.getDocument(file);
+      if (result.successful) {
+        documents.push(result.value);
+      } else if (result.error !== undefined) {
+        warnings.push(result.error);
       }
     }
 
@@ -100,7 +98,7 @@ export class Linter {
   }
 
   private _getWarningFromError(
-      parsedDocument: ParsedDocument<any, any>, e: any, file: string,
+      parsedDocument: ParsedDocument<any, any>, e: any, file: ResolvedUrl,
       code: string, message: string) {
     if (e instanceof WarningCarryingException) {
       return e.warning;

@@ -21,6 +21,12 @@ import {stripIndentation, stripWhitespace} from '../util';
 const definitelyNotMethodTypes =
     new Set(['string', 'number', 'boolean', 'Array']);
 
+for (const type of [...definitelyNotMethodTypes]) {
+  definitelyNotMethodTypes.add(`${type} | null | undefined`);
+  definitelyNotMethodTypes.add(`${type} | null`);
+  definitelyNotMethodTypes.add(`${type} | undefined`);
+}
+
 class DatabindingCallsMustBeFunctions extends Rule {
   code = 'databinding-calls-must-be-functions';
   description = stripIndentation(`

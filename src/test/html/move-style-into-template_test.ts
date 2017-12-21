@@ -14,25 +14,25 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, applyEdits, FSUrlLoader, makeParseLoader} from 'polymer-analyzer';
+import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {WarningPrettyPrinter} from '../util';
+import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-const code = 'style-into-template';
+const ruleId = 'style-into-template';
 
-suite(code, () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
-    linter = new Linter(registry.getRules([code]), analyzer);
+    linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -47,7 +47,7 @@ suite(code, () => {
 
   test('warns for a file with a style outside template', async() => {
     const warnings =
-        await linter.lint([`${code}/style-child-of-dom-module.html`]);
+        await linter.lint([`${ruleId}/style-child-of-dom-module.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
   <link rel="import" href="./bar.css">
@@ -62,13 +62,10 @@ suite(code, () => {
   });
 
   test('applies automatic-safe fixes', async() => {
-    const warnings = await linter.lint([`${code}/before-fixes.html`]);
-    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer, warnings.analysis);
-    const result = await applyEdits(edits, loader);
-    assert.deepEqual(result.incompatibleEdits, []);
-    assert.deepEqual(
-        result.editedFiles.get(`${code}/before-fixes.html`),
-        (await loader(`${code}/after-fixes.html`)).contents);
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/before-fixes.html`,
+        `${ruleId}/after-fixes.html`);
   });
 });

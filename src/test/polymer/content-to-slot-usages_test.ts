@@ -14,11 +14,11 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, applyEdits, FSUrlLoader, makeParseLoader} from 'polymer-analyzer';
+import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {WarningPrettyPrinter} from '../util';
+import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -30,7 +30,7 @@ suite(ruleId, () => {
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
@@ -62,12 +62,10 @@ suite(ruleId, () => {
   });
 
   test('applies automatic-safe fixes', async() => {
-    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
-    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer, warnings.analysis);
-    const result = await applyEdits(edits, loader);
-    assert.deepEqual(
-        result.editedFiles.get(`${ruleId}/before-fixes.html`),
-        (await loader(`${ruleId}/after-fixes.html`)).contents);
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/before-fixes.html`,
+        `${ruleId}/after-fixes.html`);
   });
 });

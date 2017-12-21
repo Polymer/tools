@@ -14,7 +14,7 @@
 
 import * as assert from 'assert';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
@@ -28,7 +28,7 @@ suite('databinding-calls-must-be-functions', () => {
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(
         registry.getRules(['databinding-calls-must-be-functions']), analyzer);

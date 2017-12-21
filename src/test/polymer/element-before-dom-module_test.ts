@@ -16,7 +16,6 @@ import '../../rules';
 import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
@@ -30,7 +29,7 @@ suite('element-before-dom-module', () => {
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['element-before-dom-module']), analyzer);
