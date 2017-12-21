@@ -128,11 +128,13 @@ suite('Fixtures', () => {
         rimraf.sync(fixtureResultDir);
 
         // Top-Level Integration Test! Test the CLI interface directly.
-        const output = await exec(
-            fixtureSourceDir,
-            'node',
-            [modulizerBinPath, '--out', '../generated/', '--force'].concat(
-                fixtureTestConfig.options || []));
+        const output = await exec(fixtureSourceDir, 'node', [
+          modulizerBinPath,
+          '--out',
+          '../generated/',
+          '--force',
+          '--add-import-path'
+        ].concat(fixtureTestConfig.options || []));
 
         // 1. Check stderr output that no (unexpected) errors were emitted.
         assert.equal(output.stderr, (fixtureTestConfig.stderr || ''));

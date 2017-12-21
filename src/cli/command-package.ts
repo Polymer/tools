@@ -95,6 +95,7 @@ export default async function run(options: CliOptions) {
     packageName: npmPackageName.toLowerCase(),
     packageVersion: npmPackageVersion,
     cleanOutDir: options.clean!!,
+    addImportPath: options['add-import-path'],
   });
 
   logStep(2, 2, '🎉', `Conversion Complete!`);

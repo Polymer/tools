@@ -133,6 +133,13 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
         `[name|path] The desired format for npm package import URLs/specifiers. ` +
         `Defaults to "path".`,
   },
+  {
+    name: 'add-import-path',
+    type: Boolean,
+    defaultValue: false,
+    description: `Whether to add a static importPath property to elements. ` +
+        `Defaults to false`,
+  },
 ];
 
 export interface CliOptions {
@@ -153,6 +160,7 @@ export interface CliOptions {
   install: boolean;
   test: boolean;
   'import-style': NpmImportStyle;
+  'add-import-path': boolean;
 }
 
 export async function run() {
