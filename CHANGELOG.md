@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+* Add FSUrlLoader#getFilePath which will return the file path that would
+  be loaded for a given ResolvedUrl, or an error message explaining why
+  it can't be.
+
 ## [3.0.0-pre.6] - 2017-12-18
 * [BREAKING] `Analysis#getDocument` now returns a `Result` object. When
   `result.successful` is true, `result.value` is a Document. When

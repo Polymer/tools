@@ -367,6 +367,10 @@ export function makeParseLoader(analyzer: Analyzer, analysis?: Analysis) {
     if (result.successful) {
       return result.value.parsedDocument;
     }
-    throw new Error(`Cannot load file at:  ${url}`);
+    let message = '';
+    if (result.error) {
+      message = result.error.message;
+    }
+    throw new Error(`Cannot load file at: ${JSON.stringify(url)}: ${message}`);
   };
 }

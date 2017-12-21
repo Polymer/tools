@@ -26,6 +26,13 @@ import {ResolvedUrl} from './url';
 import {Warning} from './warning';
 
 
+/**
+ * Represents the result of a computation that may fail.
+ *
+ * This lets us represent errors in a type-safe way, as well as
+ * in a way that makes it clear to the caller that the computation
+ * may fail.
+ */
 export type Result<T, E> = {
   successful: true,
   value: T,
@@ -152,26 +159,27 @@ export class Analysis implements Queryable {
    *
    * @param sourceRange Source range to search for in a document
    */
-   getDocumentContaining(sourceRange: SourceRange|undefined) {
-     if (!sourceRange) {
-       return undefined;
-     }
-     let mostSpecificDocument: undefined|Document = undefined;
-     const [outerDocument] = this.getFeatures({kind: 'document', id: sourceRange.file});
-     if (!outerDocument) {
-       return undefined;
-     }
-     for (const doc of outerDocument.getFeatures({kind: 'document'})) {
-       if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
-         if (!mostSpecificDocument ||
-             isPositionInsideRange(
-                 doc.sourceRange!.start, mostSpecificDocument.sourceRange)) {
-           mostSpecificDocument = doc;
-         }
-       }
-     }
-     return mostSpecificDocument;
-   }
+  getDocumentContaining(sourceRange: SourceRange|undefined) {
+    if (!sourceRange) {
+      return undefined;
+    }
+    let mostSpecificDocument: undefined|Document = undefined;
+    const [outerDocument] =
+        this.getFeatures({kind: 'document', id: sourceRange.file});
+    if (!outerDocument) {
+      return undefined;
+    }
+    for (const doc of outerDocument.getFeatures({kind: 'document'})) {
+      if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
+        if (!mostSpecificDocument ||
+            isPositionInsideRange(
+                doc.sourceRange!.start, mostSpecificDocument.sourceRange)) {
+          mostSpecificDocument = doc;
+        }
+      }
+    }
+    return mostSpecificDocument;
+  }
 
   private _getDocumentQuery(query: Query = {}): DocumentQuery {
     return {

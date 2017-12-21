@@ -16,7 +16,9 @@ import * as fs from 'fs';
 import * as pathlib from 'path';
 import Uri from 'vscode-uri';
 
+import {isPathInside} from '../core/utils';
 import {ResolvedUrl} from '../index';
+import {Result} from '../model/analysis';
 import {PackageRelativeUrl} from '../model/url';
 
 import {UrlLoader} from './url-loader';
@@ -27,8 +29,11 @@ import {UrlLoader} from './url-loader';
 export class FSUrlLoader implements UrlLoader {
   root: string;
 
-  constructor(root?: string) {
-    this.root = root || '';
+  constructor(root: string = '') {
+    if (root.endsWith('/')) {
+      root += '/';
+    }
+    this.root = pathlib.resolve(root);
   }
 
   canLoad(url: ResolvedUrl): boolean {
@@ -37,8 +42,12 @@ export class FSUrlLoader implements UrlLoader {
 
   load(url: ResolvedUrl): Promise<string> {
     return new Promise((resolve, reject) => {
-      const filepath = this.getFilePath(url);
-      fs.readFile(filepath, 'utf8', (error: Error, contents: string) => {
+      const result = this.getFilePath(url);
+      if (!result.successful) {
+        throw new Error(`FSUrlLoader can not load url ${
+            JSON.stringify(url)} - ${result.error}`);
+      }
+      fs.readFile(result.value, 'utf8', (error: Error, contents: string) => {
         if (error) {
           reject(error);
         } else {
@@ -48,11 +57,24 @@ export class FSUrlLoader implements UrlLoader {
     });
   }
 
-  private getFilePath(url: ResolvedUrl): string {
+  /**
+   * If successful, result.value will be the filesystem path that we would load
+   * the given url from.
+   *
+   * If unsuccessful, result.value will be an error message as a string.
+   */
+  getFilePath(url: ResolvedUrl): Result<string, string> {
     if (!this.canLoad(url)) {
-      throw new Error(`FsUrlLoader can not load url: ${url}`);
+      return {successful: false, error: 'Not a local file:// url.'};
     }
-    return Uri.parse(url).fsPath;
+    const path = Uri.parse(url).fsPath;
+    if (!isPathInside(this.root, path)) {
+      return {
+        successful: false,
+        error: `Path is not inside root directory: ${JSON.stringify(this.root)}`
+      };
+    }
+    return {successful: true, value: path};
   }
 
   async readDirectory(pathFromRoot: string, deep?: boolean):

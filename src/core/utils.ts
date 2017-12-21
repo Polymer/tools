@@ -11,10 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import {parse as parseUrl_, Url} from 'url';
 
 const unspecifiedProtocol = '-:';
-
 export function parseUrl(url: string): Url {
   if (!url.startsWith('//')) {
     return parseUrl_(url);
@@ -31,6 +31,17 @@ export function trimLeft(str: string, char: string): string {
     leftEdge++;
   }
   return str.substring(leftEdge);
+}
+
+/**
+ * Returns whether the given file path points to a location inside the given
+ * directory.
+ */
+export function isPathInside(directory: string, filePath: string): boolean {
+  if (process.platform === 'win32') {
+    return filePath.toLowerCase().startsWith(directory.toLowerCase());
+  }
+  return filePath.startsWith(directory);
 }
 
 export class Deferred<T> {
