@@ -29,7 +29,7 @@ suite('DefinitionFinder', function() {
   let testName = `it supports getting the definition of ` +
       `an element from its tag`;
   test(testName, async() => {
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
     assert.deepEqual(
         await underliner.underline(
             await client.getDefinition(indexFile, tagPosition)),
@@ -95,7 +95,7 @@ suite('DefinitionFinder', function() {
 
 
   test('it supports getting the definition of a local attribute', async() => {
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
     assert.deepEqual(
         await underliner.underline(
             await client.getDefinition(indexFile, localAttributePosition)),
@@ -116,7 +116,7 @@ suite('DefinitionFinder', function() {
   testName = 'it supports getting the definition of an attribute ' +
       'defined in a behavior';
   test(testName, async() => {
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     assert.deepEqual(
         await underliner.underline(
@@ -142,7 +142,7 @@ suite('DefinitionFinder', function() {
   test('it supports properties in databindings.', async() => {
     const fooPropUsePosition = {line: 2, column: 16};
     const internalPropUsePosition = {line: 3, column: 12};
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     let location = (await client.getDefinition(
         'polymer/element-with-databinding.html', fooPropUsePosition))!;
@@ -162,7 +162,7 @@ suite('DefinitionFinder', function() {
   testName = `it supports getting references to an element from its tag`;
   test(testName, async() => {
     const contentsPath = path.join('editor-service', 'references.html');
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
     await client.openFile(contentsPath);
 
     let references =
@@ -207,33 +207,34 @@ customElements.define('anonymous-class', class extends HTMLElement{});
   });
 
   test(`supports getting workspace symbols`, async() => {
-    const {client} =
-        await createTestEnvironment(path.join(fixtureDir, 'editor-service'));
+    const {client} = await createTestEnvironment(
+        {fixtureDir: path.join(fixtureDir, 'editor-service')});
     assert.deepEqual(
-        (await client.getWorkspaceSymbols('')).map((s) => s.name), [
+        (await client.getWorkspaceSymbols(''))!.map((s) => s.name), [
           'slot-test-elem',
           'slot-one-test-elem',
           'behavior-user',
         ]);
     assert.deepEqual(
-        (await client.getWorkspaceSymbols('one')).map((s) => s.name), [
+        (await client.getWorkspaceSymbols('one'))!.map((s) => s.name), [
           'slot-one-test-elem',
         ]);
     await client.cleanup();
   });
 
   test(`supports getting document symbols`, async() => {
-    const {client} =
-        await createTestEnvironment(path.join(fixtureDir, 'editor-service'));
+    const {client} = await createTestEnvironment(
+        {fixtureDir: path.join(fixtureDir, 'editor-service')});
     assert.deepEqual(
-        (await client.getDocumentSymbols('slot-test-elem.html'))
-            .map((s) => s.name),
+        (await client.getDocumentSymbols('slot-test-elem.html'))!.map(
+            (s) => s.name),
         [
           'slot-test-elem',
           'slot-one-test-elem',
         ]);
     assert.deepEqual(
-        (await client.getWorkspaceSymbols('slot.html')).map((s) => s.name), []);
+        (await client.getWorkspaceSymbols('slot.html'))!.map((s) => s.name),
+        []);
     await client.cleanup();
   });
 
@@ -241,7 +242,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
       `it supports finding definitions and references of a css custom property`;
   test(testName, async() => {
     const {client, underliner} = await createTestEnvironment(
-        path.join(fixtureDir, 'css-custom-properties'));
+        {fixtureDir: path.join(fixtureDir, 'css-custom-properties')});
     const locations =
         await client.getDefinition('main.html', {line: 5, column: 20});
     assert.deepEqual(await underliner.underline(locations), [
@@ -270,18 +271,18 @@ customElements.define('anonymous-class', class extends HTMLElement{});
   testName = `it supports getting code lenses of custom property declarations`;
   test(testName, async() => {
     const {client} = await createTestEnvironment(
-        path.join(fixtureDir, 'css-custom-properties'));
+        {fixtureDir: path.join(fixtureDir, 'css-custom-properties')});
 
     await client.changeConfiguration({referencesCodeLens: false});
 
     assert.deepEqual(
-        (await client.getCodeLenses('lib.html')).map(c => c.command!.title),
+        (await client.getCodeLenses('lib.html'))!.map(c => c.command!.title),
         []);
 
     await client.changeConfiguration({referencesCodeLens: true});
 
     assert.deepEqual(
-        (await client.getCodeLenses('lib.html')).map(c => c.command!.title),
+        (await client.getCodeLenses('lib.html'))!.map(c => c.command!.title),
         [`Read 2 places.`, `Read 1 place.`, `Read 2 places.`]);
     await client.cleanup();
   });
@@ -307,13 +308,13 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.changeConfiguration({referencesCodeLens: false});
 
     assert.deepEqual(
-        (await client.getCodeLenses('index.html')).map(c => c.command!.title),
+        (await client.getCodeLenses('index.html'))!.map(c => c.command!.title),
         []);
 
     await client.changeConfiguration({referencesCodeLens: true});
 
     assert.deepEqual(
-        (await client.getCodeLenses('index.html')).map(c => c.command!.title),
+        (await client.getCodeLenses('index.html'))!.map(c => c.command!.title),
         [`Referenced 3 places in HTML.`, `Referenced 1 place in HTML.`]);
     await client.cleanup();
   });

@@ -117,6 +117,10 @@ export default class LanguageServer extends Handler {
         connection, documents, workspacePath, converter, logger);
 
     logger.log(`\n\n\n\n\nInitialized with workspace path: ${workspacePath}`);
+    logger.log(`Client's capabilities:`);
+    logger.log(JSON.stringify(clientCapabilities, null, 2));
+    logger.log(`\n\nServer's capabilities:`);
+    logger.log(JSON.stringify(this.capabilities(clientCapabilities), null, 2));
 
     const analyzerSynchronizer = new AnalyzerSynchronizer(
         documents, this.fileSynchronizer, logger, urlResolver, converter);

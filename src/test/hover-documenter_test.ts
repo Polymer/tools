@@ -35,7 +35,7 @@ suite('HoverDocumenter', function() {
       'when asking for docs at its tag name';
   test(testName, async() => {
     const {client, underliner, converter} =
-        await createTestEnvironment(fixtureDir);
+        await createTestEnvironment({fixtureDir});
 
     const {contents, range} =
         (await client.getHover('editor-service/index.html', tagPosition))!;
@@ -51,7 +51,7 @@ suite('HoverDocumenter', function() {
 
   testName = 'it can still get element info after changing a file in memory';
   test(testName, async() => {
-    const {client, server} = await createTestEnvironment(fixtureDir);
+    const {client, server} = await createTestEnvironment({fixtureDir});
 
     const contents = await server.fileSynchronizer.urlLoader.load(
         client.converter.getAnalyzerUrl({uri: indexFile})!);
@@ -73,7 +73,7 @@ suite('HoverDocumenter', function() {
 
   test('it supports getting an attribute description', async() => {
     const {client, underliner, converter} =
-        await createTestEnvironment(fixtureDir);
+        await createTestEnvironment({fixtureDir});
     const {contents, range} = (await client.getHover(
         'editor-service/index.html', localAttributePosition))!;
 
@@ -91,7 +91,7 @@ suite('HoverDocumenter', function() {
       'defined in a behavior';
   test(testName, async() => {
     const {client, underliner, converter} =
-        await createTestEnvironment(fixtureDir);
+        await createTestEnvironment({fixtureDir});
     const {contents, range} = (await client.getHover(
         'editor-service/index.html', deepAttributePosition))!;
 
@@ -108,7 +108,7 @@ suite('HoverDocumenter', function() {
   const fooPropUsePosition = {line: 2, column: 16};
   const internalPropUsePosition = {line: 3, column: 12};
   test(`Give documentation for properties in databindings.`, async() => {
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     const path = 'polymer/element-with-databinding.html';
     const uri = client.converter.getUriForLocalPath(path);

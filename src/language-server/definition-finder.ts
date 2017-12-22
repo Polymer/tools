@@ -16,7 +16,7 @@ import * as fuzzaldrin from 'fuzzaldrin';
 import {Analysis, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Queryable} from 'polymer-analyzer/lib/model/queryable';
-import {CodeLens, CodeLensParams, Definition, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
+import {CodeLens, CodeLensParams, IConnection, Location, ReferenceParams, SymbolInformation, SymbolKind} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
 import {LsAnalyzer} from './analyzer-synchronizer';
@@ -38,8 +38,7 @@ export default class DefinitionFinder extends Handler {
     super();
 
     this.connection.onDefinition(async(textPosition) => {
-      return this.handleErrors(
-          this.getDefinition(textPosition), undefined) as Promise<Definition>;
+      return this.handleErrors(this.getDefinition(textPosition), null);
     });
 
     this.connection.onReferences(async(params) => {

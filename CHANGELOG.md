@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Give ranges when we give hover documentation for elements and attributes.
   This lets the client indicate to the user exactly which code is being
   documented.
+- Send down autocompletion documentation as markdown to clients that support it.
+- Greatly improve Windows support. Added Windows integration testing through
+  appveyor.
 
 ## 2.0.0 - 2017-12-05
 

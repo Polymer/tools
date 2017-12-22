@@ -36,6 +36,7 @@ import {Handler} from './util';
 export default class AutoCompleter extends Handler {
   private readonly clientCannotFilter: boolean;
   private readonly clientSupportsSnippets: boolean;
+  private readonly preferredDocumentationFormat: 'plaintext'|'markdown';
   constructor(
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
@@ -43,12 +44,25 @@ export default class AutoCompleter extends Handler {
       private capabilities: ClientCapabilities) {
     super();
 
-    this.clientSupportsSnippets =
-        !!(this.capabilities.textDocument &&
-           this.capabilities.textDocument.completion &&
-           this.capabilities.textDocument.completion.completionItem &&
-           this.capabilities.textDocument.completion.completionItem
-               .snippetSupport);
+    const completionCapabilities =
+        (this.capabilities.textDocument &&
+         this.capabilities.textDocument.completion) ||
+        {};
+
+    const completionItemCapabilities =
+        completionCapabilities.completionItem || {};
+
+    this.clientSupportsSnippets = !!completionItemCapabilities.snippetSupport;
+
+    this.preferredDocumentationFormat = 'plaintext';
+    const preferredFormats =
+        completionItemCapabilities.documentationFormat || ['plaintext'];
+    for (const preferredFormat of preferredFormats) {
+      if (preferredFormat === 'plaintext' || preferredFormat === 'markdown') {
+        this.preferredDocumentationFormat = preferredFormat;
+        break;
+      }
+    }
 
     // Work around https://github.com/atom/atom-languageclient/issues/150
     const ourExperimentalCapabilities = this.capabilities.experimental &&
@@ -194,7 +208,7 @@ export default class AutoCompleter extends Handler {
       const tagName = e.tagName!;
       let item: CompletionItem = {
         label: `<${tagName}>`,
-        documentation: e.description,
+        documentation: this.documentationFromMarkdown(e.description),
         filterText: tagName.replace(/-/g, ''),
         kind: CompletionItemKind.Class,
         insertText: `${prefix}${e.tagName}></${e.tagName}>`
@@ -408,7 +422,8 @@ export default class AutoCompleter extends Handler {
     const item: CompletionItem = {
       label: attrCompletion.label,
       kind: CompletionItemKind.Field,
-      documentation: attrCompletion.documentation,
+      documentation:
+          this.documentationFromMarkdown(attrCompletion.documentation),
       sortText: attrCompletion.sortText
     };
     if (attrCompletion.type) {
@@ -445,6 +460,19 @@ export default class AutoCompleter extends Handler {
             .filter(filterableCompletions, leadingText, {key: 'filterText'})
             .map(i => i.completion);
     return {isIncomplete: true, items};
+  }
+
+  /**
+   * If the client supports markdown for completion items, send our markdown as
+   * markdown.
+   *
+   * Otherwise send it as plain text.
+   */
+  documentationFromMarkdown(markdown: string) {
+    if (this.preferredDocumentationFormat === 'markdown') {
+      return {kind: 'markdown' as 'markdown', value: markdown};
+    }
+    return markdown;
   }
 
   /**

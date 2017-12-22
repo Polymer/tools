@@ -28,7 +28,7 @@ suite('DiagnosticGenerator', function() {
   const indexPath = path.join('editor-service', 'index.html');
 
   test('For a good document we get no warnings', async() => {
-    const {client} = await createTestEnvironment(fixtureDir);
+    const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexPath);
     assert.deepEqual(await client.getNextDiagnostics(indexPath), []);
     await client.cleanup();
@@ -36,7 +36,7 @@ suite('DiagnosticGenerator', function() {
 
   test(`Warn on imports of files that aren't found.`, async() => {
     const {client, server, underliner} =
-        await createTestEnvironment(fixtureDir);
+        await createTestEnvironment({fixtureDir});
 
     const indexContents = await server.fileSynchronizer.urlLoader.load(
         client.converter.getAnalyzerUrl({uri: indexPath})!);
@@ -66,7 +66,7 @@ suite('DiagnosticGenerator', function() {
 
   test(`Warn on imports of files that don't parse.`, async() => {
     const {client, server, underliner} =
-        await createTestEnvironment(fixtureDir);
+        await createTestEnvironment({fixtureDir});
 
     const indexContents = await server.fileSynchronizer.urlLoader.load(
         client.converter.getAnalyzerUrl({uri: indexPath})!);
@@ -89,7 +89,7 @@ suite('DiagnosticGenerator', function() {
   });
 
   test(`Warn on syntax errors in inline javascript documents`, async() => {
-    const {client, underliner} = await createTestEnvironment(fixtureDir);
+    const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     const badScript = `\n<script>var var var var var let const;</script>`;
     await client.openFile(indexPath, badScript);
@@ -110,7 +110,7 @@ suite('DiagnosticGenerator', function() {
       `if configured with a package url resolver`;
   test(testName, async() => {
     const testBaseDir = path.join(fixtureDir, 'package-url-resolver');
-    const {client} = await createTestEnvironment(testBaseDir);
+    const {client} = await createTestEnvironment({fixtureDir: testBaseDir});
     await client.openFile('simple-elem.html');
     // No warnings:
     assert.deepEqual(await client.getNextDiagnostics('simple-elem.html'), []);
@@ -120,7 +120,7 @@ suite('DiagnosticGenerator', function() {
   testName = `Warn about parse errors in the file ` +
       `we're requesting errors for.`;
   test(testName, async() => {
-    const {client} = await createTestEnvironment(fixtureDir);
+    const {client} = await createTestEnvironment({fixtureDir});
     const path = 'js-parse-error.js';
     await client.openFile(path);
     const diagnostics = await client.getNextDiagnostics(path);
@@ -136,7 +136,7 @@ suite('DiagnosticGenerator', function() {
   test('changes in dependencies update cross-file warnings', async() => {
     // This is a regression test of a tricky bug that turned out to be in
     // the analyzer, but this is useful to assert that it still works.
-    const {client} = await createTestEnvironment(fixtureDir);
+    const {client} = await createTestEnvironment({fixtureDir});
     const basePath = 'base.js';
     const childPath = 'child.html';
     await client.openFile(basePath, `

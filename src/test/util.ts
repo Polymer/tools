@@ -18,7 +18,7 @@ import * as path from 'path';
 import {PackageUrlResolver, SourcePosition, SourceRange, UrlLoader, UrlResolver} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
+import {ClientCapabilities, CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri/lib';
 
@@ -68,27 +68,30 @@ export function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
  * and send requests up to the server, then assert on the responses from the
  * server.
  *
- * @param baseDir If given, then the test environment will be set up with a
+ * @param fixtureDir If given, then the test environment will be set up with a
  *     copy of the given basedir in os.tempdir() as the client's workspace.
  *     If this param is not passed, an empty tempdir will be used.
  * @param debugging If true, does extra logging about the requests and responses
  *     between client and server.
  */
-export async function createTestEnvironment(
-    baseDir?: string, debugging?: boolean) {
-  if (baseDir) {
-    baseDir = getTempCopy(baseDir);
-  } else {
-    baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'editor-service-tests'));
-  }
+export async function createTestEnvironment(options: {
+  fixtureDir?: string,
+  debugging?: boolean,
+  capabilities?: ClientCapabilities
+} = {}) {
+  const capabilities = options.capabilities || defaultClientCapabilities;
+  const baseDir = options.fixtureDir === undefined ?
+      fs.mkdtempSync(path.join(os.tmpdir(), 'editor-service-tests')) :
+      getTempCopy(options.fixtureDir);
 
-  const {serverConnection, clientConnection} = createTestConnections(debugging);
+  const {serverConnection, clientConnection} =
+      createTestConnections(options.debugging);
   const urlResolver = new PackageUrlResolver({packageDir: baseDir});
   const converter = new AnalyzerLSPConverter(URI.file(baseDir), urlResolver);
   const client = new TestClient(clientConnection, converter, baseDir);
   const serverPromise = LanguageServer.initializeWithConnection(
       serverConnection, {interceptConsole: false});
-  const initResult = await client.initialize(baseDir);
+  const initResult = await client.initialize(baseDir, capabilities);
   const server = await serverPromise;
   const underliner =
       new Underliner(server.fileSynchronizer.urlLoader, urlResolver, converter);
@@ -141,6 +144,22 @@ export class Underliner extends BaseUnderliner {
   }
 }
 
+export const defaultClientCapabilities: ClientCapabilities = {
+  textDocument: {
+    completion: {
+      completionItem: {
+        snippetSupport: true,
+        documentationFormat: ['markdown', 'plaintext']
+      }
+    },
+    synchronization: {didSave: true, willSave: true, willSaveWaitUntil: true}
+  },
+  workspace: {
+    applyEdit: true,
+    workspaceEdit: {documentChanges: true},
+  }
+};
+
 export class TestClient {
   constructor(
       public connection: IConnection, public converter: AnalyzerLSPConverter,
@@ -174,7 +193,8 @@ export class TestClient {
     }
   }
 
-  async initialize(baseDir: string): Promise<InitializeResult> {
+  async initialize(baseDir: string, capabilities: ClientCapabilities):
+      Promise<InitializeResult> {
     const init: InitializeParams = {
       rootPath: baseDir,
       rootUri: URI.file(baseDir).toString(),
@@ -182,18 +202,7 @@ export class TestClient {
       // process.exit after a timeout if the given process id
       // does not exist!! It handles `null` just fine though.
       processId: null as any as number,
-      initializationOptions: {},
-      capabilities: {
-        textDocument: {
-          completion: {completionItem: {snippetSupport: true}},
-          synchronization:
-              {didSave: true, willSave: true, willSaveWaitUntil: true}
-        },
-        workspace: {
-          applyEdit: true,
-          workspaceEdit: {documentChanges: true},
-        }
-      }
+      initializationOptions: {}, capabilities
     };
     return this.connection.sendRequest(InitializeRequest.type, init);
   }
@@ -206,8 +215,7 @@ export class TestClient {
         DidChangeConfigurationNotification.type, params);
   }
 
-  async getHover(path: string, position: SourcePosition):
-      Promise<Hover|undefined> {
+  async getHover(path: string, position: SourcePosition): Promise<Hover|null> {
     const params: TextDocumentPositionParams = {
       position: this.converter.convertSourcePosition(position),
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
@@ -305,8 +313,7 @@ export class TestClient {
     return this.diagnosticsForPath.get(path).next();
   }
 
-  async getCompletions(path: string, position: SourcePosition):
-      Promise<CompletionList> {
+  async getCompletions(path: string, position: SourcePosition) {
     const params: TextDocumentPositionParams = {
       position: this.converter.convertSourcePosition(position),
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
@@ -316,8 +323,7 @@ export class TestClient {
   }
 
   async getReferences(
-      path: string, position: SourcePosition,
-      includeDefinition = false): Promise<Location[]> {
+      path: string, position: SourcePosition, includeDefinition = false) {
     const params: ReferenceParams = {
       position: this.converter.convertSourcePosition(position),
       textDocument: {uri: this.converter.getUriForLocalPath(path)},
@@ -326,19 +332,19 @@ export class TestClient {
     return this.connection.sendRequest(ReferencesRequest.type, params);
   }
 
-  async getWorkspaceSymbols(query: string): Promise<SymbolInformation[]> {
+  async getWorkspaceSymbols(query: string): Promise<null|SymbolInformation[]> {
     const params: WorkspaceSymbolParams = {query};
     return this.connection.sendRequest(WorkspaceSymbolRequest.type, params);
   }
 
-  async getDocumentSymbols(filePath: string): Promise<SymbolInformation[]> {
+  async getDocumentSymbols(filePath: string) {
     const params: DocumentSymbolParams = {
       textDocument: {uri: this.converter.getUriForLocalPath(filePath)}
     };
     return this.connection.sendRequest(DocumentSymbolRequest.type, params);
   }
 
-  async getCodeLenses(path: string): Promise<CodeLens[]> {
+  async getCodeLenses(path: string): Promise<null|CodeLens[]> {
     const params: CodeLensParams = {
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };

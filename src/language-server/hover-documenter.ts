@@ -36,11 +36,8 @@ export default class HoverDocumenter extends Handler {
     this.connection.onHover(async(textPosition) => {
       logger.log(`Hover request: ${textPosition.position.line}:${textPosition
                      .position.character} in ${textPosition.textDocument}`);
-      const hoverOrUndefined = await this.handleErrors(
+      return await this.handleErrors(
           this.getDocsForHover(textPosition), undefined);
-      // it is actually ok to return undefined here, but the type system
-      // disagrees.
-      return hoverOrUndefined as Hover;
     });
   }
 
