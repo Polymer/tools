@@ -33,13 +33,19 @@ suite('HoverDocumenter', function() {
 
   let testName = 'it supports getting the element description ' +
       'when asking for docs at its tag name';
-
   test(testName, async() => {
-    const {client} = await createTestEnvironment(fixtureDir);
+    const {client, underliner, converter} =
+        await createTestEnvironment(fixtureDir);
 
-    assert.deepEqual(
-        await client.getHover('editor-service/index.html', tagPosition),
-        {contents: tagDescription});
+    const {contents, range} =
+        (await client.getHover('editor-service/index.html', tagPosition))!;
+    assert.deepEqual(contents, tagDescription);
+    const sourceRange = converter.convertLRangeToP(
+        range!,
+        {uri: converter.getUriForLocalPath('editor-service/index.html')});
+    assert.deepEqual(await underliner.underline(sourceRange), `
+  <behavior-test-elem local-property deeply-inherited-property="foo">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
     await client.cleanup();
   });
 
@@ -57,28 +63,45 @@ suite('HoverDocumenter', function() {
 
     assert.deepEqual(await client.getHover(indexFile, tagPosition), null);
     assert.deepEqual(
-        await client.getHover(
-            indexFile,
-            {line: tagPosition.line + 1, column: tagPosition.column}),
-        {contents: tagDescription});
+        (await client.getHover(indexFile, {
+          line: tagPosition.line + 1,
+          column: tagPosition.column
+        }))!.contents,
+        tagDescription);
     await client.cleanup();
   });
 
   test('it supports getting an attribute description', async() => {
-    const {client} = await createTestEnvironment(fixtureDir);
-    assert.deepEqual(
-        await client.getHover(indexFile, localAttributePosition),
-        {contents: localAttributeDescription});
+    const {client, underliner, converter} =
+        await createTestEnvironment(fixtureDir);
+    const {contents, range} = (await client.getHover(
+        'editor-service/index.html', localAttributePosition))!;
+
+    assert.deepEqual(contents, localAttributeDescription);
+    const sourceRange = converter.convertLRangeToP(
+        range!,
+        {uri: converter.getUriForLocalPath('editor-service/index.html')});
+    assert.deepEqual(await underliner.underline(sourceRange), `
+  <behavior-test-elem local-property deeply-inherited-property="foo">
+                      ~~~~~~~~~~~~~~`);
     await client.cleanup();
   });
 
   testName = 'it supports getting a description of an attribute ' +
       'defined in a behavior';
   test(testName, async() => {
-    const {client} = await createTestEnvironment(fixtureDir);
-    assert.deepEqual(
-        await client.getHover(indexFile, deepAttributePosition),
-        {contents: deepAttributeDescription});
+    const {client, underliner, converter} =
+        await createTestEnvironment(fixtureDir);
+    const {contents, range} = (await client.getHover(
+        'editor-service/index.html', deepAttributePosition))!;
+
+    assert.deepEqual(contents, deepAttributeDescription);
+    const sourceRange = converter.convertLRangeToP(
+        range!,
+        {uri: converter.getUriForLocalPath('editor-service/index.html')});
+    assert.deepEqual(await underliner.underline(sourceRange), `
+  <behavior-test-elem local-property deeply-inherited-property="foo">
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~~`);
     await client.cleanup();
   });
 

@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     logs are appended to this file (in addition to possibly going to the
     client).
 - Add autocompletion for standard custom element definition.
+- Give ranges when we give hover documentation for elements and attributes.
+  This lets the client indicate to the user exactly which code is being
+  documented.
 
 ## 2.0.0 - 2017-12-05
 

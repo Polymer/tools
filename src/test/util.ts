@@ -100,7 +100,7 @@ export async function createTestEnvironment(
   assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
   assert.deepEqual(await client.getNextDiagnostics('polymer.json'), []);
 
-  return {client, server, baseDir, initResult, underliner};
+  return {client, server, baseDir, initResult, underliner, converter};
 }
 
 export class Underliner extends BaseUnderliner {

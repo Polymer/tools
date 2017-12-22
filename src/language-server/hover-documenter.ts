@@ -14,6 +14,7 @@
 
 import {Property, ScannedProperty, SourcePosition} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
+import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
 import {Hover, IConnection} from 'vscode-languageserver';
 import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 
@@ -94,10 +95,19 @@ export default class HoverDocumenter extends Handler {
       return;
     }
     this.logger.log(`Found hover description: ${description}`);
-    // TODO(rictic): we can get ranges more often here. The tricky thing is
-    // that we want the location of the area we're mousing over, which usually
-    // isn't `feature`. We want the range of the referencer, not the referent.
-    return {contents: description, range: undefined};
+    let range = undefined;
+    if (location.language === 'html') {
+      const parsedDoc = location.document.parsedDocument as ParsedHtmlDocument;
+      if (location.node.kind === 'tagName') {
+        range = parsedDoc.sourceRangeForStartTag(location.node.element);
+      } else if (
+          location.node.kind === 'attribute' &&
+          location.node.attribute != null) {
+        range = parsedDoc.sourceRangeForAttributeName(
+            location.node.element, location.node.attribute);
+      }
+    }
+    return {contents: description, range};
   }
 }
 
