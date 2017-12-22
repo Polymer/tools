@@ -159,7 +159,8 @@ export class Analysis implements Queryable {
    *
    * @param sourceRange Source range to search for in a document
    */
-  getDocumentContaining(sourceRange: SourceRange|undefined) {
+  getDocumentContaining(sourceRange: SourceRange|undefined): Document
+      |undefined {
     if (!sourceRange) {
       return undefined;
     }
