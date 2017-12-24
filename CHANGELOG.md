@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Add FSUrlLoader#getFilePath which will return the file path that would
   be loaded for a given ResolvedUrl, or an error message explaining why
   it can't be.
+* Add a `resolver` option when converting warnings to string, or when
+  using the WarningPrinter. This will resolve file urls in warnings using
+  `resolver.relative`, to avoid super long urls in warning messages.
 
 ## [3.0.0-pre.6] - 2017-12-18
 * [BREAKING] `Analysis#getDocument` now returns a `Result` object. When

@@ -14,14 +14,9 @@
 
 import * as chalk from 'chalk';
 
-import {Warning} from '../model/model';
+import {Warning, WarningStringifyOptions} from '../model/model';
 
 export type Verbosity = 'one-line'|'full';
-
-export interface Options {
-  verbosity?: Verbosity;
-  color?: boolean;
-}
 
 const defaultPrinterOptions = {
   verbosity: 'full' as 'full',
@@ -30,9 +25,11 @@ const defaultPrinterOptions = {
 
 export class WarningPrinter {
   _chalk: chalk.Chalk;
-  private _options: Options;
+  private _options: WarningStringifyOptions;
 
-  constructor(private _outStream: NodeJS.WritableStream, options?: Options) {
+  constructor(
+      private _outStream: NodeJS.WritableStream,
+      options?: WarningStringifyOptions) {
     this._options = {...defaultPrinterOptions, ...options};
     this._chalk = new chalk.constructor({enabled: !!this._options.color});
   }

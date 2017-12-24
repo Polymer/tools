@@ -23,6 +23,7 @@ import {comparePositionAndRange, isPositionInsideRange, SourceRange} from './sou
 
 import stable = require('stable');
 import {ResolvedUrl} from './url';
+import {UrlResolver} from '../index';
 
 export interface WarningInit {
   readonly message: string;
@@ -100,11 +101,14 @@ export class Warning {
       result += '\n\n';
     }
 
-    result +=
-        (`${this.sourceRange.file}` +
-         `(${this.sourceRange.start.line + 1},${
-             this.sourceRange.start.column + 1}) ` +
-         `${severity} [${this.code}] - ${this.message}\n`);
+    let file: string = this.sourceRange.file;
+    if (opts.resolver) {
+      file = opts.resolver.relative(this.sourceRange.file);
+    }
+
+    result += `${file}(${this.sourceRange.start.line + 1},${
+        this.sourceRange.start.column +
+        1}) ${severity} [${this.code}] - ${this.message}\n`;
 
     return result;
   }
@@ -171,6 +175,11 @@ export type Verbosity = 'one-line'|'full'|'code-only';
 export interface WarningStringifyOptions {
   readonly verbosity: Verbosity;
   readonly color: boolean;
+  /**
+   * If given, we will use resolver.relative to get a relative path
+   * to the reported file.
+   */
+  readonly resolver?: UrlResolver;
 }
 const defaultPrinterOptions = {
   verbosity: 'full' as 'full',
