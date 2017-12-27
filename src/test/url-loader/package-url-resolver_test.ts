@@ -152,8 +152,50 @@ suite('PackageUrlResolver', function() {
       assert.equal(
           resolver.resolve(fileRelativeUrl`%><><%=`, packageRoot), undefined);
     });
-  });
 
+    test('resolves a relative URL containing querystring and fragment', () => {
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl`foo.html#bat`, rootedFileUrl`1/2/foo.html?bar`),
+          rootedFileUrl`1/2/foo.html#bat`);
+      assert.equal(
+          resolver.resolve(fileRelativeUrl`foo.html?baz#bat`, packageRoot),
+          rootedFileUrl`1/2/foo.html?baz#bat`);
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl`foo.html?baz#bat`, rootedFileUrl`1/2/bar/baz/`),
+          rootedFileUrl`1/2/bar/baz/foo.html?baz#bat`);
+    });
+
+    test('resolves a URL with no pathname', () => {
+      assert.equal(
+          resolver.resolve(fileRelativeUrl``, rootedFileUrl`1/2/foo.html`),
+          rootedFileUrl`1/2/foo.html`);
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl``, rootedFileUrl`1/2/foo.html?baz#bat`),
+          rootedFileUrl`1/2/foo.html?baz`);
+      assert.equal(
+          resolver.resolve(fileRelativeUrl`#buz`, rootedFileUrl`1/2/foo.html`),
+          rootedFileUrl`1/2/foo.html#buz`);
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl`#buz`, rootedFileUrl`1/2/foo.html?baz#bat`),
+          rootedFileUrl`1/2/foo.html?baz#buz`);
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl`?fiz`, rootedFileUrl`1/2/foo.html?bar#buz`),
+          rootedFileUrl`1/2/foo.html?fiz`);
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl`?fiz#buz`, rootedFileUrl`1/2/foo.html`),
+          rootedFileUrl`1/2/foo.html?fiz#buz`);
+      assert.equal(
+          resolver.resolve(
+              fileRelativeUrl`?fiz#buz`, rootedFileUrl`1/2/foo.html?bar`),
+          rootedFileUrl`1/2/foo.html?fiz#buz`);
+    });
+  });
   suite('relative', () => {
     // We want process.cwd so that on Windows we test Windows paths and on
     // posix we test posix paths.
@@ -167,6 +209,12 @@ suite('PackageUrlResolver', function() {
     }
 
     test('can get relative urls between urls', () => {
+      assert.equal(relative('/', '/'), '');
+      assert.equal(relative('/', '/bar/'), 'bar/');
+      assert.equal(relative('/foo/', '/foo/'), '');
+      assert.equal(relative('/foo/', '/bar/'), '../bar/');
+      assert.equal(relative('foo/', '/'), '../');
+      assert.equal(relative('foo.html', 'foo.html'), '');
       assert.equal(relative('foo/', 'bar/'), '../bar/');
       assert.equal(relative('foo.html', 'bar.html'), 'bar.html');
       assert.equal(relative('sub/foo.html', 'bar.html'), '../bar.html');

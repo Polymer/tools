@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {posix} from 'path';
-import {resolve as urlLibResolver} from 'url';
+import * as path from 'path';
+import {format as urlLibFormat, resolve as urlLibResolver} from 'url';
 
 import {parseUrl} from '../core/utils';
 import {PackageRelativeUrl, ScannedImport} from '../index';
@@ -45,33 +45,40 @@ export abstract class UrlResolver {
   protected simpleUrlResolve(
       url: FileRelativeUrl|PackageRelativeUrl,
       baseUrl: ResolvedUrl): ResolvedUrl {
-    let resolved = urlLibResolver(baseUrl, url);
-    if (url.endsWith('/') && !resolved.endsWith('/')) {
-      resolved += '/';
-    }
-    return this.brandAsResolved(resolved);
+    return this.brandAsResolved(urlLibResolver(baseUrl, url));
   }
 
   protected simpleUrlRelative(from: ResolvedUrl, to: ResolvedUrl):
       FileRelativeUrl {
     const fromUrl = parseUrl(from);
     const toUrl = parseUrl(to);
-    if (toUrl.protocol && toUrl.protocol !== fromUrl.protocol) {
+    // Return the `to` as-is if there are conflicting components which
+    // prohibit calculating a relative form.
+    if (typeof toUrl.protocol === 'string' &&
+            fromUrl.protocol !== toUrl.protocol ||
+        typeof toUrl.slashes === 'boolean' &&
+            fromUrl.slashes !== toUrl.slashes ||
+        typeof toUrl.host === 'string' && fromUrl.host !== toUrl.host ||
+        typeof toUrl.auth === 'string' && fromUrl.auth !== toUrl.auth) {
       return this.brandAsRelative(to);
     }
-    if (toUrl.host && toUrl.host !== fromUrl.host) {
-      return this.brandAsRelative(to);
+    let pathname;
+    const {search, hash} = toUrl;
+    if (fromUrl.pathname === toUrl.pathname) {
+      pathname = '';
+    } else {
+      const fromDir = typeof fromUrl.pathname === 'string' ?
+          fromUrl.pathname.replace(/[^/]+$/, '') :
+          '';
+      const toDir = typeof toUrl.pathname === 'string' &&
+              typeof toUrl.pathname === 'string' ?
+          toUrl.pathname :
+          '';
+      // Note, below, the _ character is appended to the `toDir` so that paths
+      // with trailing slash will retain the trailing slash in the result.
+      pathname = path.posix.relative(fromDir, toDir + '_').replace(/_$/, '');
     }
-    let fromPath = decodeURIComponent(fromUrl.pathname || '');
-    const toPath = decodeURIComponent(toUrl.pathname || '');
-    if (!fromPath.endsWith('/')) {
-      fromPath = posix.dirname(fromPath);
-    }
-    let relativized = encodeURI(posix.relative(fromPath, toPath));
-    if (toPath.endsWith('/') && !relativized.endsWith('/')) {
-      relativized += '/';
-    }
-    return this.brandAsRelative(relativized);
+    return this.brandAsRelative(urlLibFormat({pathname, search, hash}));
   }
 
   protected brandAsRelative(url: string): FileRelativeUrl {

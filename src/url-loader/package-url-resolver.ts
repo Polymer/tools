@@ -13,7 +13,7 @@
  */
 import * as pathlib from 'path';
 import {posix as posix} from 'path';
-import {Url} from 'url';
+import {format as urlLibFormat, Url} from 'url';
 import Uri from 'vscode-uri';
 
 import {parseUrl} from '../core/utils';
@@ -125,7 +125,10 @@ export class PackageUrlResolver extends UrlResolver {
     // TODO(rictic): investigate moving to whatwg URLs internally:
     //     https://github.com/Polymer/polymer-analyzer/issues/804
     // Re-encode URI, since it is expected we are emitting a relative URL.
-    return this.brandAsResolved(Uri.file(path).toString());
+    const resolvedUrl = parseUrl(Uri.file(path).toString());
+    resolvedUrl.search = url.search;
+    resolvedUrl.hash = url.hash;
+    return this.brandAsResolved(urlLibFormat(resolvedUrl));
   }
 
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
@@ -144,11 +147,14 @@ export class PackageUrlResolver extends UrlResolver {
         const reresolved = this.simpleUrlResolve(
             ('../' + componentDirPath) as FileRelativeUrl, this.packageUrl);
         if (reresolved !== undefined) {
-          to = reresolved;
+          const reresolvedUrl = parseUrl(reresolved);
+          const toUrl = parseUrl(to);
+          reresolvedUrl.search = toUrl.search;
+          reresolvedUrl.hash = toUrl.hash;
+          to = this.brandAsResolved(urlLibFormat(reresolvedUrl));
         }
       }
     }
-
     return this.simpleUrlRelative(from, to);
   }
 
