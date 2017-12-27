@@ -415,6 +415,7 @@ function handleProperties(analyzerProperties: Iterable<analyzer.Property>):
       // TODO If this is a Polymer property with no default value, then the
       // type should really be `<type>|undefined`.
       type: closureTypeToTypeScript(property.type),
+      readOnly: property.readOnly,
     });
     p.description = property.description || '';
     tsProperties.push(p);

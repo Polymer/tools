@@ -350,11 +350,18 @@ export class Property {
   name: string;
   description: string;
   type: Type;
+  readOnly: boolean;
 
-  constructor(data: {name: string, description?: string, type?: Type}) {
+  constructor(data: {
+    name: string,
+    description?: string,
+    type?: Type,
+    readOnly?: boolean,
+  }) {
     this.name = data.name;
     this.description = data.description || '';
     this.type = data.type || anyType;
+    this.readOnly = data.readOnly || false;
   }
 
   * traverse(): Iterable<Node> {
@@ -368,7 +375,11 @@ export class Property {
     if (this.description) {
       out += '\n' + formatComment(this.description, depth);
     }
-    out += `${i}${quotePropertyName(this.name)}: ${this.type.serialize()};\n`;
+    out += i;
+    if (this.readOnly) {
+      out += 'readonly ';
+    }
+    out += `${quotePropertyName(this.name)}: ${this.type.serialize()};\n`;
     return out;
   }
 }
