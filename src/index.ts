@@ -22,7 +22,7 @@
 // Core objects
 export {Analyzer, Options as AnalyzerOptions} from './core/analyzer';
 export * from './model/model';
-export {WarningPrinter, Verbosity as WarningPrinterVerbosity, Options as WarningPrinterOptions} from './warning/warning-printer';
+export {WarningPrinter, Verbosity as WarningPrinterVerbosity} from './warning/warning-printer';
 export {WarningFilter} from './warning/warning-filter';
 export {Namespace} from './javascript/namespace';
 export {ParsedDocument} from './parser/document';

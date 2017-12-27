@@ -29,7 +29,7 @@ export class WarningPrinter {
 
   constructor(
       private _outStream: NodeJS.WritableStream,
-      options?: WarningStringifyOptions) {
+      options?: Partial<WarningStringifyOptions>) {
     this._options = {...defaultPrinterOptions, ...options};
     this._chalk = new chalk.constructor({enabled: !!this._options.color});
   }
