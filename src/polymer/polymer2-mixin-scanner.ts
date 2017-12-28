@@ -15,7 +15,7 @@
 import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
-import {extractPropertiesFromConstructor} from '../javascript/class-scanner';
+import {extractPropertiesFromClass} from '../javascript/class-scanner';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {getMethods, getOrInferPrivacy, getStaticMethods} from '../javascript/esutil';
@@ -199,9 +199,9 @@ export class MixinVisitor implements Visitor {
     }
 
     mixin.classAstNode = node;
-    const constructorProperties =
-        extractPropertiesFromConstructor(node, this._document);
-    for (const prop of constructorProperties.values()) {
+    const classProperties =
+        extractPropertiesFromClass(node, this._document);
+    for (const prop of classProperties.values()) {
       mixin.addProperty(prop);
     }
     getPolymerProperties(node, this._document)

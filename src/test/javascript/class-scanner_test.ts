@@ -154,6 +154,43 @@ suite('Class', () => {
       ]);
     });
 
+    test('finds properties', async () => {
+      const cls = (await getScannedClasses('class/class-properties.js'))[0];
+
+      assert.deepInclude(cls.properties.get('customPropertyGetterType'), {
+        name: 'customPropertyGetterType',
+        type: 'boolean',
+        description: 'A boolean getter',
+        readOnly: true
+      });
+
+      assert.deepInclude(cls.properties.get('customPropertyWithGetterSetter'), {
+        name: 'customPropertyWithGetterSetter',
+        description: 'a property with a getter/setter',
+        readOnly: false
+      });
+
+      assert.deepInclude(cls.properties.get('customPropertyWithReadOnlyGetter'), {
+        name: 'customPropertyWithReadOnlyGetter',
+        readOnly: true
+      });
+
+      assert.deepEqual(await getTestProps(cls), {
+        name: 'Class',
+        description: '',
+        privacy: 'public',
+        properties: [
+          { name: 'customPropertyGetter' },
+          { name: 'customPropertyGetterType' },
+          { name: 'customPropertyWithGetterSetter' },
+          { name: 'customPropertyWithSetterFirst' },
+          { name: 'customPropertyWithReadOnlyGetter' },
+          { name: 'customPropertyWithValue' },
+          { name: 'customPropertyWithJSDoc' }
+        ]
+      });
+    });
+
     test('finds methods', async () => {
       const classes = await getScannedClasses('class/class-methods.js');
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
@@ -161,6 +198,9 @@ suite('Class', () => {
           name: 'Class',
           description: '',
           privacy: 'public',
+          properties: [
+            { name: 'customInstanceGetter' }
+          ],
           methods: [
             {
               name: 'customInstanceFunction',
@@ -373,6 +413,9 @@ suite('Class', () => {
           name: 'Class',
           description: '',
           privacy: 'public',
+          properties: [
+            { name: 'customInstanceGetter' }
+          ],
           methods: [
             {
               name: 'customInstanceFunction',

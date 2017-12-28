@@ -394,11 +394,17 @@ namespaced name.`,
             superClass: 'Polymer.Element',
             description: ``,
             summary: '',
-            properties: [{
-              name: 'foo',
-              description: '',
-              type: 'string | null | undefined',
-            }],
+            properties: [
+              {
+                name: 'customInstanceGetter',
+                description: undefined
+              },
+              {
+                name: 'foo',
+                description: '',
+                type: 'string | null | undefined',
+              }
+            ],
             attributes: [{
               name: 'foo',
             }],
