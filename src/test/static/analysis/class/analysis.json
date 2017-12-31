@@ -38,7 +38,25 @@
       "path": "classes.js",
       "properties": [],
       "methods": [],
-      "staticMethods": [],
+      "staticMethods": [
+        {
+          "description": "",
+          "metadata": {},
+          "name": "staticMeth",
+          "params": [],
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 25,
+              "line": 12
+            },
+            "start": {
+              "column": 2,
+              "line": 12
+            }
+          }
+        }
+      ],
       "demos": [],
       "metadata": {},
       "sourceRange": {
