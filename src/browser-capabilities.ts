@@ -31,21 +31,19 @@ export type BrowserCapability =
 // class can't be referenced as a type. Fix the typings.
 export type UserAgentPredicate = (ua: any) => boolean;
 
+const chrome = {
+  es2015: since(49),
+  push: since(41),
+  serviceworker: since(45),
+  modules: since(61),
+};
+
 const browserPredicates: {
   [browser: string]: {[key in BrowserCapability]: UserAgentPredicate}
 } = {
-  'Chrome': {
-    es2015: since(49),
-    push: since(41),
-    serviceworker: since(45),
-    modules: since(61),
-  },
-  'Chromium': {
-    es2015: since(49),
-    push: since(41),
-    serviceworker: since(45),
-    modules: since(61),
-  },
+  'Chrome': chrome,
+  'Chromium': chrome,
+  'Chrome Headless': chrome,
   'OPR': {
     es2015: since(36),
     push: since(28),

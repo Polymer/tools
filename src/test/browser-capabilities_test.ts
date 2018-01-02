@@ -31,6 +31,12 @@ suite('capabilities', function() {
         ['es2015', 'push', 'serviceworker', 'modules']);
   });
 
+  test('chrome headless has all the capabilities', () => {
+    assertBrowserCapabilities(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/61.0.3163.31 Safari/537.36',
+        ['es2015', 'push', 'serviceworker', 'modules']);
+  });
+
   test('edge es2015 support is predicated on minor browser version', () => {
     assertBrowserCapabilities(
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.14986',
