@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+
+## [0.2.2] - 2018-01-01
 - Add Chrome Headless browser.
 
 ## [0.2.1] - 2017-10-18
