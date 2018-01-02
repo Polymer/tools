@@ -23,7 +23,11 @@ import {WarningCarryingException} from '../../model/model';
 import {CodeUnderliner, resolvedUrl} from '../test-utils';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 
-suite('TypeScriptParser', () => {
+suite('TypeScriptParser', function() {
+  // These tests are unexpectedly rather slow, and travis has started flakily
+  // failing on them recently.
+  this.timeout(8 * 1000);
+
   let parser: TypeScriptPreparser;
 
   setup(() => {
