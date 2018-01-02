@@ -37,6 +37,13 @@ declare namespace Polymer {
     _debouncers: {[key: string]: Function|null};
 
     /**
+     * Return the element whose local dom within which this element
+     * is contained. This is a shorthand for
+     * `this.getRootNode().host`.
+     */
+    readonly domHost: any;
+
+    /**
      * Overrides the default `Polymer.PropertyEffects` implementation to
      * add support for installing `hostAttributes` and `listeners`.
      */
@@ -344,7 +351,7 @@ declare namespace Polymer {
      * @param selector Selector to run.
      * @returns First effective child node that matches selector.
      */
-    queryEffectiveChildren(selector: string): any;
+    queryEffectiveChildren(selector: string): Node|null;
 
     /**
      * Returns a list of effective childNodes within this element that

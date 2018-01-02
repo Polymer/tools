@@ -42,6 +42,12 @@ declare namespace Polymer {
   class DomApi {
 
     /**
+     * For shadow roots, returns the currently focused element within this
+     * shadow root.
+     */
+    readonly activeElement: Node|null|undefined;
+
+    /**
      * Returns an instance of `Polymer.FlattenedNodesObserver` that
      * listens for node changes on this element.
      *
@@ -146,4 +152,15 @@ declare namespace Polymer {
  * `target` is an `Event`.
  */
 declare class EventApi {
+
+  /**
+   * Returns the first node on the `composedPath` of this event.
+   */
+  readonly rootTarget: Node|null;
+
+  /**
+   * Returns the local (re-targeted) target for this event.
+   */
+  readonly localTarget: Node|null;
+  readonly path: any;
 }

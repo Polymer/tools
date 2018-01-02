@@ -46,7 +46,7 @@ declare namespace Polymer {
      * @param callback Callback to run.
      * @returns Returns a debouncer object.
      */
-    static debounce(debouncer: Debouncer|null, asyncModule: AsyncModule, callback: () => any): Debouncer;
+    static debounce(debouncer: Debouncer|null, asyncModule: AsyncInterface, callback: () => any): Debouncer;
 
     /**
      * Sets the scheduler; that is, a module with the Async interface,
@@ -56,7 +56,7 @@ declare namespace Polymer {
      * @param asyncModule Object with Async interface.
      * @param callback Callback to run.
      */
-    setConfig(asyncModule: AsyncModule, callback: () => any): void;
+    setConfig(asyncModule: AsyncInterface, callback: () => any): void;
 
     /**
      * Cancels an active debouncer and returns a reference to itself.
