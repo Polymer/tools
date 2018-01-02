@@ -20,7 +20,7 @@
     "escodegen": "^1.9.0",
     "fs-extra": "^4.0.2",
     "minimatch": "^3.0.4",
-    "polymer-analyzer": "=3.0.0-pre.5"
+    "polymer-analyzer": "=3.0.0-pre.6"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -32,8 +32,8 @@
     "glob": "^7.1.2",
     "mocha": "^3.5.3",
     "source-map-support": "^0.5.0",
-    "typescript": "^2.5.3",
-    "watchy": "^0.7.0"
+    "tsc-then": "^1.0.1",
+    "typescript": "^2.5.3"
   },
   "scripts": {
     "clean": "rm -rf lib",
@@ -43,7 +43,7 @@
     "prepack": "npm run build",
     "prepublishOnly": "npm run test",
     "test": "npm run test:setup && npm run build && mocha",
-    "test:watch": "watchy -w src -- npm run test",
+    "test:watch": "tsc-then -- mocha --color",
     "test:setup": "scripts/setup-fixtures.sh",
     "test:make-goldens": "npm run build && scripts/make-goldens.js"
   },

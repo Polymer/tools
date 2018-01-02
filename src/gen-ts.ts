@@ -13,6 +13,7 @@ import * as minimatch from 'minimatch';
 import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
 import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/function';
+import * as url from 'url';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
 import * as ts from './ts-ast';
@@ -55,10 +56,7 @@ export interface Config {
  */
 export async function generateDeclarations(
     rootDir: string, config: Config): Promise<Map<string, string>> {
-  const a = new analyzer.Analyzer({
-    urlLoader: new analyzer.FSUrlLoader(rootDir),
-    urlResolver: new analyzer.PackageUrlResolver(),
-  });
+  const a = analyzer.Analyzer.createForDirectory(rootDir);
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
   for (const tsDoc of analyzerToAst(analysis, config, rootDir)) {
@@ -89,10 +87,16 @@ function analyzerToAst(
   // filename.
   const declarationDocs = new Map<string, analyzer.Document[]>();
   for (const jsDoc of analysis.getFeatures({kind: 'js-document'})) {
-    if (exclude.some((r) => r.match(jsDoc.url))) {
+    const sourcePath = analyzerUrlToRelativePath(jsDoc.url, rootDir);
+    if (sourcePath === undefined) {
+      console.warn(
+          `Skipping source document without local file URL: ${jsDoc.url}`);
       continue;
     }
-    const filename = makeDeclarationsFilename(jsDoc.url);
+    if (exclude.some((r) => r.match(sourcePath))) {
+      continue;
+    }
+    const filename = makeDeclarationsFilename(sourcePath);
     let docs = declarationDocs.get(filename);
     if (!docs) {
       docs = [];
@@ -105,10 +109,12 @@ function analyzerToAst(
   for (const [declarationsFilename, analyzerDocs] of declarationDocs) {
     const tsDoc = new ts.Document({
       path: declarationsFilename,
-      header: makeHeader(analyzerDocs.map((d) => d.url)),
+      header: makeHeader(
+          analyzerDocs.map((d) => analyzerUrlToRelativePath(d.url, rootDir))
+              .filter((url): url is string => url !== undefined)),
     });
     for (const analyzerDoc of analyzerDocs) {
-      handleDocument(analyzerDoc, tsDoc);
+      handleDocument(analyzerDoc, tsDoc, rootDir);
     }
     for (const ref of tsDoc.referencePaths) {
       const resolvedRef = path.resolve(rootDir, path.dirname(tsDoc.path), ref);
@@ -134,6 +140,20 @@ function analyzerToAst(
     tsDocs.push(tsDoc);
   }
   return tsDocs;
+}
+
+/**
+ * Analyzer always returns fully specified URLs with a protocol and an absolute
+ * path (e.g. "file:/foo/bar"). Return just the file path, relative to our
+ * project root.
+ */
+function analyzerUrlToRelativePath(
+    analyzerUrl: string, rootDir: string): string|undefined {
+  const parsed = url.parse(analyzerUrl);
+  if (parsed.protocol !== 'file:' || parsed.host || !parsed.path) {
+    return undefined;
+  }
+  return path.relative(rootDir, parsed.path);
 }
 
 /**
@@ -166,7 +186,8 @@ interface MaybePrivate {
  * Extend the given TypeScript declarations document with all of the relevant
  * items in the given Polymer Analyzer document.
  */
-function handleDocument(doc: analyzer.Document, root: ts.Document) {
+function handleDocument(
+    doc: analyzer.Document, root: ts.Document, rootDir: string) {
   for (const feature of doc.getFeatures()) {
     if ((feature as MaybePrivate).privacy === 'private') {
       continue;
@@ -191,7 +212,7 @@ function handleDocument(doc: analyzer.Document, root: ts.Document) {
       // tag as an import feature. We only care about outbound dependencies,
       // hence this check.
       if (feature.sourceRange && feature.sourceRange.file === doc.url) {
-        handleImport(feature as analyzer.Import, root);
+        handleImport(feature as analyzer.Import, root, rootDir);
       }
     }
   }
@@ -509,8 +530,11 @@ function handleNamespace(feature: analyzer.Namespace, tsDoc: ts.Document) {
  * declarations in a types/ subdirectory, we will need to update these paths to
  * match.
  */
-function handleImport(feature: analyzer.Import, tsDoc: ts.Document) {
-  if (!feature.url) {
+function handleImport(
+    feature: analyzer.Import, tsDoc: ts.Document, rootDir: string) {
+  let sourcePath = analyzerUrlToRelativePath(feature.url, rootDir);
+  if (sourcePath === undefined) {
+    console.warn(`Skipping HTML import without local file URL: ${feature.url}`);
     return;
   }
   // When we analyze a package's Git repo, our dependencies are installed to
@@ -523,9 +547,9 @@ function handleImport(feature: analyzer.Import, tsDoc: ts.Document) {
   // will be resolved to "bower_components/foo/foo.html". Transform the URL
   // back to the style that will work when this package is installed as a
   // dependency.
-  const url = feature.url.replace(/^(bower_components|node_modules)\//, '../');
-  tsDoc.referencePaths.add(
-      path.relative(path.dirname(tsDoc.path), makeDeclarationsFilename(url)));
+  sourcePath = sourcePath.replace(/^(bower_components|node_modules)\//, '../');
+  tsDoc.referencePaths.add(path.relative(
+      path.dirname(tsDoc.path), makeDeclarationsFilename(sourcePath)));
 }
 
 /**
