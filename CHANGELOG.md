@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.7] - 2017-01-01
 * [BREAKING]: `UrlResolver#resolve()` argument order swapped so that the
   optional `baseUrl` argument comes first instead of second.  This makes
   resolve more similar to `url.resolve`.
@@ -17,7 +20,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Add a `resolver` option when converting warnings to string, or when
   using the WarningPrinter. This will resolve file urls in warnings using
   `resolver.relative`, to avoid super long urls in warning messages.
-<!-- Add new, unreleased changes here. -->
+* Getters and setters are now detected.
+* Static methods are now detected in Polymer elements.
+* Methods and properties added to a class prototype are now detected.
 
 ## [3.0.0-pre.6] - 2017-12-18
 * [BREAKING] `Analysis#getDocument` now returns a `Result` object. When
