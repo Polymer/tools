@@ -12,9 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
-import * as pathLib from 'path';
 
 import {ResolvedUrl} from '../index';
 import {Function as ResolvedFunction} from '../javascript/function';
@@ -145,8 +143,7 @@ function getNamespaceName(name?: string) {
 }
 
 const validator = new jsonschema.Validator();
-const schema = JSON.parse(fs.readFileSync(
-    pathLib.join(__dirname, '../', 'analysis.schema.json'), 'utf-8'));
+const schema = require('../analysis.schema.json');
 
 export class ValidationError extends Error {
   errors: jsonschema.ValidationError[];

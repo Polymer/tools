@@ -81,9 +81,12 @@ export abstract class UrlResolver {
               typeof toUrl.pathname === 'string' ?
           toUrl.pathname :
           '';
+      // In a browserify environment, there isn't path.posix.
+      const pathlib = path.posix || path;
       // Note, below, the _ character is appended to the `toDir` so that paths
       // with trailing slash will retain the trailing slash in the result.
-      pathname = path.posix.relative(fromDir, toDir + '_').replace(/_$/, '');
+
+      pathname = pathlib.relative(fromDir, toDir + '_').replace(/_$/, '');
     }
     return this.brandAsRelative(urlLibFormat({pathname, search, hash}));
   }
