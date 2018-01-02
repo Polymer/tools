@@ -19,9 +19,10 @@ import {UrlResolver} from '../../url-loader/url-resolver';
 
 class SimplestUrlResolver extends UrlResolver {
   resolve(
-      url: FileRelativeUrl|PackageRelativeUrl,
-      baseUrl: ResolvedUrl = '/test/' as ResolvedUrl) {
-    return this.simpleUrlResolve(url, baseUrl);
+      firstUrl: ResolvedUrl|PackageRelativeUrl, secondUrl?: FileRelativeUrl) {
+    const [baseUrl = '/test/' as ResolvedUrl, url] =
+        this.getBaseAndUnresolved(firstUrl, secondUrl);
+    return this.simpleUrlResolve(baseUrl, url);
   }
 
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
@@ -41,24 +42,25 @@ class SimplestUrlResolver extends UrlResolver {
 suite('UrlResolver', () => {
   suite('resolve', () => {
     const resolver = new SimplestUrlResolver();
-    function resolve(url: string, baseUrl: string) {
-      return resolver.resolve(url as FileRelativeUrl, baseUrl as ResolvedUrl);
+    function resolve(baseUrl: string, unresolvedUrl: string) {
+      return resolver.resolve(
+          baseUrl as ResolvedUrl, unresolvedUrl as FileRelativeUrl);
     }
     test('can resolve a url when relative url contains no pathname', () => {
-      assert.equal(resolve('', '/foo.html?fiz#buz'), '/foo.html?fiz');
-      assert.equal(resolve('#fiz', '/foo.html'), '/foo.html#fiz');
-      assert.equal(resolve('#fiz', '/foo.html#buz'), '/foo.html#fiz');
-      assert.equal(resolve('?fiz', '/foo.html'), '/foo.html?fiz');
-      assert.equal(resolve('?fiz', '/foo.html?buz'), '/foo.html?fiz');
-      assert.equal(resolve(`?fiz`, `/foo.html?bar#buz`), `/foo.html?fiz`);
+      assert.equal(resolve('/foo.html?fiz#buz', ''), '/foo.html?fiz');
+      assert.equal(resolve('/foo.html', '#fiz'), '/foo.html#fiz');
+      assert.equal(resolve('/foo.html#buz', '#fiz'), '/foo.html#fiz');
+      assert.equal(resolve('/foo.html', '?fiz'), '/foo.html?fiz');
+      assert.equal(resolve('/foo.html?buz', '?fiz'), '/foo.html?fiz');
+      assert.equal(resolve('/foo.html?bar#buz', '?fiz'), `/foo.html?fiz`);
     });
   });
 
   suite('relative', () => {
     const resolver = new SimplestUrlResolver();
     function relative(from: string, to: string) {
-      const fromResolved = resolver.resolve(from as FileRelativeUrl);
-      const toResolved = resolver.resolve(to as FileRelativeUrl);
+      const fromResolved = resolver.resolve(from as PackageRelativeUrl);
+      const toResolved = resolver.resolve(to as PackageRelativeUrl);
       return resolver.relative(fromResolved, toResolved);
     }
 

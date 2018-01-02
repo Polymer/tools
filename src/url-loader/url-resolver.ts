@@ -35,16 +35,23 @@ export abstract class UrlResolver {
    */
   abstract resolve(url: PackageRelativeUrl): ResolvedUrl|undefined;
   abstract resolve(
-      url: FileRelativeUrl, baseUrl: ResolvedUrl,
+      baseUrl: ResolvedUrl, url: FileRelativeUrl,
       scannedImport?: ScannedImport): ResolvedUrl|undefined;
 
-  abstract relative(to: ResolvedUrl): FileRelativeUrl;
   abstract relative(from: ResolvedUrl, to?: ResolvedUrl, kind?: string):
       FileRelativeUrl;
 
+  protected getBaseAndUnresolved(
+      url1: PackageRelativeUrl|ResolvedUrl, url2?: FileRelativeUrl):
+      [ResolvedUrl|undefined, FileRelativeUrl|PackageRelativeUrl] {
+    return url2 === undefined ?
+        [undefined, url1 as PackageRelativeUrl] :
+        [this.brandAsResolved(url1), this.brandAsRelative(url2)];
+  }
+
   protected simpleUrlResolve(
-      url: FileRelativeUrl|PackageRelativeUrl,
-      baseUrl: ResolvedUrl): ResolvedUrl {
+      baseUrl: ResolvedUrl,
+      url: FileRelativeUrl|PackageRelativeUrl): ResolvedUrl {
     return this.brandAsResolved(urlLibResolver(baseUrl, url));
   }
 

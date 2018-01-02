@@ -52,7 +52,7 @@ suite('MultiUrlResolver', function() {
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolver.resolve(resolvedUrl``, fileRelativeUrl`test.html`),
           resolvedUrl`resolved.html`);
       // Verify only the first resolver is called
       assert.equal(resolvers[0].resolveCount, 1);
@@ -64,7 +64,7 @@ suite('MultiUrlResolver', function() {
       const resolvers = mockResolverArray([null, null, 'resolved.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolver.resolve(resolvedUrl``, fileRelativeUrl`test.html`),
           resolvedUrl`resolved.html`);
       // Verify all resolvers are called
       assert.equal(resolvers[0].resolveCount, 1);
@@ -77,7 +77,7 @@ suite('MultiUrlResolver', function() {
           ['resolved.html', 'resolved2.html', 'resolved3.html']);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolver.resolve(resolvedUrl``, fileRelativeUrl`test.html`),
           resolvedUrl`resolved.html`);
       // Verify only the first resolver is called
       assert.equal(resolvers[0].resolveCount, 1);
@@ -89,7 +89,7 @@ suite('MultiUrlResolver', function() {
       const resolvers = mockResolverArray([null, null, null]);
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`test.html`, resolvedUrl``),
+          resolver.resolve(resolvedUrl``, fileRelativeUrl`test.html`),
           undefined);
       // Verify only the first resolver is called
       assert.equal(resolvers[0].resolveCount, 1);

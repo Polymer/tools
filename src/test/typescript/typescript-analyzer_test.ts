@@ -28,7 +28,7 @@ async function getTypeScriptAnalyzer(files: Map<PackageRelativeUrl, string>) {
   const urlResolver = new PackageUrlResolver();
   for (const [url, contents] of files) {
     urlLoader.urlContentsMap.set(
-        urlResolver.resolve(url as any, '' as any)!, contents);
+        urlResolver.resolve('' as any, url as any)!, contents);
   }
   const analysisContext = new AnalysisContext({
     parsers: new Map([['ts', new TypeScriptPreparser()]]),

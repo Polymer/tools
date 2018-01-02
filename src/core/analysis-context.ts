@@ -312,7 +312,7 @@ export class AnalysisContext {
 
             // Update dependency graph
             const importUrls = filterOutUndefineds(imports.map(
-                (i) => this.resolver.resolve(i.url, parsedDoc.baseUrl, i)));
+                (i) => this.resolver.resolve(parsedDoc.baseUrl, i.url, i)));
             this._cache.dependencyGraph.addDocument(resolvedUrl, importUrls);
 
             return scannedDocument;
@@ -337,8 +337,8 @@ export class AnalysisContext {
           // Scan imports
           for (const scannedImport of imports) {
             const importUrl = this.resolver.resolve(
-                scannedImport.url,
                 scannedDocument.document.baseUrl,
+                scannedImport.url,
                 scannedImport);
             if (importUrl === undefined) {
               continue;

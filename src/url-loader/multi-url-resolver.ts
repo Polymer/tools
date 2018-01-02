@@ -26,12 +26,13 @@ export class MultiUrlResolver extends UrlResolver {
   }
 
   resolve(
-      url: FileRelativeUrl|PackageRelativeUrl, baseUrl?: ResolvedUrl,
+      firstUrl: ResolvedUrl|PackageRelativeUrl, secondUrl?: FileRelativeUrl,
       import_?: ScannedImport): ResolvedUrl|undefined {
     for (const resolver of this._resolvers) {
-      const resolved = baseUrl === undefined ?
-          resolver.resolve(url as PackageRelativeUrl) :
-          resolver.resolve(url as FileRelativeUrl, baseUrl, import_);
+      const resolved = secondUrl === undefined ?
+          resolver.resolve(firstUrl as PackageRelativeUrl) :
+          resolver.resolve(
+              firstUrl as ResolvedUrl, secondUrl as FileRelativeUrl, import_);
       if (resolved !== undefined) {
         return resolved;
       }

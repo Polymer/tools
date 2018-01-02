@@ -15,7 +15,7 @@
 import {assert} from 'chai';
 
 import {RedirectResolver} from '../../url-loader/redirect-resolver';
-import {fileRelativeUrl, resolvedUrl} from '../test-utils';
+import {packageRelativeUrl, resolvedUrl} from '../test-utils';
 
 
 suite('RedirectResolver', function() {
@@ -24,13 +24,11 @@ suite('RedirectResolver', function() {
       let resolver =
           new RedirectResolver(resolvedUrl``, 'proto://site/', 'some/path/');
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`proto://site/something.html`, resolvedUrl``),
+          resolver.resolve(packageRelativeUrl`proto://site/something.html`),
           resolvedUrl`some/path/something.html`);
       resolver = new RedirectResolver(resolvedUrl``, '/site/', 'some/path/');
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`/site/something.html`, resolvedUrl``),
+          resolver.resolve(packageRelativeUrl`/site/something.html`),
           resolvedUrl`some/path/something.html`);
     });
 
@@ -38,8 +36,7 @@ suite('RedirectResolver', function() {
       const resolver =
           new RedirectResolver(resolvedUrl``, 'proto://site/', 'some/path/');
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`protoz://site/something.html`, resolvedUrl``),
+          resolver.resolve(packageRelativeUrl`protoz://site/something.html`),
           undefined);
     });
   });

@@ -31,11 +31,12 @@ export class RedirectResolver extends UrlResolver {
   }
 
   resolve(
-      fileRelativeUrl: FileRelativeUrl|PackageRelativeUrl,
-      baseUrl: ResolvedUrl = this.packageUrl,
+      firstUrl: ResolvedUrl|PackageRelativeUrl, secondUrl?: FileRelativeUrl,
       _import?: ScannedImport): ResolvedUrl|undefined {
+    const [baseUrl = this.packageUrl, unresolvedUrl] =
+        this.getBaseAndUnresolved(firstUrl, secondUrl);
     const packageRelativeUrl =
-        this.brandAsResolved(urlLibResolver(baseUrl, fileRelativeUrl));
+        this.brandAsResolved(urlLibResolver(baseUrl, unresolvedUrl));
     if (packageRelativeUrl === undefined ||
         !packageRelativeUrl.startsWith(this._redirectFrom)) {
       return undefined;

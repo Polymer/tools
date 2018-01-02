@@ -57,10 +57,11 @@ export class PackageUrlResolver extends UrlResolver {
   }
 
   resolve(
-      unresolvedHref: FileRelativeUrl|PackageRelativeUrl,
-      baseUrl: ResolvedUrl = this.packageUrl,
+      firstHref: ResolvedUrl|PackageRelativeUrl, secondHref?: FileRelativeUrl,
       _import?: ScannedImport): ResolvedUrl|undefined {
-    const resolvedHref = this.simpleUrlResolve(unresolvedHref, baseUrl);
+    const [baseUrl = this.packageUrl, unresolvedHref] =
+        this.getBaseAndUnresolved(firstHref, secondHref);
+    const resolvedHref = this.simpleUrlResolve(baseUrl, unresolvedHref);
     if (resolvedHref === undefined) {
       return undefined;
     }
@@ -145,7 +146,7 @@ export class PackageUrlResolver extends UrlResolver {
         const componentDirPath =
             pathnameInComponentDir.slice(this.resolvedComponentDir.length);
         const reresolved = this.simpleUrlResolve(
-            ('../' + componentDirPath) as FileRelativeUrl, this.packageUrl);
+            this.packageUrl, ('../' + componentDirPath) as FileRelativeUrl);
         if (reresolved !== undefined) {
           const reresolvedUrl = parseUrl(reresolved);
           const toUrl = parseUrl(to);

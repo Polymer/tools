@@ -16,9 +16,9 @@ import {assert} from 'chai';
 import * as pathlib from 'path';
 import URI from 'vscode-uri/lib';
 
-import {FileRelativeUrl, ResolvedUrl} from '../../index';
+import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from '../../index';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {fileRelativeUrl, noOpTag, resolvedUrl} from '../test-utils';
+import {fileRelativeUrl, noOpTag, packageRelativeUrl, resolvedUrl} from '../test-utils';
 
 /**
  * On posix systems file urls look like:
@@ -35,8 +35,6 @@ function rootedFileUrl(
   return (root + text) as ResolvedUrl;
 }
 
-const packageRoot = rootedFileUrl`1/2/`;
-
 suite('PackageUrlResolver', function() {
   suite('resolve', () => {
     let resolver: PackageUrlResolver;
@@ -47,51 +45,50 @@ suite('PackageUrlResolver', function() {
       const r = new PackageUrlResolver();
       assert.equal(
           r.resolve(
-              fileRelativeUrl`file:///foo/bar/baz`,
-              resolvedUrl`https://example.com/bar`),
+              resolvedUrl`https://example.com/bar`,
+              fileRelativeUrl`file:///foo/bar/baz`),
           resolvedUrl`file:///foo/bar/baz`);
     });
 
     // test for url with host but not protocol
     test('resolves an in-package URL', () => {
       assert.equal(
-          resolver.resolve(fileRelativeUrl`foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`/foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`/foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`./foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`./foo.html`),
           rootedFileUrl`1/2/foo.html`);
     });
 
     test(`resolves sibling URLs to the component dir`, () => {
       assert.equal(
-          resolver.resolve(fileRelativeUrl`../foo/foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`../foo/foo.html`),
           rootedFileUrl`1/2/bower_components/foo/foo.html`);
 
       const configured = new PackageUrlResolver(
           {componentDir: 'components', packageDir: '/1/2/'});
       assert.equal(
           configured.resolve(
-              (rootedFileUrl`1/bar/bar.html`) as any as FileRelativeUrl,
-              packageRoot),
+              (rootedFileUrl`1/bar/bar.html`) as any as PackageRelativeUrl),
           rootedFileUrl`1/2/components/bar/bar.html`);
     });
 
     test('resolves cousin URLs as normal', () => {
       assert.equal(
-          resolver.resolve(fileRelativeUrl`../../foo/foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`../../foo/foo.html`),
           rootedFileUrl`foo/foo.html`);
     });
 
     test('passes URLs with unknown hostnames through untouched', () => {
       const r = new PackageUrlResolver();
       assert.equal(
-          r.resolve(fileRelativeUrl`http://abc.xyz/foo.html`, packageRoot),
+          r.resolve(packageRelativeUrl`http://abc.xyz/foo.html`),
           resolvedUrl`http://abc.xyz/foo.html`);
       assert.equal(
-          r.resolve(fileRelativeUrl`//abc.xyz/foo.html`, packageRoot),
+          r.resolve(packageRelativeUrl`//abc.xyz/foo.html`),
           resolvedUrl`file://abc.xyz/foo.html`);
     });
 
@@ -102,97 +99,92 @@ suite('PackageUrlResolver', function() {
         packageDir: `/1/2`
       });
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`http://abc.xyz/foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`http://abc.xyz/foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`http://abc.xyz/./foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`http://abc.xyz/./foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`http://abc.xyz/../foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`http://abc.xyz/../foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(
-              fileRelativeUrl`http://abc.xyz/foo/../foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`http://abc.xyz/foo/../foo.html`),
           rootedFileUrl`1/2/foo.html`);
 
       assert.equal(
-          resolver.resolve(fileRelativeUrl`foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`./foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`./foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`foo/../foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`foo/../foo.html`),
           rootedFileUrl`1/2/foo.html`);
 
       assert.equal(
-          resolver.resolve(fileRelativeUrl`/foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`/foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`/./foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`/./foo.html`),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`/../foo/foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`/../foo/foo.html`),
           rootedFileUrl`1/2/foo/foo.html`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`/foo/../foo.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`/foo/../foo.html`),
           rootedFileUrl`1/2/foo.html`);
     });
 
     test(`resolves a URL with spaces`, () => {
       assert.equal(
-          resolver.resolve(fileRelativeUrl`spaced name.html`, packageRoot),
+          resolver.resolve(packageRelativeUrl`spaced name.html`),
           rootedFileUrl`1/2/spaced%20name.html`);
     });
 
     test('resolves an undecodable URL to undefined', () => {
-      assert.equal(
-          resolver.resolve(fileRelativeUrl`%><><%=`, packageRoot), undefined);
+      assert.equal(resolver.resolve(packageRelativeUrl`%><><%=`), undefined);
     });
 
     test('resolves a relative URL containing querystring and fragment', () => {
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl`foo.html#bat`, rootedFileUrl`1/2/foo.html?bar`),
+              rootedFileUrl`1/2/foo.html?bar`, fileRelativeUrl`foo.html#bat`),
           rootedFileUrl`1/2/foo.html#bat`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`foo.html?baz#bat`, packageRoot),
+          resolver.resolve(packageRelativeUrl`foo.html?baz#bat`),
           rootedFileUrl`1/2/foo.html?baz#bat`);
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl`foo.html?baz#bat`, rootedFileUrl`1/2/bar/baz/`),
+              rootedFileUrl`1/2/bar/baz/`, fileRelativeUrl`foo.html?baz#bat`),
           rootedFileUrl`1/2/bar/baz/foo.html?baz#bat`);
     });
 
     test('resolves a URL with no pathname', () => {
       assert.equal(
-          resolver.resolve(fileRelativeUrl``, rootedFileUrl`1/2/foo.html`),
+          resolver.resolve(rootedFileUrl`1/2/foo.html`, fileRelativeUrl``),
           rootedFileUrl`1/2/foo.html`);
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl``, rootedFileUrl`1/2/foo.html?baz#bat`),
+              rootedFileUrl`1/2/foo.html?baz#bat`, fileRelativeUrl``),
           rootedFileUrl`1/2/foo.html?baz`);
       assert.equal(
-          resolver.resolve(fileRelativeUrl`#buz`, rootedFileUrl`1/2/foo.html`),
+          resolver.resolve(rootedFileUrl`1/2/foo.html`, fileRelativeUrl`#buz`),
           rootedFileUrl`1/2/foo.html#buz`);
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl`#buz`, rootedFileUrl`1/2/foo.html?baz#bat`),
+              rootedFileUrl`1/2/foo.html?baz#bat`, fileRelativeUrl`#buz`),
           rootedFileUrl`1/2/foo.html?baz#buz`);
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl`?fiz`, rootedFileUrl`1/2/foo.html?bar#buz`),
+              rootedFileUrl`1/2/foo.html?bar#buz`, fileRelativeUrl`?fiz`),
           rootedFileUrl`1/2/foo.html?fiz`);
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl`?fiz#buz`, rootedFileUrl`1/2/foo.html`),
+              rootedFileUrl`1/2/foo.html`, fileRelativeUrl`?fiz#buz`),
           rootedFileUrl`1/2/foo.html?fiz#buz`);
       assert.equal(
           resolver.resolve(
-              fileRelativeUrl`?fiz#buz`, rootedFileUrl`1/2/foo.html?bar`),
+              rootedFileUrl`1/2/foo.html?bar`, fileRelativeUrl`?fiz#buz`),
           rootedFileUrl`1/2/foo.html?fiz#buz`);
     });
   });
@@ -201,8 +193,8 @@ suite('PackageUrlResolver', function() {
     // posix we test posix paths.
     const resolver = new PackageUrlResolver({packageDir: process.cwd()});
     function relative(from: string, to: string) {
-      const fromResolved = resolver.resolve(from as FileRelativeUrl)!;
-      const toResolved = resolver.resolve(to as FileRelativeUrl)!;
+      const fromResolved = resolver.resolve(from as PackageRelativeUrl)!;
+      const toResolved = resolver.resolve(to as PackageRelativeUrl)!;
       const result = resolver.relative(fromResolved, toResolved);
 
       return result;
