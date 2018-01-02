@@ -60,7 +60,7 @@
     "babel-plugin-transform-regenerator": "^6.16.1",
     "babylon": "^6.17.4",
     "bower-config": "^1.4.1",
-    "browser-capabilities": "^0.2.0",
+    "browser-capabilities": "^0.2.2",
     "command-line-args": "^3.0.1",
     "command-line-usage": "^3.0.3",
     "compression": "^1.6.2",
