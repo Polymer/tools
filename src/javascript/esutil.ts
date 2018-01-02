@@ -17,6 +17,7 @@ import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 
 import {MethodParam, ScannedMethod} from '../index';
+import {Result} from '../model/analysis';
 import {ImmutableSet} from '../model/immutable';
 import {Privacy} from '../model/model';
 import {ScannedEvent, Severity, SourceRange, Warning} from '../model/model';
@@ -109,17 +110,26 @@ const VALID_EXPRESSION_TYPES = new Map([
  * @param {Node} node A Babel expression node.
  * @return {string} The type of that expression, in Closure terms.
  */
-export function closureType(
-    node: babel.Node, sourceRange: SourceRange, document: ParsedDocument):
-    string|Warning {
+export function getClosureType(
+    node: babel.Node,
+    parsedJsdoc: doctrine.Annotation,
+    sourceRange: SourceRange,
+    document: ParsedDocument): Result<string, Warning> {
+  const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
+  if (typeTag) {
+    return {successful: true, value: doctrine.type.stringify(typeTag.type!)};
+  }
   const type = VALID_EXPRESSION_TYPES.get(node.type);
   if (type) {
-    return type;
+    return {successful: true, value: type};
   }
   if (babel.isIdentifier(node)) {
-    return CLOSURE_CONSTRUCTOR_MAP.get(node.name) || node.name;
+    return {
+      successful: true,
+      value: CLOSURE_CONSTRUCTOR_MAP.get(node.name) || node.name
+    };
   }
-  return new Warning({
+  const warning = new Warning({
     code: 'no-closure-type',
     message: `Unable to determine closure type for expression of type ` +
         `${node.type}`,
@@ -127,6 +137,7 @@ export function closureType(
     sourceRange,
     parsedDocument: document,
   });
+  return {successful: false, error: warning};
 }
 
 export function getAttachedComment(node: babel.Node): string|undefined {
@@ -211,15 +222,9 @@ export function toScannedMethod(
 
   const value = babel.isObjectProperty(node) ? node.value : node;
 
-  let type = closureType(value, sourceRange, document);
-  const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
-  if (typeTag) {
-    type = doctrine.type.stringify(typeTag.type!) || type;
-  }
-  if (type instanceof Warning) {
-    warnings.push(type);
-    type = 'Function';
-  }
+  const result = getClosureType(value, parsedJsdoc, sourceRange, document);
+  const type = result.successful === true ? result.value : 'Function';
+
   const name = maybeName || '';
   const scannedMethod: ScannedMethod = {
     name,

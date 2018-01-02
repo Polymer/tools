@@ -13,9 +13,8 @@
  */
 
 import * as babel from 'babel-types';
-import * as doctrine from 'doctrine';
 
-import {closureType, configurationProperties, getAttachedComment, getOrInferPrivacy, objectKeyToString} from '../javascript/esutil';
+import {configurationProperties, getAttachedComment, getClosureType, getOrInferPrivacy, objectKeyToString} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
 import {Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
@@ -48,15 +47,15 @@ export function toScannedPolymerProperty(
 
   const value = babel.isObjectProperty(node) ? node.value : node;
 
-  let type = closureType(value, sourceRange, document);
-  const typeTag = jsdoc.getTag(parsedJsdoc, 'type');
-  if (typeTag) {
-    type = doctrine.type.stringify(typeTag.type!) || type;
-  }
-  if (type instanceof Warning) {
-    warnings.push(type);
+  const typeResult = getClosureType(value, parsedJsdoc, sourceRange, document);
+  let type;
+  if (typeResult.successful) {
+    type = typeResult.value;
+  } else {
+    warnings.push(typeResult.error);
     type = 'Object';
   }
+
   const name = maybeName || '';
   const result: ScannedPolymerProperty = {
     name,
