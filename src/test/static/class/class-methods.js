@@ -67,3 +67,27 @@ class Class {
     return 10;
   }
 }
+
+/**
+ * @param {boolean} foo a bool
+ * @return {void}
+ * @function
+ */
+Class.prototype.customInstanceFunctionOnProto;
+
+/** @function */
+Class.prototype.__customInstanceFunctionOnProtoPrivate;
+
+Class.prototype.customInstanceFunctionOnProtoWithBody = function() {
+  return true;
+};
+
+/**
+ * Returns the sum of two numbers
+ * @param {number} a some number
+ * @param {number} b another number
+ * @return {number}
+ */
+Class.prototype.customInstanceFunctionOnProtoWithBodyDoc = function(a, b) {
+  return a + b;
+}

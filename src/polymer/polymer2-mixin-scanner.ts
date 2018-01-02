@@ -199,8 +199,7 @@ export class MixinVisitor implements Visitor {
     }
 
     mixin.classAstNode = node;
-    const classProperties =
-        extractPropertiesFromClass(node, this._document);
+    const classProperties = extractPropertiesFromClass(node, this._document);
     for (const prop of classProperties.values()) {
       mixin.addProperty(prop);
     }

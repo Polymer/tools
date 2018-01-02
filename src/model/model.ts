@@ -48,6 +48,7 @@ export * from './import';
 export * from './inline-document';
 export * from './literal';
 export * from './property';
+export * from './map';
 export * from './method';
 export {Queryable, FeatureKindMap, DocumentQuery, AnalysisQuery} from './queryable';
 export * from './reference';
