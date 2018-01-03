@@ -160,7 +160,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       html: {minify: true},
       bundle: true,
       addServiceWorker: true,
-      addPushManifest: true,
+      addPushManifest: false,
     }
   ],
   [
@@ -173,7 +173,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
       html: {minify: true},
       bundle: true,
       addServiceWorker: true,
-      addPushManifest: true,
+      addPushManifest: false,
     }
   ],
   [

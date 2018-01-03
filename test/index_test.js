@@ -638,7 +638,7 @@ suite('Project Config', () => {
             preset: 'es6-bundled',
             name: 'es6-bundled',
             addServiceWorker: true,
-            addPushManifest: true,
+            addPushManifest: false,
             bundle: true,
             html: {minify: true},
             css: {minify: true},

@@ -50,7 +50,7 @@ suite('builds', () => {
         html: {minify: true},
         bundle: true,
         addServiceWorker: true,
-        addPushManifest: true,
+        addPushManifest: false,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
@@ -66,7 +66,7 @@ suite('builds', () => {
         html: {minify: true},
         bundle: true,
         addServiceWorker: true,
-        addPushManifest: true,
+        addPushManifest: false,
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), expectedBuildConfig);
     });
