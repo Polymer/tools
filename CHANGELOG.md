@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
+
+## [3.7.0] - 2018-01-01
 * Added new option: `autoBasePath`. This new flag sets `basePath: true` on all builds. See that option for more details.
 * Removed `addPushManifest` from bundled build presets.
 
