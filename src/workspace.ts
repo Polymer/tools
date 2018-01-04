@@ -165,20 +165,21 @@ export class Workspace {
    * wildcard-containing patterns as needed) to return full GitHub repo
    * information for all matched repos.
    */
-  private async _determineGitHubRepos(): Promise<GitHubRepo[]> {
+  async _determineGitHubRepos(): Promise<GitHubRepo[]> {
     const matchPatterns = this.options.match;
     const excludePatterns =
-        (this.options.exclude || []).map(String.prototype.toLowerCase);
+        (this.options.exclude ||
+         []).map(((excludePattern) => excludePattern.toLowerCase()));
     const allMatchedReferences =
         await this._github.expandRepoPatterns(matchPatterns);
     const matchedReferences = allMatchedReferences.filter((ref) => {
       return !excludePatterns.includes(ref.fullName.toLowerCase());
     });
     // Fetch the full repo information for each matched reference
-    const matchedRepos =
-        await batchProcess(matchedReferences, async (ref) => {
-          return this._github.getRepoInfo(ref);
-        }, {concurrency: githubConcurrencyPreset});
+    const matchedRepos = await batchProcess(
+        matchedReferences,
+        async (ref) => this._github.getRepoInfo(ref),
+        {concurrency: githubConcurrencyPreset});
     matchedRepos.failures.forEach((err, ref) => {
       console.log(`Repo not found: ${ref.fullName} (${err.message})`);
     });

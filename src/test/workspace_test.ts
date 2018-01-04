@@ -26,20 +26,60 @@
 import {assert} from 'chai';
 import path = require('path');
 import {Workspace} from '../workspace';
+import * as mockApi from './_util/mock-api';
+import {testApiToken} from './_util/mock-api';
 
-const testGitHubToken = 'TEST_GITHUB_TOKEN';
 const testWorkspaceDir = path.join(__dirname, 'TEST_WORKSPACE_DIR');
 
 suite('src/workspace', function() {
   suite('Workspace', () => {
+    suiteSetup(() => {
+      mockApi.setup();
+    });
+
+    suiteTeardown(() => {
+      mockApi.teardown();
+    });
+
     suite('workspace.init()', () => {
       test('can be initialized with an empty set of patterns', async () => {
-        const workspace =
-            new Workspace({token: testGitHubToken, dir: testWorkspaceDir, match: []});
+        const workspace = new Workspace(
+            {token: testApiToken, dir: testWorkspaceDir, match: []});
         const {workspaceRepos, failures} = await workspace.init();
         assert.deepEqual(workspaceRepos, []);
         assert.deepEqual([...failures], []);
       });
+    });
+
+    suite('workspace._determineGitHubRepos()', () => {
+      test(
+          'succesfully determines repos for a set of patterns to match',
+          async () => {
+            const workspace = new Workspace({
+              token: testApiToken,
+              dir: testWorkspaceDir,
+              match: ['PolymerElements/paper-*']
+            });
+            const repos = await workspace._determineGitHubRepos();
+            assert.deepEqual(repos.map((r) => r.fullName), [
+              'PolymerElements/paper-appbar',
+              'PolymerElements/paper-button'
+            ]);
+          });
+
+      test(
+          'succesfully determines repos for sets of patterns to match and exclude',
+          async () => {
+            const workspace = new Workspace({
+              token: testApiToken,
+              dir: testWorkspaceDir,
+              match: ['PolymerElements/paper-*'],
+              exclude: ['PolymerElements/paper-button']
+            });
+            const repos = await workspace._determineGitHubRepos();
+            assert.deepEqual(
+                repos.map((r) => r.fullName), ['PolymerElements/paper-appbar']);
+          });
     });
   });
 });
