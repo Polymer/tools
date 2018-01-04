@@ -130,7 +130,7 @@ export class Workspace {
     await validateEnvironment();
 
     // Fetch our repos from the given patterns.
-    const githubRepos = await this.determineGitHubRepos();
+    const githubRepos = await this._determineGitHubRepos();
     let workspaceRepos = githubRepos.map((r) => this._openWorkspaceRepo(r));
     const failedWorkspaceRepos = new Map<WorkspaceRepo, Error>();
 
@@ -165,7 +165,7 @@ export class Workspace {
    * wildcard-containing patterns as needed) to return full GitHub repo
    * information for all matched repos.
    */
-  async determineGitHubRepos(): Promise<GitHubRepo[]> {
+  async _determineGitHubRepos(): Promise<GitHubRepo[]> {
     const matchPatterns = this.options.match;
     const excludePatterns =
         (this.options.exclude ||
@@ -176,9 +176,10 @@ export class Workspace {
       return !excludePatterns.includes(ref.fullName.toLowerCase());
     });
     // Fetch the full repo information for each matched reference
-    const matchedRepos = await batchProcess(matchedReferences, async (ref) => {
-      return this._github.getRepoInfo(ref);
-    }, {concurrency: githubConcurrencyPreset});
+    const matchedRepos = await batchProcess(
+        matchedReferences,
+        async (ref) => this._github.getRepoInfo(ref),
+        {concurrency: githubConcurrencyPreset});
     matchedRepos.failures.forEach((err, ref) => {
       console.log(`Repo not found: ${ref.fullName} (${err.message})`);
     });

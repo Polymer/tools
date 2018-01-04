@@ -51,7 +51,7 @@ suite('src/workspace', function() {
       });
     });
 
-    suite('workspace.determineGitHubRepos()', () => {
+    suite('workspace._determineGitHubRepos()', () => {
       test(
           'succesfully determines repos for a set of patterns to match',
           async () => {
@@ -60,7 +60,7 @@ suite('src/workspace', function() {
               dir: testWorkspaceDir,
               match: ['PolymerElements/paper-*']
             });
-            const repos = await workspace.determineGitHubRepos();
+            const repos = await workspace._determineGitHubRepos();
             assert.deepEqual(repos.map((r) => r.fullName), [
               'PolymerElements/paper-appbar',
               'PolymerElements/paper-button'
@@ -76,7 +76,7 @@ suite('src/workspace', function() {
               match: ['PolymerElements/paper-*'],
               exclude: ['PolymerElements/paper-button']
             });
-            const repos = await workspace.determineGitHubRepos();
+            const repos = await workspace._determineGitHubRepos();
             assert.deepEqual(
                 repos.map((r) => r.fullName), ['PolymerElements/paper-appbar']);
           });
