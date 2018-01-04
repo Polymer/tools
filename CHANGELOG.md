@@ -6,12 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Add `Element#template` for getting the template of an element.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.7] - 2017-01-01
 * [BREAKING]: `UrlResolver#resolve()` argument order swapped so that the
   optional `baseUrl` argument comes first instead of second.  This makes
   resolve more similar to `url.resolve`.
+* [BREAKING] Removed scriptElement and domModule from PolymerElementMixin.
+  They were always undefined.
 * `UrlResolver#resolve()` returns urls containing querystring and fragment
   components where they were previously stripped out.
 * Add FSUrlLoader#getFilePath which will return the file path that would

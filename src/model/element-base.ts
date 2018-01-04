@@ -14,6 +14,7 @@
 
 import * as babel from 'babel-types';
 import * as dom5 from 'dom5';
+import {ASTNode} from 'parse5';
 
 import * as jsdoc from '../javascript/jsdoc';
 import {ParsedDocument} from '../parser/document';
@@ -106,6 +107,25 @@ export interface ElementBaseInit extends ClassInit {
 }
 
 /**
+ * The element's runtime contents.
+ */
+export type ElementTemplate = {
+  /**
+   * HTML that is stamped out without data binding or other
+   * interpretation beyond normal HTML semantics.
+   */
+  kind: 'html',
+  contents: ASTNode,
+}|{
+  /**
+   * HTML that's interpreted with the polymer databinding
+   * system.
+   */
+  kind: 'polymer-databinding',
+  contents: ASTNode,
+};
+
+/**
  * Base class for Element and ElementMixin.
  */
 export abstract class ElementBase extends Class implements Feature {
@@ -160,4 +180,6 @@ export abstract class ElementBase extends Class implements Feature {
   emitEventMetadata(_event: Event): Object {
     return {};
   }
+
+  template: undefined|ElementTemplate = undefined;
 }

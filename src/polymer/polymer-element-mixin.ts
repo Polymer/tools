@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import * as babel from 'babel-types';
-import * as dom5 from 'dom5';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
@@ -40,10 +39,6 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   readonly observers: Observer[] = [];
   readonly listeners: {event: string, handler: string}[] = [];
   readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];
-  // FIXME(rictic): domModule and scriptElement aren't known at a file local
-  //     level. Remove them here, they should only exist on PolymerElement.
-  domModule: dom5.Node|undefined = undefined;
-  scriptElement: dom5.Node|undefined = undefined;
   pseudo: boolean = false;
   readonly abstract: boolean = false;
   readonly sourceRange: SourceRange;
@@ -96,17 +91,13 @@ export class PolymerElementMixin extends ElementMixin implements
   readonly observers: Observer[];
   readonly listeners: {event: string, handler: string}[];
   readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];
-  readonly domModule?: dom5.Node;
-  readonly scriptElement?: dom5.Node;
   readonly localIds: LocalId[] = [];
   readonly pseudo: boolean;
 
   constructor(scannedMixin: ScannedPolymerElementMixin, document: Document) {
     super(scannedMixin, document);
     this.kinds.add('polymer-element-mixin');
-    this.domModule = scannedMixin.domModule;
     this.pseudo = scannedMixin.pseudo;
-    this.scriptElement = scannedMixin.scriptElement;
     this.behaviorAssignments = Array.from(scannedMixin.behaviorAssignments);
     this.observers = Array.from(scannedMixin.observers);
   }
