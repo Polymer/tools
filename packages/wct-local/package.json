@@ -1,6 +1,6 @@
 {
   "name": "wct-local",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "description": "WCT plugin that enables support for local browsers via Selenium",
   "keywords": [
     "wct",
@@ -48,7 +48,7 @@
     "gulp": "^3.8.10",
     "tools-common": "github:Polymer/tools-common#aa1c22d",
     "tslint": "^3.14.0",
-    "typescript": "^2.0.0"
+    "typescript": "2.3.2"
   },
   "dependencies": {
     "@types/chalk": "^0.4.28",
@@ -62,17 +62,17 @@
     "freeport": "^1.0.4",
     "launchpad": "^0.6.0",
     "promisify-node": "^0.4.0",
-    "selenium-standalone": "^5.8.0",
+    "selenium-standalone": "^6.7.0",
     "which": "^1.0.8"
   },
   "engines": {
     "node": ">=6.0"
   },
   "selenium-overrides": {
-    "version": "3.0.1",
+    "version": "3.4.0",
     "drivers": {
       "firefox": {
-        "version": "0.11.1"
+        "version": "0.18.0"
       },
       "chrome": {},
       "ie": {}

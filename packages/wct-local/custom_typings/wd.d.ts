@@ -48,6 +48,9 @@ declare module 'wd' {
     };
     firefox_binary?: string;
     marionette?: boolean;
+    'moz:firefoxOptions'?: {
+      args?: string[];
+    },
     'safari.options'?: {
       skipExtensionInstallation?: boolean;
     };
