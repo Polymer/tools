@@ -19,7 +19,9 @@ import {Workspace} from 'polymer-workspaces';
 
 import {CliOptions} from '../cli';
 import convertWorkspace from '../convert-workspace';
-import {testWorkspace, testWorkspaceInstallOnly} from '../test-workspace';
+import { testWorkspace, testWorkspaceInstallOnly } from '../test-workspace';
+import githubPushWorkspace from '../push-workspace';
+import npmPublishWorkspace from '../publish-workspace';
 import {logStep} from '../util';
 
 const githubTokenMessage = `
@@ -40,6 +42,8 @@ echo 'PASTE TOKEN HEX HERE' > ./github-token
 enum PostConversionStep {
   Test = 'Install dependencies and run tests',
   TestInstallOnly = 'Install dependencies only',
+  Push = 'Push changes to GitHub',
+  Publish = 'Publish changes to npm',
   Exit = 'Exit',
 }
 
@@ -58,6 +62,12 @@ function postConversionStepsFromCliOptions(options: CliOptions):
   }
   if (options.test === true) {
     steps.push(PostConversionStep.Test);
+  }
+  if (options.push === true) {
+    steps.push(PostConversionStep.Push);
+  }
+  if (options.publish === true) {
+    steps.push(PostConversionStep.Publish);
   }
   return steps;
 }
@@ -151,8 +161,12 @@ export default async function run(options: CliOptions) {
           reposToConvert,
         });
         break;
-      // TODO(fks): Add 'push to github' & 'publish to npm' support
-      // https://github.com/Polymer/polymer-modulizer/issues/249
+      case PostConversionStep.Push:
+        await githubPushWorkspace(reposToConvert);
+        break;
+      case PostConversionStep.Publish:
+        await npmPublishWorkspace(reposToConvert);
+        break;
       case PostConversionStep.Exit:
         console.log('👋  Goodbye.');
         return;
