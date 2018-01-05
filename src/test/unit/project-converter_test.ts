@@ -292,6 +292,25 @@ import './dep.js';
       });
     });
 
+    test('deletes import wrappers', async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="./foo.html">
+        `,
+        'foo.html': `
+          <script src="foo.js"></script>
+        `,
+        'foo.js': `
+console.log('foo');
+`,
+      });
+      assertSources(await convert(), {
+        'test.js': `
+import './foo.js';
+`
+      });
+    });
+
     test('converts implicit imports to .js', async () => {
       setSources({
         'test.html': `

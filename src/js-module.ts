@@ -32,6 +32,7 @@ export interface ConversionResult {
   readonly originalUrl: OriginalDocumentUrl;
   readonly convertedUrl: ConvertedDocumentUrl;
   readonly convertedFilePath: ConvertedDocumentFilePath;
+
   /**
    * Explicitly keep or remove the original file from disk. By default, the
    * original file will be destroyed. If the convertedFilePath matches
@@ -39,9 +40,16 @@ export interface ConversionResult {
    * converted output.
    */
   readonly deleteOriginal?: boolean;
-  readonly output: HtmlFile|JsModule;
-}
 
+  /**
+   * An object describing the converted output of this module, or `undefined`.
+   *
+   * If `undefined`, no new file is created and the original file is deleted
+   * regardless of the value of `deleteOriginal`. This is useful in cases where
+   * there original is an HTML file that only loads an external script.
+   */
+  readonly output: HtmlFile|JsModule|undefined;
+}
 
 export class JsExport {
   /**

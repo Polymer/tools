@@ -236,6 +236,16 @@ export class DocumentConverter {
   }
 
   convertToJsModule(): ConversionResult {
+    if (this._isWrapperHTMLDocument) {
+      return {
+        originalUrl: this.originalUrl,
+        convertedUrl: this.convertedUrl,
+        convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
+        deleteOriginal: true,
+        output: undefined,
+      };
+    }
+
     const combinedToplevelStatements = [];
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
@@ -266,9 +276,9 @@ export class DocumentConverter {
     const importedReferences = this.collectNamespacedReferences(program);
     // Add imports for every non-module <script> tag to just import the file
     // itself.
-    for (const scriptImports of this.document.getFeatures(
+    for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
-      const oldScriptUrl = getDocumentUrl(scriptImports.document);
+      const oldScriptUrl = getDocumentUrl(scriptImport.document);
       const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
       importedReferences.set(newScriptUrl, new Set());
     }
@@ -466,6 +476,28 @@ export class DocumentConverter {
         source: contents,
       }
     };
+  }
+
+  /**
+   * Determines if a document is just a wrapper around a script tag pointing
+   * to an external script of the same name as this file.
+   */
+  private get _isWrapperHTMLDocument() {
+    const allFeatures = Array.from(this.document.getFeatures())
+                            .filter(
+                                (f) =>
+                                    !(f.kinds.has('html-document') &&
+                                      (f as Document).isInline === false));
+    if (allFeatures.length === 1) {
+      const f = allFeatures[0];
+      if (f.kinds.has('html-script')) {
+        const sciprtImport = f as Import;
+        const oldScriptUrl = getDocumentUrl(sciprtImport.document);
+        const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
+        return newScriptUrl === this.convertedUrl;
+      }
+    }
+    return false;
   }
 
   /**

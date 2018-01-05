@@ -73,7 +73,9 @@ export class ProjectConverter {
     console.assert(
         document.kinds.has('html-document'),
         `convertDocument() must be called with an HTML document, but got ${
-            document.kinds}`);
+                                                                           document
+                                                                               .kinds
+                                                                         }`);
     try {
       this.conversionSettings.includes.has(document.url) ?
           this.convertDocumentToJs(document, new Set()) :
@@ -164,7 +166,8 @@ export class ProjectConverter {
    */
   private _handleConversionResult(newModule: ConversionResult): void {
     this.conversionResults.set(newModule.originalUrl, newModule);
-    if (newModule.output.type === 'js-module') {
+    if (newModule.output !== undefined &&
+        newModule.output.type === 'js-module') {
       for (const expr of newModule.output.exportedNamespaceMembers) {
         this.namespacedExports.set(
             expr.oldNamespacedName,
@@ -193,8 +196,10 @@ export class ProjectConverter {
             convertedModule.originalUrl as string as ConvertedDocumentFilePath,
             undefined);
       }
-      results.set(
-          convertedModule.convertedFilePath, convertedModule.output.source);
+      if (convertedModule.output !== undefined) {
+        results.set(
+            convertedModule.convertedFilePath, convertedModule.output.source);
+      }
     }
 
     return results;
