@@ -28,6 +28,7 @@ import convertPackage from '../convert-package';
 interface UpdateFixtureOptions {
   folder: string;
   repoUrl: string;
+  branch?: string;
   packageName: string;
   packageVersion: string;
 }
@@ -37,13 +38,14 @@ async function updateFixture(options: UpdateFixtureOptions) {
       path.resolve(__dirname, '../../fixtures/packages/', options.folder);
   const sourceDir = path.join(fixturesDir, 'source');
   const convertedDir = path.join(fixturesDir, 'expected');
+  const branch = options.branch || 'master';
 
-  console.log(`Cloning ${options.repoUrl} to ${sourceDir}...`);
+  console.log(`Cloning ${options.repoUrl} #${branch} to ${sourceDir}...`);
   await mkdirp(fixturesDir);
   rimraf.sync(sourceDir);
 
   await exec(
-      `git clone ${options.repoUrl} ${sourceDir} --depth=1`,
+      `git clone ${options.repoUrl} ${sourceDir} --branch=${branch} --depth=1`,
       {cwd: fixturesDir});
   rimraf.sync(path.join(sourceDir, '.git'));
   rimraf.sync(path.join(sourceDir, '.github'));
@@ -85,6 +87,8 @@ async function overridePolymer(sourceDir: string) {
 }
 
 (async () => {
+  let exitCode = 0;
+
   await Promise.all([
     updateFixture({
       folder: 'polymer',
@@ -104,5 +108,11 @@ async function overridePolymer(sourceDir: string) {
       packageName: '@polymer/iron-icon',
       packageVersion: '3.0.0',
     }),
-  ]);
+  ].map((p) => p.catch((e) => {
+    // Exit with an error code if any fixture fails, but let them all finish.
+    console.error(e);
+    exitCode = 1;
+  })));
+
+  process.exit(exitCode);
 })();
