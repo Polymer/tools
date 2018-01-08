@@ -93,6 +93,7 @@ Polymer({
 <script type="module">
 import '../../polymer.js';
 import { dom } from '../../lib/legacy/polymer.dom.js';
+import { useShadow, useNativeCustomElements, useNativeCSSProperties } from '../../lib/utils/settings.js';
 
 suite('extended dom api', function() {
   test('getEffectiveChildNodes', function() {
@@ -340,9 +341,9 @@ suite('legacy api', function() {
   });
 
   test('legacy settings', function() {
-    assert.equal(undefined.useShadow, !(window.ShadyDOM));
-    assert.equal(undefined.useNativeCustomElements, !(window.customElements.polyfillWrapFlushCallback));
-    assert.equal(undefined.useNativeCSSProperties, Boolean(!window.ShadyCSS || window.ShadyCSS.nativeCss));
+    assert.equal(useShadow, !(window.ShadyDOM));
+    assert.equal(useNativeCustomElements, !(window.customElements.polyfillWrapFlushCallback));
+    assert.equal(useNativeCSSProperties, Boolean(!window.ShadyCSS || window.ShadyCSS.nativeCss));
   });
 
 });

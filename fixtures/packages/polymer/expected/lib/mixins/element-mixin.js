@@ -7,6 +7,8 @@ import { DomModule } from '../elements/dom-module.js';
 import { PropertyEffects } from './property-effects.js';
 import { PropertiesMixin } from './properties-mixin.js';
 
+const ABS_URL = /(^\/)|(^#)|(^[\w-\d]*:)/;
+
 export const ElementMixin = dedupingMixin(base => {
 
   /**
@@ -552,6 +554,11 @@ export const ElementMixin = dedupingMixin(base => {
      * @return {string} Rewritten URL relative to base
      */
     resolveUrl(url, base) {
+      // Preserve backward compatibility with `this.resolveUrl('/foo')` resolving
+      // against the main document per #2448
+      if (url && ABS_URL.test(url)) {
+        return url;
+      }
       if (!base && this.importPath) {
         base = resolveUrl$0(this.importPath);
       }

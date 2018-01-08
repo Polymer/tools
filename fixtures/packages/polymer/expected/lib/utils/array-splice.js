@@ -133,19 +133,19 @@ function spliceOperationsFromEditDistances(distances) {
  *   l: The length of the current array
  *   p: The length of the old array
  *
- * @param {Array} current The current "changed" array for which to
+ * @param {!Array} current The current "changed" array for which to
  * calculate splices.
  * @param {number} currentStart Starting index in the `current` array for
  * which splices are calculated.
  * @param {number} currentEnd Ending index in the `current` array for
  * which splices are calculated.
- * @param {Array} old The original "unchanged" array to compare `current`
+ * @param {!Array} old The original "unchanged" array to compare `current`
  * against to determine splices.
  * @param {number} oldStart Starting index in the `old` array for
  * which splices are calculated.
  * @param {number} oldEnd Ending index in the `old` array for
  * which splices are calculated.
- * @return {Array} Returns an array of splice record objects. Each of these
+ * @return {!Array} Returns an array of splice record objects. Each of these
  * contains: `index` the location where the splice occurred; `removed`
  * the array of removed items from this location; `addedCount` the number
  * of items added at this location.

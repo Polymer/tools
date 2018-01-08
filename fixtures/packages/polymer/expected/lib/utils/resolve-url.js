@@ -1,7 +1,6 @@
 import './boot.js';
 
 let CSS_URL_RX = /(url\()([^)]*)(\))/g;
-let ABS_URL = /(^\/)|(^#)|(^[\w-\d]*:)/;
 let workingURL;
 let resolveDoc;
 /**
@@ -13,9 +12,6 @@ let resolveDoc;
  * @return {string} resolved URL
  */
 function resolveUrl(url, baseURI) {
-  if (url && ABS_URL.test(url)) {
-    return url;
-  }
   // Lazy feature detection.
   if (workingURL === undefined) {
     workingURL = false;

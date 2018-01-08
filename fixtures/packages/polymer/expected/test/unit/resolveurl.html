@@ -55,6 +55,7 @@ import '../../polymer.js';
 import './sub/resolveurl-elements.js';
 import { Element } from '../../polymer-element.js';
 import { setRootPath } from '../../lib/utils/settings.js';
+import { resolveUrl as resolveUrl$0 } from '../../lib/utils/resolve-url.js';
 suite('ResolveUrl', function() {
 
   test('Urls in styles and attributes', function() {
@@ -160,6 +161,12 @@ suite('ResolveUrl', function() {
     expected = expected + '/assets/Beaker2.jpg';
     var actual = el.resolveUrl('Beaker2.jpg');
     assert.equal(actual, expected);
+  });
+});
+
+suite('Polymer.ResolveUrl', function() {
+  test('appends absolute url to basePath', function() {
+    assert.equal(resolveUrl$0('/foo', 'http://localhost'), 'http://localhost/foo');
   });
 });
 </script>

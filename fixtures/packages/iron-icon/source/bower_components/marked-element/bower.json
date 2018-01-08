@@ -1,6 +1,6 @@
 {
   "name": "marked-element",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Element wrapper for the marked library",
   "private": true,
   "authors": [
@@ -21,7 +21,7 @@
     "url": "git://github.com/PolymerElements/marked-element.git"
   },
   "dependencies": {
-    "marked": "~0.3.6",
+    "marked": "~0.3.9",
     "polymer": "Polymer/polymer#1.9 - 2"
   },
   "devDependencies": {
@@ -34,7 +34,7 @@
   "variants": {
     "1.x": {
       "dependencies": {
-        "marked": "~0.3.3",
+        "marked": "~0.3.9",
         "polymer": "Polymer/polymer#^1.9"
       },
       "devDependencies": {

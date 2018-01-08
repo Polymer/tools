@@ -1,6 +1,6 @@
 {
   "name": "marked-element",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Element wrapper for the marked library",
   "private": true,
   "authors": [
@@ -21,7 +21,7 @@
     "url": "git://github.com/PolymerElements/marked-element.git"
   },
   "dependencies": {
-    "marked": "~0.3.6",
+    "marked": "~0.3.9",
     "polymer": "Polymer/polymer#1.9 - 2"
   },
   "devDependencies": {
@@ -34,7 +34,7 @@
   "variants": {
     "1.x": {
       "dependencies": {
-        "marked": "~0.3.3",
+        "marked": "~0.3.9",
         "polymer": "Polymer/polymer#^1.9"
       },
       "devDependencies": {
@@ -54,11 +54,11 @@
     "webcomponentsjs": "^1.0.0"
   },
   "homepage": "https://github.com/polymerelements/marked-element",
-  "_release": "2.3.2",
+  "_release": "2.3.3",
   "_resolution": {
     "type": "version",
-    "tag": "v2.3.2",
-    "commit": "cfc3a0c48502ee98bd7d6951dfecaf68b7be1c75"
+    "tag": "v2.3.3",
+    "commit": "5acd8f882e337fb3e281323bec572dddff6d82d9"
   },
   "_source": "https://github.com/polymerelements/marked-element.git",
   "_target": "1 - 2",
