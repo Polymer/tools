@@ -36,10 +36,15 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
   // Current batch of visitors
   let visitors: Visitor[];
 
+  // results
+  const nestedFeatures = [];
+  const warnings: Warning[] = [];
+
   // A Promise that runs the next batch of visitors in a microtask
   let runner: Promise<void>|null = null;
 
   let visitError: any;
+  let visitErrorFound = false;
 
   // Initializes the current batch running state
   function setup() {
@@ -71,6 +76,7 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
     visitors.push(visitor);
     if (!runner) {
       runner = Promise.resolve().then(runVisitors).catch((error) => {
+        visitErrorFound = true;
         visitError = visitError || error;
       });
     }
@@ -84,12 +90,10 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
   // This waits for all `scan()` calls to finish
   const nestedResults = await Promise.all(scannerPromises);
 
-  if (visitError) {
+  if (visitErrorFound || !nestedResults) {
     throw visitError;
   }
 
-  const nestedFeatures = [];
-  const warnings: Warning[] = [];
   for (const {features, warnings: w} of nestedResults) {
     nestedFeatures.push(features);
     if (w !== undefined) {

@@ -48,6 +48,8 @@ import {UrlResolver} from '../url-loader/url-resolver';
 import {AnalysisCache} from './analysis-cache';
 import {LanguageAnalyzer} from './language-analyzer';
 
+export const analyzerVersion: string = require('../../package.json').version;
+
 /**
  * An analysis of a set of files at a specific point-in-time with respect to
  * updates to those files. New files can be added to an existing context, but
@@ -95,7 +97,7 @@ export class AnalysisContext {
    */
   private _analysisComplete: Promise<void>;
 
-  private static _getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
+  static getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
     return new Map<string, Scanner<any, any, any>[]>([
       [
         'html',
@@ -130,8 +132,8 @@ export class AnalysisContext {
     this.resolver = options.urlResolver || new PackageUrlResolver();
     this.parsers = options.parsers || this.parsers;
     this._lazyEdges = options.lazyEdges;
-    this._scanners = options.scanners ||
-        AnalysisContext._getDefaultScanners(this._lazyEdges);
+    this._scanners =
+        options.scanners || AnalysisContext.getDefaultScanners(this._lazyEdges);
     this._cache = cache || new AnalysisCache();
     this._generation = generation || 0;
   }
@@ -185,8 +187,8 @@ export class AnalysisContext {
               if (e instanceof WarningCarryingException) {
                 this._cache.failedDocuments.set(url, e.warning);
               }
-              // No need for fallback warning, one will be produced in
-              // getDocument
+              // We don't have the info to produce a good warning here,
+              // so we'll have go just fail at getDocument() :(
             }
           }));
       const scannedDocuments = scannedDocumentsOrWarnings.filter(
@@ -347,7 +349,11 @@ export class AnalysisContext {
             // avoid deadlock in the case of cycles. Later we use the
             // DependencyGraph to wait for all transitive dependencies to load.
             this.scan(importUrl).catch((error) => {
-              scannedImport.error = error || '';
+              if (error == null || error.message == null) {
+                scannedImport.error = new Error(`Internal error.`);
+              } else {
+                scannedImport.error = error;
+              }
             });
           }
           await this._cache.dependencyGraph.whenReady(resolvedUrl);
@@ -388,7 +394,26 @@ export class AnalysisContext {
   private async _getScannedFeatures(document: ParsedDocument) {
     const scanners = this._scanners.get(document.type);
     if (scanners) {
-      return scan(document, scanners);
+      try {
+        return await scan(document, scanners);
+      } catch (e) {
+        if (e instanceof WarningCarryingException) {
+          throw e;
+        }
+        const message = e == null ? `Unknown error while scanning.` :
+                                    `Error while scanning: ${String(e)}`;
+        throw new WarningCarryingException(new Warning({
+          code: 'internal-scanning-error',
+          message,
+          parsedDocument: document,
+          severity: Severity.ERROR,
+          sourceRange: {
+            file: document.url,
+            start: {column: 0, line: 0},
+            end: {column: 0, line: 0},
+          }
+        }));
+      }
     }
     return {features: [], warnings: []};
   }
@@ -479,7 +504,20 @@ export class AnalysisContext {
       if (error instanceof WarningCarryingException) {
         throw error;
       }
-      throw new Error(`Error parsing ${url}:\n ${error.stack}`);
+      const parsedDocument = new UnparsableParsedDocument(url, contents);
+      const message = error == null ? `Unable to parse as ${type}` :
+                                      `Unable to parse as ${type}: ${error}`;
+      throw new WarningCarryingException(new Warning({
+        parsedDocument,
+        code: 'parse-error',
+        message,
+        severity: Severity.ERROR,
+        sourceRange: {
+          file: url,
+          start: {line: 0, column: 0},
+          end: {line: 0, column: 0}
+        }
+      }));
     }
   }
 
@@ -516,7 +554,11 @@ function makeRequestedWithoutLoadingWarning(resolvedUrl: ResolvedUrl) {
     },
     code: 'unable-to-analyze',
     message: `[Internal Error] Document was requested ` +
-        ` before loading and scanning finished. This should never happen.`,
+        `before loading and scanning finished. This usually indicates an ` +
+        `anomalous error during loading or analysis. Please file a bug at ` +
+        `https://github.com/Polymer/polymer-analyzer/issues/new with info ` +
+        `on the source code that caused this. ` +
+        `Polymer Analyzer version: ${analyzerVersion}`,
     severity: Severity.ERROR,
     parsedDocument
   });

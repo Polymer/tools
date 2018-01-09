@@ -38,6 +38,9 @@ import chaiSubset = require('chai-subset');
 import stripIndent = require('strip-indent');
 import {ResolvedUrl} from '../../model/url';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
+import {AnalysisContext} from '../../core/analysis-context';
+import {HtmlScanner} from '../../html/html-scanner';
+import {ScannedFeature} from '../../index';
 
 use(chaiSubset);
 use(chaiAsPromised);
@@ -265,7 +268,8 @@ suite('Analyzer', () => {
       assert.equal(narrowedDocument, inlineJsDocument);
     });
 
-    testName = 'a feature in the top level document narrows down to the full document';
+    testName =
+        'a feature in the top level document narrows down to the full document';
     test(testName, async () => {
       const url = 'static/script-tags/inline/test-element.html';
       const result = (await analyzer.analyze([url]));
@@ -276,8 +280,8 @@ suite('Analyzer', () => {
 
       // The inline document can find the container's imported
       // features
-      const HTMLImport = getOnly(document.value.getFeatures(
-          {kind: 'html-import'}));
+      const HTMLImport =
+          getOnly(document.value.getFeatures({kind: 'html-import'}));
       const narrowedDocument =
           result.getDocumentContaining(HTMLImport.sourceRange);
       assert.equal(narrowedDocument, document.value);
@@ -539,6 +543,38 @@ suite('Analyzer', () => {
                 (f) => f.url),
             ['static/dependencies/spaces in import.html'].map(
                 (u) => analyzer.resolveUrl(u)));
+      });
+
+      test('gracefully handles a scanner that throws', async () => {
+        const scanners = AnalysisContext.getDefaultScanners(new Map());
+        class FailingScanner implements HtmlScanner {
+          async scan():
+              Promise<{features: ScannedFeature[], warnings?: Warning[]}> {
+            throw new Error('Method not implemented.');
+          }
+        }
+        scanners.get('html')!.push(new FailingScanner());
+        const localAnalyzer = new Analyzer({
+          scanners,
+          urlResolver: analyzer.urlResolver,
+          urlLoader: inMemoryOverlay
+        });
+        const url = localAnalyzer.resolveUrl(`foo.html`)!;
+        inMemoryOverlay.urlContentsMap.set(url, `
+          <dom-module id="foo-bar"></dom-module>
+        `);
+        const analysis = await localAnalyzer.analyze([url]);
+        const result = analysis.getDocument(url);
+        if (result.successful) {
+          throw new Error(`Got document with crashing scanner.`);
+        }
+        if (!result.error) {
+          throw new Error(
+              `No warning message for document with crashing scanner`);
+        }
+        assert.deepEqual(
+            result.error.message,
+            'Error while scanning: Error: Method not implemented.');
       });
     });
   });
