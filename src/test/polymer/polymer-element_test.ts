@@ -156,6 +156,22 @@ suite('PolymerElement', () => {
     ]);
   });
 
+  test('Handles inner classes properly', async () => {
+    const elements = await getElements('test-element-18.js');
+    const elementData = Array.from(elements).map(getTestProps);
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'hello-world',
+        className: 'HelloWorld',
+        superClass: 'Polymer.Element',
+        description: '',
+        properties: [],
+        attributes: [],
+        methods: [],
+      },
+    ]);
+  });
+
   test('Elements inherit from mixins and base classes', async () => {
     const elements = await getElements('test-element-7.js');
     const elementData = Array.from(elements).map(getTestProps);
