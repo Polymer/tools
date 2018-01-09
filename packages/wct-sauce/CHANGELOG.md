@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Removed the Linux Chrome 'dev' version browser, which is not a thing that Sauce does.
+
 ## 2.0.0-pre.3 - 2017-11-27
 
 - Added Edge 15 to Travis browser list.
