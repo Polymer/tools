@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove hardcoded Sauce Connect version
+
 ## 2.0.0-pre.4 - 2018-01-09
 
 - Removed the Linux Chrome 'dev' version browser, which is not a thing that Sauce does.

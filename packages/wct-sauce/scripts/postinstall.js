@@ -43,8 +43,6 @@ var sauce = require('../lib/sauce');
 if (!(sauce.isTravisSauceConnectRunning() || process.env.SKIP_WCT_SAUCE_POSTINSTALL_DOWNLOAD)) {
   console.log('Prefetching the Sauce Connect binary.');
 
-  sauce.setSauceConnectDownloadVersion();
-
   requireSauceConnectLauncher(function(sauceConnectLauncher) {
     sauceConnectLauncher.download({
       logger: console.log.bind(console),
