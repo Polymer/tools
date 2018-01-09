@@ -146,6 +146,8 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
     t = convertArray(node, templateTypes);
   } else if (isParameterizedObject(node)) {  // Object<foo, bar>
     t = convertIndexableObject(node, templateTypes);
+  } else if (isParameterizedType(node)) { // Type<T>
+    t = convertParameterizedType(node, templateTypes);
   } else if (isUnion(node)) {  // foo|bar
     t = convertUnion(node, templateTypes);
   } else if (isFunction(node)) {  // function(foo): bar
@@ -191,6 +193,14 @@ const renameMap = new Map<string, string>([
   ['ITemplateArray', 'TemplateStringsArray'],
 ]);
 
+/*
+ * As above but only applicable when parameterized (`Foo<T>`)
+ */
+const parameterizedRenameMap = new Map<string, string>([
+  ['HTMLCollection', 'HTMLCollectionOf'],
+  ['NodeList', 'NodeListOf'],
+]);
+
 /**
  * Return whether the given AST node is an expression that is nullable by
  * default in the Closure type system.
@@ -227,6 +237,21 @@ function convertIndexableObject(
   return new ts.IndexableObjectType(
       convert(node.applications[0], templateTypes),
       convert(node.applications[1], templateTypes));
+}
+
+function convertParameterizedType(
+    node: doctrine.type.TypeApplication,
+    templateTypes: string[]): ts.ParameterizedType|ts.NameType {
+  if (!isName(node.expression)) {
+    console.error('Could not find name of parameterized type');
+    return ts.anyType;
+  }
+  const types = node.applications.map((application) =>
+    convert(application, templateTypes));
+  const name = renameMap.get(node.expression.name) ||
+    parameterizedRenameMap.get(node.expression.name) ||
+    node.expression.name;
+  return new ts.ParameterizedType(name, types);
 }
 
 function convertUnion(
@@ -298,6 +323,11 @@ function isParameterizedArray(node: doctrine.Type):
   return node.type === 'TypeApplication' &&
       node.expression.type === 'NameExpression' &&
       node.expression.name === 'Array';
+}
+
+function isParameterizedType(node: doctrine.Type):
+    node is doctrine.type.TypeApplication {
+  return node.type === 'TypeApplication';
 }
 
 function isBareArray(node: doctrine.Type):

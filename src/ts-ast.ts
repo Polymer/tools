@@ -386,7 +386,7 @@ export class Property {
 
 // A TypeScript type expression.
 export type Type = NameType|UnionType|ArrayType|FunctionType|ConstructorType|
-    RecordType|IntersectionType|IndexableObjectType|ParamType;
+    RecordType|IntersectionType|IndexableObjectType|ParamType|ParameterizedType;
 
 // string, MyClass, null, undefined, any
 export class NameType {
@@ -510,6 +510,30 @@ export class ArrayType {
       // complex types (e.g. arrays of arrays).
       return `Array<${this.itemType.serialize()}>`;
     }
+  }
+}
+
+// Foo<Bar>
+export class ParameterizedType {
+  readonly kind = 'parameterized';
+  itemTypes: Type[];
+  name: string;
+
+  constructor(name: string, itemTypes: Type[]) {
+    this.name = name;
+    this.itemTypes = itemTypes;
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const itemType of this.itemTypes) {
+      yield* itemType.traverse();
+    }
+    yield this;
+  }
+
+  serialize(): string {
+    const types = this.itemTypes.map((t) => t.serialize());
+    return `${this.name}<${types.join(', ')}>`;
   }
 }
 

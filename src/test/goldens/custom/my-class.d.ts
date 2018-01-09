@@ -21,4 +21,6 @@ declare class MyClass {
   defaulted_param(p1?: any): any;
   defaulted_and_optional_param(p1?: any, p2?: string): any;
   defaulted_and_required_param(p1: any|undefined, p2: any): any;
+  parameterized_return_type(): MyParameterizedType<boolean>;
+  renamed_collection_return_types(): Array<NodeListOf<Node>|HTMLCollectionOf<HTMLElement>>;
 }

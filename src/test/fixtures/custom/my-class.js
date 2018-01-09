@@ -42,4 +42,14 @@ class MyClass {
   defaulted_and_optional_param(p1 = "foo", p2) { }
 
   defaulted_and_required_param(p1 = "foo", p2) { }
+
+  /**
+   * @returns {!MyParameterizedType<boolean>}
+   */
+  parameterized_return_type() { }
+
+  /**
+   * @returns {!Array<!NodeList<!Node>|!HTMLCollection<!HTMLElement>>}
+   */
+  renamed_collection_return_types() { }
 }
