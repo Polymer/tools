@@ -21,7 +21,7 @@ declare class TemplateInstanceBase extends
    * is either another templatize instance that had option `parentModel: true`,
    * or else the host element.
    */
-  readonly parentModel: Polymer.PropertyEffects|null;
+  readonly parentModel: Polymer.PropertyEffects;
   _methodHost: Polymer.PropertyEffects;
 
   /**
@@ -31,7 +31,7 @@ declare class TemplateInstanceBase extends
    * @param eventName Name of event
    * @param handler Listener function to add
    */
-  _addEventListenerToNode(node: Node, eventName: string, handler: Function|null): void;
+  _addEventListenerToNode(node: Node, eventName: string, handler: (p0: Event) => void): void;
 
   /**
    * Overrides default property-effects implementation to intercept
@@ -42,7 +42,7 @@ declare class TemplateInstanceBase extends
    * @param prop The property to set
    * @param value The value to set
    */
-  _setUnmanagedPropertyToNode(node: Node|null, prop: string, value: any): void;
+  _setUnmanagedPropertyToNode(node: Node, prop: string, value: any): void;
 
   /**
    * Forwards a host property to this instance.  This method should be
@@ -153,6 +153,6 @@ declare namespace Polymer {
      * @returns Template instance representing the
      *   binding scope for the element
      */
-    function modelForElement(template: HTMLTemplateElement|null, node: Node|null): TemplateInstanceBase|null;
+    function modelForElement(template: HTMLTemplateElement|null, node?: Node|null): TemplateInstanceBase|null;
   }
 }
