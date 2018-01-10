@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 * Add `Element#template` for getting the template of an element.
+* In MultiUrlLoader, proxy the first implementation of readDirectory, if any.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.7] - 2017-01-01
