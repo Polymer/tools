@@ -1,9 +1,11 @@
 # Changelog
 
 ## Unreleased
+<!-- Add new, unreleased items here. -->
+
+## v2.1.0 [01-10-2018]
 - Made `Workspace.determineGitHubRepos()` method public.
 - Fixed `excludes` pattern filtering bug.
-<!-- Add new, unreleased items here. -->
 
 ## v2.0.0 [12-18-2017]
 - [BREAKING] `Workspace.init()` options have been moved to the constructor.
