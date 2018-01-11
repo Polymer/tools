@@ -19,9 +19,9 @@ import {Workspace} from 'polymer-workspaces';
 
 import {CliOptions} from '../cli';
 import convertWorkspace from '../convert-workspace';
-import { testWorkspace, testWorkspaceInstallOnly } from '../test-workspace';
-import githubPushWorkspace from '../push-workspace';
 import npmPublishWorkspace from '../publish-workspace';
+import githubPushWorkspace from '../push-workspace';
+import {testWorkspace, testWorkspaceInstallOnly} from '../test-workspace';
 import {logStep} from '../util';
 
 const githubTokenMessage = `

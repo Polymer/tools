@@ -125,6 +125,13 @@ export class WorkspaceUrlHandler implements UrlHandler {
     return './' + jsUrlPieces.join('/') as ConvertedDocumentUrl;
   }
 
+  /**
+   * Create a ConvertedDocumentUrl formatted for the current project layout.
+   * Useful when the converted file location is known ahead of time.
+   */
+  createConvertedUrl(partialUrl: string) {
+    return `./${partialUrl}` as ConvertedDocumentUrl;
+  }
 
   /**
    * Get the formatted relative import URL between two ConvertedDocumentUrls.

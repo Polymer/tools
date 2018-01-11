@@ -73,9 +73,7 @@ export class ProjectConverter {
     console.assert(
         document.kinds.has('html-document'),
         `convertDocument() must be called with an HTML document, but got ${
-                                                                           document
-                                                                               .kinds
-                                                                         }`);
+            document.kinds}`);
     try {
       this.conversionSettings.includes.has(document.url) ?
           this.convertDocumentToJs(document, new Set()) :
@@ -136,8 +134,9 @@ export class ProjectConverter {
         this.namespacedExports,
         this.urlHandler,
         this.conversionSettings);
-    const newModule = documentConverter.convertToJsModule();
-    this._handleConversionResult(newModule);
+    documentConverter.convertToJsModule().forEach((result) => {
+      this._handleConversionResult(result);
+    });
   }
 
   /**

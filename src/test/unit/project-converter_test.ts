@@ -109,7 +109,7 @@ suite('AnalysisConverter', () => {
 
     function assertSources(
         results: Map<string, string|undefined>,
-        expected: {[path: string]: string | undefined}) {
+        expected: {[path: string]: string|undefined}) {
       for (const [expectedPath, expectedContents] of Object.entries(expected)) {
         assert.isTrue(
             results.has(expectedPath),
@@ -2120,7 +2120,7 @@ var metaDatas = IronMeta.types;
       });
     });
 
-    test('External scripts get turned into imports too', async () => {
+    test('Internal imported scripts get inlined into a module', async () => {
       setSources({
         'test.html': `
           <script src='foo.js'></script>
@@ -2130,10 +2130,28 @@ var metaDatas = IronMeta.types;
 
       assertSources(await convert(), {
         'test.js': `
-import './foo.js';
+console.log("foo");
 `
       });
     });
+
+
+    test(
+        'External imported scripts do not get inlined into a module',
+        async () => {
+          setSources({
+            'test.html': `
+          <script src='../dep/dep.js'></script>
+        `,
+            'bower_components/dep/dep.js': 'console.log("foo");'
+          });
+
+          assertSources(await convert(), {
+            'test.js': `
+import '../dep/dep.js';
+`
+          });
+        });
 
     testName = `don't treat all values on a namespace as namespaces themselves`;
     test(testName, async () => {

@@ -60,7 +60,7 @@ export class JsExport {
   /**
    * Exported name, ie Foo for `export Foo`;
    *
-   * The name * represents the entire module, for when the key in the
+   * The name represents the entire module, for when the key in the
    * namespacedExports Map represents a namespace object.
    */
   readonly name: string;

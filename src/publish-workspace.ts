@@ -14,10 +14,9 @@
 
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
-import {WorkspaceRepo, publishPackagesToNpm} from 'polymer-workspaces';
+import {publishPackagesToNpm, WorkspaceRepo} from 'polymer-workspaces';
 
 export default async function run(reposToConvert: WorkspaceRepo[]) {
-
   console.log(
       chalk.dim('[1/3] ') + chalk.magenta(`Setting up publish to npm...`));
 

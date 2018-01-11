@@ -36,6 +36,7 @@ declare module 'ast-types' {
   }
 
   interface VisitorContext {
+    abort(): void;
     traverse(nodePath: NodePath): void;
   }
 
@@ -45,7 +46,10 @@ declare module 'ast-types' {
         (this: VisitorContext, path: NodePath<estree.Program>): void|boolean;
     visitEmptyStatement?
         (this: VisitorContext, path: NodePath<estree.EmptyStatement>):
-            void|boolean;
+      void | boolean;
+    visitCallExpression?
+        (this: VisitorContext, path: NodePath<estree.CallExpression>):
+      void | boolean;
     visitBlockStatement?
         (this: VisitorContext, path: NodePath<estree.BlockStatement>):
             void|boolean;

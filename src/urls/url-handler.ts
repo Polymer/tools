@@ -28,4 +28,5 @@ export interface UrlHandler {
   getPathImportUrl(fromUrl: ConvertedDocumentUrl, toUrl: ConvertedDocumentUrl):
       string;
   convertUrl(url: OriginalDocumentUrl): ConvertedDocumentUrl;
+  createConvertedUrl(partialUrl: string): ConvertedDocumentUrl;
 }

@@ -27,6 +27,7 @@ import * as recast from 'recast';
 import {ConversionSettings} from './conversion-settings';
 import {attachCommentsToFirstStatement, canDomModuleBeInlined, collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, filterClone, findAvailableIdentifier, getCommentsBetween, getMemberPath, getNodePathInProgram, getPathOfAssignmentTo, getSetterName, insertStatementsIntoProgramBody, serializeNode, serializeNodeToTemplateLiteral} from './document-util';
 import {ConversionResult, JsExport} from './js-module';
+import {addA11ySuiteIfUsed} from './passes/add-a11y-suite-if-used';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
@@ -84,6 +85,20 @@ const legacyJavascriptTypes: ReadonlySet<string|null> = new Set([
   'text/livescript',
   'text/x-ecmascript',
   'text/x-javascript',
+]);
+
+/**
+ * This is a set of JavaScript files that we know to be converted as modules.
+ * This is neccessary because we don't definitively know the converted type
+ * of an external JavaScript file loaded as a normal script in
+ * a top-level HTML file.
+ *
+ * TODO(fks): Add the ability to know via conversion manifest support or
+ * convert dependencies as entire packages instead of file-by-file.
+ * (See https://github.com/Polymer/polymer-modulizer/issues/268)
+ */
+const knownScriptModules = new Set<string>([
+  'iron-test-helpers/mock-interactions.js',
 ]);
 
 /**
@@ -235,28 +250,49 @@ export class DocumentConverter {
                 !this.conversionSettings.excludes.has(f.document.url));
   }
 
-  convertToJsModule(): ConversionResult {
+  private isInternalNonModuleImport(scriptImport: Import): boolean {
+    const oldScriptUrl = getDocumentUrl(scriptImport.document);
+    const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
+    const isModuleImport =
+        dom5.getAttribute(scriptImport.astNode, 'type') === 'module';
+    const isInternalImport =
+        this.urlHandler.isImportInternal(this.convertedUrl, newScriptUrl);
+    return isInternalImport && !isModuleImport;
+  }
+
+  convertToJsModule(): ConversionResult[] {
     if (this._isWrapperHTMLDocument) {
-      return {
+      return [{
         originalUrl: this.originalUrl,
         convertedUrl: this.convertedUrl,
         convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
         deleteOriginal: true,
         output: undefined,
-      };
+      }];
     }
 
     const combinedToplevelStatements = [];
+    const convertedHtmlScripts = new Set<Import>();
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
-    for (const script of this.document.getFeatures({kind: 'js-document'})) {
+    for (const script of this.document.getFeatures()) {
+      let scriptDocument: Document;
+      if (script.kinds.has('html-script') &&
+          this.isInternalNonModuleImport(script as Import)) {
+        scriptDocument = (script as Import).document;
+        convertedHtmlScripts.add(script as Import);
+      } else if (script.kinds.has('js-document')) {
+        scriptDocument = script as Document;
+      } else {
+        continue;
+      }
       const scriptProgram =
-          recast.parse(script.parsedDocument.contents).program;
+          recast.parse(scriptDocument.parsedDocument.contents).program;
       rewriteToplevelThis(scriptProgram);
       // We need to inline templates on a per-script basis, otherwise we run
       // into trouble matching up analyzer AST nodes with our own.
-      this.inlineTemplates(scriptProgram, script);
+      this.inlineTemplates(scriptProgram, scriptDocument);
       if (this.conversionSettings.addImportPath) {
-        this.addImportPathsToElements(scriptProgram, script);
+        this.addImportPathsToElements(scriptProgram, scriptDocument);
       }
       const comments: string[] = getCommentsBetween(
           this.document.parsedDocument.ast, prevScriptNode, script.astNode);
@@ -265,6 +301,7 @@ export class DocumentConverter {
       combinedToplevelStatements.push(...statements);
       prevScriptNode = script.astNode;
     }
+
     const trailingComments = getCommentsBetween(
         this.document.parsedDocument.ast, prevScriptNode, undefined);
     const maybeCommentStatement =
@@ -274,13 +311,29 @@ export class DocumentConverter {
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
     const importedReferences = this.collectNamespacedReferences(program);
+    const results: ConversionResult[] = [];
+
     // Add imports for every non-module <script> tag to just import the file
     // itself.
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
       const oldScriptUrl = getDocumentUrl(scriptImport.document);
       const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
-      importedReferences.set(newScriptUrl, new Set());
+      if (convertedHtmlScripts.has(scriptImport)) {
+        // NOTE: This deleted script file path *may* === this document's final
+        // converted file path. Because results are written in order, the
+        // final result (this document) has the final say, and any previous
+        // deletions won't overwrite/conflict with the final document.
+        results.push({
+          originalUrl: oldScriptUrl,
+          convertedUrl: newScriptUrl,
+          convertedFilePath: getJsModuleConvertedFilePath(oldScriptUrl),
+          deleteOriginal: true,
+          output: undefined,
+        });
+      } else {
+        importedReferences.set(newScriptUrl, new Set());
+      }
     }
     this.addJsImports(program, importedReferences);
     this.insertCodeToGenerateHtmlElements(program);
@@ -301,7 +354,7 @@ export class DocumentConverter {
     const outputProgram =
         recast.print(program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
 
-    return {
+    results.push({
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
       convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
@@ -312,7 +365,8 @@ export class DocumentConverter {
         exportedNamespaceMembers: exportMigrationRecords,
         es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
       }
-    };
+    });
+    return results;
   }
 
   convertAsToplevelHtmlDocument(): ConversionResult {
@@ -368,6 +422,7 @@ export class DocumentConverter {
           [],
           dom5.childNodesIncludeTemplate));
     }
+
     for (const astNode of scriptsToConvert) {
       if (!isLegacyJavaScriptTag(astNode)) {
         continue;
@@ -418,6 +473,7 @@ export class DocumentConverter {
       const replacementText = serializeNode(scriptTag);
       edits.push({offsets, replacementText});
     }
+
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
       // ignore fake script imports injected by various hacks in the
@@ -433,10 +489,18 @@ export class DocumentConverter {
       const offsets = htmlDocument.sourceRangeToOffsets(
           htmlDocument.sourceRangeForNode(scriptImport.astNode)!);
 
-      const correctedUrl = this.formatImportUrl(
-          this.convertDocumentUrl(getDocumentUrl(scriptImport.document)),
-          scriptImport.url);
-      dom5.setAttribute(scriptImport.astNode, 'src', correctedUrl);
+      const convertedUrl =
+          this.convertDocumentUrl(getDocumentUrl(scriptImport.document));
+      const formattedUrl = this.formatImportUrl(convertedUrl, scriptImport.url);
+      dom5.setAttribute(scriptImport.astNode, 'src', formattedUrl);
+
+      // Temporary: Check if imported script is a known module.
+      // See `knownScriptModules` for more information.
+      for (const importUrlEnding of knownScriptModules) {
+        if (scriptImport.url.endsWith(importUrlEnding)) {
+          dom5.setAttribute(scriptImport.astNode, 'type', 'module');
+        }
+      }
 
       edits.push(
           {offsets, replacementText: serializeNode(scriptImport.astNode)});
@@ -516,6 +580,10 @@ export class DocumentConverter {
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
     const importedReferences = this.collectNamespacedReferences(program);
+    const wasA11ySuiteAdded = addA11ySuiteIfUsed(
+        program,
+        this.formatImportUrl(this.urlHandler.createConvertedUrl(
+            'wct-browser-legacy/a11ySuite.js')));
     const wereImportsAdded = this.addJsImports(program, importedReferences);
     // Don't convert the HTML.
     // Don't inline templates, they're fine where they are.
@@ -532,7 +600,7 @@ export class DocumentConverter {
 
     this.warnOnDangerousReferences(program);
 
-    if (!wereImportsAdded) {
+    if (!wasA11ySuiteAdded && !wereImportsAdded) {
       return undefined;  // no imports, no reason to convert to a module
     }
 
@@ -723,10 +791,8 @@ export class DocumentConverter {
               'init', jsc.identifier('_template'), templateLiteral));
         }
       } else {
-        console.error(
-            `Internal Error, Class or CallExpression expected, got ${
-                                                                     node.type
-                                                                   }`);
+        console.error(`Internal Error, Class or CallExpression expected, got ${
+            node.type}`);
       }
     }
   }
@@ -786,10 +852,8 @@ export class DocumentConverter {
               'init', jsc.identifier('importPath'), importMetaUrl));
         }
       } else {
-        console.error(
-            `Internal Error, Class or CallExpression expected, got ${
-                                                                     node.type
-                                                                   }`);
+        console.error(`Internal Error, Class or CallExpression expected, got ${
+            node.type}`);
       }
     }
   }
@@ -1033,6 +1097,7 @@ export class DocumentConverter {
       jsImportDeclarations.push(...getImportDeclarations(
           jsFormattedImportUrl, namedExports, references, usedIdentifiers));
     }
+
     // Prepend JS imports into the program body
     program.body.splice(0, 0, ...jsImportDeclarations);
     // Return true if any imports were added, false otherwise
