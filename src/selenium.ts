@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as cleankill from 'cleankill';
 import * as freeport from 'freeport';
 import * as selenium from 'selenium-standalone';
