@@ -61,13 +61,21 @@ export function setup() {
               defaultBranch: 'master'
             }
           ],
-          {Status: '200 OK'});
+          {
+            Status: '200 OK',
+            Link:
+                '<https://api.github.com/organizations/11639138/repos?page=2>; rel="next", <https://api.github.com/organizations/11639138/repos?page=5>; rel="last"'
+          });
 
   nock('https://api.github.com')
       .persist()
       .get('/orgs/polymerelements/repos')
       .query({page: 2, per_page: 50, access_token: testApiToken})
-      .reply(200, [], {Status: '200 OK'});
+      .reply(200, [], {
+        Status: '200 OK',
+        Link:
+            '<https://api.github.com/organizations/11639138/repos?page=1>; rel="last", <https://api.github.com/organizations/11639138/repos?page=1>; rel="first", <https://api.github.com/organizations/11639138/repos?page=1>; rel="prev"'
+      });
 
   nock('https://api.github.com')
       .persist()

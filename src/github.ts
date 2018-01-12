@@ -129,9 +129,6 @@ function createGithubRepoReferenceFromPattern(pattern: string):
  * to do with listing and cloning owned repos) using a token and building in
  * rate-limiting functionality using the Bottleneck library to throttle API
  * consumption.
- *
- * TODO(fks) 09-21-2017: Add back parallelization & throttling.
- *                       https://github.com/Polymer/polymer-workspaces/issues/2
  */
 export class GitHubConnection {
   private _cache: Map<string, GitHubRepoData>;
@@ -188,9 +185,10 @@ export class GitHubConnection {
   async getOwnerRepos(owner: string): Promise<GitHubRepoData[]> {
     // Try to get the repo names assuming owner is an org.
     const allRepos: GitHubRepoData[] = [];
-    let pageRepos: GitHubRepoData[] = [];
     const pageSize = 50;
     let page = 1;
+    const lastPageRegex = /page=(\d+)>; rel="last"/;
+    let lastPage = 0;
     let isOrg = true;
 
     do {
@@ -200,6 +198,8 @@ export class GitHubConnection {
           const response = await this._github.repos.getForOrg(
               {org: owner, per_page: pageSize, page: page});
           responseData = response.data;
+          lastPage =
+              Number((lastPageRegex.exec(response.meta.link) || []).pop());
         } catch (e) {
           // Owner is not an org? Continue as if owner is a user.
           isOrg = false;
@@ -210,19 +210,21 @@ export class GitHubConnection {
           const response = await this._github.repos.getForUser(
               {username: owner, per_page: pageSize, page: page});
           responseData = response.data;
+          lastPage =
+              Number((lastPageRegex.exec(response.meta.link) || []).pop());
         } catch (e) {
           // Owner is not an user, either? End and return any repos found.
           responseData = [];
         }
       }
-      pageRepos = responseData.filter((obj: any) => !obj.private)
-                      .map(createGitHubRepoDataFromApi);
-      for (const repo of pageRepos) {
-        this.setCache(repo.fullName, repo);
-        allRepos.push(repo);
-      }
+      responseData.filter((obj: any) => !obj.private)
+          .map(createGitHubRepoDataFromApi)
+          .forEach((repo: GitHubRepoData) => {
+            this.setCache(repo.fullName, repo);
+            allRepos.push(repo);
+          });
       ++page;
-    } while (pageRepos.length > 0);
+    } while (lastPage > page);
 
     return allRepos;
   }
