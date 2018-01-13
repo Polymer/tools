@@ -185,46 +185,49 @@ export class GitHubConnection {
   async getOwnerRepos(owner: string): Promise<GitHubRepoData[]> {
     // Try to get the repo names assuming owner is an org.
     const allRepos: GitHubRepoData[] = [];
-    const pageSize = 50;
-    let page = 1;
-    const lastPageRegex = /page=(\d+)>; rel="last"/;
-    let lastPage = 0;
     let isOrg = true;
+    let hasNextPage = false;
 
-    do {
-      let responseData;
-      if (isOrg) {
-        try {
-          const response = await this._github.repos.getForOrg(
-              {org: owner, per_page: pageSize, page: page});
-          responseData = response.data;
-          lastPage =
-              Number((lastPageRegex.exec(response.meta.link) || []).pop());
-        } catch (e) {
-          // Owner is not an org? Continue as if owner is a user.
-          isOrg = false;
-        }
+    let response;
+    let responseData;
+    if (isOrg) {
+      try {
+        response = await this._github.repos.getForOrg(
+            {org: owner});
+        responseData = response.data;
+      } catch (e) {
+        // Owner is not an org? Continue as if owner is a user.
+        isOrg = false;
       }
-      if (!isOrg) {
-        try {
-          const response = await this._github.repos.getForUser(
-              {username: owner, per_page: pageSize, page: page});
-          responseData = response.data;
-          lastPage =
-              Number((lastPageRegex.exec(response.meta.link) || []).pop());
-        } catch (e) {
-          // Owner is not an user, either? End and return any repos found.
-          responseData = [];
-        }
+    }
+    if (!isOrg) {
+      try {
+        response = await this._github.repos.getForUser(
+            {username: owner});
+        responseData = response.data;
+      } catch (e) {
+        // Owner is not an user, either? End and return any repos found.
+        responseData = [];
       }
+    }
+
+    while (hasNextPage || responseData.length > 0) {
       responseData.filter((obj: any) => !obj.private)
           .map(createGitHubRepoDataFromApi)
           .forEach((repo: GitHubRepoData) => {
             this.setCache(repo.fullName, repo);
             allRepos.push(repo);
           });
-      ++page;
-    } while (lastPage > page);
+
+      if (hasNextPage = this._github.hasNextPage(response)) {
+        try {
+          response = await this._github.getNextPage(response);
+          responseData = response.data;
+        } catch (e) {
+          responseData = [];
+        }
+      }
+    }
 
     return allRepos;
   }
