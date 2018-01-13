@@ -187,14 +187,14 @@ export class GitHubConnection {
     const allRepos: GitHubRepoData[] = [];
     let isOrg = true;
     let hasNextPage = false;
-
-    let response;
     let responseData;
+    let responseMeta;
+
     if (isOrg) {
       try {
-        response = await this._github.repos.getForOrg(
-            {org: owner});
+        const response = await this._github.repos.getForOrg({org: owner});
         responseData = response.data;
+        responseMeta = response.meta;
       } catch (e) {
         // Owner is not an org? Continue as if owner is a user.
         isOrg = false;
@@ -202,9 +202,9 @@ export class GitHubConnection {
     }
     if (!isOrg) {
       try {
-        response = await this._github.repos.getForUser(
-            {username: owner});
+        const response = await this._github.repos.getForUser({username: owner});
         responseData = response.data;
+        responseMeta = response.meta;
       } catch (e) {
         // Owner is not an user, either? End and return any repos found.
         responseData = [];
@@ -219,11 +219,13 @@ export class GitHubConnection {
             allRepos.push(repo);
           });
 
-      if (hasNextPage = this._github.hasNextPage(response)) {
+      if (hasNextPage = !!this._github.hasNextPage(responseMeta)) {
         try {
-          response = await this._github.getNextPage(response);
+          const response: any = await this._github.getNextPage(responseMeta);
           responseData = response.data;
+          responseMeta = response.meta;
         } catch (e) {
+          hasNextPage = false;
           responseData = [];
         }
       }
