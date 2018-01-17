@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as escapeHtml from 'escape-html';
 import * as express from 'express';
 import * as path from 'path';
 import {parse as parseUrl} from 'url';
@@ -106,8 +107,9 @@ export function makeApp(options: AppOptions): PolyserveApplication {
                   err.path.endsWith('/requirejs/require.js')) {
                 send(req, localRequirePath).pipe(res);
               } else {
-                res.statusCode = err.statusCode;
-                res.end(err.Error);
+                res.status(err.statusCode);
+                res.type('html');
+                res.end(escapeHtml(err.Error));
               }
             })
         .pipe(res);

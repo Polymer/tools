@@ -102,6 +102,15 @@ suite('startServer', () => {
           });
         });
 
+    test('protects against XSS', async () => {
+      const app = getApp({root});
+
+      await supertest(app).get('/<script>alert("nasty")</script>.html').expect(404).expect((res: any) => {
+        expect(res.text).to.not.have.string('<script>');
+        expect(res.text).to.have.string('&lt;script&gt;alert(&quot;nasty&quot;)&lt;/script&gt;');
+      });
+    });
+
   });
 
   suite('component serving', () => {  //

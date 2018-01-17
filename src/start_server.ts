@@ -13,6 +13,7 @@
  */
 
 import * as assert from 'assert';
+import * as escapeHtml from 'escape-html';
 import * as express from 'express';
 import * as fs from 'mz/fs';
 import * as path from 'path';
@@ -406,8 +407,9 @@ export function getApp(options: ServerOptions): express.Express {
                 // disk. Serve the entry point HTML file instead of a 404.
                 send(req, entrypoint, {root: root}).pipe(res);
               } else {
-                res.statusCode = error.status || 500;
-                res.end(error.message);
+                res.status(error.status || 500);
+                res.type('html');
+                res.end(escapeHtml(error.message));
               }
             })
         .pipe(res);
