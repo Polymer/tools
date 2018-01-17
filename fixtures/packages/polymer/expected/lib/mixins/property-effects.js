@@ -1360,7 +1360,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
      *
      * Users may override this method to provide alternate approaches.
      *
-     * @param {Node} node The node to set a property on
+     * @param {!Node} node The node to set a property on
      * @param {string} prop The property to set
      * @param {*} value The value to set
      * @return {void}
@@ -2242,9 +2242,9 @@ export const PropertyEffects = dedupingMixin(superClass => {
      * templates are stored in a linked list on the instance so that
      * templates can be efficiently stamped and unstamped.
      *
-     * @param {HTMLTemplateElement} template Template containing binding
+     * @param {!HTMLTemplateElement} template Template containing binding
      *   bindings
-     * @return {Object} Template metadata object
+     * @return {!TemplateInfo} Template metadata object
      * @protected
      */
     static bindTemplate(template) {
@@ -2264,7 +2264,7 @@ export const PropertyEffects = dedupingMixin(superClass => {
      * create and link an instance of the template metadata associated with a
      * particular stamping.
      *
-     * @param {HTMLTemplateElement} template Template containing binding
+     * @param {!HTMLTemplateElement} template Template containing binding
      *   bindings
      * @param {boolean=} instanceBinding When false (default), performs
      *   "prototypical" binding of the template and overwrites any previously

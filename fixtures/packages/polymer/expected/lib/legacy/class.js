@@ -20,9 +20,10 @@ let metaProps = {
  * to ensure that any legacy behaviors can rely on legacy Polymer API on
  * the underlying element.
  *
- * @param {!(Object|Array)} behaviors Behavior object or array of behaviors.
- * @param {!HTMLElement|function(new:HTMLElement)} klass Element class.
- * @return {function(new:HTMLElement)} Returns a new Element class extended by the
+ * @template T
+ * @param {!Object|!Array<!Object>} behaviors Behavior object or array of behaviors.
+ * @param {function(new:T)} klass Element class.
+ * @return {function(new:T)} Returns a new Element class extended by the
  * passed in `behaviors` and also by `Polymer.LegacyElementMixin`.
  * @memberof Polymer
  * @suppress {invalidCasts, checkTypes}

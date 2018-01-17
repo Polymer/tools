@@ -18,7 +18,8 @@ export const PropertiesChanged = dedupingMixin(superClass => {
 
     /**
      * Creates property accessors for the given property names.
-     * @param {Object} props Object whose keys are names of accessors.
+     * @param {!Object} props Object whose keys are names of accessors.
+     * @return {void}
      * @protected
      */
     static createProperties(props) {

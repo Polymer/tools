@@ -1,6 +1,6 @@
 {
   "name": "iron-ajax",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "description": "Makes it easy to make ajax calls and parse the response",
   "private": true,
   "authors": [
@@ -53,11 +53,11 @@
   "resolutions": {
     "webcomponentsjs": "^1.0.0"
   },
-  "_release": "2.0.6",
+  "_release": "2.0.8",
   "_resolution": {
     "type": "version",
-    "tag": "v2.0.6",
-    "commit": "db9535a8e40795b464679469f5b3dd71b9163def"
+    "tag": "v2.0.8",
+    "commit": "fd9fd3b7f6f4dca92358085ee0f9b4f783394410"
   },
   "_source": "https://github.com/PolymerElements/iron-ajax.git",
   "_target": "1 - 2",

@@ -433,7 +433,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
      *
      * @param {!Node} node Node to add event listener to
      * @param {string} eventName Name of event
-     * @param {Function} handler Listener function to add
+     * @param {function(!Event):void} handler Listener function to add
      * @return {void}
      */
     _addEventListenerToNode(node, eventName, handler) {
@@ -445,7 +445,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
      *
      * @param {Node} node Node to remove event listener from
      * @param {string} eventName Name of event
-     * @param {Function} handler Listener function to remove
+     * @param {function(!Event):void} handler Listener function to remove
      * @return {void}
      */
     _removeEventListenerFromNode(node, eventName, handler) {

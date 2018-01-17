@@ -290,9 +290,9 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * properties.  To ensure only `ownProperties` are copied from source
      * to target and that accessor implementations are copied, use `extend`.
      *
-     * @param {Object} target Target object to copy properties to.
-     * @param {Object} source Source object to copy properties from.
-     * @return {Object} Target object that was passed as first argument.
+     * @param {!Object} target Target object to copy properties to.
+     * @param {!Object} source Source object to copy properties from.
+     * @return {!Object} Target object that was passed as first argument.
      */
     mixin(target, source) {
       for (let i in source) {
@@ -326,12 +326,12 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * returns a document fragment containing the imported content.
      *
      * @param {HTMLTemplateElement} template HTML template element to instance.
-     * @return {DocumentFragment} Document fragment containing the imported
+     * @return {!DocumentFragment} Document fragment containing the imported
      *   template content.
     */
     instanceTemplate(template) {
       let content = this.constructor._contentForTemplate(template);
-      let dom = /** @type {DocumentFragment} */
+      let dom = /** @type {!DocumentFragment} */
         (document.importNode(content, true));
       return dom;
     }
@@ -351,7 +351,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *  `bubbles` (boolean, defaults to `true`),
      *  `cancelable` (boolean, defaults to false), and
      *  `node` on which to fire the event (HTMLElement, defaults to `this`).
-     * @return {Event} The new event that was fired.
+     * @return {!Event} The new event that was fired.
      */
     fire(type, detail, options) {
       options = options || {};
@@ -605,7 +605,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
     /**
      * Checks whether an element is in this element's local DOM tree.
      *
-     * @param {Element=} node The element to be checked.
+     * @param {!Element} node The element to be checked.
      * @return {boolean} true if node is in this element's local DOM tree.
      */
     isLocalDescendant(node) {
@@ -653,7 +653,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      *   context) when the wait time elapses.
      * @param {number} wait Optional wait time in milliseconds (ms) after the
      *   last signal that must elapse before invoking `callback`
-     * @return {Object} Returns a debouncer object on which exists the
+     * @return {!Object} Returns a debouncer object on which exists the
      * following methods: `isActive()` returns true if the debouncer is
      * active; `cancel()` cancels the debouncer if it is active;
      * `flush()` immediately invokes the debounced callback if the debouncer
@@ -742,9 +742,9 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * Convenience method for creating an element and configuring it.
      *
      * @param {string} tag HTML element tag to create.
-     * @param {Object} props Object of properties to configure on the
+     * @param {Object=} props Object of properties to configure on the
      *    instance.
-     * @return {Element} Newly created and configured element.
+     * @return {!Element} Newly created and configured element.
      */
     create(tag, props) {
       let elt = document.createElement(tag);
@@ -769,9 +769,9 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      * element will contain the imported document contents.
      *
      * @param {string} href URL to document to load.
-     * @param {!Function=} onload Callback to notify when an import successfully
+     * @param {?function(!Event):void=} onload Callback to notify when an import successfully
      *   loaded.
-     * @param {!Function=} onerror Callback to notify when an import
+     * @param {?function(!ErrorEvent):void=} onerror Callback to notify when an import
      *   unsuccessfully loaded.
      * @param {boolean=} optAsync True if the import should be loaded `async`.
      *   Defaults to `false`.
@@ -911,7 +911,7 @@ export const LegacyElementMixin = dedupingMixin((base) => {
      */
     _logger(level, args) {
       // accept ['foo', 'bar'] and [['foo', 'bar']]
-      if (Array.isArray(args) && args.length === 1) {
+      if (Array.isArray(args) && args.length === 1 && Array.isArray(args[0])) {
         args = args[0];
       }
       switch(level) {

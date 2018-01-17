@@ -22,7 +22,7 @@ export const Templatizer = {
    * template to prepare an element for stamping the template, followed
    * by `stamp` to create new instances of the template.
    *
-   * @param {HTMLTemplateElement} template Template to prepare
+   * @param {!HTMLTemplateElement} template Template to prepare
    * @param {boolean=} mutableData When `true`, the generated class will skip
    *   strict dirty-checking for objects and arrays (always consider them to
    *   be "dirty"). Defaults to false.

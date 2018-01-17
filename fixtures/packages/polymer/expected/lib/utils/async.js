@@ -44,7 +44,6 @@ export const timeOut = {
   /**
    * Enqueues a function called in the next task.
    *
-   * @function
    * @memberof Polymer.Async.timeOut
    * @param {!Function} fn Callback to run
    * @param {number=} delay Delay in milliseconds
@@ -56,7 +55,6 @@ export const timeOut = {
   /**
    * Cancels a previously enqueued `timeOut` callback.
    *
-   * @function
    * @memberof Polymer.Async.timeOut
    * @param {number} handle Handle returned from `run` of callback to cancel
    * @return {void}
@@ -70,9 +68,8 @@ export const animationFrame = {
   /**
    * Enqueues a function called at `requestAnimationFrame` timing.
    *
-   * @function
    * @memberof Polymer.Async.animationFrame
-   * @param {function(number)} fn Callback to run
+   * @param {function(number):void} fn Callback to run
    * @return {number} Handle used for canceling task
    */
   run(fn) {
@@ -81,7 +78,6 @@ export const animationFrame = {
   /**
    * Cancels a previously enqueued `animationFrame` callback.
    *
-   * @function
    * @memberof Polymer.Async.animationFrame
    * @param {number} handle Handle returned from `run` of callback to cancel
    * @return {void}

@@ -54,7 +54,7 @@ class XMixin extends LegacyElementMixin(HTMLElement) {
 customElements.define(XMixin.is, XMixin);
 </script>
   <script type="module">
-import '../../polymer.js';
+import { Base } from '../../polymer.js';
 suite('Logging', () => {
   let fnEl, classEl;
   suiteSetup(() => {
@@ -84,6 +84,21 @@ suite('Logging', () => {
     let output = fnEl._logf(...args);
     assert.oneOf(fnEl.is, output, `${fnEl.is} should be in ${output}`);
     assert.includeMembers(output, args, `${args} should be in ${output}`);
+  });
+});
+suite('_logger', () => {
+  test('_log with single parameter', () => {
+    const msg = 'log test';
+    const orgConsole = console;      
+    const spy = sinon.spy();
+    window.console = {
+      log: spy
+    };
+    Base._log(msg);
+    window.console = orgConsole;
+    assert.equal(spy.callCount, 1, 'console.log called more than one time');
+    assert.equal(spy.args[0].length, 1, 'console.log called with more than one argument');
+    assert.equal(spy.args[0][0], msg, 'message not pass properly to log');
   });
 });
 </script>

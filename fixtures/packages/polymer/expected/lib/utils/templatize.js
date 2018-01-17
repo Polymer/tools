@@ -119,7 +119,7 @@ class TemplateInstanceBase extends base {
    *
    * @param {!Node} node Node to add event listener to
    * @param {string} eventName Name of event
-   * @param {Function} handler Listener function to add
+   * @param {function(!Event):void} handler Listener function to add
    * @return {void}
    */
   _addEventListenerToNode(node, eventName, handler) {
@@ -181,7 +181,7 @@ class TemplateInstanceBase extends base {
    * textContent bindings while children are "hidden" and cache in
    * private storage for later retrieval.
    *
-   * @param {Node} node The node to set a property on
+   * @param {!Node} node The node to set a property on
    * @param {string} prop The property to set
    * @param {*} value The value to set
    * @return {void}
@@ -200,7 +200,7 @@ class TemplateInstanceBase extends base {
    * is either another templatize instance that had option `parentModel: true`,
    * or else the host element.
    *
-   * @return {Polymer_PropertyEffects} The parent model of this instance
+   * @return {!Polymer_PropertyEffects} The parent model of this instance
    */
   get parentModel() {
     let model = this.__parentModel;
@@ -390,7 +390,7 @@ const Templatize = {
   /**
    * Returns an anonymous `Polymer.PropertyEffects` class bound to the
    * `<template>` provided.  Instancing the class will result in the
-   * template being stamped into document fragment stored as the instance's
+   * template being stamped into a document fragment stored as the instance's
    * `root` property, after which it can be appended to the DOM.
    *
    * Templates may utilize all Polymer data-binding features as well as
@@ -492,7 +492,7 @@ const Templatize = {
    * @memberof Polymer.Templatize
    * @param {HTMLTemplateElement} template The model will be returned for
    *   elements stamped from this template
-   * @param {Node} node Node for which to return a template model.
+   * @param {Node=} node Node for which to return a template model.
    * @return {TemplateInstanceBase} Template instance representing the
    *   binding scope for the element
    */

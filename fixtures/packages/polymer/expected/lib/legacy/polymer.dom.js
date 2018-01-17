@@ -43,9 +43,9 @@ class DomApi {
    * Returns an instance of `Polymer.FlattenedNodesObserver` that
    * listens for node changes on this element.
    *
-   * @param {Function} callback Called when direct or distributed children
+   * @param {function(!Element, { target: !Element, addedNodes: !Array<!Element>, removedNodes: !Array<!Element> }):void} callback Called when direct or distributed children
    *   of this element changes
-   * @return {Polymer.FlattenedNodesObserver} Observer instance
+   * @return {!Polymer.FlattenedNodesObserver} Observer instance
    */
   observeNodes(callback) {
     return new FlattenedNodesObserver(this.node, callback);
@@ -54,7 +54,7 @@ class DomApi {
   /**
    * Disconnects an observer previously created via `observeNodes`
    *
-   * @param {Polymer.FlattenedNodesObserver} observerHandle Observer instance
+   * @param {!Polymer.FlattenedNodesObserver} observerHandle Observer instance
    *   to disconnect.
    * @return {void}
    */
@@ -107,7 +107,7 @@ class DomApi {
    * For slot elements, returns the nodes assigned to the slot; otherwise
    * an empty array. It is equivalent to `<slot>.addignedNodes({flatten:true})`.
    *
-   * @return {Array<Node>} Array of assigned nodes
+   * @return {!Array<!Node>} Array of assigned nodes
    */
   getDistributedNodes() {
     return (this.node.localName === 'slot') ?
@@ -118,7 +118,7 @@ class DomApi {
   /**
    * Returns an array of all slots this element was distributed to.
    *
-   * @return {Array<HTMLSlotElement>} Description
+   * @return {!Array<!HTMLSlotElement>} Description
    */
   getDestinationInsertionPoints() {
     let ip$ = [];
@@ -133,7 +133,7 @@ class DomApi {
   /**
    * Calls `importNode` on the `ownerDocument` for this node.
    *
-   * @param {Node} node Node to import
+   * @param {!Node} node Node to import
    * @param {boolean} deep True if the node should be cloned deeply during
    *   import
    * @return {Node} Clone of given node imported to this owner document
@@ -157,7 +157,7 @@ class DomApi {
    * on the given selector.
    *
    * @param {string} selector Selector to filter nodes against
-   * @return {Array<HTMLElement>} List of flattened child elements
+   * @return {!Array<!HTMLElement>} List of flattened child elements
    */
   queryDistributedElements(selector) {
     let c$ = this.getEffectiveChildNodes();
@@ -253,7 +253,7 @@ class EventApi {
   /**
    * Returns the first node on the `composedPath` of this event.
    *
-   * @return {Node} The node this event was dispatched to
+   * @return {!EventTarget} The node this event was dispatched to
    */
   get rootTarget() {
     return this.event.composedPath()[0];
@@ -262,7 +262,7 @@ class EventApi {
   /**
    * Returns the local (re-targeted) target for this event.
    *
-   * @return {Node} The local (re-targeted) target for this event.
+   * @return {!EventTarget} The local (re-targeted) target for this event.
    */
   get localTarget() {
     return this.event.target;
@@ -270,6 +270,7 @@ class EventApi {
 
   /**
    * Returns the `composedPath` for this event.
+   * @return {!Array<EventTarget>} The nodes this event propagated through
    */
   get path() {
     return this.event.composedPath();
@@ -277,6 +278,64 @@ class EventApi {
 }
 
 export { DomApi };
+
+/**
+ * @function
+ * @param {boolean=} deep
+ * @return {!Node}
+ */
+DomApi.prototype.cloneNode;
+/**
+ * @function
+ * @param {!Node} node
+ * @return {!Node}
+ */
+DomApi.prototype.appendChild;
+/**
+ * @function
+ * @param {!Node} newChild
+ * @param {Node} refChild
+ * @return {!Node}
+ */
+DomApi.prototype.insertBefore;
+/**
+ * @function
+ * @param {!Node} node
+ * @return {!Node}
+ */
+DomApi.prototype.removeChild;
+/**
+ * @function
+ * @param {!Node} oldChild
+ * @param {!Node} newChild
+ * @return {!Node}
+ */
+DomApi.prototype.replaceChild;
+/**
+ * @function
+ * @param {string} name
+ * @param {string} value
+ * @return {void}
+ */
+DomApi.prototype.setAttribute;
+/**
+ * @function
+ * @param {string} name
+ * @return {void}
+ */
+DomApi.prototype.removeAttribute;
+/**
+ * @function
+ * @param {string} selector
+ * @return {?Element}
+ */
+DomApi.prototype.querySelector;
+/**
+ * @function
+ * @param {string} selector
+ * @return {!NodeList<!Element>}
+ */
+DomApi.prototype.querySelectorAll;
 
 export const dom = function(obj) {
   obj = obj || document;

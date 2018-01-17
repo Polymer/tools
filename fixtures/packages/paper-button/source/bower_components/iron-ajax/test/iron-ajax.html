@@ -961,6 +961,55 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           ajax.generateRequest();
         });
       });
+
+      suite('Progress Tests', function() {
+        var ajax;
+
+        setup(function() {
+          server.restore();
+        });
+
+        test('lastProgress is same as lastRequest', function(done) {
+          ajax = fixture('TrivialGet');
+
+          var lastProgressUpdated = false;
+
+          expect(ajax.lastProgress).to.be.eql(undefined);
+
+          ajax.generateRequest();
+
+          expect(ajax.lastProgress).to.be.eql(null);
+
+          var onLastProgressChanged = function() {
+            expect(ajax.lastProgress.total).to.not.be.undefined;
+            expect(ajax.lastProgress).to.be.equal(ajax.lastRequest.progress);
+            lastProgressUpdated = true;
+          };
+
+          ajax.lastRequest.completes.then(function() {
+            // should have something from last request
+            expect(ajax.lastProgress).to.be.ok;
+            ajax.removeEventListener('last-progress-changed',
+                onLastProgressChanged);
+            ajax.generateRequest();
+
+            // should reset
+            expect(ajax.lastProgress).to.be.eql(null);
+
+            if (lastProgressUpdated) {
+              done();
+            } else {
+              done('lastProgress was never updated');
+            }
+          }).catch(function(err) {
+            done(err);
+          });
+
+          server.respond();
+
+          ajax.addEventListener('last-progress-changed', onLastProgressChanged);
+        });
+      });
     });
   </script>
 

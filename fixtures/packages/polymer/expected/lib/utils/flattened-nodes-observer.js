@@ -86,7 +86,7 @@ class FlattenedNodesObserver {
 
   /**
    * @param {Element} target Node on which to listen for changes.
-   * @param {Function} callback Function called when there are additions
+   * @param {?function(!Element, { target: !Element, addedNodes: !Array<!Element>, removedNodes: !Array<!Element> }):void} callback Function called when there are additions
    * or removals from the target's list of flattened nodes.
   */
   constructor(target, callback) {

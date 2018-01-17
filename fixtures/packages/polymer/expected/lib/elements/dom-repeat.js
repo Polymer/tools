@@ -549,7 +549,7 @@ class DomRepeat extends domRepeatBase {
       let itemIdx = isntIdxToItemsIdx[instIdx];
       let item = items[itemIdx];
       itemsIdxToInstIdx[itemIdx] = instIdx;
-      if (inst && instIdx < this.__limit) {
+      if (inst) {
         inst._setPendingProperty(this.as, item);
         inst._setPendingProperty(this.indexAs, instIdx);
         inst._setPendingProperty(this.itemsIndexAs, itemIdx);
@@ -665,7 +665,7 @@ class DomRepeat extends domRepeatBase {
    * `modelForElement(el).set('item.<sub-prop>', value)`
    * should be used.
    *
-   * @param {HTMLElement} el Element for which to return the item.
+   * @param {!HTMLElement} el Element for which to return the item.
    * @return {*} Item associated with the element.
    */
   itemForElement(el) {
@@ -678,8 +678,8 @@ class DomRepeat extends domRepeatBase {
    * If `sort` is provided, the index will reflect the sorted order (rather
    * than the original array order).
    *
-   * @param {HTMLElement} el Element for which to return the index.
-   * @return {*} Row index associated with the element (note this may
+   * @param {!HTMLElement} el Element for which to return the index.
+   * @return {?number} Row index associated with the element (note this may
    *   not correspond to the array index if a user `sort` is applied).
    */
   indexForElement(el) {
@@ -700,7 +700,7 @@ class DomRepeat extends domRepeatBase {
    *     model.set('item.checked', true);
    *   }
    *
-   * @param {HTMLElement} el Element for which to return a template model.
+   * @param {!HTMLElement} el Element for which to return a template model.
    * @return {TemplateInstanceBase} Model representing the binding scope for
    *   the element.
    */

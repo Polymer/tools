@@ -272,8 +272,9 @@ export function deepTargetFind(x, y) {
 export function _findOriginalTarget(ev) {
   // shadowdom
   if (ev.composedPath) {
-    const target = /** @type {EventTarget} */(ev.composedPath()[0]);
-    return target;
+    const targets = /** @type {!Array<!EventTarget>} */(ev.composedPath());
+    // It shouldn't be, but sometimes targets is empty (window on Safari).
+    return targets.length > 0 ? targets[0] : ev.target;
   }
   // shadydom
   return ev.target;

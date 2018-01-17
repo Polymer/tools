@@ -215,7 +215,10 @@ iron-request can be used to perform XMLHttpRequests.
           loaded: progress.loaded,
           total: progress.total
         });
-      }.bind(this));
+
+        // Webcomponents v1 spec does not fire *-changed events when not connected
+        this.fire('iron-request-progress-changed', { value: this.progress });
+      }.bind(this))
 
       xhr.addEventListener('error', function(error) {
         this._setErrored(true);
@@ -364,6 +367,7 @@ iron-request can be used to perform XMLHttpRequests.
               try {
                 return JSON.parse(xhr.responseText);
               } catch (_) {
+                console.warn('Failed to parse JSON sent from ' + xhr.responseUrl);
                 return null;
               }
             }
@@ -385,6 +389,7 @@ iron-request can be used to perform XMLHttpRequests.
               try {
                 return JSON.parse(xhr.responseText.substring(prefixLen));
               } catch (_) {
+                console.warn('Failed to parse JSON sent from ' + xhr.responseUrl);
                 return null;
               }
             }

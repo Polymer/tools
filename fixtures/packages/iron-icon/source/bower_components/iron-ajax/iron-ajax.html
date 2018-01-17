@@ -236,6 +236,15 @@ element.
       },
 
       /**
+       * The `progress` property of this element's `lastRequest`.
+       */
+      lastProgress: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
        * True while lastRequest is in flight.
        */
       loading: {
@@ -348,6 +357,10 @@ element.
           'body, sync, handleAs, jsonPrefix, withCredentials, timeout, auto)'
     ],
 
+    created: function() {
+      this._boundOnProgressChanged = this._onProgressChanged.bind(this);
+    },
+
     /**
      * The query string that should be appended to the `url`, serialized from
      * the current value of `params`.
@@ -422,6 +435,10 @@ element.
       return headers;
     },
 
+    _onProgressChanged: function(event) {
+      this._setLastProgress(event.detail.value);
+    },
+
     /**
      * Request options suitable for generating an `iron-request` instance based
      * on the current state of the `iron-ajax` instance's properties.
@@ -481,8 +498,16 @@ element.
         return request;
       }
 
-      request.send(requestOptions);
+      if (this.lastRequest) {
+        this.lastRequest.removeEventListener('iron-request-progress-changed',
+                this._boundOnProgressChanged);
+      }
 
+      request.addEventListener('iron-request-progress-changed',
+          this._boundOnProgressChanged);
+
+      request.send(requestOptions);
+      this._setLastProgress(null);
       this._setLastRequest(request);
       this._setLoading(true);
 

@@ -555,6 +555,15 @@ suite('Regression Testing', function() {
     document.dispatchEvent(new MouseEvent('click', { detail: 1, clientX: 100, bubbles: true, composed: true }));
     gestures.remove(document, 'tap', null);
   });
+
+  test('#5030', function() {
+    let count = 0;
+    const increment = function() { count++; };
+    gestures.add(window, 'tap', increment);
+    window.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    assert.equal(count, 1);
+    gestures.remove(window, 'tap', increment);
+  });
 });
 </script>
 
