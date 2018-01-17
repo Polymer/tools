@@ -13,12 +13,61 @@
  */
 
 import * as babel from 'babel-types';
+import {parse} from 'babylon';
 import {assert} from 'chai';
 
-import {objectKeyToString} from '../../javascript/esutil';
+import {objectKeyToString, getEventComments} from '../../javascript/esutil';
 
 
 // See analysis_test for tests of generateElementMetadata
+
+suite('getEventComments', () => {
+  test('returns events from a comment', () => {
+    const node = parse(`
+        class Foo {
+          /**
+           * This is an event
+           *
+           * @event event-name
+           * @param {Event} event
+           */
+           myMethod() { }
+
+           /**
+            * @event descriptionless-event
+            */
+           anotherMethod() { }
+        }`);
+    const events = [...getEventComments(node).values()];
+    const eventMatches = events.map((ev) => ({
+      description: ev.description,
+      name: ev.name,
+      params: ev.params,
+      warnings: ev.warnings
+    }));
+
+    assert.deepEqual(eventMatches, [
+      {
+        description: 'descriptionless-event',
+        name: 'descriptionless-event',
+        params: [],
+        warnings: []
+      },
+      {
+        description: 'This is an event',
+        name: 'event-name',
+        params: [
+          {
+            desc: '',
+            name: 'event',
+            type: 'Event'
+          }
+        ],
+        warnings: []
+      }
+    ]);
+  });
+});
 
 suite('objectKeyToString', function() {
   test('produces expected type names', function() {
