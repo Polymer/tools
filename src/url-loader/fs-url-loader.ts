@@ -37,7 +37,7 @@ export class FSUrlLoader implements UrlLoader {
   }
 
   canLoad(url: ResolvedUrl): boolean {
-    return url.startsWith('file:///');
+    return url.startsWith(Uri.file(this.root).toString());
   }
 
   load(url: ResolvedUrl): Promise<string> {

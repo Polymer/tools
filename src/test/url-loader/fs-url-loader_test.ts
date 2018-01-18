@@ -13,19 +13,27 @@
  */
 
 import {assert} from 'chai';
+import * as path from 'path';
+import Uri from 'vscode-uri';
 
+import {ResolvedUrl} from '../../model/url';
 import {FSUrlLoader} from '../../url-loader/fs-url-loader';
 import {resolvedUrl} from '../test-utils';
 
 suite('FSUrlLoader', function() {
   suite('canLoad', () => {
-    test('canLoad is true a local file URL', () => {
-      assert.isTrue(new FSUrlLoader().canLoad(resolvedUrl`file:///foo.html`));
+    test('canLoad is true for a local file URL inside root', () => {
+      assert.isTrue(new FSUrlLoader('/a/').canLoad(
+          Uri.file(path.resolve('/a/foo.html')).toString() as ResolvedUrl));
     });
 
+    test('canLoad is false for a local file URL outside root', () => {
+      assert.isFalse(new FSUrlLoader('/a/').canLoad(
+          Uri.file(path.resolve('/b/foo.html')).toString() as ResolvedUrl));
+    });
     test('canLoad is false for a file url with a host', () => {
-      assert.isFalse(
-          new FSUrlLoader().canLoad(resolvedUrl`file://foo/foo/foo.html`));
+      assert.isFalse(new FSUrlLoader('/foo/').canLoad(
+          resolvedUrl`file://foo/foo/foo.html`));
     });
 
     test('canLoad is false for a relative path URL', () => {

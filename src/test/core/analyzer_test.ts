@@ -41,6 +41,7 @@ import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {AnalysisContext} from '../../core/analysis-context';
 import {HtmlScanner} from '../../html/html-scanner';
 import {ScannedFeature} from '../../index';
+import Uri from 'vscode-uri';
 
 use(chaiSubset);
 use(chaiAsPromised);
@@ -79,8 +80,11 @@ suite('Analyzer', () => {
   });
 
   test('canLoad delegates to the urlLoader canLoad method', () => {
-    assert.isTrue(analyzer.canLoad(resolvedUrl`file:///`));
-    assert.isTrue(analyzer.canLoad(resolvedUrl`file:////path`));
+    assert.isTrue(
+        analyzer.canLoad(Uri.file(testDir).toString() as ResolvedUrl));
+    assert.isFalse(analyzer.canLoad(
+        Uri.file(path.resolve(testDir, '../outside')).toString() as
+        ResolvedUrl));
     assert.isFalse(analyzer.canLoad(resolvedUrl`file://hostname/path`));
     assert.isFalse(analyzer.canLoad(resolvedUrl`http://host/`));
     assert.isFalse(analyzer.canLoad(resolvedUrl`http://host/path`));
