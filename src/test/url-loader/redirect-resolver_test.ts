@@ -39,5 +39,14 @@ suite('RedirectResolver', function() {
           resolver.resolve(packageRelativeUrl`protoz://site/something.html`),
           undefined);
     });
+
+    test(`if url matches redirection target, returns url`, () => {
+      const resolver =
+          new RedirectResolver(resolvedUrl`/a/`, 'proto://site/', '/b/');
+      const resolved =
+          resolver.resolve(packageRelativeUrl`proto://site/page.html`)!;
+      assert.equal(resolved, resolvedUrl`/b/page.html`);
+      assert.equal(resolver.resolve(resolved), resolved);
+    });
   });
 });

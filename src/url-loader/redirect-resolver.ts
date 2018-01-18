@@ -37,12 +37,15 @@ export class RedirectResolver extends UrlResolver {
         this.getBaseAndUnresolved(firstUrl, secondUrl);
     const packageRelativeUrl =
         this.brandAsResolved(urlLibResolver(baseUrl, unresolvedUrl));
-    if (packageRelativeUrl === undefined ||
-        !packageRelativeUrl.startsWith(this._redirectFrom)) {
-      return undefined;
+    if (packageRelativeUrl.startsWith(this._redirectFrom)) {
+      return this.brandAsResolved(
+          this._redirectTo +
+          packageRelativeUrl.slice(this._redirectFrom.length));
     }
-    return this.brandAsResolved(
-        this._redirectTo + packageRelativeUrl.slice(this._redirectFrom.length));
+    if (packageRelativeUrl.startsWith(this._redirectTo)) {
+      return packageRelativeUrl;
+    }
+    return undefined;
   }
 
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
