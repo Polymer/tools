@@ -129,6 +129,7 @@ export default async function run(options: CliOptions) {
     npmImportStyle: options['import-style'],
     packageVersion: npmPackageVersion,
     reposToConvert,
+    deleteFiles: options['delete-files'],
   });
 
   logStep(3, 3, '🎉', `Conversion Complete!`);

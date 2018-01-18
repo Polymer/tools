@@ -90,6 +90,7 @@ export default async function run(options: CliOptions) {
     inDir: inDir,
     outDir: outDir,
     excludes: options.exclude,
+    deleteFiles: options['delete-files'],
     namespaces: options.namespace,
     npmImportStyle: options['import-style'],
     packageName: npmPackageName.toLowerCase(),

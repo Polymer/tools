@@ -21,7 +21,7 @@ import {generatePackageJson, readJson, writeJson} from './manifest-converter';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {lookupNpmPackageName, WorkspaceUrlHandler} from './urls/workspace-url-handler';
-import {exec, logRepoError, writeFileResults} from './util';
+import {exec, logRepoError, rimraf, writeFileResults} from './util';
 
 /**
  * Configuration options required for workspace conversions. Contains
@@ -105,6 +105,15 @@ export default async function convert(options: WorkspaceConversionSettings):
 
   // Process & write each conversion result:
   await writeFileResults(options.workspaceDir, converter.getResults());
+
+  // Delete files that were explicitly requested to be deleted. Note we apply
+  // the glob with each repo as the root directory (e.g. a glob of "types"
+  // will delete "types" from each individual repo).
+  for (const repo of options.reposToConvert) {
+    for (const glob of options.deleteFiles || []) {
+      await rimraf(path.join(repo.dir, glob));
+    }
+  }
 
   // Generate a new package.json for each repo:
   const packageJsonResults = await run(options.reposToConvert, async (repo) => {

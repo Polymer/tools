@@ -27,6 +27,7 @@ interface UpdateFixtureOptions {
   branch?: string;
   packageName: string;
   packageVersion: string;
+  deleteFiles?: string[];
 }
 
 async function updateFixture(options: UpdateFixtureOptions) {
@@ -63,6 +64,7 @@ async function updateFixture(options: UpdateFixtureOptions) {
     packageName: options.packageName,
     packageVersion: options.packageVersion,
     addImportPath: true,
+    deleteFiles: options.deleteFiles,
   });
   console.log(`Done.`);
 }
@@ -95,6 +97,7 @@ async function overridePolymer(sourceDir: string) {
       repoUrl: 'https://github.com/Polymer/polymer.git',
       packageName: '@polymer/polymer',
       packageVersion: '3.0.0',
+      deleteFiles: ['types'],
     }),
     updateFixture({
       folder: 'paper-button',

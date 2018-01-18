@@ -88,6 +88,15 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     defaultValue: []
   },
   {
+    name: 'delete-files',
+    type: String,
+    multiple: true,
+    description:
+        'After conversion, delete all files that match any of these glob ' +
+        'patterns.',
+    defaultValue: []
+  },
+  {
     name: 'npm-name',
     type: String,
     description: 'npm package name to use for package.json'
@@ -165,6 +174,7 @@ export interface CliOptions {
   namespace?: string[];
   exclude: string[];
   include: string[];
+  'delete-files': string[];
   'npm-name'?: string;
   'npm-version'?: string;
   clean: boolean;

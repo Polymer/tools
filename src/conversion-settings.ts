@@ -137,6 +137,12 @@ export interface PartialConversionSettings {
    * to elements.
    */
   readonly addImportPath?: boolean;
+
+  /**
+   * After conversion, delete all files/directories that match any of these
+   * glob patterns.
+   */
+  readonly deleteFiles?: Iterable<string>;
 }
 
 /**
