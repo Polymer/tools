@@ -15,9 +15,8 @@
 import {assert} from 'chai';
 import chalk from 'chalk';
 import * as diff from 'diff';
-import * as fs from 'mz/fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as rimraf from 'rimraf';
 import {exec} from '../../util';
 
 // TODO(fks): Add 'dir-compare' typings.
@@ -107,9 +106,7 @@ function createDiffConflictOutput(diffResult: any): string {
 }
 
 suite('Fixtures', () => {
-
   suite('Packages', function() {
-
     this.timeout(60000);
 
     for (const fixtureBasename of fs.readdirSync(packageFixturesDir)) {
@@ -125,15 +122,16 @@ suite('Fixtures', () => {
         const fixtureTestConfig = require(path.join(fixtureDir, 'test.js'));
         assert.isOk(fs.statSync(fixtureSourceDir).isDirectory());
         assert.isOk(fs.statSync(fixtureExpectedDir).isDirectory());
-        rimraf.sync(fixtureResultDir);
+        await fs.emptyDir(fixtureResultDir);
+        await fs.copy(fixtureSourceDir, fixtureResultDir);
 
         // Top-Level Integration Test! Test the CLI interface directly.
-        const output = await exec(fixtureSourceDir, 'node', [
+        const output = await exec(fixtureResultDir, 'node', [
           modulizerBinPath,
           '--out',
-          '../generated/',
+          '.',
           '--force',
-          '--add-import-path'
+          '--add-import-path',
         ].concat(fixtureTestConfig.options || []));
 
         // 1. Check stderr output that no (unexpected) errors were emitted.
@@ -141,8 +139,11 @@ suite('Fixtures', () => {
 
         // 2. Compare the generated output to the expected conversion.
         //    Output the diff & fail if any differences are encountered.
-        const diffResult = dircompare.compareSync(
-            fixtureResultDir, fixtureExpectedDir, {compareSize: true});
+        const diffResult =
+            dircompare.compareSync(fixtureResultDir, fixtureExpectedDir, {
+              compareSize: true,
+              excludeFilter: 'bower_components',
+            });
         if (!diffResult.same) {
           const diffOutput = createDiffConflictOutput(diffResult);
           throw new Error(diffOutput);
@@ -152,7 +153,5 @@ suite('Fixtures', () => {
         assert.equal(output.stdout, (fixtureTestConfig.stdout || ''));
       });
     }
-
   });
-
 });

@@ -1,6 +1,6 @@
 {
   "name": "web-component-tester",
-  "version": "6.4.3",
+  "version": "6.5.0",
   "--private-wct--": {
     "client-side-version-range": "4 - 6 || ^6.0.0-prerelease.1",
     "wct-browser-legacy-version-range": "0.0.1-pre.1 || ^1.0.0"
@@ -83,7 +83,7 @@
   },
   "optionalDependencies": {
     "update-notifier": "^2.2.0",
-    "wct-local": "^2.0.16",
+    "wct-local": "^2.1.0",
     "wct-sauce": "^2.0.0"
   },
   "devDependencies": {

@@ -1,0 +1,72 @@
+{
+  "name": "iron-demo-helpers",
+  "version": "2.0.0",
+  "description": "Utility classes to make building demo pages easier",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "demo"
+  ],
+  "main": [
+    "demo-snippet.html",
+    "url-bar.html"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-demo-helpers.git"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/iron-demo-helpers",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#1.9 - 2",
+    "font-roboto": "PolymerElements/font-roboto#^1",
+    "iron-flex-layout": "polymerelements/iron-flex-layout#1 - 2",
+    "iron-location": "PolymerElements/iron-location#1 - 2",
+    "marked-element": "polymerelements/marked-element#1 - 2",
+    "prism-element": "PolymerElements/prism-element#1 - 2"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#1 - 2",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^3.0.0-rc.1",
+    "web-component-tester": "^6.0.0"
+  },
+  "variants": {
+    "1.x": {
+      "dependencies": {
+        "polymer": "Polymer/polymer#^1.9",
+        "font-roboto": "PolymerElements/font-roboto#^1",
+        "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+        "iron-location": "PolymerElements/iron-location#^0.8.0",
+        "marked-element": "polymerelements/marked-element#^1.0.0",
+        "prism-element": "PolymerElements/prism-element#^1.1.0"
+      },
+      "devDependencies": {
+        "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+        "web-component-tester": "^4.0.0",
+        "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+        "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
+      },
+      "resolutions": {
+        "webcomponentsjs": "^0.7"
+      }
+    }
+  },
+  "resolutions": {
+    "webcomponentsjs": "^1.0.0"
+  },
+  "_release": "2.0.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.0",
+    "commit": "9afb195a0c7e31308ce3396a8ad4ed57f585ff43"
+  },
+  "_source": "https://github.com/PolymerElements/iron-demo-helpers.git",
+  "_target": "1 - 2",
+  "_originalSource": "PolymerElements/iron-demo-helpers"
+}
