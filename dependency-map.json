@@ -493,7 +493,7 @@
   },
   "web-component-tester": {
     "npm": "wct-browser-legacy",
-    "semver": "0.0.1-pre.10"
+    "semver": "0.0.1-pre.11"
   },
   "web-animations-js": {
     "npm": "web-animations-js",
