@@ -15,6 +15,7 @@
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import {commitChanges, pushChangesToGithub, startNewBranch, WorkspaceRepo} from 'polymer-workspaces';
+import { logRepoError } from './util';
 
 export default async function run(reposToConvert: WorkspaceRepo[]) {
   console.log(
@@ -69,7 +70,11 @@ export default async function run(reposToConvert: WorkspaceRepo[]) {
   }
 
   console.log(chalk.dim('[4/5] ') + chalk.magenta(`Pushing to GitHub...`));
-  await pushChangesToGithub(reposToConvert, branchName, forcePush);
+  const publishResults = await pushChangesToGithub(reposToConvert, branchName, forcePush);
+  publishResults.successes.forEach((_result, repo) => {
+    console.log(`  - ${chalk.cyan(repo.dir)}: success!`);
+  });
+  publishResults.failures.forEach(logRepoError);
 
   console.log(chalk.dim('[5/5]') + ' 🎉  ' + chalk.magenta(`Push Complete!`));
 }
