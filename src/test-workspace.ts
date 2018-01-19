@@ -47,28 +47,25 @@ async function setupRepos(
  * Run `yarn install` to install dependencies in a repo. Note that this creates
  * a node_modules/ folder & an associated yarn.lock file as side effects.
  */
-async function installNpmDependencies(reposUnderTest: WorkspaceRepo[]) {
-  return run(reposUnderTest, async (repo) => {
-    // TODO(fks): Get `yarn install --flat` working to test flat install
-    // See: https://github.com/Polymer/polymer-modulizer/issues/254
-    return exec(repo.dir, 'npm', ['install']);
-  }, {concurrency: 1});
+async function installNpmDependencies(repo: WorkspaceRepo) {
+  // TODO(fks): Get `yarn install --flat` working to test flat install
+  // See: https://github.com/Polymer/polymer-modulizer/issues/254
+  return exec(repo.dir, 'npm', ['install']);
 }
 
 /**
  * Run `wct --npm` in a repo.
  */
-async function testRepos(reposUnderTest: WorkspaceRepo[]) {
-  return run(reposUnderTest, async (repo) => {
-    const repoDirName = path.basename(repo.dir);
-    const {stdout, stderr} = await exec(repo.dir, 'wct', ['--npm']);
-    if (stdout.length > 0) {
-      console.log(chalk.dim(`${repoDirName}: ${stdout}`));
-    }
-    if (stderr.length > 0) {
-      console.log(chalk.red(`${repoDirName}: ${stderr}`));
-    }
-  }, {concurrency: 1});
+async function testRepo(repo: WorkspaceRepo) {
+  const repoDirName = path.basename(repo.dir);
+  const results = await exec(repo.dir, 'wct', ['--npm']);
+  if (results.stdout.length > 0) {
+    console.log(chalk.dim(`${repoDirName}: ${results.stdout}`));
+  }
+  if (results.stderr.length > 0) {
+    console.log(chalk.red(`${repoDirName}: ${results.stderr}`));
+  }
+  return results;
 }
 
 /**
@@ -105,26 +102,28 @@ export async function testWorkspace(
     localConversionMap: Map<string, string>, options: WorkspaceTestSettings) {
   const allRepos = options.reposToConvert;
 
-  logStep(1, 5, '🔧', `Preparing Repos...`);
+  logStep(1, 4, '🔧', `Preparing Repos...`);
   const setupRepoResults =
       await setupRepos(allRepos, localConversionMap, options);
   setupRepoResults.failures.forEach(logRepoError);
 
-  logStep(2, 5, '🔧', `Installing Dependencies...`);
-  const installResults =
-      await installNpmDependencies([...setupRepoResults.successes.keys()]);
-  installResults.failures.forEach(logRepoError);
+  logStep(2, 4, '🔧', `Running Tests...`);
+  const runResults = await run([...setupRepoResults.successes.keys()], async (repo) => {
+    try {
+      await installNpmDependencies(repo);
+      return await testRepo(repo);
+    } catch (err) {
+      logRepoError(err, repo);
+      throw err;
+    }
+  }, { concurrency: 1 });
 
-  logStep(3, 5, '🔧', `Running Tests...`);
-  const testResults = await testRepos([...installResults.successes.keys()]);
-  testResults.failures.forEach(logRepoError);
-
-  logStep(4, 5, '🔧', `Restoring Repos...`);
+  logStep(3, 4, '🔧', `Restoring Repos...`);
   const restoreResults = await restoreRepos(allRepos);
   restoreResults.failures.forEach(logRepoError);
 
-  logStep(5, 5, '🔧', `Tests Complete!`);
-  return [...restoreResults.successes.keys()];
+  logStep(5, 4, '🔧', `Tests Complete!`);
+  return [...runResults.successes.keys()];
 }
 
 export async function testWorkspaceInstallOnly(
@@ -137,14 +136,19 @@ export async function testWorkspaceInstallOnly(
   setupRepoResults.failures.forEach(logRepoError);
 
   logStep(2, 4, '🔧', `Installing Dependencies...`);
-  const installResults =
-      await installNpmDependencies([...setupRepoResults.successes.keys()]);
-  installResults.failures.forEach(logRepoError);
+  const runResults = await run([...setupRepoResults.successes.keys()], async (repo) => {
+    try {
+      return await installNpmDependencies(repo);
+    } catch (err) {
+      logRepoError(err, repo);
+      throw err;
+    }
+  }, { concurrency: 1 });
 
   logStep(3, 4, '🔧', `Restoring Repos...`);
   const restoreResults = await restoreRepos(allRepos);
   restoreResults.failures.forEach(logRepoError);
 
   logStep(4, 4, '🔧', `Tests Complete!`);
-  return [...restoreResults.successes.keys()];
+  return [...runResults.successes.keys()];
 }

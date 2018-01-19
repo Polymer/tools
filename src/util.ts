@@ -85,7 +85,7 @@ export async function exec(
  */
 export function logRepoError(err: Error, repo: WorkspaceRepo) {
   const repoDirName = path.basename(repo.dir);
-  console.error(`${repoDirName}: ${err.message}`);
+  console.error(chalk.red(`${repoDirName}: ${err.message}`), err);
 }
 
 /**
