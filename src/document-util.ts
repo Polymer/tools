@@ -426,12 +426,13 @@ export function attachCommentsToFirstStatement(
   const firstStatement: (estree.Statement|estree.ModuleDeclaration)&RecastNode =
       statements[0]!;
 
-  const recastComments: RecastComment[] = comments.map((c) => {
+  const recastComments: RecastComment[] = comments.map((comment) => {
+    const escapedComment = comment.replace('*/', '*\\/');
     return {
       type: 'Block' as 'Block',
       leading: true,
       trailing: false,
-      value: c,
+      value: escapedComment,
     };
   });
   firstStatement.comments =

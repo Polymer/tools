@@ -2485,6 +2485,42 @@ console.log('second script');
       });
     });
 
+
+    testName = 'copy and escape comments that include JS comment tags';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+<!-- /* First comment */ -->
+
+<script>
+  // comment in script
+  console.log('second script');
+</script>
+
+<!--
+  /**
+   *  Final comment
+   **/
+-->`
+      });
+
+      assertSources(await convert(), {
+        'test.js': `
+// comment in script
+/* /* First comment *\\/ */
+console.log('second script');
+
+/*
+  /**
+   *  Final comment
+   **\\/
+*/
+;
+`,
+      });
+    });
+
+
     testName = 'copy over license comments properly';
     test(testName, async () => {
       setSources({
