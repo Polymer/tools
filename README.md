@@ -1,6 +1,6 @@
 # gen-typescript-declarations
 
-[![Build Status](https://travis-ci.org/Polymer/gen-typescript-declarations.svg?branch=master)](https://travis-ci.org/Polymer/gen-typescript-declarations)
+[![Build Status](https://travis-ci.org/PolymerLabs/gen-typescript-declarations.svg?branch=master)](https://travis-ci.org/PolymerLabs/gen-typescript-declarations)
 [![NPM version](https://img.shields.io/npm/v/@polymer/gen-typescript-declarations.svg)](https://www.npmjs.com/package/@polymer/gen-typescript-declarations)
 
 A library which generates TypeScript declarations for Polymer and custom
