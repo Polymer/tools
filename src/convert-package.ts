@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 
 import {ConversionSettings, createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
@@ -135,6 +136,11 @@ export default async function convert(options: PackageConversionSettings) {
     }
   }
   await writeFileResults(outDir, results);
+
+  // Delete files that were explicitly requested to be deleted.
+  for (const glob of options.deleteFiles || []) {
+    await rimraf(path.join(outDir, glob));
+  }
 
   // Generate a new package.json, and write it to disk.
   try {
