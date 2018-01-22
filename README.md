@@ -30,6 +30,18 @@ class MyElement extends Polymer.Element {
 }
 ```
 
+Alternatively, you can add the dependency to `tsconfig.json` in the root of your project:
+
+```javascript
+{
+...
+	"include": [
+		"src/**/*.ts",
+		"src/bower_components/polymer/**/*.d.ts",
+	]
+}
+```
+
 Typings for Polymer 3 are planned but not yet available (see
 [#18](https://github.com/Polymer/gen-typescript-declarations/issues/18)).
 
