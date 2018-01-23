@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Updated the `build` options `js-minify`, `js-compile`, `css-minify` and `html-minify` to support an object with `excludes` property to list specific files to exclude from minification or compilation.
 <!-- Add new, unreleased changes here. -->
+
+## [3.8.0] - 2018-01-23
+* Updated the `build` options `js-minify`, `js-compile`, `css-minify` and `html-minify` to support an object with `excludes` property to list specific files to exclude from minification or compilation.
 
 ## [3.7.0] - 2018-01-01
 * Added new option: `autoBasePath`. This new flag sets `basePath: true` on all builds. See that option for more details.
