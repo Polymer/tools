@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Updated the `build` options `js-minify`, `js-compile`, `css-minify` and `html-minify` to support an object with `excludes` property to list specific files to exclude from minification or compilation.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.7.0] - 2018-01-01

@@ -649,7 +649,37 @@ suite('Project Config', () => {
             name: 'my-build',
             swPrecacheConfig: 'sw.conf',
             browserCapabilities: ['es2015'],
-            basePath: true
+            basePath: true,
+            html: {
+              minify: {
+                excludes: [
+                  'human-readable-example.html',
+                  'weird-ie-comments-issue.html'
+                ]
+              }
+            },
+            css: {
+              minify: {
+                excludes: [
+                  'css/human-readable-example.css',
+                  'css/advanced-syntax.css'
+                ]
+              }
+            },
+            js: {
+              minify: {
+                excludes: [
+                  'js/unminifiable.js',
+                  'js/already-minified.js'
+                ]
+              }, 
+              compile: {
+                excludes: [
+                  'js/breaks-when-compiled.js',
+                  'js/no-compilation-necessary.js'
+                ]
+              }
+            }
           },
         ],
         lint: {
