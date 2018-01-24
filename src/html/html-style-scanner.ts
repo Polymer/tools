@@ -54,7 +54,8 @@ export class HtmlStyleScanner implements HtmlScanner {
               true));
         } else {
           const contents = dom5.getTextContent(node);
-          const locationOffset = getLocationOffsetOfStartOfTextContent(node);
+          const locationOffset =
+              getLocationOffsetOfStartOfTextContent(node, document);
           const commentText = getAttachedCommentText(node) || '';
           features.push(new ScannedInlineDocument(
               'css',
@@ -62,7 +63,7 @@ export class HtmlStyleScanner implements HtmlScanner {
               locationOffset,
               commentText,
               document.sourceRangeForNode(node)!,
-              node));
+              {language: 'html', node, containingDocument: document}));
         }
       }
       // Descend into templates.

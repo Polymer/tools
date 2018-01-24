@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {AstNodeWithLanguage} from '../model/inline-document';
 import {correctSourceRange, LocationOffset, SourcePosition, SourceRange, uncorrectSourceRange} from '../model/source-range';
 import {ResolvedUrl} from '../model/url';
 
@@ -33,7 +34,7 @@ export abstract class ParsedDocument<AstNode = any, Visitor = any> {
    * If not null, this is an inline document, and astNode is the AST Node of
    * this document inside of the parent. (e.g. the <style> or <script> tag)
    */
-  astNode: any;
+  readonly astNode: AstNodeWithLanguage|null;
 
   sourceRange: SourceRange;
 
@@ -159,7 +160,7 @@ export interface Options<A> {
   contents: string;
   ast: A;
   locationOffset: LocationOffset|undefined;
-  astNode: any|null;
+  astNode: AstNodeWithLanguage|null;
   isInline: boolean;
 }
 

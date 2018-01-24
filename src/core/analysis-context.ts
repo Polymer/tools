@@ -14,7 +14,6 @@
 
 import * as path from 'path';
 
-
 import {ForkOptions, LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../core/analyzer';
 import {CssCustomPropertyScanner} from '../css/css-custom-property-scanner';
 import {CssParser} from '../css/css-parser';
@@ -25,6 +24,7 @@ import {HtmlScriptScanner} from '../html/html-script-scanner';
 import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {ClassScanner} from '../javascript/class-scanner';
 import {FunctionScanner} from '../javascript/function-scanner';
+import {InlineHtmlDocumentScanner} from '../javascript/html-template-literal-scanner';
 import {JavaScriptImportScanner} from '../javascript/javascript-import-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
@@ -120,7 +120,8 @@ export class AnalysisContext {
           new NamespaceScanner(),
           new FunctionScanner(),
           new ClassScanner(),
-          new JavaScriptImportScanner()
+          new JavaScriptImportScanner(),
+          new InlineHtmlDocumentScanner(),
         ]
       ],
       ['css', [new CssCustomPropertyScanner()]]

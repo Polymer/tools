@@ -186,20 +186,39 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     const mutableDocuments = clone(immutableDocuments);
     const selfClone = mutableDocuments.shift()!;
 
-    for (const doc of mutableDocuments) {
-      let expectedIndentation;
-      if (doc.astNode.__location) {
-        expectedIndentation = doc.astNode.__location.col;
+    // We must handle documents that are inline to us but mutated here.
+    // If they're not inline us, we'll pass them along to our child documents
+    // when stringifying them.
+    const [ourInlineDocuments, otherDocuments] = partition(
+        mutableDocuments,
+        (d) => d.astNode != null && d.astNode.containingDocument === selfClone);
 
-        if (doc.astNode.parentNode && doc.astNode.parentNode.__location) {
-          expectedIndentation -= doc.astNode.parentNode.__location.col;
+    for (const doc of ourInlineDocuments) {
+      if (doc.astNode == null || doc.astNode.language !== 'html') {
+        throw new Error(
+            `This should not happen, ` +
+            `we already checked for this condition in partition()`);
+      }
+      const docContainingNode = doc.astNode.node;
+      const docContainingLocation = docContainingNode.__location;
+      let expectedIndentation;
+      if (docContainingLocation &&
+          !isElementLocationInfo(docContainingLocation)) {
+        expectedIndentation = docContainingLocation.col;
+
+        const parentLocation = docContainingNode.parentNode &&
+            docContainingNode.parentNode.__location;
+        if (parentLocation && !isElementLocationInfo(parentLocation)) {
+          expectedIndentation -= parentLocation.col;
         }
-      } else {
+      }
+      if (expectedIndentation === undefined) {
         expectedIndentation = 2;
       }
 
-      dom5.setTextContent(doc.astNode, '\n' + doc.stringify({
-        indent: expectedIndentation
+      dom5.setTextContent(docContainingNode, '\n' + doc.stringify({
+        indent: expectedIndentation,
+        inlineDocuments: otherDocuments
       }) + '  '.repeat(expectedIndentation - 1));
     }
 
@@ -300,3 +319,21 @@ const voidTagNames = new Set([
   'track',
   'wbr'
 ]);
+
+/**
+ * Returns two arrays. One of items that match the predicate, the other of items
+ * that do not.
+ */
+function partition<T>(
+    items: Iterable<T>, predicate: (val: T) => boolean): [T[], T[]] {
+  const matched = [];
+  const notMatched = [];
+  for (const item of items) {
+    if (predicate(item)) {
+      matched.push(item);
+    } else {
+      notMatched.push(item);
+    }
+  }
+  return [matched, notMatched];
+}

@@ -133,7 +133,12 @@ suite('Analyzer', () => {
       assert.equal(jsDocuments.size, 1);
       const jsDocument = getOnly(jsDocuments);
       assert.isObject(jsDocument.astNode);
-      assert.equal(jsDocument.astNode!.tagName, 'script');
+      const astNode = jsDocument.astNode!;
+      if (astNode.language !== 'html') {
+        throw new Error(
+            'Expected inline js doc to have an HTML containing node.');
+      }
+      assert.equal(astNode.node.tagName, 'script');
       assert.deepEqual(await underliner.underline(jsDocument.sourceRange), `
   <script>
           ~
@@ -148,8 +153,13 @@ suite('Analyzer', () => {
           'static/inline-documents/inline-documents.html');
       const cssDocuments = document.getFeatures({kind: 'css-document'});
       const cssDocument = getOnly(cssDocuments);
-      assert.isObject(cssDocument.astNode);
-      assert.equal(cssDocument.astNode!.tagName, 'style');
+      const astNode = cssDocument.astNode!;
+      assert.isObject(astNode);
+      if (astNode.language !== 'html') {
+        throw new Error(
+            'Expected inline css doc to have an HTML containing node.');
+      }
+      assert.equal(astNode.node.tagName, 'style');
       assert.deepEqual(await underliner.underline(cssDocument.sourceRange), `
   <style>
          ~

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* [BREAKING] Document#astNode and ParsedDocument#astNode are now an
+  `AstNodeWithLanguage`, because we support inline documents in more than just
+  HTML, as we've added an HTML-in-JS scanner.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.8] - 2017-01-18

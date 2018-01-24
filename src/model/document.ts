@@ -11,7 +11,6 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import * as dom5 from 'dom5';
 
 import {AnalysisContext} from '../core/analysis-context';
 import {ParsedCssDocument} from '../css/css-document';
@@ -25,7 +24,7 @@ import {Analysis} from './analysis';
 import {Feature, ScannedFeature} from './feature';
 import {ImmutableSet, unsafeAsMutable} from './immutable';
 import {Import} from './import';
-import {ScannedInlineDocument} from './inline-document';
+import {AstNodeWithLanguage, ScannedInlineDocument} from './inline-document';
 import {DocumentQuery as Query, DocumentQueryWithKind as QueryWithKind, FeatureKind, FeatureKindMap, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
@@ -44,7 +43,7 @@ export class ScannedDocument {
   get sourceRange() {
     return this.document.sourceRange;
   }
-  get astNode() {
+  get astNode(): AstNodeWithLanguage|null {
     return this.document.astNode;
   }
 
@@ -158,7 +157,7 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
     return this._scannedDocument.sourceRange;
   }
 
-  get astNode(): dom5.Node|undefined {
+  get astNode(): AstNodeWithLanguage|null {
     return this._scannedDocument.astNode;
   }
 
