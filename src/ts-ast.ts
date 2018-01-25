@@ -12,19 +12,21 @@
 // TODO Document classes better.
 // TODO Try to make serialization methods easier to read.
 
-export type Node =
-    Document|Namespace|Class|Interface|Function|Method|Type|Property;
+export type Node = Document|Declaration|Method|Type|Property;
+
+// An AST node that can appear directly in a document or namespace.
+export type Declaration = Namespace|Class|Interface|Function|ConstValue;
 
 export class Document {
   readonly kind = 'document';
   path: string;
-  members: Array<Namespace|Class|Interface|Function>;
+  members: Declaration[];
   referencePaths: Set<string>;
   header: string;
 
   constructor(data: {
     path: string,
-    members?: Array<Namespace|Class|Interface|Function>
+    members?: Declaration[],
     referencePaths?: Iterable<string>,
     header?: string
   }) {
@@ -76,12 +78,12 @@ export class Namespace {
   readonly kind = 'namespace';
   name: string;
   description: string;
-  members: Array<Namespace|Class|Interface|Function>;
+  members: Declaration[];
 
   constructor(data: {
     name: string,
-    description?: string;
-    members?: Array<Namespace|Class|Interface|Function>,
+    description?: string,
+    members?: Declaration[],
   }) {
     this.name = data.name;
     this.description = data.description || '';
@@ -381,6 +383,29 @@ export class Property {
     }
     out += `${quotePropertyName(this.name)}: ${this.type.serialize()};\n`;
     return out;
+  }
+}
+
+export class ConstValue {
+  readonly kind = 'constValue';
+  name: string;
+  type: Type;
+
+  constructor(data: {
+    name: string,
+    type: Type,
+  }) {
+    this.name = data.name;
+    this.type = data.type;
+  }
+
+  * traverse(): Iterable<Node> {
+    yield* this.type.traverse();
+    yield this;
+  }
+
+  serialize(depth: number = 0): string {
+    return `${indent(depth)}const ${this.name}: ${this.type.serialize()};\n`;
   }
 }
 

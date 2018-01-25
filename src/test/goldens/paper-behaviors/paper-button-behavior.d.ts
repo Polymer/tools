@@ -42,4 +42,6 @@ declare namespace Polymer {
     _calculateElevation(): any;
     _computeKeyboardClass(receivedFocusFromKeyboard: any): any;
   }
+
+  const PaperButtonBehavior: object;
 }

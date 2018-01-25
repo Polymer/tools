@@ -31,4 +31,6 @@ declare namespace Polymer {
      */
     _checkedChanged(): any;
   }
+
+  const PaperCheckedElementBehavior: object;
 }

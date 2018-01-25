@@ -73,4 +73,6 @@ declare namespace Polymer {
     _createRipple(): PaperRippleElement;
     _noinkChanged(noink: any): any;
   }
+
+  const PaperRippleBehavior: object;
 }

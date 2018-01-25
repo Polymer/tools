@@ -21,4 +21,6 @@ declare namespace Polymer {
     _createRipple(): any;
     _focusedChanged(receivedFocusFromKeyboard: any): any;
   }
+
+  const PaperInkyFocusBehavior: object;
 }

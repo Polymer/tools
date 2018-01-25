@@ -310,12 +310,28 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
     console.error('Could not find a name for behavior.');
     return;
   }
+
   const [namespacePath, className] = splitReference(feature.className);
-  const i = new ts.Interface({name: className});
-  i.description = feature.description || feature.summary;
-  i.properties = handleProperties(feature.properties.values());
-  i.methods = handleMethods(feature.methods.values());
-  findOrCreateNamespace(root, namespacePath).members.push(i);
+  const ns = findOrCreateNamespace(root, namespacePath);
+
+  // An interface with the properties and methods that this behavior adds to an
+  // element. Note that behaviors are not classes, they are just data objects
+  // which the Polymer library uses to augment element classes.
+  ns.members.push(new ts.Interface({
+    name: className,
+    description: feature.description || feature.summary,
+    properties: handleProperties(feature.properties.values()),
+    methods: handleMethods(feature.methods.values()),
+  }));
+
+  // The value that contains the actual definition of the behavior for Polymer.
+  // It's not important to know the shape of this object, so the `object` type
+  // is good enough. The main use of this is to make statements like
+  // `Polymer.mixinBehaviors([Polymer.SomeBehavior], ...)` compile.
+  ns.members.push(new ts.ConstValue({
+    name: className,
+    type: new ts.NameType('object'),
+  }));
 }
 
 /**
