@@ -8,7 +8,7 @@
  *   paper-checked-element-behavior.html
  */
 
-/// <reference path="../polymer/polymer.d.ts" />
+/// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-checked-element-behavior/iron-checked-element-behavior.d.ts" />
 /// <reference path="paper-inky-focus-behavior.d.ts" />
 

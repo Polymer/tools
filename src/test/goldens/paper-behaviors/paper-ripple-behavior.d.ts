@@ -8,7 +8,7 @@
  *   paper-ripple-behavior.html
  */
 
-/// <reference path="../polymer/polymer.d.ts" />
+/// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-behaviors/iron-button-state.d.ts" />
 /// <reference path="../paper-ripple/paper-ripple.d.ts" />
 

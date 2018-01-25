@@ -8,7 +8,7 @@
  *   paper-button.html
  */
 
-/// <reference path="../polymer/polymer.d.ts" />
+/// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-flex-layout/iron-flex-layout.d.ts" />
 /// <reference path="../paper-behaviors/paper-button-behavior.d.ts" />
 /// <reference path="../paper-styles/element-styles/paper-material-styles.d.ts" />
