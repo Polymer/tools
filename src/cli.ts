@@ -43,8 +43,7 @@ const argDefs = [
   {
     name: 'outDir',
     type: String,
-    description:
-        'Type declarations output directory (default concatenated to stdout).',
+    description: 'Type declarations output directory (required).',
   },
 ];
 
@@ -70,6 +69,10 @@ async function run(argv: string[]) {
     return;
   }
 
+  if (!args.outDir) {
+    throw new Error('--outDir is required');
+  }
+
   if (!args.config) {
     const p = path.join(args.root, 'gen-tsd.json');
     if (await fsExtra.pathExists(p)) {
@@ -83,14 +86,8 @@ async function run(argv: string[]) {
   }
 
   const fileMap = await generateDeclarations(args.root, config);
-
-  if (args.outDir) {
-    console.log('Writing type declarations to ' + path.resolve(args.outDir));
-    await writeFileMap(args.outDir, fileMap);
-  } else {
-    const concatenated = [...fileMap.values()].join('\n');
-    process.stdout.write(concatenated);
-  }
+  console.log('Writing type declarations to', path.resolve(args.outDir));
+  await writeFileMap(args.outDir, fileMap);
 }
 
 async function writeFileMap(

@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- The `--outDir` flag is now required when using the command line tool. Previously it would print all concatenated typings to `stdout`, which doesn't make much sense given that we emit multiple files.
 
 ## [0.3.6] - 2017-01-09
 - Support parameterized types other than `Array` and `Object`, such as `Foo<T>`.
