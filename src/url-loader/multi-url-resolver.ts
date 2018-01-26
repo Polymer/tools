@@ -25,6 +25,9 @@ export class MultiUrlResolver extends UrlResolver {
     super();
   }
 
+  /**
+   * Returns the first resolved URL (which is not undefined.)
+   */
   resolve(
       firstUrl: ResolvedUrl|PackageRelativeUrl, secondUrl?: FileRelativeUrl,
       import_?: ScannedImport): ResolvedUrl|undefined {
@@ -40,10 +43,16 @@ export class MultiUrlResolver extends UrlResolver {
     return undefined;
   }
 
+  /**
+   * Delegates to relative method on the first resolver which can resolve the
+   * destination URL.
+   */
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, kind?: string):
       FileRelativeUrl {
     for (const resolver of this._resolvers) {
-      return resolver.relative(fromOrTo, maybeTo, kind);
+      if (resolver.resolve((maybeTo || fromOrTo) as any)) {
+        return resolver.relative(fromOrTo, maybeTo, kind);
+      }
     }
     throw new Error(
         `Could not get relative url, with no configured url resolvers`);
