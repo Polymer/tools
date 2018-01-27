@@ -735,7 +735,20 @@ function indent(depth: number): string {
 }
 
 function formatComment(comment: string, depth: number): string {
+  // Make sure we don't end our comment early by printing out the `*/` end
+  // comment sequence if it is contained in the comment. Escape it as `*\/`
+  // instead. One way this sequence could get here is if an HTML comment
+  // embedded a JavaScript style block comment.
+  comment = comment.replace(/\*\//g, '*\\/')
+
+  // Indent the comment one space so that it doesn't touch the `*` we add next,
+  // but only if there is a character there. If we also indented blank lines by
+  // one space, then they would have an unneccessary space after the `*`.
+  comment = comment.replace(/^(.)/gm, ' $1')
+
+  // Indent to the given level and add the `*` character.
   const i = indent(depth);
-  return `${i}/**\n` +
-      comment.replace(/^(.)/gm, ' $1').replace(/^/gm, `${i} *`) + `\n${i} */\n`;
+  comment = comment.replace(/^/gm, `${i} *`);
+
+  return `${i}/**\n${comment}\n${i} */\n`;
 }
