@@ -14,7 +14,6 @@ import {assert} from 'chai';
 import {closureParamToTypeScript, closureTypeToTypeScript} from '../closure-types';
 
 suite('closureTypeToTypeScript', () => {
-
   function check(closureType: string, expectedType: string) {
     const actualType = closureTypeToTypeScript(closureType).serialize();
     assert.equal(actualType, expectedType);
@@ -138,10 +137,14 @@ suite('closureTypeToTypeScript', () => {
   test('returns any when invalid', () => {
     check('><', 'any');
   });
+
+  test('promise', () => {
+    check('!Promise<string>', 'Promise<string>');
+    check('!Promise', 'Promise<any>');
+  });
 });
 
 suite('closureParamToTypeScript', () => {
-
   function check(
       closureType: string,
       expectedType: string,
