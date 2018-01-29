@@ -652,7 +652,7 @@ suite('Project Config', () => {
             basePath: true,
             html: {
               minify: {
-                excludes: [
+                exclude: [
                   'human-readable-example.html',
                   'weird-ie-comments-issue.html'
                 ]
@@ -660,7 +660,7 @@ suite('Project Config', () => {
             },
             css: {
               minify: {
-                excludes: [
+                exclude: [
                   'css/human-readable-example.css',
                   'css/advanced-syntax.css'
                 ]
@@ -668,13 +668,13 @@ suite('Project Config', () => {
             },
             js: {
               minify: {
-                excludes: [
+                exclude: [
                   'js/unminifiable.js',
                   'js/already-minified.js'
                 ]
               }, 
               compile: {
-                excludes: [
+                exclude: [
                   'js/breaks-when-compiled.js',
                   'js/no-compilation-necessary.js'
                 ]

@@ -109,7 +109,7 @@ export interface ProjectBuildOptions {
     /** Minify HTMl by removing comments and whitespace. */
     minify?: boolean|{
       /** HTML files listed here will not be minified. */
-      excludes?: string[],
+      exclude?: string[],
     },
   };
 
@@ -118,7 +118,7 @@ export interface ProjectBuildOptions {
     /** Minify inlined and external CSS. */
     minify?: boolean|{
       /** CSS files listed here will not be minified. */
-      excludes?: string[],
+      exclude?: string[],
     },
   };
 
@@ -127,13 +127,13 @@ export interface ProjectBuildOptions {
     /** Minify inlined and external JavaScript. */
     minify?: boolean|{
       /** JavaScript files listed here will not be minified. */
-      excludes?: string[],
+      exclude?: string[],
     },
 
     /** Use babel to compile all ES6 JS down to ES5 for older browsers. */
     compile?: boolean|{
       /** JavaScript files listed here will not be compiled. */
-      excludes?: string[],
+      exclude?: string[],
     }
   };
 

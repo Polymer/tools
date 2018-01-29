@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Changed name of `excludes` property to more natural `exclude` in `js-minify`, `js-compile`, `css-minify` and `html-minify` options prior to releasing the feature as `exclude` is more natural.  The `bundle` options will remain `excludes` for now, as that is already implemented in `polymer-bundler`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.8.0] - 2018-01-23

@@ -25,20 +25,20 @@
       "basePath": true,
       "js": {
         "compile": {
-          "excludes": ["js/breaks-when-compiled.js", "js/no-compilation-necessary.js"]
+          "exclude": ["js/breaks-when-compiled.js", "js/no-compilation-necessary.js"]
         },
         "minify": {
-          "excludes": ["js/unminifiable.js", "js/already-minified.js"]
+          "exclude": ["js/unminifiable.js", "js/already-minified.js"]
         }
       },
       "html": {
         "minify": {
-          "excludes": ["human-readable-example.html", "weird-ie-comments-issue.html"]
+          "exclude": ["human-readable-example.html", "weird-ie-comments-issue.html"]
         }
       },
       "css": {
         "minify": {
-          "excludes": ["css/human-readable-example.css", "css/advanced-syntax.css"]
+          "exclude": ["css/human-readable-example.css", "css/advanced-syntax.css"]
         }
       }
     }
