@@ -115,7 +115,7 @@ suite('Fixtures', () => {
         continue;
       }
 
-      test(`packages/${fixtureBasename}`, async() => {
+      test(`packages/${fixtureBasename}`, async () => {
         const fixtureSourceDir = path.join(fixtureDir, 'source');
         const fixtureExpectedDir = path.join(fixtureDir, 'expected');
         const fixtureResultDir = path.join(fixtureDir, 'generated');

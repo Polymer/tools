@@ -108,15 +108,16 @@ export async function testWorkspace(
   setupRepoResults.failures.forEach(logRepoError);
 
   logStep(2, 4, '🔧', `Running Tests...`);
-  const runResults = await run([...setupRepoResults.successes.keys()], async (repo) => {
-    try {
-      await installNpmDependencies(repo);
-      return await testRepo(repo);
-    } catch (err) {
-      logRepoError(err, repo);
-      throw err;
-    }
-  }, { concurrency: 1 });
+  const runResults =
+      await run([...setupRepoResults.successes.keys()], async (repo) => {
+        try {
+          await installNpmDependencies(repo);
+          return await testRepo(repo);
+        } catch (err) {
+          logRepoError(err, repo);
+          throw err;
+        }
+      }, {concurrency: 1});
 
   logStep(3, 4, '🔧', `Restoring Repos...`);
   const restoreResults = await restoreRepos(allRepos);
@@ -136,14 +137,15 @@ export async function testWorkspaceInstallOnly(
   setupRepoResults.failures.forEach(logRepoError);
 
   logStep(2, 4, '🔧', `Installing Dependencies...`);
-  const runResults = await run([...setupRepoResults.successes.keys()], async (repo) => {
-    try {
-      return await installNpmDependencies(repo);
-    } catch (err) {
-      logRepoError(err, repo);
-      throw err;
-    }
-  }, { concurrency: 1 });
+  const runResults =
+      await run([...setupRepoResults.successes.keys()], async (repo) => {
+        try {
+          return await installNpmDependencies(repo);
+        } catch (err) {
+          logRepoError(err, repo);
+          throw err;
+        }
+      }, {concurrency: 1});
 
   logStep(3, 4, '🔧', `Restoring Repos...`);
   const restoreResults = await restoreRepos(allRepos);

@@ -15,7 +15,7 @@
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import {publishPackagesToNpm, WorkspaceRepo} from 'polymer-workspaces';
-import { logRepoError } from './util';
+import {logRepoError} from './util';
 
 export default async function run(reposToConvert: WorkspaceRepo[]) {
   console.log(

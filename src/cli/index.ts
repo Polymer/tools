@@ -215,7 +215,7 @@ installation.
   }
 
   if (options['version']) {
-    console.log(require('../package.json').version);
+    console.log(require('../../package.json').version);
     return;
   }
 
