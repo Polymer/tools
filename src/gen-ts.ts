@@ -24,7 +24,8 @@ import * as ts from './ts-ast';
 export interface Config {
   /**
    * Skip source files whose paths match any of these glob patterns. If
-   * undefined, defaults to excluding directories ending in "test" or "demo".
+   * undefined, defaults to excluding "index.html" and directories ending in
+   * "test" or "demo".
    */
   exclude?: string[];
 
@@ -50,6 +51,12 @@ export interface Config {
   renameTypes?: {[name: string]: string};
 }
 
+const defaultExclude = [
+  'index.html',
+  'test/**',
+  'demo/**',
+];
+
 /**
  * Analyze all files in the given directory using Polymer Analyzer, and return
  * TypeScript declaration document strings in a map keyed by relative path.
@@ -72,21 +79,31 @@ export async function generateDeclarations(
 function analyzerToAst(
     analysis: analyzer.Analysis, config: Config, rootDir: string):
     ts.Document[] {
-  const exclude = (config.exclude || ['test/**', 'demo/**'])
-                      .map((p) => new minimatch.Minimatch(p));
+  const exclude =
+      (config.exclude || defaultExclude).map((p) => new minimatch.Minimatch(p));
   const addReferences = config.addReferences || {};
   const removeReferencesResolved = new Set(
       (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
   const renameTypes = new Map(Object.entries(config.renameTypes || {}));
 
-  // Analyzer can produce multiple JS documents with the same URL (e.g. an
-  // HTML file with multiple inline scripts). We also might have multiple
-  // files with the same basename (e.g. `foo.html` with an inline script,
-  // and `foo.js`). We want to produce one declarations file for each
-  // basename, so we first group Analyzer documents by their declarations
-  // filename.
+  const analyzerDocs = [
+    ...analysis.getFeatures({kind: 'html-document'}),
+    ...analysis.getFeatures({kind: 'js-document'}),
+  ];
+
+  // We want to produce one declarations file for each file basename. There
+  // might be both `foo.html` and `foo.js`, and we want their declarations to be
+  // combined into a signal `foo.d.ts`. So we first group Analyzer documents by
+  // their declarations filename.
   const declarationDocs = new Map<string, analyzer.Document[]>();
-  for (const jsDoc of analysis.getFeatures({kind: 'js-document'})) {
+  for (const jsDoc of analyzerDocs) {
+    // For every HTML or JS file, Analyzer is going to give us 1) the top-level
+    // document, and 2) N inline documents for any nested content (e.g. script
+    // tags in HTML). The top-level document will give us all the nested
+    // features we need, so skip any inline ones.
+    if (jsDoc.isInline) {
+      continue;
+    }
     const sourcePath = analyzerUrlToRelativePath(jsDoc.url, rootDir);
     if (sourcePath === undefined) {
       console.warn(
