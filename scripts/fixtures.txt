@@ -1,3 +1,3 @@
 https://github.com/PolymerElements/paper-button.git v2.0.0 paper-button
 https://github.com/PolymerElements/paper-behaviors.git v2.0.1 paper-behaviors
-https://github.com/Polymer/polymer.git 589684a5a45ed8907dd6d46479a015fd66fec845 polymer
+https://github.com/Polymer/polymer.git 6fc285c429350f6ecb006d839637ac1dc7515a9c polymer
