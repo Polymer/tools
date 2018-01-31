@@ -78,7 +78,7 @@
  * `--paper-button-flat-keyboard-focus` | Mixin applied to a flat button after it's been focused using the keyboard | `{}`
  * `--paper-button-raised-keyboard-focus` | Mixin applied to a raised button after it's been focused using the keyboard | `{}`
  */
-interface PaperButton extends Polymer.Element, Polymer.PaperButtonBehavior {
+interface PaperButtonElement extends Polymer.Element, Polymer.PaperButtonBehavior {
 
   /**
    * If true, the button should be styled with a shadow.
@@ -88,5 +88,5 @@ interface PaperButton extends Polymer.Element, Polymer.PaperButtonBehavior {
 }
 
 interface HTMLElementTagNameMap {
-  "paper-button": PaperButton;
+  "paper-button": PaperButtonElement;
 }

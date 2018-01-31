@@ -238,10 +238,16 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
     parent = findOrCreateNamespace(root, namespacePath);
 
   } else if (feature.tagName) {
+    // No `className` means this is an element defined by a call to the Polymer
+    // function without a LHS assignment. We'll follow the convention of the
+    // Closure Polymer Pass, and emit a global namespace interface called
+    // `FooBarElement` (given a `tagName` of `foo-bar`). More context here:
+    //
+    // https://github.com/google/closure-compiler/wiki/Polymer-Pass#element-type-names-for-1xhybrid-call-syntax
+    // https://github.com/google/closure-compiler/blob/master/src/com/google/javascript/jscomp/PolymerClassDefinition.java#L128
     constructable = false;
-    shortName = kebabToCamel(feature.tagName);
+    shortName = kebabToCamel(feature.tagName) + 'Element';
     fullName = shortName;
-    // We're going to pollute the global scope with an interface.
     parent = root;
 
   } else {

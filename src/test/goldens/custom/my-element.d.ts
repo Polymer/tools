@@ -15,9 +15,9 @@
  *
  *   /** More danger! *\/*\/
  */
-interface MyElement extends Polymer.Element {
+interface MyElementElement extends Polymer.Element {
 }
 
 interface HTMLElementTagNameMap {
-  "my-element": MyElement;
+  "my-element": MyElementElement;
 }

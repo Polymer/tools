@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Always parameterize `Promise`. In Closure `Promise` is valid, but in TypeScript this is invalid and must be `Promise<any>` instead.
 - Escape `*\` comment end sequences when formatting comments. These turn up in practice when an HTML comment embeds a JavaScript style block comment, like here: https://github.com/PolymerElements/paper-icon-button/blob/master/paper-icon-button.html#L51
+- Hybrid Polymer elements without a LHS assignment now have `Element` appended to their generated interface name, to match the behavior of the Closure Polymer Pass (https://github.com/google/closure-compiler/wiki/Polymer-Pass#element-type-names-for-1xhybrid-call-syntax). For example, `interface IronRequest` is now `interface IronRequestElement`.
 
 ## [1.0.0] - 2018-01-25
 - [BREAKING] The `--outDir` flag is now required when using the command line tool. Previously it would print all concatenated typings to `stdout`, which doesn't make much sense given that we emit multiple files.
