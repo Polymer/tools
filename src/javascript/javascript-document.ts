@@ -43,9 +43,9 @@ export interface Options extends ParsedDocumentOptions<Program> {
 }
 
 export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
-  type = 'js';
+  readonly type = 'js';
   private visitorSkips = new Map<Visitor, SkipRecord>();
-  ast: Program;
+  ast!: Program;  // assigned in super, this type is just a refinement.
 
   /**
    * How the js document was parsed. If 'module' then the source code is

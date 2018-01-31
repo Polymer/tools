@@ -202,7 +202,8 @@ class BehaviorVisitor implements Visitor {
   mergeBehavior(newBehavior: ScannedBehavior): ScannedBehavior {
     const isBehaviorImpl = (b: ScannedBehaviorAssignment) => {
       // filter out BehaviorImpl
-      return b.name.indexOf(newBehavior.className) === -1;
+      return newBehavior.className === undefined ||
+          b.name.indexOf(newBehavior.className) === -1;
     };
     for (const behavior of this.behaviors) {
       if (newBehavior.className !== behavior.className) {

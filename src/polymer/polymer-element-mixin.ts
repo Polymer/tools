@@ -86,10 +86,11 @@ declare module '../model/queryable' {
 }
 export class PolymerElementMixin extends ElementMixin implements
     PolymerExtension {
-  readonly properties: Map<string, PolymerProperty>;
+  // This property is assigned in the super class.
+  readonly properties!: Map<string, PolymerProperty>;
 
   readonly observers: Observer[];
-  readonly listeners: {event: string, handler: string}[];
+  readonly listeners: {event: string, handler: string}[] = [];
   readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];
   readonly localIds: LocalId[] = [];
   readonly pseudo: boolean;

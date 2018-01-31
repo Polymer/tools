@@ -16,7 +16,7 @@ import * as ts from 'typescript';
 import {Node} from 'typescript';
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
+import {ParsedDocument, StringifyOptions} from '../parser/document';
 
 import {Visitor} from './typescript-visitor';
 
@@ -25,13 +25,7 @@ export {Options} from '../parser/document';
 export {Visitor} from './typescript-visitor';
 
 export class ParsedTypeScriptDocument extends ParsedDocument<Node, Visitor> {
-  type = 'typescript';
-
-  constructor(from: Options<Node>) {
-    // This constructor is neccessary because the default constructor that
-    // TypeScript generates uses spread syntax which in unsupported by node 4.
-    super(from);
-  }
+  readonly type = 'typescript';
 
   visit(visitors: Visitor[]) {
     const sourceFile = this.ast;

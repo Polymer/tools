@@ -306,7 +306,7 @@ function serializeElementMixin(
 function serializePolymerBehaviorAsElementMixin(
     behavior: ResolvedPolymerBehavior, urlResolver: UrlResolver): ElementMixin {
   const metadata = serializeElementLike(behavior, urlResolver) as ElementMixin;
-  metadata.name = behavior.className;
+  metadata.name = behavior.className!;
   metadata.privacy = behavior.privacy;
   if (behavior.mixins.length > 0) {
     metadata.mixins = behavior.mixins.map((m) => m.identifier);

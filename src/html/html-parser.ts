@@ -31,7 +31,7 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
    */
   parse(
       contents: string, url: ResolvedUrl, urlResolver: UrlResolver,
-      inlineInfo?: InlineDocInfo<any>): ParsedHtmlDocument {
+      inlineInfo?: InlineDocInfo): ParsedHtmlDocument {
     const ast = parseHtml(contents, {locationInfo: true});
 
     // There should be at most one <base> tag and it must be inside <head> tag.
@@ -42,16 +42,20 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
             p.hasTagName('base'),
             p.hasAttr('href')));
 
-    let baseUrl;
-    if (baseTag) {
-      const baseHref = getAttribute(baseTag, 'href')! as FileRelativeUrl;
-      baseUrl = urlResolver.resolve(url, baseHref, undefined);
-    } else {
-      baseUrl = url;
-    }
-
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
+
+    let baseUrl: ResolvedUrl =
+        inlineInfo.baseUrl !== undefined ? inlineInfo.baseUrl : url;
+    if (baseTag) {
+      const baseTagHref = getAttribute(baseTag, 'href')! as FileRelativeUrl;
+      const resolvedBaseTagHref =
+          urlResolver.resolve(url, baseTagHref, undefined);
+      if (resolvedBaseTagHref !== undefined) {
+        baseUrl = resolvedBaseTagHref;
+      }
+    }
+
     return new ParsedHtmlDocument({
       url,
       baseUrl,

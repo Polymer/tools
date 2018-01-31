@@ -14,7 +14,7 @@
 
 import {Document} from './document';
 import {ElementBase, ElementBaseInit, ScannedElementBase} from './element-base';
-import {Feature, Privacy} from './feature';
+import {Feature} from './feature';
 import {ScannedReference} from './reference';
 
 export {Visitor} from '../javascript/estree-visitor';
@@ -26,7 +26,6 @@ export class ScannedElement extends ScannedElementBase {
     return this.className;
   }
   superClass?: ScannedReference;
-  privacy: Privacy;
 
   /**
    * For customized built-in elements, the tagname of the superClass.

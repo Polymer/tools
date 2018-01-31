@@ -30,12 +30,13 @@ export class CssParser implements Parser<ParsedCssDocument> {
 
   parse(
       contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
-      inlineInfo?: InlineDocInfo<any>): ParsedCssDocument {
+      inlineInfo?: InlineDocInfo): ParsedCssDocument {
     const ast = this._parser.parse(contents);
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     return new ParsedCssDocument({
       url,
+      baseUrl: inlineInfo.baseUrl,
       contents,
       ast,
       locationOffset: inlineInfo.locationOffset,

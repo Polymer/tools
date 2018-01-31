@@ -43,7 +43,7 @@ export class ScannedDocument {
   get sourceRange() {
     return this.document.sourceRange;
   }
-  get astNode(): AstNodeWithLanguage|null {
+  get astNode(): AstNodeWithLanguage|undefined {
     return this.document.astNode;
   }
 
@@ -157,7 +157,7 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
     return this._scannedDocument.sourceRange;
   }
 
-  get astNode(): AstNodeWithLanguage|null {
+  get astNode(): AstNodeWithLanguage|undefined {
     return this._scannedDocument.astNode;
   }
 

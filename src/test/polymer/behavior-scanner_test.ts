@@ -33,6 +33,9 @@ suite('BehaviorScanner', () => {
     behaviorsList =
         <ScannedBehavior[]>features.filter((e) => e instanceof ScannedBehavior);
     for (const behavior of behaviorsList) {
+      if (behavior.className === undefined) {
+        throw new Error(`Could not determine className of behavior.`);
+      }
       behaviors.set(behavior.className, behavior);
     }
   });

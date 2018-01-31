@@ -19,16 +19,11 @@ import {UrlLoader} from '../../url-loader/url-loader';
 import {invertPromise, resolvedUrl} from '../test-utils';
 
 class MockLoader implements UrlLoader {
-  canLoadUrls: string[];
-  loadUrls: string[];
+  canLoadUrls: string[] = [];
+  loadUrls: string[] = [];
   constructor(private _load: string|null) {
-    this.reset();
   }
 
-  reset() {
-    this.canLoadUrls = [];
-    this.loadUrls = [];
-  }
 
   canLoad(url: string): boolean {
     this.canLoadUrls.push(url);

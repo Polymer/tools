@@ -22,11 +22,12 @@ import {ParsedJsonDocument} from './json-document';
 export class JsonParser implements Parser<ParsedJsonDocument> {
   parse(
       contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
-      inlineDocInfo: InlineDocInfo<any>): ParsedJsonDocument {
+      inlineDocInfo: InlineDocInfo): ParsedJsonDocument {
     const isInline = !!inlineDocInfo;
     inlineDocInfo = inlineDocInfo || {};
     return new ParsedJsonDocument({
       url,
+      baseUrl: inlineDocInfo.baseUrl,
       contents,
       ast: JSON.parse(contents),
       locationOffset: inlineDocInfo.locationOffset,

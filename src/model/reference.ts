@@ -32,6 +32,7 @@ export class ScannedReference extends ScannedFeature implements Resolvable {
       identifier: string, sourceRange: SourceRange, astNode?: any,
       description?: string, jsdoc?: Annotation, warnings?: Warning[]) {
     super(sourceRange, astNode, description, jsdoc, warnings);
+    this.sourceRange = sourceRange;
     this.identifier = identifier;
   }
 

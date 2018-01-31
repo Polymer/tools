@@ -305,7 +305,8 @@ declare module '../model/queryable' {
 }
 
 export class PolymerElement extends Element implements PolymerExtension {
-  readonly properties: Map<string, PolymerProperty>;
+  // This property is assigned in the super class. We just refine its type here.
+  readonly properties!: Map<string, PolymerProperty>;
   readonly observers: ImmutableArray<Observer> = [];
   readonly listeners: ImmutableArray<{event: string, handler: string}> = [];
   readonly behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment> = [];
@@ -314,6 +315,8 @@ export class PolymerElement extends Element implements PolymerExtension {
 
   constructor(scannedElement: ScannedPolymerElement, document: Document) {
     super(scannedElement, document);
+
+
     this.kinds.add('polymer-element');
 
     this.observers = Array.from(scannedElement.observers);

@@ -43,5 +43,6 @@ export class ElementMixin extends ElementBase implements Feature {
   constructor(init: ElementMixinInit, document: Document) {
     super(init, document);
     this.kinds.add('element-mixin');
+    this.name = init.name;
   }
 }

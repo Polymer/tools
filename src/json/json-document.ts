@@ -13,7 +13,7 @@
  */
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument} from '../parser/document';
+import {ParsedDocument} from '../parser/document';
 
 export type Json = JsonObject|JsonArray|number|string|boolean|null;
 export interface JsonObject { [key: string]: Json; }
@@ -22,11 +22,7 @@ export interface JsonArray extends Array<Json> {}
 export interface Visitor { visit(node: Json): void; }
 
 export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
-  type = 'json';
-
-  constructor(from: Options<Json>) {
-    super(from);
-  }
+  readonly type = 'json';
 
   visit(visitors: Visitor[]) {
     this._visit(this.ast, visitors);

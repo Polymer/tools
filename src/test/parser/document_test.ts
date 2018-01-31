@@ -15,10 +15,10 @@ import {assert} from 'chai';
 
 import {SourceRange} from '../../model/model';
 import {ParsedDocument, StringifyOptions} from '../../parser/document';
-import { resolvedUrl } from '../test-utils';
+import {resolvedUrl} from '../test-utils';
 
 class TestDocument extends ParsedDocument<null, null> {
-  type: string;
+  readonly type = 'test-document';
   visit(_visitors: null[]): void {
     throw new Error('Method not implemented.');
   }
@@ -32,7 +32,7 @@ class TestDocument extends ParsedDocument<null, null> {
   constructor(contents: string) {
     super({
       ast: null,
-      astNode: null,
+      astNode: undefined,
       baseUrl: resolvedUrl`test-document`,
       contents,
       isInline: false,

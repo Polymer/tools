@@ -21,14 +21,14 @@ import {FileRelativeUrl} from '../model/url';
  * represents a script tag with a `src` attribute as an import, so that the
  * analyzer loads and parses the referenced document.
  */
-export class ScriptTagImport extends Import { type: 'html-script'; }
+export class ScriptTagImport extends Import { readonly type = 'html-script'; }
 
 /**
  * A synthetic import that provides the document containing the script tag to
  * the javascript document defined/referenced by the script tag.
  */
 export class ScriptTagBackReferenceImport extends Import {
-  type: 'html-script-back-reference';
+  readonly type = 'html-script-back-reference';
 }
 
 export class ScannedScriptTagImport extends ScannedImport {

@@ -44,11 +44,11 @@ const baseParseOptions: babylon.BabylonOptions = {
 (baseParseOptions as any)['ranges'] = true;
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
-  sourceType: SourceType;
+  readonly sourceType?: SourceType;
 
   parse(
       contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
-      inlineInfo?: InlineDocInfo<any>): JavaScriptDocument {
+      inlineInfo?: InlineDocInfo): JavaScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     const result = parseJs(
@@ -58,6 +58,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       const minimalDocument = new JavaScriptDocument({
         url,
         contents,
+        baseUrl: inlineInfo.baseUrl,
         ast: null as any,
         locationOffset: inlineInfo.locationOffset,
         astNode: inlineInfo.astNode,
@@ -71,6 +72,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
     return new JavaScriptDocument({
       url,
       contents,
+      baseUrl: inlineInfo.baseUrl,
       ast: result.program,
       locationOffset: inlineInfo.locationOffset,
       astNode: inlineInfo.astNode,
@@ -81,11 +83,11 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
 }
 
 export class JavaScriptModuleParser extends JavaScriptParser {
-  sourceType: SourceType = 'module';
+  readonly sourceType: SourceType = 'module';
 }
 
 export class JavaScriptScriptParser extends JavaScriptParser {
-  sourceType: SourceType = 'script';
+  readonly sourceType: SourceType = 'script';
 }
 
 export type ParseResult = {

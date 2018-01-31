@@ -37,7 +37,7 @@ import {ParsedTypeScriptDocument} from './typescript-document';
 export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
   parse(
       contents: string, url: ResolvedUrl, _urlResolver: UrlResolver,
-      inlineInfo?: InlineDocInfo<any>): ParsedTypeScriptDocument {
+      inlineInfo?: InlineDocInfo): ParsedTypeScriptDocument {
     const isInline = !!inlineInfo;
     inlineInfo = inlineInfo || {};
     const sourceFile =
@@ -52,6 +52,7 @@ export class TypeScriptPreparser implements Parser<ParsedTypeScriptDocument> {
     const result = new ParsedTypeScriptDocument({
       url,
       contents,
+      baseUrl: inlineInfo.baseUrl,
       ast: sourceFile,
       locationOffset: inlineInfo.locationOffset,
       astNode: inlineInfo.astNode,

@@ -59,7 +59,7 @@ suite('TypeScriptParser', () => {
 
       // Get the HTMLElement type from the DOM module
       let htmlElement: ts.Type;
-      const domSource = program.getSourceFile('/$lib/DOM.d.ts');
+      const domSource = program.getSourceFile('/$lib/DOM.d.ts')!;
       ts.forEachChild(domSource, (node) => {
         if (node.kind === ts.SyntaxKind.InterfaceDeclaration) {
           const innerface = node as ts.InterfaceDeclaration;
@@ -70,7 +70,7 @@ suite('TypeScriptParser', () => {
       });
 
       // Get class A and assert that it extends HTMLElement
-      const sourceFile = program.getSourceFile(fileName);
+      const sourceFile = program.getSourceFile(fileName)!;
       ts.forEachChild(sourceFile, (node) => {
         if (node.kind === ts.SyntaxKind.ClassDeclaration) {
           const class_ = node as ts.ClassDeclaration;

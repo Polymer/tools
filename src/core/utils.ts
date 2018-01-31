@@ -46,8 +46,8 @@ export function isPathInside(directory: string, filePath: string): boolean {
 
 export class Deferred<T> {
   promise: Promise<T>;
-  resolve: (result: T) => void;
-  reject: (error: Error) => void;
+  resolve!: (result: T) => void;
+  reject!: (error: Error) => void;
   resolved = false;
   rejected = false;
   error: any;

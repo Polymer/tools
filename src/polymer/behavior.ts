@@ -40,7 +40,7 @@ export interface Options extends ElementOptions {}
  */
 export class ScannedBehavior extends ScannedPolymerElement {
   tagName: undefined;
-  className: string;
+  className?: string;
 
   resolve(document: Document) {
     return new Behavior(this, document);
@@ -55,9 +55,6 @@ declare module '../model/queryable' {
 
 export class Behavior extends PolymerElement {
   readonly tagName: undefined = undefined;
-  readonly name: string;
-  readonly className: string;
-
   constructor(scannedBehavior: ScannedBehavior, document: Document) {
     super(scannedBehavior, document);
     this.kinds.delete('element');

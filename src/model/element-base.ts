@@ -40,14 +40,14 @@ export abstract class ScannedElementBase implements Resolvable {
   demos: Demo[] = [];
   events: Map<string, ScannedEvent> = new Map();
   sourceRange: SourceRange|undefined;
-  staticMethods: Map<string, ScannedMethod>;
-  methods: Map<string, ScannedMethod>;
-  astNode: babel.Node|null;
+  staticMethods: Map<string, ScannedMethod> = new Map();
+  methods: Map<string, ScannedMethod> = new Map();
+  astNode: babel.Node|null = null;
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
   'slots': Slot[] = [];
   mixins: ScannedReference[] = [];
-  privacy: Privacy;
+  privacy!: Privacy;
   abstract: boolean = false;
   superClass?: ScannedReference = undefined;
 
@@ -145,8 +145,8 @@ export abstract class ElementBase extends Class implements Feature {
     // Initialization of these attributes is kinda awkward, as they're part
     // of the inheritance system. See `inheritFrom` below which *may* be
     // called by our superclass, but may not be.
-    this.attributes = this.attributes || new Map();
-    this.events = this.events || new Map();
+    this.attributes = (this as any).attributes || new Map();
+    this.events = (this as any).events || new Map();
 
     if (attributes !== undefined) {
       this._overwriteInherited(this.attributes, attributes, undefined, true);

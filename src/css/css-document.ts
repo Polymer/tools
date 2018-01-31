@@ -15,18 +15,14 @@
 import * as shady from 'shady-css-parser';
 
 import {SourceRange} from '../model/model';
-import {Options, ParsedDocument, StringifyOptions} from '../parser/document';
+import {ParsedDocument, StringifyOptions} from '../parser/document';
 
 import cssbeautify = require('cssbeautify');
 
 export interface Visitor { visit(node: shady.Node): void; }
 
 export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
-  type = 'css';
-
-  constructor(from: Options<shady.Node>) {
-    super(from);
-  }
+  readonly type = 'css';
 
   visit(visitors: Visitor[]) {
     for (const node of this) {

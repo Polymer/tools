@@ -137,6 +137,7 @@ export class AnalysisContext {
         options.scanners || AnalysisContext.getDefaultScanners(this._lazyEdges);
     this._cache = cache || new AnalysisCache();
     this._generation = generation || 0;
+    this._analysisComplete = Promise.resolve();
   }
 
   /**
@@ -431,12 +432,11 @@ export class AnalysisContext {
       };
       try {
         const parsedDoc = this._parseContents(
-            feature.type,
-            feature.contents,
-            containingDocument.url,
-            {locationOffset, astNode: feature.astNode});
-        // Inline documents inherit the base url of their containers.
-        parsedDoc.baseUrl = containingDocument.document.baseUrl;
+            feature.type, feature.contents, containingDocument.url, {
+              locationOffset,
+              astNode: feature.astNode,
+              baseUrl: containingDocument.document.baseUrl
+            });
         const scannedDoc = await this._scanDocument(
             parsedDoc, feature.attachedComment, containingDocument.document);
 
@@ -494,7 +494,7 @@ export class AnalysisContext {
    */
   private _parseContents(
       type: string, contents: string, url: ResolvedUrl,
-      inlineInfo?: InlineDocInfo<any>): ParsedDocument {
+      inlineInfo?: InlineDocInfo): ParsedDocument {
     const parser = this.parsers.get(type);
     if (parser == null) {
       throw new NoKnownParserError(`No parser for for file type ${type}`);

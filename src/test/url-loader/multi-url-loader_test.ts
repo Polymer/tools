@@ -19,15 +19,9 @@ import {UrlLoader} from '../../url-loader/url-loader';
 import {invertPromise, resolvedUrl} from '../test-utils';
 
 class MockLoader implements UrlLoader {
-  canLoadCount: number;
-  loadCount: number;
+  canLoadCount = 0;
+  loadCount = 0;
   constructor(private _load: string|null) {
-    this.resetCounts();
-  }
-
-  resetCounts() {
-    this.canLoadCount = 0;
-    this.loadCount = 0;
   }
 
   canLoad(_url: string): boolean {

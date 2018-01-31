@@ -26,11 +26,13 @@ import {ScannedFeature} from './feature';
 import {unsafeAsMutable} from './immutable';
 import {Resolvable} from './resolvable';
 import {LocationOffset, SourceRange} from './source-range';
+import {ResolvedUrl} from './url';
 import {Warning} from './warning';
 
-export interface InlineDocInfo<AstNode> {
-  astNode?: AstNode;
+export interface InlineDocInfo {
+  astNode?: AstNodeWithLanguage;
   locationOffset?: LocationOffset;
+  baseUrl?: ResolvedUrl;
 }
 
 export type AstNodeWithLanguage = {
