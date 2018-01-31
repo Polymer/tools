@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+- Always parameterize `Promise`. In Closure `Promise` is valid, but in TypeScript this is invalid and must be `Promise<any>` instead.
+- Escape `*\` comment end sequences when formatting comments. These turn up in practice when an HTML comment embeds a JavaScript style block comment, like here: https://github.com/PolymerElements/paper-icon-button/blob/master/paper-icon-button.html#L51
 
 ## [1.0.0] - 2018-01-25
 - [BREAKING] The `--outDir` flag is now required when using the command line tool. Previously it would print all concatenated typings to `stdout`, which doesn't make much sense given that we emit multiple files.

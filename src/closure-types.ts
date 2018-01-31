@@ -146,7 +146,11 @@ function convert(node: doctrine.Type, templateTypes: string[]): ts.Type {
     t = convertArray(node, templateTypes);
   } else if (isParameterizedObject(node)) {  // Object<foo, bar>
     t = convertIndexableObject(node, templateTypes);
-  } else if (isParameterizedType(node)) { // Type<T>
+  } else if (isBarePromise(node)) {  // Promise
+    // In Closure, `Promise` is ok, but in TypeScript this is invalid and must
+    // be explicitly parameterized as `Promise<any>`.
+    t = new ts.ParameterizedType('Promise', [ts.anyType]);
+  } else if (isParameterizedType(node)) {  // foo<T>
     t = convertParameterizedType(node, templateTypes);
   } else if (isUnion(node)) {  // foo|bar
     t = convertUnion(node, templateTypes);
@@ -246,11 +250,10 @@ function convertParameterizedType(
     console.error('Could not find name of parameterized type');
     return ts.anyType;
   }
-  const types = node.applications.map((application) =>
-    convert(application, templateTypes));
+  const types = node.applications.map(
+      (application) => convert(application, templateTypes));
   const name = renameMap.get(node.expression.name) ||
-    parameterizedRenameMap.get(node.expression.name) ||
-    node.expression.name;
+      parameterizedRenameMap.get(node.expression.name) || node.expression.name;
   return new ts.ParameterizedType(name, types);
 }
 
@@ -331,8 +334,13 @@ function isParameterizedType(node: doctrine.Type):
 }
 
 function isBareArray(node: doctrine.Type):
-    node is doctrine.type.TypeApplication {
+    node is doctrine.type.NameExpression {
   return node.type === 'NameExpression' && node.name === 'Array';
+}
+
+function isBarePromise(node: doctrine.Type):
+    node is doctrine.type.NameExpression {
+  return node.type === 'NameExpression' && node.name === 'Promise';
 }
 
 /**
