@@ -66,7 +66,10 @@ export class CodeUnderliner {
         return this.brandAsResolved(secondUrl || firstUrl);
       }
 
-      relative(): FileRelativeUrl {
+      relative(to: ResolvedUrl): PackageRelativeUrl;
+      relative(
+          from: ResolvedUrl, to: ResolvedUrl, kind?: string): FileRelativeUrl;
+      relative(): FileRelativeUrl|PackageRelativeUrl {
         throw new Error('does not do relative');
       }
     }());

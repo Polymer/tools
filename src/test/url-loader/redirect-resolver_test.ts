@@ -49,4 +49,30 @@ suite('RedirectResolver', function() {
       assert.equal(resolver.resolve(resolved), resolved);
     });
   });
+
+  suite('relative', () => {
+    test('if `to` is not in redirect-to, return as-is', () => {
+      const resolver = new RedirectResolver(
+          resolvedUrl`file:///src/a/`,
+          resolvedUrl`proto://site/`,
+          resolvedUrl`file:///src/b/`);
+      const relative = resolver.relative(resolvedUrl`file:///src/a/page.html`)!;
+      assert.equal(relative, packageRelativeUrl`page.html`);
+      assert.equal(
+          resolver.relative(resolvedUrl`file:///src/a/page.html`),
+          packageRelativeUrl`page.html`);
+    });
+
+    test('if `from` is not in redirect-to, un-redirect the `to`', () => {
+      const resolver = new RedirectResolver(
+          resolvedUrl`file:///src/a/`,
+          resolvedUrl`proto://site/`,
+          resolvedUrl`file:///src/b/`);
+      const relative = resolver.relative(resolvedUrl`file:///src/b/page.html`)!;
+      assert.equal(relative, packageRelativeUrl`proto://site/page.html`);
+      assert.equal(
+          resolver.relative(resolvedUrl`proto://site/page.html`),
+          packageRelativeUrl`proto://site/page.html`);
+    });
+  });
 });

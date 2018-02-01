@@ -38,15 +38,16 @@ export abstract class UrlResolver {
       baseUrl: ResolvedUrl, url: FileRelativeUrl,
       scannedImport?: ScannedImport): ResolvedUrl|undefined;
 
-  abstract relative(from: ResolvedUrl, to?: ResolvedUrl, kind?: string):
+  abstract relative(to: ResolvedUrl): PackageRelativeUrl;
+  abstract relative(from: ResolvedUrl, to: ResolvedUrl, kind?: string):
       FileRelativeUrl;
 
   protected getBaseAndUnresolved(
       url1: PackageRelativeUrl|ResolvedUrl, url2?: FileRelativeUrl):
       [ResolvedUrl|undefined, FileRelativeUrl|PackageRelativeUrl] {
     return url2 === undefined ?
-        [undefined, url1 as PackageRelativeUrl] :
-        [this.brandAsResolved(url1), this.brandAsRelative(url2)];
+        [undefined, this.brandAsPackageRelative(url1)] :
+        [this.brandAsResolved(url1), this.brandAsFileRelative(url2)];
   }
 
   protected simpleUrlResolve(
@@ -67,7 +68,7 @@ export abstract class UrlResolver {
             fromUrl.slashes !== toUrl.slashes ||
         typeof toUrl.host === 'string' && fromUrl.host !== toUrl.host ||
         typeof toUrl.auth === 'string' && fromUrl.auth !== toUrl.auth) {
-      return this.brandAsRelative(to);
+      return this.brandAsFileRelative(to);
     }
     let pathname;
     const {search, hash} = toUrl;
@@ -88,11 +89,15 @@ export abstract class UrlResolver {
 
       pathname = pathlib.relative(fromDir, toDir + '_').replace(/_$/, '');
     }
-    return this.brandAsRelative(urlLibFormat({pathname, search, hash}));
+    return this.brandAsFileRelative(urlLibFormat({pathname, search, hash}));
   }
 
-  protected brandAsRelative(url: string): FileRelativeUrl {
+  protected brandAsFileRelative(url: string): FileRelativeUrl {
     return url as FileRelativeUrl;
+  }
+
+  protected brandAsPackageRelative(url: string): PackageRelativeUrl {
+    return url as PackageRelativeUrl;
   }
 
   protected brandAsResolved(url: string): ResolvedUrl {

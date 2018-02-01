@@ -48,16 +48,27 @@ export class RedirectResolver extends UrlResolver {
     return undefined;
   }
 
+  relative(to: ResolvedUrl): PackageRelativeUrl;
+  relative(from: ResolvedUrl, to: ResolvedUrl, kind?: string): FileRelativeUrl;
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
-      FileRelativeUrl {
+      FileRelativeUrl|PackageRelativeUrl {
     let from, to;
-    if (maybeTo !== undefined) {
-      from = fromOrTo;
-      to = maybeTo;
-    } else {
+    if (maybeTo === undefined) {
       from = this.packageUrl;
       to = fromOrTo;
+    } else {
+      from = fromOrTo;
+      to = maybeTo;
     }
-    return this.simpleUrlRelative(from, to);
+    if (!from.startsWith(this._redirectTo) && to.startsWith(this._redirectTo)) {
+      to = this.brandAsResolved(
+          this._redirectFrom + to.slice(this._redirectTo.length));
+    }
+    const result = this.simpleUrlRelative(from, to);
+    if (maybeTo === undefined) {
+      return this.brandAsPackageRelative(result);
+    } else {
+      return result;
+    }
   }
 }

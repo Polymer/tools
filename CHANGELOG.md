@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* [BREAKING] The `UrlResolver#relative()` method now returns a
+  `PackageRelativeUrl` when called with only one argument, since the only
+  use of this call form is to reverse a resolved URL back into a simpler
+  package relative form.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.9] - 2018-01-26

@@ -25,8 +25,10 @@ class SimplestUrlResolver extends UrlResolver {
     return this.simpleUrlResolve(baseUrl, url);
   }
 
+  relative(to: ResolvedUrl): PackageRelativeUrl;
+  relative(from: ResolvedUrl, to: ResolvedUrl, kind?: string): FileRelativeUrl;
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
-      FileRelativeUrl {
+      FileRelativeUrl|PackageRelativeUrl {
     let from, to;
     if (maybeTo !== undefined) {
       from = fromOrTo;
@@ -35,7 +37,11 @@ class SimplestUrlResolver extends UrlResolver {
       throw new Error(
           'simplest url resolver.relative must be called with two arguments');
     }
-    return this.simpleUrlRelative(from, to);
+    const result = this.simpleUrlRelative(from, to);
+    if (maybeTo === undefined) {
+      return this.brandAsPackageRelative(result);
+    }
+    return result;
   }
 }
 

@@ -132,11 +132,18 @@ export class PackageUrlResolver extends UrlResolver {
     return this.brandAsResolved(urlLibFormat(resolvedUrl));
   }
 
+  relative(to: ResolvedUrl): PackageRelativeUrl;
+  relative(from: ResolvedUrl, to: ResolvedUrl, _kind?: string): FileRelativeUrl;
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
-      FileRelativeUrl {
+      FileRelativeUrl|PackageRelativeUrl {
     const [from, to] = (maybeTo !== undefined) ? [fromOrTo, maybeTo] :
                                                  [this.packageUrl, fromOrTo];
-    return this.relativeImpl(from, to);
+    const result = this.relativeImpl(from, to);
+    if (maybeTo === undefined) {
+      return this.brandAsPackageRelative(result);
+    } else {
+      return result;
+    }
   }
 
   private relativeImpl(from: ResolvedUrl, to: ResolvedUrl): FileRelativeUrl {

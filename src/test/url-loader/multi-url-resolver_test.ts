@@ -38,12 +38,18 @@ class MockResolver extends UrlResolver {
     return undefined;
   }
 
+  relative(to: ResolvedUrl): PackageRelativeUrl;
+  relative(from: ResolvedUrl, to: ResolvedUrl, kind?: string): FileRelativeUrl;
   relative(fromOrTo: ResolvedUrl, maybeTo?: ResolvedUrl, _kind?: string):
-      FileRelativeUrl {
+      FileRelativeUrl|PackageRelativeUrl {
     const [from, to] = (maybeTo !== undefined) ? [fromOrTo, maybeTo] :
                                                  [this.packageUrl, fromOrTo];
     ++this.relativeCount;
-    return this.simpleUrlRelative(from, to);
+    const result = this.simpleUrlRelative(from, to);
+    if (maybeTo === undefined) {
+      return this.brandAsPackageRelative(result);
+    }
+    return result;
   }
 }
 
@@ -101,7 +107,7 @@ suite('MultiUrlResolver', function() {
       const resolver = new MultiUrlResolver(resolvers);
       assert.equal(
           resolver.relative(resolvedUrl`file2.html`),
-          fileRelativeUrl`file2.html`);
+          packageRelativeUrl`file2.html`);
       // Verify the first two resolvers are called.
       assert.equal(resolvers[0].resolveCount, 1);
       assert.equal(resolvers[1].resolveCount, 1);
