@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as GitHubApi from 'github';
+import * as GitHubApi from '@octokit/rest';
 import {batchProcess, githubConcurrencyPreset} from './util/batch-process';
 
 /**
