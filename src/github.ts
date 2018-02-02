@@ -187,7 +187,7 @@ export class GitHubConnection {
     const allRepos: GitHubRepoData[] = [];
     let isOrg = true;
     let hasNextPage = false;
-    let responseData: any[];
+    let responseData: any[] = [];
     let responseMeta: any;
 
     if (isOrg) {
@@ -207,7 +207,6 @@ export class GitHubConnection {
         responseMeta = response.meta;
       } catch (e) {
         // Owner is not an user, either? End and return any repos found.
-        responseData = [];
       }
     }
 
