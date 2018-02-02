@@ -187,8 +187,8 @@ export class GitHubConnection {
     const allRepos: GitHubRepoData[] = [];
     let isOrg = true;
     let hasNextPage = false;
-    let responseData;
-    let responseMeta;
+    let responseData: any[];
+    let responseMeta: any;
 
     if (isOrg) {
       try {
