@@ -86,15 +86,17 @@ suite('AnalysisConverter', () => {
       const analysis = await analyzer.analyze(allTestUrls);
       // Setup ConversionSettings, set "test.html" as default entrypoint.
       const conversionSettings =
-          createDefaultConversionSettings(analysis, partialSettings);
+          createDefaultConversionSettings(analyzer, analysis, partialSettings);
       conversionSettings.includes.add('test.html');
       // Setup ProjectConverter, use PackageUrlHandler for easy setup.
-      const urlHandler = new PackageUrlHandler(packageName, packageType);
+      const urlHandler =
+          new PackageUrlHandler(analyzer, packageName, packageType);
       const converter =
           await new ProjectConverter(urlHandler, conversionSettings);
       // Gather all relevent package documents, and run the converter!
       const stopIntercepting = interceptWarnings();
-      for (const doc of getPackageDocuments(analysis, conversionSettings)) {
+      for (const doc of getPackageDocuments(
+               urlHandler, analysis, conversionSettings)) {
         converter.convertDocument(doc);
       }
       // Assert warnings matched expected.
@@ -120,12 +122,14 @@ suite('AnalysisConverter', () => {
           assert.deepEqual(
               actualContents,
               expectedContents,
-              `${expectedPath} was unexpectedly deleted!`);
+              `${expectedPath} was unexpectedly deleted! ` +
+                  `Generated outputs: ${[...results.keys()].join(', ')}`);
         } else if (expectedContents === undefined) {
           assert.deepEqual(
               actualContents,
               expectedContents,
-              `${expectedPath} should have been deleted`);
+              `${expectedPath} should have been deleted. ` +
+                  `Generated outputs: ${[...results.keys()].join(', ')}`);
         } else {
           assert.deepEqual(
               '\n' + actualContents,
@@ -137,7 +141,7 @@ suite('AnalysisConverter', () => {
 
     function setSources(sources: {[filename: string]: string}) {
       for (const [filename, source] of Object.entries(sources)) {
-        urlLoader.urlContentsMap.set(filename, source);
+        urlLoader.urlContentsMap.set(analyzer.resolveUrl(filename)!, source);
       }
     }
 
@@ -2452,15 +2456,13 @@ console.log('two');
       assertSources(await convert(), {
         'test.js': `
 /* First comment */
-;
-
-// comment in script
 /* Second comment */
-console.log('second script');
-
 /* Another comment */
 /* Final trailing comment */
 ;
+
+// comment in script
+console.log('second script');
 `,
       });
     });
@@ -2508,14 +2510,12 @@ console.log('second script');
         'test.js': `
 // comment in script
 /* /* First comment *\\/ */
-console.log('second script');
-
 /*
   /**
    *  Final comment
    **\\/
 */
-;
+console.log('second script');
 `,
       });
     });

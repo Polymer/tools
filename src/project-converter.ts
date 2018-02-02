@@ -19,7 +19,6 @@ import {DocumentConverter} from './document-converter';
 import {ConversionResult, JsExport} from './js-module';
 import {ConvertedDocumentFilePath, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
-import {getDocumentUrl} from './urls/util';
 
 // These files were already ES6 modules, so don't write our conversions.
 // Can't be handled in `excludes` because we want to preserve imports of.
@@ -75,7 +74,8 @@ export class ProjectConverter {
         `convertDocument() must be called with an HTML document, but got ${
             document.kinds}`);
     try {
-      this.conversionSettings.includes.has(document.url) ?
+      const documentUrl = this.urlHandler.getDocumentUrl(document);
+      this.conversionSettings.includes.has(documentUrl) ?
           this.convertDocumentToJs(document, new Set()) :
           this.convertDocumentToHtml(document, new Set());
     } catch (e) {
@@ -88,7 +88,7 @@ export class ProjectConverter {
    * to decide if it should be converted or skipped.
    */
   private _shouldConvertDocument(document: Document): boolean {
-    const documentUrl = getDocumentUrl(document);
+    const documentUrl = this.urlHandler.getDocumentUrl(document);
     return !this.conversionResults.has(documentUrl) &&
         !this.conversionSettings.excludes.has(documentUrl);
   }
@@ -106,10 +106,11 @@ export class ProjectConverter {
         continue;
       }
       // Warn if a cyclical dependency is found.
-      if (visited.has(getDocumentUrl(htmlImport.document))) {
+      if (visited.has(this.urlHandler.getDocumentUrl(htmlImport.document))) {
         console.warn(
             `Cycle in dependency graph found where ` +
-            `${document.url} imports ${htmlImport.document.url}.\n` +
+            `${this.urlHandler.getDocumentUrl(document)} imports ${
+                this.urlHandler.getDocumentUrl(htmlImport.document)}.\n` +
             `    Modulizer does not yet support rewriting references among ` +
             `cyclic dependencies.`);
         continue;
@@ -127,7 +128,7 @@ export class ProjectConverter {
     if (!this._shouldConvertDocument(document)) {
       return;
     }
-    visited.add(getDocumentUrl(document));
+    visited.add(this.urlHandler.getDocumentUrl(document));
     this._convertDependencies(document, visited);
     const documentConverter = new DocumentConverter(
         document,
@@ -148,7 +149,7 @@ export class ProjectConverter {
     if (!this._shouldConvertDocument(document)) {
       return;
     }
-    visited.add(getDocumentUrl(document));
+    visited.add(this.urlHandler.getDocumentUrl(document));
     this._convertDependencies(document, visited);
     const documentConverter = new DocumentConverter(
         document,

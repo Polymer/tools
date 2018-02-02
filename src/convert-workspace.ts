@@ -55,13 +55,14 @@ function writePackageJson(repo: WorkspaceRepo, packageVersion: string) {
  */
 function configureAnalyzer(options: WorkspaceConversionSettings) {
   const workspaceDir = options.workspaceDir;
+  const urlResolver = new PackageUrlResolver({packageDir: workspaceDir});
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
   for (const [url, contents] of polymerFileOverrides) {
-    urlLoader.urlContentsMap.set(`polymer/${url}`, contents);
+    urlLoader.urlContentsMap.set(urlResolver.resolve(url)!, contents);
   }
   return new Analyzer({
     urlLoader,
-    urlResolver: new PackageUrlResolver(),
+    urlResolver,
   });
 }
 
@@ -80,8 +81,9 @@ export default async function convert(options: WorkspaceConversionSettings):
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   const htmlDocuments = [...analysis.getFeatures({kind: 'html-document'})];
-  const conversionSettings = createDefaultConversionSettings(analysis, options);
-  const urlHandler = new WorkspaceUrlHandler(options.workspaceDir);
+  const conversionSettings =
+      createDefaultConversionSettings(analyzer, analysis, options);
+  const urlHandler = new WorkspaceUrlHandler(analyzer, options.workspaceDir);
   const converter = new ProjectConverter(urlHandler, conversionSettings);
   const convertedPackageResults: ConversionResultsMap = new Map();
 
@@ -94,8 +96,9 @@ export default async function convert(options: WorkspaceConversionSettings):
       continue;
     }
     for (const document of htmlDocuments) {
-      if (!document.url.startsWith(repoDirName) ||
-          conversionSettings.excludes.has(document.url)) {
+      const documentUrl = urlHandler.getDocumentUrl(document);
+      if (!documentUrl.startsWith(repoDirName) ||
+          conversionSettings.excludes.has(documentUrl)) {
         continue;
       }
       converter.convertDocument(document);

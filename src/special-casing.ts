@@ -1,3 +1,5 @@
+import {ResolvedUrl} from 'polymer-analyzer';
+
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -13,11 +15,11 @@
  */
 
 // TODO(fks) 07-06-2015: Convert this to a configurable option
-export const polymerFileOverrides: ReadonlyMap<string, string> = new Map([
+export const polymerFileOverrides: ReadonlyMap<ResolvedUrl, string> = new Map([
   // 'lib/utils/boot.html' - This is a special file that overwrites exports
   // and does other things that make less sense in an ESM world.
   [
-    'lib/utils/boot.html',
+    'lib/utils/boot.html' as ResolvedUrl,
     `<script>
   window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
 
@@ -30,7 +32,7 @@ export const polymerFileOverrides: ReadonlyMap<string, string> = new Map([
   // WebComponentsReady event.
   // See: https://github.com/Polymer/polymer-modulizer/issues/111
   [
-    'lib/utils/unresolved.html',
+    'lib/utils/unresolved.html' as ResolvedUrl,
     `
 <script>
 function resolve() {

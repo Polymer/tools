@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Analyzer, Document} from 'polymer-analyzer';
+
 import {lookupDependencyMapping} from '../manifest-converter';
 
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl, PackageType} from './types';
@@ -28,6 +30,7 @@ import {getRelativeUrl} from './util';
 export class PackageUrlHandler implements UrlHandler {
   readonly packageName: string;
   readonly packageType: PackageType;
+  readonly analyzer: Analyzer;
 
   /**
    * Helper function to check if a file URL is internal to the main package
@@ -41,9 +44,30 @@ export class PackageUrlHandler implements UrlHandler {
         !url.startsWith('./node_modules/');
   }
 
-  constructor(packageName: string, packageType: PackageType = 'element') {
+  constructor(
+      analyzer: Analyzer, packageName: string,
+      packageType: PackageType = 'element') {
+    this.analyzer = analyzer;
     this.packageName = packageName;
     this.packageType = packageType;
+  }
+
+  /**
+   * Return a document url property as a OriginalDocumentUrl type.
+   * OriginalDocumentUrl is relative to the project under conversion, unlike
+   * the analyzer's ResolvedUrl, which is absolute to the file system.
+   */
+  getDocumentUrl(document: Document): OriginalDocumentUrl {
+    const relativeUrl =
+        this.analyzer.urlResolver.relative(document.url) as string;
+    // If the analyzer URL is outside the current directory, it actually exists
+    // in the child bower_components/ directory.
+    if (relativeUrl.startsWith('../')) {
+      return 'bower_components/' + relativeUrl.substring(3) as
+          OriginalDocumentUrl;
+    } else {
+      return relativeUrl as OriginalDocumentUrl;
+    }
   }
 
   /**

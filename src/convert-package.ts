@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 
 import {ConversionSettings, createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
 import {generatePackageJson, readJson, writeJson} from './manifest-converter';
@@ -21,7 +21,6 @@ import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {PackageUrlHandler} from './urls/package-url-handler';
 import {PackageType} from './urls/types';
-import {getDocumentUrl} from './urls/util';
 import {mkdirp, rimraf, writeFileResults} from './util';
 
 
@@ -62,8 +61,12 @@ async function setupOutDir(outDir: string, clean = false) {
  * current package's bower.json maifest to the "includes" set.
  */
 function getConversionSettings(
-    analysis: Analysis, options: PackageConversionSettings, bowerJson: any) {
-  const conversionSettings = createDefaultConversionSettings(analysis, options);
+    analyzer: Analyzer,
+    analysis: Analysis,
+    options: PackageConversionSettings,
+    bowerJson: any) {
+  const conversionSettings =
+      createDefaultConversionSettings(analyzer, analysis, options);
   let bowerMainFiles = (bowerJson.main) || [];
   if (!Array.isArray(bowerMainFiles)) {
     bowerMainFiles = [bowerMainFiles];
@@ -78,26 +81,33 @@ function getConversionSettings(
  * Get the relevant documents from a package, to be converted.
  */
 export function getPackageDocuments(
-    analysis: Analysis, conversionSettings: ConversionSettings) {
+    urlHandler: PackageUrlHandler,
+    analysis: Analysis,
+    conversionSettings: ConversionSettings) {
   const htmlDocuments = [...analysis.getFeatures({kind: 'html-document'})];
-  return htmlDocuments.filter(
-      (d) => PackageUrlHandler.isUrlInternalToPackage(getDocumentUrl(d)) &&
-          !conversionSettings.excludes.has(d.url));
+  return htmlDocuments.filter((d) => {
+    const documentUrl = urlHandler.getDocumentUrl(d);
+    return PackageUrlHandler.isUrlInternalToPackage(documentUrl) &&
+        !conversionSettings.excludes.has(documentUrl);
+  });
 }
 
 /**
  * Configure a basic analyzer instance for the package under conversion.
  */
 function configureAnalyzer(options: PackageConversionSettings) {
+  const urlResolver = new PackageUrlResolver();
   const urlLoader =
       new InMemoryOverlayUrlLoader(new FSUrlLoader(options.inDir));
   for (const [url, contents] of polymerFileOverrides) {
-    urlLoader.urlContentsMap.set(url, contents);
-    urlLoader.urlContentsMap.set(`bower_components/polymer/${url}`, contents);
+    urlLoader.urlContentsMap.set(urlResolver.resolve(url)!, contents);
+    urlLoader.urlContentsMap.set(
+        urlResolver.resolve(`bower_components/polymer/${url}` as ResolvedUrl)!,
+        contents);
   }
   return new Analyzer({
     urlLoader,
-    urlResolver: new PackageUrlResolver(),
+    urlResolver,
   });
 }
 
@@ -118,13 +128,14 @@ export default async function convert(options: PackageConversionSettings) {
 
   // Create the url handler & converter.
   const urlHandler =
-      new PackageUrlHandler(options.packageName, options.packageType);
+      new PackageUrlHandler(analyzer, options.packageName, options.packageType);
   const conversionSettings =
-      getConversionSettings(analysis, options, bowerJson);
+      getConversionSettings(analyzer, analysis, options, bowerJson);
   const converter = new ProjectConverter(urlHandler, conversionSettings);
 
   // Gather all relevent package documents, and run the converter on them!
-  for (const document of getPackageDocuments(analysis, conversionSettings)) {
+  for (const document of getPackageDocuments(
+           urlHandler, analysis, conversionSettings)) {
     converter.convertDocument(document);
   }
 

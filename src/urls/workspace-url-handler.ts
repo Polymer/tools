@@ -13,6 +13,7 @@
  */
 
 import * as path from 'path';
+import {Analyzer, Document} from 'polymer-analyzer';
 
 import {lookupDependencyMapping} from '../manifest-converter';
 import {readJson} from '../manifest-converter';
@@ -53,9 +54,21 @@ export function lookupNpmPackageName(bowerJsonPath: string): string|undefined {
 
 export class WorkspaceUrlHandler implements UrlHandler {
   readonly workspaceDir: string;
+  readonly analyzer: Analyzer;
 
-  constructor(workspaceDir: string) {
+  constructor(analyzer: Analyzer, workspaceDir: string) {
     this.workspaceDir = workspaceDir;
+    this.analyzer = analyzer;
+  }
+
+  /**
+   * Return a document url property as a OriginalDocumentUrl type.
+   * OriginalDocumentUrl is relative to the project under conversion, unlike
+   * the analyzer's ResolvedUrl, which is absolute to the file system.
+   */
+  getDocumentUrl(document: Document): OriginalDocumentUrl {
+    return this.analyzer.urlResolver.relative(document.url) as string as
+        OriginalDocumentUrl;
   }
 
   /**

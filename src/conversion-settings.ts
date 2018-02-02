@@ -15,7 +15,7 @@
 import * as estree from 'estree';
 import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
-import {Analysis} from 'polymer-analyzer';
+import {Analysis, Analyzer} from 'polymer-analyzer';
 
 export type NpmImportStyle = 'name'|'path';
 
@@ -166,8 +166,8 @@ function getNamespaceNames(analysis: Analysis) {
  * incomplete user-provided options.
  */
 export function createDefaultConversionSettings(
-    analysis: Analysis,
-    options: PartialConversionSettings): ConversionSettings {
+    analyzer: Analyzer, analysis: Analysis, options: PartialConversionSettings):
+    ConversionSettings {
   // Configure "namespaces":
   const namespaces =
       new Set(getNamespaceNames(analysis).concat(options.namespaces || []));
@@ -180,12 +180,15 @@ export function createDefaultConversionSettings(
   const importedFiles =
       IterableX
           .from(analysis.getFeatures({kind: 'import', externalPackages: false}))
-          .map((imp) => imp.url)
+          .filter((imp) => !imp.kinds.has('html-script-back-reference'))
+          .map(
+              (imp) =>
+                  analyzer.urlResolver.relative(imp.url) as string | undefined)
           .filter(
-              (url) =>
-                  !(url.startsWith('bower_components') ||
-                    url.startsWith('node_modules')));
-  const includes = new Set(importedFiles);
+              (url) => url !== undefined &&
+                  !url.startsWith('bower_components') &&
+                  !url.startsWith('node_modules'));
+  const includes = new Set(importedFiles as IterableX<string>);
 
   // Configure "referenceExcludes":
   const referenceExcludes = new Set(options.referenceExcludes || [

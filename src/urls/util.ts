@@ -13,7 +13,6 @@
  */
 
 import {posix as path} from 'path';
-import {Document} from 'polymer-analyzer';
 
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './types';
 
@@ -50,13 +49,6 @@ export function getJsModuleConvertedFilePath(originalUrl: OriginalDocumentUrl):
 export function getHtmlDocumentConvertedFilePath(
     originalUrl: OriginalDocumentUrl): ConvertedDocumentFilePath {
   return originalUrl as string as ConvertedDocumentFilePath;
-}
-
-/**
- * Return a document url property as a OriginalDocumentUrl type.
- */
-export function getDocumentUrl(document: Document): OriginalDocumentUrl {
-  return document.url as OriginalDocumentUrl;
 }
 
 /**

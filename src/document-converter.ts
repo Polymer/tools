@@ -40,7 +40,7 @@ import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
 import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
 import {isOriginalDocumentUrlFormat} from './urls/util';
-import {getDocumentUrl, getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId, replaceHtmlExtensionIfFound} from './urls/util';
+import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId, replaceHtmlExtensionIfFound} from './urls/util';
 
 /**
  * Keep a map of dangerous references to check for. Output the related warning
@@ -224,7 +224,7 @@ export class DocumentConverter {
     this.conversionSettings = conversionSettings;
     this.urlHandler = urlHandler;
     this.document = document;
-    this.originalUrl = getDocumentUrl(document);
+    this.originalUrl = urlHandler.getDocumentUrl(document);
     this.convertedUrl = this.convertDocumentUrl(this.originalUrl);
   }
 
@@ -245,13 +245,14 @@ export class DocumentConverter {
    */
   private getHtmlImports() {
     return DocumentConverter.getAllHtmlImports(this.document)
-        .filter(
-            (f: Import) =>
-                !this.conversionSettings.excludes.has(f.document.url));
+        .filter((f: Import) => {
+          const documentUrl = this.urlHandler.getDocumentUrl(f.document);
+          return !this.conversionSettings.excludes.has(documentUrl);
+        });
   }
 
   private isInternalNonModuleImport(scriptImport: Import): boolean {
-    const oldScriptUrl = getDocumentUrl(scriptImport.document);
+    const oldScriptUrl = this.urlHandler.getDocumentUrl(scriptImport.document);
     const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
     const isModuleImport =
         dom5.getAttribute(scriptImport.astNode, 'type') === 'module';
@@ -317,7 +318,8 @@ export class DocumentConverter {
     // itself.
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
-      const oldScriptUrl = getDocumentUrl(scriptImport.document);
+      const oldScriptUrl =
+          this.urlHandler.getDocumentUrl(scriptImport.document);
       const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
       if (convertedHtmlScripts.has(scriptImport)) {
         // NOTE: This deleted script file path *may* === this document's final
@@ -375,13 +377,13 @@ export class DocumentConverter {
 
     const edits: Array<Edit> = [];
     for (const script of this.document.getFeatures({kind: 'js-document'})) {
-      const astNode = script.astNode;
-      if (!astNode || !isLegacyJavaScriptTag(astNode)) {
+      if (!script.astNode ||
+          !isLegacyJavaScriptTag(script.astNode.node as parse5.ASTNode)) {
         continue;  // ignore unknown script tags and preexisting modules
       }
-      const sourceRange = script.astNode ?
-          htmlDocument.sourceRangeForNode(script.astNode) :
-          undefined;
+      const astNode = script.astNode.node as parse5.ASTNode;
+      const sourceRange =
+          script.astNode ? htmlDocument.sourceRangeForNode(astNode) : undefined;
       if (!sourceRange) {
         continue;  // nothing we can do about scripts without known positions
       }
@@ -463,10 +465,11 @@ export class DocumentConverter {
       }
       const offsets = htmlDocument.sourceRangeToOffsets(htmlImport.sourceRange);
 
-      const htmlDocumentUrl = getDocumentUrl(htmlImport.document);
+      const htmlDocumentUrl =
+          this.urlHandler.getDocumentUrl(htmlImport.document);
       const importedJsDocumentUrl = this.convertDocumentUrl(htmlDocumentUrl);
       const importUrl =
-          this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
+          this.formatImportUrl(importedJsDocumentUrl, htmlImport.originalUrl);
       const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
                             .childNodes![0];
       dom5.setAttribute(scriptTag, 'src', importUrl);
@@ -489,9 +492,10 @@ export class DocumentConverter {
       const offsets = htmlDocument.sourceRangeToOffsets(
           htmlDocument.sourceRangeForNode(scriptImport.astNode)!);
 
-      const convertedUrl =
-          this.convertDocumentUrl(getDocumentUrl(scriptImport.document));
-      const formattedUrl = this.formatImportUrl(convertedUrl, scriptImport.url);
+      const convertedUrl = this.convertDocumentUrl(
+          this.urlHandler.getDocumentUrl(scriptImport.document));
+      const formattedUrl =
+          this.formatImportUrl(convertedUrl, scriptImport.originalUrl);
       dom5.setAttribute(scriptImport.astNode, 'src', formattedUrl);
 
       // Temporary: Check if imported script is a known module.
@@ -556,7 +560,8 @@ export class DocumentConverter {
       const f = allFeatures[0];
       if (f.kinds.has('html-script')) {
         const sciprtImport = f as Import;
-        const oldScriptUrl = getDocumentUrl(sciprtImport.document);
+        const oldScriptUrl =
+            this.urlHandler.getDocumentUrl(sciprtImport.document);
         const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
         return newScriptUrl === this.convertedUrl;
       }
@@ -1070,15 +1075,15 @@ export class DocumentConverter {
     // Rewrite HTML Imports to JS imports
     const jsImportDeclarations = [];
     for (const htmlImport of this.getHtmlImports()) {
-      const importedJsDocumentUrl =
-          this.convertDocumentUrl(getDocumentUrl(htmlImport.document));
+      const importedJsDocumentUrl = this.convertDocumentUrl(
+          this.urlHandler.getDocumentUrl(htmlImport.document));
 
       const references = importedReferences.get(importedJsDocumentUrl);
       const namedExports =
           new Set(IterableX.from(references || []).map((ref) => ref.target));
 
       const jsFormattedImportUrl =
-          this.formatImportUrl(importedJsDocumentUrl, htmlImport.url);
+          this.formatImportUrl(importedJsDocumentUrl, htmlImport.originalUrl);
       jsImportDeclarations.push(...getImportDeclarations(
           jsFormattedImportUrl, namedExports, references, usedIdentifiers));
 
