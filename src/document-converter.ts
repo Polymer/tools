@@ -19,6 +19,7 @@ import * as estree from 'estree';
 import {Identifier, Program} from 'estree';
 import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
+import {EOL} from 'os';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
@@ -363,7 +364,7 @@ export class DocumentConverter {
       deleteOriginal: true,
       output: {
         type: 'js-module',
-        source: outputProgram.code + '\n',
+        source: outputProgram.code + EOL,
         exportedNamespaceMembers: exportMigrationRecords,
         es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
       }
@@ -401,12 +402,12 @@ export class DocumentConverter {
       dom5.setAttribute(newScriptTag, 'type', 'module');
       dom5.setTextContent(
           newScriptTag,
-          '\n' +
+          EOL +
               recast
                   .print(
                       program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
                   .code +
-              '\n');
+              EOL);
       const replacementText = serializeNode(newScriptTag);
       edits.push({offsets, replacementText});
     }
@@ -448,12 +449,12 @@ export class DocumentConverter {
       dom5.setAttribute(newScriptTag, 'type', 'module');
       dom5.setTextContent(
           newScriptTag,
-          '\n' +
+          EOL +
               recast
                   .print(
                       program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
                   .code +
-              '\n');
+              EOL);
       const replacementText = serializeNode(newScriptTag);
       edits.push({offsets, replacementText});
     }
@@ -640,7 +641,7 @@ export class DocumentConverter {
         able to expand the underlying CSS custom properties.
         See: https://github.com/Polymer/polymer-modulizer/issues/154
         -->
-    `;
+    `.split('\n').join(EOL);
     let first = true;
     for (const tag of tagsToInsertImperatively) {
       const offsets = htmlDocument.sourceRangeToOffsets(
@@ -650,12 +651,12 @@ export class DocumentConverter {
       const program = jsc.program(createDomNodeInsertStatements([tag]));
       dom5.setTextContent(
           scriptTag,
-          '\n' +
+          EOL +
               recast
                   .print(
                       program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
                   .code +
-              '\n');
+              EOL);
       let replacementText = serializeNode(scriptTag);
       if (first) {
         replacementText = apology + replacementText;
@@ -676,12 +677,12 @@ export class DocumentConverter {
           jsc.program(createDomNodeInsertStatements([bodyNode], true));
       dom5.setTextContent(
           scriptTag,
-          '\n' +
+          EOL +
               recast
                   .print(
                       program, {quote: 'single', wrapColumn: 80, tabWidth: 2})
                   .code +
-              '\n');
+              EOL);
       let replacementText = serializeNode(scriptTag);
       if (first) {
         replacementText = apology + replacementText;

@@ -17,6 +17,7 @@ import * as dom5 from 'dom5';
 import * as estree from 'estree';
 import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
+import {EOL} from 'os';
 import * as parse5 from 'parse5';
 
 /**
@@ -76,9 +77,9 @@ export function serializeNodeToTemplateLiteral(
     lines.pop();
   }
 
-  let cooked = lines.join('\n');
+  let cooked = lines.join(EOL);
   if (addNewLines) {
-    cooked = `\n${cooked}\n`;
+    cooked = `${EOL}${cooked}${EOL}`;
   }
 
   // The `\` -> `\\` replacement must occur first so that the backslashes

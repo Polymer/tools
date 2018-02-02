@@ -15,6 +15,7 @@
 import {assert} from 'chai';
 import * as esprima from 'esprima';
 import * as estree from 'estree';
+import {EOL} from 'os';
 import {Analyzer, InMemoryOverlayUrlLoader} from 'polymer-analyzer';
 
 import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
@@ -36,9 +37,7 @@ A few conventions in these tests:
  */
 
 suite('AnalysisConverter', () => {
-
   suite('convertDocument', () => {
-
     let urlLoader: InMemoryOverlayUrlLoader;
     let analyzer: Analyzer;
 
@@ -132,7 +131,7 @@ suite('AnalysisConverter', () => {
                   `Generated outputs: ${[...results.keys()].join(', ')}`);
         } else {
           assert.deepEqual(
-              '\n' + actualContents,
+              '\n' + actualContents.split(EOL).join('\n'),
               expectedContents,
               `Content of ${expectedPath} is wrong`);
         }
@@ -2573,11 +2572,9 @@ Polymer({
         });
       });
     });
-
   });
 
   suite('getMemberPath', () => {
-
     function getMemberExpression(source: string) {
       const program = esprima.parse(source);
       const statement = program.body[0] as estree.ExpressionStatement;
@@ -2602,7 +2599,5 @@ Polymer({
       const memberPath = getMemberPath(memberExpression);
       assert.deepEqual(memberPath, ['Foo', 'Bar', 'Baz']);
     });
-
   });
-
 });

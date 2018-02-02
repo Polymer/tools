@@ -18,9 +18,7 @@ import {ConvertedDocumentUrl} from '../../../urls/types';
 import {getRelativeUrl} from '../../../urls/util';
 
 suite('src/url-handler', () => {
-
   suite('getRelativeUrl()', () => {
-
     test('handles two root urls relative to the same directory', () => {
       assert.equal(
           getRelativeUrl(
@@ -46,7 +44,5 @@ suite('src/url-handler', () => {
             './bar.js' as ConvertedDocumentUrl);
       }, `paths relative to package root expected (actual: from="../foo.js", to="./bar.js")`);
     });
-
   });
-
 });

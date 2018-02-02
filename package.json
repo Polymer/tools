@@ -14,8 +14,8 @@
   "scripts": {
     "build": "tsc",
     "build:fixtures": "npm run build && node lib/tools/update-fixtures",
-    "test:full": "npm run build && mocha $(find lib/test -name *_test.js) && npm run lint",
-    "test:fast": "npm run build && mocha $(find lib/test/unit -name *_test.js)",
+    "test:full": "npm run build && bash test/run-mocha.sh && npm run lint",
+    "test:fast": "npm run build && bash test/run-mocha.sh unit",
     "test:watch": "watchy -w src/ -w custom_typings/ -- npm run test:fast --loglevel=silent",
     "test": "npm run test:fast && npm run lint",
     "lint": "tslint -p ./",

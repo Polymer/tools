@@ -15,6 +15,7 @@
 'use strict';
 
 import * as fs from 'mz/fs';
+import {EOL} from 'os';
 import * as path from 'path';
 import * as spdxLicenseList from 'spdx-license-list/simple';
 
@@ -85,7 +86,8 @@ export function readJson(...pathPieces: string[]) {
  */
 export function writeJson(json: any, ...pathPieces: string[]) {
   const jsonPath = path.resolve(...pathPieces);
-  const jsonContents = JSON.stringify(json, undefined, 2) + '\n';
+  const jsonContents =
+      JSON.stringify(json, undefined, 2).split('\n').join(EOL) + EOL;
   fs.writeFileSync(jsonPath, jsonContents);
 }
 
