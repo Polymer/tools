@@ -129,9 +129,6 @@ function createGithubRepoReferenceFromPattern(pattern: string):
  * to do with listing and cloning owned repos) using a token and building in
  * rate-limiting functionality using the Bottleneck library to throttle API
  * consumption.
- *
- * TODO(fks) 09-21-2017: Add back parallelization & throttling.
- *                       https://github.com/Polymer/polymer-workspaces/issues/2
  */
 export class GitHubConnection {
   private _cache: Map<string, GitHubRepoData>;
@@ -188,41 +185,51 @@ export class GitHubConnection {
   async getOwnerRepos(owner: string): Promise<GitHubRepoData[]> {
     // Try to get the repo names assuming owner is an org.
     const allRepos: GitHubRepoData[] = [];
-    let pageRepos: GitHubRepoData[] = [];
-    const pageSize = 50;
-    let page = 1;
     let isOrg = true;
+    let hasNextPage = false;
+    let responseData: any[];
+    let responseMeta: any;
 
-    do {
-      let responseData;
-      if (isOrg) {
-        try {
-          const response = await this._github.repos.getForOrg(
-              {org: owner, per_page: pageSize, page: page});
-          responseData = response.data;
-        } catch (e) {
-          // Owner is not an org? Continue as if owner is a user.
-          isOrg = false;
-        }
+    if (isOrg) {
+      try {
+        const response = await this._github.repos.getForOrg({org: owner});
+        responseData = response.data;
+        responseMeta = response.meta;
+      } catch (e) {
+        // Owner is not an org? Continue as if owner is a user.
+        isOrg = false;
       }
-      if (!isOrg) {
+    }
+    if (!isOrg) {
+      try {
+        const response = await this._github.repos.getForUser({username: owner});
+        responseData = response.data;
+        responseMeta = response.meta;
+      } catch (e) {
+        // Owner is not an user, either? End and return any repos found.
+        responseData = [];
+      }
+    }
+
+    while (hasNextPage || responseData.length > 0) {
+      responseData.filter((obj: any) => !obj.private)
+          .map(createGitHubRepoDataFromApi)
+          .forEach((repo: GitHubRepoData) => {
+            this.setCache(repo.fullName, repo);
+            allRepos.push(repo);
+          });
+
+      if (hasNextPage = !!this._github.hasNextPage(responseMeta)) {
         try {
-          const response = await this._github.repos.getForUser(
-              {username: owner, per_page: pageSize, page: page});
+          const response: any = await this._github.getNextPage(responseMeta);
           responseData = response.data;
+          responseMeta = response.meta;
         } catch (e) {
-          // Owner is not an user, either? End and return any repos found.
+          hasNextPage = false;
           responseData = [];
         }
       }
-      pageRepos = responseData.filter((obj: any) => !obj.private)
-                      .map(createGitHubRepoDataFromApi);
-      for (const repo of pageRepos) {
-        this.setCache(repo.fullName, repo);
-        allRepos.push(repo);
-      }
-      ++page;
-    } while (pageRepos.length > 0);
+    }
 
     return allRepos;
   }
