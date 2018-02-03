@@ -53,3 +53,6 @@ class MyClass {
    */
   renamed_collection_return_types() { }
 }
+
+class ExcludeThisClass {
+}

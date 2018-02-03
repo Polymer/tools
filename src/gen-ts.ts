@@ -27,7 +27,19 @@ export interface Config {
    * undefined, defaults to excluding "index.html" and directories ending in
    * "test" or "demo".
    */
+  excludeFiles?: string[];
+
+  /**
+   * The same as `excludeFiles`, for backwards compatibility. Will be removed in
+   * next major version.
+   */
   exclude?: string[];
+
+  /**
+   * Do not emit any declarations for features that have any of these
+   * identifiers.
+   */
+  excludeIdentifiers?: string[];
 
   /**
    * Remove any triple-slash references to these files, specified as paths
@@ -79,8 +91,8 @@ export async function generateDeclarations(
 function analyzerToAst(
     analysis: analyzer.Analysis, config: Config, rootDir: string):
     ts.Document[] {
-  const exclude =
-      (config.exclude || defaultExclude).map((p) => new minimatch.Minimatch(p));
+  const excludeFiles = (config.excludeFiles || config.exclude || defaultExclude)
+                           .map((p) => new minimatch.Minimatch(p));
   const addReferences = config.addReferences || {};
   const removeReferencesResolved = new Set(
       (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
@@ -110,7 +122,7 @@ function analyzerToAst(
           `Skipping source document without local file URL: ${jsDoc.url}`);
       continue;
     }
-    if (exclude.some((r) => r.match(sourcePath))) {
+    if (excludeFiles.some((r) => r.match(sourcePath))) {
       continue;
     }
     const filename = makeDeclarationsFilename(sourcePath);
@@ -131,7 +143,8 @@ function analyzerToAst(
               .filter((url): url is string => url !== undefined)),
     });
     for (const analyzerDoc of analyzerDocs) {
-      handleDocument(analyzerDoc, tsDoc, rootDir);
+      handleDocument(
+          analyzerDoc, tsDoc, rootDir, config.excludeIdentifiers || []);
     }
     for (const ref of tsDoc.referencePaths) {
       const resolvedRef = path.resolve(rootDir, path.dirname(tsDoc.path), ref);
@@ -204,8 +217,14 @@ interface MaybePrivate {
  * items in the given Polymer Analyzer document.
  */
 function handleDocument(
-    doc: analyzer.Document, root: ts.Document, rootDir: string) {
+    doc: analyzer.Document,
+    root: ts.Document,
+    rootDir: string,
+    excludeIdentifiers: string[]) {
   for (const feature of doc.getFeatures()) {
+    if (excludeIdentifiers.some((id) => feature.identifiers.has(id))) {
+      continue;
+    }
     if ((feature as MaybePrivate).privacy === 'private') {
       continue;
     }
