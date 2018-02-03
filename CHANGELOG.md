@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Added `excludeIdentifiers` config option. Use this to skip emitting any declarations for some feature by its class name, etc.
 - Renamed `exclude` config option to `excludeFiles` to disambiguate it from `excludeIdentifiers`. `exclude` still works as before for backwards compatibility, but will be removed in the next major version.
+- Polymer behavior interfaces now extend any additional behaviors that they apply. This is done with an array of behavior objects as documented at https://www.polymer-project.org/1.0/docs/devguide/behaviors#extending.
 
 ## [1.0.1] - 2018-02-01
 - Always parameterize `Promise`. In Closure `Promise` is valid, but in TypeScript this is invalid and must be `Promise<any>` instead.

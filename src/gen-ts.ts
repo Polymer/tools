@@ -362,6 +362,7 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
   ns.members.push(new ts.Interface({
     name: className,
     description: feature.description || feature.summary,
+    extends: feature.behaviorAssignments.map((b) => b.name),
     properties: handleProperties(feature.properties.values()),
     methods: handleMethods(feature.methods.values()),
   }));
