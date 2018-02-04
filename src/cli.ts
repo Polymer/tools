@@ -10,6 +10,7 @@
  */
 
 import * as fsExtra from 'fs-extra';
+import * as glob from 'glob';
 import * as path from 'path';
 
 import {Config, generateDeclarations} from './gen-ts';
@@ -44,6 +45,12 @@ const argDefs = [
     name: 'outDir',
     type: String,
     description: 'Type declarations output directory (required).',
+  },
+  {
+    name: 'deleteExisting',
+    type: Boolean,
+    description: 'Recursively delete all .d.ts files in <outDir> before ' +
+        'writing new typings, excluding node_modules/ bower_components/.',
   },
 ];
 
@@ -86,6 +93,23 @@ async function run(argv: string[]) {
   }
 
   const fileMap = await generateDeclarations(args.root, config);
+
+  if (args.deleteExisting) {
+    const dtsFiles = glob.sync('**/*.d.ts', {
+      cwd: args.outDir,
+      absolute: true,
+      nodir: true,
+      ignore: [
+        'node_modules/**',
+        'bower_components/**',
+      ]
+    });
+    console.log(
+        `Deleting ${dtsFiles.length} existing d.ts files from ` +
+        `${path.resolve(args.outDir)}`);
+    await Promise.all(dtsFiles.map((filepath) => fsExtra.remove(filepath)));
+  }
+
   console.log('Writing type declarations to', path.resolve(args.outDir));
   await writeFileMap(args.outDir, fileMap);
 }
