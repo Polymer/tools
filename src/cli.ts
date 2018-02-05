@@ -54,8 +54,17 @@ const argDefs = [
   },
 ];
 
+interface args {
+  help?: boolean;
+  version?: boolean;
+  root: string;
+  config?: string;
+  outDir?: string;
+  deleteExisting?: boolean;
+}
+
 async function run(argv: string[]) {
-  const args = commandLineArgs(argDefs, {argv});
+  const args = commandLineArgs(argDefs, {argv}) as args;
 
   if (args.help) {
     console.log(commandLineUsage([
