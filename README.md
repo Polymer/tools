@@ -83,10 +83,14 @@ publish.
 By default the `gen-tsd` command will read a file called `gen-tsd.json` in
 your root directory. It has the following options:
 
-* **`exclude`**`: string[]`
+* **`excludeFiles`**`: string[]`
 
   Skip source files whose paths match any of these glob patterns. If
   `undefined`, defaults to excluding directories ending in "test" or "demo".
+
+* **`excludeIdentifiers`**`: string[]`
+
+  Do not emit any declarations for features that have any of these identifiers.
 
 * **`removeReferences`**`: string[]`
 

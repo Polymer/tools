@@ -17,7 +17,7 @@ declare namespace Polymer {
   /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    */
-  interface PaperInkyFocusBehavior {
+  interface PaperInkyFocusBehavior extends Polymer.IronButtonState, Polymer.IronControlState, Polymer.PaperRippleBehavior {
     _createRipple(): any;
     _focusedChanged(receivedFocusFromKeyboard: any): any;
   }

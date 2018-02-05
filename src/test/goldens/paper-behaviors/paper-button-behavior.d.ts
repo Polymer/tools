@@ -14,7 +14,7 @@
 
 declare namespace Polymer {
 
-  interface PaperButtonBehavior {
+  interface PaperButtonBehavior extends Polymer.IronButtonState, Polymer.IronControlState, Polymer.PaperRippleBehavior {
 
     /**
      * The z-depth of this element, from 0-5. Setting to 0 will remove the

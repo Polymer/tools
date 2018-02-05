@@ -20,7 +20,7 @@
     "escodegen": "^1.9.0",
     "fs-extra": "^5.0.0",
     "minimatch": "^3.0.4",
-    "polymer-analyzer": "=3.0.0-pre.9"
+    "polymer-analyzer": "=3.0.0-pre.10"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",

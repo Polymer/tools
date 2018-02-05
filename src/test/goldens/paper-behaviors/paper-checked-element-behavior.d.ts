@@ -19,7 +19,7 @@ declare namespace Polymer {
    * that has a `checked` property similar to `Polymer.IronCheckedElementBehavior`
    * and is compatible with having a ripple effect.
    */
-  interface PaperCheckedElementBehavior {
+  interface PaperCheckedElementBehavior extends Polymer.PaperInkyFocusBehavior, Polymer.IronCheckedElementBehavior {
 
     /**
      * Synchronizes the element's `active` and `checked` state.
