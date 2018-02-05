@@ -8,17 +8,17 @@
 
 <body>
   <script type="module">
-    import {foo} from 'lib-module.js';
+    import {foo} from './lib-module.js';
     doSomething(foo);
   </script>
 
   <script type="module">
-    import {foo} from 'lib-module.js';
+    import {foo} from './lib-module.js';
     doSomethingElse(foo);
   </script>
 
   <script>inlineNotModuleStuff();<script>
 
-  <script src="external.js" type="module"></script>
+  <script src="./external.js" type="module"></script>
 </body>
 </html>

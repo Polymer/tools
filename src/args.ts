@@ -15,7 +15,7 @@
 /// <reference path="../custom_typings/command-line-args.d.ts" />
 import {ArgDescriptor} from 'command-line-args';
 
-export let args: ArgDescriptor[] = [
+export const args: ArgDescriptor[] = [
   {
     name: 'version',
     description: 'Print version info.',
@@ -35,6 +35,15 @@ export let args: ArgDescriptor[] = [
         'fully support ES6.',
     type: String,
     defaultValue: 'auto',
+  },
+  {
+    name: 'module-resolution',
+    description: 'Algorithm to use for resolving module specifiers in import ' +
+        'and export statements when rewriting them to be web-compatible. ' +
+        'Valid values are "none" and "node". "none" disables module specifier ' +
+        'rewriting. "node" uses Node.js resolution to find modules.',
+    type: String,
+    defaultValue: 'none',
   },
   {
     name: 'compile-cache',

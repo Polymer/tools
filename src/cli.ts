@@ -51,6 +51,7 @@ export async function run(): Promise<StartServerResult> {
   const options: ServerOptions = {
     root: cliOptions.root,
     compile: cliOptions.compile,
+    moduleResolution: cliOptions['module-resolution'],
     port: cliOptions.port,
     hostname: cliOptions.hostname,
     open: cliOptions.open,

@@ -43,13 +43,13 @@
   })();
 </script>
 
-<script>require(['lib-module.js'], function (_libModule) {
+<script>require(['./lib-module.js'], function (_libModule) {
     'use strict';
 
     doSomething(_libModule.foo);
 });</script>
 
-  <script>require(['lib-module.js'], function (_libModule) {
+  <script>require(['./lib-module.js'], function (_libModule) {
     'use strict';
 
     doSomethingElse(_libModule.foo);
@@ -57,7 +57,7 @@
 
   <script>inlineNotModuleStuff();<script>
 
-  <script src="external.js" type="module"></script>
+  <script src="./external.js" type="module"></script>
 
 
 </body></html>

@@ -18,9 +18,12 @@ import {browserCapabilities} from 'browser-capabilities';
 import {parse as parseContentType} from 'content-type';
 import * as dom5 from 'dom5';
 import {Request, RequestHandler, Response} from 'express';
+import * as fs from 'fs';
 import * as LRU from 'lru-cache';
 import * as parse5 from 'parse5';
+import * as path from 'path';
 
+import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 import {transformResponse} from './transform-middleware';
 
 const p = dom5.predicates;
@@ -89,9 +92,21 @@ export const babelCompileCache = LRU<string>(<LRU.Options<string>>{
   length: (n: string, key: string) => n.length + key.length
 });
 
+// TODO(justinfagnani): see if we can just use the request path as the key
+// See https://github.com/Polymer/polyserve/issues/248
+export const getCompileCacheKey =
+    (requestPath: string, body: string, options: any): string =>
+        JSON.stringify(options) + requestPath + body;
+
 export function babelCompile(
-    forceCompile: boolean, componentUrl: string): RequestHandler {
+    compile: 'always'|'never'|'auto',
+    moduleResolution: 'none'|'node',
+    rootdir: string,
+    packageName: string,
+    componentUrl: string,
+    componentDir: string): RequestHandler {
   return transformResponse({
+
     shouldTransform(request: Request, response: Response) {
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
@@ -101,8 +116,11 @@ export function babelCompile(
       if (!compileMimeTypes.includes(getContentType(response))) {
         return false;
       }
-      if (forceCompile) {
+      if (compile === 'always' || moduleResolution === 'node') {
         return true;
+      }
+      if (compile === 'never') {
+        return false;
       }
       const capabilities = browserCapabilities(request.get('user-agent'));
       return !capabilities.has('es2015') || !capabilities.has('modules');
@@ -111,25 +129,46 @@ export function babelCompile(
     transform(request: Request, response: Response, body: string): string {
       const capabilities = browserCapabilities(request.get('user-agent'));
       const options = {
-        transformES2015: forceCompile || !capabilities.has('es2015'),
-        transformModules: forceCompile || !capabilities.has('modules'),
+        transformES2015: compile === 'always' || !capabilities.has('es2015'),
+        transformModules: compile === 'always' || !capabilities.has('modules'),
       };
-      const optionsLeader = JSON.stringify(options);
-      const cached = babelCompileCache.get(optionsLeader + body);
+
+      const cacheKey =
+          getCompileCacheKey(request.baseUrl + request.path, body, options);
+      const cached = babelCompileCache.get(cacheKey);
       if (cached !== undefined) {
         return cached;
       }
 
       let transformed;
       const contentType = getContentType(response);
+      const isComponentRequest = request.baseUrl === `/${componentUrl}` &&
+          !request.path.startsWith(`/${packageName}`);
+
+      let filePath =
+          path.join(isComponentRequest ? componentDir : rootdir, request.path);
+
+      // The file path needs to include the filename for correct relative
+      // path calculation
+      try {
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+          filePath = path.join(filePath, 'index.html');
+        }
+      } catch (e) {
+        // file not found, will 404 later
+      }
+
       if (contentType === htmlMimeType) {
-        transformed = compileHtml(body, request.path, componentUrl, options);
+        transformed = compileHtml(
+            body, filePath, isComponentRequest, componentUrl, options);
       } else if (javaScriptMimeTypes.includes(contentType)) {
-        transformed = compileScript(body, options);
+        transformed =
+            compileScript(body, filePath, isComponentRequest, options);
       } else {
         transformed = body;
       }
-      babelCompileCache.set(optionsLeader + body, transformed);
+      babelCompileCache.set(cacheKey, transformed);
       return transformed;
     },
   });
@@ -137,7 +176,8 @@ export function babelCompile(
 
 function compileHtml(
     source: string,
-    location: string,
+    filePath: string,
+    isComponentRequest: boolean,
     componentUrl: string,
     options: CompileOptions): string {
   const document = parse5.parse(source);
@@ -145,9 +185,9 @@ function compileHtml(
 
   const jsNodes = dom5.queryAll(document, isJsScriptNode);
 
-  // Assume that if this document has a nomodule script, the author is already
-  // handling browsers that don't support modules, and we don't need to
-  // transform anything.
+  // Assume that if this document has a nomodule script, the author is
+  // already handling browsers that don't support modules, and we don't need
+  // to transform anything.
   if (jsNodes.find((node) => dom5.hasAttribute(node, 'nomodule'))) {
     return source;
   }
@@ -158,11 +198,11 @@ function compileHtml(
         dom5.getAttribute(scriptTag, 'type') === 'module';
 
     if (transformingModule && !requireScriptTag) {
-      // We need RequireJS to load the AMD modules we are declaring. Inject the
-      // dependency as late as possible (right before the first module is
-      // declared) because some of our legacy non-module dependencies,
-      // typically loaded in <head>, behave differently when window.require is
-      // present.
+      // We need RequireJS to load the AMD modules we are declaring. Inject
+      // the dependency as late as possible (right before the first module
+      // is declared) because some of our legacy non-module dependencies,
+      // typically loaded in <head>, behave differently when window.require
+      // is present.
       const fragment = parse5.parseFragment(
           `<script src="/${componentUrl}/requirejs/require.js"></script>\n`);
       requireScriptTag = fragment.childNodes[0];
@@ -179,15 +219,15 @@ function compileHtml(
     }
 
     if (transformingModule && !isInline) {
-      // Transform an external module script into a `require` for that module,
-      // to be executed immediately.
+      // Transform an external module script into a `require` for that
+      // module, to be executed immediately.
       dom5.replace(
           scriptTag,
           parse5.parseFragment(`<script>require(["${src}"]);</script>\n`));
 
     } else if (isInline) {
       let js = dom5.getTextContent(scriptTag);
-      const plugins = [];
+      const plugins = [resolveBareSpecifiers(filePath, isComponentRequest)];
       if (options.transformES2015) {
         plugins.push(...es2015Plugins);
       }
@@ -199,17 +239,19 @@ function compileHtml(
       try {
         compiled = babelCore.transform(js, {plugins}).code;
       } catch (e) {
-        // Continue so that we leave the original script as-is. It might work?
+        // Continue so that we leave the original script as-is. It might
+        // work?
         // TODO Show an error in the browser console, or on the runner page.
-        console.warn(`Error compiling script in ${location}: ${e.message}`);
+        console.warn(`Error compiling script in ${filePath}: ${e.message}`);
         continue;
       }
 
       if (transformingModule) {
-        // The Babel AMD transformer output always starts with a `define` call,
-        // which registers a module but does not execute it immediately. Since
-        // we're in HTML, these are our top-level scripts, and we want them to
-        // execute immediately. Swap it out for `require` so that it does.
+        // The Babel AMD transformer output always starts with a `define`
+        // call, which registers a module but does not execute it
+        // immediately. Since we're in HTML, these are our top-level
+        // scripts, and we want them to execute immediately. Swap it out for
+        // `require` so that it does.
         compiled = compiled.replace('define', 'require');
 
         // Remove type="module" since this is non-module JavaScript now.
@@ -221,20 +263,21 @@ function compileHtml(
   }
 
   if (wctScriptTag && requireScriptTag) {
-    // This looks like a Web Component Tester script, and we have converted ES
-    // modules to AMD. Converting a module to AMD means that `DOMContentLoaded`
-    // will fire before RequireJS resolves and executes the modules. Since WCT
-    // listens for `DOMContentLoaded`, this means test suites in modules will
-    // not have been registered by the time WCT starts running tests.
+    // This looks like a Web Component Tester script, and we have converted
+    // ES modules to AMD. Converting a module to AMD means that
+    // `DOMContentLoaded` will fire before RequireJS resolves and executes
+    // the modules. Since WCT listens for `DOMContentLoaded`, this means
+    // test suites in modules will not have been registered by the time WCT
+    // starts running tests.
     //
-    // To address this, we inject a block of JS that uses WCT's `waitFor` hook
-    // to defer running tests until our AMD modules have loaded. If WCT finds a
-    // `waitFor`, it passes it a callback that will run the tests, instead of
-    // running tests immediately.
+    // To address this, we inject a block of JS that uses WCT's `waitFor`
+    // hook to defer running tests until our AMD modules have loaded. If WCT
+    // finds a `waitFor`, it passes it a callback that will run the tests,
+    // instead of running tests immediately.
     //
-    // Note we must do this as late as possible, before the WCT script, because
-    // users may be setting their own `waitFor` that musn't clobber ours.
-    // Likewise we must call theirs if we find it.
+    // Note we must do this as late as possible, before the WCT script,
+    // because users may be setting their own `waitFor` that musn't clobber
+    // ours. Likewise we must call theirs if we find it.
     dom5.insertBefore(
         wctScriptTag.parentNode, wctScriptTag, parse5.parseFragment(`
 <script>
@@ -256,13 +299,15 @@ function compileHtml(
 `));
 
     // Monkey patch `require` to keep track of loaded AMD modules. Note this
-    // assumes that all modules are registered before `DOMContentLoaded`, but
-    // that's an assumption WCT normally makes anyway. Do this right after
-    // RequireJS is loaded, and hence before the first module is registered.
+    // assumes that all modules are registered before `DOMContentLoaded`,
+    // but that's an assumption WCT normally makes anyway. Do this right
+    // after RequireJS is loaded, and hence before the first module is
+    // registered.
     //
-    // TODO We may want to detect when the module failed to load (e.g. the deps
-    // couldn't be resolved, or the factory threw an exception) and show a nice
-    // message. For now test running will just hang if any module fails.
+    // TODO We may want to detect when the module failed to load (e.g. the
+    // deps couldn't be resolved, or the factory threw an exception) and
+    // show a nice message. For now test running will just hang if any
+    // module fails.
     dom5.insertAfter(
         requireScriptTag.parentNode, requireScriptTag, parse5.parseFragment(`
 <script>
@@ -290,8 +335,12 @@ function compileHtml(
   return parse5.serialize(document);
 }
 
-function compileScript(source: string, options: CompileOptions): string {
-  const plugins = [];
+function compileScript(
+    source: string,
+    filePath: string,
+    isComponentRequest: boolean,
+    options: CompileOptions): string {
+  const plugins = [resolveBareSpecifiers(filePath, isComponentRequest)];
   if (options.transformES2015) {
     plugins.push(...es2015Plugins);
   }

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Honor `.bowerrc` for bower component directory and variants
 * Root directories can now be relative paths
+* Added --module-resolution flag to allow rewriting of "bare" module specifiers to web-compatible paths.
 
 ## [0.23.0](https://github.com/PolymerLabs/polyserve/tree/0.23.0) (2017-10-02)
 

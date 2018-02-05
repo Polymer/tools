@@ -50,6 +50,9 @@ export interface ServerOptions {
   /** Whether or not to compile JavaScript **/
   compile?: 'always'|'never'|'auto';
 
+  /** Resolution algorithm to use for rewriting module specifiers */
+  moduleResolution?: 'none'|'node';
+
   /** The port to serve from */
   port?: number;
 
@@ -159,7 +162,7 @@ async function _startServer(
   }
 }
 
-export type ServerInfo = MainlineServer | VariantServer | ControlServer;
+export type ServerInfo = MainlineServer|VariantServer|ControlServer;
 
 export interface PolyserveServer {
   kind: 'control'|'mainline'|'variant';
@@ -201,7 +204,7 @@ export interface MultipleServersInfo {
   servers: PolyserveServer[];
 }
 
-export type StartServerResult = MainlineServer | MultipleServersInfo;
+export type StartServerResult = MainlineServer|MultipleServersInfo;
 
 /**
  * Starts one or more web servers, based on the given options and
@@ -386,8 +389,17 @@ export function getApp(options: ServerOptions): express.Express {
   const forceCompile = options.compile === 'always';
   if (options.compile === 'auto' || forceCompile) {
     app.use('*', injectCustomElementsEs5Adapter(forceCompile));
-    app.use('*', babelCompile(forceCompile, options.componentUrl));
   }
+  app.use(
+      '*',
+      babelCompile(
+          options.compile,
+          options.moduleResolution,
+          root,
+          options.packageName,
+          options.componentUrl,
+          options.componentDir));
+
 
   app.use(`/${componentUrl}/`, polyserve);
 
@@ -402,7 +414,7 @@ export function getApp(options: ServerOptions): express.Express {
     send(req, filePath, {root: root, index: entrypoint})
         .on('error',
             (error: send.SendError) => {
-              if ((error).status === 404 && !filePathRegex.test(filePath)) {
+              if (error.status === 404 && !filePathRegex.test(filePath)) {
                 // The static file handling middleware failed to find a file on
                 // disk. Serve the entry point HTML file instead of a 404.
                 send(req, entrypoint, {root: root}).pipe(res);
