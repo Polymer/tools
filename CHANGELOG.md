@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- ## [Unreleased] -->
 
+## [1.1.1] - 2018-02-05
+- Fix missing `glob` dependency.
+
 ## [1.1.0] - 2018-02-05
 - Added `excludeIdentifiers` config option. Use this to skip emitting any declarations for some feature by its class name, etc.
 - Renamed `exclude` config option to `excludeFiles` to disambiguate it from `excludeIdentifiers`. `exclude` still works as before for backwards compatibility, but will be removed in the next major version.
