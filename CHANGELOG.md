@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [1.1.0] - 2018-02-05
 - Added `excludeIdentifiers` config option. Use this to skip emitting any declarations for some feature by its class name, etc.
 - Renamed `exclude` config option to `excludeFiles` to disambiguate it from `excludeIdentifiers`. `exclude` still works as before for backwards compatibility, but will be removed in the next major version.
 - Polymer behavior interfaces now extend any additional behaviors that they apply. This is done with an array of behavior objects as documented at https://www.polymer-project.org/1.0/docs/devguide/behaviors#extending.
