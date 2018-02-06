@@ -22,16 +22,16 @@ This table contains the status of every Polymer 3.0 element being run through au
 | app-pouchdb| ❌ | ❌ |  |
 | app-route| ✅ | ✅ | |
 | app-storage| ✅ | ❌ | 3 failed tests |
-| font-roboto| ✅ | ❌ | No test suites were found |
 | font-roboto-local| ✅ | ❌ | No test suites were found |
+| font-roboto| ✅ | ❌ | No test suites were found |
 | gold-cc-cvc-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
 | gold-cc-expiration-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'required' is not a valid attribute name. |
 | gold-cc-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
 | gold-phone-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
 | gold-zip-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
 | iron-a11y-announcer| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'aria-live' is not a valid attribute name. |
-| iron-a11y-keys| ✅ | ✅ | |
 | iron-a11y-keys-behavior| ✅ | ✅ | |
+| iron-a11y-keys| ✅ | ✅ | |
 | iron-ajax| ✅ | ❌ | synchronousSuccessfulRequestOptions is not defined |
 | iron-autogrow-textarea| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'rows' is not a valid attribute name. |
 | iron-behaviors| ✅ | ✅ | |
@@ -43,12 +43,12 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-dropdown| ✅ | ❌ | Cannot read property 'call' of undefined |
 | iron-fit-behavior| ✅ | ❌ | 4 failed tests |
 | iron-flex-layout| ✅ | ✅ | |
-| iron-form| ✅ | ✅ | |
 | iron-form-element-behavior| ✅ | ✅ | |
-| iron-icon| ✅ | ✅ | |
-| iron-icons| ✅ | ❌ | 2 failed tests |
-| iron-iconset| ✅ | ✅ | |
+| iron-form| ✅ | ✅ | |
 | iron-iconset-svg| ✅ | ✅ | |
+| iron-iconset| ✅ | ✅ | |
+| iron-icons| ✅ | ❌ | 2 failed tests |
+| iron-icon| ✅ | ✅ | |
 | iron-image| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'aria-label' is not a valid attribute name. |
 | iron-input| ✅ | ❌ | 2 failed tests |
 | iron-jsonp-library| ✅ | ✅ | |
@@ -77,9 +77,9 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-button| ✅ | ✅ | |
 | paper-card| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
 | paper-checkbox| ✅ | ✅ | |
-| paper-dialog| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
 | paper-dialog-behavior| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
 | paper-dialog-scrollable| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
+| paper-dialog| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
 | paper-drawer-panel| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
 | paper-dropdown-menu| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
 | paper-fab| ✅ | ✅ | |
@@ -104,9 +104,9 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-toggle-button| ✅ | ✅ | |
 | paper-toolbar| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
 | paper-tooltip| ✅ | ✅ | |
+| platinum-sw| ✅ | ✅ | |
 | polymer| ✅ | ❌ | chai is undefined |
 | promise-polyfill| ✅ | ❌ | No test suites were found |
-| platinum-sw| ✅ | ✅ | |
 | test-fixture| ✅ | ❌ | Cannot read property \'import\' of null\n |
 
 *\*Note: `npm install` is currently being used for testing instead of the planned `yarn install --flat` due to a yarn bug in multi-repo conversion & testing. See https://github.com/Polymer/polymer-modulizer/issues/254 for more info.*
