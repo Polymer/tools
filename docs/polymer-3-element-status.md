@@ -1,6 +1,6 @@
 # Polymer 3.0 Status Page
 
-*Last run: 2018-01-05*
+*Last run: 2018-02-06*
 
 This table contains the status of every Polymer 3.0 element being run through automated testing.
 
@@ -16,97 +16,96 @@ This table contains the status of every Polymer 3.0 element being run through au
 
 | repo | `npm install`\* | `wct --npm` | reason? |
 |------|---------------|------------|---------|
-| app-layout| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'position' is not a valid attribute name. |
-| app-localize-behavior| ✅ | ✅ | |
-| app-media| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| app-pouchdb| ❌ | ❌ |  |
-| app-route| ✅ | ✅ | |
-| app-storage| ✅ | ❌ | 3 failed tests |
-| font-roboto-local| ✅ | ❌ | No test suites were found |
-| font-roboto| ✅ | ❌ | No test suites were found |
-| gold-cc-cvc-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| gold-cc-expiration-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'required' is not a valid attribute name. |
-| gold-cc-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| gold-phone-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| gold-zip-input| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| iron-a11y-announcer| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'aria-live' is not a valid attribute name. |
-| iron-a11y-keys-behavior| ✅ | ✅ | |
-| iron-a11y-keys| ✅ | ✅ | |
-| iron-ajax| ✅ | ❌ | synchronousSuccessfulRequestOptions is not defined |
-| iron-autogrow-textarea| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'rows' is not a valid attribute name. |
-| iron-behaviors| ✅ | ✅ | |
-| iron-checked-element-behavior| ✅ | ✅ | |
-| iron-collapse| ✅ | ✅ | |
-| iron-component-page| ✅ | ✅ | |
-| iron-demo-helpers| ✅ | ✅ | |
-| iron-doc-viewer| ✅ | ✅ | |
-| iron-dropdown| ✅ | ❌ | Cannot read property 'call' of undefined |
-| iron-fit-behavior| ✅ | ❌ | 4 failed tests |
-| iron-flex-layout| ✅ | ✅ | |
-| iron-form-element-behavior| ✅ | ✅ | |
-| iron-form| ✅ | ✅ | |
-| iron-iconset-svg| ✅ | ✅ | |
-| iron-iconset| ✅ | ✅ | |
-| iron-icons| ✅ | ❌ | 2 failed tests |
-| iron-icon| ✅ | ✅ | |
-| iron-image| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'aria-label' is not a valid attribute name. |
-| iron-input| ✅ | ❌ | 2 failed tests |
-| iron-jsonp-library| ✅ | ✅ | |
-| iron-label| ✅ | ✅ | |
-| iron-list| ✅ | ❌ | buildDataSet is not defined |
-| iron-localstorage| ✅ | ✅ | |
-| iron-location| ✅ | ❌ | Timeout of 10000ms exceeded. |
-| iron-media-query| ✅ | ✅ | |
-| iron-menu-behavior| ✅ | ✅ | |
-| iron-meta| ✅ | ✅ | |
-| iron-overlay-behavior| ✅ | ⚠️ | Unknown
-| iron-pages| ✅ | ✅ | |
-| iron-range-behavior| ✅ | ✅ | |
-| iron-resizable-behavior| ✅ | ❌ | 2 failed tests |
-| iron-scroll-target-behavior| ✅ | ✅ | |
-| iron-scroll-threshold| ✅ | ✅ | |
-| iron-selector| ✅ | ✅ | |
-| iron-swipeable-container| ✅ | ❌ | 3 failed tests |
-| iron-test-helpers| ✅ | ❌ | 9 failed tests |
-| iron-validatable-behavior| ✅ | ✅ | |
-| iron-validator-behavior| ✅ | ✅ | |
-| marked-element| ✅ | ❌️ | Timed out |
-| neon-animation| ✅ | ❌️ | Timed out |
-| paper-badge| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-behaviors| ✅ | ❌ | 1 failed tests |
-| paper-button| ✅ | ✅ | |
-| paper-card| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| paper-checkbox| ✅ | ✅ | |
-| paper-dialog-behavior| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-dialog-scrollable| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-dialog| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-drawer-panel| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-dropdown-menu| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-fab| ✅ | ✅ | |
-| paper-header-panel| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| paper-icon-button| ✅ | ❌ | 8 failed tests |
-| paper-input| ✅ | ❌ | Timed out |
-| paper-item| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| paper-listbox| ✅ | ✅ | |
-| paper-material| ✅ | ✅ | |
-| paper-menu-button| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-progress| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'hidden' is not a valid attribute name. |
-| paper-radio-button| ✅ | ✅ | |
-| paper-radio-group| ✅ | ✅ | |
-| paper-ripple| ✅ | ✅ | |
-| paper-scroll-header-panel| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-slider| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'hidden' is not a valid attribute name. |
-| paper-spinner| ✅ | ✅  | |
-| paper-styles| ✅ | ❌ | test suites were found matching your configuration |
-| paper-swatch-picker| ✅ | ❌ | 6 failed tests |
-| paper-tabs| ✅ | ❌ | 12 failed tests |
-| paper-toast| ✅ | ❌ | The requested module does not provide an export named 'Settings' |
-| paper-toggle-button| ✅ | ✅ | |
-| paper-toolbar| ✅ | ❌ | Failed to execute 'setAttribute' on 'Element': 'class' is not a valid attribute name. |
-| paper-tooltip| ✅ | ✅ | |
-| platinum-sw| ✅ | ✅ | |
-| polymer| ✅ | ❌ | chai is undefined |
-| promise-polyfill| ✅ | ❌ | No test suites were found |
-| test-fixture| ✅ | ❌ | Cannot read property \'import\' of null\n |
+| app-layout | ✅ | ❌ | 33 failed tests |
+| app-localize-behavior | ✅ | ✅ | |
+| app-media | ✅ | ❌ | 12 failed tests |
+| app-route | ✅ | ✅ | |
+| app-storage | ✅ | ❌ | 4 failed tests |
+| font-roboto | ✅ | ⚠️ | *No test suites were found matching your configuration* |
+| font-roboto-local | ✅ | ⚠️ | *No test suites were found matching your configuration* |
+| gold-cc-cvc-input | ✅ | ❌ | 14 failed tests |
+| gold-cc-expiration-input | ✅ | ❌ | 16 failed tests |
+| gold-cc-input | ✅ | ❌ | 14 failed tests |
+| gold-phone-input | ✅ | ❌ | 8 failed tests |
+| gold-zip-input | ✅ | ❌ | 12 failed tests |
+| iron-a11y-announcer | ✅ | ✅ | |
+| iron-a11y-keys | ✅ | ✅ | |
+| iron-a11y-keys-behavior | ✅ | ✅ | |
+| iron-ajax | ✅ | ❌ | Error: synchronousSuccessfulRequestOptions is not defined |
+| iron-autogrow-textarea | ✅ | ✅ | |
+| iron-behaviors | ✅ | ✅ | |
+| iron-checked-element-behavior | ✅ | ✅ | |
+| iron-collapse | ✅ | ✅ | |
+| iron-component-page | ✅ | ✅ | |
+| iron-demo-helpers | ✅ | ✅ | |
+| iron-doc-viewer | ✅ | ✅ | |
+| iron-dropdown | ✅ | ❌ | Error: expected 10 to equal 0 |
+| iron-fit-behavior | ✅ | ❌ | 4 failed tests |
+| iron-flex-layout | ✅ | ✅ | |
+| iron-form | ✅ | ❌ | Error: form is not defined |
+| iron-form-element-behavior | ✅ | ✅ | |
+| iron-icon | ✅ | ✅ | |
+| iron-icons | ✅ | ❌ | 2 failed tests |
+| iron-iconset | ✅ | ✅ | |
+| iron-iconset-svg | ✅ | ✅ | |
+| iron-image | ✅ | ✅ | |
+| iron-input | ✅ | ✅ | |
+| iron-jsonp-library | ✅ | ✅ | |
+| iron-label | ✅ | ❌ | Error: Timed out |
+| iron-list | ✅ | ❌ | Error: buildDataSet is not defined |
+| iron-localstorage | ✅ | ✅ | |
+| iron-location | ✅ | ❌ | Error: Timeout of 10000ms exceeded.  |
+| iron-media-query | ✅ | ✅ | |
+| iron-menu-behavior | ✅ | ✅ | |
+| iron-meta | ✅ | ✅ | |
+| iron-overlay-behavior | ✅ | ❌ | 2 failed tests |
+| iron-pages | ✅ | ✅ | |
+| iron-range-behavior | ✅ | ✅ | |
+| iron-resizable-behavior | ✅ | ❌ | 2 failed tests |
+| iron-scroll-target-behavior | ✅ | ✅ | |
+| iron-scroll-threshold | ✅ | ✅ | |
+| iron-selector | ✅ | ✅ | |
+| iron-test-helpers | ✅ | ❌ | 9 failed tests |
+| iron-validatable-behavior | ✅ | ✅ | |
+| iron-validator-behavior | ✅ | ✅ | |
+| marked-element | ✅ | ✅ | |
+| neon-animation | ✅ | ❌ | 4 failed tests |
+| paper-badge | ✅ | ✅ | |
+| paper-behaviors | ✅ | ✅ | |
+| paper-button | ✅ | ✅ | |
+| paper-card | ✅ | ✅ | |
+| paper-checkbox | ✅ | ✅ | |
+| paper-dialog | ✅ | ✅ | |
+| paper-dialog-behavior | ✅ | ✅ | |
+| paper-dialog-scrollable | ✅ | ✅ | |
+| paper-drawer-panel | ✅ | ❌ | 1 failed tests |
+| paper-dropdown-menu | ✅ | ✅ | |
+| paper-fab | ✅ | ✅ | |
+| paper-header-panel | ✅ | ❌ | Error: seamedShadow is not defined |
+| paper-icon-button | ✅ | ✅ | |
+| paper-input | ✅ | ❌ | 20 failed tests |
+| paper-item | ✅ | ✅ | |
+| paper-listbox | ✅ | ✅ | |
+| paper-material | ✅ | ✅ | |
+| paper-menu-button | ✅ | ✅ | |
+| paper-progress | ✅ | ✅ | |
+| paper-radio-button | ✅ | ✅ | |
+| paper-radio-group | ✅ | ✅ | |
+| paper-ripple | ✅ | ✅ | |
+| paper-scroll-header-panel | ✅ | ✅ | |
+| paper-slider | ✅ | ✅ | |
+| paper-spinner | ✅ | ✅ | |
+| paper-styles | ✅ | ⚠️ | *No test suites were found matching your configuration* |
+| paper-swatch-picker | ✅ | ❌ | Error: Cannot read property 'call' of undefined |
+| paper-tabs | ✅ | ✅ | |
+| paper-toast | ✅ | ✅ | |
+| paper-toggle-button | ✅ | ✅ | |
+| paper-toolbar | ✅ | ✅ | |
+| paper-tooltip | ✅ | ✅ | |
+| platinum-sw | ✅ | ❌ | 16 failed tests |
+| polymer | ✅ | ❌ | Error: chai is not defined |
+| prism-element | ✅ | ✅ | |
+| promise-polyfill | ✅ | ⚠️ | *No test suites were found matching your configuration* |
+| test-fixture | ✅ | ❌ | 2 failed tests |
 
 *\*Note: `npm install` is currently being used for testing instead of the planned `yarn install --flat` due to a yarn bug in multi-repo conversion & testing. See https://github.com/Polymer/polymer-modulizer/issues/254 for more info.*
