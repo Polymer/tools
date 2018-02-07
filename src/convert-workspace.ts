@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
@@ -58,7 +58,7 @@ function configureAnalyzer(options: WorkspaceConversionSettings) {
   const urlResolver = new PackageUrlResolver({packageDir: workspaceDir});
   const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
   for (const [url, contents] of polymerFileOverrides) {
-    urlLoader.urlContentsMap.set(urlResolver.resolve(url)!, contents);
+    urlLoader.urlContentsMap.set(urlResolver.resolve(`polymer/${url}` as ResolvedUrl)!, contents);
   }
   return new Analyzer({
     urlLoader,
