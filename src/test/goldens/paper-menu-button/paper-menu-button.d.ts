@@ -209,6 +209,9 @@ declare class PaperMenuButton extends Polymer.Element {
   _openedChanged(opened: boolean, oldOpened: boolean): any;
 }
 
+interface PaperMenuButton extends Polymer.IronA11yKeysBehavior, Polymer.IronControlState {
+}
+
 interface HTMLElementTagNameMap {
   "paper-menu-button": PaperMenuButton;
 }
