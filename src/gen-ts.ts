@@ -291,9 +291,12 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
     return;
   }
 
+  const behaviors = isPolymerElement(feature) ?
+      feature.behaviorAssignments.map((behavior) => behavior.name) :
+      [];
+
   if (constructable) {
-    // TODO How do we handle behaviors with classes?
-    const c = new ts.Class({
+    parent.members.push(new ts.Class({
       name: shortName,
       description: feature.description || feature.summary,
       extends: (feature.extends) ||
@@ -304,8 +307,19 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
         ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
         ...handleMethods(feature.methods.values()),
       ]
-    });
-    parent.members.push(c);
+    }));
+
+    if (behaviors.length > 0) {
+      // We need to augment our class declaration with some behaviors. Behaviors
+      // are interfaces, so our class can't directly extend them, like we can do
+      // with mixin functions. However, the class declaration implicitly creates
+      // a corresponding interface with the same name, and we can augment that
+      // with the behavior interfaces using declaration merging.
+      parent.members.push(new ts.Interface({
+        name: shortName,
+        extends: behaviors,
+      }));
+    }
 
   } else {
     // TODO How do we handle mixins when we are emitting an interface? We don't
@@ -323,8 +337,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
 
     if (isPolymerElement(feature)) {
       i.extends.push('Polymer.Element');
-      i.extends.push(...feature.behaviorAssignments.map(
-          (behavior) => behavior.name));
+      i.extends.push(...behaviors);
     }
 
     parent.members.push(i);
