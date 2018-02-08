@@ -50,7 +50,8 @@ const argDefs = [
     name: 'deleteExisting',
     type: Boolean,
     description: 'Recursively delete all .d.ts files in <outDir> before ' +
-        'writing new typings, excluding node_modules/ bower_components/.',
+        'writing new typings, excluding node_modules/, bower_components/, ' +
+        'or any file added using the <addReferences> config option.',
   },
 ];
 
@@ -104,7 +105,7 @@ async function run(argv: string[]) {
   const fileMap = await generateDeclarations(args.root, config);
 
   if (args.deleteExisting) {
-    const dtsFiles = glob.sync('**/*.d.ts', {
+    let dtsFiles = glob.sync('**/*.d.ts', {
       cwd: args.outDir,
       absolute: true,
       nodir: true,
@@ -113,6 +114,18 @@ async function run(argv: string[]) {
         'bower_components/**',
       ]
     });
+
+    // If the addReferences option is being used, it's probably to add some
+    // manually written typings. Since manually written typing files won't get
+    // re-generated, we shouldn't delete them.
+    const dontDelete = new Set<string>();
+    for (const refs of Object.values(config.addReferences || {})) {
+      for (const ref of refs) {
+        dontDelete.add(path.resolve(args.root, ref));
+      }
+    }
+    dtsFiles = dtsFiles.filter((filepath) => !dontDelete.has(filepath));
+
     console.log(
         `Deleting ${dtsFiles.length} existing d.ts files from ` +
         `${path.resolve(args.outDir)}`);
