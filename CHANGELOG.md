@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- ## [Unreleased] -->
 
-## [1.1.2] - 2018-02-07
+## [1.1.2] - 2018-02-08
 - Elements that are constructable (usually a call to the Polymer function whose result is assigned to some variable) can now have behaviors.
 - The `--deleteExisting` command line flag will no longer delete `.d.ts` files that are referenced as values in the `addReferences` config option, since such files are typically hand-written.
 
