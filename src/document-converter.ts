@@ -100,6 +100,7 @@ const legacyJavascriptTypes: ReadonlySet<string|null> = new Set([
  */
 const knownScriptModules = new Set<string>([
   'iron-test-helpers/mock-interactions.js',
+  'iron-test-helpers/test-helpers.js',
 ]);
 
 /**
