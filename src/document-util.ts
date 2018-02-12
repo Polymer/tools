@@ -428,7 +428,7 @@ export function attachCommentsToFirstStatement(
       statements[0]!;
 
   const recastComments: RecastComment[] = comments.map((comment) => {
-    const escapedComment = comment.replace('*/', '*\\/');
+    const escapedComment = comment.replace(/\*\//g, '*\\/');
     return {
       type: 'Block' as 'Block',
       leading: true,

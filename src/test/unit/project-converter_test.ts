@@ -2492,7 +2492,7 @@ console.log('second script');
       setSources({
         'test.html': `
 <!-- /* First comment */ -->
-
+<!-- /* 1/2 comments */ /* 2/2 comments */ -->
 <script>
   // comment in script
   console.log('second script');
@@ -2509,6 +2509,7 @@ console.log('second script');
         'test.js': `
 // comment in script
 /* /* First comment *\\/ */
+/* /* 1/2 comments *\\/ /* 2/2 comments *\\/ */
 /*
   /**
    *  Final comment
