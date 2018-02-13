@@ -240,8 +240,8 @@
     "semver": "^3.0.0-pre.8"
   },
   "prism": {
-    "npm": "prism",
-    "semver": "^4.0.0"
+    "npm": "prismjs",
+    "semver": "^1.11.0"
   },
   "prism-element": {
     "npm": "@polymer/prism-element",
