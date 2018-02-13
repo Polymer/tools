@@ -14,7 +14,7 @@
 
 import * as babel from 'babel-types';
 
-import {Document, Feature, Resolvable, SourceRange, Warning} from '../model/model';
+import {Document, Feature, Property, Resolvable, ScannedProperty, SourceRange, Warning} from '../model/model';
 
 import {Annotation as JsDocAnnotation} from './jsdoc';
 
@@ -29,10 +29,12 @@ export class ScannedNamespace implements Resolvable {
   sourceRange: SourceRange;
   astNode: babel.Node;
   warnings: Warning[];
+  properties: Map<string, ScannedProperty>;
 
   constructor(
       name: string, description: string, summary: string, astNode: babel.Node,
-      jsdoc: JsDocAnnotation, sourceRange: SourceRange) {
+      properties: Map<string, ScannedProperty>, jsdoc: JsDocAnnotation,
+      sourceRange: SourceRange) {
     this.name = name;
     this.description = description;
     this.summary = summary;
@@ -40,6 +42,7 @@ export class ScannedNamespace implements Resolvable {
     this.sourceRange = sourceRange;
     this.astNode = astNode;
     this.warnings = [];
+    this.properties = properties;
   }
 
   resolve(_document: Document) {
@@ -62,6 +65,7 @@ export class Namespace implements Feature {
   sourceRange: SourceRange;
   astNode: any;
   warnings: Warning[];
+  readonly properties = new Map<string, Property>();
 
   constructor(scannedNamespace: ScannedNamespace) {
     this.name = scannedNamespace.name;
@@ -72,6 +76,10 @@ export class Namespace implements Feature {
     this.sourceRange = scannedNamespace.sourceRange;
     this.astNode = scannedNamespace.astNode;
     this.warnings = Array.from(scannedNamespace.warnings);
+
+    for (const [key, prop] of scannedNamespace.properties) {
+      this.properties.set(key, prop);
+    }
   }
 
   toString() {

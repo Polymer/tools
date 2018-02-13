@@ -38,6 +38,19 @@ suite('NamespaceScanner', () => {
     return scannedNamespaces;
   };
 
+  function getProperties(namespace: ScannedNamespace) {
+    return [...namespace.properties.values()].map((prop) => {
+      return {
+        name: prop.name,
+        description: prop.description,
+        privacy: prop.privacy,
+        readOnly: prop.readOnly,
+        type: prop.type,
+        warnings: prop.warnings
+      };
+    });
+  }
+
   test('scans named namespaces', async () => {
     const namespaces = await getNamespaces('namespace-named.js');
     assert.equal(namespaces.length, 2);
@@ -45,6 +58,7 @@ suite('NamespaceScanner', () => {
     assert.equal(namespaces[0].name, 'ExplicitlyNamedNamespace');
     assert.equal(namespaces[0].description, '');
     assert.deepEqual(namespaces[0].warnings, []);
+    assert.equal(namespaces[0].properties.size, 0);
     assert.equal(await underliner.underline(namespaces[0].sourceRange), `
 var ExplicitlyNamedNamespace = {};
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
@@ -53,6 +67,14 @@ var ExplicitlyNamedNamespace = {};
         namespaces[1].name, 'ExplicitlyNamedNamespace.NestedNamespace');
     assert.equal(namespaces[1].description, '');
     assert.deepEqual(namespaces[1].warnings, []);
+    assert.deepEqual(getProperties(namespaces[1]), [{
+                       name: 'foo',
+                       description: undefined,
+                       privacy: 'public',
+                       readOnly: false,
+                       type: 'string',
+                       warnings: []
+                     }]);
     assert.equal(await underliner.underline(namespaces[1].sourceRange), `
 ExplicitlyNamedNamespace.NestedNamespace = {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,5 +185,88 @@ DynamicNamespace['InferredComputedProperty'] = {
 ~~~~~~~~~~~~
 };
 ~~`);
+  });
+
+  test('scans properties', async () => {
+    const namespaces = await getNamespaces('namespace-properties.js');
+    assert.equal(namespaces.length, 1);
+
+    assert.equal(namespaces[0].name, 'PropertiesNamespace');
+    assert.equal(namespaces[0].description, '');
+    assert.deepEqual(namespaces[0].warnings, []);
+    assert.deepEqual(getProperties(namespaces[0]), [
+      {
+        name: 'property',
+        description: undefined,
+        privacy: 'public',
+        readOnly: false,
+        type: 'string',
+        warnings: []
+      },
+      {
+        name: 'propertyWithAnnotation',
+        description: 'Property with annotation',
+        privacy: 'public',
+        readOnly: false,
+        type: '(string | number)',
+        warnings: []
+      },
+      {
+        name: 'propertyWithReadOnly',
+        description: undefined,
+        privacy: 'public',
+        readOnly: true,
+        type: 'string',
+        warnings: []
+      },
+      {
+        name: 'propertyWithGetter',
+        description: undefined,
+        privacy: 'public',
+        readOnly: true,
+        type: undefined,
+        warnings: []
+      },
+      {
+        name: 'propertyWithGetterSetter',
+        description: undefined,
+        privacy: 'public',
+        readOnly: false,
+        type: undefined,
+        warnings: []
+      },
+      {
+        name: 'propertyWithSetterFirst',
+        description: undefined,
+        privacy: 'public',
+        readOnly: false,
+        type: undefined,
+        warnings: []
+      },
+      {
+        name: 'propertyDefinedLater',
+        description: undefined,
+        privacy: 'public',
+        readOnly: false,
+        type: 'string',
+        warnings: []
+      },
+      {
+        name: 'propertyDefinedLaterWithAnnotation',
+        description: 'Test property',
+        privacy: 'public',
+        readOnly: false,
+        type: 'boolean',
+        warnings: []
+      },
+      {
+        name: 'propertyDefinedLaterWithoutValue',
+        description: undefined,
+        privacy: 'public',
+        readOnly: false,
+        type: 'string',
+        warnings: []
+      }
+    ]);
   });
 });

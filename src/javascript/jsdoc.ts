@@ -216,3 +216,23 @@ export function pickBestDescription(...descriptions: Array<string|undefined>):
   }
   return description;
 }
+
+/**
+ * Extracts the description from a jsdoc annotation and uses
+ * known descriptive tags if no explicit description is set.
+ */
+export function getDescription(jsdocAnn: Annotation): string|undefined {
+  if (jsdocAnn.description) {
+    return jsdocAnn.description;
+  }
+  // These tags can be used to describe a field.
+  // e.g.:
+  //    /** @type {string} the name of the animal */
+  //    this.name = name || 'Rex';
+  const tagSet = new Set(['public', 'private', 'protected', 'type']);
+  for (const tag of jsdocAnn.tags) {
+    if (tagSet.has(tag.title) && tag.description) {
+      return tag.description;
+    }
+  }
+}
