@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run test",
-    "test": "npm run build && npm run lint && mocha --ui tdd",
+    "test": "npm run build && npm run lint && mocha --ui tdd lib/test/*.js",
     "format": "./node_modules/.bin/clang-format --style=file -i dom5.ts test/dom5_test.ts",
     "lint": "tslint dom5.ts"
   },
@@ -31,8 +31,8 @@
     "tslint": "^4.0.0",
     "typescript": "^2.0.0"
   },
-  "main": "dom5.js",
-  "typings": "dom5.d.ts",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "directories": {
     "test": "test"
   },
