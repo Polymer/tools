@@ -231,9 +231,17 @@
     "npm": "@polymer/iron-demo-helpers",
     "semver": "^3.0.0-pre.8"
   },
+  "marked": {
+    "npm": "marked",
+    "semver": "~0.3.9"
+  },
   "marked-element": {
     "npm": "@polymer/marked-element",
     "semver": "^3.0.0-pre.8"
+  },
+  "prism": {
+    "npm": "prismjs",
+    "semver": "^1.11.0"
   },
   "prism-element": {
     "npm": "@polymer/prism-element",
