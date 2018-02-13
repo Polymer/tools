@@ -633,13 +633,13 @@ suite('dom5', () => {
       // 'sample element' text node
       let expected = templateContent.childNodes![4];
       let actual = dom5.nodeWalk(doc, textNode, dom5.childNodesIncludeTemplate);
-      assert.equal(expected, actual);
+      assert.equal(actual, expected);
 
       // <!-- comment node -->
       expected = templateContent.childNodes![5];
       actual = dom5.nodeWalk(
           template, dom5.isCommentNode, dom5.childNodesIncludeTemplate);
-      assert.equal(expected, actual);
+      assert.equal(actual, expected);
     });
 
     test('query', () => {
@@ -649,7 +649,7 @@ suite('dom5', () => {
           dom5.predicates.hasAttr('href'));
       const expected = doc.childNodes![1].childNodes![0].childNodes![0];
       const actual = dom5.query(doc, fn);
-      assert.equal(expected, actual);
+      assert.equal(actual, expected);
     });
 
     test('nodeWalkAll', () => {
@@ -667,7 +667,7 @@ suite('dom5', () => {
               .length +
           2;
 
-      assert.equal(expected, actual);
+      assert.equal(actual, expected);
     });
 
     test('queryAll', () => {
@@ -689,8 +689,8 @@ suite('dom5', () => {
       const actual = dom5.queryAll(doc, fn, [], dom5.childNodesIncludeTemplate);
 
       assert.equal(actual.length, 3);
-      assert.equal(expected_1, actual[0]);
-      assert.equal(expected_2, actual[1]);
+      assert.equal(actual[0], expected_1);
+      assert.equal(actual[1], expected_2);
     });
   });
 
