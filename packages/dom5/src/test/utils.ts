@@ -10,4 +10,5 @@
  */
 
 import * as path from 'path';
+
 export const fixturesDir = path.join(__dirname, '../../src/test/static/');
