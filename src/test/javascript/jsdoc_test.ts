@@ -29,7 +29,8 @@ suite('jsdoc', () => {
     });
 
     test('parses CRLF comments', () => {
-      const parsed = jsdoc.parseJsdoc('* Just some text\r\n* in multiple lines.');
+      const parsed =
+          jsdoc.parseJsdoc('* Just some text\r\n* in multiple lines.');
       assert.deepEqual(parsed, {
         description: 'Just some text\nin multiple lines.',
         tags: [],

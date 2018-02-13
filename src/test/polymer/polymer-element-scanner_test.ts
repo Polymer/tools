@@ -57,6 +57,9 @@ suite('PolymerElementScanner', () => {
             readOnly: false
           },
           h: String,
+          [i]: Boolean, // should not be recognized,
+          ['j']: Boolean,
+          'k': Boolean,
           all: {
             type: Object,
             notify: true,
@@ -96,8 +99,6 @@ suite('PolymerElementScanner', () => {
         new PolymerElementScanner(), 'test-file.js', contents);
     const features = untypedFeatures as ScannedPolymerElement[];
 
-    assert.deepEqual(features.map((f) => f.tagName), ['x-foo', 'x-bar']);
-
     assert.deepEqual(
         features[0].observers.map((o) => o.expression),
         ['_anObserver(foo, bar)', '_anotherObserver(foo)']);
@@ -126,7 +127,9 @@ suite('PolymerElementScanner', () => {
         Array.from(features[0].events.values()).map((e) => e.name),
         ['e-changed', 'all-changed']);
 
-    assert.equal(properties.length, 9);
+    assert.deepEqual(
+        properties.map((p) => p.name),
+        ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'all']);
 
     assert.deepEqual(
         properties.filter((p) => p.warnings.length > 0)
@@ -169,6 +172,8 @@ suite('PolymerElementScanner', () => {
       ['f', 'Object | null | undefined'],
       ['g', undefined],
       ['h', 'string | null | undefined'],
+      ['j', 'boolean | null | undefined'],
+      ['k', 'boolean | null | undefined'],
       ['all', 'Object | null | undefined']
     ]);
 
@@ -184,6 +189,8 @@ suite('PolymerElementScanner', () => {
           ['f', undefined],
           ['g', undefined],
           ['h', undefined],
+          ['j', undefined],
+          ['k', undefined],
           ['all', 'all-changed']
         ]);
 

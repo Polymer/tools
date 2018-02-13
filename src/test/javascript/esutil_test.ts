@@ -13,13 +13,12 @@
  */
 
 import * as babel from 'babel-types';
+import * as babylon from 'babylon';
 import {parse} from 'babylon';
 import {assert} from 'chai';
 
-import {objectKeyToString, getEventComments} from '../../javascript/esutil';
+import {getEventComments, getPropertyName} from '../../javascript/esutil';
 
-
-// See analysis_test for tests of generateElementMetadata
 
 suite('getEventComments', () => {
   test('returns events from a comment', () => {
@@ -40,11 +39,11 @@ suite('getEventComments', () => {
         }`);
     const events = [...getEventComments(node).values()];
     const eventMatches = events.map((ev) => ({
-      description: ev.description,
-      name: ev.name,
-      params: ev.params,
-      warnings: ev.warnings
-    }));
+                                      description: ev.description,
+                                      name: ev.name,
+                                      params: ev.params,
+                                      warnings: ev.warnings
+                                    }));
 
     assert.deepEqual(eventMatches, [
       {
@@ -56,13 +55,7 @@ suite('getEventComments', () => {
       {
         description: 'This is an event',
         name: 'event-name',
-        params: [
-          {
-            desc: '',
-            name: 'event',
-            type: 'Event'
-          }
-        ],
+        params: [{desc: '', name: 'event', type: 'Event'}],
         warnings: []
       }
     ]);
@@ -70,85 +63,27 @@ suite('getEventComments', () => {
 });
 
 suite('objectKeyToString', function() {
-  test('produces expected type names', function() {
-    const start = 0;
-    const end = 0;
-    const loc = {start: {line: 0, column: 0}, end: {line: 0, column: 0}};
-    const memberExpression: babel.MemberExpression = {
-      type: 'MemberExpression',
-      object: {
-        type: 'Identifier',
-        name: 'foo',
-        loc,
-        start,
-        end,
-      },
-      property: {
-        type: 'Identifier',
-        name: 'bar',
-        loc,
-        start,
-        end,
-      },
-      computed: false,
-      loc,
-      start,
-      end,
-    };
-    const afe: babel.ArrowFunctionExpression = {
-      id: {type: 'Identifier', name: 'foo', loc, start, end},
-      type: 'ArrowFunctionExpression',
-      expression: true,
-      generator: false,
-      async: false,
-      params: [],
-      body: {
-        type: 'Identifier',
-        name: 'foo',
-        loc,
-        start,
-        end,
-      },
-      loc,
-      start,
-      end,
-    };
-    const inputToOutput:
-        [
-          babel.Identifier|babel.StringLiteral|babel.NumericLiteral|
-          babel.MemberExpression|babel.ArrowFunctionExpression,
-          string|undefined
-        ][] =
-            [
-              [{type: 'Identifier', name: 'foo', loc, start, end}, 'foo'],
-              [
-                {
-                  type: 'StringLiteral',
-                  value: 'foo',
-                  loc,
-                  start,
-                  end,
-                  /* raw: '"foo"' */
-                },
-                'foo'
-              ],
-              [
-                {
-                  type: 'NumericLiteral',
-                  value: 10,
-                  loc,
-                  start,
-                  end,
-                  /* raw: '10' */
-                },
-                '10'
-              ],
-              [memberExpression, 'foo.bar'],
-              // When it hits an unknown type it returns undefined
-              [afe, undefined]
-            ];
-    for (const testCase of inputToOutput) {
-      assert.equal(testCase[1], objectKeyToString(testCase[0]));
+  test('produces expected names', function() {
+    const objectLiteralCode = `
+    ({
+      'foo': 1,
+      bar: 2,
+      [10]: 3,
+      [10 + 20]: 4,
+      ['hi' + ' there']: 5,
+      [identifier]: 6,
+    });
+    `;
+    const statement = babylon.parse(objectLiteralCode).program.body[0];
+    if (!babel.isExpressionStatement(statement)) {
+      throw new Error('');
     }
+    const expr = statement.expression;
+    if (!babel.isObjectExpression(expr)) {
+      throw new Error('');
+    }
+    assert.deepEqual(
+        expr.properties.map((prop) => getPropertyName(prop)),
+        ['foo', 'bar', '10', '30', 'hi there', undefined]);
   });
 });

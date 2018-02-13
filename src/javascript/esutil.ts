@@ -69,19 +69,25 @@ export function matchesCallExpression(
 }
 
 /**
- * @param {Node} key The node representing an object key or expression.
- * @return {string} The name of that key.
+ * Given a property or method, return its name, or undefined if that name can't
+ * be determined.
  */
-export function objectKeyToString(key: babel.Node): string|undefined {
-  if (babel.isIdentifier(key)) {
+export function getPropertyName(prop: babel.ObjectProperty|
+                                babel.ObjectMethod|babel.ClassMethod|
+                                babel.SpreadProperty): string|undefined {
+  if (babel.isSpreadProperty(prop)) {
+    return undefined;
+  }
+  const key = prop.key;
+  // {foo: bar} // note that `foo` is not quoted, so it's an identifier
+  if (!prop.computed && babel.isIdentifier(key)) {
     return key.name;
   }
-  if (babel.isLiteral(key)) {
-    return '' + astValue.expressionToValue(key);
-  }
-  if (babel.isMemberExpression(key)) {
-    return objectKeyToString(key.object) + '.' +
-        objectKeyToString(key.property);
+
+  // Otherwise, try to statically evaluate the expression
+  const keyValue = astValue.expressionToValue(key);
+  if (keyValue !== undefined) {
+    return '' + keyValue;
   }
   return undefined;
 }
@@ -193,7 +199,7 @@ export function getPropertyValue(
   const properties = node.properties;
   for (const property of properties) {
     if (!babel.isSpreadProperty(property) &&
-        objectKeyToString(property.key) === name) {
+        getPropertyName(property) === name) {
       return property.value;
     }
   }
@@ -208,7 +214,7 @@ export function toScannedMethod(
     document: ParsedDocument): ScannedMethod {
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
-  const maybeName = objectKeyToString(node.key);
+  const maybeName = getPropertyName(node);
 
   const warnings: Warning[] = [];
   if (!maybeName) {
@@ -448,11 +454,8 @@ export function extractPropertyFromGetterOrSetter(
 
   // TODO(43081j): use getPropertyName, see
   // https://github.com/Polymer/polymer-analyzer/pull/867
-  if (!babel.isIdentifier(method.key)) {
-    return null;
-  }
-
-  if (method.key.name === undefined) {
+  const name = getPropertyName(method);
+  if (name === undefined) {
     return null;
   }
 
@@ -465,12 +468,12 @@ export function extractPropertyFromGetterOrSetter(
     const ret = getReturnFromAnnotation(jsdocAnn);
     type = ret ? ret.type : undefined;
     description = jsdoc.getDescription(jsdocAnn);
-    privacy = getOrInferPrivacy(method.key.name, jsdocAnn);
+    privacy = getOrInferPrivacy(name, jsdocAnn);
     readOnly = jsdoc.hasTag(jsdocAnn, 'readonly');
   }
 
   return {
-    name: method.key.name,
+    name,
     astNode: method,
     type,
     jsdoc: jsdocAnn,
@@ -490,9 +493,10 @@ export function extractPropertiesFromClassOrObjectBody(
     node: babel.Class|babel.ObjectExpression,
     document: JavaScriptDocument): Map<string, ScannedProperty> {
   const properties = new Map<string, ScannedProperty>();
-  const accessors = new Map<
-      string,
-      {getter?: babel.ClassMethod|babel.ObjectMethod, setter?: babel.ClassMethod|babel.ObjectMethod}>();
+  const accessors = new Map<string, {
+    getter?: babel.ClassMethod | babel.ObjectMethod,
+    setter?: babel.ClassMethod | babel.ObjectMethod
+  }>();
 
   let body;
 
@@ -514,8 +518,7 @@ export function extractPropertiesFromClassOrObjectBody(
 
     const name = astValue.getIdentifierName(member.key)!;
 
-    if (babel.isMethod(member) ||
-        babel.isFunction(member.value)) {
+    if (babel.isMethod(member) || babel.isFunction(member.value)) {
       if (babel.isMethod(member) &&
           (member.kind === 'get' || member.kind === 'set')) {
         let accessor = accessors.get(name);
@@ -566,15 +569,15 @@ export function extractPropertiesFromClassOrObjectBody(
     if (val.getter) {
       const parsedJsdoc =
           jsdoc.parseJsdoc(getAttachedComment(val.getter) || '');
-      getter = extractPropertyFromGetterOrSetter(
-          val.getter, parsedJsdoc, document);
+      getter =
+          extractPropertyFromGetterOrSetter(val.getter, parsedJsdoc, document);
     }
 
     if (val.setter) {
       const parsedJsdoc =
           jsdoc.parseJsdoc(getAttachedComment(val.setter) || '');
-      setter = extractPropertyFromGetterOrSetter(
-          val.setter, parsedJsdoc, document);
+      setter =
+          extractPropertyFromGetterOrSetter(val.setter, parsedJsdoc, document);
     }
 
     const prop = getter || setter;

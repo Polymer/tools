@@ -47,6 +47,9 @@ export function analyzeProperties(
     }
     const prop = toScannedPolymerProperty(
         property, document.sourceRangeForNode(property)!, document);
+    if (prop === undefined) {
+      continue;
+    }
 
     // toScannedPolymerProperty does the wrong thing for us with type. We want
     // type to be undefined unless there's a positive signal for the type.
@@ -88,11 +91,11 @@ export function analyzeProperties(
         if (babel.isSpreadProperty(propertyArg)) {
           continue;
         }
-        const propertyKey = esutil.objectKeyToString(propertyArg.key);
+        const propertyKey = esutil.getPropertyName(propertyArg);
 
         switch (propertyKey) {
           case 'type':
-            prop.attributeType = esutil.objectKeyToString(propertyArg.value);
+            prop.attributeType = astValue.getIdentifierName(propertyArg.value);
             if (prop.attributeType === undefined && prop.type === undefined) {
               prop.warnings.push(new Warning({
                 code: 'invalid-property-type',

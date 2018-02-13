@@ -170,20 +170,17 @@ suite('Class', () => {
         readOnly: false
       });
 
-      assert.deepInclude(cls.properties.get('customPropertyWithReadOnlyGetter'), {
-        name: 'customPropertyWithReadOnlyGetter',
-        readOnly: true
-      });
+      assert.deepInclude(
+          cls.properties.get('customPropertyWithReadOnlyGetter'),
+          {name: 'customPropertyWithReadOnlyGetter', readOnly: true});
 
-      assert.deepInclude(cls.properties.get('customPropertyOnProto'), {
-        name: 'customPropertyOnProto',
-        type: 'string'
-      });
+      assert.deepInclude(
+          cls.properties.get('customPropertyOnProto'),
+          {name: 'customPropertyOnProto', type: 'string'});
 
-      assert.deepInclude(cls.properties.get('customPropertyOnProtoValue'), {
-        name: 'customPropertyOnProtoValue',
-        type: 'number'
-      });
+      assert.deepInclude(
+          cls.properties.get('customPropertyOnProtoValue'),
+          {name: 'customPropertyOnProtoValue', type: 'number'});
 
       assert.deepInclude(cls.properties.get('customPropertyOnProtoDoc'), {
         name: 'customPropertyOnProtoDoc',
@@ -193,27 +190,26 @@ suite('Class', () => {
         readOnly: true
       });
 
-      assert.deepInclude(cls.properties.get('__customPropertyOnProtoPrivate'), {
-        name: '__customPropertyOnProtoPrivate',
-        privacy: 'private'
-      });
+      assert.deepInclude(
+          cls.properties.get('__customPropertyOnProtoPrivate'),
+          {name: '__customPropertyOnProtoPrivate', privacy: 'private'});
 
       assert.deepEqual(await getTestProps(cls), {
         name: 'Class',
         description: '',
         privacy: 'public',
         properties: [
-          { name: 'customPropertyWithValue' },
-          { name: 'customPropertyWithJSDoc' },
-          { name: 'customPropertyGetter' },
-          { name: 'customPropertyGetterType' },
-          { name: 'customPropertyWithGetterSetter' },
-          { name: 'customPropertyWithSetterFirst' },
-          { name: 'customPropertyWithReadOnlyGetter' },
-          { name: 'customPropertyOnProto' },
-          { name: 'customPropertyOnProtoValue' },
-          { name: 'customPropertyOnProtoDoc' },
-          { name: '__customPropertyOnProtoPrivate' }
+          {name: 'customPropertyWithValue'},
+          {name: 'customPropertyWithJSDoc'},
+          {name: 'customPropertyGetter'},
+          {name: 'customPropertyGetterType'},
+          {name: 'customPropertyWithGetterSetter'},
+          {name: 'customPropertyWithSetterFirst'},
+          {name: 'customPropertyWithReadOnlyGetter'},
+          {name: 'customPropertyOnProto'},
+          {name: 'customPropertyOnProtoValue'},
+          {name: 'customPropertyOnProtoDoc'},
+          {name: '__customPropertyOnProtoPrivate'}
         ]
       });
     });
@@ -225,9 +221,7 @@ suite('Class', () => {
           name: 'Class',
           description: '',
           privacy: 'public',
-          properties: [
-            { name: 'customInstanceGetter' }
-          ],
+          properties: [{name: 'customInstanceGetter'}],
           methods: [
             {
               name: 'customInstanceFunction',
@@ -324,16 +318,8 @@ suite('Class', () => {
             {
               description: undefined,
               name: 'customInstanceFunctionOnProto',
-              params: [
-                {
-                  description: 'a bool',
-                  name: 'foo',
-                  type: 'boolean'
-                }
-              ],
-              return: {
-                type: 'void'
-              }
+              params: [{description: 'a bool', name: 'foo', type: 'boolean'}],
+              return: {type: 'void'}
             },
             {
               description: undefined,
@@ -347,20 +333,10 @@ suite('Class', () => {
               description: 'Returns the sum of two numbers',
               name: 'customInstanceFunctionOnProtoWithBodyDoc',
               params: [
-                {
-                  description: 'some number',
-                  name: 'a',
-                  type: 'number'
-                },
-                {
-                  description: 'another number',
-                  name: 'b',
-                  type: 'number'
-                }
+                {description: 'some number', name: 'a', type: 'number'},
+                {description: 'another number', name: 'b', type: 'number'}
               ],
-              return: {
-                type: 'number'
-              }
+              return: {type: 'number'}
             },
           ]
         },
@@ -481,9 +457,7 @@ suite('Class', () => {
           name: 'Class',
           description: '',
           privacy: 'public',
-          properties: [
-            { name: 'customInstanceGetter' }
-          ],
+          properties: [{name: 'customInstanceGetter'}],
           methods: [
             {
               name: 'customInstanceFunction',
@@ -581,16 +555,8 @@ suite('Class', () => {
             {
               description: undefined,
               name: 'customInstanceFunctionOnProto',
-              params: [
-                {
-                  description: 'a bool',
-                  name: 'foo',
-                  type: 'boolean'
-                }
-              ],
-              return: {
-                type: 'void'
-              }
+              params: [{description: 'a bool', name: 'foo', type: 'boolean'}],
+              return: {type: 'void'}
             },
             {
               description: undefined,
@@ -604,20 +570,10 @@ suite('Class', () => {
               description: 'Returns the sum of two numbers',
               name: 'customInstanceFunctionOnProtoWithBodyDoc',
               params: [
-                {
-                  description: 'some number',
-                  name: 'a',
-                  type: 'number'
-                },
-                {
-                  description: 'another number',
-                  name: 'b',
-                  type: 'number'
-                }
+                {description: 'some number', name: 'a', type: 'number'},
+                {description: 'another number', name: 'b', type: 'number'}
               ],
-              return: {
-                type: 'number'
-              }
+              return: {type: 'number'}
             },
           ]
         },

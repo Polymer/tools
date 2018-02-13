@@ -15,7 +15,7 @@
 import * as babel from 'babel-types';
 import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
-import {getAttachedComment, getEventComments, getOrInferPrivacy, objectKeyToString, toScannedMethod} from '../javascript/esutil';
+import {getAttachedComment, getEventComments, getOrInferPrivacy, getPropertyName, toScannedMethod} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
@@ -102,7 +102,7 @@ class ElementVisitor implements Visitor {
       if (babel.isSpreadProperty(prop)) {
         continue;
       }
-      const name = objectKeyToString(prop.key);
+      const name = getPropertyName(prop);
       if (!name) {
         element.warnings.push(new Warning({
           message: `Can't determine name for property key from expression ` +
@@ -127,6 +127,9 @@ class ElementVisitor implements Visitor {
       try {
         const scannedPolymerProperty = toScannedPolymerProperty(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
+        if (scannedPolymerProperty === undefined) {
+          continue;
+        }
         if (babel.isObjectMethod(prop) && prop.kind === 'get') {
           getters[scannedPolymerProperty.name] = scannedPolymerProperty;
         } else if (babel.isObjectMethod(prop) && prop.kind === 'set') {

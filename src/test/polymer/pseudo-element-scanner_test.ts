@@ -35,6 +35,11 @@ suite('PseudoElementScanner', () => {
         features.map(
             (f: ScannedPolymerElement) =>
                 [f.tagName, f.pseudo, f.description.trim(), f.demos]),
-        [['x-foo', true, desc, [{desc: 'demo', path: fileRelativeUrl`demo/index.html`}]]]);
+        [[
+          'x-foo',
+          true,
+          desc,
+          [{desc: 'demo', path: fileRelativeUrl`demo/index.html`}]
+        ]]);
   });
 });

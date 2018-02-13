@@ -803,9 +803,9 @@ export function extractPropertiesFromClass(
     return properties;
   }
 
-  const construct = astNode.body.body
-    .find((member) =>
-      babel.isClassMethod(member) && member.kind === 'constructor') as babel.ClassMethod;
+  const construct = astNode.body.body.find(
+                        (member) => babel.isClassMethod(member) &&
+                            member.kind === 'constructor') as babel.ClassMethod;
 
   if (construct) {
     const props = extractPropertiesFromConstructor(construct, document);
@@ -814,7 +814,9 @@ export function extractPropertiesFromClass(
     }
   }
 
-  for (const prop of esutil.extractPropertiesFromClassOrObjectBody(astNode, document).values()) {
+  for (const prop of esutil
+           .extractPropertiesFromClassOrObjectBody(astNode, document)
+           .values()) {
     properties.set(prop.name, prop);
   }
 

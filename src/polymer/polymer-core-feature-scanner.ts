@@ -154,6 +154,9 @@ class PolymerCoreFeatureVisitor implements Visitor {
       } else {
         const property =
             toScannedPolymerProperty(prop, sourceRange, this.document);
+        if (property === undefined) {
+          continue;
+        }
         feature.properties.set(property.name, property);
       }
       // TODO(aomarks) Are there any getters/setters on Polymer.Base?

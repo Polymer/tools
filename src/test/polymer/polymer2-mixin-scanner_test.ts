@@ -333,10 +333,7 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
           name: 'TestMixin',
           description: 'A mixin description',
           summary: 'A mixin summary',
-          properties: [
-            { name: 'customInstanceGetter' },
-            { name: 'foo' }
-          ],
+          properties: [{name: 'customInstanceGetter'}, {name: 'foo'}],
           attributes: [{
             name: 'foo',
           }],

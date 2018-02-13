@@ -87,7 +87,8 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
   }
   const scannedEvent: ScannedEvent = {
     name: name,
-    description: annotation.description || (eventTag && eventTag.description) || undefined,
+    description: annotation.description || (eventTag && eventTag.description) ||
+        undefined,
     jsdoc: annotation,
     sourceRange: undefined,
     astNode: null,

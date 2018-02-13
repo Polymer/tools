@@ -394,10 +394,7 @@ namespaced name.`,
             description: ``,
             summary: '',
             properties: [
-              {
-                name: 'customInstanceGetter',
-                description: undefined
-              },
+              {name: 'customInstanceGetter', description: undefined},
               {
                 name: 'foo',
                 description: '',
@@ -559,18 +556,20 @@ namespaced name.`,
   test('can identify elements registered with ClassName.is', async () => {
     const elements = await getElements('test-element-11.js');
     const elementData = await Promise.all(elements.map(getTestProps));
-    assert.deepEqual(
-        elementData, [{
-          attributes: [{name: 'prop1'}],
-          className: 'MyElement',
-          description: '',
-          methods: [],
-          properties:
-              [{name: 'prop1', description: '', type: 'string | null | undefined'}],
-          summary: '',
-          superClass: 'Polymer.Element',
-          tagName: 'my-app',
-          warningUnderlines: [],
-        }]);
+    assert.deepEqual(elementData, [
+      {
+        attributes: [{name: 'prop1'}],
+        className: 'MyElement',
+        description: '',
+        methods: [],
+        properties: [
+          {name: 'prop1', description: '', type: 'string | null | undefined'}
+        ],
+        summary: '',
+        superClass: 'Polymer.Element',
+        tagName: 'my-app',
+        warningUnderlines: [],
+      }
+    ]);
   });
 });

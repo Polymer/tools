@@ -395,10 +395,7 @@ namespaced name.`,
             description: ``,
             summary: '',
             properties: [
-              {
-                name: 'customInstanceGetter',
-                description: undefined
-              },
+              {name: 'customInstanceGetter', description: undefined},
               {
                 name: 'foo',
                 description: '',

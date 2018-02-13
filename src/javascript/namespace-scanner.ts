@@ -105,13 +105,14 @@ class NamespaceVisitor implements Visitor {
       namespacedIdentifier = getIdentifierName(node.expression);
     }
 
-    if (!namespacedIdentifier || namespacedIdentifier.indexOf('.prototype.') !== -1) {
+    if (!namespacedIdentifier ||
+        namespacedIdentifier.indexOf('.prototype.') !== -1) {
       return;
     }
 
     const namespace = this.namespaces.get(namespaceName)!;
-    const name = namespacedIdentifier
-      .substring(namespacedIdentifier.lastIndexOf('.') + 1);
+    const name = namespacedIdentifier.substring(
+        namespacedIdentifier.lastIndexOf('.') + 1);
 
     prop = this._createPropertyFromExpression(name, node.expression, jsdocAnn);
 

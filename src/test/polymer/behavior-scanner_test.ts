@@ -102,10 +102,15 @@ suite('BehaviorScanner', () => {
     }
     assert.deepEqual(
         [...behavior.methods.keys()], ['method', 'shorthandMethod']);
-    assert.deepEqual(
-        [...behavior.properties.keys()],
-        ['simple', 'object', 'array', 'attached', 'templateLiteral',
-          'getter', 'getterSetter']);
+    assert.deepEqual([...behavior.properties.keys()], [
+      'simple',
+      'object',
+      'array',
+      'attached',
+      'templateLiteral',
+      'getter',
+      'getterSetter'
+    ]);
   });
 
   test('Correctly transforms property types', function() {

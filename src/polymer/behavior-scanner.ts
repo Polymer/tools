@@ -61,10 +61,7 @@ class BehaviorVisitor implements Visitor {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
-    this._initBehavior(node, () => {
-      const id = node.declarations[0].id;
-      return esutil.objectKeyToString(id)!;
-    });
+    this._initBehavior(node, getIdentifierName(node.declarations[0].id));
   }
 
   /**
@@ -72,7 +69,7 @@ class BehaviorVisitor implements Visitor {
    */
   enterAssignmentExpression(
       node: babel.AssignmentExpression, parent: babel.Node) {
-    this._initBehavior(parent, () => esutil.objectKeyToString(node.left)!);
+    this._initBehavior(parent, getIdentifierName(node.left));
   }
 
   /**
@@ -88,7 +85,7 @@ class BehaviorVisitor implements Visitor {
       if (babel.isSpreadProperty(prop)) {
         continue;
       }
-      const name = esutil.objectKeyToString(prop.key);
+      const name = esutil.getPropertyName(prop);
       if (!name) {
         this.currentBehavior.warnings.push(new Warning({
           code: 'cant-determine-name',
@@ -103,7 +100,8 @@ class BehaviorVisitor implements Visitor {
       }
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
-      } else if ((babel.isMethod(prop) && prop.kind === 'method') ||
+      } else if (
+          (babel.isMethod(prop) && prop.kind === 'method') ||
           babel.isFunction(prop.value)) {
         const method = esutil.toScannedMethod(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
@@ -111,7 +109,9 @@ class BehaviorVisitor implements Visitor {
       }
     }
 
-    for (const prop of esutil.extractPropertiesFromClassOrObjectBody(node, this.document).values()) {
+    for (const prop of esutil
+             .extractPropertiesFromClassOrObjectBody(node, this.document)
+             .values()) {
       if (prop.name in this.propertyHandlers) {
         continue;
       }
@@ -136,18 +136,20 @@ class BehaviorVisitor implements Visitor {
     this.currentBehavior = null;
   }
 
-  private _initBehavior(node: babel.Node, getName: () => string) {
+  private _initBehavior(node: babel.Node, name: string|undefined) {
     const comment = esutil.getAttachedComment(node);
-    const symbol = getName();
+    if (name === undefined) {
+      return;
+    }
     // Quickly filter down to potential candidates.
     if (!comment || comment.indexOf('@polymerBehavior') === -1) {
-      if (symbol !== templatizer) {
+      if (name !== templatizer) {
         return;
       }
     }
     const parsedJsdocs = jsdoc.parseJsdoc(comment || '');
     if (!jsdoc.hasTag(parsedJsdocs, 'polymerBehavior')) {
-      if (symbol !== templatizer) {
+      if (name !== templatizer) {
         return;
       }
     }
@@ -157,7 +159,7 @@ class BehaviorVisitor implements Visitor {
       description: parsedJsdocs.description,
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node),
-      privacy: esutil.getOrInferPrivacy(symbol, parsedJsdocs),
+      privacy: esutil.getOrInferPrivacy(name, parsedJsdocs),
       abstract: jsdoc.hasTag(parsedJsdocs, 'abstract'),
       attributes: new Map(),
       properties: [],
@@ -181,7 +183,7 @@ class BehaviorVisitor implements Visitor {
     docs.annotateElementHeader(behavior);
     const behaviorTag = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior');
     behavior.className = behaviorTag && behaviorTag.name ||
-        getNamespacedIdentifier(symbol, behavior.jsdoc);
+        getNamespacedIdentifier(name, behavior.jsdoc);
     if (!behavior.className) {
       throw new Error(
           `Unable to determine name for @polymerBehavior: ${comment}`);

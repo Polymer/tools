@@ -20,7 +20,7 @@ import {comparePosition} from '../model/source-range';
 
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
-import {getAttachedComment, getOrInferPrivacy, objectKeyToString} from './esutil';
+import {getAttachedComment, getOrInferPrivacy, getPropertyName} from './esutil';
 import {ScannedFunction} from './function';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
@@ -76,11 +76,10 @@ class FunctionVisitor implements Visitor {
       return;  // Ambiguous.
     }
     const declaration = node.declarations[0];
-    const declarationId = declaration.id;
     const declarationValue = declaration.init;
     if (declarationValue && babel.isFunction(declarationValue)) {
       return this._initFunction(
-          node, objectKeyToString(declarationId), declarationValue);
+          node, getIdentifierName(declaration.id), declarationValue);
     }
   }
 
@@ -90,7 +89,7 @@ class FunctionVisitor implements Visitor {
   enterAssignmentExpression(
       node: babel.AssignmentExpression, parent: babel.Node) {
     if (babel.isFunction(node.right)) {
-      this._initFunction(parent, objectKeyToString(node.left), node.right);
+      this._initFunction(parent, getIdentifierName(node.left), node.right);
     }
   }
 
@@ -104,7 +103,7 @@ class FunctionVisitor implements Visitor {
         continue;
       }
       const propValue = prop.value;
-      const name = objectKeyToString(prop.key);
+      const name = getPropertyName(prop);
       if (babel.isFunction(propValue)) {
         this._initFunction(prop, name, propValue);
         continue;

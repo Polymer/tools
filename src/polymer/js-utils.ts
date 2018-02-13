@@ -14,7 +14,7 @@
 
 import * as babel from 'babel-types';
 
-import {configurationProperties, getAttachedComment, getClosureType, getOrInferPrivacy, objectKeyToString} from '../javascript/esutil';
+import {configurationProperties, getAttachedComment, getClosureType, getOrInferPrivacy, getPropertyName} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
 import {Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
@@ -27,10 +27,10 @@ import {ScannedPolymerProperty} from './polymer-element';
 export function toScannedPolymerProperty(
     node: babel.ObjectMethod|babel.ObjectProperty|babel.ClassMethod,
     sourceRange: SourceRange,
-    document: ParsedDocument): ScannedPolymerProperty {
+    document: ParsedDocument): ScannedPolymerProperty|undefined {
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
-  const maybeName = objectKeyToString(node.key);
+  const maybeName = getPropertyName(node);
 
   const warnings: Warning[] = [];
   if (!maybeName) {
@@ -43,6 +43,7 @@ export function toScannedPolymerProperty(
       severity: Severity.WARNING,
       parsedDocument: document
     }));
+    return;
   }
 
   const value = babel.isObjectProperty(node) ? node.value : node;
