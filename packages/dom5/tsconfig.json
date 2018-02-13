@@ -7,10 +7,12 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "lib": ["es2017"]
+    "lib": [
+      "es2017"
+    ],
+    "outDir": "./lib",
   },
   "include": [
-    "*.ts",
-    "test/*.ts"
+    "src/**/*.ts",
   ]
 }
