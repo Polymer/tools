@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+- Mixin functions now include all of the additional mixins they automatically apply. Previously, only the immediately applied mixins were accounted for, but not ones that were applied transitively.
 
 ## [1.1.2] - 2018-02-08
 - Elements that are constructable (usually a call to the Polymer function whose result is assigned to some variable) can now have behaviors.

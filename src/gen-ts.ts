@@ -144,7 +144,11 @@ function analyzerToAst(
     });
     for (const analyzerDoc of analyzerDocs) {
       handleDocument(
-          analyzerDoc, tsDoc, rootDir, config.excludeIdentifiers || []);
+          analysis,
+          analyzerDoc,
+          tsDoc,
+          rootDir,
+          config.excludeIdentifiers || []);
     }
     for (const ref of tsDoc.referencePaths) {
       const resolvedRef = path.resolve(rootDir, path.dirname(tsDoc.path), ref);
@@ -217,6 +221,7 @@ interface MaybePrivate {
  * items in the given Polymer Analyzer document.
  */
 function handleDocument(
+    analysis: analyzer.Analysis,
     doc: analyzer.Document,
     root: ts.Document,
     rootDir: string,
@@ -233,7 +238,7 @@ function handleDocument(
     } else if (feature.kinds.has('behavior')) {
       handleBehavior(feature as analyzer.PolymerBehavior, root);
     } else if (feature.kinds.has('element-mixin')) {
-      handleMixin(feature as analyzer.ElementMixin, root);
+      handleMixin(feature as analyzer.ElementMixin, root, analysis);
     } else if (feature.kinds.has('class')) {
       handleClass(feature as analyzer.Class, root);
     } else if (feature.kinds.has('function')) {
@@ -393,7 +398,10 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
 /**
  * Add the given Mixin to the given TypeScript declarations document.
  */
-function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
+function handleMixin(
+    feature: analyzer.ElementMixin,
+    root: ts.Document,
+    analysis: analyzer.Analysis) {
   const [namespacePath, mixinName] = splitReference(feature.name);
   const parentNamespace = findOrCreateNamespace(root, namespacePath);
 
@@ -410,8 +418,8 @@ function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
     returns: new ts.IntersectionType([
       new ts.NameType('T'),
       new ts.NameType(mixinName + 'Constructor'),
-      ...feature.mixins.map(
-          (m) => new ts.NameType(m.identifier + 'Constructor'))
+      ...Array.from(transitiveMixins(feature, analysis))
+          .map((mixin) => new ts.NameType(mixin + 'Constructor'))
     ]),
   }));
 
@@ -446,6 +454,34 @@ function handleMixin(feature: analyzer.ElementMixin, root: ts.Document) {
       }),
   );
 };
+
+/**
+ * Mixins can automatically apply other mixins, indicated by the @appliesMixin
+ * annotation. However, since those mixins may themselves apply other mixins, to
+ * know the full set of them we need to traverse down the tree.
+ */
+function transitiveMixins(
+    parentMixin: analyzer.ElementMixin,
+    analysis: analyzer.Analysis,
+    result?: Set<string>): Set<string> {
+  if (result === undefined) {
+    result = new Set();
+  }
+  for (const childRef of parentMixin.mixins) {
+    result.add(childRef.identifier);
+    const childMixinSet =
+        analysis.getFeatures({id: childRef.identifier, kind: 'element-mixin'});
+    if (childMixinSet.size !== 1) {
+      console.error(
+          `Found ${childMixinSet.size} features for mixin ` +
+          `${childRef.identifier}, expected 1.`);
+      continue;
+    }
+    const childMixin = childMixinSet.values().next().value;
+    transitiveMixins(childMixin, analysis, result);
+  }
+  return result;
+}
 
 /**
  * Add the given Class to the given TypeScript declarations document.
