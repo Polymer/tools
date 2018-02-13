@@ -250,6 +250,7 @@ addPredicate('paper-input-container', [
   {selector: '[prefix]', slot: 'prefix'},
   {selector: '[suffix]', slot: 'suffix'},
   {selector: '[add-on]', slot: 'add-on'},
+  {selector: 'label', slot: 'label'},
   {selector: '*', slot: 'input'},
 ]);
 
