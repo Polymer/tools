@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {ASTNode, treeAdapters} from 'parse5';
 
 import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, ScannedImport, ScannedInlineDocument} from '../model/model';
@@ -70,10 +70,9 @@ export class HtmlStyleScanner implements HtmlScanner {
       if (node.tagName === 'template') {
         const content = treeAdapters.default.getTemplateContent(node);
         if (content) {
-          dom5.nodeWalk(content, (n) => {
+          for (const n of dom5.depthFirst(content)) {
             visitor(n);
-            return false;
-          });
+          }
         }
       }
     };

@@ -13,7 +13,7 @@
  */
 
 import * as clone from 'clone';
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import {ASTNode} from 'parse5';
 
@@ -30,10 +30,9 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
   type = 'html';
 
   visit(visitors: HtmlVisitor[]) {
-    dom5.nodeWalk(this.ast, (node) => {
+    for (const node of dom5.depthFirst(this.ast)) {
       visitors.forEach((visitor) => visitor(node));
-      return false;
-    });
+    }
   }
 
   // An element node with end tag information will produce a source range that

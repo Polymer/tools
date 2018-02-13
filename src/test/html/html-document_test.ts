@@ -13,7 +13,7 @@
  */
 
 import {assert} from 'chai';
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as fs from 'fs';
 import * as parse5 from 'parse5';
 import * as path from 'path';
@@ -37,8 +37,8 @@ suite('ParsedHtmlDocument', () => {
 
   suite('sourceRangeForNode()', () => {
     test('works for comments', async () => {
-      const comments = dom5.nodeWalkAll(
-          document.ast, parse5.treeAdapters.default.isCommentNode);
+      const comments = [...dom5.depthFirst(document.ast)].filter(
+          parse5.treeAdapters.default.isCommentNode);
 
       assert.equal(comments.length, 2);
       assert.deepEqual(
@@ -60,7 +60,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for elements', async () => {
       const liTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'))];
 
       assert.equal(liTags.length, 4);
 
@@ -91,7 +91,7 @@ suite('ParsedHtmlDocument', () => {
 ~~~~~~`);
 
       const pTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('p'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('p'))];
       assert.equal(pTags.length, 2);
 
       assert.deepEqual(
@@ -127,7 +127,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('works for void elements', async () => {
       const linkTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'))];
       assert.equal(linkTags.length, 2);
 
       assert.deepEqual(
@@ -163,7 +163,7 @@ suite('ParsedHtmlDocument', () => {
 ~~~~~~~~`);
 
       const pTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('p'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('p'))];
       assert.equal(pTags.length, 2);
 
       assert.deepEqual(
@@ -189,7 +189,7 @@ suite('ParsedHtmlDocument', () => {
   suite('sourceRangeForStartTag', () => {
     test('it works for tags with no attributes', async () => {
       const liTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('li'))];
 
       assert.deepEqual(
           await underliner.underline(
@@ -222,7 +222,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('it works for void tags with no attributes', async () => {
       const brTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('br'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('br'))];
       assert.equal(brTags.length, 1);
 
       assert.deepEqual(
@@ -235,7 +235,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('it works for void tags with attributes', async () => {
       const linkTags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'))];
       assert.equal(linkTags.length, 2);
 
       assert.deepEqual(
@@ -257,7 +257,7 @@ suite('ParsedHtmlDocument', () => {
 
     test('it works for normal elements with attributes', async () => {
       const h1Tags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('h1'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('h1'))];
       assert.equal(h1Tags.length, 2);
 
       assert.deepEqual(
@@ -267,8 +267,8 @@ suite('ParsedHtmlDocument', () => {
     <h1 class="foo" id="bar">
     ~~~~~~~~~~~~~~~~~~~~~~~~~`);
 
-      const complexTags = dom5.queryAll(
-          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      const complexTags = [...dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'))];
       assert.equal(complexTags.length, 1);
 
       assert.deepEqual(
@@ -298,7 +298,7 @@ suite('ParsedHtmlDocument', () => {
   suite('sourceRangeForEndTag', () => {
     test('it works for normal elements', async () => {
       const h1Tags =
-          dom5.queryAll(document.ast, dom5.predicates.hasTagName('h1'));
+          [...dom5.queryAll(document.ast, dom5.predicates.hasTagName('h1'))];
       assert.equal(h1Tags.length, 2);
 
       assert.deepEqual(
@@ -307,8 +307,8 @@ suite('ParsedHtmlDocument', () => {
     </h1>
     ~~~~~`);
 
-      const complexTags = dom5.queryAll(
-          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      const complexTags = [...dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'))];
       assert.equal(complexTags.length, 1);
 
       assert.deepEqual(
@@ -325,8 +325,8 @@ suite('ParsedHtmlDocument', () => {
   suite('sourceRangeForAttribute', () => {
     let complexTags: parse5.ASTNode[];
     setup(() => {
-      complexTags = dom5.queryAll(
-          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      complexTags = [...dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'))];
       assert.equal(complexTags.length, 1);
     });
 
@@ -381,8 +381,8 @@ suite('ParsedHtmlDocument', () => {
 
     suite('for a void element', async () => {
       test('works for a string attribute', async () => {
-        const linkTags =
-            dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+        const linkTags = [...dom5.queryAll(
+            document.ast, dom5.predicates.hasTagName('link'))];
         assert.equal(linkTags.length, 2);
 
         assert.deepEqual(
@@ -405,8 +405,8 @@ suite('ParsedHtmlDocument', () => {
   suite('sourceRangeForAttributeName', () => {
     let complexTags: parse5.ASTNode[];
     setup(() => {
-      complexTags = dom5.queryAll(
-          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      complexTags = [...dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'))];
       assert.equal(complexTags.length, 1);
     });
 
@@ -450,8 +450,8 @@ suite('ParsedHtmlDocument', () => {
 
     suite('for a void element', async () => {
       test('works for a string attribute', async () => {
-        const linkTags =
-            dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+        const linkTags = [...dom5.queryAll(
+            document.ast, dom5.predicates.hasTagName('link'))];
         assert.equal(linkTags.length, 2);
 
         assert.deepEqual(
@@ -474,8 +474,8 @@ suite('ParsedHtmlDocument', () => {
   suite('sourceRangeForAttributeValue', () => {
     let complexTags: parse5.ASTNode[];
     setup(() => {
-      complexTags = dom5.queryAll(
-          document.ast, dom5.predicates.hasTagName('complex-tag'));
+      complexTags = [...dom5.queryAll(
+          document.ast, dom5.predicates.hasTagName('complex-tag'))];
       assert.equal(complexTags.length, 1);
     });
 
@@ -524,8 +524,8 @@ suite('ParsedHtmlDocument', () => {
 
     suite('for a void element', async () => {
       test('works for a string attribute', async () => {
-        const linkTags =
-            dom5.queryAll(document.ast, dom5.predicates.hasTagName('link'));
+        const linkTags = [...dom5.queryAll(
+            document.ast, dom5.predicates.hasTagName('link'))];
         assert.equal(linkTags.length, 2);
 
         assert.deepEqual(

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 
 import {getAttachedCommentText, getLocationOffsetOfStartOfTextContent, ScannedImport, ScannedInlineDocument} from '../model/model';
 import {FileRelativeUrl} from '../model/url';

@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {getAttribute, predicates as p, query} from 'dom5';
+import {getAttribute, predicates as p} from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {parse as parseHtml} from 'parse5';
 
 import {InlineDocInfo} from '../model/model';
@@ -35,7 +36,7 @@ export class HtmlParser implements Parser<ParsedHtmlDocument> {
     const ast = parseHtml(contents, {locationInfo: true});
 
     // There should be at most one <base> tag and it must be inside <head> tag.
-    const baseTag = query(
+    const baseTag = dom5.query(
         ast,
         p.AND(
             p.parentMatches(p.hasTagName('head')),

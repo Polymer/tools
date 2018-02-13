@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {ASTNode, treeAdapters} from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
@@ -128,15 +128,15 @@ export class DomModuleScanner implements HtmlScanner {
         if (template) {
           const templateContent =
               treeAdapters.default.getTemplateContent(template);
-          slots =
-              dom5.queryAll(templateContent, dom5.predicates.hasTagName('slot'))
-                  .map(
-                      (s) => new Slot(
-                          dom5.getAttribute(s, 'name') || '',
-                          document.sourceRangeForNode(s)!,
-                          s));
+          slots = [...dom5.queryAll(
+                       templateContent, dom5.predicates.hasTagName('slot'))]
+                      .map(
+                          (s) => new Slot(
+                              dom5.getAttribute(s, 'name') || '',
+                              document.sourceRangeForNode(s)!,
+                              s));
           localIds =
-              dom5.queryAll(templateContent, dom5.predicates.hasAttr('id'))
+              [...dom5.queryAll(templateContent, dom5.predicates.hasAttr('id'))]
                   .map(
                       (e) => new LocalId(
                           dom5.getAttribute(e, 'id')!,

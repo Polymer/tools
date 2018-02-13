@@ -13,7 +13,7 @@
  */
 
 import * as babel from 'babel-types';
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {ASTNode} from 'parse5';
 
 import * as jsdoc from '../javascript/jsdoc';

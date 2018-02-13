@@ -13,7 +13,7 @@
  */
 
 import * as babel from 'babel-types';
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 
 import {getOrInferPrivacy} from '../javascript/esutil';
