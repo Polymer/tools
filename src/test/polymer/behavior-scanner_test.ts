@@ -104,7 +104,8 @@ suite('BehaviorScanner', () => {
         [...behavior.methods.keys()], ['method', 'shorthandMethod']);
     assert.deepEqual(
         [...behavior.properties.keys()],
-        ['simple', 'object', 'array', 'attached', 'templateLiteral']);
+        ['simple', 'object', 'array', 'attached', 'templateLiteral',
+          'getter', 'getterSetter']);
   });
 
   test('Correctly transforms property types', function() {
@@ -114,13 +115,15 @@ suite('BehaviorScanner', () => {
     }
     assert.deepEqual(
         [...behavior.properties.values()].map(
-            (p) => ({name: p.name, type: p.type})),
+            (p) => ({name: p.name, type: p.type, readOnly: p.readOnly})),
         [
-          {name: 'simple', type: 'boolean'},
-          {name: 'object', type: 'Object'},
-          {name: 'array', type: 'Array'},
-          {name: 'attached', type: 'Object'},
-          {name: 'templateLiteral', type: 'string'}
+          {name: 'simple', type: 'boolean', readOnly: false},
+          {name: 'object', type: 'Object', readOnly: false},
+          {name: 'array', type: 'Array', readOnly: false},
+          {name: 'attached', type: undefined, readOnly: false},
+          {name: 'templateLiteral', type: 'string', readOnly: false},
+          {name: 'getter', type: undefined, readOnly: true},
+          {name: 'getterSetter', type: undefined, readOnly: false}
         ]);
   });
 });

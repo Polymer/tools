@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 * Support Windows line endings in JSDoc annotations
 * Support scanning of properties in namespaces
+* Support scanning of accessors in behaviors
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.10] - 2018-02-01

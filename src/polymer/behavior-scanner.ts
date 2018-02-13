@@ -25,7 +25,6 @@ import {Severity, Warning} from '../model/model';
 import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
-import {toScannedPolymerProperty} from './js-utils';
 
 const templatizer = 'Polymer.Templatizer';
 
@@ -104,16 +103,25 @@ class BehaviorVisitor implements Visitor {
       }
       if (name in this.propertyHandlers) {
         this.propertyHandlers[name](prop.value);
-      } else if (babel.isMethod(prop) || babel.isFunction(prop.value)) {
+      } else if ((babel.isMethod(prop) && prop.kind === 'method') ||
+          babel.isFunction(prop.value)) {
         const method = esutil.toScannedMethod(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
         this.currentBehavior.addMethod(method);
-      } else {
-        const property = toScannedPolymerProperty(
-            prop, this.document.sourceRangeForNode(prop)!, this.document);
-        this.currentBehavior.addProperty(property);
       }
     }
+
+    for (const prop of esutil.extractPropertiesFromClassOrObjectBody(node, this.document).values()) {
+      if (prop.name in this.propertyHandlers) {
+        continue;
+      }
+
+      this.currentBehavior.addProperty({
+        ...prop,
+        isConfiguration: esutil.configurationProperties.has(prop.name),
+      });
+    }
+
     this._finishBehavior();
   }
 
