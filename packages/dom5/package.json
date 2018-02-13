@@ -18,7 +18,7 @@
   "dependencies": {
     "@types/parse5": "^2.2.32",
     "clone": "^2.1.0",
-    "parse5": "^2.2.2"
+    "parse5": "^4.0.0"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",

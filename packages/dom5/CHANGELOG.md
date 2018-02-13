@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+- [BREAKING] Update to parse5 v4. For breaking changes see:
+  - http://inikulin.github.io/parse5/#4-0-0 and
+    http://inikulin.github.io/parse5/#3-0-0
 - Moved development-only dependencies in package.json to devDependencies.
 <!-- Add new, unreleased changes here. -->
 
