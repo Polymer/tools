@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- Add a rule to detect `Polymer.dom` usages where native methods/properties may
+  now be used
 
 ## [3.0.0-pre.1] - 2017-12-21
 - [BREAKING] Return an object with `warnings` and `analysis` properties

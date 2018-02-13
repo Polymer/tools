@@ -24,6 +24,7 @@ import './polymer/content-to-slot-declarations';
 import './polymer/content-to-slot-usages';
 import './polymer/databinding-calls-must-be-functions';
 import './polymer/databind-with-unknown-property';
+import './polymer/dom-calls-to-native';
 import './polymer/element-before-dom-module';
 import './polymer/set-unknown-attribute';
 import './polymer/unbalanced-delimiters';

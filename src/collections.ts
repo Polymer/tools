@@ -33,6 +33,7 @@ registry.register(
       'undefined-elements',
       'deprecated-css-custom-property-syntax',
       'paper-toolbar-v1-to-v2',
+      'dom-calls-to-native',
     ]));
 
 registry.register(new RuleCollection(
