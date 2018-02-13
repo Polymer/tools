@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode as Node, treeAdapters} from 'parse5';
+import {ASTNode as Node} from 'parse5';
 
+import * as iteration from './iteration';
 import {isElement, Predicate, predicates as p} from './predicates';
+import {defaultChildNodes, GetChildNodes} from './util';
 
 export {ASTNode as Node} from 'parse5';
 
@@ -23,25 +25,27 @@ export {ASTNode as Node} from 'parse5';
  * list of results.
  */
 export function treeMap<U>(node: Node, mapfn: (node: Node) => U[]): U[] {
-  let results: U[] = [];
-  nodeWalk(node, function(node) {
-    results = results.concat(mapfn(node));
-    return false;
-  });
-  return results;
+  return Array.from(iteration.treeMap(node, mapfn));
 }
 
-export type GetChildNodes = (node: Node) => Node[] | undefined;
-
-export const defaultChildNodes: GetChildNodes = node => node.childNodes;
-
-export const childNodesIncludeTemplate: GetChildNodes = node => {
-  if (node.nodeName === 'template') {
-    return treeAdapters.default.getTemplateContent(node).childNodes;
+function find<U>(iter: Iterable<U>, predicate: (u: U) => boolean) {
+  for (const value of iter) {
+    if (predicate(value)) {
+      return value;
+    }
   }
+  return null;
+}
 
-  return node.childNodes;
-};
+function filter<U>(
+    iter: Iterable<U>, predicate: (u: U) => boolean, matches: U[] = []) {
+  for (const value of iter) {
+    if (predicate(value)) {
+      matches.push(value);
+    }
+  }
+  return matches;
+}
 
 /**
  * Walk the tree down from `node`, applying the `predicate` function.
@@ -53,20 +57,7 @@ export function nodeWalk(
     node: Node,
     predicate: Predicate,
     getChildNodes: GetChildNodes = defaultChildNodes): Node|null {
-  if (predicate(node)) {
-    return node;
-  }
-  let match: Node|null = null;
-  const childNodes = getChildNodes(node);
-  if (childNodes) {
-    for (let i = 0; i < childNodes.length; i++) {
-      match = nodeWalk(childNodes[i], predicate, getChildNodes);
-      if (match) {
-        break;
-      }
-    }
-  }
-  return match;
+  return find(iteration.depthFirst(node, getChildNodes), predicate);
 }
 
 /**
@@ -79,88 +70,28 @@ export function nodeWalkAll(
     predicate: Predicate,
     matches?: Node[],
     getChildNodes: GetChildNodes = defaultChildNodes): Node[] {
-  if (!matches) {
-    matches = [];
-  }
-  if (predicate(node)) {
-    matches.push(node);
-  }
-  const childNodes = getChildNodes(node);
-  if (childNodes) {
-    for (let i = 0; i < childNodes.length; i++) {
-      nodeWalkAll(childNodes[i], predicate, matches, getChildNodes);
-    }
-  }
-  return matches;
-}
-
-function _reverseNodeWalkAll(
-    node: Node,
-    predicate: Predicate,
-    matches: Node[],
-    getChildNodes: GetChildNodes = defaultChildNodes): Node[] {
-  if (!matches) {
-    matches = [];
-  }
-  const childNodes = getChildNodes(node);
-  if (childNodes) {
-    for (let i = childNodes.length - 1; i >= 0; i--) {
-      nodeWalkAll(childNodes[i], predicate, matches, getChildNodes);
-    }
-  }
-  if (predicate(node)) {
-    matches.push(node);
-  }
-  return matches;
+  return filter(iteration.depthFirst(node, getChildNodes), predicate, matches);
 }
 
 /**
  * Equivalent to `nodeWalk`, but only returns nodes that are either
- * ancestors or earlier cousins/siblings in the document.
+ * ancestors or earlier siblings in the document.
  *
  * Nodes are searched in reverse document order, starting from the sibling
  * prior to `node`.
  */
 export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
     undefined {
-  // Search our earlier siblings and their descendents.
-  const parent = node.parentNode;
-  if (parent && parent.childNodes) {
-    const idx = parent.childNodes.indexOf(node);
-    const siblings = parent.childNodes.slice(0, idx);
-    for (let i = siblings.length - 1; i >= 0; i--) {
-      const sibling = siblings[i];
-      if (predicate(sibling)) {
-        return sibling;
-      }
-      const found = nodeWalk(sibling, predicate);
-      if (found) {
-        return found;
-      }
-    }
-    if (predicate(parent)) {
-      return parent;
-    }
-    return nodeWalkPrior(parent, predicate);
-  }
-  return undefined;
-}
-
-/**
- * Walk the tree up from the parent of `node`, to its grandparent and so on to
- * the root of the tree.  Return the first ancestor that matches the given
- * predicate.
- */
-export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|
-    undefined {
-  const parent = node.parentNode;
-  if (!parent) {
+  const result = find(iteration.prior(node), predicate);
+  if (result === null) {
     return undefined;
   }
-  if (predicate(parent)) {
-    return parent;
-  }
-  return nodeWalkAncestors(parent, predicate);
+  return result;
+}
+
+function* iteratePriorIncludingNode(node: Node) {
+  yield node;
+  yield* iteration.prior(node);
 }
 
 /**
@@ -171,23 +102,21 @@ export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|
  */
 export function nodeWalkAllPrior(
     node: Node, predicate: Predicate, matches?: Node[]): Node[] {
-  if (!matches) {
-    matches = [];
+  return filter(iteratePriorIncludingNode(node), predicate, matches);
+}
+
+/**
+ * Walk the tree up from the parent of `node`, to its grandparent and so on to
+ * the root of the tree.  Return the first ancestor that matches the given
+ * predicate.
+ */
+export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|
+    undefined {
+  const result = find(iteration.ancestors(node), predicate);
+  if (result === null) {
+    return undefined;
   }
-  if (predicate(node)) {
-    matches.push(node);
-  }
-  // Search our earlier siblings and their descendents.
-  const parent = node.parentNode;
-  if (parent) {
-    const idx = parent.childNodes!.indexOf(node);
-    const siblings = parent.childNodes!.slice(0, idx);
-    for (let i = siblings.length - 1; i >= 0; i--) {
-      _reverseNodeWalkAll(siblings[i], predicate, matches);
-    }
-    nodeWalkAllPrior(parent, predicate, matches);
-  }
-  return matches;
+  return result;
 }
 
 /**

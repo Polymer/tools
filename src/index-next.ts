@@ -11,7 +11,14 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
+// This is the API that we would like to expose.
+//
+// We can change users to import this file directly, then
+// we can do a breaking change that replaces the contents
+// of index.ts with this.
+
 export * from './modification';
 export * from './predicates';
 export * from './util';
-export * from './walking';
+export * from './iteration';
