@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### New Lint Rules
 - `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
 - `deprecated-shadow-dom-selectors`: Warns when deprecated Shadow DOM selectors are used. (`/deep/`, `>>>`, and `::shadow`)
+- `content-selector-to-slotted`: Warns when deprecated `::content` selector is used. Can safely fix usages that use `>` selector.
 
 ## [3.0.0-pre.1] - 2017-12-21
 - [BREAKING] Return an object with `warnings` and `analysis` properties

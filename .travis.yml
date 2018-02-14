@@ -5,4 +5,4 @@ node_js:
   - "node"
 script:
   - npm test
-  - npm run test:integration || echo '' # Integration test is advisory only.
+  #- npm run test:integration || echo '' # Integration test is advisory only.

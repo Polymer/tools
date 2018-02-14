@@ -79,7 +79,7 @@ class DeprecatedCustomPropertySyntax extends CssRule {
     if (node.type === shady.nodeType.expression) {
       const match = node.text.match(
           /var\s*\(\s*--[a-zA-Z0-9_-]+\s*,\s*(--[a-zA-Z0-9_-]+)\s*\)/);
-      if (match) {
+      if (match !== null) {
         const offsetOfVarInsideExpression = match.index!;
         const offsetOfSecondCustomPropWithinVar =
             match[0].match(/--[a-zA-Z0-9_-]+\s*\)$/)!.index!;

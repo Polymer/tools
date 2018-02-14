@@ -42,7 +42,7 @@
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
     "test": "npm run build && mocha && npm run lint",
-    "test:watch": "tsc-then -- mocha -c",
+    "test:watch": "tsc-then -- mocha",
     "test:integration": "npm run build && (cd test/integration && bower install --silent) && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },
   "repository": {

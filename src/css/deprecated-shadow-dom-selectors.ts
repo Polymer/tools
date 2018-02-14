@@ -31,14 +31,15 @@ class DeprecatedShadowPiercingCombinators extends CssRule {
     for (const node of parsedDocument) {
       if (node.type === shady.nodeType.ruleset) {
         const deprecatedCombinatorsRegex = /(\/deep\/|>>>|::shadow)/g;
-        let match: RegExpExecArray | null;
+        let match: RegExpExecArray|null;
 
-        while ((match = deprecatedCombinatorsRegex.exec(node.selector)) !== null) {
+        while ((match = deprecatedCombinatorsRegex.exec(node.selector)) !==
+               null) {
           const combinatorOffset = match.index!;
           const start = node.range.start + combinatorOffset;
           const end = start + match[0].length;
           const sourceRange =
-            parsedDocument.sourceRangeForShadyRange({ start, end });
+              parsedDocument.sourceRangeForShadyRange({start, end});
           warnings.push(new Warning({
             code: 'deprecated-shadow-dom-selectors',
             severity: Severity.WARNING, parsedDocument, sourceRange,
