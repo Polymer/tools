@@ -13,6 +13,7 @@
  */
 
 import './css/deprecated-css-custom-property-syntax';
+import './css/deprecated-shadow-dom-selectors';
 
 import './html/dom-module-name-or-is';
 import './html/move-style-into-template';

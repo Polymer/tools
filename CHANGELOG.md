@@ -6,8 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-- Add a rule to detect `Polymer.dom` usages where native methods/properties may
-  now be used
+### New Lint Rules
+- `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
+- `deprecated-shadow-dom-selectors`: Warns when deprecated Shadow DOM selectors are used. (`/deep/`, `>>>`, and `::shadow`)
 
 ## [3.0.0-pre.1] - 2017-12-21
 - [BREAKING] Return an object with `warnings` and `analysis` properties
@@ -76,7 +77,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - polymer-lint is now at feature parity with [polylint](https://github.com/PolymerLabs/polylint), and is ready to replace it!
 
 ### New Lint Rules
-- `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
+- `databind-with-unknown-property`: Warns when a polymer element's databindings use properties that aren't declared on that element.
 - `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
 - `databinding-calls-must-be-functions`: Computed functions, observers, and calls in databinding expressions must be either methods on the element or properties with types that could be function types.
 - `call-super-in-callbacks`: Warns when a Polymer 2.0 element does not call super() in callbacks that require it, like `connectedCallback`.

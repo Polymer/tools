@@ -21,8 +21,9 @@ import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
+const ruleId = `deprecated-shadow-dom-selectors`;
 
-suite('dom-calls-to-native', () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,7 +31,7 @@ suite('dom-calls-to-native', () => {
   setup(() => {
     analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
-    linter = new Linter(registry.getRules(['dom-calls-to-native']), analyzer);
+    linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -45,24 +46,27 @@ suite('dom-calls-to-native', () => {
   });
 
   test('warns for the proper cases and with the right messages', async() => {
-    const {warnings} =
-        await linter.lint(['dom-calls-to-native/dom-calls-to-native.html']);
+    const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-      Polymer.dom(event).localTarget.innerHTML = 'foo';
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  x-tabs /deep/ x-panel {
+         ~~~~~~`,
       `
-      const path = Polymer.dom(event).path;
-                   ~~~~~~~~~~~~~~~~~~~~~~~`,
+  x-tabs >>> x-panel {
+         ~~~`,
       `
-      const root = Polymer.dom(event).rootTarget;
-                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+    x-tabs::shadow x-panel::shadow h2 {
+          ~~~~~~~~`,
+      `
+    x-tabs::shadow x-panel::shadow h2 {
+                          ~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Polymer.dom no longer needs to be called for "localTarget", instead "event.target" may be used.',
-      'Polymer.dom no longer needs to be called for "path", instead "event.composedPath()" may be used.',
-      'Polymer.dom no longer needs to be called for "rootTarget", instead "event.composedPath()[0]" may be used.'
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
     ]);
   });
 });

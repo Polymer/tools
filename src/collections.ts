@@ -25,15 +25,16 @@ registry.register(
       'content-to-slot-usages',
       'databind-with-unknown-property',
       'databinding-calls-must-be-functions',
+      'deprecated-css-custom-property-syntax',
+      'deprecated-shadow-dom-selectors',
+      'dom-calls-to-native',
       'dom-module-invalid-attrs',
       'element-before-dom-module',
+      'paper-toolbar-v1-to-v2',
       'set-unknown-attribute',
       'style-into-template',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
-      'deprecated-css-custom-property-syntax',
-      'paper-toolbar-v1-to-v2',
-      'dom-calls-to-native',
     ]));
 
 registry.register(new RuleCollection(
@@ -47,14 +48,15 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'content-to-slot-usages',
       'databinding-calls-must-be-functions',
       'databind-with-unknown-property',
+      'deprecated-css-custom-property-syntax',
+      'deprecated-shadow-dom-selectors',
       'dom-module-invalid-attrs',
       'element-before-dom-module',
+      'paper-toolbar-v1-to-v2',
       'set-unknown-attribute',
       'style-into-template',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
-      'deprecated-css-custom-property-syntax',
-      'paper-toolbar-v1-to-v2',
     ]));
 
 registry.register(new RuleCollection(
