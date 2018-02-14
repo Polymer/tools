@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
 * Support Windows line endings in JSDoc annotations
 * Support scanning of properties in namespaces
 * Support scanning of accessors in behaviors
+* Support @return annotations on getters/setters on legacy Polymer function
+  calls, and fix bug where readonly was inverted.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.10] - 2018-02-01

@@ -89,6 +89,15 @@ suite('PolymerElementScanner', () => {
         customPublicMethodWithJsDoc: (foo, bar) => { return foo + bar; },
         customPublicMethodWithClassicFunction: function(foo, bar) { return foo + bar; },
         shorthandMethod(foo, bar) { return foo + bar; },
+
+        /** @return {string} */
+        get getterNoSetter() { },
+
+        /** @return {string} */
+        get getterSetter() { },
+
+        /** @param {string} value */
+        set getterSetter(value) { },
       });
       Polymer({
         is: 'x-bar',
@@ -127,9 +136,21 @@ suite('PolymerElementScanner', () => {
         Array.from(features[0].events.values()).map((e) => e.name),
         ['e-changed', 'all-changed']);
 
-    assert.deepEqual(
-        properties.map((p) => p.name),
-        ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'all']);
+    assert.deepEqual(properties.map((p) => p.name), [
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'g',
+      'h',
+      'j',
+      'k',
+      'all',
+      'getterNoSetter',
+      'getterSetter',
+    ]);
 
     assert.deepEqual(
         properties.filter((p) => p.warnings.length > 0)
@@ -174,7 +195,9 @@ suite('PolymerElementScanner', () => {
       ['h', 'string | null | undefined'],
       ['j', 'boolean | null | undefined'],
       ['k', 'boolean | null | undefined'],
-      ['all', 'Object | null | undefined']
+      ['all', 'Object | null | undefined'],
+      ['getterNoSetter', 'string'],
+      ['getterSetter', 'string'],
     ]);
 
     assert.deepEqual(
@@ -196,7 +219,7 @@ suite('PolymerElementScanner', () => {
 
     assert.deepEqual(
         properties.filter((p) => p.readOnly).map((p) => p.name),
-        ['c', 'd', 'g']);
+        ['c', 'd', 'g', 'getterNoSetter']);
 
     assert.deepEqual(
         properties.filter((p) => p.default).map((p) => [p.name, p.default]),

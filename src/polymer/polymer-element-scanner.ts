@@ -15,15 +15,14 @@
 import * as babel from 'babel-types';
 import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
-import {getAttachedComment, getEventComments, getOrInferPrivacy, getPropertyName, toScannedMethod} from '../javascript/esutil';
+import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Severity, Warning, WarningCarryingException} from '../model/model';
+import {Severity, Warning} from '../model/model';
 
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
-import {toScannedPolymerProperty} from './js-utils';
-import {ScannedPolymerElement, ScannedPolymerProperty} from './polymer-element';
+import {ScannedPolymerElement} from './polymer-element';
 
 export class PolymerElementScanner implements JavaScriptScanner {
   async scan(
@@ -51,7 +50,7 @@ class ElementVisitor implements Visitor {
     if (!babel.isIdentifier(callee) || callee.name !== 'Polymer') {
       return;
     }
-    const rawDescription = getAttachedComment(parent);
+    const rawDescription = esutil.getAttachedComment(parent);
     let className: undefined|string = undefined;
     if (babel.isAssignmentExpression(parent)) {
       className = getIdentifierName(parent.left);
@@ -63,9 +62,9 @@ class ElementVisitor implements Visitor {
       className,
       astNode: node,
       description: jsDoc.description,
-      events: getEventComments(parent),
+      events: esutil.getEventComments(parent),
       sourceRange: this.document.sourceRangeForNode(node.arguments[0]),
-      privacy: getOrInferPrivacy('', jsDoc),
+      privacy: esutil.getOrInferPrivacy('', jsDoc),
       abstract: jsdoc.hasTag(jsDoc, 'abstract'),
       attributes: new Map(),
       properties: [],
@@ -95,14 +94,11 @@ class ElementVisitor implements Visitor {
   private handleObjectExpression(
       node: babel.ObjectExpression, propertyHandlers: PropertyHandlers,
       element: ScannedPolymerElement) {
-    const getters: {[name: string]: ScannedPolymerProperty} = {};
-    const setters: {[name: string]: ScannedPolymerProperty} = {};
-    const definedProperties: {[name: string]: ScannedPolymerProperty} = {};
     for (const prop of node.properties) {
       if (babel.isSpreadProperty(prop)) {
         continue;
       }
-      const name = getPropertyName(prop);
+      const name = esutil.getPropertyName(prop);
       if (!name) {
         element.warnings.push(new Warning({
           message: `Can't determine name for property key from expression ` +
@@ -114,55 +110,27 @@ class ElementVisitor implements Visitor {
         }));
         continue;
       }
-
-      if (!propertyHandlers) {
-        continue;
-      }
-
       if (name in propertyHandlers) {
         propertyHandlers[name](prop.value);
-        continue;
-      }
-
-      try {
-        const scannedPolymerProperty = toScannedPolymerProperty(
+      } else if (
+          (babel.isMethod(prop) && prop.kind === 'method') ||
+          babel.isFunction(prop.value)) {
+        const method = esutil.toScannedMethod(
             prop, this.document.sourceRangeForNode(prop)!, this.document);
-        if (scannedPolymerProperty === undefined) {
-          continue;
-        }
-        if (babel.isObjectMethod(prop) && prop.kind === 'get') {
-          getters[scannedPolymerProperty.name] = scannedPolymerProperty;
-        } else if (babel.isObjectMethod(prop) && prop.kind === 'set') {
-          setters[scannedPolymerProperty.name] = scannedPolymerProperty;
-        } else if (babel.isObjectMethod(prop) || babel.isFunction(prop.value)) {
-          const scannedPolymerMethod = toScannedMethod(
-              prop, this.document.sourceRangeForNode(prop)!, this.document);
-          element.addMethod(scannedPolymerMethod);
-        } else {
-          element.addProperty(scannedPolymerProperty);
-        }
-      } catch (e) {
-        if (e instanceof WarningCarryingException) {
-          element.warnings.push(e.warning);
-          continue;
-        }
-        throw e;
+        element.addMethod(method);
       }
     }
-    Object.keys(getters).forEach((name) => {
-      const prop = getters[name];
-      definedProperties[prop.name] = prop;
-      prop.readOnly = !!setters[prop.name];
-    });
-    Object.keys(setters).forEach((name) => {
-      const prop = setters[name];
-      if (!(prop.name in definedProperties)) {
-        definedProperties[prop.name] = prop;
+
+    for (const prop of esutil
+             .extractPropertiesFromClassOrObjectBody(node, this.document)
+             .values()) {
+      if (prop.name in propertyHandlers) {
+        continue;
       }
-    });
-    Object.keys(definedProperties).forEach((name) => {
-      const prop = definedProperties[name];
-      element.addProperty(prop);
-    });
+      element.addProperty({
+        ...prop,
+        isConfiguration: esutil.configurationProperties.has(prop.name),
+      });
+    }
   }
 }
