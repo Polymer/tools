@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
@@ -47,7 +47,7 @@ class DomModuleNameOrIs extends HtmlRule {
     const warnings: Warning[] = [];
     const badModule = p.AND(
         p.hasTagName('dom-module'), p.OR(p.hasAttr('is'), p.hasAttr('name')));
-    const badModules = dom5.nodeWalkAll(document.ast, badModule);
+    const badModules = dom5.queryAll(document.ast, badModule);
     for (const domModule of badModules) {
       for (const badAttr of ['is', 'name']) {
         const attr = dom5.getAttribute(domModule, badAttr);

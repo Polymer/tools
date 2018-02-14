@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {treeAdapters} from 'parse5';
 import {Document, Edit, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
@@ -121,7 +121,8 @@ class IronFlexLayoutClasses extends HtmlRule {
         }));
         continue;
       }
-      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
+      const template =
+          dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
@@ -221,9 +222,9 @@ function searchUsedModulesAndIncludes(
     modules: Map<string, dom5.Node[]> = new Map(),
     includes: string[] =
         []): {modules: Map<string, dom5.Node[]>, includes: string[]} {
-  dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
+  for (const node of dom5.depthFirst(rootNode)) {
     if (!dom5.isElement(node)) {
-      return false;
+      continue;
     }
     // Ensure we don't search into dom-module's templates.
     if (p.hasTagName('template')(node) &&
@@ -247,8 +248,7 @@ function searchUsedModulesAndIncludes(
         }
       });
     }
-    return false;
-  });
+  }
   return {modules, includes};
 }
 

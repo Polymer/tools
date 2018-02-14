@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Warning, ParsedDocument} from 'polymer-analyzer';
+import {Document, ParsedDocument, Warning} from 'polymer-analyzer';
 
 /**
  * A lint rule. Can take a package and find Warnings.
@@ -21,15 +21,16 @@ export abstract class Rule {
   /**
    * A unique identifier for this lint rule, like "move-style-into-template".
    */
-  abstract code: string;
+  abstract readonly code: string;
 
   /**
    * A description of this lint rule. Like "Warns for style
    * children of dom-modules outside of template tags."
    */
-  abstract description: string;
+  abstract readonly description: string;
 
-  protected cache = new WeakMap<Document, Promise<ReadonlyArray<Warning>>>();
+  protected readonly cache =
+      new WeakMap<Document, Promise<ReadonlyArray<Warning>>>();
 
   /**
    * Finds all warnings in the given document.
@@ -64,7 +65,7 @@ export class RuleCollection {
    * A unique string identifying this collection. Uses the same namespace as
    * Rules.
    */
-  code: string;
+  readonly code: string;
 
   /**
    * Describes the rule collection.
@@ -72,14 +73,14 @@ export class RuleCollection {
    * A description should answer questions like: Who should use it? When? What
    * should they expect?
    */
-  description: string;
+  readonly description: string;
 
   /**
    * A list of codes that identify the rules in this collection.
    *
    * The codes can identify rules or rule collections.
    */
-  rules: string[];
+  readonly rules: ReadonlyArray<string>;
 
   constructor(code: string, description: string, rules: string[]) {
     this.code = code;

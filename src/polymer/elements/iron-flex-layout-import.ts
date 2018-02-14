@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {Document, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
@@ -62,7 +62,7 @@ class IronFlexLayoutImport extends HtmlRule {
 
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, _: Document, warnings: Warning[]) {
-    const imports = dom5.queryAll(parsedDocument.ast, isImport);
+    const imports = [...dom5.queryAll(parsedDocument.ast, isImport)];
     // Assume base path to be current folder.
     let polymerElementsBasePath: string = './';
     let goodImport: dom5.Node|null = null;
