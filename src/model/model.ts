@@ -38,6 +38,7 @@ export {Analysis} from './analysis';
 export * from './attribute';
 export * from './class';
 export {Document, ScannedDocument} from './document';
+export {DocumentBackreference} from './document-backreference';
 export * from './element';
 export * from './element-base';
 export * from './element-mixin';

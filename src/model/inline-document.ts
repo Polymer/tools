@@ -22,6 +22,7 @@ import {JavaScriptDocument} from '../javascript/javascript-document';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {Document, ScannedDocument} from './document';
+import {DocumentBackreference} from './document-backreference';
 import {ScannedFeature} from './feature';
 import {unsafeAsMutable} from './immutable';
 import {Resolvable} from './resolvable';
@@ -99,7 +100,7 @@ export class InlineDocument extends Document {
   constructor(base: ScannedDocument, containerDocument: Document) {
     super(base, containerDocument._analysisContext);
     unsafeAsMutable(this.kinds).add('inline-document');
-    this._addFeature(containerDocument);
+    this._addFeature(new DocumentBackreference(containerDocument));
   }
 }
 

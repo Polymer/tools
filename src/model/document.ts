@@ -21,6 +21,7 @@ import {ParsedDocument} from '../parser/document';
 import {ParsedTypeScriptDocument} from '../typescript/typescript-document';
 
 import {Analysis} from './analysis';
+import {DocumentBackreference} from './document-backreference';
 import {Feature, ScannedFeature} from './feature';
 import {ImmutableSet, unsafeAsMutable} from './immutable';
 import {Import} from './import';
@@ -201,7 +202,7 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
   }
 
   /**
-   * Adds and indexes a feature to this documentled before resolve().
+   * Adds and indexes a feature to this document before resolve().
    */
   _addFeature(feature: Feature) {
     if (this._doneResolving) {
@@ -291,7 +292,8 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
   }
 
   private _isCachable(query: Query = {}): boolean {
-    return !!query.imported && !query.noLazyImports;
+    return !!query.imported && !query.noLazyImports &&
+        !query.excludeBackreferences;
   }
 
   private _getSlowlyByKind(kind: string, query: Query): Set<Feature> {
@@ -324,7 +326,18 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
     }
     visited.add(this);
     for (const feature of this._localFeatures) {
-      result.add(feature);
+      // Don't include a DocumentBackreference feature in the result set if the
+      // query excludes them.
+      if (!feature.kinds.has('document-backreference') ||
+          !query.excludeBackreferences) {
+        result.add(feature);
+      }
+      if (feature.kinds.has('document-backreference') &&
+          !query.excludeBackreferences) {
+        const containerDocument = (feature as DocumentBackreference).document;
+        result.add(containerDocument);
+        containerDocument._listFeatures(result, visited, query);
+      }
       if (feature.kinds.has('document')) {
         (feature as Document)._listFeatures(result, visited, query);
       }

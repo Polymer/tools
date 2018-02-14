@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Support Windows line endings in JSDoc annotations
 * Support scanning of properties in namespaces
 * Support scanning of accessors in behaviors
+* `Document#getFeatures()` now supports an `excludeBackreferences`
+  option for use with inline documents to exclude the container/importer
+  document and its features from the results.
 * Support @return annotations on getters/setters on legacy Polymer function
   calls, and fix bug where readonly was inverted.
 * Add `IndirectUrlResolver`, a URL resolver for very large codebases where
@@ -16,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   This resolver is still experimental.
   * It is generally true that if something has to be imported from
     `polymer-analyzer/lib/...` then it's not yet stable. caveat importer.
+* [BREAKING] Removed the `ScriptTagBackReferenceImport` and replaced it
+  with new general-purpose `DocumentBackreference` feature used to
+  link inline/imported documents back to their containers/importers.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.10] - 2018-02-01

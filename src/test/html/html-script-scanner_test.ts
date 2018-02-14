@@ -84,13 +84,19 @@ suite('HtmlScriptScanner', () => {
       }
       const inlineDocuments =
           [...result.value.getFeatures({kind: 'inline-document'})];
-      assert.equal(inlineDocuments.length, 1);
-      const js = inlineDocuments[0].parsedDocument as JavaScriptDocument;
-      assert.equal(js.url, analyzer.resolveUrl('js-modules.html'));
-      assert.equal(js.parsedAsSourceType, 'module');
+      assert.equal(inlineDocuments.length, 2);
+      const js1 = inlineDocuments[0].parsedDocument as JavaScriptDocument;
+      assert.equal(js1.url, analyzer.resolveUrl('js-modules.html'));
+      assert.equal(js1.parsedAsSourceType, 'module');
       assert.equal(
-          js.contents.trim(),
+          js1.contents.trim(),
           `import * as something from './javascript/module-with-export.js';`);
+      const js2 = inlineDocuments[1].parsedDocument as JavaScriptDocument;
+      assert.equal(js2.url, analyzer.resolveUrl('js-modules.html'));
+      assert.equal(js2.parsedAsSourceType, 'module');
+      assert.equal(
+          js2.contents.trim(),
+          `import * as somethingElse from './javascript/other-module-with-export.js';`);
     });
 
     test('follows import statements in modules', async () => {
@@ -98,11 +104,11 @@ suite('HtmlScriptScanner', () => {
       if (!result.successful) {
         throw new Error(`could not get document js-modules.html`);
       }
-      const jsImports =
-          [...result.value.getFeatures({kind: 'js-import', imported: true})];
-      assert.equal(jsImports.length, 2);
+      const jsImports = [...result.value.getFeatures(
+          {kind: 'js-import', imported: true, excludeBackreferences: true})];
+      assert.equal(jsImports.length, 4);
 
-      // import statement in inline module script in 'js-modules.html'
+      // import statement in 1st inline module script in 'js-modules.html'
       const js0 = jsImports[0].document.parsedDocument as JavaScriptDocument;
       assert.equal(
           js0.url, analyzer.resolveUrl('javascript/module-with-export.js'));
@@ -110,11 +116,58 @@ suite('HtmlScriptScanner', () => {
       assert.equal(
           js0.contents.trim(), `export const someValue = 'value goes here';`);
 
-      // import statement in external module script 'javascript/module.js'
+      // import statement in 2nd inline module script in 'js-modules.html'
       const js1 = jsImports[1].document.parsedDocument as JavaScriptDocument;
-      assert.equal(js1.url, analyzer.resolveUrl('javascript/submodule.js'));
+      assert.equal(
+          js1.url,
+          analyzer.resolveUrl('javascript/other-module-with-export.js'));
       assert.equal(js1.parsedAsSourceType, 'module');
-      assert.equal(js1.contents.trim(), `export const subThing = 'sub-thing';`);
+      assert.equal(
+          js1.contents.trim(),
+          `import { subThing } from './submodule.js';\n` +
+              `export const otherValue = subThing;`);
+
+      // import statement in imported 'javascript/other-module-with-export.js'
+      const js2 = jsImports[2].document.parsedDocument as JavaScriptDocument;
+      assert.equal(js2.url, analyzer.resolveUrl('javascript/submodule.js'));
+      assert.equal(js2.parsedAsSourceType, 'module');
+      assert.equal(js2.contents.trim(), `export const subThing = 'sub-thing';`);
+
+      // import statement in external module script 'javascript/module.js'
+      const js3 = jsImports[3].document.parsedDocument as JavaScriptDocument;
+      assert.equal(js3.url, analyzer.resolveUrl('javascript/submodule.js'));
+      assert.equal(js3.parsedAsSourceType, 'module');
+      assert.equal(js3.contents.trim(), `export const subThing = 'sub-thing';`);
+    });
+
+    test('query for modules imported in specific inline scripts', async () => {
+      const result = analysis.getDocument('js-modules.html');
+      if (!result.successful) {
+        throw new Error(`could not get document js-modules.html`);
+      }
+      const [jsDoc0, jsDoc1] = [...result.value.getFeatures(
+          {kind: 'js-document', imported: false, excludeBackreferences: true})];
+
+      assert.equal(
+          jsDoc0.parsedDocument.contents.trim(),
+          `import * as something from './javascript/module-with-export.js';`);
+      assert.equal(
+          jsDoc1.parsedDocument.contents.trim(),
+          `import * as somethingElse from './javascript/other-module-with-export.js';`);
+
+      const jsDoc0imports = jsDoc0.getFeatures(
+          {kind: 'js-import', imported: false, excludeBackreferences: true});
+      assert.equal(jsDoc0imports.size, 1);
+
+      // Demonstrate that without `excludeBackreferences: true`, the number of
+      // imports returned would be 2, because we'll be getting the js-import
+      // from the other inline JavaScript document's import statement.
+      assert.equal(
+          jsDoc0.getFeatures({kind: 'js-import', imported: false}).size, 2);
+
+      const jsDoc1imports = jsDoc1.getFeatures(
+          {kind: 'js-import', imported: false, excludeBackreferences: true});
+      assert.equal(jsDoc1imports.size, 1);
     });
 
     test('finds imports, honoring base href', async () => {

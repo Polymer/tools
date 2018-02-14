@@ -19,6 +19,13 @@ export interface FeatureKindMap {}
 export type FeatureKind = keyof FeatureKindMap;
 export type BaseQueryOptions = {
   /**
+   * Do not include the containing document or any features from the
+   * containing document; allows querying for features specific to an inline
+   * document and/or its descendents.
+   */
+  excludeBackreferences?: boolean;
+
+  /**
    * If true then results will include features from outside the package, e.g.
    * from files in bower_components or node_modules directories.
    *
