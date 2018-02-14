@@ -11,110 +11,41 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import * as pathlib from 'path';
 import {posix as posix} from 'path';
-import {format as urlLibFormat, Url} from 'url';
-import Uri from 'vscode-uri';
+import {format as urlLibFormat} from 'url';
 
 import {parseUrl} from '../core/utils';
-import {FileRelativeUrl, PackageRelativeUrl, ScannedImport} from '../index';
+import {FileRelativeUrl, PackageRelativeUrl} from '../index';
 import {ResolvedUrl} from '../model/url';
 
-import {UrlResolver} from './url-resolver';
+import {FsUrlResolver} from './fs-url-resolver';
 
 export interface PackageUrlResolverOptions {
   packageDir?: string;
   componentDir?: string;
-  hostname?: string;
+  host?: string;
 }
-
-const isWindows = process.platform === 'win32';
 
 /**
  * Resolves a URL to a canonical URL within a package.
  */
-export class PackageUrlResolver extends UrlResolver {
-  private readonly packageDir: string;
-  private readonly packageUrl: ResolvedUrl;
+export class PackageUrlResolver extends FsUrlResolver {
   readonly componentDir: string;
-  readonly hostname: string|null;
   private readonly resolvedComponentDir: string;
 
-  constructor(options?: PackageUrlResolverOptions) {
-    super();
-    options = options || {};
-    this.packageDir =
-        normalizeFsPath(pathlib.resolve(options.packageDir || process.cwd()));
-    this.packageUrl =
-        this.brandAsResolved(Uri.file(this.packageDir).toString());
-    if (!this.packageUrl.endsWith('/')) {
-      this.packageUrl = this.brandAsResolved(this.packageUrl + '/');
-    }
+  constructor(options: PackageUrlResolverOptions = {}) {
+    super(options.packageDir, options.host);
     this.componentDir = options.componentDir || 'bower_components/';
-    this.hostname = options.hostname || null;
     this.resolvedComponentDir =
         pathlib.join(this.packageDir, this.componentDir);
   }
 
-  resolve(
-      firstHref: ResolvedUrl|PackageRelativeUrl, secondHref?: FileRelativeUrl,
-      _import?: ScannedImport): ResolvedUrl|undefined {
-    const [baseUrl = this.packageUrl, unresolvedHref] =
-        this.getBaseAndUnresolved(firstHref, secondHref);
-    const resolvedHref = this.simpleUrlResolve(baseUrl, unresolvedHref);
-    if (resolvedHref === undefined) {
-      return undefined;
-    }
-    const url = parseUrl(resolvedHref);
-    if (this.shouldHandleAsFileUrl(url)) {
-      return this.handleFileUrl(url, unresolvedHref);
-    }
-    return this.brandAsResolved(resolvedHref);
-  }
-
-  private shouldHandleAsFileUrl(url: Url) {
-    const isLocalFileUrl =
-        url.protocol === 'file:' && (!url.host || url.host === 'localhost');
-    const isOurHostname = url.hostname === this.hostname;
-    return isLocalFileUrl || isOurHostname;
-  }
-
-  /**
-   * Take the given URL which is either a file:// url or a url with the
-   * configured hostname, and treat its pathname as though it points to a file
-   * on the local filesystem, producing a file:/// url.
-   *
-   * Also corrects sibling URLs like `../foo` to point to
-   * `./${component_dir}/foo`
-   */
-  private handleFileUrl(url: Url, unresolvedHref: string) {
-    let pathname: string;
-    const unresolvedUrl = parseUrl(unresolvedHref);
-    if (unresolvedUrl.pathname && unresolvedUrl.pathname.startsWith('/') &&
-        unresolvedUrl.protocol !== 'file:') {
-      // Absolute urls point to the package root.
-      let unresolvedPathname: string;
-      try {
-        unresolvedPathname =
-            posix.normalize(decodeURIComponent(unresolvedUrl.pathname));
-      } catch (e) {
-        return undefined;  // undecodable url
-      }
-      pathname = pathlib.join(this.packageDir, unresolvedPathname);
-    } else {
-      // Otherwise, consider the url that has already been resolved
-      // against the baseUrl
-      try {
-        pathname = posix.normalize(decodeURIComponent(url.pathname || ''));
-      } catch (e) {
-        return undefined;  // undecodable url
-      }
-    }
-
+  protected modifyFsPath(path: string) {
     // If the path points to a sibling directory, resolve it to the
     // component directory
     const parentOfPackageDir = pathlib.dirname(this.packageDir);
-    let path = this.filesystemPathForPathname(pathname);
     if (path.startsWith(parentOfPackageDir) &&
         !path.startsWith(this.packageDir)) {
       path = pathlib.join(
@@ -123,13 +54,7 @@ export class PackageUrlResolver extends UrlResolver {
           path.substring(parentOfPackageDir.length));
     }
 
-    // TODO(rictic): investigate moving to whatwg URLs internally:
-    //     https://github.com/Polymer/polymer-analyzer/issues/804
-    // Re-encode URI, since it is expected we are emitting a relative URL.
-    const resolvedUrl = parseUrl(Uri.file(path).toString());
-    resolvedUrl.search = url.search;
-    resolvedUrl.hash = url.hash;
-    return this.brandAsResolved(urlLibFormat(resolvedUrl));
+    return path;
   }
 
   relative(to: ResolvedUrl): PackageRelativeUrl;
@@ -148,8 +73,14 @@ export class PackageUrlResolver extends UrlResolver {
 
   private relativeImpl(from: ResolvedUrl, to: ResolvedUrl): FileRelativeUrl {
     const pathnameInComponentDir = this.pathnameForComponentDirUrl(to);
+    // If the URL we're going to is in the component directory, we need
+    // to correct for that when generating a relative URL...
     if (pathnameInComponentDir !== undefined) {
+      // ... unless the URL we're coming from is *also* in the component
+      // directory
       if (this.pathnameForComponentDirUrl(from) === undefined) {
+        // Ok, transform the path from looking like `/path/to/node_modules/foo`
+        // to look instead like `/path/foo` so we get a `../` relative url.
         const componentDirPath =
             pathnameInComponentDir.slice(this.resolvedComponentDir.length);
         const reresolved = this.simpleUrlResolve(
@@ -163,7 +94,8 @@ export class PackageUrlResolver extends UrlResolver {
         }
       }
     }
-    return this.simpleUrlRelative(from, to);
+
+    return super.relative(from, to);
   }
 
   /**
@@ -188,17 +120,4 @@ export class PackageUrlResolver extends UrlResolver {
     }
     return undefined;
   }
-
-  private filesystemPathForPathname(decodedPathname: string) {
-    return normalizeFsPath(Uri.file(decodedPathname).fsPath);
-  }
-}
-
-function normalizeFsPath(fsPath: string) {
-  fsPath = pathlib.normalize(fsPath);
-  if (isWindows && /^[a-z]:/.test(fsPath)) {
-    // Upper case the drive letter
-    fsPath = fsPath[0].toUpperCase() + fsPath.slice(1);
-  }
-  return fsPath;
 }

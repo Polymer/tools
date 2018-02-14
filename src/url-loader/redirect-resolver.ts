@@ -14,8 +14,7 @@
 
 import {resolve as urlLibResolver} from 'url';
 
-import {PackageRelativeUrl} from '../index';
-import {FileRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
+import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
 
 import {UrlResolver} from './url-resolver';
 

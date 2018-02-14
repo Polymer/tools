@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PackageRelativeUrl} from '../index';
-import {FileRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
+import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl, ScannedImport} from '../model/model';
 
 import {UrlResolver} from './url-resolver';
 

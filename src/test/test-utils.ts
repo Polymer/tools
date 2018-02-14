@@ -13,6 +13,8 @@
  */
 
 import * as path from 'path';
+import URI from 'vscode-uri';
+
 import {Analyzer} from '../core/analyzer';
 import {FileRelativeUrl, PackageRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
 import {makeParseLoader, SourceRange, Warning} from '../model/model';
@@ -158,6 +160,22 @@ export function packageRelativeUrl(
 export function resolvedUrl(
     strings: TemplateStringsArray, ...values: any[]): ResolvedUrl {
   return noOpTag(strings, ...values) as ResolvedUrl;
+}
+
+/**
+ * On posix systems file urls look like:
+ *      file:///path/to/foo
+ * On windows they look like:
+ *      file:///c%3A/path/to/foo
+ *
+ * This will produce an OS-correct file url. Pretty much only useful for testing
+ * url resolvers.
+ */
+export function rootedFileUrl(
+    strings: TemplateStringsArray, ...values: any[]): ResolvedUrl {
+  const root = URI.file(path.resolve('/')).toString();
+  const text = noOpTag(strings, ...values) as FileRelativeUrl;
+  return (root + text) as ResolvedUrl;
 }
 
 export const fixtureDir = path.join(__dirname, '../../src/test/static');
