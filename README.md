@@ -1,6 +1,7 @@
 # polymer-modulizer
 
-[![Build Status](https://travis-ci.com/Polymer/polymer-modulizer.svg?token=x6MxFyUe7PYM8oPW9m6b&branch=master)](https://travis-ci.com/Polymer/polymer-modulizer)
+[![Build Status](https://travis-ci.com/Polymer/polymer-modulizer.svg?token=x6MxFyUe7PYM8oPW9m6b&branch=master)](https://travis-ci.org/Polymer/polymer-modulizer)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/koepsxxwhl6reof8/branch/master?svg=true)](https://ci.appveyor.com/project/FredKSchott/polymer-modulizer/branch/master)
 
 polymer-modulizer is a tool to convert packages of HTML imports to JavaScript modules.
 
