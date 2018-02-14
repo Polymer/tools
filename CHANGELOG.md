@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.11] - 2018-02-14
 * Support Windows line endings in JSDoc annotations
 * Support scanning of properties in namespaces
 * Support scanning of accessors in behaviors
@@ -22,7 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [BREAKING] Removed the `ScriptTagBackReferenceImport` and replaced it
   with new general-purpose `DocumentBackreference` feature used to
   link inline/imported documents back to their containers/importers.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.10] - 2018-02-01
 * The `UrlResolver#relative()` method now returns a `PackageRelativeUrl`
