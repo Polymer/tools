@@ -25,7 +25,7 @@ const fixtures_dir = path.resolve(path.join(__dirname, '../../test'));
 
 class AlwaysWarnsRule extends Rule {
   code = 'always-warn-rule';
-  description: 'Always warns, for every file';
+  description = 'Always warns, for every file';
   async check(document: Document): Promise<Warning[]> {
     return [new Warning({
       parsedDocument: document.parsedDocument,

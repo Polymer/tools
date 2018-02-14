@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Warning} from 'polymer-analyzer';
+import {Document, Warning, ParsedDocument} from 'polymer-analyzer';
 
 /**
  * A lint rule. Can take a package and find Warnings.
@@ -87,3 +87,7 @@ export class RuleCollection {
     this.rules = rules;
   }
 }
+
+// Need to have ParsedDocument in exported types for some reason.
+const t: null|ParsedDocument = null;
+t;

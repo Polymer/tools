@@ -9,10 +9,13 @@
     "tests"
   ],
   "dependencies": {
-    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
+    "app-elements": "PolymerElements/app-elements#^1.0.0",
     "iron-elements": "PolymerElements/iron-elements#^1.0.10",
-    "app-elements": "PolymerElements/app-elements#^0.10.1",
-    "note-app-elements": "polymerlabs/note-app-elements",
-    "web-component-tester": "^5.0.0"
+    "note-app-elements": "PolymerLabs/note-app-elements",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
+    "web-component-tester": "^6.0.0"
+  },
+  "resolutions": {
+    "webcomponentsjs": "^1.0.0"
   }
 }
