@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- ## [Unreleased] -->
 
-## [1.2.0] - 2018-02-14
+## [1.2.0] - 2018-02-15
 - Functions which definitely never return a value will now be automatically inferred as returning `void`.
 - Getters on Polymer elements defined with the legacy Polymer function are now scanned correctly (previously type annotations were missing, and the readonly bit was inverted.
 
