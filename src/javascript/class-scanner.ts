@@ -28,7 +28,7 @@ import * as astValue from './ast-value';
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
 import * as esutil from './esutil';
-import {getClosureType, getMethods, getOrInferPrivacy, getReturnFromAnnotation, getStaticMethods, toMethodParam} from './esutil';
+import {getClosureType, getMethods, getOrInferPrivacy, getReturnFromAnnotation, getStaticMethods, inferReturnFromBody, toMethodParam} from './esutil';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
 import * as jsdoc from './jsdoc';
@@ -494,7 +494,6 @@ class PrototypeMemberFinder implements Visitor {
       name: string, node: babel.FunctionExpression|babel.MemberExpression,
       jsdocAnn: jsdoc.Annotation|undefined) {
     let description;
-    let type;
     let ret;
     const privacy = getOrInferPrivacy(name, jsdocAnn);
     const params = new Map<string, MethodParam>();
@@ -502,7 +501,6 @@ class PrototypeMemberFinder implements Visitor {
     if (jsdocAnn) {
       description = jsdoc.getDescription(jsdocAnn);
       ret = getReturnFromAnnotation(jsdocAnn);
-      type = ret ? ret.type : undefined;
 
       if (babel.isFunctionExpression(node)) {
         (node.params || []).forEach((nodeParam) => {
@@ -529,9 +527,13 @@ class PrototypeMemberFinder implements Visitor {
       }
     }
 
+    if (ret === undefined && babel.isFunctionExpression(node)) {
+      ret = inferReturnFromBody(node);
+    }
+
     return {
       name,
-      type,
+      type: ret !== undefined ? ret.type : undefined,
       description,
       sourceRange: this._document.sourceRangeForNode(node)!,
       warnings: [],

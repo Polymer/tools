@@ -107,7 +107,7 @@ export interface Function extends Feature {
 
   summary?: string;
   params?: {name: string, type?: string}[];
-  return?: {type?: string, desc: string};
+  return?: {type?: string, desc?: string};
   privacy: Privacy;
 }
 

@@ -84,7 +84,7 @@ function aaa(a) {
         summary: '',
         warnings: [],
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         privacy: 'public',
         codeSnippet: `
 Polymer.bbb = function bbb() {
@@ -100,7 +100,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         privacy: 'protected',
         codeSnippet: `
   function ccc() {
@@ -115,7 +115,7 @@ Polymer.bbb = function bbb() {
         warnings: [],
         privacy: 'protected',
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         codeSnippet: `
   _ddd: function() {
   ~~~~~~~~~~~~~~~~~~
@@ -130,7 +130,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         privacy: 'private',
         codeSnippet: `
   eee: () => {},
@@ -142,7 +142,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         privacy: 'public',
         codeSnippet: `
   fff() {
@@ -182,7 +182,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         privacy: 'private',
         codeSnippet: `
   __iii() { },
@@ -194,7 +194,7 @@ Polymer.bbb = function bbb() {
         summary: '',
         warnings: [],
         params: [],
-        return: undefined,
+        return: {type: 'void'},
         privacy: 'public',
         codeSnippet: `
 var jjj = function() {
@@ -221,6 +221,24 @@ var jjj = function() {
     assert.deepEqual(functions.map((fn) => [fn.name, fn.templateTypes]), [
       ['templateFn', ['T']],
       ['multiTemplateFn', ['A', 'B', 'C']],
+    ]);
+  });
+
+  test('does return void inference', async () => {
+    const functions =
+        await getNamespaceFunctions('function-return-inference.js');
+    assert.deepEqual(functions.map((fn) => [fn.name, fn.return ]), [
+      ['noReturn', {type: 'void'}],
+      ['returnWithNoArgument', {type: 'void'}],
+      ['returnValue', undefined],
+      ['mixedReturnStyle', undefined],
+      ['voidWithNonVoidInside', {type: 'void'}],
+      ['isAsync', undefined],
+      ['isGenerator', undefined],
+      ['annotationOverride', {type: 'string'}],
+      ['arrowNoReturn', {type: 'void'}],
+      ['arrowReturnWithNoArgument', {type: 'void'}],
+      ['arrowReturnValueConcise', undefined],
     ]);
   });
 });

@@ -167,7 +167,8 @@
             {
               "name": "b"
             }
-          ]
+          ],
+          "return": {"type": "void"}
         }
       ],
       "staticMethods": [
@@ -186,7 +187,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ],
       "demos": [],
@@ -262,6 +264,7 @@
               "name": "b"
             }
           ],
+          "return": {"type": "void"},
           "inheritedFrom": "Polymer.InternalMixin"
         }
       ],
@@ -282,6 +285,7 @@
           },
           "metadata": {},
           "params": [],
+          "return": {"type": "void"},
           "inheritedFrom": "Polymer.InternalMixin"
         }
       ],

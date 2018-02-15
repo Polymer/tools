@@ -20,7 +20,7 @@ import {comparePosition} from '../model/source-range';
 
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
-import {getAttachedComment, getOrInferPrivacy, getPropertyName} from './esutil';
+import {getAttachedComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, inferReturnFromBody} from './esutil';
 import {ScannedFunction} from './function';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
@@ -55,16 +55,14 @@ class FunctionVisitor implements Visitor {
    */
   enterFunctionDeclaration(
       node: babel.FunctionDeclaration, _parent: babel.Node) {
-    this._initFunction(node, getIdentifierName(node.id), node);
-    return;
+    this._initFunction(node, getIdentifierName(node.id));
   }
 
   /**
    * Scan object method declarations.
    */
   enterObjectMethod(node: babel.ObjectMethod, _parent: babel.Node) {
-    this._initFunction(node, getIdentifierName(node.key), node);
-    return;
+    this._initFunction(node, getIdentifierName(node.key));
   }
 
   /**
@@ -78,8 +76,8 @@ class FunctionVisitor implements Visitor {
     const declaration = node.declarations[0];
     const declarationValue = declaration.init;
     if (declarationValue && babel.isFunction(declarationValue)) {
-      return this._initFunction(
-          node, getIdentifierName(declaration.id), declarationValue);
+      this._initFunction(
+          declarationValue, getIdentifierName(declaration.id), node);
     }
   }
 
@@ -89,7 +87,7 @@ class FunctionVisitor implements Visitor {
   enterAssignmentExpression(
       node: babel.AssignmentExpression, parent: babel.Node) {
     if (babel.isFunction(node.right)) {
-      this._initFunction(parent, getIdentifierName(node.left), node.right);
+      this._initFunction(node.right, getIdentifierName(node.left), parent);
     }
   }
 
@@ -97,15 +95,14 @@ class FunctionVisitor implements Visitor {
    * Scan functions defined inside of object literals.
    */
   enterObjectExpression(node: babel.ObjectExpression, _parent: babel.Node) {
-    for (let i = 0; i < node.properties.length; i++) {
-      const prop = node.properties[i];
+    for (const prop of node.properties) {
       if (babel.isSpreadProperty(prop)) {
         continue;
       }
       const propValue = prop.value;
       const name = getPropertyName(prop);
       if (babel.isFunction(propValue)) {
-        this._initFunction(prop, name, propValue);
+        this._initFunction(propValue, name, prop);
         continue;
       }
       const comment = getAttachedComment(prop) || '';
@@ -118,12 +115,12 @@ class FunctionVisitor implements Visitor {
   }
 
   private _initFunction(
-      node: babel.Node, analyzedName?: string, _fn?: babel.Function) {
-    const comment = getAttachedComment(node);
-    if (!comment) {
-      return;
-    }
-    const docs = jsdoc.parseJsdoc(comment);
+      node: babel.Function|babel.ObjectProperty, analyzedName?: string,
+      docNode?: babel.Node) {
+    if (docNode === undefined) {
+      docNode = node;
+    };
+    const docs = jsdoc.parseJsdoc(getAttachedComment(docNode) || '');
 
     // The @function annotation can override the name.
     const functionTag = jsdoc.getTag(docs, 'function');
@@ -153,19 +150,14 @@ class FunctionVisitor implements Visitor {
     }
 
     const functionName = getNamespacedIdentifier(analyzedName, docs);
-    const sourceRange = this.document.sourceRangeForNode(node)!;
-    const returnTag = jsdoc.getTag(docs, 'return');
+    const sourceRange = this.document.sourceRangeForNode(docNode)!;
     const summaryTag = jsdoc.getTag(docs, 'summary');
     const summary = (summaryTag && summaryTag.description) || '';
     const description = docs.description;
 
-    let functionReturn;
-    if (returnTag) {
-      functionReturn = {
-        type: returnTag.type ? doctrine.type.stringify(returnTag.type) :
-                               undefined,
-        desc: returnTag.description || '',
-      };
+    let functionReturn = getReturnFromAnnotation(docs);
+    if (functionReturn === undefined && babel.isFunction(node)) {
+      functionReturn = inferReturnFromBody(node);
     }
 
     // TODO(justinfagnani): consolidate with similar param processing code in

@@ -246,11 +246,11 @@ export function toScannedMethod(
   };
 
   if (value && babel.isFunction(value)) {
-    if (scannedMethod.jsdoc) {
-      const ret = getReturnFromAnnotation(scannedMethod.jsdoc);
-      if (ret) {
-        scannedMethod.return = ret;
-      }
+    if (scannedMethod.jsdoc !== undefined) {
+      scannedMethod.return = getReturnFromAnnotation(scannedMethod.jsdoc);
+    }
+    if (scannedMethod.return === undefined) {
+      scannedMethod.return = inferReturnFromBody(value);
     }
 
     scannedMethod.params =
@@ -282,6 +282,57 @@ export function getReturnFromAnnotation(jsdocAnn: jsdoc.Annotation):
   }
 
   return type;
+}
+
+/**
+ * Examine the body of a function to see if we can infer something about its
+ * return type. This currently only handles the case where a function definitely
+ * returns void.
+ */
+export function inferReturnFromBody(node: babel.Function): {type: string}|
+    undefined {
+  if (node.async === true || node.generator === true) {
+    // Async functions always return promises, and generators always return
+    // iterators, so they are never void.
+    return undefined;
+  }
+  if (babel.isArrowFunctionExpression(node) &&
+      !babel.isBlockStatement(node.body)) {
+    // An arrow function that immediately returns a value (e.g. () => 'foo').
+    return undefined;
+  }
+  let returnsVoid = true;
+  estraverse.traverse(node, {
+    enterReturnStatement(statement: babel.ReturnStatement) {
+      // The typings claim that statement.argument is always an Expression, but
+      // actually when there is no argument it is null.
+      if (statement.argument !== null) {
+        returnsVoid = false;
+        return estraverse.VisitorOption.Break;
+      }
+    },
+    // If this function contains another function, don't traverse into it. Only
+    // return statements in the immediate function scope matter.
+    enterFunctionDeclaration() {
+      return estraverse.VisitorOption.Skip;
+    },
+    enterFunctionExpression() {
+      return estraverse.VisitorOption.Skip;
+    },
+    enterClassMethod() {
+      return estraverse.VisitorOption.Skip;
+    },
+    enterArrowFunctionExpression() {
+      return estraverse.VisitorOption.Skip;
+    },
+    enterObjectMethod() {
+      return estraverse.VisitorOption.Skip;
+    },
+  });
+  if (returnsVoid) {
+    return {type: 'void'};
+  }
+  return undefined;
 }
 
 export function toMethodParam(

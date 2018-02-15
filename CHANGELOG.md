@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+ ## Unreleased
+ * Functions and methods will now be automatically inferred as returning `void`
+   in certain cases. This occurs when all of the following are true: 1) it has
+   no `@return` or `@returns` JSDoc annotation, 2) it is not async or a
+   generator, 3) its body contains no return statements with arguments.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.11] - 2018-02-14

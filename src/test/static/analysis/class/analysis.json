@@ -44,6 +44,7 @@
           "metadata": {},
           "name": "staticMeth",
           "params": [],
+          "return": {"type": "void"},
           "privacy": "public",
           "sourceRange": {
             "end": {
@@ -165,7 +166,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         },
         {
           "name": "overriddenMethod",
@@ -182,7 +184,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ],
       "staticMethods": [
@@ -201,7 +204,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         },
         {
           "name": "overriddenStaticMethod",
@@ -218,7 +222,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ],
       "demos": [],
@@ -259,6 +264,7 @@
           },
           "metadata": {},
           "params": [],
+          "return": {"type": "void"},
           "inheritedFrom": "Base"
         },
         {
@@ -276,7 +282,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         },
         {
           "name": "subMethod",
@@ -293,7 +300,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ],
       "staticMethods": [
@@ -313,6 +321,7 @@
           },
           "metadata": {},
           "params": [],
+          "return": {"type": "void"},
           "inheritedFrom": "Base"
         },
         {
@@ -330,7 +339,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         },
         {
           "name": "staticSubMethod",
@@ -347,7 +357,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ],
       "demos": [],

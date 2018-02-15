@@ -168,7 +168,8 @@
             {
               "name": "b"
             }
-          ]
+          ],
+          "return": {"type": "void"}
         }
       ],
       "staticMethods": [
@@ -177,6 +178,7 @@
           "metadata": {},
           "name": "glob",
           "params": [],
+          "return": {"type": "void"},
           "privacy": "public",
           "sourceRange": {
             "end": {
@@ -280,6 +282,7 @@
               "name": "b"
             }
           ],
+          "return": {"type": "void"},
           "inheritedFrom": "Polymer.InternalMixin"
         }
       ],
@@ -290,6 +293,7 @@
           "metadata": {},
           "name": "glob",
           "params": [],
+          "return": {"type": "void"},
           "privacy": "public",
           "sourceRange": {
             "end": {

@@ -194,7 +194,8 @@
             }
           },
           "metadata": {},
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ],
       "staticMethods": [],

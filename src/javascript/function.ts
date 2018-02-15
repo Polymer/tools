@@ -27,7 +27,7 @@ export class ScannedFunction implements Resolvable {
   astNode: babel.Node;
   warnings: Warning[];
   params?: {name: string, type?: string}[];
-  return?: {type?: string, desc: string};
+  return?: {type?: string, desc?: string};
   privacy: Privacy;
   templateTypes?: string[];
 
@@ -40,7 +40,7 @@ export class ScannedFunction implements Resolvable {
       jsdoc: JsDocAnnotation,
       sourceRange: SourceRange,
       params?: {name: string, type?: string}[],
-      returnData?: {type?: string, desc: string},
+      returnData?: {type?: string, desc?: string},
       templateTypes?: string[],
   ) {
     this.name = name;
@@ -77,7 +77,7 @@ export class Function implements Feature {
   astNode: any;
   warnings: Warning[];
   params?: {name: string, type?: string}[];
-  return?: {type?: string, desc: string};
+  return?: {type?: string, desc?: string};
   templateTypes?: string[];
 
   constructor(scannedFunction: ScannedFunction) {

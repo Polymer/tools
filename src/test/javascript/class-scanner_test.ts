@@ -356,10 +356,12 @@ suite('Class', () => {
             {
               description: 'This is a base method.',
               name: 'baseMethod',
+              return: {type: 'void'},
             },
             {
               description: 'Will be overriden by Subclass.',
               name: 'overriddenMethod',
+              return: {type: 'void'},
             }
           ]
         },
@@ -372,10 +374,12 @@ suite('Class', () => {
             {
               description: 'Overrides the method on Base.',
               name: 'overriddenMethod',
+              return: {type: 'void'},
             },
             {
               description: 'This method only exists on Subclass.',
               name: 'subMethod',
+              return: {type: 'void'},
             }
           ]
         }
@@ -593,10 +597,12 @@ suite('Class', () => {
             {
               description: 'This is a base method.',
               name: 'baseMethod',
+              return: {type: 'void'},
             },
             {
               description: 'Will be overriden by Subclass.',
               name: 'overriddenMethod',
+              return: {type: 'void'},
             }
           ]
         },
@@ -609,15 +615,18 @@ suite('Class', () => {
             {
               description: 'This is a base method.',
               name: 'baseMethod',
-              inheritedFrom: 'Base'
+              inheritedFrom: 'Base',
+              return: {type: 'void'},
             },
             {
               description: 'Overrides the method on Base.',
               name: 'overriddenMethod',
+              return: {type: 'void'},
             },
             {
               description: 'This method only exists on Subclass.',
               name: 'subMethod',
+              return: {type: 'void'},
             },
           ]
         }

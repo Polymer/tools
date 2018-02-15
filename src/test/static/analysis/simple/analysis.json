@@ -178,7 +178,8 @@
             {
               "name": "b"
             }
-          ]
+          ],
+          "return": {"type": "void"}
         },
         {
           "name": "_customProtectedFunction",
@@ -202,7 +203,8 @@
             {
               "name": "b"
             }
-          ]
+          ],
+          "return": {"type": "void"}
         },
         {
           "name": "__customPrivateFunction",
@@ -226,7 +228,8 @@
             {
               "name": "b"
             }
-          ]
+          ],
+          "return": {"type": "void"}
         },
         {
           "name": "customFunctionWithJsDoc",

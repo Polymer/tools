@@ -70,7 +70,8 @@
             }
           },
           "summary": "",
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         },
         {
           "description": "",
@@ -88,7 +89,8 @@
             }
           },
           "summary": "",
-          "params": []
+          "params": [],
+          "return": {"type": "void"}
         }
       ]
     }
