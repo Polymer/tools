@@ -9,18 +9,18 @@
  */
 
 declare class MyClass {
-  no_params(): any;
-  one_param(p1: any): any;
-  two_params(p1: any, p2: any): any;
+  no_params(): void;
+  one_param(p1: any): void;
+  two_params(p1: any, p2: any): void;
   typed_return(): boolean;
   two_typed_params_and_typed_return(p1: string, p2: number): boolean;
-  typed_rest_param(...p1: string[]): any;
-  undocumented_rest_param(...p1: any[]): any;
-  optional_param(p1?: string): any;
-  required_and_optional_param(p1: any, p2?: string): any;
-  defaulted_param(p1?: any): any;
-  defaulted_and_optional_param(p1?: any, p2?: string): any;
-  defaulted_and_required_param(p1: any|undefined, p2: any): any;
+  typed_rest_param(...p1: string[]): void;
+  undocumented_rest_param(...p1: any[]): void;
+  optional_param(p1?: string): void;
+  required_and_optional_param(p1: any, p2?: string): void;
+  defaulted_param(p1?: any): void;
+  defaulted_and_optional_param(p1?: any, p2?: string): void;
+  defaulted_and_required_param(p1: any|undefined, p2: any): void;
   parameterized_return_type(): MyParameterizedType<boolean>;
   renamed_collection_return_types(): Array<NodeListOf<Node>|HTMLCollectionOf<HTMLElement>>;
 }

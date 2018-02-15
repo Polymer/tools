@@ -34,13 +34,13 @@ declare namespace Polymer {
      * Ensures a `<paper-ripple>` element is available when the element is
      * focused.
      */
-    _buttonStateChanged(): any;
+    _buttonStateChanged(): void;
 
     /**
      * In addition to the functionality provided in `IronButtonState`, ensures
      * a ripple effect is created when the element is in a `pressed` state.
      */
-    _downHandler(event: any): any;
+    _downHandler(event: any): void;
 
     /**
      * Ensures this element contains a ripple effect. For startup efficiency
@@ -49,7 +49,7 @@ declare namespace Polymer {
      * @param optTriggeringEvent (optional) event that triggered the
      * ripple.
      */
-    ensureRipple(optTriggeringEvent?: Event): any;
+    ensureRipple(optTriggeringEvent?: Event): void;
 
     /**
      * Returns the `<paper-ripple>` element used by this element to create
@@ -71,7 +71,7 @@ declare namespace Polymer {
      * @returns Returns a `<paper-ripple>` element.
      */
     _createRipple(): PaperRippleElement;
-    _noinkChanged(noink: any): any;
+    _noinkChanged(noink: any): void;
   }
 
   const PaperRippleBehavior: object;

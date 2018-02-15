@@ -84,7 +84,7 @@ interface PaperButtonElement extends Polymer.Element, Polymer.PaperButtonBehavio
    * If true, the button should be styled with a shadow.
    */
   raised: boolean|null|undefined;
-  _calculateElevation(): any;
+  _calculateElevation(): void;
 }
 
 interface HTMLElementTagNameMap {
