@@ -24,14 +24,14 @@ This table contains the status of every Polymer 3.0 element being run through au
 | font-roboto | ✅ | ⚠️ | *No test suites were found matching your configuration* |
 | font-roboto-local | ✅ | ⚠️ | *No test suites were found matching your configuration* |
 | gold-cc-cvc-input | ✅ | ✅ | |
-| gold-cc-expiration-input | ✅ | ❌ | 16 failed tests |
-| gold-cc-input | ✅ | ❌ | 14 failed tests |
-| gold-phone-input | ✅ | ❌ | 8 failed tests |
-| gold-zip-input | ✅ | ❌ | 12 failed tests |
+| gold-cc-expiration-input | ✅ | ✅ | |
+| gold-cc-input | ✅ | ✅ | |
+| gold-phone-input | ✅ | ✅ | |
+| gold-zip-input | ✅ | ✅ | |
 | iron-a11y-announcer | ✅ | ✅ | |
 | iron-a11y-keys | ✅ | ✅ | |
 | iron-a11y-keys-behavior | ✅ | ✅ | |
-| iron-ajax | ✅ | ❌ | Error: synchronousSuccessfulRequestOptions is not defined |
+| iron-ajax | ✅ | ✅ | |
 | iron-autogrow-textarea | ✅ | ✅ | |
 | iron-behaviors | ✅ | ✅ | |
 | iron-checked-element-behavior | ✅ | ✅ | |
@@ -39,10 +39,10 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-component-page | ✅ | ✅ | |
 | iron-demo-helpers | ✅ | ✅ | |
 | iron-doc-viewer | ✅ | ✅ | |
-| iron-dropdown | ✅ | ❌ | Error: expected 10 to equal 0 |
+| iron-dropdown | ✅ | ❌ | Error: expected 10 to equal 0 (5 tests) |
 | iron-fit-behavior | ✅ | ❌ | 4 failed tests |
 | iron-flex-layout | ✅ | ✅ | |
-| iron-form | ✅ | ❌ | Error: form is not defined |
+| iron-form | ✅ | ✅ | |
 | iron-form-element-behavior | ✅ | ✅ | |
 | iron-icon | ✅ | ✅ | |
 | iron-icons | ✅ | ✅ | |
@@ -51,21 +51,21 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-image | ✅ | ✅ | |
 | iron-input | ✅ | ✅ | |
 | iron-jsonp-library | ✅ | ✅ | |
-| iron-label | ✅ | ❌ | Error: Timed out |
+| iron-label | ✅ | ✅ | |
 | iron-list | ✅ | ❌ | Error: buildDataSet is not defined |
 | iron-localstorage | ✅ | ✅ | |
 | iron-location | ✅ | ❌ | Error: Timeout of 10000ms exceeded.  |
 | iron-media-query | ✅ | ✅ | |
 | iron-menu-behavior | ✅ | ✅ | |
 | iron-meta | ✅ | ✅ | |
-| iron-overlay-behavior | ✅ | ❌ | 2 failed tests |
+| iron-overlay-behavior | ✅ | ❌ | 1 failed test (_boundScrollHandler is not defined) |
 | iron-pages | ✅ | ✅ | |
 | iron-range-behavior | ✅ | ✅ | |
 | iron-resizable-behavior | ✅ | ❌ | 2 failed tests |
 | iron-scroll-target-behavior | ✅ | ✅ | |
 | iron-scroll-threshold | ✅ | ✅ | |
 | iron-selector | ✅ | ✅ | |
-| iron-test-helpers | ✅ | ❌ | 9 failed tests |
+| iron-test-helpers | ✅ | ❌ | 7 failed tests |
 | iron-validatable-behavior | ✅ | ✅ | |
 | iron-validator-behavior | ✅ | ✅ | |
 | marked-element | ✅ | ✅ | |
@@ -83,7 +83,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-fab | ✅ | ✅ | |
 | paper-header-panel | ✅ | ✅ | |
 | paper-icon-button | ✅ | ✅ | |
-| paper-input | ✅ | ❌ | 20 failed tests |
+| paper-input | ✅ | ❌ | 14 failed tests |
 | paper-item | ✅ | ✅ | |
 | paper-listbox | ✅ | ✅ | |
 | paper-material | ✅ | ✅ | |
@@ -102,7 +102,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-toggle-button | ✅ | ✅ | |
 | paper-toolbar | ✅ | ✅ | |
 | paper-tooltip | ✅ | ✅ | |
-| platinum-sw | ✅ | ❌ | 16 failed tests |
+| platinum-sw | ✅ | ❌ | 12 failed tests |
 | polymer | ✅ | ❌ | Error: chai is not defined |
 | prism-element | ✅ | ✅ | |
 | promise-polyfill | ✅ | ⚠️ | *No test suites were found matching your configuration* |
