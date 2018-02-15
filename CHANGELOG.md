@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [1.2.0] - 2018-02-14
 - Functions which definitely never return a value will now be automatically inferred as returning `void`.
 - Getters on Polymer elements defined with the legacy Polymer function are now scanned correctly (previously type annotations were missing, and the readonly bit was inverted.
 
