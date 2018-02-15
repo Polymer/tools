@@ -56,7 +56,7 @@ declare namespace Polymer {
      *
      * @param name Name of property
      */
-    typeForProperty(name: string): any;
+    typeForProperty(name: string): void;
   }
 
   interface PropertiesChanged {
@@ -76,6 +76,15 @@ declare namespace Polymer {
      *   protected `_setProperty` function must be used to set the property
      */
     _createPropertyAccessor(property: string, readOnly?: boolean): void;
+
+    /**
+     * Adds the given `property` to a map matching attribute names
+     * to property names, using `attributeNameForProperty`. This map is
+     * used when deserializing attribute values to properties.
+     *
+     * @param property Name of the property
+     */
+    _addPropertyToAttributeMap(property: string): void;
 
     /**
      * Defines a property accessor for the given property.
@@ -248,7 +257,7 @@ declare namespace Polymer {
      * @param value Value to serialize.
      * @param attribute Attribute name to serialize to.
      */
-    _valueToNodeAttribute(node: Element|null, value: any, attribute: string): void;
+    _valueToNodeAttribute(node: _Element|null, value: any, attribute: string): void;
 
     /**
      * Converts a typed JavaScript value to a string.

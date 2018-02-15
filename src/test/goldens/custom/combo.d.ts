@@ -9,8 +9,8 @@
  *   combo.js
  */
 
-declare function B(): any;
+declare function B(): void;
 
-declare function C(): any;
+declare function C(): void;
 
-declare function A(): any;
+declare function A(): void;

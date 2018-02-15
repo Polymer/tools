@@ -19,7 +19,7 @@ declare namespace Polymer {
    */
   interface PaperInkyFocusBehavior extends Polymer.IronButtonState, Polymer.IronControlState, Polymer.PaperRippleBehavior {
     _createRipple(): any;
-    _focusedChanged(receivedFocusFromKeyboard: any): any;
+    _focusedChanged(receivedFocusFromKeyboard: any): void;
   }
 
   const PaperInkyFocusBehavior: object;

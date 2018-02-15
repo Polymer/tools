@@ -72,7 +72,7 @@ declare class TemplateInstanceBase extends
    *
    * @param event Event to dispatch
    */
-  dispatchEvent(event: Event|null): any;
+  dispatchEvent(event: Event|null): void;
 }
 
 declare namespace templateInfo {

@@ -155,8 +155,9 @@ declare class PaperMenuButton extends Polymer.Element {
 
   /**
    * The content element that is contained by the menu button, if any.
+   *          
    */
-  contentElement: object|null;
+  readonly contentElement: any;
 
   /**
    * If the dropdown is open when disabled becomes true, close the
@@ -164,23 +165,23 @@ declare class PaperMenuButton extends Polymer.Element {
    *
    * @param disabled True if disabled, otherwise false.
    */
-  _disabledChanged(disabled: boolean): any;
+  _disabledChanged(disabled: boolean): void;
 
   /**
    * Toggles the drowpdown content between opened and closed.
    */
-  toggle(): any;
+  toggle(): void;
 
   /**
    * Make the dropdown content appear as an overlay positioned relative
    * to the dropdown trigger.
    */
-  open(): any;
+  open(): void;
 
   /**
    * Hide the dropdown content.
    */
-  close(): any;
+  close(): void;
 
   /**
    * When an `iron-select` event is received, the dropdown should
@@ -189,7 +190,7 @@ declare class PaperMenuButton extends Polymer.Element {
    * @param event A CustomEvent instance with type
    * set to `"iron-select"`.
    */
-  _onIronSelect(event: CustomEvent|null): any;
+  _onIronSelect(event: CustomEvent|null): void;
 
   /**
    * Closes the dropdown when an `iron-activate` event is received if
@@ -197,7 +198,7 @@ declare class PaperMenuButton extends Polymer.Element {
    *
    * @param event A CustomEvent of type 'iron-activate'.
    */
-  _onIronActivate(event: CustomEvent|null): any;
+  _onIronActivate(event: CustomEvent|null): void;
 
   /**
    * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
@@ -206,7 +207,7 @@ declare class PaperMenuButton extends Polymer.Element {
    * @param opened True if the dropdown is opened, otherwise false.
    * @param oldOpened The previous value of `opened`.
    */
-  _openedChanged(opened: boolean, oldOpened: boolean): any;
+  _openedChanged(opened: boolean, oldOpened: boolean): void;
 }
 
 interface PaperMenuButton extends Polymer.IronA11yKeysBehavior, Polymer.IronControlState {

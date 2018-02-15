@@ -30,7 +30,7 @@ declare namespace Polymer {
      *
      * @param event .
      */
-    _spaceKeyDownHandler(event: KeyboardEvent): any;
+    _spaceKeyDownHandler(event: KeyboardEvent): void;
 
     /**
      * In addition to `IronButtonState` behavior, when space key goes up,
@@ -38,9 +38,9 @@ declare namespace Polymer {
      *
      * @param event .
      */
-    _spaceKeyUpHandler(event: KeyboardEvent): any;
-    _calculateElevation(): any;
-    _computeKeyboardClass(receivedFocusFromKeyboard: any): any;
+    _spaceKeyUpHandler(event: KeyboardEvent): void;
+    _calculateElevation(): void;
+    _computeKeyboardClass(receivedFocusFromKeyboard: any): void;
   }
 
   const PaperButtonBehavior: object;

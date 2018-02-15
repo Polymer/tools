@@ -24,12 +24,12 @@ declare namespace Polymer {
     /**
      * Synchronizes the element's `active` and `checked` state.
      */
-    _buttonStateChanged(): any;
+    _buttonStateChanged(): void;
 
     /**
      * Synchronizes the element's checked state with its ripple effect.
      */
-    _checkedChanged(): any;
+    _checkedChanged(): void;
   }
 
   const PaperCheckedElementBehavior: object;
