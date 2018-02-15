@@ -16,14 +16,14 @@ This table contains the status of every Polymer 3.0 element being run through au
 
 | repo | `npm install`\* | `wct --npm` | reason? |
 |------|---------------|------------|---------|
-| app-layout | ✅ | ❌ | 33 failed tests |
+| app-layout | ✅ | ❌ | 3 failed tests |
 | app-localize-behavior | ✅ | ✅ | |
-| app-media | ✅ | ❌ | 12 failed tests |
+| app-media | ✅ | ❌ | 12 failed tests bower -> npm issues |
 | app-route | ✅ | ✅ | |
-| app-storage | ✅ | ❌ | 4 failed tests |
+| app-storage | ✅ | ❌ | 2 failed tests |
 | font-roboto | ✅ | ⚠️ | *No test suites were found matching your configuration* |
 | font-roboto-local | ✅ | ⚠️ | *No test suites were found matching your configuration* |
-| gold-cc-cvc-input | ✅ | ❌ | 14 failed tests |
+| gold-cc-cvc-input | ✅ | ✅ | |
 | gold-cc-expiration-input | ✅ | ❌ | 16 failed tests |
 | gold-cc-input | ✅ | ❌ | 14 failed tests |
 | gold-phone-input | ✅ | ❌ | 8 failed tests |
@@ -45,7 +45,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-form | ✅ | ❌ | Error: form is not defined |
 | iron-form-element-behavior | ✅ | ✅ | |
 | iron-icon | ✅ | ✅ | |
-| iron-icons | ✅ | ❌ | 2 failed tests |
+| iron-icons | ✅ | ✅ | |
 | iron-iconset | ✅ | ✅ | |
 | iron-iconset-svg | ✅ | ✅ | |
 | iron-image | ✅ | ✅ | |
@@ -78,10 +78,10 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-dialog | ✅ | ✅ | |
 | paper-dialog-behavior | ✅ | ✅ | |
 | paper-dialog-scrollable | ✅ | ✅ | |
-| paper-drawer-panel | ✅ | ❌ | 1 failed tests |
+| paper-drawer-panel | ✅ | ✅ | |
 | paper-dropdown-menu | ✅ | ✅ | |
 | paper-fab | ✅ | ✅ | |
-| paper-header-panel | ✅ | ❌ | Error: seamedShadow is not defined |
+| paper-header-panel | ✅ | ✅ | |
 | paper-icon-button | ✅ | ✅ | |
 | paper-input | ✅ | ❌ | 20 failed tests |
 | paper-item | ✅ | ✅ | |
