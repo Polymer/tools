@@ -37,7 +37,8 @@ export class FSUrlLoader implements UrlLoader {
   }
 
   canLoad(url: ResolvedUrl): boolean {
-    return url.startsWith(Uri.file(this.root).toString());
+    return url.startsWith('file://') &&
+        isPathInside(this.root, Uri.parse(url).fsPath);
   }
 
   load(url: ResolvedUrl): Promise<string> {
@@ -64,16 +65,16 @@ export class FSUrlLoader implements UrlLoader {
    * If unsuccessful, result.value will be an error message as a string.
    */
   getFilePath(url: ResolvedUrl): Result<string, string> {
-    if (!this.canLoad(url)) {
+    if (!url.startsWith('file://')) {
       return {successful: false, error: 'Not a local file:// url.'};
     }
-    const path = Uri.parse(url).fsPath;
-    if (!isPathInside(this.root, path)) {
+    if (!this.canLoad(url)) {
       return {
         successful: false,
         error: `Path is not inside root directory: ${JSON.stringify(this.root)}`
       };
     }
+    const path = Uri.parse(url).fsPath;
     return {successful: true, value: path};
   }
 
