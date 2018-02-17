@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+## [3.0.0-pre.2] - 2018-02-16
 ### New Lint Rules
 - `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
 - `deprecated-shadow-dom-selectors`: Warns when deprecated Shadow DOM selectors are used. (`/deep/`, `>>>`, and `::shadow`)
