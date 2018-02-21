@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {isCancel} from 'cancel-token';
+import {assert} from 'chai';
 import * as path from 'path';
 import URI from 'vscode-uri';
 
@@ -23,7 +25,6 @@ import {Scanner} from '../scanning/scanner';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 import {UrlLoader} from '../url-loader/url-loader';
 import {underlineCode} from '../warning/code-printer';
-
 
 export class UnexpectedResolutionError extends Error {
   resolvedValue: any;
@@ -179,3 +180,7 @@ export function rootedFileUrl(
 }
 
 export const fixtureDir = path.join(__dirname, '../../src/test/static');
+export async function assertIsCancelled(promise: Promise<any>): Promise<void> {
+  const rejection = await invertPromise(promise);
+  assert.isTrue(isCancel(rejection), `Expected ${rejection} to be a Cancel.`);
+}

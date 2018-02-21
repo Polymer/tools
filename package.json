@@ -80,6 +80,7 @@
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
     "babylon": "^6.18.0",
+    "cancel-token": "^0.1.1",
     "chalk": "^1.1.3",
     "clone": "^2.0.0",
     "cssbeautify": "^0.3.1",
