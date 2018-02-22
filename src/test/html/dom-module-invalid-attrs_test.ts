@@ -18,11 +18,12 @@ import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {WarningPrettyPrinter} from '../util';
+import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
+const ruleId = 'dom-module-invalid-attrs';
 
-suite('dom-module-invalid-attrs', () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,8 +31,7 @@ suite('dom-module-invalid-attrs', () => {
   setup(() => {
     analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
-    linter =
-        new Linter(registry.getRules(['dom-module-invalid-attrs']), analyzer);
+    linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -46,8 +46,7 @@ suite('dom-module-invalid-attrs', () => {
   });
 
   test('warns for a file "is" and "name" dom-modules', async() => {
-    const {warnings} =
-        await linter.lint(['dom-module-name-or-is/dom-module-name-or-is.html']);
+    const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
 <dom-module name="foo-elem">
@@ -62,5 +61,13 @@ suite('dom-module-invalid-attrs', () => {
 <dom-module name="baz-elem" is="zod-elem">
             ~~~~`,
     ]);
+  });
+
+  test('applies automatic-safe fixes', async() => {
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/before-fixes.html`,
+        `${ruleId}/after-fixes.html`);
   });
 });

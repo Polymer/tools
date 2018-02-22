@@ -16,7 +16,7 @@ import './css/content-selector-to-slotted';
 import './css/deprecated-css-custom-property-syntax';
 import './css/deprecated-shadow-dom-selectors';
 
-import './html/dom-module-name-or-is';
+import './html/dom-module-invalid-attrs';
 import './html/move-style-into-template';
 import './html/undefined-elements';
 

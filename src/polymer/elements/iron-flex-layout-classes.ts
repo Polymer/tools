@@ -121,8 +121,7 @@ class IronFlexLayoutClasses extends HtmlRule {
         }));
         continue;
       }
-      const template =
-          dom5.query(domModule.astNode, p.hasTagName('template'));
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
