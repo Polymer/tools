@@ -18,7 +18,7 @@ import {Analyzer} from '../../core/analyzer';
 import {HtmlScriptScanner} from '../../html/html-script-scanner';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Analysis} from '../../model/analysis';
-import {ScannedImport, ScannedInlineDocument} from '../../model/model';
+import {FileRelativeUrl, ScannedImport, ScannedInlineDocument} from '../../model/model';
 import {fixtureDir, runScannerOnContents} from '../test-utils';
 
 suite('HtmlScriptScanner', () => {
@@ -34,7 +34,7 @@ suite('HtmlScriptScanner', () => {
     assert.instanceOf(features[0], ScannedImport);
     const feature0 = features[0] as ScannedImport;
     assert.equal(feature0.type, 'html-script');
-    assert.equal(feature0.url, 'foo.js');
+    assert.equal(feature0.url, 'foo.js' as FileRelativeUrl);
     assert.instanceOf(features[1], ScannedInlineDocument);
     const feature1 = features[1] as ScannedInlineDocument;
     assert.equal(feature1.type, 'js');

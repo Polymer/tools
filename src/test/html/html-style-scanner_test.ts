@@ -15,7 +15,7 @@
 import {assert} from 'chai';
 
 import {HtmlStyleScanner} from '../../html/html-style-scanner';
-import {ScannedImport, ScannedInlineDocument} from '../../model/model';
+import {FileRelativeUrl, ScannedImport, ScannedInlineDocument} from '../../model/model';
 import {runScannerOnContents} from '../test-utils';
 
 suite('HtmlStyleScanner', () => {
@@ -31,7 +31,7 @@ suite('HtmlStyleScanner', () => {
     assert.instanceOf(features[0], ScannedImport);
     const feature0 = <ScannedImport>features[0];
     assert.equal(feature0.type, 'html-style');
-    assert.equal(feature0.url, 'foo.css');
+    assert.equal(feature0.url, 'foo.css' as FileRelativeUrl);
     assert.instanceOf(features[1], ScannedInlineDocument);
     const feature1 = <ScannedInlineDocument>features[1];
     assert.equal(feature1.type, 'css');

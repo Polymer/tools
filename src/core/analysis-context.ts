@@ -97,12 +97,12 @@ export class AnalysisContext {
    */
   private _analysisComplete: Promise<void>;
 
-  static getDefaultScanners(lazyEdges: LazyEdgeMap|undefined) {
+  static getDefaultScanners(options: Options) {
     return new Map<string, Scanner<any, any, any>[]>([
       [
         'html',
         [
-          new HtmlImportScanner(lazyEdges),
+          new HtmlImportScanner(options.lazyEdges),
           new HtmlScriptScanner(),
           new HtmlStyleScanner(),
           new DomModuleScanner(),
@@ -120,7 +120,8 @@ export class AnalysisContext {
           new NamespaceScanner(),
           new FunctionScanner(),
           new ClassScanner(),
-          new JavaScriptImportScanner(),
+          new JavaScriptImportScanner(
+              {moduleResolution: options.moduleResolution}),
           new InlineHtmlDocumentScanner(),
         ]
       ],
@@ -134,7 +135,7 @@ export class AnalysisContext {
     this.parsers = options.parsers || this.parsers;
     this._lazyEdges = options.lazyEdges;
     this._scanners =
-        options.scanners || AnalysisContext.getDefaultScanners(this._lazyEdges);
+        options.scanners || AnalysisContext.getDefaultScanners(options);
     this._cache = cache || new AnalysisCache();
     this._generation = generation || 0;
     this._analysisComplete = Promise.resolve();
@@ -316,7 +317,9 @@ export class AnalysisContext {
 
             // Update dependency graph
             const importUrls = filterOutUndefineds(imports.map(
-                (i) => this.resolver.resolve(parsedDoc.baseUrl, i.url, i)));
+                (i) => i.url === undefined ?
+                    undefined :
+                    this.resolver.resolve(parsedDoc.baseUrl, i.url, i)));
             this._cache.dependencyGraph.addDocument(resolvedUrl, importUrls);
 
             return scannedDocument;
@@ -340,6 +343,9 @@ export class AnalysisContext {
 
           // Scan imports
           for (const scannedImport of imports) {
+            if (scannedImport.url === undefined) {
+              continue;
+            }
             const importUrl = this.resolver.resolve(
                 scannedDocument.document.baseUrl,
                 scannedImport.url,

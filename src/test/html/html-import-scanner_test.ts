@@ -15,7 +15,7 @@
 import {assert} from 'chai';
 
 import {HtmlImportScanner} from '../../html/html-import-scanner';
-import {Analyzer, InMemoryOverlayUrlLoader, ScannedImport} from '../../index';
+import {Analyzer, FileRelativeUrl, InMemoryOverlayUrlLoader, ScannedImport} from '../../index';
 import {PackageRelativeUrl, ResolvedUrl} from '../../model/url';
 import {runScanner, runScannerOnContents} from '../test-utils';
 
@@ -102,7 +102,8 @@ suite('HtmlImportScanner', () => {
           importFeatures.map((i) => i.lazy), [false, true, true, true]);
       assert.deepEqual(
           importFeatures.map((f) => f.url),
-          ['polymer.html', 'lazy1.html', 'lazy2.html', 'lazy3.html']);
+          ['polymer.html', 'lazy1.html', 'lazy2.html', 'lazy3.html'] as
+              FileRelativeUrl[]);
     });
   });
 });

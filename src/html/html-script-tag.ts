@@ -24,6 +24,9 @@ export class ScriptTagImport extends Import { readonly type = 'html-script'; }
 
 export class ScannedScriptTagImport extends ScannedImport {
   resolve(document: Document): ScriptTagImport|undefined {
+    if (this.url === undefined) {
+      return;
+    }
     const resolvedUrl = document._analysisContext.resolver.resolve(
         document.parsedDocument.baseUrl, this.url, this);
     if (resolvedUrl === undefined) {

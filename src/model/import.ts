@@ -32,7 +32,7 @@ export class ScannedImport implements Resolvable {
   /**
    * URL of the import, relative to the base directory.
    */
-  url: FileRelativeUrl;
+  url: FileRelativeUrl|undefined;
 
   sourceRange: SourceRange|undefined;
 
@@ -55,8 +55,9 @@ export class ScannedImport implements Resolvable {
   lazy: boolean;
 
   constructor(
-      type: string, url: FileRelativeUrl, sourceRange: SourceRange|undefined,
-      urlSourceRange: SourceRange|undefined, ast: any|null, lazy: boolean) {
+      type: string, url: FileRelativeUrl|undefined,
+      sourceRange: SourceRange|undefined, urlSourceRange: SourceRange|undefined,
+      ast: any|null, lazy: boolean) {
     this.type = type;
     this.url = url;
     this.sourceRange = sourceRange;
@@ -66,6 +67,11 @@ export class ScannedImport implements Resolvable {
   }
 
   resolve(document: Document): Import|undefined {
+    if (this.url === undefined) {
+      // We don't issue a warning here because the scanner should have when it
+      // produced an undefined URL.
+      return undefined;
+    }
     const resolvedUrl = document._analysisContext.resolver.resolve(
         document.parsedDocument.baseUrl, this.url, this);
     if (resolvedUrl === undefined) {

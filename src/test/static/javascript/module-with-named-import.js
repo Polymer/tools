@@ -1,1 +1,1 @@
-import * as foo from 'foo';
+import * as test from 'test-package';

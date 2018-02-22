@@ -23,8 +23,9 @@ suite('JavaScriptImportScanner', () => {
   const analyzer = Analyzer.createForDirectory(fixtureDir);
 
   test('finds imports', async () => {
-    const {features} = await runScanner(
+    const {features, warnings} = await runScanner(
         analyzer, new JavaScriptImportScanner(), 'javascript/module.js');
+    assert.equal(warnings.length, 0);
     assert.containSubset(features, [
       {
         type: 'js-import',
@@ -35,26 +36,73 @@ suite('JavaScriptImportScanner', () => {
   });
 
   test('finds dynamic imports', async () => {
-    const {features} = await runScanner(
+    const {features, warnings} = await runScanner(
         analyzer,
-        new JavaScriptImportScanner(),
+        new JavaScriptImportScanner({moduleResolution: 'node'}),
         'javascript/dynamic-import.js');
 
+    assert.equal(warnings.length, 1);
+    assert.containSubset(warnings, [{code: 'non-literal-import'}]);
     assert.containSubset(features, [
       {
         type: 'js-import',
         url: './submodule.js',
         lazy: true,
       },
+      {
+        type: 'js-import',
+        url: './node_modules/test-package/index.js',
+        lazy: true,
+      },
     ]);
   });
 
-  test('skips non-path imports', async () => {
-    const {features} = await runScanner(
+  test('resolves bare specifiers', async () => {
+    const {features, warnings} = await runScanner(
         analyzer,
-        new JavaScriptImportScanner(),
+        new JavaScriptImportScanner({moduleResolution: 'node'}),
         'javascript/module-with-named-import.js');
 
-    assert.equal(features.length, 0);
+    assert.equal(warnings.length, 0);
+    assert.containSubset(features, [
+      {
+        type: 'js-import',
+        url: './node_modules/test-package/index.js',
+        lazy: false,
+      },
+    ]);
+  });
+
+  test('warns for non-resolvable bare specifiers', async () => {
+    const {features, warnings} = await runScanner(
+        analyzer,
+        new JavaScriptImportScanner({moduleResolution: 'node'}),
+        'javascript/module-with-not-found-named-import.js');
+
+    assert.equal(warnings.length, 1);
+    assert.containSubset(warnings, [{code: 'cant-resolve-module-specifier'}]);
+    assert.containSubset(features, [
+      {
+        type: 'js-import',
+        url: undefined,
+        lazy: false,
+      },
+    ]);
+  });
+
+  test('handles URL specifiers', async () => {
+    const {features, warnings} = await runScanner(
+        analyzer,
+        new JavaScriptImportScanner(),
+        'javascript/module-with-remote-import.js');
+
+    assert.equal(warnings.length, 0);
+    assert.containSubset(features, [
+      {
+        type: 'js-import',
+        url: 'https://unpkg.com/lit-html/lit-html.js',
+        lazy: false,
+      },
+    ]);
   });
 });

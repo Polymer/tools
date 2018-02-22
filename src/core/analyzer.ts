@@ -32,11 +32,19 @@ export interface Options {
   urlResolver?: UrlResolver;
   parsers?: Map<string, Parser<any>>;
   scanners?: ScannerTable;
-  /*
+
+  /**
    * Map from url of an HTML Document to another HTML document it lazily depends
    * on.
    */
   lazyEdges?: LazyEdgeMap;
+
+  /**
+   * Algorithm to use for resolving module specifiers in import
+   * and export statements when rewriting them to be web-compatible.
+   * A value of 'node' uses Node.js resolution to find modules.
+   */
+  moduleResolution?: 'node';
 
   // For internal use
   __contextPromise?: Promise<AnalysisContext>;

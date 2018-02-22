@@ -36,7 +36,7 @@ import {CodeUnderliner, fixtureDir, invertPromise, resolvedUrl} from '../test-ut
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
 import stripIndent = require('strip-indent');
-import {ResolvedUrl} from '../../model/url';
+import {ResolvedUrl, FileRelativeUrl} from '../../model/url';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {AnalysisContext} from '../../core/analysis-context';
 import {HtmlScanner} from '../../html/html-scanner';
@@ -637,7 +637,7 @@ suite('Analyzer', () => {
           ['html-import', 'html-script', 'html-style']);
       assert.deepEqual(
           features.map((e) => e.url),  //
-          ['polymer.html', 'foo.js', 'foo.css']);
+          ['polymer.html', 'foo.js', 'foo.css'] as FileRelativeUrl[]);
     });
 
     test('polymer css import scanner', async () => {
@@ -658,7 +658,7 @@ suite('Analyzer', () => {
           ScannedImport[];
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
-      assert.equal(features[0].url, 'bar.css');
+      assert.equal(features[0].url, 'bar.css' as FileRelativeUrl);
     });
 
     test('HTML inline document scanners', async () => {
