@@ -30,6 +30,7 @@ import {attachCommentsToFirstStatement, canDomModuleBeInlined, collectIdentifier
 import {ConversionResult, JsExport, NamespaceMemberToExport} from './js-module';
 import {addA11ySuiteIfUsed} from './passes/add-a11y-suite-if-used';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
+import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
 import {rewriteExcludedReferences} from './passes/rewrite-excluded-references';
@@ -315,6 +316,7 @@ export class DocumentConverter {
       const scriptProgram =
           recast.parse(scriptDocument.parsedDocument.contents).program;
       rewriteToplevelThis(scriptProgram);
+      removeToplevelUseStrict(scriptProgram);
       // We need to inline templates on a per-script basis, otherwise we run
       // into trouble matching up analyzer AST nodes with our own.
       const localClaimedDomModules =
@@ -667,6 +669,7 @@ export class DocumentConverter {
     }
 
     rewriteToplevelThis(program);
+    removeToplevelUseStrict(program);
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
     const importedReferences = this.collectNamespacedReferences(program);
