@@ -12,13 +12,30 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analysis, Document} from 'polymer-analyzer';
+import {Analysis} from 'polymer-analyzer';
 
 import {ConversionSettings} from './conversion-settings';
-import {DeleteFileScanResult, DocumentConverter, HtmlDocumentScanResult, JsModuleScanResult} from './document-converter';
+import {DeleteFileScanResult, HtmlDocumentScanResult, JsModuleScanResult, ScanResult} from './document-converter';
 import {JsExport} from './js-module';
+import {PackageScanner} from './package-scanner';
 import {OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
+
+function exportsMapToObject(exportsMap: Map<string, JsExport>) {
+  const exportsObject: any = {};
+  for (const [k, v] of exportsMap) {
+    exportsObject[k] = { name: v.name, url: v.url };
+  }
+  return exportsObject;
+}
+
+function filesMapToObject(filesMap: Map<OriginalDocumentUrl, ScanResult>) {
+  const filesObject: any = {};
+  for (const [k, v] of filesMap) {
+    filesObject[k] = (<any>v).convertedUrl || null;
+  }
+  return filesObject;
+}
 
 /**
  * ProjectScanner provides the top-level interface for scanning packages and
@@ -38,22 +55,7 @@ export class ProjectScanner {
   private readonly analysis: Analysis;
   private readonly urlHandler: UrlHandler;
   private readonly conversionSettings: ConversionSettings;
-
-  private readonly scannedPackages = new Set<string>();
-
-  /**
-   * All JS Exports registered by namespaced identifier, to map implicit HTML
-   * imports to explicit named JS imports.
-   */
-  private readonly namespacedExports = new Map<string, JsExport>();
-
-  /**
-   * All Scan Results registered by document URL, so that the conversion process
-   * knows how to treat each file.
-   */
-  private readonly results = new Map<
-      OriginalDocumentUrl,
-      JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult>();
+  private readonly scannedPackages = new Map<string, PackageScanner>();
 
   constructor(
       analysis: Analysis, urlHandler: UrlHandler,
@@ -67,26 +69,31 @@ export class ProjectScanner {
    * Get all relevant HTML documents from a package that should be scanned,
    * coverted, or otherwise handled by the modulizer.
    */
-  getPackageDocuments(matchPackageName: string) {
-    return [
-      ...this.analysis.getFeatures(
-          {kind: 'html-document', externalPackages: true})
-    ].filter((d) => {
-      // Filter out any inline documents returned by the analyzer
-      if (d.isInline === true) {
-        return false;
-      }
-      // Filter out any excluded documents
-      const documentUrl = this.urlHandler.getDocumentUrl(d);
-      if (this.conversionSettings.excludes.has(documentUrl)) {
-        return false;
-      }
-      // Filter out any external documents
-      const packageName =
-          this.urlHandler.getOriginalPackageNameForUrl(documentUrl);
-      return packageName === matchPackageName;
-    });
+  getPackageDocuments(packageName: string) {
+    if (!this.scannedPackages.has(packageName)) {
+      this.scanPackage(packageName);
+    }
+    const packageScanner = this.scannedPackages.get(packageName)!;
+    return packageScanner.getPackageDocuments();
   }
+
+  /**
+   * Get a package manifest (a serializable version of the scanner results) for
+   * a package.
+   */
+  getPackageManifest(packageName: string) {
+    if (!this.scannedPackages.has(packageName)) {
+      this.scanPackage(packageName);
+    }
+
+    const packageScanner = this.scannedPackages.get(packageName)!;
+    const scanResults = packageScanner.getResults();
+    return {
+      files: filesMapToObject(scanResults.files),
+      exports: exportsMapToObject(scanResults.exports),
+    };
+  }
+
 
   /**
    * Scan a document and any of its dependency packages for their new interface.
@@ -96,93 +103,41 @@ export class ProjectScanner {
       return;
     }
     // Add this package to our cache so that it won't get double scanned.
-    this.scannedPackages.add(matchPackageName);
-    // Gather all relevent package documents, and run the scanner on them.
-    for (const document of this.getPackageDocuments(matchPackageName)) {
-      this.scanDocument(document);
-    }
-  }
-
-  /**
-   * Scan a document and any of its dependency packages. The scan document
-   * format (JS Module or HTML Document) is determined by whether the file is
-   * included in conversionSettings.includes.
-   */
-  scanDocument(document: Document, forceJs = false) {
-    console.assert(
-        document.kinds.has('html-document'),
-        `scanDocument() must be called with an HTML document, but got ${
-            document.kinds}`);
-
-    if (!this._shouldScanDocument(document)) {
-      return;
-    }
-
-    const documentUrl = this.urlHandler.getDocumentUrl(document);
-    const documentConverter = new DocumentConverter(
-        document,
-        this.namespacedExports,
+    const packageScanner = new PackageScanner(
+        matchPackageName,
+        this.analysis,
         this.urlHandler,
         this.conversionSettings);
-    let scanResult: JsModuleScanResult|HtmlDocumentScanResult|
-        DeleteFileScanResult;
-    try {
-      scanResult =
-          (forceJs || this.conversionSettings.includes.has(documentUrl)) ?
-          documentConverter.scanJsModule() :
-          documentConverter.scanTopLevelHtmlDocument();
-    } catch (e) {
-      console.error(`Error in ${document.url}`, e);
-      return;
-    }
-    this.results.set(scanResult.originalUrl, scanResult);
-    this._scanDependencies(document);
-    if (scanResult.type === 'js-module') {
-      for (const expr of scanResult.exportMigrationRecords) {
-        if (!this.namespacedExports.has(expr.oldNamespacedName)) {
-          this.namespacedExports.set(
-              expr.oldNamespacedName,
-              new JsExport(scanResult.convertedUrl, expr.es6ExportName));
-        }
-      }
-    }
-  }
-
-  /**
-   * Check if a document is explicitly excluded or has already been scanned
-   * to decide if it should be skipped.
-   */
-  private _shouldScanDocument(document: Document): boolean {
-    const documentUrl = this.urlHandler.getDocumentUrl(document);
-    return !this.results.has(documentUrl) &&
-        !this.conversionSettings.excludes.has(documentUrl);
-  }
-
-  /**
-   * Scan document dependencies. If a dependency is external to this package,
-   * scan the entire external package.
-   */
-  private _scanDependencies(document: Document) {
-    const documentUrl = this.urlHandler.getDocumentUrl(document);
-    const packageName =
-        this.urlHandler.getOriginalPackageNameForUrl(documentUrl);
-    for (const htmlImport of DocumentConverter.getAllHtmlImports(document)) {
-      const importDocumentUrl = this.urlHandler.getDocumentUrl(<any>htmlImport);
-      const importPackageName =
-          this.urlHandler.getOriginalPackageNameForUrl(importDocumentUrl);
-
-      if (importPackageName === packageName) {
-        this.scanDocument(htmlImport.document, true);
-      } else {
-        this.scanPackage(importPackageName);
-      }
+    this.scannedPackages.set(matchPackageName, packageScanner);
+    packageScanner.scanPackage();
+    for (const externalDependencyName of packageScanner.externalDependencies) {
+      this.scanPackage(externalDependencyName);
     }
   }
 
   getResults() {
+    const allResults = [...this.scannedPackages.values()].map(
+        (scanner) => scanner.getResults());
+    const allFiles = new Map<
+        OriginalDocumentUrl,
+        JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult>();
+    const allExports = new Map<string, JsExport>();
+    for (const result of allResults) {
+      for (const [fileOriginalUrl, scanResult] of result.files) {
+        allFiles.set(fileOriginalUrl, scanResult);
+      }
+      for (const [exportName, exportInfo] of result.exports) {
+        if (allExports.has(exportName)) {
+          console.warn(
+              `CONFLICT: JS Export ${exportName} claimed by two packages: ${
+                  exportInfo.url} & ${allExports.get(exportName)!.url}`);
+        }
+        allExports.set(exportName, exportInfo);
+      }
+    }
     return {
-      files: this.results,
-      exports: this.namespacedExports,
+      files: allFiles,
+      exports: allExports,
     };
   }
 }

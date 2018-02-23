@@ -16,7 +16,7 @@ import {assert} from 'chai';
 import * as esprima from 'esprima';
 import * as estree from 'estree';
 import {EOL} from 'os';
-import {Analyzer, InMemoryOverlayUrlLoader} from 'polymer-analyzer';
+import {Analyzer, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 
 import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
 import {getMemberPath} from '../../document-util';
@@ -38,11 +38,12 @@ A few conventions in these tests:
 suite('AnalysisConverter', () => {
   suite('_convertDocument', () => {
     let urlLoader: InMemoryOverlayUrlLoader;
+    const urlResolver = new PackageUrlResolver();
     let analyzer: Analyzer;
 
     setup(() => {
       urlLoader = new InMemoryOverlayUrlLoader();
-      analyzer = new Analyzer({urlLoader: urlLoader});
+      analyzer = new Analyzer({urlLoader, urlResolver});
     });
 
     function interceptWarnings() {
@@ -65,6 +66,7 @@ suite('AnalysisConverter', () => {
       packageName: string;
       packageType: PackageType;
       expectedWarnings: string[];
+      includes: string[];
     }
 
     async function convert(
@@ -88,6 +90,10 @@ suite('AnalysisConverter', () => {
       const conversionSettings =
           createDefaultConversionSettings(analyzer, analysis, partialSettings);
       conversionSettings.includes.add('test.html');
+      if (partialOptions.includes) {
+        partialOptions.includes.forEach(
+            (str) => conversionSettings.includes.add(str));
+      }
       // Setup ProjectScanner, use PackageUrlHandler for easy setup.
       const urlHandler =
           new PackageUrlHandler(analyzer, packageName, packageType);
@@ -1832,6 +1838,60 @@ setFoo('hello');
 setBaz(foo + 10 * (10 ** 10));
 `,
       });
+    });
+
+    // TODO: Fix (or remove) package url handling to properly scan dependencies
+    // as seperate packages.
+    test.skip(`handle when two dependencies claim the same export`, async () => {
+      setSources({
+        'test.html': `
+          <link rel="import" href="../app-storage/app-storage.html">
+          <script>
+            console.log(Polymer.foo);
+          </script>
+        `,
+        'test2.html': `
+          <link rel="import" href="../app-route/app-route.html">
+          <script>
+            console.log(Polymer.foo);
+          </script>
+        `,
+        'bower_components/app-storage/app-storage.html': `
+          <script>
+            Polymer.foo = 'hello, app-storage';
+          </script>
+        `,
+        'bower_components/app-route/app-route.html': `
+          <script>
+            Polymer.foo = 'hello, app-route';
+          </script>
+        `,
+      });
+
+      assertSources(
+          await convert({
+            includes: [
+              'test.html',
+              'test2.html',
+              'bower_components/app-storage/app-storage.html',
+              'bower_components/app-route/app-route.html',
+            ],
+            expectedWarnings: [
+              'CONFLICT: JS Export Polymer.foo claimed by two packages: ./node_modules/@polymer/app-route/app-route.js & ./node_modules/@polymer/app-storage/app-storage.js',
+              'CONFLICT: JS Export Polymer.foo claimed by two packages: ./node_modules/@polymer/app-route/app-route.js & ./node_modules/@polymer/app-storage/app-storage.js',
+            ]
+          }),
+          {
+            'test.js': `
+import '../@polymer/app-storage/app-storage.js';
+import { foo } from '../@polymer/app-route/app-route.js';
+console.log(foo);
+`,
+            'test2.js': `
+import { foo } from '../@polymer/app-route/app-route.js';
+console.log(foo);
+`,
+          });
     });
 
     testName = `we convert urls of external scripts in html to html transforms`;

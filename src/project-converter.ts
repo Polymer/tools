@@ -63,29 +63,33 @@ export class ProjectConverter {
    * Module or HTML Document) is determined by whether the file is included in
    * conversionSettings.includes.
    */
-  convertPackage(matchPackageName: string) {
+  convertPackage(packageName: string) {
     // First, scan the package (and any of its dependencies)
-    this.scanner.scanPackage(matchPackageName);
+    this.scanner.scanPackage(packageName);
     // Then, convert each document in the given package
-    for (const document of this.scanner.getPackageDocuments(matchPackageName)) {
+    for (const document of this.scanner.getPackageDocuments(packageName)) {
       this.convertDocument(document);
     }
+  }
+
+  /**
+   * Get a package manifest (a serializable version of the scanner results) for
+   * a package.
+   */
+  getPackageManifest(packageName: string) {
+    return this.scanner.getPackageManifest(packageName);
   }
 
   /**
    * Convert a document. The output format (JS Module or HTML Document) is
    * dictated by the results of the scanner.
    */
-  convertDocument(document: Document) {
+  private convertDocument(document: Document) {
     console.assert(
         document.kinds.has('html-document'),
         `convertDocument() must be called with an HTML document, but got ${
             document.kinds}`);
 
-    // Note that this should be a quick no-op if this method was called via
-    // convertPackage() (which first scans the entire package) since each
-    // document is only ever scanned once.
-    this.scanner.scanDocument(document);
     const scanResults = this.scanner.getResults();
     const documentUrl = this.urlHandler.getDocumentUrl(document);
     const scanResult = scanResults.files.get(documentUrl);
@@ -94,16 +98,15 @@ export class ProjectConverter {
     }
 
     const documentConverter = new DocumentConverter(
-        document,
-        scanResults.exports,
-        this.urlHandler,
-        this.conversionSettings);
+        document, this.urlHandler, this.conversionSettings);
     if (scanResult.type === 'js-module') {
-      documentConverter.convertJsModule().forEach((newModule) => {
-        this.results.set(newModule.originalUrl, newModule);
-      });
+      documentConverter.convertJsModule(scanResults.exports)
+          .forEach((newModule) => {
+            this.results.set(newModule.originalUrl, newModule);
+          });
     } else if (scanResult.type === 'html-document') {
-      const newModule = documentConverter.convertTopLevelHtmlDocument();
+      const newModule =
+          documentConverter.convertTopLevelHtmlDocument(scanResults.exports);
       this.results.set(newModule.originalUrl, newModule);
     } else if (scanResult.type === 'delete-file') {
       const newModule = documentConverter.createDeleteResult();
@@ -123,7 +126,7 @@ export class ProjectConverter {
       // TODO(fks): This is hacky, ProjectConverter isn't supposed to know about
       //  project layout / file location. Move into URLHandler, potentially make
       //  its own `excludes`-like settings option.
-      if (excludeFromResults.has(convertedModule.originalUrl)) {
+      if (excludeFromResults.has(convertedModule.convertedFilePath)) {
         continue;
       }
       if (convertedModule.deleteOriginal) {

@@ -129,6 +129,9 @@ interface Edit {
   replacementText: string;
 }
 
+export type ScanResult = JsModuleScanResult |
+  DeleteFileScanResult |
+  HtmlDocumentScanResult;
 /**
  * Contains information about how an existing file should be converted to a new
  * JS Module. Includes a mapping of its new exports.
@@ -244,14 +247,12 @@ export class DocumentConverter {
   private readonly originalUrl: OriginalDocumentUrl;
   private readonly convertedUrl: ConvertedDocumentUrl;
   private readonly urlHandler: UrlHandler;
-  private readonly namespacedExports: Map<string, JsExport>;
   private readonly conversionSettings: ConversionSettings;
   private readonly document: Document;
 
   constructor(
-      document: Document, namespacedExports: Map<string, JsExport>,
-      urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
-    this.namespacedExports = namespacedExports;
+      document: Document, urlHandler: UrlHandler,
+      conversionSettings: ConversionSettings) {
     this.conversionSettings = conversionSettings;
     this.urlHandler = urlHandler;
     this.document = document;
@@ -374,9 +375,11 @@ export class DocumentConverter {
   /**
    * Convert a document to a JS Module.
    */
-  convertJsModule(): ConversionResult[] {
+  convertJsModule(namespacedExports: Map<string, JsExport>):
+      ConversionResult[] {
     const {program, convertedHtmlScripts} = this._prepareJsModule();
-    const importedReferences = this.collectNamespacedReferences(program);
+    const importedReferences =
+        this.collectNamespacedReferences(program, namespacedExports);
     const results: ConversionResult[] = [];
 
     // Add imports for every non-module <script> tag to just import the file
@@ -444,7 +447,8 @@ export class DocumentConverter {
   /**
    * Convert a document to a top-level HTML document.
    */
-  convertTopLevelHtmlDocument(): ConversionResult {
+  convertTopLevelHtmlDocument(namespacedExports: Map<string, JsExport>):
+      ConversionResult {
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
     const p = dom5.predicates;
 
@@ -463,7 +467,7 @@ export class DocumentConverter {
       const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
       const file = recast.parse(script.parsedDocument.contents);
-      const program = this.rewriteInlineScript(file.program);
+      const program = this.rewriteInlineScript(file.program, namespacedExports);
 
       if (program === undefined) {
         continue;
@@ -510,7 +514,7 @@ export class DocumentConverter {
       const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
       const file = recast.parse(dom5.getTextContent(astNode));
-      const program = this.rewriteInlineScript(file.program);
+      const program = this.rewriteInlineScript(file.program, namespacedExports);
 
       if (program === undefined) {
         continue;
@@ -658,7 +662,8 @@ export class DocumentConverter {
    * Rewrite an inline script that will exist inlined inside an HTML document.
    * Should not be called on top-level JS Modules.
    */
-  private rewriteInlineScript(program: Program) {
+  private rewriteInlineScript(
+      program: Program, namespacedExports: Map<string, JsExport>) {
     // Any code that sets the global settings object cannot be inlined (and
     // deferred) because the settings object must be created/configured
     // before other imports evaluate in following module scripts.
@@ -669,7 +674,8 @@ export class DocumentConverter {
     rewriteToplevelThis(program);
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
-    const importedReferences = this.collectNamespacedReferences(program);
+    const importedReferences =
+        this.collectNamespacedReferences(program, namespacedExports);
     const wasA11ySuiteAdded = addA11ySuiteIfUsed(
         program,
         this.formatImportUrl(this.urlHandler.createConvertedUrl(
@@ -956,10 +962,10 @@ export class DocumentConverter {
    * Returns a map of from url to identifier of the references we should
    * import.
    */
-  private collectNamespacedReferences(program: Program):
+  private collectNamespacedReferences(
+      program: Program, namespacedExports: Map<string, JsExport>):
       Map<ConvertedDocumentUrl, Set<ImportReference>> {
     const convertedUrl = this.convertedUrl;
-    const namespacedExports = this.namespacedExports;
     const conversionSettings = this.conversionSettings;
     const importedReferences =
         new Map<ConvertedDocumentUrl, Set<ImportReference>>();
