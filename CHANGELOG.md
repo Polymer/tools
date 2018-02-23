@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.24.0](https://github.com/PolymerLabs/polyserve/tree/0.24.0) (2018-02-23)
 
 * Honor `.bowerrc` for bower component directory and variants
 * Root directories can now be relative paths
