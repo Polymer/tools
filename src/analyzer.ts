@@ -14,7 +14,7 @@
 
 import * as path from 'path';
 import * as logging from 'plylog';
-import {Analyzer, Document, Severity, UrlLoader, Warning, WarningPrinter} from 'polymer-analyzer';
+import {Analyzer, Document, PackageUrlResolver, Severity, UrlLoader, Warning, WarningPrinter} from 'polymer-analyzer';
 import {parseUrl} from 'polymer-analyzer/lib/core/utils';
 import {ProjectConfig} from 'polymer-project-config';
 import {PassThrough, Transform} from 'stream';
@@ -130,6 +130,9 @@ export class BuildAnalyzer {
     this.loader = new StreamLoader(this);
     this.analyzer = new Analyzer({
       urlLoader: this.loader,
+      urlResolver: (config.componentDir) ?
+          new PackageUrlResolver({componentDir: config.componentDir}) :
+          undefined,
     });
 
     this.allFragmentsToAnalyze = new Set(this.config.allFragments);

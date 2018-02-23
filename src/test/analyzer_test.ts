@@ -99,6 +99,68 @@ suite('Analyzer', () => {
 
   });
 
+  suite('ProjectConfig componentDir', () => {
+
+    test(
+        'setting `componentDir` searches for dependencies in the given ' +
+            'directory',
+        () => {
+          const foundDependencies = new Set();
+          const root = `test-fixtures/analyzer-componentDir`;
+          const sourceFiles =
+              ['my-component.js'].map((p) => path.resolve(root, p));
+          const config = new ProjectConfig({
+            root: root,
+            entrypoint: 'my-component.js',
+            sources: sourceFiles,
+
+            componentDir: 'path/to/some/components/',
+          });
+
+          const analyzer = new BuildAnalyzer(config);
+          analyzer.sources().pipe(new NoopStream());
+          analyzer.dependencies().on('data', (file: File) => {
+            foundDependencies.add(file.path);
+          });
+
+          return waitForAll([analyzer.sources(), analyzer.dependencies()])
+              .then(() => {
+                assert.isTrue(foundDependencies.has(path.resolve(
+                    root,
+                    'path/to/some/components/a_component/a_component.js')));
+              });
+        });
+
+    test(
+        'setting `npm: true` searches for dependencies in "node_modules/"',
+        () => {
+          const foundDependencies = new Set();
+          const root = `test-fixtures/analyzer-componentDir-npm`;
+          const sourceFiles =
+              ['my-component.js'].map((p) => path.resolve(root, p));
+          const config = new ProjectConfig({
+            root: root,
+            entrypoint: 'my-component.js',
+            sources: sourceFiles,
+
+            npm: true,
+          });
+
+          const analyzer = new BuildAnalyzer(config);
+          analyzer.sources().pipe(new NoopStream());
+          analyzer.dependencies().on('data', (file: File) => {
+            foundDependencies.add(file.path);
+          });
+
+          return waitForAll([analyzer.sources(), analyzer.dependencies()])
+              .then(() => {
+                assert.isTrue(foundDependencies.has(path.resolve(
+                    root, 'node_modules/a_component/a_component.js')));
+              });
+        });
+
+  });
+
   suite('.dependencies', () => {
 
     test('outputs all dependencies needed by source', () => {
