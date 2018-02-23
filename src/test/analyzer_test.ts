@@ -23,7 +23,7 @@ import {Writable} from 'stream';
 
 import {getFlowingState} from './util';
 import {BuildAnalyzer} from '../analyzer';
-import {waitForAll} from '../streams';
+import {waitFor, waitForAll} from '../streams';
 
 /**
  * Streams will remain paused unless something is listening for it's data.
@@ -333,6 +333,28 @@ suite('Analyzer', () => {
                   assert.isTrue(printWarningsSpy.calledOnce);
                 });
       });
+
+  test('analyzer filters warnings', () => {
+    const root = path.resolve('test-fixtures/project-analysis-warning');
+    const sources = [path.join(root, '**')];
+
+    const config = new ProjectConfig({
+      root,
+      sources,
+      lint: {
+        rules: ['polymer-2'],
+        ignoreWarnings: ['invalid-polymer-expression']
+      }
+    });
+
+    const analyzer = new BuildAnalyzer(config);
+    analyzer.sources().pipe(new NoopStream());
+
+    return waitFor(analyzer.sources()).then(() => {
+      assert.isTrue(analyzer.warnings.size === 0);
+    });
+
+  });
 
   test('calling sources() starts analysis', async () => {
     const config = new ProjectConfig({
