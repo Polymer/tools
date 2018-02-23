@@ -65,6 +65,8 @@ async function updateFixture(options: UpdateFixtureOptions) {
     packageVersion: options.packageVersion,
     addImportPath: true,
     deleteFiles: options.deleteFiles,
+    flat: false,
+    private: false,
   });
   console.log(`Done.`);
 }

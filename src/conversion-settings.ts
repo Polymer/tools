@@ -143,6 +143,16 @@ export interface PartialConversionSettings {
    * glob patterns.
    */
   readonly deleteFiles?: Iterable<string>;
+
+  /**
+   * Whether to set flat:true in the newly generated package.json.,
+   */
+  readonly flat: boolean;
+
+  /**
+   * Whether to set private:true in the newly generated package.json.
+   */
+  readonly private: boolean;
 }
 
 /**

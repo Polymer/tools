@@ -130,6 +130,8 @@ export default async function run(options: CliOptions) {
     packageVersion: npmPackageVersion,
     reposToConvert,
     deleteFiles: options['delete-files'],
+    flat: options.flat,
+    private: options.private,
   });
 
   logStep(3, 3, '🎉', `Conversion Complete!`);
@@ -153,6 +155,8 @@ export default async function run(options: CliOptions) {
           workspaceDir,
           packageVersion: npmPackageVersion,
           reposToConvert,
+          flat: options.flat,
+          private: options.private,
         });
         break;
       case PostConversionStep.TestInstallOnly:
@@ -160,6 +164,8 @@ export default async function run(options: CliOptions) {
           workspaceDir,
           packageVersion: npmPackageVersion,
           reposToConvert,
+          flat: options.flat,
+          private: options.private,
         });
         break;
       case PostConversionStep.Push:

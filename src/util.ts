@@ -13,8 +13,8 @@
  */
 import chalk from 'chalk';
 import {ExecOptions} from 'child_process';
+import * as fse from 'fs-extra';
 import {Iterable as IterableX} from 'ix';
-import * as fs from 'mz/fs';
 import * as path from 'path';
 import {WorkspaceRepo} from 'polymer-workspaces';
 
@@ -47,9 +47,9 @@ export async function writeFileResults(
     const filePath = path.join(outDir, newPath);
     await mkdirp(path.dirname(filePath));
     if (newSource !== undefined) {
-      await fs.writeFile(filePath, newSource);
-    } else if (await fs.exists(filePath)) {
-      await fs.unlink(filePath);
+      await fse.writeFile(filePath, newSource);
+    } else if (await fse.pathExists(filePath)) {
+      await fse.unlink(filePath);
     }
   }));
 }
@@ -95,4 +95,16 @@ export function logStep(
     stepNum: number, totalNum: number, emoji: string, msg: string) {
   const stepInfo = `[${stepNum}/${totalNum}]`;
   console.log(`${chalk.dim(stepInfo)} ${emoji}  ${chalk.magenta(msg)}`);
+}
+
+/**
+ * Check if a file exists at the given path. If it does, read it as JSON and
+ * cast to the given type. If not, return undefined.
+ */
+export async function readJsonIfExists<T>(filepath: string):
+    Promise<T|undefined> {
+  if (await fse.pathExists(filepath)) {
+    return await fse.readJSON(filepath) as T;
+  }
+  return undefined;
 }

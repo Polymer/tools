@@ -11,13 +11,13 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import * as fse from 'fs-extra';
 import * as inquirer from 'inquirer';
 import * as path from 'path';
 import * as semver from 'semver';
 
 import {CliOptions} from '../cli';
 import convertPackage from '../convert-package';
-import {readJson} from '../manifest-converter';
 import {exec, logStep} from '../util';
 
 export default async function run(options: CliOptions) {
@@ -39,19 +39,19 @@ export default async function run(options: CliOptions) {
   let inPackageJson: {name: string, version: string}|undefined;
   let outPackageJson: {name: string, version: string}|undefined;
   try {
-    outPackageJson = readJson(outDir, 'package.json');
+    outPackageJson = await fse.readJSON(path.join(outDir, 'package.json'));
   } catch (e) {
     // do nothing
   }
   try {
     if (options.in) {
-      inPackageJson = readJson(inDir, 'package.json');
+      inPackageJson = await fse.readJson(path.join(inDir, 'package.json'));
     }
   } catch (e) {
     // do nothing
   }
   try {
-    inBowerJson = readJson(inDir, 'bower.json');
+    inBowerJson = await fse.readJson(path.join(inDir, 'bower.json'));
   } catch (e) {
     // do nothing
   }
@@ -97,6 +97,8 @@ export default async function run(options: CliOptions) {
     packageVersion: npmPackageVersion,
     cleanOutDir: options.clean!!,
     addImportPath: options['add-import-path'],
+    flat: options.flat,
+    private: options.private,
   });
 
   logStep(2, 2, '🎉', `Conversion Complete!`);

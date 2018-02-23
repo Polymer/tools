@@ -79,6 +79,8 @@ suite('AnalysisConverter', () => {
         excludes: partialOptions.excludes,
         referenceExcludes: partialOptions.referenceExcludes,
         addImportPath: partialOptions.addImportPath,
+        flat: false,
+        private: false,
       };
       // Analyze all given files.
       const allTestUrls = [...urlLoader.urlContentsMap.keys()];

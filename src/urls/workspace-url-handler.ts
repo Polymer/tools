@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import {Analyzer, Document} from 'polymer-analyzer';
 
 import {lookupDependencyMapping} from '../manifest-converter';
-import {readJson} from '../manifest-converter';
 
 import {ConvertedDocumentUrl, OriginalDocumentUrl, PackageType} from './types';
 import {UrlHandler} from './url-handler';
@@ -34,7 +34,7 @@ export function lookupNpmPackageName(bowerJsonPath: string): string|undefined {
   let bowerPackageName: string;
   // Lookup the official package name via `bower.json`.
   try {
-    const bowerJson = readJson(bowerJsonPath);
+    const bowerJson = fse.readJSONSync(bowerJsonPath);
     bowerPackageName = bowerJson.name as string;
   } catch (err) {
     console.warn(

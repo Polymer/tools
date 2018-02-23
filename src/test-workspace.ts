@@ -13,13 +13,15 @@
  */
 
 import chalk from 'chalk';
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {ConversionResultsMap, GIT_STAGING_BRANCH_NAME, WorkspaceConversionSettings} from './convert-workspace';
-import {generatePackageJson, localDependenciesBranch, readJson, writeJson} from './manifest-converter';
+import {generatePackageJson, localDependenciesBranch, writeJson} from './manifest-converter';
+import {YarnConfig} from './npm-config';
 import {lookupNpmPackageName} from './urls/workspace-url-handler';
-import {exec, logRepoError, logStep} from './util';
+import {exec, logRepoError, logStep, readJsonIfExists} from './util';
 
 /**
  * Configuration options required for workspace testing. Same as conversion
@@ -37,7 +39,7 @@ async function setupRepos(
     options: WorkspaceTestSettings) {
   return run(reposUnderTest, async (repo) => {
     await exec(repo.dir, 'git', ['checkout', '-B', localDependenciesBranch]);
-    writeTestingPackageJson(repo, localConversionMap, options.packageVersion);
+    await writeTestingPackageJson(repo, localConversionMap, options);
     await exec(
         repo.dir, 'git', ['commit', '-am', 'testing commit', '--allow-empty']);
   }, {concurrency: 10});
@@ -84,18 +86,31 @@ async function restoreRepos(reposUnderTest: WorkspaceRepo[]) {
  * include local references to dependencies that were also converted in the
  * workspace.
  */
-function writeTestingPackageJson(
+async function writeTestingPackageJson(
     repo: WorkspaceRepo,
     localConversionMap: Map<string, string>,
-    newPackageVersion: string) {
+    options: WorkspaceTestSettings) {
   const bowerPackageName = path.basename(repo.dir);
   const bowerJsonPath = path.join(repo.dir, 'bower.json');
-  const bowerJson = readJson(bowerJsonPath);
+  const bowerJson = await fse.readJSON(bowerJsonPath);
   const npmPackageName =
       lookupNpmPackageName(bowerJsonPath) || bowerPackageName;
+
+  const packageJsonPath = path.join(repo.dir, 'package.json');
+  const existingPackageJson =
+      await readJsonIfExists<Partial<YarnConfig>>(packageJsonPath);
+
   const packageJson = generatePackageJson(
-      bowerJson, npmPackageName, newPackageVersion, localConversionMap);
-  writeJson(packageJson, repo.dir, 'package.json');
+      bowerJson,
+      {
+        name: npmPackageName,
+        version: options.packageVersion,
+        flat: options.flat,
+        private: options.private,
+      },
+      localConversionMap,
+      existingPackageJson);
+  writeJson(packageJson, packageJsonPath);
 }
 
 export async function testWorkspace(

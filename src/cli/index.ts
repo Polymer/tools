@@ -163,6 +163,20 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     description: `Whether to add a static importPath property to elements. ` +
         `Defaults to false`,
   },
+  {
+    name: 'flat',
+    type: Boolean,
+    defaultValue: false,
+    description:
+        `Whether to set flat:true in the newly generated package.json.`,
+  },
+  {
+    name: 'private',
+    type: Boolean,
+    defaultValue: false,
+    description:
+        `Whether to set private:true in the newly generated package.json.`,
+  },
 ];
 
 export interface CliOptions {
@@ -187,6 +201,8 @@ export interface CliOptions {
   publish: boolean;
   'import-style': NpmImportStyle;
   'add-import-path': boolean;
+  flat: boolean;
+  'private': boolean;
 }
 
 export async function run() {

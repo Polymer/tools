@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-* Add `deleteFiles` option and `--delete-files` flag to delete all files/directories matching some glob patterns after conversion.
+* Add `deleteFiles` option and `--delete-files` flag to delete all
+  files/directories matching some glob patterns after conversion.
+* If a package already has a `package.json`, it will be merged with the newly
+  generated one.
+* Added `--flat` and `--private` CLI flags to control those options in the new
+  `package.json`. Both default to `false`.
 <!-- Add new, unreleased changes here. -->
 
 ## [0.3.0] - 2017-11-28
