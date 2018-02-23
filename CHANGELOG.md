@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## Unreleased
+## [3.9.0] - 2018-02-23
 * Added new options: `npm` and `componentDir`. Setting `npm` automatically sets `componentDir` to "node_modules/", unless explicitly set otherwise.
 
 ## [3.8.1] - 2018-01-29
