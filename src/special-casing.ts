@@ -23,8 +23,8 @@ export const polymerFileOverrides: ReadonlyMap<ResolvedUrl, string> = new Map([
     `<script>
   window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
 
-  /** @namespace */
-  let Polymer;
+  /** @namespace Polymer */
+  let __PolymerBootstrap;
 </script>`
   ],
 

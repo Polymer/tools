@@ -17,7 +17,7 @@ import * as path from 'path';
 import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 
 import {BowerConfig} from './bower-config';
-import {ConversionSettings, createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
+import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
 import {generatePackageJson, writeJson} from './manifest-converter';
 import {YarnConfig} from './npm-config';
 import {ProjectConverter} from './project-converter';
@@ -80,21 +80,6 @@ function getConversionSettings(
 }
 
 /**
- * Get the relevant documents from a package, to be converted.
- */
-export function getPackageDocuments(
-    urlHandler: PackageUrlHandler,
-    analysis: Analysis,
-    conversionSettings: ConversionSettings) {
-  const htmlDocuments = [...analysis.getFeatures({kind: 'html-document'})];
-  return htmlDocuments.filter((d) => {
-    const documentUrl = urlHandler.getDocumentUrl(d);
-    return PackageUrlHandler.isUrlInternalToPackage(documentUrl) &&
-        !conversionSettings.excludes.has(documentUrl);
-  });
-}
-
-/**
  * Configure a basic analyzer instance for the package under conversion.
  */
 function configureAnalyzer(options: PackageConversionSettings) {
@@ -117,6 +102,7 @@ function configureAnalyzer(options: PackageConversionSettings) {
  */
 export default async function convert(options: PackageConversionSettings) {
   const outDir = options.outDir;
+  const npmPackageName = options.packageName;
   await setupOutDir(outDir, options.cleanOutDir);
 
   // Configure the analyzer and run an analysis of the package.
@@ -132,13 +118,11 @@ export default async function convert(options: PackageConversionSettings) {
       new PackageUrlHandler(analyzer, options.packageName, options.packageType);
   const conversionSettings =
       getConversionSettings(analyzer, analysis, options, bowerJson);
-  const converter = new ProjectConverter(urlHandler, conversionSettings);
+  const converter =
+      new ProjectConverter(analysis, urlHandler, conversionSettings);
 
-  // Gather all relevent package documents, and run the converter on them!
-  for (const document of getPackageDocuments(
-           urlHandler, analysis, conversionSettings)) {
-    converter.convertDocument(document);
-  }
+  // Convert the package
+  converter.convertPackage(npmPackageName);
 
   // Filter out external results before writing them to disk.
   const results = converter.getResults();

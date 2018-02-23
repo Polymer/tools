@@ -1,5 +1,6 @@
-import { Base, html } from '../../polymer.js';
+import { Base } from '../../polymer.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../lib/utils/html-tag.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.

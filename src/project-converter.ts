@@ -12,11 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document} from 'polymer-analyzer';
+import {Analysis, Document} from 'polymer-analyzer';
 
 import {ConversionSettings} from './conversion-settings';
 import {DocumentConverter} from './document-converter';
-import {ConversionResult, JsExport} from './js-module';
+import {ConversionResult} from './js-module';
+import {ProjectScanner} from './project-scanner';
 import {ConvertedDocumentFilePath, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
 
@@ -37,154 +38,88 @@ const excludeFromResults = new Set([
  * For best results, only one ProjectConverter instance should be needed, so
  * that it can cache results and avoid duplicate, extraneous document
  * conversions.
- *
- * ProjectConverter is indifferent to the layout of the project, delegating any
- * special URL handling/resolution to the urlHandler provided to the
- * constructor.
  */
 export class ProjectConverter {
-  readonly urlHandler: UrlHandler;
-  readonly conversionSettings: ConversionSettings;
-
-  /**
-   * A cache of all JS Exports by namespace, to map implicit HTML imports to
-   * explicit named JS imports.
-   */
-  readonly namespacedExports = new Map<string, JsExport>();
+  private readonly urlHandler: UrlHandler;
+  private readonly conversionSettings: ConversionSettings;
+  private readonly scanner: ProjectScanner;
 
   /**
    * A cache of all converted documents. Document conversions should be
    * idempotent, so conversion results can be safely cached.
    */
-  readonly conversionResults = new Map<OriginalDocumentUrl, ConversionResult>();
+  private readonly results = new Map<OriginalDocumentUrl, ConversionResult>();
 
-  constructor(urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
+  constructor(
+      analysis: Analysis, urlHandler: UrlHandler,
+      conversionSettings: ConversionSettings) {
     this.urlHandler = urlHandler;
     this.conversionSettings = conversionSettings;
+    this.scanner = new ProjectScanner(analysis, urlHandler, conversionSettings);
   }
 
   /**
-   * Convert a document and any of its dependencies. The output format (JS
+   * Convert a package and any of its dependencies. The output format (JS
    * Module or HTML Document) is determined by whether the file is included in
    * conversionSettings.includes.
+   */
+  convertPackage(matchPackageName: string) {
+    // First, scan the package (and any of its dependencies)
+    this.scanner.scanPackage(matchPackageName);
+    // Then, convert each document in the given package
+    for (const document of this.scanner.getPackageDocuments(matchPackageName)) {
+      this.convertDocument(document);
+    }
+  }
+
+  /**
+   * Convert a document. The output format (JS Module or HTML Document) is
+   * dictated by the results of the scanner.
    */
   convertDocument(document: Document) {
     console.assert(
         document.kinds.has('html-document'),
         `convertDocument() must be called with an HTML document, but got ${
             document.kinds}`);
-    try {
-      const documentUrl = this.urlHandler.getDocumentUrl(document);
-      this.conversionSettings.includes.has(documentUrl) ?
-          this.convertDocumentToJs(document, new Set()) :
-          this.convertDocumentToHtml(document, new Set());
-    } catch (e) {
-      console.error(`Error in ${document.url}`, e);
-    }
-  }
 
-  /**
-   * Check if a document is explicitly excluded or has already been converted
-   * to decide if it should be converted or skipped.
-   */
-  private _shouldConvertDocument(document: Document): boolean {
+    // Note that this should be a quick no-op if this method was called via
+    // convertPackage() (which first scans the entire package) since each
+    // document is only ever scanned once.
+    this.scanner.scanDocument(document);
+    const scanResults = this.scanner.getResults();
     const documentUrl = this.urlHandler.getDocumentUrl(document);
-    return !this.conversionResults.has(documentUrl) &&
-        !this.conversionSettings.excludes.has(documentUrl);
-  }
-
-  /**
-   * Convert document dependencies. Should be called early in the conversion
-   * process so that it can read this document's dependencies' exports.
-   */
-  private _convertDependencies(
-      document: Document, visited: Set<OriginalDocumentUrl>) {
-    for (const htmlImport of DocumentConverter.getAllHtmlImports(document)) {
-      // Ignore excluded or already-converted documents before checking for
-      // cyclical dependencies below.
-      if (!this._shouldConvertDocument(htmlImport.document)) {
-        continue;
-      }
-      // Warn if a cyclical dependency is found.
-      if (visited.has(this.urlHandler.getDocumentUrl(htmlImport.document))) {
-        console.warn(
-            `Cycle in dependency graph found where ` +
-            `${this.urlHandler.getDocumentUrl(document)} imports ${
-                this.urlHandler.getDocumentUrl(htmlImport.document)}.\n` +
-            `    Modulizer does not yet support rewriting references among ` +
-            `cyclic dependencies.`);
-        continue;
-      }
-      // Run a full conversion on the dependency document and its dependencies.
-      this.convertDocumentToJs(htmlImport.document, visited);
+    const scanResult = scanResults.files.get(documentUrl);
+    if (!scanResult) {
+      throw new Error(`File not found during scan: ${documentUrl}`);
     }
-  }
 
-  /**
-   * Convert an HTML document to a JS module. Useful during conversion for
-   * dependencies where the type of result is explictly expected.
-   */
-  convertDocumentToJs(document: Document, visited: Set<OriginalDocumentUrl>) {
-    if (!this._shouldConvertDocument(document)) {
-      return;
-    }
-    visited.add(this.urlHandler.getDocumentUrl(document));
-    this._convertDependencies(document, visited);
     const documentConverter = new DocumentConverter(
         document,
-        this.namespacedExports,
+        scanResults.exports,
         this.urlHandler,
         this.conversionSettings);
-    documentConverter.convertToJsModule().forEach((result) => {
-      this._handleConversionResult(result);
-    });
-  }
-
-  /**
-   * Convert an HTML document without changing the file type (changes imports
-   * and inline scripts to modules as necessary). Useful during conversion for
-   * dependencies where the type of result is explictly expected.
-   */
-  convertDocumentToHtml(document: Document, visited: Set<OriginalDocumentUrl>) {
-    if (!this._shouldConvertDocument(document)) {
-      return;
-    }
-    visited.add(this.urlHandler.getDocumentUrl(document));
-    this._convertDependencies(document, visited);
-    const documentConverter = new DocumentConverter(
-        document,
-        this.namespacedExports,
-        this.urlHandler,
-        this.conversionSettings);
-    const newModule = documentConverter.convertAsToplevelHtmlDocument();
-    this._handleConversionResult(newModule);
-  }
-
-  /**
-   * A private instance method for handling new conversion results, exports,
-   * etc.
-   */
-  private _handleConversionResult(newModule: ConversionResult): void {
-    this.conversionResults.set(newModule.originalUrl, newModule);
-    if (newModule.output !== undefined &&
-        newModule.output.type === 'js-module') {
-      for (const expr of newModule.output.exportedNamespaceMembers) {
-        this.namespacedExports.set(
-            expr.oldNamespacedName,
-            new JsExport(newModule.convertedUrl, expr.es6ExportName));
-      }
+    if (scanResult.type === 'js-module') {
+      documentConverter.convertJsModule().forEach((newModule) => {
+        this.results.set(newModule.originalUrl, newModule);
+      });
+    } else if (scanResult.type === 'html-document') {
+      const newModule = documentConverter.convertTopLevelHtmlDocument();
+      this.results.set(newModule.originalUrl, newModule);
+    } else if (scanResult.type === 'delete-file') {
+      const newModule = documentConverter.createDeleteResult();
+      this.results.set(newModule.originalUrl, newModule);
     }
   }
 
   /**
    * This method collects the results after all documents are converted. It
-   * handles out some broken edge-cases (ex: shadycss) and sets empty map
-   * entries for files to be deleted.
+   * handles any broken edge-cases and sets empty map entries for files to be
+   * deleted.
    */
   getResults(): Map<ConvertedDocumentFilePath, string|undefined> {
     const results = new Map<ConvertedDocumentFilePath, string|undefined>();
 
-    for (const convertedModule of this.conversionResults.values()) {
+    for (const convertedModule of this.results.values()) {
       // TODO(fks): This is hacky, ProjectConverter isn't supposed to know about
       //  project layout / file location. Move into URLHandler, potentially make
       //  its own `excludes`-like settings option.
@@ -197,11 +132,9 @@ export class ProjectConverter {
             undefined);
       }
       if (convertedModule.output !== undefined) {
-        results.set(
-            convertedModule.convertedFilePath, convertedModule.output.source);
+        results.set(convertedModule.convertedFilePath, convertedModule.output);
       }
     }
-
     return results;
   }
 }

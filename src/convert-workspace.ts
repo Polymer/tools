@@ -94,14 +94,14 @@ export default async function convert(options: WorkspaceConversionSettings):
     Promise<ConversionResultsMap> {
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
-  const htmlDocuments = [...analysis.getFeatures({kind: 'html-document'})];
   const conversionSettings =
       createDefaultConversionSettings(analyzer, analysis, options);
   const urlHandler = new WorkspaceUrlHandler(analyzer, options.workspaceDir);
-  const converter = new ProjectConverter(urlHandler, conversionSettings);
-  const convertedPackageResults: ConversionResultsMap = new Map();
+  const converter =
+      new ProjectConverter(analysis, urlHandler, conversionSettings);
+  const scannedPackageResults: ConversionResultsMap = new Map();
 
-  // For each repo, convert the relevant HTML documents:
+  // For each repo, convert the full package:
   for (const repo of options.reposToConvert) {
     const repoDirName = path.basename(repo.dir);
     const bowerConfigPath = path.join(repo.dir, 'bower.json');
@@ -109,19 +109,13 @@ export default async function convert(options: WorkspaceConversionSettings):
     if (!npmPackageName) {
       continue;
     }
-    for (const document of htmlDocuments) {
-      const documentUrl = urlHandler.getDocumentUrl(document);
-      if (!documentUrl.startsWith(repoDirName) ||
-          conversionSettings.excludes.has(documentUrl)) {
-        continue;
-      }
-      converter.convertDocument(document);
-    }
-    convertedPackageResults.set(npmPackageName, repo.dir);
+    scannedPackageResults.set(npmPackageName, repo.dir);
+    converter.convertPackage(repoDirName);
   }
 
   // Process & write each conversion result:
-  await writeFileResults(options.workspaceDir, converter.getResults());
+  const results = converter.getResults();
+  await writeFileResults(options.workspaceDir, results);
 
   // Delete files that were explicitly requested to be deleted. Note we apply
   // the glob with each repo as the root directory (e.g. a glob of "types"
@@ -154,5 +148,5 @@ export default async function convert(options: WorkspaceConversionSettings):
   commitResults.failures.forEach(logRepoError);
 
   // Return a map of all packages converted, keyed by npm package name.
-  return convertedPackageResults;
+  return scannedPackageResults;
 }

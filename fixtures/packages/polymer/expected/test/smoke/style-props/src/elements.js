@@ -1,6 +1,6 @@
 import './elements-defaults.js';
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
-import { html } from '../../../../polymer.js';
+import { html } from '../../../../lib/utils/html-tag.js';
 Polymer({
   importPath: import.meta.url,
 

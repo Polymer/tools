@@ -1,7 +1,7 @@
 import { Element } from '../../polymer-element.js';
 import '../../../../@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '../../lib/elements/custom-style.js';
-import { html } from '../../polymer.js';
+import { html } from '../../lib/utils/html-tag.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.

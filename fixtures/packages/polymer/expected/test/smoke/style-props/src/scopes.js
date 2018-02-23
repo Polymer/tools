@@ -1,7 +1,7 @@
 import './settings.js';
 import './elements.js';
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
-import { html } from '../../../../polymer.js';
+import { html } from '../../../../lib/utils/html-tag.js';
 import { dom } from '../../../../lib/legacy/polymer.dom.js';
 
 Polymer({

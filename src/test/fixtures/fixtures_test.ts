@@ -137,7 +137,6 @@ suite('Fixtures', () => {
 
         // 1. Check stderr output that no (unexpected) errors were emitted.
         assert.equal(output.stderr, (fixtureTestConfig.stderr || ''));
-
         // 2. Compare the generated output to the expected conversion.
         //    Output the diff & fail if any differences are encountered.
         const diffResult =

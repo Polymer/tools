@@ -19,7 +19,6 @@ import {EOL} from 'os';
 import {Analyzer, InMemoryOverlayUrlLoader} from 'polymer-analyzer';
 
 import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
-import {getPackageDocuments} from '../../convert-package';
 import {getMemberPath} from '../../document-util';
 import {ProjectConverter} from '../../project-converter';
 import {PackageUrlHandler} from '../../urls/package-url-handler';
@@ -37,7 +36,7 @@ A few conventions in these tests:
  */
 
 suite('AnalysisConverter', () => {
-  suite('convertDocument', () => {
+  suite('_convertDocument', () => {
     let urlLoader: InMemoryOverlayUrlLoader;
     let analyzer: Analyzer;
 
@@ -89,17 +88,14 @@ suite('AnalysisConverter', () => {
       const conversionSettings =
           createDefaultConversionSettings(analyzer, analysis, partialSettings);
       conversionSettings.includes.add('test.html');
-      // Setup ProjectConverter, use PackageUrlHandler for easy setup.
+      // Setup ProjectScanner, use PackageUrlHandler for easy setup.
       const urlHandler =
           new PackageUrlHandler(analyzer, packageName, packageType);
       const converter =
-          await new ProjectConverter(urlHandler, conversionSettings);
+          await new ProjectConverter(analysis, urlHandler, conversionSettings);
       // Gather all relevent package documents, and run the converter!
       const stopIntercepting = interceptWarnings();
-      for (const doc of getPackageDocuments(
-               urlHandler, analysis, conversionSettings)) {
-        converter.convertDocument(doc);
-      }
+      converter.convertPackage(packageName);
       // Assert warnings matched expected.
       const warnings = stopIntercepting();
       assert.deepEqual(
@@ -1111,7 +1107,6 @@ export const setRootPath = function(path) {
               const Polymer = {};
               /** @memberof Polymer */
               Polymer.Element = class Element {}
-              Polymer.html = Polymer.html;
             </script>`,
         'test.html': `
 <link rel="import" href="./polymer.html">
@@ -1137,7 +1132,8 @@ export const setRootPath = function(path) {
       });
       assertSources(await convert(), {
         'test.js': `
-import { html, Element } from './polymer.js';
+import { Element } from './polymer.js';
+import { html } from './html-tag.js';
 /**
  * @customElement
  * @polymer
@@ -1173,7 +1169,6 @@ class TestElement extends Element {
             <script>
               /** @global */
               window.Polymer = function() {}
-              Polymer.html = Polymer.html;
             </script>`,
         'test.html': `
   <link rel="import" href="./polymer.html">
@@ -1192,7 +1187,8 @@ class TestElement extends Element {
 
       assertSources(await convert(), {
         'test.js': `
-import { Polymer, html } from './polymer.js';
+import { Polymer } from './polymer.js';
+import { html } from './html-tag.js';
 Polymer({
   _template: html\`
       <h1>Hi!</h1>
@@ -2217,11 +2213,7 @@ export const foo = 10;
           </script>
         `,
       });
-      const expectedWarnings =
-          ['Cycle in dependency graph found where b.html imports a.html.\n' +
-           '    Modulizer does not yet support rewriting references among ' +
-           'cyclic dependencies.'];
-      assertSources(await convert({expectedWarnings}), {
+      assertSources(await convert(), {
         'a.js': `
 import './b.js';
 export const foo = 5;
@@ -2256,12 +2248,7 @@ export const bar = 20;
           </script>
       `
       });
-
-      const expectedWarnings =
-          ['Cycle in dependency graph found where b.html imports a.html.\n' +
-           '    Modulizer does not yet support rewriting references among ' +
-           'cyclic dependencies.'];
-      assertSources(await convert({expectedWarnings}), {
+      assertSources(await convert(), {
         'a.js': `
 import { bar } from './b.js';
 
@@ -2269,12 +2256,11 @@ export const foo = function() {
   return bar || 10;
 };
 `,
-        // TODO(rictic): we should rewrite Polymer.foo here, but that's tricky…
         'b.js': `
-import './a.js';
+import { foo } from './a.js';
 
 export const bar = (function() {
-  if (Polymer.foo) {
+  if (foo) {
     return 50;
   }
   return 5;

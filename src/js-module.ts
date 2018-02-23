@@ -14,20 +14,6 @@
 
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 
-
-export interface HtmlFile {
-  readonly type: 'html-file';
-  readonly source: string;
-}
-
-export interface JsModule {
-  readonly type: 'js-module';
-  readonly source: string;
-  readonly exportedNamespaceMembers: ReadonlyArray<NamespaceMemberToExport>;
-  /** Set of exported names. */
-  readonly es6Exports: ReadonlySet<string>;
-}
-
 export interface ConversionResult {
   readonly originalUrl: OriginalDocumentUrl;
   readonly convertedUrl: ConvertedDocumentUrl;
@@ -48,7 +34,7 @@ export interface ConversionResult {
    * regardless of the value of `deleteOriginal`. This is useful in cases where
    * there original is an HTML file that only loads an external script.
    */
-  readonly output: HtmlFile|JsModule|undefined;
+  readonly output: string|undefined;
 }
 
 export class JsExport {

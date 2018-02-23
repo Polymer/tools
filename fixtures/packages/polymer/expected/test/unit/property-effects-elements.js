@@ -1,5 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
-import { html } from '../../polymer.js';
+import { html } from '../../lib/utils/html-tag.js';
 import { Element } from '../../polymer-element.js';
 import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
 import { MutableData } from '../../lib/mixins/mutable-data.js';

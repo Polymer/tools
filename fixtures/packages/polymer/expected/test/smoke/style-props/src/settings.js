@@ -1,5 +1,5 @@
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
-import { html } from '../../../../polymer.js';
+import { html } from '../../../../lib/utils/html-tag.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

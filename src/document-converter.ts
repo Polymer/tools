@@ -27,7 +27,7 @@ import * as recast from 'recast';
 
 import {ConversionSettings} from './conversion-settings';
 import {attachCommentsToFirstStatement, canDomModuleBeInlined, collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, filterClone, findAvailableIdentifier, getCommentsBetween, getMemberPath, getNodePathInProgram, getPathOfAssignmentTo, getSetterName, insertStatementsIntoProgramBody, serializeNode, serializeNodeToTemplateLiteral} from './document-util';
-import {ConversionResult, JsExport} from './js-module';
+import {ConversionResult, JsExport, NamespaceMemberToExport} from './js-module';
 import {addA11ySuiteIfUsed} from './passes/add-a11y-suite-if-used';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
@@ -130,6 +130,36 @@ interface Edit {
 }
 
 /**
+ * Contains information about how an existing file should be converted to a new
+ * JS Module. Includes a mapping of its new exports.
+ */
+export interface JsModuleScanResult {
+  type: 'js-module';
+  originalUrl: OriginalDocumentUrl;
+  convertedUrl: ConvertedDocumentUrl;
+  exportMigrationRecords: NamespaceMemberToExport[];
+}
+
+/**
+ * Contains information that an existing file should be deleted during
+ * conversion.
+ */
+export interface DeleteFileScanResult {
+  type: 'delete-file';
+  originalUrl: OriginalDocumentUrl;
+}
+
+/**
+ * Contains information that an existing file should be converted as a top-level
+ * HTML file (and not as a new JS module).
+ */
+export interface HtmlDocumentScanResult {
+  type: 'html-document';
+  originalUrl: OriginalDocumentUrl;
+  convertedUrl: ConvertedDocumentUrl;
+}
+
+/**
  * Convert a module specifier & an optional set of named exports (or '*' to
  * import entire namespace) to a set of ImportDeclaration objects.
  */
@@ -218,7 +248,6 @@ export class DocumentConverter {
   private readonly conversionSettings: ConversionSettings;
   private readonly document: Document;
 
-  private readonly _claimedDomModules = new Set<parse5.ASTNode>();
   constructor(
       document: Document, namespacedExports: Map<string, JsExport>,
       urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
@@ -263,19 +292,14 @@ export class DocumentConverter {
     return isInternalImport && !isModuleImport;
   }
 
-  convertToJsModule(): ConversionResult[] {
-    if (this._isWrapperHTMLDocument) {
-      return [{
-        originalUrl: this.originalUrl,
-        convertedUrl: this.convertedUrl,
-        convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
-        deleteOriginal: true,
-        output: undefined,
-      }];
-    }
-
+  /**
+   * Creates a single program from all the JavaScript in the current document.
+   * The standard program result can be used for either scanning or conversion.
+   */
+  private _prepareJsModule() {
     const combinedToplevelStatements = [];
     const convertedHtmlScripts = new Set<Import>();
+    const claimedDomModules = new Set<parse5.ASTNode>();
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
     for (const script of this.document.getFeatures()) {
       let scriptDocument: Document;
@@ -293,7 +317,11 @@ export class DocumentConverter {
       rewriteToplevelThis(scriptProgram);
       // We need to inline templates on a per-script basis, otherwise we run
       // into trouble matching up analyzer AST nodes with our own.
-      this.inlineTemplates(scriptProgram, scriptDocument);
+      const localClaimedDomModules =
+          this.inlineTemplates(scriptProgram, scriptDocument);
+      for (const claimedDomModule of localClaimedDomModules) {
+        claimedDomModules.add(claimedDomModule);
+      }
       if (this.conversionSettings.addImportPath) {
         this.addImportPathsToElements(scriptProgram, scriptDocument);
       }
@@ -313,6 +341,41 @@ export class DocumentConverter {
     const program = jsc.program(combinedToplevelStatements);
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
+
+    this.insertCodeToGenerateHtmlElements(program, claimedDomModules);
+    removeNamespaceInitializers(program, this.conversionSettings.namespaces);
+
+    return {program, convertedHtmlScripts};
+  }
+
+  /**
+   * Scan a document's new interface as a JS Module.
+   */
+  scanJsModule(): DeleteFileScanResult|JsModuleScanResult {
+    if (this._isWrapperHTMLDocument) {
+      return {
+        type: 'delete-file',
+        originalUrl: this.originalUrl,
+      };
+    }
+
+    const {program} = this._prepareJsModule();
+    const {exportMigrationRecords} = rewriteNamespacesAsExports(
+        program, this.document, this.conversionSettings.namespaces);
+
+    return {
+      type: 'js-module',
+      originalUrl: this.originalUrl,
+      convertedUrl: this.convertedUrl,
+      exportMigrationRecords,
+    };
+  }
+
+  /**
+   * Convert a document to a JS Module.
+   */
+  convertJsModule(): ConversionResult[] {
+    const {program, convertedHtmlScripts} = this._prepareJsModule();
     const importedReferences = this.collectNamespacedReferences(program);
     const results: ConversionResult[] = [];
 
@@ -339,10 +402,8 @@ export class DocumentConverter {
         importedReferences.set(newScriptUrl, new Set());
       }
     }
-    this.addJsImports(program, importedReferences);
-    this.insertCodeToGenerateHtmlElements(program);
 
-    removeNamespaceInitializers(program, this.conversionSettings.namespaces);
+    this.addJsImports(program, importedReferences);
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
             program, this.document, this.conversionSettings.namespaces);
@@ -352,7 +413,6 @@ export class DocumentConverter {
     rewriteExcludedReferences(program, this.conversionSettings);
     rewriteReferencesToLocalExports(program, exportMigrationRecords);
     rewriteReferencesToNamespaceMembers(program, allNamespaceNames);
-
     this.warnOnDangerousReferences(program);
 
     const outputProgram =
@@ -363,17 +423,28 @@ export class DocumentConverter {
       convertedUrl: this.convertedUrl,
       convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
       deleteOriginal: true,
-      output: {
-        type: 'js-module',
-        source: outputProgram.code + EOL,
-        exportedNamespaceMembers: exportMigrationRecords,
-        es6Exports: new Set(exportMigrationRecords.map((r) => r.es6ExportName))
-      }
+      output: outputProgram.code + EOL
     });
     return results;
   }
 
-  convertAsToplevelHtmlDocument(): ConversionResult {
+  /**
+   * Scan a document as a top-level HTML document. Top-level HTML documents
+   * have no exports to scan, so this returns a simple object containing
+   * relevant url mapping information.
+   */
+  scanTopLevelHtmlDocument(): HtmlDocumentScanResult {
+    return {
+      type: 'html-document',
+      convertedUrl: this.convertedUrl,
+      originalUrl: this.originalUrl,
+    };
+  }
+
+  /**
+   * Convert a document to a top-level HTML document.
+   */
+  convertTopLevelHtmlDocument(): ConversionResult {
     const htmlDocument = this.document.parsedDocument as ParsedHtmlDocument;
     const p = dom5.predicates;
 
@@ -532,6 +603,7 @@ export class DocumentConverter {
     // Apply edits from bottom to top, so that the offsets stay valid.
     edits.sort(({offsets: [startA]}, {offsets: [startB]}) => startB - startA);
     let contents = this.document.parsedDocument.contents;
+
     for (const {offsets: [start, end], replacementText} of edits) {
       contents =
           contents.slice(0, start) + replacementText + contents.slice(end);
@@ -541,10 +613,21 @@ export class DocumentConverter {
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
       convertedFilePath: getHtmlDocumentConvertedFilePath(this.originalUrl),
-      output: {
-        type: 'html-file',
-        source: contents,
-      }
+      output: contents
+    };
+  }
+
+  /**
+   * Create a ConversionResult object to delete the file instead of converting
+   * it.
+   */
+  createDeleteResult(): ConversionResult {
+    return {
+      originalUrl: this.originalUrl,
+      convertedUrl: this.convertedUrl,
+      convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
+      deleteOriginal: true,
+      output: undefined,
     };
   }
 
@@ -698,7 +781,8 @@ export class DocumentConverter {
    * code to the top of program that constructs equivalent DOM and insert
    * it into `window.document`.
    */
-  private insertCodeToGenerateHtmlElements(program: Program) {
+  private insertCodeToGenerateHtmlElements(
+      program: Program, claimedDomModules: Set<parse5.ASTNode>) {
     const ast = this.document.parsedDocument.ast as parse5.ASTNode;
     if (ast.childNodes === undefined) {
       return;
@@ -712,12 +796,10 @@ export class DocumentConverter {
       ...body.childNodes!.filter((n: parse5.ASTNode) => n.tagName !== undefined)
     ];
 
-    const genericElements = filterClone(
-        elements,
-        (e) =>
-            !(generatedElementBlacklist.has(e.tagName) ||
-              this._claimedDomModules.has(e)));
-
+    const genericElements = filterClone(elements, (e) => {
+      return !(
+          generatedElementBlacklist.has(e.tagName) || claimedDomModules.has(e));
+    });
     if (genericElements.length === 0) {
       return;
     }
@@ -731,6 +813,7 @@ export class DocumentConverter {
    */
   private inlineTemplates(program: Program, scriptDocument: Document) {
     const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
+    const claimedDomModules = new Set<parse5.ASTNode>();
 
     for (const element of elements) {
       // This is an analyzer wart. There's no way to avoid getting features
@@ -748,7 +831,7 @@ export class DocumentConverter {
       if (!canDomModuleBeInlined(domModule)) {
         continue;
       }
-      this._claimedDomModules.add(domModule);
+      claimedDomModules.add(domModule);
       const template = dom5.query(domModule, (e) => e.tagName === 'template');
       if (template === null) {
         continue;
@@ -802,6 +885,7 @@ export class DocumentConverter {
             node.type}`);
       }
     }
+    return claimedDomModules;
   }
 
   /**
@@ -874,6 +958,7 @@ export class DocumentConverter {
    */
   private collectNamespacedReferences(program: Program):
       Map<ConvertedDocumentUrl, Set<ImportReference>> {
+    const convertedUrl = this.convertedUrl;
     const namespacedExports = this.namespacedExports;
     const conversionSettings = this.conversionSettings;
     const importedReferences =
@@ -902,7 +987,7 @@ export class DocumentConverter {
           return false;
         }
         const exportOfMember = namespacedExports.get(memberName);
-        if (!exportOfMember) {
+        if (!exportOfMember || exportOfMember.url === convertedUrl) {
           return false;
         }
         // Store the imported reference
@@ -920,8 +1005,7 @@ export class DocumentConverter {
         if (assignmentPath) {
           const setterName = getSetterName(memberPath);
           const exportOfMember = namespacedExports.get(setterName);
-          if (!exportOfMember) {
-            // warn about writing to an exported value without a setter?
+          if (!exportOfMember || exportOfMember.url === convertedUrl) {
             this.traverse(path);
             return;
           }
@@ -935,7 +1019,7 @@ export class DocumentConverter {
           return false;
         }
         const exportOfMember = namespacedExports.get(memberName);
-        if (!exportOfMember) {
+        if (!exportOfMember || exportOfMember.url === convertedUrl) {
           this.traverse(path);
           return;
         }

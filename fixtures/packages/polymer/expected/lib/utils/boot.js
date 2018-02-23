@@ -1,4 +1,4 @@
 window.JSCompiler_renameProperty = function(prop, obj) { return prop; }
 
-/** @namespace */
-let Polymer;
+/** @namespace Polymer */
+let __PolymerBootstrap;

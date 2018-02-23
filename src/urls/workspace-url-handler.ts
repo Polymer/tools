@@ -13,7 +13,6 @@
  */
 
 import * as fse from 'fs-extra';
-import * as path from 'path';
 import {Analyzer, Document} from 'polymer-analyzer';
 
 import {lookupDependencyMapping} from '../manifest-converter';
@@ -72,35 +71,13 @@ export class WorkspaceUrlHandler implements UrlHandler {
   }
 
   /**
-   * Cache the npm package name found for each
-   */
-  packageNameCache = new Map<string, string>();
-
-  /**
    * Get the name of the package where a file lives, based on it's URL. For a
    * workspace, we read the Bower package name from the bower.json of every
    * repo, and then check dependency map to get the new NPM name for that
    * package.
    */
-  getPackageNameForUrl(url: OriginalDocumentUrl) {
-    const basePackageDir = url.split('/')[0];
-    const cachedPackageName = this.packageNameCache.get(basePackageDir);
-    if (cachedPackageName) {
-      return cachedPackageName;
-    }
-    const packageName = this._getPackageNameForUrl(url);
-    this.packageNameCache.set(basePackageDir, packageName);
-    return packageName;
-  }
-
-  /**
-   * Get the name of the package where a file lives, based on it's URL.
-   */
-  _getPackageNameForUrl(url: OriginalDocumentUrl) {
-    const packageDirName = url.split('/')[0];
-    const bowerPath =
-        path.join(this.workspaceDir, packageDirName, 'bower.json');
-    return lookupNpmPackageName(bowerPath) || packageDirName;
+  getOriginalPackageNameForUrl(url: OriginalDocumentUrl): string {
+    return url.split('/')[0];
   }
 
   /**

@@ -1,7 +1,7 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { Templatize } from '../../lib/utils/templatize.js';
 import { Templatizer } from '../../lib/legacy/templatizer-behavior.js';
-import { html } from '../../polymer.js';
+import { html } from '../../lib/utils/html-tag.js';
 
 /**
 @license

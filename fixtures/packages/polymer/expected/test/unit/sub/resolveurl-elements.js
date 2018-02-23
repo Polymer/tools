@@ -1,4 +1,4 @@
-import { html } from '../../../polymer.js';
+import { html } from '../../../lib/utils/html-tag.js';
 import { Element } from '../../../polymer-element.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
