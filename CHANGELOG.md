@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## Unreleased
+* Added new options: `npm` and `componentDir`. Setting `npm` automatically sets `componentDir` to "node_modules/", unless explicitly set otherwise.
+
 ## [3.8.1] - 2018-01-29
 * Changed name of `excludes` property to more natural `exclude` in `js-minify`, `js-compile`, `css-minify` and `html-minify` options prior to releasing the feature as `exclude` is more natural.  The `bundle` options will remain `excludes` for now, as that is already implemented in `polymer-bundler`.
 

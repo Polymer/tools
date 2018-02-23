@@ -36,6 +36,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'index.html'),
           ],
           lint: undefined,
+          npm: undefined,
         });
       });
 
@@ -58,6 +59,7 @@ suite('Project Config', () => {
                 path.resolve(absoluteRoot, 'index.html'),
               ],
               lint: undefined,
+              npm: undefined,
             });
           });
 
@@ -79,6 +81,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'foo.html'),
           ],
           lint: undefined,
+          npm: undefined,
         });
       });
 
@@ -99,6 +102,7 @@ suite('Project Config', () => {
             path.resolve('foo.html')
           ],
           lint: undefined,
+          npm: undefined,
         });
       });
 
@@ -125,6 +129,7 @@ suite('Project Config', () => {
             path.resolve('bar.html'),
           ],
           lint: undefined,
+          npm: undefined,
         });
       });
 
@@ -147,6 +152,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'index.html'),
           ],
           lint: undefined,
+          npm: undefined,
         });
       });
 
@@ -178,6 +184,7 @@ suite('Project Config', () => {
             path.resolve(absoluteRoot, 'index.html'),
           ],
           lint: undefined,
+          npm: undefined,
         });
       });
 
@@ -212,6 +219,7 @@ suite('Project Config', () => {
                 path.resolve('bar.html'),
               ],
               lint: undefined,
+              npm: undefined,
             });
           });
 
@@ -259,6 +267,27 @@ suite('Project Config', () => {
               }
             ]);
           });
+
+      test('npm option sets other options to expected defaults', () => {
+        const config = new ProjectConfig({
+          npm: true,
+        });
+        config.validate();
+
+        assert.equal(config.npm, true);
+        assert.equal(config.componentDir, 'node_modules/');
+      });
+
+      test('npm option does not override other explicitly set values', () => {
+        const config = new ProjectConfig({
+          npm: true,
+          componentDir: '../some_other_dir/over_here/'
+        });
+        config.validate();
+
+        assert.equal(config.npm, true);
+        assert.equal(config.componentDir, '../some_other_dir/over_here/');
+      });
     });
 
     suite('isFragment()', () => {
@@ -579,6 +608,7 @@ suite('Project Config', () => {
           path.resolve(absoluteRoot, 'bar.html'),
         ],
         lint: undefined,
+        npm: undefined,
       });
     });
 
