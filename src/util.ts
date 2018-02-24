@@ -13,6 +13,7 @@
  */
 
 import * as levenshtein from 'fast-levenshtein';
+import {Document, isPositionInsideRange, ParsedDocument, SourceRange} from 'polymer-analyzer';
 
 import stripIndent = require('strip-indent');
 
@@ -69,4 +70,27 @@ export function minBy<T>(it: Iterable<T>, score: (t: T) => number) {
 
 export function closestSpelling(word: string, options: Iterable<string>) {
   return minBy(options, (option) => levenshtein.get(word, option));
+}
+
+// TODO(43081j): this exists already in the analyzer's analysis
+// namespace. We should remove this function and import it instead
+// once it has been exposed in a future analyzer release.
+export function getDocumentContaining(
+    sourceRange: SourceRange|undefined,
+    document: Document): ParsedDocument<any, any>|undefined {
+  if (!sourceRange) {
+    return undefined;
+  }
+  let mostSpecificDocument: undefined|Document = undefined;
+  for (const doc of document.getFeatures({kind: 'document'})) {
+    if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
+      if (!mostSpecificDocument ||
+          isPositionInsideRange(
+              doc.sourceRange!.start, mostSpecificDocument.sourceRange)) {
+        mostSpecificDocument = doc;
+      }
+    }
+  }
+  mostSpecificDocument = mostSpecificDocument || document;
+  return mostSpecificDocument.parsedDocument;
 }

@@ -14,12 +14,11 @@
 
 import babelTraverse from 'babel-traverse';
 import * as babel from 'babel-types';
-import {Document, Element, ElementMixin, isPositionInsideRange, ParsedDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
+import {Document, Element, ElementMixin, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
-import {stripWhitespace} from '../util';
-import {stripIndentation} from '../util';
+import {getDocumentContaining, stripIndentation, stripWhitespace} from '../util';
 
 const methodsThatMustCallSuper = new Set([
   'ready',
@@ -75,7 +74,7 @@ class CallSuperInCallbacks extends Rule {
         if (!doesCallSuper(method, methodName)) {
           // Construct a nice legible warning.
           const parsedDocumentContaining =
-              getParsedDocumentContaining(elementLike.sourceRange, document);
+              getDocumentContaining(elementLike.sourceRange, document);
           if (parsedDocumentContaining) {
             const sourceRange =
                 parsedDocumentContaining.sourceRangeForNode(method.key)!;
@@ -116,28 +115,6 @@ class CallSuperInCallbacks extends Rule {
     }
     return warnings;
   }
-}
-
-// TODO(rictic): This is awkward. Filed as
-//     https://github.com/Polymer/polymer-analyzer/issues/557
-function getParsedDocumentContaining(
-    sourceRange: SourceRange|undefined,
-    document: Document): ParsedDocument<any, any>|undefined {
-  if (!sourceRange) {
-    return undefined;
-  }
-  let mostSpecificDocument: undefined|Document = undefined;
-  for (const doc of document.getFeatures({kind: 'document'})) {
-    if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
-      if (!mostSpecificDocument ||
-          isPositionInsideRange(
-              doc.sourceRange!.start, mostSpecificDocument.sourceRange)) {
-        mostSpecificDocument = doc;
-      }
-    }
-  }
-  mostSpecificDocument = mostSpecificDocument || document;
-  return mostSpecificDocument.parsedDocument;
 }
 
 function getClassBody(astNode?: babel.Node|null): undefined|babel.ClassBody {

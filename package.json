@@ -39,7 +39,7 @@
     "prepublishOnly": "npm run build",
     "build": "npm run clean && tsc",
     "clean": "touch lib && rm -rf lib && mkdir lib",
-    "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
+    "format": "find src | grep \"\\.[jt]s$\" | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
     "test": "npm run build && mocha && npm run lint",
     "test:watch": "tsc-then -- mocha",
