@@ -13,6 +13,7 @@
  */
 
 import generate from 'babel-generator';
+import {NodePath, Scope} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 
@@ -560,15 +561,16 @@ class ClassFinder implements Visitor {
   }
 
   enterAssignmentExpression(
-      node: babel.AssignmentExpression, parent: babel.Node) {
+      node: babel.AssignmentExpression, parent: babel.Node, path: NodePath) {
     this.handleGeneralAssignment(
-        astValue.getIdentifierName(node.left), node.right, node, parent);
+        astValue.getIdentifierName(node.left), node.right, node, parent, path);
   }
 
-  enterVariableDeclarator(node: babel.VariableDeclarator, parent: babel.Node) {
+  enterVariableDeclarator(
+      node: babel.VariableDeclarator, parent: babel.Node, path: NodePath) {
     if (node.init) {
       this.handleGeneralAssignment(
-          astValue.getIdentifierName(node.id), node.init, node, parent);
+          astValue.getIdentifierName(node.id), node.init, node, parent, path);
     }
   }
 
@@ -576,7 +578,7 @@ class ClassFinder implements Visitor {
   private handleGeneralAssignment(
       assignedName: string|undefined, value: babel.Expression,
       assignment: babel.VariableDeclarator|babel.AssignmentExpression,
-      statement: babel.Node) {
+      statement: babel.Node, path: NodePath) {
     const comment = esutil.getAttachedComment(value) ||
         esutil.getAttachedComment(assignment) ||
         esutil.getAttachedComment(statement) || '';
@@ -585,17 +587,18 @@ class ClassFinder implements Visitor {
       const name = assignedName ||
           value.id && astValue.getIdentifierName(value.id) || undefined;
 
-      this._classFound(name, doc, value);
+      this._classFound(name, doc, value, path.scope);
     } else {
       // TODO(justinfagnani): remove @polymerElement support
       if (jsdoc.hasTag(doc, 'customElement') ||
           jsdoc.hasTag(doc, 'polymerElement')) {
-        this._classFound(assignedName, doc, value);
+        this._classFound(assignedName, doc, value, path.scope);
       }
     }
   }
 
-  enterClassExpression(node: babel.ClassExpression, parent: babel.Node) {
+  enterClassExpression(
+      node: babel.ClassExpression, parent: babel.Node, path: NodePath) {
     // Class expressions may be on the right hand side of assignments, so
     // we may have already handled this expression from the parent or
     // grandparent node. Class declarations can't be on the right hand side of
@@ -607,18 +610,20 @@ class ClassFinder implements Visitor {
     const name = node.id ? astValue.getIdentifierName(node.id) : undefined;
     const comment = esutil.getAttachedComment(node) ||
         esutil.getAttachedComment(parent) || '';
-    this._classFound(name, jsdoc.parseJsdoc(comment), node);
+    this._classFound(name, jsdoc.parseJsdoc(comment), node, path.scope);
   }
 
-  enterClassDeclaration(node: babel.ClassDeclaration, parent: babel.Node) {
+  enterClassDeclaration(
+      node: babel.ClassDeclaration, parent: babel.Node, path: NodePath) {
     const name = astValue.getIdentifierName(node.id);
     const comment = esutil.getAttachedComment(node) ||
         esutil.getAttachedComment(parent) || '';
-    this._classFound(name, jsdoc.parseJsdoc(comment), node);
+    this._classFound(name, jsdoc.parseJsdoc(comment), node, path.scope);
   }
 
   private _classFound(
-      name: string|undefined, doc: jsdoc.Annotation, astNode: babel.Node) {
+      name: string|undefined, doc: jsdoc.Annotation, astNode: babel.Node,
+      scope: Scope) {
     const namespacedName = name && getNamespacedIdentifier(name, doc);
 
     const warnings: Warning[] = [];
@@ -635,8 +640,9 @@ class ClassFinder implements Visitor {
         properties,
         methods,
         getStaticMethods(astNode, this._document),
-        this._getExtends(astNode, doc, warnings, this._document),
-        jsdoc.getMixinApplications(this._document, astNode, doc, warnings),
+        this._getExtends(astNode, doc, warnings, this._document, scope),
+        jsdoc.getMixinApplications(
+            this._document, astNode, doc, warnings, scope),
         getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
@@ -651,7 +657,7 @@ class ClassFinder implements Visitor {
    */
   private _getExtends(
       node: babel.Node, docs: jsdoc.Annotation, warnings: Warning[],
-      document: JavaScriptDocument): ScannedReference|undefined {
+      document: JavaScriptDocument, scope: Scope): ScannedReference|undefined {
     const extendsAnnotations =
         docs.tags!.filter((tag) => tag.title === 'extends');
 
@@ -669,7 +675,7 @@ class ClassFinder implements Visitor {
           parsedDocument: this._document
         }));
       } else {
-        return new ScannedReference(extendsId, sourceRange);
+        return new ScannedReference(extendsId, sourceRange, undefined, scope);
       }
     } else if (
         babel.isClassDeclaration(node) || babel.isClassExpression(node)) {
@@ -682,7 +688,8 @@ class ClassFinder implements Visitor {
             extendsId = extendsId.substring('window.'.length);
           }
           const sourceRange = document.sourceRangeForNode(superClass)!;
-          return new ScannedReference(extendsId, sourceRange);
+          return new ScannedReference(
+              extendsId, sourceRange, node.superClass, scope);
         }
       }
     }

@@ -98,7 +98,33 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node.source)!,
             node,
             false));
+      },
+
+      enterExportAllDeclaration(node, _parent) {
+        imports.push(new ScannedImport(
+            'js-import',
+            scanner._resolveSpecifier(
+                node.source.value, document, node, warnings),
+            document.sourceRangeForNode(node)!,
+            document.sourceRangeForNode(node.source)!,
+            node,
+            false));
+      },
+
+      enterExportNamedDeclaration(node, _parent) {
+        if (node.source == null) {
+          return;
+        }
+        imports.push(new ScannedImport(
+            'js-import',
+            scanner._resolveSpecifier(
+                node.source.value, document, node, warnings),
+            document.sourceRangeForNode(node)!,
+            document.sourceRangeForNode(node.source)!,
+            node,
+            false));
       }
+
     });
     return {features: imports, warnings};
   }

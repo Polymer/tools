@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
@@ -40,7 +41,7 @@ export class MixinVisitor implements Visitor {
   }
 
   enterAssignmentExpression(
-      node: babel.AssignmentExpression, parent: babel.Node) {
+      node: babel.AssignmentExpression, parent: babel.Node, path: NodePath) {
     if (!babel.isExpressionStatement(parent)) {
       return;
     }
@@ -64,7 +65,7 @@ export class MixinVisitor implements Visitor {
           privacy: getOrInferPrivacy(namespacedName, parentJsDocs),
           jsdoc: parentJsDocs,
           mixins: jsdoc.getMixinApplications(
-              this._document, node, parentJsDocs, this.warnings),
+              this._document, node, parentJsDocs, this.warnings, path.scope),
         });
         this._currentMixinNode = node;
         this.mixins.push(this._currentMixin);
@@ -75,7 +76,7 @@ export class MixinVisitor implements Visitor {
   }
 
   enterFunctionDeclaration(
-      node: babel.FunctionDeclaration, _parent: babel.Node) {
+      node: babel.FunctionDeclaration, _parent: babel.Node, path: NodePath) {
     const nodeComments = esutil.getAttachedComment(node) || '';
     const nodeJsDocs = jsdoc.parseJsdoc(nodeComments);
     if (hasMixinFunctionDocTag(nodeJsDocs)) {
@@ -97,7 +98,7 @@ export class MixinVisitor implements Visitor {
           privacy: getOrInferPrivacy(namespacedName, nodeJsDocs),
           jsdoc: nodeJsDocs,
           mixins: jsdoc.getMixinApplications(
-              this._document, node, nodeJsDocs, this.warnings)
+              this._document, node, nodeJsDocs, this.warnings, path.scope)
         });
         this._currentMixinNode = node;
         this.mixins.push(this._currentMixin);
@@ -117,7 +118,7 @@ export class MixinVisitor implements Visitor {
   }
 
   enterVariableDeclaration(
-      node: babel.VariableDeclaration, _parent: babel.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node, path: NodePath) {
     const comment = esutil.getAttachedComment(node) || '';
     const docs = jsdoc.parseJsdoc(comment);
     const isMixin = hasMixinFunctionDocTag(docs);
@@ -139,7 +140,7 @@ export class MixinVisitor implements Visitor {
             privacy: getOrInferPrivacy(namespacedName, docs),
             jsdoc: docs,
             mixins: jsdoc.getMixinApplications(
-                this._document, declaration, docs, this.warnings)
+                this._document, declaration, docs, this.warnings, path.scope)
           });
         }
       }

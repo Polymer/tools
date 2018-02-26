@@ -24,7 +24,7 @@
 import babelTraverse from 'babel-traverse';
 import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
-import {Visitor, VisitResult} from './estree-visitor';
+import {Visitor, VisitorCallback} from './estree-visitor';
 
 /**
  * These enum options mimic the estraverse enums that are returned by their
@@ -47,11 +47,13 @@ export enum VisitorOption {
 export function traverse(ast: babel.Node, visitor: Visitor): void {
   babelTraverse(ast, {
     enter(path) {
-      dispatchVisitMethods(['enter', `enter${path.type}`], path, visitor);
+      dispatchVisitMethods(
+          ['enter', `enter${path.type}` as keyof Visitor], path, visitor);
     },
 
     exit(path) {
-      dispatchVisitMethods(['leave', `leave${path.type}`], path, visitor);
+      dispatchVisitMethods(
+          ['leave', `leave${path.type}` as keyof Visitor], path, visitor);
     },
     noScope: true,
   });
@@ -64,11 +66,14 @@ export function traverse(ast: babel.Node, visitor: Visitor): void {
  * advise visitor control flow, i.e. `stop`, `skip`, and `remove`.
  */
 function dispatchVisitMethods(
-    methods: string[], path: NodePath<babel.Node>, visitor: Visitor): void {
-  for (const method of methods) {
-    if (typeof (<any>visitor)[method] === 'function') {
-      const result =
-          (<any>visitor)[method](path.node, path.parent) as VisitResult;
+    methodNames: Array<keyof Visitor>,
+    path: NodePath<babel.Node>,
+    visitor: Visitor): void {
+  for (const methodName of methodNames) {
+    if (typeof visitor[methodName] === 'function') {
+      // TODO(rictic): can maybe remove this cast in TS 2.8
+      const result = (visitor[methodName] as VisitorCallback<babel.Node>)!
+          (path.node, path.parent, path);
       switch (result) {
         case VisitorOption.Break:
           return path.stop();

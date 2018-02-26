@@ -21,6 +21,7 @@ import {Options as ParsedDocumentOptions, ParsedDocument, StringifyOptions} from
 
 import {traverse, VisitorOption} from './estraverse-shim';
 import {Visitor, VisitResult} from './estree-visitor';
+import {NodePath} from 'babel-traverse';
 
 export {Visitor} from './estree-visitor';
 
@@ -65,7 +66,10 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
      * Applies all visiting callbacks from `visitors`.
      */
     const applyScanners =
-        (callbackName: string, node: Node, parent: Node|null) => {
+        (callbackName: keyof Visitor,
+         node: Node,
+         parent: Node|null,
+         path: NodePath) => {
           for (const visitor of visitors) {
             if (_shouldSkip(visitor, callbackName, node.type)) {
               continue;
@@ -75,7 +79,7 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
               //     mapping between callback names and the types of the first
               //     arg?
               const result: VisitResult =
-                  (visitor as any)[callbackName](node, parent);
+                  (visitor as any)[callbackName](node, parent, path);
               if (result) {
                 handleVisitorResult(result, callbackName, visitor, node.type);
               }
@@ -136,13 +140,12 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
         };
 
     traverse(this.ast, {
-      enter(node: Node, parent: Node) {
-        applyScanners(`enter${node.type}`, node, parent);
+      enter(node: Node, parent: Node, path) {
+        applyScanners(`enter${node.type}` as keyof Visitor, node, parent, path);
       },
-      leave(node: Node, parent: Node) {
-        applyScanners(`leave${node.type}`, node, parent);
-      },
-      fallback: 'iteration',
+      leave(node: Node, parent: Node, path) {
+        applyScanners(`leave${node.type}` as keyof Visitor, node, parent, path);
+      }
     });
   }
   protected _sourceRangeForNode(node: Node): SourceRange|undefined {

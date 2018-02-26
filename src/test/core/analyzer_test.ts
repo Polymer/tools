@@ -20,7 +20,7 @@ import * as clone from 'clone';
 import * as path from 'path';
 import * as shady from 'shady-css-parser';
 
-import {Analyzer} from '../../core/analyzer';
+import {Analyzer, Options} from '../../core/analyzer';
 import {Deferred} from '../../core/utils';
 import {ParsedCssDocument} from '../../css/css-document';
 import {ParsedHtmlDocument} from '../../html/html-document';
@@ -560,19 +560,20 @@ suite('Analyzer', () => {
       });
 
       test('gracefully handles a scanner that throws', async () => {
-        const scanners = AnalysisContext.getDefaultScanners(new Map());
+        const options: Options = {
+          urlResolver: analyzer.urlResolver,
+          urlLoader: inMemoryOverlay
+        };
+        const scanners = AnalysisContext.getDefaultScanners(options);
         class FailingScanner implements HtmlScanner {
           async scan():
               Promise<{features: ScannedFeature[], warnings?: Warning[]}> {
             throw new Error('Method not implemented.');
           }
         }
+        options.scanners = scanners;
         scanners.get('html')!.push(new FailingScanner());
-        const localAnalyzer = new Analyzer({
-          scanners,
-          urlResolver: analyzer.urlResolver,
-          urlLoader: inMemoryOverlay
-        });
+        const localAnalyzer = new Analyzer(options);
         const url = localAnalyzer.resolveUrl(`foo.html`)!;
         inMemoryOverlay.urlContentsMap.set(url, `
           <dom-module id="foo-bar"></dom-module>

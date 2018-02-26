@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Scope} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
@@ -143,7 +144,8 @@ export function getMixinApplications(
     document: JavaScriptDocument,
     node: babel.Node,
     docs: Annotation,
-    warnings: Warning[]): ScannedReference[] {
+    warnings: Warning[],
+    scope: Scope): ScannedReference[] {
   // TODO(justinfagnani): remove @mixes support
   const appliesMixinAnnotations = docs.tags!.filter(
       (tag) => tag.title === 'appliesMixin' || tag.title === 'mixes');
@@ -164,7 +166,8 @@ export function getMixinApplications(
                  }));
                  return;
                }
-               return new ScannedReference(mixinId, sourceRange);
+               return new ScannedReference(
+                   mixinId, sourceRange, undefined, scope);
              })
              .filter((m) => m !== undefined) as ScannedReference[];
 }

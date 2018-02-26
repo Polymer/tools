@@ -23,7 +23,7 @@ import {ImmutableArray} from '../model/immutable';
 import {Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
 
-import {Behavior, ScannedBehaviorAssignment} from './behavior';
+import {Behavior} from './behavior';
 import {DomModule} from './dom-module-scanner';
 import {JavascriptDatabindingExpression} from './expression-scanner';
 
@@ -147,7 +147,7 @@ export interface Options {
   attributes: Map<string, ScannedAttribute>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];
-  behaviors: ScannedBehaviorAssignment[];
+  behaviors: ScannedReference[];
 
   events: Map<string, ScannedEvent>;
 
@@ -162,7 +162,7 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
   methods: Map<string, ScannedMethod>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];
-  behaviorAssignments: ScannedBehaviorAssignment[];
+  behaviorAssignments: ScannedReference[];
   // TODO(justinfagnani): Not Polymer-specific, and hopefully not necessary
   pseudo: boolean;
 
@@ -224,7 +224,7 @@ export class ScannedPolymerElement extends ScannedElement implements
   staticMethods = new Map<string, ScannedMethod>();
   observers: Observer[] = [];
   listeners: {event: string, handler: string}[] = [];
-  behaviorAssignments: ScannedBehaviorAssignment[] = [];
+  behaviorAssignments: ScannedReference[] = [];
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
   abstract: boolean = false;
@@ -291,7 +291,7 @@ export interface PolymerExtension extends ElementBase {
   }
   > ;
   listeners: ImmutableArray<{event: string, handler: string}>;
-  behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment>;
+  behaviorAssignments: ImmutableArray<ScannedReference>;
   localIds: ImmutableArray<LocalId>;
 
   emitPropertyMetadata(property: PolymerProperty): any;
@@ -309,7 +309,7 @@ export class PolymerElement extends Element implements PolymerExtension {
   readonly properties!: Map<string, PolymerProperty>;
   readonly observers: ImmutableArray<Observer> = [];
   readonly listeners: ImmutableArray<{event: string, handler: string}> = [];
-  readonly behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment> = [];
+  readonly behaviorAssignments: ImmutableArray<ScannedReference> = [];
   readonly domModule?: dom5.Node;
   readonly localIds: ImmutableArray<LocalId> = [];
 
@@ -406,22 +406,20 @@ function propertyToAttributeName(propertyName: string): string|null {
 }
 
 export function getBehaviors(
-    behaviorAssignments: ImmutableArray<ScannedBehaviorAssignment>,
-    document: Document) {
+    behaviorAssignments: ImmutableArray<ScannedReference>, document: Document) {
   const warnings: Warning[] = [];
   const behaviors: Behavior[] = [];
   for (const behavior of behaviorAssignments) {
     const foundBehaviors = document.getFeatures({
       kind: 'behavior',
-      id: behavior.name,
+      id: behavior.identifier,
       imported: true,
       externalPackages: true
     });
-    if (foundBehaviors.size === 0) {
+    if (foundBehaviors.size === 0 && behavior.sourceRange) {
       warnings.push(new Warning({
-        message: `Unable to resolve behavior ` +
-            `\`${behavior.name}\`. Did you import it? Is it annotated with ` +
-            `@polymerBehavior?`,
+        message: `Unable to resolve behavior \`${behavior.identifier}\`. ` +
+            `Did you import it? Is it annotated with @polymerBehavior?`,
         severity: Severity.WARNING,
         code: 'unknown-polymer-behavior',
         sourceRange: behavior.sourceRange,
@@ -430,9 +428,9 @@ export function getBehaviors(
       // Skip processing this behavior.
       continue;
     }
-    if (foundBehaviors.size > 1) {
+    if (foundBehaviors.size > 1 && behavior.sourceRange) {
       warnings.push(new Warning({
-        message: `Found more than one behavior named ${behavior.name}.`,
+        message: `Found more than one behavior named ${behavior.identifier}.`,
         severity: Severity.WARNING,
         code: 'multiple-polymer-behaviors',
         sourceRange: behavior.sourceRange,

@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {NodePath, Scope} from 'babel-traverse';
+
 import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
@@ -20,9 +22,9 @@ import * as esutil from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {JavaScriptScanner} from '../javascript/javascript-scanner';
 import * as jsdoc from '../javascript/jsdoc';
-import {Severity, Warning} from '../model/model';
+import {ScannedReference, Severity, Warning} from '../model/model';
 
-import {ScannedBehavior, ScannedBehaviorAssignment} from './behavior';
+import {ScannedBehavior} from './behavior';
 import {declarationPropertyHandlers, PropertyHandlers} from './declaration-property-handlers';
 import * as docs from './docs';
 
@@ -57,19 +59,19 @@ class BehaviorVisitor implements Visitor {
    * Look for object declarations with @polymerBehavior in the docs.
    */
   enterVariableDeclaration(
-      node: babel.VariableDeclaration, _parent: babel.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node, path: NodePath) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
-    this._initBehavior(node, getIdentifierName(node.declarations[0].id));
+    this._initBehavior(node, getIdentifierName(node.declarations[0].id), path);
   }
 
   /**
    * Look for object assignments with @polymerBehavior in the docs.
    */
   enterAssignmentExpression(
-      node: babel.AssignmentExpression, parent: babel.Node) {
-    this._initBehavior(parent, getIdentifierName(node.left));
+      node: babel.AssignmentExpression, parent: babel.Node, path: NodePath) {
+    this._initBehavior(parent, getIdentifierName(node.left), path);
   }
 
   /**
@@ -136,7 +138,8 @@ class BehaviorVisitor implements Visitor {
     this.currentBehavior = null;
   }
 
-  private _initBehavior(node: babel.Node, name: string|undefined) {
+  private _initBehavior(
+      node: babel.Node, name: string|undefined, path: NodePath) {
     const comment = esutil.getAttachedComment(node);
     if (name === undefined) {
       return;
@@ -178,7 +181,7 @@ class BehaviorVisitor implements Visitor {
     const behavior = this.currentBehavior!;
 
     this.propertyHandlers =
-        declarationPropertyHandlers(behavior, this.document);
+        declarationPropertyHandlers(behavior, this.document, path.scope);
 
     docs.annotateElementHeader(behavior);
     const behaviorTag = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior');
@@ -191,11 +194,11 @@ class BehaviorVisitor implements Visitor {
 
     behavior.privacy =
         esutil.getOrInferPrivacy(behavior.className, behavior.jsdoc);
-    this._parseChainedBehaviors(node);
+    this._parseChainedBehaviors(node, path.scope);
 
     this.currentBehavior = this.mergeBehavior(behavior);
-    this.propertyHandlers =
-        declarationPropertyHandlers(this.currentBehavior, this.document);
+    this.propertyHandlers = declarationPropertyHandlers(
+        this.currentBehavior, this.document, path.scope);
 
     // Some behaviors are just lists of other behaviors. If this is one then
     // add it to behaviors right away.
@@ -210,10 +213,10 @@ class BehaviorVisitor implements Visitor {
    * to same behavior. See iron-multi-selectable for example.
    */
   mergeBehavior(newBehavior: ScannedBehavior): ScannedBehavior {
-    const isBehaviorImpl = (b: ScannedBehaviorAssignment) => {
+    const isBehaviorImpl = (b: ScannedReference) => {
       // filter out BehaviorImpl
       return newBehavior.className === undefined ||
-          b.name.indexOf(newBehavior.className) === -1;
+          b.identifier.indexOf(newBehavior.className) === -1;
     };
     for (const behavior of this.behaviors) {
       if (newBehavior.className !== behavior.className) {
@@ -247,27 +250,28 @@ class BehaviorVisitor implements Visitor {
     return newBehavior;
   }
 
-  _parseChainedBehaviors(node: babel.Node) {
+  _parseChainedBehaviors(node: babel.Node, scope: Scope) {
     if (this.currentBehavior == null) {
       throw new Error(
           `_parsedChainedBehaviors was called without a current behavior.`);
     }
-    // if current behavior is part of an array, it gets extended by other
-    // behaviors
-    // inside the array. Ex:
-    // Polymer.IronMultiSelectableBehavior = [ {....},
-    // Polymer.IronSelectableBehavior]
-    // We add these to behaviors array
+    // If current behavior is part of an array, it gets extended by other
+    // behaviors inside the array. Ex:
+    // Polymer.IronMultiSelectableBehavior = [
+    //     {....},
+    //     Polymer.IronSelectableBehavior];
+    // We add these to the behaviors array.
     const expression = behaviorExpression(node);
-    const chained: Array<ScannedBehaviorAssignment> = [];
+    const chained: Array<ScannedReference> = [];
     if (expression && babel.isArrayExpression(expression)) {
       for (const arrElement of expression.elements) {
         const behaviorName = getIdentifierName(arrElement);
         if (behaviorName) {
-          chained.push({
-            name: behaviorName,
-            sourceRange: this.document.sourceRangeForNode(arrElement)!
-          });
+          chained.push(new ScannedReference(
+              behaviorName,
+              this.document.sourceRangeForNode(arrElement)!,
+              arrElement,
+              scope));
         }
       }
       if (chained.length > 0) {

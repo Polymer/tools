@@ -12,30 +12,31 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Scope} from 'babel-traverse';
 import * as babel from 'babel-types';
 
 import * as astValue from '../javascript/ast-value';
 import {JavaScriptDocument} from '../javascript/javascript-document';
-import {Severity, Warning} from '../model/model';
-import {ScannedBehaviorAssignment} from '../polymer/behavior';
+import {Result} from '../model/analysis';
+import {ScannedReference, Severity, Warning} from '../model/model';
 
 import {analyzeProperties} from './analyze-properties';
 import {parseExpressionInJsStringLiteral} from './expression-scanner';
 import {Observer, ScannedPolymerElement} from './polymer-element';
 
-export type BehaviorAssignmentOrWarning = {
+export type BehaviorReferenceOrWarning = {
   kind: 'warning',
   warning: Warning
-}|{kind: 'behaviorAssignment', assignment: ScannedBehaviorAssignment};
+}|{kind: 'behaviorReference', reference: ScannedReference};
 
-export function getBehaviorAssignmentOrWarning(
-    argNode: babel.Node,
-    document: JavaScriptDocument): BehaviorAssignmentOrWarning {
+export function getBehaviorReference(
+    argNode: babel.Node, document: JavaScriptDocument, scope: Scope):
+    Result<ScannedReference, Warning> {
   const behaviorName = astValue.getIdentifierName(argNode);
   if (!behaviorName) {
     return {
-      kind: 'warning',
-      warning: new Warning({
+      successful: false,
+      error: new Warning({
         code: 'could-not-determine-behavior-name',
         message: `Could not determine behavior name from expression of type ` +
             `${argNode.type}`,
@@ -46,11 +47,9 @@ export function getBehaviorAssignmentOrWarning(
     };
   }
   return {
-    kind: 'behaviorAssignment',
-    assignment: {
-      name: behaviorName,
-      sourceRange: document.sourceRangeForNode(argNode)!
-    }
+    successful: true,
+    value: new ScannedReference(
+        behaviorName, document.sourceRangeForNode(argNode)!, argNode, scope)
   };
 }
 
@@ -65,7 +64,8 @@ export type PropertyHandlers = {
  */
 export function declarationPropertyHandlers(
     declaration: ScannedPolymerElement,
-    document: JavaScriptDocument): PropertyHandlers {
+    document: JavaScriptDocument,
+    scope: Scope): PropertyHandlers {
   return {
     is(node: babel.Node) {
       if (babel.isLiteral(node)) {
@@ -82,11 +82,11 @@ export function declarationPropertyHandlers(
         return;
       }
       for (const element of node.elements) {
-        const result = getBehaviorAssignmentOrWarning(element, document);
-        if (result.kind === 'warning') {
-          declaration.warnings.push(result.warning);
+        const result = getBehaviorReference(element, document, scope);
+        if (result.successful === false) {
+          declaration.warnings.push(result.error);
         } else {
-          declaration.behaviorAssignments.push(result.assignment);
+          declaration.behaviorAssignments.push(result.value);
         }
       }
     },

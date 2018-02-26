@@ -16,7 +16,6 @@ import * as babel from 'babel-types';
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
-import {ScannedBehaviorAssignment} from './behavior';
 import {addMethod, addProperty, getBehaviors, LocalId, Observer, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
 
 export interface Options {
@@ -38,7 +37,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   readonly staticMethods: Map<string, ScannedMethod> = new Map();
   readonly observers: Observer[] = [];
   readonly listeners: {event: string, handler: string}[] = [];
-  readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];
+  readonly behaviorAssignments: ScannedReference[] = [];
   pseudo: boolean = false;
   readonly abstract: boolean = false;
   readonly sourceRange: SourceRange;
@@ -91,7 +90,7 @@ export class PolymerElementMixin extends ElementMixin implements
 
   readonly observers: Observer[];
   readonly listeners: {event: string, handler: string}[] = [];
-  readonly behaviorAssignments: ScannedBehaviorAssignment[] = [];
+  readonly behaviorAssignments: ScannedReference[] = [];
   readonly localIds: LocalId[] = [];
   readonly pseudo: boolean;
 

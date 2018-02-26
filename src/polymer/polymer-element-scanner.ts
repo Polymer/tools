@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
+
 import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -45,7 +47,8 @@ class ElementVisitor implements Visitor {
     this.document = document;
   }
 
-  enterCallExpression(node: babel.CallExpression, parent: babel.Node) {
+  enterCallExpression(
+      node: babel.CallExpression, parent: babel.Node, path: NodePath) {
     const callee = node.callee;
     if (!babel.isIdentifier(callee) || callee.name !== 'Polymer') {
       return;
@@ -81,7 +84,7 @@ class ElementVisitor implements Visitor {
     });
     element.description = (element.description || '').trim();
     const propertyHandlers =
-        declarationPropertyHandlers(element, this.document);
+        declarationPropertyHandlers(element, this.document, path.scope);
 
     const argument = node.arguments[0];
     if (babel.isObjectExpression(argument)) {

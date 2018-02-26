@@ -16,7 +16,7 @@
 import {assert} from 'chai';
 
 import {Analyzer} from '../../core/analyzer';
-import {ScannedBehavior, ScannedBehaviorAssignment} from '../../polymer/behavior';
+import {ScannedBehavior} from '../../polymer/behavior';
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
 import {fixtureDir, runScanner} from '../test-utils';
 
@@ -88,11 +88,10 @@ suite('BehaviorScanner', () => {
     const deepChainedBehaviors =
         behaviors.get('Really.Really.Deep.Behavior')!.behaviorAssignments;
     assert.deepEqual(
-        childBehaviors.map((b: ScannedBehaviorAssignment) => b.name),
+        childBehaviors.map((b) => b.identifier),
         ['SimpleBehavior', 'AwesomeBehavior', 'Really.Really.Deep.Behavior']);
     assert.deepEqual(
-        deepChainedBehaviors.map((b: ScannedBehaviorAssignment) => b.name),
-        ['Do.Re.Mi.Fa']);
+        deepChainedBehaviors.map((b) => b.identifier), ['Do.Re.Mi.Fa']);
   });
 
   test('Does not count methods as properties', function() {
