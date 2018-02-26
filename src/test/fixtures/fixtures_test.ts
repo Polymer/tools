@@ -18,7 +18,7 @@ import * as diff from 'diff';
 import * as fs from 'fs-extra';
 import {EOL} from 'os';
 import * as path from 'path';
-import {exec} from '../../util';
+import {runFixture, TestConfig} from './run-fixture';
 
 // TODO(fks): Add 'dir-compare' typings.
 const dircompare = require('dir-compare');
@@ -26,7 +26,6 @@ const dircompare = require('dir-compare');
 // Install source map support for stack traces, etc.
 require('source-map-support').install();
 
-const modulizerBinPath = path.resolve(__dirname, '../../../bin/modulizer.js');
 const packageFixturesDir =
     path.resolve(__dirname, '../../../fixtures/packages');
 
@@ -120,20 +119,13 @@ suite('Fixtures', () => {
         const fixtureSourceDir = path.join(fixtureDir, 'source');
         const fixtureExpectedDir = path.join(fixtureDir, 'expected');
         const fixtureResultDir = path.join(fixtureDir, 'generated');
-        const fixtureTestConfig = require(path.join(fixtureDir, 'test.js'));
+        const fixtureTestConfig =
+            require(path.join(fixtureDir, 'test.js')) as TestConfig;
         assert.isOk(fs.statSync(fixtureSourceDir).isDirectory());
         assert.isOk(fs.statSync(fixtureExpectedDir).isDirectory());
-        await fs.emptyDir(fixtureResultDir);
-        await fs.copy(fixtureSourceDir, fixtureResultDir);
 
-        // Top-Level Integration Test! Test the CLI interface directly.
-        const output = await exec(fixtureResultDir, 'node', [
-          modulizerBinPath,
-          '--out',
-          '.',
-          '--force',
-          '--add-import-path',
-        ].concat(fixtureTestConfig.options || []));
+        const output = await runFixture(
+            fixtureSourceDir, fixtureResultDir, fixtureTestConfig);
 
         // 1. Check stderr output that no (unexpected) errors were emitted.
         assert.equal(output.stderr, (fixtureTestConfig.stderr || ''));

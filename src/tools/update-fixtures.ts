@@ -18,16 +18,29 @@ require('source-map-support').install();
 import * as path from 'path';
 import {exec} from 'mz/child_process';
 import * as fs from 'fs-extra';
+import * as commandLineArgs from 'command-line-args';
+import {runFixture, TestConfig} from '../test/fixtures/run-fixture';
 
-import convertPackage from '../convert-package';
+const cliDefs = [
+  {
+    name: 'skip-source-update',
+    type: Boolean,
+    defaultValue: false,
+    description: `Whether to skip updating the source repo, ` +
+        `so that the expected result is generated from the existing source.`,
+
+  },
+];
+
+interface CliOpts {
+  'skip-source-update': boolean;
+}
 
 interface UpdateFixtureOptions {
   folder: string;
   repoUrl: string;
+  skipSourceUpdate: boolean;
   branch?: string;
-  packageName: string;
-  packageVersion: string;
-  deleteFiles?: string[];
 }
 
 async function updateFixture(options: UpdateFixtureOptions) {
@@ -35,39 +48,30 @@ async function updateFixture(options: UpdateFixtureOptions) {
       path.resolve(__dirname, '../../fixtures/packages/', options.folder);
   const sourceDir = path.join(fixturesDir, 'source');
   const convertedDir = path.join(fixturesDir, 'expected');
-  const branch = options.branch || 'master';
 
-  console.log(`Cloning ${options.repoUrl} #${branch} to ${sourceDir}...`);
-  await fs.ensureDir(fixturesDir);
-  await fs.remove(sourceDir);
+  if (!options.skipSourceUpdate) {
+    const branch = options.branch || 'master';
 
-  await exec(
-      `git clone ${options.repoUrl} ${sourceDir} --branch=${branch} --depth=1`,
-      {cwd: fixturesDir});
-  await fs.remove(path.join(sourceDir, '.git'));
-  await fs.remove(path.join(sourceDir, '.github'));
-  await fs.remove(path.join(sourceDir, '.gitignore'));
+    console.log(`Cloning ${options.repoUrl} #${branch} to ${sourceDir}...`);
+    await fs.ensureDir(fixturesDir);
+    await fs.remove(sourceDir);
 
-  await overridePolymer(sourceDir);
+    await exec(
+        `git clone ${options.repoUrl} ${sourceDir} --branch=${
+            branch} --depth=1`,
+        {cwd: fixturesDir});
+    await fs.remove(path.join(sourceDir, '.git'));
+    await fs.remove(path.join(sourceDir, '.github'));
+    await fs.remove(path.join(sourceDir, '.gitignore'));
 
-  await exec('bower install', {cwd: sourceDir});
+    await overridePolymer(sourceDir);
 
-  // We're going to do an in-place conversion.
-  await fs.emptyDir(convertedDir);
-  await fs.copy(sourceDir, convertedDir);
+    await exec('bower install', {cwd: sourceDir});
+  }
 
-  console.log(`Converting...`);
-  await convertPackage({
-    inDir: convertedDir,
-    outDir: convertedDir,
-    cleanOutDir: false,
-    packageName: options.packageName,
-    packageVersion: options.packageVersion,
-    addImportPath: true,
-    deleteFiles: options.deleteFiles,
-    flat: false,
-    private: false,
-  });
+  const testConfig = require(path.join(fixturesDir, 'test.js')) as TestConfig;
+  await runFixture(sourceDir, convertedDir, testConfig);
+
   console.log(`Done.`);
 }
 
@@ -91,27 +95,26 @@ async function overridePolymer(sourceDir: string) {
 }
 
 (async () => {
+  const options = commandLineArgs(cliDefs) as CliOpts;
+  const skipSourceUpdate = options['skip-source-update'];
+
   let exitCode = 0;
 
   await Promise.all([
     updateFixture({
       folder: 'polymer',
       repoUrl: 'https://github.com/Polymer/polymer.git',
-      packageName: '@polymer/polymer',
-      packageVersion: '3.0.0',
-      deleteFiles: ['types'],
+      skipSourceUpdate,
     }),
     updateFixture({
       folder: 'paper-button',
       repoUrl: 'https://github.com/PolymerElements/paper-button.git',
-      packageName: '@polymer/paper-button',
-      packageVersion: '3.0.0',
+      skipSourceUpdate,
     }),
     updateFixture({
       folder: 'iron-icon',
       repoUrl: 'https://github.com/PolymerElements/iron-icon.git',
-      packageName: '@polymer/iron-icon',
-      packageVersion: '3.0.0',
+      skipSourceUpdate,
     }),
   ].map((p) => p.catch((e) => {
     // Exit with an error code if any fixture fails, but let them all finish.
