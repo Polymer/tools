@@ -459,13 +459,71 @@ function findDatabindingInString(str: string) {
   return expressions;
 }
 
+function transformPath(expression: string) {
+  return expression
+    // replace .0, .123, .kebab-case with ['0'], ['123'], ['kebab-case']
+    .replace(/\.([a-zA-Z_$]([\w:$*]*-+[\w:$*]*)+|[1-9][0-9]*|0)/g, "['$1']")
+    // remove .* and .splices from the end of the paths
+    .replace(/\.(\*|splices)$/, '');
+}
+
+/**
+ * Transform polymer expression based on
+ * https://github.com/Polymer/polymer/blob/10aded461b1a107ed1cfc4a1d630149ad8508bda/lib/mixins/property-effects.html#L864
+ */
+function transformPolymerExprToJS(expression: string) {
+  const method = expression.match(/([^\s]+?)\(([\s\S]*)\)/);
+  if (method) {
+    const methodName = method[1];
+    if (method[2].trim()) {
+      // replace escaped commas with comma entity, split on un-escaped commas
+      const args = method[2].replace(/\\,/g, '&comma;').split(',');
+      return methodName + '(' + args.map(transformArg).join(',') + ')';
+    } else {
+      return expression;
+    }
+  }
+  return transformPath(expression);
+}
+
+function transformArg(rawArg: string) {
+  const arg = rawArg
+    // replace comma entity with comma
+    .replace(/&comma;/g, ',')
+    // repair extra escape sequences; note only commas strictly need
+    // escaping, but we allow any other char to be escaped since its
+    // likely users will do this
+    .replace(/\\(.)/g, '\$1');
+  // detect literal value (must be String or Number)
+  const i = arg.search(/[^\s]/);
+  let fc = arg[i];
+  if (fc === '-') {
+    fc = arg[i + 1];
+  }
+  if (fc >= '0' && fc <= '9') {
+    fc = '#';
+  }
+  switch (fc) {
+    case "'":
+    case '"':
+      return arg;
+    case '#':
+      return arg;
+  }
+  if (arg.indexOf('.') !== -1) {
+    return transformPath(arg);
+  }
+  return arg;
+}
+
+
 function parseExpression(content: string, expressionSourceRange: SourceRange) {
   const expressionOffset = {
     line: expressionSourceRange.start.line,
     col: expressionSourceRange.start.column
   };
   const parseResult = parseJs(
-      content,
+      transformPolymerExprToJS(content),
       expressionSourceRange.file,
       expressionOffset,
       'polymer-expression-parse-error');

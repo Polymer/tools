@@ -48,6 +48,8 @@ suite('ExpressionScanner', () => {
 
         <template is="dom-bind">
           <div id="{{baz}}"></div>
+          <div id="{{camel.casePath}}"></div>
+          <div id="{{kebab.case-path}}"></div>
         </template>
       `;
       const underliner =
@@ -61,7 +63,7 @@ suite('ExpressionScanner', () => {
       assert.deepEqual(results.warnings, []);
       assert.deepEqual(
           generalExpressions.map((e) => e.databindingInto),
-          ['attribute', 'attribute', 'attribute', 'attribute', 'attribute']);
+          ['attribute', 'attribute', 'attribute', 'attribute', 'attribute', 'attribute', 'attribute']);
       const expressions =
           generalExpressions as AttributeDatabindingExpression[];
       assert.deepEqual(
@@ -81,26 +83,32 @@ suite('ExpressionScanner', () => {
             `
           <div id="{{baz}}"></div>
                      ~~~`,
+          `
+          <div id="{{camel.casePath}}"></div>
+                     ~~~~~~~~~~~~~~`,
+            `
+          <div id="{{kebab.case-path}}"></div>
+                     ~~~~~~~~~~~~~~~`,
           ]);
       assert.deepEqual(
-          expressions.map((e) => e.direction), ['{', '{', '{', '[', '{']);
+          expressions.map((e) => e.direction), ['{', '{', '{', '[', '{', '{', '{']);
       assert.deepEqual(
           expressions.map((e) => e.expressionText),
-          ['foo', 'val', 'bada(wing, daba.boom, 10, -20)', 'bar', 'baz']);
+          ['foo', 'val', 'bada(wing, daba.boom, 10, -20)', 'bar', 'baz', 'camel.casePath', 'kebab.case-path']);
       assert.deepEqual(
           expressions.map((e) => e.eventName),
-          [undefined, 'changed', undefined, undefined, undefined]);
+          [undefined, 'changed', undefined, undefined, undefined, undefined, undefined]);
       assert.deepEqual(
           expressions.map((e) => e.attribute && e.attribute.name),
-          ['id', 'value', 'id', 'id', 'id']);
+          ['id', 'value', 'id', 'id', 'id', 'id', 'id']);
       assert.deepEqual(
           expressions.map((e) => e.properties.map((p) => p.name)),
-          [['foo'], ['val'], ['bada', 'wing', 'daba'], ['bar'], ['baz']]);
+          [['foo'], ['val'], ['bada', 'wing', 'daba'], ['bar'], ['baz'], ['camel'], ['kebab']]);
       assert.deepEqual(
-          expressions.map((e) => e.warnings), [[], [], [], [], []]);
+          expressions.map((e) => e.warnings), [[], [], [], [], [], [], []]);
       assert.deepEqual(
           expressions.map((e) => e.isCompleteBinding),
-          [true, true, true, true, true]);
+          [true, true, true, true, true, true, true]);
     });
 
     test('finds interpolated attribute expressions', async () => {
@@ -328,7 +336,9 @@ suite('ExpressionScanner', () => {
           'foo(bar, baz)',
            ~~~~~~~~~~~~~`,
         `No source range given.`,
-        `No source range given.`,
+        `
+          'foo(bar.*)',
+           ~~~~~~~~~~`,
         `No source range given.`,
         `No source range given.`,
       ]);
