@@ -24,7 +24,7 @@ import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {PackageUrlHandler} from './urls/package-url-handler';
 import {PackageType} from './urls/types';
-import {mkdirp, readJsonIfExists, rimraf, writeFileResults} from './util';
+import {deleteGlobsSafe, mkdirp, readJsonIfExists, rimraf, writeFileResults} from './util';
 
 /**
  * Configuration options required for package-layout conversions. Contains
@@ -134,8 +134,8 @@ export default async function convert(options: PackageConversionSettings) {
   await writeFileResults(outDir, results);
 
   // Delete files that were explicitly requested to be deleted.
-  for (const glob of options.deleteFiles || []) {
-    await rimraf(path.join(outDir, glob));
+  if (options.deleteFiles !== undefined) {
+    await deleteGlobsSafe(options.deleteFiles, outDir);
   }
 
   const packageJsonPath = path.join(options.inDir, 'package.json');

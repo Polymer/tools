@@ -22,9 +22,11 @@ import {ConvertedDocumentFilePath} from './urls/types';
 
 import _mkdirp = require('mkdirp');
 import _rimraf = require('rimraf');
+import _glob = require('glob');
 const {promisify} = require('util');
 const {execFile: _execFile} = require('child_process');
 const execFile = promisify(_execFile);
+const glob = promisify(_glob);
 
 
 /**
@@ -107,4 +109,27 @@ export async function readJsonIfExists<T>(filepath: string):
     return await fse.readJSON(filepath) as T;
   }
   return undefined;
+}
+
+/**
+ * Delete all files matching any of the given glob patterns, rooted in the given
+ * directory, excluding any file in node_modules/ or bower_components/.
+ */
+export async function deleteGlobsSafe(
+    globs: Iterable<string>, cwd: string): Promise<void> {
+  const toDelete = new Set<string>();
+  for (const g of globs) {
+    const matches = await glob(g, {
+      cwd,
+      absolute: true,
+      ignore: [
+        'node_modules/**',
+        'bower_components/**',
+      ],
+    });
+    for (const m of matches) {
+      toDelete.add(m);
+    }
+  }
+  await Promise.all([...toDelete].map((filepath) => fse.remove(filepath)));
 }

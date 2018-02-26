@@ -72,6 +72,10 @@ async function updateFixture(options: UpdateFixtureOptions) {
   const testConfig = require(path.join(fixturesDir, 'test.js')) as TestConfig;
   await runFixture(sourceDir, convertedDir, testConfig);
 
+  // Our integration tests always skip bower_components when comparing, so
+  // there's no reason to check them into git.
+  await fs.remove(path.join(convertedDir, 'bower_components'));
+
   console.log(`Done.`);
 }
 

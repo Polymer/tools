@@ -24,7 +24,7 @@ import {YarnConfig} from './npm-config';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {lookupNpmPackageName, WorkspaceUrlHandler} from './urls/workspace-url-handler';
-import {exec, logRepoError, readJsonIfExists, rimraf, writeFileResults} from './util';
+import {deleteGlobsSafe, exec, logRepoError, readJsonIfExists, writeFileResults} from './util';
 
 /**
  * Configuration options required for workspace conversions. Contains
@@ -120,9 +120,9 @@ export default async function convert(options: WorkspaceConversionSettings):
   // Delete files that were explicitly requested to be deleted. Note we apply
   // the glob with each repo as the root directory (e.g. a glob of "types"
   // will delete "types" from each individual repo).
-  for (const repo of options.reposToConvert) {
-    for (const glob of options.deleteFiles || []) {
-      await rimraf(path.join(repo.dir, glob));
+  if (options.deleteFiles !== undefined) {
+    for (const repo of options.reposToConvert) {
+      await deleteGlobsSafe(options.deleteFiles, repo.dir);
     }
   }
 

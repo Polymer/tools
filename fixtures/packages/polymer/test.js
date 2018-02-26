@@ -7,7 +7,8 @@ module.exports = {
     '--npm-version',
     '3.0.0',
     '--delete-files',
-    'types'
+    'bower.json',
+    'types',
   ],
   stdout: `[1/2] 🌀  Converting Package...
 Out directory: ${path.join(__dirname, 'generated')}
