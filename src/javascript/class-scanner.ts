@@ -187,11 +187,13 @@ export class ClassScanner implements JavaScriptScanner {
     const class_ = element.class_;
     const astNode = element.class_.astNode;
     const docs = element.class_.jsdoc;
+    const customElementTag = jsdoc.getTag(class_.jsdoc, 'customElement');
     let tagName: string|undefined = undefined;
-    // TODO(rictic): support `@customElements explicit-tag-name` from jsdoc
     if (element.definition &&
         element.definition.tagName.type === 'string-literal') {
       tagName = element.definition.tagName.value;
+    } else if (customElementTag && customElementTag.description) {
+      tagName = customElementTag.description;
     } else if (
         babel.isClassExpression(astNode) || babel.isClassDeclaration(astNode)) {
       tagName = getIsValue(astNode);

@@ -6,9 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-<!-- Add new, unreleased changes here. -->
+ * Support specifying tag names in jsdoc, e.g. `@customElement fancy-button`
  * Add "bare" module specifier support for JavaScript imports and exports. ie,
    `import * as jquery from 'jquery'`.
+<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.12] - 2018-02-14
  * Functions and methods will now be automatically inferred as returning `void`

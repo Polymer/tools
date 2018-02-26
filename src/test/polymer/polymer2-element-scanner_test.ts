@@ -189,6 +189,24 @@ class BaseElement extends Polymer.Element {
 ~`);
   });
 
+  test('uses @customElement jsdoc tag for tagName', async () => {
+    const elements = await getElements('test-element-19.js');
+    const elementData = await Promise.all(elements.map(getTestProps));
+    assert.deepEqual(elementData, [
+      {
+        tagName: 'test-element',
+        className: 'TestElement',
+        superClass: 'HTMLElement',
+        description: '',
+        summary: '',
+        properties: [],
+        attributes: [],
+        methods: [],
+        warningUnderlines: [],
+      },
+    ]);
+  });
+
   test('Uses static is getter for tagName', async () => {
     const elements = await getElements('test-element-2.js');
     const elementData = await Promise.all(elements.map(getTestProps));
