@@ -5,10 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [2.2.0] - 2018-02-23
 * Fixed issue where the build silently fails when several source dependencies are missing
 * If the ProjectConfig given to BuildAnalyzer has a `componentDir`, pass a PackageUrlResolver using that `componentDir` to the underlying Analyzer.
+* Warnings indicated in the `lint.warningsToIgnore` ProjectConfig option are now ignored.
 
 ## [2.1.1] - 2017-10-23
 * Updated `polymer-bundler` to 3.1.1, to fix an issue with deprecated CSS imports being inlined into the wrong templates.
