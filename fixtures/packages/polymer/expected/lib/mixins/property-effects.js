@@ -551,6 +551,7 @@ function runBindingEffect(inst, path, props, oldProps, info, hasPaths, nodeList)
   // e.g.: foo="{{obj.sub}}", path: 'obj.sub.prop', set 'foo.prop'=obj.sub.prop
   if (hasPaths && part.source && (path.length > part.source.length) &&
       (binding.kind == 'property') && !binding.isCompound &&
+      node.__isPropertyEffectsClient &&
       node.__dataHasAccessor && node.__dataHasAccessor[binding.target]) {
     let value = props[path];
     path = translate(part.source, binding.target, path);
@@ -587,7 +588,8 @@ function applyBindingValue(inst, node, binding, part, value) {
   } else {
     // Property binding
     let prop = binding.target;
-    if (node.__dataHasAccessor && node.__dataHasAccessor[prop]) {
+    if (node.__isPropertyEffectsClient &&
+        node.__dataHasAccessor && node.__dataHasAccessor[prop]) {
       if (!node[TYPES.READ_ONLY] || !node[TYPES.READ_ONLY][prop]) {
         if (node._setPendingProperty(prop, value)) {
           inst._enqueueClient(node);
@@ -1079,6 +1081,9 @@ export const PropertyEffects = dedupingMixin(superClass => {
 
     constructor() {
       super();
+      /** @type {boolean} */
+      // Used to identify users of this mixin, ala instanceof
+      this.__isPropertyEffectsClient = true;
       /** @type {number} */
       // NOTE: used to track re-entrant calls to `_flushProperties`
       // path changes dirty check against `__dataTemp` only during one "turn"
@@ -1881,13 +1886,33 @@ export const PropertyEffects = dedupingMixin(superClass => {
       // Normalize fancy native splice handling of crazy start values
       if (start < 0) {
         start = array.length - Math.floor(-start);
-      } else {
+      } else if (start) {
         start = Math.floor(start);
       }
-      if (!start) {
-        start = 0;
+      // array.splice does different things based on the number of arguments
+      // you pass in. Therefore, array.splice(0) and array.splice(0, undefined)
+      // do different things. In the former, the whole array is cleared. In the
+      // latter, no items are removed.
+      // This means that we need to detect whether 1. one of the arguments
+      // is actually passed in and then 2. determine how many arguments
+      // we should pass on to the native array.splice
+      //
+      let ret;
+      // Omit any additional arguments if they were not passed in
+      if (arguments.length === 2) {
+        ret = array.splice(start);
+      // Either start was undefined and the others were defined, but in this
+      // case we can safely pass on all arguments
+      //
+      // Note: this includes the case where none of the arguments were passed in,
+      // e.g. this.splice('array'). However, if both start and deleteCount
+      // are undefined, array.splice will not modify the array (as expected)
+      } else {
+        ret = array.splice(start, deleteCount, ...items);
       }
-      let ret = array.splice(start, deleteCount, ...items);
+      // At the end, check whether any items were passed in (e.g. insertions)
+      // or if the return array contains items (e.g. deletions).
+      // Only notify if items were added or deleted.
       if (items.length || ret.length) {
         notifySplice(this, array, info.path, start, items.length, ret);
       }

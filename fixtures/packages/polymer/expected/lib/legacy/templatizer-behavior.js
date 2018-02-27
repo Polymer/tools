@@ -1,4 +1,4 @@
-import { TemplateInstanceBase as TemplateInstanceBase$0, Templatize } from '../utils/templatize.js';
+import { TemplateInstanceBase as TemplateInstanceBase$0, templatize as templatize$0, modelForElement as modelForElement$0 } from '../utils/templatize.js';
 
 let TemplateInstanceBase = TemplateInstanceBase$0; // eslint-disable-line
 
@@ -31,7 +31,7 @@ export const Templatizer = {
    */
   templatize(template, mutableData) {
     this._templatizerTemplate = template;
-    this.ctor = Templatize.templatize(template, this, {
+    this.ctor = templatize$0(template, this, {
       mutableData: Boolean(mutableData),
       parentModel: this._parentModel,
       instanceProps: this._instanceProps,
@@ -69,6 +69,6 @@ export const Templatizer = {
    * @this {TemplatizerUser}
    */
   modelForElement(el) {
-    return Templatize.modelForElement(this._templatizerTemplate, el);
+    return modelForElement$0(this._templatizerTemplate, el);
   }
 };

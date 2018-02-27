@@ -56,7 +56,7 @@ declare namespace Polymer {
      *
      * @param name Name of property
      */
-    typeForProperty(name: string): any;
+    typeForProperty(name: string): void;
   }
 
   interface PropertiesChanged {
@@ -76,6 +76,15 @@ declare namespace Polymer {
      *   protected `_setProperty` function must be used to set the property
      */
     _createPropertyAccessor(property: string, readOnly?: boolean): void;
+
+    /**
+     * Adds the given `property` to a map matching attribute names
+     * to property names, using `attributeNameForProperty`. This map is
+     * used when deserializing attribute values to properties.
+     *
+     * @param property Name of the property
+     */
+    _addPropertyToAttributeMap(property: string): void;
 
     /**
      * Defines a property accessor for the given property.
@@ -174,6 +183,21 @@ declare namespace Polymer {
     _flushProperties(): void;
 
     /**
+     * Called in `_flushProperties` to determine if `_propertiesChanged`
+     * should be called. The default implementation returns true if
+     * properties are pending. Override to customize when
+     * `_propertiesChanged` is called.
+     *
+     * @param currentProps Bag of all current accessor values
+     * @param changedProps Bag of properties changed since the last
+     *   call to `_propertiesChanged`
+     * @param oldProps Bag of previous values for each property
+     *   in `changedProps`
+     * @returns true if changedProps is truthy
+     */
+    _shouldPropertiesChange(currentProps: object, changedProps: object, oldProps: object): boolean;
+
+    /**
      * Callback called when any properties with accessors created via
      * `_createPropertyAccessor` have been set.
      *
@@ -248,7 +272,7 @@ declare namespace Polymer {
      * @param value Value to serialize.
      * @param attribute Attribute name to serialize to.
      */
-    _valueToNodeAttribute(node: Element|null, value: any, attribute: string): void;
+    _valueToNodeAttribute(node: _Element|null, value: any, attribute: string): void;
 
     /**
      * Converts a typed JavaScript value to a string.

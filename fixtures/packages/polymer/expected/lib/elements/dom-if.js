@@ -1,5 +1,5 @@
 import { Element } from '../../polymer-element.js';
-import { Templatize } from '../utils/templatize.js';
+import { templatize } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
 import { enqueueDebouncer, flush } from '../utils/flush.js';
 import { microTask } from '../utils/async.js';
@@ -169,7 +169,7 @@ class DomIf extends Element {
     // Guard against element being detached while render was queued
     if (parentNode) {
       if (!this.__ctor) {
-        let template = this.querySelector('template');
+        let template = /** @type {HTMLTemplateElement} */(this.querySelector('template'));
         if (!template) {
           // Wait until childList changes and template should be there by then
           let observer = new MutationObserver(() => {
@@ -183,7 +183,7 @@ class DomIf extends Element {
           observer.observe(this, {childList: true});
           return false;
         }
-        this.__ctor = Templatize.templatize(template, this, {
+        this.__ctor = templatize(template, this, {
           // dom-if templatizer instances require `mutable: true`, as
           // `__syncHostProperties` relies on that behavior to sync objects
           mutableData: true,

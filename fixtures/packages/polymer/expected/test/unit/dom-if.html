@@ -101,7 +101,7 @@ import { flush } from '../../lib/utils/flush.js';
 suite('nested pre-configured dom-if', function() {
 
   test('parent scope binding', function() {
-    var stamped = configured.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = configured.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(stamped[0].prop, 'outer');
     assert.equal(stamped[0].itemProp, 'outerItem');
@@ -112,7 +112,7 @@ suite('nested pre-configured dom-if', function() {
   });
 
   test('parent scope downward notification', function() {
-    var stamped = configured.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = configured.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     configured.prop = 'yes';
     assert.equal(stamped[0].prop, 'yes');
     assert.equal(stamped[1].prop, 'yes');
@@ -124,7 +124,7 @@ suite('nested pre-configured dom-if', function() {
   });
 
   test('parent upward upward notification', function() {
-    var stamped = configured.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = configured.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     stamped[2].prop = 'nice';
     assert.equal(configured.prop, 'nice');
     assert.equal(stamped[0].prop, 'nice');
@@ -133,8 +133,8 @@ suite('nested pre-configured dom-if', function() {
   });
 
   test('dom-change event composed, bubbles outside dom-if scope', function() {
-    var domChangeFired = 0;
-    var domIf = configured.$['if-1'];
+    let domChangeFired = 0;
+    let domIf = configured.$['if-1'];
     configured.addEventListener('dom-change', function() {
       domChangeFired++;
     });
@@ -150,14 +150,14 @@ suite('nested pre-configured dom-if', function() {
 suite('nested individually-controlled dom-if', function() {
 
   test('nothing stamped', function() {
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 0, 'total stamped count incorrect');
   });
 
   test('show 1', function() {
     individual.shouldStamp1 = true;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 1, 'total stamped count incorrect');
     assert.equal(stamped[0].prop, 'prop1');
     assert.equal(getComputedStyle(stamped[0]).display, 'inline', 'stamped 1 display wrong');
@@ -166,7 +166,7 @@ suite('nested individually-controlled dom-if', function() {
   test('show 2', function() {
     individual.shouldStamp2 = true;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 2, 'total stamped count incorrect');
     assert.equal(stamped[0].prop, 'prop1');
     assert.equal(stamped[1].prop, 'prop2');
@@ -177,7 +177,7 @@ suite('nested individually-controlled dom-if', function() {
   test('show 3', function() {
     individual.shouldStamp3 = true;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(stamped[0].prop, 'prop1');
     assert.equal(stamped[1].prop, 'prop2');
@@ -190,7 +190,7 @@ suite('nested individually-controlled dom-if', function() {
   test('hide 3', function() {
     individual.shouldStamp3 = false;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(getComputedStyle(stamped[0]).display, 'inline', 'stamped 1 display wrong');
     assert.equal(getComputedStyle(stamped[1]).display, 'inline', 'stamped 2 display wrong');
@@ -200,7 +200,7 @@ suite('nested individually-controlled dom-if', function() {
   test('hide 2', function() {
     individual.shouldStamp2 = false;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(getComputedStyle(stamped[0]).display, 'inline', 'stamped 1 display wrong');
     assert.equal(getComputedStyle(stamped[1]).display, 'none', 'stamped 2 display wrong');
@@ -210,7 +210,7 @@ suite('nested individually-controlled dom-if', function() {
   test('hide 1', function() {
     individual.shouldStamp1 = false;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(getComputedStyle(stamped[0]).display, 'none', 'stamped 1 display wrong');
     assert.equal(getComputedStyle(stamped[1]).display, 'none', 'stamped 2 display wrong');
@@ -220,7 +220,7 @@ suite('nested individually-controlled dom-if', function() {
   test('show 1', function() {
     individual.shouldStamp1 = true;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(getComputedStyle(stamped[0]).display, 'inline', 'stamped 1 display wrong');
     assert.equal(getComputedStyle(stamped[1]).display, 'none', 'stamped 2 display wrong');
@@ -230,7 +230,7 @@ suite('nested individually-controlled dom-if', function() {
   test('show 2', function() {
     individual.shouldStamp2 = true;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(getComputedStyle(stamped[0]).display, 'inline', 'stamped 1 display wrong');
     assert.equal(getComputedStyle(stamped[1]).display, 'inline', 'stamped 2 display wrong');
@@ -240,7 +240,7 @@ suite('nested individually-controlled dom-if', function() {
   test('show 3', function() {
     individual.shouldStamp3 = true;
     individual.render();
-    var stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = individual.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     assert.equal(getComputedStyle(stamped[0]).display, 'inline', 'stamped 1 display wrong');
     assert.equal(getComputedStyle(stamped[1]).display, 'inline', 'stamped 2 display wrong');
@@ -252,7 +252,7 @@ suite('nested individually-controlled dom-if', function() {
 suite('nested un-configured dom-if in document', function() {
 
   test('if=false: nothing rendered', function() {
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if)');
     assert.equal(stamped.length, 0, 'total stamped count incorrect');
   });
 
@@ -260,11 +260,11 @@ suite('nested un-configured dom-if in document', function() {
     // first dom-if
     inDocumentIf.if = true;
     inDocumentIf.render();
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 1, 'total stamped count incorrect');
 
     // second dom-if
-    var xif = inDocumentContainer.querySelector('dom-if');
+    let xif = inDocumentContainer.querySelector('dom-if');
     xif.if = true;
     xif.render();
     stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
@@ -286,7 +286,7 @@ suite('nested un-configured dom-if in document', function() {
   test('if=false, restamp=false: everything hidden', function() {
     inDocumentIf.if = false;
     inDocumentIf.render();
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if)');
     stamped.forEach(function(n) {
@@ -298,7 +298,7 @@ suite('nested un-configured dom-if in document', function() {
     inDocumentIf.restamp = true;
     inDocumentIf.if = true;
     inDocumentIf.render();
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if)');
     stamped.forEach(function(n) {
@@ -311,7 +311,7 @@ suite('nested un-configured dom-if in document', function() {
     inDocumentIf.if = false;
     inDocumentIf.render();
     // 2nd one needed to force nested if to detach
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if)');
     assert.equal(stamped.length, 0, 'total stamped count incorrect');
   });
 
@@ -320,11 +320,11 @@ suite('nested un-configured dom-if in document', function() {
     // first dom-if
     inDocumentIf.if = true;
     inDocumentIf.render();
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 1, 'total stamped count incorrect');
 
     // second dom-if
-    var xif = inDocumentContainer.querySelector('dom-if');
+    let xif = inDocumentContainer.querySelector('dom-if');
     xif.if = true;
     xif.render();
     stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
@@ -344,7 +344,7 @@ suite('nested un-configured dom-if in document', function() {
   });
 
   test('parent scope binding', function() {
-    var stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = inDocumentContainer.querySelectorAll('*:not(template):not(dom-if):not(span)');
     stamped[0].prop = 'outer';
     assert.equal(stamped[1].prop, 'outer');
     assert.equal(stamped[2].prop, 'outer');
@@ -355,7 +355,7 @@ suite('nested un-configured dom-if in document', function() {
 suite('nested un-configured dom-if', function() {
 
   test('if=false: nothing rendered', function() {
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if)');
     assert.equal(stamped.length, 0, 'total stamped count incorrect');
   });
 
@@ -364,7 +364,7 @@ suite('nested un-configured dom-if', function() {
     unconfigured1.shouldStamp = true;
     unconfigured2.shouldStamp = true;
     unconfigured1.render();
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     stamped[0].prop = 'outer';
     assert.equal(unconfigured1.domUpdateHandlerCount, 1);
@@ -374,7 +374,7 @@ suite('nested un-configured dom-if', function() {
     unconfigured1.domUpdateHandlerCount = 0;
     unconfigured1.shouldStamp = false;
     unconfigured1.render();
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if)');
     stamped.forEach(function(n) {
@@ -388,7 +388,7 @@ suite('nested un-configured dom-if', function() {
     unconfigured1.$['if-1'].restamp = true;
     unconfigured1.shouldStamp = true;
     unconfigured1.$['if-1'].render();
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if)');
     stamped.forEach(function(n) {
@@ -402,7 +402,7 @@ suite('nested un-configured dom-if', function() {
     unconfigured1.$['if-1'].restamp = true;
     unconfigured1.shouldStamp = false;
     unconfigured1.$['if-1'].render();
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if)');
     assert.equal(unconfigured1.domUpdateHandlerCount, 1);
     assert.equal(stamped.length, 0, 'total stamped count incorrect');
     assert.equal(unconfigured1.domUpdateHandlerCount, 1);
@@ -415,27 +415,27 @@ suite('nested un-configured dom-if', function() {
     unconfigured2.shouldStamp = true;
     unconfigured1.render();
     unconfigured2.render();
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped.length, 3, 'total stamped count incorrect');
     stamped[0].prop = 'outer';
     assert.equal(unconfigured1.domUpdateHandlerCount, 1);
   });
 
   test('parent scope binding', function() {
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     assert.equal(stamped[1].prop, 'outer');
     assert.equal(stamped[2].prop, 'outer');
   });
 
   test('parent upward upward notification', function() {
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     stamped[2].prop = 'nice';
     assert.equal(stamped[0].prop, 'nice');
     assert.equal(stamped[1].prop, 'nice');
   });
 
   test('event handlers', function() {
-    var stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
     stamped[0].fire('test1');
     assert.equal(unconfigured1.testHandler1Count, 1);
     stamped[1].fire('test2');
@@ -449,8 +449,8 @@ suite('nested un-configured dom-if', function() {
 suite('notification between two dom-ifs', function() {
 
   test('change to one scope doesn\'t affect other dom-if', function() {
-    var stamped1 = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
-    var stamped2 = unconfigured2.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped1 = unconfigured1.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
+    let stamped2 = unconfigured2.shadowRoot.querySelectorAll('*:not(template):not(dom-if):not(span)');
 
     unconfigured1.prop = 'foo';
     unconfigured2.prop = 'bar';
@@ -466,7 +466,7 @@ suite('notification between two dom-ifs', function() {
 suite('structured data controlling if', function() {
 
   test('item changed with no if field', function() {
-    var showing;
+    let showing;
     showing = structuredContainer.querySelector('.showing');
     assert.notOk(showing);
     structuredDomBind.item = {show: true};
@@ -487,7 +487,7 @@ suite('structured data controlling if', function() {
   });
 
   test('item changed with no if field (restamp)', function() {
-    var showing;
+    let showing;
     structuredDomIf.restamp = true;
     structuredDomIf.if = false;
     structuredDomIf.render();
@@ -512,10 +512,10 @@ suite('structured data controlling if', function() {
 suite('text node handling', function() {
 
   test('text nodes cleared on if=false', function() {
-    var x = document.createElement('x-textcontent');
+    let x = document.createElement('x-textcontent');
     document.body.appendChild(x);
     x.$.domIf.render();
-    var stamped = x.shadowRoot.childNodes;
+    let stamped = x.shadowRoot.childNodes;
     assert.equal(stamped.length, 12);
     assert.equal(stamped[7].textContent.trim(), 'Stuff');
     x.$.domIf.if = false;
@@ -532,10 +532,10 @@ suite('text node handling', function() {
   });
 
   test('binding to text nodes changed while if=false', function() {
-    var x = document.createElement('x-textcontent');
+    let x = document.createElement('x-textcontent');
     document.body.appendChild(x);
     x.$.domIf.render();
-    var stamped = x.shadowRoot.childNodes;
+    let stamped = x.shadowRoot.childNodes;
     assert.equal(stamped.length, 12);
     assert.equal(stamped[7].textContent.trim(), 'Stuff');
     x.$.domIf.if = false;
@@ -554,14 +554,61 @@ suite('text node handling', function() {
 
 });
 
+suite('slot handling', function() {
+
+  test('slots added/removed on if=true/false', function() {
+    let x = document.createElement('x-slot');
+    let one = document.createElement('div');
+    one.slot = 'one';
+    x.appendChild(one);
+    let two = document.createElement('div');
+    two.slot = 'two';
+    x.appendChild(two);
+    let three = document.createElement('div');
+    three.slot = 'three';
+    x.appendChild(three);
+    document.body.appendChild(x);
+    x.$.domIf.render();
+    let stamped = x.shadowRoot.childNodes;
+    assert.equal(stamped.length, 14);
+    assert.equal(stamped[4].assignedNodes()[0], one);
+    assert.equal(stamped[8].assignedNodes()[0], two);
+    assert.equal(stamped[10].assignedNodes()[0], three);
+    x.$.domIf.if = false;
+    x.$.domIf.render();
+    stamped = x.shadowRoot.childNodes;
+    assert.equal(stamped.length, 14);
+    x.$.domIf.if = true;
+    x.$.domIf.render();
+    stamped = x.shadowRoot.childNodes;
+    assert.equal(stamped.length, 14);
+    assert.equal(stamped[4].assignedNodes()[0], one);
+    assert.equal(stamped[8].assignedNodes()[0], two);
+    assert.equal(stamped[10].assignedNodes()[0], three);
+    x.$.domIf.if = false;
+    x.$.domIf.render();
+    const innerIf = x.shadowRoot.querySelector('#innerIf');
+    innerIf.if = false;
+    innerIf.render();
+    x.$.domIf.if = true;
+    x.$.domIf.render();
+    stamped = x.shadowRoot.childNodes;
+    assert.equal(stamped[4].assignedNodes()[0], one);
+    assert.equal(stamped[7].assignedNodes()[0], two);
+    assert.equal(stamped[9].assignedNodes()[0], three);
+    document.body.removeChild(x);
+  });
+
+});
+
 suite('attach/detach tests', function() {
 
   test('move domif (clients persist)', function(done) {
-    var domif = document.querySelector('#simple');
+    let domif = document.querySelector('#simple');
     domif.if = true;
     innerContainer.appendChild(domif);
     setTimeout(function() {
-      var clients = innerContainer.querySelectorAll('x-client');
+      let clients = innerContainer.querySelectorAll('x-client');
       // Same clients as before since move happened in one turn
       assert.equal(clients[0].uid, 0);
       assert.equal(clients[1].uid, 1);
@@ -574,15 +621,15 @@ suite('attach/detach tests', function() {
   });
 
   test('remove, wait, append domif (clients recreated)', function(done) {
-    var domif = document.querySelector('#simple');
+    let domif = document.querySelector('#simple');
     domif.if = true;
     innerContainer.removeChild(domif);
     setTimeout(function() {
-      var clients = innerContainer.querySelectorAll('x-client');
+      let clients = innerContainer.querySelectorAll('x-client');
       assert.equal(clients.length, 0);
       innerContainer.appendChild(domif);
       setTimeout(function() {
-        var clients = outerContainer.querySelectorAll('x-client');
+        let clients = outerContainer.querySelectorAll('x-client');
         // New clients since removed for a turn
         assert.equal(clients[0].uid, 3);
         assert.equal(clients[1].uid, 4);
@@ -596,10 +643,10 @@ suite('attach/detach tests', function() {
   });
 
   test('move host with domif (clients persist)', function(done) {
-    var host = document.createElement('x-host');
+    let host = document.createElement('x-host');
     outerContainer.appendChild(host);
     setTimeout(function() {
-      var clients = host.shadowRoot.querySelectorAll('x-client');
+      let clients = host.shadowRoot.querySelectorAll('x-client');
       // New clients created in host instance
       assert.equal(clients[0].uid, 6);
       assert.equal(clients[1].uid, 7);
@@ -609,7 +656,7 @@ suite('attach/detach tests', function() {
       assert.equal(host.$.domif.previousElementSibling, clients[2]);
       innerContainer.appendChild(host);
       setTimeout(function() {
-        var clients = host.shadowRoot.querySelectorAll('x-client');
+        let clients = host.shadowRoot.querySelectorAll('x-client');
         // Clients in removed host persist
         assert.equal(clients[0].uid, 6);
         assert.equal(clients[1].uid, 7);
@@ -623,10 +670,10 @@ suite('attach/detach tests', function() {
   });
 
   test('remove, wait, append host with domif (clients persist)', function(done) {
-    var host = document.createElement('x-host');
+    let host = document.createElement('x-host');
     outerContainer.appendChild(host);
     setTimeout(function() {
-      var clients = host.shadowRoot.querySelectorAll('x-client');
+      let clients = host.shadowRoot.querySelectorAll('x-client');
       // New clients created in host instance
       assert.equal(clients[0].uid, 9);
       assert.equal(clients[1].uid, 10);
@@ -646,7 +693,7 @@ suite('attach/detach tests', function() {
         innerContainer.appendChild(host);
         setTimeout(function() {
           // Clients in removed host persist
-          var clients = host.shadowRoot.querySelectorAll('x-client');
+          let clients = host.shadowRoot.querySelectorAll('x-client');
           assert.equal(clients[0].uid, 9);
           assert.equal(clients[1].uid, 10);
           assert.equal(clients[2].uid, 11);
@@ -660,16 +707,16 @@ suite('attach/detach tests', function() {
   });
 
   test('remove, append domif', function(done) {
-    var domif = document.querySelector('#simple');
-    var parent = domif.parentNode;
+    let domif = document.querySelector('#simple');
+    let parent = domif.parentNode;
     domif.if = true;
     parent.removeChild(domif);
     setTimeout(function() {
-      var clients = parent.querySelectorAll('x-client');
+      let clients = parent.querySelectorAll('x-client');
       assert.equal(clients.length, 0);
       parent.appendChild(domif);
       setTimeout(function() {
-        var clients = parent.querySelectorAll('x-client');
+        let clients = parent.querySelectorAll('x-client');
         assert.equal(clients[0].uid, 12);
         assert.equal(clients[1].uid, 13);
         assert.equal(clients[2].uid, 14);
@@ -682,9 +729,9 @@ suite('attach/detach tests', function() {
   });
 
   test('move into doc fragment', function(done) {
-    var el = shouldBeRemoved;
+    let el = shouldBeRemoved;
     assert.equal(el.parentNode, removalContainer);
-    var frag = document.createDocumentFragment();
+    let frag = document.createDocumentFragment();
     frag.appendChild(toBeRemoved);
     setTimeout(function() {
       assert.equal(el.parentNode, null);
@@ -698,11 +745,11 @@ suite('attach/detach tests', function() {
 
   test('move into shadow root', function(done) {
     if (undefined.hasShadow) {
-      var el = shouldBeRemoved;
+      let el = shouldBeRemoved;
       assert.equal(el.parentNode, removalContainer);
-      var div = document.createElement('div');
+      let div = document.createElement('div');
       document.body.appendChild(div);
-      var frag = div.createShadowRoot();
+      let frag = div.createShadowRoot();
       frag.appendChild(toBeRemoved);
       setTimeout(function() {
         assert.equal(el.parentNode, frag);
@@ -728,7 +775,7 @@ suite('timing', function() {
   suite('ordering, restamp: ' + restamp, function() {
 
     test('effects in if not run when `if` goes false via property', function() {
-      var el = document.createElement('x-guard-prop');
+      let el = document.createElement('x-guard-prop');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.bool = true;
@@ -743,7 +790,7 @@ suite('timing', function() {
     });
 
     test('effects in if not run when `if` goes false via inline function', function() {
-      var el = document.createElement('x-guard-inline');
+      let el = document.createElement('x-guard-inline');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.bool = true;
@@ -758,7 +805,7 @@ suite('timing', function() {
     });
 
     test('effects in if not run when `if` goes false via computed property', function() {
-      var el = document.createElement('x-guard-computed');
+      let el = document.createElement('x-guard-computed');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.bool = true;
@@ -773,7 +820,7 @@ suite('timing', function() {
     });
 
     test('effects in if not run when `if` goes false via object sub-property', function() {
-      var el = document.createElement('x-guard-object');
+      let el = document.createElement('x-guard-object');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.obj = {bool: true};
@@ -788,7 +835,7 @@ suite('timing', function() {
     });
 
     test('effects in if not run when `if` goes false via computed from object sub-property', function() {
-      var el = document.createElement('x-guard-object-computed');
+      let el = document.createElement('x-guard-object-computed');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.obj = {bool: true};
@@ -803,7 +850,7 @@ suite('timing', function() {
     });
 
     test('effects in if not run when `if` goes false via setProperties batch', function() {
-      var el = document.createElement('x-guard-separate-props');
+      let el = document.createElement('x-guard-separate-props');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.setProperties({a: 'ok', b: true});
@@ -818,7 +865,7 @@ suite('timing', function() {
     });
 
     test('host properties in sync when changed while false', function() {
-      var el = document.createElement('x-guard-separate-props');
+      let el = document.createElement('x-guard-separate-props');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.a = 'ok';
@@ -837,7 +884,7 @@ suite('timing', function() {
     });
 
     test('host paths in sync when changed while false', function() {
-      var el = document.createElement('x-guard-separate-paths');
+      let el = document.createElement('x-guard-separate-paths');
       el.restamp = restamp;
       document.body.appendChild(el);
       el.obj = {a: 'ok', b: true};

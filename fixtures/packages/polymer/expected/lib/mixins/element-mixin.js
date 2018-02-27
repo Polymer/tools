@@ -7,8 +7,6 @@ import { DomModule } from '../elements/dom-module.js';
 import { PropertyEffects } from './property-effects.js';
 import { PropertiesMixin } from './properties-mixin.js';
 
-const ABS_URL = /(^\/)|(^#)|(^[\w-\d]*:)/;
-
 export const ElementMixin = dedupingMixin(base => {
 
   /**
@@ -147,11 +145,8 @@ export const ElementMixin = dedupingMixin(base => {
     if (info.observer) {
       proto._createPropertyObserver(name, info.observer, allProps[info.observer]);
     }
-    // always ensure an accessor is made for properties but don't stomp
-    // on existing values.
-    if (!info.readOnly && !(name in proto)) {
-      proto._createPropertyAccessor(name);
-    }
+    // always create the mapping from attribute back to property for deserialization.
+    proto._addPropertyToAttributeMap(name);
   }
 
   /**
@@ -548,17 +543,16 @@ export const ElementMixin = dedupingMixin(base => {
      * this element. This method will return the same URL before and after
      * bundling.
      *
+     * Note that this function performs no resolution for URLs that start
+     * with `/` (absolute URLs) or `#` (hash identifiers).  For general purpose
+     * URL resolution, use `window.URL`.
+     *
      * @param {string} url URL to resolve.
      * @param {string=} base Optional base URL to resolve against, defaults
      * to the element's `importPath`
      * @return {string} Rewritten URL relative to base
      */
     resolveUrl(url, base) {
-      // Preserve backward compatibility with `this.resolveUrl('/foo')` resolving
-      // against the main document per #2448
-      if (url && ABS_URL.test(url)) {
-        return url;
-      }
       if (!base && this.importPath) {
         base = resolveUrl$0(this.importPath);
       }

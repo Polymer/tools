@@ -188,6 +188,27 @@ Polymer({
   importPath: import.meta.url,
 
   _template: html`
+      <template id="domIf" is="dom-if" if="">
+        <div class="stuff">stuff</div>
+        <slot id="one" name="one"></slot><template id="innerIf" is="dom-if" if="" restamp="">hi</template>
+        <slot id="two" name="two"></slot>
+        {{text}}
+        <slot id="three" name="three"></slot>
+      </template>
+`,
+
+  is: 'x-slot',
+
+  properties: {
+    text: {
+      value: 'Stuff'
+    }
+  }
+});
+Polymer({
+  importPath: import.meta.url,
+
+  _template: html`
     <template id="domif" is="dom-if" if="">
       <x-client></x-client>
       <x-client></x-client>

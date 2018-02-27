@@ -38,7 +38,13 @@ export function stylesFromModules(moduleIds) {
 
 export function stylesFromModule(moduleId) {
   const m = importModule(moduleId);
-  if (m && m._styles === undefined) {
+
+  if (!m) {
+    console.warn('Could not find style data in module named', moduleId);
+    return [];
+  }
+
+  if (m._styles === undefined) {
     const styles = [];
     // module imports: <link rel="import" type="css">
     styles.push(..._stylesFromModuleImports(m));
@@ -48,12 +54,11 @@ export function stylesFromModule(moduleId) {
       styles.push(...stylesFromTemplate(template,
         /** @type {templateWithAssetPath} */(m).assetpath));
     }
+
     m._styles = styles;
   }
-  if (!m) {
-    console.warn('Could not find style data in module named', moduleId);
-  }
-  return m ? m._styles : [];
+
+  return m._styles;
 }
 
 export function stylesFromTemplate(template, baseURI) {

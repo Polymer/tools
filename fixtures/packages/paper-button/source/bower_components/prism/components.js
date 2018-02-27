@@ -161,6 +161,10 @@ var components = {
 			"require": "ruby",
 			"owner": "MakeNowJust"
 		},
+		"csp": {
+			"title": "Content-Security-Policy",
+			"owner": "ScottHelme"
+		},
 		"css-extras": {
 			"title": "CSS Extras",
 			"require": "css",
@@ -176,14 +180,14 @@ var components = {
 			"require": "clike",
 			"owner": "Golmote"
 		},
+		"diff": {
+			"title": "Diff",
+			"owner": "uranusjr"
+		},
 		"django": {
 			"title": "Django/Jinja2",
 			"require": "markup",
 			"owner": "romanvm"
-		},
-		"diff": {
-			"title": "Diff",
-			"owner": "uranusjr"
 		},
 		"docker": {
 			"title": "Docker",
@@ -268,6 +272,14 @@ var components = {
 		"http": {
 			"title": "HTTP",
 			"owner": "danielgtaylor"
+		},
+		"hpkp": {
+			"title": "HTTP Public-Key-Pins",
+			"owner": "ScottHelme"
+		},
+		"hsts": {
+			"title": "HTTP Strict-Transport-Security",
+			"owner": "ScottHelme"
 		},
 		"ichigojam": {
 			"title": "IchigoJam",
@@ -494,10 +506,14 @@ var components = {
 			"require": ["markup", "javascript"],
 			"owner": "vkbansal"
 		},
+		"tsx": {
+			"title": "React TSX", 
+			"require": ["jsx", "typescript"]
+		},
 		"renpy": {
 			"title": "Ren'py",
 			"owner": "HyuchiaDiego"
-        },
+		},
 		"reason": {
 			"title": "Reason",
 			"require": "clike",

@@ -26,9 +26,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
   <script>
+    'use strict';
     suite('<iron-request>', function() {
       var jsonResponseHeaders;
       var successfulRequestOptions;
+      var synchronousSuccessfulRequestOptions;
+      var asynchronousSuccessfulRequestOptions;
+      var asynchronousUndefSuccessfulRequestOptions;
       var request;
       var server;
 

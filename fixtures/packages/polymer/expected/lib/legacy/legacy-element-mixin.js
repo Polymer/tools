@@ -47,14 +47,12 @@ export const LegacyElementMixin = dedupingMixin((base) => {
 
     constructor() {
       super();
-      this.root = this;
       /** @type {boolean} */
       this.isAttached;
       /** @type {WeakMap<!Element, !Object<string, !Function>>} */
       this.__boundListeners;
       /** @type {Object<string, Function>} */
       this._debouncers;
-      this.created();
       // Ensure listeners are applied immediately so that they are
       // added before declarative event listeners. This allows an element to
       // decorate itself via an event prior to any declarative listeners
@@ -148,6 +146,8 @@ export const LegacyElementMixin = dedupingMixin((base) => {
         this._registered();
       }
       super._initializeProperties();
+      this.root = this;
+      this.created();
     }
 
     /**

@@ -1,5 +1,5 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
-import { Templatize } from '../../lib/utils/templatize.js';
+import { templatize as templatize$0 } from '../../lib/utils/templatize.js';
 import { Templatizer } from '../../lib/legacy/templatizer-behavior.js';
 import { html } from '../../lib/utils/html-tag.js';
 
@@ -81,7 +81,7 @@ Polymer({
 
   go: function(withProps) {
     var template = this.querySelector('template');
-    var ctor = Templatize.templatize(template, this, {
+    var ctor = templatize$0(template, this, {
       parentModel: true,
       instanceProps: {
         obj: true,

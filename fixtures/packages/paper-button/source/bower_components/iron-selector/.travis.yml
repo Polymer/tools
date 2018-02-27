@@ -1,8 +1,12 @@
 language: node_js
 sudo: required
 before_script:
-  - npm install -g polymer-cli web-component-tester
+  - npm install -g polymer-cli
   - polymer install --variants
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
 env:
   global:
     - secure: >-
@@ -18,8 +22,8 @@ addons:
     packages:
       - google-chrome-stable
 script:
-  - xvfb-run wct
+  - xvfb-run polymer test
   - >-
-    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'default';
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
     fi
 dist: trusty

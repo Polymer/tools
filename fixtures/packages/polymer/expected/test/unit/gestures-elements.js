@@ -1,6 +1,8 @@
 import '../../polymer.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
+import { Element } from '../../polymer-element.js';
+import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -193,3 +195,62 @@ Polymer({
   is: 'x-imperative',
   behaviors: [EventCaptureBehavior]
 });
+class XNativeLabel extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+
+  static get template() {
+    return html`
+    <label id="label" for="check"></label>
+    <input id="check" type="checkbox">
+`;
+  }
+
+  static get is() {
+    return 'x-native-label';
+  }
+}
+customElements.define(XNativeLabel.is, XNativeLabel);
+class XNativeLabelNested extends Element {
+  static get importPath() {
+    return import.meta.url;
+  }
+
+  static get template() {
+    return html`
+    <label id="label">
+      <input id="check" type="checkbox">
+    </label>
+`;
+  }
+
+  static get is() {
+    return 'x-native-label-nested';
+  }
+}
+customElements.define(XNativeLabelNested.is, XNativeLabelNested);
+class XDisabled extends GestureEventListeners(Element) {
+  static get importPath() {
+    return import.meta.url;
+  }
+
+  static get template() {
+    return html`
+    <button id="disabled" on-tap="tap" disabled=""></button>
+    <div disabled="">
+      <button id="nested" on-tap="tap"></button>
+    </div>
+`;
+  }
+
+  constructor() {
+    super();
+    this.taps = [];
+  }
+  static get is() {return 'x-disabled-tap';}
+  tap(e) {
+    this.taps.push(e.id);
+  }
+}
+customElements.define(XDisabled.is, XDisabled);

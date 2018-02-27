@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <body>
   <script type="module">
 import '../../polymer.js';
-import { html } from '../../lib/utils/html-tag.js';
+import { html, htmlLiteral } from '../../lib/utils/html-tag.js';
 import { Element } from '../../polymer-element.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 suite('html function', function() {
@@ -33,21 +33,28 @@ suite('html function', function() {
     assert.instanceOf(t.content.lastChild, Comment);
   });
   test('escaping works as expected', function() {
-    let t = html`<span>\f\o\o</span>`;
-    assert.equal(t.innerHTML, '<span>\\f\\o\\o</span>');
+    let t = html`<span>the \`price\` is \${{foo}}\n</span>`;
+    assert.equal(t.innerHTML, '<span>the `price` is ${{foo}}\n</span>');
   });
-  test('variables work', function() {
-    let a = 3;
-    let b = 'foo';
-    let t = html`<div>${a} ${b}</div>`;
-    let inst = document.createElement('div');
-    inst.appendChild(t.content.cloneNode(true));
-    assert.equal(inst.textContent, `${a} ${b}`);
+  test('interpolation of non-templates throw', function() {
+    assert.throws(() => html`<div>${'a'}</div>`);
   });
-  test('template variables only include the template contents', function() {
+  test('interpolation of templates include the template contents', function() {
     let t1 = html`<div></div>`;
     let t2 = html`<span>${t1}</span>`;
     assert.equal(t2.innerHTML, '<span><div></div></span>');
+  });
+  test('interpolation of literal values', function() {
+    let s1 = htmlLiteral`hello`;
+    assert.equal(s1.value, `hello`);
+    let s2 = htmlLiteral`hello${htmlLiteral` ${htmlLiteral`world`}!`}!`;
+    assert.equal(s2.value, 'hello world!!');
+  });
+  test('interpolation of literal values within html values', function() {
+    let s1 = htmlLiteral`foo`;
+    let s2 = htmlLiteral`display: block;`;
+    let t = html`<style>:host {${s2}}</style><div ${s1}></div>`;
+    assert.equal(t.innerHTML, `<style>:host {display: block;}</style><div foo=""></div>`);
   });
 });
 suite('Polymer + html fn', function() {

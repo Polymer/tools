@@ -63,23 +63,31 @@ Or, in a Polymer element, you can include a meta in your template:
      *   value: *,
      * }=} options
      */
-    function IronMeta(options) {
+    Polymer.IronMeta = function(options) {
+      Polymer.IronMeta[' '](options);
+
       this.type = (options && options.type) || 'default';
       this.key = options && options.key;
       if (options && 'value' in options) {
         this.value = options.value;
       }
-    }
+    };
 
-    IronMeta.types = {};
+    // This function is used to convince Closure not to remove constructor calls
+    // for instances that are not held anywhere. For example, when
+    // `new Polymer.IronMeta({...})` is used only for the side effect of adding
+    // a value.
+    Polymer.IronMeta[' '] = function(){};
 
-    IronMeta.prototype = {
+    Polymer.IronMeta.types = {};
+
+    Polymer.IronMeta.prototype = {
       get value() {
         var type = this.type;
         var key = this.key;
 
         if (type && key) {
-          return IronMeta.types[type] && IronMeta.types[type][key];
+          return Polymer.IronMeta.types[type] && Polymer.IronMeta.types[type][key];
         }
       },
 
@@ -88,7 +96,7 @@ Or, in a Polymer element, you can include a meta in your template:
         var key = this.key;
 
         if (type && key) {
-          type = IronMeta.types[type] = IronMeta.types[type] || {};
+          type = Polymer.IronMeta.types[type] = Polymer.IronMeta.types[type] || {};
           if (value == null) {
             delete type[key];
           } else {
@@ -101,7 +109,7 @@ Or, in a Polymer element, you can include a meta in your template:
         var type = this.type;
 
         if (type) {
-          const items = IronMeta.types[this.type];
+          var items = Polymer.IronMeta.types[this.type];
           if (!items) {
             return [];
           }
@@ -117,8 +125,6 @@ Or, in a Polymer element, you can include a meta in your template:
         return this.value;
       }
     };
-
-    Polymer.IronMeta = IronMeta;
 
     var metaDatas = Polymer.IronMeta.types;
 

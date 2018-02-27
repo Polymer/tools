@@ -23,6 +23,8 @@ class PR extends Element {
     <style>
       .logo {
         background-image: url(foo.z);
+        clip-path: url('#bar');
+        mask-image: url('/zot');
       }
     </style>
     <div id="div" class="logo" style\$="background-image: url('[[importPath]]foo.z');"></div>
@@ -30,6 +32,8 @@ class PR extends Element {
     <a id="a" href\$="[[importPath]]foo.z">Foo</a>
     <zonk id="import" url\$="[[importPath]]foo.z"></zonk>
     <zonk id="resolveUrl" url\$="[[resolveUrl('foo.z')]]"></zonk>
+    <zonk id="resolveUrlHash" url\$="[[resolveUrl('#foo')]]"></zonk>
+    <zonk id="resolveUrlAbs" url\$="[[resolveUrl('/foo')]]"></zonk>
     <zonk id="root" url\$="[[rootPath]]foo.z"></zonk>
     <a id="rel" href\$="[[importPath]]../foo.z?123">Foo</a>
     <a id="action" action="foo.z">Foo</a>

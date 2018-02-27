@@ -35,7 +35,7 @@ See [this](https://github.com/PolymerElements/iron-form/blob/master/demo/simple-
 for an example.
 
 ### Changes in 2.0
-- `validate()` no longer requires a `value` paramer to be passed, and will use the element's `value` property if it exists
+- `validate()` no longer requires a `value` parameter to be passed, and will use the element's `value` property if it exists
 - `validatorType` and `validatorName` were unused and have been removed
 
 ### Accessibility

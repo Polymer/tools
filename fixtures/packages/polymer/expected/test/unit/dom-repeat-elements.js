@@ -344,6 +344,31 @@ Polymer({
   importPath: import.meta.url,
 
   _template: html`
+      <template id="repeater" is="dom-repeat" items="{{items}}">
+        <x-foo itema-prop="{{item.prop.nestedProp}}"></x-foo>
+      </template>
+`,
+
+  is: 'x-repeat-filter-and-sort-by-nested-property',
+
+  properties: {
+    items: {
+      value () {
+        return [
+          { prop: { nestedProp: 0 } },
+          { prop: { nestedProp: 1 } },
+          { prop: { nestedProp: 2 } },
+          { prop: { nestedProp: 3 } },
+          { prop: { nestedProp: 4 } },
+        ];
+      }
+    }
+  }
+});
+Polymer({
+  importPath: import.meta.url,
+
+  _template: html`
     <template id="repeat" is="dom-repeat" items="{{items}}">
       <x-foo itema-prop="{{item.prop}}"></x-foo>
     </template>

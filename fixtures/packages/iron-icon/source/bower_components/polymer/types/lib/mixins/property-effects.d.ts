@@ -46,7 +46,7 @@ declare namespace Polymer {
    * whereas the default when using `PropertyAccessors` standalone is to be
    * async by default.
    */
-  function PropertyEffects<T extends new (...args: any[]) => {}>(base: T): T & PropertyEffectsConstructor & Polymer.TemplateStampConstructor & Polymer.PropertyAccessorsConstructor;
+  function PropertyEffects<T extends new (...args: any[]) => {}>(base: T): T & PropertyEffectsConstructor & Polymer.TemplateStampConstructor & Polymer.PropertyAccessorsConstructor & Polymer.PropertiesChangedConstructor;
 
   interface PropertyEffectsConstructor {
     new(...args: any[]): PropertyEffects;
@@ -96,7 +96,7 @@ declare namespace Polymer {
      * @returns `true` if the visited node added node-specific
      *   metadata to `nodeInfo`
      */
-    _parseTemplateNodeAttribute(node: Element|null, templateInfo: TemplateInfo|null, nodeInfo: NodeInfo|null, name: string, value: string): boolean;
+    _parseTemplateNodeAttribute(node: _Element|null, templateInfo: TemplateInfo|null, nodeInfo: NodeInfo|null, name: string, value: string): boolean;
 
     /**
      * Ensures an accessor exists for the specified property, and adds

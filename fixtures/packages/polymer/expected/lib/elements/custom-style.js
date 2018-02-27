@@ -27,12 +27,12 @@ const CustomStyleInterface = window.ShadyCSS.CustomStyleInterface;
  *
  * For example:
  *
- * ```
+ * ```html
  * <!-- import apply shim--only required if using mixins -->
- * <link rel="import href="bower_components/shadycss/apply-shim.html">
+ * <link rel="import" href="bower_components/shadycss/apply-shim.html">
  * <!-- import custom-style element -->
  * <link rel="import" href="bower_components/polymer/lib/elements/custom-style.html">
- * ...
+ *
  * <custom-style>
  *   <style>
  *     html {

@@ -29,7 +29,7 @@ declare namespace Polymer {
    * representing the last selected item.  When `multi` is true, `selected`
    * is an array of multiply selected items.
    */
-  function ArraySelectorMixin<T extends new (...args: any[]) => {}>(base: T): T & ArraySelectorMixinConstructor & Polymer.ElementMixinConstructor;
+  function ArraySelectorMixin<T extends new (...args: any[]) => {}>(base: T): T & ArraySelectorMixinConstructor & Polymer.ElementMixinConstructor & Polymer.PropertyEffectsConstructor & Polymer.TemplateStampConstructor & Polymer.PropertyAccessorsConstructor & Polymer.PropertiesChangedConstructor & Polymer.PropertiesMixinConstructor;
 
   interface ArraySelectorMixinConstructor {
     new(...args: any[]): ArraySelectorMixin;
@@ -143,19 +143,23 @@ declare namespace Polymer {
    *   <template>
    *
    *     <div> Employee list: </div>
-   *     <template is="dom-repeat" id="employeeList" items="{{employees}}">
+   *     <dom-repeat id="employeeList" items="{{employees}}">
+   *       <template>
    *         <div>First name: <span>{{item.first}}</span></div>
-   *         <div>Last name: <span>{{item.last}}</span></div>
-   *         <button on-click="toggleSelection">Select</button>
-   *     </template>
+   *           <div>Last name: <span>{{item.last}}</span></div>
+   *           <button on-click="toggleSelection">Select</button>
+   *       </template>
+   *     </dom-repeat>
    *
    *     <array-selector id="selector" items="{{employees}}" selected="{{selected}}" multi toggle></array-selector>
    *
    *     <div> Selected employees: </div>
-   *     <template is="dom-repeat" items="{{selected}}">
+   *     <dom-repeat items="{{selected}}">
+   *       <template>
    *         <div>First name: <span>{{item.first}}</span></div>
    *         <div>Last name: <span>{{item.last}}</span></div>
-   *     </template>
+   *       </template>
+   *     </dom-repeat>
    *
    *   </template>
    *
@@ -163,20 +167,26 @@ declare namespace Polymer {
    * ```
    *
    * ```js
-   * Polymer({
-   *   is: 'employee-list',
-   *   ready() {
-   *     this.employees = [
-   *         {first: 'Bob', last: 'Smith'},
-   *         {first: 'Sally', last: 'Johnson'},
-   *         ...
-   *     ];
-   *   },
-   *   toggleSelection(e) {
-   *     let item = this.$.employeeList.itemForElement(e.target);
-   *     this.$.selector.select(item);
-   *   }
-   * });
+   * class EmployeeList extends Polymer.Element {
+   *  static get is() { return 'employee-list'; }
+   *  static get properties() {
+   *    return {
+   *      employees: {
+   *        value() {
+   *          return [
+   *            {first: 'Bob', last: 'Smith'},
+   *            {first: 'Sally', last: 'Johnson'},
+   *            ...
+   *          ];
+   *        }
+   *      }
+   *    };
+   *  }
+   *  toggleSelection(e) {
+   *    let item = this.$.employeeList.itemForElement(e.target);
+   *    this.$.selector.select(item);
+   *  }
+   * }
    * ```
    */
   class ArraySelector extends

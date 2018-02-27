@@ -67,7 +67,8 @@ class TemplateInstanceBase extends base {
       children.push(n);
       n.__templatizeInstance = this;
     }
-    if (this.__templatizeOwner.__hideTemplateChildren__) {
+    if (this.__templatizeOwner &&
+      this.__templatizeOwner.__hideTemplateChildren__) {
       this._showHideChildren(true);
     }
     // Flush props only when props are passed if instance props exist
@@ -86,15 +87,15 @@ class TemplateInstanceBase extends base {
    */
   _configureProperties(props) {
     let options = this.__templatizeOptions;
-    if (props) {
-      for (let iprop in options.instanceProps) {
-        if (iprop in props) {
-          this._setPendingProperty(iprop, props[iprop]);
-        }
+    if (options.forwardHostProp) {
+      for (let hprop in this.__hostProps) {
+        this._setPendingProperty(hprop, this.__dataHost['_host_' + hprop]);
       }
     }
-    for (let hprop in this.__hostProps) {
-      this._setPendingProperty(hprop, this.__dataHost['_host_' + hprop]);
+    // Any instance props passed in the constructor will overwrite host props;
+    // normally this would be a user error but we don't specifically filter them
+    for (let iprop in props) {
+      this._setPendingProperty(iprop, props[iprop]);
     }
   }
   /**
@@ -161,7 +162,20 @@ class TemplateInstanceBase extends base {
           } else {
             n.textContent = n.__polymerTextContent__;
           }
-        } else if (n.style) {
+        // remove and replace slot
+        } else if (n.localName === 'slot') {
+          if (hide) {
+            n.__polymerReplaced__ = document.createComment('hidden-slot');
+            n.parentNode.replaceChild(n.__polymerReplaced__, n);
+          } else {
+            const replace = n.__polymerReplaced__;
+            if (replace) {
+              replace.parentNode.replaceChild(n, replace);
+            }
+          }
+        }
+
+        else if (n.style) {
           if (hide) {
             n.__polymerDisplay__ = n.style.display;
             n.style.display = 'none';
@@ -216,6 +230,17 @@ class TemplateInstanceBase extends base {
     }
     return model;
   }
+
+  /**
+   * Stub of HTMLElement's `dispatchEvent`, so that effects that may
+   * dispatch events safely no-op.
+   *
+   * @param {Event} event Event to dispatch
+   * @return {boolean} Always true.
+   */
+  dispatchEvent(event) { // eslint-disable-line no-unused-vars
+    return true;
+ }
 }
 
 /** @type {!DataTemplate} */
@@ -345,180 +370,55 @@ function createNotifyHostPropEffect() {
   };
 }
 
-/**
- * Module for preparing and stamping instances of templates that utilize
- * Polymer's data-binding and declarative event listener features.
- *
- * Example:
- *
- *     // Get a template from somewhere, e.g. light DOM
- *     let template = this.querySelector('template');
- *     // Prepare the template
- *     let TemplateClass = Polymer.Templatize.templatize(template);
- *     // Instance the template with an initial data model
- *     let instance = new TemplateClass({myProp: 'initial'});
- *     // Insert the instance's DOM somewhere, e.g. element's shadow DOM
- *     this.shadowRoot.appendChild(instance.root);
- *     // Changing a property on the instance will propagate to bindings
- *     // in the template
- *     instance.myProp = 'new value';
- *
- * The `options` dictionary passed to `templatize` allows for customizing
- * features of the generated template class, including how outer-scope host
- * properties should be forwarded into template instances, how any instance
- * properties added into the template's scope should be notified out to
- * the host, and whether the instance should be decorated as a "parent model"
- * of any event handlers.
- *
- *     // Customize property forwarding and event model decoration
- *     let TemplateClass = Polymer.Templatize.templatize(template, this, {
- *       parentModel: true,
- *       instanceProps: {...},
- *       forwardHostProp(property, value) {...},
- *       notifyInstanceProp(instance, property, value) {...},
- *     });
- *
- *
- * @namespace
- * @memberof Polymer
- * @summary Module for preparing and stamping instances of templates
- *   utilizing Polymer templating features.
- */
-
-const Templatize = {
-
-  /**
-   * Returns an anonymous `Polymer.PropertyEffects` class bound to the
-   * `<template>` provided.  Instancing the class will result in the
-   * template being stamped into a document fragment stored as the instance's
-   * `root` property, after which it can be appended to the DOM.
-   *
-   * Templates may utilize all Polymer data-binding features as well as
-   * declarative event listeners.  Event listeners and inline computing
-   * functions in the template will be called on the host of the template.
-   *
-   * The constructor returned takes a single argument dictionary of initial
-   * property values to propagate into template bindings.  Additionally
-   * host properties can be forwarded in, and instance properties can be
-   * notified out by providing optional callbacks in the `options` dictionary.
-   *
-   * Valid configuration in `options` are as follows:
-   *
-   * - `forwardHostProp(property, value)`: Called when a property referenced
-   *   in the template changed on the template's host. As this library does
-   *   not retain references to templates instanced by the user, it is the
-   *   templatize owner's responsibility to forward host property changes into
-   *   user-stamped instances.  The `instance.forwardHostProp(property, value)`
-   *    method on the generated class should be called to forward host
-   *   properties into the template to prevent unnecessary property-changed
-   *   notifications. Any properties referenced in the template that are not
-   *   defined in `instanceProps` will be notified up to the template's host
-   *   automatically.
-   * - `instanceProps`: Dictionary of property names that will be added
-   *   to the instance by the templatize owner.  These properties shadow any
-   *   host properties, and changes within the template to these properties
-   *   will result in `notifyInstanceProp` being called.
-   * - `mutableData`: When `true`, the generated class will skip strict
-   *   dirty-checking for objects and arrays (always consider them to be
-   *   "dirty").
-   * - `notifyInstanceProp(instance, property, value)`: Called when
-   *   an instance property changes.  Users may choose to call `notifyPath`
-   *   on e.g. the owner to notify the change.
-   * - `parentModel`: When `true`, events handled by declarative event listeners
-   *   (`on-event="handler"`) will be decorated with a `model` property pointing
-   *   to the template instance that stamped it.  It will also be returned
-   *   from `instance.parentModel` in cases where template instance nesting
-   *   causes an inner model to shadow an outer model.
-   *
-   * Note that the class returned from `templatize` is generated only once
-   * for a given `<template>` using `options` from the first call for that
-   * template, and the cached class is returned for all subsequent calls to
-   * `templatize` for that template.  As such, `options` callbacks should not
-   * close over owner-specific properties since only the first `options` is
-   * used; rather, callbacks are called bound to the `owner`, and so context
-   * needed from the callbacks (such as references to `instances` stamped)
-   * should be stored on the `owner` such that they can be retrieved via `this`.
-   *
-   * @memberof Polymer.Templatize
-   * @param {!HTMLTemplateElement} template Template to templatize
-   * @param {!Polymer_PropertyEffects} owner Owner of the template instances;
-   *   any optional callbacks will be bound to this owner.
-   * @param {Object=} options Options dictionary (see summary for details)
-   * @return {function(new:TemplateInstanceBase)} Generated class bound to the template
-   *   provided
-   * @suppress {invalidCasts}
-   */
-  templatize(template, owner, options) {
-    options = /** @type {!TemplatizeOptions} */(options || {});
-    if (template.__templatizeOwner) {
-      throw new Error('A <template> can only be templatized once');
-    }
-    template.__templatizeOwner = owner;
-    let templateInfo = owner.constructor._parseTemplate(template);
-    // Get memoized base class for the prototypical template, which
-    // includes property effects for binding template & forwarding
-    let baseClass = templateInfo.templatizeInstanceClass;
-    if (!baseClass) {
-      baseClass = createTemplatizerClass(template, templateInfo, options);
-      templateInfo.templatizeInstanceClass = baseClass;
-    }
-    // Host property forwarding must be installed onto template instance
-    addPropagateEffects(template, templateInfo, options);
-    // Subclass base class and add reference for this specific template
-    /** @private */
-    let klass = class TemplateInstance extends baseClass {};
-    klass.prototype._methodHost = findMethodHost(template);
-    klass.prototype.__dataHost = template;
-    klass.prototype.__templatizeOwner = owner;
-    klass.prototype.__hostProps = templateInfo.hostProps;
-    klass = /** @type {function(new:TemplateInstanceBase)} */(klass); //eslint-disable-line no-self-assign
-    return klass;
-  },
-
-  /**
-   * Returns the template "model" associated with a given element, which
-   * serves as the binding scope for the template instance the element is
-   * contained in. A template model is an instance of
-   * `TemplateInstanceBase`, and should be used to manipulate data
-   * associated with this template instance.
-   *
-   * Example:
-   *
-   *   let model = modelForElement(el);
-   *   if (model.index < 10) {
-   *     model.set('item.checked', true);
-   *   }
-   *
-   * @memberof Polymer.Templatize
-   * @param {HTMLTemplateElement} template The model will be returned for
-   *   elements stamped from this template
-   * @param {Node=} node Node for which to return a template model.
-   * @return {TemplateInstanceBase} Template instance representing the
-   *   binding scope for the element
-   */
-  modelForElement(template, node) {
-    let model;
-    while (node) {
-      // An element with a __templatizeInstance marks the top boundary
-      // of a scope; walk up until we find one, and then ensure that
-      // its __dataHost matches `this`, meaning this dom-repeat stamped it
-      if ((model = node.__templatizeInstance)) {
-        // Found an element stamped by another template; keep walking up
-        // from its __dataHost
-        if (model.__dataHost != template) {
-          node = model.__dataHost;
-        } else {
-          return model;
-        }
-      } else {
-        // Still in a template scope, keep going up until
-        // a __templatizeInstance is found
-        node = node.parentNode;
-      }
-    }
-    return null;
+export function templatize(template, owner, options) {
+  options = /** @type {!TemplatizeOptions} */(options || {});
+  if (template.__templatizeOwner) {
+    throw new Error('A <template> can only be templatized once');
   }
-};
+  template.__templatizeOwner = owner;
+  const ctor = owner ? owner.constructor : TemplateInstanceBase;
+  let templateInfo = ctor._parseTemplate(template);
+  // Get memoized base class for the prototypical template, which
+  // includes property effects for binding template & forwarding
+  let baseClass = templateInfo.templatizeInstanceClass;
+  if (!baseClass) {
+    baseClass = createTemplatizerClass(template, templateInfo, options);
+    templateInfo.templatizeInstanceClass = baseClass;
+  }
+  // Host property forwarding must be installed onto template instance
+  addPropagateEffects(template, templateInfo, options);
+  // Subclass base class and add reference for this specific template
+  /** @private */
+  let klass = class TemplateInstance extends baseClass {};
+  klass.prototype._methodHost = findMethodHost(template);
+  klass.prototype.__dataHost = template;
+  klass.prototype.__templatizeOwner = owner;
+  klass.prototype.__hostProps = templateInfo.hostProps;
+  klass = /** @type {function(new:TemplateInstanceBase)} */(klass); //eslint-disable-line no-self-assign
+  return klass;
+}
 
-export { Templatize };
+export function modelForElement(template, node) {
+  let model;
+  while (node) {
+    // An element with a __templatizeInstance marks the top boundary
+    // of a scope; walk up until we find one, and then ensure that
+    // its __dataHost matches `this`, meaning this dom-repeat stamped it
+    if ((model = node.__templatizeInstance)) {
+      // Found an element stamped by another template; keep walking up
+      // from its __dataHost
+      if (model.__dataHost != template) {
+        node = model.__dataHost;
+      } else {
+        return model;
+      }
+    } else {
+      // Still in a template scope, keep going up until
+      // a __templatizeInstance is found
+      node = node.parentNode;
+    }
+  }
+  return null;
+}
+
 export { TemplateInstanceBase };

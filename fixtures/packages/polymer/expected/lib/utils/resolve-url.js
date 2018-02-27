@@ -1,10 +1,15 @@
 import './boot.js';
 
 let CSS_URL_RX = /(url\()([^)]*)(\))/g;
+let ABS_URL = /(^\/)|(^#)|(^[\w-\d]*:)/;
 let workingURL;
 let resolveDoc;
 /**
  * Resolves the given URL against the provided `baseUri'.
+ * 
+ * Note that this function performs no resolution for URLs that start
+ * with `/` (absolute URLs) or `#` (hash identifiers).  For general purpose
+ * URL resolution, use `window.URL`.
  *
  * @memberof Polymer.ResolveUrl
  * @param {string} url Input URL to resolve
@@ -12,6 +17,9 @@ let resolveDoc;
  * @return {string} resolved URL
  */
 function resolveUrl(url, baseURI) {
+  if (url && ABS_URL.test(url)) {
+    return url;
+  }
   // Lazy feature detection.
   if (workingURL === undefined) {
     workingURL = false;

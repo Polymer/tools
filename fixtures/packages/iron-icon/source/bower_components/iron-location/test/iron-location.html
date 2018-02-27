@@ -193,21 +193,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           expect(makeTemporaryIronLocation().hash).to.be.equal(plainTextHash);
         }
       });
-      test('dealing with queries with unusual characters', function() {
-        var queryEncodingExamples = {
-          'foo': '?foo',
-          '': '',
-          'foo bar': '?foo%20bar',
-          'foo#bar': '?foo%23bar',
-          'foo?bar': '?foo?bar',
-          '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
-          'foo/bar/baz': '?foo/bar/baz'
-        };
+      function testQuery(queryEncodingExamples, encodeSpaceAsPlusInQuery) {
+        urlElem.encodeSpaceAsPlusInQuery = encodeSpaceAsPlusInQuery;
+
         for (var plainTextQuery in queryEncodingExamples) {
           var encodedQueries = queryEncodingExamples[plainTextQuery];
-          if (typeof encodedQueries === 'string') {
-            encodedQueries = [encodedQueries];
-          }
 
           var ironLocationQuery = encodedQueries.map(function(value) {
             return value.substring(1);
@@ -226,7 +216,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           expect(ironLocationQuery).to.contain(urlElem.query);
           expect(ironLocationQuery).to.contain(makeTemporaryIronLocation().query);
         }
+      }
+
+      test('dealing with queries with unusual characters', function() {
+        testQuery({
+          'foo': ['?foo'],
+          '': [''],
+          'foo bar': ['?foo%20bar'],
+          'foo#bar': ['?foo%23bar'],
+          'foo?bar': ['?foo?bar'],
+          '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
+          'foo/bar/baz': ['?foo/bar/baz']
+        }, false)
       });
+      test('dealing with queries with unusual characters - encodeSpaceAsPlusInQuery', function() {
+        testQuery({
+          '': [''],
+          'foo bar': ['?foo%20bar', '?foo+bar'],
+          'foo#bar': ['?foo%23bar'],
+          'foo+bar': ['?foo%2Bbar'],
+          'foo?bar': ['?foo?bar'],
+          '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
+          'foo/bar/baz': ['?foo/bar/baz']
+        }, true)
+      });
+
       test('assigning to a relative path URL', function() {
         urlElem.path = '/foo/bar';
         expect(window.location.pathname).to.be.equal('/foo/bar');

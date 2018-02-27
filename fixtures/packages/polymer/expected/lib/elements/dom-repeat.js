@@ -1,5 +1,5 @@
 import { Element } from '../../polymer-element.js';
-import { TemplateInstanceBase as TemplateInstanceBase$0, Templatize } from '../utils/templatize.js';
+import { TemplateInstanceBase as TemplateInstanceBase$0, templatize, modelForElement as modelForElement$0 } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
 import { enqueueDebouncer, flush } from '../utils/flush.js';
 import { OptionalMutableData } from '../mixins/mutable-data.js';
@@ -31,27 +31,37 @@ const domRepeatBase = OptionalMutableData(Element);
  *   <template>
  *
  *     <div> Employee list: </div>
- *     <template is="dom-repeat" items="{{employees}}">
+ *     <dom-repeat items="{{employees}}">
+ *       <template>
  *         <div>First name: <span>{{item.first}}</span></div>
  *         <div>Last name: <span>{{item.last}}</span></div>
- *     </template>
+ *       </template>
+ *     </dom-repeat>
  *
  *   </template>
  *
- *   <script>
- *     Polymer({
- *       is: 'employee-list',
- *       ready: function() {
- *         this.employees = [
+ * </dom-module>
+ * ```
+ *
+ * With the following custom element definition:
+ *
+ * ```js
+ * class EmployeeList extends Polymer.Element {
+ *   static get is() { return 'employee-list'; }
+ *   static get properties() {
+ *     return {
+ *       employees: {
+ *         value() {
+ *           return [
  *             {first: 'Bob', last: 'Smith'},
  *             {first: 'Sally', last: 'Johnson'},
  *             ...
- *         ];
+ *           ];
+ *         }
  *       }
- *     });
- *   < /script>
- *
- * </dom-module>
+ *     };
+ *   }
+ * }
  * ```
  *
  * Notifications for changes to items sub-properties will be forwarded to template
@@ -90,16 +100,15 @@ const domRepeatBase = OptionalMutableData(Element);
  * For example, for an `dom-repeat` with a filter of the following:
  *
  * ```js
- * isEngineer: function(item) {
- *     return item.type == 'engineer' || item.manager.type == 'engineer';
+ * isEngineer(item) {
+ *   return item.type == 'engineer' || item.manager.type == 'engineer';
  * }
  * ```
  *
  * Then the `observe` property should be configured as follows:
  *
  * ```html
- * <template is="dom-repeat" items="{{employees}}"
- *           filter="isEngineer" observe="type manager.type">
+ * <dom-repeat items="{{employees}}" filter="isEngineer" observe="type manager.type">
  * ```
  *
  * @customElement
@@ -319,7 +328,7 @@ class DomRepeat extends domRepeatBase {
     // until ready, since won't have its template content handed back to
     // it until then
     if (!this.__ctor) {
-      let template = this.template = this.querySelector('template');
+      let template = this.template = /** @type {HTMLTemplateElement} */(this.querySelector('template'));
       if (!template) {
         // // Wait until childList changes and template should be there by then
         let observer = new MutationObserver(() => {
@@ -338,7 +347,7 @@ class DomRepeat extends domRepeatBase {
       instanceProps[this.as] = true;
       instanceProps[this.indexAs] = true;
       instanceProps[this.itemsIndexAs] = true;
-      this.__ctor = Templatize.templatize(template, this, {
+      this.__ctor = templatize(template, this, {
         mutableData: this.mutableData,
         parentModel: true,
         instanceProps: instanceProps,
@@ -383,22 +392,24 @@ class DomRepeat extends domRepeatBase {
     return this.__dataHost._methodHost || this.__dataHost;
   }
 
-  __sortChanged(sort) {
-    let methodHost = this.__getMethodHost();
-    this.__sortFn = sort && (typeof sort == 'function' ? sort :
-      function() { return methodHost[sort].apply(methodHost, arguments); });
-    if (this.items) {
-      this.__debounceRender(this.__render);
+  __functionFromPropertyValue(functionOrMethodName) {
+    if (typeof functionOrMethodName === 'string') {
+      let methodName = functionOrMethodName;
+      let obj = this.__getMethodHost();
+      return function() { return obj[methodName].apply(obj, arguments); };
     }
+
+    return functionOrMethodName;
+  }
+
+  __sortChanged(sort) {
+    this.__sortFn = this.__functionFromPropertyValue(sort);
+    if (this.items) { this.__debounceRender(this.__render); }
   }
 
   __filterChanged(filter) {
-    let methodHost = this.__getMethodHost();
-    this.__filterFn = filter && (typeof filter == 'function' ? filter :
-      function() { return methodHost[filter].apply(methodHost, arguments); });
-    if (this.items) {
-      this.__debounceRender(this.__render);
-    }
+    this.__filterFn = this.__functionFromPropertyValue(filter);
+    if (this.items) { this.__debounceRender(this.__render); }
   }
 
   __computeFrameTime(rate) {
@@ -464,7 +475,6 @@ class DomRepeat extends domRepeatBase {
         this.__debounceRender(this.__render, this.delay);
       } else if (this.__observePaths) {
         // Otherwise, re-render if the path changed matches an observed path
-        path = path.substring(path.indexOf('.') + 1);
         let paths = this.__observePaths;
         for (let i=0; i<paths.length; i++) {
           if (path.indexOf(paths[i]) === 0) {
@@ -705,7 +715,7 @@ class DomRepeat extends domRepeatBase {
    *   the element.
    */
   modelForElement(el) {
-    return Templatize.modelForElement(this.template, el);
+    return modelForElement$0(this.template, el);
   }
 }
 

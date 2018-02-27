@@ -1,7 +1,7 @@
 {
   "name": "iron-iconset-svg",
   "description": "Manages a set of svg icons",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "keywords": [
     "web-components",
     "polymer",
@@ -53,11 +53,11 @@
     "webcomponentsjs": "^1.0.0"
   },
   "homepage": "https://github.com/PolymerElements/iron-iconset-svg",
-  "_release": "2.1.0",
+  "_release": "2.2.0",
   "_resolution": {
     "type": "version",
-    "tag": "v2.1.0",
-    "commit": "791acf9d965c7b539b57589769d085a0518e2235"
+    "tag": "v2.2.0",
+    "commit": "bb78b4da81e0e48621008e43bf2fd0ebce012c8b"
   },
   "_source": "https://github.com/PolymerElements/iron-iconset-svg.git",
   "_target": "1 - 2",

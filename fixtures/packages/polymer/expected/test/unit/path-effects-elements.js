@@ -1,3 +1,4 @@
+import { PropertiesMixin } from '../../lib/mixins/properties-mixin.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
 /**
@@ -9,6 +10,30 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
+class XPropertiesElement extends PropertiesMixin(HTMLElement) {
+  static get importPath() {
+    return import.meta.url;
+  }
+
+  static get properties() {
+    return {
+      obj: Object
+    };
+  }
+  constructor() {
+    super();
+    this.resetObservers();
+  }
+  // Allow re-set objects to show in _propertiesChanged
+  _shouldPropertyChange(property, value, old) {
+    return (typeof value == 'object') ||
+      super._shouldPropertyChange(property, value, old);
+  }
+  resetObservers() {
+    this._propertiesChanged = sinon.spy();
+  }
+}
+customElements.define('x-pe', XPropertiesElement);
 Polymer({
   importPath: import.meta.url,
   is: 'x-basic',
@@ -113,6 +138,7 @@ Polymer({
     <x-compose id="compose" obj="{{nested.obj}}"></x-compose>
     <x-forward id="forward" obj="{{nested.obj}}"></x-forward>
     <div id="boundChild" computed-from-paths="{{computeFromPaths(a, nested.b, nested.obj.c)}}" array-length="{{data.length}}"></div>
+    <x-pe id="pe" obj="[[nested.obj]]"></x-pe>
 `,
 
   is: 'x-stuff',
@@ -174,6 +200,7 @@ Polymer({
     if (this.$) {
       this.$.compose.resetObservers();
       this.$.forward.resetObservers();
+      this.$.pe.resetObservers();
     }
   },
 

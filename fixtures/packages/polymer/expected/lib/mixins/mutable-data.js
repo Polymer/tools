@@ -50,8 +50,6 @@ export const MutableData = dedupingMixin(superClass => {
     }
 
   }
-  /** @type {boolean} */
-  MutableData.prototype.mutableData = false;
 
   return MutableData;
 

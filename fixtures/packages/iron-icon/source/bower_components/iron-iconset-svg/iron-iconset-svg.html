@@ -246,7 +246,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             cssText = 'pointer-events: none; display: block; width: 100%; height: 100%;';
 
         if (mirrorAllowed && content.hasAttribute('mirror-in-rtl')) {
-          cssText += '-webkit-transform:scale(-1,1);transform:scale(-1,1);';
+          cssText += '-webkit-transform:scale(-1,1);transform:scale(-1,1);transform-origin:center;';
         }
 
         svg.setAttribute('viewBox', viewBox);

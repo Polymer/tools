@@ -270,7 +270,7 @@ class EventApi {
 
   /**
    * Returns the `composedPath` for this event.
-   * @return {!Array<EventTarget>} The nodes this event propagated through
+   * @return {!Array<!EventTarget>} The nodes this event propagated through
    */
   get path() {
     return this.event.composedPath();

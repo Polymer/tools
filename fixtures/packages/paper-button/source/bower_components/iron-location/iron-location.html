@@ -155,6 +155,19 @@ milliseconds.
         },
 
         /**
+         * A flag that specifies whether the spaces in query that would normally be encoded as %20 should be
+         * encoded as +.
+         *
+         * Given an example text "hello world", it is encoded in query as
+         * - "hello%20world" without the parameter
+         * - "hello+world" with the parameter
+         */
+        encodeSpaceAsPlusInQuery: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * urlSpaceRegex, but coerced into a regexp.
          *
          * @type {RegExp}
@@ -230,6 +243,9 @@ milliseconds.
         var partiallyEncodedQuery = '';
         if (this.query) {
           partiallyEncodedQuery = '?' + this.query.replace(/\#/g, '%23');
+          if(this.encodeSpaceAsPlusInQuery) {
+            partiallyEncodedQuery = partiallyEncodedQuery.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/%20/g, '+');
+          }
         }
         var partiallyEncodedHash = '';
         if (this.hash) {
