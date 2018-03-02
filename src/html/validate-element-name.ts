@@ -90,7 +90,7 @@ class ValidateElementName extends Rule {
         code: isError ? 'invalid-element-name' :
                         'potential-element-naming-issue',
         severity: isError ? Severity.ERROR : Severity.WARNING,
-        sourceRange: sourceRange!,
+        sourceRange: sourceRange,
         message: validationResult.message
       }));
     }
