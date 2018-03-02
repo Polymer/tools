@@ -18,9 +18,7 @@ import {AttributeDatabindingExpression, Document, isPositionInsideRange, ParsedH
 import {HtmlRule} from '../html/rule';
 import {sharedProperties} from '../html/util';
 import {registry} from '../registry';
-import {closestSpelling} from '../util';
-
-import {stripIndentation} from '../util';
+import {closestSpelling, stripIndentation} from '../util';
 
 const p = dom5.predicates;
 const isDomRepeat = p.OR(

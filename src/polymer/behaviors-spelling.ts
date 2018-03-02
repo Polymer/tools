@@ -16,10 +16,7 @@ import {Document, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
-import {stripWhitespace} from '../util';
-
-import {stripIndentation} from '../util';
-
+import {stripIndentation, stripWhitespace} from '../util';
 
 class BehaviorsSpelling extends Rule {
   code = 'behaviors-spelling';
