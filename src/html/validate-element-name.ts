@@ -71,7 +71,7 @@ class ValidateElementName extends Rule {
           }
           if (babel.isIdentifier(path.node.key) &&
               path.node.key.name === 'is' && path.node.kind === 'get' &&
-              path.node.static === true) {
+              path.node.static) {
             const body = path.node.body.body[0];
             if (babel.isReturnStatement(body) &&
                 babel.isStringLiteral(body.argument)) {
