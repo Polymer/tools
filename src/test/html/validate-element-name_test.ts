@@ -18,7 +18,7 @@ import {Analyzer, Severity} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
+import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 const ruleId = 'validate-element-name';

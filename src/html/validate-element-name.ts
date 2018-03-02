@@ -14,24 +14,21 @@
 
 import babelTraverse from 'babel-traverse';
 import * as babel from 'babel-types';
-import * as dom5 from 'dom5/lib/index-next';
-import {Document, ParsedDocument, ParsedHtmlDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
-import * as validate from 'validate-element-name';
+import {Document, Severity, SourceRange, Warning} from 'polymer-analyzer';
+const validate = require('validate-element-name');
 
 import {registry} from '../registry';
 import {getDocumentContaining, stripIndentation} from '../util';
 
-import {HtmlRule} from './rule';
+import {Rule} from '../rule';
 
-const p = dom5.predicates;
-
-class ValidateElementName extends HtmlRule {
+class ValidateElementName extends Rule {
   code = 'validate-element-name';
   description = stripIndentation(`
       Warns for invalid element names.
   `);
 
-  async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
+  async check(document: Document) {
     const warnings: Warning[] = [];
 
     const elements = document.getFeatures({kind: 'polymer-element'});
@@ -40,12 +37,21 @@ class ValidateElementName extends HtmlRule {
     }
 
     for (const el of elements) {
-      const isP2 = babel.isClassDeclaration(el.astNode);
+      if (el.tagName === undefined) {
+        continue;
+      }
+
       const containingDoc = getDocumentContaining(el.sourceRange, document);
       if (containingDoc === undefined) {
         continue;
       }
 
+      const validationResult = validate(el.tagName);
+      if (validationResult.isValid && validationResult.message === undefined) {
+        continue;  // Valid element
+      }
+
+      const isP2 = babel.isClassDeclaration(el.astNode);
       let sourceRange: SourceRange|undefined;
       babelTraverse(el.astNode, {
         noScope: true,
@@ -74,31 +80,15 @@ class ValidateElementName extends HtmlRule {
           }
         }
       });
-
       if (sourceRange === undefined) {
-        continue;
-      }
-
-      if (!el.tagName) {
-        warnings.push(new Warning({
-          parsedDocument,
-          code: 'invalid-element-name',
-          severity: Severity.ERROR,
-          sourceRange: sourceRange!,
-          message: 'Missing element name.'
-        }));
-        continue;
-      }
-
-      const validationResult = validate(el.tagName);
-      if (validationResult.isValid && validationResult.message === undefined) {
         continue;
       }
 
       const isError = !validationResult.isValid;
       warnings.push(new Warning({
-        parsedDocument,
-        code: isError ? 'invalid-element-name' : 'potential-issue-element-name',
+        parsedDocument: document.parsedDocument,
+        code: isError ? 'invalid-element-name' :
+                        'potential-element-naming-issue',
         severity: isError ? Severity.ERROR : Severity.WARNING,
         sourceRange: sourceRange!,
         message: validationResult.message
