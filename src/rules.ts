@@ -19,6 +19,7 @@ import './css/deprecated-shadow-dom-selectors';
 import './html/dom-module-invalid-attrs';
 import './html/move-style-into-template';
 import './html/undefined-elements';
+import './html/validate-element-name';
 
 import './polymer/behaviors-spelling';
 import './polymer/call-super-in-callbacks';

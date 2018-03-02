@@ -16,8 +16,7 @@ import * as dom5 from 'dom5/lib/index-next';
 import {ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
-import {stripWhitespace} from '../util';
-import {stripIndentation} from '../util';
+import {stripIndentation, stripWhitespace} from '../util';
 
 import {HtmlRule} from './rule';
 

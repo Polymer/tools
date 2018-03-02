@@ -37,6 +37,7 @@ registry.register(
       'style-into-template',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
+      'validate-element-name',
     ]));
 
 registry.register(new RuleCollection(
@@ -61,6 +62,7 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'style-into-template',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
+      'validate-element-name',
     ]));
 
 registry.register(new RuleCollection(
@@ -77,4 +79,5 @@ For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-
       'set-unknown-attribute',
       'unbalanced-polymer-delimiters',
       'undefined-elements',
+      'validate-element-name',
     ]));

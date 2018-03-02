@@ -16,7 +16,8 @@
     "polymer-analyzer": "^3.0.0-pre.6",
     "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",
-    "strip-indent": "^2.0.0"
+    "strip-indent": "^2.0.0",
+    "validate-element-name": "^2.1.1"
   },
   "devDependencies": {
     "@polymer/tools-common": "^2.0.0",
