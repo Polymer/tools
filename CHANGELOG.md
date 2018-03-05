@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### New Lint Rules
 - `validate-element-name`: Warns when using an invalid element name or when there are potential issues or conflicts with the element name.
 
+### Fixes
+- `content-selector-to-slotted`: Don't attempt to fix usages where a selector would come after `::slotted`
+
+
 ## [3.0.0-pre.2] - 2018-02-16
 ### New Lint Rules
 - `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may

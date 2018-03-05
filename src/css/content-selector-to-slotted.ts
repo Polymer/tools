@@ -42,7 +42,7 @@ class ContentToSlottedUsages extends CssRule {
 
           let fix: ReadonlyArray<Replacement>|undefined;
           // Safe fix only if we know the selector is immediate descendant
-          const safeFixRegex = /::content\s*>\s*([^\s]+)/;
+          const safeFixRegex = /::content\s*>\s*([^\s]+)$/;
           const descendantSelectorMatch = node.selector.match(safeFixRegex);
           if (descendantSelectorMatch !== null) {
             const descendantSelectorIndex =
