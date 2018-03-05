@@ -64,11 +64,15 @@ suite(ruleId, () => {
     ::content > [top-item] {
     ~~~~~~~~~`,
       `
+    ::content > [top-item] [child] {
+    ~~~~~~~~~`,
+      `
     ::content * {
     ~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
       `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
       `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
       `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,

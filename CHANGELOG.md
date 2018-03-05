@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
 - `create-element-extension`: Warns when using the second parameter of `createElement` for element extension using the `is` attribute.
 
+### Fixes
+- `content-selector-to-slotted`: Don't attempt to fix usages where a selector would come after `::slotted`
+
 ## [3.0.0-pre.2] - 2018-02-16
 ### New Lint Rules
 - `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
