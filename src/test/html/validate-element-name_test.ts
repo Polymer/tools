@@ -49,8 +49,8 @@ suite(ruleId, () => {
     const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-        return 'testApp';
-               ~~~~~~~~~`,
+        return 'test-App';
+               ~~~~~~~~~~`,
       `
       is: 'app'
           ~~~~~`,

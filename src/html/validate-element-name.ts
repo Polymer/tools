@@ -52,7 +52,7 @@ class ValidateElementName extends Rule {
       }
 
       const isP2 = babel.isClassDeclaration(el.astNode);
-      let sourceRange: SourceRange|undefined;
+      let sourceRange = el.sourceRange;
       babelTraverse(el.astNode, {
         noScope: true,
         ObjectProperty(path) {
