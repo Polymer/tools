@@ -23,6 +23,7 @@ import {generatePackageJson, writeJson} from './manifest-converter';
 import {YarnConfig} from './npm-config';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
+import {transformTravisConfig} from './travis-config';
 import {lookupNpmPackageName, WorkspaceUrlHandler} from './urls/workspace-url-handler';
 import {deleteGlobsSafe, exec, logRepoError, readJsonIfExists, writeFileResults} from './util';
 
@@ -116,6 +117,10 @@ export default async function convert(options: WorkspaceConversionSettings):
   // Process & write each conversion result:
   const results = converter.getResults();
   await writeFileResults(options.workspaceDir, results);
+
+  for (const repo of options.reposToConvert) {
+    await transformTravisConfig(repo.dir, repo.dir);
+  }
 
   // Delete files that were explicitly requested to be deleted. Note we apply
   // the glob with each repo as the root directory (e.g. a glob of "types"
