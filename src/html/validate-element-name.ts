@@ -14,13 +14,13 @@
 
 import babelTraverse from 'babel-traverse';
 import * as babel from 'babel-types';
-import {Document, Severity, SourceRange, Warning} from 'polymer-analyzer';
-const validate = require('validate-element-name');
+import {Document, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
+import {Rule} from '../rule';
 import {getDocumentContaining, stripIndentation} from '../util';
 
-import {Rule} from '../rule';
+import validate = require('validate-element-name');
 
 class ValidateElementName extends Rule {
   code = 'validate-element-name';
@@ -91,7 +91,7 @@ class ValidateElementName extends Rule {
                         'potential-element-naming-issue',
         severity: isError ? Severity.ERROR : Severity.WARNING,
         sourceRange: sourceRange,
-        message: validationResult.message
+        message: validationResult.message!
       }));
     }
 
