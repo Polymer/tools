@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.13] - 2018-03-05
  * Support specifying tag names in jsdoc, e.g. `@customElement fancy-button`
  * Add "bare" module specifier support for JavaScript imports and exports. ie,
    `import * as jquery from 'jquery'`.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.12] - 2018-02-14
  * Functions and methods will now be automatically inferred as returning `void`
