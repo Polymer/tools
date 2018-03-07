@@ -5,8 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-- Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
+<!-- ## Unreleased -->
+
+## [3.0.0-pre.3] - 2018-03-07
 
 ### New Lint Rules
 - `create-element-extension`: Warns when using the second parameter of `createElement` for element extension using the `is` attribute.
@@ -16,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixes
 - `content-selector-to-slotted`: Don't attempt to fix usages where a selector would come after `::slotted`
+
+### Enhancements
+- Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
 
 
 ## [3.0.0-pre.2] - 2018-02-16
