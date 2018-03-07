@@ -30,6 +30,7 @@ import './polymer/databinding-calls-must-be-functions';
 import './polymer/databind-with-unknown-property';
 import './polymer/dom-calls-to-native';
 import './polymer/element-before-dom-module';
+import './polymer/root-selector-to-html';
 import './polymer/set-unknown-attribute';
 import './polymer/unbalanced-delimiters';
 

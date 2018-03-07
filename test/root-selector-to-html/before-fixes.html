@@ -1,0 +1,46 @@
+<style>
+  :root {
+    --my-theme-color: #0F0;
+  }
+</style>
+<style is="custom-style">
+  :root {
+    --my-theme-color: #F00;
+  }
+  :root foo {
+    --my-theme-primary-color: #000;
+  }
+</style>
+
+<dom-module id="my-app">
+  <template>
+    <style>
+      :host {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --my-theme-color: #F00;
+      }
+
+      .selected {
+        font-weight: bold;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'my-app'
+    });
+  </script>
+</dom-module>
+
+<dom-module id="paper-material-styles">
+  <template>
+    <style>
+      :root {
+        --my-theme-color: #F00;
+      }
+    </style>
+  </template>
+</dom-module>

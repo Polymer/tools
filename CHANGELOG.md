@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
-- `create-element-extension`: Warns when using the second parameter of `createElement` for element extension using the `is` attribute.
 
 ### New Lint Rules
+- `create-element-extension`: Warns when using the second parameter of `createElement` for element extension using the `is` attribute.
 - `validate-element-name`: Warns when using an invalid element name or when there are potential issues or conflicts with the element name.
+- `root-selector-to-html`: Warns when using the `:root` selector in `custom-style` or element styles.
 
 ### Fixes
 - `content-selector-to-slotted`: Don't attempt to fix usages where a selector would come after `::slotted`
