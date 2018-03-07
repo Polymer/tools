@@ -13,7 +13,7 @@
  */
 
 import * as levenshtein from 'fast-levenshtein';
-import {Document, isPositionInsideRange, ParsedDocument, SourceRange} from 'polymer-analyzer';
+import {Document, isPositionInsideRange, ParsedDocument, Replacement, SourceRange} from 'polymer-analyzer';
 
 import stripIndent = require('strip-indent');
 
@@ -93,4 +93,27 @@ export function getDocumentContaining(
   }
   mostSpecificDocument = mostSpecificDocument || document;
   return mostSpecificDocument.parsedDocument;
+}
+
+/**
+ * A utility for indenting a sourceRange
+ */
+export function indentSourceRange(
+    sourceRange: SourceRange, indentation: string, _document: ParsedDocument) {
+  const fixes: Replacement[] = [];
+  for (let i = sourceRange.start.line; i <= sourceRange.end.line; i++) {
+    const sourcePosition = {
+      line: i,
+      column: sourceRange.start.column,
+    };
+    fixes.push({
+      range: {
+        file: _document.url,
+        start: sourcePosition,
+        end: sourcePosition,
+      },
+      replacementText: indentation
+    });
+  }
+  return fixes;
 }

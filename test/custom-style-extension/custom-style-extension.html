@@ -1,0 +1,61 @@
+<style is="custom-style">
+  p {
+    color: #F00;
+  }
+</style>
+<style>
+  p {
+    color: #0F0;
+  }
+</style>
+<custom-style>
+  <style is="custom-style">
+    p {
+      color: #00F;
+    }
+  </style>
+</custom-style>
+<dom-module id="x-foo">
+  <template>
+    <style is="custom-style">
+      p {
+        color: #F00;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'x-foo'
+    });
+  </script>
+</dom-module>
+<dom-module id="x-bar">
+  <template>
+    <style>
+      p {
+        color: #0F0;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'x-bar'
+    });
+  </script>
+</dom-module>
+<dom-module id="x-baz">
+  <template>
+    <custom-style>
+      <style is="custom-style">
+        p {
+          color: #00F;
+        }
+      </style>
+    </custom-style>
+  </template>
+  <script>
+    Polymer({
+      is: 'x-baz'
+    });
+  </script>
+</dom-module>

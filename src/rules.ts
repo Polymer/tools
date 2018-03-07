@@ -25,6 +25,7 @@ import './polymer/behaviors-spelling';
 import './polymer/call-super-in-callbacks';
 import './polymer/content-to-slot-declarations';
 import './polymer/content-to-slot-usages';
+import './polymer/custom-style-extension';
 import './polymer/create-element-extension';
 import './polymer/databinding-calls-must-be-functions';
 import './polymer/databind-with-unknown-property';
