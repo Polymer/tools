@@ -27,6 +27,7 @@ const extensionsForType: {[mimetype: string]: string} = {
   'text/javascript': 'js',
   'application/x-typescript': 'ts',
   'text/x-typescript': 'ts',
+  'module': 'js',
 };
 
 /**

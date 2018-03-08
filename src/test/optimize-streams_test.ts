@@ -10,9 +10,12 @@
  */
 
 import {assert} from 'chai';
+import * as path from 'path';
+import stripIndent = require('strip-indent');
 import * as vfs from 'vinyl-fs-fake';
 
 import {getOptimizeStreams} from '../optimize-streams';
+import {HtmlSplitter} from '../html-splitter';
 import {pipeStreams} from '../streams';
 
 suite('optimize-streams', () => {
@@ -67,6 +70,79 @@ suite('optimize-streams', () => {
     assert.equal(f.contents.toString(), es6Contents);
   });
 
+  suite('rewrites bare module specifiers to paths', () => {
+    const fixtureRoot =
+        path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
+
+    test('in js files', async () => {
+      const filePath = path.join(fixtureRoot, 'foo.js');
+      const contents = stripIndent(`
+      import { dep1 } from 'dep1';
+      import { dep2 } from 'dep2';
+      import { dep2A } from 'dep2/a';
+
+      import { p1 } from '/already/a/path.js';
+      import { p2 } from './already/a/path.js';
+      import { p3 } from '../already/a/path.js';
+      import { p4 } from '../already/a/path.js';
+      import { p5 } from 'http://example.com/already/a/path.js';
+      `);
+      const expected = stripIndent(`
+      import { dep1 } from './node_modules/dep1/index.js';
+      import { dep2 } from './node_modules/dep2/dep2.js';
+      import { dep2A } from './node_modules/dep2/a.js';
+
+      import { p1 } from '/already/a/path.js';
+      import { p2 } from './already/a/path.js';
+      import { p3 } from '../already/a/path.js';
+      import { p4 } from '../already/a/path.js';
+      import { p5 } from 'http://example.com/already/a/path.js';
+      `);
+
+      const result = await testStream(pipeStreams([
+        vfs.src([{path: filePath, contents}]),
+        getOptimizeStreams({js: {moduleResolution: 'node'}}),
+      ]));
+      assert.deepEqual(result.contents.toString().trim(), expected.trim());
+    });
+
+    test('in html inline scripts', async () => {
+      const filePath = path.join(fixtureRoot, 'foo.html');
+      const contents = stripIndent(`
+      <html>
+        <head>
+          <script type="module">
+            import { dep1 } from 'dep1';
+            import { dep2 } from 'dep2';
+            import { dep2A } from 'dep2/a';
+          </script>
+        </head>
+        <body></body>
+      </html>
+      `);
+      // Note we do some quite ugly re-formatting of HTML!
+      const expected = stripIndent(`
+      <html><head>
+          <script type="module">
+      import { dep1 } from './node_modules/dep1/index.js';
+      import { dep2 } from './node_modules/dep2/dep2.js';
+      import { dep2A } from './node_modules/dep2/a.js';</script>
+        </head>
+        <body>
+
+      </body></html>
+      `);
+
+      const htmlSplitter = new HtmlSplitter();
+      const result = await testStream(pipeStreams([
+        vfs.src([{path: filePath, contents}]),
+        htmlSplitter.split(),
+        getOptimizeStreams({js: {moduleResolution: 'node'}}),
+        htmlSplitter.rejoin()
+      ]));
+      assert.deepEqual(result.contents.toString().trim(), expected.trim());
+    });
+  });
 
   test('minify js', async () => {
     const sourceStream = vfs.src([

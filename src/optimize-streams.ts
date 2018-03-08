@@ -19,18 +19,20 @@ import {minify as htmlMinify, Options as HTMLMinifierOptions} from 'html-minifie
 import * as logging from 'plylog';
 import {Transform} from 'stream';
 import * as vinyl from 'vinyl';
+
 import matcher = require('matcher');
+
+import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 
 const babelPresetES2015 = require('babel-preset-es2015');
 const minifyPreset = require('babel-preset-minify');
 const babelPresetES2015NoModules =
     babelPresetES2015.buildPreset({}, {modules: false});
 const externalHelpersPlugin = require('babel-plugin-external-helpers');
-const babelObjectRestSpreadPlugin =
+const dynamicImportSyntax = require('babel-plugin-syntax-dynamic-import');
+const objectRestSpreadTransform =
     require('babel-plugin-transform-object-rest-spread');
-const babelPluginSyntaxDynamicImport =
-    require('babel-plugin-syntax-dynamic-import');
-const babelPluginSyntaxObjectRestSpread =
+const objectRestSpreadSyntax =
     require('babel-plugin-syntax-object-rest-spread');
 
 // TODO(fks) 09-22-2016: Latest npm type declaration resolves to a non-module
@@ -46,23 +48,15 @@ export type CSSOptimizeOptions = {
 };
 export interface OptimizeOptions {
   html?: {
-    minify?:
-        boolean|{
-          exclude?: string[]
-        }
+    minify?: boolean|{exclude?: string[]},
   };
   css?: {
-    minify?:
-        boolean|{
-          exclude?: string[]
-        }
+    minify?: boolean|{exclude?: string[]},
   };
   js?: {
     minify?: boolean|{exclude?: string[]},
-    compile?:
-        boolean|{
-          exclude?: string[]
-        }
+    compile?: boolean|{exclude?: string[]},
+    moduleResolution?: 'node',
   };
 }
 ;
@@ -75,10 +69,12 @@ export interface OptimizeOptions {
  * through unaffected.
  */
 export class GenericOptimizeTransform extends Transform {
-  optimizer: (content: string) => string;
+  optimizer: (content: string, file: File) => string;
   optimizerName: string;
 
-  constructor(optimizerName: string, optimizer: (content: string) => string) {
+  constructor(
+      optimizerName: string,
+      optimizer: (content: string, file: File) => string) {
     super({objectMode: true});
     this.optimizer = optimizer;
     this.optimizerName = optimizerName;
@@ -98,7 +94,7 @@ export class GenericOptimizeTransform extends Transform {
     if (file.contents) {
       try {
         let contents = file.contents.toString();
-        contents = this.optimizer(contents);
+        contents = this.optimizer(contents, file);
         file.contents = new Buffer(contents);
       } catch (error) {
         logger.warn(
@@ -113,35 +109,31 @@ export class GenericOptimizeTransform extends Transform {
 /**
  * Transpile JavaScript to ES5 using Babel.
  */
-export class JSCompileTransform extends GenericOptimizeTransform {
-  constructor() {
-    const transformer = (content: string) =>
-        babelTransform(content, {
-          presets: [babelPresetES2015NoModules],
-          plugins: [
+export class JsTransform extends GenericOptimizeTransform {
+  constructor(options: OptimizeOptions['js']) {
+    const transformer = (content: string, file: File) => {
+      const presets = [];
+      const plugins = [
+        // Syntax plugins for >ES2015 features we support.
+        objectRestSpreadSyntax,
+        dynamicImportSyntax,
+      ];
+      if (options.compile) {
+        presets.push(babelPresetES2015NoModules);
+        plugins.push(
             externalHelpersPlugin,
-            babelObjectRestSpreadPlugin,
-            babelPluginSyntaxDynamicImport,
-          ]
-        }).code!;
+            objectRestSpreadTransform,
+        );
+      }
+      if (options.moduleResolution === 'node') {
+        plugins.push(resolveBareSpecifiers(file.path, false));
+      }
+      if (options.minify) {
+        presets.push(minifyPreset(null, {simplifyComparisons: false}));
+      }
+      return babelTransform(content, {presets, plugins}).code!
+    };
     super('babel-compile', transformer);
-  }
-}
-
-/**
- * Minify JavaScript using Babel.
- */
-export class JSMinifyTransform extends GenericOptimizeTransform {
-  constructor() {
-    const transformer = (content: string) =>
-        babelTransform(content, {
-          presets: [minifyPreset(null, {simplifyComparisons: false})],
-          plugins: [
-            babelPluginSyntaxObjectRestSpread,
-            babelPluginSyntaxDynamicImport,
-          ]
-        }).code!;
-    super('babel-minify', transformer);
   }
 }
 
@@ -197,11 +189,13 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   options = options || {};
   const streams = [];
 
-  // compile ES6 JavaScript using babel
-  if (options.js && options.js.compile) {
+  // compile and/or minify ES6 JavaScript using babel
+  if (options.js &&
+      (options.js.compile || options.js.minify ||
+       options.js.moduleResolution === 'node')) {
     streams.push(gulpif(
         matchesExtAndNotExcluded('.js', options.js.compile),
-        new JSCompileTransform()));
+        new JsTransform(options.js)));
   }
 
   // minify code (minify should always be the last transform)
@@ -220,11 +214,6 @@ export function getOptimizeStreams(options?: OptimizeOptions):
     streams.push(gulpif(
         matchesExtAndNotExcluded('.html', options.css.minify),
         new InlineCSSOptimizeTransform({stripWhitespace: true})));
-  }
-  if (options.js && options.js.minify) {
-    streams.push(gulpif(
-        matchesExtAndNotExcluded('.js', options.js.minify),
-        new JSMinifyTransform()));
   }
 
   return streams;
