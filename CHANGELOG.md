@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+ * Fixed issue where `UrlResolver#simpleUrlResolve` treated protocol-relative URL like `//something` as a path.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.13] - 2018-03-05

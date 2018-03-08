@@ -13,9 +13,8 @@
  */
 
 import * as path from 'path';
-import {format as urlLibFormat, resolve as urlLibResolver} from 'url';
-
-import {parseUrl} from '../core/utils';
+import {format as urlLibFormat} from 'url';
+import {parseUrl, resolveUrl} from '../core/utils';
 import {PackageRelativeUrl, ScannedImport} from '../index';
 import {FileRelativeUrl, ResolvedUrl} from '../model/url';
 
@@ -53,7 +52,7 @@ export abstract class UrlResolver {
   protected simpleUrlResolve(
       baseUrl: ResolvedUrl,
       url: FileRelativeUrl|PackageRelativeUrl): ResolvedUrl {
-    return this.brandAsResolved(urlLibResolver(baseUrl, url));
+    return this.brandAsResolved(resolveUrl(baseUrl, url));
   }
 
   protected simpleUrlRelative(from: ResolvedUrl, to: ResolvedUrl):
