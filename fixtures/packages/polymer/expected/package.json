@@ -7,7 +7,7 @@
   "homepage": "https://github.com/Polymer/polymer",
   "name": "@polymer/polymer",
   "version": "3.0.0",
-  "main": "polymer.html",
+  "main": "polymer.js",
   "directories": {
     "doc": "docs",
     "test": "test"
