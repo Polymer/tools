@@ -184,6 +184,8 @@ export function generatePackageJson(
           `Manually update main in your bower.json or package.json to fix.`);
     }
   } else {
+    // Certain polymer repos have an existing package.json with its main set to
+    // an HTML file.
     packageJson.main = replaceHtmlExtensionIfFound(packageJson.main);
   }
 
