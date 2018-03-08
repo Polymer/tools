@@ -141,7 +141,7 @@ export class JSMinifyTransform extends GenericOptimizeTransform {
             babelPluginSyntaxDynamicImport,
           ]
         }).code!;
-    super('babel-minifiy', transformer);
+    super('babel-minify', transformer);
   }
 }
 
