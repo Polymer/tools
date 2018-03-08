@@ -73,7 +73,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
       url,
       contents,
       baseUrl: inlineInfo.baseUrl,
-      ast: result.program,
+      ast: result.parsedFile,
       locationOffset: inlineInfo.locationOffset,
       astNode: inlineInfo.astNode,
       isInline,
@@ -93,7 +93,7 @@ export class JavaScriptScriptParser extends JavaScriptParser {
 export type ParseResult = {
   type: 'success',
   sourceType: SourceType,
-  program: babel.Program,
+  parsedFile: babel.File,
 }|{
   type: 'failure',
   warningish: {
@@ -119,7 +119,7 @@ export function parseJs(
     warningCode = 'parse-error';
   }
 
-  let program: babel.Program;
+  let parsedFile: babel.File;
   const parseOptions = {sourceFilename: file, ...baseParseOptions};
 
   try {
@@ -129,20 +129,18 @@ export function parseJs(
     if (!sourceType) {
       try {
         sourceType = 'script';
-        program =
-            babylon.parse(contents, {sourceType, ...parseOptions}).program;
+        parsedFile = babylon.parse(contents, {sourceType, ...parseOptions});
       } catch (_ignored) {
         sourceType = 'module';
-        program =
-            babylon.parse(contents, {sourceType, ...parseOptions}).program;
+        parsedFile = babylon.parse(contents, {sourceType, ...parseOptions});
       }
     } else {
-      program = babylon.parse(contents, {sourceType, ...parseOptions}).program;
+      parsedFile = babylon.parse(contents, {sourceType, ...parseOptions});
     }
     return {
       type: 'success',
       sourceType: sourceType,
-      program: program,
+      parsedFile,
     };
   } catch (err) {
     if (err instanceof SyntaxError) {

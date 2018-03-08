@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* [breaking] JavascriptDocument#ast is now a `babel.File` rather than a
+  `babel.Program`. Use `jsDoc.ast.program` instead of `jsDoc.ast` in the
+  unlikely case that the `Program` is required.
+
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.13] - 2018-03-05

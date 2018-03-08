@@ -361,7 +361,7 @@ function extractDataBindingsFromTextNode(
           node,
           sourceRange,
           dataBinding.expressionText,
-          parseResult.program,
+          parseResult.parsedFile.program,
           document);
       for (const warning of expression.warnings) {
         warnings.push(warning);
@@ -420,7 +420,7 @@ function extractDataBindingsFromAttr(
           attr,
           sourceRange,
           expressionText,
-          parseResult.program,
+          parseResult.parsedFile.program,
           document);
       for (const warning of expression.warnings) {
         warnings.push(warning);
@@ -461,10 +461,10 @@ function findDatabindingInString(str: string) {
 
 function transformPath(expression: string) {
   return expression
-    // replace .0, .123, .kebab-case with ['0'], ['123'], ['kebab-case']
-    .replace(/\.([a-zA-Z_$]([\w:$*]*-+[\w:$*]*)+|[1-9][0-9]*|0)/g, "['$1']")
-    // remove .* and .splices from the end of the paths
-    .replace(/\.(\*|splices)$/, '');
+      // replace .0, .123, .kebab-case with ['0'], ['123'], ['kebab-case']
+      .replace(/\.([a-zA-Z_$]([\w:$*]*-+[\w:$*]*)+|[1-9][0-9]*|0)/g, '[\'$1\']')
+      // remove .* and .splices from the end of the paths
+      .replace(/\.(\*|splices)$/, '');
 }
 
 /**
@@ -488,12 +488,12 @@ function transformPolymerExprToJS(expression: string) {
 
 function transformArg(rawArg: string) {
   const arg = rawArg
-    // replace comma entity with comma
-    .replace(/&comma;/g, ',')
-    // repair extra escape sequences; note only commas strictly need
-    // escaping, but we allow any other char to be escaped since its
-    // likely users will do this
-    .replace(/\\(.)/g, '\$1');
+                  // replace comma entity with comma
+                  .replace(/&comma;/g, ',')
+                  // repair extra escape sequences; note only commas strictly
+                  // need escaping, but we allow any other char to be escaped
+                  // since its likely users will do this
+                  .replace(/\\(.)/g, '\$1');
   // detect literal value (must be String or Number)
   const i = arg.search(/[^\s]/);
   let fc = arg[i];
@@ -504,7 +504,7 @@ function transformArg(rawArg: string) {
     fc = '#';
   }
   switch (fc) {
-    case "'":
+    case '\'':
     case '"':
       return arg;
     case '#':
@@ -593,7 +593,7 @@ export function parseExpressionInJsStringLiteral(
         stringLiteral,
         sourceRange,
         expressionText,
-        parsed.program,
+        parsed.parsedFile.program,
         kind,
         document);
     for (const warning of result.databinding.warnings) {

@@ -52,10 +52,10 @@ suite('JavaScriptParser', () => {
           new PackageUrlResolver());
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
-      assert.equal(document.ast.type, 'Program');
+      assert.equal(document.ast.type, 'File');
       assert.equal(document.parsedAsSourceType, 'script');
       // First statement is a class declaration
-      assert.equal(document.ast.body[0].type, 'ClassDeclaration');
+      assert.equal(document.ast.program.body[0].type, 'ClassDeclaration');
     });
 
     test('parses async await', () => {
@@ -70,10 +70,10 @@ suite('JavaScriptParser', () => {
           new PackageUrlResolver());
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
-      assert.equal(document.ast.type, 'Program');
+      assert.equal(document.ast.type, 'File');
       assert.equal(document.parsedAsSourceType, 'script');
       // First statement is an async function declaration
-      const functionDecl = document.ast.body[0];
+      const functionDecl = document.ast.program.body[0];
       if (!babel.isFunctionDeclaration(functionDecl)) {
         throw new Error('Expected a function declaration.');
       }
@@ -96,7 +96,7 @@ suite('JavaScriptParser', () => {
       const document = parser.parse(
           file, resolvedUrl`/static/js-elements.js`, new PackageUrlResolver());
       const ast = document.ast;
-      const element1 = ast.body[0];
+      const element1 = ast.program.body[0];
       const comment = esutil.getAttachedComment(element1)!;
       assert.isTrue(comment.indexOf('test-element') !== -1);
     });
@@ -111,7 +111,7 @@ suite('JavaScriptParser', () => {
           new PackageUrlResolver());
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
-      assert.equal(document.ast.type, 'Program');
+      assert.equal(document.ast.type, 'File');
       assert.equal(document.parsedAsSourceType, 'module');
     });
   });
@@ -155,7 +155,7 @@ suite('JavaScriptModuleParser', () => {
           new PackageUrlResolver());
       assert.instanceOf(document, JavaScriptDocument);
       assert.equal(document.url, '/static/es6-support.js');
-      assert.equal(document.ast.type, 'Program');
+      assert.equal(document.ast.type, 'File');
       assert.equal(document.parsedAsSourceType, 'module');
     });
   });

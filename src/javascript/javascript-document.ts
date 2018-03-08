@@ -13,7 +13,8 @@
  */
 
 import generate from 'babel-generator';
-import {Node, Program} from 'babel-types';
+import * as babel from 'babel-types';
+import {Node} from 'babel-types';
 import indent = require('indent');
 
 import {SourceRange} from '../model/model';
@@ -39,14 +40,14 @@ interface SkipRecord {
   depth: number;
 }
 
-export interface Options extends ParsedDocumentOptions<Program> {
+export interface Options extends ParsedDocumentOptions<babel.File> {
   parsedAsSourceType: 'script'|'module';
 }
 
 export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
   readonly type = 'js';
   private visitorSkips = new Map<Visitor, SkipRecord>();
-  ast!: Program;  // assigned in super, this type is just a refinement.
+  ast!: babel.File;  // assigned in super, this type is just a refinement.
 
   /**
    * How the js document was parsed. If 'module' then the source code is

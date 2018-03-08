@@ -61,9 +61,15 @@ suite('ExpressionScanner', () => {
       const generalExpressions = results.expressions;
 
       assert.deepEqual(results.warnings, []);
-      assert.deepEqual(
-          generalExpressions.map((e) => e.databindingInto),
-          ['attribute', 'attribute', 'attribute', 'attribute', 'attribute', 'attribute', 'attribute']);
+      assert.deepEqual(generalExpressions.map((e) => e.databindingInto), [
+        'attribute',
+        'attribute',
+        'attribute',
+        'attribute',
+        'attribute',
+        'attribute',
+        'attribute'
+      ]);
       const expressions =
           generalExpressions as AttributeDatabindingExpression[];
       assert.deepEqual(
@@ -83,7 +89,7 @@ suite('ExpressionScanner', () => {
             `
           <div id="{{baz}}"></div>
                      ~~~`,
-          `
+            `
           <div id="{{camel.casePath}}"></div>
                      ~~~~~~~~~~~~~~`,
             `
@@ -91,19 +97,39 @@ suite('ExpressionScanner', () => {
                      ~~~~~~~~~~~~~~~`,
           ]);
       assert.deepEqual(
-          expressions.map((e) => e.direction), ['{', '{', '{', '[', '{', '{', '{']);
-      assert.deepEqual(
-          expressions.map((e) => e.expressionText),
-          ['foo', 'val', 'bada(wing, daba.boom, 10, -20)', 'bar', 'baz', 'camel.casePath', 'kebab.case-path']);
-      assert.deepEqual(
-          expressions.map((e) => e.eventName),
-          [undefined, 'changed', undefined, undefined, undefined, undefined, undefined]);
+          expressions.map((e) => e.direction),
+          ['{', '{', '{', '[', '{', '{', '{']);
+      assert.deepEqual(expressions.map((e) => e.expressionText), [
+        'foo',
+        'val',
+        'bada(wing, daba.boom, 10, -20)',
+        'bar',
+        'baz',
+        'camel.casePath',
+        'kebab.case-path'
+      ]);
+      assert.deepEqual(expressions.map((e) => e.eventName), [
+        undefined,
+        'changed',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      ]);
       assert.deepEqual(
           expressions.map((e) => e.attribute && e.attribute.name),
           ['id', 'value', 'id', 'id', 'id', 'id', 'id']);
       assert.deepEqual(
-          expressions.map((e) => e.properties.map((p) => p.name)),
-          [['foo'], ['val'], ['bada', 'wing', 'daba'], ['bar'], ['baz'], ['camel'], ['kebab']]);
+          expressions.map((e) => e.properties.map((p) => p.name)), [
+            ['foo'],
+            ['val'],
+            ['bada', 'wing', 'daba'],
+            ['bar'],
+            ['baz'],
+            ['camel'],
+            ['kebab']
+          ]);
       assert.deepEqual(
           expressions.map((e) => e.warnings), [[], [], [], [], [], [], []]);
       assert.deepEqual(
@@ -321,7 +347,7 @@ suite('ExpressionScanner', () => {
       const javascriptDocument = new JavaScriptParser().parse(
           contents, resolvedUrl`test.html`, new PackageUrlResolver());
       const literals: babel.Literal[] =
-          (javascriptDocument.ast as any)
+          (javascriptDocument.ast.program as any)
               .body[0]['declarations'][0]['init']['elements'];
 
       const parsedLiterals = literals.map(
