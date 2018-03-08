@@ -183,6 +183,8 @@ export function generatePackageJson(
           `so this package will not be directly importable by name. ` +
           `Manually update main in your bower.json or package.json to fix.`);
     }
+  } else {
+    packageJson.main = replaceHtmlExtensionIfFound(packageJson.main);
   }
 
   if (!packageJson.author &&
