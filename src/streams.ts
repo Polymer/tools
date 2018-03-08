@@ -170,8 +170,8 @@ class AsyncQueue<V> implements AsyncIterable<V> {
  *
  * `In` and `Out` extend `{}` because they may not be `null`.
  */
-export abstract class AsyncTransformStream<In extends{}, Out extends{}> extends
-    Transform {
+export abstract class AsyncTransformStream<In extends {}, Out extends {}>
+    extends Transform {
   private readonly _inputs = new AsyncQueue<In>();
 
   /**
@@ -265,4 +265,20 @@ export class VinylReaderTransform extends AsyncTransformStream<string, File> {
       yield new File({path: filePath, contents: await fs.readFile(filePath)});
     }
   }
+}
+
+export type PipeStream = (NodeJS.ReadableStream|NodeJS.WritableStream|
+                          NodeJS.ReadableStream[]|NodeJS.WritableStream[]);
+
+/**
+ * pipeStreams() takes in a collection streams and pipes them together,
+ * returning the last stream in the pipeline. Each element in the `streams`
+ * array must be either a stream, or an array of streams (see PipeStream).
+ * pipeStreams() will then flatten this array before piping them all together.
+ */
+export function pipeStreams(streams: PipeStream[]): NodeJS.ReadableStream {
+  return Array.prototype.concat.apply([], streams)
+      .reduce((a: NodeJS.ReadableStream, b: NodeJS.ReadWriteStream) => {
+        return a.pipe(b);
+      });
 }

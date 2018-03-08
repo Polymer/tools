@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {transform as babelTransform, TransformOptions as BabelTransformOptions} from 'babel-core';
+import {transform as babelTransform} from 'babel-core';
 import * as cssSlam from 'css-slam';
 import * as gulpif from 'gulp-if';
 import {minify as htmlMinify, Options as HTMLMinifierOptions} from 'html-minifier';
@@ -75,18 +75,13 @@ export interface OptimizeOptions {
  * through unaffected.
  */
 export class GenericOptimizeTransform extends Transform {
-  optimizer: (content: string, options: any) => string;
+  optimizer: (content: string) => string;
   optimizerName: string;
-  optimizerOptions: any;
 
-  constructor(
-      optimizerName: string,
-      optimizer: (content: string, optimizerOptions: any) => string,
-      optimizerOptions: any) {
+  constructor(optimizerName: string, optimizer: (content: string) => string) {
     super({objectMode: true});
     this.optimizer = optimizer;
     this.optimizerName = optimizerName;
-    this.optimizerOptions = optimizerOptions || {};
   }
 
   _transform(file: File, _encoding: string, callback: FileCB): void {
@@ -103,7 +98,7 @@ export class GenericOptimizeTransform extends Transform {
     if (file.contents) {
       try {
         let contents = file.contents.toString();
-        contents = this.optimizer(contents, this.optimizerOptions);
+        contents = this.optimizer(contents);
         file.contents = new Buffer(contents);
       } catch (error) {
         logger.warn(
@@ -116,54 +111,37 @@ export class GenericOptimizeTransform extends Transform {
 }
 
 /**
- * JSBabelTransform uses babel to transpile Javascript, most often rewriting
- * newer ECMAScript features to only use language features available in major
- * browsers. If no options are given to the constructor, JSBabelTransform will
- * use
- * a babel's default "ES6 -> ES5" preset.
+ * Transpile JavaScript to ES5 using Babel.
  */
-export class JSBabelTransform extends GenericOptimizeTransform {
-  constructor(optimizerName: string, config: BabelTransformOptions) {
-    const transform = (contents: string, options: BabelTransformOptions) => {
-      return babelTransform(contents, options).code!;
-    };
-    super(optimizerName, transform, config);
+export class JSCompileTransform extends GenericOptimizeTransform {
+  constructor() {
+    const transformer = (content: string) =>
+        babelTransform(content, {
+          presets: [babelPresetES2015NoModules],
+          plugins: [
+            externalHelpersPlugin,
+            babelObjectRestSpreadPlugin,
+            babelPluginSyntaxDynamicImport,
+          ]
+        }).code!;
+    super('babel-compile', transformer);
   }
 }
 
 /**
- * A convenient stream that wraps JSBabelTransform in our default "compile"
- * options.
+ * Minify JavaScript using Babel.
  */
-export class JSDefaultCompileTransform extends JSBabelTransform {
+export class JSMinifyTransform extends GenericOptimizeTransform {
   constructor() {
-    super('babel-compile', {
-      presets: [babelPresetES2015NoModules],
-      plugins: [
-        externalHelpersPlugin,
-        babelObjectRestSpreadPlugin,
-        babelPluginSyntaxDynamicImport,
-      ]
-    });
-  }
-}
-
-/**
- * A convenient stream that wraps JSBabelTransform in our default "minify"
- * options. Yes, it's strange to use babel for minification, but our minifier
- * babili is actually just a plugin for babel.
- * simplyComparisons plugin is disabled
- * (https://github.com/Polymer/polymer-cli/issues/689)
- */
-export class JSDefaultMinifyTransform extends JSBabelTransform {
-  constructor() {
-    super('babel-minifiy', {
-      presets: [minifyPreset(null, {simplifyComparisons: false})],
-      plugins: [
-        babelPluginSyntaxObjectRestSpread,
-        babelPluginSyntaxDynamicImport,
-      ]
-    });
+    const transformer = (content: string) =>
+        babelTransform(content, {
+          presets: [minifyPreset(null, {simplifyComparisons: false})],
+          plugins: [
+            babelPluginSyntaxObjectRestSpread,
+            babelPluginSyntaxDynamicImport,
+          ]
+        }).code!;
+    super('babel-minify', transformer);
   }
 }
 
@@ -171,15 +149,13 @@ export class JSDefaultMinifyTransform extends JSBabelTransform {
  * CSSMinifyTransform minifies CSS that pass through it (via css-slam).
  */
 export class CSSMinifyTransform extends GenericOptimizeTransform {
-  constructor(options: CSSOptimizeOptions) {
-    super('css-slam', cssSlam.css, options);
+  constructor(private options: CSSOptimizeOptions) {
+    super('css-slam-minify', cssSlam.css);
   }
 
   _transform(file: File, encoding: string, callback: FileCB): void {
     // css-slam will only be run if the `stripWhitespace` option is true.
-    // Because css-slam itself doesn't accept any options, we handle the
-    // option here before transforming.
-    if (this.optimizerOptions.stripWhitespace) {
+    if (this.options.stripWhitespace) {
       super._transform(file, encoding, callback);
     }
   }
@@ -190,15 +166,13 @@ export class CSSMinifyTransform extends GenericOptimizeTransform {
  * passes through it (via css-slam).
  */
 export class InlineCSSOptimizeTransform extends GenericOptimizeTransform {
-  constructor(options: CSSOptimizeOptions) {
-    super('css-slam', cssSlam.html, options);
+  constructor(private options: CSSOptimizeOptions) {
+    super('css-slam-inline', cssSlam.html);
   }
 
   _transform(file: File, encoding: string, callback: FileCB): void {
     // css-slam will only be run if the `stripWhitespace` option is true.
-    // Because css-slam itself doesn't accept any options, we handle the
-    // option here before transforming.
-    if (this.optimizerOptions.stripWhitespace) {
+    if (this.options.stripWhitespace) {
       super._transform(file, encoding, callback);
     }
   }
@@ -210,7 +184,7 @@ export class InlineCSSOptimizeTransform extends GenericOptimizeTransform {
  */
 export class HTMLOptimizeTransform extends GenericOptimizeTransform {
   constructor(options: HTMLMinifierOptions) {
-    super('html-minify', htmlMinify, options);
+    super('html-minify', (source: string) => htmlMinify(source, options));
   }
 }
 
@@ -227,7 +201,7 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   if (options.js && options.js.compile) {
     streams.push(gulpif(
         matchesExtAndNotExcluded('.js', options.js.compile),
-        new JSDefaultCompileTransform()));
+        new JSCompileTransform()));
   }
 
   // minify code (minify should always be the last transform)
@@ -250,7 +224,7 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   if (options.js && options.js.minify) {
     streams.push(gulpif(
         matchesExtAndNotExcluded('.js', options.js.minify),
-        new JSDefaultMinifyTransform()));
+        new JSMinifyTransform()));
   }
 
   return streams;
