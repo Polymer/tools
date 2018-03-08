@@ -71,7 +71,8 @@ gulp.task('depcheck', function() {
       '@types/*',
       // Also it can't yet parse files that use async iteration.
       // TODO(rictic): remove these
-      'mz', 'multipipe', 'polymer-bundler', 'parse5', 'dom5'
+      'mz', 'multipipe', 'polymer-bundler', 'parse5', 'dom5',
+      'babel-traverse', 'stream',
   ]}).then((result) => {
     let invalidFiles = Object.keys(result.invalidFiles) || [];
     let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
