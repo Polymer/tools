@@ -1,0 +1,36 @@
+<html>
+
+<body>
+
+  <iron-form>
+    <form></form>
+  </iron-form>
+
+  <div><iron-form with-credentials><form></form></iron-form></div>
+
+  <iron-form with-credentials on-iron-form-error="handleError">
+    <form method="post" action="/my-end-point" enctype="application/json" on-submit="onSubmit">
+      <input type="text">
+      <input type="submit">
+    </form>
+  </iron-form>
+
+  <dom-module id="my-element">
+    <template>
+      <iron-form id="form" with-credentials$="[[withCredentials]]">
+        <form>
+          <input type="text">
+          <input type="submit">
+        </form>
+      </iron-form>
+    </template>
+    <script>
+      Polymer({
+        is: "my-element"
+      });
+    </script>
+  </dom-module>
+
+</body>
+
+</html>
