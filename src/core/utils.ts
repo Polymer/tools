@@ -12,33 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {parse as parseUrl_, resolve as resolveUrl_, Url} from 'url';
+import {parse as parseUrl_, Url} from 'url';
 
 const unspecifiedProtocol = '-:';
-
 export function parseUrl(url: string): Url {
   if (!url.startsWith('//')) {
     return parseUrl_(url);
   }
-  const urlObject = parseUrl_(addUnspecifiedProtocol(url));
+  const urlObject = parseUrl_(`${unspecifiedProtocol}${url}`);
   urlObject.protocol = undefined;
   urlObject.href = urlObject.href!.replace(/^-:/, '');
   return urlObject;
-}
-
-export function resolveUrl(baseUrl: string, target: string): string {
-  return removeUnspecifiedProtocol(resolveUrl_(
-      addUnspecifiedProtocol(baseUrl), addUnspecifiedProtocol(target)));
-}
-
-function addUnspecifiedProtocol(url: string): string {
-  return url.startsWith('//') ? unspecifiedProtocol + url : url;
-}
-
-function removeUnspecifiedProtocol(url: string): string {
-  return url.startsWith(unspecifiedProtocol) ?
-      url.slice(unspecifiedProtocol.length) :
-      url;
 }
 
 export function trimLeft(str: string, char: string): string {

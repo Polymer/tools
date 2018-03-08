@@ -72,7 +72,7 @@ suite('PackageUrlResolver', function() {
           resolvedUrl`http://abc.xyz/foo.html`);
       assert.equal(
           r.resolve(packageRelativeUrl`//abc.xyz/foo.html`),
-          resolvedUrl`//abc.xyz/foo.html`);
+          resolvedUrl`file://abc.xyz/foo.html`);
     });
 
     test(`resolves a URL with the right hostname`, () => {
