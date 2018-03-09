@@ -119,17 +119,5 @@ export class Reference<F extends Feature> implements Feature {
     this.sourceRange = scannedReference.sourceRange;
     this.warnings = warnings;
     this.feature = feature;
-    /*
-    TODO(rictic): enable this, after actually performing resolution.
-    if (feature === undefined && this.sourceRange) {
-      this.warnings = this.warnings.concat([new Warning({
-        sourceRange: this.sourceRange,
-        code: 'could-not-resolve-reference',
-        parsedDocument: document,
-        severity: Severity.WARNING,
-        message: `Could not resolve this reference. Did you import it?`
-      })]);
-    }
-    */
   }
 }
