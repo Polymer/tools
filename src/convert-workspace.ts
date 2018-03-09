@@ -117,15 +117,6 @@ export default async function convert(options: WorkspaceConversionSettings):
   const results = converter.getResults();
   await writeFileResults(options.workspaceDir, results);
 
-  // Delete files that were explicitly requested to be deleted. Note we apply
-  // the glob with each repo as the root directory (e.g. a glob of "types"
-  // will delete "types" from each individual repo).
-  if (options.deleteFiles !== undefined) {
-    for (const repo of options.reposToConvert) {
-      await deleteGlobsSafe(options.deleteFiles, repo.dir);
-    }
-  }
-
   // Generate a new package.json for each repo:
   const packageJsonResults = await run(
       options.reposToConvert, async (repo) => await writePackageJson(repo, {
@@ -134,6 +125,15 @@ export default async function convert(options: WorkspaceConversionSettings):
                                 private: options.private,
                               }));
   packageJsonResults.failures.forEach(logRepoError);
+
+  // Delete files that were explicitly requested to be deleted. Note we apply
+  // the glob with each repo as the root directory (e.g. a glob of "types"
+  // will delete "types" from each individual repo).
+  if (options.deleteFiles !== undefined) {
+    for (const repo of options.reposToConvert) {
+      await deleteGlobsSafe(options.deleteFiles, repo.dir);
+    }
+  }
 
   // Commit all changes to a staging branch for easy state resetting.
   // Useful when performing actions that modify the repo, like installing deps.

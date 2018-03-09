@@ -133,30 +133,27 @@ export default async function convert(options: PackageConversionSettings) {
   }
   await writeFileResults(outDir, results);
 
-  // Delete files that were explicitly requested to be deleted.
-  if (options.deleteFiles !== undefined) {
-    await deleteGlobsSafe(options.deleteFiles, outDir);
-  }
+
 
   const packageJsonPath = path.join(options.inDir, 'package.json');
   const existingPackageJson =
       await readJsonIfExists<Partial<YarnConfig>>(packageJsonPath);
 
   // Generate a new package.json, and write it to disk.
-  try {
-    const packageJson = generatePackageJson(
-        bowerJson,
-        {
-          name: options.packageName,
-          version: options.packageVersion,
-          flat: options.flat,
-          private: options.private,
-        },
-        undefined,
-        existingPackageJson);
-    writeJson(packageJson, packageJsonPath);
-  } catch (err) {
-    console.log(
-        `error in bower.json -> package.json conversion (${err.message})`);
+  const packageJson = generatePackageJson(
+      bowerJson,
+      {
+        name: options.packageName,
+        version: options.packageVersion,
+        flat: options.flat,
+        private: options.private,
+      },
+      undefined,
+      existingPackageJson);
+  writeJson(packageJson, packageJsonPath);
+
+  // Delete files that were explicitly requested to be deleted.
+  if (options.deleteFiles !== undefined) {
+    await deleteGlobsSafe(options.deleteFiles, outDir);
   }
 }
