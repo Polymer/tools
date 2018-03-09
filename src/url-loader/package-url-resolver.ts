@@ -14,6 +14,7 @@
 
 import * as pathlib from 'path';
 import {posix as posix} from 'path';
+import pathIsInside = require('path-is-inside');
 import {format as urlLibFormat} from 'url';
 
 import {parseUrl} from '../core/utils';
@@ -46,8 +47,8 @@ export class PackageUrlResolver extends FsUrlResolver {
     // If the path points to a sibling directory, resolve it to the
     // component directory
     const parentOfPackageDir = pathlib.dirname(this.packageDir);
-    if (path.startsWith(parentOfPackageDir) &&
-        !path.startsWith(this.packageDir)) {
+    if (pathIsInside(path, parentOfPackageDir) &&
+        !pathIsInside(path, this.packageDir)) {
       path = pathlib.join(
           this.packageDir,
           this.componentDir,
@@ -114,7 +115,7 @@ export class PackageUrlResolver extends FsUrlResolver {
         return undefined;
       }
       const path = this.filesystemPathForPathname(pathname);
-      if (path && path.startsWith(this.resolvedComponentDir)) {
+      if (path && pathIsInside(path, this.resolvedComponentDir)) {
         return path;
       }
     }

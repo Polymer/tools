@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [breaking] JavascriptDocument#ast is now a `babel.File` rather than a
   `babel.Program`. Use `jsDoc.ast.program` instead of `jsDoc.ast` in the
   unlikely case that the `Program` is required.
+* Fix bug where if a package's name was a prefix of one of its dependencies,
+  that dependency would not resolve to its components directory.
 
 <!-- Add new, unreleased changes here. -->
 

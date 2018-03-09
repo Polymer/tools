@@ -59,6 +59,18 @@ suite('PackageUrlResolver', function() {
           rootedFileUrl`1/2/components/bar/bar.html`);
     });
 
+    test('resolves sibling with matching name prefix to component dir', () => {
+      // Regression test for bug in path containment check.
+      const configured =
+          new PackageUrlResolver({packageDir: '/repos/iron-icons'});
+      assert.equal(
+          configured.resolve(
+              rootedFileUrl`repos/iron-iconset-svg/foo.html` as any as
+              PackageRelativeUrl),
+          rootedFileUrl
+          `repos/iron-icons/bower_components/iron-iconset-svg/foo.html`);
+    });
+
     test('resolves cousin URLs as normal', () => {
       assert.equal(
           resolver.resolve(packageRelativeUrl`../../foo/foo.html`),
@@ -168,6 +180,7 @@ suite('PackageUrlResolver', function() {
           rootedFileUrl`1/2/foo.html?fiz#buz`);
     });
   });
+
   suite('relative', () => {
     // We want process.cwd so that on Windows we test Windows paths and on
     // posix we test posix paths.

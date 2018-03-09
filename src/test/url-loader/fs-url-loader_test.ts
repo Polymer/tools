@@ -31,6 +31,7 @@ suite('FSUrlLoader', function() {
       assert.isFalse(new FSUrlLoader('/a/').canLoad(
           Uri.file(path.resolve('/b/foo.html')).toString() as ResolvedUrl));
     });
+
     test('canLoad is false for a file url with a host', () => {
       assert.isFalse(new FSUrlLoader('/foo/').canLoad(
           resolvedUrl`file://foo/foo/foo.html`));

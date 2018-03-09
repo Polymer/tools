@@ -33,17 +33,6 @@ export function trimLeft(str: string, char: string): string {
   return str.substring(leftEdge);
 }
 
-/**
- * Returns whether the given file path points to a location inside the given
- * directory.
- */
-export function isPathInside(directory: string, filePath: string): boolean {
-  if (process.platform === 'win32') {
-    return filePath.toLowerCase().startsWith(directory.toLowerCase());
-  }
-  return filePath.startsWith(directory);
-}
-
 export class Deferred<T> {
   promise: Promise<T>;
   resolve!: (result: T) => void;
