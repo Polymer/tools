@@ -43,3 +43,10 @@ Really.Really.Deep.Behavior = [
 */
 CustomBehaviorList =
     [SimpleBehavior, AwesomeBehavior, Really.Really.Deep.Behavior];
+
+
+/** @polymerBehavior */
+export const exportedBehavior = {exported: true};
+
+/** @polymerBehavior */
+export default { defaultExported: true };

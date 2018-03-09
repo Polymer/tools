@@ -463,4 +463,60 @@ Polymer.TestMixin = Polymer.woohoo(function TestMixin(base) {
       }
     ]);
   });
+
+  test('finds exported mixin functions', async () => {
+    const mixins = await getScannedMixins('test-mixin-12.js');
+    const mixinData = await Promise.all(mixins.map(getTestProps));
+    assert.deepEqual(mixinData, [{
+                       name: 'TestMixin',
+                       description: 'A mixin description',
+                       summary: '',
+                       properties: [{
+                         name: 'foo',
+                       }],
+                       attributes: [{
+                         name: 'foo',
+                       }],
+                       methods: [],
+                       underlinedWarnings: []
+                     }, {
+                      name: 'DefaultTestMixin',
+                      description: 'Another mixin description',
+                      summary: '',
+                      properties: [{
+                        name: 'bar',
+                      }],
+                      attributes: [{
+                        name: 'bar',
+                      }],
+                      methods: [],
+                      underlinedWarnings: []
+                    });
+    const underlinedSource = await underliner.underline(mixins[0].sourceRange);
+    assert.deepEqual(underlinedSource, `
+export function TestMixin(superclass) {
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  return class extends superclass {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    static get properties() {
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      return {
+~~~~~~~~~~~~~~
+        foo: {
+~~~~~~~~~~~~~~
+          notify: true,
+~~~~~~~~~~~~~~~~~~~~~~~
+          type: String,
+~~~~~~~~~~~~~~~~~~~~~~~
+        },
+~~~~~~~~~~
+      };
+~~~~~~~~
+    }
+~~~~~
+  }
+~~~
+}
+~`);
+  });
 });

@@ -19,3 +19,11 @@ AnotherAssignment = class IgnoreIgnoreIgnore { }
 let NotAClass; // this comment should not be attached to a class
 
 class ClassWithNoJsDoc { }
+
+/** An exported class. */
+export class ExportedClass { }
+
+/** A default exported class. */
+export default class { };
+
+export const ExportedConstClass = class { };

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
+import {NodePath, Scope} from 'babel-traverse';
 import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
@@ -42,120 +42,65 @@ export class MixinVisitor implements Visitor {
 
   enterAssignmentExpression(
       node: babel.AssignmentExpression, parent: babel.Node, path: NodePath) {
-    if (!babel.isExpressionStatement(parent)) {
-      return;
-    }
-    const parentComments = esutil.getAttachedComment(parent) || '';
-    const parentJsDocs = jsdoc.parseJsdoc(parentComments);
-    if (hasMixinFunctionDocTag(parentJsDocs)) {
-      const name = getIdentifierName(node.left);
-      const namespacedName =
-          name ? getNamespacedIdentifier(name, parentJsDocs) : undefined;
-      const sourceRange = this._document.sourceRangeForNode(node)!;
-
-      const summaryTag = jsdoc.getTag(parentJsDocs, 'summary');
-
-      if (namespacedName) {
-        this._currentMixin = new ScannedPolymerElementMixin({
-          name: namespacedName,
-          sourceRange,
-          astNode: node,
-          description: parentJsDocs.description,
-          summary: (summaryTag && summaryTag.description) || '',
-          privacy: getOrInferPrivacy(namespacedName, parentJsDocs),
-          jsdoc: parentJsDocs,
-          mixins: jsdoc.getMixinApplications(
-              this._document, node, parentJsDocs, this.warnings, path.scope),
-        });
-        this._currentMixinNode = node;
-        this.mixins.push(this._currentMixin);
-      } else {
-        // TODO(rictic): warn for a mixin whose name we can't determine.
-      }
-    }
+    this.tryInitializeMixin(path, node.left);
   }
 
   enterFunctionDeclaration(
       node: babel.FunctionDeclaration, _parent: babel.Node, path: NodePath) {
-    const nodeComments = esutil.getAttachedComment(node) || '';
-    const nodeJsDocs = jsdoc.parseJsdoc(nodeComments);
-    if (hasMixinFunctionDocTag(nodeJsDocs)) {
-      const name = node.id.name;
-      const namespacedName =
-          name ? getNamespacedIdentifier(name, nodeJsDocs) : undefined;
-      const sourceRange = this._document.sourceRangeForNode(node)!;
-      this._currentMixinFunction = node;
-
-      const summaryTag = jsdoc.getTag(nodeJsDocs, 'summary');
-
-      if (namespacedName) {
-        this._currentMixin = new ScannedPolymerElementMixin({
-          name: namespacedName,
-          sourceRange,
-          astNode: node,
-          description: nodeJsDocs.description,
-          summary: (summaryTag && summaryTag.description) || '',
-          privacy: getOrInferPrivacy(namespacedName, nodeJsDocs),
-          jsdoc: nodeJsDocs,
-          mixins: jsdoc.getMixinApplications(
-              this._document, node, nodeJsDocs, this.warnings, path.scope)
-        });
-        this._currentMixinNode = node;
-        this.mixins.push(this._currentMixin);
-      } else {
-        // Warn about a mixin whose name we can't infer.
-      }
-    }
+    this.tryInitializeMixin(path, node.id);
   }
 
   leaveFunctionDeclaration(
       node: babel.FunctionDeclaration, _parent: babel.Node) {
-    if (this._currentMixinNode === node) {
-      this._currentMixin = null;
-      this._currentMixinNode = null;
-      this._currentMixinFunction = null;
-    }
+    this.clearOnLeave(node);
   }
 
   enterVariableDeclaration(
       node: babel.VariableDeclaration, _parent: babel.Node, path: NodePath) {
-    const comment = esutil.getAttachedComment(node) || '';
-    const docs = jsdoc.parseJsdoc(comment);
-    const isMixin = hasMixinFunctionDocTag(docs);
-    const sourceRange = this._document.sourceRangeForNode(node)!;
-    const summaryTag = jsdoc.getTag(docs, 'summary');
-    if (isMixin) {
-      let mixin: ScannedPolymerElementMixin|undefined = undefined;
-      if (node.declarations.length === 1) {
-        const declaration = node.declarations[0];
-        const name = getIdentifierName(declaration.id);
-        if (name) {
-          const namespacedName = getNamespacedIdentifier(name, docs);
-          mixin = new ScannedPolymerElementMixin({
-            name: namespacedName,
-            sourceRange,
-            astNode: node,
-            description: docs.description,
-            summary: (summaryTag && summaryTag.description) || '',
-            privacy: getOrInferPrivacy(namespacedName, docs),
-            jsdoc: docs,
-            mixins: jsdoc.getMixinApplications(
-                this._document, declaration, docs, this.warnings, path.scope)
-          });
-        }
-      }
-      if (mixin) {
-        this._currentMixin = mixin;
-        this._currentMixinNode = node;
-        this.mixins.push(this._currentMixin);
-      } else {
-        // TODO(rictic); warn about being unable to determine mixin name.
-      }
-    }
+    this.tryInitializeMixin(path, node.declarations[0].id);
   }
 
   leaveVariableDeclaration(
       node: babel.VariableDeclaration, _parent: babel.Node) {
+    this.clearOnLeave(node);
+  }
+
+  private tryInitializeMixin(nodePath: NodePath, nameNode: babel.LVal) {
+    const comment = esutil.getBestComment(nodePath);
+    if (comment === undefined) {
+      return;
+    }
+    const docs = jsdoc.parseJsdoc(comment);
+    if (!hasMixinFunctionDocTag(docs)) {
+      return;
+    }
+    const node = nodePath.node;
+    const name = getIdentifierName(nameNode);
+    const namespacedName =
+        name ? getNamespacedIdentifier(name, docs) : undefined;
+    if (namespacedName === undefined) {
+      // TODO(#903): Warn about a mixin whose name we can't infer?
+      return;
+    }
+    const sourceRange = this._document.sourceRangeForNode(node)!;
+    const summaryTag = jsdoc.getTag(docs, 'summary');
+    const mixin = new ScannedPolymerElementMixin({
+      name: namespacedName,
+      sourceRange,
+      astNode: node,
+      description: docs.description,
+      summary: (summaryTag && summaryTag.description) || '',
+      privacy: getOrInferPrivacy(namespacedName, docs),
+      jsdoc: docs,
+      mixins: jsdoc.getMixinApplications(
+          this._document, node, docs, this.warnings, nodePath.scope)
+    });
+    this._currentMixin = mixin;
+    this._currentMixinNode = node;
+    this.mixins.push(this._currentMixin);
+  }
+
+  private clearOnLeave(node: babel.Node) {
     if (this._currentMixinNode === node) {
       this._currentMixin = null;
       this._currentMixinNode = null;

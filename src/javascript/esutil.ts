@@ -13,6 +13,7 @@
  */
 
 import generate from 'babel-generator';
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 
@@ -146,6 +147,38 @@ export function getClosureType(
     parsedDocument: document,
   });
   return {successful: false, error: warning};
+}
+
+/**
+ * Tries to find the comment for the given node.
+ *
+ * Will look up the tree at comments on parents as appropriate, but should
+ * not look at unrelated nodes. Stops at the nearest statement boundary.
+ */
+export function getBestComment(nodePath: NodePath): string|undefined {
+  const maybeComment = getAttachedComment(nodePath.node);
+  if (maybeComment !== undefined) {
+    return maybeComment;
+  }
+
+  const parent = nodePath.parentPath;
+  if (parent === undefined) {
+    return undefined;
+  }
+  if (!babel.isExportNamedDeclaration(parent.node) &&
+      !babel.isExportDefaultDeclaration(parent.node) &&
+      babel.isStatement(nodePath.node)) {
+    // don't walk up above the nearest statement
+    return undefined;
+  }
+  if (babel.isVariableDeclaration(parent.node) &&
+      parent.node.declarations.length !== 1) {
+    // The parent node is multiple declarations. We can't be sure its
+    // comment applies to us.
+    return undefined;
+  }
+
+  return getBestComment(parent);
 }
 
 export function getAttachedComment(node: babel.Node): string|undefined {

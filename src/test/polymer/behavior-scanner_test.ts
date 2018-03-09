@@ -47,7 +47,9 @@ suite('BehaviorScanner', () => {
       'AwesomeBehavior',
       'Polymer.AwesomeNamespacedBehavior',
       'Really.Really.Deep.Behavior',
-      'CustomBehaviorList'
+      'CustomBehaviorList',
+      'exportedBehavior',
+      'default',
     ].sort());
   });
 

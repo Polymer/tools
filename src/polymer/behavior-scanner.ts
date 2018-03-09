@@ -58,12 +58,15 @@ class BehaviorVisitor implements Visitor {
   /**
    * Look for object declarations with @polymerBehavior in the docs.
    */
-  enterVariableDeclaration(
-      node: babel.VariableDeclaration, _parent: babel.Node, path: NodePath) {
-    if (node.declarations.length !== 1) {
-      return;  // Ambiguous.
-    }
-    this._initBehavior(node, getIdentifierName(node.declarations[0].id), path);
+  enterVariableDeclarator(
+      node: babel.VariableDeclarator, _parent: babel.Node, path: NodePath) {
+    this._initBehavior(node, getIdentifierName(node.id), path);
+  }
+
+  enterExportDefaultDeclaration(
+      node: babel.ExportDefaultDeclaration, _parent: babel.Node,
+      path: NodePath) {
+    this._initBehavior(node, 'default', path);
   }
 
   /**
@@ -140,10 +143,10 @@ class BehaviorVisitor implements Visitor {
 
   private _initBehavior(
       node: babel.Node, name: string|undefined, path: NodePath) {
-    const comment = esutil.getAttachedComment(node);
     if (name === undefined) {
       return;
     }
+    const comment = esutil.getBestComment(path);
     // Quickly filter down to potential candidates.
     if (!comment || comment.indexOf('@polymerBehavior') === -1) {
       if (name !== templatizer) {
