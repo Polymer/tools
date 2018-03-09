@@ -297,7 +297,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
   }
 
   const behaviors = isPolymerElement(feature) ?
-      feature.behaviorAssignments.map((behavior) => behavior.name) :
+      feature.behaviorAssignments.map((behavior) => behavior.identifier) :
       [];
 
   if (constructable) {
@@ -380,7 +380,7 @@ function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
   ns.members.push(new ts.Interface({
     name: className,
     description: feature.description || feature.summary,
-    extends: feature.behaviorAssignments.map((b) => b.name),
+    extends: feature.behaviorAssignments.map((b) => b.identifier),
     properties: handleProperties(feature.properties.values()),
     methods: handleMethods(feature.methods.values()),
   }));
