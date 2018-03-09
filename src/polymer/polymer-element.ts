@@ -20,7 +20,7 @@ import {getOrInferPrivacy} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
 import {Annotation as JsDocAnnotation, Annotation} from '../javascript/jsdoc';
 import {ImmutableArray} from '../model/immutable';
-import {Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, Severity, SourceRange, Warning} from '../model/model';
+import {Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
 
 import {Behavior} from './behavior';
@@ -136,8 +136,8 @@ export interface Observer {
 export interface Options {
   tagName: string|undefined;
   className: string|undefined;
-  superClass: ScannedReference|undefined;
-  mixins: ScannedReference[];
+  superClass: ScannedReference<'class'>|undefined;
+  mixins: ScannedReference<'element-mixin'>[];
   extends: string|undefined;
   jsdoc: JsDocAnnotation;
   description: string|undefined;
@@ -147,12 +147,13 @@ export interface Options {
   attributes: Map<string, ScannedAttribute>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];
-  behaviors: ScannedReference[];
+  behaviors: ScannedReference<'behavior'>[];
 
   events: Map<string, ScannedEvent>;
 
   abstract: boolean;
   privacy: Privacy;
+  // TODO(rictic): make this AstNodeWithLanguage
   astNode: any;
   sourceRange: SourceRange|undefined;
 }
@@ -162,7 +163,7 @@ export interface ScannedPolymerExtension extends ScannedElementBase {
   methods: Map<string, ScannedMethod>;
   observers: Observer[];
   listeners: {event: string, handler: string}[];
-  behaviorAssignments: ScannedReference[];
+  behaviorAssignments: ScannedReference<'behavior'>[];
   // TODO(justinfagnani): Not Polymer-specific, and hopefully not necessary
   pseudo: boolean;
 
@@ -224,7 +225,7 @@ export class ScannedPolymerElement extends ScannedElement implements
   staticMethods = new Map<string, ScannedMethod>();
   observers: Observer[] = [];
   listeners: {event: string, handler: string}[] = [];
-  behaviorAssignments: ScannedReference[] = [];
+  behaviorAssignments: ScannedReference<'behavior'>[] = [];
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
   abstract: boolean = false;
@@ -291,7 +292,7 @@ export interface PolymerExtension extends ElementBase {
   }
   > ;
   listeners: ImmutableArray<{event: string, handler: string}>;
-  behaviorAssignments: ImmutableArray<ScannedReference>;
+  behaviorAssignments: ImmutableArray<ScannedReference<'behavior'>>;
   localIds: ImmutableArray<LocalId>;
 
   emitPropertyMetadata(property: PolymerProperty): any;
@@ -309,7 +310,8 @@ export class PolymerElement extends Element implements PolymerExtension {
   readonly properties!: Map<string, PolymerProperty>;
   readonly observers: ImmutableArray<Observer> = [];
   readonly listeners: ImmutableArray<{event: string, handler: string}> = [];
-  readonly behaviorAssignments: ImmutableArray<ScannedReference> = [];
+  readonly behaviorAssignments: ImmutableArray<ScannedReference<'behavior'>> =
+      [];
   readonly domModule?: dom5.Node;
   readonly localIds: ImmutableArray<LocalId> = [];
 
@@ -406,41 +408,18 @@ function propertyToAttributeName(propertyName: string): string|null {
 }
 
 export function getBehaviors(
-    behaviorAssignments: ImmutableArray<ScannedReference>, document: Document) {
+    behaviorReferences: Iterable<ScannedReference<'behavior'>>,
+    document: Document) {
   const warnings: Warning[] = [];
   const behaviors: Behavior[] = [];
-  for (const behavior of behaviorAssignments) {
-    const foundBehaviors = document.getFeatures({
-      kind: 'behavior',
-      id: behavior.identifier,
-      imported: true,
-      externalPackages: true
-    });
-    if (foundBehaviors.size === 0 && behavior.sourceRange) {
-      warnings.push(new Warning({
-        message: `Unable to resolve behavior \`${behavior.identifier}\`. ` +
-            `Did you import it? Is it annotated with @polymerBehavior?`,
-        severity: Severity.WARNING,
-        code: 'unknown-polymer-behavior',
-        sourceRange: behavior.sourceRange,
-        parsedDocument: document.parsedDocument
-      }));
-      // Skip processing this behavior.
-      continue;
+  for (const scannedReference of behaviorReferences) {
+    const resolvedReference = scannedReference.resolve(document);
+    if (resolvedReference.warnings.length > 0) {
+      warnings.push(...resolvedReference.warnings);
     }
-    if (foundBehaviors.size > 1 && behavior.sourceRange) {
-      warnings.push(new Warning({
-        message: `Found more than one behavior named ${behavior.identifier}.`,
-        severity: Severity.WARNING,
-        code: 'multiple-polymer-behaviors',
-        sourceRange: behavior.sourceRange,
-        parsedDocument: document.parsedDocument
-      }));
-      // Don't skip processing this behavior, just take the most recently
-      // declared instance.
+    if (resolvedReference.feature) {
+      behaviors.push(resolvedReference.feature);
     }
-    const foundBehavior = Array.from(foundBehaviors)[foundBehaviors.size - 1];
-    behaviors.push(foundBehavior);
   }
   return {warnings, behaviors};
 }

@@ -659,7 +659,8 @@ class ClassFinder implements Visitor {
    */
   private _getExtends(
       node: babel.Node, docs: jsdoc.Annotation, warnings: Warning[],
-      document: JavaScriptDocument, scope: Scope): ScannedReference|undefined {
+      document: JavaScriptDocument,
+      scope: Scope): ScannedReference<'class'>|undefined {
     const extendsAnnotations =
         docs.tags!.filter((tag) => tag.title === 'extends');
 
@@ -677,7 +678,8 @@ class ClassFinder implements Visitor {
           parsedDocument: this._document
         }));
       } else {
-        return new ScannedReference(extendsId, sourceRange, undefined, scope);
+        return new ScannedReference(
+            'class', extendsId, sourceRange, undefined, scope);
       }
     } else if (
         babel.isClassDeclaration(node) || babel.isClassExpression(node)) {
@@ -691,7 +693,7 @@ class ClassFinder implements Visitor {
           }
           const sourceRange = document.sourceRangeForNode(superClass)!;
           return new ScannedReference(
-              extendsId, sourceRange, node.superClass, scope);
+              'class', extendsId, sourceRange, node.superClass, scope);
         }
       }
     }

@@ -25,7 +25,7 @@ export interface Options {
   summary: string;
   privacy: Privacy;
   sourceRange: SourceRange;
-  mixins: ScannedReference[];
+  mixins: ScannedReference<'element-mixin'>[];
   astNode: babel.Node;
   classAstNode?: babel.Node;
 }
@@ -37,7 +37,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
   readonly staticMethods: Map<string, ScannedMethod> = new Map();
   readonly observers: Observer[] = [];
   readonly listeners: {event: string, handler: string}[] = [];
-  readonly behaviorAssignments: ScannedReference[] = [];
+  readonly behaviorAssignments: ScannedReference<'behavior'>[] = [];
   pseudo: boolean = false;
   readonly abstract: boolean = false;
   readonly sourceRange: SourceRange;
@@ -90,7 +90,7 @@ export class PolymerElementMixin extends ElementMixin implements
 
   readonly observers: Observer[];
   readonly listeners: {event: string, handler: string}[] = [];
-  readonly behaviorAssignments: ScannedReference[] = [];
+  readonly behaviorAssignments: ScannedReference<'behavior'>[] = [];
   readonly localIds: LocalId[] = [];
   readonly pseudo: boolean;
 

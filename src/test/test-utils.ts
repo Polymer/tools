@@ -64,7 +64,7 @@ export class CodeUnderliner {
     urlLoader.urlContentsMap.set(url, contents);
     return new CodeUnderliner(urlLoader, new class extends UrlResolver {
       resolve(
-          firstUrl: ResolvedUrl | PackageRelativeUrl,
+          firstUrl: ResolvedUrl|PackageRelativeUrl,
           secondUrl?: FileRelativeUrl) {
         return this.brandAsResolved(secondUrl || firstUrl);
       }

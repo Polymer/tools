@@ -145,7 +145,7 @@ export function getMixinApplications(
     node: babel.Node,
     docs: Annotation,
     warnings: Warning[],
-    scope: Scope): ScannedReference[] {
+    scope: Scope): Array<ScannedReference<'element-mixin'>> {
   // TODO(justinfagnani): remove @mixes support
   const appliesMixinAnnotations = docs.tags!.filter(
       (tag) => tag.title === 'appliesMixin' || tag.title === 'mixes');
@@ -167,9 +167,10 @@ export function getMixinApplications(
                  return;
                }
                return new ScannedReference(
-                   mixinId, sourceRange, undefined, scope);
+                   'element-mixin', mixinId, sourceRange, undefined, scope);
              })
-             .filter((m) => m !== undefined) as ScannedReference[];
+             .filter((m) => m !== undefined) as
+      Array<ScannedReference<'element-mixin'>>;
 }
 
 export function extractDemos(jsdoc: Annotation|undefined): Demo[] {

@@ -15,7 +15,7 @@
 import * as babel from 'babel-types';
 
 import * as jsdocLib from '../javascript/jsdoc';
-import {Document, Feature, Method, Privacy, Property, Reference, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
+import {Document, ElementMixin, Feature, Method, Privacy, Property, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 import {Demo} from './element-base';
@@ -45,8 +45,9 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly properties: Map<string, ScannedProperty>;
   readonly staticMethods: ImmutableMap<string, ScannedMethod>;
   readonly methods: ImmutableMap<string, ScannedMethod>;
-  readonly superClass: ScannedReference|undefined;
-  readonly mixins: ScannedReference[];
+  readonly superClass: ScannedReference<'class'>|undefined;
+  // TODO: add a 'mixin' type independent of elements, use that here.
+  readonly mixins: ScannedReference<'element-mixin'>[];
   readonly abstract: boolean;
   readonly privacy: Privacy;
   readonly warnings: Warning[];
@@ -57,8 +58,9 @@ export class ScannedClass implements ScannedFeature, Resolvable {
       sourceRange: SourceRange, properties: Map<string, ScannedProperty>,
       methods: Map<string, ScannedMethod>,
       staticMethods: Map<string, ScannedMethod>,
-      superClass: ScannedReference|undefined, mixins: ScannedReference[],
-      privacy: Privacy, warnings: Warning[], abstract: boolean, demos: Demo[]) {
+      superClass: ScannedReference<'class'>|undefined,
+      mixins: Array<ScannedReference<'element-mixin'>>, privacy: Privacy,
+      warnings: Warning[], abstract: boolean, demos: Demo[]) {
     this.name = className;
     this.localName = localClassName;
     this.astNode = astNode;
@@ -120,8 +122,9 @@ export interface ClassInit {
   readonly properties?: ImmutableMap<string, Property>;
   readonly staticMethods: ImmutableMap<string, Method>;
   readonly methods?: ImmutableMap<string, Method>;
-  readonly superClass?: ScannedReference|undefined;
-  readonly mixins?: ScannedReference[];
+  readonly superClass?: ScannedReference<'class'>|undefined;
+  // TODO: add a 'mixin' type independent of elements, use that here.
+  readonly mixins?: Array<ScannedReference<'element-mixin'>>;
   readonly abstract: boolean;
   readonly privacy: Privacy;
   readonly demos?: Demo[];
@@ -146,7 +149,7 @@ export class Class implements Feature {
   readonly properties = new Map<string, Property>();
   readonly methods = new Map<string, Method>();
   readonly staticMethods = new Map<string, Method>();
-  readonly superClass: Reference|undefined;
+  readonly superClass: ScannedReference<'class'>|undefined;
   /**
    * Mixins that this class declares with `@mixes`.
    *
@@ -155,7 +158,7 @@ export class Class implements Feature {
    * single list. A mixin can be applied more than once, each time its
    * members override those before it in the prototype chain.
    */
-  readonly mixins: Reference[] = [];
+  readonly mixins: ReadonlyArray<ScannedReference<'element-mixin'>> = [];
   readonly abstract: boolean;
   readonly privacy: Privacy;
   demos: Demo[];
@@ -184,9 +187,9 @@ export class Class implements Feature {
     }
 
     if (init.superClass) {
-      this.superClass = init.superClass.resolve(document);
+      this.superClass = init.superClass;
     }
-    this.mixins = (init.mixins || []).map((m) => m.resolve(document));
+    this.mixins = (init.mixins || []);
 
     const superClassLikes = this._getSuperclassAndMixins(document, init);
     for (const superClassLike of superClassLikes) {
@@ -269,10 +272,10 @@ export class Class implements Feature {
    * engine (i.e. closest to HTMLElement first, closest to `this` last).
    */
   protected _getSuperclassAndMixins(document: Document, _init: ClassInit) {
-    const mixins = this.mixins.map(
-        (m) => this._resolveReferenceToSuperClass(m, document, 'class'));
+    const mixins =
+        this.mixins.map((m) => this._resolveReferenceToSuperClass(m, document));
     const superClass =
-        this._resolveReferenceToSuperClass(this.superClass, document, 'class');
+        this._resolveReferenceToSuperClass(this.superClass, document);
 
     const prototypeChain: Class[] = [];
     if (superClass) {
@@ -288,38 +291,16 @@ export class Class implements Feature {
   }
 
   protected _resolveReferenceToSuperClass(
-      reference: Reference|undefined, document: Document, kind: 'class'): Class
-      |undefined {
-    if (!reference || reference.identifier === 'HTMLElement') {
+      scannedReference: ScannedReference<'class'|'element-mixin'>|undefined,
+      document: Document): Class|ElementMixin|undefined {
+    if (!scannedReference || scannedReference.identifier === 'HTMLElement') {
       return undefined;
     }
-    const superElements = document.getFeatures({
-      kind: kind,
-      id: reference.identifier,
-      externalPackages: true,
-      imported: true,
-    });
-
-    if (superElements.size < 1) {
-      this.warnings.push(new Warning({
-        message: `Unable to resolve superclass ${reference.identifier}`,
-        severity: Severity.WARNING,
-        code: 'unknown-superclass',
-        sourceRange: reference.sourceRange!,
-        parsedDocument: this._parsedDocument,
-      }));
-      return undefined;
-    } else if (superElements.size > 1) {
-      this.warnings.push(new Warning({
-        message: `Multiple superclasses found for ${reference.identifier}`,
-        severity: Severity.WARNING,
-        code: 'unknown-superclass',
-        sourceRange: reference.sourceRange!,
-        parsedDocument: this._parsedDocument,
-      }));
-      return undefined;
+    const reference = scannedReference.resolve(document);
+    if (reference.warnings.length > 0) {
+      this.warnings.push(...reference.warnings);
     }
-    return superElements.values().next().value;
+    return reference.feature;
   }
 
   emitMetadata(): object {

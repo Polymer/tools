@@ -33,10 +33,8 @@ export class FunctionScanner implements JavaScriptScanner {
     const visitor = new FunctionVisitor(document);
     await visit(visitor);
     return {
-      features: Array.from(visitor.functions)
-                    .sort(
-                        (a, b) => comparePosition(
-                            a.sourceRange.start, b.sourceRange.start)),
+      features: [...visitor.functions].sort(
+          (a, b) => comparePosition(a.sourceRange.start, b.sourceRange.start)),
     };
   }
 }

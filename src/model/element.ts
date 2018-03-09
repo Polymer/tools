@@ -25,7 +25,7 @@ export class ScannedElement extends ScannedElementBase {
   get name() {
     return this.className;
   }
-  superClass?: ScannedReference;
+  superClass?: ScannedReference<'class'>;
 
   /**
    * For customized built-in elements, the tagname of the superClass.
@@ -40,7 +40,7 @@ export class ScannedElement extends ScannedElementBase {
 export interface ElementInit extends ElementBaseInit {
   tagName?: string;
   className?: string;
-  superClass?: ScannedReference;
+  superClass?: ScannedReference<'class'>;
   extends?: string;
 }
 

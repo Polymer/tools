@@ -27,11 +27,11 @@ import {Observer, ScannedPolymerElement} from './polymer-element';
 export type BehaviorReferenceOrWarning = {
   kind: 'warning',
   warning: Warning
-}|{kind: 'behaviorReference', reference: ScannedReference};
+}|{kind: 'behaviorReference', reference: ScannedReference<'behavior'>};
 
 export function getBehaviorReference(
     argNode: babel.Node, document: JavaScriptDocument, scope: Scope):
-    Result<ScannedReference, Warning> {
+    Result<ScannedReference<'behavior'>, Warning> {
   const behaviorName = astValue.getIdentifierName(argNode);
   if (!behaviorName) {
     return {
@@ -49,7 +49,11 @@ export function getBehaviorReference(
   return {
     successful: true,
     value: new ScannedReference(
-        behaviorName, document.sourceRangeForNode(argNode)!, argNode, scope)
+        'behavior',
+        behaviorName,
+        document.sourceRangeForNode(argNode)!,
+        argNode,
+        scope)
   };
 }
 

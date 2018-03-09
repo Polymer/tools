@@ -213,7 +213,7 @@ class BehaviorVisitor implements Visitor {
    * to same behavior. See iron-multi-selectable for example.
    */
   mergeBehavior(newBehavior: ScannedBehavior): ScannedBehavior {
-    const isBehaviorImpl = (b: ScannedReference) => {
+    const isBehaviorImpl = (b: ScannedReference<'behavior'>) => {
       // filter out BehaviorImpl
       return newBehavior.className === undefined ||
           b.identifier.indexOf(newBehavior.className) === -1;
@@ -262,12 +262,13 @@ class BehaviorVisitor implements Visitor {
     //     Polymer.IronSelectableBehavior];
     // We add these to the behaviors array.
     const expression = behaviorExpression(node);
-    const chained: Array<ScannedReference> = [];
+    const chained: Array<ScannedReference<'behavior'>> = [];
     if (expression && babel.isArrayExpression(expression)) {
       for (const arrElement of expression.elements) {
         const behaviorName = getIdentifierName(arrElement);
         if (behaviorName) {
           chained.push(new ScannedReference(
+              'behavior',
               behaviorName,
               this.document.sourceRangeForNode(arrElement)!,
               arrElement,

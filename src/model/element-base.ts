@@ -46,10 +46,10 @@ export abstract class ScannedElementBase implements Resolvable {
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
   'slots': Slot[] = [];
-  mixins: ScannedReference[] = [];
+  mixins: Array<ScannedReference<'element-mixin'>> = [];
   privacy!: Privacy;
   abstract: boolean = false;
-  superClass?: ScannedReference = undefined;
+  superClass?: ScannedReference<'class'> = undefined;
 
   applyHtmlComment(
       commentText: string|undefined,

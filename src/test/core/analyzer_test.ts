@@ -194,9 +194,10 @@ suite('Analyzer', () => {
         imported: true
       }));
       const expectedWarning = {
-        code: 'unknown-polymer-behavior',
+        code: 'could-not-resolve-reference',
         message:
-            'Unable to resolve behavior `NotFoundBehavior`. Did you import it? Is it annotated with @polymerBehavior?',
+            'Could not resolve reference to behavior. Is it annotated with' +
+            ' @polymerBehavior?',
         severity: 1,
         sourceRange: {
           end: {column: 55, line: 2},
@@ -998,7 +999,7 @@ var DuplicateNamespace = {};
       assert.notEqual(u1Doc, u2Doc);
       assert.equal(
           u2Doc.getWarnings()[0].message,
-          'Unable to resolve superclass BaseElement');
+          'Could not resolve reference to class');
 
       inMemoryOverlay.urlContentsMap.set(analyzer.resolveUrl('base.js')!, `
         class BaseElement extends HTMLElement {}
