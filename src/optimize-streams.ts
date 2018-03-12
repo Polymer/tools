@@ -18,6 +18,7 @@ import * as gulpif from 'gulp-if';
 import {minify as htmlMinify, Options as HTMLMinifierOptions} from 'html-minifier';
 import * as logging from 'plylog';
 import {Transform} from 'stream';
+import * as uuid from 'uuid/v1';
 import * as vinyl from 'vinyl';
 
 import matcher = require('matcher');
@@ -131,9 +132,46 @@ export class JsTransform extends GenericOptimizeTransform {
       if (options.minify) {
         presets.push(minifyPreset(null, {simplifyComparisons: false}));
       }
-      return babelTransform(content, {presets, plugins}).code!
+      const transformed = babelTransform(content, {presets, plugins}).code!;
+      return this._replaceTemplateObjectNames(transformed);
     };
     super('babel-compile', transformer);
+  }
+
+  /**
+   * Modifies variables names of tagged template literals (`"_templateObject"`)
+   * from a given string so that they're all unique.
+   *
+   * This is needed to workaround a potential naming collision when
+   * individually transpiled scripts are bundled. See #950.
+   */
+  _replaceTemplateObjectNames(code: string): string {
+    // Breakdown of regular expression to match "_templateObject" variables
+    //
+    // Pattern                | Meaning
+    // -------------------------------------------------------------------
+    // (                      | Group1
+    // _templateObject        | Match "_templateObject"
+    // \d*                    | Match 0 or more digits
+    // \b                     | Match word boundary
+    // )                      | End Group1
+    const searchValueRegex = /(_templateObject\d*\b)/g;
+
+    // The replacement pattern appends an underscore and UUID to the matches:
+    //
+    // Pattern                | Meaning
+    // -------------------------------------------------------------------
+    // $1                     | Insert matching Group1 (from above)
+    // _                      | Insert "_"
+    // ${uniqueId}            | Insert previously generated UUID
+    const uniqueId = uuid().replace(/-/g, '');
+    const replaceValue = `$1_${uniqueId}`;
+
+    // Example output:
+    // _templateObject  -> _templateObject_200817b1154811e887be8b38cea68555
+    // _templateObject2 -> _templateObject2_5e44de8015d111e89b203116b5c54903
+
+    return code.replace(searchValueRegex, replaceValue);
   }
 }
 
