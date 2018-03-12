@@ -13,11 +13,12 @@
  */
 
 import * as fse from 'fs-extra';
+import * as path from 'path';
 import {Analyzer, Document} from 'polymer-analyzer';
 
-import {lookupDependencyMapping} from '../manifest-converter';
+import {lookupDependencyMapping} from '../package-manifest';
 
-import {ConvertedDocumentUrl, OriginalDocumentUrl, PackageType} from './types';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl, PackageType} from './types';
 import {UrlHandler} from './url-handler';
 import {getRelativeUrl} from './util';
 
@@ -58,6 +59,10 @@ export class WorkspaceUrlHandler implements UrlHandler {
   constructor(analyzer: Analyzer, workspaceDir: string) {
     this.workspaceDir = workspaceDir;
     this.analyzer = analyzer;
+  }
+
+  getPackageDir(packageName: string): string {
+    return path.join(this.workspaceDir, packageName);
   }
 
   /**
@@ -138,5 +143,39 @@ export class WorkspaceUrlHandler implements UrlHandler {
    */
   getNameImportUrl(url: ConvertedDocumentUrl): ConvertedDocumentUrl {
     return url.slice('./'.length) as ConvertedDocumentUrl;
+  }
+
+  originalUrlToPackageRelative(url: OriginalDocumentUrl): string {
+    return url.split('/').splice(1).join('/');
+  }
+
+  convertedUrlToPackageRelative(url: ConvertedDocumentUrl): string {
+    if (url.startsWith('./@')) {
+      return url.split('/').splice(3).join('/');
+    } else {
+      return url.split('/').splice(2).join('/');
+    }
+  }
+
+  convertedDocumentFilePathToPackageRelative(url: ConvertedDocumentFilePath):
+      string {
+    return this.originalUrlToPackageRelative(
+        url as string as OriginalDocumentUrl);
+  }
+
+  packageRelativeToOriginalUrl(originalPackageName: string, url: string):
+      OriginalDocumentUrl {
+    return originalPackageName + '/' + url as OriginalDocumentUrl;
+  }
+
+  packageRelativeToConvertedUrl(convertedPackageName: string, url: string):
+      ConvertedDocumentUrl {
+    return './' + convertedPackageName + '/' + url as ConvertedDocumentUrl;
+  }
+
+  packageRelativeToConvertedDocumentFilePath(packageName: string, url: string):
+      ConvertedDocumentFilePath {
+    return this.packageRelativeToOriginalUrl(packageName, url) as string as
+        ConvertedDocumentFilePath;
   }
 }

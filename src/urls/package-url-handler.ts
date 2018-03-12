@@ -12,9 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as path from 'path';
 import {Analyzer, Document} from 'polymer-analyzer';
 
-import {lookupDependencyMapping} from '../manifest-converter';
+import {lookupDependencyMapping} from '../package-manifest';
 
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl, PackageType} from './types';
 import {UrlHandler} from './url-handler';
@@ -28,7 +29,9 @@ import {getRelativeUrl} from './util';
  * directory.
  */
 export class PackageUrlHandler implements UrlHandler {
-  readonly packageName: string;
+  readonly packageDir: string;
+  readonly bowerPackageName: string;
+  readonly npmPackageName: string;
   readonly packageType: PackageType;
   readonly analyzer: Analyzer;
 
@@ -45,11 +48,17 @@ export class PackageUrlHandler implements UrlHandler {
   }
 
   constructor(
-      analyzer: Analyzer, packageName: string,
-      packageType: PackageType = 'element') {
+      analyzer: Analyzer, bowerPackageName: string, npmPackageName: string,
+      packageType: PackageType = 'element', packageDir: string) {
     this.analyzer = analyzer;
-    this.packageName = packageName;
+    this.bowerPackageName = bowerPackageName;
+    this.npmPackageName = npmPackageName;
     this.packageType = packageType;
+    this.packageDir = packageDir;
+  }
+
+  getPackageDir(packageName: string): string {
+    return path.join(this.packageDir, packageName);
   }
 
   /**
@@ -80,7 +89,7 @@ export class PackageUrlHandler implements UrlHandler {
     if (url.startsWith('../')) {
       return url.split('/')[1];
     } else {
-      return this.packageName;
+      return this.bowerPackageName;
     }
   }
 
@@ -117,7 +126,6 @@ export class PackageUrlHandler implements UrlHandler {
     return false;
   }
 
-
   /**
    * Rewrite a Bower package name in a URL to its matching npm package name.
    */
@@ -129,9 +137,13 @@ export class PackageUrlHandler implements UrlHandler {
     const newUrl = url.replace('bower_components/', 'node_modules/');
     const newUrlPieces = newUrl.split('/');
     const bowerPackageName = newUrlPieces[1];
-    const depInfo = lookupDependencyMapping(bowerPackageName);
-    if (depInfo) {
-      newUrlPieces[1] = depInfo.npm;
+    if (bowerPackageName === this.bowerPackageName) {
+      newUrlPieces[1] = this.npmPackageName;
+    } else {
+      const depInfo = lookupDependencyMapping(bowerPackageName);
+      if (depInfo) {
+        newUrlPieces[1] = depInfo.npm;
+      }
     }
     return ('./' + newUrlPieces.join('/')) as ConvertedDocumentUrl;
   }
@@ -149,7 +161,7 @@ export class PackageUrlHandler implements UrlHandler {
    */
   getPathImportUrl(fromUrl: ConvertedDocumentUrl, toUrl: ConvertedDocumentUrl):
       string {
-    const isPackageNameScoped = this.packageName.startsWith('@');
+    const isPackageNameScoped = this.npmPackageName.startsWith('@');
     const isPackageTypeElement = this.packageType === 'element';
     const isImportFromLocalFile =
         PackageUrlHandler.isUrlInternalToPackage(fromUrl);
@@ -185,5 +197,45 @@ export class PackageUrlHandler implements UrlHandler {
    */
   getNameImportUrl(url: ConvertedDocumentUrl): ConvertedDocumentUrl {
     return url.slice('./node_modules/'.length) as ConvertedDocumentUrl;
+  }
+
+  originalUrlToPackageRelative(url: OriginalDocumentUrl): string {
+    if (url.startsWith('bower_components/')) {
+      return url.split('/').splice(1).join('/');
+    } else {
+      return url;
+    }
+  }
+
+  convertedUrlToPackageRelative(url: ConvertedDocumentUrl): string {
+    if (url.startsWith('./node_modules/@')) {
+      return url.split('/').splice(4).join('/');
+    } else if (url.startsWith('./node_modules/')) {
+      return url.split('/').splice(3).join('/');
+    } else {
+      return url.substring('./'.length);
+    }
+  }
+
+  convertedDocumentFilePathToPackageRelative(url: ConvertedDocumentFilePath):
+      string {
+    return this.originalUrlToPackageRelative(
+        url as string as OriginalDocumentUrl);
+  }
+
+  packageRelativeToOriginalUrl(_originalPackageName: string, url: string):
+      OriginalDocumentUrl {
+    return url as OriginalDocumentUrl;
+  }
+
+  packageRelativeToConvertedUrl(_convertedPackageName: string, url: string):
+      ConvertedDocumentUrl {
+    return './' + url as ConvertedDocumentUrl;
+  }
+
+  packageRelativeToConvertedDocumentFilePath(packageName: string, url: string):
+      ConvertedDocumentFilePath {
+    return this.packageRelativeToOriginalUrl(packageName, url) as string as
+        ConvertedDocumentFilePath;
   }
 }
