@@ -52,8 +52,20 @@ export const resolveBareSpecifiers =
             return;
           }
 
-          const resolvedSpecifier =
-              resolve.sync(specifier, {basedir: filePath});
+          const resolvedSpecifier = resolve.sync(specifier, {
+            basedir: filePath,
+            // Some packages use a non-standard alternative to the "main" field
+            // in their package.json to differentiate their ES module version.
+            packageFilter: (packageJson: {
+              main?: string,
+              module?: string,
+              'jsnext:main'?: string
+            }) => {
+              packageJson.main = packageJson.module ||
+                  packageJson['jsnext:main'] || packageJson.main;
+              return packageJson;
+            },
+          });
 
           let relativeSpecifierUrl =
               relative(dirname(filePath), resolvedSpecifier);

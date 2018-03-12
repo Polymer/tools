@@ -80,6 +80,8 @@ suite('optimize-streams', () => {
       import { dep1 } from 'dep1';
       import { dep2 } from 'dep2';
       import { dep2A } from 'dep2/a';
+      import { dep3 } from 'dep3';
+      import { dep4 } from 'dep4';
 
       import { p1 } from '/already/a/path.js';
       import { p2 } from './already/a/path.js';
@@ -91,6 +93,8 @@ suite('optimize-streams', () => {
       import { dep1 } from './node_modules/dep1/index.js';
       import { dep2 } from './node_modules/dep2/dep2.js';
       import { dep2A } from './node_modules/dep2/a.js';
+      import { dep3 } from './node_modules/dep3/dep3-module.js';
+      import { dep4 } from './node_modules/dep4/dep4-module.js';
 
       import { p1 } from '/already/a/path.js';
       import { p2 } from './already/a/path.js';
