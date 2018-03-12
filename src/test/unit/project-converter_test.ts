@@ -63,7 +63,8 @@ suite('AnalysisConverter', () => {
     }
 
     interface TestConversionOptions extends PartialConversionSettings {
-      packageName: string;
+      bowerPackageName: string;
+      npmPackageName: string;
       packageType: PackageType;
       expectedWarnings: string[];
       includes: string[];
@@ -72,9 +73,12 @@ suite('AnalysisConverter', () => {
     async function convert(
         partialOptions: Partial<TestConversionOptions> = {}) {
       // Extract options & settings /w defaults.
-      const packageName = partialOptions.packageName || 'some-package';
-      const packageType = partialOptions.packageType || 'element';
-      const expectedWarnings = partialOptions.expectedWarnings || [];
+      const {
+        npmPackageName = 'some-package',
+        bowerPackageName = 'some-package',
+        packageType = 'element',
+        expectedWarnings = [],
+      } = partialOptions;
       const partialSettings: PartialConversionSettings = {
         namespaces: partialOptions.namespaces || ['Polymer'],
         excludes: partialOptions.excludes,
@@ -95,13 +99,13 @@ suite('AnalysisConverter', () => {
             (str) => conversionSettings.includes.add(str));
       }
       // Setup ProjectScanner, use PackageUrlHandler for easy setup.
-      const urlHandler =
-          new PackageUrlHandler(analyzer, packageName, packageType);
+      const urlHandler = new PackageUrlHandler(
+          analyzer, bowerPackageName, npmPackageName, packageType, __dirname);
       const converter =
           await new ProjectConverter(analysis, urlHandler, conversionSettings);
       // Gather all relevent package documents, and run the converter!
       const stopIntercepting = interceptWarnings();
-      converter.convertPackage(packageName);
+      await converter.convertPackage(bowerPackageName);
       // Assert warnings matched expected.
       const warnings = stopIntercepting();
       assert.deepEqual(
@@ -159,6 +163,7 @@ suite('AnalysisConverter', () => {
         'bower_components/dep/dep.html': `<h1>Hi</h1>`,
       });
       const expectedWarnings = [
+        `WARN: bower->npm mapping for "some-package" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
       ];
       assertSources(await convert({expectedWarnings}), {
@@ -214,7 +219,7 @@ import '../../@polymer/app-route/app-route.js';
             'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
           });
           assertSources(
-              await convert({packageName: '@some-scope/some-package'}), {
+              await convert({npmPackageName: '@some-scope/some-package'}), {
                 'test.js': `
 import './nested/test.js';
 import '../../@polymer/app-storage/app-storage.js';
@@ -1905,7 +1910,7 @@ console.log(foo);
         `
       });
       let expectedWarnings = [`WARN: bower->npm mapping for "foo" not found`];
-      assertSources(await convert({packageName: 'polymer', expectedWarnings}), {
+      assertSources(await convert({expectedWarnings}), {
         'index.html': `
 
           <script src="../foo/foo.js"></script>
@@ -1914,7 +1919,12 @@ console.log(foo);
       // Warnings are memoized, duplicates are not expected
       expectedWarnings = [];
       assertSources(
-          await convert({packageName: '@polymer/polymer', expectedWarnings}), {
+          await convert({
+            bowerPackageName: 'polymer',
+            npmPackageName: '@polymer/polymer',
+            expectedWarnings
+          }),
+          {
             'index.html': `
 
           <script src="../../foo/foo.js"></script>
@@ -1947,8 +1957,13 @@ console.log(foo);
         `,
       });
 
-      assertSources(await convert({packageName: 'polymer'}), {
-        'test.js': `
+      assertSources(
+          await convert({
+            bowerPackageName: 'polymer',
+            npmPackageName: '@polymer/polymer'
+          }),
+          {
+            'test.js': `
 class XFoo extends HTMLElement {
   connectedCallback() {
     this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
@@ -1962,7 +1977,7 @@ Polymer({
   is: 'data-popup'
 });
 `,
-      });
+          });
     });
 
     test(`clones unclaimed dom-modules, leaves out scripts`, async () => {
@@ -1978,8 +1993,13 @@ Polymer({
         `,
       });
 
-      assertSources(await convert({packageName: 'polymer'}), {
-        'test.js': `
+      assertSources(
+          await convert({
+            bowerPackageName: 'polymer',
+            npmPackageName: '@polymer/polymer'
+          }),
+          {
+            'test.js': `
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
@@ -1989,13 +2009,13 @@ $_documentContainer.innerHTML = \`<dom-module>
               <script>foo&lt;/script>
             </template>
 ` +
-            '            ' +
-            `
+                '            ' +
+                `
           </dom-module>\`;
 
 document.head.appendChild($_documentContainer);
 `,
-      });
+          });
     });
 
     testName =

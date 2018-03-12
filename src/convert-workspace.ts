@@ -19,8 +19,8 @@ import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
-import {generatePackageJson, writeJson} from './manifest-converter';
 import {YarnConfig} from './npm-config';
+import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {lookupNpmPackageName, WorkspaceUrlHandler} from './urls/workspace-url-handler';
@@ -61,6 +61,18 @@ async function writePackageJson(
       undefined,
       existingPackageJson);
   writeJson(packageJson, packageJsonPath);
+}
+
+/**
+ * For a given repo, generate a new package.json and write it to disk.
+ */
+async function writeConversionManifest(
+    repo: WorkspaceRepo, converter: ProjectConverter) {
+  const bowerPackageName = path.basename(repo.dir);
+  const manifestJsonPath = path.join(repo.dir, 'manifest.json');
+  const packageManifest =
+      await converter.getConversionManifest(bowerPackageName);
+  writeJson(packageManifest, manifestJsonPath);
 }
 
 /**
@@ -110,7 +122,7 @@ export default async function convert(options: WorkspaceConversionSettings):
       continue;
     }
     scannedPackageResults.set(npmPackageName, repo.dir);
-    converter.convertPackage(repoDirName);
+    await converter.convertPackage(repoDirName);
   }
 
   // Process & write each conversion result:
@@ -134,6 +146,11 @@ export default async function convert(options: WorkspaceConversionSettings):
                                 private: options.private,
                               }));
   packageJsonResults.failures.forEach(logRepoError);
+
+  const manifestResults = await run(options.reposToConvert, async (repo) => {
+    return writeConversionManifest(repo, converter);
+  });
+  manifestResults.failures.forEach(logRepoError);
 
   // Commit all changes to a staging branch for easy state resetting.
   // Useful when performing actions that modify the repo, like installing deps.

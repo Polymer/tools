@@ -18,8 +18,8 @@ import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
-import {generatePackageJson, writeJson} from './manifest-converter';
 import {YarnConfig} from './npm-config';
+import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {PackageUrlHandler} from './urls/package-url-handler';
@@ -109,20 +109,25 @@ export default async function convert(options: PackageConversionSettings) {
   const bowerJson =
       await fse.readJSON(path.join(options.inDir, 'bower.json')) as
       Partial<BowerConfig>;
+  const bowerPackageName = bowerJson.name!;
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
   await setupOutDir(options.outDir, !!options.cleanOutDir);
 
   // Create the url handler & converter.
-  const urlHandler =
-      new PackageUrlHandler(analyzer, options.packageName, options.packageType);
+  const urlHandler = new PackageUrlHandler(
+      analyzer,
+      bowerPackageName,
+      npmPackageName,
+      options.packageType,
+      options.inDir);
   const conversionSettings =
       getConversionSettings(analyzer, analysis, options, bowerJson);
   const converter =
       new ProjectConverter(analysis, urlHandler, conversionSettings);
 
   // Convert the package
-  converter.convertPackage(npmPackageName);
+  await converter.convertPackage(bowerPackageName);
 
   // Filter out external results before writing them to disk.
   const results = converter.getResults();
@@ -159,4 +164,8 @@ export default async function convert(options: PackageConversionSettings) {
     console.log(
         `error in bower.json -> package.json conversion (${err.message})`);
   }
+
+  // TODO(fks): create a new manifest.json, and write it to disk.
+  // Currently blocked by the fact that package-url-handler treats all
+  // dependencies as local/internal.
 }

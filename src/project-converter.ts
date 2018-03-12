@@ -63,11 +63,12 @@ export class ProjectConverter {
    * Module or HTML Document) is determined by whether the file is included in
    * conversionSettings.includes.
    */
-  convertPackage(packageName: string) {
+  async convertPackage(packageName: string) {
     // First, scan the package (and any of its dependencies)
-    this.scanner.scanPackage(packageName);
+    await this.scanner.scanPackage(packageName);
     // Then, convert each document in the given package
-    for (const document of this.scanner.getPackageDocuments(packageName)) {
+    for (const document of await this.scanner.getPackageHtmlDocuments(
+             packageName)) {
       this.convertDocument(document);
     }
   }
@@ -76,8 +77,8 @@ export class ProjectConverter {
    * Get a package manifest (a serializable version of the scanner results) for
    * a package.
    */
-  getPackageManifest(packageName: string) {
-    return this.scanner.getPackageManifest(packageName);
+  async getConversionManifest(packageName: string) {
+    return this.scanner.getConversionManifest(packageName);
   }
 
   /**

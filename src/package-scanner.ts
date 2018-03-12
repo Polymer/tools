@@ -12,19 +12,26 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import fetch from 'node-fetch';
 import {Analysis, Document} from 'polymer-analyzer';
 
+import {filesJsonObjectToMap, PackageScanResultJson, serializePackageScanResult} from './conversion-manifest';
 import {ConversionSettings} from './conversion-settings';
-import {DeleteFileScanResult, DocumentConverter, HtmlDocumentScanResult, JsModuleScanResult} from './document-converter';
+import {DeleteFileScanResult, DocumentConverter, HtmlDocumentScanResult, JsModuleScanResult, ScanResult} from './document-converter';
 import {JsExport} from './js-module';
+import {lookupDependencyMapping} from './package-manifest';
 import {OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
 
+// These types represent the data surfaced from a package scan. The full
+// PackageScanResult object contains both a mapping of all files from old->new,
+// and a mapping of all exports from implicit global namespace references to
+// new ES6 imports by name.
+export type PackageScanFiles = Map<OriginalDocumentUrl, ScanResult>;
+export type PackageScanExports = Map<string, JsExport>;
 export interface PackageScanResult {
-  files:
-      Map<OriginalDocumentUrl,
-          JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult>;
-  exports: Map<string, JsExport>;
+  files: PackageScanFiles;
+  exports: PackageScanExports;
 }
 
 /**
@@ -49,15 +56,13 @@ export class PackageScanner {
    * All JS Exports for a single package registered by namespaced identifier,
    * to map implicit HTML imports to explicit named JS imports.
    */
-  private readonly namespacedExports = new Map<string, JsExport>();
+  private readonly namespacedExports: PackageScanExports = new Map();
 
   /**
    * All Scan Results for a single package registered by document URL, so that
    * the conversion process knows how to treat each file.
    */
-  private readonly results = new Map<
-      OriginalDocumentUrl,
-      JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult>();
+  private readonly results: PackageScanFiles = new Map();
 
   constructor(
       packageName: string, analysis: Analysis, urlHandler: UrlHandler,
@@ -69,26 +74,85 @@ export class PackageScanner {
   }
 
   /**
-   * Scan a package.
+   * Scan a package and return the scan result. This method will first try to
+   * fetch a package manifest from npm. Failing that (no manifest exists, npm
+   * cannot be reached, etc.) it will scan the package manually.
    */
-  scanPackage(): PackageScanResult {
-    // Add this package to our cache so that it won't get double scanned.
-    // Gather all relevent package documents, and run the scanner on them.
-    for (const document of this.getPackageDocuments()) {
+  async scanPackage(): Promise<PackageScanResult> {
+    const resultsFromManifest = await this.getResultsFromManifest();
+    if (resultsFromManifest !== undefined) {
+      this.scanPackageFromManifest(resultsFromManifest);
+    } else {
+      this.scanPackageManually();
+    }
+    return this.getResults();
+  }
+
+  /**
+   * Get a package manifest (a serializable version of the scanner results) for
+   * a package.
+   */
+  private scanPackageFromManifest(packageScanManifest: PackageScanResult) {
+    for (const [originalUrl, scanResult] of packageScanManifest.files) {
+      this.results.set(originalUrl, scanResult);
+      if (scanResult.type === 'js-module') {
+        for (const expr of scanResult.exportMigrationRecords) {
+          if (!this.namespacedExports.has(expr.oldNamespacedName)) {
+            this.namespacedExports.set(
+                expr.oldNamespacedName,
+                new JsExport(scanResult.convertedUrl, expr.es6ExportName));
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Scan each document in a package manually.
+   */
+  scanPackageManually() {
+    for (const document of this.getPackageHtmlDocuments()) {
       this.scanDocument(document);
     }
+  }
 
-    return this.getResults();
+  /**
+   * Fetch a conversion manifest from NPM. If none can be found, return null.
+   */
+  async getResultsFromManifest(): Promise<PackageScanResult|undefined> {
+    const npmPackageInfo = lookupDependencyMapping(this.packageName);
+    if (!npmPackageInfo) {
+      return undefined;
+    }
+
+    try {
+      const unpkgResponse = await fetch(`https://unpkg.com/${
+          npmPackageInfo.npm}@${npmPackageInfo.semver}/manifest.json`);
+      const manifestJson: PackageScanResultJson = await unpkgResponse.json();
+      const [allFiles, allExports] = filesJsonObjectToMap(
+          this.packageName, npmPackageInfo.npm, manifestJson, this.urlHandler);
+      return {
+        files: allFiles,
+        exports: allExports,
+      };
+    } catch (err) {
+      return undefined;
+    }
   }
 
   /**
    * Get all relevant HTML documents from a package that should be scanned,
    * coverted, or otherwise handled by the modulizer.
    */
-  getPackageDocuments() {
+  getPackageHtmlDocuments() {
     return [
-      ...this.analysis.getFeatures(
-          {kind: 'html-document', externalPackages: true})
+      ...this.analysis.getFeatures({
+        // Set externalPackages=true so that this method works on dependencies
+        // packages as well. We filter out files from outside this package in
+        // the method below.
+        externalPackages: true,
+        kind: 'html-document',
+      })
     ].filter((d) => {
       // Filter out any inline documents returned by the analyzer
       if (d.isInline === true) {
@@ -99,7 +163,7 @@ export class PackageScanner {
       if (this.conversionSettings.excludes.has(documentUrl)) {
         return false;
       }
-      // Filter out any external documents
+      // Filter out any documents external *to this package*
       const packageName =
           this.urlHandler.getOriginalPackageNameForUrl(documentUrl);
       return packageName === this.packageName;
@@ -117,6 +181,15 @@ export class PackageScanner {
   }
 
   /**
+   * Get a package manifest (a serializable version of the scanner results) for
+   * a package.
+   */
+  getConversionManifest(): PackageScanResultJson {
+    return serializePackageScanResult(
+        this.results, this.namespacedExports, this.urlHandler);
+  }
+
+  /**
    * Scan a document and any of its dependency packages. The scan document
    * format (JS Module or HTML Document) is determined by whether the file is
    * included in conversionSettings.includes.
@@ -126,7 +199,7 @@ export class PackageScanner {
         document.kinds.has('html-document'),
         `scanDocument() must be called with an HTML document, but got ${
             document.kinds}`);
-    if (!this._shouldScanDocument(document)) {
+    if (!this.shouldScanDocument(document)) {
       return;
     }
 
@@ -145,7 +218,7 @@ export class PackageScanner {
       return;
     }
     this.results.set(scanResult.originalUrl, scanResult);
-    this._scanDependencies(document);
+    this.scanDependencies(document);
     if (scanResult.type === 'js-module') {
       for (const expr of scanResult.exportMigrationRecords) {
         if (!this.namespacedExports.has(expr.oldNamespacedName)) {
@@ -161,7 +234,7 @@ export class PackageScanner {
    * Check if a document is explicitly excluded or has already been scanned
    * to decide if it should be skipped.
    */
-  private _shouldScanDocument(document: Document): boolean {
+  private shouldScanDocument(document: Document): boolean {
     const documentUrl = this.urlHandler.getDocumentUrl(document);
     return !this.results.has(documentUrl) &&
         !this.conversionSettings.excludes.has(documentUrl);
@@ -172,7 +245,7 @@ export class PackageScanner {
    * add that dependency to the externalDependencies set to be scanned
    * seperately.
    */
-  private _scanDependencies(document: Document) {
+  private scanDependencies(document: Document) {
     const documentUrl = this.urlHandler.getDocumentUrl(document);
     const packageName =
         this.urlHandler.getOriginalPackageNameForUrl(documentUrl);
