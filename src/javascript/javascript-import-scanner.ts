@@ -15,7 +15,8 @@
 import * as babel from 'babel-types';
 import {dirname, relative} from 'path';
 import {URL} from 'whatwg-url';
-import {FileRelativeUrl, ScannedImport, Severity, Warning} from '../model/model';
+
+import {Document, FileRelativeUrl, Import, ResolvedUrl, ScannedImport, Severity, Warning} from '../model/model';
 
 import {Visitor} from './estree-visitor';
 import {JavaScriptDocument} from './javascript-document';
@@ -23,16 +24,86 @@ import {JavaScriptScanner} from './javascript-scanner';
 
 import isWindows = require('is-windows');
 import resolve = require('resolve');
+import {SourceRange} from '../model/model';
 
 const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
 
 export interface JavaScriptImportScannerOptions {
   /**
    * Algorithm to use for resolving module specifiers in import
-   * and export statements when rewriting them to be web-compatible.
+   * and export statements when converting them to URLs.
    * A value of 'node' uses Node.js resolution to find modules.
+   *
+   * If this argument is not given, module specifiers must be web-compatible
+   * urls.
    */
   moduleResolution?: 'node';
+}
+
+export class ScannedJavascriptImport extends ScannedImport {
+  readonly type!: 'js-import';
+
+  // The original text of the specifier. Unlike `this.url`, this may not
+  // be a URL, but may be a bare module specifier, like 'jquery'.
+  readonly specifier: string;
+
+  constructor(
+      url: FileRelativeUrl|undefined, sourceRange: SourceRange|undefined,
+      urlSourceRange: SourceRange|undefined,
+      ast: babel.ImportDeclaration|babel.CallExpression|
+      babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
+      lazy: boolean, originalSpecifier: string) {
+    super('js-import', url, sourceRange, urlSourceRange, ast, lazy);
+    this.specifier = originalSpecifier;
+  }
+
+  protected constructImport(
+      resolvedUrl: ResolvedUrl, relativeUrl: FileRelativeUrl,
+      importedDocument: Document, _containingDocument: Document) {
+    return new JavascriptImport(
+        resolvedUrl,
+        relativeUrl,
+        this.type,
+        importedDocument,
+        this.sourceRange,
+        this.urlSourceRange,
+        this.astNode,
+        this.warnings,
+        this.lazy,
+        this.specifier);
+  }
+}
+
+declare module '../model/queryable' {
+  interface FeatureKindMap {
+    'js-import': JavascriptImport;
+  }
+}
+export class JavascriptImport extends Import {
+  /**
+   * The original text of the specifier. Unlike `this.url`, this may not
+   * be a URL, but may be a bare module specifier, like 'jquery'.
+   */
+  readonly specifier: string;
+  constructor(
+      url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
+      document: Document, sourceRange: SourceRange|undefined,
+      urlSourceRange: SourceRange|undefined,
+      ast: babel.ImportDeclaration|babel.CallExpression|
+      babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
+      warnings: Warning[], lazy: boolean, specifier: string) {
+    super(
+        url,
+        originalUrl,
+        type,
+        document,
+        sourceRange,
+        urlSourceRange,
+        ast,
+        warnings,
+        lazy);
+    this.specifier = specifier;
+  }
 }
 
 export class JavaScriptImportScanner implements JavaScriptScanner {
@@ -44,7 +115,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
   async scan(
       document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>) {
-    const imports: ScannedImport[] = [];
+    const imports: ScannedJavascriptImport[] = [];
     const warnings: Warning[] = [];
     const scanner = this;
 
@@ -79,50 +150,50 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
           }));
           return;
         }
-        imports.push(new ScannedImport(
-            'js-import',
-            scanner._resolveSpecifier(
-                arg.value as string, document, node, warnings),
+        const specifier = arg.value as string;
+        imports.push(new ScannedJavascriptImport(
+            scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.callee)!,
             node,
-            true));
+            true,
+            specifier));
       },
 
       enterImportDeclaration(node: babel.ImportDeclaration, _: babel.Node) {
-        imports.push(new ScannedImport(
-            'js-import',
-            scanner._resolveSpecifier(
-                node.source.value, document, node, warnings),
+        const specifier = node.source.value;
+        imports.push(new ScannedJavascriptImport(
+            scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             node,
-            false));
+            false,
+            specifier));
       },
 
       enterExportAllDeclaration(node, _parent) {
-        imports.push(new ScannedImport(
-            'js-import',
-            scanner._resolveSpecifier(
-                node.source.value, document, node, warnings),
+        const specifier = node.source.value;
+        imports.push(new ScannedJavascriptImport(
+            scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             node,
-            false));
+            false,
+            specifier));
       },
 
       enterExportNamedDeclaration(node, _parent) {
         if (node.source == null) {
           return;
         }
-        imports.push(new ScannedImport(
-            'js-import',
-            scanner._resolveSpecifier(
-                node.source.value, document, node, warnings),
+        const specifier = node.source.value;
+        imports.push(new ScannedJavascriptImport(
+            scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             node,
-            false));
+            false,
+            specifier));
       }
 
     });
@@ -131,7 +202,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
 
   private _resolveSpecifier(
       specifier: string, document: JavaScriptDocument, node: babel.Node,
-      warnings: any[]): FileRelativeUrl|undefined {
+      warnings: Warning[]): FileRelativeUrl|undefined {
     if (isPathSpecifier(specifier)) {
       return specifier as FileRelativeUrl;
     }

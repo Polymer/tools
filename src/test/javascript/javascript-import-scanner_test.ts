@@ -48,11 +48,13 @@ suite('JavaScriptImportScanner', () => {
         type: 'js-import',
         url: './submodule.js',
         lazy: true,
+        specifier: './submodule.js',
       },
       {
         type: 'js-import',
         url: './node_modules/test-package/index.js',
         lazy: true,
+        specifier: 'test-package'
       },
     ]);
   });
@@ -69,6 +71,7 @@ suite('JavaScriptImportScanner', () => {
         type: 'js-import',
         url: './node_modules/test-package/index.js',
         lazy: false,
+        specifier: 'test-package'
       },
     ]);
   });

@@ -27,7 +27,7 @@ import {Severity, Warning} from './warning';
  * @template N The AST node type
  */
 export class ScannedImport implements Resolvable {
-  type: 'html-import'|'html-script'|'html-style'|'js-import'|string;
+  readonly type: 'html-import'|'html-script'|'html-style'|'js-import'|string;
 
   /**
    * URL of the import, relative to the base directory.
@@ -90,11 +90,18 @@ export class ScannedImport implements Resolvable {
       }));
       return undefined;
     }
+    return this.constructImport(
+        resolvedUrl, this.url, importedDocumentOrWarning, document);
+  }
+
+  protected constructImport(
+      resolvedUrl: ResolvedUrl, relativeUrl: FileRelativeUrl,
+      importedDocument: Document, _containingDocument: Document) {
     return new Import(
         resolvedUrl,
-        this.url,
+        relativeUrl,
         this.type,
-        importedDocumentOrWarning,
+        importedDocument,
         this.sourceRange,
         this.urlSourceRange,
         this.astNode,
@@ -112,7 +119,6 @@ declare module './queryable' {
     'html-import': Import;
     'html-script': Import;
     'html-style': Import;
-    'js-import': Import;
     'css-import': Import;
   }
 }
