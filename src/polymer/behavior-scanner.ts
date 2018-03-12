@@ -162,6 +162,7 @@ class BehaviorVisitor implements Visitor {
 
     this._startBehavior(new ScannedBehavior({
       astNode: node,
+      statementAst: esutil.getCanonicalStatement(path),
       description: parsedJsdocs.description,
       events: esutil.getEventComments(node),
       sourceRange: this.document.sourceRangeForNode(node),

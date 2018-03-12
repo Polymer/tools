@@ -13,6 +13,7 @@
  */
 
 import generate from 'babel-generator';
+import babelTraverse from 'babel-traverse';
 import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
@@ -27,7 +28,6 @@ import * as docs from '../polymer/docs';
 import {annotateEvent} from '../polymer/docs';
 
 import * as astValue from './ast-value';
-import * as estraverse from './estraverse-shim';
 import {JavaScriptDocument} from './javascript-document';
 import * as jsdoc from './jsdoc';
 
@@ -69,13 +69,15 @@ export function matchesCallExpression(
   return false;
 }
 
+export type PropertyOrMethod = babel.ObjectProperty|babel.ObjectMethod|
+                               babel.ClassMethod|babel.SpreadProperty|
+                               babel.AssignmentProperty;
+
 /**
  * Given a property or method, return its name, or undefined if that name can't
  * be determined.
  */
-export function getPropertyName(prop: babel.ObjectProperty|
-                                babel.ObjectMethod|babel.ClassMethod|
-                                babel.SpreadProperty): string|undefined {
+export function getPropertyName(prop: PropertyOrMethod): string|undefined {
   if (babel.isSpreadProperty(prop)) {
     return undefined;
   }
@@ -165,10 +167,9 @@ export function getBestComment(nodePath: NodePath): string|undefined {
   if (parent === undefined) {
     return undefined;
   }
-  if (!babel.isExportNamedDeclaration(parent.node) &&
-      !babel.isExportDefaultDeclaration(parent.node) &&
+  if (!isStatementWithUniqueStatementChild(parent.node) &&
       babel.isStatement(nodePath.node)) {
-    // don't walk up above the nearest statement
+    // Don't walk up above the nearest statement.
     return undefined;
   }
   if (babel.isVariableDeclaration(parent.node) &&
@@ -191,14 +192,16 @@ export function getAttachedComment(node: babel.Node): string|undefined {
  */
 export function getEventComments(node: babel.Node): Map<string, ScannedEvent> {
   const eventComments = new Set<string>();
-  estraverse.traverse(node, {
-    enter(node: babel.Node) {
-      (node.leadingComments || [])
-          .concat(node.trailingComments || [])
+
+  babelTraverse(node, {
+    enter(path: NodePath) {
+      const node = path.node;
+      [...(node.leadingComments || []), ...(node.trailingComments || [])]
           .map((commentAST) => commentAST.value)
           .filter((comment) => comment.indexOf('@event') !== -1)
           .forEach((comment) => eventComments.add(comment));
-    }
+    },
+    noScope: true,
   });
   const events = [...eventComments]
                      .map(
@@ -335,32 +338,35 @@ export function inferReturnFromBody(node: babel.Function): {type: string}|
     return undefined;
   }
   let returnsVoid = true;
-  estraverse.traverse(node, {
-    enterReturnStatement(statement: babel.ReturnStatement) {
+  babelTraverse(node, {
+    ReturnStatement(path) {
+      const statement = path.node;
       // The typings claim that statement.argument is always an Expression, but
       // actually when there is no argument it is null.
       if (statement.argument !== null) {
         returnsVoid = false;
-        return estraverse.VisitorOption.Break;
+        path.stop();
       }
     },
     // If this function contains another function, don't traverse into it. Only
     // return statements in the immediate function scope matter.
-    enterFunctionDeclaration() {
-      return estraverse.VisitorOption.Skip;
+    FunctionDeclaration(path) {
+      path.skip();
     },
-    enterFunctionExpression() {
-      return estraverse.VisitorOption.Skip;
+    FunctionExpression(path) {
+      path.skip();
     },
-    enterClassMethod() {
-      return estraverse.VisitorOption.Skip;
+    ClassMethod(path) {
+      path.skip();
     },
-    enterArrowFunctionExpression() {
-      return estraverse.VisitorOption.Skip;
+    ArrowFunctionExpression(path) {
+      path.skip();
     },
-    enterObjectMethod() {
-      return estraverse.VisitorOption.Skip;
+    ObjectMethod(path) {
+      path.skip();
     },
+
+    noScope: true
   });
   if (returnsVoid) {
     return {type: 'void'};
@@ -677,4 +683,49 @@ export function extractPropertiesFromClassOrObjectBody(
   }
 
   return properties;
+}
+
+/**
+ * Get the canonical statement or declaration for the given node.
+ *
+ * It would otherwise be difficult, or require specialized code for each kind of
+ * feature, to determine which node is the canonical node for a feature. This
+ * function is simple, it only walks up, and it stops once it reaches a clear
+ * feature boundary. And since we're calling this function both on the indexing
+ * and the lookup sides, we can be confident that both will agree on the same
+ * node.
+ *
+ * There may be more than one feature within a single statement (e.g. `export
+ * class Foo {}` is both a Class and an Export, but between `kind` and `id` we
+ * should still have enough info to narrow down to the intended feature.
+ *
+ * See `DeclaredWithStatement` and `BaseDocumentQuery` to see where this is
+ * used.
+ */
+export function getCanonicalStatement(nodePath: NodePath): babel.Statement|
+    undefined {
+  const node = nodePath.node;
+  const parent = nodePath.parentPath;
+  if ((parent && !isStatementWithUniqueStatementChild(parent.node)) &&
+      babel.isStatement(node)) {
+    return node;
+  }
+  if (parent != null) {
+    return getCanonicalStatement(parent);
+  }
+  return undefined;
+}
+
+/**
+ * Some statements have many statments as children, like a BlockStatement.
+ *
+ * Some statements have a single unique statement child, like
+ * ExportNamedDeclaration or ExportDefaultDeclaration. When we're talking up the
+ * node tree but we want to stay within a single statement, we don't want to
+ * walk up to a BlockStatement, as that's a group of many statements, but we do
+ * want to walk up to ExportNamedDeclaration.
+ */
+function isStatementWithUniqueStatementChild(node: babel.Node): boolean {
+  return babel.isExportNamedDeclaration(node) ||
+      babel.isExportDefaultDeclaration(node);
 }

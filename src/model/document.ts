@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from 'babel-types';
+
 import {AnalysisContext} from '../core/analysis-context';
 import {ParsedCssDocument} from '../css/css-document';
 import {ParsedHtmlDocument} from '../html/html-document';
@@ -26,6 +28,7 @@ import {Feature, ScannedFeature} from './feature';
 import {ImmutableSet, unsafeAsMutable} from './immutable';
 import {Import} from './import';
 import {AstNodeWithLanguage, ScannedInlineDocument} from './inline-document';
+import {MapWithDefault} from './map';
 import {DocumentQuery as Query, DocumentQueryWithKind as QueryWithKind, FeatureKind, FeatureKindMap, Queryable} from './queryable';
 import {isResolvable} from './resolvable';
 import {SourceRange} from './source-range';
@@ -84,6 +87,22 @@ export class ScannedDocument {
     }
   }
 }
+export interface DeclaredWithStatement {
+  /**
+   * This is the nearest statement at or above `this.astNode`.
+   *
+   * This is a fast and simple way to get a canonical, indexable AST node,
+   * so that we can look up a feature syntactically.
+   *
+   * Populate this field with `esutil.getCanonicalStatement`.
+   */
+  statementAst: babel.Statement|undefined;
+}
+function isDeclaredWithStatement(
+    feature: Feature&Partial<DeclaredWithStatement>): feature is Feature&
+    DeclaredWithStatement {
+  return feature.statementAst !== undefined;
+}
 
 declare module './queryable' {
   interface FeatureKindMap {
@@ -112,6 +131,8 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
 
   private readonly _localFeatures = new Set<Feature>();
   private readonly _scannedDocument: ScannedDocument;
+  private readonly _localFeaturesByStatement =
+      new MapWithDefault<babel.Statement, Set<Feature>>(() => new Set());
 
 
   /**
@@ -210,6 +231,11 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
     }
     this._indexFeature(feature);
     this._localFeatures.add(feature);
+
+    if (isDeclaredWithStatement(feature) &&
+        feature.statementAst !== undefined) {
+      this._localFeaturesByStatement.get(feature.statementAst).add(feature);
+    }
   }
 
   /**
@@ -226,6 +252,9 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
       Set<FeatureKindMap[K]>;
   getFeatures(query?: Query): Set<Feature>;
   getFeatures(query: Query = {}): Set<Feature> {
+    if (query.statement !== undefined) {
+      return this._getByStatement(query.statement, query.kind);
+    }
     if (query.id && query.kind) {
       return this._getById(query.kind, query.id, query);
     } else if (query.kind) {
@@ -286,6 +315,25 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
     for (const featureOfKind of this._getByKind(kind, query)) {
       if (featureOfKind.identifiers.has(identifier)) {
         result.add(featureOfKind);
+      }
+    }
+    return result;
+  }
+
+  private _getByStatement(statement: babel.Statement, kind: string|undefined) {
+    const result = this._localFeaturesByStatement.get(statement);
+    if (kind === undefined) {
+      return result;
+    }
+    return this._filterByKind(result, kind);
+  }
+
+  /** Filters out the given features by the given kind. */
+  private _filterByKind(features: Iterable<Feature>, kind: string) {
+    const result = new Set<Feature>();
+    for (const feature of features) {
+      if (feature.kinds.has(kind)) {
+        result.add(feature);
       }
     }
     return result;

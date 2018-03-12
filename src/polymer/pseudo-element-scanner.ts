@@ -44,6 +44,7 @@ export class PseudoElementScanner implements HtmlScanner {
         if (tagName) {
           const element = new ScannedPolymerElement({
             astNode: node,
+            statementAst: undefined,
             tagName: tagName,
             jsdoc: parsedJsdoc,
             description: parsedJsdoc.description,

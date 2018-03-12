@@ -237,6 +237,7 @@ export class ClassScanner implements JavaScriptScanner {
       className: class_.name,
       tagName,
       astNode,
+      statementAst: class_.statementAst,
       properties: [...class_.properties.values()],
       methods,
       staticMethods,
@@ -589,12 +590,12 @@ class ClassFinder implements Visitor {
       const name = assignedName ||
           value.id && astValue.getIdentifierName(value.id) || undefined;
 
-      this._classFound(name, doc, value, path.scope);
+      this._classFound(name, doc, value, path);
     } else {
       // TODO(justinfagnani): remove @polymerElement support
       if (jsdoc.hasTag(doc, 'customElement') ||
           jsdoc.hasTag(doc, 'polymerElement')) {
-        this._classFound(assignedName, doc, value, path.scope);
+        this._classFound(assignedName, doc, value, path);
       }
     }
   }
@@ -612,7 +613,7 @@ class ClassFinder implements Visitor {
     const name = node.id ? astValue.getIdentifierName(node.id) : undefined;
     const comment = esutil.getAttachedComment(node) ||
         esutil.getAttachedComment(parent) || '';
-    this._classFound(name, jsdoc.parseJsdoc(comment), node, path.scope);
+    this._classFound(name, jsdoc.parseJsdoc(comment), node, path);
   }
 
   enterClassDeclaration(
@@ -620,12 +621,12 @@ class ClassFinder implements Visitor {
     const name = astValue.getIdentifierName(node.id);
     const comment = esutil.getAttachedComment(node) ||
         esutil.getAttachedComment(parent) || '';
-    this._classFound(name, jsdoc.parseJsdoc(comment), node, path.scope);
+    this._classFound(name, jsdoc.parseJsdoc(comment), node, path);
   }
 
   private _classFound(
       name: string|undefined, doc: jsdoc.Annotation, astNode: babel.Node,
-      scope: Scope) {
+      path: NodePath) {
     const namespacedName = name && getNamespacedIdentifier(name, doc);
 
     const warnings: Warning[] = [];
@@ -636,15 +637,16 @@ class ClassFinder implements Visitor {
         namespacedName,
         name,
         astNode,
+        esutil.getCanonicalStatement(path),
         doc,
         (doc.description || '').trim(),
         this._document.sourceRangeForNode(astNode)!,
         properties,
         methods,
         getStaticMethods(astNode, this._document),
-        this._getExtends(astNode, doc, warnings, this._document, scope),
+        this._getExtends(astNode, doc, warnings, this._document, path.scope),
         jsdoc.getMixinApplications(
-            this._document, astNode, doc, warnings, scope),
+            this._document, astNode, doc, warnings, path.scope),
         getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),

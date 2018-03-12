@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 * Now recognizes classes, behaviors, elements, and mixins that are
   declared in an ES6 `export` declaration.
+* Document#getFeatures now supports querying by `statement`. Given the
+  canonical statement (see esutil.getCanonicalStatement), it will lookup
+  the feature at that statement. This will be used by internal
+  APIs to do scope-based dereferencing of super classes, behaviors, and mixins.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.14] - 2018-03-09

@@ -64,6 +64,7 @@ class ElementVisitor implements Visitor {
     const element = new ScannedPolymerElement({
       className,
       astNode: node,
+      statementAst: esutil.getCanonicalStatement(path),
       description: jsDoc.description,
       events: esutil.getEventComments(parent),
       sourceRange: this.document.sourceRangeForNode(node.arguments[0]),

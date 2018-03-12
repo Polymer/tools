@@ -75,6 +75,7 @@ export class ScannedPolymerCoreFeature extends ScannedFeature implements
           summary: '',
           sourceRange: this.sourceRange,
           astNode: this.astNode,
+          statementAst: undefined,
         },
         document);
   }
@@ -93,6 +94,7 @@ export class PolymerCoreFeature implements Feature {
   kinds = new Set(['polymer-core-feature']);
   identifiers = new Set<string>();
   warnings: Warning[] = [];
+  readonly statementAst = undefined;
 
   constructor(
       public properties: Map<string, Property>,

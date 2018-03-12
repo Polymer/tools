@@ -34,9 +34,10 @@ suite('Class', () => {
     return features.filter((e) => e instanceof ScannedClass) as ScannedClass[];
   };
 
-  async function getClasses(filename: string): Promise<Class[]> {
+  async function getClasses(filename: string) {
     const analysis = await analyzer.analyze([filename]);
-    return Array.from(analysis.getFeatures({kind: 'class'}));
+    const classes = Array.from(analysis.getFeatures({kind: 'class'}));
+    return {classes, analysis};
   };
 
   async function getTestProps(class_: ScannedClass|Class) {
@@ -428,7 +429,7 @@ suite('Class', () => {
 
   suite('resolving', () => {
     test('finds classes and their names and descriptions', async () => {
-      const classes = await getClasses('class/class-names.js');
+      const {classes} = await getClasses('class/class-names.js');
       assert.deepEqual(classes.map((c) => c.name), [
         'Declaration',
         'VarDeclaration',
@@ -491,7 +492,7 @@ suite('Class', () => {
     });
 
     test('finds methods', async () => {
-      const classes = await getClasses('class/class-methods.js');
+      const {classes} = await getClasses('class/class-methods.js');
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
         {
           name: 'Class',
@@ -621,7 +622,7 @@ suite('Class', () => {
     });
 
     test('deals with super classes correctly', async () => {
-      const classes = await getClasses('class/super-class.js');
+      const {classes} = await getClasses('class/super-class.js');
 
       assert.deepEqual(classes.map((f) => f.name), ['Base', 'Subclass']);
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
@@ -693,6 +694,33 @@ suite('Class', () => {
         'PolymerElementMixin',
         'PolymerElementMixin'
       ]);
+    });
+
+    test('we index classes by their canonical statements', async () => {
+      const filename = 'class/class-names.js';
+      const {classes, analysis} = await getClasses(filename);
+      assert.deepEqual(
+          classes.map((c) => c.statementAst && c.statementAst.type), [
+            'ClassDeclaration',
+            'VariableDeclaration',
+            'ExpressionStatement',
+            'ExpressionStatement',
+            'ExpressionStatement',
+            'ClassDeclaration',
+            'ExportNamedDeclaration',
+            'ExportDefaultDeclaration',
+            'ExportNamedDeclaration'
+          ]);
+
+      const result = analysis.getDocument(filename);
+      if (result.successful === false) {
+        throw new Error('Could not get document');
+      }
+      const document = result.value;
+      for (const class_ of classes) {
+        const features = document.getFeatures({statement: class_.statementAst});
+        assert.deepEqual([class_], [...features]);
+      }
     });
   });
 });

@@ -155,6 +155,7 @@ export interface Options {
   privacy: Privacy;
   // TODO(rictic): make this AstNodeWithLanguage
   astNode: any;
+  statementAst: babel.Statement|undefined;
   sourceRange: SourceRange|undefined;
 }
 
@@ -247,6 +248,7 @@ export class ScannedPolymerElement extends ScannedElement implements
     this.abstract = options.abstract;
     this.privacy = options.privacy;
     this.astNode = options.astNode;
+    this.statementAst = options.statementAst;
     this.sourceRange = options.sourceRange;
 
     if (options.properties) {

@@ -11,6 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
+import * as babel from 'babel-types';
 import {Feature} from './feature';
 import {Warning} from './warning';
 
@@ -60,6 +62,15 @@ export type BaseAnalysisQuery = BaseQueryOptions&{
 };
 
 export type BaseDocumentQuery = BaseQueryOptions&{
+  /**
+   * If given, returns any features which are defined by the given statement.
+   * This argument implies `imported: false`.
+   *
+   * See esutil.getStatement for going from a babel-traverse NodePath to the
+   * canonical statment node.
+   */
+  statement?: babel.Statement;
+
   /**
    * If true, the query will return results from the document and its
    * dependencies. Otherwise it will only include results from the document.

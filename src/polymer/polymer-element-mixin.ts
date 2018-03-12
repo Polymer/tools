@@ -27,6 +27,7 @@ export interface Options {
   sourceRange: SourceRange;
   mixins: ScannedReference<'element-mixin'>[];
   astNode: babel.Node;
+  statementAst: babel.Statement|undefined;
   classAstNode?: babel.Node;
 }
 
@@ -52,6 +53,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     sourceRange,
     mixins,
     astNode,
+    statementAst,
     classAstNode
   }: Options) {
     super({name});
@@ -62,6 +64,7 @@ export class ScannedPolymerElementMixin extends ScannedElementMixin implements
     this.sourceRange = sourceRange;
     this.mixins = mixins;
     this.astNode = astNode;
+    this.statementAst = statementAst;
     this.classAstNode = classAstNode;
   }
 

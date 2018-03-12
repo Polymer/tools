@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath, Scope} from 'babel-traverse';
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
@@ -41,7 +41,7 @@ export class MixinVisitor implements Visitor {
   }
 
   enterAssignmentExpression(
-      node: babel.AssignmentExpression, parent: babel.Node, path: NodePath) {
+      node: babel.AssignmentExpression, _parent: babel.Node, path: NodePath) {
     this.tryInitializeMixin(path, node.left);
   }
 
@@ -88,6 +88,7 @@ export class MixinVisitor implements Visitor {
       name: namespacedName,
       sourceRange,
       astNode: node,
+      statementAst: esutil.getCanonicalStatement(nodePath),
       description: docs.description,
       summary: (summaryTag && summaryTag.description) || '',
       privacy: getOrInferPrivacy(namespacedName, docs),

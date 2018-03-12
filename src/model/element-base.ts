@@ -43,6 +43,7 @@ export abstract class ScannedElementBase implements Resolvable {
   staticMethods: Map<string, ScannedMethod> = new Map();
   methods: Map<string, ScannedMethod> = new Map();
   astNode: babel.Node|null = null;
+  statementAst: babel.Statement|undefined;
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
   'slots': Slot[] = [];
