@@ -19,6 +19,7 @@ import {Document, Feature, SourceRange, Warning} from '../model/model';
 import {Resolvable} from '../model/resolvable';
 
 import {Visitor} from './estree-visitor';
+import * as esutil from './esutil';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
 
@@ -33,37 +34,38 @@ declare module '../model/queryable' {
   }
 }
 
-const scannedExportKinds: ReadonlySet<string> = new Set(['export']);
+const exportKinds: ReadonlySet<string> = new Set(['export']);
 export class Export implements Resolvable, Feature {
-  readonly kinds = scannedExportKinds;
-  readonly identifiers = new Set();
+  readonly kinds = exportKinds;
+  readonly identifiers = new Set<string>();
   readonly description: undefined;
   readonly jsdoc: undefined;
   readonly sourceRange: SourceRange|undefined;
   readonly astNodePath: NodePath<babel.Node>;
   readonly astNode: ExportNode;
+  readonly statementAst: babel.Statement;
   readonly warnings: ReadonlyArray<Warning> = [];
 
   constructor(
-      astNode: ExportNode, sourceRange: SourceRange|undefined,
-      nodePath: NodePath<babel.Node>) {
+      astNode: ExportNode, statementAst: babel.Statement,
+      sourceRange: SourceRange|undefined, nodePath: NodePath<babel.Node>) {
     this.astNode = astNode;
-    if (astNode.type === 'ExportDefaultDeclaration') {
-      this.identifiers.add('default');
-    } else if (astNode.type === 'ExportNamedDeclaration') {
-      for (const specifier of astNode.specifiers) {
-        if (specifier.exported.type === 'Identifier') {
-          this.identifiers.add(specifier.exported.name);
-        }
-      }
+    this.statementAst = statementAst;
+    for (const name of esutil.getBindingNamesFromDeclaration(astNode)) {
+      this.identifiers.add(name);
     }
+
     this.astNodePath = nodePath;
     this.sourceRange = sourceRange;
   }
 
   // It's immutable, and it doesn't care about other documents, so it's
-  // both a ScannedFeature and a Feature.
+  // both a ScannedFeature and a Feature. This is just one step in an
+  // arbitrarily long chain of references.
   resolve(_document: Document): Feature|undefined {
+    // TODO: Could potentially get a speed boost by doing the Reference
+    //   resolution algorithm here. Especially in cases of re-export.
+    //   would need to separate out ScannedExport from Export in that case.
     return this;
   }
 }
@@ -77,13 +79,25 @@ export class JavaScriptExportScanner implements JavaScriptScanner {
 
     await visit({
       enterExportNamedDeclaration(node, _parent, path) {
-        exports.push(new Export(node, document.sourceRangeForNode(node), path));
+        exports.push(new Export(
+            node,
+            esutil.getCanonicalStatement(path)!,
+            document.sourceRangeForNode(node),
+            path));
       },
       enterExportAllDeclaration(node, _parent, path) {
-        exports.push(new Export(node, document.sourceRangeForNode(node), path));
+        exports.push(new Export(
+            node,
+            esutil.getCanonicalStatement(path)!,
+            document.sourceRangeForNode(node),
+            path));
       },
       enterExportDefaultDeclaration(node, _parent, path) {
-        exports.push(new Export(node, document.sourceRangeForNode(node), path));
+        exports.push(new Export(
+            node,
+            esutil.getCanonicalStatement(path)!,
+            document.sourceRangeForNode(node),
+            path));
       }
     });
     return {features: exports, warnings};

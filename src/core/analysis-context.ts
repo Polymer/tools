@@ -25,6 +25,7 @@ import {HtmlStyleScanner} from '../html/html-style-scanner';
 import {ClassScanner} from '../javascript/class-scanner';
 import {FunctionScanner} from '../javascript/function-scanner';
 import {InlineHtmlDocumentScanner} from '../javascript/html-template-literal-scanner';
+import {JavaScriptExportScanner} from '../javascript/javascript-export-scanner';
 import {JavaScriptImportScanner} from '../javascript/javascript-import-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
@@ -122,6 +123,7 @@ export class AnalysisContext {
           new ClassScanner(),
           new JavaScriptImportScanner(
               {moduleResolution: options.moduleResolution}),
+          new JavaScriptExportScanner(),
           new InlineHtmlDocumentScanner(),
         ]
       ],

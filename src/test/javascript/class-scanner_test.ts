@@ -718,8 +718,9 @@ suite('Class', () => {
       }
       const document = result.value;
       for (const class_ of classes) {
-        const features = document.getFeatures({statement: class_.statementAst});
-        assert.deepEqual([class_], [...features]);
+        const features = document.getFeatures(
+            {statement: class_.statementAst, kind: 'class'});
+        assert.deepEqual([...features].map((c) => c.name), [class_.name]);
       }
     });
   });

@@ -17,6 +17,7 @@ import babelTraverse from 'babel-traverse';
 import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
+import * as util from 'util';
 
 import {MethodParam, ScannedMethod, ScannedProperty} from '../index';
 import {Result} from '../model/analysis';
@@ -728,4 +729,122 @@ export function getCanonicalStatement(nodePath: NodePath): babel.Statement|
 function isStatementWithUniqueStatementChild(node: babel.Node): boolean {
   return babel.isExportNamedDeclaration(node) ||
       babel.isExportDefaultDeclaration(node);
+}
+
+/** What names does a declaration assign to? */
+export function*
+    getBindingNamesFromDeclaration(declaration: babel.Declaration|null|
+                                   undefined): IterableIterator<string> {
+  if (declaration == null) {
+    return;
+  }
+  switch (declaration.type) {
+    case 'ClassDeclaration':
+    case 'DeclareClass':
+      yield declaration.id.name;
+      break;
+    case 'VariableDeclaration':
+      for (const varDecl of declaration.declarations) {
+        yield* getNamesFromLValue(varDecl.id);
+      }
+      break;
+    case 'FunctionDeclaration':
+    case 'DeclareFunction':
+    case 'DeclareInterface':
+    case 'DeclareTypeAlias':
+    case 'InterfaceDeclaration':
+    case 'DeclareVariable':
+    case 'TypeAlias':
+      yield declaration.id.name;
+      break;
+    case 'ExportAllDeclaration':
+      yield '*';
+      break;
+    case 'ExportDefaultDeclaration':
+      yield 'default';
+      break;
+    case 'ExportNamedDeclaration':
+      for (const specifier of declaration.specifiers) {
+        if (specifier.exported.type === 'Identifier') {
+          yield specifier.exported.name;
+        }
+      }
+      yield* getBindingNamesFromDeclaration(declaration.declaration);
+      break;
+    case 'DeclareModule':
+      if (declaration.id.type === 'StringLiteral') {
+        yield declaration.id.value;
+      } else {
+        yield declaration.id.name;
+      }
+      break;
+    case 'ImportDeclaration':
+      for (const specifier of declaration.specifiers) {
+        yield specifier.local.name;
+      }
+      break;
+    default:
+      assertNever(declaration);
+  }
+}
+
+/**
+ * Given an LValue, what are the names it assigns to?
+ *
+ * Internal utility function for getBindingNamesFromDeclaration.
+ */
+function* getNamesFromLValue(lhs: babel.LVal): IterableIterator<string> {
+  switch (lhs.type) {
+    case 'Identifier':
+      // x = _;
+      yield lhs.name;
+      break;
+    case 'ArrayPattern':
+      // [a, b, c] = _;
+      for (const element of lhs.elements) {
+        if (babel.isLVal(element)) {
+          yield* getNamesFromLValue(element);
+        }
+      }
+      break;
+    case 'RestElement':
+      // the `...more` part of either
+      // [a, b, ...more] = _;
+      // {a: b, ...more} = _;
+      yield* getNamesFromLValue(lhs.argument);
+      break;
+    case 'MemberExpression':
+      // foo.bar = _;
+      const name = astValue.getIdentifierName(lhs);
+      if (name !== undefined) {
+        yield name;
+      }
+      break;
+    case 'ObjectPattern':
+      // {a: b, c} = _;
+      for (const prop of lhs.properties) {
+        switch (prop.type) {
+          case 'ObjectProperty':
+            // If the property has a 'value' (like)
+            yield* getNamesFromLValue(prop.value);
+            break;
+          case 'RestProperty':
+            yield* getNamesFromLValue(prop.argument);
+            break;
+          default:
+            assertNever(prop);
+        }
+      }
+      break;
+    case 'AssignmentPattern':
+      // var [a = 'defaultVal'] = _;
+      yield* getNamesFromLValue(lhs.left);
+      break;
+    default:
+      assertNever(lhs);
+  }
+}
+
+function assertNever(never: never) {
+  throw new Error(`Unexpected ast node: ${util.inspect(never)}`);
 }
