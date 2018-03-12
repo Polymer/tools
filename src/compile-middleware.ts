@@ -23,7 +23,7 @@ import * as LRU from 'lru-cache';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
-import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
+import {resolveBareSpecifiers} from 'polymer-build';
 import {transformResponse} from './transform-middleware';
 
 const p = dom5.predicates;

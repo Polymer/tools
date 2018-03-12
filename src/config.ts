@@ -12,9 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as bowerConfig from 'bower-config';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as bowerConfig from 'bower-config';
+
 import {ServerOptions} from './start_server';
 
 function readConfigSync(filename: string, root?: string): any {
@@ -52,6 +53,5 @@ export function getPackageName(options: ServerOptions) {
 export function getComponentDir(options: ServerOptions) {
   const root = options.root || process.cwd();
   const bowerDir = bowerConfig.read(root).directory;
-  return options.componentDir ||
-      (options.npm ? 'node_modules' : bowerDir);
+  return options.componentDir || (options.npm ? 'node_modules' : bowerDir);
 }

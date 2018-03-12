@@ -15,7 +15,7 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {getPackageName, getComponentDir} from '../config';
+import {getComponentDir, getPackageName} from '../config';
 
 suite('getPackageName', () => {
 
@@ -36,8 +36,8 @@ suite('getComponentDir', () => {
   });
 
   test('reads from .bowerrc', () => {
-    const dir =
-        getComponentDir({root: path.join(__dirname, '..', '..', 'test', 'bowerrc')});
+    const dir = getComponentDir(
+        {root: path.join(__dirname, '..', '..', 'test', 'bowerrc')});
     assert.equal(dir, 'my_components');
   });
 

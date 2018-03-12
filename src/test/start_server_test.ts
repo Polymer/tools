@@ -34,14 +34,12 @@ const assert = chai.assert;
 const root = path.join(__dirname, '..', '..', 'test');
 
 suite('startServer', () => {
-
   test('returns an app', () => {
     const app = getApp({});
     assert.isOk(app);
   });
 
   suite('application serving', () => {
-
     test('serves root application files', async () => {
       const app = getApp({root});
       await supertest(app).get('/test-file.txt').expect(200, 'PASS\n');
@@ -114,11 +112,9 @@ suite('startServer', () => {
                 '&lt;script&gt;alert(&quot;nasty&quot;)&lt;/script&gt;');
           });
     });
-
   });
 
-  suite('component serving', () => {  //
-
+  suite('component serving', () => {
     test('serves component files', async () => {
       const app = getApp({root});
       await supertest(app)
@@ -154,16 +150,14 @@ suite('startServer', () => {
           .get('/components/no_config/test-file.txt')
           .expect(200, 'NO CONFIG\n');
     });
-
   });
 
   suite('compilation', () => {
-
     const testCompilation = (options: {
       url: string,
       agent?: string,
-      compile: 'always' | 'never' | 'auto',
-      result: 'compiled' | 'uncompiled'
+           compile: 'always'|'never'|'auto',
+           result: 'compiled'|'uncompiled'
     }) => async () => {
       const url = options.url;
       const agent = options.agent;
@@ -319,7 +313,9 @@ suite('startServer', () => {
     });
   });
 
-  suite('h2', () => {
+  suite('h2', function() {
+    this.timeout(10000);
+
     let _certFile: tmp.SynchrounousResult;
     let _keyFile: tmp.SynchrounousResult;
     let _nodeVersion: number;
@@ -533,7 +529,6 @@ suite('startServer', () => {
 
 suite('startServers', () => {
   suite('replace generated app with optional appMapper argument', () => {
-
     let prevCwd: string;
     setup(() => {
       prevCwd = process.cwd();

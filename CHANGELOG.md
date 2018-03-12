@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+* Module bare specifier rewriting Babel plugin now works on Windows, does not rewrite fully qualified URLs, and will follow the "module" or "jsnext:main" fields when a package.json uses them instead of "main".
+
 ## [0.24.0](https://github.com/PolymerLabs/polyserve/tree/0.24.0) (2018-02-23)
 
 * Honor `.bowerrc` for bower component directory and variants
