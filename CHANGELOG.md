@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Restore ES5 template literal uniquifying feature from https://github.com/Polymer/polymer-cli/pull/962 that was missed in earlier code migration.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [2.3.1] - 2018-03-12
+* Restore ES5 template literal uniquifying feature from https://github.com/Polymer/polymer-cli/pull/962 that was missed in earlier code migration.
+* Allow "none" moduleResolution option in JS compile transform.
 
 ## [2.3.0] - 2018-03-12
 * JS compile and other "optimize streams" build transformers have been moved from polyer-cli into this package.

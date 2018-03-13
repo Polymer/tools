@@ -17,6 +17,7 @@ import * as cssSlam from 'css-slam';
 import * as gulpif from 'gulp-if';
 import {minify as htmlMinify, Options as HTMLMinifierOptions} from 'html-minifier';
 import * as logging from 'plylog';
+import {ModuleResolutionStrategy} from 'polymer-project-config';
 import {Transform} from 'stream';
 import * as uuid from 'uuid/v1';
 import * as vinyl from 'vinyl';
@@ -57,7 +58,7 @@ export interface OptimizeOptions {
   js?: {
     minify?: boolean|{exclude?: string[]},
     compile?: boolean|{exclude?: string[]},
-    moduleResolution?: 'node',
+    moduleResolution?: ModuleResolutionStrategy,
   };
 }
 ;
