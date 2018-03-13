@@ -19,12 +19,14 @@ import {URL} from 'whatwg-url';
 import {Document, FileRelativeUrl, Import, ResolvedUrl, ScannedImport, Severity, Warning} from '../model/model';
 
 import {Visitor} from './estree-visitor';
+import * as esutil from './esutil';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
 
 import isWindows = require('is-windows');
 import resolve = require('resolve');
 import {SourceRange} from '../model/model';
+import {DeclaredWithStatement} from '../model/document';
 
 const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
 
@@ -47,14 +49,18 @@ export class ScannedJavascriptImport extends ScannedImport {
   // be a URL, but may be a bare module specifier, like 'jquery'.
   readonly specifier: string;
 
+  readonly statementAst: babel.Statement|undefined;
+
   constructor(
       url: FileRelativeUrl|undefined, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined,
       ast: babel.ImportDeclaration|babel.CallExpression|
       babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
-      lazy: boolean, originalSpecifier: string) {
+      lazy: boolean, originalSpecifier: string,
+      statementAst: babel.Statement|undefined) {
     super('js-import', url, sourceRange, urlSourceRange, ast, lazy);
     this.specifier = originalSpecifier;
+    this.statementAst = statementAst;
   }
 
   protected constructImport(
@@ -70,7 +76,8 @@ export class ScannedJavascriptImport extends ScannedImport {
         this.astNode,
         this.warnings,
         this.lazy,
-        this.specifier);
+        this.specifier,
+        this.statementAst);
   }
 }
 
@@ -79,19 +86,22 @@ declare module '../model/queryable' {
     'js-import': JavascriptImport;
   }
 }
-export class JavascriptImport extends Import {
+export class JavascriptImport extends Import implements DeclaredWithStatement {
   /**
    * The original text of the specifier. Unlike `this.url`, this may not
    * be a URL, but may be a bare module specifier, like 'jquery'.
    */
   readonly specifier: string;
+  readonly statementAst: babel.Statement|undefined;
+
   constructor(
       url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
       document: Document, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined,
       ast: babel.ImportDeclaration|babel.CallExpression|
       babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
-      warnings: Warning[], lazy: boolean, specifier: string) {
+      warnings: Warning[], lazy: boolean, specifier: string,
+      statementAst: babel.Statement|undefined) {
     super(
         url,
         originalUrl,
@@ -103,6 +113,7 @@ export class JavascriptImport extends Import {
         warnings,
         lazy);
     this.specifier = specifier;
+    this.statementAst = statementAst;
   }
 }
 
@@ -120,7 +131,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
     const scanner = this;
 
     await visit({
-      enterCallExpression(node: babel.CallExpression, _: babel.Node) {
+      enterCallExpression(node, _, path) {
         // TODO(usergenic): There's no babel.Import type or babel.isImport()
         // function right now, we have to just check the type property
         // here until there is; please change to use babel.isImport(node.callee)
@@ -157,10 +168,11 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node.callee)!,
             node,
             true,
-            specifier));
+            specifier,
+            esutil.getCanonicalStatement(path)));
       },
 
-      enterImportDeclaration(node: babel.ImportDeclaration, _: babel.Node) {
+      enterImportDeclaration(node, _, path) {
         const specifier = node.source.value;
         imports.push(new ScannedJavascriptImport(
             scanner._resolveSpecifier(specifier, document, node, warnings),
@@ -168,10 +180,11 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node.source)!,
             node,
             false,
-            specifier));
+            specifier,
+            esutil.getCanonicalStatement(path)));
       },
 
-      enterExportAllDeclaration(node, _parent) {
+      enterExportAllDeclaration(node, _parent, path) {
         const specifier = node.source.value;
         imports.push(new ScannedJavascriptImport(
             scanner._resolveSpecifier(specifier, document, node, warnings),
@@ -179,10 +192,11 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node.source)!,
             node,
             false,
-            specifier));
+            specifier,
+            esutil.getCanonicalStatement(path)));
       },
 
-      enterExportNamedDeclaration(node, _parent) {
+      enterExportNamedDeclaration(node, _parent, path) {
         if (node.source == null) {
           return;
         }
@@ -193,7 +207,8 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node.source)!,
             node,
             false,
-            specifier));
+            specifier,
+            esutil.getCanonicalStatement(path)));
       }
 
     });

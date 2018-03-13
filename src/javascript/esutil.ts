@@ -758,7 +758,7 @@ export function*
       yield declaration.id.name;
       break;
     case 'ExportAllDeclaration':
-      yield '*';
+      // Can't do this syntactically. See Export#resolve.
       break;
     case 'ExportDefaultDeclaration':
       yield 'default';

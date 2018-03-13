@@ -48,10 +48,18 @@ export class Export implements Resolvable, Feature {
 
   constructor(
       astNode: ExportNode, statementAst: babel.Statement,
-      sourceRange: SourceRange|undefined, nodePath: NodePath<babel.Node>) {
+      sourceRange: SourceRange|undefined, nodePath: NodePath<babel.Node>,
+      exportingAllFrom?: Iterable<Export>) {
     this.astNode = astNode;
     this.statementAst = statementAst;
-    for (const name of esutil.getBindingNamesFromDeclaration(astNode)) {
+    let exportedIdentifiers;
+    if (exportingAllFrom !== undefined) {
+      exportedIdentifiers =
+          flatMap(exportingAllFrom, (export_) => export_.identifiers);
+    } else {
+      exportedIdentifiers = esutil.getBindingNamesFromDeclaration(astNode);
+    }
+    for (const name of exportedIdentifiers) {
       this.identifiers.add(name);
     }
 
@@ -59,14 +67,37 @@ export class Export implements Resolvable, Feature {
     this.sourceRange = sourceRange;
   }
 
-  // It's immutable, and it doesn't care about other documents, so it's
-  // both a ScannedFeature and a Feature. This is just one step in an
-  // arbitrarily long chain of references.
-  resolve(_document: Document): Feature|undefined {
-    // TODO: Could potentially get a speed boost by doing the Reference
-    //   resolution algorithm here. Especially in cases of re-export.
-    //   would need to separate out ScannedExport from Export in that case.
+  // TODO: Could potentially get a speed boost by doing the Reference
+  //   resolution algorithm here, rather than re-doing it every single place
+  //   this export is referenced.
+  resolve(document: Document): Feature|undefined {
+    if (babel.isExportAllDeclaration(this.astNode)) {
+      const [import_] =
+          document.getFeatures({kind: 'import', statement: this.statementAst});
+      if (import_ === undefined) {
+        // Import did not resolve.
+        return undefined;
+      }
+      return new Export(
+          this.astNode,
+          this.statementAst,
+          this.sourceRange,
+          this.astNodePath,
+          import_.document.getFeatures({kind: 'export'}));
+    }
+    // It's immutable, and it doesn't care about other documents, so it's
+    // both a ScannedFeature and a Feature. This is just one step in an
+    // arbitrarily long chain of references.
+
     return this;
+  }
+}
+
+function*
+    flatMap<In, Out>(inputs: Iterable<In>, map: (input: In) => Iterable<Out>):
+        Iterable<Out> {
+  for (const input of inputs) {
+    yield* map(input);
   }
 }
 
