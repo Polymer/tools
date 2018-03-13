@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Added JavascriptImport#specifier for getting the original import specifier,
   before it may have been resolved to a file-relative url by the node module
   resolution algorithm.
+* Parse concatenated strings in expressions
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.14] - 2018-03-09

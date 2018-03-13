@@ -566,7 +566,7 @@ namespaced name.`,
           observers: [
             'let let let parseError',
             'foo',
-            'foo(bar)',
+            'foo(bar)'
           ],
           observerProperties: [['foo'], ['foo', 'bar']],
         }]);
@@ -639,6 +639,46 @@ namespaced name.`,
         type: 'number',
         readOnly: true,
         warnings: [],
+      }
+    ]);
+  });
+
+  test('finds multiline observers', async () => {
+    const elements = await getElements('test-element-20.js');
+    const elementData = await Promise.all(elements.map(getTestProps));
+    assert.deepEqual(elementData, [
+      {
+        attributes: [
+          { name: 'prop1' },
+          { name: 'prop2' }
+        ],
+        className: 'TestElement',
+        description: '',
+        methods: [],
+        observerProperties: [
+          ['_testObserver', 'prop1', 'prop2'],
+          ['_testObserverTwo', 'prop1', 'prop2']
+        ],
+        observers: [
+          '_testObserver(prop1, prop2)',
+          '_testObserverTwo(prop1, prop2)'
+        ],
+        properties: [
+          {
+            description: '',
+            name: 'prop1',
+            type: 'string | null | undefined'
+          },
+          {
+            description: '',
+            name: 'prop2',
+            type: 'string | null | undefined'
+          }
+        ],
+        summary: '',
+        superClass: 'Polymer.Element',
+        tagName: 'test-element',
+        warningUnderlines: []
       }
     ]);
   });

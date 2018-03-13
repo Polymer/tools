@@ -550,7 +550,9 @@ export function parseExpressionInJsStringLiteral(
   };
   const sourceRangeForLiteral = document.sourceRangeForNode(stringLiteral)!;
 
-  if (!babel.isLiteral(stringLiteral)) {
+  const expressionText = astValue.expressionToValue(stringLiteral);
+
+  if (expressionText === undefined) {
     // Should we warn here? It's potentially valid, just unanalyzable. Maybe
     // just an info that someone could escalate to a warning/error?
     warnings.push(new Warning({
@@ -562,7 +564,7 @@ export function parseExpressionInJsStringLiteral(
     }));
     return result;
   }
-  const expressionText = astValue.expressionToValue(stringLiteral);
+
   if (typeof expressionText !== 'string') {
     warnings.push(new Warning({
       code: 'invalid-polymer-expression',
