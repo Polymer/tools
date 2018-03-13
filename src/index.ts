@@ -28,6 +28,10 @@ const logger = logging.getLogger('polymer-project-config');
  */
 export const defaultSourceGlobs = ['src/**/*'];
 
+export type ModuleResolutionStrategy = 'none'|'node';
+const moduleResolutionStrategies =
+    new Set<ModuleResolutionStrategy>(['none', 'node']);
+
 /**
  * Resolve any glob or path from the given path, even if glob
  * is negative (begins with '!').
@@ -186,6 +190,15 @@ export interface ProjectOptions {
    * The directory containing this project's dependencies.
    */
   componentDir?: string;
+
+  /**
+   * Algorithm to use for resolving module specifiers in import and export
+   * statements when rewriting them to be web-compatible. Valid values are:
+   *
+   * "none": Disable module specifier rewriting. This is the default.
+   * "node": Use Node.js resolution to find modules.
+   */
+  moduleResolution?: ModuleResolutionStrategy;
 }
 
 export class ProjectConfig {
@@ -197,6 +210,7 @@ export class ProjectConfig {
   readonly extraDependencies: string[];
   readonly componentDir?: string;
   readonly npm?: boolean;
+  readonly moduleResolution: ModuleResolutionStrategy;
 
   readonly builds: ProjectBuildOptions[];
   readonly autoBasePath: boolean;
@@ -290,8 +304,13 @@ export class ProjectConfig {
 
     // Set defaults for all NPM related options.
     if (this.npm) {
-      this.componentDir = "node_modules/";
+      this.componentDir = 'node_modules/';
     }
+
+    /**
+     * moduleResolution
+     */
+    this.moduleResolution = options.moduleResolution || 'none';
 
     /**
      * root
@@ -442,9 +461,13 @@ export class ProjectConfig {
           `${validateErrorPrefix}: an "extraDependencies" path (${d}) ` +
               `does not resolve within root (${this.root})`);
     });
+    console.assert(
+        moduleResolutionStrategies.has(this.moduleResolution),
+        `${validateErrorPrefix}: "moduleResolution" must be one of: ` +
+            `${[...moduleResolutionStrategies].join(', ')}.`);
 
-    // TODO(fks) 11-14-2016: Validate that files actually exist in the file
-    // system. Potentially become async function for this.
+    // TODO(fks) 11-14-2016: Validate that files actually exist in the
+    // file system. Potentially become async function for this.
 
     if (this.builds) {
       console.assert(

@@ -15,11 +15,8 @@ const path = require('path');
 const ProjectConfig = require('..').ProjectConfig;
 
 suite('Project Config', () => {
-
   suite('ProjectConfig', () => {
-
     suite('constructor', () => {
-
       test('sets minimum set of defaults when no options are provided', () => {
         const absoluteRoot = process.cwd();
         const config = new ProjectConfig();
@@ -37,6 +34,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
+          moduleResolution: 'none',
         });
       });
 
@@ -60,6 +58,7 @@ suite('Project Config', () => {
               ],
               lint: undefined,
               npm: undefined,
+              moduleResolution: 'none',
             });
           });
 
@@ -82,6 +81,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
+          moduleResolution: 'none',
         });
       });
 
@@ -103,6 +103,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
+          moduleResolution: 'none',
         });
       });
 
@@ -130,6 +131,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
+          moduleResolution: 'none',
         });
       });
 
@@ -153,6 +155,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
+          moduleResolution: 'none',
         });
       });
 
@@ -185,6 +188,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
+          moduleResolution: 'none',
         });
       });
 
@@ -220,6 +224,7 @@ suite('Project Config', () => {
               ],
               lint: undefined,
               npm: undefined,
+              moduleResolution: 'none',
             });
           });
 
@@ -279,19 +284,37 @@ suite('Project Config', () => {
       });
 
       test('npm option does not override other explicitly set values', () => {
-        const config = new ProjectConfig({
-          npm: true,
-          componentDir: '../some_other_dir/over_here/'
-        });
+        const config = new ProjectConfig(
+            {npm: true, componentDir: '../some_other_dir/over_here/'});
         config.validate();
 
         assert.equal(config.npm, true);
         assert.equal(config.componentDir, '../some_other_dir/over_here/');
       });
+
+      suite('module resolution', () => {
+        test('defaults to none', () => {
+          const config = new ProjectConfig({});
+          config.validate();
+          assert.equal(config.moduleResolution, 'none');
+        });
+
+        test('can be set to node', () => {
+          const config = new ProjectConfig({moduleResolution: 'node'});
+          config.validate();
+          assert.equal(config.moduleResolution, 'node');
+        });
+
+        test('cannot be set to something invalid', () => {
+          const config = new ProjectConfig({moduleResolution: 'magic'});
+          assert.throws(() => {
+            config.validate();
+          });
+        });
+      });
     });
 
     suite('isFragment()', () => {
-
       test('matches all fragments and does not match other file paths', () => {
         const relativeRoot = 'public';
         const absoluteRoot = path.resolve(relativeRoot);
@@ -314,11 +337,9 @@ suite('Project Config', () => {
         assert.isFalse(config.isFragment(
             path.resolve(absoluteRoot, 'not-a-fragment.html')));
       });
-
     });
 
     suite('isShell()', () => {
-
       test('matches the shell path and does not match other file paths', () => {
         const relativeRoot = 'public';
         const absoluteRoot = path.resolve(relativeRoot);
@@ -338,11 +359,9 @@ suite('Project Config', () => {
         assert.isFalse(
             config.isShell(path.resolve(absoluteRoot, 'not-a-fragment.html')));
       });
-
     });
 
     suite('isSource()', () => {
-
       test(
           'matches source file paths and does not match other file paths',
           () => {
@@ -365,11 +384,9 @@ suite('Project Config', () => {
             assert.isFalse(config.isSource(
                 path.resolve(absoluteRoot, 'not-a-fragment.html')));
           });
-
     });
 
     suite('validate()', () => {
-
       test('returns true for valid configuration', () => {
         const relativeRoot = 'public';
         const absoluteRoot = path.resolve(relativeRoot);
@@ -529,13 +546,10 @@ suite('Project Config', () => {
             () => config.validate(),
             'Polymer Config Error: "not-a-real-preset" is not a valid  "builds" preset.');
       });
-
     });
-
   });
 
   suite('loadOptionsFromFile()', () => {
-
     test('throws an exception for polymer.json with invalid syntax', () => {
       const filepath = path.join(__dirname, 'polymer-invalid-syntax.json');
       assert.throws(() => ProjectConfig.loadOptionsFromFile(filepath));
@@ -568,11 +582,9 @@ suite('Project Config', () => {
           path.join(__dirname, 'polymer-minimal.json'));
       assert.deepEqual(options, {});
     });
-
   });
 
   suite('loadConfigFromFile()', () => {
-
     test('throws an exception for polymer.json with invalid syntax', () => {
       const filepath = path.join(__dirname, 'polymer-invalid-syntax.json');
       assert.throws(() => ProjectConfig.loadConfigFromFile(filepath));
@@ -609,6 +621,7 @@ suite('Project Config', () => {
         ],
         lint: undefined,
         npm: undefined,
+        moduleResolution: 'none',
       });
     });
 
@@ -617,13 +630,12 @@ suite('Project Config', () => {
           path.join(__dirname, 'polymer-minimal.json'));
       config.validate();
     });
-
   });
 
   suite('json validation', () => {
     test('throws good error messages', () => {
       try {
-        ProjectConfig.validateAndCreate({ lint: [] });
+        ProjectConfig.validateAndCreate({lint: []});
       } catch (e) {
         assert.deepEqual(
             e.message, `Property 'lint' is not of a type(s) object`);
@@ -697,12 +709,8 @@ suite('Project Config', () => {
               }
             },
             js: {
-              minify: {
-                exclude: [
-                  'js/unminifiable.js',
-                  'js/already-minified.js'
-                ]
-              }, 
+              minify:
+                  {exclude: ['js/unminifiable.js', 'js/already-minified.js']},
               compile: {
                 exclude: [
                   'js/breaks-when-compiled.js',
@@ -715,7 +723,7 @@ suite('Project Config', () => {
         lint: {
           rules: ['some-rule'],
           warningsToIgnore: ['some-warning'],
-          filesToIgnore: ["some .* glob"]
+          filesToIgnore: ['some .* glob']
         }
       });
     });
