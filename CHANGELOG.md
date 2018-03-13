@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Added new option: `moduleResolution`. Determines algorithm used for resolving module specifiers. Can be 'none' or 'node'.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.10.0] - 2018-03-12
+* Added new option: `moduleResolution`. Determines algorithm used for resolving module specifiers. Can be 'none' or 'node'.
 
 ## [3.9.0] - 2018-02-23
 * Added new options: `npm` and `componentDir`. Setting `npm` automatically sets `componentDir` to "node_modules/", unless explicitly set otherwise.
