@@ -525,6 +525,9 @@ export class ProjectConfig {
       builds: this.builds,
       autoBasePath: this.autoBasePath,
       lint: lintObj,
+      npm: this.npm,
+      componentDir: this.componentDir,
+      moduleResolution: this.moduleResolution,
     };
     return JSON.stringify(obj, null, 2);
   }

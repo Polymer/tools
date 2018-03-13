@@ -657,6 +657,7 @@ suite('Project Config', () => {
           'index.html',
         ],
         extraDependencies: [],
+        moduleResolution: 'none',
       });
     });
 
@@ -675,6 +676,7 @@ suite('Project Config', () => {
           'fragment.html',
         ],
         extraDependencies: ['extra.html'],
+        moduleResolution: 'none',
         builds: [
           {
             preset: 'es6-bundled',
