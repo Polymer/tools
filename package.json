@@ -70,7 +70,7 @@
     "@types/mocha": "^2.2.33",
     "@types/sinon": "^1.16.33",
     "babel-core": "^6.26.0",
-    "chai": "^3.5.0",
+    "chai": "^4.1.2",
     "clang-format": "^1.0.52",
     "del": "^2.2.1",
     "depcheck": "^0.6.3",

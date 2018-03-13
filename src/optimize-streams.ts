@@ -26,16 +26,17 @@ import matcher = require('matcher');
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 
-const babelPresetES2015 = require('babel-preset-es2015');
-const minifyPreset = require('babel-preset-minify');
+const babelSyntaxPlugins = [
+  require('babel-plugin-syntax-dynamic-import'),
+  require('babel-plugin-syntax-object-rest-spread'),
+];
+const babelPresetMinify =
+    require('babel-preset-minify')({}, {simplifyComparisons: false});
 const babelPresetES2015NoModules =
-    babelPresetES2015.buildPreset({}, {modules: false});
-const externalHelpersPlugin = require('babel-plugin-external-helpers');
-const dynamicImportSyntax = require('babel-plugin-syntax-dynamic-import');
-const objectRestSpreadTransform =
+    require('babel-preset-es2015').buildPreset({}, {modules: false});
+const babelPluginExternalHelpers = require('babel-plugin-external-helpers');
+const babelTransformPluginObjectRestSpread =
     require('babel-plugin-transform-object-rest-spread');
-const objectRestSpreadSyntax =
-    require('babel-plugin-syntax-object-rest-spread');
 
 // TODO(fks) 09-22-2016: Latest npm type declaration resolves to a non-module
 // entity. Upgrade to proper JS import once compatible .d.ts file is released,
@@ -109,32 +110,40 @@ export class GenericOptimizeTransform extends Transform {
 }
 
 /**
- * Transpile JavaScript to ES5 using Babel.
+ * Transform JavaScript using Babel.
  */
 export class JsTransform extends GenericOptimizeTransform {
   constructor(options: OptimizeOptions['js']) {
+    const shouldCompileFile =
+        options.compile ? notExcluded(options.compile) : () => false;
+    const shouldMinifyFile =
+        options.minify ? notExcluded(options.minify) : () => false;
+
     const transformer = (content: string, file: File) => {
+      // Note that Babel plugins run in this order:
+      // 1) plugins, first to last
+      // 2) presets, last to first
+      const plugins = [...babelSyntaxPlugins];
       const presets = [];
-      const plugins = [
-        // Syntax plugins for >ES2015 features we support.
-        objectRestSpreadSyntax,
-        dynamicImportSyntax,
-      ];
-      if (options.compile) {
+
+      if (shouldMinifyFile(file)) {
+        // Minify last, so push first.
+        presets.push(babelPresetMinify);
+      }
+      if (shouldCompileFile(file)) {
         presets.push(babelPresetES2015NoModules);
         plugins.push(
-            externalHelpersPlugin,
-            objectRestSpreadTransform,
+            babelPluginExternalHelpers,
+            babelTransformPluginObjectRestSpread,
         );
       }
       if (options.moduleResolution === 'node') {
         plugins.push(resolveBareSpecifiers(file.path, false));
       }
-      if (options.minify) {
-        presets.push(minifyPreset(null, {simplifyComparisons: false}));
-      }
-      const transformed = babelTransform(content, {presets, plugins}).code!;
-      return this._replaceTemplateObjectNames(transformed);
+
+      content = babelTransform(content, {presets, plugins}).code!;
+      content = this._replaceTemplateObjectNames(content);
+      return content;
     };
     super('babel-compile', transformer);
   }
@@ -232,9 +241,7 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   if (options.js &&
       (options.js.compile || options.js.minify ||
        options.js.moduleResolution === 'node')) {
-    streams.push(gulpif(
-        matchesExtAndNotExcluded('.js', options.js.compile),
-        new JsTransform(options.js)));
+    streams.push(gulpif(matchesExt('.js'), new JsTransform(options.js)));
   }
 
   // minify code (minify should always be the last transform)
@@ -258,12 +265,18 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   return streams;
 };
 
+function matchesExt(extension: string) {
+  return (fs: vinyl) => !!fs.path && fs.relative.endsWith(extension);
+}
+
+function notExcluded(option: boolean|{exclude?: string[]}) {
+  const exclude = typeof option === 'object' && option.exclude || [];
+  return (fs: vinyl) => !exclude.some(
+             (pattern: string) => matcher.isMatch(fs.relative, pattern));
+}
 function matchesExtAndNotExcluded(
     extension: string, option: boolean|{exclude?: string[]}) {
-  const exclude = typeof option === 'object' && option.exclude || [];
-  return (fs: vinyl) => {
-    return !!fs.path && fs.relative.endsWith(extension) &&
-        !exclude.some(
-            (pattern: string) => matcher.isMatch(fs.relative, pattern));
-  };
+  const a = matchesExt(extension);
+  const b = notExcluded(option);
+  return (fs: vinyl) => a(fs) && b(fs);
 }
