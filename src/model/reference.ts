@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Scope} from 'babel-traverse';
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 
 import {Annotation} from '../javascript/jsdoc';
@@ -33,17 +33,17 @@ export class ScannedReference<K extends keyof FeatureKindMap> extends
   readonly identifier: string;
   readonly kind: K;
   readonly sourceRange: SourceRange|undefined;
-  readonly scope: Scope;
+  readonly astPath: NodePath;
   readonly astNode: babel.Node|undefined;
 
   constructor(
       kind: K, identifier: string, sourceRange: SourceRange|undefined,
-      astNode: babel.Node|undefined, scope: Scope, description?: string,
+      astNode: babel.Node|undefined, astPath: NodePath, description?: string,
       jsdoc?: Annotation, warnings?: Warning[]) {
     super(sourceRange, astNode, description, jsdoc, warnings);
     this.kind = kind;
     this.astNode = astNode;
-    this.scope = scope;
+    this.astPath = astPath;
     this.sourceRange = sourceRange;
     this.identifier = identifier;
   }

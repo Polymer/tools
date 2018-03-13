@@ -845,6 +845,6 @@ function* getNamesFromLValue(lhs: babel.LVal): IterableIterator<string> {
   }
 }
 
-function assertNever(never: never) {
+function assertNever(never: never): never {
   throw new Error(`Unexpected ast node: ${util.inspect(never)}`);
 }

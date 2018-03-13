@@ -94,7 +94,7 @@ export class MixinVisitor implements Visitor {
       privacy: getOrInferPrivacy(namespacedName, docs),
       jsdoc: docs,
       mixins: jsdoc.getMixinApplications(
-          this._document, node, docs, this.warnings, nodePath.scope)
+          this._document, node, docs, this.warnings, nodePath)
     });
     this._currentMixin = mixin;
     this._currentMixinNode = node;

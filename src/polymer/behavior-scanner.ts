@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath, Scope} from 'babel-traverse';
+import {NodePath} from 'babel-traverse';
 
 import * as babel from 'babel-types';
 
@@ -185,7 +185,7 @@ class BehaviorVisitor implements Visitor {
     const behavior = this.currentBehavior!;
 
     this.propertyHandlers =
-        declarationPropertyHandlers(behavior, this.document, path.scope);
+        declarationPropertyHandlers(behavior, this.document, path);
 
     docs.annotateElementHeader(behavior);
     const behaviorTag = jsdoc.getTag(behavior.jsdoc, 'polymerBehavior');
@@ -198,11 +198,11 @@ class BehaviorVisitor implements Visitor {
 
     behavior.privacy =
         esutil.getOrInferPrivacy(behavior.className, behavior.jsdoc);
-    this._parseChainedBehaviors(node, path.scope);
+    this._parseChainedBehaviors(node, path);
 
     this.currentBehavior = this.mergeBehavior(behavior);
-    this.propertyHandlers = declarationPropertyHandlers(
-        this.currentBehavior, this.document, path.scope);
+    this.propertyHandlers =
+        declarationPropertyHandlers(this.currentBehavior, this.document, path);
 
     // Some behaviors are just lists of other behaviors. If this is one then
     // add it to behaviors right away.
@@ -254,7 +254,7 @@ class BehaviorVisitor implements Visitor {
     return newBehavior;
   }
 
-  _parseChainedBehaviors(node: babel.Node, scope: Scope) {
+  _parseChainedBehaviors(node: babel.Node, path: NodePath) {
     if (this.currentBehavior == null) {
       throw new Error(
           `_parsedChainedBehaviors was called without a current behavior.`);
@@ -276,7 +276,7 @@ class BehaviorVisitor implements Visitor {
               behaviorName,
               this.document.sourceRangeForNode(arrElement)!,
               arrElement,
-              scope));
+              path));
         }
       }
       if (chained.length > 0) {

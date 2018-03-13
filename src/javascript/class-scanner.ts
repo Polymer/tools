@@ -13,7 +13,7 @@
  */
 
 import generate from 'babel-generator';
-import {NodePath, Scope} from 'babel-traverse';
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as doctrine from 'doctrine';
 
@@ -644,9 +644,9 @@ class ClassFinder implements Visitor {
         properties,
         methods,
         getStaticMethods(astNode, this._document),
-        this._getExtends(astNode, doc, warnings, this._document, path.scope),
+        this._getExtends(astNode, doc, warnings, this._document, path),
         jsdoc.getMixinApplications(
-            this._document, astNode, doc, warnings, path.scope),
+            this._document, astNode, doc, warnings, path),
         getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
@@ -662,7 +662,7 @@ class ClassFinder implements Visitor {
   private _getExtends(
       node: babel.Node, docs: jsdoc.Annotation, warnings: Warning[],
       document: JavaScriptDocument,
-      scope: Scope): ScannedReference<'class'>|undefined {
+      path: NodePath): ScannedReference<'class'>|undefined {
     const extendsAnnotations =
         docs.tags!.filter((tag) => tag.title === 'extends');
 
@@ -681,7 +681,7 @@ class ClassFinder implements Visitor {
         }));
       } else {
         return new ScannedReference(
-            'class', extendsId, sourceRange, undefined, scope);
+            'class', extendsId, sourceRange, undefined, path);
       }
     } else if (
         babel.isClassDeclaration(node) || babel.isClassExpression(node)) {
@@ -695,7 +695,7 @@ class ClassFinder implements Visitor {
           }
           const sourceRange = document.sourceRangeForNode(superClass)!;
           return new ScannedReference(
-              'class', extendsId, sourceRange, node.superClass, scope);
+              'class', extendsId, sourceRange, node.superClass, path);
         }
       }
     }

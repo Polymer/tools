@@ -85,7 +85,7 @@ class ElementVisitor implements Visitor {
     });
     element.description = (element.description || '').trim();
     const propertyHandlers =
-        declarationPropertyHandlers(element, this.document, path.scope);
+        declarationPropertyHandlers(element, this.document, path);
 
     const argument = node.arguments[0];
     if (babel.isObjectExpression(argument)) {

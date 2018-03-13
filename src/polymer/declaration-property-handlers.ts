@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Scope} from 'babel-traverse';
+import {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 
 import * as astValue from '../javascript/ast-value';
@@ -30,7 +30,7 @@ export type BehaviorReferenceOrWarning = {
 }|{kind: 'behaviorReference', reference: ScannedReference<'behavior'>};
 
 export function getBehaviorReference(
-    argNode: babel.Node, document: JavaScriptDocument, scope: Scope):
+    argNode: babel.Node, document: JavaScriptDocument, path: NodePath):
     Result<ScannedReference<'behavior'>, Warning> {
   const behaviorName = astValue.getIdentifierName(argNode);
   if (!behaviorName) {
@@ -53,7 +53,7 @@ export function getBehaviorReference(
         behaviorName,
         document.sourceRangeForNode(argNode)!,
         argNode,
-        scope)
+        path)
   };
 }
 
@@ -69,7 +69,7 @@ export type PropertyHandlers = {
 export function declarationPropertyHandlers(
     declaration: ScannedPolymerElement,
     document: JavaScriptDocument,
-    scope: Scope): PropertyHandlers {
+    path: NodePath): PropertyHandlers {
   return {
     is(node: babel.Node) {
       if (babel.isLiteral(node)) {
@@ -86,7 +86,7 @@ export function declarationPropertyHandlers(
         return;
       }
       for (const element of node.elements) {
-        const result = getBehaviorReference(element, document, scope);
+        const result = getBehaviorReference(element, document, path);
         if (result.successful === false) {
           declaration.warnings.push(result.error);
         } else {
