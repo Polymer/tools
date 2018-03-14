@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Don't run Babel at all if there are no meaningful changes to make.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [2.3.3] - 2018-03-14
+* Don't run Babel at all if there are no meaningful changes to make.
 
 ## [2.3.2] - 2018-03-13
 * Fix bug where JS compilation/minification would ignore the "excludes" field.
