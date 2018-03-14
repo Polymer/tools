@@ -26,6 +26,7 @@ interface TravisConfig {
   cache?: string|Array<string|{directories: string[]}|{[key: string]: boolean}>;
 }
 
+// modify travis scripts, credit to @stramel for the modifications to make
 function addNPMFlag(scripts: string[]): string[] {
   return scripts.map((script) => {
     if (script.indexOf('polymer test') > -1 && script.indexOf('--npm') === -1) {
