@@ -30,7 +30,7 @@ interface TravisConfig {
 function addNPMFlag(scripts: string[]): string[] {
   return scripts.map((script) => {
     if (script.indexOf('polymer test') > -1 && script.indexOf('--npm') === -1) {
-      script = script.replace('polymer test', 'polymer-test --npm');
+      script = script.replace('polymer test', 'polymer test --npm');
     }
     if (script.indexOf('wct') > -1 && script.indexOf('--npm') === -1) {
       script = script.replace('wct', 'wct --npm');
@@ -65,8 +65,31 @@ function configToArray(yamlPart: string|string[]|undefined): string[] {
 }
 
 /**
- * Modify a project's travis config to use `yarn`
- * and the polymer-cli commands with the `--npm` flag.
+ * Set travis config in an expected way.
+ * If value has no items, delete the key.
+ * If value has one item, set a single string.
+ * If value has more than one item, set the whole value array.
+ * @param travisConfig Travis config to modify
+ * @param key Property of travisConfig
+ * @param value Array to set values from
+ */
+function setConfig(
+    travisConfig: TravisConfig, key: keyof TravisConfig, value: string[]) {
+  switch (value.length) {
+    case 0:
+      delete travisConfig[key];
+      break;
+    case 1:
+      travisConfig[key] = value[0];
+      break;
+    default:
+      travisConfig[key] = value;
+  }
+}
+
+/**
+ * Modify a project's travis config to remove `bower` commands
+ * and ensure the testing commands use the `--npm` flag.
  *
  * @param inDir Root path to search for travis config
  * @param outDir Root path of output travis config
@@ -79,31 +102,26 @@ export async function transformTravisConfig(
     return;
   }
 
-  const travisBlob = (await fse.readFile(inTravisPath)).toString();
+  const travisBlob = await fse.readFile(inTravisPath, 'utf-8');
   const travisConfig = safeLoad(travisBlob) as Partial<TravisConfig>;
 
-  let beforeScript = configToArray(travisConfig.before_script);
-  let testScript = configToArray(travisConfig.script);
-  let installScript = configToArray(travisConfig.install);
+  let beforeScripts = configToArray(travisConfig.before_script);
+  let testScripts = configToArray(travisConfig.script);
+  let installScripts = configToArray(travisConfig.install);
 
   // remove use of `bower` and `polymer install`
-  beforeScript = removeBowerAndPolymerInstall(beforeScript);
-  testScript = removeBowerAndPolymerInstall(testScript);
-  installScript = removeBowerAndPolymerInstall(installScript);
+  beforeScripts = removeBowerAndPolymerInstall(beforeScripts);
+  testScripts = removeBowerAndPolymerInstall(testScripts);
+  installScripts = removeBowerAndPolymerInstall(installScripts);
 
   // use `--npm` in `polymer test` and `wct` commands
-  testScript = addNPMFlag(testScript);
+  testScripts = addNPMFlag(testScripts);
 
-  travisConfig.before_script = beforeScript;
-  travisConfig.script = testScript;
-  // only add `install` config if previous config had one
-  if (installScript.length > 0) {
-    travisConfig.install = installScript;
-  } else {
-    delete travisConfig.install;
-  }
+  setConfig(travisConfig, 'before_script', beforeScripts);
+  setConfig(travisConfig, 'script', testScripts);
+  setConfig(travisConfig, 'install', installScripts);
 
   const outPath = path.join(outDir, travisConfigFile);
-  const travisBlobOut = safeDump(travisConfig);
+  const travisBlobOut = safeDump(travisConfig, {lineWidth: -1});
   await fse.writeFile(outPath, travisBlobOut);
 }
