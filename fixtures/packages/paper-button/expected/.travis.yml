@@ -2,7 +2,6 @@ language: node_js
 sudo: required
 before_script:
   - npm install -g polymer-cli
-  - polymer install --variants
 env:
   global:
     - secure: >-
@@ -19,8 +18,8 @@ addons:
       - google-chrome-stable
   sauce_connect: true
 script:
-  - xvfb-run polymer test
+  - xvfb-run polymer-test --npm
   - >-
-    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
-    fi
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer-test --npm -s
+    'default'; fi
 dist: trusty
