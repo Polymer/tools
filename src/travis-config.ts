@@ -14,6 +14,7 @@
 
 import * as fse from 'fs-extra';
 import {safeDump, safeLoad} from 'js-yaml';
+import {EOL} from 'os';
 import * as path from 'path';
 
 const travisConfigFile = '.travis.yml';
@@ -122,6 +123,7 @@ export async function transformTravisConfig(
   setConfig(travisConfig, 'install', installScripts);
 
   const outPath = path.join(outDir, travisConfigFile);
-  const travisBlobOut = safeDump(travisConfig, {lineWidth: -1});
+  const travisBlobOut =
+      safeDump(travisConfig, {lineWidth: -1}).split('\n').join(EOL) + EOL;
   await fse.writeFile(outPath, travisBlobOut);
 }

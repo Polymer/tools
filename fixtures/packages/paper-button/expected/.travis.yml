@@ -18,3 +18,4 @@ script:
   - xvfb-run polymer test --npm
   - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test --npm -s ''default''; fi'
 dist: trusty
+
