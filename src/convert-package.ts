@@ -22,6 +22,7 @@ import {YarnConfig} from './npm-config';
 import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
+import {transformTravisConfig} from './travis-config';
 import {PackageUrlHandler} from './urls/package-url-handler';
 import {PackageType} from './urls/types';
 import {deleteGlobsSafe, mkdirp, readJsonIfExists, rimraf, writeFileResults} from './util';
@@ -138,7 +139,8 @@ export default async function convert(options: PackageConversionSettings) {
   }
   await writeFileResults(outDir, results);
 
-
+  // transform travis config
+  await transformTravisConfig(options.inDir, options.outDir);
 
   const packageJsonPath = path.join(options.inDir, 'package.json');
   const existingPackageJson =

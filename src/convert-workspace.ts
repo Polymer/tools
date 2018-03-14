@@ -23,6 +23,7 @@ import {YarnConfig} from './npm-config';
 import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
+import {transformTravisConfig} from './travis-config';
 import {lookupNpmPackageName, WorkspaceUrlHandler} from './urls/workspace-url-handler';
 import {deleteGlobsSafe, exec, logRepoError, readJsonIfExists, writeFileResults} from './util';
 
@@ -128,6 +129,11 @@ export default async function convert(options: WorkspaceConversionSettings):
   // Process & write each conversion result:
   const results = converter.getResults();
   await writeFileResults(options.workspaceDir, results);
+
+  // update .travis.yml files for repos
+  for (const repo of options.reposToConvert) {
+    await transformTravisConfig(repo.dir, repo.dir);
+  }
 
   // Generate a new package.json for each repo:
   const packageJsonResults = await run(
